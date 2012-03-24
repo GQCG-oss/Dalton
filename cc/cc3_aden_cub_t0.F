@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_aden_cub_t0 */
       SUBROUTINE CC3_ADEN_CUB_T0(LISTL,IDLSTL,LISTR,IDLSTR,
@@ -35,11 +35,11 @@ C  /* Deck cc3_aden_cub_t0 */
      *                            LU3FOP2X,FN3FOP2X)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       LOGICAL DO_YMMAT
 C
@@ -182,16 +182,16 @@ C  /* Deck cc3_adenocc_cub_t0 */
 *=====================================================================*
 C
       IMPLICIT NONE
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
-#include <ccr2rsp.h>
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
+#include "ccr2rsp.h"
 C
       INTEGER ISYM0
       PARAMETER(ISYM0 = 1)
@@ -1389,20 +1389,20 @@ C  /* Deck cc3_adenvir_cub_t0 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <cc3t3d.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <cclrmrsp.h>
-#include <ccexci.h>
-#include <ccr2rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "cc3t3d.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "cclrmrsp.h"
+#include "ccexci.h"
+#include "ccr2rsp.h"
 
 C
       CHARACTER*10 MODEL
@@ -3686,10 +3686,10 @@ C=========================================================================
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cc3t3d.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cc3t3d.h"
 C
       INTEGER ISYMT3,ISWMAT,LUT3,LUWBMAT,LWORK,ISYMD,ISYDEN
       INTEGER ISYML,ISYMDL,ISWMATDL,ISYMT3DL,ISYMN,ISYEMF,ISYMBN,ISYMEM
@@ -4229,9 +4229,9 @@ C  /* Deck dab_cont_cub_t0 */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL TRANSPOSEW
 C
@@ -4342,10 +4342,10 @@ C  /* Deck aden_dij_jk_t0 */
       SUBROUTINE ADEN_DIJ_JK_t0(DIJ,THLM,ISYMTHLM,WLM,ISYMWLM)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMTHLM,ISYMWLM
       INTEGER ISYMJ,ISYMDEF,ISYMI,KOFF1,KOFF2,KOFF3,NTOTDEF,NTOTI
@@ -4393,10 +4393,10 @@ C  /* Deck aden_dab_lm_cub_t0 */
      *                           WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER IOPT
       INTEGER ISYMTHLM,ISYMWLM,LWORK

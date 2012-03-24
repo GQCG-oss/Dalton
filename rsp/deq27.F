@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck deq27 */
       SUBROUTINE DEQ27(CMO,UBO,DV,DXCAO,DXVAO,WRK,LFRSAV)
@@ -54,7 +54,7 @@ C
 C Scratch:
 C   WRK(LFRSAV)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),UBO(NORBT,*),DV(NASHT,*),DXCAO(*),DXVAO(*),
      *          WRK(*)
 C
@@ -67,17 +67,17 @@ C  INFIND : IROW(*)
 C  INFVAR : ??????
 C  WRKRSP : KSYMOP
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <wrkrsp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "wrkrsp.h"
 C
 #if defined (VAR_DEBUG)
-#include <idbg.h>
+#include "idbg.h"
 #endif
 C
       CALL QENTER('DEQ27')

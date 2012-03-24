@@ -12,11 +12,11 @@ C
 C     PURPOSE: Calculate gradient property vector GPVEC for the
 C              property with label LABEL and symmetry ISYMTR.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccsdsym.h>
-#include <soppinf.h>
+#include "ccsdsym.h"
+#include "soppinf.h"
 C
       PARAMETER   (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION   GPVEC(LGPVEC)

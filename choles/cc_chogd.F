@@ -27,12 +27,12 @@ C
 C     The Y intermediates are generated in CC_CYI and temporarily stored
 C     in the files also used by the left-hand Jacobian transformations.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ETA(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHOETA')
@@ -154,15 +154,15 @@ C
 C     Purpose: Calculate Y intermediates for the effective right-hand
 C              side for 0th order multipliers.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), WORK(LWORK)
       LOGICAL DELP1, DELP2
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "dummy.h"
 
 C     Amplitude info.
 C     ---------------
@@ -219,14 +219,14 @@ C     where g,d refer to AO basis and L(gd,J) = L(dg,J) has been used.
 C
 C     IF (DELY): Y intermediate files are deleted after use.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), ETA(*), WORK(LWORK)
       LOGICAL DELY
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER IOFFL(8), IOFFZ(8), IOFFY(8)
 
@@ -601,19 +601,19 @@ C     PROP designates the one-electron perturbation integrals, whose
 C     precise nature (label,symmetry, etc.) is obtained through
 C     IXETRAN(1,*).
 C
-#include <implicit.h>
-#include <cclists.h>
+#include "implicit.h"
+#include "cclists.h"
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <chocc2.h>
-#include <ccroper.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "chocc2.h"
+#include "ccroper.h"
+#include "dummy.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHOXI0')
@@ -943,18 +943,18 @@ C     TODO: the "doubles-direct" algorithm may be improved by doing things
 C           much the same way as the in-core algorithm. I.e. set up T2AM,
 C           transform with property integrals, calculate contributions.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XI(*), WORK(LWORK)
       CHARACTER*8 LABEL
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <chocc2.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "chocc2.h"
+#include "dummy.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHOXI1')
@@ -1175,16 +1175,16 @@ C     WARNING: This routine allocates 2 full square doubles arrays. Use
 C              CC_CHOXI3 for an implementation less demanding in terms of
 C              memory (but more demanding in terms of CPU time).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), FIA(*), XLAMDP(*), XLAMDH(*), XI(*)
       DIMENSION PROPIJ(*), PROPAB(*)
       DIMENSION FREQ(NFREQ), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <ciarc.h>
-#include <chocc2.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "ciarc.h"
+#include "chocc2.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1476,16 +1476,16 @@ C              for 1st order amplitude equations.
 C
 C     See CC_CHOXI1 for the explicit formula.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), FIA(*), XLAMDP(*), XLAMDH(*), XI(*)
       DIMENSION PROPIJ(*), PROPAB(*)
       DIMENSION FREQ(NFREQ), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <ciarc.h>
-#include <chocc2.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "ciarc.h"
+#include "chocc2.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1646,16 +1646,16 @@ C
 C     Purpose: Calculate Y intermediates for the effective right-hand
 C              side for 1st order amplitude response.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), XI(*), FIA(*), WORK(LWORK)
       LOGICAL DELP1, DELP2
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <chocc2.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "chocc2.h"
 
 C     Amplitude info.
 C     ---------------
@@ -1701,10 +1701,10 @@ C     Thomas Bondo Pedersen, February 2003.
 C
 C     Purpose: Transform T2AM. See CC_CHOXI1 and CC_CHOXI2 for details.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(*), X2AM(*), PROPIJ(*), PROPAB(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0)
 
@@ -1803,13 +1803,13 @@ C                        - sum(ckj) X2AM(aj,ck) * (kc|ji)
 C
 C     using Cholesky decomposed integrals. X2AM is assumed to be full-square.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), XI(*), X2AM(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER IOFFL(8), IOFFZ(8), IOFFY(8)
 
@@ -2157,14 +2157,14 @@ C              Currently only used for Eta(A)*T(B) contributions to linear
 C              response. See CC_XIETA for details (to the extent they are
 C              applicable here).
 C
-#include <implicit.h>
-#include <cclists.h>
+#include "implicit.h"
+#include "cclists.h"
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
       INTEGER IXDOTS(MXVEC,NXETRAN), IEDOTS(MXVEC,NXETRAN)
       CHARACTER*(*) LISTL, FILXI, FILETA
       DIMENSION XCONS(MXVEC,NXETRAN), ECONS(MXVEC,NXETRAN)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOXIETA')
@@ -2235,16 +2235,16 @@ C              The contributions are calculated from the 1st order right
 C              densities, which must be available on disk, backtransformed
 C              to the AO basis.
 C
-#include <implicit.h>
-#include <cclists.h>
+#include "implicit.h"
+#include "cclists.h"
       INTEGER   IETRAN(MXDIM_XEVEC,NETRAN)
       INTEGER   IEDOTS(MXDEN,NETRAN)
       DIMENSION ECONS(MXDEN,NETRAN), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHOETADOT')

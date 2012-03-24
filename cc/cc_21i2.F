@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cc_21i2 */
@@ -58,9 +58,9 @@ C
 #else
 #   include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       LOGICAL LRHOAO, LDERIV, LX2ISQ
       INTEGER LWORK,ISYDIS,ISYDIS2,ISYVWZ0,ISYVWZ2,ISYXL0,ISYXL2,IOPT
@@ -317,10 +317,10 @@ C  RHO1MO(ai) = FAC*RHO1MO(ai) + sum_alp XLAMD(alp a) RHO1AO(alp i)
 C
 C  Written by Christof Haettig 16 July 1998
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DIMENSION RHO1MO(*), RHO1AO(*), XLAMD(*)
 C
@@ -372,9 +372,9 @@ C
 #else
 #   include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CHARACTER*(*) FLAG
       INTEGER LWORK, ISYGIJ, ISYDEN, ISYMXL, IOPT, IT3BAO(8,8)
@@ -511,9 +511,9 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYRES, ISYDEN, ISYDIS, IT3BAO(8,8), LWORK
       INTEGER IOPT 

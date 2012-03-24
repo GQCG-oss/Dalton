@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck ccder1 */
 *=====================================================================*
@@ -39,10 +39,10 @@ c /* deck ccder1 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "ccorb.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -135,9 +135,9 @@ C     magnetic derivatives added Sep-1999
 C
 *----------------------------------------------------------------------*
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#include <priunit.h>
-#include <iratdef.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "inftap.h"
 C
       PARAMETER (LBUF = 600)
 C
@@ -153,8 +153,8 @@ C
 C
       DATA NAME  /'CCAODER1','CCAODER2','CCAODER3','CCAODER4',
      *            'CCAODER5','CCAODER6','CCAODER7','CCAODER8'/
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
 *----------------------------------------------------------------------*
 * open files for sorted integrals:
@@ -416,17 +416,17 @@ C     based on Henrik Kochs CCSD_SORT1 routine
 C     generalizations for London integrals Sep-1999
 C
 *----------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <ibtpar.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "ibtpar.h"
+#include "ccorb.h"
       DIMENSION XINT(LENGTH,*),IBUF(LBUF,NIBUF),RBUF(LBUF)
       DIMENSION KAOAB(NBAST,NBAST),KAOGDER(NBAST,NSYM,NSYM,*)
       INTEGER ITYPE
 C
-#include <inftap.h>
-#include <ibtfun.h>
+#include "inftap.h"
+#include "ibtfun.h"
 C
       CALL REWSPL(LU2DER)
 C
@@ -524,7 +524,7 @@ C     Written by Christof Haettig 06-May-1998
 C     based on Henrik Kochs CCSD_SORT2 routine
 C
 *----------------------------------------------------------------------*
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*)
 C
       INTEGER LUAODR(8)
@@ -563,14 +563,14 @@ C               derivative integrals for a given component
 C               and given symmetry 
 C
 *----------------------------------------------------------------------*
-#include <implicit.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "ccorb.h"
       DIMENSION KAOAB(NBAST,NBAST)
       DIMENSION KAOG(NBAST,NSYM)
       DIMENSION KAOGDER(NBAST,NSYM,NSYM,MXCOMP)
       LOGICAL LDISTRIB, LDERINT(8,MXCOMP)
       DIMENSION NDIMAB(8)
-#include <ccsdsym.h>
+#include "ccsdsym.h"
  
 *----------------------------------------------------------------------*
 * set up KAOAB index array for the leading indeces alpha,beta :
@@ -706,20 +706,20 @@ c /* deck ccgeth2d */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <nodint.h>
-#include <ccorb.h>
-#include <cch2d.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "nodint.h"
+#include "ccorb.h"
+#include "cch2d.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "second.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG

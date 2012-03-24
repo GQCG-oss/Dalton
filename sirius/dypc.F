@@ -514,7 +514,7 @@ c----------------------------------------------------------------------
       allocatable h2m(:,:),tint(:,:)
       dimension fmpb(*),zgel(*)
 cele
-#include <dummy.h>
+#include "dummy.h"
 cele
 
       
@@ -540,7 +540,7 @@ cele      allocate(tint(ncore,ncore,nvirt))
       allocate(tint(nvirt,nvirt))
       call dzero(tint,nvirt*nvirt)
 cele  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
-  900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP(1),LUINTD,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
 cele
       ii=id2n(icd)
@@ -663,7 +663,7 @@ c----------------------------------------------------------------
       dimension fmpb(*),zgel(*)
       allocatable h2m(:,:),tintar(:,:),tintra(:,:)
       allocatable s(:,:),coef(:,:),w(:),work(:),caux(:,:),vct(:,:)
-#include <dummy.h>
+#include "dummy.h"
       
       ncoat=ncore+nact
       nvirt=norb-ncoat
@@ -757,7 +757,7 @@ c------ two-electron part with Dirac distr (ii,ij|**)
       allocate(tintra(nvirt,nact))
       call dzero(tintar,nact*nvirt)
       call dzero(tintra,nact*nvirt)
-  900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP(1),LUINTD,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ii=id2n(icd)
       ij=id2n(idd)
@@ -961,7 +961,7 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,ncore,nvirt,nact))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -1074,7 +1074,7 @@ c----Partially contracted NEV-PT---------------------------------
       end
 c-------------------------------------------------------------
       subroutine fill(a,b,n)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION a(*),b(*)
       do i=1,n
          a(i)=b(i)
@@ -1083,7 +1083,7 @@ c-------------------------------------------------------------
       end
 c----------------------------------------------
       subroutine halve(a,n)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION a(*)
       do i=1,n
          a(i)=0.5d0*a(i)
@@ -1454,7 +1454,7 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(nact,ncore,nact,ncore))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -1721,7 +1721,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nvirt,nact))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -1973,7 +1973,7 @@ c--   metto in coef i coefficienti trasformati (for clarity sake)
       end
 c----------------------------------------------------------------
       subroutine fillcm2(s,daa,nact)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(nact**2,nact**2),daa(nact,nact,nact,nact)
 c---caso r#s
       ij=0
@@ -1993,7 +1993,7 @@ c---caso r#s
       end
 c-------------------------------------------------------------
       subroutine fillcm2p(s,daa,nact)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(nact*(nact+1)/2,nact*(nact+1)/2),
      &          daa(nact,nact,nact,nact)
 c---caso r=s
@@ -2014,7 +2014,7 @@ c---caso r=s
       end
 c----------------------------------------------------------------
       subroutine fillc0p(s,coef,ga,gd,daa,da,nact)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(2*nact**2,2*nact**2),daa(nact,nact,nact,nact)
       DIMENSION coef(2*nact**2,2*nact**2),da(nact,nact)
       DIMENSION ga(nact,nact,nact,nact),gd(nact,nact,nact,nact)
@@ -2085,7 +2085,7 @@ c---parte sud-est
       end
 c----------------------------------------------------------------
       subroutine fillcm1p(s,coef,amat,ro3,daa,da,nact,nact3)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(nact3,nact3),daa(nact,nact,nact,nact)
       DIMENSION coef(nact3,nact3),da(nact,nact)
       DIMENSION ro3(nact,nact,nact,nact,nact,nact)
@@ -2113,7 +2113,7 @@ c----------------------------------------------------------------
       end
 c----------------------------------------------------------------
       subroutine fillcp1p(s,coef,amat,ro3,daa,da,nact,nact3)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(nact3,nact3),daa(nact,nact,nact,nact)
       DIMENSION coef(nact3,nact3),da(nact,nact)
       DIMENSION ro3(nact,nact,nact,nact,nact,nact)
@@ -2177,7 +2177,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       call nwadd(nwall,L_tinta*8)
       allocate(tinta(nvirt,nact,ncore,nact))
       CALL DZERO(tinta,L_tinta)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -2210,7 +2210,7 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       call nwadd(nwall,L_tintc*8)
       allocate(tintc(nvirt,ncore,nact,nact))
       call dzero(tintc,L_tintc)
-  910 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  910 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1010
       ic=id2n(icd)
       id=id2n(idd)
@@ -2429,7 +2429,7 @@ c--inizio il calcolo perturbativo
       end
 c----------------------------------------------------------------
       subroutine caux0p(caux,s,w,nact2,nnew,thr)
-#include <implicit.h>
+#include "implicit.h"
       dimension caux(nact2,nnew),s(nact2,nact2),w(*)
       jnew=0
       do j=1,nact2
@@ -2445,7 +2445,7 @@ c----------------------------------------------------------------
       end
 c----------------------------------------------------------------
       subroutine copia(coef,s,nact2,nnew)
-#include <implicit.h>
+#include "implicit.h"
       dimension coef(nact2,nact2),s(nact2,nact2)
       do mu=1,nnew
          do i=1,nact2
@@ -2457,7 +2457,7 @@ c----------------------------------------------------------------
 c----------------------------------------------------------------
       subroutine e20pcont(e2,psi2,heffd,coef,s,sp,spp,w,daa,da,fmpb,nact
      $     ,ncore,norb,nnew,zro,zgel,tintc,tinta)
-#include <implicit.h>
+#include "implicit.h"
       logical*1 zro,zgel
 c      allocatable rhoir(:,:),vaux(:)
       dimension coef(2*nact**2,2*nact**2),s(nact**2,nnew),
@@ -2549,7 +2549,7 @@ cro      if(zro)deallocate(rhoir)
 c----------------------------------------------------------------
       subroutine e21pcont(e2,psi2,heffd,coef,s,sp,w,ro3,daa,da,fmpb,nact
      $     ,ncore,norb,nnew,zro,zgel,tint)
-#include <implicit.h>
+#include "implicit.h"
       logical*1 zro,zgel
       dimension coef(nact**3,nact**3),s(nnew,nact**3),
      $     sp(nnew,nact**3),w(*),fmpb(*),ro3(nact,nact,nact,nact,nact
@@ -2655,7 +2655,7 @@ c     if(zro)deallocate(rhoid)
 c------------------------------------------------------------------
       subroutine e2m1pcont(e2,psi2,heffd,coef,s,sp,w,ro3,daa,da,fmpb
      $     ,nact,ncore,norb,nnew,zro,zgel,tint)
-#include <implicit.h>
+#include "implicit.h"
       logical*1 zro,zgel
       dimension coef(nact**3,nact**3),s(nnew,nact**3),
      $     sp(nnew,nact**3),w(*),fmpb(*),ro3(nact,nact,nact,nact,nact
@@ -2803,7 +2803,7 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(ncore,nact,nact,nact))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -3036,7 +3036,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nact,nact))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -3264,8 +3264,8 @@ c-------------------------------------------------------------------
 c----------------------------------------------------
       subroutine getorbeps(WRK,LWRK,onel,heffd,fmpb,da,norb,nact,ncore,
      *           id2n,in2d)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension onel(*),fmpb(*),da(nact,*),id2n(*),in2d(*),heffd(*)
       dimension wrk(lwrk),needtp(-4:6)
       allocatable h2m(:,:)
@@ -3325,7 +3325,7 @@ c------ two-electron part with mulliken distr (ij|**)
       LFREE=LWRK
       IDIST = 0
       needtp(1)=1
-  100 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 200
       ic=id2n(icd)
       id=id2n(idd)
@@ -3426,7 +3426,7 @@ c------ two-electron part with mulliken distr (ia|**)
       IDIST = 0
       needtp(1)=0
       needtp(2)=1
-  300 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  300 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 400
       ic=id2n(icd)
       id=id2n(idd)
@@ -3454,7 +3454,7 @@ c------ two-electron part with mulliken distr (ia,ib|**)
       IDIST = 0
       needtp(2)=0
       needtp(3)=1
-  500 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  500 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 600
       ic=id2n(icd)-ncore
       id=id2n(idd)-ncore
@@ -3480,7 +3480,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       IDIST = 0
       needtp(3)=0
       needtp(5)=1
-  700 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  700 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
       ic=id2n(icd)
       id=id2n(idd)
@@ -3515,7 +3515,7 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       IDIST = 0
       needtp(5)=0
       needtp(4)=1
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)

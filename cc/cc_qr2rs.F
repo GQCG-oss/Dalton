@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c*DECK CC_QR2RSD
        SUBROUTINE CC_QR2RSD(WORK,LWORK)
@@ -37,35 +37,35 @@ C     Ove Christiansen April 1997.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,THR=1.0D-08)
 C
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
-#include <cclrinf.h>
-#include <ccexci.h>
-#include <cclres.h>
-#include <ccroper.h>
-#include <ccqr2r.h>
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
+#include "cclrinf.h"
+#include "ccexci.h"
+#include "cclres.h"
+#include "ccroper.h"
+#include "ccqr2r.h"
 C
       LOGICAL LTST,LCALC,LDIP
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*10,MODELP*10,MODEL1*10,CHSYM*2,FILEX*10,FILOLD*10
       CHARACTER LABELA*8,LABELB*8
 C
-#include <leinf.h>
+#include "leinf.h"
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
 C
 C------------------------------------
 C     Header of Property calculation.
@@ -514,18 +514,18 @@ C     Written by Ove Christiansen 26-4-1996
 C
 C------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <ccqr2r.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "ccqr2r.h"
+#include "dummy.h"
 C
       PARAMETER( TWO = 2.0D00,TOLFRQ=1.0D-08 )
 
@@ -659,19 +659,19 @@ C     Written by Ove Christiansen April 1997 based on CC_OSCPRI
 C
 C------------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
       PARAMETER (TOLFRQ = 1.0D-08,ONE= 1.0D0,THR = 1.0D-08)
 C
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccqr2r.h>
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccqr2r.h"
 C
       DIMENSION OSC(*),PVAL(3),PAXIS(3,3)
       CHARACTER MODEL*10,CDIP*7

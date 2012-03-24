@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE  CCFBINT1(ITRAN,   LISTL,   IDLSTL, LISTR, IDLSTR,
@@ -52,11 +52,11 @@ C
 *     Version: 08/10-1999
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

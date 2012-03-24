@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck dicsym */
 #if defined (VAR_DICSYM)
@@ -37,7 +37,7 @@ C                  =  1 if symmetric
 C                  = -1 if antisymmetric
 C                  =  0 if neither symmetric nor antisymmetric
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CBLOCK(NIASTS,NIBSTS), CTBLCK(NIBSTS,NIASTS)
       PARAMETER (THRSML = 1.0D-14)
       LOGICAL   SYM, ASYM
@@ -81,7 +81,7 @@ C get Ebb*Ebb contribution by adding
 C CBLOCK(NIASTS,NIBSTS) transposed to CTBLCK(NIBSTS,NIASTS)
 C and vice versa.
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL   EQUAL
       DIMENSION CBLOCK(NIASTS,NIBSTS), CTBLCK(NIBSTS,NIASTS)
 C

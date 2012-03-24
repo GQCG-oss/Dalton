@@ -5,9 +5,9 @@ C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C     CCSD(T) energy correction with Cholesky decomposition.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cc_cho.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cc_cho.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -20,10 +20,10 @@ C
       DIMENSION CHOELE(MAXCHO),IOFSET(8),IOFF2(8),IOFF3(8),IOFF4(8)
       DIMENSION IOFF5(8)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <dummy.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "dummy.h"
 C
       LOGICAL BCONV,ACONV,ICONV
 C
@@ -1583,8 +1583,8 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C     - occupied part included, TBP, June 2002.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
@@ -1597,11 +1597,11 @@ C
 C
 *     dimension temp(10)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <ccinftap.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "ccinftap.h"
+#include "cc_cho.h"
 C
 C---------------------------
 C     Work space allocation.
@@ -1778,11 +1778,11 @@ C              (ji,k,a) to (ij,k,a) ordering.
 C
 C              ISYM is the symmetry of the integrals.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XJIKA(*), XIJKA(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO ISYMA = 1,NSYM
 C
@@ -1848,8 +1848,8 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
@@ -1858,8 +1858,8 @@ C
       DIMENSION CMO(*)
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C
       ISYINT = ISYMOP
@@ -1994,15 +1994,15 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
       DIMENSION T2VO(*),T2AM (*)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2059,15 +2059,15 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION T2VO(*),T2TIL(NIJ,NA,NB)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYMAB = MULD2H(ISYMA,ISYMB)
       ISYMIJ = MULD2H(ISYMAB,ISYMT2)
@@ -2096,8 +2096,8 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       INTEGER A,B
 C
@@ -2121,15 +2121,15 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION XMAT(NCD,NA),Y1MAT(NC,NA,ND),Y2MAT(NC,NA,ND)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C
       DO A = 1,NA
@@ -2155,11 +2155,11 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       CHARACTER*7 FILNAM
@@ -2186,11 +2186,11 @@ C
 C     XINT is packed under symmetries of C. Inside each C symmetry
 C     block, the packing is (em,c,a)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -2255,8 +2255,8 @@ C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C     CCSD(T) energy correction with Cholesky decomposition.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
@@ -2264,9 +2264,9 @@ C
 C
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------------
 C     Dynamic allocation.
@@ -2311,17 +2311,17 @@ C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C     CCSD(T) energy correction with Cholesky decomposition.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-15)
 C
       DIMENSION FOCC(*),FVIR(*),OMEG(*),CHOELE(MAXCHO)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       NDIMP = (NRHFT+1)*NRHFT*NVIRT/2 + (NVIRT+1)*NVIRT*NRHFT/2
 C
@@ -2387,8 +2387,8 @@ C       1.- ijb for fixed #b from the batch over b (numib*nij)
 C       2.- emc for fixed ISYEMC  (nckatr(isyemc))
 C       3.- ijc for fixed ISYIJC  (nmaija(isyijc))
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
@@ -2396,9 +2396,9 @@ C
       DIMENSION FOCKD(*),CHOELE(*),CHOVEC(*)
       DIMENSION IOF2(8)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -2579,8 +2579,8 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XKINT(NB,NA),XLINT(NB,NA),CHOVEC(NB) 
 C
@@ -2600,15 +2600,15 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION T2VO(*),T2BIJC(NB,NIJC)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO ISYMC = 1,NSYM
          ISYMBC = MULD2H(ISYMB,ISYMC)
@@ -2642,15 +2642,15 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION T2VO(*),T2IJCA(NIJC,NA)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO A = 1,NA
          IA  = IA1 + A - 1
@@ -2687,8 +2687,8 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       INTEGER A
 C
@@ -2711,8 +2711,8 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -2720,8 +2720,8 @@ C
       DIMENSION XJINT(*),XKINT(*),XLINT(*),SCRINT(*)
       DIMENSION IOFSET(8)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C
 C-----------------
@@ -2812,8 +2812,8 @@ C    and s(ai,bj) = 2 t(ai,bj) - t(aj,bi), and d(ai,j) and d(ai,b) denotes
 C    the occupied and virtual parts of the Cholesky decomposition of the
 C    orbital energy denominator.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XIINT(*),XJINT(*),T2VO(*),CHOELE(*),FOCKD(*)
       DIMENSION WORK(LWORK)
@@ -2822,9 +2822,9 @@ c      DIMENSION IOFF2(8),IOFF3(8),IOFF4(8)
       DIMENSION IOFF2(8),IOFF3(8)
       LOGICAL FBATCH,PRINT
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C 
@@ -3172,16 +3172,16 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (TWO = 2.0D0)
 C
       DIMENSION T2VO(*),T21(*),T22(*), T23(*), T24(*)
       DIMENSION IOFF3(8)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO I = 1,NUMII
 C
@@ -3245,15 +3245,15 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION XIINT(*),XJINT(*),XINTD(*),XINTW(*)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C---------------------------
 C     Extract the integrals.
@@ -3282,17 +3282,17 @@ C
 C     For the occupied part, OCCHO(emi), only the update vector
 C     For the virtual  part, VICHO(emc), the actual vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -3424,8 +3424,8 @@ C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C     Scale T2 subblocks with occupied part of Cholesky vector.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
@@ -3433,8 +3433,8 @@ C
       DIMENSION T21(*),T23(*),T24(*),OCCHO(*)
       DIMENSION IOFF2(8),IOFF3(8)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C
       DO ISYMA = 1,NSYM
@@ -3470,14 +3470,14 @@ C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C     Scale integrals with Cholesky vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XINTI(*),XINTJ(*),VICHO(*) 
       DIMENSION IOFF2(8)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C
       DO ISYMA = 1,NSYM
@@ -3531,17 +3531,17 @@ C     and s(ai,bj) = 2 t(ai,bj) - t(aj,bi), and d(ai,j) and d(ai,b) denotes
 C     the occupied and virtual parts of the Cholesky decomposition of the
 C     orbital energy denominator.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XIINT(*),XJINT(*),XOINT(*),T2VO(*),CHOELE(*),FOCKD(*)
       DIMENSION WORK(LWORK)
       DIMENSION IOFF3(8)
       LOGICAL FBATCH,PRINT
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C 
@@ -3907,16 +3907,16 @@ C
 C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (TWO = 2.0D0)
 C
       DIMENSION T2VO(*),T21(*),T22(*), T23(*)
       DIMENSION IOFF3(8)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO I = 1,NUMII
 C
@@ -3979,8 +3979,8 @@ C     Henrik Koch and Alfredo Sanchez.    Aug 1999
 C
 C     Scale T2 subblocks with virtual part of Cholesky vector.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
@@ -3988,8 +3988,8 @@ C
       DIMENSION T21(*),T22(*),T23(*),VCCHO(*)
       DIMENSION IOFF3(8)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO ISYMA = 1,NSYM
 C
@@ -4026,11 +4026,11 @@ C     JLC, BFR, TBP, HK AND AS, June 2002.
 C
 C     Extract 2CME of (bj|ik) integrals (ordered as (jk,i,b)).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XOINT(*), XKINT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       PARAMETER (TWO = 2.00D0)
 
@@ -4080,11 +4080,11 @@ C     JLC, BFR, TBP, HK, AS, June 2002.
 C
 C     Scale occupied integrals.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XKINT(*), CHOO(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       ISYMJK = MULD2H(ISYMI,ISINTK)
 
@@ -4111,17 +4111,17 @@ C
 C     For the occupied part, OCCHO(jk,#b)  actual vector
 C     For the virtual  part, VICHO(emc)    update vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -4262,17 +4262,17 @@ C     and s(ai,bj) = 2 t(ai,bj) - t(aj,bi), and d(aij) and d(aib) denote
 C     the occupied and virtual parts of the Cholesky decomposition of the
 C     orbital energy denominator.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XJINT(*),XKINT(*),T2VO(*),CHOELE(*),FOCKD(*)
       DIMENSION WORK(LWORK)
       DIMENSION IOFF3(8)
       LOGICAL FBATCH,PRINT
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C 
@@ -4663,7 +4663,7 @@ C     JLC, BFR, TBP, HK, AS, June 2002.
 C
 C     Scale XMAT.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION XMAT(NI,NJ), SCAL(NI)
 C
@@ -4683,14 +4683,14 @@ C     JLC, BFR, TBP, HK, AS, June 2002.
 C
 C     Extract K(lk,i,d) as K(dlk,i)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (TWO = 2.0D0)
 C
       DIMENSION XKINT(*),XKDLKI(*)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYDLK = ISYMI
       DO ISYMD = 1,NSYM
@@ -4747,15 +4747,15 @@ C
 C     Extract T2 amplitudes as s(dlk,a)
 C     s(dlk,a) = 2 t(da,lk) - t(da,kl)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (XMONE = -1.0D0, TWO = 2.0D0)
 C
       DIMENSION T2VO(*),TDLKA(*)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYDLK = ISYMA
 C
@@ -4808,15 +4808,15 @@ C
 C     Extract T2 amplitudes as s(cjb,i)
 C     s(cjb,i) = 2 t(cb,ji) - t(bc,ji)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (XMONE = -1.0D0, TWO = 2.0D0)
 C
       DIMENSION T2VO(*),TCJBI(*)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYCJB = ISYMI
 C
@@ -4929,17 +4929,17 @@ C
 C     For the occupied part, OCCHO(dlk)  actual vector
 C     For the virtual  part, VICHO(cjb)  actual vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -5063,17 +5063,17 @@ C        For the occupied part, OCCHO(dlk)  update vector
 C     IF (IOPTV .EQ. 1):
 C        For the virtual  part, VICHO(cjb)  update vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -5272,8 +5272,8 @@ C           NUMIJ=1 for all symmetries).
 C           Alternatively, one might calculate Q again and include
 C           this term in the A term.....
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XIINT(*),XJINT(*),XKINT(*),T2VO(*),FOCKD(*)
       DIMENSION WORK(LWORK)
@@ -5281,9 +5281,9 @@ C
 C
       INTEGER IOFF2(8),IOFF3(8), IOFF4(8)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C 
@@ -5889,11 +5889,11 @@ C     JLC, BFR, TBP, HK, AS, June 2002.
 C
 C     Extract subblocks of T2VO.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2VO(*), T21(*), T22(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYCKI = ISYMA
 C
@@ -6000,13 +6000,13 @@ C     JLC, BFR, TBP, HK, AS, June 2002.
 C
 C     Extract occupied integrals.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER DLIJ
       DIMENSION XKINT(*), XKIN1(*), XKIN2(*)
       INTEGER IOFF4(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYDLI = ISYMJ
 C
@@ -6119,13 +6119,13 @@ C     JLC, BFR, TBP, HK, AS, June 2002.
 C
 C     Extract T2 amplitudes as 2CME and their transposed.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2VO(*), T25(*), T26(*)
       INTEGER IOFF3(8)
       INTEGER BJ
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (XMONE = -1.00D0, TWO = 2.00D0)
 C
@@ -6246,13 +6246,13 @@ C
 C     Resort virtual integrals and set up corresponding index array
 C     IOFF2.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XJINT(*),XJ1(*),XJ2(*)
       INTEGER IOFF2(8)
       INTEGER DE,EI,DI,BI,DEBI,EIDB,DIEB
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYDEI = ISYMB
 C
@@ -6397,12 +6397,12 @@ C
 C     Sort amplitudes and set up corresponding index array
 C     IOFF3.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2VO(*),T2AM3(*),T2AM4(*)
       INTEGER IOFF3(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (XMONE = -1.00D0, TWO = 2.00D0)
 C
@@ -6562,13 +6562,13 @@ C     JLC, BFR, TBP, HK, AS, June 2002.
 C
 C     Sort virtual integrals for I term.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XKINT(*), XKTIL(*)
       INTEGER IOFSET(8),IOFF4(8)
       INTEGER AJ, EA
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO ISYMJ = 1,NSYM
 C
@@ -6632,12 +6632,12 @@ C
 C     Sort amplitudes and set up corresponding index array
 C     IOFF5.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2VO(*),T2AM1(*),T2AM2(*)
       INTEGER IOFF5(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYCKI = ISYMA
 C
@@ -6782,13 +6782,13 @@ C     JLC, BFR, TBP, HK, AS, June 2002.
 C
 C     Scale amplitudes for I term.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2AM1(*),T2AM2(*),CHOVEC(*)
       INTEGER IOFF5(8)
       INTEGER AI,CK,CKAI
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYCKI = ISYMA
 
@@ -6926,14 +6926,14 @@ C       V(aj,bi) = - Sum(de) d(dej) (dj|ea) * (ie|bd)
 C
 C       W(aj,bi) =   Sum(de) d(dej) (dj|ea) * (id|be)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XJ1(*),XJ2(*),T3(*),T4(*),XK(*),T1(*),T2(*)
       DIMENSION VMAT(*),WMAT(*),QMAT(*),RMAT(*)
       INTEGER IOFF2(8),IOFF3(8),IOFF4(8),IOFF5(8)
       INTEGER BI,BJ
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
@@ -7109,17 +7109,17 @@ C     and s(ai,bj) = 2 * t(ai,bj) - t(aj,bi), d(aij) and d(aib) denote
 C     the occupied and virtual parts of the Cholesky decomposition of the
 C     orbital energy denominator, and L(iajb) = 2 * (ia|jb) - (ja|ib).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XIINT(*),XJINT(*),T2VO(*),T1AM(*),XIAJB(*),FOCKD(*)
       DIMENSION CHOELE(*)
       DIMENSION WORK(LWORK)
       LOGICAL   FBATCH,PRINT
       INTEGER IOFF1(8),IOFF2(8),IOFF3(8),IOFF4(8),IOFF5(8),IOFF6(8)
       INTEGER IOFT1(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
@@ -7830,13 +7830,13 @@ C
 C        M1(ai,#bj) = L(ia,jb)
 C        M2(ai,#bj) = L(ja,ib)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XIAJB(*),XM1(*),XM2(*)
       INTEGER IOFF3(8)
       INTEGER AI,BJ,AJ,BI,AIBJ,AJBI
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -7970,13 +7970,13 @@ C     Extract integrals:
 C
 C        M3(da,#ik) = L(ia,kd)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XIAJB(*),XM3(*)
       INTEGER IOFF4(8)
       INTEGER AI,DK,DKAI,DA
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -8067,12 +8067,12 @@ C
 C        T1(ck,a#i)  = T(ck,ai), ordering: IOFF5.
 C        T2(ck,a#i)  = T(ci,ak), ordering: IOFF5.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2VO(*),T1(*),T2(*)
       INTEGER IOFF5(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Set up IOFF5.
@@ -8214,12 +8214,12 @@ C     Extract amplitudes:
 C
 C        T4(ck,#b#i)  = T(ck,bi), ordering: IOFF6.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2VO(*),T4(*)
       INTEGER IOFF6(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Set up IOFF6.
@@ -8298,13 +8298,13 @@ C     J1(aj,#bd) = d(dj,#b) * J(dj,a;#b), ordering: IOFF1
 C     I1(aj,#bd) = d(dj,#b) * I(dj,a;#b), ordering: IOFF1
 C     J2(da,#bj) = d(dj,a)  * J(dj,a;#b), ordering: IOFF2
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XJINT(*),XIINT(*),XJ1(*),XJ2(*),XI1(*),CHOV(*),CHOL(*)
       INTEGER IOFF1(8),IOFF2(8),IOFT1(8)
       INTEGER AJ,BJ,DJ,DA,BD,DJB,DJA,AJBD,DABJ,DJAB
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C----------------------------
 C     Set up IOFF1 and IOFF2.
@@ -8458,13 +8458,13 @@ C        T2(ck,a#i)   <- d(ck,#i) * T2(ck,a#i),   ordering: IOFF5.
 C        T3(ck,a#i)   <- d(ck,#i) * T3(ck,a#i),   ordering: IOFF5.
 C        T4(#b#i,k,c) <- d(ck,#i) * T4(#b#i,k,c), ordering: IOFF6.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T1(*),T2(*),T3(*),T4(*),CHOO(*)
       INTEGER IOFF5(8),IOFF6(8),IOFT1(8)
       INTEGER AI,CK,BI
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYMBI = MULD2H(ISYMI,ISYMB)
       LENBI  = NUMIB*NUMII
@@ -8606,15 +8606,15 @@ C     the virtual and occupied parts of the Cholesky decomposition of the
 C     orbital energy denominator, L(iajb) = 2 * (ia|jb) - (ja|ib), and
 C     L(djba) = 2 * (dj|ba) - (bj|da).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XIINT(*),XJINT(*),T2VO(*),T1AM(*),XIAJB(*),FOCKD(*)
       DIMENSION CHOELE(*)
       DIMENSION WORK(LWORK)
       LOGICAL   FBATCH,PRINT
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
@@ -8974,12 +8974,12 @@ C     Extract integrals:
 C
 C        M(#b,ikc) = L(ib,kc)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XIAJB(*)
       DIMENSION XMINT(NUMIB,*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -9040,15 +9040,15 @@ C     Extract (same as CCHO_TIJCA, except for *not* extracting 2CME):
 C
 C     T2IJCA(ijc,a) = T2VO(ac,ij)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION T2VO(*),T2IJCA(NIJC,NA)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO A = 1,NA
 C
@@ -9124,8 +9124,8 @@ C     and s(ai,bj) = 2 * t(ai,bj) - t(aj,bi), d(aij) and d(aib) denote
 C     the occupied and virtual parts of the Cholesky decomposition of the
 C     orbital energy denominator, and L(iajb) = 2 * (ia|jb) - (ja|ib) etc.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FOCKD(*),T1AM(*)
       DIMENSION XKINT(*),T2VO(*),XIAJB(*)
       DIMENSION WORK(LWORK)
@@ -9135,9 +9135,9 @@ C
       INTEGER IOFK12(8),IOFK3(8)
       INTEGER IOFT12(8),IOFT3(8)
       INTEGER BJ
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
@@ -10195,12 +10195,12 @@ C
 C     T1(a#i,#kb) = T(ai,bk) = T2VO(ab,ik), ordering: IOFT12
 C     T2(a#i,#kb) = T(ak,bi) = T2VO(ab,ki), ordering: IOFT12
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2VO(*),T1(*),T2(*)
       INTEGER IOFT12(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYMIK = MULD2H(ISYMK,ISYMI)
       ISYMKI = ISYMIK
@@ -10289,12 +10289,12 @@ C     Extract amplitudes:
 C
 C     T3(cd,l#k) = T(ck,dl) = T2VO(cd,kl), ordering: IOFT3.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2VO(*),T3(*)
       INTEGER IOFT3(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Set up IOFT3.
@@ -10351,12 +10351,12 @@ C
 C     K4(bj,#k#i) = 2*(bj|ki)  - (bi|kj)
 C                 = 2*K(jki,b) - K(ikj,b).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XKINT(*),XK4(*)
       INTEGER BJKI
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (TWO = 2.00D0)
 C
@@ -10426,13 +10426,13 @@ C     Extract integrals:
 C
 C     K3(b,#kj#i) = (bj,ki) = K(jki,b), ordering: IOFK3.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XKINT(*),XK3(*)
       INTEGER IOFK3(8)
       INTEGER BKJI
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYMBJ = MULD2H(ISYMK,ISYMI)
 C
@@ -10511,12 +10511,12 @@ C
 C     K1(dl,j#k) = (dl|kj) = K(lkj,d), ordering: IOFK12
 C     K2(dl,j#k) = (dj|kl) = K(jkl,d), ordering: IOFK12
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XKINT(*),XK1(*),XK2(*)
       INTEGER IOFK12(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
       INTEGER DL,DLJK
 C
 C-------------------
@@ -10722,13 +10722,13 @@ C     M1(bj,a#i) = L(jb,ia) = X(bj,ai), ordering: IOFM12
 C     M2(bj,a#i) = L(ja,ib) = X(bi,aj), ordering: IOFM12
 C     M3(ab,j#i) = L(ia,jb) = X(bj,ai), ordering: IOFM3
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XIAJB(*),XM1(*),XM2(*),XM3(*)
       INTEGER IOFM12(8),IOFM3(8)
       INTEGER AI,BJ,BI,AJ,BJAI,BIAJ,AB
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -10929,16 +10929,16 @@ C     and s(ai,bj) = 2 * t(ai,bj) - t(aj,bi), d(aij) and d(aib) denote
 C     the occupied and virtual parts of the Cholesky decomposition of the
 C     orbital energy denominator, and L(iajb) = 2 * (ia|jb) - (ja|ib) etc.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FOCKD(*),T1AM(*)
       DIMENSION XKINT(*),T2VO(*),XIAJB(*)
       DIMENSION WORK(LWORK)
       DIMENSION CHOELE(*)
       LOGICAL   FBATCH,PRINT
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
@@ -11376,12 +11376,12 @@ C     TAM(bj,#a#i) = 2*T(bj,ai) - T(bi,aj)
 C
 C                  = 2*T2VO(ba,ji) - T2VO(ba,ij)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2VO(*),TAM(*)
       INTEGER BAIJ,BAJI,AI,BJAI
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (XMONE = -1.00D0, TWO = 2.00D0)
 C
@@ -11439,12 +11439,12 @@ C     JLC, BFR, TBP, HK, AS, June 2002.
 C
 C     M(kl,c,#a) = XIAJB(ck,al).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XIAJB(*),XM(*)
       INTEGER AL,CK,CKAL
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -11509,17 +11509,17 @@ C     For the occupied part,  CHOL(mn,b)  actual vector
 C     For the occupied part, OCCHO(ck,#j) update vector
 C     For the virtual  part, VICHO(ck,#a) actual vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),CHOL(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -11739,17 +11739,17 @@ C     For the virtual  part,  CHOL(dj,a)  actual vector
 C     For the occupied part, OCCHO(ck,#i) update vector
 C     For the virtual  part, VICHO(ck,#b) actual vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),CHOL(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       IF (ICHO .GT. NUMCHO) THEN
          WRITE(LUPRI,*) 'Only ',NUMCHO,' vectors were calculated',
@@ -11920,11 +11920,11 @@ C                                        all ikc of sym. ISYIKC
 C     For the virtual  part, VICHO(dj,#b) actual vector,
 C                                         fixed dj sym. ISYMDJ
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FOCKD(*), CHOELE(*), OCCHO(*), VICHO(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -12062,11 +12062,11 @@ C
 C        XKSUB(klc,#i) = (ck|#il) = (kc|l#i)
 C                      = XKINT(kl,#i,c)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XKINT(*), XKSUB(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 c     lenk   = NTRAOC(1)
 c     xknorm = dnorm2(lenk,XKINT,1)
@@ -12119,11 +12119,11 @@ C
 C     For the occupied part, OCCHO(dlj),  update vector
 C     For the virtual  part, VICHO(cdl),  update vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FOCKD(*), CHOELE(*), OCCHO(*), VICHO(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (TWO = 2.00D0)
 C
@@ -12282,8 +12282,8 @@ C    and s(ai,bj) = 2 t(ai,bj) - t(aj,bi), and d(em,j) and d(dl,a) denotes
 C    the occupied and virtual parts of the Cholesky decomposition of the
 C    orbital energy denominator.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XOINT(*),T2VO(*),FOCKD(*),CHOELE(*)
       DIMENSION WORK(LWORK)
@@ -12291,9 +12291,9 @@ C
 C     
       DIMENSION IOFFINT(8),IOFFT(8),IOFFD(8)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -12794,11 +12794,11 @@ C      ordered for a fixed ISYMJ from core XOINT(mi,j;e)=(em|ij)
 C      for each ISYMI all j values in the batch
 C     
 C  
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XOINT(*),XIINT(*),XJINT(*),IOFFINT(*)
@@ -12898,11 +12898,11 @@ C                         T2(em;ka) = s(ek,am) = 2T(ea,km) - T(ea,mk)
 C                         T3(em;ka) = t(em,ak) = T(ea,mk)
 C                         T4(em;ka) = t(ek,am) = T(ea,km)
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION T2VO(*),T21(*),T22(*),T23(*),T24(*),IOFFT(*)
@@ -12975,11 +12975,11 @@ C     Henrik Koch, Alfredo Sanchez June 2002.
 C
 C     Scale T21 T23 T24 amplitudes with cholesky update
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T21(*),T23(*),T24(*),VCCHO(*),IOFFT(8),IOFFD(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
       DO ISYMI = 1,NSYM
 C
          ISYMDL = MULD2H(ISYMI,ISYMA)
@@ -13014,12 +13014,12 @@ C     Henrik Koch, Alfredo Sanchez June 2002.
 C
 C     Scale I and J integrals with cholesky actual vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XITINT(*),XJTINT(*),XIINT(*),XJINT(*),
      &          CCHOO(*),IOFFINT(8),IOFFD(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
       DO ISYMI = 1,NSYM
 C
          ISYMEM = MULD2H(ISYMI,ISYMJ)
@@ -13055,17 +13055,17 @@ C
 C     For the occupied part, OCCHO(em#j), the actual vector
 C     For the virtual  part, VICHO(dl#a), the update vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -13219,17 +13219,17 @@ C         J(dl,kj)   = (lk|jd)
 C     and d(dli) and d(bjc) denotes the occupied and virtual parts of
 C     the Cholesky decomposition of the orbital energy denominator.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XOINT(*),T2VO(*),FOCKD(*),CHOELE(*)
       DIMENSION WORK(LWORK)
       DIMENSION IOFF2(8)
       CHARACTER*7 FILNAM
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>      
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"      
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR  =  4.0D0)
@@ -13718,11 +13718,11 @@ C                    I(dl,kj) = (jk|ld)
 C                    J(dl,kj) = (lk|jd) 
 C     from XOINT(lj,k;d) = (jk|ld) 
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DIMENSION XOINT(*),XIINT(*),XJINT(*),IOFF2(*) 
 C     
@@ -13790,11 +13790,11 @@ C           I(bc,j;a) = (bj|ca) = X(bj,c;a)
 C           J(bc,j;a) = (cj|ab) = X(cj,b;a) 
 C     X represents the integrals as in CHO_VI1
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C  
       CHARACTER*7 FILNAM   
       DIMENSION XMINT(*),XNINT(*) 
@@ -13908,11 +13908,11 @@ C     Extract amplitudes:
 C                 T21(dl,i;a) = t(ad,li) 
 C                 T22(dl,i;a) = t(ad,il) 
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DIMENSION T2VO(*),T21(*),T22(*)
 *     do i = 1,NCKI(ISYMA)*NUMIA
@@ -13990,11 +13990,11 @@ C     Scale M and N integrals with cholesky update
 C           M(bc,j;a) = 2(bj|ca) - (cj|ba) 
 C           N(bc,j;a) = 2(cj|ba) - (bj|ca)
 C      
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C     
       DIMENSION XMINT(*),XNINT(*),CHOV(*) 
 C     
@@ -14024,11 +14024,11 @@ C     Scale T21 and T22 with cholesky update
 C           T21(dl,i;a) --> d(dl,i) * t(ad,li) 
 C           T22(dl,i;a) --> d(dl,i) * t(ad,il)
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C     
       DIMENSION T21(*),T22(*),CHOO(*) 
 C     
@@ -14060,17 +14060,17 @@ C
 C     For the occupied part, OCCHO(dli), the update vector
 C     For the virtual  part, VICHO(bcj), the update vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 *     do i = 1,ncki(isymdli)
 *        occho(i) = 8888888888888D28
@@ -14252,17 +14252,17 @@ C         J(dl,kj)   = (lk|jd)
 C     and d(dli) and d(bjc) denotes the occupied and virtual parts of
 C     the Cholesky decomposition of the orbital energy denominator.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XIINT(*),XJINT(*),XOINT(*),T2VO(*),FOCKD(*),CHOELE(*)
       DIMENSION WORK(LWORK)
       DIMENSION IOFF2(8)
       LOGICAL   PRINT
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>      
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"      
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR  =  4.0D0)
@@ -14570,11 +14570,11 @@ C                    I(dl,kj) = (jk|ld)
 C                    J(dl,kj) = (lk|jd) 
 C     from XOINT(lj,k;d) = (jk|ld) 
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DIMENSION XOINT(*),XIINT(*),XJINT(*),IOFF2(*) 
 C     
@@ -14642,11 +14642,11 @@ C        J(em,d;#b) = (em|#bd)
 C     M(bc,j;#a) = 2 J(bj,c;#a) - J(cj,b;#a) 
 C     N(bj,j;#a) = 2 J(cj,b;#a) - J(bj,c;#a)
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C  
       DIMENSION XIINT(*),XJINT(*),XMINT(*),XNINT(*) 
 C     
@@ -14709,11 +14709,11 @@ C     Extract amplitudes:
 C                 T21(dl,i;a) = t(ad,li) 
 C                 T22(dl,i;a) = t(ad,il) 
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DIMENSION T2VO(*),T21(*),T22(*)
 C
@@ -14780,11 +14780,11 @@ C     Scale M and N integrals with cholesky update
 C           M(bc,j;a) = 2(bj|ca) - (cj|ba) 
 C           N(bc,j;a) = 2(cj|ba) - (bj|ca)
 C      
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C     
       DIMENSION XMINT(*),XNINT(*),CHOV(*) 
 C     
@@ -14814,11 +14814,11 @@ C     Scale T21 and T22 with cholesky update
 C           T21(dl,i;a) --> d(dl,i) * t(ad,li) 
 C           T22(dl,i;a) --> d(dl,i) * t(ad,il)
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C     
       DIMENSION T21(*),T22(*),CHOO(*) 
 C     
@@ -14850,17 +14850,17 @@ C
 C     For the occupied part, OCCHO(dli), the update vector
 C     For the virtual  part, VICHO(bcj), the update vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -15031,8 +15031,8 @@ C        J(cm,l#j)   = (cl|mj) = XOINT(lm,j;c)
 C     
 C        XOINT(ml,j;c) = (cm|lj)
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XOINT(*),T2VO(*),FOCKD(*),CHOELE(*)
       DIMENSION WORK(LWORK)
@@ -15041,9 +15041,9 @@ C
       DIMENSION IOFFI(8),IOFFJ(8) 
 *     dimension ilabel(25)      
 C     
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -15676,11 +15676,11 @@ C        M(cm,k#i) =  (mk|ic) =  XOINT(ik,m;c)
 C     ordered for a i batch with a fixed ISYMI      
 C     from core XOINT(mi,k;c)=(cm|ik)
 C        
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ONE = 1.0D0,XMONE = -1.0D0,TWO = 2.0D0,THREE = 3.0D0)
       DIMENSION XOINT(*),XCMAT(*),XLINT(*),XMINT(*),IOFFI(*)
@@ -15771,11 +15771,11 @@ C        J(cm,l#j) = (cl|jm) = XOINT(lj,m;c)
 C     ordered for a j batch with a fixed ISYMJ      
 C     from core XOINT(ml,j;c)=(cm|lj)
 C        
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ONE = 1.0D0, XMONE = -1.0D0, THREE = 3.0D0)
       DIMENSION XOINT(*),XIINT(*),XJINT(*),IOFFJ(*)
@@ -15839,13 +15839,13 @@ C
 C     Extract amplitudes:
 C        T21(ab,#i#j) = s(ai,bj) = 2*T2VO(ab,ij) - T2VO(ab,ji)
 C        
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION T2VO(*),T21(*)
 C      
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ONE = 1.0D0, XMONE = -1.0D0, TWO = 2.0D0)
 C     
@@ -15897,17 +15897,17 @@ C
 C        For the occupied part, OCCHO(dli)  update vector
 C        For the virtual  part, VICHO(bc#j)  update vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -16054,14 +16054,14 @@ C
 C     Scale s(ab,#i#j) with cholesky update vector: 
 C        s(ab,#i#j)d(ab#i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION T21(*),CHOV(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       NABI = NMATAB(ISYMAB)*NUMII
 C     
@@ -16086,14 +16086,14 @@ C     Scale (cm|jl) and (cl|jm) with cholesky update vector:
 C        d(cml)*I(cm,l#j)
 C        d(cml)*J(cm,l#j)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XIINT(*),XJINT(*),CHOO(*),IOFFJ(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       DO ISYML = 1,NSYM
          ISYMCM = MULD2H(ISYMCML,ISYML)
@@ -16148,8 +16148,8 @@ C        I(clm;i)   = (cl|im) = XOINT(li,m;c)
 C        L(clm;j)   = L_{mjlc} = 2*(mj|lc) - (mc|lj) 
 C                   = 2*XOINT(lm,j;c) - XOINT(ml,j;c)
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XOINT(*),T2VO(*),FOCKD(*),CHOELE(*)
       DIMENSION WORK(LWORK)
@@ -16157,9 +16157,9 @@ C
 C
 C     DIMENSION IOFFT21(8),IOFFI(8),IOFFT22(8),IOFFL(8) 
 C     
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cc_cho.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cc_cho.h"
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -16520,11 +16520,11 @@ C
 C     Extract amplitudes:
 C        T21(abk;#i) = s(ak,bi) = 2*T2VO(ab,ki) - T2VO(ab,ik)
 C        
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ONE = 1.0D0, XMONE = -1.0D0, TWO = 2.0D0)
       DIMENSION T2VO(*),T21(*)
@@ -16570,11 +16570,11 @@ C     Henrik Koch, Alfredo Sanchez April 2003.
 C
 C           Extract I(clm;#i) = (cl|im) = XOINT(li,m;c)
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DIMENSION XOINT(*),XIINT(*)
 C     
@@ -16630,11 +16630,11 @@ C     Henrik Koch, Alfredo Sanchez April 2003.
 C
 C     Extract T22(abk;#j) = t(ak,bj) = T2VO(ab,kj)
 C        
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ONE = 1.0D0, XMONE = -1.0D0, TWO = 2.0D0)
       DIMENSION T2VO(*),T22(*)
@@ -16678,13 +16678,13 @@ C
 C           Extract L(clm;#j) = L_{mjlc} = 2*(mj|lc) - (mc|lj) 
 C                             = 2*XOINT(lm,j;c) - XOINT(ml,j;c)
 C     
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XOINT(*),XLINT(*)
 C     
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C      
@@ -16757,17 +16757,17 @@ C
 C        For the occupied part, OCCHO(dli)  update vector
 C        For the virtual  part, VICHO(bcj)  update vector
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRES = 1.0D-13)
 C
       DIMENSION FOCKD(*),CHOELE(*),OCCHO(*),VICHO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       IF (ICHO .GT. NUMCHO) THEN
@@ -16914,14 +16914,14 @@ C
 C     Scale T22(abk;#j) with cholesky update vector: 
 C        d(abk)*T22(abk;#j)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION T22(*),CHOV(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       ISYMABK = ISYMJ
       NABK = NCKASR(ISYMABK)
@@ -16944,14 +16944,14 @@ C
 C     Scale L(clm;#j) with cholesky update vector: 
 C        d(clm)*L(clm;#j)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XLINT(*),CHOO(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       ISYMCLM = ISYMJ
       NCLM = NCKI(ISYMCLM)

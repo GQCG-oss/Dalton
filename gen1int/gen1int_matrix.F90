@@ -29,6 +29,11 @@
 #include "xkind.h"
 
 !> \brief matrix module used in Gen1Int interface
+!> \note the reason of introducing matrix type is due to other codes (like OpenRSP) ask
+!>       for a matrix type output, in order to maintain only one Gen1Int interface, I
+!>       have therefore introduced such matrix module (or wrapper); users who would like
+!>       to have their results in an array could use \fn(MatAssociate) and \fn(MatNullify)
+!>       subroutines
 !> \author Bin Gao
 !> \date 2011-12-10
 module gen1int_matrix
@@ -85,25 +90,42 @@ module gen1int_matrix
   !> \author Bin Gao
   !> \date 2011-12-10
   !> \param work_alpha is the Dalton/Dirac workspace
+  !> \param num_row is the number of rows
   !> \param triangular indicates if the matrix element storage is in triangular format
   !> \param symmetric indicates if the matrix is symmetric or anti-symmetric in triangular format
   !> \return A is the matrix
-  subroutine MatAssociate(work_alpha, A, triangular, symmetric)
+  !> \return info_mat (/=0) indicates error happened when associating the matrix elements
+  subroutine MatAssociate(work_alpha, num_row, A, info_mat, triangular, symmetric)
     real(REALK), target, intent(in) :: work_alpha(:)
+    integer, intent(in) :: num_row
     type(matrix), intent(inout) :: A
+    integer, intent(out) :: info_mat
     logical, optional, intent(in) :: triangular
     logical, optional, intent(in) :: symmetric
     integer num_elms  !number of elements
     if (present(triangular)) A%triangular = triangular
     num_elms = size(work_alpha)
+    ! matrix element storage in triangular format
     if (A%triangular) then
-      A%num_row = (int(sqrt(real(8*num_elms+1,REALK)))-1)/2
-      if (present(symmetric)) A%symmetric = symmetric
+      info_mat = num_elms-num_row*(num_row+1)/2
+      if (info_mat==0) then
+        if (present(symmetric)) A%symmetric = symmetric
+        A%num_row = num_row
+        A%num_col = num_row
+        A%elms_alpha => work_alpha
+      ! incorrect number of elements
+      else
+        A%triangular = .false.
+      end if
+    ! matrix element storage in square format
     else
-      A%num_row = int(sqrt(real(num_elms,REALK)))
+      info_mat = mod(num_elms,num_row)
+      if (info_mat==0) then
+        A%num_row = num_row
+        A%num_col = num_elms/num_row
+        A%elms_alpha => work_alpha
+      end if
     end if
-    A%num_col = A%num_row
-    A%elms_alpha => work_alpha
   end subroutine MatAssociate
 
   !> \brief deassociates the matrix element storage to Dalton/dirac workspace
@@ -392,22 +414,21 @@ module gen1int_matrix
     if (present(triangular)) A%triangular = triangular
     ! matrix element storage in triangular format
     if (A%triangular) then
-      ! we can not use triangular format for non-square matrix
-      if (A%num_row/=A%num_col) then
-        A%num_row = huge(1)
-        A%num_col = huge(1)
-        A%triangular = .false.
-        info_mat = A%num_col
-        return
-      else
-        if (present(symmetric)) A%symmetric = symmetric
+      if (A%num_row==A%num_col) then
         allocate(A%elms_alpha(A%num_row*(A%num_row+1)/2), stat=info_mat)
         if (info_mat/=0) then
           A%num_row = huge(1)
           A%num_col = huge(1)
           A%triangular = .false.
-          A%symmetric = .true.
+        else
+          if (present(symmetric)) A%symmetric = symmetric
         end if
+      ! we can not use triangular format for non-square matrix
+      else
+        A%num_row = huge(1)
+        A%num_col = huge(1)
+        A%triangular = .false.
+        info_mat = A%num_col
       end if
     ! matrix element storage in square format
     else
@@ -416,7 +437,6 @@ module gen1int_matrix
         A%num_row = huge(1)
         A%num_col = huge(1)
         A%triangular = .false.
-        A%symmetric = .true.
       end if
     end if
   end subroutine MatCreate
@@ -769,8 +789,17 @@ module gen1int_matrix
       return
     end if
     tr_sym_elms = 0.0_REALK
-    call MatAssociate(work_alpha=tr_sym_elms, A=TrSym, &
-                      triangular=.true., symmetric=.true.)
+    call MatAssociate(work_alpha=tr_sym_elms, num_row=NUM_MAT_ROW, A=TrSym, &
+                      info_mat=ierr, triangular=.true., symmetric=.true.)
+    if (ierr/=0) then
+      deallocate(ref_tr_sym)
+      deallocate(ref_tr_anti)
+      deallocate(ref_sq_sym)
+      deallocate(ref_sq_anti)
+      deallocate(tr_sym_elms)
+      test_failed = .true.
+      return
+    end if
     allocate(tr_anti_elms(DIM_TR_MAT), stat=ierr)
     if (ierr/=0) then
       deallocate(ref_tr_sym)
@@ -782,8 +811,18 @@ module gen1int_matrix
       return
     end if
     tr_anti_elms = 0.0_REALK
-    call MatAssociate(work_alpha=tr_anti_elms, A=TrAnti, &
-                      triangular=.true., symmetric=.false.)
+    call MatAssociate(work_alpha=tr_anti_elms, num_row=NUM_MAT_ROW, A=TrAnti, &
+                      info_mat=ierr, triangular=.true., symmetric=.false.)
+    if (ierr/=0) then
+      deallocate(ref_tr_sym)
+      deallocate(ref_tr_anti)
+      deallocate(ref_sq_sym)
+      deallocate(ref_sq_anti)
+      deallocate(tr_sym_elms)
+      deallocate(tr_anti_elms)
+      test_failed = .true.
+      return
+    end if
     allocate(sq_sym_elms(DIM_SQ_MAT), stat=ierr)
     if (ierr/=0) then
       deallocate(ref_tr_sym)
@@ -796,7 +835,19 @@ module gen1int_matrix
       return
     end if
     sq_sym_elms = 0.0_REALK
-    call MatAssociate(work_alpha=sq_sym_elms, A=SqSym)
+    call MatAssociate(work_alpha=sq_sym_elms, num_row=NUM_MAT_ROW, &
+                      A=SqSym, info_mat=ierr)
+    if (ierr/=0) then
+      deallocate(ref_tr_sym)
+      deallocate(ref_tr_anti)
+      deallocate(ref_sq_sym)
+      deallocate(ref_sq_anti)
+      deallocate(tr_sym_elms)
+      deallocate(tr_anti_elms)
+      deallocate(sq_sym_elms)
+      test_failed = .true.
+      return
+    end if
     allocate(sq_anti_elms(DIM_SQ_MAT), stat=ierr)
     if (ierr/=0) then
       deallocate(ref_tr_sym)
@@ -810,7 +861,20 @@ module gen1int_matrix
       return
     end if
     sq_anti_elms = 0.0_REALK
-    call MatAssociate(work_alpha=sq_anti_elms, A=SqAnti)
+    call MatAssociate(work_alpha=sq_anti_elms, num_row=NUM_MAT_ROW, A=SqAnti, &
+                      info_mat=ierr)
+    if (ierr/=0) then
+      deallocate(ref_tr_sym)
+      deallocate(ref_tr_anti)
+      deallocate(ref_sq_sym)
+      deallocate(ref_sq_anti)
+      deallocate(tr_sym_elms)
+      deallocate(tr_anti_elms)
+      deallocate(sq_sym_elms)
+      deallocate(sq_anti_elms)
+      test_failed = .true.
+      return
+    end if
     ! assigns elements of matrices
     do icol = 1, NUM_BLOCK
       ! sets the minimum and maximum of indices of columns of matrices

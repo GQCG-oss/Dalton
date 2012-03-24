@@ -26,18 +26,18 @@ C
 C        IALMP2 > 3: Use the IALMP2=2 algorithm if sufficient memory,
 C                    otherwise use IALMP2=1 algorithm.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccorb.h>
-#include <dccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccdeco.h>
-#include <chomp2.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "dccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccdeco.h"
+#include "chomp2.h"
+#include "priunit.h"
+#include "iratdef.h"
 
       INTEGER MINVEC(8), NVECTOT(8)
 
@@ -445,11 +445,11 @@ C     --------------
 C  /* Deck cc_chomax */
       SUBROUTINE CC_CHOMAX(CHMAX,WORK,LWORK,NUMCHO,ITYP)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CHMAX(*), WORK(LWORK)
       INTEGER NUMCHO(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       ICOUNT = 0
 
@@ -507,21 +507,21 @@ C
 C        If amplitudes are not to be saved (MP2SAV=.FALSE. from input),
 C        array T2DIA may be dummy.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2DIA(*), EMO(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <dccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccdeco.h>
-#include <chomp2.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "dccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccdeco.h"
+#include "chomp2.h"
 Casm
-#include <chomp2_b.h>
+#include "chomp2_b.h"
 Casm
-#include <priunit.h>
+#include "priunit.h"
 
       INTEGER BBEG, BEND
       INTEGER LVIR(8), IOFB1(8), IX1AM(8,8), NX1AM(8), IX2SQ(8)
@@ -1224,14 +1224,14 @@ C
 C     LVIR is the local virtual-counter array (i.e. local version
 C     og the global NVIR array).
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LVIR(8)
       INTEGER BBEG
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CALL IZERO(LVIR,NSYM)
 
@@ -1281,15 +1281,15 @@ C
 C     NB: BE SURE TO UPDATE MP2CHO_2A IF YOU CHANGE ANY ALLOCATIONS IN
 C         THIS ROUTINE.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2DIA(*), EMO(*), XINT(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccdeco.h>
-#include <chomp2.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccdeco.h"
+#include "chomp2.h"
+#include "priunit.h"
 
       INTEGER IOFFD(8), NVECTOT(8)
       INTEGER LUTAM(8), LUCHMO(8), LSYM(8)
@@ -1757,16 +1757,16 @@ C
 C     NB: BE SURE TO UPDATE THIS ROUTINE IF YOU CHANGE ANY ALLOCATIONS
 C         IN THE "PARENT" ROUTINE MP2CHO_2.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER MINVEC(8)
       LOGICAL POSSBL
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccdeco.h>
-#include <chomp2.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccdeco.h"
+#include "chomp2.h"
+#include "priunit.h"
 
       INTEGER NVECTOT(8)
 
@@ -1835,12 +1835,12 @@ C
 C        For NOCCD, provided LAMMAT has been appropriately
 C        modified, T1AM is dummy.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XAIBJ(*), T1AM(*)
       DIMENSION WORK(LWORK)
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOIAJB')
@@ -1894,17 +1894,17 @@ C     array XAIBJ must be initialized.
 C
 C     XAIBJ is packed and returned as ai<=bj.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XAIBJ(*), XLAMDP(*), XLAMDH(*)
       DIMENSION WORK(LWORK)
       INTEGER AI, BJ, AIBJ
-#include <iratdef.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <priunit.h>
+#include "iratdef.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOIAJB1')
@@ -2202,14 +2202,14 @@ C        - Logical variable LSTOP acts as input:
 C          If, on input, LSTOP=.TRUE. then the execution is terminated
 C          upon completion of this routine.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XAIBJ(*), T1AM(*), WORK(LWORK)
       LOGICAL LSTOP, CHOINSV
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "priunit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'DIFFIAJB')
@@ -2314,14 +2314,14 @@ C     Notes:
 C        MO Cholesky vectors, L(ai), are assumed available on
 C        disk (file assumed open with unit LUCHMO).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIAG(*), WORK(LWORK) 
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccdeco.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccdeco.h"
+#include "priunit.h"
 
       INTEGER AI
 
@@ -2438,14 +2438,14 @@ C     Notes:
 C        MO Cholesky vectors, L(ai), are assumed available in
 C        CHAI
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIAG(*), CHAI(*)
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccdeco.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccdeco.h"
+#include "priunit.h"
 
       INTEGER AI
 
@@ -2508,15 +2508,15 @@ C     Notes:
 C        MO Cholesky vectors, L(ai), are assumed available on disk on
 C        opened unit LUCHMO.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK) 
       INTEGER LISTBJ(*)
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccdeco.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccdeco.h"
+#include "priunit.h"
 
       INTEGER BJ
 
@@ -2655,15 +2655,15 @@ C
 C     Purpose: Calculate (ai|#[bj]); as CHO_AIBJ except vectors
 C              assumed in core.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), CHAI(*), CHBJ(*)
       INTEGER LISTBJ(*)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CHO_AIBJ_I')
@@ -2755,16 +2755,16 @@ C
 C     Control flag SKIPTR is set true at the end of this routine
 C     to avoid future (re-)calculation.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), WORK(LWORK)
-#include <iratdef.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <chomp2.h>
-#include <priunit.h>
+#include "iratdef.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "chomp2.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CHO_TRFAI')
@@ -2977,16 +2977,16 @@ C
 C     Purpose: Cholesky decomposition of (ia|jb) integral matrix
 C              constructed from AO Cholesky vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <chomp2.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "chomp2.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_DECOMP2')
@@ -3030,15 +3030,15 @@ C     Thomas Bondo Pedersen, November 2002.
 C
 C     Purpose: Determine MP2 algorithm based on work space availability.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <chomp2.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccorb.h>
-#include <dccsdsym.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "chomp2.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccorb.h"
+#include "dccsdsym.h"
+#include "priunit.h"
 
       INTEGER VFRAC
 
@@ -3222,16 +3222,16 @@ C        This routine requires at least in the order of
 C             O*(N + 2)
 C        words of memory.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EMO(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <chomp2.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "chomp2.h"
+#include "priunit.h"
 
       INTEGER NVECTOT(8)
       INTEGER LUCHMO(8), LSYM(8)
@@ -3257,7 +3257,7 @@ Casm
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'MP2CHO_3')
 Casm
-#include <chomp2_b.h>
+#include "chomp2_b.h"
 Casm
 
 C     Start timing.
@@ -4076,16 +4076,16 @@ C        This routine requires at least in the order of
 C             O*(N + 2)
 C        words of memory.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EMO(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <chomp2.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "chomp2.h"
+#include "priunit.h"
 
       INTEGER NVECTOT(8)
       INTEGER LUCHMO(8), LSYM(8)
@@ -4853,13 +4853,13 @@ C     Thomas Bondo Pedersen, November 2002.
 C
 C     Purpose: Set up index arrays for MP2 calculation.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LVIRB(8), IOFB1(8), IX1AMB(8,8), NX1AMB(8)
       INTEGER BBEG, BEND
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       CALL IZERO(IOFB1,8)
       CALL IZERO(IX1AMB,64)
@@ -4891,14 +4891,14 @@ C
 C     Purpose: Set up b-batch for MP2CHO_3:
 C              (#ai|#bj) with #a estimated.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LVIRB(8)
       INTEGER BBEG
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER LVIRA(8)
       LOGICAL POSSBL(8)
@@ -5007,9 +5007,9 @@ C     Thomas Bondo Pedersen, November 2002.
 C
 C     Purpose: calculate memory need.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LVIRA(8), LVIRB(8)
-#include <ccorb.h>
+#include "ccorb.h"
 
       MEMAB = 0
       DO ISYMBJ = 1,NSYM
@@ -5034,14 +5034,14 @@ C
 C     Purpose: Set up a-batch for MP2CHO_3:
 C              (#ai|#bj) with #b known.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LIBJ(8), NX1AMB(8), LVIRA(8)
       INTEGER ABEG
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'GET_BTCHA')
@@ -5136,10 +5136,10 @@ C
 C     Purpose: Calculate memory need for holding one Cholesky
 C              vector in MP2CHO_3.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LVIRA(8), NX1AMB(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       ICOUNT = 0
       DO ISYMA = 1,NSYM
@@ -5166,16 +5166,16 @@ C     Output:
 C        LWRK   : Dimension of work space reserved for
 C                 (ai|#bj) integral batch.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER NVECTOT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccorb.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <chomp2.h>
-#include <chocc2.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccorb.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "chomp2.h"
+#include "chocc2.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'MP2_MEMSPL2')
@@ -5300,16 +5300,16 @@ C     Output:
 C        LWRK   : Dimension of work space reserved for
 C                 (#ai|#bj) integral batch.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER NVECTOT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccorb.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <chomp2.h>
-#include <chocc2.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccorb.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "chomp2.h"
+#include "chocc2.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'MP2_MEMSPL3')
@@ -5469,18 +5469,18 @@ C                 is close to the actual minimum required. Might be fixed by
 C                 ensuring that the initial b-batch will succeed for all
 C                 subsequent a-batches.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EMO(*), CHMAX(*), WORK(LWORK)
       INTEGER   MAPAI(*), MAI(*), MAPBJ(*), MBJ(*)
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccdeco.h>
-#include <chomp2.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccdeco.h"
+#include "chomp2.h"
+#include "priunit.h"
 
       INTEGER NVECTOT(8)
       INTEGER LUCHMO(8), LSYM(8)
@@ -6310,7 +6310,7 @@ C     --------------
 C  /* Deck sprmm */
       SUBROUTINE SPRMM(XINT,NAI,XAI,LAI,XBJ,LBJ,MAI,MBJ)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(NAI,*), XAI(LAI), XBJ(LBJ)
       INTEGER   MAI(LAI), MBJ(LBJ)
 

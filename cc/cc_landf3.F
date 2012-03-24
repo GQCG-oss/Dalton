@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_gam */
       SUBROUTINE CC_GAM(DSRHF,GAMMA,XLAMDP,XLAMDH,
@@ -36,13 +36,13 @@ C
 C     Ove Christiansen 18-9-1996:
 C              General symmetry for F-matrix construction.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DSRHF(*),GAMMA(*),SCRM(*)
       DIMENSION WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMDH(*),XLAMPC(*),XLAMHC(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------------
 C     Dynamic allocation.
@@ -125,14 +125,14 @@ C               (They should be the same)
 C
 C     Purpose: Calculate the gamma intermediate.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION DSRHF(*),GAMMA(*),SCRM(*),XLAM(*),XLAMC(*)
       DIMENSION SCR1(*),SCR2(*),SCR3(*),SCR4(*),SCR5(*),WORK(*)
       DIMENSION XLAMDP(*),XLAMDH(*),XLAMPC(*),XLAMHC(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -313,13 +313,13 @@ C
 C     Ove Christiansen 1-10-1996:
 C              general symmetry of ctr2 (isymc2)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ZINT(*), CTR2(*), TINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
 C-----------------------------
 C     Initialize result array.
@@ -389,14 +389,14 @@ C
 C     Ove Christiansen 30-9-1996: Generalised symmetry of T2AM: ISYMT2
 C              Still it is assumed that XLAMDH is total symmetric.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       INTEGER ISYTIN, ISYMT2, ISYMLH, IDEL, ISYMD
       DIMENSION TINT(*), T2AM(*), XLAMDH(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -528,14 +528,14 @@ C     Ove Christiansen 1-10-1996:
 C              Generalization to general symmetry YMAT and YDEN
 C              for F-matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*), DSRHF(*), YMAT(*), YDEN(*), XLAMDH(*),
      *          XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       ISYRES = MULD2H(ISYMYD,ISYMOP)
       IF (MULD2H(ISYMY,ISYMLP).NE.ISYRES) THEN
@@ -721,13 +721,13 @@ C              XLAMDP (ISYMLP)
 C              XLAMDH is assumed to have the symmetry ISYMOP
 C              (it is a hole-virtuel index.)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION YMAT(*), YDEN(*), XLAMDH(*), XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       ISYMYD = MULD2H(ISYMLP,ISYMY)
 C
@@ -787,14 +787,14 @@ C              as well as general symmetry of integrals.
 C              ISYVWZ is symmetry of V,W, and Z intermediates.
 C              ISYINT is symmetry of integrals.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*), VINT(*), WINT(*), ZINT(*), X3OINT(*),
      &          WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       ISYJLI = MULD2H(ISYINT,ISYMD)
       ISYRES = MULD2H(ISYJLI,ISYVWZ)
@@ -902,14 +902,14 @@ C        General symmetries for F-matrix
 C        isyint is symmetry of integrals.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION RHO1(*), XMINT(*), XLAMDH(*), WORK(LWORK)
       CHARACTER O3FIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       ISYRES = MULD2H(ISYMM,ISYINT)
 C

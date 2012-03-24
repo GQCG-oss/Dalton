@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cctrbt1 */
@@ -44,14 +44,14 @@ C  /* Deck cctrbt1 */
 *     Christof Haettig 7.11.99
 *
 *=====================================================================*
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
 C
       DIMENSION XINT(*),DSRHF(*),XLAMDP(*),WORK(LWORK)
       LOGICAL SQRINT
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       IF (IOPT.EQ.0) THEN
         OPTION = ZERO

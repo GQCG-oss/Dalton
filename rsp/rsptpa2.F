@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE TP1IND
 C
@@ -29,17 +29,17 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT ONE-INDEX
 C LINEAR RESPONSE EQUATIONS THAT ARE USED IN A
 C A CALCULATION OF TWO-PHOTON EXCITATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <rspprp.h>
-#include <infsmo.h>
-#include <indcr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <inftpa.h>
-#include <infcr.h>
+#include "rspprp.h"
+#include "infsmo.h"
+#include "indcr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "inftpa.h"
+#include "infcr.h"
 C
 C If excited state alpha (TPALP) is specified we only compute certain
 C components.
@@ -117,16 +117,16 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C TWO-INDEX LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
 C IN A CUBIC RESPONSE TWO-PHOTON CALCULATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <rspprp.h>
-#include <infcr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <inftpa.h>
-#include <indcr.h>
+#include "rspprp.h"
+#include "infcr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "inftpa.h"
+#include "indcr.h"
 C
       CHARACTER*8 CTPLB, DTPLB
 C

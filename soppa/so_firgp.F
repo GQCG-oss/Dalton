@@ -11,12 +11,12 @@ C
 C     PURPOSE: Calculate 2p-2h part of gradient property vectors.
 C              There is only a first order contribution.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <soppinf.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "soppinf.h"
 C
       PARAMETER   (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION   GPVC2(LGPVC2), T2AM(LT2AM)

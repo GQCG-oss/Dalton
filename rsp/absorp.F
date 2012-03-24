@@ -44,18 +44,18 @@ C     Purpose:
 C     Read in user settings for imaginary polarizabilities describing
 C     absorption in the optical processes.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <absorp.h>
-#include <infrsp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "absorp.h"
+#include "infrsp.h"
 C
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <codata.h>
-#include <infinp.h>
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "codata.h"
+#include "infinp.h"
 C
       LOGICAL NEWDEF, ALLCOMP
       PARAMETER ( NTABLE = 22 )
@@ -420,12 +420,12 @@ C PURPOSE:
 C     Driver routine for the computation of response properties including
 C     absorption
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <absorp.h>
-#include <infvar.h>
-#include <infrsp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "absorp.h"
+#include "infvar.h"
+#include "infrsp.h"
 
 C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
@@ -480,13 +480,13 @@ C PURPOSE:
 C     Solve the linear response equations and store response vectors on
 C     disk.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <absorp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infvar.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),MJWOP(2,MAXWOP,8)
@@ -533,13 +533,13 @@ C PURPOSE:
 C     Solve the eigenvalue equation ( E[2] - w*S[2] )*X = 0 for 
 C     the few lowest excited states to be used as startvectors.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <absorp.h>
-#include <dummy.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
+#include "dummy.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infvar.h"
 C
       DIMENSION REDE(*),REDS(*),IBTYP(*),EIGVAL(*),RESIDUAL(*),EIGVEC(*)
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
@@ -588,15 +588,15 @@ C
      &     REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
      &     REDVEC,FC,FV,CMO,UDV,PV,XINDX,NBATCH,RESLRF,WRK,LWRK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <absorp.h>
-#include <inftap.h>
-#include <ibndxdef.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "absorp.h"
+#include "inftap.h"
+#include "ibndxdef.h"
+#include "qrinf.h"
 C
 C PURPOSE:
 C     Create start vectors from the reduced eigenvalue problem
@@ -783,15 +783,15 @@ C     now put I after J is there is space
       END
       SUBROUTINE ABSRESULT(MJWOP,RESLRF,WRK,LWRK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <absorp.h>
-#include <inforb.h>
-#include <codata.h>
-#include <qrinf.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
+#include "inforb.h"
+#include "codata.h"
+#include "qrinf.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infdim.h"
 C
       LOGICAL FOUND, CONV
 C
@@ -1071,14 +1071,14 @@ C                          / b1 \                    / b2 \
 C     NI = sum(i=1,KZRED) |      | * REDVEC(4i-2) + |      | * REDVEC(4i)
 C                          \ b2 /_i                  \ b1 /_i           
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <absorp.h>
-#include <inftap.h>
-#include <ibndxdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "absorp.h"
+#include "inftap.h"
+#include "ibndxdef.h"
 C
       LOGICAL CONVERGED
       CHARACTER*8 LABEL
@@ -1232,14 +1232,14 @@ C
      &     REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
      &     REDVEC,CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <absorp.h>
-#include <inftap.h>
-#include <ibndxdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "absorp.h"
+#include "inftap.h"
+#include "ibndxdef.h"
 C
 C PURPOSE:
 C     Solve the coupled equations in this iteration
@@ -1424,12 +1424,12 @@ C                          / b1 \                    / b2 \
 C     NI = sum(i=1,KZRED) |      | * REDVEC(4i-2) + |      | * REDVEC(4i)
 C                          \ b2 /_i                  \ b1 /_i           
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <absorp.h>
-#include <ibndxdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "absorp.h"
+#include "ibndxdef.h"
 C
       CHARACTER*8 LABEL,BLANK
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
@@ -1530,13 +1530,13 @@ C
      &     CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,
      &     RESLRF,WRK,LWRK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <absorp.h>
-#include <inftap.h>
-#include <ibndxdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "absorp.h"
+#include "inftap.h"
+#include "ibndxdef.h"
 C
 C PURPOSE:
 C
@@ -1744,10 +1744,10 @@ C
       SUBROUTINE GETLRF(LU,LABEL,NFREQ_ABS,FREQ_ABS,
      &     FC,FV,CMO,UDV,PV,XINDX,NBATCH,RESLRF,
      &     WRK,LWRK)
-#include <implicit.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <absorp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "absorp.h"
 C
       CHARACTER*8 LABEL,LABGD
       LOGICAL FOUND,CONV
@@ -1793,7 +1793,7 @@ C
       END
       SUBROUTINE CHKONFILE(LU,FOUND,LABEL,ISYM,NFREQ_ABS,FREQ_ABS,
      &     THD,FLAGS)
-#include <priunit.h>
+#include "priunit.h"
 C
       LOGICAL     FOUND,FLAGS(NFREQ_ABS)
       CHARACTER*8 LABEL,LAB1,LAB2
@@ -1831,13 +1831,13 @@ C
       END
       SUBROUTINE REDSPACE(LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
      &     REDE,REDS,REDVEC,IBTYP,FC,FV,CMO,UDV,PV,XINDX,WRK,LWRK)
-#include <implicit.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <absorp.h>
-#include <inftap.h>
-#include <ibndxdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "absorp.h"
+#include "inftap.h"
+#include "ibndxdef.h"
 C
       CHARACTER*8 LABEL
       LOGICAL FOUND,CONV,READFLAG
@@ -2083,10 +2083,10 @@ C
       RETURN
       END
       SUBROUTINE BETA_SETUP
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <absorp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "absorp.h"
 C
       PARAMETER (THRZERO = 1.0D-6)
 C
@@ -2170,7 +2170,7 @@ C
       RETURN
       END
       SUBROUTINE GPDSRT(N,X,THD)
-#include <implicit.h>
+#include "implicit.h"
 C
 C========================================================================
 C
@@ -2228,20 +2228,20 @@ C PURPOSE:
 C     Compute the quadratice response functions with response vectors
 C     found on file.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <absorp.h>
-#include <wrkrsp.h>
-#include <infvar.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <cbilrs.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <qrinf.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
+#include "wrkrsp.h"
+#include "infvar.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "cbilrs.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "qrinf.h"
+#include "infdim.h"
 C
       PARAMETER ( D0=0.0D0 )
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
@@ -2515,9 +2515,9 @@ C
       END
       SUBROUTINE QRCHK(DOHYP,ALAB,BLAB,CLAB,ISYMA,ISYMB,ISYMC,
      &                 FREQA,FREQB,FREQC)
-#include <implicit.h>
-#include <priunit.h>
-#include <absorp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
 C
       PARAMETER (THRZERO = 1.0D-6)
       LOGICAL DOHYP,NEWFRQ
@@ -2617,13 +2617,13 @@ C
 C
 C PURPOSE: Read in response vectors for quadratic response. 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <absorp.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "qrinf.h"
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 ALAB,BLAB,CLAB,BLANK
@@ -2746,14 +2746,14 @@ C imaginary parts are added to RESULT(1) and RESULT(2), respectively.
 C
 C     Na*R[3]*Nb*Nc
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "qrinf.h"
 C
       LOGICAL TDM, NORHO2
 c
@@ -2873,14 +2873,14 @@ C
 C Calculate <0|nCnB + nC(+)nB(+)|0A> given the one- and two-electron
 C transition densities.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "qrinf.h"
 C
       DIMENSION WRK(LWRK),MJWOP(2,MAXWOP,8)
       DIMENSION DEN1(NASHDI,NASHDI),DEN2(N2ASHX,N2ASHX)
@@ -2895,8 +2895,8 @@ C
       SUBROUTINE ABCCHK(DOCAL,LURSPRES,ISYMA,ISYMB,ISYMC,FREQA,FREQB,
      &                  FREQC,ALAB,BLAB,CLAB,HYPVAL)
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 #include "absorp.h"
 C
 C PURPOSE:
@@ -2911,7 +2911,7 @@ C
       DIMENSION FREQ(3),VALUE(2), HYPVAL(2)
       SAVE N
       DATA N/0/
-#include <priunit.h>
+#include "priunit.h"
 C
       DOCAL = .TRUE.
       REWIND (LURSPRES)

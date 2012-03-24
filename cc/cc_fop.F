@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_fop */
        SUBROUTINE CC_FOP(IPDD,WORK,LWORK,APROXR12)
@@ -60,41 +60,41 @@ C     CC-R12 introduced by Christian Neiss 2005
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <codata.h>
-#include <iratdef.h>
-#include <ccfop.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccrspprp.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccroper.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <dipole.h>
-#include <quadru.h>
-#include <nqcc.h>
-#include <ccfdgeo.h>
-#include <ccfro.h>
-#include <ccinftap.h>
-#include <ccslvinf.h>
-#include <ccnoddy.h>
-#include <r12int.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <qm3.h>
+#include "codata.h"
+#include "iratdef.h"
+#include "ccfop.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccrspprp.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccroper.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "dipole.h"
+#include "quadru.h"
+#include "nqcc.h"
+#include "ccfdgeo.h"
+#include "ccfro.h"
+#include "ccinftap.h"
+#include "ccslvinf.h"
+#include "ccnoddy.h"
+#include "r12int.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "qm3.h"
 !#include <qmmm.h>
-#include <ccqrinf.h>
+#include "ccqrinf.h"
 C
       LOGICAL CCMMCONV,DIELCONV,CCDC
       LOGICAL CC1BSV,CC1ASV,FASAVE,CICLC,HFCLC, DAR2SA,
@@ -121,9 +121,9 @@ C
       INTEGER NCVIJ(8,8),NCVAI5(8,8) 
       INTEGER IPDD
 C
-#include <leinf.h>
+#include "leinf.h"
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 C
       CALL QENTER('CC_FOP')
@@ -2781,23 +2781,23 @@ C     Triples corrections by K. Hald, Fall 2001.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "r12int.h"
 C
 !
 !SONIA SONIA SONIA
 !
-#include <grdccpt.h>
+#include "grdccpt.h"
 C
       LOGICAL LOCDBG
       PARAMETER(LOCDBG = .FALSE.)
@@ -3132,15 +3132,15 @@ C
 C     Purpose: To add the orbital relaxation term to the
 C              CC one electron density in AO basis!
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D1AO(*), ZKAM(*), WORK(LWORK)
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CC_D1ORRE')
 C
@@ -3239,13 +3239,13 @@ C     Purpose: Set flags for response solver properly for integral
 C              direct calculations!
 C
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <inftra.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "inftra.h"
 C
 C
-#include <grdccpt.h>
+#include "grdccpt.h"
 
       CALL QENTER('CCDFFOP')
 C
@@ -3274,17 +3274,17 @@ C              molecular quadrupole moment (based on the
 C              equivalent ABACUS-routines)!
 C
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION WORK(LWORK)
-#include <cbiher.h>
-#include <orgcom.h>
-#include <nuclei.h>
+#include "cbiher.h"
+#include "orgcom.h"
+#include "nuclei.h"
 ! gnrinf.h : QM3
-#include <gnrinf.h>
-#include <qm3.h>
+#include "gnrinf.h"
+#include "qm3.h"
 C
       CALL QENTER('CCNUCQUA')
 C
@@ -3330,13 +3330,13 @@ C              molecular quadrupole moment (based on the
 C              equivalent ABACUS-routines)!
 C
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       DIMENSION XONEP(*), DENS(*), RESVEC(3,3)
-#include <symmet.h>
-#include <quadru.h>
+#include "symmet.h"
+#include "quadru.h"
 C
       CALL QENTER('CCELQUA')
 C
@@ -3358,14 +3358,14 @@ C     Purpose: Reorder quadrupole and second moment tensors to
 C              CC storing.
 C
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (ZERO = 0.0D0)
       DIMENSION QORI(3,3), QNEW(3,3)
-#include <symmet.h>
-#include <quadru.h>
+#include "symmet.h"
+#include "quadru.h"
 C
       CALL QENTER('CC_QUAREO')
 C
@@ -3398,12 +3398,12 @@ C              electric field gradients (based on the
 C              equivalent ABACUS-routines)!
 C
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION DENS(*), WORK(LWORK)
-#include <nuclei.h>
+#include "nuclei.h"
 C
       CALL QENTER('CCELEFG')
 C
@@ -3469,20 +3469,20 @@ C              ABACUS routines)!
 C
 C     Merge to Dalton1.0 Ove 16-4-1997
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "maxorb.h"
       DIMENSION DENS(*), EFGINT(*), DOTPRO(NCOMP), WORK(LWORK)
       CHARACTER*8 LABEL
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrxyz.h>
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "chrnos.h"
+#include "ibtfun.h"
 C
       CALL QENTER('CCELEFG1')
 C
@@ -3555,13 +3555,13 @@ C
 C     Purpose: To set up the one electron AO-density in case
 C              of a CCS calculation (equal to HF density)!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION AODEN(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCS_D1AO')
 C
@@ -3641,20 +3641,20 @@ C
 C     Purpose: To set up the zero'th order Lagrangian multipliers
 C              in the MP2 case.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION TBAM(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <inftap.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccinftap.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "inftap.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccinftap.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('MP_LAM')
 C
@@ -3735,30 +3735,30 @@ C     Purpose: To calculate the right hand side ETAAI for the
 C              equations for the zero'th order orbital rotation
 C              multipliers in CCPT2 calculations.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), WORK(LWORK)
       CHARACTER MODEL*(10)
-#include <ccorb.h>
-#include <ccisao.h>
-#include <r12int.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "r12int.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
 C
       CALL QENTER('MP2_KARI')
 C
@@ -4175,13 +4175,13 @@ C
 C     Purpose: To calculate the Fock matrix contributions to 
 C              ETAAI(CCPT2).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAAI(*), FCKMO(*), XTMAT(*), YTMAT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCPT_FCK')
 C
@@ -4264,13 +4264,13 @@ C     Purpose: To calculate the contributions to ETAAI(CCPT2)
 C              originating from amplitudes directly contracted 
 C              with integrals (oo|ov).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAAI(*), TSCR(*), X3OINT(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCPT_3OT')
 C
@@ -4325,13 +4325,13 @@ C     Purpose: To calculate the contributions to ETAAI(CCPT2)
 C              originating from amplitudes directly contracted 
 C              with integrals (oo|ov).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAAI(*), TSCR(*), DSRHF(*), XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCPT_3VT')
 C
@@ -4444,14 +4444,14 @@ C     Purpose: To calculate the contributions to ETAAI(CCPT2)
 C              containing the original (i.e. nonsymmetrized) 
 C              X- and Y-matrices.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
       DIMENSION ETAAI(*), XMAT(*), YMAT(*), X3OINT(*), DSRHF(*)
       DIMENSION XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCPT_NXY')
 C
@@ -4603,13 +4603,13 @@ C     Purpose: To calculate the contribution to ETAAI(CCPT2)
 C              involving the symmetrized X-matrix (XTMAT) and the
 C              (oo|ov) integrals.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
       DIMENSION ETAAI(*), XTMAT(*), X3OINT(*), XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCPT_XTO')
 C
@@ -4696,13 +4696,13 @@ C     Purpose: To calculate the contribution to ETAAI(CCPT2)
 C              involving the symmetrized Y-matrix (YTMAT) and the
 C              (vv|ov) integrals.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
       DIMENSION ETAAI(*), YTMAT(*), DSRHF(*), XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCPT_YTV')
 C
@@ -4829,14 +4829,14 @@ C
 C     Purpose: To diagonalize and analyse the correlated
 C              one-electron density matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION DENSI(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "ccsdinp.h"
 C
       CHARACTER MODEL*4
 C
@@ -4950,22 +4950,22 @@ C              ij, ab, ai, ia; and these are stored full blocks after
 C              each other. After these, the blocks containing frozen
 C              core indices come: first cJ and then kJ.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       CHARACTER MODEL*10
       DIMENSION ZKDIA(*), WORK(LWORK)
       LOGICAL R12PRP
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "ccfro.h"
 C
       CALL QENTER('MP2_ZKDIA')
 C
@@ -5196,20 +5196,20 @@ C     Small modifications for CC2 by A. Halkier & S. Coriani
 C     14/01-2000. Introduce factor FACT to control antisymmetrization
 C     of eta_ij and eta_ab.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRDEM = 1.0D-12)
       DIMENSION ZKDIA(*), XMAT(*), YMAT(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <inftap.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "inftap.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('MP2_ZKBLO')
 C
@@ -5327,34 +5327,34 @@ C
 C     Modifications for inclusion of frozen core contributions
 C     by Asger Halkier 28/5 - 1998.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       CHARACTER MODEL*10
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
-#include <ccorb.h>
+#include "ccorb.h"
 CCN#include <infind.h> 
-#include <ccisao.h>
+#include "ccisao.h"
 celena#include <ccisao.h> sonst falscher Wert fuer ISAO() in D2h
 !CCN:                    Nicht, wenn man ISAO() NACH IJKAUX() aufruft!
-#include <r12int.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccinftap.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
+#include "r12int.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccinftap.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
 C
       CALL QENTER('MP2_KANEW')
 C
@@ -5797,14 +5797,14 @@ C     Purpose: To calculate the contributions to ETAAI(MP2)
 C              originating from the coulomb part of the "extra
 C              terms" from the diagonal orbital multipliers.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
       DIMENSION ETAAI(*), XMAT(*), YMAT(*), X3OINT(*), DSRHF(*)
       DIMENSION XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('MP2_NXY')
 C
@@ -5955,13 +5955,13 @@ C     Purpose: To calculate the (oo|ov) contributions to ETAAI(MP2)
 C              originating from the exchange part of the "extra
 C              terms" from the diagonal orbital multipliers.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAAI(*), XTMAT(*), X3OINT(*), XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('MP2_XTO')
 C
@@ -6047,13 +6047,13 @@ C     Purpose: To calculate the (vv|ov) contributions to ETAAI(MP2)
 C              originating from the exchange part of the "extra
 C              terms" from the diagonal orbital multipliers.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAAI(*), YTMAT(*), DSRHF(*), XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('MP2_YTV')
 C
@@ -6181,28 +6181,28 @@ C              side ETAAI from the diagonal multiplier blocks for
 C              the equations for kappa-bar-0. This includes the
 C              frozen core contributions.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccisao.h>
-#include <r12int.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "r12int.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
 C
       CALL QENTER('CC_KANEW')
 C
@@ -6589,18 +6589,18 @@ C     Current models: CCS, MP2, CCD, CCSD
 C
 C     CC2 (without frozen core) by A. Halkier & S. Coriani 20/01-2000.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "eridst.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       LOGICAL SAVDIR, LEX, SAVHER, OLDDX
@@ -6609,20 +6609,20 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL
       CHARACTER*10 MODEL
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <drw2el.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "drw2el.h"
 C
       CALL QENTER('CC_2EEXP')
 C
@@ -7902,7 +7902,7 @@ C     Purpose: Write block of effective two electron density matrix
 C              (DEN) to disc.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DEN(LENDEN)
 C
       CALL QENTER('DUMP2DEN')
@@ -7922,7 +7922,7 @@ C     Purpose: Read block of effective two electron density matrix
 C              (AODEN) from disc.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DEN(LENDEN)
 C
       CALL QENTER('RETR2DEN')

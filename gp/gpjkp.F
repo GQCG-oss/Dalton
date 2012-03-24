@@ -24,7 +24,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#include "single.h"
 C /* Deck erf */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION ERF(X)
@@ -36,7 +36,7 @@ C     Purpose : Calculate value of error-function in point X
 C               Based on code from numerical recipies.
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       IF(X.LT.D0)THEN
@@ -50,7 +50,7 @@ C
 C*****************************************************************************
 C
       FUNCTION GAMMP2(A,X)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       IF (X .LT. D0 .OR. A.LE. D0) CALL QUIT('BAD ARGUMENTS IN GAMMP2')
       IF (X.LT.(A+D1)) THEN
@@ -66,8 +66,8 @@ C
 C*****************************************************************************
 C
       SUBROUTINE GSER2(GAMSER,A,X)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ITMAX=100, EPS=3.0D-7, D0=0.0D0, D1 = 1.0D0)
       GLN=GAMMLN2(A)
       IF(X.LE.D0)THEN
@@ -94,8 +94,8 @@ C
 C*****************************************************************************
 C
       SUBROUTINE GCF2(GAMMCF,A,X)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ITMAX=100,EPS=3.0D-7,FPMIN=1.0D-30, D1 = 1.0D0,
      >           D2 = 2.0D0)
       GLN=GAMMLN(A)
@@ -123,7 +123,7 @@ C
 C*****************************************************************************
 C
       FUNCTION GAMMLN2(XX)
-#include <implicit.h>
+#include "implicit.h"
       DOUBLE PRECISION STP,COF(6)
       SAVE COF,STP
       DATA COF,STP/76.18009172947146D0,-86.50532032941677D0,
@@ -154,7 +154,7 @@ C               Naval Surface Warfare Center Mathematical Library
 C               (http://www.math.iastate.edu/burkardt/f_src/nswc/nswc.html)
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (C = .564189583547756D0, ONE = 1.0D0, HALF = 0.5D0,
      >           ZERO = 0.0D0)
       DOUBLE PRECISION A(5), B(3), P(8), Q(8), R(5), S(4)
@@ -221,7 +221,7 @@ C               Naval Surface Warfare Center Mathematical Library
 C               (http://www.math.iastate.edu/burkardt/f_src/nswc/nswc.html)
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DERFC = 1.0D0 - DERF(X)
       RETURN
       END 

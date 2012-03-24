@@ -21,17 +21,17 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cimain */
       SUBROUTINE CIMAIN(WORK,LWORK,ICONV)
 C
 C 28-Jun-1985 hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION WORK(LWORK)
-#include <dummy.h>
+#include "dummy.h"
 C
       PARAMETER (MXCIDFT = 20)
 C
@@ -41,12 +41,12 @@ C   INFORB: NCMOT,NASHT
 C   INFDIM: LCINDX
 C   dftcom: DFTADD
 C
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "dftcom.h"
 C
       LOGICAL ADDSRI_SAVE
 C
@@ -176,13 +176,13 @@ C  ICONV      number of CI states converged
 C             (NCROOT-ICONV states are not converged)
 C  ICROOT(*)  index of CI states not converged
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), INDXCI(*), ECI(*), ICROOT(*), WRK(*)
 C
-#include <iratdef.h>
-#include <thrldp.h>
+#include "iratdef.h"
+#include "thrldp.h"
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0, D1 = 1.0D0 )
-#include <dummy.h>
+#include "dummy.h"
       LOGICAL CINMEM
 C
 C Used from common blocks:
@@ -193,15 +193,15 @@ C   INFORB : NNASHX
 C   INFDIM : LCINDX,LACIMX,LBCIMX,LPHPMX,MAXPHP
 C   INFTAP : LUIT1,LUIT3,LUIT5
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <cicb01.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "cicb01.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C     Local variables
 C
@@ -836,21 +836,21 @@ C Purpose:
 C  CIIN*: Calculate integrals needed for CI. EMY, FCAC and H2AC
 C         are needed by calling program.
 C
-#include <implicit.h>
+#include "implicit.h"
 
       DIMENSION CMO(*), FCAC(*),H2AC(*),WRK(*)
       LOGICAL   DISKH2
 
-#include <priunit.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFORB : NNASHX,NNBAST,NNORBT
 C   INFINP : SRHYBR
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infinp.h"
 
       LOGICAL SRHYBR_SAVE
 C
@@ -908,7 +908,7 @@ C Revisions:
 C  Purpose : To obtain the necessary two-electron
 C            integrals to perform a CI calculation.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION H2AC(NNASHX,NNASHX),WRK(LWRK)
 C
@@ -917,13 +917,13 @@ C   INFORB : NNASHX,NNBAST,?
 C   INFIND : ISMO,?
 C CBGETDIS : IADH2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <cbgetdis.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "cbgetdis.h"
 C
       DIMENSION NEEDMU(-4:6)
       CALL QENTER('CIIN2A')
@@ -951,7 +951,7 @@ C     Loop over active-active distributions
       NEEDMU(3) = 1 ! only active-active distributions needed (type 3)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -1029,9 +1029,9 @@ C Scratch: H2ACCD (active 2-el integrals)
 C          WRK
 C
 C ****************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2ACCD(NNASHX), WRK(LWRK)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C
 C Used from common blocks:
@@ -1041,15 +1041,15 @@ C   INFTAP : LUH2AC
 C   INFPRI : P6FLAG
 C CBGETDIS : IADH2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
       LOGICAL OLDDX
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <cbgetdis.h>
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "cbgetdis.h"
 
       DIMENSION NEEDMU(-4:6)
 
@@ -1080,13 +1080,13 @@ C
       CALL MEMGET('REAL',KH2CD,N2ORBX,WRK,KFREE,LFREE)
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDMU(6)
+C     Loop over Mulliken distributions allowed in NEEDMU(*)
 C
       NEEDMU(-4:6) = 0
       NEEDMU(3) = 1 ! only active-active distributions needed (type 3)
 
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -1148,8 +1148,8 @@ C
 C Output:
 C  SCVECS; will start at WRK(1) on output; followed by
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION BCVECS(NCONF,*), FCAC(*), H2AC(*)
       DIMENSION INDXCI(*),WRK(LFREE)
 C
@@ -1161,8 +1161,8 @@ C Used from common blocks:
 C   INFVAR : NCONF
 C CBGETDIS : DISTYP,IADINT,IADH2
 C
-#include <maxorb.h>
-#include <cbgetdis.h>
+#include "maxorb.h"
+#include "cbgetdis.h"
 C
       CALL QENTER('CILIN ')
 C
@@ -1221,7 +1221,7 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVAL(*), EVEC(NCIRED,*), CDIAG(*), RESID(*), WRK(*)
 C
 C     ********** Define parameters, common blocks, and local variables.
@@ -1231,7 +1231,7 @@ C
       PARAMETER ( THKC   = 0.10D0, THKO   = 0.001D0 )
       PARAMETER ( THLIU1 = 0.01D0, THLIU2 = 0.0D0 )
       PARAMETER ( THRSIM = 1.D-6 , DTEST  = 0.01D0 )
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER ( D0=0.0D0, D1 = 1.0D0, DHALF=0.5D0 )
 C
 C Common blocks:
@@ -1245,13 +1245,13 @@ C   INFTAP : LUIT3,LUIT5
 C   INFPRI : P4FLAG(*)
 C   PRIUNIT: IPRSTAT
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <cicb01.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "cicb01.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C     local variables:
 C
@@ -1742,8 +1742,8 @@ C
 C Scratch:
 C  CPREV(*),    scratch array for old vectors on LUCVEC
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION KCROOT(*), CVEC(NCONF,*), CPREV(*)
 C
       PARAMETER ( THRRND=1.D-2, THRTT=1.D-4, D1=1.0D0 )
@@ -1751,9 +1751,9 @@ C
 C Used from common blocks:
 C   INFVAR : NCONF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('CIORT ')
@@ -1876,7 +1876,7 @@ C   Calculate full reduced CI-matrix for symmetry check in
 C   CI calculation;
 C   asymmetry would indicate probable bug in CILIN module.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WRK(LFREE)
       PARAMETER ( D1 = 1.0D0, DIFTST = 1.0D-8 )
 C
@@ -1885,11 +1885,11 @@ C   INFVAR : NCONF
 C   CICB01 : NCIRED
 C   INFTAP : LUIT3, LUIT5
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <cicb01.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "cicb01.h"
+#include "inftap.h"
 C
 C
       REDH(I,J) = WRK((J-1)*NCIRED+I)
@@ -2016,8 +2016,8 @@ C         and for the reduced CI matrix (section 2)
 C         dimension: NCONF and NREDCI*(NREDCI+1)/2, rsp.
 C  WRK, real scratch array for BIG and JBIG in JACO, dim: 2*NREDCI
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION CVECS(*), SVECS(NCONF,*)
       DIMENSION REDCI(*), EVEC(NREDCI,*),EVAL(*), WRK(LWRK)
 C
@@ -2025,12 +2025,12 @@ C Used from common blocks:
 C   INFVAR : NCONF
 C   INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('CIRED ')
@@ -2113,21 +2113,21 @@ C
 C revised 870627-hjaaj, write ci energies to LUIT1 for OCE program
 C         890925-hjaaj, write ci residuals to LUIT1 also
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ECI(*), RESID(*), EVEC(*), CMO(*), INDXCI(*), WRK(*)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks :
 C   INFINP : NROOTS
 C   INFOPT : NREDL
 C   INFTAP : LUIT1
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CHARACTER*8 LABENR(4), LABEOD(4)
       DATA LABENR/'********','********','********','ENERGIES'/
@@ -2182,7 +2182,7 @@ C ICI1=2 : Start CI-vector(s) are already on LUIT1 (this is checked).
 C
 C ICI1=4 : Same as ICI1=2, for compatibility with MCSCF CISTRT
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*),HDIAG(*),WRK(*)
 C
@@ -2196,16 +2196,16 @@ C   INFIND : ?
 C   INFDIM : ?
 C   INFTAP : LUIT1,?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C *** Externals:
 C
@@ -2393,7 +2393,7 @@ C
 C  Block of old CIST, purpose: find start vectors corresponding
 C  to lowest diagonal elements and write these to LUIT1.
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL PLUSCB
       DIMENSION HDIAG(*), WRK(*)
       PARAMETER (MXNLIS = 220)
@@ -2406,9 +2406,9 @@ C Used from common blocks:
 C   INFTAP : LUIT1
 C   INFPRI : LUW*, IPRI*
 C
-#include <infpri.h>
-#include <inftap.h>
-#include <priunit.h>
+#include "infpri.h"
+#include "inftap.h"
+#include "priunit.h"
 C
 C *** Local variables:
 C
@@ -2585,7 +2585,7 @@ C
 C Purpose:
 C   Return in IPLACE addresses on lowest NELMNT elements in VEC.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(NVEC), IPLACE(NELMNT), WRK(LWRK)
 C
       IF (LWRK .LT. NELMNT) THEN
@@ -2660,11 +2660,11 @@ C    9) HDIAG (diagonal of CI matrix)
 C   10) label "SIRFLAGS"
 C   11) FLAG(1:NFLAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CMO(*), FCAC(*), H2AC(*), HDIAG(*), INDXCI(*), WRK(*)
-#include <iratdef.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "dummy.h"
 C
 C Used from common blocks:
 C
@@ -2674,13 +2674,13 @@ C   INFVAR : NCONF
 C   INFTAP : LUIT1, LUSIFC
 C   CBGETD : IADH2
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <cbgetdis.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "cbgetdis.h"
 C
       CHARACTER*8 LAB123(3), TABLE(5)
       DATA LAB123/'********','********','********'/

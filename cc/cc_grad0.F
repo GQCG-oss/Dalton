@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_grad0 */
       SUBROUTINE CC_GRAD0(GRADH1,GRADFS,GRADH2,WORK,LWORK)
@@ -41,19 +41,19 @@ C              the new integral program!
 C
 C     Current models: CCS, MP2, CCD, CC2, CCSD
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "eridst.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       LOGICAL LOCDBG
@@ -66,20 +66,20 @@ C
       CHARACTER*8 LABEL
       CHARACTER*10 MODEL
       LOGICAL OLDDX, DIRSAV
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
 C
       CALL QENTER('CC_GRAD0')
 C

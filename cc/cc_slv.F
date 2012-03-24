@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_slv */
        SUBROUTINE CC_SLV(AODEN,ETLM,DIELCONV,WORK,LWORK)
@@ -37,22 +37,22 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       LOGICAL   DIELCONV
       DIMENSION WORK(LWORK),AODEN(*),ETLM(NLMCU,2)
@@ -232,23 +232,23 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
-#include <thrzer.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
+#include "thrzer.h"
 C
       DIMENSION WORK(LWORK),AODEN(*),ETLM(NLMCU,2)
       CHARACTER MODEL*10
@@ -457,7 +457,7 @@ C            Ove Christiansen, April 1998
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C     Parameters: FLFAC = - 1 / (8 pi epsilon_null)   (S.I.)
 C                       = - 1 / 2                     (a.u.)
@@ -478,7 +478,7 @@ C            Ove Christiansen, April 1998
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
+#include "implicit.h"
 C     
       EXTERNAL GL
       DOUBLE PRECISION GL
@@ -496,15 +496,15 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       DIMENSION AOUP(*),AOP(*),WORK(LWORK)
 C
@@ -540,22 +540,22 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),TLMAO(*)
 C
@@ -592,22 +592,22 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),FOCK(*)
 C
@@ -761,23 +761,23 @@ C     Ove Christiansen, April/mai 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*),CTR1(*),CTR2(*) 
 C
@@ -1064,16 +1064,16 @@ C
       END
 C  /* Deck ccsl_tlmget*/
       SUBROUTINE CCSL_TLMGET
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       LUCTLM = -1
       CALL GPOPEN(LUCTLM,'CC_TL','UNKNOWN',' ','FORMATTED',IDUMMY,
@@ -1097,16 +1097,16 @@ C
 C
 C  /* Deck ccsl_tlmput*/
       SUBROUTINE CCSL_TLMPUT
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       LUCTLM = -1
       CALL GPOPEN(LUCTLM,'CC_TL','UNKNOWN',' ','FORMATTED',IDUMMY,
@@ -1136,23 +1136,23 @@ C and ^CT^gB operators.
 C JK+OC, 03
 C---------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*),CTR1(*),BTR1(*)
 C
@@ -1341,23 +1341,23 @@ C            t^C_my <bar my|[T_lm,Tau_sigma]|CC> t^B_sigma T_lm
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),BTR1(*),CTR1(*)
       DIMENSION TGB(*) 
@@ -1552,23 +1552,23 @@ C             t^B_sigma <bar sigma|T_lm|CC> T_lm
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),CTR1(*)
       DIMENSION TGB(*)
@@ -1795,23 +1795,23 @@ C
 C       The permutation creates 3 different contributions. 
 C
 C------------------------------------------------------------------
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*)
 C
@@ -1973,23 +1973,23 @@ C
 C    JK+OC, 03
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK)
       DIMENSION TGCB(*)
@@ -2154,23 +2154,23 @@ C
 C     JK+OC, 03
 C---------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*)
 C
@@ -2325,23 +2325,23 @@ C Calculates the CCSL ETA and XI vectors and write them to files.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK)
 C

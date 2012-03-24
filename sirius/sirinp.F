@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_REV_LOG
 !===========================================================================
@@ -99,24 +99,24 @@ C                   ORTHO  (REORDERING AND ORTHONORMALIZATION
 C                           OF TRIAL MOLECULAR ORBITALS).
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LFREE)
 C
 C -- local constants
 C
-#include <dummy.h>
+#include "dummy.h"
 C
 C -- common blocks
 C    INFINP : FLAG(*),?
 C    INFORB : NCMOT,...
 C    INFPRI : LUPNCH
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL QENTER('SIRINP')
 C
@@ -202,9 +202,9 @@ C                   ERRINP (ERROR message OUTPUT ROUTINE)
 C
 C******************************************
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
       DIMENSION CMO(LCMO)
 C
 C -- local variables and constants
@@ -216,6 +216,7 @@ C
 C
 C Used from common blocks:
 C   GNRINF : WESTA,EMBEDDING,QM3,QMMM, ...
+C   CCOM   : THRS ! integral threshold, used for THRP default
 C   INFINP : ...,ITRLVL,ITRFIN,..., DO*, DIRFCK,...
 C   INFORB : NSYM,?
 C   INFVAR : MAXOCC,NWOPT,JWOP(2,*),JWOPSY
@@ -230,29 +231,33 @@ C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
 C   SPINFO : MULTS, MS2
 C
-#include <gnrinf.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <scbrhf.h>
-#include <infmp2.h>
-#include <pcmlog.h>
-#include <siripc.h>
-#include <huckel.h>
-#include <cbihrs.h>
-#include <spinfo.h>
-#include <dftcom.h>
-#include <dfterg.h>
+#include "gnrinf.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+
+#include "ccom.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "scbrhf.h"
+#include "infmp2.h"
+#include "pcmlog.h"
+#include "siripc.h"
+#include "huckel.h"
+#include "cbihrs.h"
+#include "spinfo.h"
+#include "dftcom.h"
+#include "dfterg.h"
+
 ! srDFT linear response
-#include <srdftlnr.h>
+#include "srdftlnr.h"
 C
       INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
       ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
@@ -303,8 +308,8 @@ C
             IRDMO = 8
             FLAG(13) = .FALSE.
             IF (DOSCF) THEN
-               AUTOCC = .TRUE.
-               INIOCC = 0
+               AUTOCC = NSYM .GT. 1
+               INIOCC = -1
                DO 13 I = 1, 8
                   NRHF(I) = 0
   13           CONTINUE
@@ -435,6 +440,9 @@ C <---
 C     ... It is followed by an abacus run
       CORHOL    = .FALSE.
       CORRLX    = .FALSE.
+C added by Bin Gao for generating cube files
+C March 9, 2012
+      DO_CUBE = .false.
 C
 C********** Default values section HAMINP *****
 C
@@ -567,11 +575,13 @@ C               ICHARG = ICHRGNU - (2*NISHT+NACTEL)
       NISHT  = 0
       NACTEL = 0
       CALL MOLCHR(ICHARG)
+C     ICHARG is now total nuclear charge;
+C     KCHARG is input in .mol file for total molecular charge
       NACTEL = -1
       NRHFEL = ICHARG - KCHARG
       INIOCC = -1
       IF (NRHFEL .GT. 0) THEN
-         AUTOCC = .TRUE.
+         AUTOCC = NSYM .GT. 1
       ELSE
          AUTOCC = .FALSE.
       END IF
@@ -682,7 +692,7 @@ C
 C     ITRFIN   Level of final integral transformation (when FLAG(25),
 C              i.e. call wrgeom in siropt)
 C
-      THRP   = 1.0D-12
+      THRP   = MAX(THRS,1.0D-15)
       ITRLVL = -6789
       ITRFIN = -6789
       IPRTRA = -1
@@ -837,7 +847,9 @@ C     Several common blocks are saved to next iteration
 C
       CALL SSAVE
 C
-C     This is where we jump back in if input has been processed earlier.
+C *************************************************************************
+C     "124" is where we jump back in if input has been processed earlier,
+C     i.e. if INPPRC is .true.
 C
  124  CONTINUE
 C
@@ -912,6 +924,25 @@ C
      &      ' NEVPT2 is only implemented for complecte active space.'
             INPERR = INPERR + 1
          END IF
+      END IF
+C
+C     No need for AUTOCC if C_1 symmetry
+C
+      IF (NRHFEL .LE. 0) THEN
+         NRHFEL = 2*NRHFT
+         IF (IOPRHF .GT. 0) NRHFEL = NRHFEL + 1
+      END IF
+      IF (NSYM .EQ. 1 .AND. INIOCC .LT. 0) THEN
+         CALL IZERO(NRHF,8)
+         MOCC = NRHFEL/2
+         NRHF(1) = MOCC
+         IF (2*MOCC .NE. NRHFEL) THEN
+            IOPRHF = 1
+         ELSE
+            IOPRHF = 0
+         END IF
+         INIOCC = 6
+         AUTOCC = .FALSE.
       END IF
 C
 C     Disable AUTOCC for RHF if RHF not used (HJ aug95)
@@ -1235,21 +1266,21 @@ C
          IF (DOSCF .AND. AUTOCC .AND. NSYM .GT. 1) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &         'Input error for core-hole calculation:',
-     &         ' - automatic occupation of SCF orbitals not allowed.'
+     &     'ERROR: Input error for core-hole calculation:',
+     &     'ERROR:  - automatic occupation of SCF orbitals not allowed.'
          END IF
          IF (IRDMO .EQ. 8) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &         'Input error for core-hole calculation:',
-     &         ' - no initial molecular orbitals from'//
+     &      'ERROR: Input error for core-hole calculation:',
+     &      'ERROR:  - no initial molecular orbitals from'//
      &         ' a previous calculation specified.'
          END IF
          IF (DOSCF .AND. DOMC) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &       'Input error for core-hole calculation:',
-     &       ' - both Hartree-Fock and MCSCF specified.'
+     &      'ERROR: Input error for core-hole calculation:',
+     &      'ERROR: - both Hartree-Fock and MCSCF specified.'
          END IF
          IF (NASHT .GT. 1) THEN
           IF (NELMN1 .LE. 0 .AND. NELMX1 .LE. 0) THEN
@@ -1301,15 +1332,15 @@ C           ... NO ABSORPTION :
             IF (JCHORB .GT. NISH(JCHSYM)+1) THEN
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/A,I4,A,I2,A)')
-     &               ' Input error for core-hole calculation:'//
-     &               ' Core hole orbital',JCHORB,' in symmetry',
+     &            'ERROR: Input error for core-hole calculation:'//
+     &            'ERROR: Core hole orbital',JCHORB,' in symmetry',
      &               JCHSYM,' is neither inactive nor in RAS1.'
             ELSE IF (JCHORB .LE. NISH(JCHSYM)) THEN
                IF (LMOORD) THEN
                   INPERR = INPERR + 1
                   WRITE (LUPRI,'(/A/A)')
-     &               ' Input error for core-hole calculation:',
-     &               ' .COREHOLE and .REORDER are not compatible'//
+     &            'ERROR: Input error for core-hole calculation:',
+     &            'ERROR: .COREHOLE and .REORDER are not compatible'//
      &               ' if core hole orbital is inactive.'
                END IF
                LMOORD = .TRUE.
@@ -1346,10 +1377,6 @@ C
 C *** AUTOCC : find initial occupation (hjaaj-aug95)
 C              and Huckel start orbitals if DOHUCKEL
 C
-      IF (NRHFEL .LE. 0) THEN
-         NRHFEL = 2*NRHFT
-         IF (IOPRHF .GT. 0) NRHFEL = NRHFEL + 1
-      END IF
       IF (DOSCF .AND. AUTOCC .AND. IREST .EQ. 0
      &   .AND. INPERR .EQ. 0) THEN
 C
@@ -1361,26 +1388,10 @@ C
          KSCRA = 1    + NCMOT
          LSCRA = LCMO - KSCRA
          IF (INIOCC .LE. 0) THEN
-            IF (NSYM .EQ. 1) THEN
-               CALL IZERO(NRHF,8)
-               MOCC = NRHFEL/2
-               NRHF(1) = MOCC
-               IF (2*MOCC .NE. NRHFEL) THEN
-                  IOPRHF = 1
-               ELSE
-                  IOPRHF = 0
-               END IF
-               INIOCC = 6
-            ELSE IF (DOHUCKEL) THEN
+            IF (DOHUCKEL) THEN
                CALL HUCDRV(CMO,CMO(KSCRA),LSCRA)
                FLAG(13) = .FALSE.
                INIOCC = 5
-            ELSE IF (NSYM .EQ. 1) THEN
-               CALL IZERO(NRHF,8)
-               MOCC = NRHFEL/2
-               NRHF(1) = MOCC
-               IF (2*MOCC .NE. NRHFEL) IOPRHF = 1
-               INIOCC = 6
             ELSE
                CALL H1OCC(CMO,CMO(KSCRA),1,LSCRA)
                INIOCC = 4
@@ -1456,8 +1467,8 @@ C
       IF ((DOSCF .OR. DOMP2 .OR. DOCCSD) .AND. INIOCC .LE. 0) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A/A)')
-     &      ' Input error for DFT, HF, MP2, or CC calculation:',
-     &      ' Initial SCF occupation has not been defined.'
+     &     'ERROR: Input error for DFT, HF, MP2, or CC calculation:',
+     &     'ERROR: Initial SCF occupation has not been defined.'
          INIOCC = 0
 C        ... set INIOCC = 0 for SIR_PRTINP
       END IF
@@ -1981,18 +1992,22 @@ C
       use input_reader
       use lucita_cfg
       use lucita_orbital_spaces
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
+#ifdef BUILD_GEN1INT
+      PARAMETER (NTBMOD = 24)
+#else
       PARAMETER (NTBMOD = 23)
+#endif
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
 C needed for lucita: nsym, norb
       DIMENSION NORB(*)
 C
-#include <priunit.h>
-#include <gnrinf.h>
+#include "priunit.h"
+#include "gnrinf.h"
 C
       CALL QENTER('NEWINP')
 C
@@ -2000,7 +2015,11 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
+#ifdef BUILD_GEN1INT
+     *            '*AUXILL','*LUCITA','*CUBE  ','*END OF'/
+#else
      *            '*AUXILL','*LUCITA','*END OF'/
+#endif
 C
 C
 C  ***************************************************
@@ -2020,7 +2039,11 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
+#ifdef BUILD_GEN1INT
+     *                2900,3000,2400,3200,3600,8000), I
+#else
      *                2900,3000,2400,3200,8000), I
+#endif
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2096,6 +2119,12 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  3200  lucita_input_provided = .true.
        call move_to_next_star(word,lucmd)
        GO TO 910
+#ifdef BUILD_GEN1INT
+C added by Bin Gao, to generate cube files to visualize the results
+C March 9, 2012
+ 3600  call gen1int_cube_input(LUCMD, LUPRI, WORD)
+       goto 910
+#endif
 C  Here if "*END OF"
  8000  CONTINUE
        IF (ALLOPT .AND. .NOT.PTABMO) THEN
@@ -2150,10 +2179,10 @@ C  /* Deck sir_geninp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*20, TITLIN*80, SR_FUNCS*80
+     &          REWORD*20, TITLIN*80, SR_FUNCS*80
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
@@ -2166,15 +2195,15 @@ C  INFTAP : LUSUPM
 C  GNRINF : DOCCSD,
 C  CBIHER : SUPMAT,
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <inftra.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "inftra.h"
+#include "dftcom.h"
 C
 #if !defined (VAR_NONAMELIST)
       NAMELIST /NMLSIR/ NPATH, MAXMIC
@@ -2559,7 +2588,7 @@ C  /* Deck haminp */
 C
 C Copyright Nov 1990 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 2)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -2569,10 +2598,10 @@ C
 C INFINP : NFIELD,EFIELD,LFIELD
 C INFPRI : P6FLAG
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
 C
       DATA TABLE /'.FIELD ','.PRINT '/
 C
@@ -2642,7 +2671,7 @@ C  /* Deck wavinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 12)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -2653,11 +2682,11 @@ C INFORB : NASH, NISH, NSYM,...
 C INFINP : NACTEL,ISPIN,FLAG(*),MCTYP,..
 C SPINFO : MULTS, MS2
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <spinfo.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "spinfo.h"
 C
       LOGICAL RAS1EL
 C
@@ -2723,9 +2752,7 @@ C *** Option 2 >INACTI<  Inactive orbitals
          READ(LUCMD,*) (NISH(I),I=1,NSYM)
          NRHFT = ISUM(NSYM,NRHF,1)
          IF (NRHFT .EQ. 0) THEN
-            DO 402 I = 1, NSYM
-               NRHF(I) = NISH(I)
-  402       CONTINUE
+            NRHF(1:NSYM) = NISH(1:NSYM)
          END IF
       GO TO 100
 C
@@ -2840,7 +2867,7 @@ C 8-May-1989 Hans Joergen Aa. Jensen
 C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
 C 1999 Helgaker, DFT input added 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 26)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
@@ -2856,19 +2883,19 @@ C INFTAP : LUSUPM
 C INFPRI : IPRSIR,IPRRHF
 C DFTACB : DFTIPT, DFTBR1, DFTBR2
 C
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
-#include <gnrinf.h>
-#include <scbrhf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <dftcom.h>
-#include <dfterg.h>
-#include <dftacb.h>
+#include "gnrinf.h"
+#include "scbrhf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "dftcom.h"
+#include "dfterg.h"
+#include "dftacb.h"
 C
       LOGICAL NODIIS,SET,ELECTR
       SAVE SET,ELECTR
@@ -3055,8 +3082,14 @@ C *** Option 21 >ELECTR< No. of electrons, for automagic det. of occ. orb.s
       GO TO 100
 C *** Option 22 >AUTOCC< automatic determination of occ. orbs. in DIIS,
 C                        with given inital occ. from user input or file
-  122 AUTOCC = .TRUE.
-      IF (INIOCC .LT. 0) INIOCC = 0
+  122 IF (NSYM .EQ. 1) THEN
+         AUTOCC = .FALSE.
+         WRITE (LUPRI,'(/A)')
+     &      'INFO: .AUTOCC ignored because C_1 symmetry'
+      ELSE
+         AUTOCC = .TRUE.
+         IF (INIOCC .LT. 0) INIOCC = 0
+      END IF
       GO TO 100
 C
 C *** Option 23 >FC MVO<  Modified virtual orbitals from FC from NMVO
@@ -3088,12 +3121,13 @@ C
       ELSE
          IOPRHF = 0
       END IF
-      IF (INIOCC .EQ. 0) THEN
+      IF (INIOCC .LT. 0) AUTOCC = .FALSE.
+C     ... AUTOCC may have been set true by .AUTOCC
+      IF (ELECTR .OR. AUTOCC) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
      &' .SINGLY must not be specified together with .ELECTR or .AUTOCC'
       END IF
-      AUTOCC = .FALSE.
       NRHFEL = 0
       INIOCC = 1
       GO TO 100
@@ -3142,7 +3176,7 @@ C  /* Deck optinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 33)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -3158,15 +3192,15 @@ C INFOPT : RAT*
 C INFOPT : NFRO
 C INFPRI : LUPRI
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infopt.h>
-#include <inforb.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infopt.h"
+#include "inforb.h"
 C
       DATA TABLE /'.ABSORP','.ALWAYS','.ACTROT','.FROZEN','.MAXAPM',
      *            '.SYM CH','.THRCGR','.STATE ','.COREHO','.CORERE',
@@ -3524,7 +3558,7 @@ C  /* Deck cicinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 12)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -3534,10 +3568,10 @@ C
 C GNRINF : THR_REDFAC
 C INFINP : DOCINO, DOFCI, DOCISD,FLAG(*), NROOCI, THRCI, THRPWF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
 C
       DATA TABLE /'.CINO  ','.CIDENS','.CIROOT','.DISKH2','.THRESH',
      *            '.THRPWF','.WEIGHT','.ZEROEL','.STATE ','.FULLCI',
@@ -3660,8 +3694,8 @@ C  /* Deck orbinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C -- local variables and constants
 C
@@ -3678,12 +3712,12 @@ C INFINP : FLAG,IMOORD,CMAXMO,SUPSYM,THRSSY
 C INFORB : NBAS
 C HUCKEL : DOHUCKEL
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <huckel.h>
-#include <r12int.h>
-#include <infloc.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "huckel.h"
+#include "r12int.h"
+#include "infloc.h"
 C
       DATA TABLE /'XXXXXXX','.5D7F9G','.DELETE','.MOSTAR','.FREEZE',
      *            '.GRAM-S','.SYMMET','.PUNCHI','.PUNCHO','.REORDE',
@@ -3792,7 +3826,7 @@ C *** Option 4 >MOSTAR<   Molecular orbital input
              IRDMO = 8
              DOHUCKEL = .FALSE.
 C         ... make sure Huckel guess is disabled,
-C             although code in GNRLIN in dalton.F takes care of that
+C             although code in GNRLIN in dalton.F also takes care of that
           ELSE IF (INDEX(REWORD,'NEWORB') .GT. 0) THEN
              IRDMO = 9
           ELSE IF (INDEX(REWORD,'SIRIFC') .GT. 0) THEN
@@ -3996,7 +4030,7 @@ C  /* Deck civinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 5)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -4005,9 +4039,9 @@ C Used from common:
 C
 C INFINP : FLAG(*), ICI0,
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
 C
       DATA TABLE /'.PLUS C','.SELECT','.STARTH','.ABACUS','.STARTO'/
 C
@@ -4078,7 +4112,7 @@ C  /* Deck stpinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4091,10 +4125,10 @@ C
 C INFINP : FLAG(*)
 C INFOPT : BET*,RT*,RAT*,STP*
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infopt.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infopt.h"
 C
       DATA TABLE /'.DAMPIN','.MAX DA','.MIN DA','.NO EXT','.GOOD R',
      *            '.MIN RA','.REJECT','.TRUST ','.TOLERA','.INCREM',
@@ -4210,7 +4244,7 @@ C                  any population analysis option sets flag(73) false
 C                  new option: .PRINT
 C 13-sep-90 hjaaj: IPRMUL = MAX(IPRMUL,xxx)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4338,7 +4372,7 @@ C  /* Deck trainp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4353,12 +4387,12 @@ C INFINP : FLAG(*)
 C INFDIM : MWORK
 C INFTRA : ITRLVL, THRP
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <infdim.h>
-#include <inftra.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "infdim.h"
+#include "inftra.h"
 C
       DATA TABLE /'.RESIDE','.FINAL ','.LEVEL ','.OLD TR','.PRINT ',
      *            '.P THRE','xxxxxxx','xxxxxxx'/
@@ -4442,7 +4476,7 @@ C  /* Deck updinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4454,9 +4488,9 @@ C Used from common:
 C
 C INFINP : FLAG(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
 C
       DATA TABLE /'.FIXED ','.INVERS'/
 C
@@ -4511,7 +4545,7 @@ C
 C 1-Oct 1987 Hans Agren
 C Revised Nov 1989 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4529,10 +4563,10 @@ C
 C
 C INFPRI : IPRSOL
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
 C
       DATA TABLE /'.CAVITY','.DIELEC','.MAX L ','.PRINT ',
      *            '.INERSI','.INERSF'/
@@ -4642,7 +4676,7 @@ C  /* Deck priinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4658,11 +4692,11 @@ C INFINP : FLAG(*),
 C INFPRI : LU*, IPR*,
 C INFTRA : IPRTRA
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
-#include <inftra.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "inftra.h"
 C
       DATA TABLE /'XXXXXXX','.IPRKAP','.IPRDIA','.IPRSIG','.IPRDNS',
      *            '.IPRSOL','.RESFIL','.PRINTL','.PRINTF','.IPRCIX',
@@ -4840,7 +4874,7 @@ C  /* Deck auxinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4853,10 +4887,10 @@ C
 C INFINP :
 C INFTAP : LUSUPM
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inftap.h"
 C
       DATA TABLE /'XXXXXXX','.NOSUPM'/
 C
@@ -4912,7 +4946,7 @@ C
 C     ***** ERROR MESSAGES IN INPUT SECTION *****
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER TAB1*15,TAB2*30
       PARAMETER (TAB1=' ERROR MESSAGE:')
@@ -4922,15 +4956,15 @@ C
 C Used from common blocks:
 C   INFVAR : NWOPT
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
       INPERR = INPERR + 1
@@ -5019,7 +5053,7 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFINP : DOMC,DOCI,DIRFCK,FLAG(21),MCTYPE,THR*,NFIELD,...,?
@@ -5034,28 +5068,28 @@ C   siripc : INPPRC
 C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
 C   pcmlog : PCM
 C
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
-#include <infinp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <scbrhf.h>
-#include <infmp2.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <huckel.h>
-#include <dftcom.h>
-#include <dfterg.h>
-#include <dftacb.h>
-#include <siripc.h>
-#include <gnrinf.h>
-#include <pcmlog.h>
-#include <spinfo.h>
+#include "infinp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "scbrhf.h"
+#include "infmp2.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "huckel.h"
+#include "dftcom.h"
+#include "dfterg.h"
+#include "dftacb.h"
+#include "siripc.h"
+#include "gnrinf.h"
+#include "pcmlog.h"
+#include "spinfo.h"
 C
       CHARACTER*6 RDMOLB(12)
       CHARACTER*8  WFTYPE
@@ -5077,7 +5111,7 @@ C
       DATA RELEAS(1:36) /'*SIRIUS* a direct, restricted step, '/
       DATA RELEAS(37:70)/'second order MCSCF program       *'/
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
 C     ***** WRITE PROGRAM IDENTIFICATION *****
 C
@@ -5099,11 +5133,13 @@ C
       END IF
 #ifdef VAR_AUTHORS
          WRITE(IWUNIT,400)
- 400     FORMAT(/' Main authors of the SIRIUS module:'
+  400    FORMAT(/' Main authors of the SIRIUS module:'
      *   /T5,'Hans Joergen Aa. Jensen, Univ. Southern Denmark, Denmark',
      *       ' (principal author)',
      *   /T5,'Hans Agren,              Royal Inst. Technology, Sweden')
-         CALL CIAUTH(IWUNIT)
+         WRITE(IWUNIT,402)
+  402    FORMAT(/' Direct CI and density matrix routines:'
+     *   /T5,'Jeppe Olsen,             University of Aarhus,   Denmark')
          CALL TRAUTH(IWUNIT)
 c        WRITE(IWUNIT,410)
 c410     FORMAT(/,' Questions and correspondence should be directed',
@@ -5693,7 +5729,7 @@ C  /* Deck nevpt2inp */
 C
 C  2003 -- input for NEVPT2
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 3)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -5705,12 +5741,12 @@ C INFORB : NSYM
 C INFMP2 : NFRMP2(*)
 C INFPRI : IPRMP2
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infpt2.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infpt2.h"
 C
       DATA TABLE /'.FROZEN','.THRESH','.STATE'/
 C

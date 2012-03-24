@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REVLOG
 ===========================================================================
@@ -38,14 +38,14 @@ C     Purpose:
 C     Outer driver routine for solvent contribution 
 C     to E[4] times three vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -160,22 +160,22 @@ C
 C
 C     Purpose:
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( DH = 0.5D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
+#include "dummy.h"
 C
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
       DIMENSION VEC1(*),VEC2(*),VEC3(*),ZYM1(*),ZYM2(*),ZYM3(*)
@@ -494,23 +494,23 @@ C
      *            DEN1,UDV,WRK,LFREE,ZYM1,ZYM2,
      *            KZYVR,KZYV1,KZYV2,KZYV3,IGRSYM,ISYMV1,ISYMV2,ISYMV3)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      *            D4 = 4.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
+#include "dummy.h"
 C
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
       DIMENSION ZYM1(*),ZYM2(*)
@@ -710,23 +710,23 @@ C
      *            DEN1,UDV,WRK,LFREE,CMO,MJWOP,ZYM1,ZYM2,
      *            KZYVR,KZYV1,KZYV2,KZYV3,IGRSYM,ISYMV1,ISYMV2,ISYMV3)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      *            D4 = 4.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
 C
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
       DIMENSION ZYM1(*),ZYM2(*)
@@ -878,23 +878,23 @@ C
      *            DEN1,UDV,WRK,LFREE,CMO,MJWOP,ZYM1,
      *            KZYVR,KZYV1,KZYV2,KZYV3,IGRSYM,ISYMV1,ISYMV2,ISYMV3)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      *            D4 = 4.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
+#include "dummy.h"
 C
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
       DIMENSION VEC1(KZYV1),VEC2(KZYV2),VEC3(KZYV3),ETRS(KZYVR)
@@ -959,23 +959,23 @@ C
      *            DEN1,UDV,WRK,LFREE,CMO,MJWOP,ZYM1,ZYM2,ZYM3,
      *            KZYVR,KZYV1,KZYV2,KZYV3,IGRSYM,ISYMV1,ISYMV2,ISYMV3)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      *            D4 = 4.0D0, D6 = 6.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
+#include "dummy.h"
 C
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
       DIMENSION ZYM1(*),ZYM2(*),ZYM3(*)
@@ -1090,21 +1090,21 @@ C     Purpose:
 C     Memeory efficient routine for computing solvent contribution 
 C     to E[4] times three vectors. Replaces E4SOL in SCF calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infcr.h>
-#include <inftap.h>
-#include <qrinf.h>
+#include "infcr.h"
+#include "inftap.h"
+#include "qrinf.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI)

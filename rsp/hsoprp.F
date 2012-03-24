@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck hsoctl */
       SUBROUTINE HSOCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM_GP,WRK,LWRK)
@@ -39,17 +39,17 @@ C        Index vector, XINDX
 C
 C Output: Spin-orbit property vector returned in first elements of WRK
 C
-#include <implicit.h>
-#include <dummy.h>
-      DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK),NEEDSO(6)
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER*8 WORD
-      DATA NEEDSO/1,1,1,1,1,0/
+      DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
 C
-      PARAMETER(D0=0D0, D1=1D0, DM1=-1D0)
-      LOGICAL SO2TRA, MOEXIS, FOPEN, DO1, DO2, LORB, LCON
+      PARAMETER (D0=0D0, D1=1D0, DM1=-1D0)
+      DIMENSION NEEDSO(-4:6)
+      LOGICAL   SO2TRA, MOEXIS, FOPEN, DO1, DO2, LORB, LCON
       CHARACTER*8 LABEL
-      LOGICAL FNDLAB
-      EXTERNAL FNDLAB
+      LOGICAL   FNDLAB
+      EXTERNAL  FNDLAB
 C
 C Used from common blocks:
 C  MULD2H,ISMO,ISW,IOBTYP,IDBTYP,NISHT,NORBT,NASHT,NNASHX
@@ -63,23 +63,23 @@ C  INFPP: EXMOM
 C  INFRSP: ???,SOPPA
 C
 C-- common blocks:
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <trhso.h>
-#include <infhso.h>
-#include <infhyp.h>
-#include <infsmo.h>
-#include <infpp.h>
-#include <iratdef.h>
-#include <codata.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "trhso.h"
+#include "infhso.h"
+#include "infhyp.h"
+#include "infsmo.h"
+#include "infpp.h"
+#include "iratdef.h"
+#include "codata.h"
 C
       CALL QENTER('HSOCTL')
 C
@@ -264,6 +264,8 @@ C
 C
 C Read distributions
 C
+      NEEDSO(-4:6) = 0
+      NEEDSO( 1:5) = 1
       IDIST = 0
       KFREE = 1
       LFREE = LWRK1
@@ -448,15 +450,15 @@ C
 C  /* Deck hsoinp */
       SUBROUTINE HSOINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "trhso.h"
+#include "infhso.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE =  8 )
@@ -564,7 +566,7 @@ C  FVSO(P,Q) = SUM (X,Y) (XY|P^Q) D(XY) - SUM (K) 3/2*(PX|Y^Q) D(XY)
 C                                     - SUM (K) 3/2*(XQ|P^Y) D(XY)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C
@@ -573,17 +575,17 @@ C   INFIND : ISMO,IOBTYP,ICH,ISMO,IASH,IORB,NISH,NASH,NOCC,NORB
 C   INFHSO :
 C   WRKRSP : KSYMOP
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
+#include "trhso.h"
+#include "infhso.h"
 C
       DIMENSION H2(NORBT,NORBT)
       DIMENSION FCSO(NORBT,NORBT),FVSO(NORBT,NORBT)
@@ -900,19 +902,19 @@ C
 C   where PV(++)(P,Q,R,S) = <0| e(+,+)(pqrs) |0>
 C    and  PV(--)(P,Q,R,S) = <0| e(-,-)(pqrs) |0>
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
+#include "trhso.h"
+#include "infhso.h"
 C
 C
       DIMENSION QASO(NORBT,NASHT),QBSO(NORBT,NASHT)
@@ -1224,25 +1226,25 @@ C triangularly packed form
 C
 C Olav Vahtras
 C Sep 14, 1990
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FC(NORBT,NORBT)
       DIMENSION H2AC(NNASHX,NNASHX)
       DIMENSION GP(KZYVAR),XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <cbgetdis.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "cbgetdis.h"
+#include "trhso.h"
+#include "infhso.h"
 C
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -1398,7 +1400,7 @@ C  /* Deck h2acso */
 C
 C 20-Jun-1990 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2ACPK(NNASHX,NNASHX), H2SOAC(N2ASHX,NASHT,NASHT)
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -1407,10 +1409,10 @@ C Used from common blocks:
 C  INFORB : NASHT,NNASHX,N2ASHX
 C  INFIND : IROW()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('H2ACSO')
 C

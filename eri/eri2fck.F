@@ -21,34 +21,34 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck erifck */
       SUBROUTINE ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      *                  CCFBT,INDXBT,FCKTMP,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
 C
 C	I don't know if IFCTYP and ISYMDM is used properly in this 
 C	routine at the current stage, K.Ruud-jan96
 C
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <veclen.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <infpar.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "veclen.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "infpar.h"
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
      &	        FCKTMP(*)
@@ -244,23 +244,23 @@ C
 C  /* Deck erifok */
       SUBROUTINE ERIFOK(SO,IPNTCR,IODDCC,IPNTUV,FMAT,DMAT,NDMT,
      &                  IFCTYP,CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "eridst.h"
       DIMENSION SO(*), IPNTCR(MAXBCH,4), CCFBT(*), INDXBT(*),
      &          IPNTUV(KC2MAX,0:NRDER,2), WORK(LWORK), IODDCC(NRTOP),
      &          FMAT(NBASE,NBASE), DMAT(NBASE,NBASE), IFCTYP(NDMT)
-#include <cbieri.h>
-#include <aobtch.h>
-#include <ericom.h>
-#include <eribuf.h>
-#include <symmet.h>
-#include <hertop.h>
+#include "cbieri.h"
+#include "aobtch.h"
+#include "ericom.h"
+#include "eribuf.h"
+#include "symmet.h"
+#include "hertop.h"
 C
 C     Allocation for ERIFOK
 C
@@ -280,26 +280,26 @@ C  /* Deck erifo1 */
       SUBROUTINE ERIFO1(SO,INDEX,IPNTCR,IODDCC,IPNTUV,
      &                  BIN,IBIN,LBIN,FMAT,DMAT,NDMT,IFCTYP,
      &                  CCFBT,INDXBT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
-#include <eridst.h>
+#include "eridst.h"
       DIMENSION SO(*), INDEX(LBIN,4), CCFBT(*), INDXBT(*),
      &          IPNTCR(MAXBCH,4),
      &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2),
      &          BIN(LBIN), IBIN(LBIN,4),
      &          FMAT(NBASE,NBASE,NDMT), DMAT(NBASE,NBASE,NDMT),
      &          IFCTYP(NDMT)
-#include <cbieri.h>
-#include <ericom.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIFO1',-1)
 C
@@ -320,13 +320,13 @@ C
 C  /* Deck erindf */
       SUBROUTINE ERINDF(SO,INDEX,IPNTCR,IODDCC,IPNTUV,
      &                  BIN,IBIN,LBIN,CCFBT,INDXBT,INT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D1 = 1.0D0, DP5=0.50D0)
       INTEGER A, B, C, D, AB, CD, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, CTRIAC, CTRIBD, CTRIPQ,
@@ -338,14 +338,14 @@ C  /* Deck erindf */
      &          BIN(LBIN), IBIN(LBIN,4),
      &          IPNRST(0:7,3),
      &          IADCMP(MXAQN,MXAQN,2)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERINDF',-1)
@@ -548,11 +548,11 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D4 = 4.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       INTEGER P, Q, R, S
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST,NDMT,*), DMAT(NBAST,NBAST,NDMT),
      &          BUF(LBIN), IBUF(LBIN,4), IFCTYP(NDMT)
 C
@@ -590,8 +590,8 @@ C...........The multiplication factor should be one in this case.
       END
 C  /* Deck erisfk */
       SUBROUTINE ERISFK(FMAT,NBASE,NDMT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FMAT(NBASE,NBASE,NDMT)
       DO IDM = 1, NDMT
          DO I = 1, NBASE

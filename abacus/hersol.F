@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck rlmset */
       SUBROUTINE RLMSET_CBISOL(LMAX)
@@ -31,11 +31,11 @@ C
 C  Set some /cbisol/ variables which are used in some calls,
 C  also when DORLM is false.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  CBISOL : LCAVMX,LMTOT,LMNTOT
 C
-#include <cbisol.h>
+#include "cbisol.h"
 C
 C     transfer information to CBISOL (for SOLNUC)
       LCAVMX = LMAX
@@ -80,7 +80,7 @@ C
 C Used from common blocks:
 C  INFTAP : LUSOL
 C
-#include <inftap.h>
+#include "inftap.h"
 C
       IF (NOPTYP .NE. 2*L + 1) THEN
          WRITE (LUPRI,*) 'WRTSOL ERROR: NOPTYP .ne. 2*L+1'
@@ -143,10 +143,10 @@ C  CBISOL : LCAVMX,LMTOT,LMNTOT
 C  ORGCOM : CAVORG
 C  INFTAP : LUSOL
 C
-#include <symmet.h>
-#include <cbisol.h>
-#include <orgcom.h>
-#include <inftap.h>
+#include "symmet.h"
+#include "cbisol.h"
+#include "orgcom.h"
+#include "inftap.h"
 C
       CHARACTER*8 LABSOL(4)
       DIMENSION   FILL4(4)
@@ -1595,13 +1595,13 @@ C
      &          DERMAT(*), TEMPMA(NNBASX,NCOMP,-LCAVMX:LCAVMX),
      &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
      &          WORK(LWORK)
-#include <symmet.h>
-#include <cbisol.h>
-#include <orgcom.h>
-#include <mgsolt.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "symmet.h"
+#include "cbisol.h"
+#include "orgcom.h"
+#include "mgsolt.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "inftap.h"
 C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND
@@ -1764,14 +1764,14 @@ C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND,FNDLAB
 C
-#include <symmet.h>
-#include <cbisol.h>
-#include <mgsolt.h>
-#include <orgcom.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <chrnos.h>
+#include "symmet.h"
+#include "cbisol.h"
+#include "mgsolt.h"
+#include "orgcom.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "chrnos.h"
 C
       DATA (LBL3(I), I = 1, 3) /'X ','Y ', 'Z '/
       DATA (LBL6(I), I = 1, 6) /'XX','XY','XZ','YY','YZ','ZZ'/
@@ -1966,13 +1966,13 @@ C  /* Deck magsolexp */
 C
 C     K.Ruud, July-05
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "iratdef.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       LOGICAL EXP1VL
       DIMENSION GLM(LMTOT), TLM(LMTOT),
@@ -1982,13 +1982,13 @@ C
      &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
      &          DENMAT(*), WORK(LWORK)
       CHARACTER*8 LABINT(*)
-#include <symmet.h>
-#include <cbisol.h>
-#include <orgcom.h>
-#include <mgsolt.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "symmet.h"
+#include "cbisol.h"
+#include "orgcom.h"
+#include "mgsolt.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "inftap.h"
 C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND

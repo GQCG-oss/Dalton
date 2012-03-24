@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_REV_OLG
 !===========================================================================
@@ -132,10 +132,10 @@ C
 C  Open mo integral units required by this Sirius calculation,
 C  as specified in command input.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
-#include <iratdef.h>
+#include "iratdef.h"
 #include "lbmxsq.h"
 C
 C Used from common blocks:
@@ -146,15 +146,15 @@ C   INFTRA : LSRTAO, THRP
 C   CCOM   : THRS ! from hermit
 C   INFTAP : LU*
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <maxaqn.h>
-#include <ccom.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "maxaqn.h"
+#include "ccom.h"
+#include "inftap.h"
 C
       LOGICAL OPINTM, FNDLAB, OLDTRA, FEXIST
 C
@@ -275,22 +275,22 @@ C....       ISCR --  (AS SCR - ALLOWS INTEGER ADDRESSING)
 C....       MEMS --  LENGTH OF SCRATCH SORT AREA
 C....       MEMT --    **   *    **    TRANSFORMATION AREA
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*)
       INTEGER   IT(*)
-#include <iratdef.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "dummy.h"
 C
       PARAMETER (IBUFL = 500)
       INTEGER   IBUF(IBUFL), NAOS(8)
 C
       LOGICAL FEXIST, OLDDX
 C
-#include <priunit.h>
+#include "priunit.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
-#include <ibtdef.h>
+#include "inftra.h"
+#include "inftap.h"
+#include "ibtdef.h"
 C
       CALL QENTER('SORTA ')
 C
@@ -632,19 +632,19 @@ C....    FOR *SORTA* (Q.V.)
 C
 C....                        PETER R. TAYLOR   LUND   MAR *79
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (IBUFL = 500)
-#include <iratdef.h>
+#include "iratdef.h"
       DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*),IBUF(IBUFL)
       INTEGER   IT(*)
       LOGICAL FEXIST
 #include "lbmxsq.h"
 C
-#include <priunit.h>
+#include "priunit.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
-#include <ibtdef.h>
+#include "inftra.h"
+#include "inftap.h"
+#include "ibtdef.h"
 C
       CALL QENTER('SORTB ')
 C
@@ -900,7 +900,7 @@ C
      2       /'  PERCENT NON-ZERO INTEGRALS',F20.2)
       END
 C  /* Deck tracd */
-#include <vdir.h>
+#include "vdir.h"
       SUBROUTINE TRACD(ITRLVL,LUHALF,LUDA,CMOT,BUF,IBUF,OUTB,IOUTB,PQCD,
      &                 PQRD,TRI,ITSMO,ITSAO,ITSX,IT)
 C
@@ -922,21 +922,21 @@ C     CMOT = CMO(transposed)
 C
 C          ********** RELEASE 79 03 28 **********
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMOT(*),BUF(*),IBUF(*),OUTB(*),IOUTB(*),
      *          PQCD(MORBT,*),PQRD(*),TRI(*)
       INTEGER   ITSMO(*), ITSAO(*), ITSX(*), IT(*)
-#include <iratdef.h>
+#include "iratdef.h"
 #include "lbmxsq.h"
 C
-#include <priunit.h>
+#include "priunit.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
+#include "inftra.h"
+#include "inftap.h"
 C
       LOGICAL SKIPR
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       CALL QENTER('TRACD ')
 CHJ-START-840726
@@ -1007,7 +1007,7 @@ C     ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
   103          CALL READDX(LUDA,IADR,LDA22,IBUF)
                   IADR   = IBUF(LDA21)
                   LENGTH = IBUF(LDA22)
-#include <nosync.h>
+#include "nosync.h"
                   DO 104 I = 1,LENGTH
                      LDAI = IDABUF + I
                      IBL  = IBUF(LDAI)
@@ -1273,7 +1273,7 @@ C
       RETURN
       END
 C  /* Deck traab */
-#include <vdir.h>
+#include "vdir.h"
       SUBROUTINE TRAAB(ITRLVL,LUDA2,CMOT,BUF,IBUF,OUTB,IOUTB,ABCD,PBCD,
      &                 TRI,ITSMO,ITSAO,ITSW,ITSX,IT)
 C
@@ -1313,21 +1313,21 @@ C                27-Jul-1984 hjaaj /
 C                23-Mar-1984 hjaaj /
 C                11-Dec-1983 ha/hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMOT(*),BUF(*),IBUF(*),OUTB(*),IOUTB(*),
      *          ABCD(MORBT,*),PBCD(*),TRI(*)
       INTEGER   ITSMO(*), ITSAO(*), ITSW(*), ITSX(*), IT(*)
-#include <iratdef.h>
+#include "iratdef.h"
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
+#include "inftra.h"
+#include "inftap.h"
 C
       CHARACTER*8 TABLE(2),LAB123(3)
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       DATA TABLE /'MOLTWOEL','END INTM'/
       DATA LAB123/'********','********','********'/
@@ -1430,7 +1430,7 @@ C           ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
                IADR=IBUF(LDA21)
                LENGTH=IBUF(LDA22)
             IF(LENGTH.EQ.0) GO TO 106
-#include <nosync.h>
+#include "nosync.h"
                DO 104 I=1,LENGTH
                   IBL=IBUF(IDABUG+I)
                   MPQ=IBTAND(IBTSHR(IBL,16),IBT16)
@@ -1751,22 +1751,22 @@ C  CMO,   mo coefficients
 C  WORK,  work array
 C  KWORK, actual length of work array
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*), WORK(KWORK)
-#include <iratdef.h>
-#include <thrzer.h>
+#include "iratdef.h"
+#include "thrzer.h"
 #include "lbmxsq.h"
 C
 C Used from common blocks:
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <exeinf.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "exeinf.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
-#include <gnrinf.h>
+#include "inftra.h"
+#include "inftap.h"
+#include "gnrinf.h"
 C
       DIMENSION MFRO(8)
       LOGICAL VFIRST, FOPEN, DELDA, FEXIST
@@ -1853,12 +1853,12 @@ C  Based on:
 C     CASSCF:TRANSFORMATION SECTION.CONTROL ROUTINE
 C      ********** RELEASE 79 04 20 **********
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       INTEGER   ITSMO(*), ITSAO(*), ITSW(*), ITSX(*), IT(*)
       DIMENSION CMO(*), WORK(KWORK), MISH_TEST(8), MASH_TEST(8)
-#include <iratdef.h>
-#include <thrzer.h>
+#include "iratdef.h"
+#include "thrzer.h"
 #include "lbmxsq.h"
       PARAMETER (DM1 = -1.0D0)
 C
@@ -1866,15 +1866,15 @@ C Used from common blocks:
 C CBGETDIS : IAD*
 C INFDIM   : MWORK
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <exeinf.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "exeinf.h"
 #include "infdim.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <cbgetdis.h>
+#include "inftra.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "cbgetdis.h"
 C
       DIMENSION MFRO(8)
       LOGICAL FOPEN, DELDA, FEXIST
@@ -2542,7 +2542,7 @@ C    DO NOT CHANGE IDIST or WRK(KFREE1:KFREE2-1) in calling routine
 C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
-C     define NEEDTP(1:6)
+C     define NEEDTP(-4:6)
 C 100 CALL NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
 C     IF (IDIST .GT. 0) THEN
 C        KW1 = KFREE
@@ -2553,16 +2553,16 @@ C        GO TO 100
 C     END IF
 C
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFTAP : LUINTM,LBINTM
 C
-#include <inftap.h>
-#include <inftra.h>
+#include "inftap.h"
+#include "inftra.h"
 C   
 C
       SAVE KBUF, KIBUF, KNEXT
@@ -2596,7 +2596,7 @@ C        distributions must be available (needtp .gt. 0).
      &         'NXTH2M error, LVLMOL on LUINTM too small'
             WRITE (LUPRI,*) 'LVLMOL =',LVLMOL
             WRITE (LUPRI,*) 'need   :',LVLMIN
-            WRITE (LUPRI,*) 'NEEDTP :',(NEEDTP(J),J=1,6)
+            WRITE (LUPRI,*) 'NEEDTP :',(NEEDTP(J),J=-4,6)
             CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2M error, LVLMOL too small')
          END IF
@@ -2664,7 +2664,7 @@ C    Read next Mulliken two-electron integral distribution (**|cd)
 C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Input:
-C       NEEDTP(6); non-zero for needed (cd) distribution types
+C       NEEDTP(-4:6); non-zero for needed (cd) distribution types
 C                  if .gt. 0 all distributions of that type needed
 C       IDIST; .eq. 0 first read
 C              .gt. 1 intermediate read
@@ -2679,12 +2679,12 @@ C       BUF, IBUF
 C
 C ****************************************************************
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "inftap.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(LBINTM), IBUF(LBINTM)
-#include <priunit.h>
-      DIMENSION NEEDTP(6)
+#include "priunit.h"
+      DIMENSION NEEDTP(-4:6)
 C
 C
 C Used from common blocks:
@@ -2692,16 +2692,16 @@ C   INFORB : NORBT
 C   INFIND : JTACT,JTSEC,ISW(*),...
 C   INFTAP : LUINTM,LBINTM
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
       SAVE INDCDN, LENGTH, JBUF
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
 C ****************************************************************
 C
@@ -2827,7 +2827,7 @@ C    DO NOT CHANGE IDIST or WRK(KFREE1:KFREE2-1) in calling routine
 C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
-C     define NEEDTP(1:6)
+C     define NEEDTP(-4:6)
 C 100 CALL NXTH2D(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
 C     IF (IDIST .GT. 0) THEN
 C        KW1 = KFREE
@@ -2838,16 +2838,16 @@ C        GO TO 100
 C     END IF
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFTAP : LUINTD,LBINTD
 C
-#include <inftap.h>
-#include <inftra.h>
+#include "inftap.h"
+#include "inftra.h"
 C
       SAVE KBUF, KIBUF, KNEXT
       DATA KNEXT /-1/
@@ -2930,7 +2930,7 @@ C    Read next Dirac two-electron integral distribution <**|cd>
 C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Input:
-C       NEEDTP(6); non-zero for needed (cd) distribution types
+C       NEEDTP(i); non-zero for needed (cd) distribution types
 C                  if .gt. 0 all distributions of that type needed
 C       IDIST; .eq. 0 first read
 C              .gt. 1 intermediate read
@@ -2945,10 +2945,10 @@ C       BUF, IBUF
 C
 C ****************************************************************
 C
-#include <implicit.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "inftap.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(LBINTD),IBUF(LBINTD)
-      DIMENSION NEEDTP(6)
+      DIMENSION NEEDTP(-4:6)
 C
 C
 C Used from common blocks:
@@ -2956,16 +2956,16 @@ C   INFORB : NORBT
 C   INFIND : JTACT,JTSEC,ISW(*),...
 C   INFTAP : LUINTD,LBINTD
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
       SAVE INDCDN, LENGTH
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
 C ****************************************************************
 C
@@ -2990,7 +2990,7 @@ C *** Initialize H2CD
 C
       CALL DZERO(H2CD,N2ORBX)
 C
-C *** Read next distribution which is needed according to NEEDTP(6)
+C *** Read next distribution which is needed according to NEEDTP(*)
 C     into H2CD
 C
 C  ITYPCD values:  1=i*i :  2=t*i : 3=t*t : 4=a*i : 5=a*t : 6=a*a

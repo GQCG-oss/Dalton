@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccefffock */
 *======================================================================*
@@ -61,41 +61,41 @@ C
       IMPLICIT NONE
       INTEGER  LUBAR0
 #else
-#include <implicit.h>
+#include "implicit.h"
 #endif
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ccorb.h>
-#include <infind.h> 
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <drw2el.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccr1rsp.h>
-#include <chrxyz.h>
-#include <inftap.h>
-#include <ccisao.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccorb.h"
+#include "infind.h" 
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "drw2el.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccr1rsp.h"
+#include "chrxyz.h"
+#include "inftap.h"
+#include "ccisao.h"
+#include "r12int.h"
 C
       LOGICAL LOCDBG ! debug flag
       PARAMETER (LOCDBG = .FALSE.)

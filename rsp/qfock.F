@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -61,8 +61,8 @@ C   = FDTI which is returned
 C
 C FDTI should be called with NOSIM=1 (but programmed here for .LT. 1)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION FC(*),ZYMATB(NORBT,NORBT,*),ZYMATC(NORBT,NORBT,*)
       DIMENSION FDTI(NORBT,NORBT,*),WRK(*),CMO(*)
@@ -71,13 +71,13 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <thrzer.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "thrzer.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 C
 C -- local constants
 C
@@ -297,7 +297,7 @@ c/* Deck q3fock */
      &   FCIN,FOIN,FC,FO,
      &   WORK,LWORK
      &   )
-#include <implicit.h>
+#include "implicit.h"
 C
 C Input: response vectors, length, symmetry and spin
 C
@@ -321,12 +321,12 @@ C
 C
 C External data
 C
-#include <inforb.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <thrzer.h>
-#include <priunit.h>
-#include <infvar.h>
+#include "inforb.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "thrzer.h"
+#include "priunit.h"
+#include "infvar.h"
 C
 C External procedures
 C
@@ -643,8 +643,8 @@ C
 C /* Deck MOTOAO */
 C
       SUBROUTINE MOTOAO(XMO,XAO,CMO,XSYM,WRK,LWRK)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION WRK(LWRK)
       CALL QENTER('MOTOAO')
       KFREE = 1
@@ -658,13 +658,13 @@ C
 C
 C MO-AO Transforms XMO, add result to XAO (is not initialized to zero)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Input XMO  
 C       CMO
 C       XSYM
 C
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION XMO(NORBT,NORBT), CMO(*)
       INTEGER XSYM
 C
@@ -713,8 +713,8 @@ C
 C /* Deck AOTOMO */
 C
       SUBROUTINE AOTOMO(XAO,XMO,CMO,XSYM,WRK,LWRK)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION WRK(LWRK)
       CALL QENTER('AOTOMO')
       KFREE = 1
@@ -728,13 +728,13 @@ C
 C
 C MO-AO Transforms XAO, add result to XMO (is not initialized to zero)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Input XMO  
 C       CMO
 C       XSYM
 C
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION XAO(NBAST,NBAST), CMO(*)
       INTEGER XSYM
 C
@@ -783,7 +783,7 @@ C
 C
 C  DK = D*S*E - E*S*D  ([k,D](T) in ao basis)
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER N
       DIMENSION E(N,N), D(N,N), DK(N,N), S(N,N)
       PARAMETER (D0=0.0D0, D1=1.0D0, DM1=-D1)
@@ -797,7 +797,7 @@ C
 C
 C  FK = S*E*F - F*E*S  ([k,F] in ao basis)
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER N
       DIMENSION E(N,N), F(N,N), FK(N,N), S(N,N)
       DIMENSION WRK(LFREE)
@@ -805,12 +805,12 @@ C
       END
 
       SUBROUTINE GET_H1(S,KEY,WRK,LWRK)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION S(NBAST,NBAST)
       CHARACTER*(*) KEY
       DIMENSION WRK(LWRK)
-#include <priunit.h>
+#include "priunit.h"
 C
 C Local (automatic)
 C
@@ -829,29 +829,29 @@ C
       END
 
       SUBROUTINE MAOPRI(A,TEXT)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION A(NBAST,NBAST)
       CHARACTER*(*) TEXT
       CALL MSQPRI(A,NBAST,TEXT)
       END
 
       SUBROUTINE MMOPRI(A,TEXT)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION A(NBAST,NBAST)
       CHARACTER*(*) TEXT
       CALL MSQPRI(A,NORBT,TEXT)
       END
 
       SUBROUTINE MSQPRI(A,N,TEXT)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER N
       DIMENSION A(N,N)
       CHARACTER*(*) TEXT
       INTEGER INDENT
       PARAMETER (INDENT = 14)
-#include <priunit.h>
+#include "priunit.h"
       IF (TEXT .NE. ' ') CALL HEADER(TEXT,INDENT)
       CALL OUTPUT(A,1,N,1,N,N,N,1,LUPRI)
       END

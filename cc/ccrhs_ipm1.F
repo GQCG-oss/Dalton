@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CCRHS_IPM1(XINT,XINTP,XINTM,SCRAB,INDV1,INDV2,
      *                     ISYMAB,ISYMG,NUMG,IG1,IG2,IOPT)
@@ -38,14 +38,14 @@ C              If IOPT = 0, XINT in input is packed  (a>=g|bd)
 C              If IOPT = 1, XINT in input is squared (ag|bd)
 C        
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       PARAMETER(ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),XINTP(*),XINTM(*),SCRAB(*)
       DIMENSION INDV1(*), INDV2(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C

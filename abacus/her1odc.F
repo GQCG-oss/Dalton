@@ -21,14 +21,14 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck getodc */
       SUBROUTINE GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,KINODC,
      &                  ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,WORK,LWORK,
      &                  CORPX,CORPY,CORPZ,DONUC1,DOMOM1,ORIGIN,INTTYP)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL DIFODC, KINODC, ONECEN, DONUC1, DOMOM1
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          WORK(LWORK), ORIGIN(3)
@@ -72,8 +72,8 @@ C  /* Deck getod1 */
      &                  JMAXTP,ODCUND,DIFODC,KINODC,ONECEN,EXPA,EXPB,
      &                  IPRINT,SAAB13,EXPPI,CORPX,CORPY,CORPZ,DONUC1,
      &                  DOMOM1,ORIGIN,INTTYP)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL DIFODC, KINODC, ONECEN, DONUC1, DOMOM1
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &      ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,0:JMAXM,3)
@@ -148,7 +148,7 @@ C  /* Deck copodc */
 C
 C     Copy expansion coefficients from ODCUND to ODC
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -168,12 +168,12 @@ C  /* Deck oneodc */
 C
 C     TUH 91
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, A, B, AB
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
+#include "onecom.h"
 C
       PAX = CORPX - CORAX
       PAY = CORPY - CORAY
@@ -243,8 +243,8 @@ C  /* Deck dodca */
 C
 C     TUH, Recursive calculation of coefficients implemented dec.91, KR
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, D, T, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
@@ -291,8 +291,8 @@ C  /* Deck dodcb */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, D, T, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
@@ -339,13 +339,13 @@ C  /* Deck modca */
 C
 C     K.Ruud Nov 1991
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T, D, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3), ORIGIN(3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
+#include "onecom.h"
       OAX = CORAX - ORIGIN(1)
       OAY = CORAY - ORIGIN(2)
       OAZ = CORAZ - ORIGIN(3)
@@ -395,13 +395,13 @@ C  /* Deck modcb */
 C
 C     K.Ruud, Aug 1992
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T, D, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),ORIGIN(3)
-#include <onecom.h>
+#include "onecom.h"
 C
       OBX = CORBX - ORIGIN(1)
       OBY = CORBY - ORIGIN(2)
@@ -452,8 +452,8 @@ C  /* Deck todc */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
@@ -506,15 +506,15 @@ C     to store coeff. No moments involved.
 C
 C     H. Heiberg
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <pi.h>
+#include "pi.h"
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
-#include <onecom.h>
+#include "onecom.h"
 C
       DO 10 A = 0, JMAXA
          FA = (D2*A + 1.0D0)/(D2*EXPA)
@@ -556,15 +556,15 @@ C  /* Deck defodc */
 C
 C     Modified differentiated coeffitions.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, D
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <pi.h>
+#include "pi.h"
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
-#include <onecom.h>
+#include "onecom.h"
 C
       DO 10 A = 0, JMAXA
          FA = (D2*A + 1.0D0)/(D2*EXPA)
@@ -607,13 +607,13 @@ C     K.Ruud, Sept 2000. Code for B-derivative integrals at the same
 C     time as we have A-derivative integrals. Needed for pVp integrals
 C     of the Douglas-Kroll transformation.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T, D, X, M
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
+#include "onecom.h"
 C
       TEXPB1 = EXPB + EXPB
       DO 10 M = 1, JMAXM

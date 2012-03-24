@@ -9,7 +9,7 @@ C
 C     Integer version of ORDER3 by T. Saue.
 C     See the file gp/gpsaue.F for further details.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IVAL(*)
       PARAMETER (MONE = -1)
 
@@ -53,10 +53,10 @@ C        IOPT = 0: Close and delete the files.
 C
 C        IOPT > 0: Close and keep the files.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LSYM(MSYM), LUNIT(MSYM)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       LOGICAL OLDDX
 
@@ -119,10 +119,10 @@ C
 C       The file is assumed open on entry, with logical unit number
 C       LUNIT.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TAM(LTAM)
       INTEGER BJ
-#include <ccsdsym.h>
+#include "ccsdsym.h"
 
       IREC = BJ + 1
       WRITE(LUNIT,REC=IREC) (TAM(I),I=1,LTAM)
@@ -145,10 +145,10 @@ C
 C       The file is assumed open on entry, with logical unit number
 C       LUNIT.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TAM(LTAM)
       INTEGER BJ
-#include <ccsdsym.h>
+#include "ccsdsym.h"
 
       IREC = BJ + 1
       READ(LUNIT,REC=IREC) (TAM(I),I=1,LTAM)
@@ -196,12 +196,12 @@ C     The symmetry index on the file names refer to the symmetry of
 C     the J-index (vector index); this is, of course, irrelevant for
 C     total symmetric Cholesky vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LSYM(MSYM),LUNIT(MSYM)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <cyit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "cyit.h"
 
       LOGICAL OLDDX
 
@@ -331,9 +331,9 @@ C     Notes:
 C       The file is assumed open on entry, with logical unit number
 C       LUNIT.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(NAI,NVEC)
-#include <cyit.h>
+#include "cyit.h"
 
       TIMT = SECOND()
       DO JVEC = 1,NVEC
@@ -356,9 +356,9 @@ C     Notes:
 C       The file is assumed open on entry, with logical unit number
 C       LUNIT.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(NAI,NVEC)
-#include <cyit.h>
+#include "cyit.h"
 
       TIMT = SECOND()
       DO JVEC = 1,NVEC
@@ -376,7 +376,7 @@ C
 C     Purpose:
 C        Read record IREC from direct access file.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DATA(LEN)
 
       READ(LUNIT,REC=IREC) (DATA(I),I=1,LEN)
@@ -389,7 +389,7 @@ C
 C     Purpose:
 C        Write record IREC from direct access file.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DATA(LEN)
 
       WRITE(LUNIT,REC=IREC) (DATA(I),I=1,LEN)
@@ -418,12 +418,12 @@ C                       IND1 and IND2: dummies.
 C
 C     IF (REDUCE): IND1 must contain reduce index array on input.
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       DIMENSION CHOVEC(*), WORK(LWORK)
       INTEGER IND1(*), IND2(*)
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CHO_READN')
@@ -491,14 +491,14 @@ C     Purpose:
 C        Read the reduce index vector from the Cholesky decomposition
 C        into work space. On exit, LIND1 is the length of the index array.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <iratdef.h>
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "iratdef.h"
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_GETIND1')
@@ -547,7 +547,7 @@ C     Thomas Bondo Pedersen, July 2002.
 C
 C     Purpose: Read reduce index array.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IND1(LEN)
 
       LOGICAL LOPEN
@@ -584,11 +584,11 @@ C     Purpose:
 C        Function MEMRD returns the memory needed in
 C        CHO_READN (incl. call to CC_GETCHO).
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccsdsym.h"
 
       MEMRD = 1
 
@@ -646,10 +646,10 @@ C        ITYP = 3: F(ia)
 C
 C        LUVEC: Unit number.
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       LOGICAL OLDDX
 
@@ -719,7 +719,7 @@ C     Thomas Bondo Pedersen, February 2003.
 C
 C     Cheat the CC_CYI* I/O routines.
 C
-#include <implicit.h>
+#include "implicit.h"
 
       JSIDE = ISIDE
 
@@ -749,13 +749,13 @@ C
 C     ISYCHO is the symmetry of the vector index J, and ISIDE specifies
 C     which transformation we are doing.
 C
-#include <implicit.h>
-#include <chocc2.h>
-#include <chocc2lhs.h>
-#include <chocc2rhs.h>
-#include <chocc2ftr.h>
-#include <priunit.h>
-#include <cyit.h>
+#include "implicit.h"
+#include "chocc2.h"
+#include "chocc2lhs.h"
+#include "chocc2rhs.h"
+#include "chocc2ftr.h"
+#include "priunit.h"
+#include "cyit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_CYIOP')
@@ -849,16 +849,16 @@ C     ISIDE  determines which files are used (according to
 C            type of Y intermediates, i.e. LH trf., gr.state,
 C            or RH trf.)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION YIM(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <chocc2lhs.h>
-#include <chocc2rhs.h>
-#include <chocc2ftr.h>
-#include <priunit.h>
-#include <cyit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "chocc2lhs.h"
+#include "chocc2rhs.h"
+#include "chocc2ftr.h"
+#include "priunit.h"
+#include "cyit.h"
 
       INTEGER IADR, ICOL, LROW
 
@@ -912,16 +912,16 @@ C     ISIDE  determines which files are used (according to
 C            type of Y intermediates, i.e. LH trf., gr.state,
 C            or RH trf.)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION YIM(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <chocc2lhs.h>
-#include <chocc2rhs.h>
-#include <chocc2ftr.h>
-#include <priunit.h>
-#include <cyit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "chocc2lhs.h"
+#include "chocc2rhs.h"
+#include "chocc2ftr.h"
+#include "priunit.h"
+#include "cyit.h"
 
       INTEGER IADR, ICOL, LROW
 
@@ -979,18 +979,18 @@ C
 C     Note: Use CC_CYIRDF for full read without using "local" index
 C           arrays.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION YIM(*)
       INTEGER   IOFA1(8), LVIRA(8), NX1AMA(8)
       INTEGER   IX1AMA(8,8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <chocc2lhs.h>
-#include <chocc2rhs.h>
-#include <chocc2ftr.h>
-#include <priunit.h>
-#include <cyit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "chocc2lhs.h"
+#include "chocc2rhs.h"
+#include "chocc2ftr.h"
+#include "priunit.h"
+#include "cyit.h"
 
       INTEGER IADR, ICOL, LROW
 
@@ -1132,18 +1132,18 @@ C
 C     Note: Use CC_CYIWRF for full write without using "local" index
 C           arrays.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION YIM(*)
       INTEGER   IOFA1(8), LVIRA(8), NX1AMA(8)
       INTEGER   IX1AMA(8,8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <chocc2lhs.h>
-#include <chocc2rhs.h>
-#include <chocc2ftr.h>
-#include <priunit.h>
-#include <cyit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "chocc2lhs.h"
+#include "chocc2rhs.h"
+#include "chocc2ftr.h"
+#include "priunit.h"
+#include "cyit.h"
 
       INTEGER IADR, ICOL, LROW
 
@@ -1276,13 +1276,13 @@ C     Purpose: Initialize Y intermediates on disk.
 C
 C     NOTE: The number of Y intermediates must be passed in NUMCHO !!!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
       INTEGER   NUMCHO(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <cyit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "cyit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_CYINI')
@@ -1342,10 +1342,10 @@ C
 C        LUNIT: Unit number.
 C        ISYM : Symmetry of the intermediates.
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       LOGICAL OLDDX
 
@@ -1415,10 +1415,10 @@ C     Thomas Bondo Pedersen, February 2003.
 C
 C     Purpose: Write Cholesky CC2 restart file.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T1AM(*), OMEGA1(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       CHARACTER*10 FILRST
       PARAMETER (FILRST = 'CHOCC2.RST')
@@ -1458,12 +1458,12 @@ C        IFAIL = 1: there is a problem with the amount of data on file:
 C                   The length of T1AM and OMEGA1 is not equal to NT1AMX.
 C                   Nothing is read in this case: T1AM and OMEGA1 undefined!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T1AM(*), OMEGA1(*)
       LOGICAL RDE, RDT, RDO
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CHO_RDRST')
@@ -1554,13 +1554,13 @@ C     RDE = .TRUE. : read POTNUC and ESCF
 C     RDF = .TRUE. : read FOCKD
 C     RDC = .TRUE. : read CMO
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), FOCKD(*), WORK(LWORK)
       LOGICAL RDE, RDF, RDC
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       CHARACTER*6 FSIRFC
       PARAMETER (FSIRFC = 'SIRIFC')
@@ -1630,8 +1630,8 @@ C     Thomas Bondo Pedersen, February 2003.
 C
 C     Purpose: Read information for MO decomposition.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 
       INTEGER NTOVEC(NSYM), NCOLUM(NSYM)
       DIMENSION XDIANL(3,NSYM)
@@ -1674,7 +1674,7 @@ C     Thomas Bondo Pedersen, February 2003.
 C
 C     Purpose: Save information for MO decomposition.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER NTOVEC(NSYM), NCOLUM(NSYM)
       DIMENSION XDIANL(3,NSYM)
       CHARACTER*(*) FILSAV

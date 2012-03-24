@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_MAOMAO(TRANSA,TRANSB,ALPHA,AMAT,ISYMA,BMAT,ISYMB,
@@ -44,9 +44,9 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REVLOG
 ===========================================================================
@@ -39,18 +39,18 @@ C     Purpose:
 C     Outer driver routine for solvent contribution 
 C     to E[3] times two vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infcr.h>
+#include "infcr.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -152,17 +152,17 @@ C OVLAP = <L|R>, DEN1 = <L|...|R>
 C NUCFLG indicates if T(l,m) = TN(l,m) or T(l,m) = TE(l,m)
 C IKLVL is the number of times T(l,m) is to be one-index tranformed
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "infrsp.h"
 C
       LOGICAL NUCFLG
       INTEGER ADDFLG
@@ -289,21 +289,21 @@ C
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
      *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
      *     DBGFLG)
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0, DM2 = -2.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*),ISYRLM(2*LSOLMX+1)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -391,21 +391,21 @@ C
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
      *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
      *     DBGFLG)
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*),ISYRLM(2*LSOLMX+1)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -491,21 +491,21 @@ C
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
      *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
      *     DBGFLG)
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D1 = 1.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*),ISYRLM(2*LSOLMX+1)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -586,21 +586,21 @@ C
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
      *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
      *     DBGFLG)
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*),ISYRLM(2*LSOLMX+1)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -785,22 +785,22 @@ C     Purpose:
 C     Memeory efficient routine for computing solvent contribution 
 C     to E[3] times two vectors. Replaces E3SOL in SCF calculations.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infcr.h>
-#include <inftap.h>
-#include <qrinf.h>
+#include "infcr.h"
+#include "inftap.h"
+#include "qrinf.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI)

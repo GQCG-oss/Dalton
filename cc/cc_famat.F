@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cc_famat */
 *=====================================================================*
@@ -66,20 +66,20 @@ c /* deck cc_famat */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <iratdef.h>
-#include <cbieri.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <maxorb.h>
-#include <distcl.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cclists.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "cbieri.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "maxorb.h"
+#include "distcl.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cclists.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -791,13 +791,13 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -1306,11 +1306,11 @@ ctest
 * Christof Haettig, May 2003
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclists.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclists.h"
+#include "ccroper.h"
 
       CHARACTER*(25) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCSDT_FA_SETUP> ')  
@@ -1504,14 +1504,14 @@ C     -------------------------
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <ccr1rsp.h>
-#include <ccroper.h>
-#include <ccexci.h>
-#include <cclists.h>
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "ccr1rsp.h"
+#include "ccroper.h"
+#include "ccexci.h"
+#include "cclists.h"
 
       LOGICAL LOCDBG
       PARAMETER ( LOCDBG = .FALSE. )
@@ -2154,10 +2154,10 @@ c       -------------------------------------------------
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
 
       CHARACTER FNINTER*(*)
       CHARACTER*3 LSTR_INTER(*), LISTB, LISTC

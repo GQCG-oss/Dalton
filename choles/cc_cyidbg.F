@@ -8,13 +8,13 @@ C
 C     It is assumed that the CC2 energy code has completed at least
 C     one iteration so that all MO Cholesky files are available.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYIDBG')
@@ -131,14 +131,14 @@ C
 C     Note: The Y intermediates and MO Cholesky vectors must be
 C           available on disk.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHOEIMDBG')
@@ -383,11 +383,11 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Debug CC_LAMPT using CCLR_LAMTRA.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_LAMPTDBG')
@@ -571,10 +571,10 @@ C  /* Deck cc_lamchk */
       SUBROUTINE CC_LAMCHK(TARGET,TEST,ISYM,TRGNRM,TSTNRM,
      &                     ERRMIN,ERRMAX,IOPT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TARGET(*), TEST(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       ERRMIN = 1.0D10
       ERRMAX = -1.0D10
@@ -631,13 +631,13 @@ C  /* Deck cc_chotgdbg */
 C
 C     Thomas Bondo Pedersen, January 2003.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOTGDBG')
@@ -971,10 +971,10 @@ C  /* Deck dbgdifai */
       SUBROUTINE DBGDIFAI(TARGET,TEST,TRGNRM,TSTNRM,ERRMIN,ERRMAX,
      &                    ISYMAI)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TARGET(*), TEST(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       ERRMIN = 1.0D10
       ERRMAX = -1.0D10
@@ -1004,16 +1004,16 @@ C     Purpose: Debug CC_CHOCIM.
 C
 C     It is assumed that CC_CIA is bug-free!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <priunit.h>
-#include <ciarc.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "priunit.h"
+#include "ciarc.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHOCIMDBG')
@@ -1253,15 +1253,15 @@ C                -    sum(Jj) L(ja,J) sum(b)  L(ib,J) * C(bj)
 C                + 2 * sum(J) L(ia,J) sum(bj) L(bj,J) * X(bj)
 C                -    sum(Jj) L(ij,J) sum(b)  L(ba,J) * X(bj)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), SIGMA1(*), X1AM(*), CIM(*)
       DIMENSION WORK(LWORK)
       LOGICAL CALY, CALX, CALC
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER* 14 SECNAM
       PARAMETER (SECNAM = 'CC_CHOLTRGIJHD')
@@ -1544,12 +1544,12 @@ C
 C     Purpose: Debug routines called by CC_CHOATR for ISIDE = -1.
 C              CC_CYI, however, is assumed correct.....
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SIGMA1(*), X1AM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "priunit.h"
 
       LOGICAL FALS, TRU
       PARAMETER (FALS = .FALSE., TRU = .TRUE.)
@@ -1779,11 +1779,11 @@ C
 C     Purpose: Debug E contributions for LH trf.
 C              SIGMA1 is initialized here...
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SIGMA1(*), X1AM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_ECNLDBG')
@@ -1887,14 +1887,14 @@ C
 C     N.B. most of this is internal consistency checking, not really
 C          debugging....
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <chocc2.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "chocc2.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOXIDBG')
@@ -2200,10 +2200,10 @@ C  /* Deck dbgdifij */
       SUBROUTINE DBGDIFIJ(TARGET,TEST,TRGNRM,TSTNRM,ERRMIN,ERRMAX,
      &                    ISYMIJ)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TARGET(*), TEST(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       ERRMIN = 1.0D10
       ERRMAX = -1.0D10
@@ -2232,13 +2232,13 @@ C     Thomas Bondo Pedersen, February 2003.
 C
 C     Purpose: debug CC_CHOTG2.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), XLAMD2(*), X1AM(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHOTG2DBG')

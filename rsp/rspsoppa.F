@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck setsoppa */
       SUBROUTINE SETSOPPA
@@ -33,21 +33,21 @@ C
 C  Modified by K.Ruud in Dec.-96 in order to avoid static allocation of 
 C  large particle-hole matrices
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB : NSYM,MULD2H(8,8),NRHF(),NVIR(),...
 C   INFMP2 : ...,NFRMP2(),IFRMP2(NORBT),...
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infmp2.h>
-#include <infsop.h>
-#include <infind.h>
-#include <infdim.h>
-#include <iratdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infmp2.h"
+#include "infsop.h"
+#include "infind.h"
+#include "infdim.h"
+#include "iratdef.h"
 C
       CALL QENTER('SETSOPPA')
 C
@@ -140,16 +140,16 @@ C
 C  /* Deck set2soppa */
       SUBROUTINE SET2SOPPA(ABSADR,ABTADR,IJSADR,IJTADR,IJ1ADR,IJ2ADR,
      &                     IJ3ADR,IADR1)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER A,AA,B,BEND,ASYM,BSYM,ABSYM,ABSNDX,ABTNDX,ABSADR,ABTADR
       PARAMETER (IBIG = -100 000 000)
-#include <maxorb.h>
-#include <maxash.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsop.h>
-#include <infmp2.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infsop.h"
+#include "infmp2.h"
+#include "infind.h"
 C
       DIMENSION ABSADR(NORBT,NORBT), ABTADR(NORBT,NORBT),
      &          IJSADR(NISHT,NISHT,NSYM), IJTADR(NISHT,NISHT,NSYM),
@@ -275,14 +275,14 @@ C IN ORDER TO ACCOUNT FOR THE NON-HERMITICITY.
 C
 C 940726-hjaaj: corrected code for NSIM .gt. 1
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       DIMENSION FCONE(N2ORBX,*), ORBE(NORBT,NORBT), FC(*)
       DIMENSION WRK(*), ZYMAT(NORBT,NORBT,*), TZYMAT(NORBT,NORBT,*)
@@ -406,14 +406,14 @@ C Copyright by Martin Packer 251193. In formulas below
 C i,j,k.. are occupied and a,b,c... are virtual orbitals.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
 C
       DIMENSION  DONEPT(NORBT,NORBT)
 C
@@ -440,17 +440,17 @@ C Copyright by Martin Packer 191193. In formulas below
 C i,j,k.. are occupied and a,b,c... are virtual orbitals.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
-#include <inforb.h>
-#include <orbtypdef.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "inforb.h"
+#include "orbtypdef.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       DIMENSION H2(NORBT,NORBT), FCONE(N2ORBX,*), COEMP2(*)
       DIMENSION DONEPT(NORBT,NORBT)
@@ -658,16 +658,16 @@ C ISEL=1 OCC-OCC DISTRIBUTION
 C ISEL=4 OCC-VIRT DISTRIBUTION
 C ISEL=6 VIRT-VIRT DISTRIBUTION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       DIMENSION FCONE(NORBT,NORBT), WRK(*), H2XP(NPHMAX)
       DIMENSION COEMP2(*), H2X(NORBT,NORBT)
@@ -825,16 +825,16 @@ C Copyright by Martin Packer 251193. In formulas below
 C i,j,k.. are occupied and a,b,c... are virtual orbitals.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infmp2.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infmp2.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "wrkrsp.h"
 C
       DIMENSION ZYMAT(NORBT,NORBT,*), DONEPT(NORBT,*)
       DIMENSION STWO(NORBT,NORBT,*), SVEC(KZYVAR,*)
@@ -904,16 +904,16 @@ C
 C Changed to construction of A(2) only. 940916-ekd
 C A new routine is then added to symmetrise A.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       DIMENSION COEMP2(*),H2(NORBT,NORBT),A2TEMP(NORBT,NORBT)
       DIMENSION COEUNP(NORBT,NORBT)
@@ -959,15 +959,15 @@ C which is in A2TEMP (outside called XINDX).
 C Adapted by Erik K. Dalskov from HERM_A
 C written by Martin J. Packer.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infmp2.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infmp2.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       DIMENSION FCONE(NORBT,NORBT,*)
       DIMENSION A2TEMP(NORBT,NORBT), ZYMAT(NORBT,NORBT,*)
@@ -1040,18 +1040,18 @@ C Copyright 11/4-1994 by Erik K. Dalskov
 C
 C Purpose: Construct D-matrix in SOPPA
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER ABSADR, ABTADR, A, AA, B, BB, ABSYM, BSYM
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsop.h>
-#include <infmp2.h>
-#include <infrsp.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infsop.h"
+#include "infmp2.h"
+#include "infrsp.h"
+#include "infind.h"
 C
       DIMENSION ABSADR(NORBT,NORBT), ABTADR(NORBT,NORBT), 
      &          IJSADR(NISHT,NISHT,NSYM), IJTADR(NISHT,NISHT,NSYM),
@@ -1149,18 +1149,18 @@ C             2p-2h trial vector with a C-matrix for SOPPA.
 C
 C     Copyright 11/7-1994 by Erik K. Dalskov
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infmp2.h>
-#include <infsop.h>
-#include <infind.h>
-#include <scbrhf.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infmp2.h"
+#include "infsop.h"
+#include "infind.h"
+#include "scbrhf.h"
 C
       DIMENSION H2(NORBT,*),FVTD(NORBT,NORBT,*),ZYCVEC(KZCONF,*),WRK(*)
       DIMENSION XINDX(*)
@@ -1238,18 +1238,18 @@ C     Copyright 11/7-1994 by Erik K. Dalskov
 C
 C     Triplet implemented 22 Feb. 1995 by Thomas Enevoldsen (tec)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsop.h>
-#include <infmp2.h>
-#include <infind.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infsop.h"
+#include "infmp2.h"
+#include "infind.h"
+#include "infrsp.h"
 C
       DIMENSION UNPS(NP,*),ZYCVEC(*)
       DIMENSION ABSADR(NORBT,NORBT), ABTADR(NORBT,NORBT)
@@ -1390,18 +1390,18 @@ C
 C     Copyright 11/7-1994 by Erik K. Dalskov
 C     Revision 940711/940726 hjaaj
 C     Triplet case implementet 21 feb. 1995 by Thomas Enevoldsen (tec)
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsop.h>
-#include <infmp2.h>
-#include <infind.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infsop.h"
+#include "infmp2.h"
+#include "infind.h"
+#include "infrsp.h"
 C
 C
       DIMENSION EVECS(KZYVAR,*),H2(NORBT,*),WRK(*)
@@ -1624,12 +1624,12 @@ C
 C     Copyright 11/7-1994 by Erik K. Dalskov
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infrsp.h>
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infrsp.h"
 C
       DIMENSION EVECS(KZYVAR,*),ZYCVEC(KZCONF,*),SOPCL(*)
 C
@@ -1663,24 +1663,24 @@ C     element IG in a 2p-2h vector
 C
 C     Copyright 11/7-94 by Erik K. Dalskov
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
 C
       DIMENSION ABSADR(NORBT,NORBT), ABTADR(NORBT,NORBT),
      &          IJSADR(NISHT,NISHT,NSYM), IJTADR(NISHT,NISHT,NSYM),
      &          IJ1ADR(NISHT,NISHT,NSYM), IJ2ADR(NISHT,NISHT,NSYM),
      &          IJ3ADR(NISHT,NISHT,NSYM)
-#include <infpri.h>
-#include <inforb.h>
-#include <infsop.h>
-#include <infmp2.h>
-#include <infind.h>
-#include <infrsp.h>
+#include "infpri.h"
+#include "inforb.h"
+#include "infsop.h"
+#include "infmp2.h"
+#include "infind.h"
+#include "infrsp.h"
 C
 C
       INTEGER A,AA,B,BB,C,CC,D,DD,CSYM,DSYM,ABSYM,DIFF,DISC,ASYM,BSYM,
@@ -2012,16 +2012,16 @@ C     for use in SOPPA for triplet properties.
 C
 C     Copyright 941122 Erik K. Dalskov
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       INTEGER ASYM,BSYM,AST,AEND,BB1,B1,B1IOFF,AA,A,AIOFF1,BB
 C
@@ -2082,12 +2082,12 @@ C     where D(0) is the D-matrix in SOPPA and
 C     GP is the 2p-2h property gradient vector
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infrsp.h>
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infrsp.h"
 C
       DIMENSION GP(KZYVAR), DINVGP(KZYVAR), DIAG(*)
 C
@@ -2121,14 +2121,14 @@ C  CALCULATES THE SECOND-ORDER CORRECTION TO AVERAGE VALUE
 C
 C  Programmed 14/12-1993 by Erik K. Dalskov
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION PRPMO(NORBT,NORBT), DONEPT(NORBT,NORBT)
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infmp2.h"
 C
 C
          DO 50 IASYM = 1,NSYM
@@ -2158,17 +2158,17 @@ C          + sum_b A_ib D_ba - sum_j D_ij A_ja
 C i,j,k.. are occupied and a,b,c... are virtual orbitals.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infmp2.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infmp2.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "wrkrsp.h"
 C
       DIMENSION DONEPT(NORBT,NORBT), PRPMO(NORBT,NORBT)
       DIMENSION PRPSE(NORBT,NORBT)
@@ -2249,7 +2249,7 @@ C 21-Jul-1992 Hinne Hettema Average orbital part if necessary.
 C 030394 - mjp written for SOPPA case
 C          where PRPSE are the second order corrections
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION PRPMO(NORBT,NORBT),PRPSE(NORBT,NORBT),GP(KZYVAR)
 C
@@ -2259,12 +2259,12 @@ C  INFVAR: JWOP()
 C  INFRSP: IPRRSP
 C  WRKRSP: KZYVAR
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -2306,23 +2306,23 @@ C
 C  Purpose: Construct 2p-2h corrections to transition moments
 C           in SOPPA
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  Used from common blocks:
 C  INFRSP : IPRRSP
 C  WRKRSP : KSYMOP,KZYVAR
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsop.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infsop.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       INTEGER BSYM,CSYM,A,AA,B,BB,ABSADR,ABTADR
       PARAMETER ( D1 = 1.0D0 , D3 = 3.0D0 , D4 = 4.0D0 )
@@ -2471,23 +2471,23 @@ C
 C     Notice COEMP2 = Kappa / 2
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C INFRSP : IPRRSP
 C WRKRSP : KSYMOP,KZYVAR
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsop.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infsop.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       INTEGER BSYM,CSYM,A,AA,B,BB,ABSADR,ABTADR
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D3 = 3.0D0 , D6 = 6.0D0 )
@@ -2653,17 +2653,17 @@ C  /* Deck rspact */
 C
 C 16-Nov-1993 mjp+hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFRSP: SOPPA,LPVMAT,NACTT,NACT(8),IACT(8),JACT(8)
 C  INFORB: NSYM,*ASH*,*ORB*,NVIRT,NRHFT
 C  INFMP2: NPHTOT(1)
 C
-#include <maxorb.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       IF (SOPPA) THEN
          LPVMAT = NPHTOT(1)
@@ -2693,17 +2693,17 @@ C     I,J pair in the 2p2h solution vector.
 C
 C     Copyright 23/2-96 by Erik K. Dalskov and Thomas Enevoldsen
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsop.h>
-#include <infmp2.h>
-#include <infind.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infsop.h"
+#include "infmp2.h"
+#include "infind.h"
+#include "infrsp.h"
 C
       INTEGER ABSYM,BASYM,ASYM,BSYM,A,B,ABSOFF,ABTOFF,ABSADR,ABTADR
       DIMENSION RSPVEC(*), ABSADR(NORBT,NORBT), ABTADR(NORBT,NORBT),

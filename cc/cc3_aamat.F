@@ -28,10 +28,10 @@
      *                                ISYRES,WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER LUCKJD, LUDELD, LU3VI, LUTOC,LU3VI2, LUDKBC, LU3FOP
 C
@@ -170,16 +170,16 @@ C
 C     Written by Poul Jorgensen and Filip Pawlowski, Aarhus, Spring 2003
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FNDKBC,FN3VI2,FN3VI
       INTEGER LUCKJD,LUTOC,LUDELD,LUDKBC,LU3VI2,LU3VI
@@ -1491,10 +1491,10 @@ C
 C
       PARAMETER (ONE = 1.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('TETJKI')
 
@@ -1577,15 +1577,15 @@ C  /* Deck cc3_aamatsdocc */
 *
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FN3FOP,FN3VI
       INTEGER LUCKJD,LUTOC,LUDELD,LU3FOP,LU3VI
@@ -2207,10 +2207,10 @@ C
       DOUBLE PRECISION ONE
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER ( ONE = 1.0D0)
 C
@@ -2494,10 +2494,10 @@ C                  w(cabj)                    *   f(c)  = O^I(abj)
 #endif
 
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -2811,10 +2811,10 @@ C
       DOUBLE PRECISION TWO, ONE 
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER ( ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -3116,10 +3116,10 @@ C
 C                   (ac|kd) = g(acdk)
 
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER ISYRES, ISWMAT, ISYINT , LWORK
       INTEGER ISYMIJ, IJ, ISYMIK, IK
@@ -3422,9 +3422,9 @@ C     Sort from L2 integral stored as X(aI,bJ) to X^IJ(a,b)
 C-------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMI,ISYMJ,ISYINT 
       INTEGER ISYMB,ISYMBIJ,ISYMA,ISYMAI,ISYMBJ,NBJ,NAB,NAI,NAIBJ 
@@ -3480,9 +3480,9 @@ C     Sort from L2 integral stored as X(ai,bJ) to X^J(bai)
 C-------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMJ,ISYINT 
       INTEGER ISYMBAI,ISYMB,ISYMAI,ISYMA,ISYMI,ISYMBJ,NBJ,NBAI,NAI,NAIBJ
@@ -3556,10 +3556,10 @@ C
       DOUBLE PRECISION TWO
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (TWO = 2.0D0)
 C
@@ -3636,9 +3636,9 @@ C
 C
       PARAMETER (TWO = 2.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -3761,10 +3761,10 @@ C
       DOUBLE PRECISION RMAT1(*), RMAT2(*)
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
 C
       CALL QENTER('CC3_MABI')

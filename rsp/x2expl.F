@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 ===========================================================================
@@ -36,19 +36,19 @@ C  /* Deck x2expl */
      *               UDV,PV,OPLBL,ISYMB,ISPINB,CMO,MJWOP,
      *               WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE THAT
 C  1)  CALCULATE THE X(2) MATRIX EXPLICITLY BY CARRYING
 C      OUT LINEAR TRANSFORMATIONS ON UNIT VECTORS
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DTOL = 1.0D-8 )
       DIMENSION CVEC(MZYVC), X2N(MZYVA), XINDX(*), UDV(*), PV(*)

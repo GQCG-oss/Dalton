@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck strpa2 */
       SUBROUTINE STRPA2(NSASOA,NSASOB,NASTR,NBSTR,
@@ -39,8 +39,8 @@ C                       introduced REFSPC option
 C      SEP 14 88 NEL1MX AND NEL3MN ADDED
 C L.R. JAN 14 88 ( NDTASM AND MXNDT ADDED )
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER SYMPRO(8,8)
       DIMENSION NSASOA(NOCTPA,MAXSYM),NSASOB(NOCTPB,MAXSYM)
       DIMENSION IOCOC(NOCTPA,NOCTPB)
@@ -158,13 +158,13 @@ C IF IFLAG .NE. 0 REDEFINED TYPE IS OBTAINED THROUGH
 C OCCUPATION POINTERS.
 C IAB = 1 ( 2 ) DESIGNATES ALPHA ( BETA )   STRING
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER  STRING(*)
 C
-#include <mxpdim.h>
-#include <ciinfo.h>
-#include <strnum.h>
+#include "mxpdim.h"
+#include "ciinfo.h"
+#include "strnum.h"
 C
 C OCCUPATION CLASSS OF STRING
 C
@@ -229,8 +229,8 @@ C ( NORB1 - IEL1) *( NEL3MX + 1 ) + IEL3 + 1
 C A POINTER , IPOINT, IS SET UP TO ELIMINATE CLASSES
 C WITH ZERO STRINGS
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION NSTAOC(*), IPOINT(*)
       DIMENSION NL1FTP(*),NL2FTP(*),NL3FTP(*)
 C
@@ -305,12 +305,12 @@ C
 C SOME DIMENSION OF STRINGS FOR DEFINING STATIC PARTITIONING OF
 C MEMORY
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxpdim.h>
-#include <maxash.h>
-#include <strnum.h>
-#include <ciinfo.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxpdim.h"
+#include "maxash.h"
+#include "strnum.h"
+#include "ciinfo.h"
 c.Added sept 90
 c NL1FTP : Number of electron in ras 1 for string of given type
 c NL2FTP : Number of electron in ras 2 for string of given type
@@ -400,8 +400,8 @@ c Last revision November 1989
 c
 c NEL is number of active electrons
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IOC(NEL),NSSO(NOCTYP,MAXSYM), NSTASM(MAXSYM)
       INTEGER   ORBSYM(*)
 c
@@ -558,12 +558,12 @@ C
 c L.R. October 1990, Dimensions for KIPNSA,KIPNSB changed
 c                    RAS always assumed
 C April 1991 hjaaj: put single excitation info. last
-#include <implicit.h>
-#include <mxpdim.h>
-#include <detbas.h>
-#include <strnum.h>
-#include <ciinfo.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxpdim.h"
+#include "detbas.h"
+#include "strnum.h"
+#include "ciinfo.h"
+#include "priunit.h"
 C
       NORB = NORB1 + NORB2 + NORB3
 C
@@ -717,22 +717,22 @@ C
 C** L.R. JAN 12 1988 / J.O.
 C
 C NOSYM added Nov '88
-#include <implicit.h>
+#include "implicit.h"
       INTEGER   CLCTYP
       DIMENSION WORK(*)
       DIMENSION NRAS1(8),NRAS2(8),NRAS3(8)
       LOGICAL   REFSPC
 C
-#include <mxsmob.h>
-#include <mxpdim.h>
-#include <maxash.h>
+#include "mxsmob.h"
+#include "mxpdim.h"
+#include "maxash.h"
 C
-#include <priunit.h>
-#include <spinfo.h>
-#include <ciinfo.h>
-#include <detbas.h>
-#include <strnum.h>
-#include <mxblk.h>
+#include "priunit.h"
+#include "spinfo.h"
+#include "ciinfo.h"
+#include "detbas.h"
+#include "strnum.h"
+#include "mxblk.h"
 C
       INTEGER SYMPRO(8,8)
       DATA SYMPRO/1,2,3,4,5,6,7,8,
@@ -948,12 +948,12 @@ C
 C     ILTSOB(K) GIVES SIRIUS NUMBER OF ORBITAL WITH LUNAR NUMBER K
 C     ISTLOB(K) GIVES LUNAR  NUMBER OF ORBITAL WITH SIRIUS NUMBER K
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER ORBSYM(1)
       DIMENSION NRAS1(MAXSYM),NRAS2(MAXSYM),NRAS3(MAXSYM)
       DIMENSION ILTSOB(*),ISTLOB(*)
-#include <cbreor.h>
+#include "cbreor.h"
 C
         MINTP = 1
         MAXTP = 3

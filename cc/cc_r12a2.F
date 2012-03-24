@@ -48,11 +48,11 @@ c     modified C. Neiss, fall 2004: write also integrals with beta
 c                auxiliary basis functions if desired
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "dummy.h"
        
       logical locdbg,lauxbeta
       parameter (locdbg = .false.)
@@ -258,12 +258,12 @@ c
 c     \sum_MN r^MtNt_kl * g^alpha jt_MN
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       logical ldum,lauxd,locdbg
       parameter (locdbg = .false.)
@@ -478,12 +478,12 @@ c     adapted for ansatz 3, Christof Haettig, spring 2005
 c     adapted for CABS, Christian Neiss, winter 2006
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
        
 #if defined (SYS_CRAY)
       real zero,one,half
@@ -891,10 +891,10 @@ c     added transformation to Sbbp, Christof Haettig, spring 2005
 c     adapted for CABS, Christian Neiss, winter 2006
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -973,10 +973,10 @@ c     H. Fliegl, C. Haettig, winter 2003
 c     C. Neiss, winter 2006: adapted for CABS
 c--------------------------------------------------------------------- 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       logical locdbg
       parameter (locdbg = .false.)
 
@@ -1074,8 +1074,8 @@ c
 c     H. Fliegl, C. Haettig, spring 2004
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccorb.h"
       logical locdbg,oneaux
       parameter (locdbg = .false.)
       integer nh2amx, ih2am(8,8), nh1am(8), ih1am(8,8), nvircc(8),
@@ -1229,11 +1229,11 @@ c     H. Fliegl, C. Haettig, spring 2004
 c     adapted for ansatz 3, Christof Haettig, spring 2005
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
       logical locdbg,lres
       parameter (locdbg = .false.)
       integer lwork,lunit,isymt2am,isymkint,kt2pck,kpck,lwrk1,idum,
@@ -1384,11 +1384,11 @@ c     H. Fliegl, C. Haettig, spring 2004
 c     modified C. Neiss, september 2005
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "inftap.h"
       integer lwork, kscr1,kend1,lwrk1,isymkl,isymij,keij,kekl,
      &        idxijkl,isymr,ij,kl,idummy,norbtsx
       integer nij,nkl,inmatij(8),inmatkl(8),isym
@@ -1461,11 +1461,11 @@ c
 c     H. Fliegl, C. Haettig, spring 2004
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "inftap.h"
        integer lwork, kscr1,kend1,lwrk1, isymc,index,idummy,
      &         kend2,lwrk2,isymk,isymi,isyml,isymj,
      &         mk,mi,mj,ml
@@ -1576,10 +1576,10 @@ c
 *     modified for general r12 orbitals: C. Neiss, september 2005
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       logical locdbg, delfro
       parameter (locdbg = .false.)
@@ -1691,9 +1691,9 @@ c
 c     H. Fliegl, C. Haettig, spring 2004 
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       logical locdbg
       parameter (locdbg = .false.)
       integer isymkint, isymt2am, lwork, ntoto, ntotk,
@@ -1785,10 +1785,10 @@ c     H. Fliegl, C. Haettig, spring 2004
 c     modified C. Neiss august 2005
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       integer isymkint, index, isymakl, isyma, isyml, 
      &        isymk, isymak, isymbl, isymkl, idxbl, idxkl, idxakl,
      &        idxabkl, idxak, isymb
@@ -1964,12 +1964,12 @@ c     H. Fliegl, C. Haettig, spring 2004
 c     adapted for ansatz 3, Christof Haettig, spring 2005
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical locdbg, lres, needkrint
       parameter (locdbg = .false.)
@@ -2140,9 +2140,9 @@ c
 c     H. Fliegl, C. Haettig, spring 2004
 c--------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       logical locdbg
       parameter (locdbg = .false.)
       integer lwork, isymkint, isymc, isymb, isyma, isymab, isymkl,
@@ -2268,9 +2268,9 @@ c
 c     H. Fliegl, C. Haettig, spring 2004
 c--------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       logical locdbg
       parameter ( locdbg = .false. ) 
       integer isymc, index, isymj, isymi, isymikl, isymkl, isymk,
@@ -2349,11 +2349,11 @@ c
 c     C. Neiss, winter 2006: adapted for CABS
 c--------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
        
 #if defined (SYS_CRAY)
       real zero,one, work(*),ddot
@@ -2529,12 +2529,12 @@ c
 c     H. Fliegl, C. Haettig, spring 2004
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
       logical locdbg, lauxd
       parameter (locdbg = .false.) 
       integer isymv, isymc, lwork, lwrk1, lwrk2, kend1, kend2 
@@ -2739,12 +2739,12 @@ c     iopte = 1 make E_ab^(R12) intermediate instead of Omega_ai^H'
 c               C. Neiss, spring 2006
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
       integer lwork,isymc,isymh,ifile,lufc12,komai, isymom,
      &        isymh0,kctil,kend1,lwrk1,isymd,isymilk,isymimn,
      &        idelp,kint,kgtf,kmint,kend2,lwrk2,isymkl,
@@ -3003,12 +3003,12 @@ c     H. Fliegl, C. Haettig, spring 2004
 c     adapted for CABS, C. Neiss, winter 2006
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>  
-#include <dummy.h> 
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"  
+#include "dummy.h" 
       logical lauxd, locdbg
       parameter (locdbg = .false.)
       integer lwork,ifile,lufc12,isymt,isymh,isymc,isymt1ao,
@@ -3238,10 +3238,10 @@ c
 c     H. Fliegl, C. Haettig, spring 2004
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       integer iglmrhs(8,8),iglmvis(8,8),nglmds(8),isym,
      &        icmo(8,8),ncmo(8),imaklm(8,8),nmaklm(8),
      &        imatijm(8,8),nmatijm(8),ngamsm(8),igamsm(8,8),
@@ -3353,10 +3353,10 @@ c
 c     H. Fliegl, C. Haettig, spring 2004
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "r12int.h"
       logical locdbg
       parameter (locdbg = .false.)
       integer icount1,isym,isym1,isym2
@@ -3488,11 +3488,11 @@ c
 c     H. Fliegl, C. Haettig, spring 2004
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "dummy.h"
        
       logical locdbg
       parameter (locdbg = .false.)
@@ -3586,10 +3586,10 @@ c
 c     H. Fliegl, C. Haettig spring 2004
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 
       logical lauxd,locdbg 
       parameter(locdbg=.false.)
@@ -3713,16 +3713,16 @@ c
 c      H. Fliegl, C. Haettig, winter 2004
 c-----------------------------------------------------------------------
       implicit none
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <second.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "second.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "r12int.h"
+#include "ccr12int.h"
       logical omegorsv, testvajtkl, testvbar, testrbar 
       parameter (testvajtkl = .false., testvbar = .false., 
      &           testrbar = .false.)
@@ -3996,9 +3996,9 @@ c     ndim2 --> nmatij / nmatijm
 c      
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
     
       integer lwork,isymv,lwrk1,kend1,isymkl,isymij,isymk,
      &        isyml,isymi,isymj,idxkl,idxlk,idxij,idxji,idxijkl,idxjilk
@@ -4054,7 +4054,7 @@ c
 c     H. Fliegl, C. Haettig
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
+#include "priunit.h"
 
       integer maxred,len1,len2,len3,lwork,i,j,idxi,idxj,ierr
       integer kevr,kevi,kevec,kiv1,kfv1,kend1,lwrk1,matz,nm
@@ -4155,8 +4155,8 @@ c
 c     C. Neiss, spring 2006
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccorb.h"
       logical locdbg,oneaux
       parameter (locdbg = .false.)
       integer ih2am(8,8), ih1am(8,8), nvircc(8),ldr12(8),

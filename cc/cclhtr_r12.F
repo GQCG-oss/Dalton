@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 
 *=====================================================================*
       subroutine CCLHTR_FP(RHO1,XLAMDH,WORK,LWORK,ISYMC,FC12AM,LUFC12,
@@ -32,12 +32,12 @@ C
 C     C. Neiss, C. Hättig, summer 2004
 *---------------------------------------------------------------------*
       implicit none
-#include <r12int.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "r12int.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       integer LWORK,ISYMC,LUFC12,IFILE,isymak,isymk,isyma,
      &        kvec,kvajkl,kend1,lwrk1,luvajkl
@@ -118,12 +118,12 @@ C
 C     C. Neiss, C. Hättig, summer 2004
 *---------------------------------------------------------------------*
       implicit none
-#include <r12int.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccr12int.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccr12int.h"
+#include "ccsdinp.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -215,12 +215,12 @@ C
 C     C. Neiss october/november 2005
 *---------------------------------------------------------------------*
       implicit none
-#include <r12int.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccr12int.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccr12int.h"
+#include "ccsdinp.h"
 
       integer isygam,isymc,isymv,isymij,isymmn,isymkl
       integer lwork,kend1,lwrk1,koff1,koff2,koff3,kscr,iopt,
@@ -347,10 +347,10 @@ C
 C     C. Neiss october 2005
 *---------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
 C     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -433,12 +433,12 @@ C
 C     C. Neiss october 2005
 *---------------------------------------------------------------------*
       implicit none
-#include <r12int.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccr12int.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccr12int.h"
+#include "ccsdinp.h"
 
       integer isymkl,isymin,isymij,isymnj,isymi,isymj,isymn,isymk,isyml
       integer idxkl,koffx,kvinkl,kvijkl,isymtr 

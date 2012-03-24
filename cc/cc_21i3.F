@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_21i3 */
 *--------------------------------------------------------------
@@ -63,9 +63,9 @@ C  /* Deck cc_21i3 */
 #else
 #   include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       LOGICAL LRHOAO, LDERIV, LXI1SQ
       INTEGER LWORK,ISYDIS0,ISYDIS1,IOPT

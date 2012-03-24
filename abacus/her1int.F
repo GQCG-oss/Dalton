@@ -197,7 +197,7 @@ C
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.14) THEN
+      ELSE IF (INTTYP .EQ.14) THEN ! SQHDOL
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -348,7 +348,7 @@ C
          JMAXM = 3
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.44) THEN
+      ELSE IF (INTTYP .EQ.44) THEN ! SQHDOR
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .FALSE.
@@ -405,34 +405,34 @@ C     type 45 already defined together with type 1
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.56) THEN
-         JMAXD = 0
-         JMAXM = 3
+         JMAXD  = 0
+         JMAXM  = 3
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.57) THEN
-         JMAXD = 0
-         JMAXM = 1
+         JMAXD  = 0
+         JMAXM  = 1
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.58) THEN
-         JMAXD = 1
-         JMAXM = 0
+         JMAXD  = 1
+         JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.59) THEN
+      ELSE IF (INTTYP .EQ.59) THEN ! DEROVLP
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.61) THEN
-          JMAXD = 0
-          JMAXM = 1
-          DONUC1= .FALSE.
+          JMAXD  = 0
+          JMAXM  = 1
+          DONUC1 = .FALSE.
           DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.62) THEN
-          JMAXD = 1
-          JMAXM = 1
-          DONUC1= .FALSE.
+          JMAXD  = 1
+          JMAXM  = 1
+          DONUC1 = .FALSE.
           DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.63) THEN
          JMAXD  = 1
@@ -445,8 +445,8 @@ C     type 45 already defined together with type 1
          DONUC1 = .FALSE.
          DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.65) THEN
-         JMAXD = 0
-         JMAXM = 3
+         JMAXD  = 0
+         JMAXM  = 3
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.66) THEN
@@ -551,7 +551,7 @@ cLig <<
          JMAXM = 1
          DONUC1= .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.98) THEN
+      ELSE IF (INTTYP .EQ.98) THEN ! SQHD2OR
          JMAXD  = 2
          JMAXM  = 0
          DONUC1 = .FALSE.
@@ -567,9 +567,9 @@ cLig <<
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.101) THEN
-         JMAXD = 1
-         JMAXM = 2
-         DONUC1= .FALSE.
+         JMAXD  = 1
+         JMAXM  = 2
+         DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.102) THEN
          JMAXD  = 2
@@ -2563,13 +2563,13 @@ C
 C     Mar 2006 hjaaj -- POPOVLP type for population analysis
 C     Based on subr. OVLINT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,2)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -2999,13 +2999,13 @@ C  /* Deck qugint */
 C
 C     K.Ruud, October/November-97
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5370,9 +5370,9 @@ C
          Y2 = SHGTF*ODC(MVALA,MVALB,0,2,0,2)
          Z2 = SHGTF*ODC(NVALA,NVALB,0,2,0,3)
          INT = INT + 1
-         SHLINT(INT,1) = SHLINT(INT,1) + X2*Y0*Z0
-         SHLINT(INT,2) = SHLINT(INT,2) + X0*Y2*Z0
-         SHLINT(INT,3) = SHLINT(INT,3) + X0*Y0*Z2
+         SHLINT(INT,1) = SHLINT(INT,1) - X2*Y0*Z0
+         SHLINT(INT,2) = SHLINT(INT,2) - X0*Y2*Z0
+         SHLINT(INT,3) = SHLINT(INT,3) - X0*Y0*Z2
  100  CONTINUE
       RETURN
       END
@@ -6550,19 +6550,16 @@ C  /* Deck hdotra */
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
 #include "symmet.h"
 #include "ibtfun.h"
-      FULMAT = .TRUE.
-      ANTI = .FALSE.
       DO 100 IREPO = 0, MAXREP
          DO 200 ICOOR = 1, 3
-            IF (INTTYP .EQ. 14) THEN
+            IF (INTTYP .EQ. 14) THEN ! SQHDOL
                ISCOOR = IPTCNT(3*(NCENTA - 1) + ICOOR,IREPO,1)
                FAC = HKAB
-            ELSE
+            ELSE ! SQHDOR or SQHD2OR
 C              ... INTTYP 44 and 98
                ISCOOR = IPTCNT(3*(NCENTB - 1) + ICOOR,IREPO,1)
                FAC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
@@ -9070,4 +9067,4 @@ c                     IZZ = 9*(IATOM - 1) + 9
  100  CONTINUE
       RETURN
       END
-cLig <<
+! -- end of her1int.F --

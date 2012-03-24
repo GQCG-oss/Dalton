@@ -14,10 +14,10 @@ C     Andrea Ligabue, December 2003: Linear response functions included
 C
 C     PURPOSE: Calculate the residual vector and norm.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
+#include "soppinf.h"
 C
       CHARACTER*6 LTYPE
       DIMENSION RESI1E(LRESI1E), RESI1D(LRESI1D)

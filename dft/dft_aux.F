@@ -28,12 +28,12 @@ C----------------------------------------------------------------------------
 c     DFTINI
 C     intialize DFTCOM common block
 C------------------------------------------------------------------------------
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       PARAMETER (D0=0D0, D1=1D0)
-#include <gnrinf.h>
-#include <dftcom.h>
-#include <dftacb.h>
+#include "gnrinf.h"
+#include "dftcom.h"
+#include "dftacb.h"
       IPRDFT = IPRUSR
       HFXFAC = D1
       HFXMU  = D0 
@@ -119,9 +119,9 @@ c
 c     Pawel Salek, 2003-03-18.
 c     Write DFT SO integrals to AOPROPER.
 c
-#include <implicit.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "inftap.h"
       DIMENSION SOINTS(N2BASX,3)
 c
       CHARACTER*1 CXYZ(3)
@@ -141,25 +141,25 @@ c
       END
 c
       SUBROUTINE GET_MAXL_NUCIND(maxl,nuniqat)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <ccom.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "ccom.h"
+#include "mxcent.h"
+#include "nuclei.h"
       maxl = NHTYP
       nuniqat = NUCIND
       END
 
       FUNCTION ishell_cnt()
-#include <implicit.h>
-#include <maxorb.h>
-#include <shells.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "shells.h"
       ishell_cnt = KMAX
       END
 c
       SUBROUTINE get_grid_paras(Lgrdone, Pradint, Iangmin, Iangint)
-#include <implicit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "dftcom.h"
       LOGICAL LGRDONE
       LGRDONE = GRDONE
       PRADINT = RADINT
@@ -168,27 +168,27 @@ c
       END
 c
       SUBROUTINE set_grid_done
-#include <implicit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "dftcom.h"
       GRDONE = .TRUE.
       END
       SUBROUTINE get_no_atoms(natom_CNT)
 c return total number of atoms.
-#include <implicit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       NATOM_CNT = NATOMS
       END
       SUBROUTINE GET_ATOM_BY_ICENT(ICENT,ZCNT,NAT,NDEG,X,Y,Z)
-#include <implicit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
       DIMENSION X(8), Y(8), Z(8)
 c
-#include <ibtfun.h>
+#include "ibtfun.h"
 csymmetry is not completely implemented here yet.
       ZCNT   = CHARGE(ICENT)
       MULCNT = ISTBNU(ICENT)
@@ -207,20 +207,20 @@ csymmetry is not completely implemented here yet.
       END
 c
       SUBROUTINE FORT_WRT(str, len)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(len) str
       WRITE(LUPRI,'(1X,A)') str
       END
       FUNCTION ISETKSYMOP(IKSYM)
-#include <implicit.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "wrkrsp.h"
       ISETKSYMOP = KSYMOP
       KSYMOP = IKSYM
       END
       SUBROUTINE LRAO2MO(CMO,KSYMOP,FAOMAT,FMAT,WORK,LWORK)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION CMO(*), FAOMAT(*), FMAT(*),WORK(LWORK)
       PARAMETER (D2 = 2D0)
       KDA1 = 1
@@ -245,8 +245,8 @@ c     compute AO density matrix dmat using provided CMO.
 c     dmat must be previously allocated.
 c
       SUBROUTINE dft_get_ao_dens_mat(cmo,dmat,work,lwork)
-#include <implicit.h>
-#include <infvar.h>      
+#include "implicit.h"
+#include "infvar.h"      
       DIMENSION CMO(*), DMAT(*),WORK(LWORK)
       JKEEP = JWOPSY
       JWOPSY = 1
@@ -258,8 +258,8 @@ c dft_get_ao_dens_matab:
 c   compute AO active and inactive density matrices using provided CMO.
 c
       SUBROUTINE dft_get_ao_dens_matab(cmo,dmata,dmatb,work,lwork)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION CMO(*), DMATA(*),DMATB(*),WORK(LWORK)
       KUDV = 1
       KLAST = KUDV + N2ASHX
@@ -271,57 +271,57 @@ C     ... high spin, i.e. active density matrix UDV is a unit matrix.
       END
 c
       SUBROUTINE OUTMAT(A,IRLOW,IRHI,ICLOW,ICHI,IROWS,ICOLS)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CALL OUTPUT(A,IRLOW,IRHI,ICLOW,ICHI,IROWS,ICOLS,0,LUPRI)
       END
 c
       SUBROUTINE dftsethf(W)
-#include <implicit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "dftcom.h"
       HFXFAC = W
       END
 C     
       FUNCTION dftgethf()
-#include <implicit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "dftcom.h"
       dftgethf = HFXFAC
       END
 
       SUBROUTINE dftsetmp2(W)
-#include <implicit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "dftcom.h"
       WDFTMP = W
       END
 C     
       FUNCTION dftgetmp2()
-#include <implicit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "dftcom.h"
       dftgetmp2 = WDFTMP
       END
 c
       SUBROUTINE dftsetcam(W,BETA)
-#include <implicit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "dftcom.h"
       HFXMU = W
       HFXATT = BETA 
       END
 c
       SUBROUTINE DFT_GET_THRESHOLDS(TDFTI,TDFT0)
-#include <implicit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "dftcom.h"
       TDFTI = DFTHRI
       TDFT0 = DFTHR0
       END
 #ifdef VAR_MPI
       SUBROUTINE DFTLRSYNC
-#include <implicit.h>
-#include <mpif.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "mpif.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "wrkrsp.h"
       CALL MPI_Bcast(NASHT, 1,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
       CALL MPI_Bcast(NISHT, 1,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
       CALL MPI_Bcast(JWOPSY,1,  my_MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
@@ -337,30 +337,30 @@ c
       END
 #endif
       SUBROUTINE GETSHELLSCNT(nshells)
-#include <implicit.h>
-#include <maxorb.h>
-#include <shells.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "shells.h"
       nshells = kmax
       END
       SUBROUTINE GETSHELLNO(ISHELL,ICNT,IL,X,Y,Z,MXCONTR,
      &                      COEFF, ALPHA)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
 c     RETURNS INFORMATION ABOUT SHELL ISHELL
 c
       DIMENSION COEFF(MXCONTR), ALPHA(MXCONTR)
-#include <inforb.h>
-#include <onecom.h>
-#include <lmns.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <primit.h>
-#include <sphtrm.h>
-#include <orgcom.h>
+#include "inforb.h"
+#include "onecom.h"
+#include "lmns.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "primit.h"
+#include "sphtrm.h"
+#include "orgcom.h"
       NHKTA  = NHKT(ISHELL)
       KHKTA  = KHKT(ISHELL)
       KCKTA  = KCKT(ISHELL)

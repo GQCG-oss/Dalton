@@ -12,10 +12,10 @@ C     PURPOSE: Get the appropriate T2 and possibly T1 amplitudes
 C              for RPA(D), SOPPA and SOPPA(CCSD) and calculate
 C              the corresponding densities.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
+#include "soppinf.h"
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C

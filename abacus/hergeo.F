@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck anainp */
       SUBROUTINE ANAINP(WORD)
@@ -200,7 +200,7 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include <codata.h>
+#include "codata.h"
 #include "facang.h"
       PARAMETER (MAXANG = 20)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D1P5 = 1.5D00)
@@ -211,7 +211,7 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
 #include "nuclei.h"
 #include "symmet.h"
@@ -583,8 +583,8 @@ C
       END
 C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C     Based on covalent radii and metallic radii in Angstrom.
 C     Returns -1 where data is inavailable

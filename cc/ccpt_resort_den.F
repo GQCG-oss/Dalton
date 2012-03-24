@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck resort_daibc */
       SUBROUTINE RESORT_DAIBC(IOPT,ISYDEN,FACT,LU1,FN1,
@@ -51,10 +51,10 @@ C
       DOUBLE PRECISION WORK(LWORK), HALF, ONE, TWO, FACT
 #endif
 C
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C

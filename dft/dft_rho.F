@@ -21,25 +21,25 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck getrho */
       SUBROUTINE GETRHO(DMAT,GSO,RHO,DMAGAO,DFTHRI)
 C
 C     T. Helgaker feb 01
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
      &           DP5 = 0.5D0)
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION DMAT(NBAST,NBAST), GSO(NBAST,*), DMAGAO(NBAST)
 C
-#include <symmet.h>
+#include "symmet.h"
 C
 C
       IF (NSYM.EQ.1) THEN
@@ -67,10 +67,10 @@ C /* Deck dftrhh */
 C
 C     T. Helgaker oct 2000
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0) 
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION DMAT(NBAST,NBAST), DMAGAO(NBAST),RH(3),
      &          GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6)
@@ -117,14 +117,14 @@ c ===================================================================
      &                              TMP,NVCLEN,RHO)
 c     computes  <o|dmat|o'>
 c     i.e rho_a where dmat is a density matrix.
-#include <implicit.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <shells.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "shells.h"
       DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,*)
       DIMENSION NBLOCKS(NSYM), IBLOCKS(2,LDAIB,NSYM), RHO(NVCLEN)
       DIMENSION TMP(NVCLEN,NBAST)
-#include <priunit.h>
+#include "priunit.h"
 c
       CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
 c      CALL DZERO(TMP,NVCLEN*NBAST)
@@ -160,12 +160,12 @@ c      getexp_blocked_lda does almost the same thing as getrho
 c     but it does not use the simplification that the DMAT is symmetric.
       SUBROUTINE getexp_blocked_lda(IDSYM,DMAT,GAO,NBLOCKS,IBLOCKS,
      &                              LDAIB,TMP,NVCLEN,RHO)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,*)
       DIMENSION NBLOCKS(NSYM), IBLOCKS(2,LDAIB,NSYM), RHO(NVCLEN)
       DIMENSION TMP(NVCLEN,NBAST)
-#include <priunit.h>
+#include "priunit.h"
 c
       CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
 c     CALL DZERO(TMP,NVCLEN*NBAST)
@@ -204,12 +204,12 @@ c     i.e rho_a where dmat is a density matrix (it can be a total
 c     density end then one will get total density, or it can be an
 c     alpha/beta density.
 c     assert(NTYPSO>=NRHO)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,*)
       DIMENSION NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM)
       DIMENSION RHO(NVCLEN), GRAD(3,NVCLEN),TMP(NVCLEN,NBAST)
-#include <priunit.h>
+#include "priunit.h"
 c
       CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
 c     CALL DZERO(TMP,NVCLEN*NBAST)
@@ -250,12 +250,12 @@ c     are symmetrized i.e it computes <o|dmat|o'> + <o'|dmat|o>
 c     GRAD(1,:) contains rho.
 c     GRAD(2:4,:) contains gradient components.
 c     assert(NTYPSO>=NRHO)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,*)
       DIMENSION NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM), GRAD(4,NVCLEN)
       DIMENSION TMP(NVCLEN,NBAST)
-#include <priunit.h>
+#include "priunit.h"
 c
       CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
 c      CALL DZERO(TMP,NVCLEN*NBAST)
@@ -299,20 +299,20 @@ c     IBLCKS (output) - pairs of (startindex, stopindex)
 c     
 c     symmetry handling takes some effort.
 c
-#include <implicit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <primit.h>
-#include <shells.h>
-#include <dftcom.h>
-#include <inforb.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "primit.h"
+#include "shells.h"
+#include "dftcom.h"
+#include "inforb.h"
+#include "maxaqn.h"
+#include "symmet.h"
       DIMENSION CENTER(3), RSHEL(KMAX), IBLCKS(2,NBAST)
       DIMENSION  ISSS(KMAX)
-#include <ibtfun.h>
+#include "ibtfun.h"
 
 !#define NO_SHELL_SCREENING
 #ifdef NO_SHELL_SCREENING
@@ -373,16 +373,16 @@ c      print "(8('[',2I3,']'))", ((IBLCKS(I,J),I=1,2),J=1,NBLCNT)
 c
       SUBROUTINE GTEXTS(RSHEL)
 c     get radii of all shells as defined by specified threshold DFTHRI.
-#include <implicit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <primit.h>
-#include <shells.h>
-#include <priunit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "primit.h"
+#include "shells.h"
+#include "priunit.h"
+#include "dftcom.h"
 cdebug below
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION FACL(10)
       DATA FACL /1D0,1.3333D0,1.6D0,1.83D0,2.03D0,
      &     2.22D0,2.39D0,2.55D0,2.70D0,2.84D0/
@@ -409,14 +409,14 @@ c     IORIDX contains preprocessed information about
 c     where given shell begins and ends in given symmetry.
 
       SUBROUTINE SHLTOORB(NSHLBL,shlblock,NORBBL,orbblock,IORIDX)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       INTEGER SHLBLOCK(2,NSHLBL), ORBBLOCK(2,NSHLBL,NSYM)
       INTEGER IORIDX(2,KMAX,NSYM), NORBBL(NSYM)
-#include <maxorb.h>
-#include <shells.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "maxorb.h"
+#include "shells.h"
+#include "mxcent.h"
+#include "nuclei.h"
       ILO = 0
       IHI = 0
       DO ISYM = 1, NSYM

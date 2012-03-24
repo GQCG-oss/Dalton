@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cc_sortz2 */
@@ -40,9 +40,9 @@ C  /* Deck cc_sortz2 */
 #else
 #  include <implicit.h>
 #endif
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
       INTEGER ISYZA2, IOPT
 #if defined (SYS_CRAY)
       REAL ZKJAI(*), ZJKIA(*)

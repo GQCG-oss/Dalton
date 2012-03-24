@@ -426,9 +426,12 @@ C
      &        .FALSE.)
       END IF
 C Open files for trial and sigma vectors
-      CALL GPOPEN(LURSP3,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(LURSP4,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(LURSP5,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LURSP3,'RSP_BVEC','UNKNOWN',' ',
+     &   'UNFORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LURSP4,'RSP_DIAG','UNKNOWN',' ',
+     &   'UNFORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LURSP5,'RSP_SVEC','UNKNOWN',' ',
+     &   'UNFORMATTED',IDUMMY,.FALSE.)
 C
 C     Calculate open shell triplet expectation values
 C     ====================================================
@@ -446,7 +449,8 @@ C
      *               WRK(KINDX),WRK(KWRK1),LWRK1)
          CALL FLSHFO(LUPRI)
       END IF
-      IF (GCALC) THEN
+C
+      IF ( GCALC ) THEN ! calculate g-tensor etc.
          CALL GDRV(WRK,LWRK)
       END IF
 C
@@ -2203,7 +2207,7 @@ C
 #include "implicit.h"
 C
 #include "priunit.h"
-#include <gnrinf.h>
+#include "gnrinf.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "rspprp.h"
@@ -3131,27 +3135,27 @@ C
 C
       CALL GPCLOSE(LUPROP,'KEEP')
 C
-      IF (IPRRSP.GT.20) THEN
-        WRITE(LUPRI,'(/A/)')   ' RSPSYM: number of property vectors :'
-        WRITE(LUPRI,'(A/8I5)')' NGPPP(I) ,I=1,NSYM',(NGPPP(I) ,I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NGPLR(I) ,I=1,NSYM',(NGPLR(I) ,I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NGPC6(I) ,I=1,NSYM',(NGPC6(I) ,I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NAQROP(I),I=1,NSYM',(NAQROP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NBQROP(I),I=1,NSYM',(NBQROP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NCQROP(I),I=1,NSYM',(NCQROP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NASMOP(I),I=1,NSYM',(NASMOP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NBSMOP(I),I=1,NSYM',(NBSMOP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NESRS(I) ,I=1,NSYM',(NESRS(I) ,I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NESRT(I) ,I=1,NSYM',(NESRT(I) ,I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NACROP(I),I=1,NSYM',(NACROP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NBCROP(I),I=1,NSYM',(NBCROP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NCCROP(I),I=1,NSYM',(NCCROP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NDCROP(I),I=1,NSYM',(NDCROP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NATMOP(I),I=1,NSYM',(NATMOP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NBTMOP(I),I=1,NSYM',(NBTMOP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NCTMOP(I),I=1,NSYM',(NCTMOP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NATPOP(I),I=1,NSYM',(NATPOP(I),I=1,NSYM)
-        WRITE(LUPRI,'(A/8I5)')' NBTPOP(I),I=1,NSYM',(NBTPOP(I),I=1,NSYM)
+      IF (IPRRSP.GT.5) THEN
+        WRITE(LUPRI,'(/A/)')  ' RSPSYM: number of property vectors :'
+        WRITE(LUPRI,'(A,8I5)')' NGPPP(I) ,I=1,NSYM',(NGPPP(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NGPLR(I) ,I=1,NSYM',(NGPLR(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NGPC6(I) ,I=1,NSYM',(NGPC6(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NAQROP(I),I=1,NSYM',(NAQROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NBQROP(I),I=1,NSYM',(NBQROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NCQROP(I),I=1,NSYM',(NCQROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NASMOP(I),I=1,NSYM',(NASMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NBSMOP(I),I=1,NSYM',(NBSMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NESRS(I) ,I=1,NSYM',(NESRS(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NESRT(I) ,I=1,NSYM',(NESRT(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NACROP(I),I=1,NSYM',(NACROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NBCROP(I),I=1,NSYM',(NBCROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NCCROP(I),I=1,NSYM',(NCCROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NDCROP(I),I=1,NSYM',(NDCROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NATMOP(I),I=1,NSYM',(NATMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NBTMOP(I),I=1,NSYM',(NBTMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NCTMOP(I),I=1,NSYM',(NCTMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NATPOP(I),I=1,NSYM',(NATPOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A,8I5)')' NBTPOP(I),I=1,NSYM',(NBTPOP(I),I=1,NSYM)
       END IF
       NTOTLR = 0
       NTOTC6 = 0
@@ -3517,7 +3521,7 @@ C
 #include "infrsp.h"
 C
       DIMENSION NAOPNU(*),NBOPNU(*),NCOPNU(*),IWRK(NSYM,*)
-      IF (IPRRSP.GT.10) THEN
+      IF (IPRRSP.GT.5) THEN
          WRITE(LUPRI,'(/A)')
      *   ' ANASYM: NUMBER OF QR PROPERTY VECTORS BEFORE REDUCTION'
          WRITE(LUPRI,'(/A)')' NAOPNU(I),I=1,NSYM '
@@ -3567,7 +3571,7 @@ C
          NBOPTO = NBOPTO + NBOPNU(ISYM)
          NCOPTO = NCOPTO + NCOPNU(ISYM)
  400  CONTINUE
-      IF (IPRRSP.GT.10) THEN
+      IF (IPRRSP.GT.5) THEN
          WRITE(LUPRI,'(/A)')
      *   ' ANASYM: NUMBER OF QR PROPERTY VECTORS AFTER REDUCTION'
          WRITE(LUPRI,'(/A)')' NAOPNU(I),I=1,NSYM '
@@ -3976,8 +3980,8 @@ C
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
-#include <gnrinf.h>
-#include <qm3.h>
+#include "gnrinf.h"
+#include "qm3.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -4557,12 +4561,12 @@ C
 C
 C Excited State Gradient input
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <infpri.h>
+#include "infpri.h"
 #include "rspprp.h"
-#include <esg.h>
+#include "esg.h"
 C
       PARAMETER ( NTABLE = 1 )
       CHARACTER WORD*7, STRING*7
@@ -4585,28 +4589,28 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infpp.h>
-#include <infspi.h>
-#include <infhso.h>
-#include <inflr.h>
-#include <inflin.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <esg.h>
-#include <gnrinf.h>
+#include "infpp.h"
+#include "infspi.h"
+#include "infhso.h"
+#include "inflr.h"
+#include "inflin.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "esg.h"
+#include "gnrinf.h"
       DATA TABLE /'.ROOTS', '.THCPP ', '.MAX IT', '.MAXITO', '.THCLR ',
      *            '.RESTPP','.PRINT ', '.STATE '/
 C

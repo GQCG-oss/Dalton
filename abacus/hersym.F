@@ -22,12 +22,12 @@
 !
 !
 C FILE    : hersym.F
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_LOG
 ===========================================================================
 950522-kenneth
-Added solvent in FNDSYM, as well as using NUCIND instead ATMARR in loops
+Added solvent in FIND_SYMMETRY, as well as using NUCIND instead ATMARR in loops
 950208-vebjorn
 SYMADD: Completely new module to determine molecular symmetry, find the
         symmetry elements, remove symmetry-dependant atoms and finally
@@ -44,11 +44,11 @@ C
 C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxsymm.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxsymm.h"
+#include "optinf.h"
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER KASYM(3,3)*1, CLASS*15
 
@@ -60,6 +60,7 @@ C     Set control variables in "mxsymm.h"
       ELSE
          TOLLRN = TOLLRN_INPUT
       END IF
+      TOLLRN_2 = TOLLRN**2
       ZERTOL = 1.0D-12
       MAXAXS = 100
       MAXMIR = 25
@@ -78,34 +79,34 @@ C     Set control variables in "mxsymm.h"
       LENTMP = MAX(2*MXCENT,MXCENT+MAXAXS+MAXMIR)
       CALL MEMGET('REAL',KTEMP ,7*(LENTMP+1),WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP2,6*(MXCENT+1),WORK,KFREE,LFREE)
-      CALL FNDSYM(WORK(KCOOR),WORK(KROT),WORK(KIROT),WORK(KMIR),
+      CALL FIND_SYMMETRY(WORK(KCOOR),WORK(KROT),WORK(KIROT),WORK(KMIR),
      &            WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
      &            KATOM,KASYM,LENTMP,CLASS,VRML_SYM,WORK,KFREE,LFREE)
       CALL MEMREL('SYMADD',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('SYMADD')
       RETURN
       END
-C  /* Deck fndsym */
-      SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,
+C  /* Deck FIND_SYMMETRY */
+      SUBROUTINE FIND_SYMMETRY(ATMARR,DRTAXS,DIRAXS,DMRPLN,
      &            TMPARR,TMP2AR,NONTYP,NSYMOP,NONT,
      &            KATOM,KASYM,LENTMP,CLASS,VRML_SYM,WORK,KFREE,LFREE)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxsymm.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxsymm.h"
+#include "mxcent.h"
+#include "maxorb.h"
 
-#include <nuclei.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <cbirea.h>
-#include <cbisol.h>
-#include <cbihr1.h>
-#include <molinp.h>
-#include <numder.h>
-#include <pcmlog.h>
-#include <pcmdef.h>
-#include <pcm.h>
+#include "nuclei.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "cbirea.h"
+#include "cbisol.h"
+#include "cbihr1.h"
+#include "molinp.h"
+#include "numder.h"
+#include "pcmlog.h"
+#include "pcmdef.h"
+#include "pcm.h"
 
 
 ! infpar.h: MASTER, MYNUM
@@ -142,11 +143,11 @@ C
          CALL DZERO(TMPARR,7*(LENTMP + 1))
          CALL DZERO(TMP2AR,6*(MXCENT + 1))
 C        IF (SOLVNT .OR. DORLM) THEN
-C          NUCLP = NUCIND - 1
+C          N_ATOMS = NUCIND - 1
 C        ELSE
-           NUCLP = NUCIND
+           N_ATOMS = NUCIND
 C        END IF
-         DO 100 I = 1, NUCLP
+         DO 100 I = 1, N_ATOMS
             ATMARR(1,I) = CORD(1,I)
             ATMARR(2,I) = CORD(2,I)
             ATMARR(3,I) = CORD(3,I)
@@ -159,7 +160,7 @@ C               /hjaaj Mar 2004
             ATMARR(5,I) = I
             ATMARR(6,I) = ISOTOP(I)
  100     CONTINUE
-         ATMARR(1,0) = NUCLP
+         ATMARR(1,0) = N_ATOMS
          IF (IPRSYM .GE. IPRTHR) THEN
             TEXT = 'Original Coordinates'
             CALL PRNARR(TEXT, MXCENT, ATMARR)
@@ -168,46 +169,49 @@ C
 C        MIDAS Interface, write out input coordinates for midas.sym
 C        analysis
 C
-         IF (MIDSYM) THEN 
+         IF (MIDSYM) THEN
             LUCOOR = -1
             CALL GPOPEN(LUCOOR,'midasifc.cartorig','NEW',
      &                  ' ','FORMATTED',IDUMMY,.FALSE.)
 C           CALL PRIGEOLU(LUCOOR,CORD)
-            DO ICENT=1,NUCLP
+            DO ICENT=1,N_ATOMS
                NAME=NAMEX(3*ICENT)(1:4)
                WRITE(LUCOOR,'(2X,A,3(2X,E22.16))')
      &              NAMEX(3*ICENT)(1:4),ATMARR(1,ICENT),
      &              ATMARR(2,ICENT),ATMARR(3,ICENT)
             ENDDO
             CALL GPCLOSE(LUCOOR,'KEEP')
-         ENDIF 
+         ENDIF
 C
 C
          CALL SRTATM(MXCENT, ATMARR, .TRUE.)
          IF (.NOT. NOMOVE) THEN
-C        Place molecular center of mass at the origin
-            CALL CNTRML(NUCLP, ATMARR)
+C           Place molecular center of mass at the origin and
+C           with principal axes of inertia along coordinate axes
+            CALL CENTER_MOLECULE(ATMARR)
          END IF
+C
 C        Determine molecular point group
-         CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
-     &                       TMPARR, CLASS)
+         CALL FIND_PGROUP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
+     &                    TMPARR, CLASS)
 C ::: If requested, a VRML representation of :::
 C ::: the symmetry elements is constructed.  :::
          IF (VRML_SYM) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
      &                             DMRPLN,MAXMIR,WORK(KFREE),LFREE)
 C
-         IF( MYNUM .eq. MASTER ) 
-     &       WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
+         IF( MYNUM .eq. MASTER )
+     &       WRITE(LUPRI,'(/2A)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
          IF (.NOT. NOMOVE) THEN
-           CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
+           CALL TURN_MOLECULE(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,
+     &                        TMPARR,LENTMP)
          END IF
          IF (IPRSYM .GE. IPRTHR) THEN
             IF (.NOT. NOMOVE) THEN
               TEXT = 'Centered and Rotated Coordinates'
               CALL PRNARR(TEXT , MXCENT, ATMARR)
             ELSE
-              WRITE (LUPRI,'(/A/)') 
+              WRITE (LUPRI,'(/A/)')
      &  '   System could not be centered or rotated due to finite field'
              END IF
          END IF
@@ -394,8 +398,8 @@ C ::                                          ::
 C ::       Prints all elements of array       ::
 C ::(VB, part of hersym.F)                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
          CHARACTER*(*) TEXT
          DIMENSION ARR(6,0:MXM)
          I = LEN(TEXT)
@@ -427,7 +431,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::
      &          (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
          IF (TEMP .GT. ZERTOL) THEN
             TEMP = (V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3))/SQRT(TEMP)
-C ::: Parallel vectors might yield a value here that's slightly greater  :::
+C ::: Parallel vectors might yield a value here that is slightly greater :::
 C ::: than one. ACOS is undefined for these values, so we have to round  :::
 C ::: them off, removing the "excess", accumulated numerical error.      :::
 C ::: Also, ACOS is extremely sensitive around +/-1, so we round off     :::
@@ -446,9 +450,9 @@ C ::                              ::
 C ::       Add Vec to array       ::
 C ::                              ::
 C ::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxsymm.h"
       DIMENSION ARR(6,0:MXM), VEC(3)
       IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
       IF (ABS(VEC(2)) .LT. TOLLRN) VEC(2) = 0.0D0
@@ -458,11 +462,11 @@ C ::::::::::::::::::::::::::::::::::
       VEC(1) = VEC(1)/VCNORM
       VEC(2) = VEC(2)/VCNORM
       VEC(3) = VEC(3)/VCNORM
-      N = NINT(ARR(1,0))
+      N_ATOMS = NINT(ARR(1,0))
 C
 Chjaaj Sep08: remove duplicates already here, to include as many axes
-Chjaaj        as possible before N .ge. MXM.
-      DO I = 1, N
+Chjaaj        as possible before N_ATOMS .ge. MXM.
+      DO I = 1, N_ATOMS
          J = 0
          IF (ABS(ARR(1,I) - VEC(1)) .LT. TOLLRN) J = J + 1
          IF (ABS(ARR(2,I) - VEC(2)) .LT. TOLLRN) J = J + 1
@@ -473,13 +477,13 @@ Cdbg        WRITE(LUPRI,*) 'ADD2AR info   : duplicate axis',I,N+1
          END IF
       END DO
 C
-      IF (N .GE. MXM) THEN
-Cdbg     WRITE(LUPRI,*) 'ADD2AR warning: axis not added',N+1,MXM
+      IF (N_ATOMS .GE. MXM) THEN
+Cdbg     WRITE(LUPRI,*) 'ADD2AR warning: axis not added',N_ATOMS+1,MXM
 Cdbg     WRITE(LUPRI,*) 'ADD2AR warning: the axis',
 Cdbg &      VEC(1),VEC(2),VEC(3)
          RETURN
       ELSE
-Cdbg     WRITE(LUPRI,*) 'ADD2AR info   : axis added',N+1,MXM
+Cdbg     WRITE(LUPRI,*) 'ADD2AR info   : axis added',N_ATOMS+1,MXM
 Cdbg     WRITE(LUPRI,*) 'ADD2AR info   : the axis',
 Cdbg &      VEC(1),VEC(2),VEC(3)
       END IF
@@ -487,11 +491,11 @@ C ::: The vector is placed in its correct position in the array, :::
 C ::: so no sorting is necessary.                                :::
       I = 1
  100  CONTINUE
-         IF ((NINT(ARR(4,I)) .GT. IORDER) .AND. (I .LE. N)) THEN
+         IF ((NINT(ARR(4,I)) .GT. IORDER) .AND. (I .LE. N_ATOMS)) THEN
             I = I + 1
             GOTO 100
          END IF
-      DO J = N, I, -1
+      DO J = N_ATOMS, I, -1
          ARR(1,J+1) = ARR(1,J)
          ARR(2,J+1) = ARR(2,J)
          ARR(3,J+1) = ARR(3,J)
@@ -502,7 +506,7 @@ C ::: so no sorting is necessary.                                :::
       ARR(2,I) = VEC(2)
       ARR(3,I) = VEC(3)
       ARR(4,I) = IORDER
-      ARR(1,0) = N + 1
+      ARR(1,0) = N_ATOMS + 1
 C
       RETURN
       END
@@ -517,7 +521,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "priunit.h"
 #include "mxsymm.h"
          DIMENSION AXARR(6,0:MXM), V1(3), V2(3)
-         N = NINT(AXARR(1,0))
+         N_ATOMS = NINT(AXARR(1,0))
          I = 1
  100     CONTINUE
             V1(1) = AXARR(1,I)
@@ -525,7 +529,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
             V1(3) = AXARR(3,I)
             J = I + 1
  150        CONTINUE
-            IF (J .LE. N) THEN
+            IF (J .LE. N_ATOMS) THEN
 C ::: Parallel axes yields a zero vector as cross product.  :::
 C ::: Since the array is sorted, the last one will have     :::
 C ::: equal or lesser order, and should be removed.         :::
@@ -534,22 +538,22 @@ C ::: equal or lesser order, and should be removed.         :::
                V2(3) =  V1(1)*AXARR(2,J) - AXARR(1,J)*V1(2)
                V2NORM2 = V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3)
                IF (V2NORM2 .LT. TOLLRN*TOLLRN) THEN
-                  DO 200 I = 1, N - J
+                  DO 200 I = 1, N_ATOMS - J
                      AXARR(1,J+I-1) = AXARR(1,J+I)
                      AXARR(2,J+I-1) = AXARR(2,J+I)
                      AXARR(3,J+I-1) = AXARR(3,J+I)
                      AXARR(4,J+I-1) = AXARR(4,J+I)
  200              CONTINUE
-                  N = N - 1
+                  N_ATOMS = N_ATOMS - 1
                ELSE
                   J = J + 1
                END IF
                GOTO 150
             END IF
          I = I + 1
-         IF (I .LT. N) GOTO 100
+         IF (I .LT. N_ATOMS) GOTO 100
 
-         AXARR(1,0) = N
+         AXARR(1,0) = N_ATOMS
          RETURN
       END
 C  /* Deck dldpat */
@@ -559,28 +563,28 @@ C ::                                         ::
 C ::       Deletes all duplicate atoms       ::
 C ::                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3)
-         N = NINT(ATMARR(1,0))
+         N_ATOMS = NINT(ATMARR(1,0))
          CALL SRTATM(MXM, ATMARR, .TRUE.)
          I = 1
  100     CONTINUE
-         IF (I .LT. N) THEN
+         IF (I .LT. N_ATOMS) THEN
             V1(1) = ATMARR(1,I)
             V1(2) = ATMARR(2,I)
             V1(3) = ATMARR(3,I)
             J = I + 1
  150        CONTINUE
-            IF ((J .LE. N) .AND.
+            IF ((J .LE. N_ATOMS) .AND.
      &        (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)))) THEN
 C ::: Subtracting two position yields a zero vector for duplicate atoms. :::
                V2(1) = ATMARR(1,J) - V1(1)
                V2(2) = ATMARR(2,J) - V1(2)
                V2(3) = ATMARR(3,J) - V1(3)
                IF (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3) .LT.
-     &                                           TOLLRN*TOLLRN) THEN
-                  DO 200 K = 1, N - J
+     &                                           TOLLRN_2) THEN
+                  DO 200 K = 1, N_ATOMS - J
                      ATMARR(1,J+K-1) = ATMARR(1,J+K)
                      ATMARR(2,J+K-1) = ATMARR(2,J+K)
                      ATMARR(3,J+K-1) = ATMARR(3,J+K)
@@ -588,7 +592,7 @@ C ::: Subtracting two position yields a zero vector for duplicate atoms. :::
                      ATMARR(5,J+K-1) = ATMARR(5,J+K)
                      ATMARR(6,J+K-1) = ATMARR(6,J+K)
  200              CONTINUE
-                  N = N - 1
+                  N_ATOMS = N_ATOMS - 1
                ELSE
                   J = J + 1
                END IF
@@ -597,7 +601,7 @@ C ::: Subtracting two position yields a zero vector for duplicate atoms. :::
             I = I + 1
             GOTO 100
          END IF
-         ATMARR(1,0) = 1.0D0*N
+         ATMARR(1,0) = 1.0D0*N_ATOMS
          RETURN
       END
 C  /* Deck srtatm */
@@ -614,13 +618,13 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION ARR(6,0:IUPPER)
          LOGICAL USENRM, SORTED
 C
-         N = NINT(ARR(1,0))
+         N_ATOMS = NINT(ARR(1,0))
          I = 1
          SORTED = .FALSE.
  100     CONTINUE
-         IF ((I .LT. N) .AND. (.NOT. SORTED)) THEN
+         IF ((I .LT. N_ATOMS) .AND. (.NOT. SORTED)) THEN
             SORTED = .TRUE.
-            DO 200 J = 1, N-I
+            DO 200 J = 1, N_ATOMS-I
                IF (USENRM) THEN
 C              ... sort atoms
 C              test 1) higher charge before lower charge
@@ -632,8 +636,8 @@ C              test 2) for same charge: higher isotope before lower isotope
                   RATM1 = ARR(1,J  )**2 + ARR(2,J  )**2 + ARR(3,J  )**2
                   RATM2 = ARR(1,J+1)**2 + ARR(2,J+1)**2 + ARR(3,J+1)**2
 C              test 3) shorter distance to origo before longer distance
-                  IF ( RATM1 .LT. RATM2 ) GOTO 300
-                  GOTO 310
+                  IF ( RATM1 .GT. RATM2 ) GOTO 300
+                  GOTO 310 ! J and J+1 ar in correct order
 C
   300             CONTINUE
 C                 ... J and J+1 are NOT in correct order, switch them
@@ -674,13 +678,13 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION ARR(6,0:IUPPER)
          DIMENSION ATM1(3), ATM2(3)
          LOGICAL SORTED
-         N = NINT(ARR(1,0))
+         N_ATOMS = NINT(ARR(1,0))
          I = 1
          SORTED = .FALSE.
  100     CONTINUE
-         IF ((I .LT. N) .AND. (.NOT. SORTED)) THEN
+         IF ((I .LT. N_ATOMS) .AND. (.NOT. SORTED)) THEN
             SORTED = .TRUE.
-            DO 200 J = 1, N-I
+            DO 200 J = 1, N_ATOMS-I
                ATM1(1)=ARR(1,J)
                ATM1(2)=ARR(2,J)
                ATM1(3)=ARR(3,J)
@@ -701,18 +705,26 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          END IF
          RETURN
       END
-C  /* Deck cntrml */
-      SUBROUTINE CNTRML(NUCLP, ATMARR)
+C ---
+      SUBROUTINE CENTER_MOLECULE(ATMARR)
 C :::::::::::::::::::::::::::::::::::::::::::
 C ::                                       ::
 C ::       Centres molecule in space       ::
 C ::                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
-         DIMENSION ATMARR(6,0:NUCLP), SUM(3)
-         N = NINT(ATMARR(1,0))
 C
+C   Revision Aug 2011 HJAaJ (merged some of my old code from 2002):
+C    - rotate to axes corresponding to
+C      principal moment of mass inertia
+C    - do it twice to minimize round-off errors
+C
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION ATMARR(6,0:*), SUM(3)
+      DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
+
+      N_ATOMS = NINT(ATMARR(1,0))
+
 Cdbg     write (lupri,*) 'CNTRML: initial coord.s etc.'
 Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,NUCLP+1,6,NUCLP+1,1,LUPRI)
 Cdbg     CALL PRNARR('CNTRML: ATMARR start', NUCLP, ATMARR)
@@ -721,32 +733,87 @@ Cdbg     CALL PRNARR('CNTRML: ATMARR start', NUCLP, ATMARR)
          SUM(1) = 0.0D0
          SUM(2) = 0.0D0
          SUM(3) = 0.0D0
-C ::: Finds the three coordinates of the center of mass, then the molecule :::
-C ::: is moved so that the center of mass coincides with the origin.        :::
+C ::: Finds the three coordinates of the center of mass,
+C ::: then we calculate the inertia tensor around the center of mass,
+C ::: then the molecule is moved so that the center of mass coincides with the origin
+C ::: and the molecule is rotated such that the principal moment of inertia axes
+C ::: are along the coordinate axes.
          TOTMAS = 0.0D0
-         DO 100 I=1,N
+         DO I=1,N_ATOMS
             IZ = NINT(ATMARR(4,I))
-         IF (IZ .GT. 0) THEN
+         IF (IZ .LE. 0) CYCLE
 C... hjaaj exclude point charges, MM atoms and floating orbitals
 C          in the centering of the molecule.
-            AMASS = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
+            AMASS  = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
             TOTMAS = TOTMAS + AMASS
             SUM(1) = SUM(1) + ATMARR(1,I)*AMASS
             SUM(2) = SUM(2) + ATMARR(2,I)*AMASS
             SUM(3) = SUM(3) + ATMARR(3,I)*AMASS
-         END IF
- 100     CONTINUE
+         END DO
          SUM(1) = SUM(1)/TOTMAS
          SUM(2) = SUM(2)/TOTMAS
          SUM(3) = SUM(3)/TOTMAS
-         DO 200 I=1,N
-            ATMARR(1,I) = ATMARR(1,I) - SUM(1)
-            ATMARR(2,I) = ATMARR(2,I) - SUM(2)
-            ATMARR(3,I) = ATMARR(3,I) - SUM(3)
- 200     CONTINUE
-Cdbg     write (lupri,*) 'CNTRML: transformed coord.s'
-Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,NUCLP+1,6,NUCLP+1,1,LUPRI)
+C        SUM(1:3) now contains center-of-mass coordinates
+
+Cdbg     write(lupri,*) 'Total mass ',TOTMAS
+Cdbg     write(lupri,*) 'Center of mass',SUM(1:3)
+
+         CINRTP(1:6) = 0.0D0
+         DO I=1,N_ATOMS
+            IZ = NINT(ATMARR(4,I))
+         IF (IZ .LE. 0) CYCLE
+            AMASS  = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
+            XI = ATMARR(1,I) - SUM(1)
+            YI = ATMARR(2,I) - SUM(2)
+            ZI = ATMARR(3,I) - SUM(3)
+            CINRTP(1) = CINRTP(1) + AMASS*(YI*YI + ZI*ZI)
+            CINRTP(2) = CINRTP(2) - AMASS* XI*YI
+            CINRTP(3) = CINRTP(3) + AMASS*(XI*XI + ZI*ZI)
+            CINRTP(4) = CINRTP(4) - AMASS* XI*ZI
+            CINRTP(5) = CINRTP(5) - AMASS* YI*ZI
+            CINRTP(6) = CINRTP(6) + AMASS*(XI*XI + YI*YI)
+         END DO
+Cdbg     write(lupri,*) 'mass inertia matrix'
+Cdbg     call outpak(cinrtp,3,1,lupri)
+         CALL DUNIT(VPCMOM,3)
+         CALL JACO(CINRTP,VPCMOM,3,3,3,TMP,ITMP)
+Cdbg     call outpak(cinrtp,3,1,lupri)
+         CINRTP(2) = CINRTP(3)
+         CINRTP(3) = CINRTP(6)
+C        sort after increasing value - will put oblate molecule
+C        primarily in the x-y plane.
+         CALL ORDER(VPCMOM,CINRTP,3,3)
+         IF (CINRTP(2) .GE. 1.0D0) THEN ! avoid divide by zero for atoms
+         IF (CINRTP(1)/CINRTP(2) .LT. 0.8D0*CINRTP(2)/CINRTP(3)) THEN
+C        ... definitely more prolate than oblate, maybe (close to) linear,
+C            we resort after increasing value to get molecular axis along z-axis
+            CALL ORDER2(VPCMOM,CINRTP,3,3)
+         END IF
+         END IF
+Cdbg     write (lupri,*) 'PCMOM, VPCMOM turn',ITURN
+Cdbg     call output(CINRTP,1,1,1,3,1,3,1,lupri)
+Cdbg     call output(VPCMOM,1,3,1,3,3,3,1,LUPRI)
+C
+C        Now we are ready to center and rotate molecule:
+C        Note:  VPCMOM describes how to rotate coordinate axes
+C               thus molecule should be rotated with VPCMOM(inverse)
+C               which is same as VPC(transposed)
+C
+         DO I=1,N_ATOMS
+            XI = ATMARR(1,I) - SUM(1)
+            YI = ATMARR(2,I) - SUM(2)
+            ZI = ATMARR(3,I) - SUM(3)
+            ATMARR(1,I) = XI*VPCMOM(1,1)+YI*VPCMOM(2,1)+ZI*VPCMOM(3,1)
+            ATMARR(2,I) = XI*VPCMOM(1,2)+YI*VPCMOM(2,2)+ZI*VPCMOM(3,2)
+            ATMARR(3,I) = XI*VPCMOM(1,3)+YI*VPCMOM(2,3)+ZI*VPCMOM(3,3)
+         END DO
+Cdbg     write (lupri,*) 'CENTER_MOLECULE: transformed coord.s'
+Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
       IF (ITURN .LE. 1) GO TO 10
+      WRITE(LUPRI,'(/A/A)')
+     &   ' - molecule centered at center of mass and rotated so',
+     &   '   principal axes of inertia are along coordinate axes.'
+Cdbg     CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
       RETURN
       END
 C  /* Deck rotmol */
@@ -809,30 +876,36 @@ C ::: Finally the rotated coordinates are given back to the atom. :::
          RETURN
       END
 C  /* Deck trnmol */
-      SUBROUTINE TRNMOL(MXM, ATMARR, DRTAXS, DIRAXS, DMRPLN,
-     &                  TMPARR, LENTMP)
+      SUBROUTINE TURN_MOLECULE(MXM, ATMARR, DRTAXS, DIRAXS, DMRPLN,
+     &                   TMPARR, LENTMP)
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                    ::
 C ::       Turns molecule to sensible orientation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
-#include <mxsymm.h>
-         DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
-         DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN (6,0:MAXMIR)
-         DIMENSION V1(3), V2(3), V3(3), TMPARR(6,0:LENTMP)
-         CALL DZERO(TMPARR,6*(LENTMP+1))
-         N = NINT(ATMARR(1,0))
+#include "implicit.h"
+#include "priunit.h"
+#include "mxsymm.h"
+      DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
+      DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN (6,0:MAXMIR)
+      DIMENSION V1(3), V2(3), V3(3), TMPARR(6,0:LENTMP)
+C
+      N_ROTAXS = NINT(DRTAXS(1,0))
+      N_MIRROR = NINT(DMRPLN(1,0))
+      N_ATOMS  = NINT(ATMARR(1,0))
+
+      IF (N_ROTAXS .LE. 0) GOTO 9000 ! RETURN, no turning if no rotation axes (C1, Cs, or Ci symmetry)
+C
+      CALL DZERO(TMPARR,6*(LENTMP+1))
 C ::: First we make a new array of vectors, consisting of mirror :::
 C ::: planes, even-ordered rotational axes and atom positions.   :::
-         ITURN = 0
-c        NTOT = N + NINT(DRTAXS(1,0) + DMRPLN(1,0))
+      ITURN = 0
+c     NTOT  = N_ATOMS + N_ROTAXS + N_MIRROR
 C        ... we count instead
-         NTOT = 0
+      NTOT  = 0
 C 1) rotational axes of even order (C_2, C_4, etc.)
 chj Nov 2007: include both even and odd orders
-         DO I = 1, NINT(DRTAXS(1,0))
+         DO I = 1, N_ROTAXS
 ckr
 ckr         The following test prevented the molecule from being rotated
 ckr         to standard orientation in case of groups in which the highest
@@ -852,7 +925,7 @@ chj: no, we want to save the order to find highest rotation axis for z-direction
             END IF
          END DO
 C 2) mirror planes
-         DO I = 1, NINT(DMRPLN(1,0))
+         DO I = 1, N_MIRROR
             NTOT = NTOT + 1
             DO 115 K = 1, 3
                TMPARR(K,NTOT) = DMRPLN(K,I)
@@ -861,7 +934,7 @@ C 2) mirror planes
          END DO
 C 3) rotational axes of odd order (C_3, C_5, etc.)
 chj Nov 2007: now done in "1)" above
-chj      DO I = 1, NINT(DRTAXS(1,0))
+chj      DO I = 1, N_ROTAXS
 chj         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
 chj  &         (ABS(MOD(DRTAXS(4,I),2.0D0)) .GT. 1.0D-2)) THEN
 chj            NTOT = NTOT + 1
@@ -871,7 +944,7 @@ chj            END DO
 chj         END IF
 chj      END DO
 C 4) and all the nuclei/point charges
-         DO 130 I = 1, N
+         DO 130 I = 1, N_ATOMS
             NTOT = NTOT + 1
             DO 135 K = 1, 3
                TMPARR(K,NTOT) = ATMARR(K,I)
@@ -886,14 +959,12 @@ C        Find first non-zero vector, place it along z-axis
 C        (if no symmetry axes, it will become the coordinates of
 C        the first of the nuclei with highest charge).
 C
-         IF (NTOT .GT. 0) THEN
-            V1(1) = TMPARR(1,1)
-            V1(2) = TMPARR(2,1)
-            V1(3) = TMPARR(3,1)
-         END IF
          I = 1
+         V1(1) = TMPARR(1,1)
+         V1(2) = TMPARR(2,1)
+         V1(3) = TMPARR(3,1)
  150     CONTINUE
-         IF (((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)) .LT. TOLLRN*TOLLRN)
+         IF (((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)) .LT. TOLLRN_2)
      &                        .AND. (I .LT. NTOT)) THEN
             I = I + 1
             V1(1) = TMPARR(1,I)
@@ -901,7 +972,7 @@ C
             V1(3) = TMPARR(3,I)
             GOTO 150
          END IF
-         IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)).GT.TOLLRN*TOLLRN)THEN
+         IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)).GT.TOLLRN_2)THEN
 C           V2 = target direction (along z-axis)
             V2(1) = 0.0D0
             V2(2) = 0.0D0
@@ -911,7 +982,7 @@ C           V3 = axis to rotate around
             V3(2) = -V1(1)
             V3(3) = 0.0D0
             IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
-     &                   .GT. TOLLRN*TOLLRN) THEN
+     &                   .GT. TOLLRN_2) THEN
                DEG = VECANG(V1, V2)
                CALL ROTMOL(MXM   , ATMARR, V3, DEG)
                CALL ROTMOL(MAXAXS, DRTAXS, V3, DEG)
@@ -942,8 +1013,8 @@ C
             V1(1) = TMPARR(1,I)
             V1(2) = TMPARR(2,I)
             V1(3) = 0.0D0
-            IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3).GT.TOLLRN*TOLLRN)
-     &                      .AND. (ABS(TMPARR(3,I)) .LT. TOLLRN)) THEN
+            IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3) .GT. TOLLRN_2)
+     &          .AND. (ABS(TMPARR(3,I)) .LT. TOLLRN)) THEN
 C              V2 = target direction (along x-axis)
                V2(1) = 1.0D0
                V2(2) = 0.0D0
@@ -953,7 +1024,7 @@ C              V3 = axis to rotate around
                V3(2) = -V1(1)*V2(3) + V2(1)*V1(3)
                V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
                IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
-     &                                        .GT. TOLLRN*TOLLRN) THEN
+     &                                        .GT. TOLLRN_2) THEN
                   DEG = VECANG(V1, V2)
                   CALL ROTMOL(MXM   , ATMARR, V3, DEG)
                   CALL ROTMOL(MAXAXS, DRTAXS, V3, DEG)
@@ -976,7 +1047,8 @@ C             i.e. do not require true z-coordinate to be zero this time.
             I = JJ
             GOTO 200
          END IF
-         RETURN
+C
+ 9000 RETURN
       END
 C  /* Deck linmol */
       LOGICAL FUNCTION LINMOL(MXM, ATMARR)
@@ -988,16 +1060,16 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
-         N = NINT(ATMARR(1,0))
+         N_ATOMS = NINT(ATMARR(1,0))
          LINMOL = .TRUE.
-         IF (N .GT. 2) THEN
+         IF (N_ATOMS .GT. 2) THEN
 C ::: Builds first vector from bond between the two first atoms :::
             V1(1) = ATMARR(1,1)-ATMARR(1,2)
             V1(2) = ATMARR(2,1)-ATMARR(2,2)
             V1(3) = ATMARR(3,1)-ATMARR(3,2)
             I = 2
  100        CONTINUE
-            IF((I .LT. N) .AND. LINMOL) THEN
+            IF((I .LT. N_ATOMS) .AND. LINMOL) THEN
 C ::: If molecule is to be linear, all subsequent bonds must be parallel  :::
 C ::: with the first one, and hence give a zero vector as cross product.  :::
                V2(1) = ATMARR(1,I)-ATMARR(1,I+1)
@@ -1007,7 +1079,7 @@ C ::: with the first one, and hence give a zero vector as cross product.  :::
                V3(2) = -V1(1)*V2(3) + V2(1)*V1(3)
                V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
                IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
-     &                   .GT. TOLLRN*TOLLRN) LINMOL = .FALSE.
+     &                   .GT. TOLLRN_2) LINMOL = .FALSE.
                I = I + 1
                GOTO 100
             END IF
@@ -1025,11 +1097,11 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
          LOGICAL LINMOL
-         N = NINT(ATMARR(1,0))
+         N_ATOMS = NINT(ATMARR(1,0))
          PLNMOL = .TRUE.
 C ::: With three atoms or less, we can be sure it's planar. If it's :::
 C ::: linear, it's also planar of course.                           :::
-         IF ((N .GT. 3) .AND. (.NOT. LINMOL(MXM, ATMARR))) THEN
+         IF ((N_ATOMS .GT. 3) .AND. (.NOT. LINMOL(MXM, ATMARR))) THEN
 C ::: We then have to find two bonds that span the possible molecular :::
 C ::: plane. Since we've taken care of linear molecules, two such     :::
 C ::: vectors do indeed exist. The cross product, V3, of these two    :::
@@ -1046,7 +1118,7 @@ C ::: vectors will be perpendicular to the plane.                     :::
             I = 3
  100        CONTINUE
             IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3) .LT.
-     &                      TOLLRN*TOLLRN) .AND. (I .LE. N)) THEN
+     &                      TOLLRN_2) .AND. (I .LE. N_ATOMS)) THEN
                V2(1) = ATMARR(1,2) - ATMARR(1,I)
                V2(2) = ATMARR(2,2) - ATMARR(2,I)
                V2(3) = ATMARR(3,2) - ATMARR(3,I)
@@ -1056,13 +1128,13 @@ C ::: vectors will be perpendicular to the plane.                     :::
                I = I + 1
                GOTO 100
             END IF
-C ::: We the go through the rest of the bonds, verifing that they're :::
-C ::: perpendicular to the perpendicular vector, V3, that is, that   :::
-C ::: they lie in the same plane. The test is done by checking that  :::
-C ::: the dot product is very close to zero.                         :::
+C ::: We the go through the rest of the bonds, verifing that they    :::
+C ::: are perpendicular to the perpendicular vector, V3, that is,    :::
+C ::: that they lie in the same plane. The test is done by checking  :::
+C ::: that the dot product is very close to zero.                    :::
             I = 2
  200        CONTINUE
-            IF ((I .LT. N) .AND. PLNMOL) THEN
+            IF ((I .LT. N_ATOMS) .AND. PLNMOL) THEN
                V1(1) = ATMARR(1,I) - ATMARR(1,I+1)
                V1(2) = ATMARR(2,I) - ATMARR(2,I+1)
                V1(3) = ATMARR(3,I) - ATMARR(3,I+1)
@@ -1086,17 +1158,16 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "mxcent.h"
          DIMENSION ATMARR(6,0:MXM), V1(3)
          DIMENSION IUSED(MXCENT)
-         N = NINT(ATMARR(1,0))
+         N_ATOMS = NINT(ATMARR(1,0))
          CALL IZERO(IUSED,MXCENT)
 C ::: The routine depends on the atoms being sorted and centered.    :::
 C ::: The matrix 'Used' keeps track of which atoms have been paired. :::
 C ::: First, atom(s) lying in origo are dropped.                     :::
-         DO 100 I=1,N
+         DO 100 I=1,N_ATOMS
             V1(1) = ATMARR(1,I)
             V1(2) = ATMARR(2,I)
             V1(3) = ATMARR(3,I)
-            IF (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3) .LT.
-     &                 TOLLRN*TOLLRN) THEN
+            IF (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3) .LT. TOLLRN_2) THEN
                IUSED(I) = 1
             ELSE
                IUSED(I) = 0
@@ -1105,11 +1176,11 @@ C ::: First, atom(s) lying in origo are dropped.                     :::
 C ::: We then proceed with the rest of the atoms, trying to pair them. :::
          I = 1
  200     CONTINUE
-         IF (I .LT. N) THEN
+         IF (I .LT. N_ATOMS) THEN
             IF (IUSED(I) .EQ. 0) THEN
                J = I + 1
  250           CONTINUE
-                  IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N)) THEN
+                  IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N_ATOMS)) THEN
                      IF (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)) .AND.
      &                   NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) THEN
                         V1(1) = ATMARR(1,I) + ATMARR(1,J)
@@ -1118,7 +1189,7 @@ C ::: We then proceed with the rest of the atoms, trying to pair them. :::
 C ::: The sum of two anti-parallel vectors of equal length, is the  :::
 C ::: zero vector. We use this to find each atoms "partner".        :::
                         IF (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3) .LT.
-     &                       TOLLRN*TOLLRN) THEN
+     &                       TOLLRN_2 ) THEN
                            IUSED(I) = 1
                            IUSED(J) = 1
                         END IF
@@ -1133,10 +1204,10 @@ C ::: zero vector. We use this to find each atoms "partner".        :::
 C ::: Finally, we have to check that all the atoms of the molecule :::
 C ::: have been inverted into another atom of the same kind.       :::
          ISUM = 0
-         DO 300 I=1,N
+         DO 300 I=1,N_ATOMS
             ISUM = ISUM + IUSED(I)
  300     CONTINUE
-         INVMOL = (ISUM .EQ. N)
+         INVMOL = (ISUM .EQ. N_ATOMS)
          RETURN
       END
 C  /* Deck mirmol */
@@ -1158,10 +1229,10 @@ C
 #include "mxsymm.h"
          DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), VEC(3)
          DIMENSION VROT(3), V1(3), IUSED(MXCENT)
-         N = NINT(ORGARR(1,0))
+         N_ATOMS = NINT(ORGARR(1,0))
 C ::: Instead of working on the original coordinates, we make a copy.   :::
 C ::: By doing so, no numerical error is built up by repeated rotation. :::
-         DO 100 I = 0,N
+         DO 100 I = 0,N_ATOMS
             ATMARR(1,I) = ORGARR(1,I)
             ATMARR(2,I) = ORGARR(2,I)
             ATMARR(3,I) = ORGARR(3,I)
@@ -1183,8 +1254,8 @@ C ::: in the XY-plane.                                               :::
          END IF
 C ::: All atoms lying in the XY-plane are dropped. :::
          N_ATOMS_IN_PLANE = 0
-         DO 200 I=1,N
-            IF (ATMARR(3,I)*ATMARR(3,I).LT.TOLLRN*TOLLRN) THEN
+         DO 200 I=1,N_ATOMS
+            IF (ATMARR(3,I)*ATMARR(3,I).LT.TOLLRN_2) THEN
                N_ATOMS_IN_PLANE = N_ATOMS_IN_PLANE + 1
                IUSED(I) = 1
             ELSE
@@ -1194,23 +1265,23 @@ C ::: All atoms lying in the XY-plane are dropped. :::
 C ::: Then we go through the rest, trying to find each atoms mirror image :::
          I = 1
  300     CONTINUE
-         IF (I .LT. N) THEN
+         IF (I .LT. N_ATOMS) THEN
             IF (IUSED(I) .EQ. 0) THEN
                J = I + 1
  350           CONTINUE
-               IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N) .AND.
+               IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N_ATOMS) .AND.
      &             (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND.
      &             (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))) THEN
-C ::: The possible mirror atom's position is investigated. First, we :::
-C ::: subtract the XY-comp. of the first atom. If the two project    :::
-C ::: into the same point in the XY-plane, Atom #2 only has its      :::
-C ::: Z- comp. left. We add the Z-comp. of #1, and the sum should    :::
+C ::: The position of the possible mirror atom is investigated.      :::
+C ::: First, we subtract the XY-comp. of the first atom. If the two  :::
+C ::: project into the same point in the XY-plane, Atom #2 only has  :::
+C ::: its Z-comp. left. We add the Z-comp. of #1, and the sum should :::
 C ::: be a zero vector if they are each others mirror image.         :::
                   V1(1) = ATMARR(1,J) - ATMARR(1,I)
                   V1(2) = ATMARR(2,J) - ATMARR(2,I)
                   V1(3) = ATMARR(3,J) + ATMARR(3,I)
                   IF (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3) .LT.
-     &                                    TOLLRN*TOLLRN*1.0D1) THEN
+     &                                    10.D0*TOLLRN_2) THEN
                      IUSED(I) = 1
                      IUSED(J) = 1
                   END IF
@@ -1223,10 +1294,10 @@ C ::: be a zero vector if they are each others mirror image.         :::
          END IF
 C ::: Finally, we have to check that all atoms have been used. :::
          ISUM = 0
-         DO 400 I = 1, N
+         DO 400 I = 1, N_ATOMS
             ISUM = ISUM + IUSED(I)
  400     CONTINUE
-         MIRMOL = (ISUM .EQ. N)
+         MIRMOL = (ISUM .EQ. N_ATOMS)
          RETURN
       END
 C  /* Deck rotaxs */
@@ -1237,11 +1308,11 @@ C ::       Checks if the mol. has rotational axis of order IORDER      ::
 C ::                     around the given vector                       ::
 C ::                                                                   ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "mxsymm.h"
          DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), ROTVEC(3)
          LOGICAL PROPER,EQL
          DIMENSION VROT(3), V1(3), V2(3)
@@ -1249,12 +1320,12 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          IORDR = IORDER
          IF (.NOT. PROPER) IORDR = 2*IORDER
          CON2PO = 2.0D0*PI/DBLE(IORDR)
-C ::: If we're looking for improper rotational axes, we have to :::
-C ::: multiply the order by a factor of two.                    :::
-         N = NINT(ORGARR(1,0))
+C ::: If we are looking for improper rotational axes, we have :::
+C ::: to multiply the order by a factor of two.               :::
+         N_ATOMS = NINT(ORGARR(1,0))
          ATMARR(1,0) = ORGARR(1,0)
 C ::: The original matrix is copied. :::
-         DO 100 I=1,N
+         DO 100 I=1,N_ATOMS
             ATMARR(1,I) = ORGARR(1,I)
             ATMARR(2,I) = ORGARR(2,I)
             ATMARR(3,I) = ORGARR(3,I)
@@ -1276,12 +1347,12 @@ C ::: lies along the Z-axis                                       :::
          VROT(2) = -V1(1)*ROTVEC(3) + ROTVEC(1)*V1(3)
          VROT(3) =  V1(1)*ROTVEC(2) - ROTVEC(1)*V1(2)
          IF (VROT(1)*VROT(1)+VROT(2)*VROT(2)+VROT(3)*VROT(3) .GT.
-     &                                            TOLLRN*TOLLRN) THEN
+     &                                            TOLLRN_2) THEN
             DEG = VECANG(ROTVEC, V1)
             CALL ROTMOL(MXM, ATMARR, VROT, -DEG)
          END IF
 C ::: Initialize IUSED array to all atoms not used :::
-         DO I=1,N
+         DO I=1,N_ATOMS
             IUSED(I) = 0
          END DO
 C ::: Then we check if the (im)proper rotation of atom I hits another atom :::
@@ -1289,7 +1360,7 @@ C ::: Then we check if the (im)proper rotation of atom I hits another atom :::
          I = 1
          ROTAXS = .TRUE.
  300     CONTINUE
-         IF (ROTAXS .AND. (I .LE. N)) THEN
+         IF (ROTAXS .AND. (I .LE. N_ATOMS)) THEN
             IF (IUSED(I) .EQ. 0) THEN
 C ::: We take the XY-component. :::
                V1(1) = ATMARR(1,I)
@@ -1299,7 +1370,7 @@ C ::: We take the XY-component. :::
                IORD = 0
                J = I
  350           CONTINUE
-               IF ( (IORD .LT. IORDR) .AND. (J .LE. N) ) THEN
+               IF ( (IORD .LT. IORDR) .AND. (J .LE. N_ATOMS) ) THEN
                   EQL = (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)) .AND.
      &                   NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))
                IF ( EQL ) THEN
@@ -1352,11 +1423,11 @@ C ::: We also have to check that the symmetry is complete :::
 C ::: Finally, we check that all atoms have been rotated into another atom. :::
          ISUM = 0
          IF (ROTAXS) THEN
-            DO 400 I = 1, N
+            DO 400 I = 1, N_ATOMS
                ISUM = ISUM + IUSED(I)
  400        CONTINUE
          END IF
-         ROTAXS = (ISUM .EQ. N)
+         ROTAXS = (ISUM .EQ. N_ATOMS)
          RETURN
       END
 C  /* Deck findax */
@@ -1378,7 +1449,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION ICNT(2), IUSED(2*MXCENT)
          LOGICAL ROTAXS, PROPER
          DRTAXS(1,0) = 0.0D0
-         N = NINT(ATMARR(1,0))
+         N_ATOMS = NINT(ATMARR(1,0))
          IF (PROPER) THEN
             MINORD = 2
          ELSE
@@ -1392,7 +1463,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
  95      CONTINUE
          I = 1
  100     CONTINUE
-         IF (I .LE. N) THEN
+         IF (I .LE. N_ATOMS) THEN
             J = I
 C ::: We have to make sure we get all the equivalent atoms. :::
  105        CONTINUE
@@ -1411,12 +1482,12 @@ C ::: The number of equivalent atoms are counted. :::
             V2(1) = ATMARR(1,J)
             V2(2) = ATMARR(2,J)
             V2(3) = ATMARR(3,J)
-            IF ((J .LE. N) .AND.
+            IF ((J .LE. N_ATOMS) .AND.
      &        (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND.
      &        (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) .AND.
      &        (((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)) -
      &          (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))) .LT.
-     &                                      TOLLRN*TOLLRN)) THEN
+     &                                      TOLLRN_2)) THEN
                IORD = IORD + 1
                J = J + 1
                GOTO 110
@@ -1424,7 +1495,7 @@ C ::: The number of equivalent atoms are counted. :::
 C ::: Order must be two or higher to be of interest. :::
             IF (IORD .GT. 1) THEN
 C ::: We "add" all equivalent atoms to yield a vector. If this vector is :::
-C ::: different from the zero vector, it's the only possible rotational  :::
+C ::: different from the zero vector, it is the only possible rotational :::
 C ::: axis. If it adds up to the zero vector, the atoms defines a        :::
 C ::: linear, planar or highly symmetrical structur (it has to be        :::
 C ::: symmetrical around origo).                                         :::
@@ -1437,7 +1508,7 @@ C ::: symmetrical around origo).                                         :::
                   V1(3) = V1(3) + ATMARR(3,K)
  120           CONTINUE
                V1NRM2 = V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)
-               IF (V1NRM2 .LT. TOLLRN*TOLLRN) THEN
+               IF (V1NRM2 .LT. TOLLRN_2) THEN
 C ::: All but the linear case has order higher than two. :::
                   IF (IORD .GT. 2) THEN
                      V1(1) = ATMARR(1,I)
@@ -1453,7 +1524,7 @@ C ::: the normal vector of this plane as a possible rotational axis. :::
                         V3(2) = -V1(1)*V2(3) + V2(1)*V1(3)
                         V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
                         IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
-     &                                       .GT. TOLLRN*TOLLRN) THEN
+     &                                       .GT. TOLLRN_2) THEN
                           DO L=IORD,MINORD,-1
                            IF (ROTAXS(MXM,ATMARR,TMPARR,L,V3,PROPER))
      &                        THEN
@@ -1502,7 +1573,7 @@ C                          DO WHILE (ICNT(K) .LE. IORD)
                               END DO ! L = 1,K
 C ::: We check for all possible orders of rotation from Ord/2 and down :::
                               IF((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
-     &                                       .GT. TOLLRN*TOLLRN) THEN
+     &                                       .GT. TOLLRN_2) THEN
                                DO M = IORD/2, MINORD, -1
                                IF(ROTAXS(MXM,ATMARR,TMPARR,M,V2,PROPER))
      &                            THEN
@@ -1521,8 +1592,8 @@ C ::: We check for all possible orders of rotation from Ord/2 and down :::
 C                          ... END DO WHILE
  160                    CONTINUE
 C ::: Molecules with high symmetry and an inversion center, might have  :::
-C ::: a central axis that's difficult to get at. To find it, we add all :::
-C ::: atoms on one side of the origo. All these have positive dot       :::
+C ::: a central axis that is difficult to get at. To find it, we add    :::
+C ::: all atoms on one side of the origo. All these have positive dot   :::
 C ::: products between themselves.                                      :::
                         V1(1) = 0.0D0
                         V1(2) = 0.0D0
@@ -1544,7 +1615,7 @@ C ::: products between themselves.                                      :::
                               END IF
                            END DO
                            IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
-     &                         .GT. TOLLRN*TOLLRN) THEN
+     &                         .GT. TOLLRN_2) THEN
                              DO M = IORD/2, MINORD, -1
                               IF (ROTAXS(MXM,ATMARR,TMPARR,M,V3,PROPER))
      &                           THEN
@@ -1636,7 +1707,7 @@ C ::: We need another vector to specify the axis, so we store it. :::
 C ::: If a vector already is stored, we check if the two span a   :::
 C ::: plane. If they do, a C2 axis perp. to the plane is tested.  :::
                         IF (VSTORE(1)*VSTORE(1)+VSTORE(2)*VSTORE(2)+
-     &                      VSTORE(3)*VSTORE(3) .LT. TOLLRN*TOLLRN) THEN
+     &                      VSTORE(3)*VSTORE(3) .LT. TOLLRN_2) THEN
                            VSTORE(1) = V1(1)
                            VSTORE(2) = V1(2)
                            VSTORE(3) = V1(3)
@@ -1645,7 +1716,7 @@ C ::: plane. If they do, a C2 axis perp. to the plane is tested.  :::
                            V3(2) = -V1(1)*VSTORE(3) + VSTORE(1)*V1(3)
                            V3(3) =  V1(1)*VSTORE(2) - VSTORE(1)*V1(2)
                            IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
-     &                                        .GT. TOLLRN*TOLLRN) THEN
+     &                                        .GT. TOLLRN_2) THEN
                               IF (ROTAXS(MXM,ATMARR,TMPARR,2,V3,PROPER))
      &                           THEN
                                  CALL ADD2AR(MAXAXS, DRTAXS, 2, V3)
@@ -1668,7 +1739,7 @@ C ::: The easiest case is when the atoms define the only possible axis. :::
             GOTO 100
          END IF
          CALL DLDPAX(MAXAXS, DRTAXS)
-         CALL SRTATM(MAXAXS, DRTAXS, .FALSE.)
+         CALL SRTATM(MAXAXS, DRTAXS, .FALSE.) ! sort so highest order first
          RETURN
       END
 C  /* Deck fndima */
@@ -1683,7 +1754,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION ATMARR(6,0:MXM), AXIMAR(6,0:MAXAXS)
          DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
          DIMENSION V1(3), V2(3)
-         N = NINT(ATMARR(1,0))
+         N_ATOMS = NINT(ATMARR(1,0))
 C ::: And we call upon FindAx to find all axes for this molecule. :::
          CALL FINDAX(MXM, ATMARR, AXIMAR, TMPARR, .FALSE.)
 C ::: We have to multiply all orders by a factor of two to get S_n not S_2n :::
@@ -1704,7 +1775,7 @@ C ::: and parallellity to proper axes.                                   :::
                V2(2) = -V1(1)*AXIMAR(3,J) + AXIMAR(1,J)*V1(3)
                V2(3) =  V1(1)*AXIMAR(2,J) - AXIMAR(1,J)*V1(2)
                IF ((ORD .GE. NINT(AXIMAR(4,J))) .AND. (V2(1)*V2(1)+
-     &               V2(2)*V2(2)+V2(3)*V2(3) .LT. TOLLRN*TOLLRN)) THEN
+     &               V2(2)*V2(2)+V2(3)*V2(3) .LT. TOLLRN_2)) THEN
                   DO 205 K = 1, NINT(AXIMAR(1,0)) - J
                      AXIMAR(1,J+K-1) = AXIMAR(1,J+K)
                      AXIMAR(2,J+K-1) = AXIMAR(2,J+K)
@@ -1734,16 +1805,16 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
          LOGICAL   MIRMOL, PLNMOL, LINMOL
          DMRARR(1,0) = 0.0D0
-         N = NINT(ATMARR(1,0))
+         N_ATOMS = NINT(ATMARR(1,0))
          VSTORE(1) = 0.0D0
          VSTORE(2) = 0.0D0
          VSTORE(3) = 0.0D0
 C ::: First we check all planes perpendicular to one atom pos. :::
-         DO 100 I = 1, N
+         DO 100 I = 1, N_ATOMS
             V1(1) = ATMARR(1,I)
             V1(2) = ATMARR(2,I)
             V1(3) = ATMARR(3,I)
-            IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3).GT.TOLLRN*TOLLRN)
+            IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3) .GT. TOLLRN_2)
      &          .AND. (MIRMOL(MXM, ATMARR, TMPARR, V1,N2))) THEN
                CALL ADD2AR(MAXMIR, DMRARR, N2, V1)
                CALL DLDPAX(MAXMIR, DMRARR)
@@ -1753,7 +1824,7 @@ C ::: Next thing, we go through all pairs of equal atoms, examining      :::
 C ::: possible mirror planes through and between them. For the linear    :::
 C ::: cases, a vector is stored. If one already is stored, we got enough :::
 C ::: information to test a mirror plane.                                :::
-         DO 200 I = 1, N-1
+         DO 200 I = 1, N_ATOMS-1
             V1(1) = ATMARR(1,I)
             V1(2) = ATMARR(2,I)
             V1(3) = ATMARR(3,I)
@@ -1761,8 +1832,8 @@ C ::: information to test a mirror plane.                                :::
             IATMNR = NINT(ATMARR(4,I))
             IATMMS = NINT(ATMARR(6,I))
  210        CONTINUE
-            IF ((J .LE. N) .AND. (NINT(ATMARR(4,J)) .EQ. IATMNR) .AND.
-     &                           (NINT(ATMARR(6,J)) .EQ. IATMMS)) THEN
+            IF ((J .LE. N_ATOMS) .AND. (NINT(ATMARR(4,J)) .EQ. IATMNR)
+     &          .AND. (NINT(ATMARR(6,J)) .EQ. IATMMS)) THEN
                V2(1) = ATMARR(1,J)
                V2(2) = ATMARR(2,J)
                V2(3) = ATMARR(3,J)
@@ -1770,8 +1841,8 @@ C ::: Checking the cross product, tells us whether the atoms lie on a line. :::
                V3(1) =  V1(2)*V2(3) - V2(2)*V1(3)
                V3(2) = -V1(1)*V2(3) + V2(1)*V1(3)
                V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
-               IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
-     &                                    .GT. TOLLRN*TOLLRN) THEN
+               IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)).GT. TOLLRN_2)
+     &         THEN
 C ::: The cross product defines the plane both atoms lie in. :::
                   IF (MIRMOL(MXM, ATMARR, TMPARR, V3, N2)) THEN
                      CALL ADD2AR(MAXMIR, DMRARR, N2, V3)
@@ -1789,7 +1860,7 @@ C ::: the atoms.                                                       :::
                ELSE
 C ::: The linear case calls for another vector to specify a plane. :::
                   IF ((VSTORE(1)*VSTORE(1)+VSTORE(2)*VSTORE(2)+
-     &                 VSTORE(3)*VSTORE(3)) .LT. TOLLRN*TOLLRN) THEN
+     &                 VSTORE(3)*VSTORE(3)) .LT. TOLLRN_2) THEN
                      VSTORE(1) = V1(1)
                      VSTORE(2) = V1(2)
                      VSTORE(3) = V1(3)
@@ -1798,7 +1869,7 @@ C ::: The linear case calls for another vector to specify a plane. :::
                      V3(2) = -V1(1)*VSTORE(3) + VSTORE(1)*V1(3)
                      V3(3) =  V1(1)*VSTORE(2) - VSTORE(1)*V1(2)
                      IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
-     &                                       .GT. TOLLRN*TOLLRN) THEN
+     &                   .GT. TOLLRN_2) THEN
                         IF (MIRMOL(MXM, ATMARR, TMPARR, V3, N2)) THEN
                            CALL ADD2AR(MAXMIR, DMRARR, N2, V3)
                            CALL DLDPAX(MAXMIR, DMRARR)
@@ -1811,9 +1882,9 @@ C ::: The linear case calls for another vector to specify a plane. :::
             END IF
  200     CONTINUE
 C ::: If the molecule is planar, not linear, and have no other symmetry   :::
-C ::: element than this plane, we won't have found it. This must be taken :::
+C ::: element than this plane, we have not found it. This must be taken   :::
 C ::: care of.                                                            :::
-         IF ((N .GT. 2) .AND. PLNMOL(MXM, ATMARR) .AND.
+         IF ((N_ATOMS .GT. 2) .AND. PLNMOL(MXM, ATMARR) .AND.
      &       (.NOT. LINMOL(MXM, ATMARR))) THEN
             V1(1) = ATMARR(1,1) - ATMARR(1,2)
             V2(1) = ATMARR(1,2) - ATMARR(1,3)
@@ -1827,8 +1898,8 @@ C ::: Take cross product of the two bonds. :::
             V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
             I = 4
  250        CONTINUE
-            IF ((I .LE. N) .AND. (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
-     &                                    .LT. TOLLRN*TOLLRN)) THEN
+            IF ((I .LE. N_ATOMS) .AND.
+     &         (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3) .LT. TOLLRN_2)) THEN
                V2(1) = ATMARR(1,2) - ATMARR(1,I)
                V2(2) = ATMARR(2,2) - ATMARR(2,I)
                V2(3) = ATMARR(3,2) - ATMARR(3,I)
@@ -1839,7 +1910,7 @@ C ::: Take cross product of the two bonds. :::
                GOTO 250
             END IF
             IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
-     &                                     .GT. TOLLRN*TOLLRN) THEN
+     &                                     .GT. TOLLRN_2) THEN
                IF (MIRMOL(MXM, ATMARR, TMPARR, V3, N2)) THEN
                   CALL ADD2AR(MAXMIR, DMRARR, N2, V3)
                   CALL DLDPAX(MAXMIR, DMRARR)
@@ -1863,11 +1934,11 @@ C ::: Horizontal - 2   Vertical - 1   Other/Undecided - 0                :::
                V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
 C ::: First the horizontal. :::
                IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
-     &                                    .LT. TOLLRN*TOLLRN) THEN
+     &                                    .LT. TOLLRN_2) THEN
                   DMRARR(4,I) = 2.0D6 + DMRARR(4,I) + 0.1D0
 C ::: Then the vertical. :::
-               ELSE IF (ABS(V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3)) .LT.
-     &                                                   TOLLRN) THEN
+               ELSE IF (ABS(V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3))
+     &                                     .LT. TOLLRN) THEN
                   DMRARR(4,I) = 1.0D6 + DMRARR(4,I) + 0.1D0
 C ::: The rest must be diagonal/undecided. :::
                ELSE
@@ -1882,8 +1953,8 @@ C            roundoff errrors when DMRARR(4,I) = 0.0D0)
          RETURN
       END
 C  /* Deck fndgrp */
-      SUBROUTINE FNDGRP(MXM, ATMARR, DRTAXS, DIRAXS, DMRPLN,
-     &                  TMPARR, CLASS)
+      SUBROUTINE FIND_PGROUP(MXM, ATMARR, DRTAXS, DIRAXS, DMRPLN,
+     &                       TMPARR, CLASS)
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                              ::
 C ::       Determines which point group molecule belongs to       ::
@@ -1905,7 +1976,7 @@ C ::: Find proper rotation axes
          CALL FINDAX(MXM, ATMARR, DRTAXS, TMPARR, .TRUE.)
 C ::: If the number of rotational axes exceeds 10, the number :::
 C ::: of improper rotational axes is likely to be very high   :::
-C ::: and we chosse to skip their determination.              :::
+C ::: and we choose to skip their determination.              :::
          IF (NINT(DRTAXS(1,0)) .LE. 10) THEN
             CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
          ELSE
@@ -1923,7 +1994,7 @@ C ::: We count rotational axes with order > 2 :::
             ITEMP = 0
             DO 100 I = 1, NINT(DRTAXS(1,0))
                IF (NINT(DRTAXS(4,I)) .GT. 2) ITEMP = ITEMP + 1
- 100           CONTINUE
+ 100        CONTINUE
             IF (ITEMP .GE. 2) THEN
                IF (.NOT. INVMOL(MXM, ATMARR)) THEN
                   CLASS = 'T(d)'
@@ -1952,7 +2023,7 @@ C ::: Number of perpendicular C2 axes is counted. :::
                   V2(3) = DRTAXS(3,I)
                   IF ((NINT(DRTAXS(4,I)).EQ.2) .AND. (ABS(V1(1)*V2(1)+
      &              V1(2)*V2(2)+V1(3)*V2(3)).LT.TOLLRN)) ITEMP = ITEMP+1
- 200           CONTINUE 
+ 200           CONTINUE
                IF (ITEMP .GE. NINT(DRTAXS(4,1))) THEN
                   MIRTYP = 1.0D-6*DMRPLN(4,1)
 C                 ... any horizontal mirror plane is first in DMRPLN
@@ -2019,8 +2090,8 @@ C ::: Number of perpendicular mirror planes is counted. :::
                   ELSE
                      IF (NINT(DIRAXS(1,0)) .LT. 0)
      &                  CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
-                     IF ((NINT(DIRAXS(1,0)) .GE. 1) .AND.
-     &                (NINT(DIRAXS(4,1)).GE.2*NINT(DRTAXS(4,1))))THEN
+                     IF ((NINT(DIRAXS(1,0)).GE.1) .AND.
+     &                   (NINT(DIRAXS(4,1)).GE.2*NINT(DRTAXS(4,1))))THEN
                         IF (NINT(DRTAXS(4,1)) .LT. 5) THEN
                            CLASS = 'S(n)'
                            WRITE(CLASS(3:3),111) 2*NINT(DRTAXS(4,1))
@@ -2099,9 +2170,9 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION TMPARR(6, 0:MXM), V1(3), V2(3), V3(3)
          CHARACTER STRING*9, SYMELM*9
          LOGICAL MIRMOL, ROTAXS, INVMOL, NECESS, GENELM
-         N = NINT(ATMARR(1,0))
-         EXTARR(1,0) = N
-         DO 100 I = 1, N
+         N_ATOMS = NINT(ATMARR(1,0))
+         EXTARR(1,0) = N_ATOMS
+         DO 100 I = 1, N_ATOMS
             DO 110 J = 1, 6
                EXTARR(J,I) = ATMARR(J,I)
  110        CONTINUE
@@ -2120,12 +2191,12 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
                IELMNT = IELMNT + 1
               J = 1
  130           CONTINUE
-               IF (J .LT. N) THEN
+               IF (J .LT. N_ATOMS) THEN
                   IF ((ABS(EXTARR(I,J)) .GT. TOLLRN) .AND.
      &                 (NINT(EXTARR(7,J)) .EQ. 0)) THEN
                      K = J + 1
  150                 CONTINUE
-                     IF ((K .LE. N) .AND.
+                     IF ((K .LE. N_ATOMS) .AND.
      &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J))) .AND.
      &                (NINT(EXTARR(6,K)) .EQ. NINT(EXTARR(6,J)))) THEN
                        CALL TSTPAR(MXM,EXTARR,TMPARR,J,K,1,V1,GENELM)
@@ -2150,18 +2221,18 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
                J = 1
                NECESS = .FALSE.
  250           CONTINUE
-               IF (J .LT. N) THEN
+               IF (J .LT. N_ATOMS) THEN
                   V2(1) = EXTARR(1,J)
                   V2(2) = EXTARR(2,J)
                   V2(3) = EXTARR(3,J)
                   V3(1) =  V1(2)*V2(3) - V2(2)*V1(3)
                   V3(2) = -V1(1)*V2(3) + V2(1)*V1(3)
                   V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
-                  IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3) .GT.
-     &              TOLLRN*TOLLRN) THEN
+                  IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
+     &               .GT. TOLLRN_2) THEN
                      K = J + 1
  260                 CONTINUE
-                     IF ((K .LE. N) .AND.
+                     IF ((K .LE. N_ATOMS) .AND.
      &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J))) .AND.
      &                (NINT(EXTARR(6,K)) .EQ. NINT(EXTARR(6,J)))) THEN
                         CALL TSTPAR(MXM,EXTARR,TMPARR,J,K,2,V1,GENELM)
@@ -2182,7 +2253,7 @@ C ::: necessary. The last is removed here (extremely dirty solution!!!) :::
 C ::: 12-1999 Torgeir: Expanded hack to make sure D2 symmetry is ok, and:::
 C ::: make use of as much symmetry as possible.                         :::
                IF ((NROT .EQ. 3) .AND. (IELMNT .GT. 1)) THEN
-                  CALL D2SYMM(ATMARR,N,MXM,SYMELM)
+                  CALL D2SYMM(ATMARR,N_ATOMS,MXM,SYMELM)
                END IF
 C ::: Some molecules causes a problem, with two mirror planes (A & B) :::
 C ::: and  a redundant rotation (AB), the last is removed             :::
@@ -2202,15 +2273,15 @@ C ::: (another dirty solution!!!)                                     :::
                IELMNT = IELMNT + 1
                J = 1
  350           CONTINUE
-               IF (J .LT. N) THEN
+               IF (J .LT. N_ATOMS) THEN
                   V2(1) = EXTARR(1,J)
                   V2(2) = EXTARR(2,J)
                   V2(3) = EXTARR(3,J)
-                  IF ((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3) .GT.
-     &              TOLLRN*TOLLRN).AND.(NINT(EXTARR(7,J)).EQ.0)) THEN
+                  IF ( (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3).GT.TOLLRN_2)
+     &                .AND. (NINT(EXTARR(7,J)).EQ.0) ) THEN
                      K = J + 1
  360                 CONTINUE
-                     IF ((K .LE. N) .AND.
+                     IF ((K .LE. N_ATOMS) .AND.
      &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J))) .AND.
      &                (NINT(EXTARR(6,K)) .EQ. NINT(EXTARR(6,J)))) THEN
                         CALL TSTPAR(MXM,EXTARR,TMPARR,J,K,3,V1,GENELM)
@@ -2225,7 +2296,7 @@ C ::: (another dirty solution!!!)                                     :::
          END IF
 C ::: All symmetry dependant atoms are removed. :::
          I = 1
-         DO 600 J = 1, N
+         DO 600 J = 1, N_ATOMS
             IF (NINT(EXTARR(7,J)) .EQ. 0) THEN
                DO 610 K = 1, 6
                   ATMARR(K,I) = EXTARR(K,J)
@@ -2239,7 +2310,7 @@ C ::: All symmetry dependant atoms are removed. :::
                DO 620 K = NC, NMLINE - 1
                   MLINE(K) = MLINE(K+1)
  620           CONTINUE
-               DO 640 K = 1, N
+               DO 640 K = 1, N_ATOMS
                   IF (NCLINE(NINT(EXTARR(5,K))) .GE. NC)
      &           NCLINE(NINT(EXTARR(5,K)))=NCLINE(NINT(EXTARR(5,K)))-1
  640           CONTINUE
@@ -2286,7 +2357,7 @@ C       ********************************************************
 C
         NPRAXS = 0
         DO IATOM = 1, NATOM
-           DIST = SQRT(ATMARR(1,IATOM)**2 + ATMARR(2,IATOM)**2 
+           DIST = SQRT(ATMARR(1,IATOM)**2 + ATMARR(2,IATOM)**2
      &               + ATMARR(3,IATOM)**2)
            DO ICART = 1, 3
               IF ((ABS(DIST-ABS(ATMARR(ICART,IATOM))) .LT. THRS)
@@ -2299,7 +2370,7 @@ C
               END IF
            END DO
         END DO
-C       
+C
 C       ***********************************************************
 C       ***We figure out which of the three situations we have. ***
 C       ***********************************************************
@@ -2320,10 +2391,10 @@ C       **********************************************************
 C
            SYMELM(2*3+1:2*3+2) = '  '
            SYMELM(  3+1:  3+2) = '  '
-        ELSE 
+        ELSE
 C
 C       ****************************************************************
-C       *** 1 axis with atom-pairs on it. We have to be careful with *** 
+C       *** 1 axis with atom-pairs on it. We have to be careful with ***
 C       *** which axes we use to generate the dependent atoms.       ***
 C       ****************************************************************
 C
@@ -2341,7 +2412,7 @@ C
 C
 C          *** If necessary the second axis is arbitrarily chosen ***
 C
-           DO IAXS = 3, 1, -1 
+           DO IAXS = 3, 1, -1
               IF ((IEL.LT.2) .AND. (.NOT.HAVAXS(IAXS))) THEN
                  SYMELM(IEL*3+1:IEL*3+2) = ROTAXIS(IAXS)
                  HAVAXS(IAXS) = .TRUE.
@@ -2349,6 +2420,7 @@ C
               END IF
            END DO
         END IF
-C       
+C
         RETURN
         END
+! --- end of hersym.F ---

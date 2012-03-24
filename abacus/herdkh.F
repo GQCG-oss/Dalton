@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C File : herdkh.F
 C
@@ -39,22 +39,22 @@ C     writing them to file
 C
 C     K.Ruud, September-00
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL DOHUCKEL_BKP
 C
-#include <inftap.h>
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbihr2.h>
-#include <cbieri.h>
-#include <cbihrs.h>
-#include <gnrinf.h>
-#include <huckel.h>
+#include "inftap.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbihr2.h"
+#include "cbieri.h"
+#include "cbihrs.h"
+#include "gnrinf.h"
+#include "huckel.h"
 C
       CALL QENTER('DKH_INTF')
       CALL GETTIM(TIMHER,WALHER)
@@ -121,17 +121,17 @@ C
 C     Read specification of primitive basis (i.e. decontracted)
 C     for calculation of Douglas-Kroll-Hess integrals.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION WORK(LWORK)
       LOGICAL   UNCONT_BKP
       CHARACTER*7 WORD
-#include <ccom.h>
-#include <mxsymm.h>
-#include <cbirea.h>
+#include "ccom.h"
+#include "mxsymm.h"
+#include "cbirea.h"
 C
       CALL QENTER('DKH_READIN')
 C
@@ -195,16 +195,16 @@ C     in the primitive basis
 C
 C     K.Ruud, September 2000
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       DIMENSION WORK(LWORK)
-#include <shells.h>
-#include <symmet.h>
-#include <inftap.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "symmet.h"
+#include "inftap.h"
+#include "ibtfun.h"
 C
       CALL QENTER('DKH_DRIV')
 C
@@ -260,11 +260,11 @@ C/* Deck dkh_dri1 */
 C
 C     K.Ruud, Sept.-2000
 C
-#include <implicit.h>
-#include <codata.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "codata.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, CVEL2 = CVEL*CVEL, DM1 = -D1)
       CHARACTER*8 RTNLBL(2)
       LOGICAL FNDLAB
@@ -274,11 +274,11 @@ C
      &          A1DIAG(NBAST), EKDIAG(NBAST), D1DIAG(NBAST),
      &          WEWMAT(N2BASX), VMAT(NNBASX), PVPMAT(NNBASX)
       DIMENSION WORK(LWORK)
-#include <dkinf.h>      
-#include <priunit.h>
-#include <inftap.h>
-#include <aosotr.h>
-#include <symmet.h>
+#include "dkinf.h"      
+#include "priunit.h"
+#include "inftap.h"
+#include "aosotr.h"
+#include "symmet.h"
 C
 C     Allocate temporary storage
 C
@@ -550,10 +550,10 @@ C/* Deck wwewew */
 C
 C     Subroutine for calculating second-order Douglas-Kroll-Hess contributions
 C
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       PARAMETER (CVEL2 = CVEL*CVEL, DP5 = 0.50D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION VMAT(NNBASX), PVPMAT(NNBASX), E1DIAG(NBAST),
      &          A1DIAG(NBAST), EKDIAG(NBAST), WEWMAT(NBAST,NBAST),
      &          SQMAT1(NBAST,NBAST), SQMAT2(NBAST,NBAST),
@@ -675,18 +675,18 @@ C     basis set used in the calculation
 C
 C     K.Ruud, September 2000
 C     
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <dkinf.h>      
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "dkinf.h"      
       LOGICAL FNDLAB, ANTI, PROPRI
       CHARACTER*8 LABINT
       DIMENSION WORK(LWORK)
-#include <shells.h>
-#include <symmet.h>
+#include "shells.h"
+#include "symmet.h"
 C
 C     
       NBAST = ISUM(MAXREP+1,NAOS,1)
@@ -731,28 +731,28 @@ C/* Deck pri2cn */
       SUBROUTINE PRI2CN(AOINT,CONTC,WORK,LWORK,ANTI,
      &                  NOPTYP,NBAST,NPRIM,LABINT,INTREP,PROPRI,IPRINT)
 C
-C     Subroutine to transform primitive AO's to contracted SO basis
+C     Subroutine to transform primitive AOs to contracted SO basis
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <pi.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "pi.h"
       PARAMETER (D2 = 2.0D0, DP5 = 0.50D0, DP75 = 0.75D0, D4 = 4.0D0)
-#include <priunit.h>
+#include "priunit.h"
       LOGICAL ANTI, PROPRI
       CHARACTER*8 RTNLBL(2), LABINT(NOPTYP)
       DIMENSION AOINT(NPRIM,NPRIM), CONTC(NPRIM,NBAST), WORK(LWORK)
       DIMENSION INTREP(NOPTYP)
-#include <pgroup.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <ibtfun.h>
+#include "pgroup.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "ibtfun.h"
 C
       ICNT   = 0
       IADR   = 0
@@ -820,9 +820,9 @@ C/* Deck READ_CBIHER */
 C
 C Fetch two definitions from cbiher.h
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbiher.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbiher.h"
       LOGICAL TSTINP_HER
       IPRDEF_HER = IPRDEF
       TSTINP_HER = TSTINP
@@ -834,10 +834,10 @@ C
 C     Read in Douglas-Kroll-Hess and overlap integrals and
 C     transfer to standard arrays
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL FNDLAB
-#include <inftap.h>
+#include "inftap.h"
       DIMENSION STDER0(NNBAST)
 C
       REWIND (LUPROP)
@@ -865,13 +865,13 @@ C     Set up a contraction matrix for use in contraction of
 C     Douglas-Kroll-Hess integrals. Called from BASPRO(herrdn.F).
 C
 C******************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C

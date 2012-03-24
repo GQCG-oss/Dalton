@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_lhtr_l3 */
       SUBROUTINE CC3_FMAT(LISTL,IDLSTL,LISTB,IDLSTB,IOPTRES,
@@ -37,15 +37,15 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <second.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "second.h"
 C
       INTEGER IDLSTL, IDLSTB, IOPTRES, ITRAN, NFTRAN, MXVEC, LWORK
       INTEGER LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOPX, LU3FOP2X
@@ -1160,23 +1160,23 @@ C     through the input).)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <r12int.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <second.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "r12int.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "second.h"
 C
       INTEGER ISYINT, LU4V, IDLSTB, ISYMB, LWORK
       INTEGER KLAMDP, KLAMDH, KEND1, LWRK1, KEND2, LWRK2, KENDS2, LWRKS2
@@ -1694,9 +1694,9 @@ C
       DOUBLE PRECISION WORK(LWORK), ZERO, ONE
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       CHARACTER FNINT*(*)
 C
@@ -1905,22 +1905,22 @@ C     NSIMTR = 1 !!!!!!!
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <r12int.h> 
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "r12int.h" 
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
 C#include <cclr.h>
 C
       INTEGER ISYMB, LWORK, LU3SRTR, LUCKJDR
@@ -2108,10 +2108,10 @@ C     ISYMT2 is the symmetry of T2TP.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C#include <cclr.h>
 C
       INTEGER ISYMT2, ISYINT, LWORK, LENSQ, ISYMB, ISYMC
@@ -2348,14 +2348,14 @@ C     Ove Christiansen 11-1-1996: ISYINT is symmetry of (ck|alpha d)
 C
 C     Kasper Hald, 01062002 : General symmetry of Lambda
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XINT(*),TRINT(*),XLAMDP(*),WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCLR_TRVIR')
 C
@@ -2410,9 +2410,9 @@ C     Kasper Hald, Summer 2002 -> generalisation to nonsymmetric lambda
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMLH, LWORK
       INTEGER ISYMK, ISYINT, ISYAIJ, LENGTH, ISYMD

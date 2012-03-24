@@ -16,13 +16,13 @@ C     C. Haettig, spring 2004
 C     added virtual blocks, Christof Haettig, spring 2005
 *----------------------------------------------------------------------*
        implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
       LOGICAL LOCDBG, LRES, NOT1AM
       PARAMETER ( LOCDBG = .FALSE. ) 

@@ -25,7 +25,7 @@ C
 C FILE    : herrdn.F
 C
 C
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_REVISION_LOG
 c===========================================================================
@@ -435,7 +435,7 @@ C
 #include "aosotr.h"
 #include "infpar.h"
 #include "huckel.h"
-#include <optinf.h>
+#include "optinf.h"
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
@@ -651,10 +651,6 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
-#ifdef BUILD_GEN1INT
-C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
-      use gen1int_interface
-#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -662,7 +658,7 @@ C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include <codata.h>
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
 #include "clsfmm.h"
 #include "cbirea.h"
@@ -684,7 +680,7 @@ C
       CHARACTER*2 SYMTXT
       CHARACTER*15 SYMGROUP
       DIMENSION IFXYZ(3)
-#include <cbihr1.h>
+#include "cbihr1.h"
       LOGICAL ANG, ADDSYM
 #include "molinp.h"
 #include "ccom.h"
@@ -704,10 +700,10 @@ C
 #endif
 #include "dgroup.h"
 
-#include <numder.h>
-#include <r12int.h>
-#include <qm3.h>
-#include <pcmlog.h>
+#include "numder.h"
+#include "r12int.h"
+#include "qm3.h"
+#include "pcmlog.h"
       CALL QENTER('READ_MOL')
       ZMAT = .FALSE.
 C     Initialize auxiliary basis set variables (WK/UniKA/04-11-2002).
@@ -1177,7 +1173,7 @@ C           ... New input style
             CALL LINE5R(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),
      &                  JCO(1,I,1),KANG,BASIS,ATOMBA,LMULBS,
      &                  BASNAMSAVE,RADIUS_PCM, ALPHA_PCM)
-            Q_EXPONENT = D0 ! hjaaj: should be introuduced in LINE5R; GNU=
+            Q_EXPONENT = D0 ! hjaaj: should be introduced in LINE5R; GNU=
          ELSE
 C           ... Old input style
             Q_EXPONENT = D0
@@ -2032,13 +2028,13 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <cbirea.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
       DIMENSION NONT(KATOM),IQM(KATOM,3),JCO(KANG,KATOM,3),
@@ -2296,11 +2292,11 @@ C*****************************************************************************
       CHARACTER*37 SET_TYPE(MXBSETS_TOT)
       DIMENSION NPRIM(MXBSETS_TOT), NCONT(MXBSETS_TOT)
       DIMENSION IBLOCK(MXBSETS_TOT)
-#include <molde.h>
+#include "molde.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include <frame.h>
-#include <infpar.h>
+#include "frame.h"
+#include "infpar.h"
 #include "shells.h"
 #include "primit.h"
 #include "aosotr.h"
@@ -3048,9 +3044,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nrmorb */
       SUBROUTINE NRMORB(I,NRCIJ,NUCIJ,ALPHA,CPRIM,CPRIMU,KPRIM,NBLOCK)
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
      &           THRMIN = 1.D-17, EXPMIN = 1.D-10)
@@ -3095,30 +3091,30 @@ C
 C     Process basis data
 C
 C******************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C
-#include <cbirea.h>
+#include "cbirea.h"
       LOGICAL SEG,SPHER
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-#include <ccom.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <r12int.h>
-#include <aosotr.h>
-#include <gnrinf.h>
+#include "ccom.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "r12int.h"
+#include "aosotr.h"
+#include "gnrinf.h"
 C
 C
       IFSTSHAUX = 0
@@ -3973,10 +3969,10 @@ C
 #include "aosotr.h"
 #include "chrsgn.h"
       CHARACTER COMP(-MXBSETS:MXBSETS)
-#include <r12int.h>
-#include <huckel.h>
+#include "r12int.h"
+#include "huckel.h"
 casm
-#include <suscc.h>
+#include "suscc.h"
 casm
 
 C
@@ -4161,20 +4157,20 @@ C
       END
 C  /* Deck symnco */
       SUBROUTINE SYMNCO(LWORK,WORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
 C
-#include <cbirea.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "cbirea.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION WORK(LWORK)
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "chrxyz.h"
+#include "ibtfun.h"
       LENGTH = 48*NCTOT
       CALL IZERO(IPTCNT(1,0,1),LENGTH)
       IOFFT = 0
@@ -4278,31 +4274,31 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "gnrinf.h"
 C
       CHARACTER*4 NAME
       INTEGER NBASE(8), NSIGN(8)
       LOGICAL LINEAR
       DIMENSION WORK(LWORK)
 C
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <cbirea.h>
-#include <frame.h>
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "cbirea.h"
+#include "frame.h"
 C
-#include <orgcom.h>
-#include <chrxyz.h>
-#include <chrsgn.h>
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "orgcom.h"
+#include "chrxyz.h"
+#include "chrsgn.h"
+#include "chrnos.h"
+#include "ibtfun.h"
 C
       NCOOR = 3*NUCDEP
 C
@@ -4545,7 +4541,7 @@ C.......................................................................
 #include "implicit.h"
 #include "priunit.h"
 C     include character ASYMB(0:NSYNB)*2 with atomic symbols
-#include <asymb.h>
+#include "asymb.h"
       DIMENSION AMASS(103)
       DATA (AMASS(I),I = 1,92)
      1/ 1.0078246D0, 4.002601D0, 7.01600D0, 9.01218D0, 11.009307D0,
@@ -4888,20 +4884,20 @@ C     nuclear coordinates
 C
 C     tuh Jun 29 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "thrzer.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <nuclei.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "symmet.h"
 C
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL DZERO(CSTRA,NCOOR*NCOOR)
       CALL DZERO(SCTRA,NCOOR*NCOOR)
@@ -4995,12 +4991,12 @@ C     Set up IPTCOR - points from symmetry coordinate to generating
 C     Cartesian coordinate. Extracted from old TRACOR routine by
 C     K.Ruud, Dec-96
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
-#include <symmet.h>
+#include "symmet.h"
 C
       DO 400 ITYPE = 1, 2
          IJ = 0
@@ -5235,18 +5231,15 @@ C
 #include "molinp.h"
 #include "infpar.h"
 
-      CHARACTER*(120) NEXT_INPUT_LINE
-      INTEGER NMLN_LASTREAD
-      DATA NMLN_LASTREAD /0/
-      SAVE NMLN_LASTREAD, LEN_MLINE
+      PARAMETER (len_NEXT_INPUT_LINE = 120)
+      CHARACTER*(len_NEXT_INPUT_LINE) NEXT_INPUT_LINE
+      INTEGER    NMLN_LASTREAD
+      DATA       NMLN_LASTREAD /0/
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
 C
-      IF ( NMLINE .EQ. 0) THEN
-         NMLN_LASTREAD = 0
-         LEN_MLINE = LEN( MLINE(1) )
-      END IF
+      IF ( NMLINE .EQ. 0) NMLN_LASTREAD = 0
 C
    10 CONTINUE
       NMLINE = NMLINE + 1
@@ -5258,6 +5251,12 @@ C
      &        'NMLN_LASTREAD = ',NMLN_LASTREAD
          CALL QUIT('*** ERROR reading .mol file')
       ENDIF
+      IF (NMLINE.GT.KMLINE) THEN
+         WRITE (LUPRI,'(//A,/A,I5)')
+     &      ' READIN ERROR: Too many lines in input -,',
+     &      ' Increase dimension in molinp.h to at least',NMLINE
+         CALL QUIT('*** ERROR *** Too many input lines in .mol file')
+      END IF
 C
 C     Only the master in a parallel calc. reads the input file.
 C     The slaves get the input transferred from the master in
@@ -5266,29 +5265,36 @@ C
       IF (.NOT. SLAVE .AND. NMLINE .GT. NMLN_LASTREAD) THEN
           READ (LUINFO,'(A)',END=12,ERR=11) NEXT_INPUT_LINE
           MLINE(NMLINE) = NEXT_INPUT_LINE
-      END IF
-      IF (NMLINE.GT.KMLINE) THEN
-         WRITE (LUPRI,'(//A,/A,I5)')
-     &      ' READIN ERROR: Too many lines in input -,',
-     &      ' Increase dimension in /MOLINP/ to at least',NMLINE
-         CALL QUIT('*** ERROR *** Too many input lines in .mol file')
+      ELSE
+          NEXT_INPUT_LINE = MLINE(NMLINE)
       END IF
 
 #ifdef VAR_DEBUG
-      write (lupri,*) 'debug output from RDLINE, nmline=',nmline
-      write (lupri,*) 'on file>',NEXT_INPUT_LINE
-      write (lupri,*) 'RDLINE >',MLINE(NMLINE)
+         write (lupri,*) 'debug output from RDLINE, nmline=',nmline
+         write (lupri,*) 'on file>',NEXT_INPUT_LINE
+         write (lupri,*) 'RDLINE >',MLINE(NMLINE)
 #endif
 
-      IF((MLINE(NMLINE)(1:1) .EQ. '#') .OR.
-     &   (MLINE(NMLINE)(1:1) .EQ. '!') .OR.
-     &   (MLINE(NMLINE)(1:1) .EQ. '$')) GOTO 10
+         len_NOT_COMMENT = len_NEXT_INPUT_LINE
+         I_COMMENT = INDEX(NEXT_INPUT_LINE,'#')
+         IF (I_COMMENT .GT. 0) len_NOT_COMMENT = I_COMMENT-1
+         I_COMMENT = INDEX(NEXT_INPUT_LINE(1:len_NOT_COMMENT),'!')
+         IF (I_COMMENT .GT. 0) len_NOT_COMMENT = I_COMMENT-1
+         I_COMMENT = INDEX(NEXT_INPUT_LINE(1:len_NOT_COMMENT),'$')
+         IF (I_COMMENT .GT. 0) len_NOT_COMMENT = I_COMMENT-1
+      
+      IF (len_NOT_COMMENT .eq. 0) GO TO 10 ! this was a comment line with one of #!$ in column 1
 
-      IF (LNBLNK(NEXT_INPUT_LINE) .GT. LEN_MLINE) THEN
-         WRITE(LUPRI,'(//A,I5/2A/2A)')
-     &   ' WARNING -- line in ".mol" file truncated, line',NMLINE,
+      IF (LNBLNK( NEXT_INPUT_LINE(1:len_NOT_COMMENT) ) .GT. len_MLINE)
+     &   THEN
+         WRITE(LUPRI,'(//A,I5/2A/2A//A,I5/A)')
+     &   ' FATAL ERROR -- line in ".mol" file truncated, line',NMLINE,
      &   ' Line from file: ',NEXT_INPUT_LINE,
-     &   ' Truncated line: ',MLINE(NMLINE)
+     &   ' Truncated line: ',MLINE(NMLINE),
+     &   ' NOTE: maximum length of an input line in ".mol" file is',
+     &     len_MLINE,
+     &   ' Rewrite the offending input line and be welcome back!'
+         CALL QUIT('Too long input line in ".mol" file')
       END IF
 
       NMLN_LASTREAD = NMLINE
@@ -5328,14 +5334,14 @@ C
       DIMENSION CHRN(MXCENT), COOO(MXCENT,3),
      &          INAMN(MXCORB), IGTO(MXCORB)
       DIMENSION NONT(KATOM), IQM(KATOM), JCO2(KANG,KATOM,2)
-#include <ccom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <frame.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <sphtrm.h>
+#include "ccom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "frame.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "sphtrm.h"
       DATA TABLE1 /'********','        ','        ','ISORDK  '/,
      &     TABLE2 /'********','        ','        ','SCFINP  '/,
      &     TABLE3 /'********','        ','        ','SYMINPUT'/,
@@ -5343,7 +5349,7 @@ C
      &     TABLE5 /'********','        ','        ','SPHERICA'/,
      &     TABLE6 /'********','        ','        ','INTEGRAL'/
       DATA QPOL/6*DUMMY/, QQ/3*DUMMY/, JFXYZ/3*IDUMMY/
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL GETDAT(CDATE,CTIME)
       TABLE1(2) = CDATE
@@ -5576,7 +5582,7 @@ C
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
 
 C     include character ASYMB(0:NSYMB)*2 with atomic symbols
-#include <asymb.h>
+#include "asymb.h"
 
 C
       NCTOT = NCTOT + 1
@@ -5630,16 +5636,16 @@ C
       CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,4),DUMMY,'INT',IERR)
       CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA',IERR)
 #else
-  200 READ (MLINE(NMLINE)(5:80),*) INUM,CHARGE(NUCIND)
+  200 READ (MLINE(NMLINE)(5:len_MLINE),*) INUM,CHARGE(NUCIND)
       GO TO 204
-  201 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
+  201 READ (MLINE(NMLINE)(5:len_MLINE),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),CHARGE(NUCIND)
       GO TO 204
-  202 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
+  202 READ (MLINE(NMLINE)(5:len_MLINE),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),IZ(NUCIND,2),
      &     ALP(NUCIND),CHARGE(NUCIND)
       GO TO 204
-  203 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
+  203 READ (MLINE(NMLINE)(5:len_MLINE),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),IZ(NUCIND,2),
      &     ALP(NUCIND),IZ(NUCIND,3),BET(NUCIND),
      &     IZ(NUCIND,4),CHARGE(NUCIND)
@@ -6058,19 +6064,20 @@ C
 C     Simulate free format input for Cray computers when reading from an
 C     internal file, K.Ruud-Feb.97
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C      
-      CHARACTER*80 STRING
+      CHARACTER*(*) STRING
       CHARACTER TYPE*3, FRMT*7
 C
+      len_STRING = LEN(STRING)
       IERR = 0
       IF (TYPE .EQ. 'INT') THEN
          IVAL = 0
       ELSE
          RVAL = 0.0D0
       END IF
-      DO 10 IPOS = ISTART, 80
+      DO 10 IPOS = ISTART, len_STRING
          IF (STRING(IPOS:IPOS) .NE. ' ') GO TO 20
          ! leave cycle when found first non-white character
  10   CONTINUE
@@ -6084,14 +6091,14 @@ C
          ELSE
             WRITE (FRMT,'(3X,A2,I1,A1)') '(I',ILEN,')'
          END IF
-         READ (STRING(ISTART:80),FRMT,ERR=9000) IVAL
+         READ (STRING(ISTART:len_STRING),FRMT,ERR=9000) IVAL
       ELSE IF (TYPE .EQ. 'REA') THEN
          IF (ILEN .GT. 9) THEN
             WRITE (FRMT,'(A2,I2,A3)') '(F',ILEN,'.0)'
          ELSE
             WRITE (FRMT,'(1X,A2,I1,A3)') '(F',ILEN,'.0)'
          END IF
-         READ (STRING(ISTART:80),FRMT,ERR=9000) RVAL
+         READ (STRING(ISTART:len_STRING),FRMT,ERR=9000) RVAL
       ELSE
          WRITE (LUPRI,'(/,A)') 'Illegal variable type in FREFRM'
          CALL QUIT('Illegal variable type in FREFRM')
@@ -6115,7 +6122,7 @@ C     Written by K.Ruud 160297
 C
 #include "implicit.h"
 #include "priunit.h"
-#include <dummy.h>
+#include "dummy.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -6123,12 +6130,12 @@ C
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
 C    
-#include <ccom.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <gnrinf.h>
-#include <molinp.h>
+#include "ccom.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "gnrinf.h"
+#include "molinp.h"
       LOGICAL SEG, NRMPRI
       CHARACTER KASYM(3,3)*1, CRT*1
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
@@ -6276,10 +6283,10 @@ C
       END
 C  /* Deck crtest */
       SUBROUTINE CRTEST(DOCART)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL DOCART
-#include <cbieri.h>
+#include "cbieri.h"
 C
       IF (RUNERI.AND.DOCART) THEN
          NWARN = NWARN + 1
@@ -6296,8 +6303,8 @@ C
 C     Function to switch from mass number to isotope number sorted
 C     according to abundance, K.Ruud-02
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CALL QENTER('ISOMAS')
       IORD = 0
@@ -6321,9 +6328,9 @@ C
 C     Enforce computation of Cartesian second moments.
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbiher.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbiher.h"
       CARMOM = .TRUE.
       ONEPRP = .TRUE.
       IORCAR = MAX(2,IORCAR)
@@ -6375,11 +6382,11 @@ C
 C
 C     Read in the fourth input line using the new input scheme
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
       LOGICAL ADDSYM, DOCART, DOOWN
       CHARACTER*80 LINE
       CHARACTER CRT*1, ID3*1, SYMTXT*2
@@ -6572,7 +6579,7 @@ C
 C
 C     Write out molecule specific information in new input format
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*80 TMPLN
       CHARACTER*1 KASYM(3,3), ID3
       LOGICAL AUTOSY, NOSYM, DOCART, DOOWN
@@ -6643,10 +6650,10 @@ C
 C
 C     Read the atom-specific information in new input style
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "pcmlog.h"
       CHARACTER TMPLN*80, BASNAM*80, BKPLIN*80, FRMT*5
       LOGICAL BASIS, ATOMBA, LMULBS, FOUNDR, FOUNDA
       DIMENSION JCO(KANG)
@@ -6810,8 +6817,8 @@ C
 C
 C     Write out atom-specific input line in new format
 C     
-#include <implicit.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "pcmlog.h"
       CHARACTER LINE*80, BASNAM*80
       DIMENSION JCO(KANG)
       LOGICAL   BASIS, ATOMBA, LMULBS

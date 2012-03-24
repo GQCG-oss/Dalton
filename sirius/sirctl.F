@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck sirctl */
       SUBROUTINE SIRCTL(ICONV,WORK,LWORK)
@@ -54,12 +54,12 @@ C
 
       use lucita_orbital_spaces
 
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION WORK(LWORK)
-#include <iratdef.h>
-#include <dummy.h>
-#include <thrldp.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "thrldp.h"
 C
 C Used from common blocks:
 C   INFINP : DO*, MAXMAC
@@ -70,29 +70,29 @@ C   PRIUNIT : IPRSTAT, NWARN
 C   SCBRHF : RHFCAN, MXHFMA, MXHFMI, NFRRHF(8), IOPRHF, MAXFCK, MXDIIS, THRRHF
 C   GNRINF : WRINDX
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <inftra.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "inftra.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 ! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
-#include <dftcom.h>
+#include "dftcom.h"
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
       real(8), allocatable :: tmp_space(:)
  
-#include <sirbkd.h>
+#include "sirbkd.h"
 C
 C *** Call setup to define limits and I/O units
 C     and maybe open some files (depending on host)
@@ -333,7 +333,8 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-            IF (QMMM) CALL QUIT('DIIS failed to converge')
+            IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
+     &         ' and QC-SCF is not implemented for QMMM')
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)
             FLAG(15) = RHFCAN
@@ -350,9 +351,9 @@ C
             THRLDG = SQRT(THRLDG)
             IF (THRGRD .LT. THRLDG) THEN
                WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit'
-     *        ,' SCF convergence threshold:',THRGRD
-     *        ,' linear dependency limit  :',THRLDG
+     &         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit'
+     &        ,' SCF convergence threshold:',THRGRD
+     &        ,' linear dependency limit  :',THRLDG
                CALL QUIT(
      &            'SIRCTL error: SCF threshold below lin.dep. limit')
             END IF
@@ -363,9 +364,9 @@ C              ... orbital super symmetries may have been reordered
                CALL SIRSET(WORK,LWORK,OLDWOP)
                IAVERR = 0
                CALL AVECHK(WORK,LWORK,IAVERR)
-               IF (IAVERR .NE. 0) CALL QUIT(
-     &         'SIRCTL QCHF error: inconsistency in sup.sym. averaging')
-         END IF
+               IF (IAVERR .NE. 0) CALL QUIT('SIRCTL error: '//
+     &         'inconsistency in sup.sym. averaging before QC-SCF call')
+            END IF
 C
             CALL SIROPT(WORK,LWORK,ICONV)
             FLAG(15) = FLAGSV(15)
@@ -407,7 +408,7 @@ C
          NUMRUN = NUMRUN + 1
          IF (DORHF .AND. ICONV .LE. 0) THEN
             WRITE (LUPRI,7020)
-            WRITE (LUERR ,7020)
+            WRITE (LUERR,7020)
             GO TO 8000
          END IF
  7020    FORMAT(/'ERROR: Sirius MP2 calculation aborted because',
@@ -651,22 +652,18 @@ C
          CALL FLSHFO(LUSTAT)
       END IF
 C
-      IF (ICONV .EQ. -1) THEN
-C        *** set ICONV to converged ***
-         ICONV = 1
-      END IF
       IF (ICONV .EQ. 0) THEN
          NWARN = NWARN + 1
          WRITE (LUERR,7070)
          WRITE (LUPRI,7070)
          IF (LUW4.NE.LUPRI) WRITE (LUW4,7070)
       END IF
- 7070 FORMAT(//' WARNING: wave function not converged')
+ 7070 FORMAT(//'@ ******* WARNING: wave function not converged *******')
+C
 C
 C *** Output sections
 C
 C *** ORBITAL OUTPUT
-      IF (LUPROP .GE. 0) CALL GPCLOSE(LUPROP,'KEEP')
       IF (FLAG(5) .AND. NUMRUN .GT. 0) THEN
          CALL SIROUT(ICONV,WORK,LWORK)
          CALL FLSHFO(LUW4)
@@ -681,7 +678,7 @@ C
       IF (DONEVPT) THEN
        IF (ICONV .EQ. 0) THEN
          WRITE (LUPRI,'(//A)')
-     &      ' WARNING: NEVPT2 skipped because MCSCF not converged.'
+     &      '@ WARNING: NEVPT2 skipped because MCSCF not converged.'
        ELSE
          JRDMO = 9
          KCMO  = 1
@@ -720,8 +717,8 @@ C     *** LUCITA ***
 C
       IF (DOLUCITA) THEN
        IF (ICONV .EQ. 0) THEN
-         WRITE (LUPRI,'(//A)')
-     &      ' WARNING: LUCITA skipped because HF/MCSCF not converged.'
+         WRITE (LUPRI,'(//A)') '@ WARNING: '//
+     &      'LUCITA skipped because requested HF/MCSCF not converged.'
        ELSE
          kfirst_lucita = 1
          JRDMO  = 9
@@ -733,8 +730,8 @@ C
 
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
                                           ! orbital occupations for TRACTL
-         JTRALVL = 0 ! all active orbitals for all four indices
-         USEDRC  = .FALSE.
+         JTRALVL = 0 ! only active orbitals for all four indices
+         USEDRC  = .FALSE. ! Dirac format 2-el. integrals not needed
 
 !        integral transformation
          CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
@@ -774,6 +771,10 @@ C
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
+#ifdef BUILD_GEN1INT
+C... added by Bin Gao, to generate cube files
+      if (DO_CUBE) call gen1int_cube_main(LFREE, WORK(KFREE), LUPRI)
+#endif
 C
  8000 CALL GETTIM(TEND,WEND)
       TIMSIR = TEND - TIMSIR
@@ -809,12 +810,13 @@ C
  7210 FORMAT(/' NOTE:',I5,' informational messages have been issued.',
      &       /' Check output, result, and error files for "INFO".')
 C
-      IF (FLAG(16)) CALL GPCLOSE(LUSOL,'KEEP')
-      CALL GPCLOSE(LUIT1,'KEEP')
-      IF (LUH2AC .GT. 0) CALL GPCLOSE(LUH2AC,'DELETE')
+      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP') ! AOPROPER   - property integrals
+      IF (LUSOL  .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP') ! AOSOLINT   - multipole integrals for spherical cavity
+      IF (LUPCMD .GT. 0) CALL GPCLOSE(LUPCMD,'KEEP') ! PCMDATA    - PCM data
+      IF (LUIT1  .GT. 0) CALL GPCLOSE(LUIT1,'KEEP')  ! SIRIUS.RST - restart info
       IF (LUW4 .NE. LUPRI) CALL GPCLOSE(LUW4,'KEEP')
+      IF (LUH2AC .GT. 0) CALL GPCLOSE(LUH2AC,'DELETE') ! H2AC on disk for large CI
 C
-      IF (PCM) CALL GPCLOSE(LUPCMD,'KEEP')
       CALL QEXIT('SIRCTL')
       RETURN
 C *** end of SIRCTL.
@@ -823,8 +825,8 @@ C
 C  /* Deck sbdorb */
       BLOCK DATA SBDORB
 C     Initialize MULD2H in common block /INFORB/
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 C
 C     MULTIPLICATION TABLE FOR SYMMETRIES (MULD2H is in /INFORB/)
 C
@@ -842,8 +844,8 @@ C  /* Deck sbdgetd */
 C 900302-hjaaj
 C Define default values for CBGETD
 C To be safe, include EXTERNAL SBDGETD in main program.
-#include <implicit.h>
-#include <cbgetdis.h>
+#include "implicit.h"
+#include "cbgetdis.h"
       DATA DISTYP,IADINT,IADH2,IADH2X,IADH2D /1,4*-1/
       END
 C  /* Deck sbdtra */
@@ -854,8 +856,8 @@ C Initialization moved to here because NEWTRA may be set
 C both in dalton and sirius input modules.
 C To be safe, include EXTERNAL SBDTRA in sirctl
 C
-#include <implicit.h>
-#include <inftra.h>
+#include "implicit.h"
+#include "inftra.h"
       DATA NEWTRA /.FALSE./
       END
 C  /* Deck sbddim */
@@ -863,8 +865,8 @@ C  /* Deck sbddim */
 C 010321 hjaaj
 C Initialize variables in /INFDIM/
 C
-#include <implicit.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "infdim.h"
       DATA MWORK /8 000 000/
 C
 C     Re MWORK:

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_SETXE */
 *=====================================================================*
@@ -53,8 +53,8 @@ c /* deck CC_SETXE */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "cclists.h"
       INTEGER MXVEC, MXTRAN
       INTEGER IXETRAN(MXDIM_XEVEC,MXTRAN)
       INTEGER IDOTS(MXVEC,MXTRAN)

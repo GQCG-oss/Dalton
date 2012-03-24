@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C------------------------------------------------------------------------
 C||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -37,13 +37,13 @@ C-------------------------------------------------------------------------
 C
 C INPUT FROM ABACUS TO QM3 CALCULATIONS 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxsymm.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxsymm.h"
+#include "qm3.h"
 !#include <qmmm.h>
 C
       PARAMETER ( NTABLE = 18, D1 = 1.0D0)
@@ -51,8 +51,8 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
       CHARACTER*80 INLINE
-#include <cbirea.h>
-#include <ccom.h>
+#include "cbirea.h"
+#include "ccom.h"
 C
       DATA TABLE /'.QM3   ', '.THRDIP', '.MAXDIP', '.FIXMOM',
      *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
@@ -356,11 +356,11 @@ C     April 2009, hjaaj
 C
 C     Moved setup of MM info to this new subroutine.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "qm3.h"
 C
 C     ***************************************************************
 C     Calculating the classical interaction terms from the given
@@ -392,13 +392,13 @@ C------------------------------------------------------------------------
 C
 C <<< General Input for MM potentials>>>
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <inftap.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "inftap.h"
+#include "qm3.h"
 C
       PARAMETER (NTABLE = 24,NTAB1 = 16)
       PARAMETER (DHALF = 0.5D0, D0 = 0.0D0)
@@ -1332,13 +1332,13 @@ C----------------------------------------------------------------
 C  /* Deck qm3mas */
 C----------------------------------------------------------------
       SUBROUTINE QM3MAS(NONT,NONTYP)
-#include <implicit.h>
+#include "implicit.h"
 C
 C JK+AO nov. 2002
-#include <priunit.h>
-#include <mxcent.h>
-#include <inftap.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "inftap.h"
+#include "qm3.h"
 C
       PARAMETER  (D0 = 0.0D0)
       INTEGER    NUALTS, KUTEST
@@ -1346,9 +1346,9 @@ C
       LOGICAL    ANGQM3
       DIMENSION  NONT(*)
 C
-#include <nuclei.h>
-#include <chrnos.h>
-#include <codata.h>
+#include "nuclei.h"
+#include "chrnos.h"
+#include "codata.h"
 C
       TOTMAS = D0
       LTEMP1 = 0
@@ -1684,12 +1684,12 @@ C     This routine calculates the electric fields from the
 C     different contributers at given positions in the MM medium.
 C     ******************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  ENUC(3,MXQM3), ESITE(3,MXQM3)
       DIMENSION  EQMCLF(3,MXQM3), EELEC(3,MXQM3)
@@ -2307,12 +2307,12 @@ C
 C     Calculates the induced dipole moments by an iterative
 C     procedure or by direct matrix inversion.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       LOGICAL    DIPCON, LOINDM 
       DIMENSION  MYIND(3,MXQM3), EIND1(3,MXQM3)
@@ -2729,11 +2729,11 @@ C     "QM"/MM interaction, the van der Waal interaction
 C     and the total classical "QM"/MM interaction.
 C*******************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -2899,12 +2899,12 @@ C  /* Deck qm3_put3*/
       SUBROUTINE QM3_PUT3(NMBU,FLNAME,PUTNU,NULOOP)
 C*******************************************************
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "inftap.h"
 C
       CHARACTER FLNAME*8
       INTEGER   NMBU,NULOOP
@@ -2928,12 +2928,12 @@ C  /* Deck qm3_get3*/
       SUBROUTINE QM3_GET3(NMBU,FLNAME,PUTNU,NULOOP)
 C*******************************************************
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "inftap.h"
 C
       CHARACTER FLNAME*8
       INTEGER   NMBU,NULOOP
@@ -2972,12 +2972,12 @@ C     wave-function. o-bar and E^ns_a are written to
 C     files.
 C
 C*******************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
       DIMENSION  ENUC(3,MXQM3)
@@ -3061,12 +3061,12 @@ C     Calculates the o-tilde contribution to the
 C     QM/MM interaction energy. 
 C***************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
       DIMENSION  ENUC(3,MXQM3),RHS(3,MXQM3)
@@ -3136,13 +3136,13 @@ C     on file LUQM3P.
 C     14.05.03 JK. Modified also to include overlap inegrals.
 C**************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "qm3.h"
 C
       DIMENSION AINT(*)
 
@@ -3176,12 +3176,12 @@ C  /* Deck qm3_emmmm */
       SUBROUTINE QM3_EMMMM(DEMMMM,TEMPOL,FFJ)
 C*************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  PIND(3,MXQM3),MYIND(3,MXQM3)
       DIMENSION  ESITE(3,MXQM3),FFJ(*)
@@ -3244,11 +3244,11 @@ C     Waal interaction between the MM systems when LBEGIN = 1.
 C
 C**************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -3391,11 +3391,11 @@ C                                  (Sig(ij)/R(ij))**6 ]]
 C
 C**************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -3476,10 +3476,10 @@ C     given in the MOLECULE.INP file.
 C
 C*************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -3672,12 +3672,12 @@ C
 C     Nuclear contribution to electric field gradients 
 C     from the MM system. 1. contribution from the partial charges.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "qm3.h"
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
-#include <nuclei.h>
-#include <nqcc.h>
+#include "nuclei.h"
+#include "nqcc.h"
 C
       IF (OLDTG)  THEN
         DO 873 I= 1, ISYTP
@@ -3754,11 +3754,11 @@ C
 C     Nuclear contribution to electric field gradients
 C     from the MM system. 2. Contribution from the induced dipoles.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
-#include <nqcc.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
+#include "nqcc.h"
 C
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
       DIMENSION  MYIND(3,MXQM3)
@@ -3881,11 +3881,11 @@ C     is omitted.
 C
 C*******************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -3925,14 +3925,14 @@ C  /* Deck rdqm3 */
       SUBROUTINE RDQM3(AINT,LOFRST,INTTYP)
 C**************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <gnrinf.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "gnrinf.h"
+#include "qm3.h"
 C
       DIMENSION AINT(*)
       LOGICAL LOFRST
@@ -3962,12 +3962,12 @@ C  /* Deck mumatinv */
       SUBROUTINE MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,MYIND,EIND,
      &                    DIPCON)
 C**************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
+#include "inftap.h"
 
 #if defined (SYS_CRAY)
       REAL              DIST
@@ -4155,11 +4155,11 @@ C*********************************************************************
 C
 C     Calculate the reaction field (RF) at the QM nuclei 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
       DIMENSION  MYIND(3,MXQM3)
@@ -4347,15 +4347,15 @@ C-------------------------------------------------------------------------
 C
 C INPUT FROM ABACUS TO QMMM CALCULATIONS 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxsymm.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxsymm.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "codata.h"
 C
       PARAMETER ( NTABLE = 27, D1 = 1.0D0)
       LOGICAL NEWDEF,RCUT
@@ -4363,8 +4363,8 @@ C
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
       CHARACTER*80 INLINE
       CHARACTER*2 UNITS
-#include <cbirea.h>
-#include <ccom.h>
+#include "cbirea.h"
+#include "ccom.h"
 C
 !                  1          2          3          4
       DATA TABLE /'.QMMM  ', '.SPLDIP', '.FIXDIP', '.MMDAMP',
@@ -4751,15 +4751,15 @@ C------------------------------------------------------------------------
 C
 C <<< General Input for QMMM electrostatic potentials>>>
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <qmmm.h>
-#include <codata.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "qmmm.h"
+#include "codata.h"
 C
       CHARACTER*180 KWord
       CHARACTER*2 UNITS
@@ -5722,15 +5722,15 @@ C------------------------------------------------------------------------
 C     IF IOPT = 1 all information is printed
 C     otherwise only the sites changed are printed
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <qmmm.h>
-#include <codata.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "qmmm.h"
+#include "codata.h"
 C
       INTEGER IOPT
 

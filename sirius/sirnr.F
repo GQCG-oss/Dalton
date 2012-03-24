@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REVISION_LOG
 ===========================================================================
@@ -62,13 +62,13 @@ C          for in core simultaneously.
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*),G(*),CMO(*),DV(*),PV(*)
       DIMENSION FC(*),FV(*), FCAC(*),H2AC(*)
       DIMENSION INDXCI(*),IBNDX(*),WRK(*)
 C
-#include <iratdef.h>
-#include <ibndxdef.h>
+#include "iratdef.h"
+#include "ibndxdef.h"
 C
 C -- local variables and constants:
 C
@@ -88,17 +88,17 @@ C  ITINFO: DINFO(*),IINFO(*)
 C  INFTAP: LUIT3,LUIT5,?
 C  INFPRI: P6FLAG,...
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <itinfo.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "itinfo.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       SAVE NCONSV,NWOPSV,MXRLSV,LFRESV, LA,LB,LC,LBC,MAXSIM
       SAVE IGORB,KREDH,KREDG,KREDV,KLDIA,KWRK1,LWRK1
@@ -225,7 +225,7 @@ C                                    ------------v
 C
 C
 C        *** Calculate linear transformation induced by K-matrix
-C        NOTE: CI BVEC's are assumed orthogonal to CREF, otherwise
+C        NOTE: CI BVECs are assumed orthogonal to CREF, otherwise
 C              LINTRN will not return correct result for
 C              K(orb,CI) * b-vec (see comments in ORBSIG)
 C
@@ -452,13 +452,13 @@ C Purpose:
 C  NR start. Find the trial vectors for the first micro
 C  iteration and define optimization parameters in common /infopt/.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CREF(*),G(*),BVECS(*),IBNDX(*),DIAGL(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0 , D2 = 2.0D0 )
       PARAMETER ( DTEST = 1.0D-4 )
 C
@@ -468,13 +468,13 @@ C  INFVAR: NCONF,NWOPT,NVAR,JWOP(2,*)
 C  INFOPT: NROOTC,JROOT(*)
 C  INFTAP: LUIT2, LUIT3, LUIT5
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "inftap.h"
 C
 C
       LOGICAL     GETBVO
@@ -671,7 +671,7 @@ C                                   trial vectors.
 C
 C PJ JAN 1985
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IBNDX(*),G(*),DIAGL(*),SOLNR(*)
       DIMENSION CMO(*),CREF(*),DV(*),PV(*),FC(*),FV(*),WRK(*)
 C
@@ -679,13 +679,13 @@ C
       PARAMETER ( FKAPC = 0.2D0, FKAPO = 0.01D0)
 C
 C
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER ( MAXTST = 30 , QCNRAT = 0.80D0 )
       PARAMETER ( DP1 = 0.1D0, D1=1.0D0 , D0=0.0D0 )
       PARAMETER ( THRSIM = 1.D-6 )
-#include <dummy.h>
+#include "dummy.h"
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C
 C Used from common blocks:
@@ -695,20 +695,20 @@ C  INFVAR: NCONF,NWOPT,NVAR
 C  INFOPT: NREDL,GRDNRM
 C  INFTAP: LUIT3,LUIT5
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
 C     local variables:
 C
       LOGICAL KAPOPT, FORCEO, CTRUNC, SYMTRZ
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
 C     **********
 C     ********** End of declarations, start execution.
@@ -993,24 +993,24 @@ C Scratch:
 C  BCNRVE are used for B vectors from unit LUIT3 (section 1)
 C  SNRVEC is used for reduced PROJECTED HESSIAN matrix (section 2)
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION REDH(*),REDG(*),SOLNR(*),G(*)
       DIMENSION IBNDX(*),BCNRVE(*),BONRVE(*),SNRVEC(NVAR,*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C  INFIND : IROW(*),?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       CALL QENTER('SNRRED')
 C
@@ -1122,7 +1122,7 @@ C     REDG  = minus reduced gradient
 C     REDH  = reduced Hessian
 C     SOLEQ = step vector in reduced basis
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION REDG(*),REDH(*),SOLEQ(*)
 C
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0 )

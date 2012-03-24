@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck CC3_XISD */ 
       SUBROUTINE CC3_XISD(XI1,XI2,XI1EFF,XI2EFF,ISYRES,
@@ -108,16 +108,16 @@ C
 C
       PARAMETER(FN3SRTR  = 'CC3_XISD_TMP1', FNDELDR  = 'CC3_XISD_TMP2')
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccrc1rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccrc1rsp.h"
 C
       PARAMETER(TWO = 2.0D0, CDUMMY = ' ')
 C
@@ -1347,7 +1347,7 @@ C
 C
       IMPLICIT NONE
 C
-#include <ccsdsym.h>
+#include "ccsdsym.h"
 C
       INTEGER ISSMAT, LENGTH, LENSQ, INDSQ(LENSQ,6)
 C
@@ -1400,9 +1400,9 @@ c     P. Jorgensen and F. Pawlowski, Spring 2002.
 c
       IMPLICIT NONE
 c
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMIM, KOFF1, KOFF4, KOFF5, KOFF6, KOFF7
       INTEGER ISYMA, ISYMI, ISYMJ, ISYMK
@@ -1517,14 +1517,14 @@ C
       REAL*8  TMAT(*), FOCKY(*), WMAT(*), WRK(*)
       REAL*8  HALF, ONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0)
 C
@@ -1621,14 +1621,14 @@ C
       REAL*8  TMAT(*), FOCKY(*), WMAT(*), WRK(*)
       REAL*8  MHALF, ONE 
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (MHALF = -0.5D0, ONE = 1.0D0)
 C
@@ -1743,8 +1743,8 @@ C  /* Deck wbd_t2 */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 C
       LOGICAL T2XNET2Z
 C
@@ -1799,14 +1799,14 @@ C     Modified to handle two different symmetries of T2, 14-May-2003.
 
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER LENSQ
       INTEGER INDSQ(LENSQ,6)
@@ -2052,10 +2052,10 @@ C
       REAL*8  ONE, ZERO, TWO
 
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -2268,9 +2268,9 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMB,ISYMC,ISWMAT,NB,NC 
 C
@@ -2319,9 +2319,9 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER iopt,lwrk,ai,nck,nbj,kckbj,kaikj,kbjki,index,ib,ic
       integer kckji
@@ -2495,10 +2495,10 @@ C
       REAL*8  ZERO, ONE, TWO
 
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -2689,10 +2689,10 @@ C
       REAL*8  XI2(*), ABIJ(*)
       REAL*8  TWO
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (TWO = 2.0D0)
 C
@@ -2790,10 +2790,10 @@ C
       REAL*8  WORK(*) 
       REAL*8  TWO, ONE, ZERO, XTMAT, XRMAT, DDOT
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -3123,10 +3123,10 @@ C
       INTEGER KOFF1, KOFF2, KMAT, KEND0, LWRK0
       REAL*8  RMAT1(*), RMAT2(*)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
 C
       CALL QENTER('CC3_MAJI')
@@ -3201,10 +3201,10 @@ C
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -3438,10 +3438,10 @@ C
 C
       REAL*8  XI2(*), RBJIA(*)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
 C
       CALL QENTER('CC3_RBJIA')
@@ -3474,7 +3474,7 @@ C    /* Deck get_filename */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
+#include "priunit.h"
 C
       LOGICAL LCDBG
       PARAMETER (LCDBG = .FALSE.)

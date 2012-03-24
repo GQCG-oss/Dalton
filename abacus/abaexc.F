@@ -21,26 +21,26 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck excinp */
       SUBROUTINE EXCINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (NTABLE = 16)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbiexc.h>
+#include "cbiexc.h"
 C
-#include <gnrinf.h>
-#include <abainf.h>
-#include <anrinf.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "gnrinf.h"
+#include "abainf.h"
+#include "anrinf.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "symmet.h"
       DATA TABLE /'.SKIP  ', '.INTPRI','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.TRIPLE','.XXXXXX',
      *            '.OPTORB', '.NEXCIT','.DIPSTR','.PRINT ',
@@ -203,10 +203,10 @@ C  /* Deck excini */
 C
 C     Initialize /cbiexc/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbiexc.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbiexc.h"
+#include "abainf.h"
 C
       IPR1IN = IPRDEF
       IPREXC = IPRDEF
@@ -235,15 +235,15 @@ C    &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
      &                  TRLON,TRMAG,BSRLON,TTLEN,EXENG,FONAC,
 CKeinSPASmehr
      &                  FONA2,SECMAT,WORK,LWORK,PASS)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <cbiexc.h>
-#include <infrsp.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "cbiexc.h"
+#include "infrsp.h"
+#include "nuclei.h"
 CSPAS : 6/11-2009 AO-SOPPA included
-#include <soppinf.h>
+#include "soppinf.h"
 CKeinSPASmehr
       LOGICAL PASS
       DIMENSION WORK(LWORK)
@@ -299,26 +299,26 @@ C      SUBROUTINE EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
 CKeinSPASmehr
      &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
      &                  FONA2,WORK,LWORK)
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cbiexc.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <infsop.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cbiexc.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "infsop.h"
 C
       DIMENSION WORK(LWORK)
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
@@ -886,16 +886,16 @@ C    &                  EXENG,FONAC,FONA2,RMLEN,RQLEN,RLEN,
      &                  TTLEN,EXENG,FONAC,FONA2,RMLEN,RQLEN,RLEN,
 CKeinSPASmehr
      &                  RMVEL,RQVEL,RVEL,SLEN,SVEL,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <codata.h>
-#include <gnrinf.h>
-#include <cbiexc.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <abainf.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "codata.h"
+#include "gnrinf.h"
+#include "cbiexc.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "abainf.h"
+#include "orgcom.h"
       CHARACTER COORDI*21, NMDTXT*9, LAPRPC*8
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
       DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
@@ -1801,18 +1801,18 @@ C  /* Deck excit2 */
 C
 C     Triplet excitations now determined in input
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "priunit.h"
       CHARACTER*8 LABEL
       LOGICAL INTTRS, CICLC, HFCLC, TRIPLE, EXECLC
       DIMENSION WORK(LWORK), EXVAL(NEXENG)
 C
-#include <cbiexc.h>
-#include <infvar.h>
-#include <inforb.h>
+#include "cbiexc.h"
+#include "infvar.h"
+#include "inforb.h"
 C
       CICLC  = .FALSE.
       HFCLC  = NASHT .LE. 1
@@ -1850,9 +1850,9 @@ C
 C     Purpose: To copy a set of NLAB labels and corresponding
 C     symmetries from LAB1 and ISYM1 to LAB2 and ISYM2.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cbiexc.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cbiexc.h"
       CHARACTER LAB1(*)*8, LAB2(*)*8
       DIMENSION ISYM1(*), ISYM2(*)
 C
@@ -1881,18 +1881,18 @@ C
 C     Purpose: To generate a readable description of the symmetry
 C     coordinate ISCOOR in COORDI.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
       CHARACTER COORDI*21, CNBASE*2
       DIMENSION NBASE(8),NSIGN(8), CSTRA(NCOOR,NCOOR)
-#include <chrxyz.h>
-#include <chrnos.h>
-#include <chrsgn.h>
+#include "chrxyz.h"
+#include "chrnos.h"
+#include "chrsgn.h"
 C
       DO 400 ISYM = 0, MAXREP
       IF (NCRREP(ISYM,1) .GT. 0) THEN

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 !===========================================================================
 !  FILE : abarhs.F
@@ -31,16 +31,16 @@ C
 !===========================================================================
 C  /* Deck rhsinp */
       SUBROUTINE RHSINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL NEWDEF
       PARAMETER (NTABLE = 42)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION NATOM(10)
-#include <abainf.h>
-#include <cbirhs.h>
-#include <inftap.h>
+#include "abainf.h"
+#include "cbirhs.h"
+#include "inftap.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', 'XXXXXXX',
      &            '.INTSKI', '.INTPRI', '.RETURN',
      &            '.FCKSKI', '.FCKPRI', 'XXXXXXX',
@@ -152,6 +152,7 @@ C
    23             NODV = .TRUE.
                GO TO 100
    24             NOPV = .TRUE.
+                  RUNPTR = .FALSE.
                GO TO 100
    25             TESTFS = .TRUE.
                GO TO 100
@@ -189,7 +190,7 @@ C
                GO TO 100
    41             READ (LUCMD,*) IPRSOR
                GO TO 100
-   42             RUNPTR = .FALSE.
+   42             RUNPTR = .FALSE.          ! .PTRSKIp
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -343,10 +344,10 @@ C  /* Deck rhsini */
 C
 C     Initialize /CBIRHS/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbirhs.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbirhs.h"
 C
       SKIP   =.NOT.(MOLHES .OR. DIPDER .OR. SHIELD .OR. VCD .OR. MAGSUS
      &                     .OR. SPNSPN .OR. ECD .OR. VROA .OR. MOLGFA
@@ -420,15 +421,15 @@ C     This subroutine calculates the differentiated gradients,
 C     Y vectors and overlap matrices,
 C     for the right hand side of the MCSCF response equations.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.D0, D2 = 2.D0, DP5=0.50D0)
       PARAMETER (MXDMAT = 50)
 C
@@ -444,21 +445,21 @@ C   CBIRHS : *
 C   GNRINF : PARCAL
 C   INFPAR : NODTOT
 C
-#include <cbirhs.h>
-#include <gnrinf.h>
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <gdvec.h>
-#include <energy.h>
-#include <suscpt.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <inflin.h>
-#include <infpar.h>
-#include <cbieri.h>
-#include <dftcom.h>
+#include "cbirhs.h"
+#include "gnrinf.h"
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "gdvec.h"
+#include "energy.h"
+#include "suscpt.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "inflin.h"
+#include "infpar.h"
+#include "cbieri.h"
+#include "dftcom.h"
 #include "infinp.h"
 C
 C     For GDHAM true:
@@ -478,11 +479,12 @@ C
       IF (IPRMAX .GT. 0) WRITE (LUPRI,'(A/)')
      *   '  <<<<<<<<<< Output from RHSIDE >>>>>>>>>>'
 C
-C     Set for RHF
+C     Set for RHF and HSROHF
 C
-      IF (NASHT .EQ. 0) THEN
-         NODV   = .TRUE.
+      IF (NACTEL .LE. 1 .OR. HSROHF) THEN
+         NODV   = NACTEL .EQ. 0
          NOPV   = .TRUE.
+         RUNPTR = .FALSE.
          RUNTRA = .FALSE.
       END IF
 C
@@ -685,8 +687,7 @@ C
 CTROND
                DDFOCK = (ITYPE.EQ.-5).OR.(ITYPE.EQ.8)
 CTROND
-               IF ((MAGSUS .OR. MOLGFA) .AND. NASHT .GT. 0 .AND.
-     &              RUNPTR) THEN
+               IF ((MAGSUS .OR. MOLGFA) .AND. RUNPTR) THEN
                   NOBLK = .TRUE.
                ELSE
                   NOBLK = .FALSE.
@@ -728,8 +729,7 @@ C                     also when WORK(KFMAT) is not used.
 C
 C                 Transform densities
 C
-                  IF ((MAGSUS .OR. MOLGFA) .AND. NASHT .GT. 0) THEN
-                     IF (RUNPTR) THEN
+                  IF ((MAGSUS .OR. MOLGFA) .AND. RUNPTR) THEN
 C
 C                       Symmetric part
 C
@@ -781,7 +781,6 @@ C
      &                             IPRSOR,ANTI,PANTI)
                         IF (IPRPTR .GE. 3)
      &                  CALL TIMER('PSORT ',TIMSTR,TIMEND)
-                     END IF
                   END IF
 C
                   KFMAT = KLAST
@@ -929,8 +928,8 @@ C                END IF
                ENDIF
 
 C
-               IF ((MAGSUS .OR. MOLGFA) .AND. LONDON .AND. NASHT.GT.0
-     &                    .AND. RUNPTR) CALL GPCLOSE(LUPAS,'DELETE')
+               IF ((MAGSUS .OR. MOLGFA) .AND. LONDON .AND. RUNPTR)
+     &                    CALL GPCLOSE(LUPAS,'DELETE')
 C
 C              Fock matrices for geometrical derivatives
 C
@@ -1111,13 +1110,13 @@ C
 C        Calculate total derivatives of gradient (AO-derivative terms
 C        + one-index transformed terms).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "dummy.h"
       PARAMETER (D1 = 1.0D0, DP5 = 0.5D0, DM1 = -1.D0, D0 = 0.D0,
      &           D2 = 2.0D0)
 C
@@ -1130,24 +1129,24 @@ C
      &        FOUND
 C
 C
-#include <abainf.h>
-#include <cbisol.h>
-#include <cbdtra.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <dorps.h>
-#include <gdvec.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <nodint.h>
-#include <inflin.h>
-#include <infinp.h>
-#include <energy.h>
-#include <suscpt.h>
-#include <abares.h>
-#include <dftcom.h>
+#include "abainf.h"
+#include "cbisol.h"
+#include "cbdtra.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "dorps.h"
+#include "gdvec.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "nodint.h"
+#include "inflin.h"
+#include "infinp.h"
+#include "energy.h"
+#include "suscpt.h"
+#include "abares.h"
+#include "dftcom.h"
 C
       CALL QENTER('MAKEGD')
       SUSCEP = IATOM .EQ. 0 .AND. (MAGSUS .OR. MOLGFA)
@@ -1731,10 +1730,10 @@ C     put them in square matrix.
 C
 C     131088 tuh, modified for quadratic matrices, june-94
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION TRMAT(NORBT,NORBT), SQMAT(NORBT,NORBT)
-#include <inforb.h>
+#include "inforb.h"
       CALL DZERO(SQMAT,N2ORBX)
       DO 100 ISYM1 = 1, NSYM
          IOFF1 = IORB(ISYM1)
@@ -1778,10 +1777,10 @@ C       rec i.1) FDC   (NNORBT,icrd)
 C       rec i.2) FD    (NOCCT,NORBT,icrd)
 C       rec i.3) H2DAC (NNASHX,NNASHX,icrd)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0 )
       DIMENSION FDC(NNORBT), FDV(NNORBT), QD(NASHT,NORBT),
      *          DV(*), FD(NOCCT,NORBT), H2DAC(*)
@@ -1790,8 +1789,8 @@ C Used from common blocks:
 C  INFORB : NISHT,NASHT,NOCCT,NORBT,NNASHX,NNORBT
 C  INFIND : IROW(*)
 C
-#include <inforb.h>
-#include <infind.h>
+#include "inforb.h"
+#include "infind.h"
 C
 C.....rec i.1)
 C
@@ -1871,10 +1870,10 @@ C     This subroutine tests the one-index transformed Fock matrices
 C     and Q matrix by calculating the reorthonormalization term to the
 C     molecular gradient (double weight on two-electron terms).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
 C
       INTEGER P, Q, T, U, TU, QU
@@ -1885,10 +1884,10 @@ C
 C Used from common blocks:
 C  INFDIM : NASHDI,?
 C
-#include <inftap.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
+#include "inftap.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
 C
       ITRI(I) = I*(I - 1)/2
 C
@@ -1995,12 +1994,12 @@ C
 C     tuh 281088
 C     Making Y-mat and TD square, jan.-94, K.Ruud
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "abainf.h"
       PARAMETER(D0=0.0D0, DP5=0.5D0, D1 = 1.0D0, D2 = 2.0D0)
 C
       LOGICAL NOORBI,SUSCEP
@@ -2015,8 +2014,8 @@ C     Used from common blocks :
 C      INFORB : NORBT,NNORBT,NASHT,...
 C      INFIND : IROW(*)
 C
-#include <inforb.h>
-#include <infind.h>
+#include "inforb.h"
+#include "infind.h"
 C
       IF (IPRINT .GE. 5) THEN
          CALL TITLER('Output from GETY','*',103)
@@ -2156,23 +2155,23 @@ C     GRDACT is calculated in ABARHS
 C
 C     tuh 101188
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
       PARAMETER (THRS = 1.0D-10)
       LOGICAL NOH1, NOH2, NOORTH
       DIMENSION TD(NORBT,NORBT), FSC(NORBT,NORBT), FDC(NORBT,NORBT),
      *          H1AO(NNBAST), H1MO(NNORBT),
      *          CMO(*), WRK(LWRK)
-#include <abainf.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <inftap.h>
-#include <energy.h>
+#include "abainf.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "inftap.h"
+#include "energy.h"
 C
       IF (IPRINT .GE. 5) THEN
          CALL TITLER('Output from CHKRHS','*',103)
@@ -2287,16 +2286,16 @@ C     NODDY SUBROUTINE TO FORM ORBITAL PART OF RIGHT HAND SIDE
 C     FOR MAGNETIC RESPONSE EQUATIONS (Eq. 51b JCP 84, 6266 (1986))
 C     USING THE GENERALISED FOCK MATRIX
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
 C
       LOGICAL RUNSDR, NOH1, NOH2, NOORTH
       DIMENSION WORK(LWORK)
 C
-#include <nuclei.h>
-#include <inforb.h>
+#include "nuclei.h"
+#include "inforb.h"
 C
       IF (NSYM .GT. 1) THEN
          WRITE (LUPRI,'(1X,A)') ' OFACHK only works without symmetry.'
@@ -2351,11 +2350,11 @@ C  /* Deck ofabod */
      &                  GWORK,HWORK,CFKUA,AFKUA,QMTUA,HWRK3,HBMAT,
      &                  PSOAO,PSOMO,WORK,LWORK,RUNSDR,NOH1,NOH2,NOORTH,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (DP5 = 0.5D0, D0 = 0.0D0)
       INTEGER TMAT
       LOGICAL RUNSDR, NOH1, NOH2, NOORTH
@@ -2382,12 +2381,12 @@ C  /* Deck ofabod */
      &           HWORK(NBAST,NBAST), HBMAT(NBAST,NBAST,3),
      &           GWORK(NBAST,NBAST,NBAST,NBAST),
      &           PSOAO(NBAST,NBAST,*), PSOMO(NORBT,NORBT), WORK(LWORK)
-#include <abainf.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <efield.h>
-#include <chrxyz.h>
+#include "abainf.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "efield.h"
+#include "chrxyz.h"
       NT(T) = NISHT + T
 C
 C     Read in MO's
@@ -2850,10 +2849,10 @@ C
       END
 C  /* Deck ofabmo */
       SUBROUTINE OFABMO(CMO,DV,FMAT,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "inforb.h"
       DIMENSION CMO(NCMOT), DV(NASHT,NASHT), FMAT(N2ORBT), WORK(LWORK)
       LOGICAL FOUND
 C
@@ -2873,10 +2872,10 @@ C
       END
 C  /* Deck ofabhg */
       SUBROUTINE OFABHG(HWORK,UMOG,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       PARAMETER (LBUF = 600)
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION WORK(LWORK)
       KIBUF = 1
       KWONE = KIBUF + 4*LBUF
@@ -2889,16 +2888,16 @@ C  /* Deck ofabhg */
       END
 C  /* Deck ofabh1 */
       SUBROUTINE OFABH1(HWORK,UMOG,IBUF,HWRK,WRK,LWORK)
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "inforb.h"
       PARAMETER (LBUF=600)
       INTEGER A, B, C, D
       DIMENSION HWORK(NBAST,NBAST), UMOG(NBAST,NBAST,NBAST,NBAST),
      &          HWRK(NNBAST), IBUF(4,LBUF), MBAS(8), WRK(LWORK)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       KFREE = 1
       LFREE = LWORK
@@ -2961,9 +2960,9 @@ C
       END
 C  /* Deck rumoga */
       SUBROUTINE RUMOGA(UMOGA,NORBT,NOH2,NOLOND,WORK,LWORK,X)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       INTEGER X
       LOGICAL NOH2, NOLOND
       DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), WORK(LWORK)
@@ -2976,15 +2975,15 @@ C
       END
 C  /* Deck rumog1 */
       SUBROUTINE RUMOG1(UMOGA,NORBT,NOH2,NOLOND,IBUF,X,WORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
       PARAMETER (LBUF = 600)
       LOGICAL NOH2, NOLOND
       INTEGER P,Q,R,S,X
       DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), IBUF(600), WORK(*)
-#include <inftap.h>      
-#include <ibtfun.h>
+#include "inftap.h"      
+#include "ibtfun.h"
 C
       JBUF = 256
 C
@@ -3034,10 +3033,10 @@ C
       END
 C  /* Deck getdns */
       SUBROUTINE GETDNS(DDENS,PDENS)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.D0)
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION DDENS(NORBT,NORBT), PDENS(NORBT,NORBT,NORBT,NORBT)
       CALL DZERO(DDENS,N2ORBX)
       CALL DZERO(PDENS,N2ORBX*N2ORBX)
@@ -3063,9 +3062,9 @@ C
 C     NODDY SUBROUTINE TO CHECK PARTITIONED FOCK MATRICES
 C     FOR MAGNETIC RESPONSE EQUATIONS (Eq. 51b JCP 84, 6266 (1986))
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       DIMENSION  WORK(LWORK),
      &           UMOG(NORBT,NORBT,NORBT,NORBT),
@@ -3077,7 +3076,7 @@ C
      &           SXMAT(NORBT,NORBT,3),
      &           CMO  (NBAST,NORBT)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       IF (NSYM .GT. 1) THEN
          WRITE (LUPRI,'(1X,A)') ' PFKCHK only works without symmetry.'
@@ -3120,8 +3119,8 @@ C  /* Deck pfkbod */
      +                  QMTUA,CFOK,AFOK,QMAT,FMAT,CFKSA,AFKSA,QMTSA,
      +                  CWMAT,AWMAT,CDFOK,ADFOK,QDMAT,DFOCK,WRK1,WRK2,
      +                  WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER P, Q, R, S, A, B, C, D, T, U, V, X
       DIMENSION  WORK(LWORK),
      &           UMOG(NORBT,NORBT,NORBT,NORBT),
@@ -3147,8 +3146,8 @@ C  /* Deck pfkbod */
      &           DFOCK(NORBT,NORBT,3),
      &           WRK1(NBAST,NBAST),
      &           WRK2(NBAST,NBAST)
-#include <inforb.h>
-#include <chrxyz.h>
+#include "inforb.h"
+#include "chrxyz.h"
       NT(T) = NISHT + T
 C     ***************************************************************
 C     ***** Noddy subroutine to calculate the AO differentiated *****
@@ -3366,20 +3365,20 @@ C
       END
 C  /* Deck psorhs */
       SUBROUTINE PSORHS(WMAT,LABINT,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "mxcent.h"
       CHARACTER*8 LABINT(*)
       DIMENSION WMAT(*), WORK(LWORK)
-#include <nuclei.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <cbirhs.h>
-#include <abainf.h>
-#include <sigma.h>
-#include <spnout.h>
+#include "nuclei.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "cbirhs.h"
+#include "abainf.h"
+#include "sigma.h"
+#include "spnout.h"
 C INFRSP: using LPVMAT
-#include <infrsp.h>
+#include "infrsp.h"
 C
       IF ((.NOT. (SHIELD .OR. SPNSPN .OR. SPINRO)) .OR. 
      &   ((.NOT. (SHIELD .OR. SPINRO))
@@ -3425,34 +3424,34 @@ C  /* Deck psorh1 */
       SUBROUTINE PSORH1(NODV,WMAT,INTADR,LABINT,INTREP,CMO,UDV,PVX,
      &                  XINDX,WORK,LWORK,PSOTST,IPRALL,DOSHI,RALLCO,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DM2 = -2.D0)
       INTEGER X
       LOGICAL NODV, PSOTST, DOSHI, RALLCO
       CHARACTER LABINT(*)*8, LABTMP(3*MXCOOR)*8
       DIMENSION WMAT(*), INTREP(*), INTADR(*), WORK(LWORK),
      &          CMO(*), UDV(*), PVX(*), XINDX(*)
-#include <abainf.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infpri.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <gdvec.h>
-#include <wrkrsp.h>
-#include <symmet.h>
-#include <abares.h>
-#include <infsop.h>
+#include "abainf.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infpri.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "gdvec.h"
+#include "wrkrsp.h"
+#include "symmet.h"
+#include "abares.h"
+#include "infsop.h"
 C
       IPRRSP = IPRALL - 2
 C
@@ -3634,11 +3633,11 @@ C
       END
 C  /* Deck psoort */
       SUBROUTINE PSOORT(LABEL,ISCOOR,KSYMPSO,WMAT,CMO,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER LABEL*8
       DIMENSION WORK(LWORK), CMO(*), WMAT(*)
-#include <inforb.h>
+#include "inforb.h"
 C
       KPSO  = 1
       KLAST = KPSO + N2ORBX
@@ -3652,16 +3651,16 @@ C
 C  /* Deck psoor1 */
       SUBROUTINE PSOOR1(LABEL,ISCOOR,KSYMPSO,WMAT,PSOINT,CMO,
      &                  WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       INTEGER X
       CHARACTER LABEL*8
       DIMENSION PSOINT(NORBT,NORBT), WMAT(N2ORBX,3), CMO(*),
      &          WORK(LWORK)
-#include <inforb.h>
-#include <sigma.h>
-#include <chrxyz.h>
+#include "inforb.h"
+#include "sigma.h"
+#include "chrxyz.h"
 C
       KSYMP = -1
       CALL PRPGET(LABEL,CMO,PSOINT,KSYMP,ANTSYM,WORK,LWORK,IPRINT)
@@ -3684,16 +3683,16 @@ C
 C  /* Deck psonod */
       SUBROUTINE PSONOD(ISCOOR,NODV,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
 C
       LOGICAL NODV
       DIMENSION WORK(LWORK)
 C
-#include <nuclei.h>
-#include <inforb.h>
+#include "nuclei.h"
+#include "inforb.h"
 C
       IF (NSYM .GT. 1) THEN
          WRITE (LUPRI,'(1X,A)') ' PSONOD only works without symmetry.'
@@ -3723,11 +3722,11 @@ C
 C  /* Deck psono1 */
       SUBROUTINE PSONO1(ISCOOR,NODV,PSOAO,PSOMO,PDENS,DDENS,DV,FOCK,
      &                  FMAT,CMO,GRAD,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       LOGICAL NODV
       INTEGER P, Q, R, S, A, B, C, D
       DIMENSION  PSOAO(NBAST,NBAST,3*NUCDEP),
@@ -3739,8 +3738,8 @@ C  /* Deck psono1 */
      &           FOCK(NORBT,NORBT),
      &           CMO  (NBAST,NORBT),
      &           GRAD(NORBT,NORBT), WORK(LWORK)
-#include <abainf.h>
-#include <inforb.h>
+#include "abainf.h"
+#include "inforb.h"
 C
 C     Read in MO's
 C     ============
@@ -3821,11 +3820,11 @@ C  /* Deck getw */
 C
 C     tuh 210992 - apres Oui!
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL ANTI
       DIMENSION TD(*), DV(*), WMAT(*), CMO(*), WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       KDTOT = 1
       KLAST = KDTOT + N2ORBX
@@ -3838,18 +3837,18 @@ C  /* Deck getw1 */
 C
 C     tuh 210992 - apres Oui!
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
       PARAMETER(D2 = 2.D0)
 C
       LOGICAL ANTI
       INTEGER U, U1, U2, V, V1, V2, UV
       DIMENSION TD(NORBT,NORBT), DV(NNASHX), WMAT(N2ORBX), CMO(*),
      &          DTOT(NORBT,NORBT)
-#include <inforb.h>
-#include <infind.h>
+#include "inforb.h"
+#include "infind.h"
 C
       IF (IPRINT .GE. 5) THEN
          CALL TITLER('Output from GETW1','*',103)
@@ -3925,12 +3924,12 @@ C
 C  /* Deck solrhs */
       SUBROUTINE SOLRHS(CMO,TD,DV,UMAT,WORK,LWORK,ICOOR,ISCOOR,
      &                  ISYM,IPRMAX)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION CMO(*), TD(*), DV(*), UMAT(*), WORK(LWORK)
-#include <cbisol.h>
-#include <inforb.h>
+#include "cbisol.h"
+#include "inforb.h"
       KGLM    = 1
       KTLMD   = KGLM   + LMTOT
       KWMAT   = KTLMD  + LMTOT
@@ -3948,23 +3947,23 @@ C  /* Deck solrhs */
 C  /* Deck solrh1 */
       SUBROUTINE SOLRH1(CMO,TD,DV,GLM,TLMD,WMAT,UMAT,RLMAO,RLMMO,
      &                  WORK,LWORK,ICOOR,ISCOOR,ISYM,ISYRLM,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "thrzer.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.D0, THRESH = 1.0D-8)
       LOGICAL ANTI
       DIMENSION GLM(LMTOT), TLMD(LMTOT), TD(NORBT,NORBT),
      &          DV(*), CMO(*), WORK(LWORK), WMAT(NORBT,NORBT),
      &          RLMAO(NNBASX), RLMMO(NORBT,NORBT),
      &          ISYRLM(LMNTOT), UMAT(NORBT,NORBT)
-#include <cbisol.h>
-#include <orgcom.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "cbisol.h"
+#include "orgcom.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "inftap.h"
 C
       DIMENSION CAVCNT(3)
 C
@@ -4082,11 +4081,11 @@ C
       END
 C  /* Deck traone */
       SUBROUTINE TRAONE(CMO,TRSO,SQMO,WORK,LWORK,ANTI,ISYMOP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL ANTI
       DIMENSION CMO(*), TRSO(*), SQMO(*), WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
       KSQSO = 1
       KLAST = KSQSO + N2BASX
       IF (KLAST .GT. LWORK) CALL STOPIT('TRAONE',' ',KLAST,LWORK)
@@ -4099,14 +4098,14 @@ C  /* Deck traon1 */
       SUBROUTINE TRAON1(CMO,SQMO,TRSO,SQSO,WORK,LWORK,ISYMOP,ANTI,
      &                  IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <inforb.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "infdim.h"
       DIMENSION CMO(NCMOT), WORK(LWORK),
      *          SQMO(NORBT,NORBT), TRSO(NNBASX), SQSO(N2BASX)
       LOGICAL   NONSYM, ANTI
@@ -4205,20 +4204,20 @@ C
 C     Extra reorthonormalization term when doing new right-hand sides
 C     K.Ruud, june-94
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION TD1(N2ORBX), TD2(N2ORBX), TEMP(N2ORBX),
      &          FOCK(N2ORBT), HESFS1(MXCOOR,MXCOOR)
-#include <symmet.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <dorps.h>
-#include <inftap.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "dorps.h"
+#include "inftap.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from REORT2',-1)
@@ -4323,9 +4322,9 @@ C
 C Output:
 C   GP     = right hand side for ABACUS response calculation
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       DIMENSION FDC(N2ORBX)
       DIMENSION GP(2*NVARPT)
@@ -4341,15 +4340,15 @@ C   INFLIN : NVARPT,LSYMRF,LSYMPT,NCONRF,NCONST,NWOPPT
 C   INFRSP : LPVMAT,IPRRSP
 C   INFSOP : KABSAD,KABTAD,KIJSAD,KIJTAD,KIJ1AD,KIJ2AD,KIJ3AD,KIADR1
 C
-#include <abainf.h>
-#include <cbirhs.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <inflin.h>
-#include <infrsp.h>
-#include <infsop.h>
-#include <wrkrsp.h>
+#include "abainf.h"
+#include "cbirhs.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "inflin.h"
+#include "infrsp.h"
+#include "infsop.h"
+#include "wrkrsp.h"
 C
 C
       CALL QENTER('ANGRHS')

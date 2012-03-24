@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE ECPINP(Q,QEFF,IATOM,IPRINT,ECPNAME)
 C
@@ -32,12 +32,12 @@ C     Set QEFF to be the effective charge of the atom.
 C     Store the position IATOM in the list of all atoms to later
 C     identify the position of ECP atoms.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <ecpinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "ecpinf.h"
 C
       CHARACTER*80 STRING
       CHARACTER LAB
@@ -177,15 +177,15 @@ C
 C
 C Purpose: Calculatate ECP integrals
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ecpinf.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <pi.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ecpinf.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "pi.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
 C
       COMMON /TRQ88/  KCRS,LCRU
       COMMON /TRQ77/  XI,YI,ZI,XJ,YJ,ZJ,XC,YC,ZC
@@ -206,7 +206,7 @@ C
      &            1,11,15,2,3,7,12,10,14,4,6,13,5,8,9/
       DATA IOFF/0,1,4,10,20/  
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (L1 .GT. MAX_L .OR. L2 .GT. MAX_L) THEN
          write(lupri,'(//A,3I8)')
@@ -323,7 +323,7 @@ c
 c*******************************************************
 c     ----- computes type 1 core potential integrals -----
       implicit double precision (a-h,o-z)
-#include <ecpinf.h>      
+#include "ecpinf.h"      
 c*
       dimension llt(5,2),crda(5,3),crdb(5,3),gout(225)
       data llt /1,2,5,11,21,1,4,10,20,35/
@@ -471,7 +471,7 @@ c
       subroutine pseud2(gout,lit,ljt,ai,aj)
 c     ----- COMPUTES TYPE 2 CORE POTENTIAL INTEGRALS -----
       implicit double precision (a-h,o-z)
-#include <ecpinf.h>
+#include "ecpinf.h"
       dimension llt(5,2),crda(5,3),crdb(5,3),gout(225)
       data llt /1,2,5,11,21,1,4,10,20,35/
 CMM   common /trq99/ lcr(50),ncr(1000),nkcrl(6,50),nkcru(6,50),

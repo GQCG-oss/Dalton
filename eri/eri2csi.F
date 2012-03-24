@@ -21,28 +21,28 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ericsm */
       SUBROUTINE ERICSM(SO,CSMAT,IPNTCR,INDXBT,WORK,LWORK,IPRINT)
 C
 C     October 2004 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <eridst.h>
-#include <eribuf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "eridst.h"
+#include "eribuf.h"
       DIMENSION SO(NAOINT,*), CSMAT(*), IPNTCR(MAXBCH,4), INDXBT(*),
      &          WORK(LWORK) 
-#include <cbieri.h>
-#include <ericom.h>
-#include <symmet.h>
-#include <hertop.h>
-#include <inftap.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "symmet.h"
+#include "hertop.h"
+#include "inftap.h"
 C
 C     Allocation for ERIOUT
 C
@@ -58,13 +58,13 @@ C  /* Deck erics1 */
 C
 C     October 2004 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.0D0, TEN14 = 1.1D14)
       INTEGER A, B, C, D, I, A1, B1, C1, D1, AB, CD, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, CTRIAC, CTRIBD, CTRIPQ
@@ -72,15 +72,15 @@ C
      &          INDORB(NCCS,2), IPNTCR(MAXBCH,4),
      &          IPNRST(0:7,3), INDXBT(MXSHEL*MXCONT,0:7),
      &          IADCMP(MXAQN,MXAQN,2), CSMAT(NBAST,NBAST)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <inforb.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "inforb.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERICSM',-1)
@@ -225,13 +225,13 @@ C  /* Deck ericso */
 C
 C     October 2004 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.0D0, TEN14 = 1.1D14)
       INTEGER A, B, C, D, I, A1, B1, C1, D1, AB, CD, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, CTRIAC, CTRIBD, CTRIPQ
@@ -242,14 +242,14 @@ C
      &          BIN(LBIN), IBIN(LBIN,NIBUF),
      &          IPNRST(0:7,3), INDXBT(MXSHEL*MXCONT,0:7),
      &          IADCMP(MXAQN,MXAQN,2)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERICSO',-1)
@@ -403,16 +403,16 @@ C  /* Deck csmext */
 C
 C     October 2004 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.D0)
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       DIMENSION CSMAT(NBAST,NBAST), CSMSHL(KMAX,KMAX)
-#include <inforb.h>
-#include <shells.h>
+#include "inforb.h"
+#include "shells.h"
       IOFF = 0
       DO ISHELL = 1, KMAX
          JOFF = 0

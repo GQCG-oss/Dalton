@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ortrel */
       SUBROUTINE ORTREL(WORK,LWORK,PASS)
@@ -35,9 +35,9 @@ C
 C      This new driver routine calls MCORL or CCORL,
 C      depending on wave function type.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       LOGICAL PASS
       DIMENSION WORK(LWORK)
@@ -45,7 +45,7 @@ C
 C      Used from common blocks:
 C       /ABAINF/: MOLHES,DIPDER
 C
-#include <abainf.h>
+#include "abainf.h"
 C
 C     Return immediately if not (molhes or dipder or qpgrad),
 C        we do not want to open LUSFDA and LUGDR without using them.
@@ -67,11 +67,11 @@ C     Purpose:
 C      Calculate geometry response gradients and
 c      reorthonormalization terms (apart from tr(Sab*F))
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
 C
       LOGICAL RUNORT, OLDRD, OLDDX, PASS, DOREAL, DOIMAG, DOSFD,
      &        DOBRHS, DOPRHS
@@ -84,15 +84,15 @@ C       /INFDIM/: NVARMA
 C       /NUCLEI/: NUCDEP
 C       /INFTAP/: LUGDR,LURDR, LRGDR,LRRDR, NBGDR,NBRDR
 C
-#include <abainf.h>
-#include <dummy.h>
-#include <cbisol.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "abainf.h"
+#include "dummy.h"
+#include "cbisol.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DOSFD  = ((MOLHES .OR. DIPDER .OR. QPGRAD) .AND. .NOT. HELFEY)
      &         .OR. MAGSUS
@@ -219,14 +219,14 @@ C
       END
 C  /* Deck ortinp */
       SUBROUTINE ORTINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 3)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbiort.h>
+#include "abainf.h"
+#include "cbiort.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*REORT ')
@@ -294,10 +294,10 @@ C  /* Deck ortini */
 C
 C     Initialize /CBIORT/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbiort.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbiort.h"
 C
       IPRINT = IPRDEF
       SKIP   = .NOT.MOLHES
@@ -315,26 +315,26 @@ C      Evaluate reorthonormalization term (apart from tr(Sab F) ) to
 C      HESMOL(a,b) = sum(ij) SKMAT(ij,a) * YXMAT(ij,b)
 C      Contribution to solvent Hessian Gl*Tlma*Tlmb
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
       PARAMETER (D2 = 2.0D0)
       DIMENSION SKMAT(LEN), YXMAT(LEN), GLM(LMTOT),
      &          TLMA(LMTOT), TLMB(LMTOT), HESFS1(MXCOOR,MXCOOR),
      &          HSOLTT(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
       LOGICAL PASS
-#include <taysol.h>
-#include <cbisol.h>
-#include <cbiort.h>
-#include <energy.h>
-#include <taymol.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dorps.h>
+#include "taysol.h"
+#include "cbisol.h"
+#include "cbiort.h"
+#include "energy.h"
+#include "taymol.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dorps.h"
 C
       IF (SKIP) RETURN
       CALL QENTER('REORT')

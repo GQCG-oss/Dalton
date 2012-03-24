@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccsd_triple */
       SUBROUTINE CCSD_TRIPLE(OMEGA1,OMEGA2,T1AM,T2AM,FOCK,
@@ -45,14 +45,14 @@ C           T1AM(*), OMEGA1(*), OMEGA2(*), T2AM(*), SCR(*), WRK(*).
 C
 C
       IMPLICIT NONE  
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -257,11 +257,11 @@ C  /* Deck ccsdt_tran1 */
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
       DIMENSION AOINT(NNBAST,NBAST)
@@ -317,11 +317,11 @@ C  /* Deck ccsdt_tran2 */
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 
       PARAMETER (TWO = 2.0D0)
       DIMENSION XIAJB(NT1AMX,NT1AMX), AOINT(NNBAST,NBAST)
@@ -369,11 +369,11 @@ C  /* Deck ccsdt_tran2 */
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 
       PARAMETER (TWO = 2.0D0)
       DIMENSION XIAJB(NT1AMX,NT1AMX), AOINT(NNBAST,NBAST)
@@ -424,11 +424,11 @@ C  /* Deck ccsdt_omega1 */
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 
       PARAMETER (TWO = 2.0D0)
       DIMENSION OMEGA1(NT1AMX),XIAJB(NT1AMX,NT1AMX)
@@ -464,11 +464,11 @@ C  /* Deck ccsdt_omega2 */
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       PARAMETER (TWO = 2.0D0)
       DIMENSION XINT1T(NT1AMX,NVIRT,NVIRT)
       DIMENSION XINT2T(NT1AMX,NRHFT,NRHFT)
@@ -547,11 +547,11 @@ C  /* Deck ccsdt_tran3 */
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
       DIMENSION AOINT(NNBAST,NBAST)
@@ -613,12 +613,12 @@ C  /* Deck ccsdt_t03am */
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <maxorb.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "maxorb.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL XINT1S(NT1AMX,NVIRT,NVIRT)
@@ -660,11 +660,11 @@ C  /* Deck ccsdt_t3am_r */
 *                           <mu_3|[[V,T2],T2]|HF>
 *
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(NORBT)
       DIMENSION T2AM(NT1AMX,NT1AMX)
@@ -781,12 +781,12 @@ C----------------------------------------
 *     Written by Christof Haettig, April 2002 
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       LOGICAL NONHF, TRANS, LOCDBG
       PARAMETER ( LOCDBG = .FALSE. )
@@ -982,10 +982,10 @@ C----------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER NAI, NBJ, NCK
 C

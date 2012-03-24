@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c/* Deck cc_wrrsp */
       SUBROUTINE CC_WRRSP(LIST,IDXLST,ISYM,IOPT,MODFIL,
@@ -122,45 +122,45 @@ C  CC3 effective vectors introduced 2002 by Christof Haettig
 C  R12 vectors introduced Jun 2003 by Christof Haettig
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfro.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccl1rsp.h>
-#include <cco1rsp.h>
-#include <ccx1rsp.h>
-#include <ccr2rsp.h>
-#include <ccl2rsp.h>
-#include <cco2rsp.h>
-#include <ccx2rsp.h>
-#include <ccr3rsp.h>
-#include <ccl3rsp.h>
-#include <cco3rsp.h>
-#include <ccx3rsp.h>
-#include <ccr4rsp.h>
-#include <ccl4rsp.h>
-#include <cco4rsp.h>
-#include <ccx4rsp.h>
-#include <ccn2rsp.h>
-#include <cclrmrsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccl2rsp.h>
-#include <cccx2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfro.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccl1rsp.h"
+#include "cco1rsp.h"
+#include "ccx1rsp.h"
+#include "ccr2rsp.h"
+#include "ccl2rsp.h"
+#include "cco2rsp.h"
+#include "ccx2rsp.h"
+#include "ccr3rsp.h"
+#include "ccl3rsp.h"
+#include "cco3rsp.h"
+#include "ccx3rsp.h"
+#include "ccr4rsp.h"
+#include "ccl4rsp.h"
+#include "cco4rsp.h"
+#include "ccx4rsp.h"
+#include "ccn2rsp.h"
+#include "cclrmrsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccl2rsp.h"
+#include "cccx2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
+#include "dummy.h"
 Cholesky
-#include <maxorb.h>
-#include <cclr.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "cclr.h"
+#include "ccdeco.h"
 Cholesky
  
       CHARACTER SUBRNAME*(8)
@@ -801,10 +801,10 @@ C   Purpose:  Write a vector with symmetry ISYM to unit LUSAVE
 C             for an explanation of IOPT see CC_WRRSP
 C
 C---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       INTEGER LUSAVE
 C
@@ -968,11 +968,11 @@ C  Christof Haettig, April 1997
 C
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccexci.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

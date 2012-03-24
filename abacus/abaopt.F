@@ -1489,7 +1489,7 @@ C  /* Deck runopt */
 #include "cbiwlk.h"
 #include "molde.h"
 #include "numder.h"
-      LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
+      LOGICAL EXHER, EXSIR, EXABA, MINEND, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP
       CHARACTER TMPLIN*80, WRDRSP*7
       DIMENSION EGRAD(MXCOOR), CSTEP(MXCOOR), SCLVEC(MXCOOR)
@@ -2440,7 +2440,7 @@ C
 #endif
 Cef begin
 #ifndef VAR_LINSCA
-#include <incore.h>
+#include "incore.h"
 #endif
 Cef end
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY

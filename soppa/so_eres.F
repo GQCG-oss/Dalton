@@ -22,14 +22,14 @@ C              RES1D, RES2E, and RES2D.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <eribuf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "eribuf.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -41,15 +41,15 @@ C
       dimension rint(10,10,10,10)
       logical   sonod
 C
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

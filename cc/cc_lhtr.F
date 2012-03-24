@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_lhtr */
       SUBROUTINE CC_LHTR(ECURR,
@@ -55,37 +55,37 @@ C     Current models are: CC2, CCD, CCSD
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
 C
 C   #include <infind.h> replaced by: #include <ccisao.h>
 C   C. Haettig 13.08.2004
 C
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccfield.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <cclr.h>
-#include <eribuf.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccfield.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "cclr.h"
+#include "eribuf.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
-#include <ccnoddy.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccnoddy.h"
+#include "r12int.h"
+#include "ccr12int.h"
 C
       CHARACTER*10 MODEL
       CHARACTER*8  FRHO2, FRHO1, FC2AM, FC1AM, FN3SRT, FNTOC, FRHO12,

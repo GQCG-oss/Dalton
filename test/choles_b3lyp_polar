@@ -86,23 +86,23 @@ else
 fi
 
 # B3LYP energy
-CRIT1=`$GREP "Final * DFT energy: * -92\.0988233" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * -92\.0988233" $log | wc -l`
 TEST[1]=$CRIT1
 CTRL[1]=1
 ERROR[1]="B3LYP ENERGY NOT CORRECT"
 
 # Dipole moment
-CRIT1=`$GREP  "( |0)\.8784" $log | wc -l`
-CRIT2=`$GREP  "( -|-0)\.87553" $log | wc -l`
-CRIT3=`$GREP  "( -|-0)\.07136" $log | wc -l`
+CRIT1=`$GREP  "0*\.8784" $log | wc -l`
+CRIT2=`$GREP  "0*\.05149" $log | wc -l`
+CRIT3=`$GREP "\-0*\.87692" $log | wc -l`
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 # Polarizability
-CRIT1=`$GREP Ex $log | $GREP "11.7238" | $GREP "( \-|-0).5222"  | $GREP "( |0).000000" | wc -l`
-CRIT2=`$GREP Ey $log | $GREP "( \-|-0).5222" | $GREP "9.3365"  | $GREP "( |0).000000" | wc -l`
-CRIT3=`$GREP Ez $log | $GREP "( |0).000000" | $GREP "( |0).000000"  | $GREP "8.5125" | wc -l`
+CRIT1=`$GREP "Ex  *  8\.5125.. * 0*\.000000 * 0*\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey  * 0*\.000000  * 9\.3615.. *  0\.5758.." $log | wc -l`
+CRIT3=`$GREP "Ez  * 0*\.000000  * 0\.5758.. * 11\.6990.." $log | wc -l`
 
 TEST[3]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 

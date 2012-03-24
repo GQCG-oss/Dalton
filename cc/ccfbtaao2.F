@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCFBTAAO2(X0INT, ISY0DIS, X1INT, ISY1DIS,  
@@ -70,12 +70,12 @@ C
 #else
 #  include <implicit.h>
 #endif     
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccisao.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)

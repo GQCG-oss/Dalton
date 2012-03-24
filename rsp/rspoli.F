@@ -22,7 +22,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C FILE: rsp/rspoli.F ("Orbital LInear transformation")
 C
@@ -68,7 +68,7 @@ C Naming conventions:
 C    FCX, FVX, ... are FC, FV, ... with one-index transformed integrals
 C    FVTD, ...     are FV calculated with Transition dens.mat.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION UDV(NASHDI,*),ZYCVEC(*),FC(*),FV(*),PVX(*)
       DIMENSION ZYMAT(N2ORBX,*),FCX(NORBT,NORBT,*)
@@ -78,33 +78,33 @@ C
       DIMENSION EVECS(*)
       DIMENSION XINDX(*),WRK(*),CMO(*)
 C
-#include <thrzer.h>
-#include <dummy.h>
+#include "thrzer.h"
+#include "dummy.h"
 C
 C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  INFRSP : ?
 C  INFSOP : A2EXIST,KABSAD,KABTAD,...
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infinp.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <inftra.h>
-#include <orbtypdef.h>
-#include <wrkrsp.h>
-#include <infsop.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infinp.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "inftra.h"
+#include "orbtypdef.h"
+#include "wrkrsp.h"
+#include "infsop.h"
+#include "dftcom.h"
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
 CSONIA SONIA SONIA
-#include <grdccpt.h>
+#include "grdccpt.h"
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA end control direct for kappabar of CCSD(T)
 CSONIA SONIA SONIA
@@ -290,7 +290,7 @@ C NEEDED DISTRIBUTIONS DEFINED IN NEEDMU(-4:6)
 C
       CALL MEMGET('REAL',KPVCD ,      N2ASHX,WRK,KFREE,LFREE)
       IDIST = 0
- 90   CALL NXTH2M(IC,ID,WRK(KH2),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
+ 90   CALL NXTH2M(IC,ID,WRK(KH2),NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 95
 C     ... IF IDIST.LT.0 NO MORE DISTRIBUTIONS
          KWRK2 = KFREE
@@ -471,7 +471,7 @@ C
      &               'UNFORMATTED',IDUMMY,.FALSE.)
 C
       IDIST  = 0
- 1090 CALL NXTH2D(IC,ID,WRK(KH2),NEEDDI(1),LUINTD,WRK,KFREE,LFREE,IDIST)
+ 1090 CALL NXTH2D(IC,ID,WRK(KH2),NEEDDI,LUINTD,WRK,KFREE,LFREE,IDIST)
          IF (IDIST .LT. 0) GO TO 1095
 C  IF IDIST.LT.0 NO MORE DISTRIBUTIONS
          ICDSYM= MULD2H(ISMO(IC),ISMO(ID))

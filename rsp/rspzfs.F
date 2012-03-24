@@ -21,16 +21,16 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C  /* Deck zfsdrv */
       SUBROUTINE ZFSDRV(WORK,LWORK)
 C
 C CALCULATE AVERAGE VALUE OF PROPERTIES
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <dummy.h>
+#include "dummy.h"
 C
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D8 = 8.0D0 )
       PARAMETER (DP5=0.5D0, D1P5=1.5D0)
@@ -39,25 +39,25 @@ C
       CHARACTER SPD(7)
       DATA SPD/'S','P','D','F','G','H','I'/
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infind.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infind.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
 #include "infave.h"
-#include <infpri.h>
-#include <inftap.h>
-#include <iratdef.h>
-#include <aovec.h>
-#include <codata.h>
-#include <gfac.h>
-#include <priunit.h>
-#include <blocks.h>
-#include <zfs.h>
+#include "infpri.h"
+#include "inftap.h"
+#include "iratdef.h"
+#include "aovec.h"
+#include "codata.h"
+#include "gfac.h"
+#include "priunit.h"
+#include "blocks.h"
+#include "zfs.h"
 #include "infesr.h"
-#include <infinp.h>
+#include "infinp.h"
 C
       LOGICAL ANTI, PANTI, NODPTR, NODV, NOPV, NOCONT, TTIME, 
      &   RETUR, NOBLK, DEBUG, DIA2SO, ZFS2EL
@@ -171,10 +171,10 @@ C
       END
 C  /* Deck zfsana */
       SUBROUTINE ZFSANA(WORK,LWORK,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
       INTEGER S
       CALL QENTER('ZFSANA')
 C
@@ -200,16 +200,16 @@ C
 C  /* Deck zfsan1 */
       SUBROUTINE ZFSAN1(MULT,HZFS,RZFS,CG,HEIG,RWORK,WORK,KFREE,LFREE,
      &   IPRINT)
-#include <implicit.h>
+#include "implicit.h"
       DOUBLE COMPLEX HZFS(MULT,MULT)
       DIMENSION RZFS(MULT,MULT)
       DIMENSION CG(MULT,MULT)
       DIMENSION HEIG(MULT)
       DIMENSION WORK(*), RWORK(*)
-#include <priunit.h>
-#include <zfs.h>
-#include <codata.h>
-#include <gfac.h>
+#include "priunit.h"
+#include "zfs.h"
+#include "codata.h"
+#include "gfac.h"
       DOUBLE COMPLEX U(-2:2)
       DIMENSION RU(-2:2)
       DIMENSION ZFSEIG(3)
@@ -432,3 +432,4 @@ C Clean up and exit
 C
       CALL QEXIT('ZFSAN1')
       END
+! --- end of DALTON/rsp/rspzfs.F ---

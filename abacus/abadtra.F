@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -64,20 +64,20 @@ C
 C     Called from nuclear Hessian calculation.
 C
 C
-#include <implicit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION CMO(*),PV(*),FQD(*),H2DAC(*),WORK(KWORK)
       LOGICAL OPNSTA
-#include <iratdef.h>
+#include "iratdef.h"
 C
-#include <priunit.h>
-#include <nodint.h>
-#include <cbdtra.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <infind.h>
+#include "priunit.h"
+#include "nodint.h"
+#include "cbdtra.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CHARACTER*1 OPRTYP(3)
       PARAMETER (LBINT = 600)
@@ -186,18 +186,18 @@ C  FQD(NORBT,NASHT) FQ matrix for derivative integrals
 C Scratch:
 C  WRK(LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C Used from common blocks:
 C  INFORB : NASHT,NBAST,N2BASX,N2ASHX,NNASHX
 C  INFIND : NSM(),IROW()
 C  INFTRL : NDAC(),MXNDAO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
 C
       DIMENSION H2DAC(*), FQD(*), CMO(*), PV(NNASHX,NNASHX)
@@ -373,20 +373,20 @@ C  /* Deck trddrv */
 C
 C 2.Oct.1992 hjaaj
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFORB : NCMOT,NBAST,NASHT,...
 C   INFIND : ISAO(*)
 C   INFTRL : MXNDAO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infind.h"
 #include "inftrl.h"
 C
       DIMENSION H2DAC(*),FQAOAC(NBAST,NASHT),CMO(NCMOT),PVF(*)
@@ -602,14 +602,14 @@ C
 C IH1XX(IBSYM,IABSYM) is off-set for block (IASYM,IBSYM) in H1XX
 C                     of symmetry IABSYM (IASYM = MULD2H(IBSYM,IABSYM))
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks
 C   INFORB: NSYM, NASH(8), NBAS(8), MULD2H(8,8)
 C   INFTRL: IH1AO(8,8),IH1AC(8,8),NDAO(8), NDAC(8)
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "inftrl.h"
 C
       DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
@@ -727,18 +727,18 @@ C
 C Input : H2DBUF(pq,indrs) = (pq / rs)
 C Output: H2DBUF(uv,indrs) = (uv / rs)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB : NBAST, NCMOT
 C   INFIND : ISAO(*)
 C   INFTRL : MXNDAO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
 C
       DIMENSION H2DBUF(MXNDAO,*), CMO(NCMOT)
@@ -794,13 +794,13 @@ C         IABSYM = symmetry of H2CDAO, H2CDAC matrices
 C Output: H2CDAC(u.v) = (u v | c d) =
 C         sum(b) [ sum(a) [ CMO(a,u) H2CDAO(a.b) ] CMO(b,v) ]
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NASH(*), NBAS(*), NISH(*), ICMO(*)
 C  INFTRL : IH1AO(8,8), IH1AC(8,8)
 C
-#include <inforb.h>
+#include "inforb.h"
 #include "inftrl.h"
 C
       DIMENSION CMO(NCMOT), H2CDAO(*), H2CDAC(*), WRK(*)
@@ -859,21 +859,21 @@ C BUF   : Points to start element in integral buffer.
 C IBUF  : Points to start element in label buffer.
 C H2DAO : H2DAO(rs,pq), pq=(mpqoff+1:mpqoff+npq); dim (mxndao,npq)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
 C Used from common blocsk:
 C   INFORB : IBAS(8)
 C   INFIND : IROW(*),ISAO(*)
 C   INFTRL : MXNDAO
 C
-#include <nuclei.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "nuclei.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
 C
       DIMENSION H2DAO(MXNDAO,*), IBUF(4,600), WRK(600*(IRAT + 1) + 1)
@@ -884,7 +884,7 @@ C
       CHARACTER*8 KEY
       LOGICAL DOCOOR
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       CALL REWSPL(LUDERA)
 C     KEY = 'AO2DRINT'
@@ -961,12 +961,12 @@ C   INDRS = 0      for desired symmetry distributions
 C         = 654321 for sym.dist. not needed
 C   ICASE .le. 0: new round
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB : NBAST, N2BASX
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION INDRS(8,8), INDDIS(NBAST,NBAST)
 C
@@ -1068,14 +1068,14 @@ C 5-Oct-1992 Hans Joergen Aagaard Jensen
 C 'AH2' for Add to H2DAC
 C Add (uv / rs) contribution to (uv / xy) (x .ge. y)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB : ??
 C   INFTRL : NDAC(8),MXNDAO,NXNDAC
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "inftrl.h"
 C
       DIMENSION CMOR(NBASR,NASHR), CMOS(NBASS,NASHS)
@@ -1155,17 +1155,17 @@ C  /* Deck trdh2u */
 C
 C 6-Oct-1992 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NASHT,NASH(),IASH()
 C  INFIND : NSM()
 C  INFTRL : NDAC()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
 C
 #if defined (VAR_H2DPACK)
@@ -1223,13 +1223,13 @@ C Copyright 6-Oct-1992 Hans Joergen Aa. Jensen
 C
 C PVXS(uv) =  sum(y) PVF(uv,x,y) * CMO(s,y) =  [uv|xs]
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NASHT
 C  INFTRL : NDAC(8)
 C
-#include <inforb.h>
+#include "inforb.h"
 #include "inftrl.h"
 C
       DIMENSION CMOS(NBASS,NASHS), PVF(NNASHX,NNASHX)
@@ -1259,12 +1259,12 @@ C 7-Oct-1992 hjaaj
 C
 C FQD(a,x) = sum(r) FQAOAC(r,x) * CMO(r,a)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NORBT,NASHT,NBAST,NCMOT,NSYM
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION FQD(NORBT,NASHT), FQAOAC(NBAST,NASHT), CMO(NCMOT)
 C
@@ -1296,12 +1296,12 @@ C
 C IWAY .ge. 0 : Pack H1SP in H1PK
 C      else   : Unpack H1PK in H1SP
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB : NSYM,MULD2H
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION H1SP(*), H1PK(*), NBLK(8), IBLK(8)
 C

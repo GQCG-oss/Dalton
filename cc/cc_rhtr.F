@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c*DECK CC_RHTR
       SUBROUTINE CC_RHTR(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
@@ -47,35 +47,35 @@ C     (R: Eai, EaiEbj)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMTWO= -2.0D0)
       PARAMETER (XMHALF= -0.5D0, XHALF= 0.5D0)
 C
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <ccsections.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <cclr.h>
-#include <blocks.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "ccsections.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "cclr.h"
+#include "blocks.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
-#include <ccnoddy.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccnoddy.h"
+#include "r12int.h"
+#include "ccr12int.h"
 C
       DIMENSION INDEXA(MXCORB)
       DIMENSION RHO1(LRHO1,NSIMTR),C1AM(LRHO1,NSIMTR)

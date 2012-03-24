@@ -20,7 +20,7 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
-#include <single.h>
+#include "single.h"
 C
 C=========================================================================
 C old log:
@@ -32,22 +32,18 @@ C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
 C
-#ifdef BUILD_GEN1INT
-C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
-      use gen1int_interface
-#endif
-#include <implicit.h>
-#include <dummy.h>
-#include <mtags.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <infpri.h>
-#include <gnrinf.h>
-#include <inftap.h>
-#include <prpc.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mtags.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "infpri.h"
+#include "gnrinf.h"
+#include "inftap.h"
+#include "prpc.h"
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -192,7 +188,7 @@ C
 C     ... GPOPEN will change name from DALTON.OUT to $WRKDIR/$OUTFIL
 C         for Master if OUTFIL is an environment variable;
 C         for slaves the name will be changed to
-C         "DALTON.OUT#<slave no>" in GPOPEN
+C         "DALTON.OUT.n<slave no>" in GPOPEN
 
       IF (MYNUM.EQ.MASTER) THEN
       CALL GPOPEN(LUNDPF,'DALTON.PROP','NEW',' ','FORMATTED',
@@ -393,14 +389,10 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
                END IF
          END IF
 
-#ifdef THIS_IS_CMAKE_BUILD
-!radovan: this is not fully portable
-!         don't understand why
-!        write(lupri, '(//a/a/)')
-!    &     'Compilation information',
-!    &     '-----------------------'
-!        call print_binary_info()
-#endif
+         write(lupri, '(//a/a/)')
+     &     'Compilation information',
+     &     '-----------------------'
+         call print_binary_info()
 
 #if defined (VAR_MPI)
          IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
@@ -608,19 +600,19 @@ C
 
 #ifdef BUILD_GEN1INT
 C...  added by Bin Gao, Oct. 2, 2011
-C...  cleans up for Gen1Int interface
+C...  frees space used in Gen1Int interface
       call gen1int_ifc_clean
 #endif
       CALL QEXIT('DALTON main')
       END
 
       SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDIR)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) BASDIR
       CHARACTER*20  WRKMEM, NODE_WRKMEM
-#include <maxorb.h>
-#include <infpar.h>
+#include "maxorb.h"
+#include "infpar.h"
 
 C     If LMWORK .le. 0 use default value (LWORK_DEF)
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
@@ -727,12 +719,12 @@ C 10-Apr-2000 HJAaJ: changed initialization to -9xxx from 0,
 C                    because unit 0 is stderr on many systems.
 C                    The number -9xxx is used for easier debugging.
 C
-#include <mxcent.h>
-#include <eribuf.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <r12int.h>
+#include "mxcent.h"
+#include "eribuf.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "r12int.h"
 C
 C     priunit.h:
 C

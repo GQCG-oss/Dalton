@@ -21,19 +21,19 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck erigam */
       SUBROUTINE ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
 C     Two-electron Dirac delta added (WK/UniKA/22-11-2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION RJ000(NPPX,0:JMAX), FACINT(NPPX),
      &          ALPHA(NPPX), COORPQ(NPPX,3),
      &          WORK(LWORK)
-#include <ericom.h>
-#include <drw2el.h>
+#include "ericom.h"
+#include "drw2el.h"
 C-----------------------------------------------------------------------
 C
 C     Allocate ERIGAM
@@ -61,16 +61,16 @@ C  /* Deck eriga1 */
       SUBROUTINE ERIGA1(RJ000,FACINT,ALPHA,COORPQ,
      &                  WVALU,INDADR,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0)
 C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
-#include <ericom.h>
-#include <erithr.h>
+#include "ericom.h"
+#include "erithr.h"
 C-----------------------------------------------------------------------
 C
 C     One-center Integrals
@@ -165,18 +165,18 @@ C     See also: J. Comput. Chem. 18, 20 (1997), Eq. (31).
 C
 C     Wim Klopper, University of Karlsruhe, 22 November 2002.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0, DP25 = 0.25D0)
 C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
-#include <codata.h>
-#include <drw2el.h>
-#include <ericom.h>
-#include <erithr.h>
+#include "codata.h"
+#include "drw2el.h"
+#include "ericom.h"
+#include "erithr.h"
 C
       DRWFAC=DP25*ALPHA2*DARFAC
 C
@@ -266,18 +266,18 @@ C     See also: J. Comput. Chem. 18, 20 (1997), Eq. (31).
 C
 C     Wim Klopper, University of Karlsruhe, 22 November 2002.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0, DP25 = 0.25D0)
 C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
-#include <drw2el.h>
-#include <codata.h>
-#include <ericom.h>
-#include <erithr.h>
+#include "drw2el.h"
+#include "codata.h"
+#include "ericom.h"
+#include "erithr.h"
 C
       IF (DO2DAR) DRWFAC=DP25*ALPHA2
       IF (S4CENT) DRWFAC=-DP25/PI
@@ -340,14 +340,14 @@ C  /* Deck erituv */
       SUBROUTINE ERITUV(HERINT,RJ000,COORPQ,INDHER,IODDHR,
      &                  WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, U, V, TUV
       DIMENSION HERINT(NPPX,NTUV), RJ000(NPPX,0:JMAX), COORPQ(NPPX,3),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), IODDHR(NRTOP),
      &          WORK(LWORK)
-#include <ericom.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "hertop.h"
 C
 C     The final R(T,U,V) integrals are arranged as follows:
 C
@@ -424,17 +424,17 @@ C  /* Deck erihrc */
       SUBROUTINE ERIHRC(CUR,OLD,JVAL,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                  MAXDER,NPPX,NTUV,IPQX,IPQY,IPQZ)
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
       DIMENSION CUR(NPPX,NTUV), OLD(NPPX,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          PQX(NPPX), PQY(NPPX), PQZ(NPPX),
      &          RJ000(NPPX,0:JMAX)
-#include <doxyz.h>
-#include <hertop.h>
+#include "doxyz.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -584,14 +584,14 @@ C
 C  /* Deck eriswp */
       SUBROUTINE ERISWP(HEROLD,HERNEW,INDHER,IODDHR,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, U, V, TUV
       DIMENSION INDHER(0:JTOP,0:JTOP,0:JTOP), IODDHR(NRTOP)
       DIMENSION HEROLD(NPQBCX,NPRFAB,NPRFCD,NTUV),
      &          HERNEW(NPQBCX,NPRFCD,NPRFAB,NTUV)
-#include <ericom.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "hertop.h"
 C
       DO 100 J = 0, JMAX
          DO 110 T = J, 0, -1

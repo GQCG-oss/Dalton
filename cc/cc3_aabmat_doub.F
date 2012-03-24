@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C    /* Deck cc3_aabmat_doub */ 
       SUBROUTINE CC3_AABMAT_DOUB(OMEGA2,LISTB,IDLSTB,LISTC,
@@ -108,16 +108,16 @@ C
       CHARACTER*3 LISTB, LISTC
       CHARACTER CDUMMY*1
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
 C
       PARAMETER(FN3SRTR  = 'CCSDT_FBMAT1', FNCKJDR  = 'CCSDT_FBMAT2', 
      *          FNDELDR  = 'CCSDT_FBMAT3', FNDKBCR  = 'CCSDT_FBMAT4',

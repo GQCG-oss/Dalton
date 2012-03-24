@@ -44,21 +44,21 @@ C        Spin free version of NEVPT
 C
 C
 C-----------------------------------------------------------------------
-#include <single.h>
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxpdim.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpt2.h>
-#include <strnum.h>
-#include <dummy.h>
-#include <csfbas.h>
+#include "single.h"
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxpdim.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpt2.h"
+#include "strnum.h"
+#include "dummy.h"
+#include "csfbas.h"
 
 ! ** The nevpt2 code was not compiled unless PGF90, GFORTRAN or IFORT compiler.
 ! ** Now code is compiled for all compilers, if your compiler cannot handle
@@ -136,7 +136,7 @@ c       do i=1,norbt
 c       sppm(i)='-'
 c       orbfe(i)=i
 c       sppm(i+norbt)='+'
-c       orbfe(i+norbt)=i  
+c       orbfe(i+norbt)=i
 c       enddo
 c       sppm(norbt+norbt+1)='+'
 c       orbfe(norbt+norbt+1)=norbt+1
@@ -146,9 +146,8 @@ C--- Cele  Debug
          write(lupri,*)' '
          write(lupri,*)'<<<<<<<<<<<===========>>>>>>>>>>>>'
          write(lupri,*)'ATTENTION ATTENTION ATTENTION ATTENTION'
-         write(lupri,'(a,$)'
-     $        )'Number of state is required with .CI keyword'
-         write(lupri,*)
+         write(lupri,'(a)')
+     $        'Number of state is required with .CI keyword'
          write(lupri,*)'Please restart'
          CALL QUIT('NEVPT2 error: .CI but .STATE not defined')
       endif
@@ -176,8 +175,8 @@ C--- Cele  Debug
 
 C
 C     First of all we prepare a vector (in2d) which converts the OM indices
-C     from the NEVPT order to the DALTON order 
-C     
+C     from the NEVPT order to the DALTON order
+C
       call nwadd(nwall,2*norbt*4+norbt)
       allocate (in2d(norbt))
       allocate (id2n(norbt))
@@ -231,7 +230,7 @@ C     (Not used for the moment!)
 C
 C Manu April 2009: now it is used in the NEVPT2-srDFT :-)
 
-      
+
       do i=1,norbt
        zgel(i)=.false. ! is this orbital frozen ?
       enddo
@@ -290,7 +289,7 @@ C
 C--- Cele Next Work
 C
 C      Questo pezzo e' da rivedere: l'ordinamento viene fatto bene,
-C      ma con il nuovo ordinamento la sub rofour non fornisce la buona 
+C      ma con il nuovo ordinamento la sub rofour non fornisce la buona
 C      matrice densita' : approfondire.
 C
 C      do ia=1,nasht
@@ -320,7 +319,7 @@ C
       thr=thrnevpt
       NCF=NCDETS
 
-      lfermi=nactel/2 
+      lfermi=nactel/2
       zion=mod(nactel,2).eq.1
       if(zion)lfermi=(nactel+1)/2
 
@@ -340,16 +339,16 @@ C
          read(LUN98) dum,(istr(i),i=1,nael),(jstr(i),i=1,nbel)
          do ia=1,nael
 c            istr(ia)=istr(ia)
-            if (istr(ia).gt.lfermi) ntothp=ntothp+1 
+            if (istr(ia).gt.lfermi) ntothp=ntothp+1
          enddo
          do ib=1,nbel
 c            jstr(ib)=jstr(ib)
-            if (jstr(ib).gt.lfermi) ntothp=ntothp+1 
+            if (jstr(ib).gt.lfermi) ntothp=ntothp+1
          enddo
 C--- Cele Next Work
-C       write (lupri,*) 
+C       write (lupri,*)
 C       write (lupri,*) 'Determ umber',id
-C       write (lupri,*) 
+C       write (lupri,*)
 C       write (lupri,*) 'Original'
 C       write (LUPRI,'(20I3)') (istr(i),i=1,nael)
 C       write (LUPRI,'(20I3)') (jstr(i),i=1,nbel)
@@ -451,7 +450,7 @@ C
       nact2=nasht**2
       nact3=nasht**3
       nact4=nasht**4
-      nele=nactel           
+      nele=nactel
 c      if(zion)nele=nele-1
       ndim2=nasht*(nasht+1)/2
       ndim3=ndim2*(ndim2+1)/2
@@ -504,27 +503,27 @@ C Manu comment: the one-electron part of the Hamiltonian is built here !
 C
       call nwadd(nwall,NNORBX*8)
       ALLOCATE (onel(NNORBX))
-C      
+C
 C ***********************************************************
 C Manu b
       IF (DOMCSRDFT) THEN
-C        Build active density matrix wrk(dv) with ro1 ... 
+C        Build active density matrix wrk(dv) with ro1 ...
 
          CALL MEMGET('REAL',KDV,NNASHX,WRK,KFREE,LFREE)
          call dzero(dal,n2ashx)
          call ro1(cvec,dal,nisht,nasht,thr,trou
      $        ,part,ne,nd,ispinfe
      $        ,iorbfe,itsym)
-         CALL DGETSP(NASHT,dal,wrk(kdv)) 
+         CALL DGETSP(NASHT,dal,wrk(kdv))
       ELSE
          CALL MEMGET('REAL',KDV,0,WRK,KFREE,LFREE)
       END IF
       call readint(onel,atwo,aj,wrk(kdv),
      &     wrk(kfree),lfree,id2n,in2d,lupri)
-C Manu e      
+C Manu e
 
       CALL MEMREL('DV',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
-      
+
 !     write (lupri,'(/A)') 'Done with readint'
 !     call flshfo(lupri)
 
@@ -768,7 +767,7 @@ c-------------------------------------------------------------------
      $     zcapos,ncaptot,trou,part,ne,nd,ispinfe,iorbfe,itsym,iocca
      $     ,ioccb,flip)
       IMPLICIT REAL*8  (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       dimension amat(nwords,nasht,nasht,nasht,nasht)
 #include "nevpt2.h"
       dimension c(*),zcapos(*)
@@ -837,7 +836,7 @@ c           if(znocalc)nhitsd=nhitsd+1
                nec=ne(m)
                ndm=nd(m)
                call giveocc2(m,iocca,ioccb,nasht,nisht,nocca,noccb,nocc
-     $              ,nec,ndm,trou,part,iorbfe,ispinfe) 
+     $              ,nec,ndm,trou,part,iorbfe,ispinfe)
                if(abs(c(m)).lt.thr) goto 3
                if(flip(m).eq.2)goto 3
                if(mcap.eq.ncap)then
@@ -1124,7 +1123,7 @@ c                     call case20
                      endif
                      cij=valcm*c(n)*segno
                      val=cij
-c---  n1l,n2l a sinistra 
+c---  n1l,n2l a sinistra
                      if((n1+n2).ge.(n3+n4))then
                         n1l=n1
                         n2l=n2
@@ -1245,7 +1244,7 @@ c---- daabb
      $                                ,val,amat,nasht,m,n)
                               endif
                            enddo
-                        enddo    
+                        enddo
                      endif
 c     goto 2
                   elseif(nbdif.eq.3)then
@@ -1278,7 +1277,7 @@ c                     call case30
                      endif
                      cij=valcm*c(n)*segno
                      val=cij
-c---  n1l,n2l,n3l a sinistra 
+c---  n1l,n2l,n3l a sinistra
                      if((n1+n2+n3).ge.(n4+n5+n6))then
                         n1l=n1
                         n2l=n2
@@ -1372,7 +1371,7 @@ c     goto 2
                   else          !nbdif.eq.4
 c---  renzo debug
                      nfours=nfours+1
-c---- 
+c----
                      call ord4(nv,nw,zseg,segno) !prima gli alfa, poi i beta
                      n1=iorbfe(nv(1))
                      ns1=ispinfe(nv(1))
@@ -1407,7 +1406,7 @@ c                  call case40
                      endif
                      cij=valcm*c(n)*segno
                      val=cij
-c---  n1l,n2l,n3l a sinistra 
+c---  n1l,n2l,n3l a sinistra
                      if((n1+n2+n3+n4).ge.(n5+n6+n7+n8))then
                         n1l=n1
                         n2l=n2
@@ -1476,7 +1475,7 @@ c--------------------------------------------------------------------
       subroutine ro3(c,daaa,nisht,nasht,thr,icomp,iconf,ioccfe,zcapos
      $,ncaptot,trou,part,ne,nd,ispinfe,iorbfe,itsym,iocca,ioccb,flip)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
 c      include 'rotwo.par'
       allocatable dbbb(:,:,:,:,:,:),daab(:,:,:,:,:,:),dbba(:,:,:,:,:,:)
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
@@ -1502,22 +1501,12 @@ c      include 'rotwo.par'
       allocate(daab(1:nasht,1:nasht,1:nasht,1:nasht,1:nasht,1:nasht))
       allocate(dbba(1:nasht,1:nasht,1:nasht,1:nasht,1:nasht,1:nasht))
 c---azzeramento
-      do i=1,nasht
-         do j=1,nasht
-            do k=1,nasht
-               do l=1,nasht
-                  do m=1,nasht
-                     do n=1,nasht
-                        daaa(i,j,k,l,m,n)=0.d0
-                        dbbb(i,j,k,l,m,n)=0.d0
-                        daab(i,j,k,l,m,n)=0.d0
-                        dbba(i,j,k,l,m,n)=0.d0
-                     enddo
-                  enddo
-               enddo
-            enddo
-         enddo
-      enddo
+      L_dxxx = nasht**6
+      call dzero(daaa, L_dxxx)
+      call dzero(dbbb, L_dxxx)
+      call dzero(daab, L_dxxx)
+      call dzero(dbba, L_dxxx)
+
       do i=1,ncf
        flip(i)=0
       enddo
@@ -1562,14 +1551,14 @@ c           if(znocalc)nhitsd=nhitsd+1
                nec=ne(m)
                ndm=nd(m)
                call giveocc2(m,iocca,ioccb,nasht,nisht,nocca,noccb,nocc
-     $              ,nec,ndm,trou,part,iorbfe,ispinfe) 
+     $              ,nec,ndm,trou,part,iorbfe,ispinfe)
                if(abs(c(m)).lt.thr) goto 3
                if(flip(m).eq.2)goto 3
                if(mcap.eq.ncap)then
                   nbeg=minit
                   nend=m-1
 c     call case0
-c---- renzo 
+c---- renzo
                   if(flip(m).eq.1)then
                      valcm=2.d0*c(m)
                   else
@@ -1590,7 +1579,7 @@ c     costruzione di daaa
                         enddo
                      enddo
                   enddo
-c     costruzione di dbbb            
+c     costruzione di dbbb
                   do i=1,noccb
                      ib=ioccb(i)
                      do j=i+1,noccb
@@ -1616,7 +1605,7 @@ c     costruzione di daab
                         enddo
                      enddo
                   enddo
-c     costruzione di dbba            
+c     costruzione di dbba
                   do i=1,noccb
                      ib=ioccb(i)
                      do j=i+1,noccb
@@ -1783,7 +1772,7 @@ c---- contributo a dbba
      $                          ,ib)+val
                            call perm2(daab,n1,n2,ib,n3,n4,ib,nasht)
                         enddo
-                        
+
                      elseif(ns1.eq.0.and.ns2.eq.0)then
                         do i=1,noccb
                            ib=ioccb(i)
@@ -1906,7 +1895,7 @@ c-------------------------------------------------------
       subroutine ro2(c,d2alal,nisht,nasht,thr,trou,part,ne,nd,
      $               ispinfe,iorbfe,itsym,iocca,ioccb,flip)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       dimension d2alal(nasht,nasht,nasht,nasht)
       allocatable d2bebe(:,:,:,:),d2albe(:,:,:,:)
       dimension c(*)
@@ -2088,7 +2077,7 @@ c-----------------------------------------------------
 
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
 
-#include <priunit.h>
+#include "priunit.h"
       dimension d1(nasht,nasht)
       integer segno
       dimension c(*)
@@ -2148,7 +2137,7 @@ C     note: NOCB = nisht + lfermie
 c-------------------------------------------------
       subroutine ord2(nv,nw,zseg,segno)
 c--prima gli alfa poi i beta
-#include <priunit.h>
+#include "priunit.h"
       logical*1 zseg
       integer segno
       dimension nv(*),nw(*)
@@ -2174,7 +2163,7 @@ c--prima gli alfa poi i beta
 c----------------------------------------------------------------
       subroutine ord3(nv,nw,zseg,segno)
 c--prima gli alfa poi i beta
-#include <priunit.h>
+#include "priunit.h"
       logical*1 zseg
       integer segno
       dimension nv(*),nw(*)
@@ -2224,7 +2213,7 @@ c--prima gli alfa poi i beta
 c----------------------------------------------------------------
       subroutine ord4(nv,nw,zseg,segno)
 c--prima gli alfa poi i beta
-#include <priunit.h>
+#include "priunit.h"
       logical*1 zseg
       integer segno
       dimension nv(*),nw(*)
@@ -2261,9 +2250,9 @@ c--prima gli alfa poi i beta
       end
 c----------------------------------------------------------------
       subroutine giveocc2(m,iocca,ioccb,nasht,nisht,nocca,noccb,nocc,nec
-     $     ,ndm,trou,part,iorbfe,ispinfe) 
+     $     ,ndm,trou,part,iorbfe,ispinfe)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       dimension iocca(*),ioccb(*),trou(*),part(*),iorbfe(*),ispinfe(*)
       integer*2 trou,part,iorbfe,ispinfe
       do i=1,nasht
@@ -2311,7 +2300,7 @@ c--------------------------------------------------------------------
       subroutine perm3(d,i,j,k,l,m,n,nasht)
 
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       dimension d(nasht,nasht,nasht,nasht,nasht,nasht)
 c--block 1
       a=d(i,j,k,l,m,n)
@@ -2359,8 +2348,8 @@ c--block 6
       end
 c-----------------------------------------------------------
       subroutine perm2(d,i,j,k,l,m,n,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension d(nasht,nasht,nasht,nasht,nasht,nasht)
 c--block 1
       a=d(i,j,k,l,m,n)
@@ -2376,8 +2365,8 @@ c--block 2
       end
 c--------------------------------------------------------------------
       subroutine permbis(d,i,j,k,l,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension d(nasht,nasht,nasht,nasht)
 c--block 1
       a=d(i,j,k,l)
@@ -2393,8 +2382,8 @@ c--block 2
       end
 c--------------------------------------------------------------------
       subroutine permut123(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2434,8 +2423,8 @@ c---permutazioni dispari
       end
 c----------------------------------------------------------
       subroutine permut124(i,j,l,k,ip,jp,lp,kp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2475,8 +2464,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut134(i,l,j,k,ip,lp,jp,kp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2516,8 +2505,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut234(l,i,j,k,lp,ip,jp,kp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2557,8 +2546,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut1234(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
 c--permutazioni pari
       if(ivolte.eq.1)then
@@ -2591,8 +2580,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut1324(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
 c--permutazioni pari
       if(ivolte.eq.1)then
@@ -2625,8 +2614,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut1423(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
 c--permutazioni pari
       if(ivolte.eq.1)then
@@ -2659,11 +2648,11 @@ c---permutazioni dispari
       end
 c----------------------------------------------------------------------
       subroutine permut4(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       if(ivolte.eq.1)then
-c--permutazioni pari      
+c--permutazioni pari
          ip=i
          jp=j
          kp=k
@@ -2813,12 +2802,12 @@ c---permutazioni dispari
       end
 c---------------------------------------------------------------------
       FUNCTION Jdifgen(ne,nd,trou,part,II,JJ,nv1,nv2,nma,zsig)
-C     
+C
 C     SSP DE RECHERCHE DES ELEMENTS D'INTERACTION
 C     ENTRE DEUX DETERMINANTS, NUMEROTES II ET JJ
-C     
+C
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       parameter (nmax=4)
       dimension ne(*),nd(*),trou(*),part(*)
       INTEGER*2 NE,TROU,PART
@@ -2827,10 +2816,10 @@ C
       common/diff/n1,n2,n3,n4,ns1,ns2,ns3,ns4,nbdif
       KR=II
       KL=JJ
-C     
+C
 C     LE DETERMINANT - 1 - EST CHOISI COMME LE
 C     DETERMINANT AYANT LE PLUS D'O.M. EXCITEES
-C     
+C
       IF (NE(KR) .lt. NE(KL)) then
         KKKK=KR
         KR=KL
@@ -2850,14 +2839,14 @@ C     DIFFERENTES
 C     CONSTRUCTION POUR LE DETERMINANT -1- ET -2-
 C     DE IT ET NS, QUI CONTIENNENT LES NUMEROS
 C     DES ORBITALES ET LEURS SPINS
-C     
+C
       ND1=ND(KR)
       ND2=ND(KL)
       DO 15 J=1,NE1
          ITA(J)=TROU(J+ND1)
          ITA(J+NE1)=PART(J+ND1)
  15   CONTINUE
-C     
+C
 C     ZSIG :  EST LA PARITE DU  NOMBRE DE CROISEMENTS
 C     DANS LE DIAGRAMME D INTERACTION
       ZSIG=.FALSE.
@@ -2891,7 +2880,7 @@ C     SI NE2=0 LE DETERMINANT -2- EST LE FONDAMENTAL
  10         CONTINUE
  8       CONTINUE
  125     IF (NBDIF.LE.0) GOTO 44
-C     
+C
 C     NAR : EXCITATION SUPLEMENTAIRE DU DETERMINANT -1-
 C     PAR RAPPORT AU DETERMINANT -2-
  26      NAR=NE1-NE2
@@ -2940,7 +2929,7 @@ C     CALCUL DE L ELEMENT DE MATRICE
          END
 c------------------------------------------------------------------
       integer function index(i,j,k,l)
-#include <implicit.h>
+#include "implicit.h"
       if(i.ge.k)then
          ik=(i*i-i)/2+k
       else
@@ -2960,8 +2949,8 @@ c------------------------------------------------------------------
       end
 c------------------------------------------------------------------
       subroutine accum(amat,ip,jp,kp,lp,mp,np,op,pp,val,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "nevpt2.h"
       dimension amat(nwords,nasht,nasht,nasht,nasht)
       integer op,pp
@@ -2973,18 +2962,18 @@ c------------------------------------------------------------------
       end
 c-----------------------------------------------------------------
       SUBROUTINE MATOUT(N,N2,A,NN)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c     CHARACTER*3 SYMB(NN)
 c     integer symb(*)
       DIMENSION A(NN,*)
-C 
+C
    20 FORMAT(//,8X,11(5X,I3,3X))
    30 FORMAT(1X,I4,4X,11(F11.6))
    35 FORMAT(8X,11(5X,I3,3X))
    37 FORMAT(8X,11(4X,A4,3X))
    36 FORMAT(/)
-C 
+C
 c      DO 40 M=1,N2,11
       DO 40 M=1,N2,6
 c      K=M+10
@@ -3005,8 +2994,8 @@ c     WRITE(lupri,37) (SYMB(I),I=M,K)
 c-------------------------------------------------------------------
       subroutine koop2E(atwo,daaa,taa,dal,koopaa,koopeaa,nasht
      $     ,nisht,f,aj,itsym,its)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),
      $ taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3014,7 +3003,7 @@ c---F e' la matrice dei monoelettronici!
       dimension koopaa(nasht,nasht,nasht,nasht),
      $ koopeaa(nasht,nasht,nasht,nasht)
       REAL*8  koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
-      
+
       dimension itsym(*),its(8,8)
       dimension f(*),aj(*)
       integer a,b,c,d,ac,bc,cc,dc,ap,bp,apc,bpc
@@ -3038,20 +3027,20 @@ c--in AJ is heff
 c-------------------
       do a=1,nasht
          ac=a+nisht
-	 isa=itsym(ac)
+         isa=itsym(ac)
          do b=1,nasht
             bc=b+nisht
-	    isb=itsym(bc)
-	    isab=its(isa,isb)
+            isb=itsym(bc)
+            isab=its(isa,isb)
             do ap=1,nasht
                apc=ap+nisht
-	       isd=itsym(apc)
+               isd=itsym(apc)
                do bp=1,nasht
                   bpc=bp+nisht
-		  isc=itsym(bpc)
-		  iscd=its(isc,isd)
+                  isc=itsym(bpc)
+                  iscd=its(isc,isd)
                   koopaa(ap,bp,a,b)=0.d0
-		  if (its(isab,iscd).ne.1) goto 1
+                  if (its(isab,iscd).ne.1) goto 1
                   do d=1,nasht
                      dc=d+nisht
                      jad=indice(ac,dc)
@@ -3080,20 +3069,20 @@ c-------------------
       enddo
       do a=1,nasht
          ac=a+nisht
-	 isa=itsym(ac)
+         isa=itsym(ac)
          do b=1,nasht
             bc=b+nisht
-	    isb=itsym(bc)
-	    isab=its(isa,isb)
+            isb=itsym(bc)
+            isab=its(isa,isb)
             do ap=1,nasht
                apc=ap+nisht
-	       isd=itsym(apc)
+               isd=itsym(apc)
                do bp=1,nasht
                   bpc=bp+nisht
-		  isc=itsym(bpc)
-		  iscd=its(isc,isd)
+                  isc=itsym(bpc)
+                  iscd=its(isc,isd)
                   koopeaa(ap,bp,a,b)=0.d0
-		  if (its(isab,iscd).ne.1) goto 2
+                  if (its(isab,iscd).ne.1) goto 2
                   do c=1,nasht
                      cc=c+nisht
                      jac=indice(ac,cc)
@@ -3137,8 +3126,8 @@ c-------------------
 c-------------------------------------------------------------------
       subroutine koopman0pE(atwo,daaa,taa,dal,koopaa,koopbb,koopab
      $     ,nasht,nisht,f,aj,itsym,its)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),atwo(nasht,nasht,nasht,nasht),dal(nasht
@@ -3280,8 +3269,8 @@ c---F e' la matrice dei monoelettronici!
 c-------------------------------------------------------------------
       subroutine bamat(amat,atmat,atwo,ro4,daaa,taa,dal,nasht,nisht,f,aj
      $     ,itsym,its,norb)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3320,35 +3309,35 @@ c--in AJ is heff
 c-------------------
       do a=1,nasht
          ac=a+nisht
-	 isa=itsym(ac)
+         isa=itsym(ac)
          do b=1,nasht
             bc=b+nisht
-	    isb=itsym(bc)
-	    isab=its(isa,isb)
+            isb=itsym(bc)
+            isab=its(isa,isb)
             do c=1,nasht
                cc=c+nisht
-	       isc=itsym(cc)
-	       isabc=its(isab,isc)
+               isc=itsym(cc)
+               isabc=its(isab,isc)
                isbc=its(isb,isc)
                isac=its(isa,isc)
                do ap=1,nasht
                   apc=ap+nisht
-		  isap=itsym(apc)
+                  isap=itsym(apc)
                   do bp=1,nasht
                      bpc=bp+nisht
-		     isbp=itsym(bpc)
-		     isabp=its(isap,isbp)
+                     isbp=itsym(bpc)
+                     isabp=its(isap,isbp)
                      do cp=1,nasht
                         cpc=cp+nisht
-			iscp=itsym(cpc)
-			isabcp=its(isabp,iscp)
-			isatot=its(isabc,isabcp)
-			if (isatot.ne.1) then
-			goto 1
-			endif
+                        iscp=itsym(cpc)
+                        isabcp=its(isabp,iscp)
+                        isatot=its(isabc,isabcp)
+                        if (isatot.ne.1) then
+                           goto 1
+                        endif
                         do d=1,nasht
                            dc=d+nisht
-			   isd=itsym(dc)
+                           isd=itsym(dc)
                            ida=indice(dc,ac)
                            icd=indice(cc,dc)
                            ibd=indice(bc,dc)
@@ -3364,7 +3353,7 @@ c-------------------
      $                          ,bp,d,a,c,daaa,taa,dal,nasht)
                            do ie=1,nasht
                               iec=ie+nisht
-			      ise=itsym(iec)
+                              ise=itsym(iec)
                               dint1=atwo(c,ie,d,a)
                               dint2=atwo(d,ie,ie,a)
                               dint3=atwo(c,d,d,ie)
@@ -3400,11 +3389,11 @@ c-------------------
      $                             )+0.5d0*dum4t*dint4
                               do ief=1,nasht
                                  iefc=ief+nisht
-				 isf=itsym(iefc)
-				 isfd=its(isf,isd)
-				 isfde=its(isfd,ise)
+                                 isf=itsym(iefc)
+                                 isfd=its(isf,isd)
+                                 isfde=its(isfd,ise)
                                  istot=its(isabcp,isfde)
-				 if (its(isfde,isa).eq.1.and.its(istot
+                                 if (its(isfde,isa).eq.1.and.its(istot
      $                                ,isbc).eq.1) then
                                  dum1=eeee(cp,ap,bp,b,d,ief,ie,c,daaa
      $                                   ,taa,dal,ro4,nasht)
@@ -3416,8 +3405,8 @@ c-------------------
      $                                ,c)+dum1*dint1
                                  atmat(ap,b,cp,a,bp,c)=atmat(ap,b,cp,a
      $                                ,bp,c)+dum1t*dint1
-				 endif
-				 if (its(isfde,isc).eq.1.and.its(istot
+                                 endif
+                                 if (its(isfde,isc).eq.1.and.its(istot
      $                                ,isab).eq.1) then
                                  dum2=eeee(cp,ap,bp,b,d,ief,a,ie,daaa
      $                                   ,taa,dal,ro4,nasht)
@@ -3429,8 +3418,8 @@ c-------------------
      $                                ,c)-dum2*dint2
                                  atmat(ap,b,cp,a,bp,c)=atmat(ap,b,cp,a
      $                                ,bp,c)-dum2t*dint2
-				 endif
-				 if (its(isfde,isb).eq.1.and.its(istot
+                                 endif
+                                 if (its(isfde,isb).eq.1.and.its(istot
      $                                ,isac).eq.1) then
                                  dum3=eeee(cp,ap,bp,ie,d,ief,a,c,daaa
      $                                ,taa,dal,ro4,nasht)
@@ -3457,8 +3446,8 @@ c-------------------
       end
 c-------------------------------------------------------------------
       subroutine bbmat(atwo,bmat,btmat,daaa,taa,dal,nasht,nisht,f,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3525,8 +3514,8 @@ c-------------------------------------
       end
 c-------------------------------------------------------------------
       subroutine bcmat(atwo,cmat,ctmat,daaa,taa,dal,nasht,nisht,f,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3624,8 +3613,8 @@ c-------------------
       end
 c-------------------------------------------------------------------
       subroutine bdmat(atwo,dmat,dtmat,taa,dal,nasht,nisht,f,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       dimension dmat(nasht,nasht)
@@ -3681,7 +3670,7 @@ c---------------------------
       end
 c-------------------------------------------------------------------
       function eeee(a,b,c,d,e,f,g,h,d3,d2,d1,ro4,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f,g,h
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
@@ -3713,7 +3702,7 @@ c--a,c,e,g    b,d,f,h
       end
 c-------------------------------------------------------------------
       function eeeet(a,b,c,d,e,f,g,h,d3,d2,d1,ro4,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f,g,h
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
@@ -3725,7 +3714,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function eee2(a,b,c,d,e,f,daaa,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3739,7 +3728,7 @@ c--the same as eee but with the spinless density matrices as input
       end
 c-------------------------------------------------------------------
       function eee2t(a,b,c,d,e,f,daaa,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3749,7 +3738,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function eee2tl(a,b,c,d,e,f,daaa,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3759,7 +3748,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ee2(a,b,c,d,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       ee2=taa(a,c,b,d)
@@ -3768,7 +3757,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ee2t(a,b,c,d,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       ee2t=-ee2(b,a,c,d,taa,dal,nasht)
@@ -3777,7 +3766,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ee2tr(a,b,c,d,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       ee2tr=-ee2(a,b,d,c,taa,dal,nasht)
@@ -3786,7 +3775,7 @@ c-------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function daaat(i,j,k,l,m,n,daaa,daa,da,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),daa(nasht
      $     ,nasht,nasht,nasht),da(nasht,nasht)
       v=-daaa(i,j,k,l,m,n)
@@ -3816,7 +3805,7 @@ c----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function dbbbt(i,j,k,l,m,n,dbbb,dbb,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension dbbb(nasht,nasht,nasht,nasht,nasht,nasht),dbb(nasht
      $     ,nasht,nasht,nasht),db(nasht,nasht)
       v=-dbbb(i,j,k,l,m,n)
@@ -3846,7 +3835,7 @@ c----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function daabt(i,j,k,l,m,n,daab,daa,dab,da,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension daab(nasht,nasht,nasht,nasht,nasht,nasht),dab(nasht
      $     ,nasht,nasht,nasht),daa(nasht,nasht,nasht,nasht),da(nasht
      $     ,nasht),db(nasht,nasht)
@@ -3863,7 +3852,7 @@ c----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function dbbat(i,j,k,l,m,n,dbba,dbb,dab,da,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension dbba(nasht,nasht,nasht,nasht,nasht,nasht),dab(nasht
      $     ,nasht,nasht,nasht),dbb(nasht,nasht,nasht,nasht),da(nasht
      $     ,nasht),db(nasht,nasht)
@@ -3880,7 +3869,7 @@ c----------------------------------------------------------------------
       end
 c--------------------------------------------------------------------------
       function daat(a,b,c,d,daa,da,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension daa(nasht,nasht,nasht,nasht),da(nasht,nasht)
       v=daa(a,b,c,d)
@@ -3893,7 +3882,7 @@ c--------------------------------------------------------------------------
       end
 c--------------------------------------------------------------------------
       function dbbt(a,b,c,d,dbb,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension dbb(nasht,nasht,nasht,nasht),db(nasht,nasht)
       v=dbb(a,b,c,d)
@@ -3906,7 +3895,7 @@ c--------------------------------------------------------------------------
       end
 c--------------------------------------------------------------------------
       function dabt(a,b,c,d,dab,da,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension dab(nasht,nasht,nasht,nasht),da(nasht,nasht),db(nasht
      $     ,nasht)
@@ -3918,7 +3907,7 @@ c--------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       function dat(a,b,da,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b
       dimension da(nasht,nasht)
       v=-da(a,b)
@@ -3928,7 +3917,7 @@ c------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       function dbt(a,b,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b
       dimension db(nasht,nasht)
       v=-db(a,b)
@@ -3939,8 +3928,8 @@ c------------------------------------------------------------------------
 c------------------------------------------------------------------------
       subroutine koopE(atwo,koopipa,koopeaa,taa,dal,nasht,nisht,f
      $     ,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       dimension koopipa(nasht,nasht),koopeaa(nasht,nasht)
       dimension atwo(nasht,nasht,nasht,nasht)
@@ -3977,7 +3966,7 @@ cele
                irind=indice(ac,cc)
                dum=f(irind)
                koopipa(ap,a)=koopipa(ap,a)-dum*dal(ap,c)
-c	       write (lupri,*) 'mono',a,ap,c,dum,dal(ap,c)
+c               write (lupri,*) 'mono',a,ap,c,dum,dal(ap,c)
                do d=1,nasht
                   do ie=1,nasht
                      koopipa(ap,a)=koopipa(ap,a)-atwo(c,ie,a,d)*taa(ap,c
@@ -4008,7 +3997,7 @@ c     $          ,atwo(c,ie,a,d),taa(ap,c,d,ie)
 c------------------------------------------------------
       subroutine ord31(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
-#include <implicit.h>
+#include "implicit.h"
       integer segno,segno2,op,pp,op2,pp2,m,n,mp2,np2,mp,np
       integer ia,ic,ie,ig,ia2,ic2,ie2,ig2,nasht,ivolte,jvolte
       integer i1,i2,i3,i4,i5,i6,i7,i8,norm1,norm2,nwords,normind
@@ -4041,7 +4030,7 @@ c------------------------------------------------------
       do ivolte=1,6  !aaab
       call permut123(i1,i2,i3,i4,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut123(i5,i6,i7,i8,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4052,7 +4041,7 @@ c------------------------------------------------------
       do ivolte=1,6  !aaba
       call permut124(i1,i2,i4,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut124(i5,i6,i8,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4064,7 +4053,7 @@ c------------------------------------------------------
       call permut134(i1,i4,i2,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
 c      write (6,'(''ord31 3'',8I3)') mp,np,op,pp
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut134(i5,i8,i6,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4076,7 +4065,7 @@ c      write (6,'(''ord31 3'',8I3)') mp,np,op,pp
       call permut234(i4,i1,i2,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
 c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut234(i8,i5,i6,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4099,7 +4088,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
       do ivolte=1,6  !aaab
       call permut123(i1,i2,i3,i4,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut123(i5,i6,i7,i8,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4110,7 +4099,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
       do ivolte=1,6  !aaba
       call permut124(i1,i2,i4,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut124(i5,i6,i8,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4121,7 +4110,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
       do ivolte=1,6  !abaa
       call permut134(i1,i4,i2,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut134(i5,i8,i6,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4132,7 +4121,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
       do ivolte=1,6  !baaa
       call permut234(i4,i1,i2,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut234(i8,i5,i6,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4145,7 +4134,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
 c-----------------------------------------------------------
       subroutine ord22(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
-#include <implicit.h>
+#include "implicit.h"
 #include "nevpt2.h"
       DIMENSION amat(nwords,nasht,nasht,nasht,nasht)
       integer segno,segno2,op,pp,op2,pp2,m,n
@@ -4335,7 +4324,7 @@ c      write (6,'(''ord22 6'',8I3)') mp,np,op,pp
 c------------------------------------------------------
       subroutine ordsame(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
-#include <implicit.h>
+#include "implicit.h"
 #include "nevpt2.h"
       DIMENSION amat(nwords,nasht,nasht,nasht,nasht)
       integer segno,segno2,op,pp,op2,pp2,n,m
@@ -4372,7 +4361,7 @@ c      write (6,*) 'calling ordsame'
         call permut4(i5,i6,i7,i8,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
-	enddo
+        enddo
       endif
       enddo
 
@@ -4395,7 +4384,7 @@ c      write (6,*) 'calling ordsame'
         call permut4(i5,i6,i7,i8,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
-	enddo
+        enddo
       endif
       enddo
 
@@ -4405,7 +4394,7 @@ c      write (6,*) 'calling ordsame'
 c-----------------------------------------------------
       subroutine ord9(ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2,
      * i1,i2,i3,i4,i5,i6,i7,i8)
-#include <implicit.h>
+#include "implicit.h"
 c---  ordina in maniera decrescente ia1, ic1, ie1, ig1 in i1 i2 i3 i4
 c---  ed fa la stessa perm anche su ia2, ic2, ie2, ig2 in i5 i6 i7 i8
       dimension nv1(4),nv2(4)
@@ -4445,9 +4434,9 @@ c      call getnorm(ia2,ic2,ie2,ig2,norm2)
                n=imax
                imax=nv1(j)
                nv1(j)=n
-	       n=nv2(i)
-	       nv2(i)=nv2(j)
-	       nv2(j)=n
+               n=nv2(i)
+               nv2(i)=nv2(j)
+               nv2(j)=n
             endif
             nv1(i)=imax
          enddo
@@ -4460,13 +4449,13 @@ c      call getnorm(ia2,ic2,ie2,ig2,norm2)
       i6=nv2(2)
       i7=nv2(3)
       i8=nv2(4)
-c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8         
+c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8
       return
       end
 c-----------------------------------------------------
       subroutine ord8(ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2,
      * i1,i2,i3,i4,i5,i6,i7,i8)
-#include <implicit.h>
+#include "implicit.h"
 c---  ordina in maniera decrescente ia1, ic1, ie1, ig1 in i1 i2 i3 i4
 c---  ed fa la stessa perm anche su ia2, ic2, ie2, ig2 in i5 i6 i7 i8
       dimension nv1(4),nv2(4)
@@ -4501,11 +4490,11 @@ c      call getnorm(ia2,ic2,ie2,ig2,norm2)
       endif
       do i=1,4
          imax=nv1(i)
-	 jmax=i
+         jmax=i
          do j=i+1,4
             if(nv1(j).gt.imax)then
                imax=nv1(j)
-               jmax=j  
+               jmax=j
             endif
          enddo
          if (jmax.ne.i) then
@@ -4527,12 +4516,12 @@ c     *                                      nv2(1),nv2(2),nv2(3),nv2(4)
       i6=nv2(2)
       i7=nv2(3)
       i8=nv2(4)
-c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8         
+c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8
       return
       end
 c-------------------------------------------------------------------
       function ro3t(a,b,c,ap,bp,cp,d3,d2,d1,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,ap,bp,cp
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
@@ -4574,7 +4563,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ro2t(ap,bp,a,b,d2,d1,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,ap,bp,cp
       dimension d2(nasht,nasht,nasht,nasht),d1(nasht,nasht)
       ro2t=d2(a,b,ap,bp)
@@ -4588,8 +4577,8 @@ c-------------------------------------------------------------------
       end
 c-----------------------------------------------------------------
       subroutine bro3(ro4,daaa,nasht,nele)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
 #include "nevpt2.h"
       dimension ro4(nwords,nasht,nasht,nasht,nasht)
@@ -4603,9 +4592,9 @@ cc---controllo su contrazione della ro4
                      do kk=1,nasht
                         dum4=0.d0
                         do ll=1,nasht
-			call ord8(i,j,k,ll,ii,jj,kk,ll,
+                        call ord8(i,j,k,ll,ii,jj,kk,ll,
      $                            i1,i2,i3,i4,i5,i6,i7,i8)
-			ind=lindice(i1,i2,i3,i4)
+                        ind=lindice(i1,i2,i3,i4)
                         dum4=dum4+ro4(ind,i5,i6,i7,i8)
                         enddo
                         daaa(i,j,k,ii,jj,kk)=dum4/(nele-3)
@@ -4619,8 +4608,8 @@ cc---controllo su contrazione della ro4
       end
 c-----------------------------------------------------------------
       subroutine bro2(daaa,taa,nasht,nele)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
       dimension taa(nasht,nasht,nasht,nasht)
       do i=1,nasht
@@ -4640,7 +4629,7 @@ c-----------------------------------------------------------------
       end
 c-----------------------------------------------------------------
       subroutine bro1(taa,dal,nasht,nele)
-#include <implicit.h>
+#include "implicit.h"
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       do i=1,nasht
          do j=1,nasht
@@ -4655,7 +4644,7 @@ c-----------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       subroutine wr1(dal,coopeaa,coopipa,nasht,lun31)
-#include <implicit.h>
+#include "implicit.h"
       dimension dal(nasht,nasht),coopeaa(nasht,nasht)
      $     ,coopipa(nasht,nasht)
       write(lun31) nasht
@@ -4666,8 +4655,8 @@ c------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       subroutine wr2(koopaa,taa,dal,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       REAL*8  KOOPAA
       DIMENSION dal(nasht,nasht),koopaa(nasht,nasht,nasht,nasht
      $     ),taa(nasht,nasht,nasht,nasht)
@@ -4690,8 +4679,8 @@ c------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       subroutine wr3(koopeaa,taa,koopaa,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       REAL*8  koopaa(nasht,nasht,nasht,nasht),
      &           taa(nasht,nasht,nasht,nasht),
      &       koopeaa(nasht,nasht,nasht,nasht)
@@ -4716,8 +4705,8 @@ c-------scrittura matrici koopman doppia ionizzazione
       end
 c----------------------------------------------------------------------
       subroutine wr4(koopaa,koopbb,koopab,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       REAL*8  KOOPAA, KOOPBB, KOOPAB
       DIMENSION koopaa(nasht,nasht,nasht,nasht
      $     ),koopbb(nasht,nasht,nasht,nasht),koopab(nasht,nasht)
@@ -4732,8 +4721,8 @@ c----------------------------------------------------------------------
       end
 c------------------------------------------------------------------
       subroutine fdiff(bmat,cmat,btmat,ctmat,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension bmat(nasht,nasht,nasht,nasht),cmat(nasht,nasht,nasht
      $     ,nasht)
       dimension btmat(nasht,nasht,nasht,nasht),ctmat(nasht,nasht,nasht
@@ -4774,8 +4763,8 @@ c------------------------------------------------------------------
 c------------------------------------------------------------------------------
       subroutine wr5(daaa,amat,atmat,bmat,btmat,cmat,ctmat,dmat,dtmat
      $     ,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension bmat(nasht,nasht,nasht,nasht),cmat(nasht,nasht,nasht
      $     ,nasht)
       dimension amat(nasht,nasht,nasht,nasht,nasht,nasht),dmat(nasht
@@ -4831,8 +4820,8 @@ c----scrittura matrice dtmat
       end
 c-----------------------------------------------------------
       subroutine giveocc(ioccfe,m,nd,ne,trou,part,nocc,norb)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer*2 ne(*),trou(*),part(*)
       integer*1 ioccfe(*)
       integer nd(*)
@@ -4849,15 +4838,15 @@ c-----------------------------------------------------------
          if(ib.gt.norb)ib=ib-norb
          if(ip.gt.norb)ip=ip-norb
          ioccfe(ib)=ioccfe(ib)-1
-	 if (ip.le.norb) then
+         if (ip.le.norb) then
          ioccfe(ip)=ioccfe(ip)+1
-	 endif
+         endif
       enddo
       return
       end
 c------------------------------------------------------------------
       integer function ndiff(ioccfe,jocc,norb)
-#include <implicit.h>
+#include "implicit.h"
       integer*1 ioccfe(*),jocc(*)
       ndiff=0
       do i=1,norb
@@ -4870,8 +4859,8 @@ c------------------------------------------------------------------
 c--------------------------------------------------------
       subroutine esclass(nd,ne,trou,part,icomp,iconf,isegno,ncf,nocc
      $     ,norb,ispin,iocc)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer*2 ne,trou,part,icomp,iconf,isegno
       dimension nd(*),ne(*),trou(*),part(*),icomp(*),iconf(*),isegno(*)
       equivalence (ip1,ib1),(ip2,ib2)
@@ -4909,7 +4898,7 @@ c------------------------------------------------------------------------
 
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
 
-#include <priunit.h>
+#include "priunit.h"
       integer*2 ne,trou,part,ispinfe,iorbfe
       integer*1 flip
       dimension flip(*),ne(*),nd(*),trou(*),part(*),ispinfe(*),iorbfe(*)
@@ -4963,16 +4952,16 @@ C Manu april 2009: DV (active density matrix in the MO basis) added as argument 
 C the density of the MCSCF wave function in case we need it (for
 C computing the srHxc potential in a NEVPT2-srDFT calculation for example)
 C
-               
+
       subroutine readint(onel,atwo,aj,dv,wrk,lfree,id2n,in2d,lupri)
-C      
-C      
-#include <implicit.h>
-#include <maxorb.h>
-#include <inforb.h>
+C
+C
+#include "implicit.h"
+#include "maxorb.h"
+#include "inforb.h"
 C Manu: for NEVPT2-srDFT
-#include <inftap.h>
-#include <infinp.h>
+#include "inftap.h"
+#include "infinp.h"
 C#include <priunit.h>
       DIMENSION NEEDTP(-4:6) ! for NXTH2M
       allocatable h2m(:,:)
@@ -4982,12 +4971,12 @@ C#include <priunit.h>
       dimension id2n(*),in2d(*),aj(*),wrk(*),onel(*)
       dimension atwo(nasht,nasht,nasht,nasht)
       integer a,b,ac,bc,acd,bcd
-C Manu: needed for the NEVPT2-srDFT ...      
+C Manu: needed for the NEVPT2-srDFT ...
 C
       DIMENSION DV(*)
-      DOUBLE PRECISION EDFT 
+      DOUBLE PRECISION EDFT
       INTEGER LFREE
-      PARAMETER (D1 = 1.0D0) 
+      PARAMETER (D1 = 1.0D0)
 C
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
@@ -5002,7 +4991,7 @@ C
       allocate (h2m(norbt,norbt))
 c      write (lupri,*) 'Starting reading the integrals'
 c      call flshfo(lupri)
-  100 CALL NXTH2M(IC,ID,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
 c      write (lupri,*) 'read',ic,id
 c      call flshfo(lupri)
       IF (IDIST .LT. 0) GO TO 800
@@ -5013,14 +5002,14 @@ C
        write (lupri,*) 'Error IC not active'
        write (lupri,*) 'IC,ICN',ic,icn
        call quit('Error IC not active')
-      endif 
+      endif
       k=icn-nisht
       idn=id2n(id)
       if (idn.le.nisht.or.idn.gt.(nisht+nasht)) then
        write (lupri,*) 'Error ID not active'
        write (lupri,*) 'ID,IDN',id,idn
        call quit('Error ID not active')
-      endif 
+      endif
       l=idn-nisht
 c      write (lupri,*) 'tranformed to nevpt',k,l
 
@@ -5043,20 +5032,20 @@ c----building the two el part of Dyall's h eff in aj (J contr)----------
       do j=1,nisht
         jd=in2d(j)
         aj(jab)=aj(jab)+2.d0*h2m(jd,jd)
-c	write (lupri,*) 'j',icn,idn,j,2.d0*h2m(jd,jd)
+c        write (lupri,*) 'j',icn,idn,j,2.d0*h2m(jd,jd)
       enddo
-       
+
 C
       GO TO 100
 
   800 continue
 
-c----Reading again the integrals: we need K for Heff 
+c----Reading again the integrals: we need K for Heff
       needtp(3)=0
       needtp(2)=1
       KFREE=1
       IDIST = 0
-  200 CALL NXTH2M(IC,ID,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  200 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 900
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -5079,9 +5068,9 @@ c----building the two el part of Dyall's h eff in aj (K contr.)----------
         dum=h2m(bcd,icord)
         if (ac.ne.bc) dum=dum*.5d0
         aj(jab)=aj(jab)-dum
-c	write (lupri,*) 'k',bc,ac,jn,dum
+c        write (lupri,*) 'k',bc,ac,jn,dum
       enddo
-       
+
 C
       GO TO 200
 
@@ -5112,7 +5101,7 @@ C
 C
       CALL SIRH1(H1AO,WRK(KFREE),LFREE)
 C
-c     CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+c     CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed
 
 C
 C************ NEVPT2-srDFT -- start ***************
@@ -5120,8 +5109,8 @@ C
 C March 2009 Emmanuel Fromager
 
 C Purpose: add the frozen srHXC potential calculated
-C for the MCSCF-srDFT density to the one-electron part of the 
-C Hamiltonian. 
+C for the MCSCF-srDFT density to the one-electron part of the
+C Hamiltonian.
 C
 
       IF (DOMCSRDFT) THEN
@@ -5129,14 +5118,14 @@ C
          call quit('srdft not implemented in this version')
 #else
 
-C        Allocation of memory for ...       
+C        Allocation of memory for ...
 
-C        full (inactive+active) DM in the AO basis             
-         CALL MEMGET('REAL',KDAO,N2BASX,WRK,KFREE,LFREE) 
-C        sr H or xc potential in the AO basis          
-         CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE) 
-C        active part of the DM in the AO basis         
-         CALL MEMGET('REAL',KDVAO,N2BASX,WRK,KFREE,LFREE) 
+C        full (inactive+active) DM in the AO basis
+         CALL MEMGET('REAL',KDAO,N2BASX,WRK,KFREE,LFREE)
+C        sr H or xc potential in the AO basis
+         CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE)
+C        active part of the DM in the AO basis
+         CALL MEMGET('REAL',KDVAO,N2BASX,WRK,KFREE,LFREE)
 
 C Manu b
 !        write(lupri,*) 'print DV before calling FCKDEN'
@@ -5144,13 +5133,13 @@ C Manu b
 C Manu e
 
 C        Backtransform the inactive and active MCSCF-srDFT density matrix
-C        to the AO basis       
+C        to the AO basis
 
          CALL FCKDEN(.TRUE.,.TRUE.,WRK(KDAO),WRK(KDVAO),CMO,DV,
      &               WRK(KFREE),LFREE)
 
 C Manu b
-         
+
 !        write(lupri,*) 'print DVAO just after calling FCKDEN'
 !        CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
 !        write(lupri,*) 'print DCAO just after calling FCKDEN'
@@ -5162,12 +5151,12 @@ C        make total density matrix (in the AO basis) in WORK(KDAO)
          CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDAO),1)
 C
 
-C        Release memory allocated for DVAO 
+C        Release memory allocated for DVAO
 C
          CALL MEMREL('Releasing mem. used for DVAO',
-     &               WRK,KFRSAV,KDVAO,KFREE,LFREE)  
+     &               WRK,KFRSAV,KDVAO,KFREE,LFREE)
 
-C        calculate the srH potential (for the MCSCF-srDFT density) 
+C        calculate the srH potential (for the MCSCF-srDFT density)
 
          CALL DZERO(WRK(KVSRAO),N2BASX)
 
@@ -5175,7 +5164,7 @@ C        calculate the srH potential (for the MCSCF-srDFT density)
                      ! (exchange term is removed for inside SIRFCK2 if
                      ! HFXFAC = 0.0D0)
          NSRDMAT = 1 ! only one density matrix (the MCSCF-srDFT one)
-         ISYMDM  = 1 ! DMAT of symmetry 1 
+         ISYMDM  = 1 ! DMAT of symmetry 1
 
          CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KVSRAO),
      &                WRK(KDAO),NSRDMAT,ISYMDM,IFCTMP,WRK(KFREE),LFREE)
@@ -5185,8 +5174,8 @@ C manu b
 !        write(lupri,*) 'print VSRAO after calling sirfck2'
 !        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
 !        write(lupri,*) 'print H1AO after calling sirfck2'
-!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-       
+!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed
+
 C manu e
 
 C        Add the srH potential to the one-electron part of the Hamiltonian
@@ -5194,11 +5183,11 @@ C        Add the srH potential to the one-electron part of the Hamiltonian
          CALL ADD_SU_SP(WRK(KVSRAO),H1AO)
 C manu b
 !        write(lupri,*) 'print H1AO after 1st call to ADD_SU_SP'
-!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-       
+!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed
+
 C manu e
 
-C        Calculate the srxc potential for the MCSCF-srDFT density  
+C        Calculate the srxc potential for the MCSCF-srDFT density
 
          CALL DZERO(WRK(KVSRAO),N2BASX)
 
@@ -5214,8 +5203,8 @@ C manu b
 !        write(lupri,*) 'print VSRAO after calling srdft'
 !        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
 !        write(lupri,*) 'print H1AO after calling srdft'
-!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-       
+!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed
+
 C manu e
 
 C        Add the srxc potential to the one-electron part of the Hamiltonian
@@ -5225,14 +5214,14 @@ C        Add the srxc potential to the one-electron part of the Hamiltonian
 C        Release memory
 
          CALL MEMREL('Releasing mem. used for DAO and VSRAO',
-     &             WRK,KFRSAV,KDAO,KFREE,LFREE)  
+     &             WRK,KFRSAV,KDAO,KFREE,LFREE)
 
 C
 C************ NEVPT2-srDFT -- end ***************
 C
 #endif
-      END IF 
-         
+      END IF
+
       CALL UTHUB(H1AO,H1MO,CMO,WRK(KFREE),NSYM,NBAS,NORB)
       CALL PKSYM1(onel,H1MO,NORB,NSYM,-1) ! Unpack H1MO in low tri onel
 c     CALL OUTPKB(H1MO,NORB,NSYM,1,LUPRI)
@@ -5249,10 +5238,10 @@ c----building Dyall's h eff in aj----------
             jab=indice(ac,bc)
             jabd=indice(acd,bcd)
 c           write (lupri,*) ac,bc,onel(jabd),acd,bcd
-c	    call flshfo(lupri)
+c           call flshfo(lupri)
             aj(jab)=aj(jab)+onel(jabd)
 c           write (lupri,*) 'one',ac,bc,aj(jab)
-c	    call flshfo(lupri)
+c           call flshfo(lupri)
          enddo
       enddo
 
@@ -5267,27 +5256,27 @@ c-----------------------------------------------------
 C  /* Deck ADD_SU_SP */
       SUBROUTINE ADD_SU_SP(VSRAO,H1AO)
 C
-C April-2009 Emmanuel Fromager 
+C April-2009 Emmanuel Fromager
 C
 C This subroutine adds the symmetric UNPACKED matrix VSRAO to the
-C symmetry PACKED H1AO matrix 
+C symmetry PACKED H1AO matrix
 C
-#include <implicit.h>
-      DIMENSION VSRAO(NBAST,NBAST),H1AO(*)   
-C 
-#include <inforb.h>
-#include <priunit.h>
-C 
+#include "implicit.h"
+      DIMENSION VSRAO(NBAST,NBAST),H1AO(*)
+C
+#include "inforb.h"
+#include "priunit.h"
+C
 
-         IH1AO = 0 
+         IH1AO = 0
          IVSRAO = 0
          DO 2500 ISYM = 1,NSYM
             NBASI  = NBAS(ISYM)
 C ***** initial code - assuming packed wrt column ... ******
-C           DO 2600 J = 1,NBASI 
+C           DO 2600 J = 1,NBASI
 C              DO 2700 I = J,NBASI
-C***********************************************************     
-            DO 2600 I = 1,NBASI 
+C***********************************************************
+            DO 2600 I = 1,NBASI
                DO 2700 J = 1,I
 C Manu b
 C        write(lupri,*) 'debug printing in ADD_SU_SP ...'
@@ -5295,16 +5284,16 @@ C        write(lupri,*) 'H1AO(',
 C    &   IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2),') =',
 C    &   H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2))
 C        write(lupri,*) 'VSRAO(', IVSRAO+I,',',IVSRAO+J,
-C    &   ')=', VSRAO(IVSRAO+I,IVSRAO+J) 
+C    &   ')=', VSRAO(IVSRAO+I,IVSRAO+J)
 C Manu e
 C ***** initial code - assuming packed wrt column ... ******
 C                 H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2)) =
 C    &            H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2)) +
-C    &            VSRAO(IVSRAO+I,IVSRAO+J)    
-C***********************************************************     
+C    &            VSRAO(IVSRAO+I,IVSRAO+J)
+C***********************************************************
                   H1AO(IH1AO+J+(I*(I-1)/2)) =
      &            H1AO(IH1AO+J+(I*(I-1)/2)) +
-     &            VSRAO(IVSRAO+I,IVSRAO+J)    
+     &            VSRAO(IVSRAO+I,IVSRAO+J)
  2700          CONTINUE
  2600       CONTINUE
             IVSRAO = IVSRAO + NBASI
@@ -5316,8 +5305,8 @@ C
 C
 c-----------------------------------------------------
       subroutine getnorm(ia,ic,ie,ig,norm)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension nv(4)
       integer ia,ic,ie,ig,norm,nv,i,j,jmax,imax,ndum
 
@@ -5328,7 +5317,7 @@ c      return
       nv(2)=ic
       nv(3)=ie
       nv(4)=ig
-      
+
 
 c      write (6,'(''norm in'',8I3)') ia,ic,ie,ig
 
@@ -5336,16 +5325,16 @@ c      write (6,'(''norm in'',8I3)') ia,ic,ie,ig
        imax=nv(i)
        jmax=i
         do j=i+1,4
-	if(nv(j).gt.imax) then
-	imax=nv(j)
-	jmax=j
-	endif
-	enddo
-	if(jmax.ne.i) then
-	ndum=nv(i)
-	nv(i)=nv(jmax)
-	nv(jmax)=ndum
-	endif
+        if(nv(j).gt.imax) then
+         imax=nv(j)
+         jmax=j
+        endif
+        enddo
+        if(jmax.ne.i) then
+         ndum=nv(i)
+         nv(i)=nv(jmax)
+         nv(jmax)=ndum
+        endif
       enddo
 c      write (6,'(''norm ou'',8I3)') nv(1),nv(2),nv(3),nv(4)
 
@@ -5357,9 +5346,9 @@ c      write (6,'(''norm ou'',8I3)') nv(1),nv(2),nv(3),nv(4)
       end
 c-----------------------------------------------------
       subroutine nwadd(nwall,nadd)
-#include <single.h>
-#include <implicit.h>
-#include <priunit.h>
+#include "single.h"
+#include "implicit.h"
+#include "priunit.h"
       nwall=nwall+nadd
 c      write (lupri,*) 'Alloc  :',nadd/8,nwall/8
 c      write (lupri,*) 'Alloc  :',nadd,nwall
@@ -5368,9 +5357,9 @@ c      call flshfo(lupri)
       end
 c-----------------------------------------------------
       subroutine nwdel(nwall,ndel)
-#include <single.h>
-#include <implicit.h>
-#include <priunit.h>
+#include "single.h"
+#include "implicit.h"
+#include "priunit.h"
       nwall=nwall-ndel
 c      write (lupri,*) 'Dealloc:',ndel/8,nwall/8
 c      write (lupri,*) 'Dealloc:',ndel,nwall
@@ -5378,7 +5367,7 @@ c      call flshfo(lupri)
       return
       end
       function vald2r8(a,i,j,n)
-#include <implicit.h>
+#include "implicit.h"
       dimension a(n,n)
       vald2r8 = a(i,j)
       return

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_REV_LOG
 !===========================================================================
@@ -91,7 +91,7 @@ C Copyright (c) 1993, 1997 Hans Joergen Aa. Jensen
 C
 C Driver for DIIS iterations in SIRIUS.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), WRK(*)
 C
 C
@@ -102,17 +102,17 @@ C  INFORB : N2BAST,NNBAST,N2BASX,NCMOT,NSYM, ...,MXDGSS
 C  INFVAR : NWOPT
 C  INFPRI : IPRRHF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <scbrhf.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "scbrhf.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infpri.h"
 C
 Cholesky
-#include <ccdeco.h>
-#include <choscf.h>
+#include "ccdeco.h"
+#include "choscf.h"
 C
       PARAMETER (NBLOC = 1)
       INTEGER LUBLOC(NBLOC)
@@ -277,8 +277,8 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
       DIMENSION FAOSAV(NNBAST,MXERRV,2), EVCSAV(NNORBT,MXERRV)
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
@@ -295,38 +295,37 @@ C  SCBRHF : IOPRHF,AUTOCC
 C  CBIREA : LMULBS
 C  R12INT : R12CAL
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "mxcent.h"
 
-#include <molde.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <scbrhf.h>
-#include <cbihr2.h>
-#include <infpri.h>
-#include <gnrinf.h>
-#include <dfterg.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <qm3.h>
+#include "molde.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "scbrhf.h"
+#include "cbihr2.h"
+#include "infpri.h"
+#include "gnrinf.h"
+#include "dfterg.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "qm3.h"
 #include "incore.h"
-#include <qmmm.h>
-#include <infloc.h>
-#include <mmtimes.h>
-#include <infpar.h>
+#include "qmmm.h"
+#include "infloc.h"
+#include "mmtimes.h"
+#include "infpar.h"
 C
 Cholesky
-#include <ccdeco.h>
-#include <sirftim.h>
-#include <choscf.h>
+#include "ccdeco.h"
+#include "sirftim.h"
+#include "choscf.h"
 C
-#include <center.h>
+#include "center.h"
 C
-      LOGICAL DIFDNO
 Cholesky
 C
 C------------------------
@@ -364,7 +363,7 @@ C
      &      ' Automatic occupation of symmetries with',NRHFEL,
      &      ' electrons.',
      &      ' Iter     Total energy      Solvation energy  Error norm'//
-     &      '  Delta(E)    HF occupation'
+     &      '  Delta(E)    SCF occupation'
       ELSE
          WRITE (LUW4,'(/A,I4,A/A//A)')
      &      ' Automatic occupation of symmetries with',NRHFEL,
@@ -372,7 +371,7 @@ C
      &      ' "sym." is the symmetry of the one open shell orbital '//
      &      'in table below.',
      &      ' Iter     Total energy      Solvation energy  Error norm'//
-     &      '  Delta(E)  sym.  closed shell occupation'
+     &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
       ELSE ! no solvation energy
       IF (.NOT.AUTOCC) THEN
@@ -384,7 +383,7 @@ C
      &      ' Automatic occupation of symmetries with',NRHFEL,
      &      ' electrons.',
      &      ' Iter     Total energy    Error norm  Delta(E)  '//
-     &      '  HF occupation'
+     &      '  SCF occupation'
       ELSE
          WRITE (LUW4,'(/A,I4,A/A//A)')
      &      ' Automatic occupation of symmetries with',NRHFEL,
@@ -392,7 +391,7 @@ C
      &      ' "sym." is the symmetry of the one open shell orbital '//
      &      'in table below.',
      &      ' Iter     Total energy    Error norm  Delta(E)  '//
-     &      'sym.  closed shell occupation'
+     &      'Sym.  Closed shell occupation'
       END IF
       END IF
       END IF
@@ -465,16 +464,19 @@ C------------------
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
-     &     .AND. .NOT.AOSAVE
+     &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
 Ctuh:   DIFDEN does not work with DFT either   
 Cov:    DIFDEN disabled for high spin HF
+C-tbp: turn off DIFDEN for Cholesky decomposition (CHOINT true)
       DIFDEN   = DODIFDEN
+C------------------
       IF (.NOT. USRSCR) THEN
-         IF (AOSAVE) THEN
-            IFTHRS = 20
+C        AOSAVE or Cholesky (CHOINT): No screening.
+         IF (AOSAVE .OR. CHOINT) THEN
+            IFTHRS = 20 ! code for no screening
          ELSE IF (FLAG(13)) THEN
 Chj-aug99: MO's read from input, assume good guess
             IFTHRS = IFTMAX
@@ -499,18 +501,18 @@ C
      &      ' -----------------------------------------------------'//
      &      '------------------------'
 C
-Cholesky (CHOINT): No screening.
 C
-         IF (DIRFCK .AND. (IPR_DIIS .GE. 0 .OR. IPR_DIIS .LE. 1)
-     &              .AND. (.NOT. CHOINT)) THEN
-            WRITE (LUPRI,'(I4,A,I5,L5)') 
-     &      ITDIIS,'  Screening settings (-IFTHRS, DIFDEN)',
-     &      -IFTHRS, DIFDEN
-         ELSE IF (DIRFCK .AND. (IPR_DIIS .GT. 1)) THEN
-            WRITE (LUPRI,'(/A,2I5/A,I5,L5)')
-     &      ' *** START DIIS iteration ',ITDIIS,JTDIIS,
-     &      ' Screening settings in this iteration (-IFTHRS, DIFDEN)',
-     &      -IFTHRS, DIFDEN
+         IF (DIRFCK .AND. IFTHRS.LT.20) THEN
+            IF (IPR_DIIS .GT. 1) THEN
+               WRITE (LUPRI,'(/A,2I5/A,I5,L5)')
+     &         ' *** START DIIS iteration ',ITDIIS,JTDIIS,
+     &         ' Screening settings (-IFTHRS, DIFDEN)',
+     &         -IFTHRS, DIFDEN
+            ELSE IF (IPR_DIIS .GE. 0) THEN
+               WRITE (LUPRI,'(I4,A,I5,L5)') 
+     &         ITDIIS,'  Screening settings (-IFTHRS, DIFDEN)',
+     &         -IFTHRS, DIFDEN
+            END IF
          END IF
          CALL FLSHFO(LUPRI)
          HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
@@ -831,34 +833,34 @@ C
      &      /' Program aborted because this means automatic symmetry'
      &      /' designation of occupied orbitals is not possible!',
      &      /' Please send this output to hjj@dou.dk !!!',
-     &      /' You may try again with explicit specfication of .HF OCC')
+     &      /' You may try again with explicit specfication of .DOUBLY')
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')
 C
          IF (GRDNRM .LE. THDIIS) THEN
             IF (MOLDEN) CALL MOSCFCON(ITDIIS,EMCSCF,.TRUE.)
             ICONV = 1
-            WRITE (LUPRI,4110) ITDIIS
-            IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS
+            WRITE (LUPRI,4110) ITDIIS,EMCSCF,GRDNRM
+            IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS,EMCSCF,GRDNRM
 C
 Cholesky
             IF (IPR_DIIS .GE. -1) THEN
               IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
-                 WRITE(LUPRI,4116) 'Coulomb part',CSIRF
+                 WRITE(LUPRI,4116) 'Coulomb part ',CSIRF
                  WRITE(LUPRI,4116) 'Exchange part',XSIRF
                  WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
                  WRITE(LUPRI,4116) 'MO transform.',OSIRF
-                 WRITE(LUPRI,4116) 'MO sorting ',SSIRF
+                 WRITE(LUPRI,4116) 'MO sorting   ',SSIRF
               ENDIF
               WRITE(LUPRI,4115) TSIRF
               IF (QMMM) CALL QMMMTIMES('SIRIUS')
               IF (LUW4 .NE. LUPRI) THEN
                  IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
-                    WRITE(LUPRI,4116) 'Coulomb part',CSIRF
+                    WRITE(LUPRI,4116) 'Coulomb part ',CSIRF
                     WRITE(LUPRI,4116) 'Exchange part',XSIRF
                     WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
                     WRITE(LUPRI,4116) 'MO transform.',OSIRF
-                    WRITE(LUPRI,4116) 'MO sorting ',SSIRF
+                    WRITE(LUPRI,4116) 'MO sorting   ',SSIRF
                  ENDIF
                  WRITE(LUW4,4115) TSIRF
               ENDIF
@@ -880,10 +882,12 @@ C           Too many DIIS iterations, save final CMO before exit
 C           ... REWIT1 false: do not destroy any GEOWALK information
             GO TO 1100
          END IF
- 4110 FORMAT(/' *** DIIS converged in',I4,' iterations !')
- 4115 FORMAT( '   - total time used in SIRFCK :'  ,F18.2,' seconds')
- 4116 FORMAT( '   - total time used for ',A13,': ',F10.2,' seconds')
- 4120 FORMAT(/' !!! DIIS aborted because max DIIS iterations reached !')
+ 4110 FORMAT(/' *** DIIS converged in',I4,' iterations !',
+     &       /'@    Converged SCF energy, gradient:',F20.12,1P,D12.2)
+ 4115 FORMAT( '   - total time used in SIRFCK :' ,F18.2,' seconds')
+ 4116 FORMAT( '   - total time used for ',A13,':',F12.2,' seconds')
+ 4120 FORMAT(/
+     & 'WARNING !!! DIIS aborted because max DIIS iterations reached !')
 C
 Chj 990819: use DIFDEN more often
 Chj was: IF (IFTHRS .GE. 12 .AND. .NOT. FLAG(49)) DIFDEN = .TRUE.
@@ -915,18 +919,6 @@ C        -- if we have tightened screening threshold we must
 C           calculate w/o DIFDEN or the error in the Fock matrix
 C           would correspond to the previous screening threshold.
 C
-C-tbp: Dirty hack: turn off DIFDEN for Cholesky deco.
-          IF (CHOINT .AND. DIFDEN) THEN
-             DIFDNO = DIFDEN
-             DIFDEN = .FALSE.
-             IF (IPR_DIIS .GE. 25) THEN
-                WRITE (LUPRI,'(A,I5,L5)')
-     &          ' Cholesky decomposition: new settings (IFTHRS/DIFDEN)',
-     &          IFTHRS, DIFDEN
-                CALL FLSHFO(LUPRI)
-             ENDIF
-          ENDIF
-C-tbp
 C
 C        Test if convergence is stopping because of numerical problems
 C        (EMCDIF test should make sure we are in local region)
@@ -1208,7 +1200,7 @@ C        test if AUTOCC has changed occupation
                WRITE (LUPRI,4210) NEWOCC
                IF (LUW4 .NE. LUPRI) WRITE (LUW4,4210) NEWOCC
                CALL QUIT(
-     &           'FATAL ERROR: problems with automatic HF occupation')
+     &           'FATAL ERROR: problems with automatic SCF occupation')
             END IF
 Chj-sep99: bugfix for open shell when open shell symmetry changed
 C          (NASH(ISYM) used for test in DIIS_CTL !!!)
@@ -1429,7 +1421,7 @@ C  /* Deck DIIS_EVC */
      &                  ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DCAO(NNBAST), DVAO(NNBAST), FDAO(NNBAST), FVAO(NNBAST)
       DIMENSION H1AO(NNBAST)
       DIMENSION SMOAO(N2BAST), CMO1(NCMOT), ERRVEC(NNORBT), WRK(*)
@@ -1439,12 +1431,12 @@ C  INFINP : LNOROT,NOROT()
 C  INFORB : N2BAST, NNBAST, NCMOT, NSYM, ..., NFROT, ...
 C  INFDIM : N2BASM
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
 C
@@ -1602,7 +1594,7 @@ C  BMAT,  the new, extended reduced orbital Hessian-matrix
 C  CVEC  :.not.C2DIIS - SOLUTION TO LINEAR SET OF EQUATIONS
 C        :     C2DIIS - LOWEST acceptable EIGENVECTOR
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BMAT(*),CVEC(*), ERRVEC(NNORBT,*), WRK(*)
       LOGICAL C2DIIS
 C
@@ -1611,9 +1603,9 @@ C
 C Used from common blocks:
 C   INFORB : NNORBT
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       IROW(I) = I*(I-1)/2
 C
@@ -1756,11 +1748,11 @@ c /* DFT_ADD_KS */
 c     TMP1 is of NNBASX size, TMP2 is of N2BASX size.  They are passed
 c     because they are available but they could as well be allocated
 c     here.
-#include <implicit.h>
+#include "implicit.h"
 c
-#include <inforb.h>
-#include <dfterg.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "dfterg.h"
+#include "priunit.h"
 c
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
 c
@@ -1872,7 +1864,7 @@ C
 C Scratch:
 C  SCRA; general scratch area
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),FC(*),SCRA(*)
 C
 C Used from common blocks:
@@ -1880,16 +1872,16 @@ C  INFINP : SUPSYM, LNOROT, NOROT()
 C  SCBRHF : NFRRHF(*), AUTOCC
 C  INFIND : IROW(*),...,ISSMO(*),?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infind.h"
+#include "infpri.h"
 #ifdef MOD_DFTASC
-#include <dftacb.h>
+#include "dftacb.h"
 #endif
 C
       LOGICAL LSAVE4,LSAVE6
@@ -1902,7 +1894,7 @@ C
       P4FLAG(9) = .FALSE.
       P6FLAG(6) = .FALSE.
 C
-C     Some memory allocation for HF occupation determination
+C     Some memory allocation for SCF occupation determination
 C
       KEIG  = 1
       KSYMS = KEIG  + NORBT
@@ -2043,15 +2035,15 @@ C
 C  /* Deck gethom */
       SUBROUTINE DFTASC_GETHOMO(FD)
 C find homo energy. tuh 16.05.03
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FD(*)
       PARAMETER (DBIG = 1.D+12)
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <infind.h>
-#include <dftacb.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "infind.h"
+#include "dftacb.h"
 C
       EHOMO  = -DBIG
       DO ISYM = 1,NSYM
@@ -2078,8 +2070,8 @@ C
 C
       INTEGER NVEC, MXERRV, KFREE, LFREE
       REAL*8 W(NVEC)
-#include <inforb.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "priunit.h"
 C     REAL*8 DAO(NNBAST,MXERRV,2), FAO(NNBAST,MXERRV,2), F(NNBAST)
       REAL*8 DAO(NNBAST,1,2),      FAO(NNBAST,MXERRV,2), F(NNBAST)
       REAL*8 WRK(*)

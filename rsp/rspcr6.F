@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE T4DRV(IBCDEQ,ISYMA,ISYMB,ISYMC,ISYMD,VECA,VECB,VECC,
      *                 VECD,FREQB,FREQC,FREQD,XINDX,UDV,PV,MJWOP,
@@ -34,22 +34,22 @@ C
 C     OUTPUT is put in WRK:
 C     First  KZYVA elements are result vector
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0 , DM1 = -1.0D0 , DEM10 = 1.0D-10 )
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <thrzer.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infcr.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "thrzer.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infcr.h"
 C
       DIMENSION WRK(*)
       DIMENSION XINDX(*)
@@ -162,23 +162,23 @@ C
      *                  ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
 C
-#include <priunit.h>
-#include <infdim.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <rspprp.h>
-#include <infcr.h>
-#include <infinp.h>
-#include <infpri.h>
-#include <dftcom.h>
-#include <gnrinf.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "rspprp.h"
+#include "infcr.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "dftcom.h"
+#include "gnrinf.h"
 C
       DIMENSION VECA(*),VECB(*),VECC(*),VECD(*)
       DIMENSION ETRS(KZYVA), MJWOP(2,MAXWOP,8)
@@ -360,27 +360,27 @@ C       4  VECC = VECD
 C      24  VECB = VECC = VECD
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, THRSML = 1.0D-9 )
 C
-#include <thrzer.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <rspprp.h>
-#include <infcr.h>
-#include <indcr.h>
-#include <inftmo.h>
-#include <inftpa.h>
+#include "thrzer.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "rspprp.h"
+#include "infcr.h"
+#include "indcr.h"
+#include "inftmo.h"
+#include "inftpa.h"
 C
       PARAMETER (THD = 1.0D-8, MXCALC = 200)
 C
@@ -780,7 +780,7 @@ C
 
       SUBROUTINE DIPLAB(LAB,I)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*8 LAB
 C
@@ -800,12 +800,12 @@ C
      &                   ISYMB,ISYMC, ISYMD,
      &                   ISPINB,ISPINC,ISPIND,
      &                   CMO,MJWOP,WRK,LFREE)
-#include <implicit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "dftcom.h"
  
       DIMENSION VECB(*),VECC(*),VECD(*)
       DIMENSION ZYMB(*),ZYMC(*),ZYMD(*)

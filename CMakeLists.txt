@@ -12,8 +12,6 @@ if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DVAR_LINSCA)
 endif()
 
-add_definitions(-DTHIS_IS_CMAKE_BUILD)
-
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -40,14 +38,12 @@ if(    NOT cmake_build_type_tolower STREQUAL "debug"
 endif()
 
 # do not rebuild if rules (compiler flags) change
-# this has advantages and disadvantages
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
-option(ENABLE_INTERNAL_MATH  "Enable internal math library implementation"  OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
@@ -107,7 +103,7 @@ include(ConfigCompilerFlags)
 
 set(LIBS)
 
-include(Math)
+include(ConfigMath)
 
 if(ENABLE_MPI)
     find_package(MPI)
@@ -160,53 +156,57 @@ if(ENABLE_GEN1INT)
                      ${LIB_GEN1INT_PATH}/src/hgto_to_sgto.F90
                      ${LIB_GEN1INT_PATH}/src/london_mom_hgto.F90
                      ${LIB_GEN1INT_PATH}/src/const_contr_ints.F90
+                     ${LIB_GEN1INT_PATH}/src/const_contr_gto.F90
                      ${LIB_GEN1INT_PATH}/src/carmom_deriv.F90
-                     ${LIB_GEN1INT_PATH}/src/carmom_init.F90
-                     ${LIB_GEN1INT_PATH}/src/carmom_to_hbra.F90
+                     ${LIB_GEN1INT_PATH}/src/carmom_hbra.F90
                      ${LIB_GEN1INT_PATH}/src/carmom_hrr_ket.F90
+                     ${LIB_GEN1INT_PATH}/src/carmom_moment.F90
                      ${LIB_GEN1INT_PATH}/src/prim_hgto_carmom.F90
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_carmom.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_carmom.F90
                      ${LIB_GEN1INT_PATH}/src/contr_csgto_carmom.F90
+                     ${LIB_GEN1INT_PATH}/src/delta_geom.F90
+                     ${LIB_GEN1INT_PATH}/src/delta_hket.F90
+                     ${LIB_GEN1INT_PATH}/src/delta_moment.F90
+                     ${LIB_GEN1INT_PATH}/src/prim_hgto_delta.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_cgto_delta.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_sgto_delta.F90
                      ${LIB_GEN1INT_PATH}/src/aux_boys_vec.F90
-                     ${LIB_GEN1INT_PATH}/src/nucpot_nderv.F90
+                     ${LIB_GEN1INT_PATH}/src/nucpot_geom.F90
                      ${LIB_GEN1INT_PATH}/src/nucpot_hket.F90
                      ${LIB_GEN1INT_PATH}/src/nucpot_hbra.F90
-                     ${LIB_GEN1INT_PATH}/src/nucpot_to_carmom.F90
-                     ${LIB_GEN1INT_PATH}/src/nucpot_to_hgto.F90
                      ${LIB_GEN1INT_PATH}/src/prim_hgto_nucpot.F90
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_nucpot.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_nucpot.F90
-                     ${LIB_GEN1INT_PATH}/src/gaupot_nderv.F90
+                     ${LIB_GEN1INT_PATH}/src/gaupot_geom.F90
                      ${LIB_GEN1INT_PATH}/src/prim_hgto_gaupot.F90
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_gaupot.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_gaupot.F90
+                     ${LIB_GEN1INT_PATH}/src/prim_hgto_odist.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_cgto_odist.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_sgto_odist.F90
+                     ${LIB_GEN1INT_PATH}/src/prim_hgto_value.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_cgto_value.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_sgto_value.F90
+                     ${LIB_GEN1INT_PATH}/tools/str_decode.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_geom.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_carmom.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_nucpot.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_onehamil.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_gaupot.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_odist.F90
                      ${LIB_GEN1INT_PATH}/src/gen1int.F90)
     # Gen1Int interface source code
     set(FREE_FORTRAN_SOURCES
         ${FREE_FORTRAN_SOURCES}
         ${Gen1Int_SRCS}
         gen1int/gen1int_matrix.F90
+        gen1int/reorder_p_sgto.F90
         gen1int/gen1int_shell.F90
+        gen1int/dalton_shell.F90
+        gen1int/get_ao_dens.F90
+        gen1int/gen1int_cube.F90
         gen1int/gen1int_interface.F90)
-    #find_library(GEN1INT_LIBRARIES NAMES libgen1int.a
-    #             PATHS ${LIB_GEN1INT_PATH}
-    #             PATH_SUFFIXES build lib obj src)
-    #if(GEN1INT_LIBRARIES)
-    #    message("-- Find Gen1Int library at "${GEN1INT_LIBRARIES})
-    #    message("-- Enable Gen1Int module")
-    #    add_definitions(-DBUILD_GEN1INT)
-    #    set(LIBS
-    #        ${LIBS}
-    #        ${GEN1INT_LIBRARIES})
-    #    set(FREE_FORTRAN_SOURCES
-    #        ${FREE_FORTRAN_SOURCES}
-    #        gen1int/gen1int_matrix.F90
-    #        gen1int/gen1int_shell.F90
-    #        gen1int/gen1int_interface.F90)
-    #else()
-    #    message("-- Disable Gen1Int module")
-    #endif()
 endif()
 
 # set cdash buildname
@@ -240,13 +240,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     ${PROJECT_BINARY_DIR}/lib
     )
 
-configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/dalton.setup.in
-    ${CMAKE_BINARY_DIR}/dalton.setup
-    @ONLY
+include(ConfigureScript)
+configure_script(
+    ${CMAKE_SOURCE_DIR}/dalton.in
+    ${CMAKE_BINARY_DIR}/dalton
     )
-execute_process(COMMAND	cat ${CMAKE_BINARY_DIR}/dalton.setup ${CMAKE_SOURCE_DIR}/dalton.gnr OUTPUT_FILE ${CMAKE_BINARY_DIR}/dalton)
-execute_process(COMMAND	chmod 755 ${CMAKE_BINARY_DIR}/dalton OUTPUT_QUIET)
 
 add_library(
     dalton 
@@ -265,10 +263,10 @@ target_link_libraries(
     ${LIBS}
     ) 
 
-# get size of static allocations in dalton.x
+# get size of static allocations
 add_custom_target(
     info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dalton.x
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dalton.x
     )
 
 include(Install)

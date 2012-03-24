@@ -544,7 +544,6 @@ rsp/rsptpa3.F
 rsp/rspvec.F
 rsp/rspzfs.F
 rsp/x2expl.F
-sirius/ciauth.F
 sirius/ciham.F
 sirius/cioff.F
 sirius/cisig.F

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cc_bfden */
@@ -165,12 +165,12 @@ C  /* Deck cc_bfden */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "second.h"
 C
       LOGICAL LO3BF
       CHARACTER*(*) FILNAM
@@ -351,9 +351,9 @@ C  /* Deck cc_bfdenf */
 *     Christof Haettig, November 1998
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       INTEGER LWORK, ISYCTR, ISYMIN, ISYXLP, ISYCHI, ISYTAM
 
@@ -492,9 +492,9 @@ C  /* Deck cc_bfao */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 #if defined (SYS_CRAY)
       REAL XMGD(*),T2AMP(*),XLAMD0(*),XLAMD1(*),XLAMD2(*)
@@ -651,9 +651,9 @@ C  /* Deck cc_bfmiao */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 #if defined (SYS_CRAY)
       REAL XMGD(*), MINT(*), XLAMD1(*), XLAMD2(*), WORK(*)
@@ -742,10 +742,10 @@ C  /* Deck cc_bfmo */
 *
 * Christof Haettig, 04.07.1998
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DIMENSION XMGD(*), T2AMP(*), R1AMP(*), XLAMD(*), CHI(*)
 C
@@ -850,9 +850,9 @@ C  /* Deck cc_bfmimo */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 #if defined (SYS_CRAY)
       REAL XMGD(*), MINT(*), XLAMD(*)
@@ -922,12 +922,12 @@ C  /* Deck cc_bfi */
 *        (SQRINT = true)
 *
 *======================================================================
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
       LOGICAL LO3BF, SQRINT
       INTEGER IOPT, LWORK, ISYDIS, ISYMGD, ISYMD, IOPTSQ
       DIMENSION XINT(*), BFI(*), XMGD(*), WORK(LWORK)
@@ -1079,10 +1079,10 @@ C  /* Deck cc_bfib */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
       INTEGER LWORK, ISYMGD, ISYRHF
 
@@ -1192,11 +1192,11 @@ C  /* Deck cc_bfbsort */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 
       INTEGER ISYRHF, ISYM, ISYMAK, ISYBET, ISYMK, ISYMAB, ISYALP
       INTEGER ICOUNT, NBSRHF(8), IBSRHF(8,8)
@@ -1271,11 +1271,11 @@ C  /* Deck ccrhs_tpm */
 *     Purpose: construct M+ and M- 'densities' for a batch of G 
 *
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       PARAMETER(ONE = 1.0D0, THREE = 3.0D0)
 C
@@ -1355,10 +1355,10 @@ C  /* Deck cc_bfmf */
 *     Purpose: add F-term 'density' to M+ and M- arrays
 *
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       LOGICAL LO3BF
       DIMENSION XMP(*), XMM(*), XLAMD1(*), XLAMD2(*)

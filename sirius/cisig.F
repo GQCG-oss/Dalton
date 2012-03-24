@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 ===========================================================================
@@ -60,7 +60,7 @@ C THE ORDER OF THE BLOCKS ARE NOT CHANGED
 C
 C JEPPE OLSEN , NOVEMBER 1988
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),AT(*)
       DIMENSION LBLR(NBLR),LBLC(NBLC)
       DIMENSION IFLAG(NBLR,NBLC)
@@ -110,8 +110,8 @@ C PRINT THIS MATRIX !
 C
 C JEPPE OLSEN , NOVEMBER 1988
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(*)
       DIMENSION LBLR(NBLR),LBLC(NBLC)
       DIMENSION IFLAG(NBLR,NBLC)
@@ -148,7 +148,7 @@ C MOTECC-90: The algorithms used in this module, TRACI, are
 C            described in Chapter 8 Section D.5 of MOTECC-90
 C            "Counter Rotations of CI coefficients"
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CVEC(LCVEC,NCVEC), UMO(*), XNDXCI(*), WRK(LFREE)
 C
 C Used from common blocks:
@@ -162,17 +162,17 @@ C  CIINFO : NDTASM
 C  CSFBAS : Pointers for CSF information
 C  CBREOR : SLREOR
 C
-#include <maxorb.h>
-#include <mxpdim.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <detbas.h>
-#include <strnum.h>
-#include <csfbas.h>
-#include <ciinfo.h>
-#include <cbreor.h>
+#include "maxorb.h"
+#include "mxpdim.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "detbas.h"
+#include "strnum.h"
+#include "csfbas.h"
+#include "ciinfo.h"
+#include "cbreor.h"
       LOGICAL CSFEXP
 C
 C
@@ -295,8 +295,8 @@ C ( Debugged ! Error corrected 890809-hjaaj)
 c
 c New format of single excitations, October 1990
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER SYMPRO(8,8)
       INTEGER TAIJ(*),TATO(*)
       INTEGER TBIJ(*),TBTO(*)
@@ -472,8 +472,8 @@ C  /* Deck typstr */
 C
 C  OCCUPATION TYPE OF STRINGS
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER STRING(NEL,NSTRIN),ITYPE(NSTRIN)
 C
       DO 100 ISTRIN = 1, NSTRIN
@@ -502,11 +502,11 @@ C  Calculate the diagonal of the CI matrix and,
 C  if LUIT2 .gt. 0, save it on LUIT2.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FCAC(*),H2AC(*),DIAGC(*)
       DIMENSION XNDXCI(*), WRK(LFREE)
       LOGICAL   NOH2, FNDLAB
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(*)
@@ -518,15 +518,15 @@ C   CIINFO : NDTASM(*)
 C   SPINFO : ?
 C   CSFBAS : CSF core allocation for XNDXCI
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <ciinfo.h>
-#include <spinfo.h>
-#include <csfbas.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "ciinfo.h"
+#include "spinfo.h"
+#include "csfbas.h"
 C
 C *** local variables:
       LOGICAL     CSFEXP
@@ -598,10 +598,10 @@ C                        (modified one body integrals)
 C                 FIJ  : (II/JJ) integrals
 C                 FJI  : (IJ/IJ) integrals
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIAG(*), FCAC(*), FIJ(*), FJI(*), WRK(LFREE)
       DIMENSION XNDXCI(*)
-#include <priunit.h>
+#include "priunit.h"
 C
 C
 C Used from common blocks:
@@ -614,17 +614,17 @@ C   DETBAS : core allocation
 C   STRNUM : NAEL,NBEL,NASTR,NBSTR,?
 C   CIINFO : NDTASM(*),ICOMBI
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
-#include <mxpdim.h>
-#include <detbas.h>
-#include <strnum.h>
-#include <ciinfo.h>
+#include "mxpdim.h"
+#include "detbas.h"
+#include "strnum.h"
+#include "ciinfo.h"
 C
       CALL GETTIM(T0,W0)
       ECORE  = 0.0D0
@@ -722,10 +722,10 @@ C Scratch:
 C   WRK(LFREE)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(NCONST,*),FCAC(*),H2AC(*),SCVECS(LSCVEC,*)
       DIMENSION XNDXCI(*), WRK(LFREE)
-#include <iratdef.h>
+#include "iratdef.h"
       LOGICAL   NOH2, IH8SM
       PARAMETER ( NOH2 = .FALSE. , IH8SM = .TRUE. , D0 = 0.0D0 )
 C     NOH2  ... 2-electron part to be included
@@ -736,13 +736,13 @@ C   INFORB : NASHT, N2ASHX
 C   INFLIN : LSYMST,NCONST
 C   INFTIM : NCALLS,TIMCPU,TIMWAL    ! IDTIM is index for these
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inflin.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inflin.h"
 C ---
       PARAMETER (IDTIM = 2)
-#include <inftim.h>
+#include "inftim.h"
 C
 C
 C *** SCVECS(I,K) = SUM(J) OF L_CI(I,J)*BCVECS(J,K)
@@ -814,13 +814,13 @@ C Scratch:
 C   WRK(LFREE)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(NCONRF),PRPAC(N2ASHX,NSIM),SCVECS(LSCVEC,NSIM)
       DIMENSION XNDXCI(*), WRK(LFREE)
-#include <iratdef.h>
+#include "iratdef.h"
       LOGICAL   NOH2, IH8SM
       PARAMETER ( NOH2 = .TRUE. , IH8SM = .FALSE. , D2 = 2.0D0 )
-#include <thrzer.h>
+#include "thrzer.h"
 C     NOH2  ... No 2-electron part
 C     IH8SM ... integrals do not have 8-fold symmetry
 C
@@ -828,9 +828,9 @@ C Used from common blocks:
 C   INFORB : N2ASHX
 C   INFLIN : LSYMRF,NCONRF,LSYMST,NCONST
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <inflin.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "inflin.h"
 C
 C
 C *** SCVECS(I) = SUM(J) <I|PRP|J> * CREF(J)
@@ -881,7 +881,7 @@ C OUTPUT :
 C        HC : H TIMES C, OF SYMMETRY IHCSYM AND LENGTH NHCVEC
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION C(*), HC(*)
       DIMENSION FCAC(*), H2AC(*), WRK(LFREE), XNDXCI(*)
       LOGICAL   ONLYH1,IH8SM
@@ -890,7 +890,7 @@ C   THRSML : THRESHOLD FOR INTEGRALS AND CI COEFFICIENTS TO BE ZAPPED
 C
       PARAMETER ( D1 = 1.0D0, THRSML = 1.0D-14 )
 C
-#include <priunit.h>
+#include "priunit.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(27), LSYM,ISPIN
@@ -900,13 +900,13 @@ C   CIINFO : NDTASM(*)
 C   CSFBAS : CSF core allocation for XNDXCI
 C   CBESPN : ISPIN1, ISPIN2
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infpri.h"
 C
-#include <ciinfo.h>
-#include <csfbas.h>
-#include <cbespn.h>
+#include "ciinfo.h"
+#include "csfbas.h"
+#include "cbespn.h"
 C
 C
       LOGICAL CSFEXP
@@ -1024,7 +1024,7 @@ C OUTPUT :
 C       HC  : H TIMES C, OF SYMMETRY IHCSYM AND LENGTH NHCDET
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION C(*), HC(*), FCAC(*)
       DIMENSION H2AC(*), WRK(LFREE), XNDXCI(*)
       LOGICAL   ONLYH1,IH8SM,PERMSM
@@ -1033,8 +1033,8 @@ C   THRSML : THRESHOLD FOR INTEGRALS AND CI COEFFICIENTS TO BE ZAPPED
 C
       PARAMETER ( THRSML = 1.0D-14 )
 C
-#include <priunit.h>
-#include <mxsmob.h>
+#include "priunit.h"
+#include "mxsmob.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(66)
@@ -1049,19 +1049,19 @@ C   SPINFO : MS2,?
 C CBGETDIS : DISTYP, IADINT
 C   INFSPI : ISGN1,ISGN2
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
-#include <mxpdim.h>
-#include <strnum.h>
-#include <detbas.h>
-#include <mxblk.h>
-#include <cbespn.h>
-#include <spinfo.h>
-#include <cbgetdis.h>
-#include <infspi.h>
+#include "mxpdim.h"
+#include "strnum.h"
+#include "detbas.h"
+#include "mxblk.h"
+#include "cbespn.h"
+#include "spinfo.h"
+#include "cbgetdis.h"
+#include "infspi.h"
 C
 C
       CALL GETTIM(T0,W0)
@@ -1191,12 +1191,12 @@ C Scratch:
 C   WRK work area containing :
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CREF(NCONRF), SOVECS(NVARPT,NOSIM),EMYX(NOSIM),XNDXCI(*)
       DIMENSION FXCAC(NNASHX,*),H2XAC(NNASHX,NNASHX,*)
       DIMENSION WRK(LFREE)
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER (IDTIM = 10)
       PARAMETER ( D2 = 2.0D0 )
       LOGICAL   NOH2, IH8SM
@@ -1211,10 +1211,10 @@ C   INFORB : NASHT,NNASHX,N2ASHX
 C   INFLIN : LSYMRF,LSYMPT,LSYMST,NCONRF,NCONST
 C   INFTIM : NCALLS,TIMCPU,TIMWAL    ! IDTIM is index for these
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <inftim.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "inftim.h"
 C
 C
       KUFCAC = 1

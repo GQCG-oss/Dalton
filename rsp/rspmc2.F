@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 ===========================================================================
@@ -38,15 +38,15 @@ C
 C      Purpose:
 C      Outer driver routine for E[4] times three vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( DM1 = -1.0D0 , D2 = 2.0D0 , D6 = 6.0D0 )
 C
@@ -203,22 +203,22 @@ C
      *                 IGRSYM,ISYMV1,ISYMV2,ISYMV3,CMO,FC,MJWOP)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( DH= 0.5D0, D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( D2 = 2.0D0, D3 = 3.0D0, D6 = 6.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <infden.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "infden.h"
 C
 C
       DIMENSION VECA(KZYVR),VEC1(KZYV1),VEC2(KZYV2),VEC3(KZYV3)
@@ -369,20 +369,20 @@ C
      *                 IGRSYM,ISYMV1,ISYMV2,ISYMV3,CMO,FC,MJWOP)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( DH= 0.5D0, D0 = 0.0D0, D1 = 1.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
 C
       DIMENSION VECA(KZYVR),VEC1(KZYV1),VEC2(KZYV2),VEC3(KZYV3)
       DIMENSION E4TRS(KZYVR),MJWOP(2,MAXWOP,8),XINDX(*),H1(*)
@@ -630,21 +630,21 @@ C
      *                 E4TRS,XINDX,H1,ZYM1,ZYM2,ZYM3,DEN1,DEN2,
      *                 UDV,PV,WRK,LWRK,KZYVR,KZYV1,KZYV2,KZYV3,
      *                 IGRSYM,ISYMV1,ISYMV2,ISYMV3,CMO,FC,MJWOP)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
 C
       DIMENSION VECA(KZYVR),VEC1(KZYV1),VEC2(KZYV2),VEC3(KZYV3)
       DIMENSION E4TRS(KZYVR),MJWOP(2,MAXWOP,8),XINDX(*),H1(*)
@@ -782,20 +782,20 @@ C
      *                 E4TRS,XINDX,H1,ZYM1,ZYM2,ZYM3,DEN1,DEN2,
      *                 UDV,PV,WRK,LWRK,KZYVR,KZYV1,KZYV2,KZYV3,
      *                 IGRSYM,ISYMV1,ISYMV2,ISYMV3,CMO,FC,MJWOP)
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D6 = 6.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
 C
       DIMENSION VECA(KZYVR),VEC1(KZYV1),VEC2(KZYV2),VEC3(KZYV3)
       DIMENSION E4TRS(KZYVR),MJWOP(2,MAXWOP,8),XINDX(*),H1(*)
@@ -901,11 +901,11 @@ C
       END
       SUBROUTINE PRIRES(RESV,VECA,ISYMV,TEXT)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "qrinf.h"
 C
       CHARACTER*(*) TEXT
       DIMENSION RESV(*),VECA(*)

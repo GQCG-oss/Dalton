@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_yi */
       SUBROUTINE CC_YI(YMAT,CLTR2,ISYMLV,T2AM,ISYMRV,WORK,LWORK)
@@ -40,15 +40,15 @@ C     Ove Christiansen 20-6-1996:
 C
 C     General symmetry of both CLTR2 and T2AM for F-mat. and etaC.
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION YMAT(*),CLTR2(*),T2AM(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -193,15 +193,15 @@ C
 C     General symmetry of both CLTR2 and T2AM for F-mat. and etaC.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XMAT(*),CLTR2(*),T2AM(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -344,13 +344,13 @@ C     Ove Christiansen 20-6-1996
 C              General symmetry of fckmo(ISYFCK) and X and Y 
 C              intermediates ISYMIM
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION RHO1(*),FCKMO(*),XMAT(*),YMAT(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       IF (LWORK .LT. NT1AM(ISYFCK)) THEN
          CALL QUIT('Insufficient work-space-area in CC_12EMF')
@@ -441,13 +441,13 @@ C              (ia|jb) quantity is total symmetric and packed
 C              as ai,bj.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO2(*), T2AM(*), XMAT(*), YMAT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -596,13 +596,13 @@ C              (ia|jb) quantity is total symmetric and packed
 C              as ai,bj.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO2(*), T2AM(*), XMAT(*), YMAT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -799,16 +799,16 @@ C              simultaneously.)
 C
 C              in ordinary Lambda equations: iv=1,iopt=1
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO2(*), CTR2(*), XLAMDH(*), WORK(LWORK)
       CHARACTER CFIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -975,16 +975,16 @@ C                 simultaneously.)
 C
 C                 in Lambda vector calc: iv=1,iopt=1
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO2(*), CTR2(*), XLAMDH(*), WORK(LWORK)
       CHARACTER DFIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1152,13 +1152,13 @@ C     Ove Christiansen 18-9-1996:
 C              Non-total symmetric CTR2 and T2AM amplitudes.
 C              Sym:               IC2SYM   IT2SYM
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XMINT(*),CTR2(*),T2AM(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1302,13 +1302,13 @@ C
 C     Ove Christiansen 18-9-1996:
 C          ISYMIM is symmetry of intermediate.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO2(*), XIAJB(*), XMINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C

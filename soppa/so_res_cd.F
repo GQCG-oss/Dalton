@@ -10,18 +10,18 @@ C
 C     PURPOSE: Calculate contribution from D matrix to the 2p2h
 C              result vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES2E(LRES2E), RES2D(LRES2D)
       DIMENSION TR2E(LTR2E),   TR2D(LTR2D)
       DIMENSION FOCKD(LFOCKD), WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "soppinf.h"
 C
 C------------------------------
 C     Statement function INDEX.

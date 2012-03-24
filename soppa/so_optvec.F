@@ -10,10 +10,10 @@ C
 C     PURPOSE: Generate optimized trial vectors and corresponding
 C              linear transformed trial vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <soppinf.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "soppinf.h"
+#include "ccsdsym.h"
 C
       PARAMETER   (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER   (D100 = 100.0D0)

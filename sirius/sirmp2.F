@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  FILE: sirius/sirmp2.F
 C  ORIGINAL AUTHORS: Hans Joergen Aa. Jensen and Poul Joergensen (1987).
@@ -51,7 +51,7 @@ C  /* Deck mp2inp */
 C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007-Nov 2009, Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 11)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -61,10 +61,10 @@ C
 C INFORB : NSYM
 C INFMP2 : IPRMP2, NFRMP2(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','.SC_SRM',
      &            '.SRINTS','.SCSMP2','.SOSMP2','.MP2 SC','.LEVELS',
@@ -221,7 +221,7 @@ C  1A) CALCULATE SECOND ORDER ENERGY
 C  2)  DETERMINE THE NATURAL ORBITALS
 C  3)  SAVE INFORMATION FOR SOPPA
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION WRK(LFRSAV)
 C
@@ -239,21 +239,21 @@ C     INFINP: FLAG(25),DIRFCK
 C     INFIND: ISX, ISMO
 C     INFTRA: NEWTRA, AO2INTFILE_LABEL
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <exeinf.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infmp2.h>
-#include <scbrhf.h>
-#include <infinp.h>
-#include <infind.h>
-#include <inftra.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "exeinf.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infmp2.h"
+#include "scbrhf.h"
+#include "infinp.h"
+#include "infind.h"
+#include "inftra.h"
+#include "dftcom.h"
 C
       CALL QENTER('MP2CTL')
       CALL GETTIM(TIMMP2,DUMMY)
@@ -483,6 +483,7 @@ C
      *      'shifted with : ',MP2SHF
 
          IF (SRMP2_SRINTS) THEN
+            IF (DCPT2) WRITE (LUPRI,'(/A)') ' *** DCPT2 result:'
             if (isrints_loop .eq. 1) then
                WRITE (LUPRI,'(//A,F25.10)')
      *          '   MP2 contribution from short-range integrals :',EMP2
@@ -811,7 +812,7 @@ C
 C INPUT  : DONE IS ONE ELECTRON DENSITY MATRIX
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DONE(NORBT,NORBT),CMO(*),WRK(*)
 C
       PARAMETER ( D0 = 0.0D0 )
@@ -820,14 +821,14 @@ C Used from common blocks:
 C
 C INFIND : ISSMO
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL QENTER('NATORB')
       KFRSAV = 1
@@ -947,7 +948,7 @@ C
 C OUTPUT:
 C  SECOND ORDER CONTRIBUTION ADDED IN DONE(*,*)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION NFROZ(8),IFROZ(NORBT),H2PHD(NP,NH,*)
       DIMENSION DONE(NORBT,*),ORBEN(*),H2M(NORBT,*),H2D(NORBT,*)
@@ -958,13 +959,13 @@ C
 C Used from common blocks :
 C    INFINP : FLAG(25)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infinp.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infinp.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
 C
       SAVE    TVALUE
@@ -1131,16 +1132,16 @@ C
 C Modify DONE to obtain correct one electron density matrix
 C ( Factors are defined in MP2DEN )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DONE(NORBT,*),ORBEN(*)
 C
       PARAMETER (D0 = 0.0D0 , D2 = 2.0D0 ,TOLELE = 1.0D-4 )
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       CALL QENTER('MP2FAC')
 C
@@ -1236,14 +1237,14 @@ C Scratch:
 C  FC; the inactive Fock matrix and scratch area for overlap matrix
 C  SCRA; general scratch area
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),FC(*),ORBEN(*),SCRA(*)
       LOGICAL   FCKFRO, FOUND
 C
 C
       PARAMETER (VALCON_MAX = 1.D-4, VALCON_WARN = 1.D-5,
      &           D0 = 0.0D0, DBIG = 1.D+12, GAPMIN = 0.1D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C  Used from common blocks:
 C     GNRINF : EMBEDDING
@@ -1252,17 +1253,17 @@ C     INFORB : NRHF(*), NRHFT, ...
 C     SCBRHF : IOPRHF,NFRRHF(*)
 C     INFMP2 : NFRMP2(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infmp2.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infmp2.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       IJ_FOCK(I,J) = (J-1)*NORBI + I
 C
@@ -1513,19 +1514,19 @@ C the correlation coefficients and the second order one-density
 C matrix on the end of the LUSIFC file.
 C    MJP 181093
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
         DIMENSION DONE(*), COEMP2(*)
 C Used from common blocks:
 C    INFORB: N2ORBT, NRHFT, NVIRT
 C    INFMP2: NPHMAX
 C    INFTAP: LUSIFC
 C
-#include <maxorb.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <infmp2.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "infmp2.h"
+#include "inftap.h"
       CHARACTER*8 LAB123(3), LABEOD, LABELN, LMP2INFO
       DATA LAB123/'********','********','********'/
       DATA LABEOD /'EODATA  '/
@@ -1568,7 +1569,7 @@ C
 C Scratch:
 C     WRK(kfrsav:kfrsav-1+lfrsav)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DONEFL(NORBT,NORBT),DONE(NORBT,NORBT),ORBEN(NORBT)
       DIMENSION H2PHD(NP,NH,*),H2M(NORBT,NORBT),H2D(NORBT,NORBT)
@@ -1583,13 +1584,13 @@ C   INFORB : N2ORBX, ...
 C   SCBRHF : NFRRHF(*)
 C   INFMP2 : IPHORD, NP, NH, IFRMP2, MP2FRO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <infmp2.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
 C     
       LOGICAL CHOLE,DHOLE, L_MP2_TDA
@@ -1626,10 +1627,10 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDTP(6)
+C     Loop over Mulliken distributions allowed in NEEDTP(*)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -1733,15 +1734,15 @@ C  941005-hjaaj
 C  Set IFRRHF(NORBT) to 1 if orbital is frozen in RHF
 C  otherwise to 0
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IFRRHF(NORBT)
 C
 C Used from common blocks:
 C   INFORB : NSYM, NORBT, IORB(8)
 C   SCBRHF : NFRRHF(8)
 C
-#include <inforb.h>
-#include <scbrhf.h>
+#include "inforb.h"
+#include "scbrhf.h"
 C
       CALL IZERO(IFRRHF,NORBT)
       DO 100 ISYM = 1,NSYM
@@ -1773,7 +1774,7 @@ C Scratch:
 C   WRK(kfrsav:kfrsav-1+lfrsav)
 C   H2CD(NORBT,NORBT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2PHD(NP,NH,*), H2CD(NORBT,NORBT)
       DIMENSION WRK(*)
 C
@@ -1783,12 +1784,12 @@ C   INFIND : ISMO(*),?
 C   INFMP2 : NP,NH,?
 C   INFPRI : ?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infmp2.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infmp2.h"
+#include "infpri.h"
 C
       LOGICAL AHOLE, BHOLE, CHOLE, DHOLE
 
@@ -1797,7 +1798,7 @@ C
       CALL QENTER('MP2PHD')
 
       NEEDTP(-4:6) = 0 ! negative: frozen orbital in distribution
-      NEEDTP(2:5)  = 1 !  ... only particle-hole distributions needed
+      NEEDTP( 2:5) = 1 !  ... only particle-hole distributions needed
                        !      assumed: NRHF(isym) .ge. NISH(isym)
                        !           and NVIR(isym) .le. NSSH(isym)
 C
@@ -1808,12 +1809,12 @@ C
 C
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDTP(6)
+C     Loop over Mulliken distributions allowed in NEEDTP(*)
 C
       KFREE = KFRSAV
       LFREE = LFRSAV
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,H2CD,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -1889,18 +1890,18 @@ C           IPHORD(NORBT), GIVE SYMMETRY ORDERED INDEX FOR PARTICLE OR
 C                          HOLE INDEX
 C           IFRMP2(NORBT), .EQ.1 FOR FROZEN MP2 ORBITAL ELSE .EQ.0
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NSYM, NRHF(NSYM), NVIR(NSYM), NFRMP2(NSYM), ...
 C  INFMP2 : IPHORD, MP2FRO, INDXPH, IFRMP2,NP,NH
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
-#include <infind.h>
+#include "infind.h"
 C
       CALL QENTER('MP2SET')
 C
@@ -1981,16 +1982,16 @@ C   the array XK into XKP.
 C If IPHLAB>0, pack XK(OCC,VIRT); IPHLAB<0 C pack XK(VIRT,OCC),
 C   and IPHLAB=0, pack both (XK(OCC,VIRT) and XK(VIRT,OCC))
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XK(NORBT,NORBT), XKP(*)
 C
 C Used from common blocks:
 C   INFORB: NSYM,NORBT,MULD2H, N2ORBX , NOCC(), ...
 C   INFMP2: NFRMP2(*)
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       IF (IWAY .LT. 0) CALL DZERO(XK,N2ORBX)
 C
@@ -2054,14 +2055,14 @@ C
 C IADR1(A,I) is an address C array giving the offsets to
 C   the set of ph excitations associated with A,I.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       INTEGER A, AA
       DIMENSION IADR1(MAXVIR,MAXOCC)
@@ -2096,14 +2097,14 @@ C   kappa(ia,jb) er IADR1(B,J) + IADR2(A,I)
 C
 C Based on code written by Erik Kragh Dalskov fall 1994.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IADR2(NCOL,NROW)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       INTEGER A,AA,ASYM,A1OFF,AST
 C

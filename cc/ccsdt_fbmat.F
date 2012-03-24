@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C    /* Deck cc3_xi */ 
       SUBROUTINE CCSDT_FBMAT(IBTRAN,IDOTS,DOTPROD,NBTRAN,MXVEC,
@@ -48,17 +48,17 @@ C
 **************************************************************************
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
-#include <ccrc1rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
+#include "ccrc1rsp.h"
 C
       LOGICAL LCAUCHY
 C

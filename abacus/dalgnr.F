@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck srestr */
       SUBROUTINE SRESTR
@@ -29,15 +29,15 @@ C
 C     Several SIRIUS-variables has to be restored, because they are overwritten
 C     by ABACUS in SIRSET module. Called from SIRRDI.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <siripc.h>
-#include <infinp.h>
-#include <inpbak.h>
-#include <infpri.h>
-#include <pribak.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "siripc.h"
+#include "infinp.h"
+#include "inpbak.h"
+#include "infpri.h"
+#include "pribak.h"
+#include "pcmlog.h"
 C
 C     Restoring should only be done if SIRIUS has been through its
 C     input processing.
@@ -176,14 +176,14 @@ C
 C     Several SIRIUS-variables has to be saved, because they are overwritten
 C     by ABACUS in SIRSET module. Called from SIRRDI.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <siripc.h>
-#include <infinp.h>
-#include <inpbak.h>
-#include <infpri.h>
-#include <pribak.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "siripc.h"
+#include "infinp.h"
+#include "inpbak.h"
+#include "infpri.h"
+#include "pribak.h"
+#include "pcmlog.h"
 C
 C        /INFINP/ values are saved
 C
@@ -313,9 +313,9 @@ C     ABACUS-variables concerning execution of modules are restored.
 C     Called from ABADRV. Necessary because modules should be run
 C     in each geometry iteration.
 C
-#include <implicit.h>
-#include <past.h>
-#include <pastbk.h>
+#include "implicit.h"
+#include "past.h"
+#include "pastbk.h"
          PASTWO = PSTWOB
          PASORT = PSORTB
          PASDIP = PSDIPB
@@ -342,9 +342,9 @@ C
 C     ABACUS-variables concerning execution of modules are saved.
 C     Called from ABADRV.
 C
-#include <implicit.h>
-#include <past.h>
-#include <pastbk.h>
+#include "implicit.h"
+#include "past.h"
+#include "pastbk.h"
          PSTWOB = PASTWO
          PSORTB = PASORT
          PSDIPB = PASDIP
@@ -367,10 +367,10 @@ C
       END
 C  /* Deck bndchk */
       SUBROUTINE BNDCHK(WORK, LMWORK2, WRKDLM, PROG)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LMWORK2)
       CHARACTER*(*) PROG
-#include <priunit.h>
+#include "priunit.h"
 C
 C     Check memory traps. Gives error message if any of the programs
 C     have been outside the declared memory area.
@@ -389,15 +389,15 @@ C
       END
 C  /* Deck exeher */
       SUBROUTINE EXEHER(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <gnrinf.h>
-#include <dftcom.h>
-#include <pcmlog.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "gnrinf.h"
+#include "dftcom.h"
+#include "pcmlog.h"
+#include "qm3.h"
 C
 C     Run Integral section
 C
@@ -461,16 +461,16 @@ C     ***************************************************************
       END
 C  /* Deck exesir */
       SUBROUTINE EXESIR(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <siripc.h>
-#include <inftra.h>
-#include <cbihr2.h>
-#include <inftap.h>
-#include <huckel.h>
-#include <gnrinf.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "siripc.h"
+#include "inftra.h"
+#include "cbihr2.h"
+#include "inftap.h"
+#include "huckel.h"
+#include "gnrinf.h"
 C
 C     Run SIRIUS
 C
@@ -478,13 +478,17 @@ C
 C
       CALL TITLER('Starting in Wave Function Section (SIRIUS)',' ',200)
 C
-C     SIRINI defines buffer lengths for I/O and IROW()
+C     SIRINI defines buffer lengths for I/O and the IROW() array
 C
-      CALL SIRINI
+      CALL SIRINI ! SIRius INItialization
+      WRINDX = .TRUE. ! new sirius call, make sure orbital rotation info is written to file in SETWOP
 C
-      WRINDX = .TRUE.
       CALL SIRCTL(ICONV,WORK(1),LMWORK)
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SIRIUS')
+      ! ICONV > 0: converged
+      !       = 0: not converged
+      !       < 0: convergence not requested (e.g. restart from old MCSCF)
+
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SIRIUS') ! boundary checks on WORK
 C
 C     If not numerical differentiation:
 C     We should now have MO's on file, no need for DOHUCKEL anymore
@@ -503,15 +507,14 @@ C
       IF (LUSUPM.LE.0) CALL GPOPEN(LUSUPM,
      &   FNSUPM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       CALL GPCLOSE(LUSUPM,'DELETE')
-      CALL GPCLOSE(LUIT2,'DELETE')
-      CALL GPCLOSE(LUIT3,'DELETE')
-      CALL GPCLOSE(LUIT5,'DELETE')
+      IF (LUIT2  .GT. 0) CALL GPCLOSE(LUIT2,'DELETE')
+      IF (LUIT3  .GT. 0) CALL GPCLOSE(LUIT3,'DELETE')
+      IF (LUIT5  .GT. 0) CALL GPCLOSE(LUIT5,'DELETE')
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
-      IF (.NOT. USRSCR) IFTHRS = 10
       CALL TITLER('End of Wave Function Section (SIRIUS)',' ',200)
-      IF (ICONV .LT. 1 .AND. .NOT.WLKREJ) THEN
+      IF (ICONV .EQ. 0 .AND. .NOT.WLKREJ) THEN
          WRITE(LUPRI, '(/A)')
-     &      '- DALTON aborted because wave function not converged!'
+     &      '@ - DALTON aborted because wave function not converged!'
          CALL QUIT('DALTON aborted because wave function not converged')
       END IF
       CALL FLSHFO(LUPRI)
@@ -520,14 +523,14 @@ C
       END
 C  /* Deck execc */
       SUBROUTINE EXECC(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <siripc.h>
-#include <inftra.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <optinf.h>
+#include "priunit.h"
+#include "siripc.h"
+#include "inftra.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "optinf.h"
 C
 C     Run Coupled Cluster program
 C
@@ -557,17 +560,17 @@ C
       END
 C  /* Deck exeaba */
       SUBROUTINE EXEABA(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <inftra.h>
-#include <inftap.h>
-#include <huckel.h>
-#include <gnrinf.h>
-#include <abainf.h>
-#include <pcmlog.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "huckel.h"
+#include "gnrinf.h"
+#include "abainf.h"
+#include "pcmlog.h"
 C
 C     Run ABACUS
 C
@@ -598,37 +601,37 @@ C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
 C     variables and allocating WORK memory.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <nuclei.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "nuclei.h"
+#include "infinp.h"
+#include "inftap.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
-#include <infpar.h>
-#include <inftra.h>
-#include <abainf.h>
-#include <molinp.h>
-#include <cbiwlk.h>
-#include <cbirea.h>
-#include <cbisol.h>
-#include <taymol.h>
-#include <pcmlog.h>
+#include "infpar.h"
+#include "inftra.h"
+#include "abainf.h"
+#include "molinp.h"
+#include "cbiwlk.h"
+#include "cbirea.h"
+#include "cbisol.h"
+#include "taymol.h"
+#include "pcmlog.h"
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
 C
 Cholesky
-#include <ccdeco.h>
-#include <center.h>
+#include "ccdeco.h"
+#include "center.h"
 Cholesky
 C
 !
@@ -1089,34 +1092,34 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <siripc.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "siripc.h"
 C
-#include <molde.h>
-#include <abainf.h>
-#include <exeinf.h>
-#include <inftra.h>
-#include <huckel.h>
-#include <orgcom.h>
-#include <clsfmm.h>
-#include <cbieri.h>
-#include <veclen.h>
-#include <numder.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "molde.h"
+#include "abainf.h"
+#include "exeinf.h"
+#include "inftra.h"
+#include "huckel.h"
+#include "orgcom.h"
+#include "clsfmm.h"
+#include "cbieri.h"
+#include "veclen.h"
+#include "numder.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 CSONIA
-#include <grdccpt.h>
-#include <infpar.h>
+#include "grdccpt.h"
+#include "infpar.h"
 C
 Cholesky
-#include <ccdeco.h>
-#include <center.h>
+#include "ccdeco.h"
+#include "center.h"
 C
       PARAMETER (NDIR = 10, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
@@ -1725,17 +1728,17 @@ C
 C     Master routine for checking whether we will do parallell I/O by 
 C     parallelizing over nuclear geometries
 C
-#include <implicit.h>
+#include "implicit.h"
       INCLUDE 'mpif.h'
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
       CHARACTER WORD*7
-#include <priunit.h>
-#include <inftap.h>
-#include <molinp.h>
-#include <infpar.h>
-#include <pario.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "molinp.h"
+#include "infpar.h"
+#include "pario.h"
 C
       PARIO = .FALSE.
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -1832,16 +1835,16 @@ C
 C     Slave routine for learning whether we are going to do parallell I/O
 C     by parallelizing over nuclear geometries
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INCLUDE 'mpif.h'
-#include <priunit.h>
-#include <inftap.h>
-#include <molinp.h>
-#include <infpar.h>
-#include <pario.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "molinp.h"
+#include "infpar.h"
+#include "pario.h"
 C
 C     We start by waiting for the master to tell us whether we will do
 C     parallel I/O or not
@@ -1897,12 +1900,12 @@ C
 Cholesky
 C  /* Deck execho */
       SUBROUTINE EXECHO(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <gnrinf.h>
-#include <dftcom.h>
+#include "priunit.h"
+#include "gnrinf.h"
+#include "dftcom.h"
 C
 C     Run Cholesky stuff
 C
@@ -1925,16 +1928,16 @@ C
 C /* Deck exeact */
 C
       SUBROUTINE EXEACT(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <center.h>
+#include "priunit.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "center.h"
 casm
-#include <ccorb.h>
+#include "ccorb.h"
 C
 C
 C     Select orbitals and basis fucntions for hybrid CC models.

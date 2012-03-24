@@ -21,18 +21,18 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck rlxinp */
       SUBROUTINE RLXINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 5)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbirlx.h>
+#include "abainf.h"
+#include "cbirlx.h"
       DATA TABLE /'.SKIP  ', '.PRINT ','.SYMTES','.NOSELL','.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*RELAX')
@@ -111,10 +111,10 @@ C  /* Deck rlxini */
 C
 C     Initialize /CBIRLX/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbirlx.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbirlx.h"
 C
       IPRINT = IPRDEF
       SKIP   = .NOT. (MOLHES .OR. DIPDER .OR. POLAR .OR. MAGSUS .OR.
@@ -134,12 +134,12 @@ C     Rewritten to include dip. grad. and polarizabilities Jan 1990 tuh
 C
 C     Purpose: Calculate response contributions to molecular Hessian
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "dummy.h"
 C
       LOGICAL PASS, OLDDX, DOREAL, DOIMAG, DOSEL, DOTRPL, SELLER
       DIMENSION SPNPSO(*),SPNSD(*), SPNFC(*), SPSDFC(*), WORK(LWORK)
@@ -179,28 +179,28 @@ C       /INFTAP/: LUGDR,LURDR
 C       /INFVAR/: NCONF,NWOPT,NVAR
 C       /INFDIM/: NVARMA
 C
-#include <abainf.h>
-#include <spnout.h>
-#include <cbirlx.h>
+#include "abainf.h"
+#include "spnout.h"
+#include "cbirlx.h"
 C
-#include <energy.h>
-#include <moldip.h>
-#include <dipole.h>
-#include <suscpt.h>
-#include <spinro.h>
-#include <molgfa.h>
-#include <sigma.h>
-#include <difsec.h>
+#include "energy.h"
+#include "moldip.h"
+#include "dipole.h"
+#include "suscpt.h"
+#include "spinro.h"
+#include "molgfa.h"
+#include "sigma.h"
+#include "difsec.h"
 C
-#include <nuclei.h>
-#include <dorps.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <gdvec.h>
-#include <dftcom.h>
+#include "nuclei.h"
+#include "dorps.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "gdvec.h"
+#include "dftcom.h"
 C
       IF (SKIP) RETURN
       CALL QENTER('RELAX')
@@ -536,21 +536,21 @@ C     SOL(I)      : Solution
 C     RES(I)      : Residual
 C     REL(I,J)    : Second-order property
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0)
 C
       LOGICAL DOSEL, SYMTST, DOTRPL
       DIMENSION REL(NOP,NOP), WORK(LWORK)
 C
-#include <abainf.h>
-#include <gdvec.h>
-#include <inflin.h>
-#include <spnout.h>
+#include "abainf.h"
+#include "gdvec.h"
+#include "inflin.h"
+#include "spnout.h"
 C
-#include <chrnos.h>
+#include "chrnos.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ABASEL','*',103)
       KIRHS = 1
@@ -682,20 +682,20 @@ C     GDPSO(I)       : Right-hand side for PSO
 C     SOLB(I)        : Solution vector for magnetic field B
 C     REL(I,J)       : Second-order property
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0)
 C
       DIMENSION REL(NOP,NOP), WORK(LWORK)
 C
-#include <gdvec.h>
-#include <abainf.h>
-#include <spnout.h>
-#include <inflin.h>
+#include "gdvec.h"
+#include "abainf.h"
+#include "spnout.h"
+#include "inflin.h"
 C
-#include <chrnos.h>
+#include "chrnos.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from PSOB','*',103)
       KIRHS = 1
@@ -746,28 +746,28 @@ C
 C     This subroutine retrieves relaxation terms from REL and
 C     adds these to the matrices HESREL, DDIPR, and POLARS
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION REL(NOP,NOP), HESREL(MXCOOR,MXCOOR), 
      &          SPNPSO(MXCOOR,MXCOOR)
-#include <abainf.h>
-#include <spnout.h>
-#include <energy.h>
-#include <sigma.h>
-#include <suscpt.h>
-#include <molgfa.h>
-#include <spinro.h>
-#include <dipole.h>
-#include <moldip.h>
-#include <inflin.h>
-#include <difsec.h>
-#include <symmet.h>
-#include <gdvec.h>
+#include "abainf.h"
+#include "spnout.h"
+#include "energy.h"
+#include "sigma.h"
+#include "suscpt.h"
+#include "molgfa.h"
+#include "spinro.h"
+#include "dipole.h"
+#include "moldip.h"
+#include "inflin.h"
+#include "difsec.h"
+#include "symmet.h"
+#include "gdvec.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ADDREL','*',103)
       DO 100 I = 1, NOP
@@ -853,16 +853,16 @@ C
 C     KR, Oct.-92, based on ADDREL, but modified for triplet
 C     contributions to spin-spin-interactions
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION REL(NOP,NOP), WRKSD(9*NUCDEP,9*NUCDEP),
      &          WRKFC(NUCDEP,NUCDEP), WRKSDF(9*NUCDEP,NUCDEP)
-#include <abainf.h>
-#include <energy.h>
-#include <inflin.h>
-#include <gdvec.h>
+#include "abainf.h"
+#include "energy.h"
+#include "inflin.h"
+#include "gdvec.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ADDTRP','*',103)
       DO 100 I = 1, NOP
@@ -888,19 +888,19 @@ C
 C  /* Deck trpmov */
       SUBROUTINE TRPMOV(SPNSD,SPNFC,SPSDFC,WRKSD,WRKFC,WRKSDF)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION WRKSD(9*NUCDEP,9*NUCDEP), WRKFC(NUCDEP,NUCDEP),
      &          WRKSDF(9*NUCDEP,NUCDEP), SPNSD(MXCOOR,MXCOOR),
      &          SPNFC(MXCOOR,MXCOOR), SPSDFC(MXCOOR,MXCOOR)
-#include <cbitrp.h>
-#include <spnout.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "cbitrp.h"
+#include "spnout.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       CALL DZERO(SPNSD,MXCOOR*MXCOOR)
       IF (DOSD .OR. DOSDFC) THEN

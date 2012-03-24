@@ -21,15 +21,15 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CRTPA(VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,
      *                 RESVEC,CMO,UDV,PV,FOCK,FC,FV,
      *                 XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
 C
 C PURPOSE:
 C CALCULATION OF TWO-PHOTON ABSORPTION BETWEEN EXCITED STATES
@@ -46,22 +46,22 @@ C
 C
       PARAMETER ( D0 = 0.0D0 )
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <tstjep.h>
-#include <infhso.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "tstjep.h"
+#include "infhso.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <rspprp.h>
-#include <indcr.h>
-#include <infcr.h>
-#include <inftpa.h>
+#include "rspprp.h"
+#include "indcr.h"
+#include "infcr.h"
+#include "inftpa.h"
 C
       CALL QENTER('CRTPA')
       ATEST = .FALSE.

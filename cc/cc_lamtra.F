@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C=================================================================*
 C  /* Deck cc_lamtr */
@@ -44,13 +44,13 @@ C     XLAMDP XLAMDH   = Lambda^p(alp,k) and Lambda^h(alp,c)
 C     XLAMDPR XLAMDHR = Lambda^{R,p}(alp,c) and Lambda^{R,h}(alp,k) 
 C                       transformed
 C==================================================================*
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, XMONE= -1.0D00)
       DIMENSION R1AM(*),XLAMDP(*),XLAMDH(*),XLAMDPR(*),XLAMDHR(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       IF (IPRINT .GT.25) THEN
          CALL AROUND('IN CC_LAMTR  ')
@@ -135,10 +135,10 @@ C
 C     Sonia Coriani, November 1998
 C     Debug 16.08.1999 OK
 *-----------------------------------------------------------------*
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),TA1(*),ZAKJ(*)

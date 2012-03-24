@@ -31,8 +31,8 @@ cat > rsp_ctocdhyper.info <<%EOF%
 #######################################################################
 cat > rsp_ctocdhyper.mol <<%EOF%
 INTGRL
-Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability through RESPONSE
-
+Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability
+through RESPONSE
 c   2    2  X  Y      0.10D-15  0.10D-15
       8.00    1    3    6    5    1
 O   0.00000             0.00000              0.1241444240

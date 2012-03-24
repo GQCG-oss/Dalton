@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cc_sort4o */
@@ -40,9 +40,9 @@ C  /* Deck cc_sort4o */
 #else
 #  include <implicit.h>
 #endif
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
       INTEGER ISYM4O, IOPT
 #if defined (SYS_CRAY)
       REAL XKJIL(*), XJKLI(*)
@@ -123,9 +123,9 @@ C  /* Deck cc_sort4o2 */
 #else
 #  include <implicit.h>
 #endif
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
       LOGICAL LINV
       INTEGER ISYM4O, IOPT
 #if defined (SYS_CRAY)

@@ -9,11 +9,11 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Determine the initial trialvectors.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
-#include <ccsdsym.h>
+#include "soppinf.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ONE = 1.0D0, STHR = 1.0D-5)
 C

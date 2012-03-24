@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 #if defined (VAR_DEBUG)
 #define DEBUG .TRUE.
 #else
@@ -63,29 +63,29 @@ C                       ( Sj  )
 C
 C  Case 3 does not contribute for orbitally non-degenerate states (assumed)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infspi.h>
-#include <infhso.h>
-#include <trhso.h>
-#include <codata.h>
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infspi.h"
+#include "infhso.h"
+#include "trhso.h"
+#include "codata.h"
 C
 C Used from common:
 C
@@ -103,7 +103,7 @@ C
       LOGICAL DO1, DO2
       CHARACTER*8 LABEL,HSOLBL(3)
       LOGICAL ACALL
-      COMMON /ACALL/ACALL
+      COMMON /CB_HSO_ACALL/ACALL
       ACALL = .FALSE.
       DATA HSOLBL/'X SPNORB','Y SPNORB','Z SPNORB'/
 
@@ -407,28 +407,28 @@ C  Case 3 does not contribute for orbitally non-degenerate states (assumed)
 C
 C     Drive the computation of A[2] times one vector
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER( D0 = 0.0D0, D1 = 1.0D0, DH = 0.5D0, DM1 = -1.0D0)
       PARAMETER (D2 = 2.0D0)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <trhso.h>
-#include <infhso.h>
-#include <codata.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "trhso.h"
+#include "infhso.h"
+#include "codata.h"
 C
       CHARACTER*8 OPLBL,HSOLBL(3)
       DATA HSOLBL/'X SPNORB','Y SPNORB','Z SPNORB'/
@@ -439,15 +439,14 @@ C
       DIMENSION VEC(KZYV)
       DIMENSION OPMAT(NORBT,NORBT)
       DIMENSION XINDX(*)
-      DIMENSION UDV(NASHDI,NASHDI)
-      DIMENSION PV(*)
+      DIMENSION UDV(NASHDI,NASHDI), PV(*)
       DIMENSION CMO(*)
 C
       CHARACTER*8 LABEL
       LOGICAL NORHO2, TDM, LORB, LCON, LREFST, LREF
       LOGICAL DO1, DO2
       LOGICAL ACALL
-      COMMON /ACALL/ACALL
+      COMMON /CB_HSO_ACALL/ACALL
       ACALL = .TRUE.
 C
 C If expicit one-electron part go normal way
@@ -736,17 +735,17 @@ C  /* Deck hso2cr */
 C
 C     Layout the core for RSP2GR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION WRK(*)
       DIMENSION ETRS(KZYVA), MJWOP(2,MAXWOP,8)
@@ -823,7 +822,7 @@ C  The operator is of the form
 C  HSO = h(r,s)T(r,s) + (rs|t^u)(e(+,-)  + 2e(-,+))(rstu)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.50D0, D2 = 2.0D0 )
       PARAMETER ( IPLUS = 0, IMINUS = 1 )
@@ -831,23 +830,23 @@ C
 C Used from common blocks:
 C  ?
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
+#include "inftap.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infspi.h>
-#include <trhso.h>
-#include <cbgetdis.h>
-#include <infhso.h>
-#include <infdis.h>
+#include "infhyp.h"
+#include "infspi.h"
+#include "trhso.h"
+#include "cbgetdis.h"
+#include "infhso.h"
+#include "infdis.h"
 C
 C
       DIMENSION FI(NORBT,NORBT), FA(NORBT,NORBT)
@@ -858,19 +857,18 @@ C
       DIMENSION ZYMAT1(NORBT,NORBT),ZYMAT2(NORBT,NORBT)
       DIMENSION WRK(*)
 C
-      DIMENSION NEEDED(6)
-      DATA NEEDED /1,1,1,1,1,0/
+      DIMENSION NEEDED(-4:6)
 C
       LOGICAL LCON, LORB
       LOGICAL ACALL
-      COMMON /ACALL/ACALL
+      COMMON /CB_HSO_ACALL/ACALL
 C
 C     Put up the structure for reading the (transformed) integrals:
 C     IEND < 0 flags the completeness of the distributions
 C
       CALL QENTER('HSOFXD')
       CALL DZERO(H2,N2ORBX)
-      IF (IKLVL.EQ.1) NEEDED(6) = 1
+     
       IF (IPRFX.GT.200) THEN
          WRITE(LUPRI,'(/A)') 'ENTER HSOFXD'
          WRITE(LUPRI,'(A,I5)') 'IDAX =',IDAX
@@ -902,20 +900,31 @@ C
          CALL QTRACE(0)
          CALL QUIT('HSOFXD: WRONG VALUE OF IOPSPI')
       END IF
-      IDIST = 0
       IPERCD = -1
-      KWRK = KFREE
-      LWRK = LFREE
       IF (NASHT.GT.0) THEN
-         CALL MEMGET('REAL',KH2XAC,N2ASHX,WRK,KWRK,LWRK)
+         CALL MEMGET('REAL',KH2XAC,N2ASHX,WRK,KFREE,LFREE)
          CALL DZERO(WRK(KH2XAC),N2ASHX)
          IF (LORB) THEN
             LSCR = MAX(NORBT,N2ASHX)
-            CALL MEMGET('REAL',KSCR,LSCR,WRK,KWRK,LWRK)
+         ELSE
+            LSCR = 0
          END IF
+         CALL MEMGET('REAL',KSCR,LSCR,WRK,KFREE,LFREE)
+      ELSE
+         CALL MEMGET('REAL',KH2XAC,0,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KSCR  ,0,WRK,KFREE,LFREE)
       END IF
+
       IF (.NOT.DOSO2) GOTO 2000
-1000  CALL NXTHSO(IC,ID,H2,NEEDED,WRK,KWRK,LWRK,IDIST)
+
+      NEEDED(-4:6) = 0
+      IF (IKLVL.EQ.1) THEN
+         NEEDED(1:6) = 1
+      ELSE
+         NEEDED(1:5) = 1
+      END IF
+      IDIST = 0
+1000  CALL NXTHSO(IC,ID,H2,NEEDED,WRK,KFREE,LFREE,IDIST)
       IF ( IDIST .LT. 0) GO TO 2000
       IF (IC.EQ.ID) GO TO 1000
 C
@@ -1151,8 +1160,8 @@ C  is constructed. In a triplet calculation we normally have two densities
 C  stored after one another, e.g. ( <e(+,+)> <e(-,-)> )
 C  Referring to these densities INFDEN should be set to (0,0,1,1)
 C
-#include <infden.h>
-#include <inforb.h>
+#include "infden.h"
+#include "inforb.h"
       CALL QENTER('IPDENS')
       IF (ISPIN1.EQ.INFDEN(1) .AND. ISPIN2.EQ.INFDEN(2)) THEN
          IPDENS = 1
@@ -1168,7 +1177,7 @@ C
       END
 C  /* Deck ipset */
       SUBROUTINE IPSET(I,J,K,L)
-#include <infden.h>
+#include "infden.h"
       INFDEN(1) = I
       INFDEN(2) = J
       INFDEN(3) = K
@@ -1209,14 +1218,14 @@ C Work
 C
       INTEGER LWORK
       REAL*8 WORK(LWORK)
-#include <inforb.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <aovec.h>
-#include <dftcom.h>
-#include <dummy.h>
+#include "inforb.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "aovec.h"
+#include "dftcom.h"
+#include "dummy.h"
 C
 C Local
 C
@@ -1412,15 +1421,15 @@ C
 C
 C Simplified PRPGET
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 LABEL
       DIMENSION P(*)
 C
 C External
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <dummy.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "dummy.h"
       LOGICAL FNDLB2, CLOSED
       EXTERNAL FNDLB2
 C

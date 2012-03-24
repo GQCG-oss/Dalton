@@ -23,7 +23,7 @@
 !
 C FILE: eri2car1.F
 C
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cr1drv */
       SUBROUTINE CR1DRV(HERINT,HERR12,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
@@ -32,9 +32,9 @@ C  /* Deck cr1drv */
 C
 C     HERR12 integrals have been added (WK/UniKA/04-11-2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       LOGICAL DOREC, FRSTAO, CONTRA
       DIMENSION HERINT(*), HCINT(*), HERR12(*),
@@ -44,11 +44,11 @@ C
      &          WORK(LWORK)
 C     Call to subroutine CR1UND or CR1U12 in CR1TWO (WK/UniKA/04-11-2002).
       EXTERNAL CR1UND, CR1U12
-#include <cbieri.h>
-#include <ericom.h>
-#include <eriao.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eriao.h"
+#include "r12int.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
 C
@@ -178,9 +178,9 @@ C  /* Deck cr1two */
      &                  TEXPA,TEXPB,AOVERP,BOVERP,CR1SUB)
 C     TEXPA,TEXPB,AOVERP,BOVERP and CR1SUB have been added (WK/UniKA/04-11-2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
       EXTERNAL CR1SUB
       INTEGER TUV
@@ -204,13 +204,13 @@ C
      &          HCSINT(NCCPP,NTUV34,KHKT2),
      &          TEXPA(*),TEXPB(*),AOVERP(*),BOVERP(*)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <r12int.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "r12int.h"
       LOGICAL LOCMIA
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1TWO','*',103)
 C
@@ -386,17 +386,17 @@ c       giving miau12 its old value back (C. Villani, Uni-Ka, Feb 2005)
       END
 C  /* Deck hcprint */
       SUBROUTINE HCPRINT(HCINT,IODDHC,IPNTUV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (NHCTYP = 1)
       INTEGER TUV
       DIMENSION HCINT(NCTF12,NPQBCX,NPRF34,NTUV34,KHKT12,NHCTYP),
      &          IODDHC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
 C     Print Hermite-Spherical integrals
 C     =================================
@@ -442,9 +442,9 @@ C  /* Deck cr1und */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
       INTEGER T, U, V, TUV
       LOGICAL FRSTUV(NTUV34)
@@ -456,11 +456,11 @@ C
      &          ETUV(NPP12), EUV(NPP12),
      &          HCPRIM(NPP12,NPRF34,NTUV34),AOVERP(NPP12)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1UND','*',103)
 C
@@ -530,8 +530,8 @@ C
 C  /* Deck erict1 */
       SUBROUTINE ERICT1(PPINT,CCINT,CMAT1,CMAT2,CPINT,IODDHC,IODKC,
      &                  FRSTUV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TUV
       LOGICAL FRSTUV(NTUV34)
@@ -541,9 +541,9 @@ C  /* Deck erict1 */
       DIMENSION CPINT(NCTF1,NPQBCX,NPRF2)
       DIMENSION CCINT(NCTF12*NPQBCX,NPRF34,NTUV34)
       DIMENSION IODDHC(NRTOP)
-#include <hertop.h>
-#include <ericom.h>
-#include <eriao.h>
+#include "hertop.h"
+#include "ericom.h"
+#include "eriao.h"
 C
       IF (IPRINT .GT. 25) THEN
          CALL HEADER('Output from ERICT1',-1)
@@ -642,14 +642,14 @@ C
 
 C  /* Deck cont12 */
       SUBROUTINE CONT12(PPINT,CCINT,CMAT1,CMAT2,CPINT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMAT1(NPRF1,NCTF1)
       DIMENSION CMAT2(NPRF2,NCTF2)
       DIMENSION PPINT(NPQBCX*NPRF2,NPRF1,NPRF34)
       DIMENSION CPINT(NCTF1,NPQBCX,NPRF2)
       DIMENSION CCINT(NCTF2,NCTF1*NPQBCX,NPRF34)
-#include <ericom.h>
-#include <eriao.h>
+#include "ericom.h"
+#include "eriao.h"
       DO L = 1, NPRF34
          CALL DZERO(CPINT,NCTF1*NPQBCX*NPRF2)
          DO 200 K = 1, NPRF1
@@ -676,9 +676,9 @@ c     Part for [T1,r12] integral derivatives, based on subroutine CR1DRV
       SUBROUTINE CR1MIA(HERINT,HERR12,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
      &                  LMNPWR,IPNTUV,COOR12,EXP12,CSQ,CCFBT,
      &                  WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL DOREC, FRSTAO, CONTRA
       DIMENSION HERINT(*), HCINT(*), HERR12(*),
      &          INDHER(*), INDHSQ(*), IODDHH(*), IODDHC(*),
@@ -686,11 +686,11 @@ c     Part for [T1,r12] integral derivatives, based on subroutine CR1DRV
      &          COOR12(NPP12,3), EXP12(NPP12,3), CSQ(*), CCFBT(*),
      &          WORK(LWORK)
       EXTERNAL  CMIASB
-#include <cbieri.h>
-#include <ericom.h>
-#include <eriao.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eriao.h"
+#include "r12int.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
 C
@@ -823,9 +823,9 @@ C     This subroutine is a variant of CR1U12 for derivative integrals
 c     over [T1,r12].
 C     Written by Cristian Villani (University of Karlsruhe, winter 2004).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)
       INTEGER T, U, V, TUV
@@ -839,11 +839,11 @@ C
      &          ETUV(NPP12), EUV(NPP12),
      &          HCPRIM(NPP12,NPRF34,NTUV34),ABVERP(NPP12)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "r12int.h"
+#include "ibtfun.h"
 
       DO I=1,3
         MIAXYZ(I)=0
