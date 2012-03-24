@@ -182,7 +182,7 @@ C ==========================================================================
             WRITE(LUPRI,'(/A)') " M. Head-Gordon's SOS MP2 requested."
          ELSE
             WRITE(LUPRI,'(/A)') ' User-scaled MP2 requested.'
-            IF (P_T .EQ. D0) MP2_SOS = .TRUE.
+            IF (P_T .EQ. 0.0D0) MP2_SOS = .TRUE.
 C           ... SOS-MP2 but not Head-Gordon's original SOS-MP2
          END IF
          WRITE(LUPRI,'(A,2F14.6)')
@@ -241,7 +241,9 @@ C     INFTRA: NEWTRA, AO2INTFILE_LABEL
 C
 #include "maxorb.h"
 #include "maxash.h"
+#include "dummy.h"
 #include "priunit.h"
+
 #include "gnrinf.h"
 #include "exeinf.h"
 #include "infopt.h"
@@ -302,7 +304,13 @@ C     if SRMP2_SRINTS
 C     1)  calculate "EMP2" from AO2SRINT integrals (i.e. short-range integrals),
 C     2)  set SRMP2_SRINTS false, go back to label 10, and redo the 
 C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integrals)
-      ISRINTS_LOOP = 0
+      IF (SRMP2_SRINTS) THEN
+         ISRINTS_LOOP = 0
+         EMP2_SR   = DUMMY
+         EMP2_LR   = DUMMY
+         EMP2FL_SR = DUMMY
+         EMP2FL_LR = DUMMY
+      END IF
    10 CONTINUE
       IF (SRMP2_SRINTS) THEN
          ISRINTS_LOOP = ISRINTS_LOOP + 1
