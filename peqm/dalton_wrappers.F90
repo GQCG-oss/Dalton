@@ -207,7 +207,7 @@ subroutine Tk_integrals(Tk_ints, nints, ncomps, coord, work, nwrk)
 !        Tk_ints(1+5*nints:6*nints) = - (work(1+2*nints:m)                   &
 !                                        - work(1+5*nints:2*m))              &
 !                                        / (2.0d0 * 0.001d0)
-!    else if (k == 3) then
+    else if (k == 3) then
         n = 6
         m = nints
         i = n * nints
