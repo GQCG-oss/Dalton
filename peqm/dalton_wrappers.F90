@@ -14,21 +14,23 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, work, nwrk)
 
     type(one_prop_t) :: prop_operator
     integer :: num_ao
-    integer :: size_ints
     integer :: num_prop
     integer :: kind_prop
     logical :: triangular
     logical :: symmetric
-    type(matrix), dimension(:), allocatable :: Int_Matrix
-    integer :: io_viewer
-    integer :: level_print = 0
-    integer :: imat
+    type(matrix), dimension(:), allocatable :: intmats
+    integer :: io
+    integer :: printlvl = 0
     integer :: ierr
 
-    integer :: i, j, k
+    integer :: nbas
+    integer :: i, j, k, x, y, z
+    integer, dimension(3,ncomps) :: row2col
     real(8), dimension(1) :: charge
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps,8)) - 1.0d0)) - 1
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1
+
+    nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
 
     if (mod(k,2) == 0) then
         charge = -1.0d0
@@ -45,101 +47,72 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, work, nwrk)
                        coord_nuclei=R,          &
                        charge_nuclei=charge,    &
                        order_geo_pot=k)
+    if (ierr /= 0) stop 'Failed to create property operator.'
+    if (num_prop /= ncomps) stop 'Wrong number of components.'
 
     call DaltonShellGetNumAO(num_ao=num_ao)
+    if (num_ao /= nbas) stop 'Array size inconsistency.'
 
     select case(kind_prop)
         case(SYMM_INT_MAT, ANTI_INT_MAT)
             triangular = .true.
             symmetric = (kind_prop == SYMM_INT_MAT)
-            size_ints = num_ao * (num_ao + 1) / 2
         case default
             triangular = .false.
             symmetric = .false.
-            size_ints = num_ao * num_ao
+            stop 'Integral matrices not symmetric!'
     end select
 
-    if (size_ints /= size(Tk_ints,1)) stop 'Integral matrix is wrong size.'
-
-    allocate(Int_Matrix(num_prop), stat=ierr)
+    allocate(intmats(num_prop), stat=ierr)
     if (ierr /= 0) stop 'Failed to allocate matrices.'
 
-    if (k == 0) then
-        call MatAssociate(Tk_ints(1:size_ints,1), num_ao, Int_Matrix(1), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices for k = 0.'
-    else if (k == 1) then
-        do i = 1, num_prop
-            call MatAssociate(Tk_ints(1:size_ints,i), num_ao, Int_Matrix(i), ierr,&
-                              triangular, symmetric)
-            if (ierr /= 0) stop 'Failed to associate integral matrices.'
+    i = 1
+    do x = k, 0, -1
+        do y = k, 0, -1
+            do z = k, 0, -1
+                if (x+y+z > k .or. x+y+z < k) cycle
+                row2col(:,i) = (/ x, y, z /)
+                i = i + 1
+            end do
         end do
-    else if (k == 2) then
-        call MatAssociate(Tk_ints(1:size_ints,1), num_ao, Int_Matrix(1), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,2), num_ao, Int_Matrix(2), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,4), num_ao, Int_Matrix(3), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,3), num_ao, Int_Matrix(4), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,5), num_ao, Int_Matrix(5), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,6), num_ao, Int_Matrix(6), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-    else if (k == 3) then
-        call MatAssociate(Tk_ints(1:size_ints,1), num_ao, Int_Matrix(1), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,2), num_ao, Int_Matrix(2), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,4), num_ao, Int_Matrix(3), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,7), num_ao, Int_Matrix(4), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,3), num_ao, Int_Matrix(5), ierr,&
-                         triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,5), num_ao, Int_Matrix(6), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,8), num_ao, Int_Matrix(7), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,6), num_ao, Int_Matrix(8), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,9), num_ao, Int_Matrix(9), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-        call MatAssociate(Tk_ints(1:size_ints,10), num_ao, Int_Matrix(10), ierr,&
-                          triangular, symmetric)
-        if (ierr /= 0) stop 'Failed to associate integral matrices.'
-    end if
+    end do
+
+    i = 1
+    do z = 0, k
+        do y = 0, k
+            do x = 0, k
+                if (x+y+z > k .or. x+y+z < k) cycle
+                do j = 1, ncomps
+                    if (x == row2col(1,j) .and.&
+                        y == row2col(2,j) .and.&
+                        z == row2col(3,j)) then
+                        call MatAssociate(work_alpha=Tk_ints(:,j),  &
+                                          num_row=nbas,             &
+                                          A=intmats(i),             &
+                                          info_mat=ierr,            &
+                                          triangular=triangular,    &
+                                          symmetric=symmetric)
+                    end if
+                end do
+                i = i + 1
+            end do
+        end do
+    end do
 
     call DaltonShellIntegral(one_prop=prop_operator,&
                              num_ints=num_prop,     &
-                             val_ints=Int_Matrix,     &
+                             val_ints=intmats,      &
                              num_dens=1,            &
-                             io_viewer=io_viewer,   &
-                             level_print=level_print)
+                             io_viewer=io,          &
+                             level_print=printlvl)
 
     call OnePropDestroy(one_prop=prop_operator)
 
     do i = 1, num_prop
-        call MatNullify(A=Int_Matrix(i))
+        call MatNullify(A=intmats(i))
     end do
 
-    deallocate(Int_Matrix)
+    deallocate(intmats)
 
 end subroutine Tk_integrals
 #else
@@ -188,10 +161,53 @@ subroutine Tk_integrals(Tk_ints, nints, ncomps, coord, work, nwrk)
     Tk_ints = 0.0d0
 
     if (k <= 2) then
-        call get1in(Tk_ints(1), inttype, ncomps, work(1), nwrk,         &
-                    labint, intrep, intadr, 0, .false., 0, trimat,      &
-                    dummy, .false., dummy, 1)
-    else if (k == 3) then
+        n = ncomps
+        call get1in(Tk_ints(1), inttype, n, work(1), nwrk, labint, intrep,  &
+                    intadr, 0, .false., 0, trimat, dummy, .false., dummy, 1)
+!    else if (k == 2) then
+!        n = 3
+!        m = 3 * nints
+!        ! xx, xy, xz
+!        diporg(1) = coord(1) + 0.001d0
+!        call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,               &
+!                    labint, intrep, intadr, 0, .false., 0, trimat, dummy,   &
+!                    .false., dummy, 1)
+!        diporg(1) = coord(1) - 0.001d0
+!        call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,         &
+!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+!                    dummy, .false., dummy, 1)
+!        diporg = coord
+!        Tk_ints(1:3*nints) = - (work(1:m) - work(1+m:2*m))                  &
+!                                / (2.0d0 * 0.001d0)
+! 
+!        ! yy, yz
+!        diporg(2) = diporg(2) + 0.001d0
+!        call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,               &
+!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+!                    dummy, .false., dummy, 1)
+!        diporg(2) = diporg(2) - 2.0d0 * 0.001d0
+!        call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,         &
+!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+!                    dummy, .false., dummy, 1)
+!        diporg = coord
+!        Tk_ints(1+3*nints:5*nints) = - (work(1+nints:m)                     &
+!                                        - work(1+4*nints:2*m))              &
+!                                        / (2.0d0 * 0.001d0)
+! 
+!        ! zz
+!        diporg(3) = diporg(3) + 0.001d0
+!        call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,               &
+!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+!                    dummy, .false., dummy, 1)
+!        diporg(3) = diporg(3) - 2.0d0 * 0.001d0
+!        call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1),nwrk,          &
+!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+!                    dummy, .false., dummy, 1)
+!        diporg = coord
+!        Tk_ints(1+5*nints:6*nints) = - (work(1+2*nints:m)                   &
+!                                        - work(1+5*nints:2*m))              &
+!                                        / (2.0d0 * 0.001d0)
+!    else if (k == 3) then
         n = 6
         m = nints
         i = n * nints
@@ -206,7 +222,7 @@ subroutine Tk_integrals(Tk_ints, nints, ncomps, coord, work, nwrk)
                         labint, intrep, intadr, 0, .false., 0, trimat,  &
                         dummy, .false., dummy, 1)
             diporg(j) = coord(j)
-            work(l*i+1:j*i) = (work(l*i+1:j*i) - work(j*i+1:(j+1)*i)) &
+            work(l*i+1:j*i) = (work(l*i+1:j*i) - work(j*i+1:(j+1)*i))   &
                               / (2.0d0 * 0.01d0)
             l = l + 1
         end do
