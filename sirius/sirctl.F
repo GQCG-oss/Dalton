@@ -343,7 +343,8 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-            IF (QMMM) CALL QUIT('DIIS failed to converge')
+            IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
+     &         ' and QC-SCF is not implemented for QMMM')
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)
             FLAG(15) = RHFCAN
@@ -360,9 +361,9 @@ C
             THRLDG = SQRT(THRLDG)
             IF (THRGRD .LT. THRLDG) THEN
                WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit'
-     *        ,' SCF convergence threshold:',THRGRD
-     *        ,' linear dependency limit  :',THRLDG
+     &         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit'
+     &        ,' SCF convergence threshold:',THRGRD
+     &        ,' linear dependency limit  :',THRLDG
                CALL QUIT(
      &            'SIRCTL error: SCF threshold below lin.dep. limit')
             END IF
@@ -373,9 +374,9 @@ C              ... orbital super symmetries may have been reordered
                CALL SIRSET(WORK,LWORK,OLDWOP)
                IAVERR = 0
                CALL AVECHK(WORK,LWORK,IAVERR)
-               IF (IAVERR .NE. 0) CALL QUIT(
-     &         'SIRCTL QCHF error: inconsistency in sup.sym. averaging')
-         END IF
+               IF (IAVERR .NE. 0) CALL QUIT('SIRCTL error: '//
+     &         'inconsistency in sup.sym. averaging before QC-SCF call')
+            END IF
 C
             CALL SIROPT(WORK,LWORK,ICONV)
             FLAG(15) = FLAGSV(15)
@@ -417,7 +418,7 @@ C
          NUMRUN = NUMRUN + 1
          IF (DORHF .AND. ICONV .LE. 0) THEN
             WRITE (LUPRI,7020)
-            WRITE (LUERR ,7020)
+            WRITE (LUERR,7020)
             GO TO 8000
          END IF
  7020    FORMAT(/'ERROR: Sirius MP2 calculation aborted because',
@@ -661,22 +662,18 @@ C
          CALL FLSHFO(LUSTAT)
       END IF
 C
-      IF (ICONV .EQ. -1) THEN
-C        *** set ICONV to converged ***
-         ICONV = 1
-      END IF
       IF (ICONV .EQ. 0) THEN
          NWARN = NWARN + 1
          WRITE (LUERR,7070)
          WRITE (LUPRI,7070)
          IF (LUW4.NE.LUPRI) WRITE (LUW4,7070)
       END IF
- 7070 FORMAT(//' WARNING: wave function not converged')
+ 7070 FORMAT(//'@ ******* WARNING: wave function not converged *******')
+C
 C
 C *** Output sections
 C
 C *** ORBITAL OUTPUT
-      IF (LUPROP .GE. 0) CALL GPCLOSE(LUPROP,'KEEP')
       IF (FLAG(5) .AND. NUMRUN .GT. 0) THEN
          CALL SIROUT(ICONV,WORK,LWORK)
          CALL FLSHFO(LUW4)
@@ -691,7 +688,7 @@ C
       IF (DONEVPT) THEN
        IF (ICONV .EQ. 0) THEN
          WRITE (LUPRI,'(//A)')
-     &      ' WARNING: NEVPT2 skipped because MCSCF not converged.'
+     &      '@ WARNING: NEVPT2 skipped because MCSCF not converged.'
        ELSE
          JRDMO = 9
          KCMO  = 1
@@ -730,8 +727,8 @@ C     *** LUCITA ***
 C
       IF (DOLUCITA) THEN
        IF (ICONV .EQ. 0) THEN
-         WRITE (LUPRI,'(//A)')
-     &      ' WARNING: LUCITA skipped because HF/MCSCF not converged.'
+         WRITE (LUPRI,'(//A)') '@ WARNING: '//
+     &      'LUCITA skipped because requested HF/MCSCF not converged.'
        ELSE
          kfirst_lucita = 1
          JRDMO  = 9
@@ -743,8 +740,8 @@ C
 
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
                                           ! orbital occupations for TRACTL
-         JTRALVL = 0 ! all active orbitals for all four indices
-         USEDRC  = .FALSE.
+         JTRALVL = 0 ! only active orbitals for all four indices
+         USEDRC  = .FALSE. ! Dirac format 2-el. integrals not needed
 
 !        integral transformation
          CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
@@ -823,12 +820,13 @@ C
  7210 FORMAT(/' NOTE:',I5,' informational messages have been issued.',
      &       /' Check output, result, and error files for "INFO".')
 C
-      IF (FLAG(16)) CALL GPCLOSE(LUSOL,'KEEP')
-      CALL GPCLOSE(LUIT1,'KEEP')
-      IF (LUH2AC .GT. 0) CALL GPCLOSE(LUH2AC,'DELETE')
+      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP') ! AOPROPER   - property integrals
+      IF (LUSOL  .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP') ! AOSOLINT   - multipole integrals for spherical cavity
+      IF (LUPCMD .GT. 0) CALL GPCLOSE(LUPCMD,'KEEP') ! PCMDATA    - PCM data
+      IF (LUIT1  .GT. 0) CALL GPCLOSE(LUIT1,'KEEP')  ! SIRIUS.RST - restart info
       IF (LUW4 .NE. LUPRI) CALL GPCLOSE(LUW4,'KEEP')
+      IF (LUH2AC .GT. 0) CALL GPCLOSE(LUH2AC,'DELETE') ! H2AC on disk for large CI
 C
-      IF (PCM) CALL GPCLOSE(LUPCMD,'KEEP')
       CALL QEXIT('SIRCTL')
       RETURN
 C *** end of SIRCTL.

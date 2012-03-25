@@ -330,7 +330,6 @@ C
 #include "center.h"
 #include "nuclei.h"
 C
-      LOGICAL DIFDNO
 Cholesky
 C
 C------------------------
@@ -368,7 +367,7 @@ C
      &      ' Automatic occupation of symmetries with',NRHFEL,
      &      ' electrons.',
      &      ' Iter     Total energy      Solvation energy  Error norm'//
-     &      '  Delta(E)    HF occupation'
+     &      '  Delta(E)    SCF occupation'
       ELSE
          WRITE (LUW4,'(/A,I4,A/A//A)')
      &      ' Automatic occupation of symmetries with',NRHFEL,
@@ -376,7 +375,7 @@ C
      &      ' "sym." is the symmetry of the one open shell orbital '//
      &      'in table below.',
      &      ' Iter     Total energy      Solvation energy  Error norm'//
-     &      '  Delta(E)  sym.  closed shell occupation'
+     &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
       else if (peqm) then
         write(luw4,'(/a)')
@@ -392,7 +391,7 @@ C
      &      ' Automatic occupation of symmetries with',NRHFEL,
      &      ' electrons.',
      &      ' Iter     Total energy    Error norm  Delta(E)  '//
-     &      '  HF occupation'
+     &      '  SCF occupation'
       ELSE
          WRITE (LUW4,'(/A,I4,A/A//A)')
      &      ' Automatic occupation of symmetries with',NRHFEL,
@@ -400,7 +399,7 @@ C
      &      ' "sym." is the symmetry of the one open shell orbital '//
      &      'in table below.',
      &      ' Iter     Total energy    Error norm  Delta(E)  '//
-     &      'sym.  closed shell occupation'
+     &      'Sym.  Closed shell occupation'
       END IF
       END IF
       END IF
@@ -474,16 +473,19 @@ C------------------
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
      &     .and. .not. peqm    .and. .not. pe_savden
-     &     .AND. .NOT.AOSAVE
+     &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
 Ctuh:   DIFDEN does not work with DFT either   
 Cov:    DIFDEN disabled for high spin HF
+C-tbp: turn off DIFDEN for Cholesky decomposition (CHOINT true)
       DIFDEN   = DODIFDEN
+C------------------
       IF (.NOT. USRSCR) THEN
-         IF (AOSAVE) THEN
-            IFTHRS = 20
+C        AOSAVE or Cholesky (CHOINT): No screening.
+         IF (AOSAVE .OR. CHOINT) THEN
+            IFTHRS = 20 ! code for no screening
          ELSE IF (FLAG(13)) THEN
 Chj-aug99: MO's read from input, assume good guess
             IFTHRS = IFTMAX
@@ -508,18 +510,18 @@ C
      &      ' -----------------------------------------------------'//
      &      '------------------------'
 C
-Cholesky (CHOINT): No screening.
 C
-         IF (DIRFCK .AND. (IPR_DIIS .GE. 0 .OR. IPR_DIIS .LE. 1)
-     &              .AND. (.NOT. CHOINT)) THEN
-            WRITE (LUPRI,'(I4,A,I5,L5)') 
-     &      ITDIIS,'  Screening settings (-IFTHRS, DIFDEN)',
-     &      -IFTHRS, DIFDEN
-         ELSE IF (DIRFCK .AND. (IPR_DIIS .GT. 1)) THEN
-            WRITE (LUPRI,'(/A,2I5/A,I5,L5)')
-     &      ' *** START DIIS iteration ',ITDIIS,JTDIIS,
-     &      ' Screening settings in this iteration (-IFTHRS, DIFDEN)',
-     &      -IFTHRS, DIFDEN
+         IF (DIRFCK .AND. IFTHRS.LT.20) THEN
+            IF (IPR_DIIS .GT. 1) THEN
+               WRITE (LUPRI,'(/A,2I5/A,I5,L5)')
+     &         ' *** START DIIS iteration ',ITDIIS,JTDIIS,
+     &         ' Screening settings (-IFTHRS, DIFDEN)',
+     &         -IFTHRS, DIFDEN
+            ELSE IF (IPR_DIIS .GE. 0) THEN
+               WRITE (LUPRI,'(I4,A,I5,L5)') 
+     &         ITDIIS,'  Screening settings (-IFTHRS, DIFDEN)',
+     &         -IFTHRS, DIFDEN
+            END IF
          END IF
          CALL FLSHFO(LUPRI)
          HSFOCK=((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
@@ -866,34 +868,34 @@ C
      &      /' Program aborted because this means automatic symmetry'
      &      /' designation of occupied orbitals is not possible!',
      &      /' Please send this output to hjj@dou.dk !!!',
-     &      /' You may try again with explicit specfication of .HF OCC')
+     &      /' You may try again with explicit specfication of .DOUBLY')
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')
 C
          IF (GRDNRM .LE. THDIIS) THEN
             IF (MOLDEN) CALL MOSCFCON(ITDIIS,EMCSCF,.TRUE.)
             ICONV = 1
-            WRITE (LUPRI,4110) ITDIIS
-            IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS
+            WRITE (LUPRI,4110) ITDIIS,EMCSCF,GRDNRM
+            IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS,EMCSCF,GRDNRM
 C
 Cholesky
             IF (IPR_DIIS .GE. -1) THEN
               IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
-                 WRITE(LUPRI,4116) 'Coulomb part',CSIRF
+                 WRITE(LUPRI,4116) 'Coulomb part ',CSIRF
                  WRITE(LUPRI,4116) 'Exchange part',XSIRF
                  WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
                  WRITE(LUPRI,4116) 'MO transform.',OSIRF
-                 WRITE(LUPRI,4116) 'MO sorting ',SSIRF
+                 WRITE(LUPRI,4116) 'MO sorting   ',SSIRF
               ENDIF
               WRITE(LUPRI,4115) TSIRF
               IF (QMMM) CALL QMMMTIMES('SIRIUS')
               IF (LUW4 .NE. LUPRI) THEN
                  IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
-                    WRITE(LUPRI,4116) 'Coulomb part',CSIRF
+                    WRITE(LUPRI,4116) 'Coulomb part ',CSIRF
                     WRITE(LUPRI,4116) 'Exchange part',XSIRF
                     WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
                     WRITE(LUPRI,4116) 'MO transform.',OSIRF
-                    WRITE(LUPRI,4116) 'MO sorting ',SSIRF
+                    WRITE(LUPRI,4116) 'MO sorting   ',SSIRF
                  ENDIF
                  WRITE(LUW4,4115) TSIRF
               ENDIF
@@ -915,10 +917,12 @@ C           Too many DIIS iterations, save final CMO before exit
 C           ... REWIT1 false: do not destroy any GEOWALK information
             GO TO 1100
          END IF
- 4110 FORMAT(/' *** DIIS converged in',I4,' iterations !')
- 4115 FORMAT( '   - total time used in SIRFCK :'  ,F18.2,' seconds')
- 4116 FORMAT( '   - total time used for ',A13,': ',F10.2,' seconds')
- 4120 FORMAT(/' !!! DIIS aborted because max DIIS iterations reached !')
+ 4110 FORMAT(/' *** DIIS converged in',I4,' iterations !',
+     &       /'@    Converged SCF energy, gradient:',F20.12,1P,D12.2)
+ 4115 FORMAT( '   - total time used in SIRFCK :' ,F18.2,' seconds')
+ 4116 FORMAT( '   - total time used for ',A13,':',F12.2,' seconds')
+ 4120 FORMAT(/
+     & 'WARNING !!! DIIS aborted because max DIIS iterations reached !')
 C
 Chj 990819: use DIFDEN more often
 Chj was: IF (IFTHRS .GE. 12 .AND. .NOT. FLAG(49)) DIFDEN = .TRUE.
@@ -950,18 +954,6 @@ C        -- if we have tightened screening threshold we must
 C           calculate w/o DIFDEN or the error in the Fock matrix
 C           would correspond to the previous screening threshold.
 C
-C-tbp: Dirty hack: turn off DIFDEN for Cholesky deco.
-          IF (CHOINT .AND. DIFDEN) THEN
-             DIFDNO = DIFDEN
-             DIFDEN = .FALSE.
-             IF (IPR_DIIS .GE. 25) THEN
-                WRITE (LUPRI,'(A,I5,L5)')
-     &          ' Cholesky decomposition: new settings (IFTHRS/DIFDEN)',
-     &          IFTHRS, DIFDEN
-                CALL FLSHFO(LUPRI)
-             ENDIF
-          ENDIF
-C-tbp
 C
 C        Test if convergence is stopping because of numerical problems
 C        (EMCDIF test should make sure we are in local region)
@@ -1243,7 +1235,7 @@ C        test if AUTOCC has changed occupation
                WRITE (LUPRI,4210) NEWOCC
                IF (LUW4 .NE. LUPRI) WRITE (LUW4,4210) NEWOCC
                CALL QUIT(
-     &           'FATAL ERROR: problems with automatic HF occupation')
+     &           'FATAL ERROR: problems with automatic SCF occupation')
             END IF
 Chj-sep99: bugfix for open shell when open shell symmetry changed
 C          (NASH(ISYM) used for test in DIIS_CTL !!!)
@@ -1968,7 +1960,7 @@ C
       P4FLAG(9) = .FALSE.
       P6FLAG(6) = .FALSE.
 C
-C     Some memory allocation for HF occupation determination
+C     Some memory allocation for SCF occupation determination
 C
       KEIG  = 1
       KSYMS = KEIG  + NORBT

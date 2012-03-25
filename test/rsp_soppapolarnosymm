@@ -59,6 +59,8 @@ cat > rsp_soppapolarnosymm.dal <<'%EOF%'
  2
 0.0 0.0592
 *C6
+.PRINT
+  5
 .DIPLEN
 .MAXMOM
   6

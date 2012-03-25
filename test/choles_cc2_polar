@@ -112,7 +112,7 @@ fi
 
 # SCF, MP2 and CC2 energies:
 CRIT1=`$GREP "Final * HF energy:"  $log | $GREP "\-230.7281544." | wc -l`
-CRIT2=`$GREP "Coupled cluster MP2" $log | $GREP "\-231.53883400" | wc -l`
+CRIT2=`$GREP "Coupled cluster MP2" $log | $GREP "\-231.5388340" | wc -l`
 CRIT3=`$GREP "Total CC2 * energy:     *           -231.5458137" $log | wc -l`
 TESTA=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRLA=4
@@ -121,10 +121,10 @@ ERRORA="ENERGIES NOT CORRECT"
 
 
 # CC2 polarizabilities
-CRIT1=`$GREP "alpha_iso" $log | $GREP "\-*0*\.0000 * 0*\.0000 * 71.6808" | wc -l`
-CRIT2=`$GREP "alpha_ani" $log | $GREP "\-*0*\.0000 * 0*\.0000 * 38.5773" | wc -l`
-CRIT3=`$GREP "\-0*\.0772 * 0*\.0772 * 74.62232" $log | wc -l`
-CRIT4=`$GREP "\-0*\.0772 * 0*\.0772 * 41.13644" $log | wc -l`
+CRIT1=`$GREP "alpha_iso" $log | $GREP "\-*0*\.0000 * 0*\.0000 * 71.680" | wc -l`
+CRIT2=`$GREP "alpha_ani" $log | $GREP "\-*0*\.0000 * 0*\.0000 * 38.577" | wc -l`
+CRIT3=`$GREP "\-0*\.0772 * 0*\.0772 * 74.6223" $log | wc -l`
+CRIT4=`$GREP "\-0*\.0772 * 0*\.0772 * 41.1364" $log | wc -l`
 TESTB=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRLB=4
 ERRORB="CC2 POLARIZABILITIES NOT CORRECT"

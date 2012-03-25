@@ -1216,7 +1216,7 @@ dft_cr_resp_slave(real* work, integer* lwork, const integer* iprint)
     real *kappaC= dal_malloc(inforb_.n2orbx*sizeof(real));            /*IN */
     real *kappaD= dal_malloc(inforb_.n2orbx*sizeof(real));            /*IN */
     integer  symB, symC, symD;                                        /*IN */
-    dftcrcf_(fi,     cmo,
+    FSYM(dftcrcf)(fi,     cmo,
              kappaB, &symB,
              kappaC, &symC,
              kappaD, &symD,

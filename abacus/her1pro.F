@@ -587,13 +587,13 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Half-derivative overlap integrals HDO
+C     Half-derivative overlap integrals HDO (antisymmetrized)
 C     ---------------------------------
 C
    16 CONTINUE
          INTTYP = 14
-         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
-     &      ' Calculation of half-derivative overlap integrals.'
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)') ' Calculation of'//
+     &      ' antisymmetrized half-derivative overlap integrals.'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL HDOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,.TRUE.,
      &               INTTYP)

@@ -1173,7 +1173,7 @@ C           ... New input style
             CALL LINE5R(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),
      &                  JCO(1,I,1),KANG,BASIS,ATOMBA,LMULBS,
      &                  BASNAMSAVE,RADIUS_PCM, ALPHA_PCM)
-            Q_EXPONENT = D0 ! hjaaj: should be introuduced in LINE5R; GNU=
+            Q_EXPONENT = D0 ! hjaaj: should be introduced in LINE5R; GNU=
          ELSE
 C           ... Old input style
             Q_EXPONENT = D0
@@ -5240,18 +5240,15 @@ C
 #include "molinp.h"
 #include "infpar.h"
 
-      CHARACTER*(120) NEXT_INPUT_LINE
-      INTEGER NMLN_LASTREAD
-      DATA NMLN_LASTREAD /0/
-      SAVE NMLN_LASTREAD, LEN_MLINE
+      PARAMETER (len_NEXT_INPUT_LINE = 120)
+      CHARACTER*(len_NEXT_INPUT_LINE) NEXT_INPUT_LINE
+      INTEGER    NMLN_LASTREAD
+      DATA       NMLN_LASTREAD /0/
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
 C
-      IF ( NMLINE .EQ. 0) THEN
-         NMLN_LASTREAD = 0
-         LEN_MLINE = LEN( MLINE(1) )
-      END IF
+      IF ( NMLINE .EQ. 0) NMLN_LASTREAD = 0
 C
    10 CONTINUE
       NMLINE = NMLINE + 1
@@ -5263,6 +5260,12 @@ C
      &        'NMLN_LASTREAD = ',NMLN_LASTREAD
          CALL QUIT('*** ERROR reading .mol file')
       ENDIF
+      IF (NMLINE.GT.KMLINE) THEN
+         WRITE (LUPRI,'(//A,/A,I5)')
+     &      ' READIN ERROR: Too many lines in input -,',
+     &      ' Increase dimension in molinp.h to at least',NMLINE
+         CALL QUIT('*** ERROR *** Too many input lines in .mol file')
+      END IF
 C
 C     Only the master in a parallel calc. reads the input file.
 C     The slaves get the input transferred from the master in
@@ -5271,29 +5274,36 @@ C
       IF (.NOT. SLAVE .AND. NMLINE .GT. NMLN_LASTREAD) THEN
           READ (LUINFO,'(A)',END=12,ERR=11) NEXT_INPUT_LINE
           MLINE(NMLINE) = NEXT_INPUT_LINE
-      END IF
-      IF (NMLINE.GT.KMLINE) THEN
-         WRITE (LUPRI,'(//A,/A,I5)')
-     &      ' READIN ERROR: Too many lines in input -,',
-     &      ' Increase dimension in /MOLINP/ to at least',NMLINE
-         CALL QUIT('*** ERROR *** Too many input lines in .mol file')
+      ELSE
+          NEXT_INPUT_LINE = MLINE(NMLINE)
       END IF
 
 #ifdef VAR_DEBUG
-      write (lupri,*) 'debug output from RDLINE, nmline=',nmline
-      write (lupri,*) 'on file>',NEXT_INPUT_LINE
-      write (lupri,*) 'RDLINE >',MLINE(NMLINE)
+         write (lupri,*) 'debug output from RDLINE, nmline=',nmline
+         write (lupri,*) 'on file>',NEXT_INPUT_LINE
+         write (lupri,*) 'RDLINE >',MLINE(NMLINE)
 #endif
 
-      IF((MLINE(NMLINE)(1:1) .EQ. '#') .OR.
-     &   (MLINE(NMLINE)(1:1) .EQ. '!') .OR.
-     &   (MLINE(NMLINE)(1:1) .EQ. '$')) GOTO 10
+         len_NOT_COMMENT = len_NEXT_INPUT_LINE
+         I_COMMENT = INDEX(NEXT_INPUT_LINE,'#')
+         IF (I_COMMENT .GT. 0) len_NOT_COMMENT = I_COMMENT-1
+         I_COMMENT = INDEX(NEXT_INPUT_LINE(1:len_NOT_COMMENT),'!')
+         IF (I_COMMENT .GT. 0) len_NOT_COMMENT = I_COMMENT-1
+         I_COMMENT = INDEX(NEXT_INPUT_LINE(1:len_NOT_COMMENT),'$')
+         IF (I_COMMENT .GT. 0) len_NOT_COMMENT = I_COMMENT-1
+      
+      IF (len_NOT_COMMENT .eq. 0) GO TO 10 ! this was a comment line with one of #!$ in column 1
 
-      IF (LNBLNK(NEXT_INPUT_LINE) .GT. LEN_MLINE) THEN
-         WRITE(LUPRI,'(//A,I5/2A/2A)')
-     &   ' WARNING -- line in ".mol" file truncated, line',NMLINE,
+      IF (LNBLNK( NEXT_INPUT_LINE(1:len_NOT_COMMENT) ) .GT. len_MLINE)
+     &   THEN
+         WRITE(LUPRI,'(//A,I5/2A/2A//A,I5/A)')
+     &   ' FATAL ERROR -- line in ".mol" file truncated, line',NMLINE,
      &   ' Line from file: ',NEXT_INPUT_LINE,
-     &   ' Truncated line: ',MLINE(NMLINE)
+     &   ' Truncated line: ',MLINE(NMLINE),
+     &   ' NOTE: maximum length of an input line in ".mol" file is',
+     &     len_MLINE,
+     &   ' Rewrite the offending input line and be welcome back!'
+         CALL QUIT('Too long input line in ".mol" file')
       END IF
 
       NMLN_LASTREAD = NMLINE
@@ -5635,16 +5645,16 @@ C
       CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,4),DUMMY,'INT',IERR)
       CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA',IERR)
 #else
-  200 READ (MLINE(NMLINE)(5:80),*) INUM,CHARGE(NUCIND)
+  200 READ (MLINE(NMLINE)(5:len_MLINE),*) INUM,CHARGE(NUCIND)
       GO TO 204
-  201 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
+  201 READ (MLINE(NMLINE)(5:len_MLINE),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),CHARGE(NUCIND)
       GO TO 204
-  202 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
+  202 READ (MLINE(NMLINE)(5:len_MLINE),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),IZ(NUCIND,2),
      &     ALP(NUCIND),CHARGE(NUCIND)
       GO TO 204
-  203 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
+  203 READ (MLINE(NMLINE)(5:len_MLINE),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),IZ(NUCIND,2),
      &     ALP(NUCIND),IZ(NUCIND,3),BET(NUCIND),
      &     IZ(NUCIND,4),CHARGE(NUCIND)
@@ -6066,16 +6076,17 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C      
-      CHARACTER*80 STRING
+      CHARACTER*(*) STRING
       CHARACTER TYPE*3, FRMT*7
 C
+      len_STRING = LEN(STRING)
       IERR = 0
       IF (TYPE .EQ. 'INT') THEN
          IVAL = 0
       ELSE
          RVAL = 0.0D0
       END IF
-      DO 10 IPOS = ISTART, 80
+      DO 10 IPOS = ISTART, len_STRING
          IF (STRING(IPOS:IPOS) .NE. ' ') GO TO 20
          ! leave cycle when found first non-white character
  10   CONTINUE
@@ -6089,14 +6100,14 @@ C
          ELSE
             WRITE (FRMT,'(3X,A2,I1,A1)') '(I',ILEN,')'
          END IF
-         READ (STRING(ISTART:80),FRMT,ERR=9000) IVAL
+         READ (STRING(ISTART:len_STRING),FRMT,ERR=9000) IVAL
       ELSE IF (TYPE .EQ. 'REA') THEN
          IF (ILEN .GT. 9) THEN
             WRITE (FRMT,'(A2,I2,A3)') '(F',ILEN,'.0)'
          ELSE
             WRITE (FRMT,'(1X,A2,I1,A3)') '(F',ILEN,'.0)'
          END IF
-         READ (STRING(ISTART:80),FRMT,ERR=9000) RVAL
+         READ (STRING(ISTART:len_STRING),FRMT,ERR=9000) RVAL
       ELSE
          WRITE (LUPRI,'(/,A)') 'Illegal variable type in FREFRM'
          CALL QUIT('Illegal variable type in FREFRM')

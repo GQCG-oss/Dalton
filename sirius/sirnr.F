@@ -225,7 +225,7 @@ C                                    ------------v
 C
 C
 C        *** Calculate linear transformation induced by K-matrix
-C        NOTE: CI BVEC's are assumed orthogonal to CREF, otherwise
+C        NOTE: CI BVECs are assumed orthogonal to CREF, otherwise
 C              LINTRN will not return correct result for
 C              K(orb,CI) * b-vec (see comments in ORBSIG)
 C

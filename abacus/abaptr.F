@@ -271,7 +271,7 @@ C3300 FORMAT(/,'  TIME IN PTRAN IS ',F7.2,' SECONDS')
       CALL QEXIT('PTRAN')
       RETURN
 C
- 2000 FORMAT('1',//,25X,'M O L E C U L E - P T R A N',//,
+ 2000 FORMAT(//,25X,'M O L E C U L E - P T R A N',//,
      1       10X,' Transformation of MCSCF and CI 2-matrices from a',
      2           ' molecular orbital',/,10X,' to a symmetry orbital',
      3           ' basis',//,
