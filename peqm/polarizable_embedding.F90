@@ -54,6 +54,7 @@ module polarizable_embedding
     real(dp) :: Rmin = 2.2d0
     character(len=6) :: border_type = 'REDIST'
 
+    ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
     ! C^(n)_ij coefficients for calculating T(k) tensor elements
     integer, dimension(14,0:6,0:6) :: Cnij
 
@@ -151,7 +152,6 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: Rfd
 
 ! TODO:
-! use pointers in save density and twoint routines
 ! use allocate/deallocate where possible?
 ! insert quit if symmetry
 ! insert quits inside dalton if QM3, QMMM etc.
@@ -1382,12 +1382,12 @@ subroutine es_multipoles(Qks, denmats, Eel, Enuc, fckmats)
 
     ncomps = size(Qks,1)
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps,dp)) - 1.0d0)) - 1
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1
 
     if (mod(k,2) == 0) then
-        taylor = 1.0d0 / real(factorial(k),dp)
+        taylor = 1.0d0 / factorial(k)
     else if (mod(k,2) /= 0) then
-        taylor = - 1.0d0 / real(factorial(k),dp)
+        taylor = - 1.0d0 / factorial(k)
     end if
 
     allocate(Tsm(ncomps))
@@ -1662,12 +1662,12 @@ subroutine nuclear_fields(Fnuc)
 
     inquire(file='pe_nuclear_field.bin', exist=lexist)
 
-     if (lexist) then
-         call openfile('pe_nuclear_field.bin', lutemp, 'old', 'unformatted')
-         rewind(lutemp)
-         read(lutemp) Fnuc
-         close(lutemp)
-     else
+    if (lexist) then
+        call openfile('pe_nuclear_field.bin', lutemp, 'old', 'unformatted')
+        rewind(lutemp)
+        read(lutemp) Fnuc
+        close(lutemp)
+    else
         l = 0
         do i = 1, nsites
             if (zeroalphas(i)) cycle
@@ -1688,11 +1688,11 @@ subroutine nuclear_fields(Fnuc)
             end do
             l = l + 3
         end do
-         call openfile('pe_nuclear_field.bin', lutemp, 'new', 'unformatted')
-         rewind(lutemp)
-         write(lutemp) Fnuc
-         close(lutemp)
-     end if
+        call openfile('pe_nuclear_field.bin', lutemp, 'new', 'unformatted')
+        rewind(lutemp)
+        write(lutemp) Fnuc
+        close(lutemp)
+    end if
 
 end subroutine nuclear_fields
 
@@ -1807,12 +1807,12 @@ subroutine multipole_field(Fi, Rji, Qkj)
     integer :: a, b, c, x, y, z
     real(dp) :: taylor
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(Qkj), dp)) - 1.0d0))
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Qkj)) - 1.0d0))
 
     if (mod(k,2) == 0) then
-        taylor = 1.0d0 / real(factorial(k-1),dp)
+        taylor = 1.0d0 / factorial(k-1)
     else if (mod(k,2) /= 0) then
-        taylor = - 1.0d0 / real(factorial(k-1),dp)
+        taylor = - 1.0d0 / factorial(k-1)
     end if
 
     a = 1; b = 1; c = 1
@@ -1991,7 +1991,7 @@ subroutine Tk_coefficients()
     integer :: i, j, k, l, m, n
 
     Cnij(:,0,0) = 1
-    do n = 1, 14
+    do n = 1, size(Cnij,1)
         if (mod(n,2) == 0) cycle
         do i = 1, 6
             if (mod(i,2) /= 0) then
@@ -2056,7 +2056,7 @@ subroutine Tk_tensor(Tk, Rij)
     integer :: l, m, n, x, y, z
     real(dp) :: R, Cx, Cy, Cz
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(Tk),dp)) - 1.0d0)) - 1
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Tk)) - 1.0d0)) - 1
 
     R = nrm2(Rij)
 
@@ -2088,12 +2088,12 @@ subroutine Qk_integrals(Qk_ints, Rij, Qk)
     real(dp) :: taylor
     real(dp), dimension(:), allocatable :: factors
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(Qk),dp)) - 1.0d0)) - 1
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Qk)) - 1.0d0)) - 1
 
     if (mod(k,2) == 0) then
-        taylor = 1.0d0 / real(factorial(k), dp)
+        taylor = 1.0d0 / factorial(k)
     else if (mod(k,2) /= 0) then
-        taylor = - 1.0d0 / real(factorial(k), dp)
+        taylor = - 1.0d0 / factorial(k)
     end if
 
     ncomps = size(Qk_ints, 2)
@@ -2122,7 +2122,7 @@ subroutine symmetry_factors(factors)
 
     integer :: idx, x, y, z, k
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(factors),dp)) - 1.0d0)) - 1
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(factors)) - 1.0d0)) - 1
 
     idx = 1
     do x = k, 0, -1
@@ -2179,7 +2179,7 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     real(dp), dimension(:), intent(in) :: density
     real(dp), dimension(:), intent(in) :: charges
     real(dp), dimension(:,:), intent(in) :: coords
-    real(dp), dimension(:), intent(inout) :: dalwrk
+    real(dp), dimension(:), target, intent(inout) :: dalwrk
 
     integer :: i, j, l
     integer :: corenucs
@@ -2192,6 +2192,8 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     real(dp), dimension(:,:), allocatable :: T0_ints
     real(dp), dimension(:), allocatable :: Ffd
     real(dp), dimension(:,:), allocatable :: Ftmp
+
+    work => dalwrk
 
     ndens = 1
     nnbas = nbas * (nbas + 1) / 2
@@ -2242,7 +2244,7 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), dalwrk, size(dalwrk))
+        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), work, size(work))
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(density, T0_ints(:,1))
     end do
@@ -2271,7 +2273,7 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     external :: sirfck
 
     integer, intent(in) :: nbas
-    real(dp), dimension(:), intent(inout) :: dalwrk
+    real(dp), dimension(:), target, intent(inout) :: dalwrk
 
     integer :: i, j, k, l
     integer :: fbas, cbas
@@ -2282,6 +2284,7 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     real(dp), dimension(:,:), allocatable :: frozen_density, full_density
     real(dp), dimension(:,:), allocatable :: full_fock
 
+    work => dalwrk
 
     call openfile('pe_density.bin', luden, 'old', 'unformatted')
     rewind(luden)
@@ -2321,7 +2324,7 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     isymdm = 1
     ifctyp = 11
     call sirfck(full_fock, full_density, 1, isymdm, ifctyp, .false.,&
-                dalwrk, size(dalwrk))
+                work, size(work))
 
     deallocate(full_density)
 
@@ -2366,7 +2369,7 @@ subroutine pe_repulsion()
 !    real(dp), dimension(:), allocatable :: overlap
 !
 !    nnbas = size(fckmat)
-!    nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(nnbas, dp)) - 1.0d0))
+!    nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
 !
 !    call openfile('pe_density.bin', luden, 'old', 'unformatted')
 !    rewind(luden)
@@ -2566,7 +2569,7 @@ subroutine invert_packed_matrix(ap, sp)
     integer, dimension(:), allocatable :: ipiv
     real(dp), dimension(:), allocatable :: wrk
 
-    n = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(ap), dp)) - 1.0d0))
+    n = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(ap)) - 1.0d0))
 
     if (.not. present(sp)) then
         sp = 's'
