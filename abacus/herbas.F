@@ -78,8 +78,8 @@ C*************************************************************
 C* Variable declarations:                                    *
 C*     BASNAM - A character variable that contains the name  *
 C*              of the file with the basis set.              *
-C*     NEWEL - Logical variable, that is returned from       *
-C*             the subroutine finpos, gives whether the next *
+C*     NEWEL - Logical variable, that is returned from the   *
+C*             subroutine find_pos, gives whether the next   *
 C*             line in basis-file is a new element or not.   *
 C*     SEGEJ - This gives whether the contraction            *
 C*             coefficients are segmented or not (for        *
@@ -157,7 +157,7 @@ C        (these basis fu. does not exist in the minimum basis ANO-DK3)
             BASTMP = 'ANO-DK3 for Huckel'
          END IF
 C        NOTE that ECP Huckel start guess is implemented
-C        in REAANO through the Q-QEFF parameter. 
+C        in READ_ANO through the Q-QEFF parameter. 
          ISTART = 7
          IF (INTQ .LE. 2) THEN
 C           ... H and He
@@ -370,14 +370,14 @@ C
      &   '  Basis set file used for this atomic type with Z =',
      &   INTQ,' :'
       IF (NQVD) THEN
-         CALL FINNQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,SEG,
-     &               KPRIM,KAOVEC,DSM,POLFUN,IPOLST,UNCONT,LUBAS,IPRINT)
+         CALL FIND_NQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,
+     &       SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,UNCONT,LUBAS,IPRINT)
       ELSE
          CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT)
 C
 C Finds the number of primitives and columns of contraction coefficients
 C
-         CALL FINPOS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+         CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
 C
  10      CONTINUE
 C
@@ -398,13 +398,13 @@ C Reading the primitives and contraction coefficients from file in READNU
 C
             IF (ANO .OR. SADLEJ) THEN
                IQCORE = NINT(Q-QEFF)
-               CALL REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
+               CALL READ_ANO(INTEXP,INTORB,NBLOCK,KAOVEC, CPRIMU,ALPHA,
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
      +                     UNCONT,LUBAS,IQCORE,IPRINT)
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1 ! why this? Can we imagine user wants 2 0 1, i.e. 2s 0p 1d ??????
-                  CALL FINPOS ( NEWEL, INTEXP, INTORB,
-     &                          INTISG, LUBAS, IPRINT)
+                  CALL FIND_POS ( NEWEL, INTEXP, INTORB,
+     &                            INTISG, LUBAS, IPRINT)
                   GOTO 10
                END IF
             ELSE
@@ -453,7 +453,7 @@ C
 C
 C Define the type of the next relevant line in file
 C
-            CALL FINPOS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+            CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
             GOTO 10
          END IF
       END IF
@@ -535,7 +535,7 @@ C
 C Find reference information for the basis set. 
 C
       IF (IPRINT .GT. 0)
-     &   CALL FINREF (BASREF,LUBAS,BASSAV)
+     &   CALL FIND_REF (BASREF,LUBAS,BASSAV)
 C
 C Close basis set file
 C
@@ -729,15 +729,14 @@ C
                            READ (STRING,'(F16.9,6F12.9)',IOSTAT=IOS) 
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
-                           IF (IOS.NE.0) THEN
-                             CALL QUIT('Error in reading sjjd393jdj')
-                           ENDIF
+                           IF (IOS.NE.0) CALL QUIT(
+     &                        'Error reading contraction coefficients')
                            IF (IPRINT.GE.6) THEN
-                             WRITE(LUPRI,*) 
-     &                       J,NBLOCK,' CPRIMU(J,M,NBLOCK):'
-                             WRITE(LUPRI,*) ( CPRIMU(J,M,NBLOCK),
+                              WRITE(LUPRI,*) 
+     &                        J,NBLOCK,' CPRIMU(J,M,NBLOCK):'
+                              WRITE(LUPRI,*) ( CPRIMU(J,M,NBLOCK),
      &                         M = CONEOR + (I-2)*CONORB +1, KNTORB )
-                           ENDIF
+                           END IF
                         END IF
 C
 C     Blank line read the next one
@@ -836,8 +835,8 @@ C
       WRITE (LUPRI,'(/A,I5)') 'Error in reading from basis file.'//
      &     ' IOSTAT =',IOERR
       END
-C/* Deck reaano */
-      SUBROUTINE REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA, 
+C/* Deck read_ano */
+      SUBROUTINE READ_ANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA,
      +                  KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
      +                  UNCONT,LUBAS,IQCORE,IPRINT)
 C
@@ -864,7 +863,7 @@ C             in ano-* files (for this consistency check).
          CALL FREFRM(BASNAM,ISTART,INTORB,DUMMY,'INT',IERR)
          IF (INTORB .GT. INTORBMAX) THEN
             WRITE (LUPRI,'(/2A/A,I5/A,I5)')
-     &      'Fatal error in REAANO for basis ',BASNAM,
+     &      'Fatal error in READ_ANO for basis ',BASNAM,
      &      '- max number of contracted functions',INTORBMAX,
      &      '- you asked for                     ',INTORB
             CALL QUIT('You asked for too many contracted functions')
@@ -1070,7 +1069,7 @@ C
       CALL QUIT('Unsupported element in HERBAS')
       END 
 C/* Deck finnqd */
-      SUBROUTINE FINNQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
+      SUBROUTINE FIND_NQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
      &                  NRC,SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,
      &                  UNCONT,LUBAS,IPRINT)
 #include "implicit.h"
@@ -1153,7 +1152,7 @@ C
                      READ (LUBAS,*,IOSTAT=IOS) 
      &                ALPHA(ISLOOP,NBLOCK), CONTS
                      IF (IOS.NE.0) THEN
-                        CALL QUIT('FINNQD: Error reading ALPHA, CONTS')
+                       CALL QUIT('FIND_NQD: Error reading ALPHA, CONTS')
                      ENDIF
                      IF (NUCEL .EQ. 1) ALPHA(ISLOOP,NBLOCK) =
      &                    ALPHA(ISLOOP,NBLOCK)*1.44D0
@@ -1172,7 +1171,7 @@ C
      &                     ALPHA(IPLOOP,NBLOCK), CONTS,
      &                     ALPHA(IPLOOP,NBLOCK + 1), CONTP
                      IF (IOS.NE.0) THEN
-                       CALL QUIT('FINNQD Error reading ALPHA,CONTS,...')
+                       CALL QUIT('FIND_NQD Error reading ALPHA,CONTS..')
                      ENDIF
                      IF (ICONTP .LT. IPCONT) THEN
                         CPRIMU(IPLOOP,ICONTP,NBLOCK + 1) = 1.0D0
@@ -1191,7 +1190,7 @@ C
                      READ (LUBAS,*,IOSTAT=IOS)
      &                 ALPHA(ISLOOP,NBLOCK), CONTS
                      IF (IOS.NE.0) THEN
-                        CALL QUIT('FINNQD Error reading ALPHA,CONTS')
+                        CALL QUIT('FIND_NQD Error reading ALPHA,CONTS')
                      ENDIF
                      IF (ICONTS .LT. ISCONT) THEN
                         CPRIMU(ISLOOP,ICONTS,NBLOCK) = 1.0D0
@@ -1274,33 +1273,33 @@ C Error messages
 C
  2000 CONTINUE
       WRITE (LUPRI,'(/2A/A,I5)')
-     &   'FINNQD: Error when reading from basis file ',
+     &   'FIND_NQD: Error when reading from basis file ',
      &   BASNAM,
      &   ' IOSTAT =',IOERR
-      CALL QUIT('I/O error in FINNQD in HERBAS')
+      CALL QUIT('I/O error in FIND_NQD in HERBAS')
  200  CONTINUE
       WRITE (LUPRI,'(/I3,2A)') INTQ,
      &     ' is an unsupported element for basis ',BASNAM
       CALL QUIT('Unsupported element in specified basis set file')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> FINNQD error, number of primitives per block  ',ISPRIM,
+     &  ' >>> FIND_NQD error, number of primitives per block',ISPRIM,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
         CALL QUIT('Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> FINNQD error, number of contracted functions  ',ISCONT,
+     &  ' >>> FIND_NQD error, number of contracted functions',ISCONT,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KAOVEC
         CALL QUIT('Too many contracted functions')
       END 
-C/* Deck finref */
-      SUBROUTINE FINREF(BASREF, LUBAS, BASNAM)
+C/* Deck find_ref */
+      SUBROUTINE FIND_REF(BASREF, LUBAS, BASNAM)
 C*********************************************************
 C* This is the subroutine that searches through the file *
 C* and finds reference info if available.                *
-C* Based on FINPOS, LV, 14-5-2003                         *
+C* Based on FIND_POS, LV, 14-5-2003                      *
 C*********************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1392,8 +1391,8 @@ C*                          columns of contraction       *
 C*                          coefficients                 *
 C*********************************************************
 C
-C/* Deck finpos */
-      SUBROUTINE FINPOS(NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+C/* Deck find_pos */
+      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1430,14 +1429,14 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
             READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
             IF (IOS.NE.0) GO TO 2000
             IF (IPRINT.GE.10) write(lupri,'(/2X,A,3I10)')
-     &        'Output from FINPOS... read INTEXP, INTORB, INTISG',
+     &        'Output from FIND_POS... read INTEXP, INTORB, INTISG',
      &          INTEXP, INTORB, INTISG
             RETURN
          END IF
       ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
          NEWEL = .TRUE.
          IF (IPRINT.GE.10) write(lupri,'(/2X,A)')
-     &      'Output from FINPOS: New element'
+     &      'Output from FIND_POS: New element'
          RETURN
       ELSE 
          GOTO 20
@@ -1452,19 +1451,19 @@ C
 C NEWEL must be .TRUE. to break the if-loop.
 C
       IF (IPRINT.GE.10) write(lupri,'(/2X,A)')
-     &   'Output from FINPOS: Reached end of file'
+     &   'Output from FIND_POS: Reached end of file'
 
       RETURN
 C
  1000 CONTINUE
       WRITE (LUPRI,'(/A,I5)') 'Error in reading basis set file, '//
      &     'your basis is not complete. IOSTAT code:',IOERR
-      CALL QUIT('Incomplete basis set file in FINPOS')
+      CALL QUIT('Incomplete basis set file in FIND_POS')
  2000 CONTINUE
       WRITE (LUPRI,'(/A,I5//A/A)')'Error in searching basis set file,'//
      &     ' your basis is not complete. IOSTAT code:',IOERR,
      &     'Last line read:',STRING
-      CALL QUIT('Error searching basis set file in FINPOS')
+      CALL QUIT('Error searching basis set file in FIND_POS')
       END
 C/* Deck FIND_BASFIL */
       SUBROUTINE FIND_BASFIL(BASNAM,LUBAS,IPRINT)
@@ -1649,9 +1648,9 @@ C           1s,2s,2p,3s,3p,3d,4s,4p,4d,4f,5s,5p,5d ECP
             ILCORE(3) = 3
             ILCORE(4) = 1
          ELSE
-            WRITE(LUPRI,'(/A,I5)') 'REAANO FATAL ERROR: '//
+            WRITE(LUPRI,'(/A,I5)') 'READ_ANO FATAL ERROR: '//
      &         'ECP Huckel not implemented for this core charge:',IQCORE
-            CALL QUIT('REAANO ECP not implemented for this core charge')
+            CALL QUIT('READ_ANO: ECP not implemented for this charge')
          END IF
          ILOFF = ILCORE(IQM)
       ELSE

@@ -216,6 +216,7 @@ C
 C
 C Used from common blocks:
 C   GNRINF : WESTA,EMBEDDING,QM3,QMMM, ...
+C   CCOM   : THRS ! integral threshold, used for THRP default
 C   INFINP : ...,ITRLVL,ITRFIN,..., DO*, DIRFCK,...
 C   INFORB : NSYM,?
 C   INFVAR : MAXOCC,NWOPT,JWOP(2,*),JWOPSY
@@ -233,6 +234,9 @@ C
 #include "gnrinf.h"
 #include "maxash.h"
 #include "maxorb.h"
+#include "maxaqn.h"
+
+#include "ccom.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
@@ -301,8 +305,8 @@ C
             IRDMO = 8
             FLAG(13) = .FALSE.
             IF (DOSCF) THEN
-               AUTOCC = .TRUE.
-               INIOCC = 0
+               AUTOCC = NSYM .GT. 1
+               INIOCC = -1
                DO 13 I = 1, 8
                   NRHF(I) = 0
   13           CONTINUE
@@ -566,11 +570,13 @@ C               ICHARG = ICHRGNU - (2*NISHT+NACTEL)
       NISHT  = 0
       NACTEL = 0
       CALL MOLCHR(ICHARG)
+C     ICHARG is now total nuclear charge;
+C     KCHARG is input in .mol file for total molecular charge
       NACTEL = -1
       NRHFEL = ICHARG - KCHARG
       INIOCC = -1
       IF (NRHFEL .GT. 0) THEN
-         AUTOCC = .TRUE.
+         AUTOCC = NSYM .GT. 1
       ELSE
          AUTOCC = .FALSE.
       END IF
@@ -681,7 +687,7 @@ C
 C     ITRFIN   Level of final integral transformation (when FLAG(25),
 C              i.e. call wrgeom in siropt)
 C
-      THRP   = 1.0D-12
+      THRP   = MAX(THRS,1.0D-15)
       ITRLVL = -6789
       ITRFIN = -6789
       IPRTRA = -1
@@ -836,7 +842,9 @@ C     Several common blocks are saved to next iteration
 C
       CALL SSAVE
 C
-C     This is where we jump back in if input has been processed earlier.
+C *************************************************************************
+C     "124" is where we jump back in if input has been processed earlier,
+C     i.e. if INPPRC is .true.
 C
  124  CONTINUE
 C
@@ -911,6 +919,25 @@ C
      &      ' NEVPT2 is only implemented for complecte active space.'
             INPERR = INPERR + 1
          END IF
+      END IF
+C
+C     No need for AUTOCC if C_1 symmetry
+C
+      IF (NRHFEL .LE. 0) THEN
+         NRHFEL = 2*NRHFT
+         IF (IOPRHF .GT. 0) NRHFEL = NRHFEL + 1
+      END IF
+      IF (NSYM .EQ. 1 .AND. INIOCC .LT. 0) THEN
+         CALL IZERO(NRHF,8)
+         MOCC = NRHFEL/2
+         NRHF(1) = MOCC
+         IF (2*MOCC .NE. NRHFEL) THEN
+            IOPRHF = 1
+         ELSE
+            IOPRHF = 0
+         END IF
+         INIOCC = 6
+         AUTOCC = .FALSE.
       END IF
 C
 C     Disable AUTOCC for RHF if RHF not used (HJ aug95)
@@ -1234,21 +1261,21 @@ C
          IF (DOSCF .AND. AUTOCC .AND. NSYM .GT. 1) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &         'Input error for core-hole calculation:',
-     &         ' - automatic occupation of SCF orbitals not allowed.'
+     &     'ERROR: Input error for core-hole calculation:',
+     &     'ERROR:  - automatic occupation of SCF orbitals not allowed.'
          END IF
          IF (IRDMO .EQ. 8) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &         'Input error for core-hole calculation:',
-     &         ' - no initial molecular orbitals from'//
+     &      'ERROR: Input error for core-hole calculation:',
+     &      'ERROR:  - no initial molecular orbitals from'//
      &         ' a previous calculation specified.'
          END IF
          IF (DOSCF .AND. DOMC) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &       'Input error for core-hole calculation:',
-     &       ' - both Hartree-Fock and MCSCF specified.'
+     &      'ERROR: Input error for core-hole calculation:',
+     &      'ERROR: - both Hartree-Fock and MCSCF specified.'
          END IF
          IF (NASHT .GT. 1) THEN
           IF (NELMN1 .LE. 0 .AND. NELMX1 .LE. 0) THEN
@@ -1300,15 +1327,15 @@ C           ... NO ABSORPTION :
             IF (JCHORB .GT. NISH(JCHSYM)+1) THEN
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/A,I4,A,I2,A)')
-     &               ' Input error for core-hole calculation:'//
-     &               ' Core hole orbital',JCHORB,' in symmetry',
+     &            'ERROR: Input error for core-hole calculation:'//
+     &            'ERROR: Core hole orbital',JCHORB,' in symmetry',
      &               JCHSYM,' is neither inactive nor in RAS1.'
             ELSE IF (JCHORB .LE. NISH(JCHSYM)) THEN
                IF (LMOORD) THEN
                   INPERR = INPERR + 1
                   WRITE (LUPRI,'(/A/A)')
-     &               ' Input error for core-hole calculation:',
-     &               ' .COREHOLE and .REORDER are not compatible'//
+     &            'ERROR: Input error for core-hole calculation:',
+     &            'ERROR: .COREHOLE and .REORDER are not compatible'//
      &               ' if core hole orbital is inactive.'
                END IF
                LMOORD = .TRUE.
@@ -1345,10 +1372,6 @@ C
 C *** AUTOCC : find initial occupation (hjaaj-aug95)
 C              and Huckel start orbitals if DOHUCKEL
 C
-      IF (NRHFEL .LE. 0) THEN
-         NRHFEL = 2*NRHFT
-         IF (IOPRHF .GT. 0) NRHFEL = NRHFEL + 1
-      END IF
       IF (DOSCF .AND. AUTOCC .AND. IREST .EQ. 0
      &   .AND. INPERR .EQ. 0) THEN
 C
@@ -1360,26 +1383,10 @@ C
          KSCRA = 1    + NCMOT
          LSCRA = LCMO - KSCRA
          IF (INIOCC .LE. 0) THEN
-            IF (NSYM .EQ. 1) THEN
-               CALL IZERO(NRHF,8)
-               MOCC = NRHFEL/2
-               NRHF(1) = MOCC
-               IF (2*MOCC .NE. NRHFEL) THEN
-                  IOPRHF = 1
-               ELSE
-                  IOPRHF = 0
-               END IF
-               INIOCC = 6
-            ELSE IF (DOHUCKEL) THEN
+            IF (DOHUCKEL) THEN
                CALL HUCDRV(CMO,CMO(KSCRA),LSCRA)
                FLAG(13) = .FALSE.
                INIOCC = 5
-            ELSE IF (NSYM .EQ. 1) THEN
-               CALL IZERO(NRHF,8)
-               MOCC = NRHFEL/2
-               NRHF(1) = MOCC
-               IF (2*MOCC .NE. NRHFEL) IOPRHF = 1
-               INIOCC = 6
             ELSE
                CALL H1OCC(CMO,CMO(KSCRA),1,LSCRA)
                INIOCC = 4
@@ -1455,8 +1462,8 @@ C
       IF ((DOSCF .OR. DOMP2 .OR. DOCCSD) .AND. INIOCC .LE. 0) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A/A)')
-     &      ' Input error for DFT, HF, MP2, or CC calculation:',
-     &      ' Initial SCF occupation has not been defined.'
+     &     'ERROR: Input error for DFT, HF, MP2, or CC calculation:',
+     &     'ERROR: Initial SCF occupation has not been defined.'
          INIOCC = 0
 C        ... set INIOCC = 0 for SIR_PRTINP
       END IF
@@ -2170,7 +2177,7 @@ C
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*20, TITLIN*80, SR_FUNCS*80
+     &          REWORD*20, TITLIN*80, SR_FUNCS*80
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
@@ -2740,9 +2747,7 @@ C *** Option 2 >INACTI<  Inactive orbitals
          READ(LUCMD,*) (NISH(I),I=1,NSYM)
          NRHFT = ISUM(NSYM,NRHF,1)
          IF (NRHFT .EQ. 0) THEN
-            DO 402 I = 1, NSYM
-               NRHF(I) = NISH(I)
-  402       CONTINUE
+            NRHF(1:NSYM) = NISH(1:NSYM)
          END IF
       GO TO 100
 C
@@ -3072,8 +3077,14 @@ C *** Option 21 >ELECTR< No. of electrons, for automagic det. of occ. orb.s
       GO TO 100
 C *** Option 22 >AUTOCC< automatic determination of occ. orbs. in DIIS,
 C                        with given inital occ. from user input or file
-  122 AUTOCC = .TRUE.
-      IF (INIOCC .LT. 0) INIOCC = 0
+  122 IF (NSYM .EQ. 1) THEN
+         AUTOCC = .FALSE.
+         WRITE (LUPRI,'(/A)')
+     &      'INFO: .AUTOCC ignored because C_1 symmetry'
+      ELSE
+         AUTOCC = .TRUE.
+         IF (INIOCC .LT. 0) INIOCC = 0
+      END IF
       GO TO 100
 C
 C *** Option 23 >FC MVO<  Modified virtual orbitals from FC from NMVO
@@ -3105,12 +3116,13 @@ C
       ELSE
          IOPRHF = 0
       END IF
-      IF (INIOCC .EQ. 0) THEN
+      IF (INIOCC .LT. 0) AUTOCC = .FALSE.
+C     ... AUTOCC may have been set true by .AUTOCC
+      IF (ELECTR .OR. AUTOCC) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
      &' .SINGLY must not be specified together with .ELECTR or .AUTOCC'
       END IF
-      AUTOCC = .FALSE.
       NRHFEL = 0
       INIOCC = 1
       GO TO 100
@@ -3809,7 +3821,7 @@ C *** Option 4 >MOSTAR<   Molecular orbital input
              IRDMO = 8
              DOHUCKEL = .FALSE.
 C         ... make sure Huckel guess is disabled,
-C             although code in GNRLIN in dalton.F takes care of that
+C             although code in GNRLIN in dalton.F also takes care of that
           ELSE IF (INDEX(REWORD,'NEWORB') .GT. 0) THEN
              IRDMO = 9
           ELSE IF (INDEX(REWORD,'SIRIFC') .GT. 0) THEN
@@ -5116,11 +5128,13 @@ C
       END IF
 #ifdef VAR_AUTHORS
          WRITE(IWUNIT,400)
- 400     FORMAT(/' Main authors of the SIRIUS module:'
+  400    FORMAT(/' Main authors of the SIRIUS module:'
      *   /T5,'Hans Joergen Aa. Jensen, Univ. Southern Denmark, Denmark',
      *       ' (principal author)',
      *   /T5,'Hans Agren,              Royal Inst. Technology, Sweden')
-         CALL CIAUTH(IWUNIT)
+         WRITE(IWUNIT,402)
+  402    FORMAT(/' Direct CI and density matrix routines:'
+     *   /T5,'Jeppe Olsen,             University of Aarhus,   Denmark')
          CALL TRAUTH(IWUNIT)
 c        WRITE(IWUNIT,410)
 c410     FORMAT(/,' Questions and correspondence should be directed',

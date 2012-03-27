@@ -20,6 +20,11 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
+! File: DALTON/rsp/rspg.F
+!
+! The routines in this file are generally related to the
+! calculation of ESR g-tensors.
+! 
 !
 #include "single.h"
 C /* Deck gdrv */
@@ -153,7 +158,7 @@ C
       INTEGER KFREE, LFREE
       LOGICAL LDUMMY, FOUND, CONV, OPENED
       INTEGER I, J, KLEN, LU, KANG, ISYM, IPRP, ISO
-      REAL*8 RESID, ANTSYM, D0, DNORM
+      REAL*8  RESID, ANTSYM, D0, DNORM
       PARAMETER (D0=0.0D0)
       CHARACTER*8 BLANK
       DATA BLANK/'        '/
@@ -544,14 +549,14 @@ C
          CALL PRPONE(WRK(KPRPMO),UDV,AVER(3),0,'ZDIPLEN')
       END IF
 C
-C  Electronic charge cenroid
+C  Electronic charge centroid
 C
       N=2*NISHT+NACTEL
       GAGORG(1)=AVER(1)/N
       GAGORG(2)=AVER(2)/N
       GAGORG(3)=AVER(3)/N
       CALL HEADER('OUTPUT FROM ECCSET',2)
-         WRITE(LUPRI,'(/A,I5    )') '   Number of electrons:',N
+         WRITE(LUPRI,'(/A,I5   )') '   Number of electrons:',N
          WRITE(LUPRI,'(A,3F10.6)') '   Dipole moment  :',AVER
          WRITE(LUPRI,'(A,3F10.6)') '   Charge centroid:',GAGORG
 C
@@ -626,47 +631,47 @@ C              WRITE (LUPRI,'(/,3A,/)') ' KEYWORD "',WORD,
 C    *            '" NOT RECOGNIZED IN GINP.'
 C              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
 C              CALL QUIT(' ILLEGAL KEYWORD IN GINP ')
- 1             CONTINUE
+ 1             CONTINUE ! .ZERO
                   G_ALL = .FALSE.
                   READ(LUCMD,'(A80)')G_LINE
                GO TO 100
- 2             CONTINUE
+ 2             CONTINUE ! .ECC
                   ECC = .TRUE.
                GO TO 100
- 3             CONTINUE
+ 3             CONTINUE ! .RMC
                   DORMC = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 4             CONTINUE
+ 4             CONTINUE ! .GC1
                   DOGC1 = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 5             CONTINUE
+ 5             CONTINUE ! .GC2
                   DOGC2 = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 6             CONTINUE
+ 6             CONTINUE ! .OZSO1
                   DOOZSO1 = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 7             CONTINUE
+ 7             CONTINUE ! .OZSO2
                   DOOZSO2 = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 8             CONTINUE
+ 8             CONTINUE ! .MEAN-Field
                   MNFSO = .TRUE.
                GO TO 100
- 9             CONTINUE
+ 9             CONTINUE ! .TEST Amfi
                   MNFSO = .TRUE.
                   TEST_AMFI = .TRUE.
                GO TO 100
-10             CONTINUE
+10             CONTINUE ! .ADD-SO
                   ADDSO = .TRUE.
                GO TO 100
-11             CONTINUE
+11             CONTINUE ! .SCALED charges
                   SCALED_CHARGES = .TRUE.
                GO TO 100
-12             CONTINUE
+12             CONTINUE ! .OWN-OT
                   SPLITSO2 = .TRUE.
                GO TO 100
             ELSE IF (PROMPT.EQ.'*') THEN
@@ -2097,3 +2102,4 @@ C
       RWRITE=OFFSET+LENGTH
       RETURN
       END
+!  --- end of DALTON/rsp/rspg.F ---

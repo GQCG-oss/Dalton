@@ -896,6 +896,7 @@ C
 #include "qrinf.h"
 #include "infpp.h"
 #include "infpri.h"
+#include "infinp.h"
 #include "inforb.h"
 #include "infsmo.h"
 #include "infrsp.h"
@@ -912,6 +913,12 @@ C
      &   'CRCALC ERROR: cubic response not implemented for SOPPA'
          CALL QUIT(
      &   'CRCALC ERROR: cubic response not implemented for SOPPA')
+      END IF
+      IF (DODFT .AND. NASHT.GT.0) THEN
+         WRITE (LUPRI,*) 'CRCALC ERROR: '//
+     &      'cubic response not implemented for open shell DFT'
+         CALL QUIT('CRCALC ERROR: '//
+     &      'cubic response not implemented for open shell DFT')
       END IF
 C
 C Determine solution vectors; first one-index and then two-index

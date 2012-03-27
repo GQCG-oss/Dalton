@@ -23,28 +23,16 @@
 !
 #include "single.h"
 C
-#ifdef OLD_REV_LOG
-!===========================================================================
-!
-!Revision 1.5  2000/05/24 12:43:25  hjj
-! 1) attempted to get WLKREJ true working again (not tested)
-! 2) new parameter lists to SOLFCK and WR_SIRIFC
-! 3) write CREF in determinants on SIRIFC in WR_SIRIFC
-!
-!Revision 1.4  2000/05/01 14:07:33  hjj
-! removed obsolete KAVER,KSYM(4) in WRITE (LUSIFC)
-!
-!revision 1.3 2000/05/01 07:21:48 hjj
-! polishing of warnings so that 'grep WARNING' gets more relevant information.
-!----------------------------
-!revision 1.2 2000/04/14 10:10:52 hjj
-!\hjaaj jan 2000:
-! also screening for SIRCNO in OPTST
-!\hjaaj dec 1999:
-! 1) implemented dynamic Fock matrix screening for QCHF and DIRFCK
-! 2) polishing
-!===========================================================================
-#endif
+C FILE : siropt.F
+C
+C SIROPT controls second order MCSCF or SCF optimization in SIRIUS.
+C RHFENR print RHF orbital energies
+C OPTST  starting the optimization
+C SIRSTP step control
+C TIMOPT timing statistics of optimization
+C WR_SIRIFC write SIRIFC interface file from SIRIUS to RESPONS and ABACUS
+C
+C===========================================================================
 C  /* Deck siropt */
       SUBROUTINE SIROPT(WRK,LFREE,ICONV)
 C
@@ -54,7 +42,6 @@ C   6-Aug-1984/16-May-1984 - hjaaj
 C  14-May-1985 - hjaaj (update     -- sirupd)
 C  10-Nov-1985 - hjaaj (absorption -- sirorb)
 C  14-May-1986 - hjaaj (nr eq's    -- sirnr)
-C  Last revision 15-Mar-1991 - hjaaj
 C
 C Purpose: Control MCSCF optimization.
 C
@@ -119,36 +106,59 @@ C ---
 C
 C *** local:
       CHARACTER*8 STAR8, RTNLBL(2)
-      LOGICAL ABSORP, UPDATE, SOLVNT, GEOWLK, RHFCLC
+      CHARACTER*8 WF_TYPE
+      LOGICAL ABSORP, UPDATE, SOLVNT, GEOWLK, RHF_CALC
       LOGICAL CHKSTP, DONR, NRALW,   LOCAL
 C *** data:
       DATA STAR8/'********'/
 C
       CALL QENTER('SIROPT')
 C
+C *** Start timing:
+C
       IF (IPRSTAT .GT. 0) CALL TIMOPT('START',LUSTAT,WRK,LFREE)
-C
-      IF (NASHT .GT. 1) THEN
-         WRITE (LUW4,960)
-         IF (LUPRI .NE. LUW4) WRITE (LUPRI,960)
-      ELSE
-         WRITE (LUW4,961)
-         IF (LUPRI .NE. LUW4) WRITE (LUPRI,961)
-      END IF
-  960 FORMAT(//T9,     'SIRIUS MCSCF optimization (SIROPT)'
-     *       /' ================================================'/)
-  961 FORMAT(//T9,     'SIRIUS QC-HF optimization (SIROPT)'
-     *       /' ================================================'/)
-C
       TOPT  = SECOND()
       TIMST = TOPT
+C
+C *** WF_TYPE
+C
+      RHF_CALC = (NASHT .LE. 1 .OR. HSROHF)
+      IF ( (MCTYPE.EQ.0) .NEQV. RHF_CALC ) THEN
+         WRITE (LUPRI,'(//A,I5)')
+     &  'WARNING siropt: RHF_CALC neqv MCTYPE =',MCTYPE
+      END IF
+      IF (RHF_CALC) THEN
+         IF (DOHFSRDFT) THEN
+            WF_TYPE = 'HF-srDFT'
+            len_WF_TYPE = 8
+         ELSE IF (DODFT) THEN
+            WF_TYPE = 'QC-DFT'
+            len_WF_TYPE = 6
+         ELSE IF (HSROHF) THEN
+            WF_TYPE = 'HSROHF'
+            len_WF_TYPE = 6
+         ELSE
+            WF_TYPE = 'QC-HF'
+            len_WF_TYPE = 5
+         END IF
+      ELSE IF (DOMCSRDFT) THEN
+         WF_TYPE = 'MC-srDFT'
+         len_WF_TYPE = 8
+      ELSE
+         WF_TYPE = 'MCSCF'
+         len_WF_TYPE = 5
+      END IF
+
+      WRITE (LUW4,960) WF_TYPE(1:len_WF_TYPE)
+      IF (LUPRI .NE. LUW4) WRITE (LUPRI,960) WF_TYPE(1:len_WF_TYPE)
+  960 FORMAT(//T9,     'SIRIUS ',A,' optimization (SIROPT)'
+     *       /' ================================================'/)
 C
 C *** Initializations
 C     convergence flag ICONV to "not converged"
 C     UPDATE , if use UPDATE for MC optimization
 C
       ICONV  = 0
-      RHFCLC = (NASHT .LE. 1 .OR. HSROHF)
       SOLVNT = FLAG(16)
       ABSORP = ( FLAG(51) .OR. FLAG(52) .OR. FLAG(53) )
 #if defined (VAR_NOEXCABS)
@@ -179,11 +189,6 @@ CHJ      KTRLVL = 0
 CHJ   ELSE
          KTRLVL = ITRLVL
 CHJ   END IF
-#if defined (VAR_NOITRABS)
-C --- 851216 -- EXPLICIT ORBITAL HESSIAN DIAGONAL IS WRONG
-C               IF KTRLVL = 0 !
-      KTRLVL = ITRLVL
-#endif
 C     If FLAG(39) always NR (e.g. for core hole calculations /860515-hj)
 C     921028-hjaaj: FLAG(39) copied to local variable, because
 C     it may be reset to true in local region
@@ -275,7 +280,7 @@ C..
 C
 C     Get CI information if active orbitals
 C
-      IF (.NOT.RHFCLC)
+      IF (.NOT.RHF_CALC)
      &   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
 C
 C ****************************
@@ -467,9 +472,10 @@ C        use PRWF here ?? 890925-hjaaj
 C
 C *** Calculate gradient for CREF and some matrices/arrays needed later.
 C
-C Dec99 hjaaj: set screening threshold for direct SCF gradient
+C Dec99 hjaaj: implemented dynamic Fock matrix screening for QCHF and DIRFCK
+C              (based on code in sirdiis.F) :
+C              set screening threshold for direct SCF gradient
 C              GNORM(3) = grdnrm from prev.iter. (THRGRD in iter 1)
-C              (based on code in sirdiis.F)
 C Nov07 hjaaj: we expect quadratic convergence and GNORM(3) is from
 C              prev.iter., thus GNORM(3)**2 
 C              NORBT factor: statistical error is ca. sqrt(# elements) ~ NORBT
@@ -585,14 +591,14 @@ chj   END IF
      *        '(after absorp',I4,')' )
  1010 FORMAT(/' Total MCSCF energy       :',F30.15,T60,
      *        '(MACRO ',I4,')' )
- 1011 FORMAT(/' Total MC-SRDFT energy    :',F30.15,T60,
+ 1011 FORMAT(/' Total MC-srDFT energy    :',F30.15,T60,
      *        '(MACRO ',I4,')' )
  1015 FORMAT(/' - Nuclear repulsion      :',F30.15,
      *       /' - Inactive energy        :',F30.15,
      *       /' - Active energy          :',F30.15)
  1016 FORMAT( ' - Dielec. solvation ener.:',F30.15)
  1017 FORMAT( ' - QM/MM solvation energy :',F30.15)
- 1018 FORMAT( ' - SRDFT effective energy :',F30.15)
+ 1018 FORMAT( ' - srDFT effective energy :',F30.15)
  1019 FORMAT( ' - PCM solvation energy   :',F30.15)
  1020 FORMAT(/' Norm of total gradient   :',F27.12,
      *       /' -    of CI gradient      :',F27.12,
@@ -838,7 +844,7 @@ C        CALL SIRUPD(ICONV,MAXIT,REF1,GRD,CMO1,INDXCI,WRK,LFREE)
      &            ' >>> after UPDATE: recalculating gradient for SIRIFC'
                ICONV    = 0
                UPDATE   = .FALSE.
-               IF (.NOT. RHFCLC) FLAG(14) = .TRUE.
+               IF (.NOT. RHF_CALC) FLAG(14) = .TRUE.
                GO TO 700
             END IF
             GO TO 800
@@ -1000,12 +1006,15 @@ C We did not converge...
 C
       NWARN = NWARN + 1
       TOPT = SECOND() - TOPT
-      WRITE (LUSTAT,7050) ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
-      WRITE (LUW4,7050)  ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
-      IF (LUPRI.NE.LUW4)
-     *WRITE (LUPRI,7050)  ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+      WRITE (LUSTAT,7050) WF_TYPE(1:len_WF_TYPE),
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+      WRITE (LUW4,7050)  WF_TYPE(1:len_WF_TYPE),
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+      IF (LUPRI.NE.LUW4) WRITE (LUPRI,7050)  WF_TYPE(1:len_WF_TYPE),
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
  7050 FORMAT(
-     *   /' *** Optimization control WARNING: MCSCF not converged ***',
+     *   /' *** Optimization control WARNING: ',A,
+     &    ' not converged ***',
      *   /5X,  'Maximum number of iterations or backsteps reached:',
      *   /5X,  'Number of macro iterations used',T45,I5,
      *   /5X,  '   Maximum',T45,I5,
@@ -1018,12 +1027,13 @@ C
   750 CONTINUE
       NWARN = NWARN + 1
       TOPT = SECOND() - TOPT
-      WRITE (LUSTAT,7051) ITMACN,ITMICT,TOPT
-      WRITE (LUW4,7051)  ITMACN,ITMICT,TOPT
+      WRITE (LUSTAT,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
+      WRITE (LUW4  ,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
       IF (LUPRI.NE.LUW4)
-     *WRITE (LUPRI,7051)  ITMACN,ITMICT,TOPT
+     *WRITE (LUPRI ,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
  7051 FORMAT(
-     *   /' *** Optimization control WARNING: MCSCF not converged ***',
+     *   /' *** Optimization control WARNING: ',A,
+     &    ' not converged ***',
      *   /5X,  'Number of macro iterations used',T45,I5,
      *   /5X,  'Number of micro iterations used',T45,I5,
      *   /5X,  'Total number of CPU seconds used',F13.2)
@@ -1035,9 +1045,10 @@ C We have converged...
 C
   800 CONTINUE
       TOPT = SECOND() - TOPT
-      WRITE (LUW4,8000) ITMAC,ITMICT,TOPT
-      IF (LUPRI.NE.LUW4) WRITE (LUPRI,8000) ITMAC,ITMICT,TOPT
- 8000 FORMAT(/' *** Optimization control: MCSCF converged ***',
+      WRITE (LUW4 ,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,TOPT
+      IF (LUPRI.NE.LUW4)
+     &WRITE (LUPRI,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,TOPT
+ 8000 FORMAT(/' *** Optimization control: ',A,' converged ***',
      *       /5X,  'Number of macro iterations used',T45,I5,
      *       /5X,  'Number of micro iterations used',T45,I5,
      *       /5X,  'Total number of CPU seconds used',F13.2)
@@ -1339,9 +1350,17 @@ C     take care of 1-electron case and no virtuals case
      &   '  - E(HOMO) :',EHOMO,' au (symmetry',IHOMO,')',
      &   '  ------------------------------------------',
      &   '    gap     :',ELUMO-EHOMO,' au'
-      IF (NASHT .GT. 0) THEN
+      IF (NASHT .EQ. 1) THEN
          WRITE (LUPRI,'(/A,F15.8,A,I2,A)')
      &   'and E(SOMO) :',ESOMO,' au (symmetry',ISOMO,')'
+      ELSE IF (HSROHF) THEN
+         WRITE (LUPRI,'(/A)')
+     &   'and energy and symmetry of HSROHF open shell orbitals:'
+         DO IW = NISHT+1,NOCCT
+            I = ISX(IW)
+            ISYM = ISMO(I)
+            WRITE (LUPRI,'(F15.8,I10)') SCRA(I), ISYM
+         END DO
       END IF
       IF (ELUMO-EHOMO .LT. GAPMIN) THEN
          WRITE(LUPRI,'(/A)')
@@ -2077,10 +2096,10 @@ C
       ELSE
          IF (DEPRED .NE. 0.0D0) THEN
            RATIO = DEACT / DEPRED
-           WRITE(LUW4,1100) DEACT, DEPRED, RATIO
+           WRITE(LUW4,1110) DEACT, DEPRED, RATIO
            WRITE(LUW4,'(A)') ' Close to convergence, ratio set to one.'
          ELSE
-           WRITE (LUW4,1110) DEACT,DEPRED
+           IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
          END IF
          RATIO = D1
          ISTEP = -1
@@ -2791,6 +2810,7 @@ C--------------
 C CBN+JK, 03.01.06
 C-------------------
 C
+C     Revision 2000/05/24 12:43:25  hjj
 C     Write CREF in determinants here, if NCDETS .gt. NCONF
 C
       IF (NCDETS .GT. NCONF) THEN
@@ -2966,3 +2986,4 @@ C
       CALL QEXIT('WR_SIRIFC')
       RETURN
       END
+C --- end of siropt.F ---

@@ -2,7 +2,8 @@
 !     file: mxcent.h
 !
 !     MXCENT_QM = max number of QM nuclei + point charges + ghost orbital centers
-!     MXCENT = MXCENT_QM + max number of MM nuclei
+!     MXCENT = MXCENT_QM + max number of MM nuclei in QM3 model
+!              (number of nuclei in QMMM model is separately allocated in qmmm.h)
 !
 !     IF you change MXCENT you should do a "make depend"
 !     and then rebuild the program using the command "make".

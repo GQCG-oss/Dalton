@@ -62,8 +62,12 @@ cat > rsp_soppapolarsymm.dal <<'%EOF%'
 0.0 0.0592
 *C6
 .DIPLEN
+.PRINT
+  5
 .MAXMOM
   6
+.THCC6
+ 1.0D-4
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
@@ -150,15 +154,15 @@ CRIT8=`$GREP "14 * 3\.958..*(D|E)\+07" $log | wc -l`
 CRIT9=`$GREP "16 * 4\.874..*(D|E)\+08" $log | wc -l`
 CRIT10=`$GREP "18 * 6\.002..*(D|E)\+09" $log | wc -l`
 CRIT11=`$GREP "20 * 7\.391..*(D|E)\+10" $log | wc -l`
-CRIT12=`$GREP "22 * 9\.101..*(D|E)\+11" $log | wc -l`
+CRIT12=`$GREP "22 * 9\.10[12]..*(D|E)\+11" $log | wc -l`
 CRIT13=`$GREP "24 * 1\.120..*(D|E)\+13" $log | wc -l`
 CRIT14=`$GREP "26 * 1\.380..*(D|E)\+14" $log | wc -l`
 CRIT15=`$GREP "28 * 1\.699..*(D|E)\+15" $log | wc -l`
 CRIT16=`$GREP "30 * 2\.092..*(D|E)\+16" $log | wc -l`
-CRIT17=`$GREP "32 * 2\.576..*(D|E)\+17" $log | wc -l`
+CRIT17=`$GREP "32 * 2\.57[67]..*(D|E)\+17" $log | wc -l`
 CRIT18=`$GREP "34 * 3\.173..*(D|E)\+18" $log | wc -l`
 CRIT19=`$GREP "36 * 3\.907..*(D|E)\+19" $log | wc -l`
-CRIT20=`$GREP "38 * 4\.811..*(D|E)\+20" $log | wc -l`
+CRIT20=`$GREP "38 * 4\.81[12]..*(D|E)\+20" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \

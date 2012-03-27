@@ -1971,6 +1971,9 @@ C
 C     Properties not available for MP2, ABACUS run will be skipped
 C
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
+         WRITE(LUPRI,'(A/A)') ' Properties not ' //
+     &        'available for MP2 wave functions!',
+     &      ' You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789
       END IF

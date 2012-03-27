@@ -483,6 +483,7 @@ C
      *      'shifted with : ',MP2SHF
 
          IF (SRMP2_SRINTS) THEN
+            IF (DCPT2) WRITE (LUPRI,'(/A)') ' *** DCPT2 result:'
             if (isrints_loop .eq. 1) then
                WRITE (LUPRI,'(//A,F25.10)')
      *          '   MP2 contribution from short-range integrals :',EMP2
