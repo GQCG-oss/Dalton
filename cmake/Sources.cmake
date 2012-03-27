@@ -384,6 +384,7 @@ cc/ccximcon.F
 cc/crayio2.F
 cc/herdirect_cc.F
 cc/iroper2.F
+cc/cc_lanczos_lrinp.F
 choles/cc_caa.F
 choles/cc_choatr.F
 choles/cc_chocc2.F
