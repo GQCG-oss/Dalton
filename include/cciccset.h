@@ -1,5 +1,5 @@
       INTEGER MAXTAB
-      PARAMETER (MAXTAB = 32)
+      PARAMETER (MAXTAB = 33)
       CHARACTER*(3) VTABLE(MAXTAB)
       DATA VTABLE /'R0 ','R1 ','R2 ','R3 ',
      &             'L0 ','L1 ','L2 ','L3 ',
@@ -12,6 +12,7 @@
      &                   'EO1','EO2',
      &                   'EX1','EX2',
      &             'PL1',
+     &             'QL',
      &             'M1 ',
      &             'N2 ',
      &             'D0 '
