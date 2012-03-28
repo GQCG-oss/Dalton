@@ -81,6 +81,7 @@ C          'CR2': right second-order Cauchy vectors
 C          'RE' : right eigenvectors
 C          'ER1': first-order response of right eigenvetors
 C          'ER2': second-order response of right eigenvetors
+C          'QL' : Lanczos chain Q vectors (columns of Q matrix)
 C
 C          'L0' : left zeroth-order lamdba vector (IDXLST ignored)
 C          'L1' : left first-order response vector
@@ -101,6 +102,7 @@ C          'F4' : F-transformed fourth-order right vectors
 C          'FC' : F-transformed first-order right Cauchy vectors
 C          'CF2': F-transformed second-order right Cauchy vectors
 C          'FR' : F-transformed right eigenvector
+C          'FQ' : F-transformed Lanczos q vectors (FQ matrix)
 C
 C          'XF1': F-transformed right first-order response vectors,
 C                 F12*R2 contribution for Cholesky CC2.
@@ -148,6 +150,7 @@ C  PL1 vectors introduced in March 2000 by Sonia Coriani
 C  CC3 effective vectors introduced 2002 by Christof Haettig
 C  Cholesky extensions by Thomas Bondo Pedersen, March/April 2003.
 C  R12 double excitation part introduced Jun 2003 by Christof Haettig
+C  Lanczos vectors Q and FQ introduced in 2010. Sonia
 C
 C---------------------------------------------------------------------*
       IMPLICIT NONE
@@ -356,7 +359,7 @@ C   Purpose:  generate file name and account for special treatment
 C             of Cauchy vectors with zero-order Cauchy order
 C
 C  Christof Haettig, november 1998
-C 
+C  Extended to more than 999 files - Sonia, 2011
 C---------------------------------------------------------------------*
       IMPLICIT NONE
 #include "priunit.h"
@@ -409,6 +412,8 @@ C
       ELSE
          LIST3 = LIST(1:3)
       END IF
+
+
       IF ( LIST(1:2).EQ.'R0' .OR. LIST(1:2).EQ.'L0' .OR.
      &     LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'L1' .OR.
      &     LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'L2' .OR.
@@ -425,6 +430,8 @@ C
      &     LIST(1:2).EQ.'RE' .OR. LIST(1:2).EQ.'LE' .OR.
      &     LIST(1:2).EQ.'E0' .OR. LIST(1:2).EQ.'BE' .OR.
      &     LIST(1:2).EQ.'N2' .OR. LIST(1:2).EQ.'BR' .OR.
+!Lanczos QL added. Sonia
+     &     LIST(1:2).EQ.'QL' .OR. LIST(1:2).EQ.'FQ' .OR.
      &     LIST(1:2).EQ.'FR' .OR. LIST(1:2).EQ.'M1' 
      &                                                   ) THEN
 
@@ -499,10 +506,22 @@ C
       IF (ISYM .EQ. 7) LISTI = LISTI(1:3)//'7'
       IF (ISYM .EQ. 8) LISTI = LISTI(1:3)//'8'
  
-      WRITE(FILEX,'(A2,A4,1X,I3)') 'CC',LISTI(1:4), IDXFIL
-      DO I = 1, 10
-        IF ( FILEX(I:I) .EQ. ' ' ) FILEX(I:I) = '_'
-      END DO
+      !WRITE(FILEX,'(A2,A4,1X,I3)') 'CC',LISTI(1:4), IDXFIL
+      !DO I = 1, 10
+      !  IF ( FILEX(I:I) .EQ. ' ' ) FILEX(I:I) = '_'
+      !END DO
+      !Generalized to handle more that 999 files (for Lanczos). Sonia
+      IF (IDXFIL.LE.999) THEN
+        WRITE(FILEX,'(A2,A4,1X,I3)') 'CC',LISTI(1:4), IDXFIL
+        DO I = 1, 10
+          IF ( FILEX(I:I) .EQ. ' ' ) FILEX(I:I) = '_'
+        END DO
+      ELSE IF (IDXFIL.GT.999) THEN
+        WRITE(FILEX,'(A2,A4,I4)') 'CC',LISTI(1:4), IDXFIL
+        !DO I = 1, 10
+        !  IF ( FILEX(I:I) .EQ. ' ' ) FILEX(I:I) = '_'
+        !END DO
+      END IF
 
 *---------------------------------------------------------------------*
 * special file name: 
@@ -524,6 +543,7 @@ c/* Deck cc_rcrsp */
 *
 *   Christof Haettig 15-05-1996
 *   Introduced PL1, Sonia Coriani March 2000
+*   Introduced QL (Lanczos Q vectors), Sonia Coriani August 2010
 *=====================================================================*
        IMPLICIT NONE
 
@@ -558,6 +578,8 @@ c/* Deck cc_rcrsp */
 #include "cccl2rsp.h"
 #include "ccexci.h"
 #include "ccpl1rsp.h"
+!Lanczos
+#include <ccqlrlcz.h>
 Cholesky
 #include "maxorb.h"
 #include "ccdeco.h"
@@ -594,6 +616,9 @@ Cholesky
       LOGICAL LSYM, LLBL, LFRQ, LIND, LORX
       INTEGER ORDER, IOP, IBIT32
   
+!Lanczos (to be tested). Sonia
+      integer idqllst(maxorder), idqlfil(maxorder)
+
 
 *=====================================================================*
 * set up the information to check the header:
@@ -1034,6 +1059,21 @@ Cold        LORXLST(IOP) = .FALSE.
             INDLST(IOP)  = 0
           END DO
 *.....................................................................
+* 'QL' - Lanczos Q vectors
+* 'FQ' - F transformation of Lanczos Q vectors
+*  FIXME: IDQLLST??? Sonia
+*.....................................................................
+      ELSE IF ( LIST(1:2).EQ.'QL' .OR. LIST(1:2).EQ.'FQ') THEN
+          ORDER = 1
+          DO IOP = 1, ORDER
+            FRQLST(IOP)  = FRQQL(IDXLST)
+            LABLST(IOP)  = LBLQL(IDXLST)
+            ISYLST(IOP)  = ISYQL(IDXLST)
+            LORXLST(IOP) = LORXQL(IDXLST)
+            IDQLLST(IOP) = IDXQL(IDXLST)
+            INDLST(IOP)  = 0
+          END DO
+*.....................................................................
 * 'D0' - dummy vector
 *.....................................................................
       ELSE IF ( LIST(1:2).EQ.'D0' ) THEN
@@ -1139,7 +1179,16 @@ Cold    TYPE(3:3)  = '_'
      &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1)
 
         INDFIL(1) = 0
+*.....................................................................
+* 'QL ', 'FQ '  Lanczos
+*  FIXME: Verify what IDQLFIL is (replace with INDFIL?)
+*.....................................................................
+      ELSE IF ( LIST(1:2).EQ.'QL' .OR. LIST(1:2).EQ.'FQ' ) THEN
+        !read the header of the QL/FQL vector on file (Lanczos)
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3),
+     &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1), IDQLFIL(1)
 
+        INDFIL(1) = 0
 *.....................................................................
 * RC, LC, FC
 *.....................................................................

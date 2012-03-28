@@ -122,7 +122,7 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '*CCFOP ','.SOPPA(','.CCR(3)','.CCR(T)','.FIELD ',
      &            '.DEBUG ','*CCQR2R','.HERDIR','.BUFLEN','*CCLR  ',
      &            '*CCEXLR','.NSIMLE','.THRLEQ','.MXLRV ','*CCTM  ',
-     &            '.XXXXXX','*CC5R  ','*CC4R  ','*CCQR  ','*CCCR  ',
+     &            '*CCLRLA','*CC5R  ','*CC4R  ','*CCQR  ','*CCCR  ',
      &            '.O2SKIP','.R2SKIP','.X2SKIP','.F2SKIP','.L2SKIP',
      &            '*CCMCD ','.ANAAOD','.PACK  ','.CONNEC','.THRLDP',
      &            '.RCSKIP','.FCSKIP','.LCSKIP','.CO2SKI','.CX2SKI',
@@ -183,6 +183,8 @@ C
       CCTPA  = .FALSE.
       CCEXLR = .FALSE.
       CCDERI = .FALSE.
+!     Lanczos
+      CCLRLCZ = .FALSE.
 C     
 Cholesky
 C 
@@ -675,6 +677,9 @@ CKeinSPASmehr
                   CALL CC_TMINP(WORD)
                GO TO 1000
    66          CONTINUE
+               !Lanczos linear response 
+               !*CCLRLANCZOS
+                  CALL CC_LANCZOS_LRINP(WORD)
                GO TO 1000
    67          CONTINUE
                   CALL CC_5RINP(WORD)
@@ -1024,6 +1029,8 @@ C
      *         ' -Linear response properties calculated'
             IF ( CAUCHY) WRITE(IWUNIT,'(A)')
      *         ' -Dispersion coefficients for linear response calc.'
+            IF ( CCLRLCZ ) WRITE(IWUNIT,'(A)')
+     *         ' -Damped Linear Response via Lanczos algorithm'
             IF ( CCQR  ) WRITE(IWUNIT,'(A)')
      *         ' -Quadratic response properties calculated'
             IF ( CCCR  ) WRITE(IWUNIT,'(A)')

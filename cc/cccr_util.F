@@ -295,7 +295,7 @@ c /* deck iccset1 */
 *
 *    Written by Christof Haettig, january 1997.
 *    PL1 added march 2000, Sonia
-*
+*    QL (Lanczos) added 2010, Sonia
 *=====================================================================*
       IMPLICIT NONE  
 
@@ -337,6 +337,7 @@ c /* deck iccset1 */
       IF (      LIST(1:1).EQ.'R' .OR. LIST(1:1).EQ.'O'
      &     .OR. LIST(1:1).EQ.'L' .OR. LIST(1:1).EQ.'X'
      &     .OR. LIST(1:1).EQ.'N' .OR. LIST(1:1).EQ.'M' 
+     &     .OR. LIST(1:1).EQ.'Q'                       !Lanczos
      &     .OR. LIST(1:2).EQ.'D0'                      ) THEN
          LEN = 2
       ELSE IF  (LIST(1:1).EQ.'E' .OR. LIST(1:1).EQ.'C' 
@@ -394,7 +395,7 @@ c /* deck iccset2 */
 *
 *    Written by Christof Haettig, january 1997.
 *    PL1 vectors, Sonia 2000
-*
+*    Lanczos QL added in august 2010, Sonia
 *=====================================================================*
       IMPLICIT NONE  
 #include "priunit.h"
@@ -426,6 +427,7 @@ c /* deck iccset2 */
       IF (      LISTA(1:1).EQ.'R' .OR. LISTA(1:1).EQ.'O'
      &     .OR. LISTA(1:1).EQ.'L' .OR. LISTA(1:1).EQ.'X'
      &     .OR. LISTA(1:1).EQ.'N' .OR. LISTA(1:1).EQ.'M' 
+     &     .OR. LISTA(1:1).EQ.'Q'
      &     .OR. LISTA(1:2).EQ.'D0'                       ) THEN
          LENA = 2
       ELSE IF  (LISTA(1:1).EQ.'E' .OR. LISTA(1:1).EQ.'C' 
@@ -435,6 +437,7 @@ c /* deck iccset2 */
       IF (      LISTB(1:1).EQ.'R' .OR. LISTB(1:1).EQ.'O'
      &     .OR. LISTB(1:1).EQ.'L' .OR. LISTB(1:1).EQ.'X'
      &     .OR. LISTB(1:1).EQ.'N' .OR. LISTB(1:1).EQ.'M' 
+     &     .OR. LISTB(1:1).EQ.'Q'
      &     .OR. LISTB(1:2).EQ.'D0'                       ) THEN
          LENB = 2
       ELSE IF  (LISTB(1:1).EQ.'E' .OR. LISTB(1:1).EQ.'C' 

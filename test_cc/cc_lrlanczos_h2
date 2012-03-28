@@ -1,0 +1,197 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc_lrlanczos_h2.info <<'%EOF%'
+   cc_lrlanczos_h2
+   -----------
+   Molecule:         H2 in D2H
+   Wave Function:    CCSD / 6-31G
+   Test Purpose:     Lanczos excitation energies and LR
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > cc_lrlanczos_h2.mol <<'%EOF%'
+BASIS
+6-31G
+Test solvent for CCSD excitation energies
+and various properties
+    1    3  X  Y  Z     1.D-17
+        1.    1    
+H     0.0000000000000000  0.0000000000000000  0.7000000000000000       *
+%EOF%
+
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc_lrlanczos_h2.dal <<'%EOF%'
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRALS
+.DIPLEN
+**WAVE FUNCTIONS
+.CC
+*PRINT
+!To check the origin of excit
+.PRINTL
+   0 11
+*SCF INP
+.THRESH
+1.0D-9
+*CC INP
+.CCSD
+.THRLEQ
+ 1.0D-9
+.THRENR
+ 1.0D-10
+.PRINT
+ 1
+.MAX IT
+ 80
+*CCLRLANCZOS
+.CHAINLENGTH
+ 10
+.OPERATOR
+ZDIPLEN ZDIPLEN
+.ANALYZE
+.DAMPING
+ 1
+ 4.556333D-3
+.FREQ INTERVAL
+0.0 15.0 0.0025
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc_lrlanczos_h2.check
+cat >>cc_lrlanczos_h2.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Vacuum energies
+# To be inserted!!!!
+#
+#
+CRIT1=`$GREP "CCSD     Total energy: *\-398.6993147" $log | wc -l`
+CRIT2=`$GREP "CCSD     Total energy: *\-398.7042657" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 ` 
+CTRL[1]=3
+ERROR[1]="ENERGIES NOT CORRECT"
+
+# CCSD excitation energies
+# TO BE INSERTED
+# Vac.
+# | ^1A1  |    1   |     0.4029987  |      10.96616  |     88448.001  |  95.01  |
+# +-----------------------------------------------------------------------------+
+# | ^1B2  |    1   |     0.2929261  |       7.97093  |     64289.842  |  95.13  |
+#
+CRIT1=`$GREP "A1  \| * 1 * \| * ( |0)\.40299..  \| * 10\.9661.  \| * 88448\....  \|  95\.0." $log | wc -l`
+CRIT2=`$GREP "B2  \| * 1 * \| * ( |0)\.29292..  \| * 7\.9709.  \| * 64289\....  \|  95\.1." $log | wc -l`
+CRIT3=`$GREP "A1  \| * 1 * \| * ( |0)\.40963..  \| * 11\.1466.  \| * 89903\....  \|  95\.1." $log | wc -l`
+CRIT4=`$GREP "B2  \| * 1 * \| * ( |0)\.30718..  \| * 8\.3589.  \| * 67419\....  \|  95\.0." $log | wc -l`
+CRIT5=`$GREP "A1  \| * 1 * \| * ( |0)\.4005...  \| * 10\.8995.  \| * 87910\....  \|  95\.3." $log | wc -l`
+CRIT6=`$GREP "B2  \| * 1 * \| * ( |0)\.30641..  \| * 8\.3379.  \| * 67249\....  \|  95\.0." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6` 
+CTRL[2]=6
+ERROR[2]="CCSD EXCITATION ENERGY IS NOT CORRECT"
+
+## CCSD oscillator strengths for 1. state in symmetry 1
+# | ^1A1  |    1   |        0.8175252      |      0.2196411       |    Z        |
+# +-----------------------------------------------------------------------------+
+# | ^1B2  |    1   |        0.0157596      |      0.0030776       |    Y        |
+# | ^1A1  |    1   |        0.9689983      |      0.2646222       |    Z        |
+# +-----------------------------------------------------------------------------+
+# | ^1B2  |    1   |        0.0155820      |      0.0031910       |    Y        |
+# | ^1A1  |    1   |        1.4323300      |      0.3824796       |    Z        |
+# +-----------------------------------------------------------------------------+
+# | ^1B2  |    1   |        0.0192002      |      0.0039221       |    Y        |
+CRIT1=`$GREP "A1  \| * 1 * \| * ( |0)\.81752.. * \| * ( |0)\.21964.." $log | wc -l`
+CRIT2=`$GREP "B2  \| * 1 * \| * ( |0)\.01575.. * \| * ( |0)\.00307.." $log | wc -l`
+CRIT3=`$GREP "A1  \| * 1 * \| * ( |0)\.96..... * \| * ( |0)\.26462.." $log | wc -l`
+CRIT4=`$GREP "B2  \| * 1 * \| * ( |0)\.01558.. * \| * ( |0)\.00319.." $log | wc -l`
+CRIT5=`$GREP "A1  \| * 1 * \| * 1.4323... * \| * ( |0).382479." $log | wc -l`
+CRIT6=`$GREP "B2  \| * 1 * \| * ( |0)\.019.... * \| * ( |0)\.00392.." $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[3]=6
+ERROR[3]="CCSD OSCILLATOR STRENGTH IS NOT CORRECT"
+#
+
+## CCSD polarizabilities: static& dynamic * vac, noneq solv, eq. solv.
+# Isotropic Polarizability:                  13.526508 a.u.
+# Polarizability anisotropy invariant:        7.456413 a.u.
+# Isotropic Polarizability:                  13.807448 a.u.
+# Polarizability anisotropy invariant:        7.689463 a.u.
+# Isotropic Polarizability:                  14.265556 a.u.
+# Polarizability anisotropy invariant:        7.994931 a.u.
+# Isotropic Polarizability:                  14.573765 a.u.
+# Polarizability anisotropy invariant:        8.259014 a.u.
+# Isotropic Polarizability:                  16.110729 a.u.
+# Polarizability anisotropy invariant:       10.028827 a.u.
+# Isotropic Polarizability:                  16.508604 a.u.
+# Polarizability anisotropy invariant:       10.407107 a.u.
+CRIT1=`$GREP "Isotropic Polarizability:             *  13.52650." $log | wc -l`
+CRIT2=`$GREP "Polarizability anisotropy invariant:  *  7.45641." $log | wc -l`
+CRIT3=`$GREP "Isotropic Polarizability:             *  13.80744." $log | wc -l`
+CRIT4=`$GREP "Polarizability anisotropy invariant:  *  7.68946." $log | wc -l`
+CRIT5=`$GREP "Isotropic Polarizability:             *  14.26555." $log | wc -l`
+CRIT6=`$GREP "Polarizability anisotropy invariant:  *  7.99493." $log | wc -l`
+CRIT7=`$GREP "Isotropic Polarizability:             *  14.57376." $log | wc -l`
+CRIT8=`$GREP "Polarizability anisotropy invariant:  *  8.25901." $log | wc -l`
+CRIT9=`$GREP "Isotropic Polarizability:             *  16.1107.." $log | wc -l`
+CRIT10=`$GREP "Polarizability anisotropy invariant: * 10.02882." $log | wc -l`
+CRIT11=`$GREP "Isotropic Polarizability:            * 16.50860." $log | wc -l`
+CRIT12=`$GREP "Polarizability anisotropy invariant: * 10.40710." $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 `
+CTRL[4]=12
+ERROR[4]="CCSD POLARIZABILITIES ARE NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                
+%EOF%
+chmod +x cc_lrlanczos_h2.check
+#######################################################################
