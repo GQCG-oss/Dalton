@@ -360,8 +360,12 @@ csonia 04/10/95
      &                                      'Quadrupoles     ', Ees(2,1)
         if (lmul(3)) write(lupri,'(9x,a16,5x,f20.12)')
      &                                      'Octopoles       ', Ees(3,1)
+        if (lmul(4)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                      'Hexadecapoles   ', Ees(4,1)
+        if (lmul(5)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                      'Ditriacontapoles', Ees(5,1)
         if (pe_fd) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Frozen densities', Ees(4,1)
+     &                                      'Frozen densities', Ees(6,1)
         if (lpol(0) .or. lpol(1)) then
             write(lupri,'(/7x,a)') 'Polarization contributions:'
             write(lupri,'(9x,a16,5x,f20.12)')

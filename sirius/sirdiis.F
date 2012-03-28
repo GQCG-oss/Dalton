@@ -472,8 +472,8 @@ C------------------
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
-     &     .and. .not. peqm    .and. .not. pe_savden
      &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
+     &     .and. .not. peqm    .and. .not. pe_savden
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!

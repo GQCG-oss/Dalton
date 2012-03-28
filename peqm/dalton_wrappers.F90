@@ -5,8 +5,6 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, work, nwrk)
 
     implicit none
 
-    intrinsic :: real
-
     integer, intent(in) :: nnbas, ncomps, nwrk
     real(8), dimension(3,1), intent(in) :: R
     real(8), dimension(nnbas,ncomps), intent(out) :: Tk_ints
@@ -92,6 +90,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, work, nwrk)
                                           info_mat=ierr,            &
                                           triangular=triangular,    &
                                           symmetric=symmetric)
+                        if (ierr /= 0) stop 'Failed to associate matrices.'
                     end if
                 end do
                 i = i + 1

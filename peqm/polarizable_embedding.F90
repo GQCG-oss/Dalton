@@ -8,7 +8,7 @@ module polarizable_embedding
 
     private
 
-    intrinsic :: present, size, cpu_time
+    intrinsic :: allocated, present, size, cpu_time
 
     public :: pe_dalton_input, pe_read_potential, pe_master
     public :: pe_save_density, pe_intmol_twoints, pe_repulsion
@@ -56,7 +56,7 @@ module polarizable_embedding
 
     ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
     ! C^(n)_ij coefficients for calculating T(k) tensor elements
-    integer, dimension(14,0:6,0:6) :: Cnij
+    integer, dimension(:,:,:), allocatable, save :: Cnij
 
     ! variables used for timings
     real(dp) :: t1, t2
@@ -75,7 +75,7 @@ module polarizable_embedding
     
     ! specifies what type of parameters are present
     ! lmul(0): monopoles, lmul(1): dipoles etc.
-    logical, dimension(0:3), public, save :: lmul = .false.
+    logical, dimension(0:5), public, save :: lmul = .false.
     ! lpol(0): isotropic dipole-dipole polarizabilities
     ! lpol(1): anisotropic dipole-dipole polarizabilities
     logical, dimension(0:1), public, save :: lpol = .false.
@@ -99,6 +99,8 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, public, save :: Epol
 
     ! multipole moments
+    ! order of the highest order multipole moment
+    integer, save :: mulorder = -1
     ! monopoles
     real(dp), dimension(:,:), allocatable, save :: Q0s
     ! dipoles
@@ -108,12 +110,13 @@ module polarizable_embedding
     ! octopoles
     real(dp), dimension(:,:), allocatable, save :: Q3s
     ! hexadecapoles
-!    real(dp), dimension(:,:), allocatable, save :: Q4s
+    real(dp), dimension(:,:), allocatable, save :: Q4s
     ! ditriacontapoles
-!    real(dp), dimension(:,:), allocatable, save :: Q5s
-
+    real(dp), dimension(:,:), allocatable, save :: Q5s
 
     ! (hyper)polarizabilities
+    ! order of highest order polarizability
+    integer, save :: polorder = -1
     ! dipole-dipole polarizabilities
     real(dp), dimension(:,:), allocatable, save :: alphas
     ! .true. if alpha > 0 else .false.
@@ -308,6 +311,7 @@ subroutine pe_read_potential(coords, charges)
             end do
         else if (trim(word) == 'monopoles') then
             lmul(0) = .true.
+            if (mulorder < 0) mulorder = 0
             allocate(Q0s(1,nsites)); Q0s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
@@ -317,6 +321,7 @@ subroutine pe_read_potential(coords, charges)
             end do
         else if (trim(word) == 'dipoles') then
             lmul(1) = .true.
+            if (mulorder < 1) mulorder = 1
             allocate(Q1s(3,nsites)); Q1s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
@@ -326,6 +331,7 @@ subroutine pe_read_potential(coords, charges)
             end do
         else if (trim(word) == 'quadrupoles') then
             lmul(2) = .true.
+            if (mulorder < 2) mulorder = 2
             allocate(Q2s(6,nsites)); Q2s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
@@ -335,6 +341,7 @@ subroutine pe_read_potential(coords, charges)
             end do
         else if (trim(word) == 'octopoles') then
             lmul(3) = .true.
+            if (mulorder < 3) mulorder = 3
             allocate(Q3s(10,nsites)); Q3s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
@@ -342,15 +349,26 @@ subroutine pe_read_potential(coords, charges)
                 read(lupot,*) s, (temp(j), j = 1, 10)
                 Q3s(:,s) = temp(1:10)
             end do
-!        else if (trim(word) == 'hexadecapoles') then
-!            lmul(4) = .true.
-!            allocate(Q4(15,nsites)); Q4 = 0.0d0
-!            temp = 0.0d0
-!            read(lupot,*) nlines
-!            do i = 1, nlines
-!                read(lupot,*) s, (temp(j), j = 1, 15)
-!                Q4(:,s) = temp(1:15)
-!            end do
+        else if (trim(word) == 'hexadecapoles') then
+            lmul(4) = .true.
+            if (mulorder < 4) mulorder = 4
+            allocate(Q4s(15,nsites)); Q4s = 0.0d0
+            temp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (temp(j), j = 1, 15)
+                Q4s(:,s) = temp(1:15)
+            end do
+        else if (trim(word) == 'ditriacontapoles') then
+            lmul(5) = .true.
+            if (mulorder < 5) mulorder = 5
+            allocate(Q5s(21,nsites)); Q5s = 0.0d0
+            temp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (temp(j), j = 1, 21)
+                Q5s(:,s) = temp(1:21)
+            end do
         else if (trim(word) == 'isoalphas') then
             lpol(0) = .true.
             allocate(alphas(6,nsites)); alphas = 0.0d0
@@ -428,13 +446,17 @@ subroutine pe_read_potential(coords, charges)
     if (nsites > 0) then
         write(luout,'(/4x,a,i6)') 'Number of classical sites: ', nsites
     end if
-    if (lmul(3)) then
+    if (mulorder == 5) then
+        write(luout,'(4x,a)') 'Multipole moments upto 5th order.'
+    else if (mulorder == 4) then
+        write(luout,'(4x,a)') 'Multipole moments upto 4th order.'
+    else if (mulorder == 3) then
         write(luout,'(4x,a)') 'Multipole moments upto 3rd order.'
-    else if (lmul(2)) then
+    else if (mulorder == 2) then
         write(luout,'(4x,a)') 'Multipole moments upto 2nd order.'
-    else if (lmul(1)) then
+    else if (mulorder == 1) then
         write(luout,'(4x,a)') 'Multipole moments upto 1st order.'
-    else if (lmul(0)) then
+    else if (mulorder == 0) then
         write(luout,'(4x,a)') 'Multipole moments upto 0th order.'
     end if
     if (lpol(0) .and. lpol(1)) then
@@ -509,12 +531,12 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(3)) then
                     Q3s(:,idxs(i)) = 0.0d0
                 endif
-!                if (lmul(4)) then
-!                Q4s(:,idxs(i)) = 0.0d0
-!                endif
-!                if (lmul(5)) then
-!                    Q5s(:,idxs(i)) = 0.0d0
-!                endif
+                if (lmul(4)) then
+                    Q4s(:,idxs(i)) = 0.0d0
+                endif
+                if (lmul(5)) then
+                    Q5s(:,idxs(i)) = 0.0d0
+                endif
                 if (lpol(0) .or. lpol(1)) then
                     alphas(:,idxs(i)) = 0.0d0
                 end if
@@ -548,15 +570,15 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(3)) then
                     Q3s(:,idx) = Q3s(:,idx) + Q3s(:,idxs(i)) / 3.0d0
                 endif
-!                if (lmul(4)) then
-!                    Q4s(:,idx) = Q4s(:,idx) + Q4s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(5)) then
-!                   Q5s(:,idx) = Q5s(:,idx) + Q5s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lpol(0) .or. lpol(1)) then
-!                    alphas(:,idx) = alphas(:,idx) + alphas(:,idxs(i)) / 3.0d0
-!                end if
+                if (lmul(4)) then
+                    Q4s(:,idx) = Q4s(:,idx) + Q4s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(5)) then
+                    Q5s(:,idx) = Q5s(:,idx) + Q5s(:,idxs(i)) / 3.0d0
+                endif
+                if (lpol(0) .or. lpol(1)) then
+                    alphas(:,idx) = alphas(:,idx) + alphas(:,idxs(i)) / 3.0d0
+                end if
 
                 r = 1.0d10
                 do j = 1, nsites
@@ -577,24 +599,24 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(0)) then
                     Q0s(:,jdx) = Q0s(:,jdx) + Q0s(:,idxs(i)) / 3.0d0
                 endif
-                if (lmul(1)) then 
+                if (lmul(1)) then
                     Q1s(:,jdx) = Q1s(:,jdx) + Q1s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(2)) then
-                Q2s(:,jdx) = Q2s(:,jdx) + Q2s(:,idxs(i)) / 3.0d0
-                endif       
+                    Q2s(:,jdx) = Q2s(:,jdx) + Q2s(:,idxs(i)) / 3.0d0
+                endif
                 if (lmul(3)) then
                     Q3s(:,jdx) = Q3s(:,jdx) + Q3s(:,idxs(i)) / 3.0d0
                 endif
-!                if (lmul(4)) then
-!                    Q4s(:,jdx) = Q4s(:,jdx) + Q4s(:,idxs(i)) / 3.0d0
-!                endif  
-!                if (lmul(5)) then
-!                    Q5s(:,jdx) = Q5s(:,jdx) + Q5s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lpol(0) .or. lpol(1)) then
-!                    alphas(:,jdx) = alphas(:,jdx) + alphas(:,idxs(i)) / 3.0d0
-!                end if
+                if (lmul(4)) then
+                    Q4s(:,jdx) = Q4s(:,jdx) + Q4s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(5)) then
+                    Q5s(:,jdx) = Q5s(:,jdx) + Q5s(:,idxs(i)) / 3.0d0
+                endif
+                if (lpol(0) .or. lpol(1)) then
+                    alphas(:,jdx) = alphas(:,jdx) + alphas(:,idxs(i)) / 3.0d0
+                end if
 
                 r = 1.0d10
                 do j = 1, nsites
@@ -615,24 +637,24 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(0)) then
                     Q0s(:,kdx) = Q0s(:,kdx) + Q0s(:,idxs(i)) / 3.0d0
                 endif
-                if (lmul(1)) then 
+                if (lmul(1)) then
                     Q1s(:,kdx) = Q1s(:,kdx) + Q1s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(2)) then
                     Q2s(:,kdx) = Q2s(:,kdx) + Q2s(:,idxs(i)) / 3.0d0
-                endif       
+                endif
                 if (lmul(3)) then
                     Q3s(:,kdx) = Q3s(:,kdx) + Q3s(:,idxs(i)) / 3.0d0
                 endif
-!                if (lmul(4)) then
-!                    Q4s(:,kdx) = Q4s(:,kdx) + Q4s(:,idxs(i)) / 3.0d0
-!                endif  
-!                if (lmul(5)) then
-!                    Q5s(:,kdx) = Q5s(:,kdx) + Q5s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lpol(0) .or. lpol(1)) then
-!                    alphas(:,kdx) = alphas(:,kdx) + alphas(:,idxs(i)) / 3.0d0
-!                end if
+                if (lmul(4)) then
+                    Q4s(:,kdx) = Q4s(:,kdx) + Q4s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(5)) then
+                    Q5s(:,kdx) = Q5s(:,kdx) + Q5s(:,idxs(i)) / 3.0d0
+                endif
+                if (lpol(0) .or. lpol(1)) then
+                    alphas(:,kdx) = alphas(:,kdx) + alphas(:,idxs(i)) / 3.0d0
+                end if
 
                 if (lmul(0)) then
                     Q0s(:,idxs(i)) = 0.0d0
@@ -646,12 +668,12 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(3)) then
                     Q3s(:,idxs(i)) = 0.0d0
                 endif
-!                if (lmul(4)) then
-!                    Q4s(:,idxs(i)) = 0.0d0
-!                endif
-!                if (lmul(5)) then
-!                    Q5s(:,idxs(i)) = 0.0d0
-!                endif
+                if (lmul(4)) then
+                    Q4s(:,idxs(i)) = 0.0d0
+                endif
+                if (lmul(5)) then
+                    Q5s(:,idxs(i)) = 0.0d0
+                endif
                 if (lpol(0) .or. lpol(1)) then
                     alphas(:,idxs(i)) = 0.0d0
                 end if
@@ -675,8 +697,6 @@ subroutine pe_read_potential(coords, charges)
             end if
         end do
     end if
-
-    call Tk_coefficients()
 
 end subroutine pe_read_potential
 
@@ -769,6 +789,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         end if
     end if
 #endif
+
+    nullify(work)
 
 end subroutine pe_master
 
@@ -903,7 +925,7 @@ subroutine pe_sync()
     if (myid /= 0) allocate(Rm(3,qmnucs))
     call mpi_bcast(Rm, 3*qmnucs, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
 
-    call mpi_bcast(lmul, 4, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    call mpi_bcast(lmul, 6, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 
     if (lmul(0)) then
         if (myid == 0) then
@@ -973,6 +995,40 @@ subroutine pe_sync()
         end if
     end if
 
+    if (lmul(4)) then
+        if (myid == 0) then
+            displs(0) = 0
+            do i = 1, ncores-1
+                displs(i) = displs(i-1) + 15 * ndists(i-1)
+            end do
+            call mpi_scatterv(Q4s, 15*ndists, displs, MPI_REAL8,&
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
+        else
+            allocate(Q4s(15,nloop))
+            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                             &Q4s, 15*nloop, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
+        end if
+    end if
+
+    if (lmul(5)) then
+        if (myid == 0) then
+            displs(0) = 0
+            do i = 1, ncores-1
+                displs(i) = displs(i-1) + 21 * ndists(i-1)
+            end do
+            call mpi_scatterv(Q5s, 21*ndists, displs, MPI_REAL8,&
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
+        else
+            allocate(Q5s(21,nloop))
+            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                             &Q5s, 21*nloop, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
+        end if
+    end if
+
     initialized = .true.
 
 end subroutine pe_sync
@@ -990,18 +1046,15 @@ subroutine pe_fock(denmats, fckmats, Epe)
     logical :: es = .false.
     logical :: pol = .false.
 
-    do i = 0, 3
-        if (lmul(i)) es = .true.
-    end do
-    if (pe_fd) es = .true.
-    do i = 0, 1
-        if (lpol(i)) pol = .true.
-    end do
+    if ((mulorder >= 0) .or. pe_fd) es = .true.
+    if (lpol(0) .or. lpol(1)) pol = .true.
 
     if (allocated(Ees)) deallocate(Ees)
     if (allocated(Epol)) deallocate(Epol)
-    allocate(Ees(0:4,ndens), Epol(4,ndens))
-    Ees = 0.0d0; Epol = 0.0d0
+    allocate(Ees(0:6,ndens))
+    allocate(Epol(4,ndens))
+    Ees = 0.0d0
+    Epol = 0.0d0
 
     if (fock) fckmats = 0.0d0
 
@@ -1232,6 +1285,28 @@ subroutine pe_electrostatic(denmats, fckmats)
             end do
             Esave = Esave + Enuc
         end if
+        if (lmul(4)) then
+            if (fock) then
+                call es_multipoles(Q4s, denmats, Eel, Enuc, fckmats)
+            else if (energy) then
+                call es_multipoles(Q4s, denmats, Eel, Enuc)
+            end if
+            do i = 1, ndens
+                Ees(4,i) = Ees(4,i) + Eel(i) + Enuc
+            end do
+            Esave = Esave + Enuc
+        end if
+        if (lmul(5)) then
+            if (fock) then
+                call es_multipoles(Q5s, denmats, Eel, Enuc, fckmats)
+            else if (energy) then
+                call es_multipoles(Q5s, denmats, Eel, Enuc)
+            end if
+            do i = 1, ndens
+                Ees(5,i) = Ees(5,i) + Eel(i) + Enuc
+            end do
+            Esave = Esave + Enuc
+        end if
 #ifdef VAR_MPI
         if (myid == 0) then
 #endif
@@ -1242,7 +1317,7 @@ subroutine pe_electrostatic(denmats, fckmats)
                     call es_frozen_densities(denmats, Eel, Enuc)
                 end if
                 do i = 1, ndens
-                    Ees(4,i) = Ees(4,i) + Eel(i) + Enuc
+                    Ees(6,i) = Ees(6,i) + Eel(i) + Enuc
                 end do
                 Esave = Esave + Enuc
             end if
@@ -1281,10 +1356,10 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
 #ifdef VAR_MPI
         if (myid == 0 .and. ncores > 1) then
-            call mpi_reduce(MPI_IN_PLACE, Ees, 5*ndens, MPI_REAL8, MPI_SUM,&
+            call mpi_reduce(MPI_IN_PLACE, Ees, 7*ndens, MPI_REAL8, MPI_SUM,&
                            &0, MPI_COMM_WORLD, ierr)
         else if (myid /= 0) then
-            call mpi_reduce(Ees, 0, 5*ndens, MPI_REAL8, MPI_SUM,&
+            call mpi_reduce(Ees, 0, 7*ndens, MPI_REAL8, MPI_SUM,&
                            &0, MPI_COMM_WORLD, ierr)
         end if
 #endif
@@ -1784,6 +1859,16 @@ subroutine multipole_fields(F)
                         call multipole_field(F(l:l+2), Rji, Q3s(:,j))
                     end if
                 end if
+                if (lmul(4)) then
+                    if (abs(maxval(Q4s(:,j))) >= zero) then
+                        call multipole_field(F(l:l+2), Rji, Q4s(:,j))
+                    end if
+                end if
+                if (lmul(5)) then
+                    if (abs(maxval(Q5s(:,j))) >= zero) then
+                        call multipole_field(F(l:l+2), Rji, Q5s(:,j))
+                    end if
+                end if
             end do
             l = l + 3
         end do
@@ -1984,14 +2069,18 @@ end subroutine response_matrix
 
 !------------------------------------------------------------------------------
 
-subroutine Tk_coefficients()
+subroutine Tk_coefficients
 
     ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
 
     integer :: i, j, k, l, m, n
 
+!    allocate(Cnij(2*mulorder+3,0:mulorder+1,0:mulorder+1))
+    allocate(Cnij(2*5+3,0:6,0:6))
+
+    Cnij = 0
     Cnij(:,0,0) = 1
-    do n = 1, size(Cnij,1)
+    do n = 1, 13
         if (mod(n,2) == 0) cycle
         do i = 1, 6
             if (mod(i,2) /= 0) then
@@ -2020,12 +2109,16 @@ end subroutine Tk_coefficients
 
 function T(Rij, x, y, z)
 
+    ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
+
     integer, intent(in) :: x, y, z
     real(dp), dimension(3), intent(in) :: Rij
 
     integer :: l, m, n
     real(dp) :: T
     real(dp) :: R, Cx, Cy, Cz
+
+    if (.not. allocated(Cnij)) call Tk_coefficients
 
     R = nrm2(Rij)
 
