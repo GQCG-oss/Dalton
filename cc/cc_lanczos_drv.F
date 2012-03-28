@@ -1,6 +1,6 @@
-C  /* Deck cc_lanczos_drv2_s */
+C  /* Deck cc_lanczos_drv */
 C--------------------------------------------------------------------
-      SUBROUTINE CC_LANCZOS_drv2_s(WORK,LWORK,APROXR12)
+      SUBROUTINE CC_LANCZOS_drv(WORK,LWORK,APROXR12)
 C--------------------------------------------------------------------
 C     Updated version of CC_LANCZOS_drv2_s (includes symmetry)
 C     Purpose: Noddy code to build the Lanczos recursive chain
@@ -12,8 +12,8 @@ C     SYMMETRY inserted in noddy way.
 C     REWRITE COMPLETELY TO DRIVE WITHIN CC RSP SOLVER
 C--------------------------------------------------------------------
       IMPLICIT NONE
-#include <priunit.h>
-#include <cclrlcz.h>
+#include "priunit.h"
+#include "cclrlancz.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 #include "ccorb.h"
@@ -917,13 +917,11 @@ C     Generate trans^F
 C-------------------------------------------------------------------
 C
        CALL DZERO(Ftrans,JCHAIN*JCHAIN)
-       WRITE(LUPRI,*) 'Calling CC_Ftrans to make transF (calF)'
+       WRITE(LUPRI,*) 'Calling Lanczos_Ftrans to make transF (calF)'
        call flshfo(lupri)
-       CALL CC_Ftrans(IOPTRW,JKAEDE,LENGTH,IFQTRAN,WORK(KRfull),
+       CALL CC_Lanczos_Ftrans(IOPTRW,JKAEDE,LENGTH,IFQTRAN,WORK(KRfull),
      &               WORK(KEIVER),Ftrans,WORK(KEND6),LWRK6,
      &               WORK(KEIVAL),WORK(KWI),isyhop)
-       WRITE(LUPRI,*) 'Out of CC_Ftrans'
-       call flshfo(lupri)
 
       if (locdbg) then
          !CALL AROUND('>>> The trans^F matrix <<<')
@@ -937,15 +935,15 @@ C     Results are damped on a separate file!!!!
 C-------------------------------------------------------------
 C
       if (sum_rules) then
-        CALL CC_SUMRULES(LABEL,JKAEDE,WORK(KEIVAL),WORK(KWI),
+        CALL CC_LANCZOS_SUMRULES(LABEL,JKAEDE,WORK(KEIVAL),WORK(KWI),
      *                  WORK(KEIVER),
      *                  WORK(KEIVEL),FTRANS,ETANORM,CSINORM)
       else
-        CALL CC_LRLANCZOS(LABEL,JKAEDE,WORK(KEIVAL),WORK(KWI),
+        CALL CC_LANCZOS_LR(LABEL,JKAEDE,WORK(KEIVAL),WORK(KWI),
      *                  WORK(KEIVER),
      *                  WORK(KEIVEL),FTRANS,ETANORM,CSINORM)
         !compute oscillator strengths as residue of Lanczos LR
-        CALL CC_OSCSTR(LABEL,JKAEDE,WORK(KEIVAL),WORK(KWI),
+        CALL CC_LANCZOS_OSCSTR(LABEL,JKAEDE,WORK(KEIVAL),WORK(KWI),
      *                 WORK(KEIVER),
      *                 WORK(KEIVEL),FTRANS,ETANORM,CSINORM)
       end if
