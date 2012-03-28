@@ -71,6 +71,8 @@ C              CC_TMCAL    calculation of third order moments
 C
 C              CC_MCDCAL   calculation of B terms in MCD
 C
+C              CC_LANCZOS_DRV tridiagonal matrix build and LR Lanczos
+C
 C     Loop over all models specified. The order is supposed
 C     to be the optimal one from a computational point of view.
 C     Energy calculations are restarted from the preceding
@@ -324,10 +326,12 @@ C
 C
 C-----------------------------------------------------------------
 C     flag for ground state zeroth-order Lagrange multiplier:
+C     Lanczos added. Sonia
 C-----------------------------------------------------------------
       LTBAR0 = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
      &          CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCTM.OR.
      &          CCMCD.OR.CCEXLR.OR.MOLGRD.OR.CCSLV.OR.CCDERI.OR.
+     &          CCLRLCZ.OR.
      &          CCOPA.OR.CCTPA.OR.CCXOPA)
 
 C-----------------------------------------------------------------
@@ -360,9 +364,11 @@ C-----------------------------------------------------------------
 
 C-----------------------------------------------------------------
 C     flag for response calculation (-> execute CCRSPSYM routine):
+C     Lanczos added. Sonia
 C-----------------------------------------------------------------
       LRSPSYM = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
      &           CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCTM.OR.
+     &           CCLRLCZ.OR.
      &           CCMCD.OR.CCEXLR.OR.CCOPA.OR.CCTPA.OR.CCXOPA)
 
       RSPIM   = RSPIM .OR. LRSPSYM .OR. LTBAR0
@@ -782,7 +788,9 @@ C        ***** Solve CC-response equations.*****
 C        ***************************************
 C-----------------------------------------------
 C
-         IF (LRSPSYM) THEN
+         !IF (LRSPSYM) THEN
+         !Do not enter if Lanczos calculation. Sonia
+         IF ((LRSPSYM).and.(.NOT.CCLRLCZ)) THEN
            CALL CC_SOLRSP(WORK,LWORK,APROXR12)
          END IF
 C
@@ -837,7 +845,7 @@ C
 C
 C--------------------------------------------------------
 C        ************************************************
-C        ***** CC quadratic reponse second residues *****
+C        **** CC quadratic response second residues *****
 C        ************************************************
 C--------------------------------------------------------
 C
@@ -1029,6 +1037,34 @@ C
      &              'requested model not yet implemented'
             ENDIF
 C
+         ENDIF
+C---------------------------------------------------------
+C        *************************************************
+C        ***** CC LANCZOS: damped response via Lanczos ***
+C        *************************************************
+C---------------------------------------------------------
+         IF (CCLRLCZ) THEN
+           IF ((.not. CCR12).AND. (.NOT. CCSLV)) THEN
+            write(lupri,*)'CCLRLANCZOS: building the'//
+     &                    'Lanczos Chain'
+            !if (.false.) then
+               !IF (REDMEML) then
+               !  if (Debug_Sym) then
+                  CALL CC_LANCZOS_DRV(WORK,LWORK,APROXR12)
+               !  else
+               !   CALL CC_LANCZOS_drv2(WORK,LWORK,APROXR12)
+               !  end if
+               !ELSE
+               !   CALL CC_LANCZOS_drv(WORK,LWORK)
+               !END IF
+            !else
+            !   WRITE(LUPRI,*) 'Lanczos Using ATRR'
+            !   call cc_lanczos_drv3(work,lwork)
+            !end if
+           ELSE
+            WRITE(LUPRI,*) 'Lanczos Damped CC response theory'//
+     &         ' is not implemented for the requested model.'
+           END IF
          ENDIF
 C
 C--------------------------------------------------
