@@ -70,8 +70,9 @@ C=====================================================================*
       DUMP_EIGFIL = .FALSE.
       DUMP_ALLFIL = .FALSE.
       SUM_RULES   = .FALSE.
-      REDMEML     = .FALSE.
-      Debug_sym   = .false.
+      !Warning
+      REDMEML     = .true.
+      Debug_sym   = .true.
 C
 C     Common default value of the damping parameter is set to 
 C     be 1000 cm-1 = 4.556333D-3 a.u.
