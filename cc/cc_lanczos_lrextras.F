@@ -21,7 +21,7 @@
 !--------------------------------------------------------------------
       IMPLICIT NONE
 #include "priunit.h"
-#include "cclrlcz.h"
+#include "cclrlancz.h"
 #include "codata.h"
      
       INTEGER J,IFREQ,NFREQ
@@ -98,7 +98,7 @@ C
      &                   "&  sigma^I (au)"
          WRITE(LUPRI,'(X,"---------------------------")')
 !
-!Also on file
+!Also on file LUSPEC
 !
          WRITE (LUSPEC,*) " FOR OPERATOR LABEL = ", LABEL
          WRITE (LUSPEC,*) " Response fun with gamma = ",XGAMMA, 'J=',J
@@ -229,9 +229,16 @@ C
        WRITE (LUSPEC,'(6F16.8)') 
      &       FREQ*XTEV, LR_OM_RE_T, LR_OM_IM_T, -LR_OM_IM_T*FREQ, 
      &       LR_OM_RE,LR_OM_IM 
+ 
+         IF (IFREQ.LE.10) then
+            !dump first 10 values on output file as well
+       WRITE (LUPRI,'(6F16.8)')
+     &       FREQ*XTEV, LR_OM_RE_T, LR_OM_IM_T, -LR_OM_IM_T*FREQ,
+     &       LR_OM_RE,LR_OM_IM
+         end if
 
          ENDDO
-         WRITE(LUPRI,'(X,"---------------------------")')
+         WRITE(LUPRI,'(X,"--- remaining values on LUSPEC file ---")')
          WRITE(LUSPEC,'(X,"---------------------------")')
       ENDDO
 
@@ -260,7 +267,7 @@ C
 !     EVL = left eigenvectors (DGEEV solutions)
 C--------------------------------------------------------------------
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
       INTEGER J,LWORK
 #if defined (SYS_CRAY) 
       REAL ER(J),EI(J),EVR(J,J),EVL(J,J),WORK(LWORK)
@@ -340,7 +347,7 @@ C     (we pass one eigenvector at a time)
 C--------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
       INTEGER N 
 #if defined (SYS_CRAY) 
       REAL EVRR(N),EVRI(N),EVLR(N),EVLI(N),EVLRO(N),EVLIO(N) 
@@ -430,7 +437,7 @@ C     (we pass one eigenvector at a time)
 C--------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
       INTEGER N 
 #if defined (SYS_CRAY) 
       REAL EVRR(N),EVRI(N),EVLR(N),EVLI(N),EVLRO(N),EVLIO(N) 
@@ -493,11 +500,11 @@ C
       RETURN 
       END
 !--------
-      SUBROUTINE CC_Ftrans(ioptrw,Lchain,Lspace,IFQTRAN,XVEC,EVR,
-     &                     Ftrans,WORK,LWORK,ER,EI,ISYHOP)
-C--------------------------------------------------------------------
-C     SC,03/11/2010
-C     Read in the FQ vectors and generate the trans^F matrix 
+      SUBROUTINE CC_LANCZOS_Ftrans(ioptrw,Lchain,Lspace,IFQTRAN,XVEC,
+     &                            EVR,Ftrans,WORK,LWORK,ER,EI,ISYHOP)
+C-------------------------------------------------------------------
+C    SC,03/11/2010
+C    Read in the FQ vectors and generate the trans^F matrix 
 !    Lchain is length of Chain
 !    Lspace is length of exc. space
 !    Xvec is QR
@@ -507,8 +514,8 @@ C     Read in the FQ vectors and generate the trans^F matrix
 C--------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
       INTEGER Lchain,Lspace,IFQTRAN(3,*),LWORK,ioptrw 
 #if defined (SYS_CRAY) 
       REAL XVEC(Lspace,Lchain),EVR(Lchain,Lchain),ER(Lchain), EI(Lchain)
@@ -590,19 +597,19 @@ C     makes an analysis of contributions from given
 C     occupied orbital
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       dimension work(lwork)
       PARAMETER (TWO = 2.0D0, THPRT = 1.0D-9, HUNDRED = 100.0D0)
       PARAMETER (PT1THR = 75.0D0)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 C
       LOGICAL lxray
       LOGICAL CCSEFF
@@ -907,8 +914,8 @@ C    - reading in the Q (or PT) matrix
 C--------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
       INTEGER Lchain,Lspace,LWORK,LUMAT 
       CHARACTER FMAT*(*)
 #if defined (SYS_CRAY) 
@@ -963,7 +970,7 @@ C
       RETURN 
       END
 !--------------------------------------------------------------------
-      SUBROUTINE CC_SUMRULES(LABEL,J,ER,EI,R,L,F,U,V)
+      SUBROUTINE CC_LANCZOS_SUMRULES(LABEL,J,ER,EI,R,L,F,U,V)
 C--------------------------------------------------------------------
 C     Given a set of Lanzcos T eigenvalues and eigenvector this
 C     calculates the sum rules 
@@ -976,9 +983,9 @@ C     F: F-matrix "trans" (not double q-transformed)
 C     U, V are normalization factors
 C--------------------------------------------------------------------
       IMPLICIT NONE
-#include <priunit.h>
-#include <cclrlcz.h>
-#include <codata.h>
+#include "priunit.h"
+#include "cclrlancz.h"
+#include "codata.h"
      
       INTEGER J,IFREQ,NFREQ
       DOUBLE PRECISION U,V
@@ -1076,7 +1083,7 @@ C
       RETURN
       END
 !--------------------------------------------------------------------
-      SUBROUTINE CC_OSCSTR(LABEL,J,ER,EI,R,L,F,U,V)
+      SUBROUTINE CC_LANCZOS_OSCSTR(LABEL,J,ER,EI,R,L,F,U,V)
 C--------------------------------------------------------------------
 C     Given a set of Lanzcos T eigenvalues and eigenvector this
 C     calculates the oscillator strengths
@@ -1089,9 +1096,9 @@ C     F: F-matrix "trans" (not double q-transformed)
 C     U, V are normalization factors
 C--------------------------------------------------------------------
       IMPLICIT NONE
-#include <priunit.h>
-#include <cclrlcz.h>
-#include <codata.h>
+#include "priunit.h"
+#include "cclrlancz.h"
+#include "codata.h"
      
       INTEGER J,IFREQ,NFREQ
       DOUBLE PRECISION U,V
@@ -1190,8 +1197,8 @@ C    - reading in the Q (or PT) matrix
 !    LUMAT/FMAT are the unit number and file name of the Q (PT) matrix
 C--------------------------------------------------------------------
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
       INTEGER Lchain,Lspace,LWORK,LUMAT,nexci
       CHARACTER FMAT*(*)
 #if defined (SYS_CRAY) 
@@ -1258,9 +1265,9 @@ C    - Performing AR_i-w_iR
 !    ER is lanczos eigenvalue (real part), EI is lanczos eigenvalue (im part)
 C--------------------------------------------------------------------
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "dummy.h"
       INTEGER Lspace,LWORK,nexc,iside
       DOUBLE PRECISION XVEC(Lspace,nexc)
       DOUBLE PRECISION ER(nexc), EI(nexc)
@@ -1341,8 +1348,8 @@ C  /* Deck cc_normalize */
 C
 C  normalize pseudo RE
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ZR(LENGTH,N), ZL(LENGTH,N)
       DIMENSION ER(N), EI(N)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
@@ -1396,9 +1403,9 @@ C--------------------------------------------------------------------
 !    Dump on file, according to lista type
 C--------------------------------------------------------------------
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "dummy.h"
       INTEGER length,nex,isyhop,lwork,ioptrw
 #if defined (SYS_CRAY) 
       REAL XVEC(length,nex),work(lwork)
@@ -1435,8 +1442,8 @@ C  Check residual according to Lanczos recipe
 C  N_RE is the number of Lanczos eigenvectors, each of them long N_RE
 C  (squared matrix). We use the last element of each Lanczos eigenvector.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ZR(N_RE,N_RE), Qi(lengthq)
       DIMENSION ER(N_RE), EI(N_RE)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
@@ -1486,10 +1493,10 @@ C
 C Scratch:
 C  require WRK of length NCCVAR
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CHARACTER FQMAT*(*),FPMAT*(*)
       DIMENSION QNEW(NCCVAR),PNEW(NCCVAR), WRK(NCCVAR)
@@ -1629,10 +1636,10 @@ C
 C Scratch:
 C  require WRK of length NCCVAR
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CHARACTER FQMAT*(*),FPMAT*(*)
       DIMENSION QNEW(NCCVAR),PNEW(NCCVAR), WRK(NCCVAR)
@@ -1763,7 +1770,8 @@ C  Reorder (no normalize!) eigenpairs from DGEEV
 C          (they are already normalized in DGEEV)
 C  LSORT = .FALSE. --> ascending order
 C  LSORT = .TRUE.  --> descending order
-#include <implicit.h>
+#include "implicit.h"
+
       LOGICAL LSORT
       DIMENSION WR(N), WI(N), ZR(NM,N), ZL(NM,N)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
