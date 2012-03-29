@@ -1504,11 +1504,12 @@ C
       PARAMETER (THRRND=1.D-4, THRTT=1.D-6, THRZER=1.0D-35)
       PARAMETER (THRTST=1.0D-12)
       PARAMETER (D1 = 1.0D0)
+      PARAMETER (LOCDBG=.true.)
       
       INTEGER SVEC, RVEC, LVEC
 C
 C
-      IF ((IPRLE.GT.120) .OR. LOCDBG) THEN
+      IF (LOCDBG) THEN
          WRITE (LUPRI,'(//A/)') ' >>> Debug output from CCORT <<<'
       END IF
       KEND1  = 1
@@ -1554,7 +1555,7 @@ C
          TTP   = DDOT(NCCVAR,PNEW(1),1,WRK(KQPRE),1)
          !<Pold|Qold>
          TTDQP = DDOT(NCCVAR,WRK(KPPRE),1,WRK(KQPRE),1)
-         IF ((IPRLE.GT.20) .OR. LOCDBG) THEN
+         IF (LOCDBG) THEN
            WRITE (LUPRI,*)'start <P(',K,')|Qnew(',ichain,')> =', TTQ
            WRITE (LUPRI,*)'start <Pnew(',ichain,')| Q(',K,')> =', TTP
            WRITE (LUPRI,*)'start <P(',K,')|Q(',K,')>=', TTDQP
@@ -1599,7 +1600,7 @@ C
 C
 C *** End of subroutine CCBiORT
 C
-      IF (IPRLE .GT. 20) THEN
+      IF (LOCDBG) THEN
         WRITE (LUPRI,'(/A//)')' >>> End debug output from CCBiORT <<<'
       END IF
 
@@ -1643,15 +1644,16 @@ C
 C
       CHARACTER FQMAT*(*),FPMAT*(*)
       DIMENSION QNEW(NCCVAR),PNEW(NCCVAR), WRK(NCCVAR)
-      LOGICAL LOCDBG
       PARAMETER (THRRND=1.D-4, THRTT=1.D-6, THRZER=1.0D-35)
       PARAMETER (THRTST=1.0D-12)
       PARAMETER (D1 = 1.0D0)
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .true.)
       
       INTEGER SVEC, RVEC, LVEC
 C
 C
-      IF ((IPRLE.GT.120) .OR. LOCDBG) THEN
+      IF (LOCDBG) THEN
          WRITE (LUPRI,'(//A/)') ' >>> Debug output from CCORT <<<'
       END IF
       KEND1  = 1
@@ -1697,7 +1699,7 @@ C
          TTP   = DDOT(NCCVAR,PNEW(1),1,WRK(KQPRE),1)
          !<Pold|Qold>
          TTDQP = DDOT(NCCVAR,WRK(KPPRE),1,WRK(KQPRE),1)
-         IF ((IPRLE.GT.20) .OR. LOCDBG) THEN
+         IF (LOCDBG) THEN
            WRITE (LUPRI,*)'start <P(',K,')|Qnew(',ichain,')> =', TTQ
            WRITE (LUPRI,*)'start <Pnew(',ichain,')| Q(',K,')> =', TTP
            WRITE (LUPRI,*)'start <P(',K,')|Q(',K,')>=', TTDQP
@@ -1750,7 +1752,7 @@ C
 C
 C *** End of subroutine CCBiORTPQ
 C
-      IF (IPRLE .GT. 20) THEN
+      IF (LOCDBG) THEN
         WRITE (LUPRI,'(/A//)')' >>> End debug output from CCBiORTPQ <<<'
       END IF
 
