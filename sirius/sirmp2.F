@@ -258,7 +258,7 @@ C
 #include "dftcom.h"
 C
       CALL QENTER('MP2CTL')
-      CALL GETTIM(TIMMP2,DUMMY)
+      CALL GETTIM(CPUMP2,WALMP2)
       IF (IPRMP2 .GE. 0) WRITE (LUPRI,'(//A//A/A)')
      * ' >>>>> Output from SIRIUS MP2 module <<<<<'
      *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
@@ -800,12 +800,13 @@ C            long-range integrals /hjaaj Oct 09
       END IF
 C     END IF (MP2FRO .AND. .NOT.FCKFRO)
 C
-      CALL GETTIM(TIMEND,DUMMY)
-      TIMMP2 = TIMEND - TIMMP2
-      WRITE (LUSTAT,1860) TIMMP2
-      IF (IPRMP2 .GE. 2) WRITE (LUPRI,1860) TIMMP2
+      CALL GETTIM(CPUEND,WALEND)
+      CPUMP2 = CPUEND - CPUMP2
+      WALMP2 = WALEND - WALMP2
+      WRITE (LUSTAT,1860) CPUMP2, WALMP2
+      IF (IPRMP2 .GE. 1) WRITE (LUPRI,1860) CPUMP2, WALMP2
  1860 FORMAT (/' Time used for MP2 natural orbitals :',F12.3,
-     *        ' CPU seconds.')
+     *        ' CPU seconds,',F12.3,' wall seconds.')
       CALL MEMREL('MP2CTL',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL FLSHFO(LUSTAT)
       CALL FLSHFO(LUPRI)
