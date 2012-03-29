@@ -53,6 +53,7 @@ C------------------------------------------------------------------------------
 c     LEBMIN is in the common block but is used only internall in dftgrd
       DFTADD = .FALSE.
       GRDONE = .FALSE.
+      GRDONE_OLD = .FALSE.
       DFTRUN = .FALSE.
       DFTPOT = .FALSE.
       DFTORD = .FALSE.

@@ -1789,28 +1789,28 @@ grid_open(integer nbast, real *dmat, real *work, integer *lwork)
             
 #ifdef VAR_MPI
             if(mynum == 0) {
-                grid_generate("DALTON.QUAD", atom_cnt, atoms,
+                grid_generate("DALTON.cQUAD", atom_cnt, atoms,
                               radint, NULL, &dt,
                               angmin, angint, work, lwork);
                 grid_par_shutdown();
             } else 
-                grid_par_slave("DALTON.QUAD", radint);
+                grid_par_slave("DALTON.cQUAD", radint);
             /* Stop on barrier here so that we know all nodes managed to save
              * their files. */
             MPI_Barrier(MPI_COMM_WORLD);
 #else
-            grid_generate("DALTON.QUAD", atom_cnt, atoms,
+            grid_generate("DALTON.cQUAD", atom_cnt, atoms,
                           radint, NULL, &dt,
                           angmin, angint, work, lwork);
 #endif
             free(atoms);
             FSYM2(set_grid_done)();
         }
-        fname = grid_get_fname("DALTON.QUAD", mynum);
+        fname = grid_get_fname("DALTON.cQUAD", mynum);
         res->f=fopen(fname, "rb");
         free(fname);
         if(res == NULL) {
-            perror("DFT quadrature grid file DALTON.QUAD not found.");
+            perror("DFT quadrature grid file DALTON.cQUAD not found.");
             free(res);
             abort();
         }
@@ -1830,8 +1830,8 @@ grid_open(integer nbast, real *dmat, real *work, integer *lwork)
             abort();
         }
         do_cartesian_grid(nbast, dmat, res);
-        if( (res->f=fopen("DALTON.QUAD", "rb")) == NULL) {
-            perror("DFT quadrature grid file DALTON.QUAD not found.");
+        if( (res->f=fopen("DALTON.cQUAD", "rb")) == NULL) {
+            perror("DFT quadrature grid file DALTON.cQUAD not found.");
             free(res);
             abort();
         }

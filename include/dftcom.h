@@ -1,6 +1,6 @@
 !     File: dftcom.h
 !
-!     choose reasonably large MXBLLEN- so that loop unrolling gives
+!     choose reasonably large MXBLLEN - so that loop unrolling gives
 !     speedup but small compared with a cache size max block length
 !
       INTEGER MXBLLEN
@@ -11,7 +11,8 @@
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC
       INTEGER IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT
       LOGICAL DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,   &
-     &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG, HFXSET
+     &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG, HFXSET,   &
+     &        GRDONE_OLD                                                  ! GRDONE for REAQUA, GRDONE_OLD for REAQUA_OLD ("grid done")
 !     variables for srDFT /hjaaj
       LOGICAL DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
      &        DOSRC_LDA, DOSRC_GGA, DOSRMULO, DOSRGGA2, DOSRLYPT,       &
@@ -26,6 +27,7 @@
 ! logical:
      &        DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,   &
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG, HFXSET,   &
+     &        GRDONE_OLD,                                               &
 ! srDFT (logical):
      &        DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
      &        DOSRC_LDA, DOSRC_GGA, DOSRMULO, DOSRGGA2, DOSRLYPT,       &
