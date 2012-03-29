@@ -23,7 +23,7 @@
 !
 #include "single.h"
 C
-!  #define SIRFCK_DEBUG
+!  #undef SIRFCK_DEBUG
 C  /* Deck sirfck */
       SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRECT,
      &                  WRK,LWORK)
@@ -109,11 +109,7 @@ C
 C
 #include "memint.h"
       CALL QENTER('SIRFCK')
-Cholesky
-      DTIME  = SECOND()
-      ITSLDA = .FALSE.
-      ICOUN3 = 0
-Cholesky
+      CALL GETTIM(T0,W0)
 C
       iprsrdft = iprfck
       IF (NDMAT.EQ.0) GO TO 9999
@@ -124,19 +120,23 @@ C
       DO_SPINDNS = .FALSE.
       DO_CHOINT = CHOINT .and. CHIVAL .lt. 0.0D0 ! no Cholesky for short-range integrals (yet)
       DO I = 1,NDMAT
+         IF (MOD(IFCTYP(I),10) .EQ. 0) IFCTYP(I) = 0 ! "X" does not matter if no contribution
          IF (IFCTYP(I) .LT. 0) DO_SPINDNS = .TRUE.
          IF (IFCTYP(I) .ne. 13 .and. IFCTYP(I) .ne. 12 .and.
      &       IFCTYP(I) .ne.  3 .and. IFCTYP(I) .ne.  2 .and.
-     /       IFCTYP(I) .ne. 22 .and. IFCTYP(I) .ne. 11)
-     &       DO_CHOINT = .FALSE.
+     &       IFCTYP(I) .ne. 22 .and. IFCTYP(I) .ne. 11 .and.
+     &       IFCTYP(I) .ne.  1 .and. IFCTYP(I) .ne.  0)
+     &       DO_CHOINT = .FALSE.     ! actually all types are OK now ! /hjaaj Mar 2012
       END DO
       IF (DO_SPINDNS .AND. .NOT. ADDSRI) THEN
          CALL QUIT('SIRFCK can only do spin dens. for srDFT')
       END IF
       IF (CHOINT .AND. .NOT. DO_CHOINT) THEN
          NINFO = NINFO + 1
-         WRITE(LUPRI,'(3(/A),//A)')
-     &   ' INFO: Cholesky decomposed two-electron integrals can',
+         WRITE(LUPRI,'(A,(10I5))')
+     &   ' INFO: IFCTYP(1:NDMAT) =',(IFCTYP(I),I=1,NDMAT)
+         WRITE(LUPRI,'(/A/A//A)')
+     &   ' INFO: Cholesky decomposed two-electron integrals can'//
      &   ' only be applied for IFCTYP equal to 2-3, 11-13 or 22.',
      &   ' You may have to implement the request yourself !',
      &   ' Proceeding with standard AO-integral direct '//
@@ -198,7 +198,6 @@ C        DC, DV or DXC, DXV
          NDCandDV = NDMAT
          IF (NSR_DMAT*2 .ne. NDMAT) THEN
             write(lupri,*)'Inconsistency(2), NSR_DMAT*2 ne NDMAT'
-CFRAN JUST TO UNDERSTAND END
             write(lupri,*)'SIRFCK: NDMAT,NSR_DMAT=', NDMAT,NSR_DMAT
             write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
             CALL QUIT('Inconsistency(2), NSR_DMAT*2 ne NDMAT')
@@ -220,6 +219,8 @@ CFRAN 17/02/2010 END
       HFXFACSAVE = HFXFAC
       CHIVALSAVE = CHIVAL
       IF (DO_CHOINT) THEN
+         DTIME  = SECOND()
+         ICOUN3 = 0
 C
 C        *************** Cholesky section *************** 
 C
@@ -230,51 +231,63 @@ C            reading through the Cholesky file(s) NDMAT times.
 C
          DO I = 1,NDMAT
 C
-           IFCSAV = IFCTYP(I)
-           IF (IFCTYP(I) .EQ. 11)    THEN       ! No exchange
-              IFCTYP(I) = 13
-              ITSLDA = .TRUE.
+           JSYMDM = ISYMDM(I)
+           IFCTYP_CHO = IFCTYP(I)
+
+           HFXFAC_SAVE = HFXFAC
+           IF (MOD(IFCTYP_CHO,10) .EQ. 1) THEN       ! No exchange
+              ITSLDA = .TRUE. ! flag in Cholesky for no exchange
+              HFXFAC = 0.0D0
+           ELSE
+              ITSLDA = .FALSE.
            END IF
 C
-           JSYMDM = ISYMDM(I)
+C          hjaaj note 120327:
+C            NOTE that CHO_FCKDS1 normally does not use the DMAT in input for the exchange part,
+C            but rather the wave function density from CMO
+C            (i.e. not DXCAO, DXVAO, DTVAO even if they are given in input!!!)
 C
-           IF (IFCTYP(I) .EQ. 13) THEN
+           IF (IFCTYP_CHO .EQ. 13 .OR. IFCTYP_CHO .EQ. 11) THEN
                IOPTVP = .TRUE.                ! Coulomb included
 C           ... singlet, (tot.) symmetric density matrices
                CALL CHO_FCKDS1(FMAT(1,I),DMAT(1,I),WRK,LWORK,
-     &                         ISYMDM(I),IOPTVP)
+     &                         JSYMDM,IOPTVP)
 C
-           ELSE IF (IFCTYP(I) .EQ. 12) THEN
+           ELSE IF (IFCTYP_CHO .EQ. 12) THEN
                IOPTVP = .FALSE.
 C           ... singlet, (tot.) symmetric density matrices (exchange only)
                CALL CHO_FCKDS1(FMAT(1,I),DMAT(1,I),WRK,LWORK,
-     &                         ISYMDM(I),IOPTVP)
+     &                         JSYMDM,IOPTVP)
 C
-           ELSE IF (IFCTYP(I) .EQ.  3) THEN
+           ELSE IF (IFCTYP_CHO .EQ.  3 .OR. IFCTYP_CHO .EQ. 1) THEN
                IOPTVP = .TRUE.
 C           ...  singlet, non-symmetric (general) density matrices
                ICOUN3 = ICOUN3 + 1
                CALL CHO_FCKDS3(FMAT(1,I),DMAT(1,I),WRK,LWORK,
-     &                         ISYMDM(I),IOPTVP)
+     &                         JSYMDM,IOPTVP)
 C
-           ELSE IF ((IFCTYP(I) .EQ. 2) .OR. (IFCTYP(I) .EQ.  22)) THEN
+           ELSE IF ((IFCTYP_CHO .EQ. 2) .OR. (IFCTYP_CHO .EQ.  22)) THEN
                IOPTVP = .FALSE.
 C           ...  singlet, non-symmetric density matrices (exchange only)
                ICOUN3 = ICOUN3 + 1
                CALL CHO_FCKDS3(FMAT(1,I),DMAT(1,I),WRK,LWORK,
-     &                         ISYMDM(I),IOPTVP)
+     &                         JSYMDM,IOPTVP)
 C
-           ELSE IF (IFCTYP(I) .EQ.  0) THEN
-               GO TO 201
-           ELSE
+           ELSE IF (IFCTYP_CHO .NE.  0) THEN
                GO TO 8000
            END IF
 C
-           ITSLDA    = .FALSE.
-           IFCTYP(I) = IFCSAV
-C
-  201     CONTINUE
-         ENDDO
+           HFXFAC = HFXFAC_SAVE
+
+         ENDDO ! I = 1,NDMAT
+         DTIME = SECOND() - DTIME
+         TSIRF = TSIRF    + DTIME
+         IF (IPRFCK .GT. 0 .AND. ICOUN3 .EQ. NDMAT) THEN
+            WRITE(LUPRI,'(/,A,I3,A,F10.2,A,/)')
+     &     ' >>> SIRFCK Cholesky: ',NDMAT,
+     &     ' non-symmetric Fock matrices calculated in',DTIME,' seconds'
+         ENDIF
+
       ELSE IF (DIRECT) THEN ! not Cholesky, AO-direct?
 C
 C
@@ -477,8 +490,8 @@ C                    directly DMAT, did not work when the two
 C                    matrices were non-zero (which happens in the linear
 C                    response when the trial vector has both an orbital AND a
 C                    configuration part) because they were not ordered
-C                    one after the other (DTVAO "stands" in between)  
-C                         
+C                    one after the other (DTVAO "stands" in between)
+C
 C
 #ifdef SIRFCK_DEBUG
                 write(lupri,*) 'JFMAT =', JFMAT
@@ -504,22 +517,23 @@ C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
      &                         ISYMDM,IFCTYP,IPRHER,wrk(KLAST),LWRK)
                else
 #ifdef SIRFCK_DEBUG
-                   write(lupri,*) 'calling herfck with no symmetry!'     
+                   write(lupri,*) 'calling herfck with no symmetry!'
                    write(lupri,*) 'NSR_DMAT = ', NSR_DMAT
 #endif
 C
 C 
-                       CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
+                 CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
      &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
 
 ! initial code (DMAT was used instead of WRK(KDMAT))
 !
-!*                     CALL HERFCK(WRK(KFSRAO),DMAT,NSR_DMAT,
+!*               CALL HERFCK(WRK(KFSRAO),DMAT,NSR_DMAT,
 !*   &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
                end if
             END IF
 C
             EJSR = DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KFSRAO),1)
+            EKSR = D0
             IF (NASHT.GT.0) THEN
              EJKVSR =-DP5*
      &                DDOT(N2BASX,DMAT(1,NSR_DMAT+1),1,WRK(KFSRAO),1)
@@ -637,7 +651,7 @@ C                 ... add DV(I) to DC(I)
 C
             IFCTMP_SR(1) = IFCTYP(1)
             IF (HFXFAC.NE.D0) THEN
-C           ... for normal/presceding HF and for SRDFT with exact exch.
+C           ... for normal/preceding HF and for SRDFT with exact exch.
 C               (add SR coul. and exch. to LR to give full 2-el part)
                 IFCTYP(1) = 13
             ELSE 
@@ -694,6 +708,12 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
          END IF
       END IF
       HFXFAC = HFXFACSAVE
+      IF (IPRFCK .GT. 0) THEN 
+         CALL GETTIM(T1,W1)
+         WRITE(LUPRI,'(/A,2F10.3)')
+     &   ' SIRFCK: CPU and WALL time used in Fock matrix constructions',
+     &   T1-T0,W1-W0
+      END IF
 C
 #ifdef OLD_DFT_CODE
 !hjaaj: can probably be deleted, but want to be sure about srdft first. March 2006.
@@ -780,6 +800,10 @@ C        ... one more EXCMAT from SRDFT when LSRHYBR
             NDOFF  = 2
          END IF
          LWRK  = LWORK - KLAST + 1
+
+         JDAO   = 0 ! initialize JD*AO to avoid compiler warnings
+         JDXAO  = 0
+         JDXSAO = 0
          IF (DOATR) THEN
             JDAO = NDMAT + 1
 C           ... DTOTAO is in DMAT(1,NDMAT+1) from TR1FCK or RSPOLI
@@ -796,7 +820,7 @@ C              DT, DXT, DS, DXS
             ELSE
 C              DT, DXT
             END IF
-         END IF
+         END IF   ! IF (DOATR)
 C
 C        loop over NSRMAT output matrices (later do the loop inside SRDFT for
 C        efficiency!!!!!) /hjaaj June 2009
@@ -934,7 +958,7 @@ C
          CALL DENFIT_COEFFS_NODDY(NBAST,NBAST,DMAT(1,1),DFCOEFF)
 c
          WRITE (LUPRI,'(//,1X,A,I3)') ' Noddy fitting coeffs'
-         CALL OUTPUT(DFCOEFF,1,NBAST,1,1,NBAST,1,1,LUPRI)
+         CALL OUTPUT(DFCOEFF,1,NBAST,1,1,NBAST,1,-1,LUPRI)
 c
          !...and use them to build the (fitted) Fock matrix
          CALL JAB_DENFIT_NODDY(NBAST,NBAST,DFCOEFF,FMAT(1,1))
@@ -952,22 +976,13 @@ C
          CALL HEADER('Density and Fock matrices in SIRFCK',-1)
          DO 300 I = 1, NDMAT
             WRITE (LUPRI,'(//A,I3)') ' Density matrix No.',I
-            CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
             WRITE (LUPRI,'(//A,I3)') ' Fock matrix No.',I
-            CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
   300    CONTINUE
       END IF
 #endif
 C
-Cholesky
-      DTIME = SECOND() - DTIME
-      TSIRF = TSIRF    + DTIME
-      IF (ICOUN3 .EQ. NDMAT) THEN
-         WRITE(LUPRI,'(/,A,I3,A,F10.2,A,/)')
-     &   '>>> SIRFCK: ',NDMAT,
-     &   ' non-symmetric Fock matrices calculated in ',DTIME,' seconds'
-      ENDIF
-Cholesky
 C
  9999 CALL QEXIT('SIRFCK')
       RETURN
@@ -1065,6 +1080,7 @@ C              This exchange-only matrix is zero
                CALL DSCAL(N2BASX,HFXFAC*DMP5,DMAT(1,I),1)
             END IF
          END IF
+         IF (MOD(IFCTYP(I),10) .EQ. 0) IFCTYP(I) = 0 ! no contribution, X value does not matter
       END DO
 C
 C
@@ -1107,7 +1123,7 @@ C
 C
     1 CONTINUE
 C
-#if defined (VAR_SPLITFILES)         
+#if defined (VAR_SPLITFILES)
          CALL READSI(LU2INT,LENINT,WRK(KINT),JBUF)
 #else
          CALL READI(LU2INT,LENINT,WRK(KINT))
@@ -1121,7 +1137,7 @@ C
 C           ... e.g. singlet, symmetric density matrix
               CALL FCKD13(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
             ELSE IF (IFCTYP(I) .EQ. 22
-     &          .OR. IFCTYP(I) .EQ. 23      
+     &          .OR. IFCTYP(I) .EQ. 23
      &          .OR. IFCTYP(I) .EQ. 12) THEN
 C           ... Symmetric or antisymmetric, Only Exchange
 C               (type 23: Coulomb term is zero because antisymmetric)
@@ -1625,7 +1641,7 @@ C     -------------------------------------------------------
 
       TIMDC = SECOND()
 
-      IF (NEWSCF) CCMODSK = .FALSE.
+!     IF (NEWSCF) CCMODSK = .FALSE.   ! hjaaj: NEWSCF is never defined in this version of Dalton /120327-hjaaj
       IF (.NOT. CCMODSK) THEN
 
          CALL DCOPY(N2BST(ISYDEN),WORK(KDEN),1,WORK(KFOCK),1)
@@ -2040,7 +2056,7 @@ C              -------------
 Casm
 C              No exchange for LDA. Thus, no transformation
 C
-               IF (ITSLDA) GOTO 788
+               IF (ITSLDA .OR. HFXFAC .EQ. 0.0D0) GOTO 788
 Casm
 
 C              Hole transformation.
@@ -2097,12 +2113,12 @@ C              ---------------------
 
                DTIME = SECOND() - DTIME
                TIMS  = TIMS     + DTIME
-               
+
             ENDDO
 Casm
 C           Do not include exchange for DFT/LDA
 C
-            IF (ITSLDA) GOTO 789
+            IF (ITSLDA .OR. HFXFAC .EQ. 0.0D0) GOTO 789
 Casm
 
 C           Exchange part.
@@ -2255,12 +2271,13 @@ c     DO I = 1,NDIM
 c        WRITE(LUPRI,*) 'Diagonal :',I,XMAT(I,I)
 c     ENDDO
 C
-      IF (LWORK .LT. NDIM*NDIM) STOP 'Not enough memory'
+      IF (LWORK .LT. NDIM*NDIM) CALL QUIT('Not enough memory')
 C
       DO I = 1,NDIM
 C
-         XMAX = -1.0D10
-         DO J = 1,NDIM
+         XMAX = XMAT(1,1)
+         IMAX = 1
+         DO J = 2,NDIM
             IF (ABS(XMAT(J,J)) .GT. XMAX) THEN
                XMAX = XMAT(J,J)
                IMAX = J
@@ -2283,7 +2300,7 @@ C
          ENDIF
 C
          IF (ABS(XMAX) .LT. THRS) THEN
-            NVECS= I-1
+            NVECS = I-1
             RETURN
          ENDIF
 C
@@ -2452,8 +2469,8 @@ C        as symmetry packed (!) full square.
 C        The density matrix is used for both Coulomb and exchange part.
 C
 C     Formula used:
-C        F(ab) = F(ab) + 2 * Sum(gd) D(dg) (ab|dg)
-C                      -     Sum(gd) D(dg) (ad|bg)
+C        F(ab) = F(ab) +   2    * Sum(gd) D(dg) (ab|dg)
+C                      - HFXFAC * Sum(gd) D(dg) (ad|bg)
 C
 C     NB: NO SPARSITY IS USED WHATSOEVER !!!!!
 C
@@ -2660,6 +2677,11 @@ C              -------------
                   TIMC  = TIMC     + DTIME
                ENDIF
 
+C              Prepare for exchange part.
+C              --------------------------
+
+             IF (HFXFAC .ne. 0.0d0) THEN
+
 C              Reorder: L(bg,J) -> L(b,J,g).
 C              -----------------------------
 
@@ -2689,7 +2711,11 @@ C              -----------------------------
                DTIME = SECOND() - DTIME
                TIMS  = TIMS     + DTIME
 
-            ENDDO
+             END IF   ! (HFXFAC .ne. 0.0d0)
+
+            ENDDO   ! JVEC = 1, NUMV
+
+           IF (HFXFAC .NE. 0.0D0) THEN
 
             DTIME = SECOND()
             DO ISYMG = 1,NSYM
@@ -2731,8 +2757,10 @@ C              -------------------------------------------
             ENDDO
             DTIME = SECOND() - DTIME
             TIMX  = TIMX     + DTIME
+           END IF   ! (HFXFAC .ne. 0.0d0)
 
          ENDDO
+
 
   999    CONTINUE
 
