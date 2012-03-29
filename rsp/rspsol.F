@@ -1715,7 +1715,6 @@ C
                NASHK = NASH(KSYM)
                NISHK = NISH(KSYM)
                IASHK = IASH(KSYM)
-               IIORBK= IIORB(KSYM)
                IORBL = IORB(LSYM)
                NASHL = NASH(LSYM)
                NISHL = NISH(LSYM)
@@ -1725,13 +1724,11 @@ C
             ITYPL = IOBTYP(L)
             IF ( ITYPK.EQ.JTINAC ) THEN ! inactive-active or inactive-secondary
                DO 2000 ISIM = 1 ,NSIM
-                  IF (ONEIND) THEN
-                   IF ( SNGDN ) THEN
+                  IF (ONEIND .AND. SNGDN) THEN
                      EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                       + D2 * ZYMAT(L,K,ISIM)
                      EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                       - D2 * ZYMAT(K,L,ISIM)
-                   END IF
                   END IF
                   IF ( ITYPL.EQ.JTACT ) THEN ! inactive-active
                    IF (ONEIND) THEN
@@ -1759,9 +1756,9 @@ C
  2000          CONTINUE
             ELSE
               IF (ITYPL.EQ.JTACT) THEN ! active-active
+                NWL = ISW(L) - NISHT
+                NWK = ISW(K) - NISHT
                 IF (ONEIND) THEN
-                  NWL = ISW(L) - NISHT
-                  NWK = ISW(K) - NISHT
                   DO 2020 ISIM=1,NSIM
                         EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                     -DDOT(NASHL,ZYMAT(IORBL+NISHL+1,K,ISIM),1,
@@ -1781,8 +1778,6 @@ C
  755                    CONTINUE
  2020             CONTINUE
                 ELSE
-                  NWL = ISW(L) - NISHT
-                  NWK = ISW(K) - NISHT
                   DO 2021 ISIM=1,NSIM
                         EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                     -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,K,ISIM),1,
@@ -1803,8 +1798,8 @@ C
  2021             CONTINUE
                 END IF
              ELSE ! active-secondary
+               NWK = ISW(K) - NISHT
                IF (ONEIND) THEN
-                  NWK = ISW(K) - NISHT
                   DO 2030 ISIM=1,NSIM
                         EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                     -DDOT(NASHK,ZYMAT(IORBK+NISHK+1,L,ISIM),1,
@@ -1816,7 +1811,6 @@ C
  765                    CONTINUE
  2030             CONTINUE
               ELSE
-                  NWK = ISW(K) - NISHT
                   DO 2031 ISIM=1,NSIM
                         EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                     -DDOT(NASHL,ZYMAT(IORBL+NISHL+1,L,ISIM),1,

@@ -1674,13 +1674,10 @@ C
       END IF
       GOTO 920
  910  CONTINUE
-      IF (IPRABS.GE.0) THEN
-         WRITE(LUPRI,'(/,1X,A,I4,A)')
-     &        '*** ABSCTL: THE REQUESTED',NFREQ_ABS,
-     &        ' SOLUTION VECTORS NOT CONVERGED'
-         WRITE(LUPRI,'(/,1X,A)')
-     &        '--- MAXIMUM NUMBER OF ITERATIONS REACHED ---'
-      END IF
+         WRITE(LUPRI,'(/A,I4,A/A)')
+     &        ' *** ABSCTL WARNING: THE REQUESTED',NFREQ_ABS,
+     &        ' SOLUTION VECTORS NOT CONVERGED',
+     &        ' --- MAXIMUM NUMBER OF ITERATIONS REACHED ---'
       GOTO 920
 C     
 C     Construct and write response vectors to file

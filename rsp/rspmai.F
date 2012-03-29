@@ -21,12 +21,11 @@
 !...      http://daltonprogram.org
 !
 !
+! FILE: dalton/rsp/rspmai.F ("MAIn routines in response module")
+!
 #ifdef OLD_REVISIONLOG
 !===========================================================================
 !/* Comdeck revision_log */
-!
-!Revision 1.7  2000/05/24 19:01:23  hjj
-!polish; fixing FNDLB2 parameter lists (ftnchek)
 !
 !Revision 1.6  2000/05/16 09:47:13  hjj
 !s/SETSOPPA2/SET2SOPPA/ (so different from SETSOPPA in first six char.)
@@ -42,9 +41,6 @@
 !Revision 1.2 Jan 2000     hjj
 !polish: print if TRPLET operator (singlet or triplet was
 !  missing in output, which made it difficult to follow at times!)
-!  removed unnecessary "STOP"s (which also could cause MPI problems)
-!  changed (2) to (*) in DIMENSIONs
-!  polishing
 !
 !960304-spas: initialization of C6IFC moved from C6INP to RSPINF
 !960304-spas: SOPPA(CCSD) included in RSPINP, RSPMC, RSPINF
@@ -58,7 +54,6 @@
 !931011-hjaaj: C6INP: added C6IFC definition
 !931007-hjaaj: added RSPMC and GETREF (moved from rspe2c.u)
 !920721-Hinne Hettema
-!C6INP : inserted missing GO TO 100; corrected output of FREQUENCIES
 !RSPSET: define new RSPSUP variable (use super symmetry)
 !RSPDRV: initialize arrays for symmetrizing MCSCF gradient.
 !===========================================================================
@@ -785,6 +780,9 @@ C  /* Deck rspinp */
       SUBROUTINE RSPINP(WORD)
 C
 C     Read general ".xxx" input options for "**RESPONSE"
+C     Most input options are saved in infrsp.h, and the
+C     options are initialized with default values in
+C     "BLOCK DATA RSPINF"
 C
 #include "implicit.h"
 C
@@ -947,8 +945,8 @@ C              .PROP2Average
       IF (SOPPA) NOITRA = .FALSE. ! need 2-electron integrals in MO basis for SOPPA
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('CHANGES OF DEFAULTS FOR RSPINP:',0)
-         IF (INPTES) WRITE(LUPRI,'(/A,L1)')
-     *      ' INPUT TEST.  INPTES = ',INPTES
+         IF (INPTES) WRITE(LUPRI,'(///A//)')
+     *      ' ************ INPUT TEST *************'
          IF (HIRPA)  THEN
             WRITE(LUPRI,'(/A)')
      *   ' Higher RPA Polarization Propagator Approximation -- HRPA'
@@ -999,7 +997,7 @@ C              .PROP2Average
          IF (PHPRES) WRITE(LUPRI,'(/2A,L1)')
      *      ' H(0) SUBSPACE SELECTED FROM SIZE OF RESIDUAL ELEMENTS',
      *      ' PHPRES = ',PHPRES
-         IF (MAXRM.NE.200) WRITE(LUPRI,'(/A,I6)')
+         IF (MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
      *      ' MAX DIMENSION OF REDUCED SPACE. MAXRM =',MAXRM
          IF (QRREST) WRITE(LUPRI,'(/A/A)')
      *      ' QUADRATIC RESPONSE CALCULATION RESTARTED',
@@ -1072,7 +1070,7 @@ C     Initialization of RSPINP
       DATA ORBSFT/1.0D-4/
       DATA QRREST/.FALSE./
       DATA OPTORB/.FALSE./
-      DATA MAXRM/200/
+      DATA MAXRM/600/
       DATA PHPRES/.FALSE./
       DATA E3TEST/.FALSE./
       DATA A2TEST/.FALSE./
@@ -1081,7 +1079,7 @@ C     Initialization of RSPINP
       DATA RSPOCD/.FALSE./
 C     Initialization of INFRSP for both PPINP and LRINP
       DATA MAXITO/5/, ANTTES/.FALSE./, IPRRSP/2/
-C INITIALIZING ELWEAK
+C     INITIALIZING ELWEAK
       DATA PVSO/.FALSE./, PVPSO/.FALSE./,ELWEAK/.FALSE./
 C     Initialization of INFRSP for LRINP
       DATA ABOCHK/.FALSE./
@@ -1157,7 +1155,7 @@ C  Initializing ABSORP
       DATA ABSORP/.FALSE./,ABS_INTERVAL/.FALSE./,ABS_REDUCE/.FALSE./
       DATA ABS_ALPHA/.FALSE./,ABS_BETA/.FALSE./,ABS_GAMMA/.FALSE./
       DATA ABS_SHG/.FALSE./,ABS_MCD/.FALSE./,ABS_ANALYZE/.FALSE./
-      DATA NFREQ_BATCH/10/,MAX_MACRO/20/,MAX_MICRO/10/,MAX_ITORB/5/
+      DATA NFREQ_BATCH/10/,MAX_MACRO/30/,MAX_MICRO/10/,MAX_ITORB/5/
       DATA NEXCITED_STATES/2/,IPRABS/0/
       DATA NFREQ_ALPHA/1/,NFREQ_BETA_B/1/,NFREQ_BETA_C/1/
       DATA FREQ_INTERVAL/0.0D0,0.0D0,1.0D0/
@@ -3751,31 +3749,33 @@ C
       KZVAR  = KZWOPT + KZCONF
       KZYVAR = 2*KZVAR
       IF (SOPPA) THEN
-         IF (IPRRSP .GE. 2) WRITE(LUPRI,'(/4(/A,I8))')
+         IF (IPRRSP .GE. 2) WRITE(LUPRI,'(/4(/A,I12))')
      *      ' Perturbation symmetry.     KSYMOP:',KSYMOP,
      *      ' p-h variables.             KZWOPT:',KZWOPT,
      *      ' 2p-2h variables.           KZCONF:',KZCONF,
      *      ' Total number of variables. KZVAR :',KZVAR
+         IF (IPRRSP .GE. 3) THEN
          IF (TRPLET) THEN
-            IF (IPRRSP .GE. 6) WRITE(LUPRI,'(3(/A,I8))')
+            WRITE(LUPRI,'(3(/A,I12))')
      *         ' T(1) 2p-2h variables.         :',N12P2H(KSYMOP),
      *         ' T(2) 2p-2h variables.         :',N22P2H(KSYMOP),
      *         ' T(3) 2p-2h variables.         :',N32P2H(KSYMOP)
          ELSE
-            IF (IPRRSP .GE. 6) WRITE(LUPRI,'(2(/A,I8))')
+            WRITE(LUPRI,'(2(/A,I12))')
      *         ' R(1) 2p-2h variables.         :',NS2P2H(KSYMOP),
      *         ' R(2) 2p-2h variables.         :',NT2P2H(KSYMOP)
          ENDIF
-         IF (IPRRSP.GT.45) WRITE(LUPRI,'(/A,3I8)')
+         ENDIF
+         IF (IPRRSP.GT.45) WRITE(LUPRI,'(/A,3I12)')
      *      ' KZYWOP,KZYCON,KZYVAR:',KZYWOP,KZYCON,KZYVAR
       ELSE
-         IF (IPRRSP .GE. 2) WRITE(LUPRI,'(//A,I8/A,L8,3(/A,I8))')
+         IF (IPRRSP .GE. 2) WRITE(LUPRI,'(//A,I12/A,L12,3(/A,I12))')
      *      ' Perturbation symmetry.     KSYMOP:',KSYMOP,
      *      ' Perturbation spin symmetry.TRPLET:',TRPLET,
      *      ' Orbital variables.         KZWOPT:',KZWOPT,
      *      ' Configuration variables.   KZCONF:',KZCONF,
      *      ' Total number of variables. KZVAR :',KZVAR
-         IF (IPRRSP.GT.45) WRITE(LUPRI,'(/A,3I8)')
+         IF (IPRRSP.GT.45) WRITE(LUPRI,'(/A,3I12)')
      *      ' KZYWOP,KZYCON,KZYVAR:',KZYWOP,KZYCON,KZYVAR
       END IF
 C
@@ -4770,3 +4770,4 @@ C  *** END OF ESG
 C
       RETURN
       END
+C --- end of rspmai.F ---

@@ -2648,7 +2648,7 @@ C     SOPCLI reads 2p-2h diagonal (D(0) matrix)
       IF (SOPPA) KTOUSE = KTOUSE - KZCONF
       MAXSIM = MIN(MAXVEC,(KTOUSE-100)/KMAXVE)
 ! Manu + Hjj: for linear response MCSCF-srDFT (we still need to fix bugs for
-!             simultaneous calculation of many roots)       /Dec 2011
+!             simultaneous calculation of many roots)       /Dec 2011 TODO
       IF (DOMCSRDFT .OR. DOHFSRDFT) THEN
          maxsim = MIN(MAXSIM,1)
       END IF
@@ -3320,7 +3320,8 @@ C
 C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
 !     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
-      DOMO2 = DODFT
+!     DOMO2 = DODFT
+      DOMO2 = NASHT .EQ. 0
       IF (RSPOCD) THEN
          IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
             NINFO = NINFO + 1
@@ -3811,6 +3812,8 @@ C
                   END IF
   545          CONTINUE
             END IF
+            IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
+     &                             KZVAR,WRK(KCMO2),IPRRSP,LUPRI)
             IF (IPRRSP .GT. 3) THEN
                WRITE (LUPRI,'(/A,I3)')
      &              ' Eigenvector for state no.',(ISIM-1+INUM)
@@ -3820,8 +3823,6 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
-            IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
-     &                             KZVAR,WRK(KCMO2),LUPRI)
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS+(INUM-1)*KZYVAR),
      &                  'EXCITLAB',BLANK,WRK(KEIVAL-1+ISIM-1+INUM),D0,
      &                  KSYMOP,0,WRK(KRESID-1+ISIM-1+INUM),D0)
@@ -6053,7 +6054,7 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
       return
       end
 C  /* Deck RSPPMO */
-      SUBROUTINE RSPPMO (WOP,IOFFY,CMO2,LUPRI)
+      SUBROUTINE RSPPMO (WOP,IOFFY,CMO2,IPRINT,LUPRI)
 C
 C     June 2008; PBHT MO overlap diagnostic
 C     Reference: 
@@ -6065,7 +6066,7 @@ C
 C     (subroutine based on RSPPRO tuh)
 C
 #include "implicit.h"
-      PARAMETER(PTHRS = 1.D-08)
+      PARAMETER(PTHRS = 1.D-03)
       DIMENSION WOP(*)
       DIMENSION CMO2(NORBT,NORBT,2)
 C
@@ -6075,14 +6076,13 @@ C
 #include "inforb.h"
 #include "infvar.h"
  
-      CALL HEADER('PBHT MO Overlap Diagnostic',-1)
-      WRITE(LUPRI,'(A/A/)')
-     &  '  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
-     &  '             J Chem Phys 128, 044118 (2008)'
+      IF (IPRINT .GT. 4)  CALL HEADER('PBHT MO Overlap Diagnostic',-1)
       IF (NWOPT.GT.0) THEN 
-C        WRITE (LUPRI,1010) JWOPSY
-C        WRITE (LUPRI, '(2X,2A,/)')  '            I    A       ',
-C    &       'K_IA           K_AI         <|I|*|A|>      <I^2*A^2>'
+         IF (IPRINT .GT. 4) THEN
+            WRITE (LUPRI,1010) JWOPSY
+            WRITE (LUPRI, '(2A/)')  '@@@           I    A       ',
+     &         'K_IA           K_AI         <|I|*|A|>      <I^2*A^2>'
+         END IF
          CMOTOT=0.d0
          WOPTOT=0.d0
          DO IG = 1,NWOPT
@@ -6092,17 +6092,23 @@ C    &       'K_IA           K_AI         <|I|*|A|>      <I^2*A^2>'
             LS = ISMO(L)
             WOP1 = WOP(IG)
             WOP2 = WOP(IOFFY+IG)
+            IF (IPRINT .GT. 4) THEN
             IF (ABS(WOP1).GT.PTHRS .OR. ABS(WOP2).GT.PTHRS) THEN
-C              WRITE (LUPRI,'(2X,A,3I5,4F15.10)') 
-C    &            '@@@', IG,K,L,WOP1,WOP2,CMO2(K,L,1),CMO2(K,L,2)
-                  WMJGP=(WOP1-WOP2)**2.0d0
-                  CMOMJGP=WMJGP*CMO2(K,L,1)
-                  CMOTOT=CMOTOT+CMOMJGP
-                  WOPTOT=WOPTOT+WMJGP
+               WRITE (LUPRI,'(2X,A,3I5,4F15.10)') 
+     &            '@@@', IG,K,L,WOP1,WOP2,CMO2(K,L,1),CMO2(K,L,2)
             END IF
+            END IF
+            WMJGP=(WOP1-WOP2)**2.0d0
+            CMOMJGP=WMJGP*CMO2(K,L,1)
+            CMOTOT=CMOTOT+CMOMJGP
+            WOPTOT=WOPTOT+WMJGP
          END DO
          ALAMBDA=CMOTOT/WOPTOT
-         WRITE(LUPRI,'(25X,"Lambda:",2X,F15.10)')ALAMBDA
+         WRITE (LUPRI,'(/A,F17.10)')
+     &      "@ PBHT MO Overlap Diagnostic Lambda:", ALAMBDA
+      WRITE(LUPRI,'(A/A/)')
+     &  '  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
+     &  '             J Chem Phys 128, 044118 (2008)'
       END IF
       RETURN
  1010 FORMAT(5X,'Response orbital operator symmetry =',I2,/)

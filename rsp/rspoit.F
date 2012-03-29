@@ -544,7 +544,7 @@ C
       END IF
       JDIST = 0
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,H2CD,NEEDMU,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2CD,NEEDMU(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
          JDIST = JDIST + 1
