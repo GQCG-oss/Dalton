@@ -849,10 +849,15 @@ C
 C ***** count and initialize atomic Fock matrices
 C       ALso set fock matrix type (Coulomb and/or exchange)
 C
+C       for Cholesky: type 13 or 11 will call CHO_FCKDS1 in SIRFCK, and CHO_FCKDS1
+C       does only work for DCAO, not for DXCAO, DXVAO, etc. when exchange /discovered 120321 hjaaj
+C
       IF (HFXFAC .NE. 0.0D0) THEN
          IFCTYP_TR1 = 13 ! Coulomb and exchange
+         IF (CHOINT) IFCTYP_TR1 = 3
       ELSE
          IFCTYP_TR1 = 11 ! Only Coulomb
+         IF (CHOINT) IFCTYP_TR1 = 1
       END IF
       IFCTYP_SPINDNS = -12
 
