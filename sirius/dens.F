@@ -25,7 +25,7 @@
 C
 #ifdef UNDEF
 /* Comdeck last_changes */
-C modifications by jeppe sunday jan 17  '88  ( DSPDM3 ADDED )
+C modifications by jeppe sunday jan 17  1988  ( DSPDM3 ADDED )
 C 880715-hjaaj: Lunar to Sirius orbital reordering.
 #endif
 C  /* Deck dispdm */
@@ -1329,7 +1329,7 @@ C
 #include "implicit.h"
 C
       DIMENSION BCVECS(NCONST,NCSIM),CREF(NCONRF)
-      DIMENSION RHO1(NNASHX,NCSIM),RHO2(NNASHX*NNASHX,NCSIM)
+      DIMENSION RHO1(NNASHX,NCSIM,2),RHO2(NNASHX*NNASHX,NCSIM)
       DIMENSION XNDXCI(*),WORK(*)
 C
       PARAMETER ( D0 = 0.0 D0 )
@@ -1339,6 +1339,7 @@ C   INFINP : LSYM,FLAG(*)
 C   INFORB : NASHT,N2ASHX,NNASHX
 C   INFLIN : LSYMRF,LSYMST,NCONRF,NCONST
 C   INFPRI : IPRDNS
+C   DFTCOM : DFT_SPINDNS
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -1346,6 +1347,7 @@ C
 #include "inforb.h"
 #include "inflin.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
@@ -1367,7 +1369,7 @@ C
       KRHO1  = 1
       KWRKD  = KRHO1  + N2ASHX
       LWRKD  = LWRK + 1 - KWRKD
-      DO 100 ICSIM=1,NCSIM
+      DO ICSIM = 1,NCSIM
          KFREED = KWRKD
          CALL SETVEC(RHO2(1,ICSIM),D0,NNASHX*NNASHX)
          CALL SETVEC(WORK(KRHO1),D0,N2ASHX)
@@ -1379,15 +1381,31 @@ C        CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,
 C    *               RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
 C    *               XNDXCI,WORK,KFREE,LWRK)
 C
-         CALL DSITSP(NASHT,WORK(KRHO1),RHO1(1,ICSIM))
+         CALL DSITSP(NASHT,WORK(KRHO1),RHO1(1,ICSIM,1))
 C     ... pack RHO1 as triangular matrix
          IF (IPRDNS .GE. 6) WRITE (LUPRI,'(/5X,A,2I5,2I10)')
      *      'MAKTDM : ICSIM, NCSIM, KFREE, LWRK =',
      *      ICSIM,NCSIM,KFREED,LWRK
-  100 CONTINUE
+      END DO ! ICSIM = 1,NCSIM
 C
 C
-        RETURN
+      IF (DFT_SPINDNS) THEN ! calculate DTS
+         ISPIN1 = 1
+         NORHO2 = .TRUE.
+         DO ICSIM = 1,NCSIM
+            KFREED = KWRKD
+            CALL SETVEC(WORK(KRHO1),D0,N2ASHX)
+            CALL DENSID(LSYMRF,LSYMST,NCONRF,NCONST,CREF,
+     *               BCVECS(1,ICSIM),WORK(KRHO1),RHO2(1,ICSIM),
+     *               RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
+     *               XNDXCI,WORK,KFREED,LWRKD)
+C
+            CALL DSITSP(NASHT,WORK(KRHO1),RHO1(1,ICSIM,2))
+         END DO ! ICSIM = 1,NCSIM
+      END IF
+C
+C
+      RETURN
 C     ... end of MAKTDM
       END
 C  /* Deck densid */

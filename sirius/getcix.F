@@ -249,7 +249,8 @@ C CI information (NEWCI forced false).
 C Note that change of symmetry will not change CI information.
 C
       NEWCI = CHCKCI(NOSYM,IPRCIX,LUPRI)
-      IF (NASHT .LE. 1 .OR. HSROHF) THEN
+!     IF (NASHT .LE. 1 .OR. HSROHF) THEN
+      IF ( MCTYPE .EQ. 0 ) THEN ! Hartree-Fock
          NEWCI = .FALSE.
       ELSE
          NOCSF = FLAG(27)
@@ -329,7 +330,8 @@ C
          END IF
       END IF
 C
-      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
+!     IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
+      IF ( MCTYPE .GT. 0 ) THEN ! not Hartree-Fock
          IF (ICSF .EQ. 0) THEN
 C           ... do not use CSF expansion
             NCONF  = NDTASM(ICSYM)
@@ -348,14 +350,16 @@ C               symmetries or triplet in ABACUS and RESPONSE
          LBCIMX = LBCISV
          LCINDX = LCINSV
       ELSE
-C     ... NASHT .le. 1 .or. HSROHF (Hartree-Fock)
+C     ... RHF, ROHF, or HSROHF (Hartree-Fock)
          IF (HSROHF .OR. DOMC) THEN
 C        ... high spin ROHF
             JCSYM = LSYM
          ELSE IF (NASHT .EQ. 1) THEN
 C        ... one open shell ROHF
             JCSYM = IOPRHF
-         ELSE 
+         ELSE IF (NASHT .GT. 1) THEN
+            CALL QUIT('SETCI error, NASHT > 1 for Hartree-Fock')
+         ELSE
             JCSYM = 1
          END IF
          IF (ICSYM .EQ. JCSYM) THEN
@@ -453,7 +457,8 @@ C            for reference symmetry in this version). /980820-hjaaj
          ICSF = 1
       END IF
 C
-      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
+!     IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
+      IF ( MCTYPE .GT. 0 ) THEN
          IF (ICSF .EQ. 0) THEN
 C           ... do not use CSF expansion
             NCONF  = NDTASM(ICSYM)
@@ -470,11 +475,13 @@ C                  symmetries in ABACUS and RESPONSE
             END IF
          END IF
       ELSE
-C     ... NASHT .le. 1 (Hartree-Fock)
+C     ... Hartree-Fock
          IF (NASHT .EQ. 1) THEN
             JCSYM = IOPRHF
          ELSE IF (HSROHF) THEN
             JCSYM = LSYM
+         ELSE  IF (NASHT .GT. 1) THEN
+            CALL QUIT('SETCI2 error, NASHT > 1 for Hartree-Fock')
          ELSE 
             JCSYM = 1
          END IF
@@ -527,7 +534,8 @@ C If not first call (NEWCI false) check if CI specification has
 C changed, if yes then reset NEWCI to true.
 C Note that Hartree-Fock (i.e. nasht .le. 1) will not change
 C CI information.
-      IF (NASHT .LE. 1 .OR. HSROHF) THEN
+!     IF (NASHT .LE. 1 .OR. HSROHF) THEN
+      IF ( MCTYPE .EQ. 0 ) THEN ! Hartree-Fock
          IF (NASHT .NE. MASHT) THEN
             CHCKCI = .TRUE.
 C           force SETCI2 to quit if HF follows MCSCF,

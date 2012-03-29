@@ -1044,7 +1044,7 @@ C
  9999 CALL QEXIT('GETAC2')
       RETURN
 C
-C     End of GETAC1.
+C     End of GETAC2.
 C
       END
 C  /* Deck pksym1 */

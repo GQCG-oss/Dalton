@@ -846,24 +846,14 @@ C
 Cholesky
             IF (IPR_DIIS .GE. -1) THEN
               IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
-                 WRITE(LUPRI,4116) 'Coulomb part ',CSIRF
+                 WRITE(LUPRI,4115) TSIRF
+                 WRITE(LUPRI,4116) 'Coulomb part',CSIRF
                  WRITE(LUPRI,4116) 'Exchange part',XSIRF
                  WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
                  WRITE(LUPRI,4116) 'MO transform.',OSIRF
                  WRITE(LUPRI,4116) 'MO sorting   ',SSIRF
               ENDIF
-              WRITE(LUPRI,4115) TSIRF
               IF (QMMM) CALL QMMMTIMES('SIRIUS')
-              IF (LUW4 .NE. LUPRI) THEN
-                 IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
-                    WRITE(LUPRI,4116) 'Coulomb part ',CSIRF
-                    WRITE(LUPRI,4116) 'Exchange part',XSIRF
-                    WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
-                    WRITE(LUPRI,4116) 'MO transform.',OSIRF
-                    WRITE(LUPRI,4116) 'MO sorting   ',SSIRF
-                 ENDIF
-                 WRITE(LUW4,4115) TSIRF
-              ENDIF
             ENDIF
 Cholesky
 C           Save converged CMO 

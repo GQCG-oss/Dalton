@@ -1,3 +1,4 @@
+!define SIRFCK_DEBUG
 #undef SIRFCK_DEBUG
 !
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
@@ -68,8 +69,9 @@ C
       LOGICAL   DIRECT, DOERG, DOATR, LSRHYBR
       LOGICAL   DO_SPINDNS, DFT_SPINDNS_SAVE
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,*)
-      DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT), MBAS(8)
-      DIMENSION WRK(*), IFCTMP_SR(3)
+      DIMENSION ISYMDM(NDMAT),   IFCTYP(NDMAT)
+      DIMENSION ISYMDM_local(NDMAT),IFCTYP_local(NDMAT) ! automatic, temporary arrays
+      DIMENSION WRK(*), MBAS(8)
       DIMENSION DFCOEFF(NBAST) !density-fitting coefficients
 C
 #include "dummy.h"
@@ -114,14 +116,20 @@ C
       CALL QENTER('SIRFCK')
       CALL GETTIM(T0,W0)
 C
-      iprsrdft = iprfck
+C
       IF (NDMAT.EQ.0) GO TO 9999
+
+      IF (DODFT .OR. ADDSRI) THEN
+         DOERG = DFTADD
+         DOATR = .NOT.DFTADD
+C        ... DFTADD tells if add normal DFT Vxc or second order Vxc
+      END IF
 C
 C     Find out if we have spin-density terms
 C     Find out if we shall and can use Cholesky
 C
       DO_SPINDNS = .FALSE.
-      DO_CHOINT = CHOINT .and. CHIVAL .lt. 0.0D0 ! no Cholesky for short-range integrals (yet)
+      DO_CHOINT  = CHOINT .and. CHIVAL .lt. 0.0D0 ! no Cholesky for short-range integrals (yet)
       DO I = 1,NDMAT
          IF (MOD(IFCTYP(I),10) .EQ. 0) IFCTYP(I) = 0 ! "X" does not matter if no contribution
          IF (IFCTYP(I) .LT. 0) DO_SPINDNS = .TRUE.
@@ -131,8 +139,14 @@ C
      &       IFCTYP(I) .ne.  1 .and. IFCTYP(I) .ne.  0)
      &       DO_CHOINT = .FALSE.     ! actually all types are OK now ! /hjaaj Mar 2012
       END DO
-      IF (DO_SPINDNS .AND. .NOT. ADDSRI) THEN
-         CALL QUIT('SIRFCK can only do spin dens. for srDFT')
+      IF (DO_SPINDNS) THEN
+         DO_CHOINT = .FALSE.
+         IF (.NOT. ADDSRI) THEN
+            WRITE(LUPRI,'(//A/A,20I5)')
+     &      'ERROR: SIRFCK can only do spin dens. for srDFT',
+     &      'ERROR: IFCTYP =',IFCTYP(1:NDMAT)
+            CALL QUIT('SIRFCK can only do spin dens. for srDFT')
+         END IF
       END IF
       IF (CHOINT .AND. .NOT. DO_CHOINT) THEN
          NINFO = NINFO + 1
@@ -145,15 +159,17 @@ C
      &   ' Proceeding with standard AO-integral direct '//
      &     'Fock matrix construction.'
       END IF
-C
+
 #ifdef SIRFCK_DEBUG
-      iprsrdft = max(1,iprsrdft)  ! development code, always print
-      write(lupri,*)'SIRFCK: entering'
-      write(lupri,*)'SIRFCK: NDMAT=', NDMAT
+      iprfck = max(5,iprfck)  ! development code, always print
+      write(lupri,*)'SIRFCK: entering; dumping qenter call tree'
+      call qdump(lupri)
+      write(lupri,*)'SIRFCK: NDMAT =', NDMAT
       write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
       write(lupri,*)'SIRFCK: DO_SPINDNS,DFT_SPINDNS = ',
      & DO_SPINDNS,DFT_SPINDNS
 #endif
+      iprsrdft = iprfck
 C
       IF (DO_SPINDNS) THEN
 C        DC, DV, DS or DXC, DXV, DXS
@@ -189,6 +205,11 @@ C        DC, DV or DXC, DXV
             write(lupri,*)'SIRFCK: NDMAT,NSR_DMAT=', NDMAT,NSR_DMAT
             write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
             CALL QUIT('Inconsistency(2), NSR_DMAT*2 ne NDMAT')
+         END IF
+      END IF
+      IF (ADDSRI) THEN
+         IF (DOERG .AND. NSR_DMAT .GT. 1) THEN
+            CALL QUIT('SIRFCK ERROR: nsr_dmat > 1 for sr gradient call')
          END IF
       END IF
 
@@ -297,13 +318,17 @@ C        Special code for short range/long range integrals
 C        ... never short-range integrals in first call of HERFCK
 C        ... if normal HF then normal 2-el ints (CHIVAL=0)
          SRINTS = .FALSE.
+         IFCTYP_local(1:NDMAT) = IFCTYP(1:NDMAT)
          IF (ADDSRI .OR. PREHF) THEN
 C        ... full exchange for long range part and for PREHF
             HFXFAC = D1
             DO I = 1,NDCandDV
-               J = MOD(IFCTYP(I),10)
-               IF (IBTAND(J,2) .eq. 0) IFCTYP(I) = IFCTYP(I) + 2
+            IF (IFCTYP_local(I) .GT. 0) THEN ! skip "FTC" with IFCTYP=0
+               J = MOD(IFCTYP_local(I),10)
+               IF (IBTAND(J,2) .eq. 0)
+     &            IFCTYP_local(I) = IFCTYP_local(I) + 2
 C              ... make sure the "do exchange" bit is set in IFCTYP
+            END IF
             END DO
          END IF
          IF (PREHF) THEN
@@ -312,11 +337,11 @@ C           this is e.g. PREHF, i.e. standard HF
          END IF
 #ifdef SIRFCK_DEBUG
          write(lupri,*) 'sirfck: before calling herfck ...'
-         write(lupri,*) 'SIRFCK: ADDSRI =', ADDSRI
+         write(lupri,*) 'SIRFCK: ADDSRI, SRINTS =', ADDSRI,SRINTS
          write(lupri,*) 'SIRFCK: calling HERFCK with CHIVAL ',CHIVAL
          write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
-         write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
-         write(lupri,*) 'SIRFCK: IFCTYP ',(IFCTYP(I),I=1,NDMAT)
+       write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
+       write(lupri,*) 'SIRFCK: IFCTYP_local',(IFCTYP_local(I),I=1,NDMAT)
 !        write(lupri,*) 'SIRFCK: first DMAT'
 !        call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
@@ -332,44 +357,73 @@ C           HERFCK destroys DMAT when called with symmetry
             CALL DCOPY(NDCandDV*N2BASX,DMAT,1,WRK(KDMAT),1)
             if (atomdf .AND. CHIVAL .LT. D0) then
 C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
-              call dens_fit(fmat,wrk(kdmat),NDCandDV,ISYMDM,IFCTYP,
-     &                    IPRHER,WRK(KLAST),LWRK)
+              call dens_fit(fmat,wrk(kdmat),NDCandDV,ISYMDM,
+     &                    IFCTYP_local,IPRHER,WRK(KLAST),LWRK)
             else
-              CALL HERFCK(FMAT,WRK(KDMAT),NDCandDV,ISYMDM,IFCTYP,
+              CALL HERFCK(FMAT,WRK(KDMAT),NDCandDV,ISYMDM,IFCTYP_local,
      &                    IPRHER,WRK(KLAST),LWRK)
             end if
          ELSE
             if (atomdf .AND. CHIVAL .LT. D0) then
 C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
-              call dens_fit(fmat,dmat,NDCandDV,ISYMDM,IFCTYP,IPRHER,
-     &                      wrk,lwork)
+              call dens_fit(fmat,dmat,NDCandDV,ISYMDM,
+     &                      IFCTYP_local,IPRHER,wrk,lwork)
             else
-              CALL HERFCK(FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP,IPRHER,
-     &                      WRK,LWORK)
+              CALL HERFCK(FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP_local,
+     &                    IPRHER,WRK,LWORK)
             end if
          END IF
        END IF ! (CHIVAL .ne. D0)
 #ifdef SIRFCK_DEBUG
-!        write(lupri,*) 'SIRFCK: first FMAT'
-!        call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+       do i = 1,nfmat
+         write(lupri,*) 'SIRFCK: FMAT no.',i,' after long-range'
+         call output(FMAT(1,i),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+       end do
 #endif
          HFXFAC = HFXFACSAVE
          CHIVAL = CHIVALSAVE
 C
+C      ***********************************************************
 C        Add Short-range integrals (HF/MC-SRDFT hybrid model)
+C      ***********************************************************
 C
 #ifdef SIRFCK_DEBUG
          write(lupri,*) 'add direct sr integrals ? ADDSRI = ', ADDSRI 
 #endif 
          IF (ADDSRI .AND. (DOHFSRDFT.OR.DOMCSRDFT)) THEN
+            NFSRAO = NSR_DMAT ! FT
+            NFSRTYP  = 1
+            IFC_X = IFCTYP(1) / 10
+            IFC_X = 10*IFC_X ! DMAT symmetric, antisymmetric or unsymmetric ?
+            IF (HFXFAC .EQ. 0.0D0 .OR. DFT_SPINDNS) THEN
+               IFCTYP_local(1:NSR_DMAT) = IFC_X + 1 ! only Coulomb
+            ELSE
+               IFCTYP_local(1:NSR_DMAT) = IFC_X + 3 ! Coulomb + HFXFAC*exchange
+            END IF
+            IF (DO_SPINDNS) THEN
+               IF (HFXFAC .NE. D0) THEN
+                  NFSRAO = NFSRAO + 2*NSR_DMAT ! FC, FS
+                  IFCTYP_local(NSR_DMAT+1:NFSRAO) = IFC_X + 2 ! only exchange
+                  NFSRTYP = NFSRTYP + 2
+               END IF
+               JFMAT = 3
+            ELSE IF (NASHT .GT. 0 .AND. (.NOT.DOCISRDFT)) THEN
+               JFMAT = 2
+            ELSE
+C           ... total DMAT = DC when NASHT.eq.0 or CISRDFT
+               JFMAT = 1
+            END IF
+            ISYMDM_local(1:NFSRAO) = ISYMDM(1)
+            KFSRAO = 1
+            KDSRAO = KFSRAO + NFSRAO*N2BASX
+            KLAST  = KDSRAO + NFSRAO*N2BASX
+            LWRK   = LWORK - KLAST + 1
+            IF (KLAST.GT.LWORK)
+     &         CALL STOPIT('SIRFCK','FSRAO+DSRAO',KLAST,LWORK)
+
             IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT))THEN
 C              ... get total DMAT = DC + DV if NASHT.gt.0
 C                  for Hartree SR term
-               IF (DO_SPINDNS) THEN
-                  JFMAT = 3
-               ELSE
-                  JFMAT = 2
-               END IF
 !
 !
 ! Manu: introduced nosim_r and ncsim_r variables in the common block. 
@@ -382,11 +436,14 @@ C                  for Hartree SR term
 !!!! new new code 
 !
                IF (NOSIM_SR.NE.0) THEN
+        call quit('hjaaj sirfck: mangler at eliminere NOSIM_SR')
                   DO IOSIM=1,NOSIM_SR
                      CALL DAXPY(N2BASX,D1,DMAT(1,IOSIM+NOSIM_SR),1,
      &                          DMAT(1,IOSIM),1)
                   END DO
                   IF (NCSIM_SR.NE.0) THEN
+C Manu: Note that I did not consider spin polarization (should we use
+C JMAT instead of "2" in ISRMAT=2*NOSIM_SR+ICDMAT ?)
                      DO ICSIM=1,NCSIM_SR
                         CALL DAXPY(N2BASX,D1,DMAT(1,
      &                             2*NOSIM_SR+NCSIM_SR+ICSIM),1,
@@ -394,228 +451,98 @@ C                  for Hartree SR term
                       END DO
                   END IF 
                ELSE IF (NCSIM_SR.NE.0) THEN
+        call quit('hjaaj sirfck: mangler at eliminere NCSIM_SR')
                   DO ICSIM=1,NCSIM_SR
                      CALL DAXPY(N2BASX,D1,DMAT(1,ICSIM+NCSIM_SR),1,
      &                          DMAT(1,ICSIM),1)
                   END DO
 
                ELSE ! MC-srDFT optimization
-                  IF (NSR_DMAT .GT. 1)
-     &              call quit('sirfck: NSR_DMAT .gt. 1 not implemented')
-
-                  CALL DAXPY(N2BASX,D1,DMAT(1,2),1,DMAT(1,1),1)
-!!! new code !!!
-!                 DO I = 1,NSR_DMAT
-C
-!                    CALL DAXPY(N2BASX,D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
-C                 ... add DV(I) to DC(I)
-!!!!! inital code !!!
-!                    CALL DAXPY(N2BASX,D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
-C                 ... add DV(I) to DC(I)
-!                 END DO
-!
-! Manu: the core one-index transformed and transition density matrices
-!       now contains the total ones 
-!
-!!!!!!!!!!!!!!!!!!!!!
+                  CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,WRK(KDSRAO),1)
+                  CALL DAXPY(NSR_DMAT*N2BASX,D1,DMAT(1,NSR_DMAT+1),1,
+     &                                    WRK(KDSRAO),1) ! DT = DC + DV
+                  IF ( NFSRTYP .EQ. 3 ) THEN
+                     KDC_SRAO = KDSRAO + NSR_DMAT*N2BASX
+                     CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,
+     &                                    WRK(KDC_SRAO),1) ! DC
+                     KDS_SRAO = KDC_SRAO + NSR_DMAT*N2BASX
+                     CALL DCOPY(NSR_DMAT*N2BASX,DMAT(1,2*NSR_DMAT+1),1,
+     &                                    WRK(KDS_SRAO),1) ! DS
+                  END IF
                END IF
-            ELSE
-C              ... total DMAT = DC when NASHT.eq.0 or CISRDFT
-               JFMAT   = 1
-               IF (DO_SPINDNS) THEN
-                  CALL QUIT('srDFT spin density for closed shell')
-               END IF
+            ELSE ! NASHT.eq.0 .or. DOCISRDFT
+               CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,WRK(KDSRAO),1) ! DT = DC
             END IF
 C
 C
             SRINTS = .TRUE.
-            IF (HFXFAC .EQ. D0) THEN
-C              remove any "do exchange" bits
-               DO I = 1,NSR_DMAT
-                  J = MOD(IFCTYP(I),10)
-                  IF (IBTAND(J,2) .ne. 0) IFCTYP(I) = IFCTYP(I) - 2
-               END DO
-            END IF
-C           HERFCK will zero FMAT with long range term, thus :
-            KFSRAO = 1
-            KLAST = KFSRAO + NSR_DMAT*N2BASX
-            LWRK  = LWORK - KLAST + 1
-            IF (KLAST.GT.LWORK) CALL STOPIT('SIRFCK','FMAT',KLAST,LWORK)
 #ifdef SIRFCK_DEBUG
-            write(lupri,*) 'SIRFCK: calling HERFCK with CHIVAL ',CHIVAL
-            write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
-            write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
-            write(lupri,*) 'SIRFCK: IFCTYP ',(IFCTYP(I),I=1,NDMAT)
-         do i = 1,ndmat+1
-            write(lupri,*) 'SIRFCK: DMAT no.',i,' out of',ndmat+1
-            call output(DMAT(1,i),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+         write(lupri,*) 'SIRFCK: ADDSRI, SRINTS =', ADDSRI,SRINTS
+         write(lupri,*) 'SIRFCK: calling HERFCK with CHIVAL ',CHIVAL
+         write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
+         write(lupri,*) 'JFMAT    =', JFMAT
+         write(lupri,*) 'nsr_dmat =', NSR_DMAT
+         write(lupri,*) 'nosim_sr+ncsim_sr =', NOSIM_SR+NCSIM_SR
+      write(lupri,*) 'SIRFCK: ISYMDM_local',(ISYMDM_local(I),I=1,NFSRAO)
+      write(lupri,*) 'SIRFCK: IFCTYP_local',(IFCTYP_local(I),I=1,NFSRAO)
+         do i = 1,NFSRAO
+            write(lupri,*) 'SIRFCK: DMAT_SR no.',i,' out of',NFSRAO
+            JDSRAO = KDSRAO + (I-1)*N2BASX
+          call output(wrk(jdsrAO),1,nbast,1,nbast,nbast,nbast,-1,lupri)
          end do
 #endif
-            IF (NSYM.GT.1) THEN
-
-!!!! start new code for symmetry !!!
-                KDMAT = KLAST
-                KLAST = KDMAT + NSR_DMAT*N2BASX
-                LWRK  = LWORK - KLAST + 1
-                IF (KLAST.GT.LWORK)
-     &             CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
-C
-                DO ISRMAT = 1, NSR_DMAT
-                   IDMAT = JFMAT*(ISRMAT-1) +1
-                   KIDMAT = KDMAT +(ISRMAT-1)*N2BASX 
-                   CALL DCOPY(N2BASX,DMAT(1,IDMAT),1,WRK(KIDMAT),1)
-                END DO 
-C
-                if (atomdf .AND. CHIVAL .LT. D0) then
-C                  hjaaj mar 2006: dens_fit not for short range integrals (yet)
-                   call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
-     &                         ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-                else
-                   CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
-     &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-                end if
-
-!!!! end new code for symmetry !!!
-
-!!!!! start initial code !!!!!!!
-C              HERFCK destroys DMAT when called with symmetry
-C              We need DMAT for the "CALL SRDFT" below
-!*             KDMAT = KLAST
-!*             KLAST = KDMAT + NSR_DMAT*N2BASX
-!*             LWRK  = LWORK - KLAST + 1
-!*             IF (KLAST.GT.LWORK)
-!*   &         CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
-!*             CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,WRK(KDMAT),1)
-!*             if (atomdf .AND. CHIVAL .LT. D0) then
-C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
-!*               call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
-!*   &                         ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-!*             else
-!*               CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
-!*   &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-!*             end if
-!!!!! end initial code !!!!!!!
-            ELSE
-C
-C Manu - march 2011: allocation of additional memory 
-C                    for total one-index transformed 
-C                    and transition density matrices 
-C                    in order to calculate the corresponding 
-C                    srH Kernel contributions to the hessian. 
-C                    The initial implementation, that used 
-C                    directly DMAT, did not work when the two
-C                    matrices were non-zero (which happens in the linear
-C                    response when the trial vector has both an orbital AND a
-C                    configuration part) because they were not ordered
-C                    one after the other (DTVAO "stands" in between)
-C
-C
-#ifdef SIRFCK_DEBUG
-                write(lupri,*) 'JFMAT =', JFMAT
-                write(lupri,*) 'nsr_dmat = ', NSR_DMAT
-                write(lupri,*) 'nosim_sr+ncsim_sr = ', NOSIM_SR+NCSIM_SR
-#endif 
-                   KDMAT = KLAST
-                   KLAST = KDMAT + NSR_DMAT*N2BASX
-                   LWRK  = LWORK - KLAST + 1
-                   IF (KLAST.GT.LWORK)
-     &             CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
-C
-C Manu: new code for many roots ...
-C Manu: Note that I did not consider spin polarization (should we use
-C JMAT instead of "2" in ISRMAT=2*NOSIM_SR+ICDMAT ?)
-C
-                IF (NOSIM_SR.NE.0) THEN
-                   DO IODMAT=1,NOSIM_SR
-                      KODMAT=KDMAT+(IODMAT-1)*N2BASX 
-                      CALL DCOPY(N2BASX,DMAT(1,IODMAT),1,WRK(KODMAT),1)
-                   END DO
-                   IF (NCSIM_SR.NE.0) THEN
-                      DO ICDMAT=1,NCSIM_SR
-                         ISRMAT=2*NOSIM_SR+ICDMAT
-                         KCDMAT=KDMAT+(NOSIM_SR+ICDMAT-1)*N2BASX
-                         CALL DCOPY(N2BASX,DMAT(1,ISRMAT),1,
-     &                              WRK(KCDMAT),1)
-                       END DO
-                   END IF 
-               ELSE IF (NCSIM_SR.NE.0) THEN
-                   DO ICDMAT=1,NCSIM_SR
-                      KCDMAT=KDMAT+(ICDMAT-1)*N2BASX 
-                      CALL DCOPY(N2BASX,DMAT(1,ICDMAT),1,WRK(KCDMAT),1)
-                   END DO
-               ELSE ! direct MC-srDFT call in wave function optimization
-                  DO ISRMAT = 1, NSR_DMAT
-                     IDMAT  = JFMAT*(ISRMAT-1) + 1
-                     KIDMAT = KDMAT +(ISRMAT-1)*N2BASX 
-                     CALL DCOPY(N2BASX,DMAT(1,IDMAT),1,WRK(KIDMAT),1)
-                  END DO 
-               END IF
-
-C
-               if (atomdf .AND. CHIVAL .LT. D0) then
-C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
-                 call dens_fit(wrk(KFSRAO),dmat,NSR_DMAT,
-     &                         ISYMDM,IFCTYP,IPRHER,wrk(KLAST),LWRK)
-               else
-#ifdef SIRFCK_DEBUG
-                   write(lupri,*) 'calling herfck with no symmetry!'
-                   write(lupri,*) 'NSR_DMAT = ', NSR_DMAT
-#endif
-C
-C 
-                 CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
-     &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-
-! initial code (DMAT was used instead of WRK(KDMAT))
-!
-!*               CALL HERFCK(WRK(KFSRAO),DMAT,NSR_DMAT,
-!*   &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-               end if
-            END IF
-C
-            EJSR = DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KFSRAO),1)
-            EKSR = D0
-            IF (NASHT.GT.0) THEN
-             EJKVSR =-DP5*
-     &                DDOT(N2BASX,DMAT(1,NSR_DMAT+1),1,WRK(KFSRAO),1)
-            ELSE
-             EJKVSR = D0
-            END IF
- 
-            IF (JFMAT .EQ. 1) THEN
-               CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(KFSRAO),1,FMAT,1)
-            ELSE
-C
-!
-!
-! Manu: probably needs to be modified when more than one root ...
-! initial code >>>>>
-               DO I = 1,NSR_DMAT
-                  JFSRAO = KFSRAO + (I-1)*N2BASX
-                  JF = JFMAT*(I-1)+ 1
-                  CALL DAXPY(N2BASX,D1,WRK(JFSRAO),1,FMAT(1,JF),1)
-               END DO
-! end initial code <<<<<
-            END IF
-!
-! Finished with short-range Hartree and normal HF exchange term,
-! now for any spin density exchange term:
-!
-            IF (HFXFAC .NE. D0 .and. DO_SPINDNS) THEN
-               write (lupri,'(/A)') 'SIRFCK SPIN DENSITY EXX TERM'
-               IF (NSR_DMAT .NE. 1)
-     &         call quit('HFXFAC & SPINDNS only for NSR_DMAT.eq.1')
-               call dcopy(n2basx,DMAT(1,3),1,WRK(KDMAT),1)
-               ifctyp_sr = 12 ! only exchange
-               isymdm_sr = 0
-               CALL HERFCK(WRK(KFSRAO),WRK(KDMAT), 1 ,
-     &                     isymdm_sr,ifctyp_sr,IPRHER,WRK(KLAST),LWRK)
-               CALL DAXPY(N2BASX,D1,WRK(KFSRAO),1,FMAT(1,3),1)
-               EKSR_S = DP5*DDOT(N2BASX,DMAT(1,3),1,WRK(KFSRAO),1)
-               EKSR = EKSR + EKSR_S
-            END IF
-!
+!  hjaaj mar 2006: dens_fit not for short range integrals (yet)
+!             if (atomdf .AND. CHIVAL .LT. D0) then
+!                call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
+!    &                         ISYMDM,IFCTYP_local,IPRHER,WRK(KLAST),LWRK)
+!             else
+                 CALL HERFCK(WRK(KFSRAO),WRK(KDSRAO),NFSRAO,
+     &                ISYMDM_local,IFCTYP_local,IPRHER,WRK(KLAST),LWRK)
+!                NB! WRK(KDSRAO) may be destroyed inside HERFCK, do not use below!
+!             end if
             SRINTS = .FALSE.
+
+C
+         IF (DOERG) THEN
+            IF (NSR_DMAT .GT. 1)
+     &         CALL QUIT('SIRFCK SRINT ERROR: DOERG and NSR_DMAT>1')
+            EJSR = DP5*DDOT(N2BASX,DMAT,1,WRK(KFSRAO),1) ! Jsr or Jsr+Ksr from DC
+            IF (NFSRTYP .EQ. 1) THEN
+               EKSR = D0
+               EKSR_S = D0
+            ELSE IF (NFSRTYP .EQ. 3) THEN
+               JFSRAO = KFSRAO + N2BASX
+               EKSR   = DP5*DDOT(N2BASX,DMAT(1,2),1,WRK(JFSRAO),1) ! Ksr
+               CALL DAXPY(N2BASX,D1,WRK(JFSRAO),1,WRK(KFSRAO),1) ! now Jsr+Ksr
+               JFSRAO = JFSRAO + N2BASX
+               EKSR_S = DP5*DDOT(N2BASX,DMAT(1,3),1,WRK(JFSRAO),1) ! Ksr_spin
+            ELSE
+               CALL QUIT('NFSRTYP neither 1 nor 3')
+            END IF
+            IF (NASHT.GT.0) THEN
+              EJKVSR = -DP5*
+     &                DDOT(N2BASX,DMAT(1,2),1,WRK(KFSRAO),1)
+            ELSE
+              EJKVSR =  D0
+            END IF
+            EJSR = EJSR - EJKVSR ! Jsr or Jsr+Ksr from DC+DV
+         ELSE IF (NFSRTYP .EQ. 3) THEN
+            JFSRAO = KFSRAO + NSR_DMAT*N2BASX
+            CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(JFSRAO),1,WRK(KFSRAO),1) ! now Jsr+Ksr
+         END IF
+ 
+         CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(KFSRAO),1,FMAT,1) ! add Jsr+Ksr
+         IF (NFSRTYP .EQ. 3) THEN
+            JFSRAO = KFSRAO + 2*NSR_DMAT*N2BASX
+            CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(JFSRAO),1,FMAT(1,3),1) ! add Ksr_spin
+            write (lupri,'(/A)') 'SIRFCK SPIN DENSITY EXX TERM'
+         END IF
+! hjaaj: my first code, can soon be removed after testing (25.jan.2012)
+! hjaaj: I have now removed the factor 2 again, is that OK ???
+!              CALL DAXPY(N2BASX,2.0D0,WRK(KFSRAO),1,FMAT(1,3),1)
+!              EKSR_S = DDOT(N2BASX,DMAT(1,3),1,WRK(KFSRAO),1) ! 0.5 * 2.0 * DDOT
+
+
             IF (NASHT.GT.0) THEN
 !!!! new new code 
 !
@@ -637,25 +564,7 @@ C
      &                           DMAT(1,ICSIM),1)
                    END DO
 
-               ELSE
-                  CALL DAXPY(N2BASX,-D1,DMAT(1,2),1,DMAT(1,1),1)
-!
-!
-!!!! new code !!!
-!>>>>>         DO I = 1,NSR_DMAT
-!
-!>>>>>           CALL DAXPY(N2BASX,-D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
-C                 ... restore DC(I) = DTOT(I) -  DV(I)
-!!!! initial code !!!
-C                CALL DAXPY(N2BASX,-D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
-C                 ... restore DC(I) = DTOT(I) -  DV(I)
-!>>>>>         END DO
                END IF
-!
-! Manu: the core one-index transformed and transition density matrices
-!       are now restored. 
-!
-!!!!!!!!!!!!!!!!!!!!!!!
             END IF ! (NASHT.GT.0)
          ENDIF
          DO I = 1,NDMAT
@@ -675,7 +584,7 @@ C
       ELSE ! not Cholesky and not AO-direct
 C
 C     ****************** "conventional" AO Fock matrices ***************
-C                        (from AO integrals or supermatrix integrals on file)
+C                        (from AO integrals on file)
 C
          IF (HFXMU .NE. D0) CALL QUIT(
      &       'SIRFCK2: nonzero HFXMU requires .DIRECT calculation.') 
@@ -683,11 +592,11 @@ C
 C        ... if SRHYBR (DFT-SRDFT hybrid) only include Coulomb terms 
 C            (core is treated with BLYP -> hence no exchange here!)
          IF(LSRHYBR) THEN
-            IFCTMP_SR(1) = IFCTYP(1)
+            IFCTYP_local(1) = IFCTYP(1)
             IFCTYP(1) = 11
 C           ... FC,lr = JC,lr = J,lr * DC for SR-hybrid
             IF (NDMAT .EQ. 2) THEN
-               IFCTMP_SR(2) = IFCTYP(2)
+               IFCTYP_local(2) = IFCTYP(2)
                IFCTYP(2) = 13
             END IF
 C           ... FV,lr = G,lr * DV
@@ -698,14 +607,16 @@ C           ... FV,lr = G,lr * DV
 C        ... full exchange for long range part and for PREHF
             HFXFAC = D1
             DO I = 1,NDCandDV
+            IF (IFCTYP(I) .GT. 0) THEN ! skip "FTC"
                J = MOD(IFCTYP(I),10)
                IF (IBTAND(J,2) .eq. 0) IFCTYP(I) = IFCTYP(I) + 2
 C              ... make sure the "do exchange" bit is set in IFCTYP
+            END IF
             END DO
          END IF
 #ifdef SIRFCK_DEBUG
          write(lupri,*)'SIRFCK: calling SIRFCK2 "AOTWOINT" with'
-         write(lupri,*)'SIRFCK: NDMAT=',NDMAT
+         write(lupri,*)'SIRFCK: NDMAT =',NDMAT
          write(lupri,*)'SIRFCK: IFCTYP=',(IFCTYP(I),I=1,NDMAT)
 !        write(lupri,*)'SIRFCK: first DMAT'
 !        call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
@@ -717,7 +628,7 @@ C        ... no long-range integrals if chival .eq. 0
           END IF ! (CHIVAL .ne. D0)
          if (lsrhybr) then
             do i = 1,ndmat
-               ifctyp(i) = ifctmp_sr(i)
+               ifctyp(i) = IFCTYP_local(i)
             end do
          end if
          HFXFAC = HFXFACSAVE
@@ -735,7 +646,7 @@ C                 ... add DV(I) to DC(I)
             END IF
             IF (NSR_DMAT.GT.1) CALL QUIT('NSR_DMAT .GT. 1 for ADDSRI')
 C
-            IFCTMP_SR(1) = IFCTYP(1)
+            IFCTYP_local(1) = IFCTYP(1)
             IF (HFXFAC.NE.D0) THEN
 C           ... for normal/preceding HF and for SRDFT with exact exch.
 C               (add SR coul. and exch. to LR to give full 2-el part)
@@ -773,6 +684,7 @@ C              remove any "do exchange" bits
             ELSE
                EJKVSR = D0
             END IF
+            EJSR = EJSR - EJKVSR ! Jsr or Jsr+Ksr from DC+DV
             if (iprsrdft .gt. 0 .and.
      &         nsr_dmat.eq.1 .and. HFXFAC .NE. 0.0D0) then
                CALL DZERO(WRK(KFSRAO),N2BASX)
@@ -794,12 +706,19 @@ C              remove any "do exchange" bits
      &         call quit('HFXFAC & SPINDNS only for NSR_DMAT.eq.1')
                ifctyp_sr = 12 ! only exchange
                isymdm_sr = 1
+               CALL DZERO(WRK(KFSRAO),N2BASX)
                CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFSRAO),
-     &                   DMAT(1,3), 1 ,ISYMDM_sr,IFCTYP_sr,
+     &                   DMAT(1,3), 1 ,ISYMDM_local,IFCTYP_local,
      &                   WRK(KLAST),LWRK)
-               CALL DAXPY(N2BASX,D1,WRK(KFSRAO),1,FMAT(1,3),1)
-               EKSR_S = DP5*DDOT(N2BASX,DMAT(1,3),1,WRK(KFSRAO),1)
-               EKSR = EKSR + EKSR_S
+#ifdef SIRFCK_DEBUG
+               write (lupri,'(/A)')
+     &         'SIRFCK SPIN DENSITY exchange Fock matrix * 0.5'
+           call output(wrk(kfsrao),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+#endif
+               CALL DAXPY(N2BASX,2.0D0,WRK(KFSRAO),1,FMAT(1,3),1)
+               EKSR_S = DDOT(N2BASX,DMAT(1,3),1,WRK(KFSRAO),1) ! 0.5 * 2.0 * DDOT
+            ELSE
+               EKSR_S = D0
             END IF
 !
             IF (NASHT.GT.0) THEN
@@ -812,6 +731,10 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
          END IF
       END IF
       HFXFAC = HFXFACSAVE
+#ifdef SIRFCK_DEBUG
+         write(lupri,*) 'SIRFCK: final first FMAT'
+         call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+#endif
       IF (IPRFCK .GT. 0) THEN 
          CALL GETTIM(T1,W1)
          WRITE(LUPRI,'(/A,2F10.3)')
@@ -825,8 +748,6 @@ C
 C     Add DFT contribution
 C
       IF (DODFT) THEN
-         DOERG = DFTADD
-         DOATR = .NOT.DFTADD
          IF(DOATR)THEN
             J = NDMAT + 1
 C           DTOTAO is put in DMAT(1,NDMAT+1) in TR1FCK.
@@ -849,8 +770,7 @@ C           CALL OUTPUT(WRK(KSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
             CALL DFTEXC(DMAT(1,J),NDMTMP,FMAT,1,.FALSE.,DOERG,.FALSE.,
      &           .FALSE.,DOATR,.FALSE.,DUMMY,.FALSE.,WRK,LWORK,IPRFCK)
          ENDIF
-C        ... DFTADD tells if add normal DFT Vxc or second order Vxc
-         IF (NDMAT.GT.1) CALL QUIT('DFTADD and NDMAT.gt.1')
+         IF (NDMAT.GT.1) CALL QUIT('DODFT and NDMAT.gt.1')
       END IF
 #endif
 C
@@ -861,17 +781,14 @@ C
          call quit('srdft not included in this version')
 #else
 #ifdef SIRFCK_DEBUG
-         do i = 1,ndmat+1
-            write(lupri,*) 'SIRFCK srdft: DMAT no.',i,' out of',ndmat+1
+         do i = 1,ndmat
+            write(lupri,*) 'SIRFCK srdft: DMAT no.',i,' out of',ndmat
             call output(DMAT(1,i),1,nbast,1,nbast,nbast,nbast,-1,lupri)
          end do
 #endif
          IF (LSRHYBR .AND. DO_SPINDNS) THEN
             call quit('hybrid srDFT only for singlet MC-srDFT')
          END IF
-         DOERG = DFTADD
-         DOATR = .NOT.DFTADD
-C        ... DFTADD tells if add normal DFT Vxc or second order Vxc
          IF (DO_SPINDNS) THEN
             NSRAO = 2
             NDOFF = 3
@@ -1088,24 +1005,38 @@ C              ... extract symmetric component of DXSAO
 C                 ... copy symmetric part of DXVAO
                        END IF
                     END IF
-                ELSE
+                ELSE ! (.not. DOATR)
                     JDAO = JDMAT
                     IF (NDOFF.NE.1)
      &              CALL DAXPY(N2BASX,D1,DMAT(1,JDMAT+1),1,
      &                         DMAT(1,JDAO),1)
-C           ... get total DMAT = DC + DV if NASHT .gt. 0
+C           ... get total DMAT: DT = DC + DV if NASHT .gt. 0
+C           ... spin DMAT: DS is expected in JDAO + 2
                 END IF
 C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 #ifdef SIRFCK_DEBUG
-                WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG',DOERG  !JT
-                WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
+                WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG,DOATR',
+     &             DOERG,DOATR,NSRAO  !JT
+                WRITE(LUPRI,*) 'DT: DMAT(1,JDAO), JDAO =',JDAO
                 call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,
      &                      -1,lupri)
-                WRITE(LUPRI,*) 'DMAT(1,JDAO+1), JDAO+1 =',JDAO+1
-                call output(DMAT(1,JDAO+1),1,NBAST,1,NBAST,NBAST,
-     &                      NBAST,-1,lupri)
+                IF (DOATR) THEN
+                  WRITE(LUPRI,*) 'DXT: DMAT(1,JDAO+1), JDAO+1 =',JDAO+1
+                  call output(DMAT(1,JDAO+1),1,NBAST,1,NBAST,NBAST,
+     &                        NBAST,-1,lupri)
+                END IF
                 WRITE(LUPRI,*) 'SIRFCK: DFT_SPINDNS = ', DFT_SPINDNS, 
      &                   'BEFORE SRDFT'
+                IF (DFT_SPINDNS) THEN
+                 WRITE(LUPRI,*) 'DS: DMAT(1,JDAO+2), JDAO+2 =',JDAO+2
+                 call output(DMAT(1,JDAO+2),1,NBAST,1,NBAST,NBAST,NBAST,
+     &                      -1,lupri)
+                 IF (DOATR) THEN
+                  WRITE(LUPRI,*) 'DXS: DMAT(1,JDAO+3), JDAO+3 =',JDAO+3
+                  call output(DMAT(1,JDAO+3),1,NBAST,1,NBAST,NBAST,
+     &                        NBAST,-1,lupri)
+                 END IF
+                END IF
 #endif
                 CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
                 DFT_SPINDNS_SAVE = DFT_SPINDNS
@@ -1143,41 +1074,42 @@ C        ... restore DC = DTOT - DV
             ELSE
                EVSR = D0
             END IF
-            ESRDFTY = EDFT + ECSR + EVSR + EJKVSR
+            ESRDFTY = EDFT + ECSR + EVSR + EJKVSR + EKSR_S
 C
-C           EDFT = Exsr + Ecsr
-C           ECSR = -0.5*Tr(Vxcsr Dc)
-C           EVSR = -Tr(Vxcsr Dv)
+C           EDFT   = Exsr + Ecsr
+C           EKSR_S =  0.5*Tr( Ksr Dspin ) * HFXFAC
+C           ECSR   = -0.5*Tr( Vxcsr Dc )
+C           EVSR   =     -Tr( Vxcsr Dv )
 C           EJKVSR = -0.5*Tr( (Jsr+HFXFAC*Ksr) Dv)
 C           note: ECSR + EVSR + EJKVSR corrections are added
 C                 to get right contributions from MCSCF code.
 C
-C           For print, short-range Coulomb and Exchange energies
-C           EJSR = 0.5*Tr( (Jsr Dtot)
-C           EKSR = 0.5*Tr( (Ksr Dtot) * HFXFAC
+C           For print, short-range Coulomb and Exchange energies:
+C           EJSR   =  0.5*Tr( Jsr Dtot )
+C           EKSR   =  0.5*Tr( Ksr Dtot ) * HFXFAC
 C
-C           IF (iprsrdft .GT. 0) then
-               WRITE (LUPRI,'()')
+!           IF (iprsrdft .GT. 0) then
+               WRITE (LUPRI,'(/A,F20.10)')
+     &         '   Ex-sr + Ec-sr                  ',EDFT
+               IF (DO_SPINDNS .and. HFXFAC .ne. D0)
+     &         WRITE (LUPRI,'(A,F20.10)')
+     &         '   EK-sr spin density             ',EKSR_S
                WRITE (LUPRI,'(A,F20.10)')
-     &         '   Exsr + Ecsr                    ',EDFT,
-     &         ' - 0.5 Tr(Vxcsr Dcore)            ',ECSR,
-     &         ' -     Tr(Vxcsr Dval)             ',EVSR,
+     &         ' - 0.5 Tr(Vxc-sr Dcore)           ',ECSR,
+     &         ' -     Tr(Vxc-sr Dval)            ',EVSR,
      &         ' - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )',EJKVSR,
-     &         ' = ESRDFTY                        ',ESRDFTY,
-     &         '   EJSR                           ',EJSR,
-     &         '   EKSR                           ',EKSR
-               IF (DO_SPINDNS .and. HFXFAC .ne. D0) THEN
-               WRITE (LUPRI,'(A,F20.10)')
-     &         '   EKSR_S                         ',EKSR_S
-               END IF
-C           END IF
+     &         ' = EsrDFTY                        ',ESRDFTY,
+     &         '   EJsr charge density            ',EJSR,
+     &         '   EKsr charge density            ',EKSR
+!           END IF
          END IF ! (DOERG)
-!        IF (IPRFCK .GT. 0) THEN 
+         IF (IPRFCK .GT. 0) THEN 
             CALL GETTIM(T2,W2)
             WRITE(LUPRI,'(/A,2F10.3)')
      &   ' SIRFCK: CPU and WALL time used for srDFT terms             ',
      &      T2-T1,W2-W1
-!        END IF
+         END IF
+#endif  /* MOD_SRDFT */
       END IF ! (ADDSRI.AND.(DOHFSRDFT.OR.DOMCSRDFT).AND.(.NOT.PREHF))
 C
       IF (NODDYDF) THEN
@@ -1206,7 +1138,6 @@ c
 c
          !...and use them to build the (fitted) Fock matrix
          CALL JAB_DENFIT_NODDY(NBAST,NBAST,DFCOEFF,FMAT(1,1))
-#endif  /* MOD_SRDFT */
       END IF
 C
 #if defined (VAR_OLDCODE)

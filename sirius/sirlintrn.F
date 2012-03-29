@@ -109,6 +109,7 @@ C   INFDIM : NCONDI,NWOPDI,LACIMX,LBCIMX,?
 C   INFPRI : P6FLAG(*), ?
 C CBGETDIS : DISTYP,IADINT,IADH2,IADH2X
 C   INFTIM : NCALLS,TIMCPU,TIMWAL  ! IDTIM is index for these
+C   DFTCOM : DFT_SPINDNS, ?
 C
 #include "maxorb.h"
 #include "mxcent.h"
@@ -179,6 +180,11 @@ C     check INFLIN parameters
 C
 C *** Allocate work area for SIRTR1,ORBSIG,CISIG
 C
+      IF (DFT_SPINDNS) THEN
+         N_VS = 2 ! DV and DS, FV and FS, etc.
+      ELSE
+         N_VS = 1 ! no DS, FS, FXS, FTS
+      END IF
       IF (NCSIM.GE.0) THEN
          ORBLIN = .FALSE.
          IDTIM = IDTIM1
@@ -210,19 +216,20 @@ C MAERKE derved behoeves PTV og SVECS ikke i core samtidigt/891130
       END IF
 C-- SIRTR1, ..., ORBSIG, SOLLIN
       KDTV   = KSEND
-      KWSOL  = KDTV  + MCSIM*NNASHX
+      KWSOL  = KDTV  + MCSIM*NNASHX * N_VS
       LWSOL  = LFREE - KWSOL
 C-- SIRTR1, ..., CISIG
       KEMYX  = KWSOL
 C-- SIRTR1, ..., ORBSIG
       KFXC   = KEMYX  + MOSIM
       KFXV   = KFXC   + NOSIM*N2ORBX
-      KFTV   = KFXV   + NOSIM*N2ORBX
+      KFTV   = KFXV   + NOSIM*N2ORBX * N_VS
 C-- SIRTR1, ORBSIG, CISIG
       LFTV   = MCSIM*N2ORBX
       IF (DOMCSRDFT) LFTV = 2*LFTV
 C     ... Extra allocation for "FTC" in MCSCF-SRDFT
 C         Will be constructed in TR1FCY
+      IF (DFT_SPINDNS) LFTV = LFTV + MCSIM*N2ORBX ! for FTS
       KH2XAC = KFTV   + LFTV
       KFXQ   = KH2XAC + MOSIM*NNASHX*NNASHX
       KFTQ   = KFXQ   + NOSIM*NASHT*NORBT
@@ -261,7 +268,7 @@ C
 C     KDTV need to be zeroed out in case of FCI solvent calculation
 C     (DTV only set in sirtr1). K.Ruud-July 97
 C
-      CALL DZERO(WRK(KDTV),MCSIM*NNASHX)
+      CALL DZERO(WRK(KDTV),N_SV*MCSIM*NNASHX)
       IF (NWOPT.EQ.0.AND. .NOT.DOMCSRDFT) THEN
          T2 = T1
          T3 = T1
@@ -366,9 +373,9 @@ C                  because CREF is projected out of SCVEC later
                   IF (IPRLIN .GT. 10) THEN
                      WRITE(LUPRI,'(/A,I3)')
      &               'MCSRDFT "FTC"="V^([2c],xc-SR)" no.',ICSIM
-             CALL OUTPUT(WRK(JFTC),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+             CALL OUTPUT(WRK(JFTC),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
                      WRITE(LUPRI,'(/A,I3)') 'MCSRDFT SRLTRAC no.',ICSIM
-                     CALL OUTPAK(WRK(KSRLTRAC),NASHT,1,LUPRI)
+                     CALL OUTPAK(WRK(KSRLTRAC),NASHT,-1,LUPRI)
                   END IF
                   CALL SOLGC(CREF,WRK(KSRLTRAC),ESRLTR,WRK(KSRCVEC),
      &                       INDXCI,WRK(KSRW),LSRW)
@@ -501,7 +508,7 @@ C  /* Deck orbsig */
 C
 C 30-Nov-1989 hjaaj
 C
-C New interface to ORBSIG, old ORBSIG now ORBSI2
+C New interface to ORBSIG, old ORBSIG now ORBSIG_2
 C
 C MOTECC-90: The algorithms used in this module, ORBSIG, are
 C            described in Chapter 8 Appendix 8A of MOTECC-90
@@ -512,7 +519,7 @@ C
 #include "implicit.h"
       DIMENSION SCVECS(*), SOVECS(*)
       DIMENSION DTV(*), FC(*), FTV(*), FTQ(*)
-      DIMENSION BOVECS(NWOPDI,*), DV(*), FXC(*), FXV(*), FXQ(*)
+      DIMENSION BOVECS(NWOPDI,*), DV(NNASHX,*), FXC(*), FXV(*), FXQ(*)
       DIMENSION GORB(*), WRK(LWRK)
 C
 C Used from common blocks:
@@ -521,6 +528,7 @@ C   INFVAR : NVAR, JWOP
 C   INFDIM : NWOPDI
 C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG()
+C   DFTCOM : DFT_SPINDNS
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -530,6 +538,7 @@ C
 #include "inflin.h"
 #include "infpri.h"
 #include "infinp.h"
+#include "dftcom.h"
 C
       LOGICAL ORBLIN
 C
@@ -543,7 +552,12 @@ C
          KUGORB = KUBO
          KUDV   = KUGORB
       END IF
-      KW1    = KUDV   + N2ASHX
+      KUDS   = KUDV   + N2ASHX
+      IF (DFT_SPINDNS) THEN
+         KW1 = KUDS + N2ASHX
+      ELSE
+         KW1 = KUDS
+      END IF
       IF (KW1 .GT. LWRK) CALL ERRWRK('ORBSIG',KW1,LWRK)
 C
 C     first unpack B-orb to antisymmetric matrix UBO  for
@@ -565,7 +579,7 @@ C
   210    CONTINUE
          CALL UPKWOP(NWOPH,JWOP,GORB,WRK(KUGORB))
       END IF
-      CALL ORBSI2(NCSIM,NOSIM,SCVECS,SOVECS,
+      CALL ORBSIG_2(NCSIM,NOSIM,SCVECS,SOVECS,
      *            DTV,FC,FTV,FTQ,DV,FXC,FXV,FXQ,
      *            WRK(KUBO),WRK(KUGORB),WRK(KUDV))
 C
@@ -578,10 +592,15 @@ C
          call quit('srdft not included in this version')
 #else
          CALL DSPTSI(NASHT,DV,WRK(KUDV))
+         IF (DFT_SPINDNS) CALL DSPTSI(NASHT,DV(1,2),WRK(KUDS))
          DO ICSIM = 1,NCSIM
             JSCVEC = (NCONF + 1) + (ICSIM-1)*NVAR
             JFSR   = 1 + (NCSIM+ICSIM-1)*N2ORBX
             CALL SRDFTSO(2.0D0,WRK(KUDV),FTV(JFSR),SCVECS(JSCVEC))
+            IF (DFT_SPINDNS) THEN
+               JFSR   = 1 + (2*NCSIM+ICSIM-1)*N2ORBX
+               CALL SRDFTSO(0.0D0,WRK(KUDS),FTV(JFSR),SCVECS(JSCVEC))
+            END IF
          END DO
 #endif
       END IF
@@ -602,8 +621,8 @@ C
       CALL QEXIT('ORBSIG')
       RETURN
       END
-C  /* Deck orbsi2 */
-      SUBROUTINE ORBSI2(NCSIM,NOSIM,SCVECS,SOVECS,
+C  /* Deck orbsig_2 */
+      SUBROUTINE ORBSIG_2(NCSIM,NOSIM,SCVECS,SOVECS,
      *                  DTV,FC,FTV,FTQ,DV,FXC,FXV,FXQ,
      *                  UBO,UGORB,UDV)
 C
@@ -642,16 +661,19 @@ C   orbital sigma vectors in SCVECS(NCONF+1:NVAR) and
 C   SOVECS(NCONF+1:NVAR)
 C
 C Scratch:
-C   UDV; dimension: NASHT*NASHT
+C   UDV; dimension: NASHT*NASHT (if DFT_SPINDNS: NASHT*NASHT*2)
 C
 #include "implicit.h"
+!hj added priunit.h for debug
+#include "priunit.h"
 #include "infvar.h"
       DIMENSION SCVECS(NVAR,*), SOVECS(*)
-      DIMENSION DTV(*), FC(*), FTV(NORBT,NORBT,*),
+      DIMENSION DTV(*), FC(NNORBT,*), FTV(NORBT,NORBT,*),
      &          FTQ(NORBT,NASHDI,*)
-      DIMENSION DV(*), FXC(NORBT,NORBT,*), FXV(NORBT,NORBT,*),
+      DIMENSION DV(NNASHX,*), FXC(NORBT,NORBT,*), FXV(NORBT,NORBT,*),
      &          FXQ(NORBT,NASHDI,*)
-      DIMENSION UBO(NORBT,NORBT,*),UGORB(NORBT,NORBT), UDV(NASHDI,*)
+      DIMENSION UBO(NORBT,NORBT,*), UGORB(NORBT,NORBT),
+     &          UDV(NASHDI,NASHDI,2)
 C
       PARAMETER (HALF = 0.5D0)
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, D8 = 8.0D0)
@@ -661,6 +683,7 @@ C   INFVAR : NCONF,NWOPT,NVAR,JWOP(2,*)
 C   INFORB : NORBT,NNASHX,NNORBT,?
 C   INFIND : IROW(*),ISMO(*)
 C   INFDIM : NASHDI
+C   DFTCOM : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -668,6 +691,7 @@ C
 #include "infind.h"
 #include "infdim.h"
 #include "infpri.h"
+#include "dftcom.h"
 
 C
 C ***** Step 1: calculate sigma vectors of configuration trial vectors
@@ -678,10 +702,14 @@ C ***
 C
       DO 900 ICSIM = 1,NCSIM
 C
-C **  Unpack DTV into UDV
+C **  Unpack DTV into UDV and DTS into UDV(:,:,2)
 C
          JDTV = 1 + (ICSIM-1)*NNASHX
          CALL DSPTSI(NASHT,DTV(JDTV),UDV)
+         IF (DFT_SPINDNS) THEN
+            JDTS = 1 + (NCSIM+ICSIM-1)*NNASHX
+            CALL DSPTSI(NASHT,DTV(JDTS),UDV(1,1,2))
+         END IF
 C
          JSYMK = 0
          JSYML = 0
@@ -716,7 +744,7 @@ C
             IF (ITYPK .EQ. JTINAC) THEN
 C **        first index inactive:
               SCVECS(IG1,ICSIM) = SCVECS(IG1,ICSIM) + D4*FTV(L,K,ICSIM)
-C    *          + D8*BOVLP(ICSIM)*FC(LK)
+C    *          + D8*BOVLP(ICSIM)*FC(LK,1)
 C             HJ-850107-we assume BOVLP(ICSIM) = <BCSIM|CREF> = 0
             ELSE
 C **        first index active:
@@ -730,7 +758,10 @@ C **        first index active:
                 ELSE
                   IFCXL = IIORBL+IROW(NX)+NL
                 END IF
-                TEMP = TEMP + UDV(NXW,NKW)*FC(IFCXL)
+                TEMP = TEMP + UDV(NXW,NKW,1)*FC(IFCXL,1)
+                IF (DFT_SPINDNS) THEN ! UDTS * FS
+                  TEMP = TEMP + 2.0D0*UDV(NXW,NKW,2)*FC(IFCXL,3)
+                END IF
   100         CONTINUE
               SCVECS(IG1,ICSIM) = SCVECS(IG1,ICSIM) +
      *          D2*(TEMP + FTQ(L,NKW,ICSIM))
@@ -748,7 +779,10 @@ C **        second index active:
                  ELSE
                    IFCXK = IIORBK+IROW(NX)+NK
                  END IF
-                 TEMP = TEMP + UDV(NXW,NLW)*FC(IFCXK)
+                 TEMP = TEMP + UDV(NXW,NLW,1)*FC(IFCXK,1)
+                 IF (DFT_SPINDNS) THEN ! UDTS * FS
+                   TEMP = TEMP + 2.0D0*UDV(NXW,NLW,2)*FC(IFCXK,3)
+                 END IF
   200          CONTINUE
                SCVECS(IG1,ICSIM) = SCVECS(IG1,ICSIM) -
      *           D2*(TEMP + FTQ(K,NLW,ICSIM))
@@ -762,9 +796,10 @@ C ***** Step 2: calculate sigma vectors of orbital trial vectors
 C
  1000 IF (NOSIM.LE.0) GO TO 2000
 C
-C **  Unpack DV into UDV
+C **  Unpack DV into UDV (and if DFT_SPINDNS also DS into UDS)
 C
       CALL DSPTSI(NASHT,DV,UDV)
+      IF (DFT_SPINDNS) CALL DSPTSI(NASHT,DV(1,2),UDV(1,1,2))
 C
       IF (NCSIM.GE.0) THEN
          ISO = NCONF
@@ -815,11 +850,17 @@ C **        first index inactive:
 C **        first index active:
               NKW = ISW(K) - NISHT
               TEMP = D0
+              temps = d0
               DO 1100 NX = 1,NASHK
                 NXW = IASHK + NX
                 IX  = IORBK + NISHK + NX
-                TEMP = TEMP + UDV(NXW,NKW)*FXC(IX,L,IOSIM)
+                TEMP = TEMP + UDV(NXW,NKW,1)*FXC(IX,L,IOSIM) ! DV * FXC
+                IF (DFT_SPINDNS) THEN ! DS * FXS
+                   TEMPs = TEMPs
+     &                   + UDV(NXW,NKW,2)*FXV(IX,L,NOSIM+IOSIM)
+                END IF
  1100         CONTINUE
+              temp = temp + temps
               SOVECS(ISO + IG) = SOVECS(ISO + IG) +
      *          D2*(TEMP + FXQ(L,NKW,IOSIM))
 C
@@ -828,11 +869,17 @@ C
 C **        second index active:
                NLW = ISW(L) - NISHT
                TEMP = D0
+              temps = d0
                DO 1200 NX = 1,NASHL
                  NXW = IASHL + NX
                  IX  = IORBL + NISHL + NX
-                 TEMP = TEMP + UDV(NXW,NLW)*FXC(IX,K,IOSIM)
+                 TEMP = TEMP + UDV(NXW,NLW,1)*FXC(IX,K,IOSIM) ! DV * FXC
+                 IF (DFT_SPINDNS) THEN ! DS * FXS
+                    TEMPs = TEMPs
+     &                    + UDV(NXW,NLW,2)*FXV(IX,K,NOSIM+IOSIM)
+                 END IF
  1200          CONTINUE
+              temp = temp + temps
                SOVECS(ISO + IG) = SOVECS(ISO + IG) -
      *           D2*(TEMP + FXQ(K,NLW,IOSIM))
             END IF
@@ -851,6 +898,7 @@ C
  2000 CONTINUE
       RETURN
 C
-C ***** End of subroutine ORBSIG
+C ***** End of subroutine ORBSIG_2
 C
       END
+C --- end of sirius/sirlintrn.F ---

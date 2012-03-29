@@ -540,7 +540,7 @@ cele      allocate(tint(ncore,ncore,nvirt))
       allocate(tint(nvirt,nvirt))
       call dzero(tint,nvirt*nvirt)
 cele  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
-  900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP(1),LUINTD,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
 cele
       ii=id2n(icd)
@@ -757,7 +757,7 @@ c------ two-electron part with Dirac distr (ii,ij|**)
       allocate(tintra(nvirt,nact))
       call dzero(tintar,nact*nvirt)
       call dzero(tintra,nact*nvirt)
-  900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP,LUINTD,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2D(ICD,IDD,H2M,NEEDTP(1),LUINTD,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ii=id2n(icd)
       ij=id2n(idd)
@@ -961,7 +961,7 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,ncore,nvirt,nact))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -1454,7 +1454,7 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(nact,ncore,nact,ncore))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -1721,7 +1721,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nvirt,nact))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -2177,7 +2177,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       call nwadd(nwall,L_tinta*8)
       allocate(tinta(nvirt,nact,ncore,nact))
       CALL DZERO(tinta,L_tinta)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -2210,7 +2210,7 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       call nwadd(nwall,L_tintc*8)
       allocate(tintc(nvirt,ncore,nact,nact))
       call dzero(tintc,L_tintc)
-  910 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  910 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1010
       ic=id2n(icd)
       id=id2n(idd)
@@ -2803,7 +2803,7 @@ c------ two-electron part with mulliken distr (ia,ii|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(ncore,nact,nact,nact))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -3036,7 +3036,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       call nwadd(nwall,L_tint*8)
       allocate(tint(nvirt,nact,nact,nact))
       call dzero(tint,L_tint)
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)
@@ -3325,7 +3325,7 @@ c------ two-electron part with mulliken distr (ij|**)
       LFREE=LWRK
       IDIST = 0
       needtp(1)=1
-  100 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 200
       ic=id2n(icd)
       id=id2n(idd)
@@ -3426,7 +3426,7 @@ c------ two-electron part with mulliken distr (ia|**)
       IDIST = 0
       needtp(1)=0
       needtp(2)=1
-  300 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  300 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 400
       ic=id2n(icd)
       id=id2n(idd)
@@ -3454,7 +3454,7 @@ c------ two-electron part with mulliken distr (ia,ib|**)
       IDIST = 0
       needtp(2)=0
       needtp(3)=1
-  500 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  500 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 600
       ic=id2n(icd)-ncore
       id=id2n(idd)-ncore
@@ -3480,7 +3480,7 @@ c------ two-electron part with mulliken distr (ir,ia|**)
       IDIST = 0
       needtp(3)=0
       needtp(5)=1
-  700 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  700 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
       ic=id2n(icd)
       id=id2n(idd)
@@ -3515,7 +3515,7 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       IDIST = 0
       needtp(5)=0
       needtp(4)=1
-  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  900 CALL NXTH2M(ICD,IDD,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 1000
       ic=id2n(icd)
       id=id2n(idd)

@@ -25,6 +25,8 @@
 C
 C FILE: sirius/sirgrad.F
 C
+C FILE: sirius/sirgrad.F
+C
 #ifdef REVISION_LOG
 ===========================================================================
 Revision 1.2  2001/01/17 10:41:33  vebjornb
@@ -359,8 +361,9 @@ C
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION DV(*), CMO(*), FC(*), FV(NNORBT,*), WRK(*)
-C     ... FV(*,1) is the real FV, FV(*,2) is FS for DFT_SPINDNS
-C         or FV(*,2) is the Kohn-Sham matrix for LSRHYBR
+C     ... FV(*,1) is the real FV,
+C         FV(*,2) is FS for DFT_SPINDNS or
+C         FV(*,2) is the Kohn-Sham matrix for LSRHYBR
 C         / hjaaj Feb 2010
       LOGICAL   ONLYFC, NOFV, LSRHYBR
 C
@@ -711,12 +714,10 @@ C        ... Coulomb and Exchange
          IFCTYP(2) = 13
       END IF
 C
-C JT Aug 09 beg
       IF (DFT_SPINDNS) THEN
          ISYMDM(3) = 1
          IFCTYP(3) = -12
       END IF
-C JT Aug 09 end
 C
       IF (ONLYFC) THEN
          NDMAT = 1
@@ -727,7 +728,7 @@ C
          END IF
          IOFFAO = 1
       ELSE IF (NISHT .GT. 0 .OR. ADDSRI) THEN
-         IF (DFT_SPINDNS) THEN !JT Aug 09
+         IF (DFT_SPINDNS) THEN
             NDMAT = 3
             NFMAT = 3
          ELSE
@@ -898,7 +899,7 @@ C ****************************************************************
 C     Loop over active-active distributions
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
       IF (IPRSIR .GT. 65) THEN
          WRITE (LUPRI,'(/A)')
      &      '***GETH2 Next H2CD(a,b) = (ab|cd) distribution'
@@ -1617,7 +1618,7 @@ C
             call quit('Something needs to be done for srdft and hsrohf')
          END IF
          CALL DZERO(FQ,NORBT*NASHT)
-         CALL GETAC(FV,FCAC)
+         CALL GETAC(FV,FCAC) ! put -K(DV), i.e. minus DV exchange, in FCAC
          EMCACT = -ENRACT(DV,FCAC,FQ)/2
       ELSE IF (NASHT .EQ. 1) THEN
          CALL DZERO(FQ,NORBT)
@@ -1900,12 +1901,13 @@ C   Orbital gradient in GORB
 C
 C
 #include "implicit.h"
-      DIMENSION GORB(*), UDV(NASHDI,*)
-      DIMENSION FC(*), FV(*), FQ(NORBT,*)
+      DIMENSION GORB(*), UDV(NASHDI,NASHDI,2)
+      DIMENSION FC(*), FV(NNORBT,*), FQ(NORBT,*)
 C
 C Used from common blocks:
 C   INFVAR : NWOPT,NWOPH,JWOP(2,*)
 C   INFIND : IROW(*),?
+C   DFTCOM : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -1915,6 +1917,7 @@ C
 #include "infind.h"
 #include "infdim.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
 C
@@ -1957,7 +1960,7 @@ C
          IF (ITYPK .EQ. JTINAC) THEN
 C ** first index inactive:
             LK = IIORBI + IROW(NL) + NK
-            GORB(IG) = GORB(IG) + D4*(FC(LK) + FV(LK))
+            GORB(IG) = GORB(IG) + D4*(FC(LK) + FV(LK,1))
          ELSE
 C ** first index active
 C    (only other possibility, inactive, is already eliminated):
@@ -1967,11 +1970,14 @@ C    (only other possibility, inactive, is already eliminated):
             DO 100 NXW = IASHI+1,IASHI+NASHI
                NX = NX + 1
                IF (NX.LE.NL) THEN
-                  FCXL = FC(IIORBI+IROW(NL)+NX)
+                  J_XL = IIORBI+IROW(NL)+NX
                ELSE
-                  FCXL = FC(IIORBI+IROW(NX)+NL)
+                  J_XL = IIORBI+IROW(NX)+NL
                END IF
-               TEMP = TEMP + UDV(NXW,NKW)*FCXL
+               TEMP = TEMP + UDV(NXW,NKW,1)*FC(J_XL)
+               IF (DFT_SPINDNS) THEN
+                  TEMP = TEMP + UDV(NXW,NKW,2)*FV(J_XL,2)
+               END IF
   100       CONTINUE
             GORB(IG) = GORB(IG) + D2*(TEMP + FQ(L,NKW))
          END IF
@@ -1983,11 +1989,14 @@ C ** second index active:
             DO 200 NXW = IASHI+1,IASHI+NASHI
                NX = NX + 1
                IF (NX.LE.NK) THEN
-                  FCXK = FC(IIORBI+IROW(NK)+NX)
+                  J_XK = IIORBI+IROW(NK)+NX
                ELSE
-                  FCXK = FC(IIORBI+IROW(NX)+NK)
+                  J_XK = IIORBI+IROW(NX)+NK
                END IF
-               TEMP = TEMP + UDV(NXW,NLW)*FCXK
+               TEMP = TEMP + UDV(NXW,NLW,1)*FC(J_XK)
+               IF (DFT_SPINDNS) THEN
+                  TEMP = TEMP + UDV(NXW,NKW,2)*FV(J_XK,2)
+               END IF
   200       CONTINUE
             GORB(IG) = GORB(IG) - D2*(TEMP + FQ(K,NLW))
          END IF
@@ -3076,16 +3085,21 @@ C Used from common blocks:
 C  INFORB : NSYM,MULD2H(8,8),NASHT,NNBASX,N2BASX,...
 C  INFVAR : JWOPSY
 C  INFPRI : P6FLAG()
+C  DFTCOM : DFT_SPINDNS
 C
 #include "maxorb.h"
 #include "priunit.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
 C
       CALL QENTER('FCKDEN2')
 C
+      IF (DFT_SPINDNS) THEN
+         CALL QUIT('DFT_SPINDNS not implemented in FCKDEN2 yet')
+      END IF
 C
       KFRSAV = 1
       KFREE  = KFRSAV
