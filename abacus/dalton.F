@@ -399,6 +399,10 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
      &   " * Parallel with MPI: Using", NODTOT+1, " CPUs."
 #endif
 
+#if defined (VAR_MPI)
+         IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
+     &   " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+#endif
 #ifdef VAR_OMP
          write(lupri,'(/A,I5)')
      &   ' * openMP activated, number of threads:',

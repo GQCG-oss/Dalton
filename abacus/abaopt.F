@@ -2475,7 +2475,10 @@ C     CALL CLEAR_INCOREMEM()
 #endif
 Cef end
 C ach 
-      IF (DFTRUN .OR. DOHFSRDFT .OR. DOMCSRDFT) GRDONE = .FALSE.
+      IF (DFTRUN .OR. DOHFSRDFT .OR. DOMCSRDFT) THEN
+         GRDONE = .FALSE.
+         GRDONE_OLD = .FALSE.
+      END IF
       IF (.NOT. EXSIR) THEN
 C     
 C        *** For numerical derivatives we might need to  ***

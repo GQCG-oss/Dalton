@@ -405,6 +405,7 @@ C
       NEWPRP = .TRUE.
       NEWMAT = .TRUE.
       GRDONE = .FALSE.
+      GRDONE_OLD = .FALSE.
 C     ... we need new grid for numerical integrations when new geometry
 C
 C     ***************************************************************
