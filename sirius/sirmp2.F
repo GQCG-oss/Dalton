@@ -182,7 +182,7 @@ C ==========================================================================
             WRITE(LUPRI,'(/A)') " M. Head-Gordon's SOS MP2 requested."
          ELSE
             WRITE(LUPRI,'(/A)') ' User-scaled MP2 requested.'
-            IF (P_T .EQ. D0) MP2_SOS = .TRUE.
+            IF (P_T .EQ. 0.0D0) MP2_SOS = .TRUE.
 C           ... SOS-MP2 but not Head-Gordon's original SOS-MP2
          END IF
          WRITE(LUPRI,'(A,2F14.6)')
@@ -241,7 +241,9 @@ C     INFTRA: NEWTRA, AO2INTFILE_LABEL
 C
 #include "maxorb.h"
 #include "maxash.h"
+#include "dummy.h"
 #include "priunit.h"
+
 #include "gnrinf.h"
 #include "exeinf.h"
 #include "infopt.h"
@@ -256,7 +258,7 @@ C
 #include "dftcom.h"
 C
       CALL QENTER('MP2CTL')
-      CALL GETTIM(TIMMP2,DUMMY)
+      CALL GETTIM(CPUMP2,WALMP2)
       IF (IPRMP2 .GE. 0) WRITE (LUPRI,'(//A//A/A)')
      * ' >>>>> Output from SIRIUS MP2 module <<<<<'
      *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
@@ -302,7 +304,13 @@ C     if SRMP2_SRINTS
 C     1)  calculate "EMP2" from AO2SRINT integrals (i.e. short-range integrals),
 C     2)  set SRMP2_SRINTS false, go back to label 10, and redo the 
 C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integrals)
-      ISRINTS_LOOP = 0
+      IF (SRMP2_SRINTS) THEN
+         ISRINTS_LOOP = 0
+         EMP2_SR   = DUMMY
+         EMP2_LR   = DUMMY
+         EMP2FL_SR = DUMMY
+         EMP2FL_LR = DUMMY
+      END IF
    10 CONTINUE
       IF (SRMP2_SRINTS) THEN
          ISRINTS_LOOP = ISRINTS_LOOP + 1
@@ -792,12 +800,13 @@ C            long-range integrals /hjaaj Oct 09
       END IF
 C     END IF (MP2FRO .AND. .NOT.FCKFRO)
 C
-      CALL GETTIM(TIMEND,DUMMY)
-      TIMMP2 = TIMEND - TIMMP2
-      WRITE (LUSTAT,1860) TIMMP2
-      IF (IPRMP2 .GE. 2) WRITE (LUPRI,1860) TIMMP2
+      CALL GETTIM(CPUEND,WALEND)
+      CPUMP2 = CPUEND - CPUMP2
+      WALMP2 = WALEND - WALMP2
+      WRITE (LUSTAT,1860) CPUMP2, WALMP2
+      IF (IPRMP2 .GE. 1) WRITE (LUPRI,1860) CPUMP2, WALMP2
  1860 FORMAT (/' Time used for MP2 natural orbitals :',F12.3,
-     *        ' CPU seconds.')
+     *        ' CPU seconds,',F12.3,' wall seconds.')
       CALL MEMREL('MP2CTL',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL FLSHFO(LUSTAT)
       CALL FLSHFO(LUPRI)
