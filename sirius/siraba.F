@@ -751,7 +751,7 @@ C ****************************************************************
 C     Loop over Mulliken distributions allowed in NEEDMU(6)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
       IF (P6FLAG(36) .OR. IPRLIN .GE. 40) THEN

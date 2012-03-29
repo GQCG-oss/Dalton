@@ -899,7 +899,7 @@ C ****************************************************************
 C     Loop over active-active distributions
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IPRSIR .GT. 65) THEN
          WRITE (LUPRI,'(/A)')
      &      '***GETH2 Next H2CD(a,b) = (ab|cd) distribution'
