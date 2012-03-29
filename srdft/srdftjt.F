@@ -24,12 +24,12 @@
 #include <single.h>
 
 #undef SRDFT_DEBUG
-!  #define SRDFT_DEBUG
+!define SRDFT_DEBUG
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,CORX,CORY,CORZ,
      &                  WEIGHT,NBUF,GSO,NCNT,DMAGAOSR,DOGGA,
-     &                  DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+     &                  DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT_inp)
 C*****************************************************************************
 C     Calculate DFT energy and potential contributions for
 C     SR-DFT hybrid methods
@@ -78,7 +78,9 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
 
       CHARACTER*16 QUADNAME
 
+      IPRINT = IPRINT_inp
 #ifdef SRDFT_DEBUG
+      IPRINT = MAX(IPRINT,5)
 !     Debug
       WRITE(LUPRI,*) 'SRDFT1JT: entering, ND_SIM = ',ND_SIM
       WRITE(LUPRI,*) 'SRDFT1JT: DOATR,DOGRD,DOGGA  =',DOATR,DOGRD,DOGGA
@@ -96,6 +98,10 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       IF (DFT_SPINDNS) THEN
          WRITE(LUPRI,*) 'D_SPIN_AO matrix:'
          call output(DMAT(1,3),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+         IF (DOATR) THEN
+            WRITE(LUPRI,*) 'DX_SPIN_AO matrix:'
+            call output(DMAT(1,4),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+      END IF
       END IF
 C
 #endif
@@ -117,10 +123,10 @@ C     Initializations -------------------------------------------------------
       IF (DOERG) EDFTY  = D0
 
 C     DFT grid (NTOTAL is the total number of grid points)
-      IF (.NOT.GRDONE) THEN
+      IF (.NOT.GRDONE_OLD) THEN
          CALL DFTGRD(WORK,LWORK,NTOTAL,1,.FALSE.)
          CALL CONDFT
-         GRDONE = .TRUE.
+         GRDONE_OLD = .TRUE.
       END IF
 
 C     Electron number
@@ -295,9 +301,11 @@ C      Hessian transformation for second-order terms
        IF (DOATR) THEN
 C        matrix 1 is DTAO
 C        matrix 2 is DXTAO
-         JDTXAO = 2
-         JDSXAO = 4
-         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDTXAO),DMAT(1,JDSXAO),EXCMAT,
+C        matrix 3 is DSAO
+C        matrix 4 is DXSAO
+         JDXTAO = 2
+         JDXSAO = 4
+         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
      &                 CHIVAL,ERFEXP,RHO,RHG, DMAGAOSR,DOGGA)
        ENDIF
@@ -341,7 +349,8 @@ C Termination --------------------------------------------------------------
       END DO
 
 C     Print section
-      IF (IPRINT .GE. 2) THEN
+!     IF (IPRINT .GE. 2) THEN
+      IF (IPRINT .GE. 1) THEN
       IF (DOERG) THEN
          ELCTOT = ELCTRN + ELCTRSKIP
          WRITE (LUPRI,'(4(/1X,A,F18.10))')
@@ -668,7 +677,8 @@ C
          B0(I_MAT) = DDOT(NBAST,DGAO(1,I_MAT),1,GAO,1)
          BMAX = MAX( BMAX,ABS(B0(I_MAT)) )
          IF (DOGGA) THEN
-            IF (DFT_SPINDNS) CALL QUIT('SRDFTLTRJT not implemented') ! see HJAAJ note below
+            IF (DFT_SPINDNS)
+     &      CALL QUIT('SRDFTLTRJT not implemented for GGA & SPINDNS') ! see HJAAJ note below
             rhogrd(I_MAT) =
      &       sqrt( rhg(1,I_MAT)**2 + rhg(2,I_MAT)**2 + rhg(3,I_MAT)**2 )
 C           B3 = GAO1'*DGAO(1)

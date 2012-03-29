@@ -182,10 +182,10 @@ C
 C
 C     Calculate grid
 C
-      IF (.NOT.GRDONE) THEN
+      IF (.NOT.GRDONE_OLD) THEN
          CALL DFTGRD(WORK,LWORK,NTOTAL,1,.FALSE.)
          CALL CONDFT 
-         GRDONE = .TRUE.
+         GRDONE_OLD = .TRUE.
       END IF
 C
       IF (IPRINT .GT. 100) THEN
