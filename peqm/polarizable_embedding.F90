@@ -2076,13 +2076,13 @@ subroutine Tk_coefficients
     integer :: i, j, k, l, m, n
 
 !    allocate(Cnij(2*mulorder+3,0:mulorder+1,0:mulorder+1))
-    allocate(Cnij(2*5+3,0:6,0:6))
+    allocate(Cnij(2*6+3,0:7,0:7))
 
     Cnij = 0
     Cnij(:,0,0) = 1
-    do n = 1, 13
+    do n = 1, 15
         if (mod(n,2) == 0) cycle
-        do i = 1, 6
+        do i = 1, 7
             if (mod(i,2) /= 0) then
                 k = i - 1
             else if (mod(i,2) == 0) then
@@ -2145,26 +2145,26 @@ subroutine Tk_tensor(Tk, Rij)
     real(dp), dimension(:), intent(out) :: Tk
     real(dp), dimension(3), intent(in) :: Rij
 
-    integer :: k, idx
-    integer :: l, m, n, x, y, z
+    integer :: k, i
+    integer :: x, y, z
     real(dp) :: R, Cx, Cy, Cz
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Tk)) - 1.0d0)) - 1
 
     R = nrm2(Rij)
 
-    idx = 1
+    i = 1
     do x = k, 0, -1
         do y = k, 0, -1
             do z = k, 0, -1
                 if (x+y+z > k .or. x+y+z < k) cycle
-                Tk(idx) = T(Rij, x, y, z)
-                idx = idx + 1
+                Tk(i) = T(Rij, x, y, z)
+                i = i + 1
             end do
         end do
     end do
 
-end subroutine
+end subroutine Tk_tensor
 
 !------------------------------------------------------------------------------
 
