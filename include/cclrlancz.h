@@ -1,3 +1,6 @@
+!  FILE: cclrlancz.h
+!
+      REAL*8  DAMPING(20), FREQ_RANGE(3), EIG_RANGE(2)
       INTEGER JCHAIN, IPRLRLCZ, NDAMP
       INTEGER JCHAINOLD,JCHAINNEW
       LOGICAL ABS_RANGE, LCHAINADD
@@ -5,17 +8,13 @@
       LOGICAL REDMEML,Debug_sym
       LOGICAL SUM_RULES
       CHARACTER LABELO*(8)
-#if defined (SYS_CRAY)
-      REAL DAMPING(20), FREQ_RANGE(3), EIG_RANGE(2)
-#else
-      DOUBLE PRECISION DAMPING(20),FREQ_RANGE(3),EIG_RANGE(2)
-#endif
-      COMMON /CCLRLANCZ/ ABS_RANGE, 
-     &                 LCHAINADD,
+      COMMON /CCLRLANCZ/
+     &                 DAMPING, FREQ_RANGE, EIG_RANGE,
      &                 JCHAIN, IPRLRLCZ,NDAMP,
      &                 JCHAINOLD,JCHAINNEW,
-     &                 LABELO,
+     &                 ABS_RANGE, LCHAINADD,
      &                 ABSANALYZE,DUMP_EIGFIL,DUMP_ALLFIL,
-     &                 SUM_RULES,
      &                 REDMEML,Debug_sym,
-     &                 DAMPING, FREQ_RANGE, EIG_RANGE
+     &                 SUM_RULES,
+     &                 LABELO
+!  -- end of cclrlancz.h --

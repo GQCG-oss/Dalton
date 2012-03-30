@@ -90,7 +90,7 @@ actual dimension will be less if MAXPHP will split degenerate configurations.
 
 \item{\Key{MAXRM}}\\
 \verb|READ *, MAXRM |\\
-Change the maximum dimension of the reduced space. Default is 200.
+Change the maximum dimension of the reduced space. Default is 600.
 When solving a linear system of equations or an eigenvalue equation,
 the reduced space is increased by the number of
 frequencies/excitations in each iteration. For single root
@@ -1408,6 +1408,14 @@ which calculate spherical moments for $L = 0, \ldots, 3$.
 For the \Key{C6xxx} and the \Key{C10xxx} options
 you will need $L = 0, 1$ and $L = 0, \ldots, 5$, respectively.
 
+\subsection{Damped response calculation: \Sec{ABSORP}}
+\label{sec:absorprsp}
+
+Input for specification of a damped response calculation.
+\index{damped response}\index{response!damped}
+
+This section of the manual has not been written yet. Check the file 'rsp/absorp.F' for input options.
+
 \subsection{Electron Spin Resonance: \Sec{ESR}}
 
 Calculation of ESR parameters\index{ESR}
@@ -1420,14 +1428,17 @@ the Restricted-Unrestricted Approach\index{restricted-unrestricted method}.
 \begin{description}
 \item{\Key{FCCALC}} \\
 Calculate the isotropic Fermi-contact contributions to hyperfine coupling tensors
+
 \item{\Key{SDCALC}} \\
 Calculate the spin-dipole contributions to the hyperfine coupling tensor
+
 \item{\Key{ATOMS}} \\
 \verb|READ (LUCMD,*),ESRNUC |\\
 \verb|READ (LUCMD,*) (NUCINF(IG), IG = 1, ESRNUC) | \\
 Select atoms for which to calculate hyperfine coupling constants.
 The first line contains  the number of atoms and the second line the
 index of each atom (ordered as in the molecule input file \texttt{MOLECULE.INP})
+
 \item{\Key{MAX IT}}      \\
 \verb|READ (LUCMD,*),MAXESR |\\
    The line following gives the maximum number of iterations.  (Default = 60)
