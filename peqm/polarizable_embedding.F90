@@ -56,7 +56,7 @@ module polarizable_embedding
 
     ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
     ! C^(n)_ij coefficients for calculating T(k) tensor elements
-    integer, dimension(:,:,:), allocatable, save :: Cnij
+    integer, dimension(2*6+3,0:7,0:7), save :: Cnij = 0
 
     ! variables used for timings
     real(dp) :: t1, t2
@@ -268,7 +268,7 @@ subroutine pe_read_potential(coords, charges)
     integer :: nidx, idx, jdx, kdx, ldx
     integer, dimension(:), allocatable :: idxs
     real(dp) :: r
-    real(dp), dimension(15) :: temp
+    real(dp), dimension(21) :: temp
     character(len=2) :: auoraa
     character(len=80) :: word
     logical :: lexist
@@ -697,6 +697,8 @@ subroutine pe_read_potential(coords, charges)
             end if
         end do
     end if
+
+    call Tk_coefficients
 
 end subroutine pe_read_potential
 
@@ -1904,7 +1906,7 @@ subroutine multipole_field(Fi, Rji, Qkj)
     do x = k, 0, -1
         do y = k, 0, -1
             do z = k, 0, -1
-                if (x+y+z > k .or. x+y+z < k) cycle
+                if (x+y+z /= k) cycle
                 if (x /= 0) then
                     Fi(1) = Fi(1) + taylor * symfac(x-1,y,z) * T(Rji,x,y,z) * Qkj(a)
                     a = a + 1
@@ -2076,7 +2078,7 @@ subroutine Tk_coefficients
     integer :: i, j, k, l, m, n
 
 !    allocate(Cnij(2*mulorder+3,0:mulorder+1,0:mulorder+1))
-    allocate(Cnij(2*6+3,0:7,0:7))
+!    allocate(Cnij(2*6+3,0:7,0:7))
 
     Cnij = 0
     Cnij(:,0,0) = 1
@@ -2118,8 +2120,6 @@ function T(Rij, x, y, z)
     real(dp) :: T
     real(dp) :: R, Cx, Cy, Cz
 
-    if (.not. allocated(Cnij)) call Tk_coefficients
-
     R = nrm2(Rij)
 
     do l = 0, x
@@ -2147,7 +2147,7 @@ subroutine Tk_tensor(Tk, Rij)
 
     integer :: k, i
     integer :: x, y, z
-    real(dp) :: R, Cx, Cy, Cz
+    real(dp) :: R
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Tk)) - 1.0d0)) - 1
 
@@ -2157,7 +2157,7 @@ subroutine Tk_tensor(Tk, Rij)
     do x = k, 0, -1
         do y = k, 0, -1
             do z = k, 0, -1
-                if (x+y+z > k .or. x+y+z < k) cycle
+                if (x+y+z /= k) cycle
                 Tk(i) = T(Rij, x, y, z)
                 i = i + 1
             end do
@@ -2221,7 +2221,7 @@ subroutine symmetry_factors(factors)
     do x = k, 0, -1
         do y = k, 0, -1
             do z = k, 0, -1
-                if (x+y+z > k .or. x+y+z < k) cycle
+                if (x+y+z /= k) cycle
                 factors(idx) = symfac(x, y, z)
                 idx = idx + 1
             end do

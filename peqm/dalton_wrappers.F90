@@ -79,7 +79,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, work, nwrk)
     do z = 0, k
         do y = 0, k
             do x = 0, k
-                if (x+y+z > k .or. x+y+z < k) cycle
+                if (x+y+z /= k) cycle
                 do j = 1, ncomps
                     if (x == row2col(1,j) .and.&
                         y == row2col(2,j) .and.&
@@ -155,6 +155,8 @@ subroutine Tk_integrals(Tk_ints, nints, ncomps, coord, work, nwrk)
             print *, 'Not enough work space for T^(3) integrals!'
         end if
         inttype = 'ELFGRDC'
+    else
+        stop 'wrong order specified or not implemented'
     end if
 
     Tk_ints = 0.0d0
