@@ -56,7 +56,7 @@ module polarizable_embedding
 
     ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
     ! C^(n)_ij coefficients for calculating T(k) tensor elements
-    integer, dimension(2*6+3,0:7,0:7), save :: Cnij = 0
+    integer, dimension(:,:,:), allocatable, save :: Cnij
 
     ! variables used for timings
     real(dp) :: t1, t2
@@ -156,25 +156,19 @@ module polarizable_embedding
 
 ! TODO:
 ! use allocate/deallocate where possible?
-! insert quit if symmetry
-! insert quits inside dalton if QM3, QMMM etc.
+! insert quit if symmetry or QM3, QMMM etc.
 ! consistent implementation where several densities are taken as input
 ! find better solution for electric field calculation from frozen densities
-! hexadecapoles and higher order polarizabilities
+! higher order polarizabilities
 ! write list of publications which should be cited
-! write output related to QMES
-! avoid dimensions as input
+! write output related to FDs
 ! remove double zeroing and unecessary zeroing
-! write to output
 ! memory checks and handle memory better
 ! nonlinear response properties
 ! magnetic properties
-! AA and AU
 ! cutoffs and damping
 ! memory management
 ! add error catching
-! use optional?
-! ddot or dot_product and dgemm or matmul
 ! parallelization (openMP, MPI, CUDA/openCL)
 
 contains
@@ -182,8 +176,6 @@ contains
 !------------------------------------------------------------------------------
 
 subroutine pe_dalton_input(word, luinp, lupri)
-
-    external :: upcase
 
     character(len=7), intent(inout) :: word
     integer, intent(in) :: luinp
@@ -196,7 +188,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
 
     do
         read(luinp,'(a7)') option
-        call upcase(option)
+        call chcase(option)
 
         ! do a Polarizable Embedding calculation
         if (trim(option(2:)) == 'PEQM') then
@@ -208,11 +200,11 @@ subroutine pe_dalton_input(word, luinp, lupri)
             if (option(1:1) /= '.' .and. option(1:1) /= '*'&
                &.and. option(1:1) /= '!') then
                 read(luinp,*) border_type, Rmin, aaorau
-                call upcase(border_type)
+                call chcase(border_type)
                 if (border_type /= 'REMOVE' .or. border_type /= 'REDIST') then
                     stop 'Error: unknown handling of border sites!'
                 end if
-                call upcase(aaorau)
+                call chcase(aaorau)
                 if (aaorau == 'AA') Rmin = Rmin * aa2au
             end if
             pe_border = .true.
@@ -697,8 +689,6 @@ subroutine pe_read_potential(coords, charges)
             end if
         end do
     end if
-
-    call Tk_coefficients
 
 end subroutine pe_read_potential
 
@@ -1530,7 +1520,6 @@ subroutine pe_polarization(denmats, fckmats)
     do i = 1, nloop
         if (zeroalphas(i)) cycle
         if (pe_savden) then
-! TODO: find better threshold or better solution
             skip = .false.
             do j = 1, qmnucs
                 if (nrm2(Rs(:,i) - Rm(:,j)) <= 1.0d0) skip = .true.
@@ -1704,7 +1693,6 @@ subroutine electron_fields(Fel, denmats)
     do i = 1, nloop
         if (zeroalphas(i)) cycle
         if (pe_savden) then
-! TODO: find better threshold or better solution
             skip = .false.
             do j = 1, qmnucs
                 if (nrm2(Rs(:,i) - Rm(:,j)) <= 1.0d0) skip = .true.
@@ -1749,7 +1737,6 @@ subroutine nuclear_fields(Fnuc)
         do i = 1, nsites
             if (zeroalphas(i)) cycle
             if (pe_savden) then
-! TODO: finde better threshold or better solution
                 skip = .false.
                 do j = 1, qmnucs
                     if (nrm2(Rs(:,i) - Rm(:,j)) <= 1.0d0) skip = .true.
@@ -1929,8 +1916,7 @@ end subroutine multipole_field
 
 subroutine response_matrix(B, invert, wrt2file)
 
-! TODO: Damping schemes
-!       Cutoff radius
+! TODO: Cutoff radius
 
     real(dp), dimension(:), intent(out) :: B
     logical, intent(in), optional :: invert, wrt2file
@@ -2077,14 +2063,13 @@ subroutine Tk_coefficients
 
     integer :: i, j, k, l, m, n
 
-!    allocate(Cnij(2*mulorder+3,0:mulorder+1,0:mulorder+1))
-!    allocate(Cnij(2*6+3,0:7,0:7))
+    allocate(Cnij(2*mulorder+3,0:mulorder+1,0:mulorder+1))
 
     Cnij = 0
     Cnij(:,0,0) = 1
-    do n = 1, 15
+    do n = 1, 2*mulorder+3
         if (mod(n,2) == 0) cycle
-        do i = 1, 7
+        do i = 1, mulorder+1
             if (mod(i,2) /= 0) then
                 k = i - 1
             else if (mod(i,2) == 0) then
@@ -2119,6 +2104,8 @@ function T(Rij, x, y, z)
     integer :: l, m, n
     real(dp) :: T
     real(dp) :: R, Cx, Cy, Cz
+
+    if (.not. allocated(Cnij)) call Tk_coefficients
 
     R = nrm2(Rij)
 
@@ -2611,7 +2598,6 @@ end subroutine gemm
 subroutine spmv(ap, x, y, uplo, alpha, beta)
 
     external :: dspmv
-    intrinsic :: present, size
 
     real(dp), dimension(:), intent(in) :: ap
     real(dp), dimension(:), intent(in) :: x
@@ -2778,5 +2764,44 @@ function elem2charge(elem)
     end do
 
 end function elem2charge
+
+!------------------------------------------------------------------------------
+
+subroutine chcase(string, uplo)
+
+    character(len=*), intent(inout) :: string
+    character(len=*), intent(in), optional :: uplo
+
+    integer :: i, gap
+    character(len=1) :: a, z, o_uplo
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'u'
+    end if
+
+    gap = iachar('a') - iachar('A')
+
+    if (o_uplo == 'u' .or. o_uplo == 'U') then
+        a = 'a'
+        z = 'z'
+    else if (o_uplo == 'l' .or. o_uplo == 'L') then
+        a = 'A'
+        z = 'Z'
+        gap = - gap
+    else
+        stop 'Unknown case specified'
+    end if
+
+    do i = 1, len_trim(string)
+        if (lge(string(i:i), a) .and. lle(string(i:i), z)) then
+            string(i:i) = achar(iachar(string(i:i)) - gap)
+        end if
+    end do
+
+end subroutine chcase
+
+!------------------------------------------------------------------------------
 
 end module polarizable_embedding
