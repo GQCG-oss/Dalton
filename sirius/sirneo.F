@@ -428,10 +428,10 @@ C
 C        CALL NEORED (ICTL,NCSIM,NOSIM,BVECS,SVECS,BETVAL,
 C    *                G,IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
 C
-         IF (P6FLAG(51)) THEN
+c         IF (P6FLAG(51)) THEN                         ! edh checks symmetry of reduced matrix
 C           check symmetry of REDL
             CALL NEORED_CHK(IBNDX,WRK(KWRK1),LWRK1)
-         END IF
+c         END IF
 C
 C        *** update BETA in UPDBET as if eigenvector was exact
 C           (dynamic update of BETA in micro iterations,

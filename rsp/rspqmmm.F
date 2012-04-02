@@ -146,7 +146,7 @@ C     Read the relay matrix from file
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 2) )THEN
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from file'
           DO I = 1, N*(N+1)/2
