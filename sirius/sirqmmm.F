@@ -5882,7 +5882,7 @@ C edh 9/11 2011
       DIMENSION DV(*),   G(*),   WRK(LFREE)
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0,
      &            DCVAL = D2, FPI = 4.0D0 * PI )
-      LOGICAL LOCDEB,FNDLAB
+      LOGICAL LOCDEB,FNDLAB,FIRST
       CHARACTER*8 STAR8,SOLVDI,EODATA
       DATA        FIRST/.TRUE./, STAR8/'********'/
       DATA        SOLVDI/'SOLVDIAG'/, EODATA/'EODATA  '/
@@ -5993,7 +5993,7 @@ C
         WRITE(LUPRI,*) 'Expectation value from AO basis', TEMP
       ENDIF
       
-      IF (LOCDEN) THEN
+      IF (LOCDEB) THEN
         WRITE(LUPRI,*) 'FOLDED DENSITY MATRIX AFTER CALL TO QMMM_FCK_AO'
         CALL OUTPAK(WRK(KDENTF),NBAST,1,LUPRI)
       ENDIF
