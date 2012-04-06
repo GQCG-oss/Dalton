@@ -118,15 +118,9 @@ module polarizable_embedding
     ! order of highest order polarizability
     integer, save :: polorder = -1
     ! dipole-dipole polarizabilities
-    real(dp), dimension(:,:), allocatable, save :: alphas
-    ! .true. if alpha > 0 else .false.
+    real(dp), dimension(:,:), allocatable, save :: P1s
+    ! .true. if P1 > 0 else .false.
     logical, dimension(:), allocatable, save :: zeroalphas
-    ! dipole-dipole-dipole polarizabilities / 1st hyperpolarizabilities
-!    real(dp), dimension(:,:), allocatable, save :: betas
-    ! dipole-quadrupole polarizabilities
-!    real(dp), dimension(:,:), allocatable, save :: As
-    ! quadrupole-quadrupole polarizabilities
-!    real(dp), dimension(:,:), allocatable, save :: Cs
 
     ! QM core fragment info
     ! ---------------------
@@ -363,25 +357,25 @@ subroutine pe_read_potential(coords, charges)
             end do
         else if (trim(word) == 'isoalphas') then
             lpol(0) = .true.
-            allocate(alphas(6,nsites)); alphas = 0.0d0
+            allocate(P1s(6,nsites)); P1s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, temp(1)
-                alphas(1,s) = temp(1)
-                alphas(4,s) = temp(1)
-                alphas(6,s) = temp(1)
+                P1s(1,s) = temp(1)
+                P1s(4,s) = temp(1)
+                P1s(6,s) = temp(1)
             end do
         else if (trim(word) == 'alphas') then
             lpol(1) = .true.
-            if (.not. allocated(alphas)) then
-                allocate(alphas(6,nsites)); alphas = 0.0d0
+            if (.not. allocated(P1s)) then
+                allocate(P1s(6,nsites)); P1s = 0.0d0
             end if
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 6)
-                alphas(:,s) = temp(1:6)
+                P1s(:,s) = temp(1:6)
             end do
 !        else if (trim(word) == 'As') then
 !            lpol(2) = .true.
@@ -530,7 +524,7 @@ subroutine pe_read_potential(coords, charges)
                     Q5s(:,idxs(i)) = 0.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
-                    alphas(:,idxs(i)) = 0.0d0
+                    P1s(:,idxs(i)) = 0.0d0
                 end if
             end do
         else if (border_type == 'REDIST') then
@@ -569,7 +563,7 @@ subroutine pe_read_potential(coords, charges)
                     Q5s(:,idx) = Q5s(:,idx) + Q5s(:,idxs(i)) / 3.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
-                    alphas(:,idx) = alphas(:,idx) + alphas(:,idxs(i)) / 3.0d0
+                    P1s(:,idx) = P1s(:,idx) + P1s(:,idxs(i)) / 3.0d0
                 end if
 
                 r = 1.0d10
@@ -607,7 +601,7 @@ subroutine pe_read_potential(coords, charges)
                     Q5s(:,jdx) = Q5s(:,jdx) + Q5s(:,idxs(i)) / 3.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
-                    alphas(:,jdx) = alphas(:,jdx) + alphas(:,idxs(i)) / 3.0d0
+                    P1s(:,jdx) = P1s(:,jdx) + P1s(:,idxs(i)) / 3.0d0
                 end if
 
                 r = 1.0d10
@@ -645,7 +639,7 @@ subroutine pe_read_potential(coords, charges)
                     Q5s(:,kdx) = Q5s(:,kdx) + Q5s(:,idxs(i)) / 3.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
-                    alphas(:,kdx) = alphas(:,kdx) + alphas(:,idxs(i)) / 3.0d0
+                    P1s(:,kdx) = P1s(:,kdx) + P1s(:,idxs(i)) / 3.0d0
                 end if
 
                 if (lmul(0)) then
@@ -667,7 +661,7 @@ subroutine pe_read_potential(coords, charges)
                     Q5s(:,idxs(i)) = 0.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
-                    alphas(:,idxs(i)) = 0.0d0
+                    P1s(:,idxs(i)) = 0.0d0
                 end if
 
                 write(luout,'(4x,a,i6)') 'Redistributing parameters on site:',&
@@ -681,7 +675,7 @@ subroutine pe_read_potential(coords, charges)
     if (lpol(0) .or. lpol(1)) then
         allocate(zeroalphas(nsites))
         do i = 1, nsites
-            if (abs(maxval(alphas(:,i))) >= zero) then
+            if (abs(maxval(P1s(:,i))) >= zero) then
                 zeroalphas(i) = .false.
                 npols = npols + 1
             else
@@ -1079,7 +1073,7 @@ subroutine pe_response(denmats, fckmats)
     logical :: skip
     integer :: i, j, l, m, n, o
     integer, parameter :: k = 1
-    real(dp), dimension(3*npols,ndens) :: Fel, Mu
+    real(dp), dimension(3*npols,ndens) :: Fel, Q1inds
     real(dp), dimension(nnbas,3) :: Fel_ints
 
 #ifdef VAR_MPI
@@ -1145,7 +1139,7 @@ subroutine pe_response(denmats, fckmats)
 
     if (myid == 0) then
 #endif
-        call induced_dipoles(Mu, Fel)
+        call induced_dipoles(Q1inds, Fel)
 #ifdef VAR_MPI
     end if
 
@@ -1155,14 +1149,14 @@ subroutine pe_response(denmats, fckmats)
             displs(i) = displs(i-1) + 3 * ndists(i-1)
         end do
         do i = 1, ndens
-            call mpi_scatterv(Mu(:,i), 3*ndists, displs, MPI_REAL8,&
+            call mpi_scatterv(Q1inds(:,i), 3*ndists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end do
     else if (myid /= 0) then
         do i = 1, ndens
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Mu(:,i), 3*ndist, MPI_REAL8,&
+                             &Q1inds(:,i), 3*ndist, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end do
     end if
@@ -1176,7 +1170,7 @@ subroutine pe_response(denmats, fckmats)
             do m = 1, ndens
                 n = (m - 1) * nnbas + 1
                 o = m * nnbas
-                fckmats(n:o) = fckmats(n:o) - Mu(l+j,m) * Fel_ints(:,j)
+                fckmats(n:o) = fckmats(n:o) - Q1inds(l+j,m) * Fel_ints(:,j)
             end do
         end do
         l = l + 3
@@ -1502,8 +1496,8 @@ subroutine pe_polarization(denmats, fckmats)
     integer :: i, j, l, m, n, o
     integer, parameter :: k = 1
     logical :: skip
-    real(dp), dimension(3*npols) :: Fnuc, Fmul, Ffd
-    real(dp), dimension(3*npols,ndens) :: Mu, Fel, Ftot
+    real(dp), dimension(3*npols) :: Fnucs, Fmuls, Ffd
+    real(dp), dimension(3*npols,ndens) :: Q1inds, Fels, Ftots
     real(dp), dimension(nnbas,3) :: Fel_ints
 
 #ifdef VAR_MPI
@@ -1514,7 +1508,7 @@ subroutine pe_polarization(denmats, fckmats)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 #endif
 
-    Fel = 0.0d0
+    Fels = 0.0d0
 
     l = 0
     do i = 1, nloop
@@ -1531,7 +1525,7 @@ subroutine pe_polarization(denmats, fckmats)
             do m = 1, ndens
                 n = (m - 1) * nnbas + 1
                 o = m * nnbas
-                Fel(l+j,m) = dot(denmats(n:o), Fel_ints(:,j))
+                Fels(l+j,m) = dot(denmats(n:o), Fel_ints(:,j))
             end do
         end do
         l = l + 3
@@ -1563,12 +1557,12 @@ subroutine pe_polarization(denmats, fckmats)
         end do
         do i = 1, ndens
             call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                            &Fel(:,i), 3*ndists, displs, MPI_REAL8,&
+                            &Fels(:,i), 3*ndists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         end do
     else if (myid /= 0) then
         do i = 1, ndens
-            call mpi_gatherv(Fel(:,i), 3*ndist, MPI_REAL8,&
+            call mpi_gatherv(Fels(:,i), 3*ndist, MPI_REAL8,&
                             &0, 0, 0, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         end do
@@ -1576,8 +1570,8 @@ subroutine pe_polarization(denmats, fckmats)
 
     if (myid == 0) then
 #endif
-    call nuclear_fields(Fnuc)
-    call multipole_fields(Fmul)
+    call nuclear_fields(Fnucs)
+    call multipole_fields(Fmuls)
     if (pe_fd) then
         call frozen_density_field(Ffd)
     else
@@ -1585,16 +1579,16 @@ subroutine pe_polarization(denmats, fckmats)
     end if
 
     do i = 1, ndens
-        Ftot(:,i) = Fel(:,i) + Fnuc + Fmul + Ffd
+        Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Ffd
     end do
 
-    call induced_dipoles(Mu, Ftot)
+    call induced_dipoles(Q1inds, Ftots)
 
     do i = 1, ndens
-        Epol(1,i) = - 0.5d0 * dot(Mu(:,i), Fel(:,i))
-        Epol(2,i) = - 0.5d0 * dot(Mu(:,i), Fnuc)
-        Epol(3,i) = - 0.5d0 * dot(Mu(:,i), Fmul)
-        if (pe_fd) Epol(4,i) = - 0.5d0 * dot(Mu(:,i), Ffd)
+        Epol(1,i) = - 0.5d0 * dot(Q1inds(:,i), Fels(:,i))
+        Epol(2,i) = - 0.5d0 * dot(Q1inds(:,i), Fnucs)
+        Epol(3,i) = - 0.5d0 * dot(Q1inds(:,i), Fmuls)
+        if (pe_fd) Epol(4,i) = - 0.5d0 * dot(Q1inds(:,i), Ffd)
     end do
 
 #ifdef VAR_MPI
@@ -1606,14 +1600,14 @@ subroutine pe_polarization(denmats, fckmats)
             displs(i) = displs(i-1) + 3 * ndists(i-1)
         end do
         do i = 1, ndens
-            call mpi_scatterv(Mu(:,i), 3*ndists, displs, MPI_REAL8,&
+            call mpi_scatterv(Q1inds(:,i), 3*ndists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &myid, MPI_COMM_WORLD, ierr)
         end do
     else if (myid /= 0) then
         do i = 1, ndens
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Mu(:,i), 3*ndist, MPI_REAL8,&
+                             &Q1inds(:,i), 3*ndist, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end do
     end if
@@ -1628,7 +1622,7 @@ subroutine pe_polarization(denmats, fckmats)
                 do m = 1, ndens
                     n = (m - 1) * nnbas + 1
                     o = m * nnbas
-                    fckmats(n:o) = fckmats(n:o) - Mu(j+l,m) * Fel_ints(:,j)
+                    fckmats(n:o) = fckmats(n:o) - Q1inds(j+l,m) * Fel_ints(:,j)
                 end do
             end do
             l = l + 3
@@ -1639,47 +1633,141 @@ end subroutine pe_polarization
 
 !------------------------------------------------------------------------------
 
-subroutine induced_dipoles(Mu, F)
+subroutine induced_dipoles(Q1inds, Fs)
 
-    real(dp), dimension(:,:), intent(out) :: Mu
-    real(dp), dimension(:,:), intent(in) :: F
+    real(dp), dimension(:,:), intent(out) :: Q1inds
+    real(dp), dimension(:,:), intent(in) :: Fs
 
-    integer :: i, j, l
+    integer :: i, j, k, l, n
+    logical :: exclude
+    real(dp), parameter :: d6i = 1.0d0 / 6.0d0
+    real(dp) :: fe = 1.0d0
+    real(dp) :: ft = 1.0d0
+    real(dp) :: R, Rd, ai, aj, norm
+    real(dp), dimension(:), allocatable :: T, Rij, Ftmp
+    real(dp), dimension(:,:), allocatable :: Q1olds, Q1news, Fnems
     real(dp), dimension(:), allocatable :: B
 
-    allocate(B(3*npols*(3*npols+1)/2))
+    logical :: iter
 
-    call response_matrix(B)
+    iter = .true.
 
-    do i = 1, ndens
-        call spmv(B, F(:,i), Mu(:,i), 'L')
-    end do
+    if (iter) then
+
+        allocate(T(6), Rij(3), Ftmp(3))
+        allocate(Q1olds(3,npols), Q1news(3,npols), Fnems(3,npols))
+
+        ! Gauss-Seidel
+        do n = 1, ndens
+            ! initial guess from the static electric fields
+            l = 1
+            do i = 1, nsites
+                if (zeroalphas(i)) cycle
+                Fnems(:,i) = Fs(l:l+2,n)
+                call spmv(P1s(:,i), Fnems(:,i), Q1olds(:,i), 'L')
+                l = l + 3
+            end do
+
+            do
+                if (pe_nomb) exit
+                do i = 1, nsites
+                    if (zeroalphas(i)) cycle
+                    if (pe_damp) then
+                        ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
+                    end if
+                    Ftmp = 0.0d0
+                    do j = 1, nsites
+                        exclude = .false.
+                        do k = 1, lexlst
+                            if (exlists(k,i) == exlists(1,j)) then
+                                exclude = .true.
+                                exit
+                            end if
+                        end do
+                        if (j == i .or. zeroalphas(j) .or. exclude) cycle
+                        Rij = Rs(:,j) - Rs(:,i)
+                        call Tk_tensor(T, Rij)
+                        ! damping parameters
+                        ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
+                        ! a = 2.1304 = damp
+                        ! u = R / (alpha_i * alpha_j)**(1/6)
+                        ! fe = 1-(a²u²/2+au+1)*exp(-au)
+                        ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
+                        if (pe_damp) then
+                            R = nrm2(Rij)
+                            aj = P1s(1,j) + P1s(4,j) + P1s(6,j)
+                            Rd = (damp * R)/(((ai * aj) / 9.0d0)**(d6i))
+                            fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
+                            ft = fe - (Rd**3 * d6i) * exp(-Rd)
+! TODO: damping not complete
+                        end if
+                        if (j < i) then
+                            call spmv(T, Q1news(:,j), Ftmp, 'L', 1.0d0, 1.0d0)
+                        else if (j > i) then
+                            call spmv(T, Q1olds(:,j), Ftmp, 'L', 1.0d0, 1.0d0)
+                        end if
+                    end do
+                    Ftmp = Fnems(:,i) + Ftmp
+                    call spmv(P1s(:,i), Ftmp, Q1news(:,i), 'L')
+                end do
+                norm = 0.0d0
+                do i = 1, nsites
+                    norm = norm + nrm2(Q1news(:,i) - Q1olds(:,i))
+                end do
+                if (norm < zero) then
+                    l = 1
+                    do i = 1, nsites
+                        if (zeroalphas(i)) cycle
+                        Q1inds(l:l+2,n) = Q1news(:,i)
+                        l = l + 3
+                    end do
+                    exit
+                else
+                    Q1olds = Q1news
+                end if
+            end do
+        end do
+
+        deallocate(T, Rij, Ftmp, Q1olds, Q1news, Fnems)
+
+    else if (.not.iter) then
+
+        allocate(B(3*npols*(3*npols+1)/2))
+
+        call response_matrix(B)
+
+        do n = 1, ndens
+            call spmv(B, Fs(:,n), Q1inds(:,n), 'L')
+        end do
+
+        deallocate(B)
+
+    end if
 
     ! check induced dipoles
-    do i = 1, ndens
+    do n = 1, ndens
         l = 1
-        do j = 1, nsites
+        do i = 1, nsites
             if (zeroalphas(i)) cycle
-            if (nrm2(Mu(l:l+2,i)) > 1.0d0) then
-                write(luout,'(4x,a,i6)') 'Large induced dipole encountered at&
-                                         & site:', j
-                write(luout,'(f10.4)') nrm2(Mu(l:l+2,i))
+            if (nrm2(Q1inds(l:l+2,n)) > 1.0d0) then
+                write(luout,'(4x,a,i6)') 'Large induced dipole encountered&
+                                         & at site:', i
+                write(luout,'(f10.4)') nrm2(Q1inds(l:l+2,n))
             end if
             l = l + 3
         end do
     end do
 
-    deallocate(B)
 
 end subroutine induced_dipoles
 
 !------------------------------------------------------------------------------
 
-subroutine electron_fields(Fel, denmats)
+subroutine electron_fields(Fels, denmats)
 
     external :: Tk_integrals
 
-    real(dp), dimension(:,:), intent(out) :: Fel
+    real(dp), dimension(:,:), intent(out) :: Fels
     real(dp), dimension(:), intent(in) :: denmats
 
     logical :: skip
@@ -1687,7 +1775,7 @@ subroutine electron_fields(Fel, denmats)
     integer, parameter :: k = 1
     real(dp), dimension(nnbas,3) :: Fel_ints
 
-    Fel = 0.0d0
+    Fels = 0.0d0
 
     l = 0
     do i = 1, nloop
@@ -1704,7 +1792,7 @@ subroutine electron_fields(Fel, denmats)
             do m = 1, ndens
                 n = (m - 1) * nnbas + 1
                 o = m * nnbas
-                Fel(l+j,m) = dot(denmats(n:o), Fel_ints(:,j))
+                Fels(l+j,m) = dot(denmats(n:o), Fel_ints(:,j))
             end do
         end do
         l = l + 3
@@ -1714,23 +1802,23 @@ end subroutine electron_fields
 
 !------------------------------------------------------------------------------
 
-subroutine nuclear_fields(Fnuc)
+subroutine nuclear_fields(Fnucs)
 
-    real(dp), dimension(:), intent(out) :: Fnuc
+    real(dp), dimension(:), intent(out) :: Fnucs
 
     logical :: exclude, lexist, skip
     integer :: lutemp
     integer :: i, j, l, m
     real(dp), dimension(3) :: Rms, Tms
 
-    Fnuc = 0.0d0
+    Fnucs = 0.0d0
 
     inquire(file='pe_nuclear_field.bin', exist=lexist)
 
     if (lexist) then
         call openfile('pe_nuclear_field.bin', lutemp, 'old', 'unformatted')
         rewind(lutemp)
-        read(lutemp) Fnuc
+        read(lutemp) Fnucs
         close(lutemp)
     else
         l = 0
@@ -1747,14 +1835,14 @@ subroutine nuclear_fields(Fnuc)
                 Rms = Rs(:,i) - Rm(:,j)
                 call Tk_tensor(Tms, Rms)
                 do m = 1, 3
-                    Fnuc(l+m) = Fnuc(l+m) - Zm(1,j) * Tms(m)
+                    Fnucs(l+m) = Fnucs(l+m) - Zm(1,j) * Tms(m)
                 end do
             end do
             l = l + 3
         end do
         call openfile('pe_nuclear_field.bin', lutemp, 'new', 'unformatted')
         rewind(lutemp)
-        write(lutemp) Fnuc
+        write(lutemp) Fnucs
         close(lutemp)
     end if
 
@@ -1930,7 +2018,7 @@ subroutine response_matrix(B, invert, wrt2file)
     real(dp) :: Rd, ai, aj
     real(dp) :: R, R2, R3, R5, T
     real(dp), dimension(3) :: Rij
-    real(dp), dimension(6) :: alphainv
+    real(dp), dimension(6) :: P1inv
 
     if (present(invert)) then
         inv = invert
@@ -1957,10 +2045,10 @@ subroutine response_matrix(B, invert, wrt2file)
         m = 0
         do i = 1, nsites
             if (zeroalphas(i)) cycle
-            alphainv = alphas(:,i)
-            call invert_packed_matrix(alphainv, 's')
+            P1inv = P1s(:,i)
+            call invert_packed_matrix(P1inv, 's')
             if (pe_damp) then
-                ai = alphas(1,i) + alphas(4,i) + alphas(6,i)
+                ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
             end if
             do l = 3, 1, -1
                 do j = i, nsites
@@ -1968,15 +2056,15 @@ subroutine response_matrix(B, invert, wrt2file)
                     if (j == i) then
                         if (l == 3) then
                             do k = 1, l
-                                B(m+k) = alphainv(k)
+                                B(m+k) = P1inv(k)
                             end do
                         else if (l == 2) then
                             do k = 1, l
-                                B(m+k) = alphainv(3+k)
+                                B(m+k) = P1inv(3+k)
                             end do
                         else if (l == 1) then
                             do k = 1, l
-                                B(m+k) = alphainv(5+k)
+                                B(m+k) = P1inv(5+k)
                             end do
                         end if
                         m = m + l
@@ -2013,10 +2101,10 @@ subroutine response_matrix(B, invert, wrt2file)
                         ! fe = 1-(a²u²/2+au+1)*exp(-au)
                         ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
                         if (pe_damp) then
-                            aj = alphas(1,j) + alphas(4,j) + alphas(6,j)
+                            aj = P1s(1,j) + P1s(4,j) + P1s(6,j)
                             Rd = (damp * R)/(((ai * aj) / 9.0d0)**(d6i))
                             fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
-                            ft = fe - (Rd**3 / 6.0d0) * exp(-Rd)
+                            ft = fe - (Rd**3 * d6i) * exp(-Rd)
                         end if
                         if (l == 3) then
                             do k = 1, 3
@@ -2108,6 +2196,8 @@ function T(Rij, x, y, z)
     if (.not. allocated(Cnij)) call Tk_coefficients
 
     R = nrm2(Rij)
+
+    T = 0.0d0
 
     do l = 0, x
         Cx = Cnij(1,x,l)*(Rij(1)/R)**l
