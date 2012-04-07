@@ -18,6 +18,7 @@ module polarizable_embedding
 
     ! options
     logical, public, save :: peqm = .false.
+    logical, public, save :: pe_iter = .false.
     logical, public, save :: pe_border = .false.
     logical, public, save :: pe_damp = .false.
     logical, public, save :: pe_gspol = .false.
@@ -187,6 +188,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! do a Polarizable Embedding calculation
         if (trim(option(2:)) == 'PEQM') then
             peqm = .true.
+        ! iterative solver for induced dipoles
+        else if (trim(option(2:)) == 'ITERAT') then
+            pe_iter = .true.
         ! handling sites near quantum-classical border
         else if (trim(option(2:)) == 'BORDER') then
             read(luinp,*) option
@@ -1187,7 +1191,7 @@ subroutine pe_electrostatic(denmats, fckmats)
 
     integer :: i, j, k
     logical :: lexist
-    integer :: lutemp
+    integer :: lu
     real(dp) :: Enuc, Esave
     real(dp), dimension(ndens) :: Eel
 
@@ -1213,10 +1217,10 @@ subroutine pe_electrostatic(denmats, fckmats)
 #ifdef VAR_MPI
         if (myid == 0) then
 #endif
-            call openfile('pe_electrostatics.bin', lutemp, 'old', 'unformatted')
-            rewind(lutemp)
-            read(lutemp) Esave, fckmats
-            close(lutemp)
+            call openfile('pe_electrostatics.bin', lu, 'old', 'unformatted')
+            rewind(lu)
+            read(lu) Esave, fckmats
+            close(lu)
             do i = 1, ndens
                 j = (i - 1) * nnbas + 1
                 k = i * nnbas
@@ -1327,10 +1331,10 @@ subroutine pe_electrostatic(denmats, fckmats)
             end if
             if (myid == 0) then
 #endif
-                call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
-                rewind(lutemp)
-                write(lutemp) Esave, fckmats
-                close(lutemp)
+                call openfile('pe_electrostatics.bin', lu, 'new', 'unformatted')
+                rewind(lu)
+                write(lu) Esave, fckmats
+                close(lu)
 #ifdef VAR_MPI
             end if
 
@@ -1364,7 +1368,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
 
     integer :: i, j, l, m, n, o
     integer, parameter :: k = 0
-    integer :: lufck, lexist, lutemp
+    integer :: lufck, lexist, lu
     real(dp) :: Ene, Enn
     real(dp), dimension(ndens) :: Een, Eee
     real(dp), dimension(1) :: Tfm
@@ -1638,45 +1642,47 @@ subroutine induced_dipoles(Q1inds, Fs)
     real(dp), dimension(:,:), intent(out) :: Q1inds
     real(dp), dimension(:,:), intent(in) :: Fs
 
-    integer :: i, j, k, l, n
-    logical :: exclude
+    integer :: i, j, k, l, m, n, iter, lu
+    logical :: exclude, lexist
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
     real(dp) :: R, Rd, ai, aj, norm
-    real(dp), dimension(:), allocatable :: T, Rij, Ftmp
-    real(dp), dimension(:,:), allocatable :: Q1olds, Q1news, Fnems
-    real(dp), dimension(:), allocatable :: B
+    real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, Q1tmp
 
-    logical :: iter
-
-    iter = .true.
-
-    if (iter) then
-
-        allocate(T(6), Rij(3), Ftmp(3))
-        allocate(Q1olds(3,npols), Q1news(3,npols), Fnems(3,npols))
-
-        ! Gauss-Seidel
+    if (pe_iter) then
+        inquire(file='pe_induced_dipoles.bin', exist=lexist)
+        if (lexist .and. fock) then
+            call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
+            rewind(lu)
+            read(lu) Q1inds
+            close(lu)
+        end if
+        allocate(T(6), Rij(3), Ftmp(3), Q1tmp(3))
         do n = 1, ndens
-            ! initial guess from the static electric fields
-            l = 1
-            do i = 1, nsites
-                if (zeroalphas(i)) cycle
-                Fnems(:,i) = Fs(l:l+2,n)
-                call spmv(P1s(:,i), Fnems(:,i), Q1olds(:,i), 'L')
-                l = l + 3
-            end do
-
+            if (.not.lexist .or. response) then
+                l = 1
+                do i = 1, nsites
+                    if (zeroalphas(i)) cycle
+                    call spmv(P1s(:,i), Fs(l:l+2,n), Q1inds(l:l+2,n), 'L')
+                    l = l + 3
+                end do
+            end if
+            iter = 1
             do
                 if (pe_nomb) exit
+                l = 1
+                norm = 0.0d0
                 do i = 1, nsites
                     if (zeroalphas(i)) cycle
                     if (pe_damp) then
                         ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
                     end if
+                    m = 1
                     Ftmp = 0.0d0
                     do j = 1, nsites
+                        if (zeroalphas(j)) cycle
+                        if (zeroalphas(j)) cycle
                         exclude = .false.
                         do k = 1, lexlst
                             if (exlists(k,i) == exlists(1,j)) then
@@ -1684,7 +1690,10 @@ subroutine induced_dipoles(Q1inds, Fs)
                                 exit
                             end if
                         end do
-                        if (j == i .or. zeroalphas(j) .or. exclude) cycle
+                        if (i == j .or. exclude) then
+                            m = m + 3
+                            cycle
+                        end if
                         Rij = Rs(:,j) - Rs(:,i)
                         call Tk_tensor(T, Rij)
                         ! damping parameters
@@ -1701,47 +1710,37 @@ subroutine induced_dipoles(Q1inds, Fs)
                             ft = fe - (Rd**3 * d6i) * exp(-Rd)
 ! TODO: damping not complete
                         end if
-                        if (j < i) then
-                            call spmv(T, Q1news(:,j), Ftmp, 'L', 1.0d0, 1.0d0)
-                        else if (j > i) then
-                            call spmv(T, Q1olds(:,j), Ftmp, 'L', 1.0d0, 1.0d0)
-                        end if
+                        call spmv(T, Q1inds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
+                        m = m + 3
                     end do
-                    Ftmp = Fnems(:,i) + Ftmp
-                    call spmv(P1s(:,i), Ftmp, Q1news(:,i), 'L')
+                    Q1tmp = Q1inds(l:l+2,n)
+                    Ftmp = Ftmp + Fs(l:l+2,n)
+                    call spmv(P1s(:,i), Ftmp, Q1inds(l:l+2,n), 'L')
+                    norm = norm + nrm2(Q1inds(l:l+2,n) - Q1tmp)
+                    l = l + 3
                 end do
-                norm = 0.0d0
-                do i = 1, nsites
-                    norm = norm + nrm2(Q1news(:,i) - Q1olds(:,i))
-                end do
-                if (norm < zero) then
-                    l = 1
-                    do i = 1, nsites
-                        if (zeroalphas(i)) cycle
-                        Q1inds(l:l+2,n) = Q1news(:,i)
-                        l = l + 3
-                    end do
+                if (norm < 1.0d-6) then
+                    write (luout,'(a,i2,a)') 'Induced dipoles converged in ', iter, ' iterations.'
                     exit
                 else
-                    Q1olds = Q1news
+                    iter = iter + 1
                 end if
             end do
         end do
-
-        deallocate(T, Rij, Ftmp, Q1olds, Q1news, Fnems)
-
-    else if (.not.iter) then
-
+        if (fock) then
+            call openfile('pe_induced_dipoles.bin', lu, 'unknown', 'unformatted')
+            rewind(lu)
+            write(lu) Q1inds
+            close(lu)
+        end if
+        deallocate(T, Rij, Ftmp, Q1tmp)
+    else
         allocate(B(3*npols*(3*npols+1)/2))
-
         call response_matrix(B)
-
         do n = 1, ndens
             call spmv(B, Fs(:,n), Q1inds(:,n), 'L')
         end do
-
         deallocate(B)
-
     end if
 
     ! check induced dipoles
@@ -1807,7 +1806,7 @@ subroutine nuclear_fields(Fnucs)
     real(dp), dimension(:), intent(out) :: Fnucs
 
     logical :: exclude, lexist, skip
-    integer :: lutemp
+    integer :: lu
     integer :: i, j, l, m
     real(dp), dimension(3) :: Rms, Tms
 
@@ -1816,10 +1815,10 @@ subroutine nuclear_fields(Fnucs)
     inquire(file='pe_nuclear_field.bin', exist=lexist)
 
     if (lexist) then
-        call openfile('pe_nuclear_field.bin', lutemp, 'old', 'unformatted')
-        rewind(lutemp)
-        read(lutemp) Fnucs
-        close(lutemp)
+        call openfile('pe_nuclear_field.bin', lu, 'old', 'unformatted')
+        rewind(lu)
+        read(lu) Fnucs
+        close(lu)
     else
         l = 0
         do i = 1, nsites
@@ -1840,10 +1839,10 @@ subroutine nuclear_fields(Fnucs)
             end do
             l = l + 3
         end do
-        call openfile('pe_nuclear_field.bin', lutemp, 'new', 'unformatted')
-        rewind(lutemp)
-        write(lutemp) Fnucs
-        close(lutemp)
+        call openfile('pe_nuclear_field.bin', lu, 'new', 'unformatted')
+        rewind(lu)
+        write(lu) Fnucs
+        close(lu)
     end if
 
 end subroutine nuclear_fields
@@ -1855,7 +1854,7 @@ subroutine frozen_density_field(Ffd)
     real(dp), dimension(:), intent(out) :: Ffd
 
     integer :: i
-    integer :: lutemp
+    integer :: lu
     character(len=99) :: ci
     character(len=80) :: filename
     real(dp), dimension(3*npols) :: Ftmp
@@ -1867,10 +1866,10 @@ subroutine frozen_density_field(Ffd)
         write(ci,*) i
         ci = adjustl(ci)
         filename = 'pe_fock_'//trim(ci)//'.bin'
-        call openfile(trim(filename), lutemp, 'old', 'unformatted')
-        rewind(lutemp)
-        read(lutemp) Ftmp
-        close(lutemp)
+        call openfile(trim(filename), lu, 'old', 'unformatted')
+        rewind(lu)
+        read(lu) Ftmp
+        close(lu)
         Ffd = Ffd + Ftmp
     end do
 
@@ -1883,7 +1882,7 @@ subroutine multipole_fields(F)
     real(dp), dimension(:), intent(out) :: F
 
     logical :: exclude, lexist
-    integer :: lutemp
+    integer :: lu
     integer :: i, j, k, l
     real(dp), dimension(3) :: Rji
 
@@ -1892,10 +1891,10 @@ subroutine multipole_fields(F)
      inquire(file='pe_multipole_field.bin', exist=lexist)
 
      if (lexist) then
-         call openfile('pe_multipole_field.bin', lutemp, 'old', 'unformatted')
-         rewind(lutemp)
-         read(lutemp) F
-         close(lutemp)
+         call openfile('pe_multipole_field.bin', lu, 'old', 'unformatted')
+         rewind(lu)
+         read(lu) F
+         close(lu)
      else
         l = 1
         do i = 1, nsites
@@ -1949,10 +1948,10 @@ subroutine multipole_fields(F)
             end do
             l = l + 3
         end do
-        call openfile('pe_multipole_field.bin', lutemp, 'new', 'unformatted')
-        rewind(lutemp)
-        write(lutemp) F
-        close(lutemp)
+        call openfile('pe_multipole_field.bin', lu, 'new', 'unformatted')
+        rewind(lu)
+        write(lu) F
+        close(lu)
      end if
 
 end subroutine multipole_fields
@@ -2010,7 +2009,7 @@ subroutine response_matrix(B, invert, wrt2file)
     logical, intent(in), optional :: invert, wrt2file
 
     logical :: exclude, lexist, inv, wrt
-    integer :: info, lutemp
+    integer :: info, lu
     integer :: i, j, k, l, m, n
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp) :: fe = 1.0d0
@@ -2037,10 +2036,10 @@ subroutine response_matrix(B, invert, wrt2file)
     inquire(file='pe_response_matrix.bin', exist=lexist)
 
     if (lexist) then
-        call openfile('pe_response_matrix.bin', lutemp, 'old', 'unformatted')
-        rewind(lutemp)
-        read(lutemp) B
-        close(lutemp)
+        call openfile('pe_response_matrix.bin', lu, 'old', 'unformatted')
+        rewind(lu)
+        read(lu) B
+        close(lu)
     else
         m = 0
         do i = 1, nsites
@@ -2134,10 +2133,10 @@ subroutine response_matrix(B, invert, wrt2file)
             call invert_packed_matrix(B, 's')
         end if
         if (wrt) then
-            call openfile('pe_response_matrix.bin', lutemp, 'new', 'unformatted')
-            rewind(lutemp)
-            write(lutemp) B
-            close(lutemp)
+            call openfile('pe_response_matrix.bin', lu, 'new', 'unformatted')
+            rewind(lu)
+            write(lu) B
+            close(lu)
         end if
     end if
 
