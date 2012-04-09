@@ -30,9 +30,9 @@ module polarizable_embedding
     logical, public, save :: pe_timing = .false.
 
     ! calculation type
-    logical :: fock = .false.
-    logical :: energy = .false.
-    logical :: response = .false.
+    logical, save :: fock = .false.
+    logical, save :: energy = .false.
+    logical, save :: response = .false.
 
     ! temporary solution for work array thing
     real(dp), dimension(:), pointer :: work
@@ -51,9 +51,10 @@ module polarizable_embedding
     ! 1 bohr = 0.5291772108 Aa (codata 2002)
     real(dp), parameter :: aa2au = 1.8897261249935897d0
     real(dp), parameter :: zero = 1.0d-6
-    real(dp) :: damp = 2.1304d0
-    real(dp) :: Rmin = 2.2d0
-    character(len=6) :: border_type = 'REDIST'
+    real(dp), save :: thriter = 1.0d-6
+    real(dp), save :: damp = 2.1304d0
+    real(dp), save :: Rmin = 2.2d0
+    character(len=6), save :: border_type = 'REDIST'
 
     ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
     ! C^(n)_ij coefficients for calculating T(k) tensor elements
@@ -190,6 +191,12 @@ subroutine pe_dalton_input(word, luinp, lupri)
             peqm = .true.
         ! iterative solver for induced dipoles
         else if (trim(option(2:)) == 'ITERAT') then
+            read(luinp,*) option
+            backspace(luinp)
+            if (option(1:1) /= '.' .and. option(1:1) /= '*'&
+               &.and. option(1:1) /= '!') then
+                read(luinp,*) thriter
+            end if
             pe_iter = .true.
         ! handling sites near quantum-classical border
         else if (trim(option(2:)) == 'BORDER') then
@@ -471,6 +478,12 @@ subroutine pe_read_potential(coords, charges)
     end if
     if (pe_nomb) then
         write(luout,'(4x,a)') 'Many-body interactions will be neglected.'
+    end if
+    if (pe_iter) then
+        write(luout,'(4x,a)') 'Iterative solver for induced dipoles will be used'
+        write(luout,'(4x,a,es7.1)') 'with convergence threshold: ', thriter
+    else
+        write(luout,'(4x,a)') 'Direct solver for induced dipoles will be used.'
     end if
 
    ! default exclusion list (everything polarizes everything)
@@ -1682,7 +1695,6 @@ subroutine induced_dipoles(Q1inds, Fs)
                     Ftmp = 0.0d0
                     do j = 1, nsites
                         if (zeroalphas(j)) cycle
-                        if (zeroalphas(j)) cycle
                         exclude = .false.
                         do k = 1, lexlst
                             if (exlists(k,i) == exlists(1,j)) then
@@ -1720,8 +1732,11 @@ subroutine induced_dipoles(Q1inds, Fs)
                     l = l + 3
                 end do
                 if (norm < 1.0d-6) then
-                    write (luout,'(a,i2,a)') 'Induced dipoles converged in ', iter, ' iterations.'
+                    write (luout,'(a,i2,a)') 'Induced dipoles converged in ',&
+                                             & iter, ' iterations.'
                     exit
+                else if (iter > 50) then
+                    stop 'Maximum iterations reached.'
                 else
                     iter = iter + 1
                 end if
