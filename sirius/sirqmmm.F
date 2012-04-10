@@ -1790,7 +1790,7 @@ C     Read the relay matrix from file
         ENDDO
       ENDDO
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) ) THEN
+      IF ( (IPRINT .GE. 15) .OR. (LOCDEB) ) THEN
         WRITE(LUPRI,*) 'Relay mat. is read from file MM_POLARIZABILITY'
         CALL OUTPUT(FULLMAT,1,N,1,N,N,N,1,LUPRI)
       ENDIF
@@ -2056,7 +2056,7 @@ C     Read the relay matrix from file
         ENDDO
       ENDDO
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRINT .GE. 15) .OR. (LOCDEB) )THEN
         WRITE(LUPRI,*) 'Response mat. is read from file MM_OPTROT'
         CALL OUTPUT(FULLMAT,1,N,1,N,N,N,1,LUPRI)
       ENDIF
@@ -5222,8 +5222,8 @@ C     Receiving data from master
       CALL MPIXBCAST(NNZAL,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
 
-      KELFEL  = 1
-      KDCAO   = KELFEL  + 3*POLDIM
+      KELF    = 1
+      KDCAO   = KELF    + 3*POLDIM
       KMAT    = KDCAO   + NNBASX
       KLAST   = KMAT    + 3*NNBASX
       LWRK2   = LWRK - KLAST + 1
