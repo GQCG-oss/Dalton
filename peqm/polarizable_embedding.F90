@@ -47,11 +47,12 @@ module polarizable_embedding
     ! logical unit from dalton
     integer, save :: luout = 0
 
-    ! thresholds and other stuff
+    ! constants, thresholds and stuff
     ! 1 bohr = 0.5291772108 Aa (codata 2002)
     real(dp), parameter :: aa2au = 1.8897261249935897d0
     real(dp), parameter :: zero = 1.0d-6
-    real(dp), save :: thriter = 1.0d-6
+    integer, save :: scfcycle = 0
+    real(dp), save :: thriter = 1.0d-8
     real(dp), save :: damp = 2.1304d0
     real(dp), save :: Rmin = 2.2d0
     character(len=6), save :: border_type = 'REDIST'
@@ -250,6 +251,8 @@ subroutine pe_dalton_input(word, luinp, lupri)
             cycle
         end if
     end do
+
+    if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible.'
 
 end subroutine pe_dalton_input
 
@@ -728,6 +731,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         fock = .true.
         energy = .false.
         response = .false.
+        scfcycle = scfcycle + 1
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input!'
         else if (.not. present(Epe)) then
@@ -1657,13 +1661,18 @@ subroutine induced_dipoles(Q1inds, Fs)
 
     integer :: i, j, k, l, m, n, iter, lu
     logical :: exclude, lexist
-    real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
-    real(dp) :: R, Rd, ai, aj, norm
+    real(dp) :: R, Rd, ai, aj, norm, redthr
+    real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, Q1tmp
 
     if (pe_iter) then
+        if (fock .and. scfcycle <= 5) then
+            redthr = 10**(5-scfcycle)
+        else
+            redthr = 1.0d0
+        end if
         inquire(file='pe_induced_dipoles.bin', exist=lexist)
         if (lexist .and. fock) then
             call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
@@ -1683,7 +1692,6 @@ subroutine induced_dipoles(Q1inds, Fs)
             end if
             iter = 1
             do
-                if (pe_nomb) exit
                 l = 1
                 norm = 0.0d0
                 do i = 1, nsites
@@ -1731,7 +1739,7 @@ subroutine induced_dipoles(Q1inds, Fs)
                     norm = norm + nrm2(Q1inds(l:l+2,n) - Q1tmp)
                     l = l + 3
                 end do
-                if (norm < 1.0d-6) then
+                if (norm < redthr * thriter) then
                     write (luout,'(a,i2,a)') 'Induced dipoles converged in ',&
                                              & iter, ' iterations.'
                     exit
@@ -2165,6 +2173,7 @@ subroutine Tk_coefficients
 
     integer :: i, j, k, l, m, n
 
+! TODO: if mulorder less than polorder then it will be too small?
     allocate(Cnij(2*mulorder+3,0:mulorder+1,0:mulorder+1))
 
     Cnij = 0
