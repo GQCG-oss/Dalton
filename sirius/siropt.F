@@ -520,13 +520,7 @@ C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
       ELSEIF (PCM) THEN
          CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      %               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
-C
-C ****** Comment edh: Here subroutine pegrd is called     ******
-C ****** in sirqmmm.F The WRITE statements check wheather ****** 
-C ****** pegrd is activated (default no - only if .NODIIS ******
-C ****** is active). NOTE: .NODIIS is blocked in current  ****** 
-C ****** QMMM version. This block has been removed here   ******
- 
+C 
       ELSEIF (QMMM) THEN
  
          CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
