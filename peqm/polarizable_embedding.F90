@@ -784,8 +784,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
     else if (energy) then
         call pe_fock(denmats)
     else if (response) then
-        call pe_response(denmats, fckmats)
-!        call pe_polarization(denmats, fckmats
+        call pe_polarization(denmats, fckmats)
     end if
 
 #ifdef VAR_MPI
@@ -848,7 +847,7 @@ subroutine pe_mpi(dalwrk, runtype)
     else if (energy) then
         call pe_fock(work(1:ndens*nnbas))
     else if (response) then
-        call pe_response(work(1:ndens*nnbas), work(ndens*nnbas+1:2*ndens*nnbas))
+        call pe_polarization(work(1:ndens*nnbas), work(ndens*nnbas+1:2*ndens*nnbas))
     end if
 
     if (fock .or. response) then
@@ -1081,123 +1080,6 @@ subroutine pe_fock(denmats, fckmats, Epe)
     end if
 
 end subroutine pe_fock
-
-!------------------------------------------------------------------------------
-
-subroutine pe_response(denmats, fckmats)
-
-    external :: Tk_integrals
-
-    real(dp), dimension(:), intent(in) :: denmats
-    real(dp), dimension(:), intent(out) :: fckmats
-
-    logical :: skip
-    integer :: i, j, l, m, n, o
-    integer, parameter :: k = 1
-    real(dp), dimension(3*npols,ndens) :: Fel, Q1inds
-    real(dp), dimension(nnbas,3) :: Fel_ints
-
-#ifdef VAR_MPI
-    integer :: ndist, nrest
-    integer :: myid, ncores, ierr
-
-    call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
-    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
-#endif
-
-    Fel = 0.0d0; fckmats = 0.0d0
-
-    l = 0
-    do i = 1, nloop
-        if (zeroalphas(i)) cycle
-        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), work, size(work))
-        do j = 1, 3
-            do m = 1, ndens
-                n = (m - 1) * nnbas + 1
-                o = m * nnbas
-                Fel(l+j,m) = dot(denmats(n:o), Fel_ints(:,j))
-            end do
-        end do
-        l = l + 3
-    end do
-
-#ifdef VAR_MPI
-    if (myid == 0 .and. ncores > 1) then
-        ndist = npols / ncores
-        ndists = ndist
-        if (ncores * ndist < npols) then
-            nrest = npols - ncores * ndist
-            do i = 0, nrest-1
-                ndists(i) = ndists(i) + 1
-            end do
-        end if
-        call mpi_scatter(ndists, 1, MPI_INTEGER,&
-                        &MPI_IN_PLACE, 1, MPI_INTEGER,&
-                        &0, MPI_COMM_WORLD, ierr)
-    else if (myid /= 0) then
-            call mpi_scatter(0, 0, MPI_INTEGER,&
-                            &ndist, 1, MPI_INTEGER,&
-                            &0, MPI_COMM_WORLD, ierr)
-    end if
-
-    if (myid == 0 .and. ncores > 1) then
-        displs(0) = 0
-        do i = 1, ncores-1
-            displs(i) = displs(i-1) + 3 * ndists(i-1) 
-        end do
-        do i = 1, ndens
-            call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                            &Fel(:,i), 3*ndists, displs, MPI_REAL8,&
-                            &0, MPI_COMM_WORLD, ierr)
-        end do
-    else if (myid /= 0) then
-        do i = 1, ndens
-            call mpi_gatherv(Fel(:,i), 3*ndist, MPI_REAL8,&
-                            &0, 0, 0, MPI_REAL8,&
-                            &0, MPI_COMM_WORLD, ierr)
-        end do
-    end if
-
-    if (myid == 0) then
-#endif
-        call induced_dipoles(Q1inds, Fel)
-#ifdef VAR_MPI
-    end if
-
-    if (myid == 0 .and. ncores > 1) then
-        displs(0) = 0
-        do i = 1, ncores-1
-            displs(i) = displs(i-1) + 3 * ndists(i-1)
-        end do
-        do i = 1, ndens
-            call mpi_scatterv(Q1inds(:,i), 3*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 0, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        end do
-    else if (myid /= 0) then
-        do i = 1, ndens
-            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q1inds(:,i), 3*ndist, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        end do
-    end if
-#endif
-
-    l = 0
-    do i = 1, nloop
-        if (zeroalphas(i)) cycle
-        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), work, size(work))
-        do j = 1, 3
-            do m = 1, ndens
-                n = (m - 1) * nnbas + 1
-                o = m * nnbas
-                fckmats(n:o) = fckmats(n:o) - Q1inds(l+j,m) * Fel_ints(:,j)
-            end do
-        end do
-        l = l + 3
-    end do
-
-end subroutine pe_response
 
 !------------------------------------------------------------------------------
 
@@ -1531,6 +1413,8 @@ subroutine pe_polarization(denmats, fckmats)
 
     Fels = 0.0d0
 
+    if (response) fckmats = 0.0d0
+
     l = 0
     do i = 1, nloop
         if (zeroalphas(i)) cycle
@@ -1591,27 +1475,27 @@ subroutine pe_polarization(denmats, fckmats)
 
     if (myid == 0) then
 #endif
-    call nuclear_fields(Fnucs)
-    call multipole_fields(Fmuls)
-    if (pe_fd) then
-        call frozen_density_field(Ffd)
-    else
-        Ffd = 0.0d0
-    end if
-
-    do i = 1, ndens
-        Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Ffd
-    end do
-
-    call induced_dipoles(Q1inds, Ftots)
-
-    do i = 1, ndens
-        Epol(1,i) = - 0.5d0 * dot(Q1inds(:,i), Fels(:,i))
-        Epol(2,i) = - 0.5d0 * dot(Q1inds(:,i), Fnucs)
-        Epol(3,i) = - 0.5d0 * dot(Q1inds(:,i), Fmuls)
-        if (pe_fd) Epol(4,i) = - 0.5d0 * dot(Q1inds(:,i), Ffd)
-    end do
-
+        if (response) then
+            call induced_dipoles(Q1inds, Fels)
+        else
+            call nuclear_fields(Fnucs)
+            call multipole_fields(Fmuls)
+            if (pe_fd) then
+                call frozen_density_field(Ffd)
+            else
+                Ffd = 0.0d0
+            end if
+            do i = 1, ndens
+                Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Ffd
+            end do
+            call induced_dipoles(Q1inds, Ftots)
+            do i = 1, ndens
+                Epol(1,i) = - 0.5d0 * dot(Q1inds(:,i), Fels(:,i))
+                Epol(2,i) = - 0.5d0 * dot(Q1inds(:,i), Fnucs)
+                Epol(3,i) = - 0.5d0 * dot(Q1inds(:,i), Fmuls)
+                if (pe_fd) Epol(4,i) = - 0.5d0 * dot(Q1inds(:,i), Ffd)
+            end do
+        end if
 #ifdef VAR_MPI
     end if
 
@@ -1634,7 +1518,7 @@ subroutine pe_polarization(denmats, fckmats)
     end if
 #endif
 
-    if (fock) then
+    if (fock .or. response) then
         l = 0
         do i = 1, nloop
             if (zeroalphas(i)) cycle
