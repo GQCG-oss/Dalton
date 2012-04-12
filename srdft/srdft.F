@@ -1949,8 +1949,8 @@ C
       call output(udv,1,nasht,1,nasht,nasht,nasht,-1,lupri)
       write (lupri,*) 'rsp_srdftso: input V2C_SR:'
       call output(v2c_sr,1,norbt,1,norbt,norbt,norbt,-1,lupri)
-      write (lupri,*) 'rsp_srdftso: input EVEC:'
-      call output(evec,1,kzvar,1,2,kzvar,2,1,lupri)
+      write (lupri,*) 'rsp_srdftso:  input EVEC orbital part:'
+      call output(evec(kzconf+1,1,kzwopt,1,2,kzvar,2,1,lupri)
 #endif
 C
       KYCONF = KZCONF + KZVAR
@@ -1988,7 +1988,7 @@ C
                DVKX = UDV(NK,IASHK+NX)
                DVXK = UDV(IASHK+NX,NK)
                IX = (IORBK+NISHK)+NX
-               TEMPZ = TEMPZ + DVKX*V2C_SR(IX,LX)
+               TEMPZ = TEMPZ + DVKX*V2C_SR(IX,L)
                TEMPY = TEMPY + DVXK*V2C_SR(L,IX)
             END DO
             EVEC(KZCONF+IG) = EVEC(KZCONF+IG) + TEMPZ
@@ -2011,8 +2011,8 @@ C
       END DO ! DO IG = 1, KZWOPT
 C
 #ifdef SRDFT_DEBUG
-      write (lupri,*) 'rsp_srdftso: output EVEC:'
-      call output(evec,1,kzvar,1,2,kzvar,2,1,lupri)
+      write (lupri,*) 'rsp_srdftso: output EVEC orbital part:'
+      call output(evec(kzconf+1,1,kzwopt,1,2,kzvar,2,1,lupri)
 #endif
       CALL QEXIT('RSP_SRDFTSO ')
       RETURN
