@@ -9,7 +9,8 @@
       integer, parameter :: MXPOBS =    8
 !    
 !     max. number of orbs per point group irrep and GA space
-      integer, parameter :: MXTSOB =   32
+!smaa integer, parameter :: MXTSOB =   32
+      integer, parameter :: MXTSOB =   60
 
       integer, parameter :: MXPR4T =   10
       integer, parameter :: MXPR0T =    1

@@ -185,7 +185,8 @@ contains
      integer(kind=MPI_OFFSET_KIND), intent(out) :: gvec_offset_real
      integer(kind=MPI_OFFSET_KIND), intent(out) :: gvec_offset_cplx
      integer(kind=MPI_OFFSET_KIND), intent(out) :: file_offset_array(*)!(nr_files+file_offset_off)
-     integer(kind=MPI_OFFSET_KIND), intent(in)  :: file_offset_fac(*)!(nr_files+file_offset_off)
+!    integer(kind=MPI_OFFSET_KIND), intent(in)  :: file_offset_fac(*)!(nr_files+file_offset_off)
+     integer                      , intent(in)  :: file_offset_fac(*)!(nr_files+file_offset_off)
      logical, intent(in )                       :: complex_algebra
 !-------------------------------------------------------------------------------
      integer                                    :: i
