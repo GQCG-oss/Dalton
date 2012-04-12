@@ -6353,7 +6353,7 @@ C
 C     -------------------------------------------
       KINVMAT  = KFPEAC   + NNASHX
       KEFIELD  = KINVMAT  + 3*NNZAL*(3*NNZAL+1)/2
-      KINDMOM  = KEFIELD  + 3*NNZAL
+      KINDMOM  = KEFIELD  + 3*NNZAL*NCSIM
 C     -------------------------------------------
       KFXC     = KINDMOM  + 3*NNZAL*NCSIM  
       KFXCAC   = KFXC     + NCSIM*NNORBT
@@ -6382,7 +6382,7 @@ C        < 0 | Fxc | B >  (for B each state)
       CALL DZERO(WRK(KFPEMO),NNORBT)
       CALL DZERO(WRK(KFPEAC),NNASHX)
       CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
-      CALL DZERO(WRK(KEFIELD),3*NNZAL)
+      CALL DZERO(WRK(KEFIELD),3*NNZAL*NCSIM)
       CALL DZERO(WRK(KINDMOM),3*NNZAL*NCSIM)
       CALL DZERO(WRK(KFXC),NCSIM*NNORBT)
       CALL DZERO(WRK(KFXCAC),NCSIM*NNASHX)
@@ -6432,22 +6432,17 @@ C     3. KMATAC  : Active part of F^(1)
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('PELNC',-KWRK2,LWRK2)
 
-
-      LCI = 0 ! counter for state-index in electric field vector (EFIELD)
-
-      DO ICSIM = 1,NCSIM
-
-      KPATOM = 0
-      NCOM  = 3       ! called NOSIM occationally but denoted NCOM here 
-      TOFILE = .FALSE.
-      TRIMAT = .TRUE.
-      EXP1VL = .FALSE.
-
 C     ... Loop over MM sites
 
-        LRI = 0 ! counter for index in transformed electric field vector
+      LRI = 0 ! counter for index in transformed electric field vector
 
-        DO I = 1,MMCENT
+      DO I = 1,MMCENT
+
+        KPATOM = 0
+        NCOM  = 3       ! called NOSIM occationally but denoted NCOM here 
+        TOFILE = .FALSE.
+        TRIMAT = .TRUE.
+        EXP1VL = .FALSE.
 
         CALL DZERO(WRK(KMATAO),3*NNBASX)
         CALL DZERO(WRK(KMATMO),3*NNORBT)
@@ -6497,6 +6492,10 @@ C        2.d) Active part of Fel(1) operator in MO basis
 C        2.e ) Make F(tilde) =  2 < 0 | F(el) | B > is the 2 included in SOLELM ???
 C        for one |u > in | B > = sum(u)| u >b(u)        
 
+         LCI = 0
+
+         DO ICSIM = 1,NCSIM
+
             TXPE1 = SOLELM(DTV(1,ICSIM),WRK(KMATAC),
      &                     WRK(KMATMO),TXPEAC1)
 
@@ -6511,55 +6510,67 @@ C         KEFIELD x, y, z first time loop is run. Next time
 C         Set LRI + 3 to get next MM center.         
 
 C         x-value                             ! This is for storage of the vector
-          WRK(KEFIELD + LRI + 0) = TXPEAC1    ! containing the expectation value of F(tilde)
+C          WRK(KEFIELD + LRI_ICSIM + 0) = TXPEAC1    ! containing the expectation value of F(tilde)
 C         y-value                             ! LCI is a counter for each state in 
-          WRK(KEFIELD + LRI + 1) = TXPEAC2    ! < 0 | F(el) | B > = sum(u) < 0 | F(el) | u >
+C          WRK(KEFIELD + LRI_ICSIM + 1) = TXPEAC2    ! < 0 | F(el) | B > = sum(u) < 0 | F(el) | u >
 C         z-value
-          WRK(KEFIELD + LRI + 2) = TXPEAC3
+C          WRK(KEFIELD + LRI_ICSIM + 2) = TXPEAC3
 C         start from x of the next MM center
-          LRI = LRI + 3
+C          LRI_ICSIM = LRI_ICSIM + 3*NNZAL
 
-        END DO ! MMCENT
+C         x-value                                   ! This is for storage of the vector
+          WRK(KEFIELD + LRI + 0 + LCI) = TXPEAC1    ! containing the expectation value of F(tilde)
+C         y-value                                   ! LCI is a counter for each state in 
+          WRK(KEFIELD + LRI + 1 + LCI) = TXPEAC2    ! < 0 | F(el) | B > = sum(u) < 0 | F(el) | u >
+C         z-value
+          WRK(KEFIELD + LRI + 2 + LCI) = TXPEAC3
+C         start from x MM center of next root
+          LCI = LCI + (ICSIM-1)*3*NNZAL
 
-C    ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B > vector
+        END DO ! NCSIM
 
-C      write(lupri,*) 'KEFIELD VECTOR'
-C      do k=1,3*nnzal
-C        write(lupri,*) wrk(kefield+k-1)
-C      enddo
+        LRI = LRI + 3
+
+      END DO ! MMCENT
+
+C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B > vector
+
+      write(lupri,*) 'KEFIELD VECTOR'
+      do k=1,3*nnzal*ncsim
+        write(lupri,*) wrk(kefield+k-1)
+      enddo
+
+      DO ICSIM = 1, NCSIM
 
       NDIM=3*NNZAL
       IF (MMMAT) THEN
          CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
-     &                WRK(KEFIELD),1,D0,WRK(KINDMOM + 3*LCI*NNZAL),1)
+     &              WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),1,D0,
+     &              WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),1)
       ELSE IF (MMITER) THEN
          IOPT = 2 ! Do not read from file any previuos induced moments
-         CALL F2QMMM(WRK(KEFIELD),NDIM,WRK(KINDMOM + 3*LCI*NNZAL),
-     *               WRK(KWRK2),LWRK2,IOPT,IPQMMM)
+         CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
+     &               WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
+     &               WRK(KWRK2),LWRK2,IOPT,IPQMMM)
       ENDIF
 
-C      write(lupri,*) 'ncsim:',ncsim
-C      write(lupri,*) 'KINDMOM VECTOR'
-C      do k=1,3*nnzal*ncsim
-C        write(lupri,*) wrk(kindmom+k-1)
-C      enddo
-
-
-      LCI = LCI + 1                           ! Reset counter to next | B > state of length NCSIM
+      write(lupri,*) 'ncsim:',ncsim
+      write(lupri,*) 'KINDMOM VECTOR'
+      do k=1,3*nnzal*ncsim
+        write(lupri,*) wrk(kindmom+k-1)
+      enddo
 
       END DO ! ICSIM
 
-C      write(lupri,*) 'ncsim:',ncsim
-C      write(lupri,*) 'KINDMOM VECTOR'
-C      do k=1,3*nnzal*ncsim
-C        write(lupri,*) wrk(kindmom+k-1)
-C      enddo
+      write(lupri,*) 'ncsim:',ncsim
+      write(lupri,*) 'KINDMOM VECTOR 2'
+      do k=1,3*nnzal*ncsim
+        write(lupri,*) wrk(kindmom+k-1)
+      enddo
 
 
 C     3) Make F(el) and daxpy first x, then y and then z
 C        for each CI B vector
-
-      LCI = 0
 
       DO ICSIM = 1,NCSIM
 
@@ -6596,41 +6607,40 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-        FACx = -WRK(KINDMOM + LRI + 0 + 3*NNZAL*LCI)        
+        FACx = -WRK(KINDMOM + LRI + 0 + 3*NNZAL*(ICSIM-1))        
 
 C        write(lupri,*) 'FACx:', FACx
 
         CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
-     &             WRK(KFXC + LCI*NNORBT),1)
+     &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-        FACy = -WRK(KINDMOM + LRI + 1 + 3*NNZAL*LCI)
+        FACy = -WRK(KINDMOM + LRI + 1 + 3*NNZAL*(ICSIM-1))
 
 C       write(lupri,*) 'FACy:', FACy
 
         CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
-     &             WRK(KFXC + LCI*NNORBT),1)
+     &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-        FACz = -WRK(KINDMOM + LRI + 2 + 3*NNZAL*LCI)       
+        FACz = -WRK(KINDMOM + LRI + 2 + 3*NNZAL*(ICSIM-1))       
 
 C       write(lupri,*) 'FACz:', FACz
 
         CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
-     &             WRK(KFXC + LCI*NNORBT),1)
+     &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
         LRI = LRI + 3
 
         END DO
 
       IF (NASHT .GT. 0) THEN                                           
-         CALL GETAC2(WRK(KFXC + LCI*NNORBT),WRK(KFXCAC + LCI*NNASHX))  
+         CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
+     &               WRK(KFXCAC + (ICSIM-1)*NNASHX))  
       END IF
 
-      TFXC = SOLELM(DV,WRK(KFXCAC + LCI*NNASHX),
-     &              WRK(KFXC + LCI*NNORBT),TFXCAC)
+      TFXC = SOLELM(DV,WRK(KFXCAC + (ICSIM-1)*NNASHX),
+     &              WRK(KFXC + (ICSIM-1)*NNORBT),TFXCAC)
 
       WRK(KTFXCAC-1+ICSIM) = TFXCAC
-
-      LCI = LCI +  1
       
       END DO
 
