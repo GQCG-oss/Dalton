@@ -8,7 +8,7 @@ module polarizable_embedding
 
     private
 
-    intrinsic :: allocated, present, size, cpu_time
+    intrinsic :: allocated, present, max, size, cpu_time
 
     public :: pe_dalton_input, pe_read_potential, pe_master
     public :: pe_save_density, pe_intmol_twoints, pe_repulsion
@@ -2574,7 +2574,7 @@ subroutine gemm(a, b, c, transa, transb, alpha, beta)
         o_transb = 'N'
     end if
 
-    if (transa == 'N') then
+    if (o_transa == 'N') then
         k = size(a, 2)
     else
         k = size(a, 1)
