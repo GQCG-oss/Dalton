@@ -6596,23 +6596,32 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
+       write(lupri,*) 'KMAT MO x'
+       CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
+      
+       write(lupri,*) 'KMAT MO y'
+       CALL OUTPAK(WRK(KMATMO + 1*NNORBT),NORBT,1,LUPRI)
+
+       write(lupri,*) 'KMAT MO z'
+       CALL OUTPAK(WRK(KMATMO + 2*NNORBT),NORBT,1,LUPRI)
+
         FACx = -WRK(KINDMOM + LRI + 0 + 3*NNZAL*LCI)        
 
-C        write(lupri,*) 'FACx:', FACx
+        write(lupri,*) 'FACx:', FACx
 
         CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
      &             WRK(KFXC + LCI*NNORBT),1)
 
         FACy = -WRK(KINDMOM + LRI + 1 + 3*NNZAL*LCI)
 
-C       write(lupri,*) 'FACy:', FACy
+       write(lupri,*) 'FACy:', FACy
 
         CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
      &             WRK(KFXC + LCI*NNORBT),1)
 
         FACz = -WRK(KINDMOM + LRI + 2 + 3*NNZAL*LCI)       
 
-C       write(lupri,*) 'FACz:', FACz
+       write(lupri,*) 'FACz:', FACz
 
         CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
      &             WRK(KFXC + LCI*NNORBT),1)
@@ -6630,6 +6639,11 @@ C       write(lupri,*) 'FACz:', FACz
 
       WRK(KTFXCAC-1+ICSIM) = TFXCAC
 
+       write(lupri,*) 'TFXC', TFXC
+       write(lupri,*) 'TFXCAC', TFXCAC
+       write(lupri,*) 'TFXCAC', WRK(KTFXCAC-1+ICSIM)
+       CALL OUTPAK(WRK(KFXC + LCI*NNORBT),NORBT,1,LUPRI)
+     
       LCI = LCI +  1
       
       END DO
