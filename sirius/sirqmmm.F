@@ -6545,8 +6545,8 @@ C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B 
       NDIM=3*NNZAL
       IF (MMMAT) THEN
          CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
-     &              WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),1,D0,
-     &              WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),1)
+     &              WRK(KEFIELD + (ICSIM-1)*3*NNZAL),1,D0,
+     &              WRK(KINDMOM + (ICSIM-1)*3*NNZAL),1)
       ELSE IF (MMITER) THEN
          IOPT = 2 ! Do not read from file any previuos induced moments
          CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
@@ -6572,9 +6572,7 @@ C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B 
 C     3) Make F(el) and daxpy first x, then y and then z
 C        for each CI B vector
 
-      DO ICSIM = 1,NCSIM
-
-        LRI = 0
+       LRI = 0
          
         DO I = 1, MMCENT
 
@@ -6607,35 +6605,68 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-        FACx = -WRK(KINDMOM + LRI + 0 + 3*NNZAL*(ICSIM-1))        
+        write(lupri,*) 'KMAT MO MATRIX 1'
+        CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
 
-C        write(lupri,*) 'FACx:', FACx
+        write(lupri,*) 'KMAT MO MATRIX 2'
+        CALL OUTPAK(WRK(KMATMO + 1*NNORBT),NORBT,1,LUPRI)
 
-        CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
+        write(lupri,*) 'KMAT MO MATRIX 3'
+        CALL OUTPAK(WRK(KMATMO + 2*NNORBT),NORBT,1,LUPRI)
+         
+
+
+          LCI = 0 ! alternative set LCI = 3*NNZAL*(ICSIM-1)
+
+          DO ICSIM = 1,NCSIM
+
+            FACx = -WRK(KINDMOM + LRI + 0 + LCI)        
+
+            write(lupri,*) 'FACx:', FACx
+
+            CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
      &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-        FACy = -WRK(KINDMOM + LRI + 1 + 3*NNZAL*(ICSIM-1))
+            write(lupri,*) 'KFXC MATRIX 1'
+            write(lupri,*) 'ICSIM #' , ICSIM
+            CALL OUTPAK(WRK(KFXC +  (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
-C       write(lupri,*) 'FACy:', FACy
+            FACy = -WRK(KINDMOM + LRI + 1 + LCI)
 
-        CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
-     &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
+            write(lupri,*) 'FACy:', FACy
 
-        FACz = -WRK(KINDMOM + LRI + 2 + 3*NNZAL*(ICSIM-1))       
+            CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
+     &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-C       write(lupri,*) 'FACz:', FACz
+            write(lupri,*) 'KFXC MATRIX 2'
+            write(lupri,*) 'ICSIM #' , ICSIM
+            CALL OUTPAK(WRK(KFXC  + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
-        CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
-     &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
+            FACz = -WRK(KINDMOM + LRI + 2 + LCI)       
 
-        LRI = LRI + 3
+            write(lupri,*) 'FACz:', FACz
+
+            CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
+     &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
+ 
+            write(lupri,*) 'KFXC MATRIX 3'
+            write(lupri,*) 'ICSIM #' , ICSIM
+            CALL OUTPAK(WRK(KFXC + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+
+            IF (NASHT .GT. 0) THEN
+              CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
+     &                    WRK(KFXCAC + (ICSIM-1)*NNASHX))
+            END IF
+
+            LCI = LCI + (ICSIM-1)*3*NNZAL
 
         END DO
 
-      IF (NASHT .GT. 0) THEN                                           
-         CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
-     &               WRK(KFXCAC + (ICSIM-1)*NNASHX))  
-      END IF
+      LRI = LRI + 3
+
+      END DO
+
+      DO ICSIM = 1,NCSIM
 
       TFXC = SOLELM(DV,WRK(KFXCAC + (ICSIM-1)*NNASHX),
      &              WRK(KFXC + (ICSIM-1)*NNORBT),TFXCAC)
