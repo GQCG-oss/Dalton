@@ -2347,7 +2347,7 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     Ene = 0.0d0
     do i = 1, corenucs
 #ifdef BUILD_GEN1INT
-        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .true., 1.0d0)
+        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .false., 0.0d0)
 #else
         call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), work, size(work))
 #endif
