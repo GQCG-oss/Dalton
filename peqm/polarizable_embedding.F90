@@ -1435,7 +1435,7 @@ subroutine pe_polarization(denmats, fckmats)
             if (skip) cycle
         end if
 #ifdef BUILD_GEN1INT
-        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i))
+        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), .false., 0.0d0)
 #else
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), work, size(work))
 #endif
@@ -1536,7 +1536,7 @@ subroutine pe_polarization(denmats, fckmats)
         do i = 1, nloop
             if (zeroalphas(i)) cycle
 #ifdef BUILD_GEN1INT
-            call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i))
+            call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), .false., 0.0d0)
 #else
             call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), work, size(work))
 #endif
@@ -1711,7 +1711,7 @@ subroutine electron_fields(Fels, denmats)
             if (skip) cycle
         end if
 #ifdef BUILD_GEN1INT
-        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i))
+        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), .false., 0.0d0)
 #else
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), work, size(work))
 #endif
@@ -2198,7 +2198,7 @@ subroutine Qk_integrals(Qk_ints, Rij, Qk)
 
     ! get T^(k) integrals (incl. negative sign from electron density)
 #ifdef BUILD_GEN1INT
-    call Tk_integrals(Qk_ints, nnbas, ncomps, Rij)
+    call Tk_integrals(Qk_ints, nnbas, ncomps, Rij, .false., 0.0d0)
 #else
     call Tk_integrals(Qk_ints, nnbas, ncomps, Rij, work, size(work))
 #endif
@@ -2347,7 +2347,7 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     Ene = 0.0d0
     do i = 1, corenucs
 #ifdef BUILD_GEN1INT
-        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i))
+        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .true., 1.0d0)
 #else
         call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), work, size(work))
 #endif

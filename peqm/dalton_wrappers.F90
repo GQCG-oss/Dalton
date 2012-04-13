@@ -7,11 +7,13 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
 
     implicit none
 
+    intrinsic :: present
+
     integer, intent(in) :: nnbas, ncomps
     real(8), dimension(3,1), intent(in) :: R
     real(8), dimension(nnbas,ncomps), intent(out) :: Tk_ints
-    logical, intent(in), optional :: gauss
-    real(8), intent(in), optional :: gauexp
+    logical, intent(in) :: gauss
+    real(8), dimension(1), intent(in) :: gauexp
 
     integer :: num_ao
     integer :: num_prop
@@ -28,18 +30,6 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
     integer :: i, j, k, x, y, z
     integer, dimension(3,ncomps) :: row2col
     real(8), dimension(1) :: charge
-    logical :: o_gauss
-
-    if (present(gauss)) then
-        o_gauss = gauss
-    else
-        o_gauss = .false.
-    end if
-
-    if (o_gauss .and. .not.present(gauexp)) then
-        stop 'Error: gaussian multipole requested but no gaussian parameter&
-             & is provided.'
-    end if
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1
 
@@ -51,7 +41,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
         charge = 1.0d0
     end if
 
-    if (o_gauss) then
+    if (gauss) then
         call OnePropCreate(prop_name=INT_GAUSSIAN_POT,&
                            one_prop=prop_operator,    &
                            info_prop=ierr,            &
@@ -60,7 +50,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
                            idx_gauorg=(/-1/),         &
                            gaupot_origin=R,           &
                            gaupot_charge=charge,      &
-                           gaupot_expt=(/gauexp/),        &
+                           gaupot_expt=gauexp,      &
                            order_geo_pot=k)
 
     else
