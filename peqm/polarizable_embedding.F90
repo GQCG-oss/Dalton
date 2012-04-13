@@ -470,23 +470,26 @@ subroutine pe_read_potential(coords, charges)
     if (pe_fd) then
         write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
     end if
-    if (pe_damp) then
-        write(luout,'(4x,a,f8.4)')&
-            & 'Induced dipole-induced dipole interactions will be damped using&
-              & damping coefficient:', damp
-    end if
-    if (pe_gspol) then
-        write(luout,'(4x,a)') 'Dynamic response from environment will be&
-                              & neglected during response calculation.'
-    end if
-    if (pe_nomb) then
-        write(luout,'(4x,a)') 'Many-body interactions will be neglected.'
-    end if
-    if (pe_iter) then
-        write(luout,'(4x,a)') 'Iterative solver for induced dipoles will be used'
-        write(luout,'(4x,a,es7.1)') 'with convergence threshold: ', thriter
-    else
-        write(luout,'(4x,a)') 'Direct solver for induced dipoles will be used.'
+    if (lpol(0) .or. lpol(1)) then
+        if (pe_damp) then
+            write(luout,'(4x,a,f8.4)') 'Induced dipole-induced dipole&
+                                       & interactions will be damped using&
+                                       & damping coefficient:', damp
+        end if
+        if (pe_gspol) then
+            write(luout,'(4x,a)') 'Dynamic response from environment will be&
+                                  & neglected during response calculation.'
+        end if
+        if (pe_nomb) then
+            write(luout,'(4x,a)') 'Many-body interactions will be neglected.'
+        end if
+        if (pe_iter) then
+            write(luout,'(4x,a)') 'Iterative solver for induced dipoles will&
+                                  & be used'
+            write(luout,'(4x,a,es7.1)') 'with convergence threshold: ', thriter
+        else
+            write(luout,'(4x,a)') 'Direct solver for induced dipoles will be used.'
+        end if
     end if
 
    ! default exclusion list (everything polarizes everything)
@@ -1303,7 +1306,13 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         end do
 
         do j = 1, fdnucs
-            call Qk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
+#ifdef BUILD_GEN1INT
+            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), .true., 1.0d0) 
+#else
+            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), work, size(work))
+#endif
+            Zfd_ints = Zfd(1,j) * Zfd_ints
+!            call Qk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
             do m = 1, ndens
                 n = (m - 1) * nnbas + 1
                 o = m * nnbas
@@ -1425,7 +1434,11 @@ subroutine pe_polarization(denmats, fckmats)
             end do
             if (skip) cycle
         end if
+#ifdef BUILD_GEN1INT
+        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i))
+#else
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), work, size(work))
+#endif
         do j = 1, 3
             do m = 1, ndens
                 n = (m - 1) * nnbas + 1
@@ -1522,7 +1535,11 @@ subroutine pe_polarization(denmats, fckmats)
         l = 0
         do i = 1, nloop
             if (zeroalphas(i)) cycle
+#ifdef BUILD_GEN1INT
+            call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i))
+#else
             call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), work, size(work))
+#endif
             do j = 1, 3
                 do m = 1, ndens
                     n = (m - 1) * nnbas + 1
@@ -1693,7 +1710,11 @@ subroutine electron_fields(Fels, denmats)
             end do
             if (skip) cycle
         end if
+#ifdef BUILD_GEN1INT
+        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i))
+#else
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), work, size(work))
+#endif
         do j = 1, 3
             do m = 1, ndens
                 n = (m - 1) * nnbas + 1
@@ -2176,7 +2197,11 @@ subroutine Qk_integrals(Qk_ints, Rij, Qk)
     ncomps = size(Qk_ints, 2)
 
     ! get T^(k) integrals (incl. negative sign from electron density)
+#ifdef BUILD_GEN1INT
+    call Tk_integrals(Qk_ints, nnbas, ncomps, Rij)
+#else
     call Tk_integrals(Qk_ints, nnbas, ncomps, Rij, work, size(work))
+#endif
 
     ! get symmetry factors
     allocate(factors(ncomps)); factors = 0.0d0
@@ -2321,7 +2346,11 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
+#ifdef BUILD_GEN1INT
+        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i))
+#else
         call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), work, size(work))
+#endif
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(density, T0_ints(:,1))
     end do

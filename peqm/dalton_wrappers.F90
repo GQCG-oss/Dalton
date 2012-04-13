@@ -1,30 +1,40 @@
 #ifdef BUILD_GEN1INT
-subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, work, nwrk)
+subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
 
     use dalton_shell
+! TODO:
+!    use polarizable_embedding
 
     implicit none
 
     integer, intent(in) :: nnbas, ncomps, nwrk
     real(8), dimension(3,1), intent(in) :: R
     real(8), dimension(nnbas,ncomps), intent(out) :: Tk_ints
-    real(8), dimension(nwrk), intent(inout) :: work
+    logical, intent(in), optional :: gauss
+    real(8), intent(in), optional :: gauexp
 
-    type(one_prop_t) :: prop_operator
     integer :: num_ao
     integer :: num_prop
     integer :: kind_prop
-    logical :: triangular
-    logical :: symmetric
-    type(matrix), dimension(:), allocatable :: intmats
     integer :: io
     integer :: printlvl = 0
     integer :: ierr
+    logical :: triangular
+    logical :: symmetric
+    type(one_prop_t) :: prop_operator
+    type(matrix), dimension(:), allocatable :: intmats
 
     integer :: nbas
     integer :: i, j, k, x, y, z
     integer, dimension(3,ncomps) :: row2col
     real(8), dimension(1) :: charge
+
+    if (.not.present(gauss)) gauss = .false.
+
+    if (gauss .and. .not.present(gauexp)) then
+        stop 'Error: gaussian multipole requested but no gaussian parameter&
+             & is provided.'
+    end if
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1
 
@@ -36,15 +46,29 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, work, nwrk)
         charge = 1.0d0
     end if
 
-    call OnePropCreate(prop_name=INT_POT_ENERGY,&
-                       one_prop=prop_operator,  &
-                       info_prop=ierr,          &
-                       num_prop=num_prop,       &
-                       kind_prop=kind_prop,     &
-                       idx_nuclei=(/-1/),       &
-                       coord_nuclei=R,          &
-                       charge_nuclei=charge,    &
-                       order_geo_pot=k)
+    if (gauss) then
+        call OnePropCreate(prop_name=INT_GAUSSIAN_POT,&
+                           one_prop=prop_operator,    &
+                           info_prop=ierr,            &
+                           num_prop=num_prop,         &
+                           kind_prop=kind_prop,       &
+                           idx_gauorg=(/-1/),         &
+                           gaupot_origin=R,           &
+                           gaupot_charge=charge,      &
+                           gaupot_expt=(/gauexp/),        &
+                           order_geo_pot=k)
+
+    else
+        call OnePropCreate(prop_name=INT_POT_ENERGY,&
+                           one_prop=prop_operator,  &
+                           info_prop=ierr,          &
+                           num_prop=num_prop,       &
+                           kind_prop=kind_prop,     &
+                           idx_nuclei=(/-1/),       &
+                           coord_nuclei=R,          &
+                           charge_nuclei=charge,    &
+                           order_geo_pot=k)
+    end if
     if (ierr /= 0) stop 'Failed to create property operator.'
     if (num_prop /= ncomps) stop 'Wrong number of components.'
 
@@ -149,8 +173,12 @@ subroutine Tk_integrals(Tk_ints, nints, ncomps, coord, work, nwrk)
     else if (k == 1) then
         inttype = 'NEFIELD'
     else if (k == 2) then
+        print *, 'WARNING: using EFG integrals which can result in unstable&
+                 & behavior.'
         inttype = 'ELFGRDC'
     else if (k == 3) then
+        print *, 'WARNING: using simple finite difference to obtain EFH&
+                 & integrals from potentially unstable EFG integrals.'
         if (nwrk < 24 * nints) then
             print *, 'Not enough work space for T^(3) integrals!'
         end if
