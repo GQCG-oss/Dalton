@@ -162,7 +162,6 @@ contains
 
 !       character
         call dalton_mpi_bcast(lucita_cfg_run_title,           0, mpi_comm_world)
-        call dalton_mpi_bcast(lucita_cfg_ini_wavef,           0, mpi_comm_world)
         call dalton_mpi_bcast(lucita_cfg_ci_type,             0, mpi_comm_world)
 !       real(8)
         call dalton_mpi_bcast(lucita_cfg_core_energy        , 0, mpi_comm_world)

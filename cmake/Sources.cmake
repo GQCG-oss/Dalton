@@ -746,7 +746,6 @@ lucita/lucita_mcscf_ci_interface_procedures.F90
 #gen1int/gen1int_interface.F90
 #gen1int/gen1int_shell.F90
 #gen1int/gen1int_matrix.F90
-lucita/par_sync_cw.F90
     )
 set(OWN_BLAS_SOURCES
     pdpack/gp_dblas1.F

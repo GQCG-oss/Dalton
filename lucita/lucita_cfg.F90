@@ -23,7 +23,6 @@ module lucita_cfg
 ! character block
 
   character (len = 72), public :: lucita_cfg_run_title        = 'no title specified'
-  character (len = 72), public :: lucita_cfg_ini_wavef        = 'none'
   character (len = 72), public :: lucita_cfg_ci_type          = 'none'
   character (len = 72), public :: lucita_ci_run_id            = 'undefined   '
   character (len = 12), public :: ci_task_list(max_ci_tasks)  = 'undefined   '

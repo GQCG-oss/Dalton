@@ -59,7 +59,6 @@ contains
 
 !         character block
           lucita_cfg_run_title(1:36)              = 'SIRIUS-MCSCF run supported by LUCITA'
-          lucita_cfg_ini_wavef(1:6)               = 'RASSCF' 
           if(mod(mctype,2) /= 0) then
             lucita_cfg_ci_type(1:6)   = 'GASCI '
           else
@@ -128,7 +127,6 @@ contains
 
 !         character block
           lucita_cfg_run_title(1:72)      = gasci_input_run_title(1:72)
-          lucita_cfg_ini_wavef(1:72)      = gasci_input_ini_wavef(1:72)
           lucita_cfg_ci_type(1:72)        = gasci_input_ci_type(1:72)
 
 !         logical block

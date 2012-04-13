@@ -589,20 +589,6 @@ contains
     integer                        :: print_lvl
 
 !
-!     Type of initial wave function (no default)
-      if(lucita_cfg_ini_wavef(1:4).eq.'none')then
-         write(lupri,*) ' Keyword for type of initial wave function missing. '
-         write(lupri,*) ' This keyword is mandatory. '
-         call quit(' *** error in setup_lucita_check_input: keyword .INIWFC not specified.')      
-      else
-        if(lucita_cfg_ini_wavef(1:6).ne.'HF_SCF' .and. lucita_cfg_ini_wavef(1:6).ne.'RASSCF')then
-          write(lupri,*) ' Type of initial wave function not implemented. '
-          write(lupri,*) ' You have chosen: ',lucita_cfg_ini_wavef
-          write(lupri,*) ' Allowed types  : HF_SCF, RASSCF'
-          call quit(' *** error in setup_lucita_check_input: wrong input to keyword .INIWFC specified.')
-         end if
-      end if
-!
 !     CI type for LUCIA (no default)
       if(lucita_cfg_ci_type(1:4).eq.'none')then
          write(lupri,*) ' Keyword for type of CI calculation missing. '
@@ -714,7 +700,6 @@ contains
 
       if(print_lvl > 0)then
         call print_lucita_run_setup(lucita_cfg_run_title,                   &
-                                    lucita_cfg_ini_wavef,                   &
                                     lucita_cfg_ci_type,                     &
                                     lucita_cfg_nr_roots,                    &
                                     lucita_cfg_ptg_symmetry,                &
@@ -739,7 +724,6 @@ contains
 
 !*******************************************************************************
   subroutine print_lucita_run_setup(lucita_cfg_run_title,                   &
-                                    lucita_cfg_ini_wavef,                   &
                                     lucita_cfg_ci_type,                     &
                                     lucita_cfg_nr_roots,                    &
                                     lucita_cfg_ptg_symmetry,                &
@@ -764,7 +748,6 @@ contains
 !
 !*******************************************************************************
     character (len=72), intent(in)  :: lucita_cfg_run_title
-    character (len=72), intent(in)  :: lucita_cfg_ini_wavef
     character (len=72), intent(in)  :: lucita_cfg_ci_type
     integer,            intent(in)  :: lucita_cfg_nr_roots
     integer,            intent(in)  :: lucita_cfg_ptg_symmetry
@@ -793,8 +776,6 @@ contains
       write(print_unit,'(/2X,60A1)') ('-',i=1,60)
       write(print_unit,'(2A)') '   title : ',lucita_cfg_run_title
       write(print_unit,'(2X,60A1)') ('-',i=1,60)
-!     initial wave function
-      write(print_unit,'(/A42,A6/)') ' Orbitals as initial wave function .... ', lucita_cfg_ini_wavef(1:6)
 !     type of CI calculation
       write(print_unit,'(A42,A6/)') ' Type of calculation .................. ', lucita_cfg_ci_type(1:6)
 !     number of roots to be treated
