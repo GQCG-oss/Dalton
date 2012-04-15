@@ -249,7 +249,7 @@ contains
     end if
 
     if (kw_matches(word, '.SKIP4I')) then
-      call kw_read(word, gasci_input_skip_4index_trafo)
+      gasci_input_skip_4index_trafo = .true.
     end if
 
     call check_whether_kw_found(word, kw_section)
