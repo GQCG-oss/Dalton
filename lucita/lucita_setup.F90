@@ -403,9 +403,6 @@ contains
       ICLSSEL = 0
       if(idiag == 2) ICLSSEL = 1
 
-!     calculation of density matrices
-      idensi = lucita_cfg_density_calc_lvl
-
 !     perturbation expansion of EKT, default is no
       IPTEKT = 0
 !     root used to define zero order Hamiltonian
@@ -428,9 +425,12 @@ contains
       MXITLE      = 20
 !     not root homing
       IROOTHOMING = 0
+!     calculation of density matrices
+      idensi = lucita_cfg_density_calc_lvl
 !     no particle-hole simplification in use for compatibility with densities
 !     jeppe + stefan: april 2011
-      IUSE_PH     = 0
+      iuse_ph = 1
+      if(idensi > 0) IUSE_PH = 0
 !     allow the sigma routine to take advice
       IADVICE = 0
       if(IUSE_PH > 0) IADVICE = 1
