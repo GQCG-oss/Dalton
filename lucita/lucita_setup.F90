@@ -891,6 +891,7 @@ contains
 !*******************************************************************************
   use lucita_mcscf_ci_cfg
   use lucita_cfg
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "orbinp.inc"
@@ -936,6 +937,17 @@ contains
         case default
           print *, ' unknown CI run id: ',ci_run_id,' no memory allocated for the coworkers.'
       end select
+
+      if(print_lvl > 0)then
+        write(lupri,*) ' statistics for CI matrix / integral array dimensions:' 
+        write(lupri,*) ' -----------------------------------------------------' 
+        write(lupri,*) ' ci matrix #1     ==> ',len_cref_mc2lu
+        write(lupri,*) ' ci matrix #2     ==> ',len_hc_mc2lu
+        write(lupri,*) ' resolution block ==> ',len_resolution_mat_mc2lu
+        write(lupri,*) ' 1-el ij          ==> ',len_int1_or_rho1_mc2lu
+        write(lupri,*) ' 2-el ijkl        ==> ',len_int2_or_rho2_mc2lu
+        call flshfo(lupri)
+      end if
 
   end subroutine setup_lucita_mcci_wrkspc_dimensions
 !*******************************************************************************

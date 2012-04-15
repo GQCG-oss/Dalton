@@ -776,11 +776,13 @@ C
          JTRALVL = 0 ! all active orbitals for all four indices
          USEDRC  = .FALSE.
 
-!        integral transformation
-         CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
+         if(.not.gasci_input_skip_4index_trafo)then
+!          integral transformation
+           CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
 
-!        prepare (aa|aa) 1e-/2e- integral file to be read within LUCITA
-         CALL MAKE_LUCITA_INTEGRALS(WORK(KCMO),WORK(KFREE),LFREE)
+!          prepare (aa|aa) 1e-/2e- integral file to be read within LUCITA
+           CALL MAKE_LUCITA_INTEGRALS(WORK(KCMO),WORK(KFREE),LFREE)
+         end if
 
          CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
 
