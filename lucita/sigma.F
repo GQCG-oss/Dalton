@@ -1438,7 +1438,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
      &                  SSCR,CSCR,I1,XI1S,I2,XI2S,H,
      &                  NSMOB,NSMST,NSMSX,MXPOBS,MOC,
      &                  NSCOL,SCLFAC,
-     &                  IUSE_PH,IPHGAS,NTESTG)
+     &                  IUSE_PH,IPHGAS,HSCR,NTESTG)
 *
 * One electron excitations on column strings
 *
@@ -1494,6 +1494,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 #include "priunit.h"
       REAL*8 INPROD
 *. General input
+      integer, parameter :: dp = 8
       INTEGER ADSXA(MXPOBS,2*MXPOBS),SXSTST(NSMSX,NSMST),
      &        STSTSX(NSMST,NSMST)
       INTEGER NOBPTS(MXPNGAS,*),IOBPTS(MXPNGAS,*),ITSOB(*)
@@ -1510,8 +1511,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
       DIMENSION ITP(16),JTP(16)
       DIMENSION ISGRP(16),ICGRP(16)
 *. For transposing integral block
-      PARAMETER(MXPTSOB = 35)
-      DIMENSION HSCR(MXPTSOB*MXPTSOB)
+      real(dp) :: HSCR(*)
 *
       DIMENSION IJ_REO(2),IJ_DIM(2),IJ_SM(2),IJ_TP(2),IJ_AC(2)
       DIMENSION ISCR(2)
@@ -3674,7 +3674,7 @@ C?              WRITE(6,*) SIGNPA
      &                MXPNGAS,NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
      &                NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
-     &                NIB,SCLFAC,IUSE_PH,IPHGAS,NTEST)
+     &                NIB,SCLFAC,IUSE_PH,IPHGAS,SOMEH,NTEST)
            IF(NTEST.GE.500) THEN
              WRITE(luwrt,*) ' SB after RSBB1E'
              call wrtmat(sb,nib,nia,nib,nia)
@@ -3820,7 +3820,7 @@ C         WRITE(luwrt,*) ' RSSBCB2 : Transpose path choosen'
      &              ITSOB,MAXI,MAXK,
      &              SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
      &              NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
-     &              NIA,SCLFAC,IUSE_PH,IPHGAS,NTEST)
+     &              NIA,SCLFAC,IUSE_PH,IPHGAS,SOMEH,NTEST)
            IF(NTEST.GE.101) THEN
              WRITE(luwrt,*) ' SB transposed after RSBB1, first element '
              call wrtmat(sb,1,1    ,nia,nib)
