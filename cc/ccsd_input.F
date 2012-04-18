@@ -7066,6 +7066,7 @@ C
       INTEGER INDOP(MAXOP)
 
       FAILED = .FALSE.
+      NEWOP  = -1 ! to avoid compiler warning
       IF (OPERATOR(1:6).EQ.'DIPLEN') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
