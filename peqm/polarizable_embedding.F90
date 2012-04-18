@@ -105,17 +105,17 @@ module polarizable_embedding
     ! order of the highest order multipole moment
     integer, save :: mulorder = -1
     ! monopoles
-    real(dp), dimension(:,:), allocatable, save :: Q0s
+    real(dp), dimension(:,:), allocatable, save :: M0s
     ! dipoles
-    real(dp), dimension(:,:), allocatable, save :: Q1s
+    real(dp), dimension(:,:), allocatable, save :: M1s
     ! quadrupoles
-    real(dp), dimension(:,:), allocatable, save :: Q2s
+    real(dp), dimension(:,:), allocatable, save :: M2s
     ! octopoles
-    real(dp), dimension(:,:), allocatable, save :: Q3s
+    real(dp), dimension(:,:), allocatable, save :: M3s
     ! hexadecapoles
-    real(dp), dimension(:,:), allocatable, save :: Q4s
+    real(dp), dimension(:,:), allocatable, save :: M4s
     ! ditriacontapoles
-    real(dp), dimension(:,:), allocatable, save :: Q5s
+    real(dp), dimension(:,:), allocatable, save :: M5s
 
     ! (hyper)polarizabilities
     ! order of highest order polarizability
@@ -312,62 +312,62 @@ subroutine pe_read_potential(coords, charges)
         else if (trim(word) == 'monopoles') then
             lmul(0) = .true.
             if (mulorder < 0) mulorder = 0
-            allocate(Q0s(1,nsites)); Q0s = 0.0d0
+            allocate(M0s(1,nsites)); M0s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, temp(1)
-                Q0s(1,s) = temp(1)
+                M0s(1,s) = temp(1)
             end do
         else if (trim(word) == 'dipoles') then
             lmul(1) = .true.
             if (mulorder < 1) mulorder = 1
-            allocate(Q1s(3,nsites)); Q1s = 0.0d0
+            allocate(M1s(3,nsites)); M1s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 3)
-                Q1s(:,s) = temp(1:3)
+                M1s(:,s) = temp(1:3)
             end do
         else if (trim(word) == 'quadrupoles') then
             lmul(2) = .true.
             if (mulorder < 2) mulorder = 2
-            allocate(Q2s(6,nsites)); Q2s = 0.0d0
+            allocate(M2s(6,nsites)); M2s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 6)
-                Q2s(:,s) = temp(1:6)
+                M2s(:,s) = temp(1:6)
             end do
         else if (trim(word) == 'octopoles') then
             lmul(3) = .true.
             if (mulorder < 3) mulorder = 3
-            allocate(Q3s(10,nsites)); Q3s = 0.0d0
+            allocate(M3s(10,nsites)); M3s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 10)
-                Q3s(:,s) = temp(1:10)
+                M3s(:,s) = temp(1:10)
             end do
         else if (trim(word) == 'hexadecapoles') then
             lmul(4) = .true.
             if (mulorder < 4) mulorder = 4
-            allocate(Q4s(15,nsites)); Q4s = 0.0d0
+            allocate(M4s(15,nsites)); M4s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 15)
-                Q4s(:,s) = temp(1:15)
+                M4s(:,s) = temp(1:15)
             end do
         else if (trim(word) == 'ditriacontapoles') then
             lmul(5) = .true.
             if (mulorder < 5) mulorder = 5
-            allocate(Q5s(21,nsites)); Q5s = 0.0d0
+            allocate(M5s(21,nsites)); M5s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 21)
-                Q5s(:,s) = temp(1:21)
+                M5s(:,s) = temp(1:21)
             end do
         else if (trim(word) == 'isoalphas') then
             lpol(0) = .true.
@@ -529,22 +529,22 @@ subroutine pe_read_potential(coords, charges)
                 write(luout,'(4x,a,i6,a)') 'Removing parameters on site:',&
                                            & idxs(i), elems(1,idxs(i))
                 if (lmul(0)) then
-                    Q0s(:,idxs(i)) = 0.0d0
+                    M0s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(1)) then
-                    Q1s(:,idxs(i)) = 0.0d0
+                    M1s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(2)) then
-                    Q2s(:,idxs(i)) = 0.0d0
+                    M2s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(3)) then
-                    Q3s(:,idxs(i)) = 0.0d0
+                    M3s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(4)) then
-                    Q4s(:,idxs(i)) = 0.0d0
+                    M4s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(5)) then
-                    Q5s(:,idxs(i)) = 0.0d0
+                    M5s(:,idxs(i)) = 0.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
                     P1s(:,idxs(i)) = 0.0d0
@@ -568,22 +568,22 @@ subroutine pe_read_potential(coords, charges)
                     end if
                 end do
                 if (lmul(0)) then
-                    Q0s(:,idx) = Q0s(:,idx) + Q0s(:,idxs(i)) / 3.0d0
+                    M0s(:,idx) = M0s(:,idx) + M0s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(1)) then
-                    Q1s(:,idx) = Q1s(:,idx) + Q1s(:,idxs(i)) / 3.0d0
+                    M1s(:,idx) = M1s(:,idx) + M1s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(2)) then
-                    Q2s(:,idx) = Q2s(:,idx) + Q2s(:,idxs(i)) / 3.0d0
+                    M2s(:,idx) = M2s(:,idx) + M2s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(3)) then
-                    Q3s(:,idx) = Q3s(:,idx) + Q3s(:,idxs(i)) / 3.0d0
+                    M3s(:,idx) = M3s(:,idx) + M3s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(4)) then
-                    Q4s(:,idx) = Q4s(:,idx) + Q4s(:,idxs(i)) / 3.0d0
+                    M4s(:,idx) = M4s(:,idx) + M4s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(5)) then
-                    Q5s(:,idx) = Q5s(:,idx) + Q5s(:,idxs(i)) / 3.0d0
+                    M5s(:,idx) = M5s(:,idx) + M5s(:,idxs(i)) / 3.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
                     P1s(:,idx) = P1s(:,idx) + P1s(:,idxs(i)) / 3.0d0
@@ -606,22 +606,22 @@ subroutine pe_read_potential(coords, charges)
                     end if
                 end do
                 if (lmul(0)) then
-                    Q0s(:,jdx) = Q0s(:,jdx) + Q0s(:,idxs(i)) / 3.0d0
+                    M0s(:,jdx) = M0s(:,jdx) + M0s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(1)) then
-                    Q1s(:,jdx) = Q1s(:,jdx) + Q1s(:,idxs(i)) / 3.0d0
+                    M1s(:,jdx) = M1s(:,jdx) + M1s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(2)) then
-                    Q2s(:,jdx) = Q2s(:,jdx) + Q2s(:,idxs(i)) / 3.0d0
+                    M2s(:,jdx) = M2s(:,jdx) + M2s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(3)) then
-                    Q3s(:,jdx) = Q3s(:,jdx) + Q3s(:,idxs(i)) / 3.0d0
+                    M3s(:,jdx) = M3s(:,jdx) + M3s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(4)) then
-                    Q4s(:,jdx) = Q4s(:,jdx) + Q4s(:,idxs(i)) / 3.0d0
+                    M4s(:,jdx) = M4s(:,jdx) + M4s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(5)) then
-                    Q5s(:,jdx) = Q5s(:,jdx) + Q5s(:,idxs(i)) / 3.0d0
+                    M5s(:,jdx) = M5s(:,jdx) + M5s(:,idxs(i)) / 3.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
                     P1s(:,jdx) = P1s(:,jdx) + P1s(:,idxs(i)) / 3.0d0
@@ -644,44 +644,44 @@ subroutine pe_read_potential(coords, charges)
                     end if
                 end do
                 if (lmul(0)) then
-                    Q0s(:,kdx) = Q0s(:,kdx) + Q0s(:,idxs(i)) / 3.0d0
+                    M0s(:,kdx) = M0s(:,kdx) + M0s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(1)) then
-                    Q1s(:,kdx) = Q1s(:,kdx) + Q1s(:,idxs(i)) / 3.0d0
+                    M1s(:,kdx) = M1s(:,kdx) + M1s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(2)) then
-                    Q2s(:,kdx) = Q2s(:,kdx) + Q2s(:,idxs(i)) / 3.0d0
+                    M2s(:,kdx) = M2s(:,kdx) + M2s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(3)) then
-                    Q3s(:,kdx) = Q3s(:,kdx) + Q3s(:,idxs(i)) / 3.0d0
+                    M3s(:,kdx) = M3s(:,kdx) + M3s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(4)) then
-                    Q4s(:,kdx) = Q4s(:,kdx) + Q4s(:,idxs(i)) / 3.0d0
+                    M4s(:,kdx) = M4s(:,kdx) + M4s(:,idxs(i)) / 3.0d0
                 endif
                 if (lmul(5)) then
-                    Q5s(:,kdx) = Q5s(:,kdx) + Q5s(:,idxs(i)) / 3.0d0
+                    M5s(:,kdx) = M5s(:,kdx) + M5s(:,idxs(i)) / 3.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
                     P1s(:,kdx) = P1s(:,kdx) + P1s(:,idxs(i)) / 3.0d0
                 end if
 
                 if (lmul(0)) then
-                    Q0s(:,idxs(i)) = 0.0d0
+                    M0s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(1)) then
-                    Q1s(:,idxs(i)) = 0.0d0
+                    M1s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(2)) then
-                    Q2s(:,idxs(i)) = 0.0d0
+                    M2s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(3)) then
-                    Q3s(:,idxs(i)) = 0.0d0
+                    M3s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(4)) then
-                    Q4s(:,idxs(i)) = 0.0d0
+                    M4s(:,idxs(i)) = 0.0d0
                 endif
                 if (lmul(5)) then
-                    Q5s(:,idxs(i)) = 0.0d0
+                    M5s(:,idxs(i)) = 0.0d0
                 endif
                 if (lpol(0) .or. lpol(1)) then
                     P1s(:,idxs(i)) = 0.0d0
@@ -942,13 +942,13 @@ subroutine pe_sync()
             do i = 1, ncores-1
                 displs(i) = displs(i-1) + ndists(i-1)
             end do
-            call mpi_scatterv(Q0s, ndists, displs, MPI_REAL8,&
+            call mpi_scatterv(M0s, ndists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q0s(1,nloop))
+            allocate(M0s(1,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q0s, nloop, MPI_REAL8,&
+                             &M0s, nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -959,13 +959,13 @@ subroutine pe_sync()
             do i = 1, ncores-1
                 displs(i) = displs(i-1) + 3 * ndists(i-1)
             end do
-            call mpi_scatterv(Q1s, 3*ndists, displs, MPI_REAL8,&
+            call mpi_scatterv(M1s, 3*ndists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q1s(3,nloop))
+            allocate(M1s(3,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q1s, 3*nloop, MPI_REAL8,&
+                             &M1s, 3*nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -976,13 +976,13 @@ subroutine pe_sync()
             do i = 1, ncores-1
                 displs(i) = displs(i-1) + 6 * ndists(i-1)
             end do
-            call mpi_scatterv(Q2s, 6*ndists, displs, MPI_REAL8,&
+            call mpi_scatterv(M2s, 6*ndists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q2s(6,nloop))
+            allocate(M2s(6,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q2s, 6*nloop, MPI_REAL8,&
+                             &M2s, 6*nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -993,13 +993,13 @@ subroutine pe_sync()
             do i = 1, ncores-1
                 displs(i) = displs(i-1) + 10 * ndists(i-1)
             end do
-            call mpi_scatterv(Q3s, 10*ndists, displs, MPI_REAL8,&
+            call mpi_scatterv(M3s, 10*ndists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q3s(10,nloop))
+            allocate(M3s(10,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q3s, 10*nloop, MPI_REAL8,&
+                             &M3s, 10*nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -1010,13 +1010,13 @@ subroutine pe_sync()
             do i = 1, ncores-1
                 displs(i) = displs(i-1) + 15 * ndists(i-1)
             end do
-            call mpi_scatterv(Q4s, 15*ndists, displs, MPI_REAL8,&
+            call mpi_scatterv(M4s, 15*ndists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q4s(15,nloop))
+            allocate(M4s(15,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q4s, 15*nloop, MPI_REAL8,&
+                             &M4s, 15*nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -1027,13 +1027,13 @@ subroutine pe_sync()
             do i = 1, ncores-1
                 displs(i) = displs(i-1) + 21 * ndists(i-1)
             end do
-            call mpi_scatterv(Q5s, 21*ndists, displs, MPI_REAL8,&
+            call mpi_scatterv(M5s, 21*ndists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q5s(21,nloop))
+            allocate(M5s(21,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q5s, 21*nloop, MPI_REAL8,&
+                             &M5s, 21*nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -1135,9 +1135,9 @@ subroutine pe_electrostatic(denmats, fckmats)
         Esave = 0.0d0
         if (lmul(0)) then
             if (fock) then
-                call es_multipoles(Q0s, denmats, Eel, Enuc, fckmats)
+                call es_multipoles(M0s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
-                call es_multipoles(Q0s, denmats, Eel, Enuc)
+                call es_multipoles(M0s, denmats, Eel, Enuc)
             end if
             do i = 1, ndens
                 Ees(0,i) = Ees(0,i) + Eel(i) + Enuc
@@ -1146,9 +1146,9 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
         if (lmul(1)) then
             if (fock) then
-                call es_multipoles(Q1s, denmats, Eel, Enuc, fckmats)
+                call es_multipoles(M1s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
-                call es_multipoles(Q1s, denmats, Eel, Enuc)
+                call es_multipoles(M1s, denmats, Eel, Enuc)
             end if
             do i = 1, ndens
                 Ees(1,i) = Ees(1,i) + Eel(i) + Enuc
@@ -1157,9 +1157,9 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
         if (lmul(2)) then
             if (fock) then
-                call es_multipoles(Q2s, denmats, Eel, Enuc, fckmats)
+                call es_multipoles(M2s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
-                call es_multipoles(Q2s, denmats, Eel, Enuc)
+                call es_multipoles(M2s, denmats, Eel, Enuc)
             end if
             do i = 1, ndens
                 Ees(2,i) = Ees(2,i) + Eel(i) + Enuc
@@ -1168,9 +1168,9 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
         if (lmul(3)) then
             if (fock) then
-                call es_multipoles(Q3s, denmats, Eel, Enuc, fckmats)
+                call es_multipoles(M3s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
-                call es_multipoles(Q3s, denmats, Eel, Enuc)
+                call es_multipoles(M3s, denmats, Eel, Enuc)
             end if
             do i = 1, ndens
                 Ees(3,i) = Ees(3,i) + Eel(i) + Enuc
@@ -1179,9 +1179,9 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
         if (lmul(4)) then
             if (fock) then
-                call es_multipoles(Q4s, denmats, Eel, Enuc, fckmats)
+                call es_multipoles(M4s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
-                call es_multipoles(Q4s, denmats, Eel, Enuc)
+                call es_multipoles(M4s, denmats, Eel, Enuc)
             end if
             do i = 1, ndens
                 Ees(4,i) = Ees(4,i) + Eel(i) + Enuc
@@ -1190,9 +1190,9 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
         if (lmul(5)) then
             if (fock) then
-                call es_multipoles(Q5s, denmats, Eel, Enuc, fckmats)
+                call es_multipoles(M5s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
-                call es_multipoles(Q5s, denmats, Eel, Enuc)
+                call es_multipoles(M5s, denmats, Eel, Enuc)
             end if
             do i = 1, ndens
                 Ees(5,i) = Ees(5,i) + Eel(i) + Enuc
@@ -1312,7 +1312,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
             call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), work, size(work))
 #endif
             Zfd_ints = Zfd(1,j) * Zfd_ints
-!            call Qk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
+!            call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
             do m = 1, ndens
                 n = (m - 1) * nnbas + 1
                 o = m * nnbas
@@ -1338,9 +1338,9 @@ end subroutine es_frozen_densities
 
 !------------------------------------------------------------------------------
 
-subroutine es_multipoles(Qks, denmats, Eel, Enuc, fckmats)
+subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
 
-    real(dp), dimension(:,:), intent(in) :: Qks
+    real(dp), dimension(:,:), intent(in) :: Mks
     real(dp), dimension(:), intent(in) :: denmats
     real(dp), dimension(:), intent(inout), optional :: fckmats
     real(dp), dimension(:), intent(out) :: Eel
@@ -1350,10 +1350,10 @@ subroutine es_multipoles(Qks, denmats, Eel, Enuc, fckmats)
     integer :: i, j, k, l, m, n
     real(dp), dimension(3) :: Rsm
     real(dp), dimension(:), allocatable :: Tsm, symfacs
-    real(dp), dimension(:,:), allocatable :: Qk_ints
+    real(dp), dimension(:,:), allocatable :: Mk_ints
     real(dp) :: taylor
 
-    ncomps = size(Qks,1)
+    ncomps = size(Mks,1)
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1
 
@@ -1365,12 +1365,12 @@ subroutine es_multipoles(Qks, denmats, Eel, Enuc, fckmats)
 
     allocate(Tsm(ncomps))
     allocate(symfacs(ncomps))
-    allocate(Qk_ints(nnbas,ncomps))
+    allocate(Mk_ints(nnbas,ncomps))
 
     Eel = 0.0d0; Enuc = 0.0d0
 
     do i = 1, nloop
-        if (abs(maxval(Qks(:,i))) < zero) cycle
+        if (abs(maxval(Mks(:,i))) < zero) cycle
 
         ! nuclei - multipole interaction energy
         do j = 1, qmnucs
@@ -1378,18 +1378,18 @@ subroutine es_multipoles(Qks, denmats, Eel, Enuc, fckmats)
             call Tk_tensor(Tsm, Rsm)
             call symmetry_factors(symfacs)
             do l = 1, ncomps
-                Enuc = Enuc + taylor * symfacs(l) * Zm(1,j) * Qks(l,i) * Tsm(l)
+                Enuc = Enuc + taylor * symfacs(l) * Zm(1,j) * Mks(l,i) * Tsm(l)
             end do
         end do
 
         ! electron - multipole interaction energy
-        call Qk_integrals(Qk_ints, Rs(:,i), Qks(:,i))
+        call Mk_integrals(Mk_ints, Rs(:,i), Mks(:,i))
         do j = 1, ncomps
             do l = 1, ndens
                 m = (l - 1) * nnbas + 1
                 n = l * nnbas
-                Eel(l) = Eel(l) + dot(denmats(m:n), Qk_ints(:,j))
-                if (fock) fckmats(m:n) = fckmats(m:n) + Qk_ints(:,j)
+                Eel(l) = Eel(l) + dot(denmats(m:n), Mk_ints(:,j))
+                if (fock) fckmats(m:n) = fckmats(m:n) + Mk_ints(:,j)
             end do
         end do
     end do
@@ -1409,7 +1409,7 @@ subroutine pe_polarization(denmats, fckmats)
     integer, parameter :: k = 1
     logical :: skip
     real(dp), dimension(3*npols) :: Fnucs, Fmuls, Ffd
-    real(dp), dimension(3*npols,ndens) :: Q1inds, Fels, Ftots
+    real(dp), dimension(3*npols,ndens) :: M1inds, Fels, Ftots
     real(dp), dimension(nnbas,3) :: Fel_ints
 
 #ifdef VAR_MPI
@@ -1489,7 +1489,7 @@ subroutine pe_polarization(denmats, fckmats)
     if (myid == 0) then
 #endif
         if (response) then
-            call induced_dipoles(Q1inds, Fels)
+            call induced_dipoles(M1inds, Fels)
         else
             call nuclear_fields(Fnucs)
             call multipole_fields(Fmuls)
@@ -1501,12 +1501,12 @@ subroutine pe_polarization(denmats, fckmats)
             do i = 1, ndens
                 Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Ffd
             end do
-            call induced_dipoles(Q1inds, Ftots)
+            call induced_dipoles(M1inds, Ftots)
             do i = 1, ndens
-                Epol(1,i) = - 0.5d0 * dot(Q1inds(:,i), Fels(:,i))
-                Epol(2,i) = - 0.5d0 * dot(Q1inds(:,i), Fnucs)
-                Epol(3,i) = - 0.5d0 * dot(Q1inds(:,i), Fmuls)
-                if (pe_fd) Epol(4,i) = - 0.5d0 * dot(Q1inds(:,i), Ffd)
+                Epol(1,i) = - 0.5d0 * dot(M1inds(:,i), Fels(:,i))
+                Epol(2,i) = - 0.5d0 * dot(M1inds(:,i), Fnucs)
+                Epol(3,i) = - 0.5d0 * dot(M1inds(:,i), Fmuls)
+                if (pe_fd) Epol(4,i) = - 0.5d0 * dot(M1inds(:,i), Ffd)
             end do
         end if
 #ifdef VAR_MPI
@@ -1518,14 +1518,14 @@ subroutine pe_polarization(denmats, fckmats)
             displs(i) = displs(i-1) + 3 * ndists(i-1)
         end do
         do i = 1, ndens
-            call mpi_scatterv(Q1inds(:,i), 3*ndists, displs, MPI_REAL8,&
+            call mpi_scatterv(M1inds(:,i), 3*ndists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &myid, MPI_COMM_WORLD, ierr)
         end do
     else if (myid /= 0) then
         do i = 1, ndens
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q1inds(:,i), 3*ndist, MPI_REAL8,&
+                             &M1inds(:,i), 3*ndist, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end do
     end if
@@ -1544,7 +1544,7 @@ subroutine pe_polarization(denmats, fckmats)
                 do m = 1, ndens
                     n = (m - 1) * nnbas + 1
                     o = m * nnbas
-                    fckmats(n:o) = fckmats(n:o) - Q1inds(j+l,m) * Fel_ints(:,j)
+                    fckmats(n:o) = fckmats(n:o) - M1inds(j+l,m) * Fel_ints(:,j)
                 end do
             end do
             l = l + 3
@@ -1555,9 +1555,9 @@ end subroutine pe_polarization
 
 !------------------------------------------------------------------------------
 
-subroutine induced_dipoles(Q1inds, Fs)
+subroutine induced_dipoles(M1inds, Fs)
 
-    real(dp), dimension(:,:), intent(out) :: Q1inds
+    real(dp), dimension(:,:), intent(out) :: M1inds
     real(dp), dimension(:,:), intent(in) :: Fs
 
     integer :: i, j, k, l, m, n, iter, lu
@@ -1566,7 +1566,7 @@ subroutine induced_dipoles(Q1inds, Fs)
     real(dp) :: ft = 1.0d0
     real(dp) :: R, Rd, ai, aj, norm, redthr
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
-    real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, Q1tmp
+    real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp
 
     if (pe_iter) then
         if (fock .and. scfcycle <= 5) then
@@ -1578,16 +1578,16 @@ subroutine induced_dipoles(Q1inds, Fs)
         if (lexist .and. fock) then
             call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
             rewind(lu)
-            read(lu) Q1inds
+            read(lu) M1inds
             close(lu)
         end if
-        allocate(T(6), Rij(3), Ftmp(3), Q1tmp(3))
+        allocate(T(6), Rij(3), Ftmp(3), M1tmp(3))
         do n = 1, ndens
             if (.not.lexist .or. response) then
                 l = 1
                 do i = 1, nsites
                     if (zeroalphas(i)) cycle
-                    call spmv(P1s(:,i), Fs(l:l+2,n), Q1inds(l:l+2,n), 'L')
+                    call spmv(P1s(:,i), Fs(l:l+2,n), M1inds(l:l+2,n), 'L')
                     l = l + 3
                 end do
             end if
@@ -1631,13 +1631,13 @@ subroutine induced_dipoles(Q1inds, Fs)
                             ft = fe - (Rd**3 * d6i) * exp(-Rd)
 ! TODO: damping not complete
                         end if
-                        call spmv(T, Q1inds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
+                        call spmv(T, M1inds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
                         m = m + 3
                     end do
-                    Q1tmp = Q1inds(l:l+2,n)
+                    M1tmp = M1inds(l:l+2,n)
                     Ftmp = Ftmp + Fs(l:l+2,n)
-                    call spmv(P1s(:,i), Ftmp, Q1inds(l:l+2,n), 'L')
-                    norm = norm + nrm2(Q1inds(l:l+2,n) - Q1tmp)
+                    call spmv(P1s(:,i), Ftmp, M1inds(l:l+2,n), 'L')
+                    norm = norm + nrm2(M1inds(l:l+2,n) - M1tmp)
                     l = l + 3
                 end do
                 if (norm < redthr * thriter) then
@@ -1654,15 +1654,15 @@ subroutine induced_dipoles(Q1inds, Fs)
         if (fock) then
             call openfile('pe_induced_dipoles.bin', lu, 'unknown', 'unformatted')
             rewind(lu)
-            write(lu) Q1inds
+            write(lu) M1inds
             close(lu)
         end if
-        deallocate(T, Rij, Ftmp, Q1tmp)
+        deallocate(T, Rij, Ftmp, M1tmp)
     else
         allocate(B(3*npols*(3*npols+1)/2))
         call response_matrix(B)
         do n = 1, ndens
-            call spmv(B, Fs(:,n), Q1inds(:,n), 'L')
+            call spmv(B, Fs(:,n), M1inds(:,n), 'L')
         end do
         deallocate(B)
     end if
@@ -1672,10 +1672,10 @@ subroutine induced_dipoles(Q1inds, Fs)
         l = 1
         do i = 1, nsites
             if (zeroalphas(i)) cycle
-            if (nrm2(Q1inds(l:l+2,n)) > 1.0d0) then
+            if (nrm2(M1inds(l:l+2,n)) > 1.0d0) then
                 write(luout,'(4x,a,i6)') 'Large induced dipole encountered&
                                          & at site:', i
-                write(luout,'(f10.4)') nrm2(Q1inds(l:l+2,n))
+                write(luout,'(f10.4)') nrm2(M1inds(l:l+2,n))
             end if
             l = l + 3
         end do
@@ -1841,36 +1841,36 @@ subroutine multipole_fields(F)
                 Rji = Rs(:,i) - Rs(:,j)
                 ! get electric field at i due to monopole at j
                 if (lmul(0)) then
-                    if (abs(maxval(Q0s(:,j))) >= zero) then
-                        call multipole_field(F(l:l+2), Rji, Q0s(:,j))
+                    if (abs(maxval(M0s(:,j))) >= zero) then
+                        call multipole_field(F(l:l+2), Rji, M0s(:,j))
                     end if
                 end if
                 ! get electric field at i due to dipole at j
                 if (lmul(1)) then
-                    if (abs(maxval(Q1s(:,j))) >= zero) then
-                        call multipole_field(F(l:l+2), Rji, Q1s(:,j))
+                    if (abs(maxval(M1s(:,j))) >= zero) then
+                        call multipole_field(F(l:l+2), Rji, M1s(:,j))
                     end if
                 end if
                 ! get electric field at i due to quadrupole at j
                 if (lmul(2)) then
-                    if (abs(maxval(Q2s(:,j))) >= zero) then
-                        call multipole_field(F(l:l+2), Rji, Q2s(:,j))
+                    if (abs(maxval(M2s(:,j))) >= zero) then
+                        call multipole_field(F(l:l+2), Rji, M2s(:,j))
                     end if
                 end if
                 ! get electric field at i due to octopole at j
                 if (lmul(3)) then
-                    if (abs(maxval(Q3s(:,j))) >= zero) then
-                        call multipole_field(F(l:l+2), Rji, Q3s(:,j))
+                    if (abs(maxval(M3s(:,j))) >= zero) then
+                        call multipole_field(F(l:l+2), Rji, M3s(:,j))
                     end if
                 end if
                 if (lmul(4)) then
-                    if (abs(maxval(Q4s(:,j))) >= zero) then
-                        call multipole_field(F(l:l+2), Rji, Q4s(:,j))
+                    if (abs(maxval(M4s(:,j))) >= zero) then
+                        call multipole_field(F(l:l+2), Rji, M4s(:,j))
                     end if
                 end if
                 if (lmul(5)) then
-                    if (abs(maxval(Q5s(:,j))) >= zero) then
-                        call multipole_field(F(l:l+2), Rji, Q5s(:,j))
+                    if (abs(maxval(M5s(:,j))) >= zero) then
+                        call multipole_field(F(l:l+2), Rji, M5s(:,j))
                     end if
                 end if
             end do
@@ -1886,17 +1886,17 @@ end subroutine multipole_fields
 
 !------------------------------------------------------------------------------
 
-subroutine multipole_field(Fi, Rji, Qkj)
+subroutine multipole_field(Fi, Rji, Mkj)
 
     real(dp), dimension(3), intent(inout) :: Fi
     real(dp), dimension(3), intent(in) :: Rji
-    real(dp), dimension(:), intent(in) :: Qkj
+    real(dp), dimension(:), intent(in) :: Mkj
 
     integer :: k
     integer :: a, b, c, x, y, z
     real(dp) :: taylor
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Qkj)) - 1.0d0))
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Mkj)) - 1.0d0))
 
     if (mod(k,2) == 0) then
         taylor = 1.0d0 / factorial(k-1)
@@ -1910,15 +1910,15 @@ subroutine multipole_field(Fi, Rji, Qkj)
             do z = k, 0, -1
                 if (x+y+z /= k) cycle
                 if (x /= 0) then
-                    Fi(1) = Fi(1) + taylor * symfac(x-1,y,z) * T(Rji,x,y,z) * Qkj(a)
+                    Fi(1) = Fi(1) + taylor * symfac(x-1,y,z) * T(Rji,x,y,z) * Mkj(a)
                     a = a + 1
                 end if
                 if (y /= 0) then
-                    Fi(2) = Fi(2) + taylor * symfac(x,y-1,z) * T(Rji,x,y,z) * Qkj(b)
+                    Fi(2) = Fi(2) + taylor * symfac(x,y-1,z) * T(Rji,x,y,z) * Mkj(b)
                     b = b + 1
                 end if
                 if (z /= 0) then
-                    Fi(3) = Fi(3) + taylor * symfac(x,y,z-1) * T(Rji,x,y,z) * Qkj(c)
+                    Fi(3) = Fi(3) + taylor * symfac(x,y,z-1) * T(Rji,x,y,z) * Mkj(c)
                     c = c + 1
                 end if
             end do
@@ -2173,12 +2173,12 @@ end subroutine Tk_tensor
 
 !------------------------------------------------------------------------------
 
-subroutine Qk_integrals(Qk_ints, Rij, Qk)
+subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
     external :: Tk_integrals
 
-    real(dp), dimension(:,:), intent(out) :: Qk_ints
-    real(dp), dimension(:), intent(in) :: Qk
+    real(dp), dimension(:,:), intent(out) :: Mk_ints
+    real(dp), dimension(:), intent(in) :: Mk
     real(dp), dimension(3), intent(in) :: Rij
 
     integer :: i, k
@@ -2186,7 +2186,7 @@ subroutine Qk_integrals(Qk_ints, Rij, Qk)
     real(dp) :: taylor
     real(dp), dimension(:), allocatable :: factors
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Qk)) - 1.0d0)) - 1
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Mk)) - 1.0d0)) - 1
 
     if (mod(k,2) == 0) then
         taylor = 1.0d0 / factorial(k)
@@ -2194,27 +2194,27 @@ subroutine Qk_integrals(Qk_ints, Rij, Qk)
         taylor = - 1.0d0 / factorial(k)
     end if
 
-    ncomps = size(Qk_ints, 2)
+    ncomps = size(Mk_ints, 2)
 
     ! get T^(k) integrals (incl. negative sign from electron density)
 #ifdef BUILD_GEN1INT
-    call Tk_integrals(Qk_ints, nnbas, ncomps, Rij, .false., 0.0d0)
+    call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, .false., 0.0d0)
 #else
-    call Tk_integrals(Qk_ints, nnbas, ncomps, Rij, work, size(work))
+    call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, work, size(work))
 #endif
 
     ! get symmetry factors
     allocate(factors(ncomps)); factors = 0.0d0
     call symmetry_factors(factors)
 
-    ! dot T^(k) integrals with multipole to get Q^(k) integrals
+    ! dot T^(k) integrals with multipole to get M^(k) integrals
     do i = 1, ncomps
-        Qk_ints(:,i) = taylor * factors(i) * Qk(i) * Qk_ints(:,i)
+        Mk_ints(:,i) = taylor * factors(i) * Mk(i) * Mk_ints(:,i)
     end do
 
     deallocate(factors)
 
-end subroutine Qk_integrals
+end subroutine Mk_integrals
 
 !------------------------------------------------------------------------------
 
