@@ -294,7 +294,7 @@ C
       MP2FRZ = MP2FRO
 C     Disable "MP2FRO" if result not to be printed
       IF (IPRMP2 .LE. 0) MP2FRO = .FALSE.
-      IF (IPRMP2 .GE. 5) THEN
+      IF (IPRMP2 .GE. 5 .AND. MP2FRZ) THEN
          WRITE(LUPRI,'(/A)') ' Frozen orbitals in MP2 (1: frozen) :'
          WRITE(LUPRI,'(5(10I2,2X))') IFRMP2(1:NORBT)
       END IF
@@ -1087,7 +1087,7 @@ C
  100  CONTINUE
 cmjp Pack the correlation coefficients into COEMP2 if SOPPA follow
       IF (FLAG(25) .AND. KFRO .GE. 0) THEN
-         CALL PHPACK(H2D,COEMP2(IADR1(IMP,IAH)+1),ISYMAM,1,-1)
+         CALL PHPACK(H2D,COEMP2(IADR1(JMP,JAH)+1),ISYMAM,1,-1)
       ENDIF
 C
 C
@@ -1366,7 +1366,7 @@ C
             CALL QUIT('Info for "FC for MP2" not found on SIRIFC')
          END IF
       ELSE IF (NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(/A)') 'Generating Fock matrix FC+FV'
+         WRITE (LUPRI,'(/A)') ' Generating Fock matrix FC+FV'
          EMY = D0
          KDV = 1
          KFV = KDV + NNASHX
@@ -1383,7 +1383,7 @@ C
          IF (.NOT.HSROHF)  ! if HSROHF then FC already contains FC+FV
      &   CALL DAXPY(NNORBT,1.0D0,SCRA(KFV),1,FC,1)
       ELSE ! construct Fock matrix
-         WRITE (LUPRI,'(/A)') 'Generating Fock matrix'
+         WRITE (LUPRI,'(/A)') ' Generating Fock matrix'
          EMY = D0
          CALL FCKMAT(.TRUE.,DUMMY,CMO,EMY,FC,DUMMY,SCRA,LSCRA)
 C        CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
@@ -2158,11 +2158,11 @@ C
 #include "inforb.h"
 #include "infmp2.h"
 C
-      INTEGER A, AA
+      INTEGER   A, AA
       DIMENSION IADR1(MAXVIR,MAXOCC)
 C
 C
-      CALL ISETVC(IADR1,-100 000 000,MXCORB*MAXOCC)
+      CALL ISETVC(IADR1,-100 000 000,MAXVIR*MAXOCC)
 C     call isetvc(ivector,ivalue,ndim)
       IAB = 0
       NPHTOT(KSYMOP) = 0
