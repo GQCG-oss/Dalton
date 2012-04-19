@@ -23,6 +23,7 @@ module polarizable_embedding
     logical, public, save :: pe_damp = .false.
     logical, public, save :: pe_gspol = .false.
     logical, public, save :: pe_nomb = .false.
+    logical, public, save :: pe_mep = .false.
     logical, public, save :: pe_twoint = .false.
     logical, public, save :: pe_repuls = .false.
     logical, public, save :: pe_savden = .false.
@@ -33,6 +34,7 @@ module polarizable_embedding
     logical, save :: fock = .false.
     logical, save :: energy = .false.
     logical, save :: response = .false.
+    logical, save :: mep = .false.
 
     ! temporary solution for work array thing
     real(dp), dimension(:), pointer :: work
@@ -71,8 +73,8 @@ module polarizable_embedding
     integer, public, save :: nsites = 0
     ! number of polarizable sites
     integer, save :: npols = 0
-    ! loop variable (nloop = nsites if serial)
-    integer, save :: nloop = 0
+    ! loop variable (nparsites = nsites if serial)
+    integer, save :: nparsites = 0
     ! exclusion list length
     integer, save :: lexlst = 0
     
@@ -125,6 +127,7 @@ module polarizable_embedding
     ! .true. if P1 > 0 else .false.
     logical, dimension(:), allocatable, save :: zeroalphas
 
+
     ! QM core fragment info
     ! ---------------------
 
@@ -139,6 +142,7 @@ module polarizable_embedding
     ! nuclear coordinates
     real(dp), dimension(:,:), allocatable, save :: Rm
 
+
     ! frozen density fragment info
     ! ----------------------------
 
@@ -150,6 +154,16 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: Zfd
     ! nuclear coordinates
     real(dp), dimension(:,:), allocatable, save :: Rfd
+
+
+    ! MEP stuff
+    ! ---------
+    ! number of grid points
+    integer, save :: npoints
+    ! loop variable for parallel calcs
+    integer, save :: nparpoints
+    ! grid points
+    real(dp), dimension(:,:), allocatable, save :: mepgrid
 
 ! TODO:
 ! use allocate/deallocate where possible?
@@ -244,6 +258,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
             ! number of frozen densities
             read(luinp,*) nfds
             pe_fd = .true.
+        ! evaluate molecular electrostatic potential 
+        else if (trim(option(2:)) == 'MEP') then
+            pe_mep = .true.
         else if (option(1:1) == '*') then
             word = option
             exit
@@ -252,6 +269,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
         end if
     end do
 
+    if (pe_mep .and. peqm) stop 'PEQM and MEP are not compatible'
     if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible.'
 
 end subroutine pe_dalton_input
@@ -283,6 +301,24 @@ subroutine pe_read_potential(coords, charges)
         stop
     else if (.not. present(coords) .and. present(charges)) then
         print *, 'ERROR: nuclear coordinates of the QM system are missing.'
+    end if
+
+    if (pe_mep) then
+        inquire(file='MEP.INP', exist=lexist)
+        if (lexist) then
+            call openfile('MEP.INP', lupot, 'old', 'formatted')
+        else
+            stop 'MEP.INP not found!'
+        end if
+        read(lupot,*) npoints
+        read(lupot,*) auoraa
+        allocate(mepgrid(3,npoints))
+        do i = 1, npoints
+            read(lupot,*) (mepgrid(j,i), j = 1, 3)
+        end do
+        if (auoraa == 'AA') then
+            mepgrid  = mepgrid * aa2au
+        end if
     end if
 
     inquire(file='POTENTIAL.INP', exist=lexist)
@@ -391,33 +427,6 @@ subroutine pe_read_potential(coords, charges)
                 read(lupot,*) s, (temp(j), j = 1, 6)
                 P1s(:,s) = temp(1:6)
             end do
-!        else if (trim(word) == 'As') then
-!            lpol(2) = .true.
-!            allocate(As(10,nsites)); As = 0.0d0
-!            temp = 0.0d0
-!            read(lupot,*) nlines
-!            do i = 1, nlines
-!                read(lupot,*) s, (temp(j), j = 1, 10)
-!                As(:,s) = temp(1:10)
-!            end do
-!        else if (trim(word) == 'Cs') then
-!            lpol(3) = .true.
-!            allocate(Cs(15,nsites)); Cs = 0.0d0
-!            temp = 0.0d0
-!            read(lupot,*) nlines
-!            do i = 1, nlines
-!                read(lupot,*) s, (temp(j), j = 1, 15)
-!                Cs(:,s) = temp(1:15)
-!            end do
-!        else if (trim(word) == 'betas') then
-!            lhypol(1) = .true.
-!            allocate(betas(10,nsites)); betas = 0.0d0
-!            temp = 0.0d0
-!            read(lupot,*) nlines
-!            do i = 1, nlines
-!                read(lupot,*) s, (temp(j), j = 1, 10)
-!                betas(:,s) = temp(1:10)
-!            end do
         else if (trim(word) == 'exlists') then
             read(lupot,*) lexlst
             allocate(exlists(lexlst,nsites))
@@ -433,8 +442,9 @@ subroutine pe_read_potential(coords, charges)
 
     close(lupot)
 
-    ! initialize nloop
-    nloop = nsites
+    ! initialize in case calculation is serial
+    nparsites = nsites
+    nparpoints = npoints
 
     ! if coordinates are in AA then convert to AU
     if (auoraa == 'AA') then
@@ -734,6 +744,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         fock = .true.
         energy = .false.
         response = .false.
+        mep = .false.
         scfcycle = scfcycle + 1
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input!'
@@ -741,19 +752,25 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
             stop 'The energy variable is missing from input!'
         end if
     else if (runtype == 'energy') then
-        energy = .true.
         fock = .false.
+        energy = .true.
         response = .false.
     else if (runtype == 'response') then
         if (pe_gspol) return
         if (npols < 1) return
         if (.not. lpol(0) .and. .not. lpol(1)) return
-        response = .true.
         fock = .false.
         energy = .false.
+        response = .true.
+        mep = .false.
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input!'
         end if
+    else if (runtype == 'mep') then
+        fock = .false.
+        energy = .false.
+        response = .false.
+        mep = .true.
     else
         stop 'Could not determine calculation type.'
     end if
@@ -770,6 +787,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
             call mpi_bcast(2, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
         else if (response) then
             call mpi_bcast(3, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
+        else if (mep) then
+            call mpi_bcast(4, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
         end if
 
         call mpi_bcast(nnbas, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
@@ -788,6 +807,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         call pe_fock(denmats)
     else if (response) then
         call pe_polarization(denmats, fckmats)
+    else if (mep) then
+        call pe_compmep(denmats)
     end if
 
 #ifdef VAR_MPI
@@ -826,14 +847,22 @@ subroutine pe_mpi(dalwrk, runtype)
         fock = .true.
         energy = .false.
         response = .false.
+        mep = .false.
     else if (runtype == 2) then
-        energy = .true.
         fock = .false.
+        energy = .true.
         response = .false.
+        mep = .false.
     else if (runtype == 3) then
-        response = .true.
         fock = .false.
         energy = .false.
+        response = .true.
+        mep = .false.
+    else if (runtype == 4) then
+        fock = .false.
+        energy = .false.
+        response = .false.
+        mep = .true.
     end if
 
     call mpi_bcast(nnbas, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
@@ -851,6 +880,8 @@ subroutine pe_mpi(dalwrk, runtype)
         call pe_fock(work(1:ndens*nnbas))
     else if (response) then
         call pe_polarization(work(1:ndens*nnbas), work(ndens*nnbas+1:2*ndens*nnbas))
+    else if (mep) then
+        call pe_compmep(work(1:ndens*nnbas))
     end if
 
     if (fock .or. response) then
@@ -871,6 +902,40 @@ subroutine pe_sync()
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 
+    if (mep) then
+        if (myid == 0) then
+            allocate(ndists(0:ncores-1), displs(0:ncores-1))
+            ndist = npoints / ncores
+            ndists = ndist
+            if (ncores * ndist < npoints) then
+                nrest = npoints - ncores * ndist
+                do i = 0, nrest-1
+                    ndists(i) = ndists(i) + 1
+                end do
+            end if
+            nparpoints = ndists(0)
+            call mpi_scatter(ndists, 1, MPI_INTEGER,&
+                            &MPI_IN_PLACE, 1, MPI_INTEGER,&
+                            &0, MPI_COMM_WORLD, ierr)
+            displs(0) = 0
+            do i = 1, ncores-1
+                displs(i) = displs(i-1) + 3 * ndists(i-1)
+            end do
+            call mpi_scatterv(mepgrid, 3*ndists, displs, MPI_REAL8,&
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
+        else
+            call mpi_scatter(0, 0, MPI_INTEGER,&
+                            &nparpoints, 1, MPI_INTEGER,&
+                            &0, MPI_COMM_WORLD, ierr)
+            allocate(mepgrid(3,nparpoints))
+            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                             &mepgrid, 3*nparpoints, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
+
+        end if
+    end if
+
     if (myid == 0) then
         allocate(ndists(0:ncores-1), displs(0:ncores-1))
         ndist = nsites / ncores
@@ -881,13 +946,13 @@ subroutine pe_sync()
                 ndists(i) = ndists(i) + 1
             end do
         end if
-        nloop = ndists(0)
+        nparsites = ndists(0)
         call mpi_scatter(ndists, 1, MPI_INTEGER,&
                         &MPI_IN_PLACE, 1, MPI_INTEGER,&
                         &0, MPI_COMM_WORLD, ierr)
     else
         call mpi_scatter(0, 0, MPI_INTEGER,&
-                        &nloop, 1, MPI_INTEGER,&
+                        &nparsites, 1, MPI_INTEGER,&
                         &0, MPI_COMM_WORLD, ierr)
     end if
 
@@ -900,9 +965,9 @@ subroutine pe_sync()
                          &MPI_IN_PLACE, 0, MPI_REAL8,&
                          &0, MPI_COMM_WORLD, ierr)
     else
-        allocate(Rs(3,nloop))
+        allocate(Rs(3,nparsites))
         call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                         &Rs, 3*nloop, MPI_REAL8,&
+                         &Rs, 3*nparsites, MPI_REAL8,&
                          &0, MPI_COMM_WORLD, ierr)
     end if
 
@@ -919,9 +984,9 @@ subroutine pe_sync()
                              &MPI_IN_PLACE, 0, MPI_LOGICAL,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(zeroalphas(nloop))
+            allocate(zeroalphas(nparsites))
             call mpi_scatterv(0, 0, 0, MPI_LOGICAL,&
-                             &zeroalphas, nloop, MPI_LOGICAL,&
+                             &zeroalphas, nparsites, MPI_LOGICAL,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -946,9 +1011,9 @@ subroutine pe_sync()
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(M0s(1,nloop))
+            allocate(M0s(1,nparsites))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M0s, nloop, MPI_REAL8,&
+                             &M0s, nparsites, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -963,9 +1028,9 @@ subroutine pe_sync()
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(M1s(3,nloop))
+            allocate(M1s(3,nparsites))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M1s, 3*nloop, MPI_REAL8,&
+                             &M1s, 3*nparsites, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -980,9 +1045,9 @@ subroutine pe_sync()
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(M2s(6,nloop))
+            allocate(M2s(6,nparsites))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M2s, 6*nloop, MPI_REAL8,&
+                             &M2s, 6*nparsites, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -997,9 +1062,9 @@ subroutine pe_sync()
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(M3s(10,nloop))
+            allocate(M3s(10,nparsites))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M3s, 10*nloop, MPI_REAL8,&
+                             &M3s, 10*nparsites, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -1014,9 +1079,9 @@ subroutine pe_sync()
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(M4s(15,nloop))
+            allocate(M4s(15,nparsites))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M4s, 15*nloop, MPI_REAL8,&
+                             &M4s, 15*nparsites, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -1031,9 +1096,9 @@ subroutine pe_sync()
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(M5s(21,nloop))
+            allocate(M5s(21,nparsites))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M5s, 21*nloop, MPI_REAL8,&
+                             &M5s, 21*nparsites, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -1042,6 +1107,128 @@ subroutine pe_sync()
 
 end subroutine pe_sync
 #endif
+
+!------------------------------------------------------------------------------
+
+subroutine pe_compmep(denmats)
+
+    real(dp), dimension(:), intent(in) :: denmats
+
+    integer :: lu
+    integer :: i, j, k
+    real(dp), dimension(3) :: Tm
+    real(dp), dimension(:,:), allocatable :: Vs, Fs
+    real(dp), dimension(nnbas,3) :: Tk_ints
+
+#ifdef VAR_MPI
+    integer :: ndist, nrest
+    integer :: myid, ncores, ierr
+
+    call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
+    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
+
+    if (myid == 0) then
+#endif
+        allocate(Vs(1,npoints), Fs(3,npoints))
+#ifdef VAR_MPI
+    else if (myid /= 0) then
+        allocate(Vs(1,nparpoints), Fs(3,nparpoints))
+    end if
+#endif
+
+    if (ndens > 1) stop 'Not implemented for more than 1 density matrix'
+
+    do i = 1, nparpoints
+#ifdef BUILD_GEN1INT
+        call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i), .false., 0.0d0)
+#else
+        call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i), work, size(work))
+#endif
+
+        Vs(1,i) = dot(denmats, Tk_ints(:,1))
+
+        do j = 1, qmnucs
+            call Tk_tensor(Tm(1:1), mepgrid(:,i) - Rm(:,j))
+            Vs(1,i) = Vs(1,i) + Zm(1,j) * Tm(1)
+        end do
+
+#ifdef BUILD_GEN1INT
+        call Tk_integrals(Tk_ints(:,3), nnbas, 3, mepgrid(:,i), .false., 0.0d0)
+#else
+        call Tk_integrals(Tk_ints(:,3), nnbas, 3, mepgrid(:,i), work, size(work))
+#endif
+
+        do j = 1, 3
+            Fs(j,i) = dot(denmats, Tk_ints(:,j))
+        end do
+
+        do j = 1, qmnucs
+            call Tk_tensor(Tm, mepgrid(:,i) - Rm(:,j))
+            do k = 1, 3
+                Fs(k,i) = Fs(k,i) - Zm(1,j) * Tm(k)
+            end do
+        end do
+    end do
+
+#ifdef VAR_MPI
+    if (myid == 0 .and. ncores > 1) then
+        ndist = npoints / ncores
+        ndists = ndist
+        if (ncores * ndist < npoints) then
+            nrest = npoints - ncores * ndist
+            do i = 0, nrest-1
+                ndists(i) = ndists(i) + 1
+            end do
+        end if
+        call mpi_scatter(ndists, 1, MPI_INTEGER,&
+                        &MPI_IN_PLACE, 1, MPI_INTEGER,&
+                        &0, MPI_COMM_WORLD, ierr)
+    else if (myid /= 0) then
+        call mpi_scatter(0, 0, MPI_INTEGER,&
+                        &ndist, 1, MPI_INTEGER,&
+                        &0, MPI_COMM_WORLD, ierr)
+    end if
+
+    if (myid == 0 .and. ncores > 1) then
+        displs(0) = 0
+        do i = 1, ncores-1
+            displs(i) = displs(i-1) + 3 * ndists(i-1)
+        end do
+        call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
+                        &Fs, 3*ndists, displs, MPI_REAL8,&
+                        &0, MPI_COMM_WORLD, ierr)
+        displs(0) = 0
+        do i = 1, ncores-1
+            displs(i) = displs(i-1) + ndists(i-1)
+        end do
+        call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
+                        &Vs, ndists, displs, MPI_REAL8,&
+                        &0, MPI_COMM_WORLD, ierr)
+    else if (myid /= 0) then
+        call mpi_gatherv(Fs, 3*ndist, MPI_REAL8,&
+                        &0, 0, 0, MPI_REAL8,&
+                        &0, MPI_COMM_WORLD, ierr)
+        call mpi_gatherv(Vs, ndist, MPI_REAL8,&
+                        &0, 0, 0, MPI_REAL8,&
+                        &0, MPI_COMM_WORLD, ierr)
+    end if
+
+    if (myid == 0) then
+#endif
+        call openfile('mep.bin', lu, 'new', 'formatted')
+        rewind(lu)
+        write(lu,*) npoints
+        write(lu,*) 'AU'
+        do i = 1, npoints
+            write(lu,'(7(f15.8,2x))') (mepgrid(j,i), j = 1, 3),&
+                                      & Vs(1,i), (Fs(j,i), j = 1, 3)
+        end do
+        close(lu)
+#ifdef VAR_MPI
+    end if
+#endif
+
+end subroutine pe_compmep
 
 !------------------------------------------------------------------------------
 
@@ -1369,7 +1556,7 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
 
     Eel = 0.0d0; Enuc = 0.0d0
 
-    do i = 1, nloop
+    do i = 1, nparsites
         if (abs(maxval(Mks(:,i))) < zero) cycle
 
         ! nuclei - multipole interaction energy
@@ -1425,7 +1612,7 @@ subroutine pe_polarization(denmats, fckmats)
     if (response) fckmats = 0.0d0
 
     l = 0
-    do i = 1, nloop
+    do i = 1, nparsites
         if (zeroalphas(i)) cycle
         if (pe_savden) then
             skip = .false.
@@ -1533,7 +1720,7 @@ subroutine pe_polarization(denmats, fckmats)
 
     if (fock .or. response) then
         l = 0
-        do i = 1, nloop
+        do i = 1, nparsites
             if (zeroalphas(i)) cycle
 #ifdef BUILD_GEN1INT
             call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,i), .false., 0.0d0)
@@ -1701,7 +1888,7 @@ subroutine electron_fields(Fels, denmats)
     Fels = 0.0d0
 
     l = 0
-    do i = 1, nloop
+    do i = 1, nparsites
         if (zeroalphas(i)) cycle
         if (pe_savden) then
             skip = .false.
@@ -2196,7 +2383,6 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
     ncomps = size(Mk_ints, 2)
 
-    ! get T^(k) integrals (incl. negative sign from electron density)
 #ifdef BUILD_GEN1INT
     call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, .false., 0.0d0)
 #else
