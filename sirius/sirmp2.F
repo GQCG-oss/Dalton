@@ -1428,7 +1428,7 @@ C
          CALL DSPTGE(NORBI,FC(IIORBI+1),SCRA)
          VALCON  = D0
          IVALCON = 0
-         NOCCI = NRHFI + NASH(I)
+         NOCCI = NRHFI + NASH(ISYM)
          DO I = NFRRHF_I+1,NRHFI
 C
 C           To check if this occupied orbital is converged we find
