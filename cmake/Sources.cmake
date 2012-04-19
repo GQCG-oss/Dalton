@@ -384,6 +384,9 @@ cc/ccximcon.F
 cc/crayio2.F
 cc/herdirect_cc.F
 cc/iroper2.F
+cc/cc_lanczos_lrinp.F
+cc/cc_lanczos_drv.F
+cc/cc_lanczos_lrextras.F
 choles/cc_caa.F
 choles/cc_choatr.F
 choles/cc_chocc2.F
@@ -544,7 +547,6 @@ rsp/rsptpa3.F
 rsp/rspvec.F
 rsp/rspzfs.F
 rsp/x2expl.F
-sirius/ciauth.F
 sirius/ciham.F
 sirius/cioff.F
 sirius/cisig.F

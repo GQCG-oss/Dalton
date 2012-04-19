@@ -58,6 +58,7 @@ C
 #include "infpp.h"
 #include "infhyp.h"
 #include "infpri.h"
+#include "infinp.h"
 #include "inforb.h"
 #include "infsmo.h"
 #include "infspi.h"
@@ -69,6 +70,12 @@ C
      &   'QRCALC ERROR: quadratic response not implemented for SOPPA'
          CALL QUIT(
      &   'QRCALC ERROR: quadratic response not implemented for SOPPA')
+      END IF
+      IF (DODFT .AND. NASHT.GT.0) THEN
+         WRITE (LUPRI,*) 'QRCALC ERROR: '//
+     &      'quadratic response not implemented for open shell DFT'
+         CALL QUIT('QRCALC ERROR: '//
+     &      ' quadratic response not implemented for open shell DFT')
       END IF
 C
 C DETERMINE SOLUTION VECTORS FOR EIGENVALUE AND LINEAR EQUATIONS

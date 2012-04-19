@@ -55,6 +55,7 @@ C          'CR2': right second-order Cauchy vectors
 C          'RE' : right eigenvectors
 C          'ER1': first-order response of right eigenvectors
 C          'ER2': second-order response of right eigenvectors
+!          'QL' : Lanczos-chain Q vectors (columns of Q matrix)
 C
 C          'L0' : left zeroth-order lamdba vectors (IDXLST ignored)
 C          'L1' : left first-order lambda vectors
@@ -75,6 +76,7 @@ C          'F4' : F-transformed right fourth-order response vectors.
 C          'FC' : F-transformed right first-order Cauchy vectors.
 C          'CF2': F-transformed right second-order Cauchy vectors.
 C          'FR' : F-transformed right eigenvectors.
+!          'FQ' : F transformed Lanczos-chain Q vectors
 C
 C          'XF1': F-transformed right first-order response vectors,
 C                 F12*R2 contribution for Cholesky CC2.
@@ -120,6 +122,7 @@ C  Christof Haettig, october 1996, restructered in november 1998
 C  PL1 vectors introduced in March 2000 by Sonia Coriani
 C  CC3 effective vectors introduced 2002 by Christof Haettig
 C  R12 vectors introduced Jun 2003 by Christof Haettig
+C  QL/FQ Lanczos vectors introduced Aug 2010 by Sonia & Kristian
 C---------------------------------------------------------------------*
       IMPLICIT NONE
 #include "priunit.h"
@@ -157,6 +160,8 @@ C---------------------------------------------------------------------*
 #include "ccexci.h"
 #include "ccpl1rsp.h"
 #include "dummy.h"
+!Lanczos
+#include <ccqlrlcz.h>
 Cholesky
 #include "maxorb.h"
 #include "cclr.h"
@@ -743,6 +748,19 @@ C
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
      &    LISTI(1:3), LBLPL1(IDXVEC), ISYPL1(IDXVEC), FRQPL1(IDXVEC),
      &    LORXPL1(IDXVEC)
+
+*.....................................................................*
+* 'QL' - Lanczos chain Q vectors
+* 'FQ' - F transformed Lanczos chain Q vectors
+*  Sonia: need to decide better what should be on the header/list
+*  FIXME: IDXQL???
+*.....................................................................*
+
+      ELSE IF ( LISTI(1:2) .EQ. 'QL' .OR. LISTI(1:2) .EQ. 'FQ' ) THEN
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
+     &    LISTI(1:3), LBLQL(IDXVEC), ISYQL(IDXVEC), FRQQL(IDXVEC),
+     &    LORXQL(IDXVEC), IDXQL(IDXVEC)
+
 *.....................................................................*
 * unknown list:
 *.....................................................................*

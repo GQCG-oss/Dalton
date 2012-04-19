@@ -238,10 +238,17 @@ C
       CALL TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',
      &   LUPRIN)
 #if defined (VAR_MPI)
-      WRITE (LUPRIN,'(/A,I6/2A/)')
-     &   ' MPI node no.:',MYNUM, ' Reason: ',TEXT
-      WRITE (0,'(/A,I6/2A/)')
-     &   ' MPI node no.:',MYNUM, ' Reason: ',TEXT
+      IF (MYNUM .GT. 0) THEN
+         WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   '@ MPI SLAVE, node no.:',MYNUM, '@ Reason: ',TEXT
+         WRITE (0,'(/A,I6/2A/)')
+     &   ' MPI SLAVE, node no.:',MYNUM, ' Reason: ',TEXT
+      ELSE
+         WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   '@ MPI MASTER, node no.:',MYNUM, '@ Reason: ',TEXT
+         WRITE (0,'(/A,I6/2A/)')
+     &   ' MPI MASTER, node no.:',MYNUM, ' Reason: ',TEXT
+      END IF
 #else
       WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
 #endif

@@ -193,7 +193,7 @@ C
 C     ... GPOPEN will change name from DALTON.OUT to $WRKDIR/$OUTFIL
 C         for Master if OUTFIL is an environment variable;
 C         for slaves the name will be changed to
-C         "DALTON.OUT#<slave no>" in GPOPEN
+C         "DALTON.OUT.n<slave no>" in GPOPEN
 
       IF (MYNUM.EQ.MASTER) THEN
       CALL GPOPEN(LUNDPF,'DALTON.PROP','NEW',' ','FORMATTED',

@@ -460,7 +460,7 @@ C
 C
             IF (JSYMA .EQ. JSYMB) THEN
                NAB = INDEX(A,B)
-            ELSE IF (JSYMB .GT.JSYMA) THEN
+            ELSE IF (JSYMB .GT. JSYMA) THEN
                NAB = NBAS(JSYMA)*(B - 1) + A
             ELSE
                NAB = NBAS(JSYMB)*(A - 1) + B
@@ -686,6 +686,7 @@ C
          DO 600 ICHO = 1,NQUAL(ISYMAB)
 C
             XC = -ONE
+            IC = -1 ! to avoid compiler warnings
             DO I = 1,NQUAL(ISYMAB)
                II = IQUVAB(I,ISYMAB) 
                IF (DIAG(II) .GT. XC) THEN
@@ -947,6 +948,7 @@ C
 C
       END
 C
+#ifdef OLD_CODE
 C  /* Deck cc_rdao */
       SUBROUTINE CC_RDAO(XINT,IDELTA,IGAM,WORK,LWORK,IRECNR)
 C
@@ -1139,6 +1141,7 @@ C
       RETURN
  2000 CALL QUIT('Error reading AOTWODIS')
       END
+#endif   /* OLD_CODE */
 C  /* Deck ccrd_init */
       SUBROUTINE CC_INX(KADR2,ISYMAB)
 C
@@ -2123,10 +2126,12 @@ C
          DO ISHLB = 1,ISHLA
 C
             XTMP = -1.0D0
+            ITMP = -1  ! to avoid compiler warnings
             DO 100 IA = 1,NBAST
+               IF (INAOSH(IA).NE.ISHLA) GOTO 100
+C
                DO 200 IB = 1,NBAST
 C
-                  IF (INAOSH(IA).NE.ISHLA) GOTO 100
                   IF (INAOSH(IB).NE.ISHLB) GOTO 200
 C
                   ISYMA  = ISAO(IA)
@@ -2491,6 +2496,7 @@ C
       RETURN 
       END
 C
+#ifdef OLD_CODE
       SUBROUTINE CHO_RST1(DIAG,NDIM,SCR,LSCR,NTOT,NSAV,SUMRST,
      &                    VECNRM)
 C
@@ -2556,6 +2562,7 @@ C
 C
       RETURN
       END
+#endif   /* OLD_CODE  */
 C
 C/* Deck cho_name */
       SUBROUTINE CHO_NAME(ISYMAB,IFILE,LUCHO,NAME,TASK)
@@ -2667,6 +2674,7 @@ C
       RETURN
       END
 C
+#ifdef OLD_CODE
 C  /* Deck cho_read */
       SUBROUTINE CHO_READ(CHOVEC,ISTART,NR,IND1,IND2,ISYMAB,IOPT,
      &                    WORK,LWORK)
@@ -2909,6 +2917,7 @@ C
 C
       RETURN
       END
+#endif    /* OLD_CODE */
 C  /* Deck cc_rdaon */
       SUBROUTINE CC_RDAON(XINT,IDELTA,IGAM,NUMPR,ISYMGD,
      *                    IRECNR,WORK,LWORK)
@@ -2985,7 +2994,6 @@ C     Written by Henrik Koch 25-Sep-1993
 C
 #include "implicit.h"
 #include "ibtpar.h"
-      LOGICAL   OPT1, OPT2
       DIMENSION XINT(*)
       DIMENSION KADR2(NBAST,NBAST)
       DIMENSION IBUF(LBUF,NIBUF),RBUF(LBUF)
@@ -3007,9 +3015,6 @@ C
 #include "ibtfun.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
-C
-      OPT1 = .FALSE.
-      OPT2 = .FALSE.
 C
       IF (NEWDIS) THEN
 C
@@ -3058,32 +3063,28 @@ C
                   KGAM(ICOUNT,2) = K
                ENDIF
             ENDDO
-            IF (ICOUNT .NE. 0) OPT1 = .TRUE.
 C
-            IF (OPT1) THEN
+            IF (ICOUNT .NE. 0) THEN
                NREC   = J
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
                DO 110 I = 1,NINT
                   IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+                  LSV = -1
                   DO L = 1,ICOUNT
                      IF (IR .EQ. KGAM(L,1)) THEN
-                        OPT2 = .TRUE.
                         LSV  = KGAM(L,2)
                      ENDIF
                   ENDDO 
-                  IF (OPT2) THEN
+                  IF (LSV .GT. 0) THEN
                      IP = IBTAND(       IBUF(I,1)         ,IBIT1)
                      IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
                      IADR = NNBST(ISYMGD)*(LSV-1) + KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
-                     OPT2 = .FALSE.
                   ENDIF
 C 
   110          CONTINUE
 C
             ENDIF
-C
-            OPT1 = .FALSE.
 C
   100    CONTINUE
 C
@@ -3100,30 +3101,26 @@ C
                   KGAM(ICOUNT,2) = K
                ENDIF
             ENDDO
-            IF (ICOUNT .NE. 0) OPT1 = .TRUE.
 C
-            IF (OPT1) THEN
+            IF (ICOUNT .NE. 0) THEN
                NREC   = J
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
                DO 130 I = 1,NINT
                   IR = IBTAND(       IBUF(I,1)       ,IBIT1)
+                  LSV = -1
                   DO L = 1,ICOUNT
                      IF (IR .EQ. KGAM(L,1)) THEN
-                        OPT2 = .TRUE.
                         LSV  = KGAM(L,2)
                      ENDIF
                   ENDDO 
-                  IF (OPT2) THEN
+                  IF (LSV .GT. 0) THEN
                      IP = IBTAND(       IBUF(I,2)       ,IBIT1)
                      IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
                      IADR = NNBST(ISYMGD)*(LSV-1) + KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
-                     OPT2 = .FALSE.
                   ENDIF
   130          CONTINUE
             ENDIF
-C
-            OPT1 = .FALSE.
 C
   120    CONTINUE
 C
@@ -3621,6 +3618,7 @@ C
             MDIM = LENCHO(I,ISYMAB)
             JADR = JADR + MDIM
          END DO
+         MDIM = 0 ! to avoid compiler warnings
       ELSE
          IF (REDUCE) THEN
             MDIM   = NREDUC(ISYMAB)
@@ -4057,10 +4055,9 @@ C
 #include "priunit.h"
 C
 C
-      WRITE(LUPRI,'(/)')
-C
       CALL AROUND('Summary of Cholesky decomposition')
       YC = -1.0d0
+      IY = -1 ! to avoid compiler warnings
       DO I = 1,NDIAG
          IF (ABS(DIAG(I)) .GT. YC) THEN
             YC = ABS(DIAG(I))
@@ -4110,7 +4107,7 @@ C
       WRITE(LUPRI,'(6X,A,F10.2)')    'Decomposition time  : ', TIMDEC
       WRITE(LUPRI,'(/,6X,A,F10.2)')  'Total time          : ', TIMTOT
 C
-      WRITE(LUPRI,'(//,A,//)') 'Decomposition completed' 
+      WRITE(LUPRI,'(//,A,//)') 'Cholesky decomposition completed' 
 C
       RETURN
       END
@@ -4396,6 +4393,7 @@ C
  2000 CALL QUIT('Error reading AOTWODIS')
       END
 C
+#ifdef OLD_CODE
 C  /* Deck cc_gabold */
       SUBROUTINE CC_GABOLD(DIAG,WORK,LWORK)
 C
@@ -4488,6 +4486,7 @@ C
 C
       RETURN
       END
+#endif    /* OLD_CODE */
 C
 C
 C
@@ -4718,3 +4717,4 @@ C
 *     End of DGEMM .
 *
       END
+!   --- end of choles/cc_cholesky.F ---

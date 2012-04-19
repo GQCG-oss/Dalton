@@ -216,6 +216,7 @@ C
 C
 C Used from common blocks:
 C   GNRINF : WESTA,EMBEDDING,QM3,QMMM, ...
+C   CCOM   : THRS ! integral threshold, used for THRP default
 C   INFINP : ...,ITRLVL,ITRFIN,..., DO*, DIRFCK,...
 C   INFORB : NSYM,?
 C   INFVAR : MAXOCC,NWOPT,JWOP(2,*),JWOPSY
@@ -233,6 +234,9 @@ C
 #include "gnrinf.h"
 #include "maxash.h"
 #include "maxorb.h"
+#include "maxaqn.h"
+
+#include "ccom.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
@@ -301,11 +305,9 @@ C
             IRDMO = 8
             FLAG(13) = .FALSE.
             IF (DOSCF) THEN
-               AUTOCC = .TRUE.
-               INIOCC = 0
-               DO 13 I = 1, 8
-                  NRHF(I) = 0
-  13           CONTINUE
+               AUTOCC = NSYM .GT. 1
+               INIOCC = -1
+               NRHF(1:8) = 0
                IOPRHF = 0
             ELSE
                WRITE (LUPRI,'(/A)')
@@ -350,9 +352,9 @@ C         if reading input from a terminal
          END IF
          GO TO 930
   910    CONTINUE
-            CALL QUIT('End of file on LUCMD, no Sirius input found')
+            CALL QUIT('ERROR: End of file, no Sirius input found')
   920    CONTINUE
-            CALL QUIT('Error reading LUCMD, no Sirius input found')
+            CALL QUIT('ERROR reading .dal input, no Sirius input found')
   930    CONTINUE
       END IF
 C
@@ -568,11 +570,13 @@ C               ICHARG = ICHRGNU - (2*NISHT+NACTEL)
       NISHT  = 0
       NACTEL = 0
       CALL MOLCHR(ICHARG)
+C     ICHARG is now total nuclear charge;
+C     KCHARG is input in .mol file for total molecular charge
       NACTEL = -1
       NRHFEL = ICHARG - KCHARG
       INIOCC = -1
       IF (NRHFEL .GT. 0) THEN
-         AUTOCC = .TRUE.
+         AUTOCC = NSYM .GT. 1
       ELSE
          AUTOCC = .FALSE.
       END IF
@@ -683,7 +687,7 @@ C
 C     ITRFIN   Level of final integral transformation (when FLAG(25),
 C              i.e. call wrgeom in siropt)
 C
-      THRP   = 1.0D-12
+      THRP   = MAX(THRS,1.0D-15)
       ITRLVL = -6789
       ITRFIN = -6789
       IPRTRA = -1
@@ -838,7 +842,9 @@ C     Several common blocks are saved to next iteration
 C
       CALL SSAVE
 C
-C     This is where we jump back in if input has been processed earlier.
+C *************************************************************************
+C     "124" is where we jump back in if input has been processed earlier,
+C     i.e. if INPPRC is .true.
 C
  124  CONTINUE
 C
@@ -913,6 +919,25 @@ C
      &      ' NEVPT2 is only implemented for complecte active space.'
             INPERR = INPERR + 1
          END IF
+      END IF
+C
+C     No need for AUTOCC if C_1 symmetry
+C
+      IF (NRHFEL .LE. 0) THEN
+         NRHFEL = 2*NRHFT
+         IF (IOPRHF .GT. 0) NRHFEL = NRHFEL + 1
+      END IF
+      IF (NSYM .EQ. 1 .AND. INIOCC .LT. 0) THEN
+         NRHF(1:8) = 0
+         MOCC = NRHFEL/2
+         NRHF(1) = MOCC
+         IF (2*MOCC .NE. NRHFEL) THEN
+            IOPRHF = 1
+         ELSE
+            IOPRHF = 0
+         END IF
+         INIOCC = 6
+         AUTOCC = .FALSE.
       END IF
 C
 C     Disable AUTOCC for RHF if RHF not used (HJ aug95)
@@ -1192,7 +1217,7 @@ C                  calculation /hjaaj feb. 2003
             ELSE
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/2A/3A)')
-     &         ' Input error, MO coefficients to be read from'//
+     &         ' Input ERROR, MO coefficients to be read from'//
      &         ' SIRIUS interface file ',FNSIFC,' but ',
      &         FNSIFC,' with proper information was not provided.'
             END IF
@@ -1214,7 +1239,7 @@ C           are they for same basisset and same no. of symmetries ?
          IF (NERROR .GT. 0) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/5X,A,I3,5X,8I5)')
-     &         'Input error in connection with ".MOSTART"',
+     &         'Input ERROR in connection with ".MOSTART"',
      &         'NSYM, NBAS from input       :',NSYM,(NBAS(I),I=1,NSYM)
             WRITE (LUPRI,'(5X,A,I3,5X,8I5)')
      &         'NSYM, NBAS from MOSTART file:',MSYM,(MBAS(I),I=1,MSYM)
@@ -1236,21 +1261,21 @@ C
          IF (DOSCF .AND. AUTOCC .AND. NSYM .GT. 1) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &         'Input error for core-hole calculation:',
-     &         ' - automatic occupation of SCF orbitals not allowed.'
+     &     'ERROR: Input error for core-hole calculation:',
+     &     'ERROR:  - automatic occupation of SCF orbitals not allowed.'
          END IF
          IF (IRDMO .EQ. 8) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &         'Input error for core-hole calculation:',
-     &         ' - no initial molecular orbitals from'//
-     &         ' previous calculation specified.'
+     &      'ERROR: Input error for core-hole calculation:',
+     &      'ERROR:  - no initial molecular orbitals from'//
+     &         ' a previous calculation specified.'
          END IF
          IF (DOSCF .AND. DOMC) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &       'Input error for core-hole calculation:',
-     &       ' - both Hartree-Fock and MCSCF specified.'
+     &      'ERROR: Input error for core-hole calculation:',
+     &      'ERROR: - both Hartree-Fock and MCSCF specified.'
          END IF
          IF (NASHT .GT. 1) THEN
           IF (NELMN1 .LE. 0 .AND. NELMX1 .LE. 0) THEN
@@ -1261,7 +1286,7 @@ C
      &        NAS1(JCHSYM) .NE. 1 .OR. NAS1T .NE. 1) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A)')
-     &       ' Input error(s) for core-hole calculation:',
+     &       ' Input ERROR(s) for core-hole calculation:',
      &       ' -----------------------------------------'
            IF (MCTYPE .NE. 2)
      &      WRITE (LUPRI,*) 'Wave function type is not RAS'
@@ -1279,12 +1304,12 @@ C
          ELSE IF (NASHT .EQ. 1) THEN
             IF (JCHSYM .NE. IOPRHF) THEN
                INPERR = INPERR + 1
-               WRITE (LUPRI,*) 'Input error: '//
+               WRITE (LUPRI,*) 'Input ERROR: '//
      &         'core-hole sym. and RHF open shell sym. different'
             END IF
          ELSE
             INPERR = INPERR + 1
-            WRITE (LUPRI,*) 'Input error: '//
+            WRITE (LUPRI,*) 'Input ERROR: '//
      &      'core-hole not compatible with closed-shell RHF'
          END IF
          IF (CORRLX) THEN
@@ -1301,15 +1326,16 @@ C           ... NO ABSORPTION :
          ELSE
             IF (JCHORB .GT. NISH(JCHSYM)+1) THEN
                INPERR = INPERR + 1
-                  WRITE (LUPRI,'(/A/A)')
-     &               ' Input error for core-hole calculation:',
-     &               ' Core hole orbital is not inactive.'
+               WRITE (LUPRI,'(/A,I4,A,I2,A)')
+     &            'ERROR: Input error for core-hole calculation:'//
+     &            'ERROR: Core hole orbital',JCHORB,' in symmetry',
+     &               JCHSYM,' is neither inactive nor in RAS1.'
             ELSE IF (JCHORB .LE. NISH(JCHSYM)) THEN
                IF (LMOORD) THEN
                   INPERR = INPERR + 1
                   WRITE (LUPRI,'(/A/A)')
-     &               ' Input error for core-hole calculation:',
-     &               ' .COREHOLE and .REORDER are not compatible'//
+     &            'ERROR: Input error for core-hole calculation:',
+     &            'ERROR: .COREHOLE and .REORDER are not compatible'//
      &               ' if core hole orbital is inactive.'
                END IF
                LMOORD = .TRUE.
@@ -1336,7 +1362,7 @@ C        JRDMO negative : return with error status in JRDMO
 C        JRDMO positive : abort in READMO if error
          IF (JRDMO .GT. 0) THEN
             WRITE(LUPRI,'(/A)')
-     &         ' SIRRDI input error, not able to read mo coefficients.'
+     &         ' SIRRDI input ERROR, not able to read mo coefficients.'
             INPERR = INPERR + 1
             GO TO 200
          END IF
@@ -1353,10 +1379,6 @@ C
 C *** AUTOCC : find initial occupation (hjaaj-aug95)
 C              and Huckel start orbitals if DOHUCKEL
 C
-      IF (NRHFEL .LE. 0) THEN
-         NRHFEL = 2*NRHFT
-         IF (IOPRHF .GT. 0) NRHFEL = NRHFEL + 1
-      END IF
       IF (DOSCF .AND. AUTOCC .AND. IREST .EQ. 0
      &   .AND. INPERR .EQ. 0) THEN
 C
@@ -1368,26 +1390,10 @@ C
          KSCRA = 1    + NCMOT
          LSCRA = LCMO - KSCRA
          IF (INIOCC .LE. 0) THEN
-            IF (NSYM .EQ. 1) THEN
-               CALL IZERO(NRHF,8)
-               MOCC = NRHFEL/2
-               NRHF(1) = MOCC
-               IF (2*MOCC .NE. NRHFEL) THEN
-                  IOPRHF = 1
-               ELSE
-                  IOPRHF = 0
-               END IF
-               INIOCC = 6
-            ELSE IF (DOHUCKEL) THEN
+            IF (DOHUCKEL) THEN
                CALL HUCDRV(CMO,CMO(KSCRA),LSCRA)
                FLAG(13) = .FALSE.
                INIOCC = 5
-            ELSE IF (NSYM .EQ. 1) THEN
-               CALL IZERO(NRHF,8)
-               MOCC = NRHFEL/2
-               NRHF(1) = MOCC
-               IF (2*MOCC .NE. NRHFEL) IOPRHF = 1
-               INIOCC = 6
             ELSE
                CALL H1OCC(CMO,CMO(KSCRA),1,LSCRA)
                INIOCC = 4
@@ -1454,8 +1460,8 @@ C
       IF ((DOSCF .OR. DOMP2 .OR. DOCCSD) .AND. INIOCC .LE. 0) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A/A)')
-     &      ' Input error for DFT, HF, MP2, or CC calculation:',
-     &      ' Initial SCF occupation has not been defined.'
+     &     'ERROR: Input error for DFT, HF, MP2, or CC calculation:',
+     &     'ERROR: Initial SCF occupation has not been defined.'
          INIOCC = 0
 C        ... set INIOCC = 0 for SIR_PRTINP
       END IF
@@ -1475,9 +1481,9 @@ C If (MP2) force canonical Hartree-Fock orbitals
 C hjaaj Aug 04: Also if (CC)
 C
       IF (DOMP2 .OR. DOCCSD) THEN
-        IF (DOSCF .AND. (IOPRHF .NE. 0 .OR. HSROHF)) THEN
+        IF (DOCCSD. and. DOSCF .AND. (IOPRHF .NE. 0 .OR. HSROHF)) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,'(/A)') ' Input error: closed shell MP2/CC'//
+         WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell MP2/CC'//
      &      ' not compatible with open shell RHF'
         END IF
         IF (DOHFSRDFT) THEN
@@ -1679,7 +1685,7 @@ C
          INPERR = INPERR + NERROR
          WRITE (LUPRI,3101) NERROR
       END IF
- 3101 FORMAT(/' SIRRDI input error, NFRO is larger than NISH for',
+ 3101 FORMAT(/' SIRRDI input ERROR, NFRO is larger than NISH for',
      *        I2,' symmetries.',
      *       /' (Only inactive orbitals can be frozen with ".FROZEN",',
      *        ' use ".FREEZE" instead)')
@@ -1706,7 +1712,7 @@ C
          IF (NERROR .GT. 0) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A,/A,I12,2(/A,F12.6)/A,3F12.6)')
-     &     ' Input error in one or more reaction field specifications:',
+     &     ' Input ERROR in one or more reaction field specifications:',
      &     ' Lmax                =',LSOLMX,
      &     ' Dielectric constant =',EPSOL,
      &     ' Static diel. const. =',EPSTAT,
@@ -1757,7 +1763,7 @@ C
       IF (IRDMO .EQ. 8 .AND. KDEL .LT. 0) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     *      'Sirius input error: DELETE is illegal with MOSTART 8'
+     *      'Sirius input ERROR: DELETE is illegal with MOSTART 8'
       END IF
 C
       NERROR = 0
@@ -1773,8 +1779,8 @@ C
 C
       IF (NSYM.NE.1 .AND. NSYM.NE.2 .AND.
      *    NSYM.NE.4 .AND. NSYM.NE.8) THEN
-         WRITE (LUPRI,'(/A/2A)')' SIRRDI, input error.',
-     *      ' Wrong number of symmetries,',
+         WRITE (LUPRI,'(/A)')' SIRRDI, input ERROR.'//
+     *      ' Wrong number of symmetries,'//
      *      ' this cannot be a subgroup of D2h.'
          INPERR = INPERR + 1
       END IF
@@ -1784,7 +1790,7 @@ C
          WRITE (LUPRI,3710)
          INPERR = INPERR + 1
       END IF
- 3710 FORMAT(/' SIRRDI, input error.'/' Number of active electrons',
+ 3710 FORMAT(/' SIRRDI, input ERROR. Number of active electrons',
      *        ' is not consistent with spin multiplicity.')
 C
 C *****  set some non-specified variables
@@ -1820,10 +1826,9 @@ C
  9010 WRITE (LUW4,9000) INPERR
       IF (LUERR.NE.LUW4) WRITE(LUERR,9000) INPERR
       IF (LUPRI.NE.LUW4) WRITE(LUPRI,9000) INPERR
- 9000 FORMAT(//20X,I5,' errors occured in SIRIUS input processing.'
-     *        /20X,'Check error file for information about errors.'
+ 9000 FORMAT(//20X,I5,' ERROR(s) occured in SIRIUS input processing.'
      *        /20X,'Program cannot continue.'
-     *        /20X,'Correct error(s) and be welcome back')
+     *        /20X,'Correct ERROR(s) and be welcome back')
       CALL QTRACE(LUPRI)
       CALL QUIT('*** ERROR *** SIRIUS input errors.')
 C
@@ -2056,7 +2061,7 @@ C
          CALL QUIT('ILLEGAL PROMPT IN SIRIUS INPUT')
       END IF
 C
- 1100  CALL QUIT('Program error in NEWINP reading SIRIUS input.')
+ 1100  CALL QUIT('Program ERROR in NEWINP reading SIRIUS input.')
  1200  CALL WAVINP(WORD,INPERR,ALLOPT)
        GO TO 910
  1300  CALL OPTINP(WORD,INPERR,ALLOPT)
@@ -2094,7 +2099,7 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
        CALL CC_INPUT(WORD,IREST,MSYM)
        IF (NSYM .NE. MSYM) THEN
           CALL QUIT(
-     &       'CC_INPUT error: NSYM from SIRIFC .ne. NSYM in this run')
+     &       'CC_INPUT ERROR: NSYM from SIRIFC .ne. NSYM in this run')
        END IF
        GOTO 910
  2900  CALL DFTINP(WORD,INPERR,ALLOPT)
@@ -2156,7 +2161,7 @@ C
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*20, TITLIN*80, SR_FUNCS*80
+     &          REWORD*20, TITLIN*80, SR_FUNCS*80
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
@@ -2726,9 +2731,7 @@ C *** Option 2 >INACTI<  Inactive orbitals
          READ(LUCMD,*) (NISH(I),I=1,NSYM)
          NRHFT = ISUM(NSYM,NRHF,1)
          IF (NRHFT .EQ. 0) THEN
-            DO 402 I = 1, NSYM
-               NRHF(I) = NISH(I)
-  402       CONTINUE
+            NRHF(1:NSYM) = NISH(1:NSYM)
          END IF
       GO TO 100
 C
@@ -2741,7 +2744,7 @@ C *** Option 4 >MS2   < 2 * M_S value
       IF (MULTS .GT. 0) THEN
          IF (MS2 .LT. -(MULTS-1) .OR. MS2 .GT. MULTS-1) THEN
             WRITE (LUPRI,'(/A,2I10/)')
-     &      ' *CONFIG error, .SPIN M and .MS2 not compatible:',MULTS,MS2
+     &      ' *CONFIG ERROR, .SPIN M and .MS2 not compatible:',MULTS,MS2
             INPERR = INPERR + 1
          END IF
       END IF
@@ -2753,7 +2756,7 @@ C                        SPIN QUANTUM NUMBER*2 + 1
       IF (MS2 .NE. -12345) THEN
          IF (MS2 .LT. -(MULTS-1) .OR. MS2 .GT. MULTS-1) THEN
             WRITE (LUPRI,'(/A,2I10/)')
-     &      ' *CONFIG error, .SPIN M and .MS2 not compatible:',MULTS,MS2
+     &      ' *CONFIG ERROR, .SPIN M and .MS2 not compatible:',MULTS,MS2
             INPERR = INPERR + 1
          END IF
       END IF
@@ -2767,7 +2770,7 @@ C *** Option 7 >RAS1 H< number of holes in RAS1
   107 CONTINUE
          IF (RAS1EL) THEN
             WRITE (LUPRI,'(/A/)')
-     *         ' *CONFIG error, both .RAS1 H and .RAS1 E specified.'
+     *         ' *CONFIG ERROR, both .RAS1 H and .RAS1 E specified.'
             INPERR = INPERR + 1
          END IF
          READ(LUCMD,*) NHL1MN,NHL1MX
@@ -2808,7 +2811,7 @@ C *** Option 11 >RAS1 E<   RAS1 electrons
   111 CONTINUE
          IF (RAS1EL) THEN
             WRITE (LUPRI,'(/A/)')
-     *         ' *CONFIG error, both .RAS1 H and .RAS1 E specified.'
+     *         ' *CONFIG ERROR, both .RAS1 H and .RAS1 E specified.'
             INPERR = INPERR + 1
          END IF
          READ(LUCMD,*) NELMN1,NELMX1
@@ -2895,7 +2898,7 @@ C
       IF (SET .AND. WORD .EQ. '*SCF IN') THEN
          INPERR = INPERR + 1
          WRITE(LUPRI,*)
-     &   ' Input error: *SCF INPUT specified more than once'
+     &   ' Input ERROR: *SCF INPUT specified more than once'
       END IF
       NODIIS = .FALSE.
       WORD1 = WORD
@@ -3058,8 +3061,14 @@ C *** Option 21 >ELECTR< No. of electrons, for automagic det. of occ. orb.s
       GO TO 100
 C *** Option 22 >AUTOCC< automatic determination of occ. orbs. in DIIS,
 C                        with given inital occ. from user input or file
-  122 AUTOCC = .TRUE.
-      IF (INIOCC .LT. 0) INIOCC = 0
+  122 IF (NSYM .EQ. 1) THEN
+         AUTOCC = .FALSE.
+         WRITE (LUPRI,'(/A)')
+     &      'INFO: .AUTOCC ignored because C_1 symmetry'
+      ELSE
+         AUTOCC = .TRUE.
+         IF (INIOCC .LT. 0) INIOCC = 0
+      END IF
       GO TO 100
 C
 C *** Option 23 >FC MVO<  Modified virtual orbitals from FC from NMVO
@@ -3091,12 +3100,13 @@ C
       ELSE
          IOPRHF = 0
       END IF
-      IF (INIOCC .EQ. 0) THEN
+      IF (INIOCC .LT. 0) AUTOCC = .FALSE.
+C     ... AUTOCC may have been set true by .AUTOCC
+      IF (ELECTR .OR. AUTOCC) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
      &' .SINGLY must not be specified together with .ELECTR or .AUTOCC'
       END IF
-      AUTOCC = .FALSE.
       NRHFEL = 0
       INIOCC = 1
       GO TO 100
@@ -3119,14 +3129,14 @@ C
       IF (CORHOL) THEN
          IF (IOPRHF .NE. 0) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,*) 'SCFINP input error:'//
+            WRITE (LUPRI,*) 'SCFINP input ERROR:'//
      &         ' .OPEN SHELL and .COREHOLE not compatible'
          END IF
          IOPRHF = JCHSYM
          NRHF(JCHSYM) = NRHF(JCHSYM) - 1
          IF (NRHF(JCHSYM) .LT. 0) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,*) 'SCFINP input error:'//
+            WRITE (LUPRI,*) 'SCFINP input ERROR:'//
      &         ' no HF OCCUPATION in core hole symmetry'
          END IF
          MXDIIS = 0
@@ -3134,7 +3144,7 @@ C
       END IF
       IF (IOPRHF .NE. 0 .AND. HSROHF) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,*) 'SCFINP input error:'//
+         WRITE (LUPRI,*) 'SCFINP input ERROR:'//
      &      ' .OPEN SHELL and .SINGLY both specified'
       END IF
       SET = .TRUE.
@@ -3284,8 +3294,8 @@ C
 C *** Option 8 >STATE <  Root to converge calculation
   108 CONTINUE
          IF ( ISTATE_SPECIFIED .NE. 0) THEN
-            WRITE (LUPRI,*) '*OPTIMI error, not both .STATE and .MCAVER'
-            CALL QUIT('OPTINP error: not both .STATE and .MCAVER')
+            WRITE (LUPRI,*) '*OPTIMI ERROR, not both .STATE and .MCAVER'
+            CALL QUIT('OPTINP ERROR: not both .STATE and .MCAVER')
          END IF
          ISTATE_SPECIFIED = 1
 C
@@ -3294,10 +3304,10 @@ C
          IROOT(1) = ISTATE
 C
          IF ( ISTATE .GT. MAXRTS ) THEN
-            WRITE (LUPRI,*) 'OPTINP error: .STATE input is greater than'
-            WRITE (LUPRI,*) 'internal maximum of',MAXRTS
+            WRITE (LUPRI,*) '*OPTIMI ERROR: .STATE input is greater'//
+     &                      ' than internal maximum of',MAXRTS
             CALL QUIT(
-     &         'OPTINP error: .STATE input exceeds internal limit')
+     &         'OPTINP ERROR: .STATE input exceeds internal limit')
          END IF
          IF (ISTATE .GT. 1) THEN
             RATREJ = 0.40D0
@@ -3383,8 +3393,8 @@ C               Convention: ISTATE = max root in average
 C               /hjaaj nov 2006
   122 CONTINUE
          IF ( ISTATE_SPECIFIED .NE. 0) THEN
-            WRITE (LUPRI,*) '*OPTIMI error, not both .STATE and .MCAVER'
-            CALL QUIT('OPTINP error: not both .STATE and .MCAVER')
+            WRITE (LUPRI,*) '*OPTIMI ERROR, not both .STATE and .MCAVER'
+            CALL QUIT('OPTINP ERROR: not both .STATE and .MCAVER')
          END IF
          ISTATE_SPECIFIED = 1
          READ (LUCMD,*) NMCAVER
@@ -3396,12 +3406,12 @@ C        and ensure MCAVER roots are ordered
          ISTATE = 0
          DO I = 1,NMCAVER
             IF (WEIGHT_MCAVER(I) .LE. 0.0D0) THEN
-               CALL QUIT('.MCAVER error: state weight not positive!!!')
+               CALL QUIT('.MCAVER ERROR: state weight not positive!!!')
             END IF
             ISTATE = MAX(ISTATE,IROOT(I))
             DO J = 1,I-1
                IF (IROOT(I) .EQ. IROOT(J)) THEN
-                  CALL QUIT('.MCAVER error: same state duplicated')
+                  CALL QUIT('.MCAVER ERROR: same state duplicated')
                ELSE IF (IROOT(I) .LT. IROOT(J)) THEN
                   K = IROOT(I)
                   IROOT(I) = IROOT(J)
@@ -3414,10 +3424,10 @@ C        and ensure MCAVER roots are ordered
          END DO
 C
          IF ( ISTATE .GT. MAXRTS ) THEN
-            WRITE (LUPRI,*) 'OPTINP error: .STATE input is greater than'
+            WRITE (LUPRI,*) 'OPTINP ERROR: .STATE input is greater than'
             WRITE (LUPRI,*) 'internal maximum of',MAXRTS
             CALL QUIT(
-     &         'OPTINP error: .STATE input exceeds internal limit')
+     &         'OPTINP ERROR: .STATE input exceeds internal limit')
          END IF
          IF (ISTATE .GT. 1) THEN
             RATREJ = 0.40D0
@@ -3532,7 +3542,7 @@ C     Fill out rest of IROOT /hjaaj nov 2006
             IROOT(J) = I
          END IF
       END DO
- 9008 FORMAT(/' Input error: .STATE/.MCAVER value of,',I3,
+ 9008 FORMAT(/' Input ERROR: .STATE/.MCAVER value of,',I3,
      *  ', is greater than internal maximum of,',I3)
  9009 FORMAT(/' OPTINP WARNING: number of simultaneous vectors,',I3,
      *  ', is greater than maximum,',I3,
@@ -3815,7 +3825,7 @@ C *** Option 4 >MOSTAR<   Molecular orbital input
              IRDMO = 8
              DOHUCKEL = .FALSE.
 C         ... make sure Huckel guess is disabled,
-C             although code in GNRLIN in dalton.F takes care of that
+C             although code in GNRLIN in dalton.F also takes care of that
           ELSE IF (INDEX(REWORD,'NEWORB') .GT. 0) THEN
              IRDMO = 9
           ELSE IF (INDEX(REWORD,'SIRIFC') .GT. 0) THEN
@@ -3853,7 +3863,7 @@ C
 C *** Option 5 >FREEZE< Orbitals not to be rotated.
   105 CONTINUE
          IF (FLAG(33)) CALL QUIT(
-     &      'ORBINP error, .FREEZE and .AO DELETE both specified.')
+     &      'ORBINP ERROR, .FREEZE and .AO DELETE both specified.')
 C        set INDEL=2 to flag that DELETE cannot be specified any more
          INDEL = 2
          READ(LUCMD,*)(NNOR(I),I=1,NSYM)
@@ -3905,7 +3915,7 @@ C *** Option 10 >REORDE<  reordering of molecular orbitals
 C     ... to signal that DELETE cannot be specified any more
       IF (FLAG(33)) THEN
          CALL QUIT(
-     &      'ORBINP error, .REORDE and .AO DELETE both specified.')
+     &      'ORBINP ERROR, .REORDER and .AO DELETE both specified.')
       END IF
       READ(LUCMD,*) (NREOR(I),I=1,NSYM)
       DO 801 I = 1,MXCORB
@@ -3919,7 +3929,7 @@ C     ... to signal that DELETE cannot be specified any more
                WRITE (LUPRI,*) 'FATAL ERROR for ".REORDER MO"'
                WRITE (LUPRI,*) 'Internal limit of',MAXNRT/2,
      *         ' orbitals to be reordered exceeded in symmetry',I
-               CALL QUIT('Error in ORBINP, internal limit exceeded')
+               CALL QUIT('ERROR in ORBINP, internal limit exceeded')
             END IF
             READ(LUCMD,*) (INORO(J),J=1,NR2)
 C           ... this line corresponds to
@@ -4642,7 +4652,7 @@ C
  9999 CONTINUE
       IF (INPEPS .GT. 1) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,'(/1X,A/A)') WORD1//' input error',
+         WRITE (LUPRI,'(/1X,A/A)') WORD1//' input ERROR',
      *   ' Only one of ".DIELEC", ".INERSI", and ".INERSF"'//
      *   ' may be specified.'
       END IF
@@ -4685,7 +4695,7 @@ C
 C     ***** PROCESS INPUT FOR PRIINP *****
 C
       IF (WORD .NE. '*PRINT ') THEN
-         WRITE(LUPRI,*) 'ERROR, PRRINP call with ',WORD,
+         WRITE(LUPRI,*) 'ERROR, PRIINP call with ',WORD,
      *   ' instead of "*PRINT "'
          CALL QUIT('PROGRAM ERROR SIRIUS, illegal call of PRIINP')
       END IF
@@ -5076,7 +5086,7 @@ C
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
      &            'EHT   ','EWMO  '/
       CHARACTER*33 TXTOCC(0:6)
-      DATA TXTOCC/'NOTHING because of error(s).     ',
+      DATA TXTOCC/'NOTHING because of ERROR(s).     ',
      &            'user input.                      ',
      &            'SIRIUS restart file (SIRIUS.RST).',
      &            'SIRIUS interface file (SIRIFC).  ',
@@ -5112,11 +5122,13 @@ C
       END IF
 #ifdef VAR_AUTHORS
          WRITE(IWUNIT,400)
- 400     FORMAT(/' Main authors of the SIRIUS module:'
+  400    FORMAT(/' Main authors of the SIRIUS module:'
      *   /T5,'Hans Joergen Aa. Jensen, Univ. Southern Denmark, Denmark',
      *       ' (principal author)',
      *   /T5,'Hans Agren,              Royal Inst. Technology, Sweden')
-         CALL CIAUTH(IWUNIT)
+         WRITE(IWUNIT,402)
+  402    FORMAT(/' Direct CI and density matrix routines:'
+     *   /T5,'Jeppe Olsen,             University of Aarhus,   Denmark')
          CALL TRAUTH(IWUNIT)
 c        WRITE(IWUNIT,410)
 c410     FORMAT(/,' Questions and correspondence should be directed',
@@ -5241,11 +5253,11 @@ C          to get here unless someone modifies SIRIUS incorrectly
       ELSE IF ( DOMP2 ) THEN
          IF (WFTYPE .EQ. ' ') WFTYPE='MP2'
          WRITE (IWUNIT,1050)
-     &      ' MP2, Moeller-Plesset second-order calculation.'
+     &      'MP2, Moeller-Plesset second-order calculation.'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE IF ( DOCCSD) THEN
          IF (WFTYPE .EQ. ' ') WFTYPE='CC'
-         WRITE (IWUNIT,1050) ' (Integral direct) CC calculation.'
+         WRITE (IWUNIT,1050) '(Integral direct) CC calculation.'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE IF ( DOSCF ) THEN
          IF (HSROHF) THEN
@@ -5328,13 +5340,13 @@ C          to get here unless someone modifies SIRIUS incorrectly
       END IF
       IF ( DIRFCK ) THEN
       IF ( PARCAL ) THEN
-         WRITE (IWUNIT,1051)
-     *      'Fock matrices are calculated directly and in parallel',
-     *      'without use of integrals on disk.'
+         WRITE (IWUNIT,'(A)')
+     &      ' Fock matrices are calculated directly and in parallel'//
+     &      ' without use of integrals on disk.'
       ELSE
-         WRITE (IWUNIT,1051)
-     *      'Fock matrices are calculated directly',
-     *      'without use of integrals on disk.'
+         WRITE (IWUNIT,'(A)')
+     &      ' Fock matrices are calculated directly'//
+     &      ' without use of integrals on disk.'
       END IF
       END IF
 C
@@ -5365,7 +5377,11 @@ C        ... if HUCKEL use JRDMO = 11 or 12 to get correct output
          END IF
          WRITE (IWUNIT,'(/A/3A)')
      &   ' Initial molecular orbitals are obtained according to',
-     &   ' ".MOSTART ',RDMOLB(JRDMO),'" input option.'
+     &   ' ".MOSTART ',RDMOLB(JRDMO),'" input option'
+      END IF
+      IF (LMOORD) THEN
+         WRITE (IWUNIT,'(A)') ' and reordered as requested '//
+     &   'with .REORDER or indirectly with .CORHOL'
       END IF
 C
       IF (EMBEDDING) THEN

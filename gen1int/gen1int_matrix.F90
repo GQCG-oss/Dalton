@@ -29,6 +29,11 @@
 #include "xkind.h"
 
 !> \brief matrix module used in Gen1Int interface
+!> \note the reason of introducing matrix type is due to other codes (like OpenRSP) ask
+!>       for a matrix type output, in order to maintain only one Gen1Int interface, I
+!>       have therefore introduced such matrix module (or wrapper); users who would like
+!>       to have their results in an array could use \fn(MatAssociate) and \fn(MatNullify)
+!>       subroutines
 !> \author Bin Gao
 !> \date 2011-12-10
 module gen1int_matrix
@@ -98,26 +103,26 @@ module gen1int_matrix
     logical, optional, intent(in) :: triangular
     logical, optional, intent(in) :: symmetric
     integer num_elms  !number of elements
+    if (present(triangular)) A%triangular = triangular
     num_elms = size(work_alpha)
-    info_mat = mod(num_elms,num_row)
-    if (info_mat==0) then
-      A%num_row = num_row
-      A%num_col = num_elms/num_row
-      if (present(triangular)) A%triangular = triangular
-      ! matrix element storage in triangular format
-      if (A%triangular) then
-        if (A%num_row==A%num_col) then
-          if (present(symmetric)) A%symmetric = symmetric
-          A%elms_alpha => work_alpha
-        ! we can not use triangular format for non-square matrix
-        else
-          A%num_row = huge(1)
-          A%num_col = huge(1)
-          A%triangular = .false.
-          info_mat = A%num_col
-        end if
-      ! matrix element storage in square format
+    ! matrix element storage in triangular format
+    if (A%triangular) then
+      info_mat = num_elms-num_row*(num_row+1)/2
+      if (info_mat==0) then
+        if (present(symmetric)) A%symmetric = symmetric
+        A%num_row = num_row
+        A%num_col = num_row
+        A%elms_alpha => work_alpha
+      ! incorrect number of elements
       else
+        A%triangular = .false.
+      end if
+    ! matrix element storage in square format
+    else
+      info_mat = mod(num_elms,num_row)
+      if (info_mat==0) then
+        A%num_row = num_row
+        A%num_col = num_elms/num_row
         A%elms_alpha => work_alpha
       end if
     end if

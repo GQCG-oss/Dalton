@@ -39,7 +39,7 @@ c /* deck ccrspsym */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -1503,10 +1503,10 @@ c /* deck cc_opaind */
 *
 *=====================================================================*
       IMPLICIT NONE
-C#include <implicit.h>
-C#include <cclrinf.h>
-C#include <cclr.h>  
-C#include <ccsdsym.h>  
+C#include "implicit.h"
+C#include "cclrinf.h"
+C#include "cclr.h"  
+C#include "ccsdsym.h"  
 #include "priunit.h"
 #include "ccorb.h"
 #include "ccexci.h"  
@@ -2392,7 +2392,7 @@ c /* deck cc_qrind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -2732,7 +2732,7 @@ c /* deck cc_crind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -3297,7 +3297,7 @@ c /* deck CC_4RIND */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -3593,7 +3593,7 @@ c /* deck CC_5RIND */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -3745,7 +3745,7 @@ c /* deck cc_tpaind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -3953,7 +3953,7 @@ c /* deck cc_tmind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -4150,7 +4150,7 @@ c /* deck cc_mcdind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -4457,7 +4457,7 @@ c /* deck cc_exlrind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -5273,6 +5273,7 @@ C  /* Deck cclstsort */
 *                       ER1, ER2
 *                       EL1, EL2
 *                       PL1
+*                       QL (Lanczos)
 *
 *          not tested for RE, LE, E0
 *
@@ -5282,6 +5283,7 @@ C  /* Deck cclstsort */
 * projection flag 1998
 * orbital relaxation flag 1999
 * PL1 vectors, Sonia march 2000
+* QL (Lanczos), Sonia 2010-2012
 *
 Cholesky
 * Swapped sorting order so that LABEL sort is done
@@ -5316,6 +5318,7 @@ Cholesky
       IF      (     TYPE(1:2).EQ.'R1' .OR. TYPE(1:2).EQ.'L1' 
      &         .OR. TYPE(1:3).EQ.'O1 '.OR. TYPE(1:3).EQ.'X1 '
      &         .OR. TYPE(1:2).EQ.'RC' .OR. TYPE(1:2).EQ.'LC'
+     &         .or. TYPE(1:2).EQ.'QL'
      &         .OR. TYPE(1:2).EQ.'o1'                        ) THEN
         NSTAT = 0
         ORDER = 1
@@ -5865,6 +5868,7 @@ C  /* Deck ilstsym */
 *
 * Christof Haettig, November 1996
 * PL1 introduced Sonia
+* QL (Lanczos) introduced Sonia 2010
 *=====================================================================*
       IMPLICIT NONE
 #include "priunit.h"
@@ -5900,6 +5904,8 @@ C  /* Deck ilstsym */
 #include "cccl2rsp.h"
 #include "ccexci.h"
 #include "ccpl1rsp.h"
+!Lanczos
+#include "ccqlrlcz.h"
 
       CHARACTER*(3) LIST
       INTEGER INDEX
@@ -6033,6 +6039,10 @@ Cholesky
       ELSE IF (LIST(1:3).EQ.'PL1') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NPL1LBL) LEOOR = .TRUE.
          ILSTSYM = ISYPL1(INDEX)
+!Lanczos (Sonia): QL and FQL vectors
+      ELSE IF (LIST(1:2).EQ.'QL'.OR. LIST(1:2).EQ.'FQ') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NQLLBL) LEOOR = .TRUE.
+         ILSTSYM = ISYQL(INDEX)
       ELSE
          WRITE(LUPRI,*) 'Unknown LIST in ILSTSYM:"',LIST(1:3),'"'
 C to force a core dump:
@@ -6312,6 +6322,7 @@ C  /* Deck idxsym */
 * Christof Haettig, November 1996(ILSTSYM), Ove Christiansen Feb. 1997
 * PL1 vectors, Sonia 2000
 * Cholesky CC2 vectors, tbp 2003
+* Lanczos QL vectors, Sonia 2010
 *=====================================================================*
       IMPLICIT NONE
 #include "ccorb.h"
@@ -6347,6 +6358,8 @@ C  /* Deck idxsym */
 #include "ccexci.h"
 #include "ccpl1rsp.h"
 #include "priunit.h"
+!Lanczos
+#include "ccqlrlcz.h"
 
       CHARACTER*(*) LIST
       INTEGER INDEX,ISYM
@@ -6455,10 +6468,14 @@ Cholesky
       ELSE IF (LIST(1:2).EQ.'N2'.OR.LIST(1:2).EQ.'BR') THEN
          IF (INDEX.LT.0 .OR. INDEX.GT.NQRN2 ) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFN2(ISYM)
-      !PL1 vectors indices within symmetry class (Sonia)
+!PL1 vectors indices within symmetry class (Sonia)
       ELSE IF (LIST(1:3).EQ.'PL1') THEN
          IF (INDEX.LT.0 .OR. INDEX.GT.NPL1LBL) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFPL1(ISYM)
+!Lanczos QL/FQL vectors indices within symmetry class (Sonia)
+      ELSE IF (LIST(1:2).EQ.'QL' .OR. LIST(1:2).EQ.'FQ') THEN
+         IF (INDEX.LT.0 .OR. INDEX.GT.NQLLBL) LEOOR = .TRUE.
+         IDXSYM  = INDEX - ISYOFQL(ISYM)
       ELSE
          WRITE (LUPRI,*) 'Unknown LIST in IDXSYM:"',LIST(1:3),'".'
 C to force a core dump:
@@ -8282,3 +8299,91 @@ C based of IL1ZETA and IEL1AMP
       RETURN
       END
 *=====================================================================*
+C  /* Deck iqllist */
+      INTEGER FUNCTION IQLLIST(NEWLBL,LORX,ICHAIN,FRQINP,ISYM)
+*---------------------------------------------------------------------*
+C
+C maintain the list of Q vectors in Lanczos chain (aka 'QL')
+C
+C   if vector is on the list return list index and set ISYM
+C   if vector is NOT on the list:
+C        LQLOPN=.true.  --> extend list, and return index
+C        LQLOPN=.false. --> return -1
+C
+C        NEWLBL -- operator label
+C        LORX   -- flag for orbital relaxation
+C        FRQINP -- frequency (ignored for unrelaxed orbitals)
+C        ISYM   -- symmetry
+C        ICHAIN -- index of given Q vector in the chain
+C Sonia & Kristian, August 2010
+*---------------------------------------------------------------------*
+      IMPLICIT NONE
+#include "ccqlrlcz.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+      LOGICAL LORX, LOCDBG
+      PARAMETER (LOCDBG=.false.)
+      INTEGER ISYM, ICHAIN
+
+#if defined (SYS_CRAY)
+      REAL FRQNEW,TOL, FRQINP
+#else
+      DOUBLE PRECISION FRQNEW,TOL, FRQINP
+#endif
+      PARAMETER(TOL=1.0D-12)
+
+      CHARACTER*8 NEWLBL
+      INTEGER I
+
+* if LORX false ignore frequency (set to zero internally):
+      IF (LORX.OR.CCSDT) THEN
+        FRQNEW = FRQINP
+      ELSE
+        FRQNEW = 0.0d0
+      END IF
+
+      if (locdbg) then
+       write(lupri,*)'FUNCTION IQLLST at entry'
+       write(lupri,*)'NQLLBL: ', NQLLBL
+       write(lupri,*)'NEWLBL: ', NEWLBL, ' ? LBLQL:', LBLQL(1)
+       write(lupri,*)'LORX: ', LORX, ' ? LORXQL:', LORXQL(1)
+       write(lupri,*)'ABS(FRQNEW-FRQQL(1)): ', ABS(FRQNEW-FRQQL(1))
+       write(lupri,*)'ICHAIN: ', ICHAIN, 'IDXQL(1):', IDXQL(1)
+      end if
+      DO I = 1,NQLLBL
+         IF ( (NEWLBL .EQ. LBLQL(I)) .AND. (LORX .EQV. LORXQL(I)) .AND.
+     &        (ABS(FRQNEW-FRQQL(I)).LT.TOL) .AND.
+     &      (ICHAIN .EQ. IDXQL(I))) THEN
+            IQLLIST = I
+            ISYM    = ISYQL(IQLLIST)
+            RETURN
+         END IF
+      END DO
+      IF (LQLOPN) THEN
+        NQLLBL = NQLLBL + 1
+        IF (NQLLBL.GT.MAXQLLBL) THEN
+          WRITE(LUPRI,'(A,/A,I5,A,I5)')
+     *    '@ NUMBER OF SPECIFIED QL  EXCEED THE MAXIMUM ALLOWED',
+     *    '@ MAXQLLBL =',MAXQLLBL,' NQLLBL= ',NQLLBL
+          CALL QUIT(' IQLLIST: TOO MANY EQUATIONS SPECIFIED')
+        END IF
+
+        LBLQL(NQLLBL)  = NEWLBL
+        ISYQL(NQLLBL)  = ISYM
+        LORXQL(NQLLBL) = LORX
+        FRQQL(NQLLBL)  = FRQNEW
+        IDXQL(NQLLBL)  = ICHAIN
+        IQLLIST        = NQLLBL
+
+      ELSE
+        WRITE(LUPRI,'(3A,L2,A,1P,D12.5,2A)')
+     *   '@ WARNING: Q VECTOR FOR ',NEWLBL,
+     *   '(',LORX,',',FRQNEW,')',
+     *                  ' IS NOT AVAILABLE.'
+        IQLLIST = -1
+      END IF
+
+      RETURN
+      END
+
+

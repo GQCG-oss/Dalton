@@ -726,6 +726,9 @@ C
 C  /* Deck getdets */
       SUBROUTINE GETDETS(ICSYM,NCSF,NDET,XNDXCI,CVEC,DVEC,WRK,LWRK)
 C
+C Get determinant coefficients in DVEC
+C corresponding to a specific CSF vector in CVEC.
+C
 C May 2000 Hans Joergen Aa. Jensen
 C
 #include "implicit.h"
