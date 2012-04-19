@@ -170,9 +170,9 @@ C
       IF (NUMCHO .GT. MXCHVE) THEN
          WRITE(LUPRI,*)
          WRITE(LUPRI,*)
-     &   'OBS!! ',NUMCHO,' vectors required for convergence'
+     &   'INFO OBS!! ',NUMCHO,' vectors required for convergence'
          WRITE(LUPRI,*)
-     &   'But only ',MXCHVE,' included as demanded in input'
+     &   'INFO But only ',MXCHVE,' included as demanded in input'
          WRITE(LUPRI,*)
          NUMCHO = MXCHVE
       END IF
