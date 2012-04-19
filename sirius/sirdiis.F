@@ -277,7 +277,7 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use polarizable_embedding, only: peqm, pe_master,
+      use polarizable_embedding, only: peqm, pe_mep, pe_master,
      &                                 pe_repuls, pe_savden,
      &                                 pe_repulsion, pe_save_density
 #include "implicit.h"
@@ -1345,6 +1345,10 @@ C
      &                    dalwrk=wrk(kfree:lfree))
          end if
        end if
+       if (pe_mep) then
+        call pe_master(runtype='map', denmats=daosav(:,1), nmats=1,
+     &                 dalwrk=wrk(kfree:lfree))
+       end if
        ! save density matrix 
        if (pe_savden) then
         if (nsym > 1) then
@@ -1354,7 +1358,6 @@ C
         call pe_save_density(daosav(:,1), nbast, cord(:,1:natoms),
      &                       charge(1:natoms), wrk(kfree:lfree))
        end if
-       ! save intermolecular part of Fock matrix
 !       if (pe_repuls) then
 !        call pe_repulsion(faosav(1,indevc,1), wrk(kfree), lfree)
 !       end if

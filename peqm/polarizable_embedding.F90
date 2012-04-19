@@ -1215,7 +1215,7 @@ subroutine pe_compmep(denmats)
 
     if (myid == 0) then
 #endif
-        call openfile('mep.bin', lu, 'new', 'formatted')
+        call openfile('qm_mep.dat', lu, 'new', 'formatted')
         rewind(lu)
         write(lu,*) npoints
         write(lu,*) 'AU'
