@@ -905,40 +905,6 @@ subroutine pe_sync()
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 
-    if (mep) then
-        if (myid == 0) then
-            allocate(ndists(0:ncores-1), displs(0:ncores-1))
-            ndist = npoints / ncores
-            ndists = ndist
-            if (ncores * ndist < npoints) then
-                nrest = npoints - ncores * ndist
-                do i = 0, nrest-1
-                    ndists(i) = ndists(i) + 1
-                end do
-            end if
-            nparpoints = ndists(0)
-            call mpi_scatter(ndists, 1, MPI_INTEGER,&
-                            &MPI_IN_PLACE, 1, MPI_INTEGER,&
-                            &0, MPI_COMM_WORLD, ierr)
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + 3 * ndists(i-1)
-            end do
-            call mpi_scatterv(mepgrid, 3*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 0, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        else
-            call mpi_scatter(0, 0, MPI_INTEGER,&
-                            &nparpoints, 1, MPI_INTEGER,&
-                            &0, MPI_COMM_WORLD, ierr)
-            allocate(mepgrid(3,nparpoints))
-            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &mepgrid, 3*nparpoints, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-
-        end if
-    end if
-
     if (myid == 0) then
         allocate(ndists(0:ncores-1), displs(0:ncores-1))
         ndist = nsites / ncores
@@ -1106,7 +1072,40 @@ subroutine pe_sync()
         end if
     end if
 
-    initialized = .true.
+     if (mep) then
+        if (myid == 0) then
+            ndist = npoints / ncores
+            ndists = ndist
+            if (ncores * ndist < npoints) then
+                nrest = npoints - ncores * ndist
+                do i = 0, nrest-1
+                    ndists(i) = ndists(i) + 1
+                end do
+            end if
+            nparpoints = ndists(0)
+            call mpi_scatter(ndists, 1, MPI_INTEGER,&
+                            &MPI_IN_PLACE, 1, MPI_INTEGER,&
+                            &0, MPI_COMM_WORLD, ierr)
+            displs(0) = 0
+            do i = 1, ncores-1
+                displs(i) = displs(i-1) + 3 * ndists(i-1)
+            end do
+            call mpi_scatterv(mepgrid, 3*ndists, displs, MPI_REAL8,&
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
+        else
+            call mpi_scatter(0, 0, MPI_INTEGER,&
+                            &nparpoints, 1, MPI_INTEGER,&
+                            &0, MPI_COMM_WORLD, ierr)
+            allocate(mepgrid(3,nparpoints))
+            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                             &mepgrid, 3*nparpoints, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
+
+        end if
+    end if
+
+   initialized = .true.
 
 end subroutine pe_sync
 #endif
@@ -1220,7 +1219,7 @@ subroutine pe_compmep(denmats)
 #endif
         call openfile('qm_mep.dat', lu, 'new', 'formatted')
         rewind(lu)
-        write(lu,'(i10)') npoints
+        write(lu,'(i7)') npoints
         write(lu,'(a)') 'AU'
         do i = 1, npoints
             write(lu,'(7(f15.8,2x))') (mepgrid(j,i), j = 1, 3),&
