@@ -282,7 +282,7 @@ subroutine pe_read_potential(coords, charges)
     real(dp), dimension(:,:), intent(in), optional :: coords
 
     integer :: i, j, k, s
-    integer :: lupot, nlines
+    integer :: lupot, lumep, nlines
     integer :: nidx, idx, jdx, kdx, ldx
     integer, dimension(:), allocatable :: idxs
     real(dp) :: r
@@ -306,19 +306,21 @@ subroutine pe_read_potential(coords, charges)
     if (pe_mep) then
         inquire(file='MEP.INP', exist=lexist)
         if (lexist) then
-            call openfile('MEP.INP', lupot, 'old', 'formatted')
+            call openfile('MEP.INP', lumep, 'old', 'formatted')
         else
             stop 'MEP.INP not found!'
         end if
-        read(lupot,*) npoints
-        read(lupot,*) auoraa
+        read(lumep,*) npoints
+        read(lumep,*) auoraa
         allocate(mepgrid(3,npoints))
         do i = 1, npoints
-            read(lupot,*) (mepgrid(j,i), j = 1, 3)
+            read(lumep,*) (mepgrid(j,i), j = 1, 3)
         end do
+        close(lumep)
         if (auoraa == 'AA') then
             mepgrid  = mepgrid * aa2au
         end if
+        nparpoints = npoints
     end if
 
     inquire(file='POTENTIAL.INP', exist=lexist)
@@ -328,6 +330,8 @@ subroutine pe_read_potential(coords, charges)
         if (pe_savden) then
             return
         else if (pe_fd) then
+            return
+        else if (pe_mep) then
             goto 101
         else
             stop 'POTENTIAL.INP not found!'
@@ -444,7 +448,6 @@ subroutine pe_read_potential(coords, charges)
 
     ! initialize in case calculation is serial
     nparsites = nsites
-    nparpoints = npoints
 
     ! if coordinates are in AA then convert to AU
     if (auoraa == 'AA') then
@@ -1153,9 +1156,9 @@ subroutine pe_compmep(denmats)
         end do
 
 #ifdef BUILD_GEN1INT
-        call Tk_integrals(Tk_ints(:,3), nnbas, 3, mepgrid(:,i), .false., 0.0d0)
+        call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
 #else
-        call Tk_integrals(Tk_ints(:,3), nnbas, 3, mepgrid(:,i), work, size(work))
+        call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), work, size(work))
 #endif
 
         do j = 1, 3
@@ -1217,8 +1220,8 @@ subroutine pe_compmep(denmats)
 #endif
         call openfile('qm_mep.dat', lu, 'new', 'formatted')
         rewind(lu)
-        write(lu,*) npoints
-        write(lu,*) 'AU'
+        write(lu,'(i10)') npoints
+        write(lu,'(a)') 'AU'
         do i = 1, npoints
             write(lu,'(7(f15.8,2x))') (mepgrid(j,i), j = 1, 3),&
                                       & Vs(1,i), (Fs(j,i), j = 1, 3)
@@ -2266,13 +2269,14 @@ subroutine Tk_coefficients
     integer :: i, j, k, l, m, n
 
 ! TODO: if mulorder less than polorder then it will be too small?
-    allocate(Cnij(2*mulorder+3,0:mulorder+1,0:mulorder+1))
+!    allocate(Cnij(2*mulorder+3,0:mulorder+1,0:mulorder+1))
+    allocate(Cnij(2*5+3,0:5+1,0:5+1))
 
     Cnij = 0
     Cnij(:,0,0) = 1
-    do n = 1, 2*mulorder+3
+    do n = 1, 2*5+3
         if (mod(n,2) == 0) cycle
-        do i = 1, mulorder+1
+        do i = 1, 5+1
             if (mod(i,2) /= 0) then
                 k = i - 1
             else if (mod(i,2) == 0) then
@@ -2339,11 +2343,8 @@ subroutine Tk_tensor(Tk, Rij)
 
     integer :: k, i
     integer :: x, y, z
-    real(dp) :: R
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Tk)) - 1.0d0)) - 1
-
-    R = nrm2(Rij)
 
     i = 1
     do x = k, 0, -1
