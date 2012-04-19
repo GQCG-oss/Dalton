@@ -968,6 +968,7 @@ subroutine pe_sync()
     if (myid /= 0) allocate(Rm(3,qmnucs))
     call mpi_bcast(Rm, 3*qmnucs, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
 
+    call mpi_bcast(mulorder, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(lmul, 6, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 
     if (lmul(0)) then
