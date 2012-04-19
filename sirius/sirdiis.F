@@ -1346,7 +1346,7 @@ C
          end if
        end if
        if (pe_mep) then
-        call pe_master(runtype='map', denmats=daosav(:,1), nmats=1,
+        call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
      &                 dalwrk=wrk(kfree:lfree))
        end if
        ! save density matrix 
