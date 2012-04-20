@@ -1279,7 +1279,7 @@ C
 C
 C  Used from common blocks:
 C     GNRINF : EMBEDDING
-C     INFINP : POTNUC
+C     INFINP : POTNUC, HSROHF
 C     INFORB : NRHF(*), NRHFT, ...
 C     SCBRHF : IOPRHF,NFRRHF(*)
 C     INFMP2 : NFRMP2(*)
@@ -1372,7 +1372,7 @@ C
          KFV = KDV + NNASHX
          KWRK= KFV + NNORBT
          LWRK= LSCRA - KWRK
-         CALL DZERO(NNASHX+NNORBT,SCRA(KDV))
+         CALL DZERO(SCRA(KDV),NNASHX+NNORBT)
          JDV_II = KDV - 1
          DO I = 1,NASHT
             JDV_II = JDV_II + I
@@ -1422,14 +1422,14 @@ C
      +      ' INFO The thus frozen virtual orbitals are excluded.',
      +      ' INFO We hope you know what you are doing!!!'
          END IF
-         NRHFI = NRHF(ISYM)
-         IORBI = IORB(ISYM)
+         NRHFI  = NRHF(ISYM)
+         IORBI  = IORB(ISYM)
          IIORBI = IIORB(ISYM)
          CALL DSPTGE(NORBI,FC(IIORBI+1),SCRA)
          VALCON  = D0
          IVALCON = 0
-         NOCCI = NRHFI + NASH(I)
-         DO I = NFRRHF_I+1,NRHFI
+         NOCCI = NRHFI + NASH(ISYM)
+         DO  I = NFRRHF_I+1,NRHFI
 C
 C           To check if this occupied orbital is converged we find
 C           the 2-norm of the coupling to the unoccupied orbitals
