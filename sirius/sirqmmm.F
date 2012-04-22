@@ -818,7 +818,7 @@ C     total solvation energy
       CALL DZERO(WRK(KTAO),NNBASX)
 
       IF (NODTOT .GE. 1) THEN
-        CALL MM_POLAR_CONTR_M(DCAO,WRK(KTAO),WRK(KINDMOM),
+        CALL MM_POLAR_CONTR_M(DCAO(1),WRK(KTAO),WRK(KINDMOM),
      &                      WRK(KWRK2),LWRK2,IPRINT)
       ELSE
 
@@ -1043,7 +1043,7 @@ C     (the order KELF KELFEL KELFNU has to be kept because of QMMM_POLARI_M1! AH
 
 C     Form F vector due to permanent MM moments
       IF (NODTOT .GE. 1) THEN
-        CALL MM_FIELD_M1(DCAO,WRK(KELF),POLDIM,
+        CALL MM_FIELD_M1(DCAO(1),WRK(KELF),POLDIM,
      &                      WRK(KEND),LWRK1,IPRINT)
       ELSE
 
@@ -1790,7 +1790,7 @@ C     Read the relay matrix from file
         ENDDO
       ENDDO
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) ) THEN
+      IF ( (IPRINT .GE. 15) .OR. (LOCDEB) ) THEN
         WRITE(LUPRI,*) 'Relay mat. is read from file MM_POLARIZABILITY'
         CALL OUTPUT(FULLMAT,1,N,1,N,N,N,1,LUPRI)
       ENDIF
@@ -2056,7 +2056,7 @@ C     Read the relay matrix from file
         ENDDO
       ENDDO
 
-      IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) )THEN
+      IF ( (IPRINT .GE. 15) .OR. (LOCDEB) )THEN
         WRITE(LUPRI,*) 'Response mat. is read from file MM_OPTROT'
         CALL OUTPUT(FULLMAT,1,N,1,N,N,N,1,LUPRI)
       ENDIF
@@ -2206,7 +2206,7 @@ C     1. Form F vector due to permanent MM moments
 
       IF (MMTIME) DTIME = SECOND()
       IF (NODTOT .GE. 1) THEN
-        CALL MM_FIELD_M2(DCAO,WRK(KELF),POLDIM,
+        CALL MM_FIELD_M2(DCAO(1),WRK(KELF),POLDIM,
      &                       WRK(KEND),LWRK1,IPRINT)
       ELSE
 
@@ -3279,6 +3279,7 @@ C  /* Deck dipole_iter */
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('DIPOLE_ITER')
 
@@ -5221,8 +5222,8 @@ C     Receiving data from master
       CALL MPIXBCAST(NNZAL,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
 
-      KELFEL  = 1
-      KDCAO   = KELFEL  + 3*POLDIM
+      KELF    = 1
+      KDCAO   = KELF    + 3*POLDIM
       KMAT    = KDCAO   + NNBASX
       KLAST   = KMAT    + 3*NNBASX
       LWRK2   = LWRK - KLAST + 1
@@ -5583,6 +5584,7 @@ C  /* Deck mmiter_inddip_m */
 #include "implicit.h"
 C      IMPLICIT NONE
 
+#include "priunit.h"
 #include "mxcent.h"
 #include "qmmm.h"
 #include "maxorb.h"
