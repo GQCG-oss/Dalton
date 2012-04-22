@@ -102,17 +102,11 @@ C
 #include "wrkrsp.h"
 #include "infsop.h"
 #include "dftcom.h"
-CSONIA SONIA SONIA
+
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
-CSONIA SONIA SONIA
 #include "grdccpt.h"
-CSONIA SONIA SONIA
 CSONIA SONIA SONIA end control direct for kappabar of CCSD(T)
-CSONIA SONIA SONIA
-!
-! srDFT linear response
-#include <srdftlnr.h>   
-!
+
 C
 C -- local constants
 C
@@ -560,7 +554,7 @@ C TOTAL SYMMETRIC FOCK MATRICES
 C
       IF ( NOSIM .GT. 0 )  THEN
 C
-C SUM UP COULOMN CONTRIBUTIONS WHICH ARE OBTAINED USING THE
+C SUM UP COULOMB CONTRIBUTIONS WHICH ARE OBTAINED USING THE
 C TERM IS SYMMETRIC
 C
          IF (IPRRSP.GT.50) THEN
@@ -850,12 +844,6 @@ C     Change IFCTYP for all Fa matrices
        CALL OUTPUT(WRK(KDTVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 #endif
-#ifdef MOD_SRDFT
-!     NOSIM_SR=NOSIM
-!     NCSIM_SR=NCSIM
-! ... so that NOSIM and NCSIM can be used in sirfck for computing the srHxc
-! Kernel contributions to the sigma vector       
-#endif      
  
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)

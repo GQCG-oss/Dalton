@@ -1983,7 +1983,7 @@ C
       write (lupri,*) 'rsp_srdftso: input V2C_SR:'
       call output(v2c_sr,1,norbt,1,norbt,norbt,norbt,-1,lupri)
       write (lupri,*) 'rsp_srdftso:  input EVEC orbital part:'
-      call output(evec(kzconf+1,1,kzwopt,1,2,kzvar,2,1,lupri)
+      call output(evec(kzconf+1),1,kzwopt,1,2,kzvar,2,1,lupri)
 #endif
 C
       KYCONF = KZCONF + KZVAR
@@ -2045,7 +2045,7 @@ C
 C
 #ifdef SRDFT_DEBUG
       write (lupri,*) 'rsp_srdftso: output EVEC orbital part:'
-      call output(evec(kzconf+1,1,kzwopt,1,2,kzvar,2,1,lupri)
+      call output(evec(kzconf+1),1,kzwopt,1,2,kzvar,2,1,lupri)
 #endif
       CALL QEXIT('RSP_SRDFTSO ')
       RETURN

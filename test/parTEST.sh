@@ -7,7 +7,7 @@
 # assuming at least four CPU cores per node.
 # Modify to fit your own setup.
 #
-# -- Hans Jørgen Aa. Jensen, Dec. 2010
+# -- Hans Jorgen Aa. Jensen, Dec. 2010
 # -------------------------------------------------------------------------------
 #
 # Ask PBS for 2 nodes.

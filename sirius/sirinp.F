@@ -256,8 +256,6 @@ C
 #include "dftcom.h"
 #include "dfterg.h"
 
-! srDFT linear response
-#include "srdftlnr.h"
 C
       INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
       ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
@@ -426,8 +424,6 @@ C  ---> Initialize SR-DFT stuff here !
       SRHYBR    = .FALSE.
       DFT_SPINDNS = .FALSE.
       DFT_LOCALSPIN = .FALSE.
-      NOSIM_SR = 0 ! used in the linear response
-      NCSIM_SR = 0 ! used in the linear response
 C <---
       DOCINO    = .FALSE.
       DOFCI     = .FALSE. ! Do Full CI
