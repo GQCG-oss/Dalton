@@ -81,9 +81,8 @@ module polarizable_embedding
     ! specifies what type of parameters are present
     ! lmul(0): monopoles, lmul(1): dipoles etc.
     logical, dimension(0:5), public, save :: lmul = .false.
-    ! lpol(0): isotropic dipole-dipole polarizabilities
-    ! lpol(1): anisotropic dipole-dipole polarizabilities
-    logical, dimension(0:1), public, save :: lpol = .false.
+    ! lpol(1): (an)isotropic dipole-dipole polarizabilities
+    logical, dimension(1), public, save :: lpol = .false.
     ! lhypol(1): dipole-dipole-dipole polarizabilities/1st hyperpolarizability
 !    logical, dimension(1), public, save :: lhypol
 
@@ -166,21 +165,21 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: mepgrid
 
 ! TODO:
+! write results after redistributing parameters
+! better solution for lmul and lpol
 ! use allocate/deallocate where possible?
 ! insert quit if symmetry or QM3, QMMM etc.
-! consistent implementation where several densities are taken as input
 ! find better solution for electric field calculation from frozen densities
 ! higher order polarizabilities
 ! write list of publications which should be cited
 ! write output related to FDs
 ! remove double zeroing and unecessary zeroing
-! memory checks and handle memory better
 ! nonlinear response properties
 ! magnetic properties
 ! cutoffs and damping
 ! memory management
 ! add error catching
-! parallelization (openMP, MPI, CUDA/openCL)
+! parallelization (openMP, MPI, CUDA/openCL?)
 
 contains
 
@@ -270,7 +269,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
     end do
 
     if (pe_mep .and. peqm) stop 'PEQM and MEP are not compatible'
-    if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible.'
+    if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible'
+    if (peqm .and. pe_savden) stop 'PEQM and SAVDEN are not compatible'
+    if (peqm .and. pe_twoint) stop 'PEQM and TWOINT are not compatible'
 
 end subroutine pe_dalton_input
 
@@ -285,7 +286,7 @@ subroutine pe_read_potential(coords, charges)
     integer :: lupot, lumep, nlines
     integer :: nidx, idx, jdx, kdx, ldx
     integer, dimension(:), allocatable :: idxs
-    real(dp) :: r
+    real(dp) :: rclose
     real(dp), dimension(21) :: temp
     character(len=2) :: auoraa
     character(len=80) :: word
@@ -352,8 +353,7 @@ subroutine pe_read_potential(coords, charges)
         else if (trim(word) == 'monopoles') then
             lmul(0) = .true.
             if (mulorder < 0) mulorder = 0
-            allocate(M0s(1,nsites)); M0s = 0.0d0
-            temp = 0.0d0
+            allocate(M0s(1,nsites))
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, temp(1)
@@ -362,8 +362,7 @@ subroutine pe_read_potential(coords, charges)
         else if (trim(word) == 'dipoles') then
             lmul(1) = .true.
             if (mulorder < 1) mulorder = 1
-            allocate(M1s(3,nsites)); M1s = 0.0d0
-            temp = 0.0d0
+            allocate(M1s(3,nsites))
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 3)
@@ -372,8 +371,7 @@ subroutine pe_read_potential(coords, charges)
         else if (trim(word) == 'quadrupoles') then
             lmul(2) = .true.
             if (mulorder < 2) mulorder = 2
-            allocate(M2s(6,nsites)); M2s = 0.0d0
-            temp = 0.0d0
+            allocate(M2s(6,nsites))
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 6)
@@ -382,8 +380,7 @@ subroutine pe_read_potential(coords, charges)
         else if (trim(word) == 'octopoles') then
             lmul(3) = .true.
             if (mulorder < 3) mulorder = 3
-            allocate(M3s(10,nsites)); M3s = 0.0d0
-            temp = 0.0d0
+            allocate(M3s(10,nsites))
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 10)
@@ -392,8 +389,7 @@ subroutine pe_read_potential(coords, charges)
         else if (trim(word) == 'hexadecapoles') then
             lmul(4) = .true.
             if (mulorder < 4) mulorder = 4
-            allocate(M4s(15,nsites)); M4s = 0.0d0
-            temp = 0.0d0
+            allocate(M4s(15,nsites))
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 15)
@@ -402,17 +398,16 @@ subroutine pe_read_potential(coords, charges)
         else if (trim(word) == 'ditriacontapoles') then
             lmul(5) = .true.
             if (mulorder < 5) mulorder = 5
-            allocate(M5s(21,nsites)); M5s = 0.0d0
-            temp = 0.0d0
+            allocate(M5s(21,nsites))
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 21)
                 M5s(:,s) = temp(1:21)
             end do
         else if (trim(word) == 'isoalphas') then
-            lpol(0) = .true.
-            allocate(P1s(6,nsites)); P1s = 0.0d0
-            temp = 0.0d0
+            lpol(1) = .true.
+            allocate(P1s(6,nsites))
+            P1s = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, temp(1)
@@ -423,9 +418,8 @@ subroutine pe_read_potential(coords, charges)
         else if (trim(word) == 'alphas') then
             lpol(1) = .true.
             if (.not. allocated(P1s)) then
-                allocate(P1s(6,nsites)); P1s = 0.0d0
+                allocate(P1s(6,nsites))
             end if
-            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 6)
@@ -472,18 +466,8 @@ subroutine pe_read_potential(coords, charges)
     else if (mulorder == 0) then
         write(luout,'(4x,a)') 'Multipole moments upto 0th order.'
     end if
-    if (lpol(0) .and. lpol(1)) then
-        write(luout,'(4x,a)') 'Isotropic and anisotropic&
-                              & dipole-dipole polarizabilities.'
-    else if (lpol(0) .and. .not. lpol(1)) then
-        write(luout,'(4x,a)') 'Isotropic dipole-dipole polarizabilities.'
-    else if (.not. lpol(0) .and. lpol(1)) then
-        write(luout,'(4x,a)') 'Anisotropic dipole-dipole polarizabilities.'
-    end if
-    if (pe_fd) then
-        write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
-    end if
-    if (lpol(0) .or. lpol(1)) then
+    if (lpol(1)) then
+        write(luout,'(4x,a)') '(An)isotropic dipole-dipole polarizabilities.'
         if (pe_damp) then
             write(luout,'(4x,a,f8.4)') 'Induced dipole-induced dipole&
                                        & interactions will be damped using&
@@ -503,6 +487,9 @@ subroutine pe_read_potential(coords, charges)
         else
             write(luout,'(4x,a)') 'Direct solver for induced dipoles will be used.'
         end if
+    end if
+    if (pe_fd) then
+        write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
     end if
 
    ! default exclusion list (everything polarizes everything)
@@ -559,13 +546,13 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(5)) then
                     M5s(:,idxs(i)) = 0.0d0
                 endif
-                if (lpol(0) .or. lpol(1)) then
+                if (lpol(1)) then
                     P1s(:,idxs(i)) = 0.0d0
                 end if
             end do
         else if (border_type == 'REDIST') then
             do i = 1, nidx
-                r = 1.0d10
+                rclose = 1.0d10
                 do j = 1, nsites
                     lexist = .false.
                     do k = 1, nidx
@@ -575,8 +562,8 @@ subroutine pe_read_potential(coords, charges)
                         end if
                     end do
                     if (lexist) cycle
-                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= r) then
-                        r = nrm2(Rs(:,idxs(i)) - Rs(:,j))
+                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= rclose) then
+                        rclose = nrm2(Rs(:,idxs(i)) - Rs(:,j))
                         idx = j
                     end if
                 end do
@@ -598,11 +585,11 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(5)) then
                     M5s(:,idx) = M5s(:,idx) + M5s(:,idxs(i)) / 3.0d0
                 endif
-                if (lpol(0) .or. lpol(1)) then
+                if (lpol(1)) then
                     P1s(:,idx) = P1s(:,idx) + P1s(:,idxs(i)) / 3.0d0
                 end if
 
-                r = 1.0d10
+                rclose = 1.0d10
                 do j = 1, nsites
                     if (j == idx) cycle
                     lexist = .false.
@@ -613,8 +600,8 @@ subroutine pe_read_potential(coords, charges)
                         end if
                     end do
                     if (lexist) cycle
-                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= r) then
-                        r = nrm2(Rs(:,idxs(i)) - Rs(:,j))
+                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= rclose) then
+                        rclose = nrm2(Rs(:,idxs(i)) - Rs(:,j))
                         jdx = j
                     end if
                 end do
@@ -636,11 +623,11 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(5)) then
                     M5s(:,jdx) = M5s(:,jdx) + M5s(:,idxs(i)) / 3.0d0
                 endif
-                if (lpol(0) .or. lpol(1)) then
+                if (lpol(1)) then
                     P1s(:,jdx) = P1s(:,jdx) + P1s(:,idxs(i)) / 3.0d0
                 end if
 
-                r = 1.0d10
+                rclose = 1.0d10
                 do j = 1, nsites
                     if (j == idx .or. j == jdx) cycle
                     lexist = .false.
@@ -651,8 +638,8 @@ subroutine pe_read_potential(coords, charges)
                         end if
                     end do
                     if (lexist) cycle
-                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= r) then
-                        r = nrm2(Rs(:,idxs(i)) - Rs(:,j))
+                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= rclose) then
+                        rclose = nrm2(Rs(:,idxs(i)) - Rs(:,j))
                         kdx = j
                     end if
                 end do
@@ -674,7 +661,7 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(5)) then
                     M5s(:,kdx) = M5s(:,kdx) + M5s(:,idxs(i)) / 3.0d0
                 endif
-                if (lpol(0) .or. lpol(1)) then
+                if (lpol(1)) then
                     P1s(:,kdx) = P1s(:,kdx) + P1s(:,idxs(i)) / 3.0d0
                 end if
 
@@ -696,7 +683,7 @@ subroutine pe_read_potential(coords, charges)
                 if (lmul(5)) then
                     M5s(:,idxs(i)) = 0.0d0
                 endif
-                if (lpol(0) .or. lpol(1)) then
+                if (lpol(1)) then
                     P1s(:,idxs(i)) = 0.0d0
                 end if
 
@@ -708,7 +695,7 @@ subroutine pe_read_potential(coords, charges)
     end if
 
     ! number of polarizabilities different from zero
-    if (lpol(0) .or. lpol(1)) then
+    if (lpol(1)) then
         allocate(zeroalphas(nsites))
         do i = 1, nsites
             if (abs(maxval(P1s(:,i))) >= zero) then
@@ -761,7 +748,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
     else if (runtype == 'response') then
         if (pe_gspol) return
         if (npols < 1) return
-        if (.not. lpol(0) .and. .not. lpol(1)) return
+        if (.not. lpol(1)) return
         fock = .false.
         energy = .false.
         response = .true.
@@ -942,7 +929,7 @@ subroutine pe_sync()
 
     call mpi_bcast(lpol, 2, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 
-    if (lpol(0) .or. lpol(1)) then
+    if (lpol(1)) then
         call mpi_bcast(npols, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
         if (myid == 0) then
             displs(0) = 0
@@ -1246,7 +1233,7 @@ subroutine pe_fock(denmats, fckmats, Epe)
     logical :: pol = .false.
 
     if ((mulorder >= 0) .or. pe_fd) es = .true.
-    if (lpol(0) .or. lpol(1)) pol = .true.
+    if (lpol(1)) pol = .true.
 
     if (allocated(Ees)) deallocate(Ees)
     if (allocated(Epol)) deallocate(Epol)

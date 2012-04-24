@@ -366,7 +366,7 @@ csonia 04/10/95
      &                                      'Ditriacontapoles', Ees(5,1)
         if (pe_fd) write(lupri,'(9x,a16,5x,f20.12)')
      &                                      'Frozen densities', Ees(6,1)
-        if (lpol(0) .or. lpol(1)) then
+        if (lpol(1)) then
             write(lupri,'(/7x,a)') 'Polarization contributions:'
             write(lupri,'(9x,a16,5x,f20.12)')
      &                                     'Electronic      ', Epol(1,1)
