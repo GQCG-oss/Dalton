@@ -438,7 +438,7 @@ C     if MC/CI and NO's not already printed
 C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
          IF (NASHT .GT. 1) THEN
             CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-            CALL RDCREF(WRK(KCREF))
+            CALL RDCREF(WRK(KCREF),.true.)
          END IF
          CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
      *              .FALSE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
@@ -476,7 +476,7 @@ C             (CREF was not saved on file)
          IPRNO = -1
          IF (NASHT .GT. 1) THEN
             CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-            CALL RDCREF(WRK(KCREF))
+            CALL RDCREF(WRK(KCREF),.true.)
             CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
      &              .TRUE.,.TRUE.,.TRUE.,MOISNO,WRK(KCINDX),
      &              WRK,KFREE,LFREE,LUPRI,IPRNO)
