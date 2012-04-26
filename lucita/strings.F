@@ -2196,11 +2196,11 @@ C?          write(6,*) ' corresponding number ', JSTRIN
       INTEGER NNSTSGP(MXPNSMST,MXPNGAS)
       INTEGER IISTSGP(MXPNSMST,MXPNGAS)
       NTEST = 0000
-      CALL QENTER('GETST')
+      CALL QENTER('GETST2')
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ============================== '
-        WRITE(6,*) ' Welcome to GETSTR_TOTSM_SPGP '
+        WRITE(6,*) ' Welcome to GETSTR2_TOTSM_SPGP '
         WRITE(6,*) ' ============================== '
         WRITE(6,*)
         WRITE(6,'(A)')  ' Strings to be obtained : '
@@ -2326,7 +2326,7 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
         END IF
       END IF
 *
-      CALL QEXIT('GETST')
+      CALL QEXIT('GETST2')
       RETURN
       END
 ***********************************************************************
@@ -2475,10 +2475,10 @@ C?        write(6,*) ' ISTSMM1 : ', ISTSMM1
           CALL IWRTMA(ISMFGS,1,NGAS,1,NGAS)
         END IF
 *. Obtain all strings of this symmetry
-CT      CALL QENTER('GASSM')
+        CALL QENTER('GASSM')
         CALL GETSTRN_GASSM_SPGP(ISMFGS,ITPFGS,ISTR(1,ISTRBS),NSTR,NEL,
      &                          NNSTSGP,IISTSGP)
-CT      CALL QEXIT('GASSM')
+        CALL QEXIT('GASSM')
 *. Reorder Info : Lexical => actual number
         IF(IDOREO.NE.0) THEN
 *. Lexical number of NEL electrons
