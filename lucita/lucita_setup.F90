@@ -486,7 +486,7 @@ contains
           do j = 1, nirrep
             i = i + ngsh_lucita(3,j)
           end do
-          if(i =< 0 ) ngas = 2 
+          if(i <= 0 ) ngas = 2 
         end if
 
         do i = 1, ngas
