@@ -6523,10 +6523,10 @@ C         start from x of the next MM center
 
 C    ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B > vector
 
-C      write(lupri,*) 'KEFIELD VECTOR'
-C      do k=1,3*nnzal
-C        write(lupri,*) wrk(kefield+k-1)
-C      enddo
+      write(lupri,*) 'KEFIELD VECTOR'
+      do k=1,3*nnzal
+        write(lupri,*) wrk(kefield+k-1)
+      enddo
 
       NDIM=3*NNZAL
       IF (MMMAT) THEN
@@ -6538,22 +6538,22 @@ C      enddo
      *               WRK(KWRK2),LWRK2,IOPT,IPQMMM)
       ENDIF
 
-C      write(lupri,*) 'ncsim:',ncsim
-C      write(lupri,*) 'KINDMOM VECTOR'
-C      do k=1,3*nnzal*ncsim
-C        write(lupri,*) wrk(kindmom+k-1)
-C      enddo
+      write(lupri,*) 'ncsim:',ncsim
+      write(lupri,*) 'KINDMOM VECTOR 1'
+      do k=1,3*nnzal*ncsim
+        write(lupri,*) wrk(kindmom+k-1)
+      enddo
 
 
       LCI = LCI + 1                           ! Reset counter to next | B > state of length NCSIM
 
       END DO ! ICSIM
 
-C      write(lupri,*) 'ncsim:',ncsim
-C      write(lupri,*) 'KINDMOM VECTOR'
-C      do k=1,3*nnzal*ncsim
-C        write(lupri,*) wrk(kindmom+k-1)
-C      enddo
+      write(lupri,*) 'ncsim:',ncsim
+      write(lupri,*) 'KINDMOM VECTOR 2'
+      do k=1,3*nnzal*ncsim
+        write(lupri,*) wrk(kindmom+k-1)
+      enddo
 
 
 C     3) Make F(el) and daxpy first x, then y and then z
