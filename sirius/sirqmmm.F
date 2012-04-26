@@ -6516,10 +6516,10 @@ C         z-value
 C         start from x MM center of next root
           LCI = LCI + 3*NNZAL
 
-          write(lupri,*) 'KEFIELD VECTOR 1'
-          do k=1,3*nnzal*ncsim
-          write(lupri,*) wrk(kefield+k-1)
-          enddo
+C          write(lupri,*) 'KEFIELD VECTOR 1'
+C          do k=1,3*nnzal*ncsim
+C          write(lupri,*) wrk(kefield+k-1)
+C          enddo
 
         END DO ! NCSIM
 
@@ -6529,10 +6529,10 @@ C         start from x MM center of next root
 
 C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B > vector
 
-      write(lupri,*) 'KEFIELD VECTOR 2'
-      do k=1,3*nnzal*ncsim
-      write(lupri,*) wrk(kefield+k-1)
-      enddo
+C      write(lupri,*) 'KEFIELD VECTOR 2'
+C      do k=1,3*nnzal*ncsim
+C      write(lupri,*) wrk(kefield+k-1)
+C      enddo
 
       DO ICSIM = 1, NCSIM
 
@@ -6548,19 +6548,19 @@ C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B 
      &               WRK(KWRK2),LWRK2,IOPT,IPQMMM)
       ENDIF
 
-      write(lupri,*) 'ncsim:',ncsim
-      write(lupri,*) 'KINDMOM VECTOR 1'
-      do k=1,3*nnzal*ncsim
-      write(lupri,*) wrk(kindmom+k-1)
-      enddo
+C      write(lupri,*) 'ncsim:',ncsim
+C      write(lupri,*) 'KINDMOM VECTOR 1'
+C      do k=1,3*nnzal*ncsim
+C      write(lupri,*) wrk(kindmom+k-1)
+C      enddo
 
       END DO ! ICSIM
 
-      write(lupri,*) 'ncsim:',ncsim
-      write(lupri,*) 'KINDMOM VECTOR 2'
-      do k=1,3*nnzal*ncsim
-        write(lupri,*) wrk(kindmom+k-1)
-      enddo
+C      write(lupri,*) 'ncsim:',ncsim
+C      write(lupri,*) 'KINDMOM VECTOR 2'
+C      do k=1,3*nnzal*ncsim
+C        write(lupri,*) wrk(kindmom+k-1)
+C      enddo
 
 C     3) Make F(el) and daxpy first x, then y and then z
 C        for each CI B vector
@@ -6598,12 +6598,12 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-        write(lupri,*) 'KMAT MO MATRIX 1'
-        CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
-        write(lupri,*) 'KMAT MO MATRIX 2'
-        CALL OUTPAK(WRK(KMATMO + 1*NNORBT),NORBT,1,LUPRI)
-        write(lupri,*) 'KMAT MO MATRIX 3'
-        CALL OUTPAK(WRK(KMATMO + 2*NNORBT),NORBT,1,LUPRI)
+C        write(lupri,*) 'KMAT MO MATRIX 1'
+C        CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
+C        write(lupri,*) 'KMAT MO MATRIX 2'
+C        CALL OUTPAK(WRK(KMATMO + 1*NNORBT),NORBT,1,LUPRI)
+C        write(lupri,*) 'KMAT MO MATRIX 3'
+C        CALL OUTPAK(WRK(KMATMO + 2*NNORBT),NORBT,1,LUPRI)
          
           LCI = 0 ! alternative set LCI = 3*NNZAL*(ICSIM-1)
 
@@ -6611,25 +6611,25 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
 
             FACx = -WRK(KINDMOM + LRI + 0 + LCI)        
 
-            write(lupri,*) 'FACx:', FACx
+C            write(lupri,*) 'FACx:', FACx
 
             CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
      &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-            write(lupri,*) 'KFXC MATRIX 1'
-            write(lupri,*) 'ICSIM #' , ICSIM
-            CALL OUTPAK(WRK(KFXC +  (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+C            write(lupri,*) 'KFXC MATRIX 1'
+C            write(lupri,*) 'ICSIM #' , ICSIM
+C            CALL OUTPAK(WRK(KFXC +  (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
             FACy = -WRK(KINDMOM + LRI + 1 + LCI)
 
-           write(lupri,*) 'FACy:', FACy
+C           write(lupri,*) 'FACy:', FACy
 
             CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
      &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-            write(lupri,*) 'KFXC MATRIX 2'
-            write(lupri,*) 'ICSIM #' , ICSIM
-            CALL OUTPAK(WRK(KFXC  + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+C           write(lupri,*) 'KFXC MATRIX 2'
+C           write(lupri,*) 'ICSIM #' , ICSIM
+C           CALL OUTPAK(WRK(KFXC  + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
             FACz = -WRK(KINDMOM + LRI + 2 + LCI)       
 
@@ -6638,9 +6638,9 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
             CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
      &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
  
-            write(lupri,*) 'KFXC MATRIX 3'
-            write(lupri,*) 'ICSIM #' , ICSIM
-            CALL OUTPAK(WRK(KFXC + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+C            write(lupri,*) 'KFXC MATRIX 3'
+C            write(lupri,*) 'ICSIM #' , ICSIM
+C            CALL OUTPAK(WRK(KFXC + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
             IF (NASHT .GT. 0) THEN
               CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
@@ -7049,32 +7049,32 @@ c     &               1,NORBT,NORBT,NORBT,1,LUPRI)
      &                  WRK(JMTX + 2*NNORBX))              
 
 
-            WRITE(LUPRI,*) 'x-coord: Square fel(1) operator'
-             WRITE(LUPRI,*) 'Vector:' , IOSIM
-            CALL OUTPUT(WRK(KMTXSQ),1,NORBT,1,NORBT,NORBT,
-     &                  NORBT,1,LUPRI)
+C            WRITE(LUPRI,*) 'x-coord: Square fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPUT(WRK(KMTXSQ),1,NORBT,1,NORBT,NORBT,
+C     &                  NORBT,1,LUPRI)
 
-            WRITE(LUPRI,*) 'x-coord: fel(1) operator'
-            WRITE(LUPRI,*) 'Vector:' , IOSIM
-            CALL OUTPAK(WRK(KMTX),NORBT,1,LUPRI)
+C            WRITE(LUPRI,*) 'x-coord: fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPAK(WRK(KMTX),NORBT,1,LUPRI)
 
-            WRITE(LUPRI,*) 'y-coord: Square fel(1) operator'
-            WRITE(LUPRI,*) 'Vector:' , IOSIM
-            CALL OUTPUT(WRK(KMTXSQ + 1*N2ORBX),1,NORBT,1,NORBT,
-     &                  NORBT,NORBT,1,LUPRI)
+C            WRITE(LUPRI,*) 'y-coord: Square fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPUT(WRK(KMTXSQ + 1*N2ORBX),1,NORBT,1,NORBT,
+C     &                  NORBT,NORBT,1,LUPRI)
 
-            WRITE(LUPRI,*) 'y-coord: fel(1) operator'
-            WRITE(LUPRI,*) 'Vector:' , IOSIM
-            CALL OUTPAK(WRK(KMTX + 1*NNORBX),NORBT,1,LUPRI)
+C            WRITE(LUPRI,*) 'y-coord: fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPAK(WRK(KMTX + 1*NNORBX),NORBT,1,LUPRI)
 
-            WRITE(LUPRI,*) 'z-coord: Square fel(1) operator'
-            WRITE(LUPRI,*) 'Vector:' , IOSIM
-            CALL OUTPUT(WRK(KMTXSQ + 2*N2ORBX),1,NORBT,1,NORBT,
-     &              NORBT,NORBT,1,LUPRI)
+C            WRITE(LUPRI,*) 'z-coord: Square fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPUT(WRK(KMTXSQ + 2*N2ORBX),1,NORBT,1,NORBT,
+C     &              NORBT,NORBT,1,LUPRI)
 
-            WRITE(LUPRI,*) 'z-coord: fel(1) operator'
-            WRITE(LUPRI,*) 'Vector:' , IOSIM
-            CALL OUTPAK(WRK(KMTX + 2*NNORBX),NORBT,1,LUPRI)
+C            WRITE(LUPRI,*) 'z-coord: fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPAK(WRK(KMTX + 2*NNORBX),NORBT,1,LUPRI)
 
            IF (NASHT .GT. 0) THEN
              CALL GETAC2(WRK(JMTX),WRK(JMTXAC))
