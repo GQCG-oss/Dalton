@@ -429,7 +429,7 @@ contains
       idensi = lucita_cfg_density_calc_lvl
 !     no particle-hole simplification in use for compatibility with densities
 !     jeppe + stefan: april 2011
-      iuse_ph = 1
+      iuse_ph = 0
       if(idensi > 0) IUSE_PH = 0
 !     allow the sigma routine to take advice
       IADVICE = 0
@@ -477,12 +477,25 @@ contains
 !       generalized active space concept, define orbital spaces
 !       -------------------------------------------------------
         ngas    = lucita_cfg_nr_gas_spaces 
-        if(lucita_cfg_ci_type(1:6) == 'RASCI ') ngas = 3
+
+        if(lucita_cfg_ci_type(1:6) == 'RASCI ')then
+
+          ngas = 3
+!         check for atypical RAS (no RAS3):
+          i = 0
+          do j = 1, nirrep
+            i = i + ngsh_lucita(3,j)
+          end do
+          if(i =< 0 ) ngas = 2 
+        end if
+
         do i = 1, ngas
           do j = 1, nirrep
             NGSSH(j,i) = ngsh_lucita(i,j)
           end do
         end do
+
+
 !       check for maximum number of orbitals per space and symmetry
         do i = 1, NGAS 
           do j = 1, NIRREP
@@ -517,8 +530,10 @@ contains
             igsoccx(1,2,1) = nimx
             igsoccx(2,1,1) = namn
             igsoccx(2,2,1) = namx
-            igsoccx(3,1,1) = nemn
-            igsoccx(3,2,1) = nemx
+            if(ngas > 2)then
+              igsoccx(3,1,1) = nemn
+              igsoccx(3,2,1) = nemx
+            end if
             if(nimx > namx .or.  namx > nemx ) call quit('*** reconsider your RAS setup - it is wrong...  ***')
 !         gas
           case('GASCI ')

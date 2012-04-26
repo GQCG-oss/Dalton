@@ -111,6 +111,14 @@ contains
       case(2) ! RAS
 
         tmp_nr_gas_spaces = 3
+!       check for atypical ras (no ras3): 
+        i = 0
+        do j = 1, number_of_ptg_irreps
+          i = i + is_nas3_lucita(j)
+        end do
+        
+        if(i == 0) tmp_nr_gas_spaces = 2
+        
 
 !       a. active shells for each point group irrep in RAS1, RAS2 and RAS3
         do i = 1, tmp_nr_gas_spaces
