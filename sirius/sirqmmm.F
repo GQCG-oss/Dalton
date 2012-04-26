@@ -6247,7 +6247,7 @@ C   INFLIN : NWOPPT,NVARPT
       CALL QENTER('PELIN')
 
       IF (NCSIM .GT. 0) THEN
-         IF ( (LOCDEB) .OR. (IPQMMM.GT.2) ) THEN
+         IF ( (LOCDEB) .OR. (IPQMMM.GT.15) ) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' BEFORE PELNC CALL, ITERATION # '  
             CALL OUTPUT(SCVECS,1,NCONF,1,NCSIM,NCONF,NCSIM,1,LUPRI)
@@ -6256,7 +6256,7 @@ C   INFLIN : NWOPPT,NVARPT
          CALL PELNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
      &               DV,DTV,SCVECS,WRK,LWRK)
 
-         IF ( (LOCDEB) .OR. (IPQMMM .GT. 2) ) THEN
+         IF ( (LOCDEB) .OR. (IPQMMM .GT. 15) ) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' AFTER PELNC CALL, ITERATION # '
             CALL OUTPUT(SCVECS,1,NCONF,1,NCSIM,NCONF,NCSIM,1,LUPRI)
@@ -6353,7 +6353,7 @@ C
 C     -------------------------------------------
       KINVMAT  = KFPEAC   + NNASHX
       KEFIELD  = KINVMAT  + 3*NNZAL*(3*NNZAL+1)/2
-      KINDMOM  = KEFIELD  + 3*NNZAL
+      KINDMOM  = KEFIELD  + 3*NNZAL*NCSIM
 C     -------------------------------------------
       KFXC     = KINDMOM  + 3*NNZAL*NCSIM  
       KFXCAC   = KFXC     + NCSIM*NNORBT
@@ -6382,7 +6382,7 @@ C        < 0 | Fxc | B >  (for B each state)
       CALL DZERO(WRK(KFPEMO),NNORBT)
       CALL DZERO(WRK(KFPEAC),NNASHX)
       CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
-      CALL DZERO(WRK(KEFIELD),3*NNZAL)
+      CALL DZERO(WRK(KEFIELD),3*NNZAL*NCSIM)
       CALL DZERO(WRK(KINDMOM),3*NNZAL*NCSIM)
       CALL DZERO(WRK(KFXC),NCSIM*NNORBT)
       CALL DZERO(WRK(KFXCAC),NCSIM*NNASHX)
@@ -6416,7 +6416,7 @@ C     1) Construct B(r) response (relay) matrix from file or solve iteratively
 
       ENDIF
 
-C     2.a) ...Loop over CI states
+C     2.a) ...Loop over MM sites
 
       IF (.NOT. LPOL) GOTO 755
 
@@ -6432,22 +6432,15 @@ C     3. KMATAC  : Active part of F^(1)
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('PELNC',-KWRK2,LWRK2)
 
+      LRI = 0 ! counter for index in transformed electric field vector
 
-      LCI = 0 ! counter for state-index in electric field vector (EFIELD)
+      DO I = 1,MMCENT
 
-      DO ICSIM = 1,NCSIM
-
-      KPATOM = 0
-      NCOM  = 3       ! called NOSIM occationally but denoted NCOM here 
-      TOFILE = .FALSE.
-      TRIMAT = .TRUE.
-      EXP1VL = .FALSE.
-
-C     ... Loop over MM sites
-
-        LRI = 0 ! counter for index in transformed electric field vector
-
-        DO I = 1,MMCENT
+        KPATOM = 0
+        NCOM  = 3       ! called NOSIM occationally but denoted NCOM here 
+        TOFILE = .FALSE.
+        TRIMAT = .TRUE.
+        EXP1VL = .FALSE.
 
         CALL DZERO(WRK(KMATAO),3*NNBASX)
         CALL DZERO(WRK(KMATMO),3*NNORBT)
@@ -6497,6 +6490,10 @@ C        2.d) Active part of Fel(1) operator in MO basis
 C        2.e ) Make F(tilde) =  2 < 0 | F(el) | B > is the 2 included in SOLELM ???
 C        for one |u > in | B > = sum(u)| u >b(u)        
 
+         LCI = 0
+
+         DO ICSIM = 1,NCSIM
+
             TXPE1 = SOLELM(DTV(1,ICSIM),WRK(KMATAC),
      &                     WRK(KMATMO),TXPEAC1)
 
@@ -6510,60 +6507,65 @@ C         ...To store the F(tilde) in dynamical memory, get
 C         KEFIELD x, y, z first time loop is run. Next time  
 C         Set LRI + 3 to get next MM center.         
 
-C         x-value                             ! This is for storage of the vector
-          WRK(KEFIELD + LRI + 0) = TXPEAC1    ! containing the expectation value of F(tilde)
-C         y-value                             ! LCI is a counter for each state in 
-          WRK(KEFIELD + LRI + 1) = TXPEAC2    ! < 0 | F(el) | B > = sum(u) < 0 | F(el) | u >
+C         x-value                                   ! This is for storage of the vector
+          WRK(KEFIELD + LRI + 0 + LCI) = TXPEAC1    ! containing the expectation value of F(tilde)
+C         y-value                                   ! LCI is a counter for each state in 
+          WRK(KEFIELD + LRI + 1 + LCI) = TXPEAC2    ! < 0 | F(el) | B > = sum(u) < 0 | F(el) | u >
 C         z-value
-          WRK(KEFIELD + LRI + 2) = TXPEAC3
-C         start from x of the next MM center
-          LRI = LRI + 3
+          WRK(KEFIELD + LRI + 2 + LCI) = TXPEAC3
+C         start from x MM center of next root
+          LCI = LCI + 3*NNZAL
 
-        END DO ! MMCENT
+C          write(lupri,*) 'KEFIELD VECTOR 1'
+C          do k=1,3*nnzal*ncsim
+C          write(lupri,*) wrk(kefield+k-1)
+C          enddo
 
-C    ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B > vector
+        END DO ! NCSIM
 
-      write(lupri,*) 'KEFIELD VECTOR'
-      do k=1,3*nnzal
-        write(lupri,*) wrk(kefield+k-1)
-      enddo
+        LRI = LRI + 3
+
+      END DO ! MMCENT
+
+C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B > vector
+
+C      write(lupri,*) 'KEFIELD VECTOR 2'
+C      do k=1,3*nnzal*ncsim
+C      write(lupri,*) wrk(kefield+k-1)
+C      enddo
+
+      DO ICSIM = 1, NCSIM
 
       NDIM=3*NNZAL
       IF (MMMAT) THEN
          CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
-     &                WRK(KEFIELD),1,D0,WRK(KINDMOM + 3*LCI*NNZAL),1)
+     &              WRK(KEFIELD + (ICSIM-1)*3*NNZAL),1,D0,
+     &              WRK(KINDMOM + (ICSIM-1)*3*NNZAL),1)
       ELSE IF (MMITER) THEN
          IOPT = 2 ! Do not read from file any previuos induced moments
-         CALL F2QMMM(WRK(KEFIELD),NDIM,WRK(KINDMOM + 3*LCI*NNZAL),
-     *               WRK(KWRK2),LWRK2,IOPT,IPQMMM)
+         CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
+     &               WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
+     &               WRK(KWRK2),LWRK2,IOPT,IPQMMM)
       ENDIF
 
-      write(lupri,*) 'ncsim:',ncsim
-      write(lupri,*) 'KINDMOM VECTOR 1'
-      do k=1,3*nnzal*ncsim
-        write(lupri,*) wrk(kindmom+k-1)
-      enddo
-
-
-      LCI = LCI + 1                           ! Reset counter to next | B > state of length NCSIM
+C      write(lupri,*) 'ncsim:',ncsim
+C      write(lupri,*) 'KINDMOM VECTOR 1'
+C      do k=1,3*nnzal*ncsim
+C      write(lupri,*) wrk(kindmom+k-1)
+C      enddo
 
       END DO ! ICSIM
 
-      write(lupri,*) 'ncsim:',ncsim
-      write(lupri,*) 'KINDMOM VECTOR 2'
-      do k=1,3*nnzal*ncsim
-        write(lupri,*) wrk(kindmom+k-1)
-      enddo
-
+C      write(lupri,*) 'ncsim:',ncsim
+C      write(lupri,*) 'KINDMOM VECTOR 2'
+C      do k=1,3*nnzal*ncsim
+C        write(lupri,*) wrk(kindmom+k-1)
+C      enddo
 
 C     3) Make F(el) and daxpy first x, then y and then z
 C        for each CI B vector
 
-      LCI = 0
-
-      DO ICSIM = 1,NCSIM
-
-        LRI = 0
+       LRI = 0
          
         DO I = 1, MMCENT
 
@@ -6596,93 +6598,79 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-       
-       write(lupri,*) 'KMAT MO x'
-       write(lupri,*) 'ICSIM #' , ICSIM
-       CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
-      
-       write(lupri,*) 'KMAT MO y'
-       write(lupri,*) 'ICSIM #' , ICSIM
-       CALL OUTPAK(WRK(KMATMO + 1*NNORBT),NORBT,1,LUPRI)
+C        write(lupri,*) 'KMAT MO MATRIX 1'
+C        CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
+C        write(lupri,*) 'KMAT MO MATRIX 2'
+C        CALL OUTPAK(WRK(KMATMO + 1*NNORBT),NORBT,1,LUPRI)
+C        write(lupri,*) 'KMAT MO MATRIX 3'
+C        CALL OUTPAK(WRK(KMATMO + 2*NNORBT),NORBT,1,LUPRI)
+         
+          LCI = 0 ! alternative set LCI = 3*NNZAL*(ICSIM-1)
 
-       write(lupri,*) 'KMAT MO z'
-       write(lupri,*) 'ICSIM #' , ICSIM
-       CALL OUTPAK(WRK(KMATMO + 2*NNORBT),NORBT,1,LUPRI)
+          DO ICSIM = 1,NCSIM
 
-        FACx = -WRK(KINDMOM + LRI + 0 + 3*NNZAL*LCI)        
+            FACx = -WRK(KINDMOM + LRI + 0 + LCI)        
 
-        write(lupri,*) 'FACx:', FACx
+C            write(lupri,*) 'FACx:', FACx
 
-        CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
-     &             WRK(KFXC + LCI*NNORBT),1)
-        CALL OUTPAK(WRK(KFXC +  (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+            CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
+     &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-            write(lupri,*) 'KFXC MATRIX 1'
-            write(lupri,*) 'ICSIM #' , ICSIM
-            CALL OUTPAK(WRK(KFXC +  (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+C            write(lupri,*) 'KFXC MATRIX 1'
+C            write(lupri,*) 'ICSIM #' , ICSIM
+C            CALL OUTPAK(WRK(KFXC +  (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
-        FACy = -WRK(KINDMOM + LRI + 1 + 3*NNZAL*LCI)
+            FACy = -WRK(KINDMOM + LRI + 1 + LCI)
 
-       write(lupri,*) 'FACy:', FACy
+C           write(lupri,*) 'FACy:', FACy
 
-        CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
-     &             WRK(KFXC + LCI*NNORBT),1)
+            CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
+     &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-            write(lupri,*) 'KFXC MATRIX 2'
-            write(lupri,*) 'ICSIM #' , ICSIM
-            CALL OUTPAK(WRK(KFXC  + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+C           write(lupri,*) 'KFXC MATRIX 2'
+C           write(lupri,*) 'ICSIM #' , ICSIM
+C           CALL OUTPAK(WRK(KFXC  + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
-        FACz = -WRK(KINDMOM + LRI + 2 + 3*NNZAL*LCI)       
+            FACz = -WRK(KINDMOM + LRI + 2 + LCI)       
 
-       write(lupri,*) 'FACz:', FACz
+C            write(lupri,*) 'FACz:', FACz
 
-        CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
-     &             WRK(KFXC + LCI*NNORBT),1)
+            CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
+     &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
+ 
+C            write(lupri,*) 'KFXC MATRIX 3'
+C            write(lupri,*) 'ICSIM #' , ICSIM
+C            CALL OUTPAK(WRK(KFXC + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
-            write(lupri,*) 'KFXC MATRIX 3'
-            write(lupri,*) 'ICSIM #' , ICSIM
-            CALL OUTPAK(WRK(KFXC + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+            IF (NASHT .GT. 0) THEN
+              CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
+     &                    WRK(KFXCAC + (ICSIM-1)*NNASHX))
+            END IF
 
-        LRI = LRI + 3
+            LCI = LCI + 3*NNZAL
 
         END DO
 
-      IF (NASHT .GT. 0) THEN                                           
-         CALL GETAC2(WRK(KFXC + LCI*NNORBT),WRK(KFXCAC + LCI*NNASHX))  
-      END IF
+      LRI = LRI + 3
 
-      TFXC = SOLELM(DV,WRK(KFXCAC + LCI*NNASHX),
-     &              WRK(KFXC + LCI*NNORBT),TFXCAC)
+      END DO
+
+      DO ICSIM = 1,NCSIM
+
+      TFXC = SOLELM(DV,WRK(KFXCAC + (ICSIM-1)*NNASHX),
+     &              WRK(KFXC + (ICSIM-1)*NNORBT),TFXCAC)
 
       WRK(KTFXCAC-1+ICSIM) = TFXCAC
-
-       write(lupri,*) 'TFXC', TFXC
-       write(lupri,*) 'TFXCAC', TFXCAC
-       write(lupri,*) 'TFXCAC', WRK(KTFXCAC-1+ICSIM)
-       CALL OUTPAK(WRK(KFXC + LCI*NNORBT),NORBT,1,LUPRI)
-     
-      LCI = LCI +  1
       
       END DO
 
-  755 CONTINUE
+  755 CONTINUE ! IF LPOL
 
       CALL PEFCMO(WRK(KUCMO),WRK(KFPEMO),DV,WRK(KWRK1),LWRK1,IPQMMM)
-
-C ****** edh: Write statements for debugging ******************
-C *************************************************************
-
-      IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
-      WRITE(LUPRI,*) '****** SOLVENT OPERATOR AFTER PEFCMO *******'
-      CALL OUTPAK(WRK(KFPEMO),NORBT,1,LUPRI)
-      END IF
 
       IF (NASHT .GT. 0) THEN                             
           CALL GETAC2(WRK(KFPEMO),WRK(KFPEAC))
       END IF
-
-C *************************************************************
-C *************************************************************
 
       TFPEMO = SOLELM(DV,WRK(KFPEAC),WRK(KFPEMO),TFPEAC) 
 C
@@ -6762,7 +6750,7 @@ C     ...Restore the dipole origin.
       END
 C     end of pelnc.
 
-      SUBROUTINE PELNO(NOSIM,BOVECS,CREF,CMO,INDXCI,    ! edh why SVECS and not SVECS + what is NSVEC ?
+      SUBROUTINE PELNO(NOSIM,BOVECS,CREF,CMO,INDXCI,    
      *                 DV,SVEC,NSVEC,WRK,LFREE)
 C
 C  Erik Donovan Hedegaard jan. 2012 
@@ -6818,13 +6806,6 @@ C
       FULHES = (NSVEC .EQ. NVARPT)
 
       IF (IPOLTP .GT. 0) LPOL = .TRUE.
-
-c      write(lupri,*) 'FULHES: ', FULHES
-c      write(lupri,*)'NSVEC: ',NSVEC
-c      write(lupri,*) 'NVARPT: ', NVARPT
-c      write(lupri,*) 'NCONST: ',NCONST
-c      write(lupri,*) 'NWOPPT: ',NWOPPT
-
 
       IF (FULHES) THEN
          JSOVEC = 1 + NCONST
@@ -7048,7 +7029,6 @@ c     &               1,NORBT,NORBT,NORBT,1,LUPRI)
 
             CALL DZERO(WRK(KMTXSQ),3*N2ORBX) 
 
-
             CALL TR1UH1(WRK(JUBO),WRK(KMTSQ),              !     **** x component **** 
      &                  WRK(KMTXSQ),1)                     ! one index transform F^(1)el to f^(1)el
 
@@ -7069,33 +7049,33 @@ c     &               1,NORBT,NORBT,NORBT,1,LUPRI)
      &                  WRK(JMTX + 2*NNORBX))              
 
 
-c            WRITE(LUPRI,*) 'x-coord: Square fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPUT(WRK(KMTXSQ),1,NORBT,1,NORBT,NORBT,
-c     &                  NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'x-coord: fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPAK(WRK(KMTX),NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'y-coord: Square fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPUT(WRK(KMTXSQ + 1*N2ORBX),1,NORBT,1,NORBT,
-c     &                  NORBT,NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'y-coord: fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPAK(WRK(KMTX + 1*NNORBX),NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'z-coord: Square fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPUT(WRK(KMTXSQ + 2*N2ORBX),1,NORBT,1,NORBT,
-c     &              NORBT,NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'z-coord: fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPAK(WRK(KMTX + 2*NNORBX),NORBT,1,LUPRI)
-c
+C            WRITE(LUPRI,*) 'x-coord: Square fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPUT(WRK(KMTXSQ),1,NORBT,1,NORBT,NORBT,
+C     &                  NORBT,1,LUPRI)
+
+C            WRITE(LUPRI,*) 'x-coord: fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPAK(WRK(KMTX),NORBT,1,LUPRI)
+
+C            WRITE(LUPRI,*) 'y-coord: Square fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPUT(WRK(KMTXSQ + 1*N2ORBX),1,NORBT,1,NORBT,
+C     &                  NORBT,NORBT,1,LUPRI)
+
+C            WRITE(LUPRI,*) 'y-coord: fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPAK(WRK(KMTX + 1*NNORBX),NORBT,1,LUPRI)
+
+C            WRITE(LUPRI,*) 'z-coord: Square fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPUT(WRK(KMTXSQ + 2*N2ORBX),1,NORBT,1,NORBT,
+C     &              NORBT,NORBT,1,LUPRI)
+
+C            WRITE(LUPRI,*) 'z-coord: fel(1) operator'
+C            WRITE(LUPRI,*) 'Vector:' , IOSIM
+C            CALL OUTPAK(WRK(KMTX + 2*NNORBX),NORBT,1,LUPRI)
+
            IF (NASHT .GT. 0) THEN
              CALL GETAC2(WRK(JMTX),WRK(JMTXAC))
              CALL GETAC2(WRK(JMTX + 1*NNORBX),WRK(JMTXAC + 1*NNASHX))
@@ -7134,7 +7114,6 @@ C        ... start from x of the next MM center
 
       END DO ! MMCENT
 
-
 C     ... and calculate the one-index transformed 
 C     induced moment:  u = B * < 0 | f^(1) | 0 > 
 
@@ -7144,8 +7123,8 @@ C     induced moment:  u = B * < 0 | f^(1) | 0 >
         IF (IPOLTP .GT. 0) THEN
           IF (MMMAT) THEN
            CALL DSPMV('L',3*NNZAL,D1,WRK(KINVMAT),             ! edh: note KINVMAT is a lower triangular matrix
-     &                WRK(KEFIEX + 3*(IOSIM - 1)*NNZAL),1,D0,  ! Seems like these are zero from the print below ? !
-     &                WRK(KINDMOM + 3*(IOSIM-1)*NNZAL),1)      ! check KINDMOM from where it is constructed!!!
+     &                WRK(KEFIEX + 3*(IOSIM - 1)*NNZAL),1,D0,  
+     &                WRK(KINDMOM + 3*(IOSIM-1)*NNZAL),1)      
           ELSE IF (MMITER) THEN
            IOPT = 2 ! Do not read from file any previuos induced moments
            CALL F2QMMM(WRK(KEFIEX  + 3*(IOSIM - 1)*NNZAL),NNZAL,
@@ -7160,7 +7139,6 @@ C         write(lupri,*) 'KINDMOM vector:'
 C           do I=1,3*NOSIM*NNZAL
 C             write(lupri,*) wrk(kindmom+i-1)
 C           end do
-
 
 C     3) Make F^(1)el and daxpy to get one-index transformed u; first x, then y and then z
 C        
