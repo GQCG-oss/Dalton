@@ -954,7 +954,7 @@ CT    CALL QEXIT('CKA_PA')
             DO IOBTP = 1, NTPOB
 *  Allowed ?
               CALL NEWTYP(KBTP,2,IOBTP,1,JBTP)
-              IF(JATP.GT.0) THEN
+              IF(JBTP.GT.0) THEN
                 MXIOB = 0
                 DO ISMOB = 1, NSMOB
                   MXIOB = MAX(MXIOB,NTSOB(IOBTP,ISMOB))
