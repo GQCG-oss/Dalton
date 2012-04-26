@@ -6514,7 +6514,12 @@ C         y-value                                   ! LCI is a counter for each 
 C         z-value
           WRK(KEFIELD + LRI + 2 + LCI) = TXPEAC3
 C         start from x MM center of next root
-          LCI = LCI + (ICSIM-1)*3*NNZAL
+          LCI = LCI + 3*NNZAL
+
+          write(lupri,*) 'KEFIELD VECTOR 1'
+          do k=1,3*nnzal*ncsim
+          write(lupri,*) wrk(kefield+k-1)
+          enddo
 
         END DO ! NCSIM
 
@@ -6524,9 +6529,9 @@ C         start from x MM center of next root
 
 C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B > vector
 
-      write(lupri,*) 'KEFIELD VECTOR'
+      write(lupri,*) 'KEFIELD VECTOR 2'
       do k=1,3*nnzal*ncsim
-        write(lupri,*) wrk(kefield+k-1)
+      write(lupri,*) wrk(kefield+k-1)
       enddo
 
       DO ICSIM = 1, NCSIM
@@ -6543,10 +6548,16 @@ C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B 
      &               WRK(KWRK2),LWRK2,IOPT,IPQMMM)
       ENDIF
 
+      write(lupri,*) 'ncsim:',ncsim
+      write(lupri,*) 'KINDMOM VECTOR 1'
+      do k=1,3*nnzal*ncsim
+      write(lupri,*) wrk(kindmom+k-1)
+      enddo
+
       END DO ! ICSIM
 
       write(lupri,*) 'ncsim:',ncsim
-      write(lupri,*) 'KINDMOM VECTOR '
+      write(lupri,*) 'KINDMOM VECTOR 2'
       do k=1,3*nnzal*ncsim
         write(lupri,*) wrk(kindmom+k-1)
       enddo
@@ -6636,7 +6647,7 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
      &                    WRK(KFXCAC + (ICSIM-1)*NNASHX))
             END IF
 
-            LCI = LCI + (ICSIM-1)*3*NNZAL
+            LCI = LCI + 3*NNZAL
 
         END DO
 
@@ -7018,7 +7029,6 @@ c     &               1,NORBT,NORBT,NORBT,1,LUPRI)
 
             CALL DZERO(WRK(KMTXSQ),3*N2ORBX) 
 
-
             CALL TR1UH1(WRK(JUBO),WRK(KMTSQ),              !     **** x component **** 
      &                  WRK(KMTXSQ),1)                     ! one index transform F^(1)el to f^(1)el
 
@@ -7039,33 +7049,33 @@ c     &               1,NORBT,NORBT,NORBT,1,LUPRI)
      &                  WRK(JMTX + 2*NNORBX))              
 
 
-c            WRITE(LUPRI,*) 'x-coord: Square fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPUT(WRK(KMTXSQ),1,NORBT,1,NORBT,NORBT,
-c     &                  NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'x-coord: fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPAK(WRK(KMTX),NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'y-coord: Square fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPUT(WRK(KMTXSQ + 1*N2ORBX),1,NORBT,1,NORBT,
-c     &                  NORBT,NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'y-coord: fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPAK(WRK(KMTX + 1*NNORBX),NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'z-coord: Square fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPUT(WRK(KMTXSQ + 2*N2ORBX),1,NORBT,1,NORBT,
-c     &              NORBT,NORBT,1,LUPRI)
-c
-c            WRITE(LUPRI,*) 'z-coord: fel(1) operator'
-c            WRITE(LUPRI,*) 'Vector:' , IOSIM
-c            CALL OUTPAK(WRK(KMTX + 2*NNORBX),NORBT,1,LUPRI)
-c
+            WRITE(LUPRI,*) 'x-coord: Square fel(1) operator'
+             WRITE(LUPRI,*) 'Vector:' , IOSIM
+            CALL OUTPUT(WRK(KMTXSQ),1,NORBT,1,NORBT,NORBT,
+     &                  NORBT,1,LUPRI)
+
+            WRITE(LUPRI,*) 'x-coord: fel(1) operator'
+            WRITE(LUPRI,*) 'Vector:' , IOSIM
+            CALL OUTPAK(WRK(KMTX),NORBT,1,LUPRI)
+
+            WRITE(LUPRI,*) 'y-coord: Square fel(1) operator'
+            WRITE(LUPRI,*) 'Vector:' , IOSIM
+            CALL OUTPUT(WRK(KMTXSQ + 1*N2ORBX),1,NORBT,1,NORBT,
+     &                  NORBT,NORBT,1,LUPRI)
+
+            WRITE(LUPRI,*) 'y-coord: fel(1) operator'
+            WRITE(LUPRI,*) 'Vector:' , IOSIM
+            CALL OUTPAK(WRK(KMTX + 1*NNORBX),NORBT,1,LUPRI)
+
+            WRITE(LUPRI,*) 'z-coord: Square fel(1) operator'
+            WRITE(LUPRI,*) 'Vector:' , IOSIM
+            CALL OUTPUT(WRK(KMTXSQ + 2*N2ORBX),1,NORBT,1,NORBT,
+     &              NORBT,NORBT,1,LUPRI)
+
+            WRITE(LUPRI,*) 'z-coord: fel(1) operator'
+            WRITE(LUPRI,*) 'Vector:' , IOSIM
+            CALL OUTPAK(WRK(KMTX + 2*NNORBX),NORBT,1,LUPRI)
+
            IF (NASHT .GT. 0) THEN
              CALL GETAC2(WRK(JMTX),WRK(JMTXAC))
              CALL GETAC2(WRK(JMTX + 1*NNORBX),WRK(JMTXAC + 1*NNASHX))
