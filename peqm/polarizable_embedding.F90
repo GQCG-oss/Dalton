@@ -1583,24 +1583,17 @@ subroutine pe_polarization(denmats, fckmats)
     if (response) then
         call electron_fields(Fels, denmats)
         if (myid == 0) then
-            call induced_dipoles(M1inds, Fels)
+            call cpu_time(t1)
+        end if
+        call induced_dipoles(M1inds, Fels)
+        if (myid == 0) then
+            call cpu_time(t2)
+            print '(a,f8.4)', 'Time used in induced_dipoles: ', t2-t1
         end if
     else
         call electron_fields(Fels, denmats)
-!        if (myid == 0) then
-!            print *, 'Fels'
-!            print *, Fels(:,1)
-!        end if
         call nuclear_fields(Fnucs)
-!        if (myid == 0) then
-!            print *, 'Fnucs'
-!            print *, Fnucs
-!        end if
         call multipole_fields(Fmuls)
-!        if (myid == 0) then
-!            print *, 'Fmuls'
-!            print *, Fmuls
-!        end if
         if (myid == 0) then
             if (pe_fd) then
                 call frozen_density_field(Ffd)
@@ -1610,7 +1603,16 @@ subroutine pe_polarization(denmats, fckmats)
             do i = 1, ndens
                 Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Ffd
             end do
-            call induced_dipoles(M1inds, Ftots)
+        end if
+        if (myid == 0) then
+            call cpu_time(t1)
+        end if
+        call induced_dipoles(M1inds, Ftots)
+        if (myid == 0) then
+            call cpu_time(t2)
+            print '(a,f8.4)', 'Time used in induced_dipoles: ', t2-t1
+        end if
+        if (myid == 0) then
             do i = 1, ndens
                 Epol(1,i) = - 0.5d0 * dot(M1inds(:,i), Fels(:,i))
                 Epol(2,i) = - 0.5d0 * dot(M1inds(:,i), Fnucs)
@@ -1670,49 +1672,87 @@ subroutine induced_dipoles(M1inds, Fs)
     real(dp), dimension(:,:), intent(out) :: M1inds
     real(dp), dimension(:,:), intent(in) :: Fs
 
-    integer :: i, j, k, l, m, n, iter, lu
+    integer :: lu, iter
+    integer :: i, j, k, l, m, n
     logical :: exclude, lexist
+    logical :: converged = .false.
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
     real(dp) :: R, Rd, ai, aj, norm, redthr
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp
 
+#ifdef VAR_MPI
+    if (ncores > 1) then
+        call mpi_bcast(pe_iter, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    end if
+#endif
+
     if (pe_iter) then
-        if (fock .and. scfcycle <= 5) then
-            redthr = 10**(5-scfcycle)
-        else
-            redthr = 1.0d0
+        if (myid == 0) then
+            if (fock .and. scfcycle <= 5) then
+                redthr = 10**(5-scfcycle)
+            else
+                redthr = 1.0d0
+            end if
         end if
-        inquire(file='pe_induced_dipoles.bin', exist=lexist)
+
+        if (myid == 0) then
+            inquire(file='pe_induced_dipoles.bin', exist=lexist)
+        end if
+
+#ifdef VAR_MPI
+        if (ncores > 1) then
+            call mpi_bcast(lexist, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+        end if
+#endif
+
         if (lexist .and. fock) then
-            call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
-            rewind(lu)
-            read(lu) M1inds
-            close(lu)
+            if (myid == 0) then
+                call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
+                rewind(lu)
+                read(lu) M1inds
+                close(lu)
+            end if
         end if
+
         allocate(T(6), Rij(3), Ftmp(3), M1tmp(3))
         do n = 1, ndens
             if (.not.lexist .or. response) then
-                l = 1
-                do i = 1, nsites(ncores-1)
-                    if (zeroalphas(i)) cycle
-                    call spmv(P1s(:,i), Fs(l:l+2,n), M1inds(l:l+2,n), 'L')
-                    l = l + 3
-                end do
+                if (myid == 0) then
+                    l = 1
+                    do i = 1, nsites(ncores-1)
+                        if (zeroalphas(i)) cycle
+                        call spmv(P1s(:,i), Fs(l:l+2,n), M1inds(l:l+2,n), 'L')
+                        l = l + 3
+                    end do
+                end if
             end if
+
+#ifdef VAR_MPI
+            if (myid == 0 .and. ncores > 1) then
+                call mpi_scatterv(M1inds(:,n), 3*npoldists, displs, MPI_REAL8,&
+                                 &MPI_IN_PLACE, 0, MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            else if (myid /= 0) then
+                call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                                 &M1inds(:,n), 3*npoldists(myid), MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            end if
+#endif
+
             iter = 1
             do
-                l = 1
                 norm = 0.0d0
                 do i = 1, nsites(ncores-1)
                     if (zeroalphas(i)) cycle
-                    if (pe_damp) then
-                        ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
-                    end if
+                    l = i + 2 * i - 2
+!                    if (pe_damp) then
+!                        ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
+!                    end if
                     m = 1
                     Ftmp = 0.0d0
-                    do j = 1, nsites(ncores-1)
+                    do j = nsites(myid-1)+1, nsites(myid)
                         if (zeroalphas(j)) cycle
                         exclude = .false.
                         do k = 1, lexlst
@@ -1727,69 +1767,108 @@ subroutine induced_dipoles(M1inds, Fs)
                         end if
                         Rij = Rs(:,j) - Rs(:,i)
                         call Tk_tensor(T, Rij)
-                        ! damping parameters
-                        ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
-                        ! a = 2.1304 = damp
-                        ! u = R / (alpha_i * alpha_j)**(1/6)
-                        ! fe = 1-(a²u²/2+au+1)*exp(-au)
-                        ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
-                        if (pe_damp) then
-                            R = nrm2(Rij)
-                            aj = P1s(1,j) + P1s(4,j) + P1s(6,j)
-                            Rd = (damp * R)/(((ai * aj) / 9.0d0)**(d6i))
-                            fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
-                            ft = fe - (Rd**3 * d6i) * exp(-Rd)
+!                        ! damping parameters
+!                        ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
+!                        ! a = 2.1304 = damp
+!                        ! u = R / (alpha_i * alpha_j)**(1/6)
+!                        ! fe = 1-(a²u²/2+au+1)*exp(-au)
+!                        ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
+!                        if (pe_damp) then
+!                            R = nrm2(Rij)
+!                            aj = P1s(1,j) + P1s(4,j) + P1s(6,j)
+!                            Rd = (damp * R)/(((ai * aj) / 9.0d0)**(d6i))
+!                            fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
+!                            ft = fe - (Rd**3 * d6i) * exp(-Rd)
 ! TODO: damping not complete
-                        end if
+!                        end if
                         call spmv(T, M1inds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
                         m = m + 3
                     end do
-                    M1tmp = M1inds(l:l+2,n)
-                    Ftmp = Ftmp + Fs(l:l+2,n)
-                    call spmv(P1s(:,i), Ftmp, M1inds(l:l+2,n), 'L')
-                    norm = norm + nrm2(M1inds(l:l+2,n) - M1tmp)
-                    l = l + 3
+#ifdef VAR_MPI
+                    if (myid == 0 .and. ncores > 1) then
+                        call mpi_reduce(MPI_IN_PLACE, Ftmp, 3, MPI_REAL8,&
+                                       &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+                    else if (myid /= 0) then
+                        call mpi_reduce(Ftmp, 0, 3, MPI_REAL8,&
+                                       &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+                    end if
+#endif
+                    if (myid == 0) then
+                        M1tmp = M1inds(l:l+2,n)
+                        Ftmp = Ftmp + Fs(l:l+2,n)
+                        call spmv(P1s(:,i), Ftmp, M1inds(l:l+2,n), 'L')
+                        norm = norm + nrm2(M1inds(l:l+2,n) - M1tmp)
+                    end if
+#ifdef VAR_MPI
+                    if (myid == 0 .and. ncores > 1) then
+                        call mpi_scatterv(M1inds(:,n), 3*npoldists, displs,&
+                                         &MPI_REAL8, MPI_IN_PLACE, 0,&
+                                         &MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
+                    else if (myid /= 0) then
+                        call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                                         &M1inds(:,n), 3*npoldists(myid),&
+                                         &MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
+                    end if
+#endif
                 end do
-                if (norm < redthr * thriter) then
-                    write (luout,'(a,i2,a)') 'Induced dipoles converged in ',&
-                                             & iter, ' iterations.'
-                    exit
-                else if (iter > 50) then
-                    stop 'Maximum iterations reached.'
-                else
-                    iter = iter + 1
+                if (myid == 0) then
+                    if (norm < redthr * thriter) then
+                        write (luout,'(a,i2,a)') 'Induced dipoles converged in ',&
+                                                 & iter, ' iterations.'
+                        converged = .true.
+                        call mpi_bcast(converged, 1, MPI_LOGICAL, 0,&
+                                      &MPI_COMM_WORLD, ierr)
+                        exit
+                    else if (iter > 50) then
+                        stop 'Maximum iterations reached.'
+                    else
+                        converged = .false.
+                        call mpi_bcast(converged, 1, MPI_LOGICAL, 0,&
+                                      &MPI_COMM_WORLD, ierr)
+                        iter = iter + 1
+                    end if
+                else if (myid /= 0) then
+                    call mpi_bcast(converged, 1, MPI_LOGICAL, 0,&
+                                  &MPI_COMM_WORLD, ierr)
+                    if (converged) exit
                 end if
             end do
         end do
         if (fock) then
-            call openfile('pe_induced_dipoles.bin', lu, 'unknown', 'unformatted')
-            rewind(lu)
-            write(lu) M1inds
-            close(lu)
+            if (myid == 0) then
+                call openfile('pe_induced_dipoles.bin', lu, 'unknown', 'unformatted')
+                rewind(lu)
+                write(lu) M1inds
+                close(lu)
+            end if
         end if
         deallocate(T, Rij, Ftmp, M1tmp)
     else
-        allocate(B(3*npols*(3*npols+1)/2))
-        call response_matrix(B)
-        do n = 1, ndens
-            call spmv(B, Fs(:,n), M1inds(:,n), 'L')
-        end do
-        deallocate(B)
+        if (myid == 0) then
+            allocate(B(3*npols*(3*npols+1)/2))
+            call response_matrix(B)
+            do n = 1, ndens
+                call spmv(B, Fs(:,n), M1inds(:,n), 'L')
+            end do
+            deallocate(B)
+        end if
     end if
 
     ! check induced dipoles
-    do n = 1, ndens
-        l = 1
-        do i = 1, nsites(ncores-1)
-            if (zeroalphas(i)) cycle
-            if (nrm2(M1inds(l:l+2,n)) > 1.0d0) then
-                write(luout,'(4x,a,i6)') 'Large induced dipole encountered&
-                                         & at site:', i
-                write(luout,'(f10.4)') nrm2(M1inds(l:l+2,n))
-            end if
-            l = l + 3
+    if (myid == 0) then
+        do n = 1, ndens
+            l = 1
+            do i = 1, nsites(ncores-1)
+                if (zeroalphas(i)) cycle
+                if (nrm2(M1inds(l:l+2,n)) > 1.0d0) then
+                    write(luout,'(4x,a,i6)') 'Large induced dipole encountered&
+                                             & at site:', i
+                    write(luout,'(f10.4)') nrm2(M1inds(l:l+2,n))
+                end if
+                l = l + 3
+            end do
         end do
-    end do
+    end if
 
 
 end subroutine induced_dipoles
@@ -2237,10 +2316,7 @@ subroutine response_matrix(B, invert, wrt2file)
             end do
         end do
         if (inv) then
-            call cpu_time(t1)
             call invert_packed_matrix(B, 's')
-            call cpu_time(t2)
-            print '(a,f8.4)', 'Time to invert response matrix: ', t2-t1
         end if
         if (wrt) then
             call openfile('pe_response_matrix.bin', lu, 'new', 'unformatted')
