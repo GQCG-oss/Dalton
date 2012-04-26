@@ -1368,7 +1368,7 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
                     JLSM = 0
                   END IF
 *. Obtain all double excitations from this group of K strings
-                  CALL QENTER('ADADS')
+!                 CALL QENTER('ADADS')
                   I12 = 1
                   K12 = 1
                   IONE = 1
@@ -1380,13 +1380,13 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
                   JFRST = 0
                   KFRST = 0
 *
-                  CALL QEXIT('ADADS')
+!                 CALL QEXIT('ADADS')
                   IF(NKBTC.EQ.0) GOTO 1930
 *. Loop over jl in TS classes
                   J = 0
                   L = 1
 *
-                  CALL QENTER('MATCG')
+!                 CALL QENTER('MATCG')
                   DO  IJL = 1, NJL
                     CALL NXTIJ(J,L,NJ,NL,JLSM,NONEW)
                     I1JL = (L-1)*NJ+J
@@ -1409,7 +1409,7 @@ C                   JLOFF = (JLBOFF-1+IJL-1)*NKBTC*NIBTC+1
      &                            I1(1,I1JL),XI1S(1,I1JL))
                     END IF
                   END DO
-                  CALL QEXIT ('MATCG')
+!                 CALL QEXIT ('MATCG')
 *
 *
 * =========================================================

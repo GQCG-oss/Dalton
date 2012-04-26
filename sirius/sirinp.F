@@ -2795,6 +2795,10 @@ C *** Option 9 >RAS2 S<   RAS2 orbital space
       END IF
          MCTYPE = 2
          READ(LUCMD,*) (NAS2(I),I=1,NSYM)
+         NAS2T = 0
+         do i = 1, NSYM
+           NAS2T = NAS2T + NAS2(i)
+         end do
       GO TO 100
 C
 C *** Option 10 >RAS3 S<   RAS3 orbital space
@@ -5510,7 +5514,7 @@ C
                IF (NAS1T .GT. 0)
      &            WRITE(IWUNIT,1320) NAS1T,(NAS1(I),I=1,NSYM)
                IF (NAS2T .GT. 0)
-     &            WRITE(IWUNIT,1330) NAS3T,(NAS2(I),I=1,NSYM)
+     &            WRITE(IWUNIT,1330) NAS2T,(NAS2(I),I=1,NSYM)
                IF (NAS3T .GT. 0)
      &            WRITE(IWUNIT,1340) NAS3T,(NAS3(I),I=1,NSYM)
                WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)
