@@ -1877,35 +1877,6 @@ C     KLL = KFLREE
       END
 ***********************************************************************
 
-      SUBROUTINE PR_MATML_STAT
-
-!     print statistics from matrix multiplier
-
-      use lucita_matmul_statistics
-      implicit none
-#include "priunit.h"
-!
-      WRITE(lupri,*)
-      WRITE(lupri,*) ' Information about MATML7 calls : '
-      WRITE(lupri,*) ' ================================'
-      WRITE(lupri,*)
-      WRITE(lupri,*) ' Number of calls ', XNCALL
-      WRITE(lupri,*) ' Number of flops executed ', XNFLOP
-      WRITE(lupri,*) ' Average row length of C ',
-     &           XLCROWCOL/XLCCOL
-      WRITE(lupri,*) ' Average column  length of C ',
-     &           XLCROWCOL/XLCROW
-      WRITE(lupri,*) ' Average number of operations per element of  C ',
-     &           XNFLOP/XLCROWCOL
-      WRITE(lupri,*) ' Average number of operations per per call ',
-     &           XNFLOP/XNCALL
-      WRITE(lupri,*) ' Number of seconds spent in MATML7', TMULT
-!
-      WRITE(lupri,*) ' Average MFLOPS ',XNFLOP/TMULT/1000000.0D0
-      RETURN
-      END
-***********************************************************************
-
       SUBROUTINE PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
 *. Print one-electron integrals with symmetry IHSM

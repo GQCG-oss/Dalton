@@ -5815,7 +5815,6 @@ C... JEPPE OLSEN,
 C
 *. Notice : If the summation index has dimension zero nothing
 *           is performed
-      use lucita_matmul_statistics
       IMPLICIT REAL*8           (A-H,O-Z)
       DIMENSION A(NAROW,NACOL),B(NBROW,NBCOL)
       DIMENSION C(NCROW,NCCOL)
@@ -5837,18 +5836,6 @@ C
       CALL WRTMT_LU(C,NCROW,NCCOL,NCROW,NCCOL)
       END IF
 #endif
-*. Statistics
-      XNCALL = XNCALL + 1
-      XLCROW = XLCROW + NCROW
-      XLCCOL = XLCCOL + NCCOL
-      XLCROWCOL = XLCROWCOL + NCROW*NCCOL
-      T_INI = Second()
-*
-      IF(ITRNSP.EQ.1) THEN
-        XNFLOP = XNFLOP + 2*NCROW*NCCOL*NAROW
-      ELSE
-        XNFLOP = XNFLOP + 2*NCROW*NCCOL*NACOL
-      END IF
 C
 C     do matrix-matrix multiplication using DGEMM
 C
@@ -5874,9 +5861,6 @@ C
       CALL WRTMT_LU(C,NCROW,NCCOL,NCROW,NCCOL)
       END IF
 #endif
-C
-      T_END = Second()
-      TMULT = TMULT + T_END - T_INI 
 C
       END
 

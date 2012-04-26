@@ -133,11 +133,6 @@
 !     release marker on incoming work space
       call memrel('lucita.done',wrk_dalton,kfrsav,kfrsav,kfree,lfree)
       
-#ifdef LUCI_DEBUG
-!     print info on matrix multiplier
-      call pr_matml_stat
-#endif
- 
       end
 !**********************************************************************
  
