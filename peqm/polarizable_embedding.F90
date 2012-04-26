@@ -1811,27 +1811,27 @@ subroutine induced_dipoles(M1inds, Fs)
                     end if
 #endif
                 end do
+
                 if (myid == 0) then
                     if (norm < redthr * thriter) then
                         write (luout,'(a,i2,a)') 'Induced dipoles converged in ',&
                                                  & iter, ' iterations.'
                         converged = .true.
-                        call mpi_bcast(converged, 1, MPI_LOGICAL, 0,&
-                                      &MPI_COMM_WORLD, ierr)
-                        exit
                     else if (iter > 50) then
                         stop 'Maximum iterations reached.'
                     else
                         converged = .false.
-                        call mpi_bcast(converged, 1, MPI_LOGICAL, 0,&
-                                      &MPI_COMM_WORLD, ierr)
                         iter = iter + 1
                     end if
-                else if (myid /= 0) then
+                end if
+
+#ifdef VAR_MPI
+                if (ncores > 1) then
                     call mpi_bcast(converged, 1, MPI_LOGICAL, 0,&
                                   &MPI_COMM_WORLD, ierr)
-                    if (converged) exit
                 end if
+#endif
+                if (converged) exit
             end do
         end do
         if (fock) then
