@@ -1744,12 +1744,6 @@ CTF     IOFFI(IOFF) = NSTRINT + 1
 *
 *. Supergroup and symmetry of K strings
 *
-CM    CALL NEWTYP(ISPGRPABS,1,IOBTP,1,KSPGRPABS)
-CM    CALL SYMCOM(2,0,IOBSM,KSM,ISPGPSM)
-CM    NKSTR = NSTFSMSPGP(KSM,KSPGRPABS)
-CM    IF(NTEST.GE.200) WRITE(6,*)
-CM   & ' KSM, KSPGPRABS, NKSTR : ', KSM,KSPGRPABS, NKSTR
-*
 *. Gas structure of K strings
 *
       NGASL = 1
