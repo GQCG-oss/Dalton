@@ -6596,13 +6596,17 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
+       
        write(lupri,*) 'KMAT MO x'
+       write(lupri,*) 'ICSIM #' , ICSIM
        CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
       
        write(lupri,*) 'KMAT MO y'
+       write(lupri,*) 'ICSIM #' , ICSIM
        CALL OUTPAK(WRK(KMATMO + 1*NNORBT),NORBT,1,LUPRI)
 
        write(lupri,*) 'KMAT MO z'
+       write(lupri,*) 'ICSIM #' , ICSIM
        CALL OUTPAK(WRK(KMATMO + 2*NNORBT),NORBT,1,LUPRI)
 
         FACx = -WRK(KINDMOM + LRI + 0 + 3*NNZAL*LCI)        
@@ -6611,6 +6615,11 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
 
         CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
      &             WRK(KFXC + LCI*NNORBT),1)
+        CALL OUTPAK(WRK(KFXC +  (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+
+            write(lupri,*) 'KFXC MATRIX 1'
+            write(lupri,*) 'ICSIM #' , ICSIM
+            CALL OUTPAK(WRK(KFXC +  (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
         FACy = -WRK(KINDMOM + LRI + 1 + 3*NNZAL*LCI)
 
@@ -6619,12 +6628,20 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
         CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
      &             WRK(KFXC + LCI*NNORBT),1)
 
+            write(lupri,*) 'KFXC MATRIX 2'
+            write(lupri,*) 'ICSIM #' , ICSIM
+            CALL OUTPAK(WRK(KFXC  + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
+
         FACz = -WRK(KINDMOM + LRI + 2 + 3*NNZAL*LCI)       
 
        write(lupri,*) 'FACz:', FACz
 
         CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
      &             WRK(KFXC + LCI*NNORBT),1)
+
+            write(lupri,*) 'KFXC MATRIX 3'
+            write(lupri,*) 'ICSIM #' , ICSIM
+            CALL OUTPAK(WRK(KFXC + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
         LRI = LRI + 3
 
