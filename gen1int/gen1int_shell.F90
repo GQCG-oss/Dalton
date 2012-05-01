@@ -397,7 +397,7 @@ module gen1int_shell
     num_opt = num_prop*num_unique_geo
     ! allocates the expectation values with unique geometric derivatives
     if (p_redunt_expt) then
-      allocate(unique_expt(num_unique_geo,num_prop,num_dens), stat=ierr)
+      allocate(unique_expt(num_prop,num_unique_geo,num_dens), stat=ierr)
       if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate unique_expt!")
       unique_expt = 0.0_REALK
     end if
@@ -511,42 +511,40 @@ module gen1int_shell
               allocate(redunt_list(2,num_redunt_geo), stat=ierr)
               if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate redunt_list!")
               call GeomTreeReduntList(geom_tree, redunt_list)
-              iopt = 0
-              do iprop = 1, num_prop
-                do igeo = 1, num_redunt_geo
-                  call MatSetBlockedValues(val_ints(iopt+redunt_list(2,igeo)), &
-                                           min_row_idx, max_row_idx,           &
-                                           min_col_idx, max_col_idx,           &
-                                           contr_ints(:,:,:,:,iprop,           &
-                                                      redunt_list(1,igeo)),    &
+              do igeo = 1, num_redunt_geo
+                iopt = num_prop*(redunt_list(2,igeo)-1)
+                do iprop = 1, num_prop
+                  call MatSetBlockedValues(val_ints(iprop+iopt),            &
+                                           min_row_idx, max_row_idx,        &
+                                           min_col_idx, max_col_idx,        &
+                                           contr_ints(:,:,:,:,iprop,        &
+                                                      redunt_list(1,igeo)), &
                                            .false.)
-                  if (ishell/=jshell)                                            &
-                    call MatSetBlockedValues(val_ints(iopt+redunt_list(2,igeo)), &
-                                             min_row_idx, max_row_idx,           &
-                                             min_col_idx, max_col_idx,           &
-                                             contr_ints(:,:,:,:,iprop,           &
-                                                        redunt_list(1,igeo)),    &
+                  if (ishell/=jshell)                                         &
+                    call MatSetBlockedValues(val_ints(iprop+iopt),            &
+                                             min_row_idx, max_row_idx,        &
+                                             min_col_idx, max_col_idx,        &
+                                             contr_ints(:,:,:,:,iprop,        &
+                                                        redunt_list(1,igeo)), &
                                              .true.)
                 end do
-                iopt = iopt+dim_redunt_geo
               end do
               deallocate(redunt_list)
             ! returns integrals matrices with unique total geometric derivatives
             else
-              iopt = 0
-              do iprop = 1, num_prop
-                do igeo = 1, num_unique_geo
-                  call MatSetBlockedValues(val_ints(iopt+base_unique_geo+igeo), &
-                                           min_row_idx, max_row_idx,            &
-                                           min_col_idx, max_col_idx,            &
+              do igeo = 1, num_unique_geo
+                iopt = num_prop*(base_unique_geo+igeo-1)
+                do iprop = 1, num_prop
+                  call MatSetBlockedValues(val_ints(iprop+iopt),     &
+                                           min_row_idx, max_row_idx, &
+                                           min_col_idx, max_col_idx, &
                                            contr_ints(:,:,:,:,iprop,igeo), .false.)
-                  if (ishell/=jshell)                                             &
-                    call MatSetBlockedValues(val_ints(iopt+base_unique_geo+igeo), &
-                                             min_row_idx, max_row_idx,            &
-                                             min_col_idx, max_col_idx,            &
+                  if (ishell/=jshell)                                  &
+                    call MatSetBlockedValues(val_ints(iprop+iopt),     &
+                                             min_row_idx, max_row_idx, &
+                                             min_col_idx, max_col_idx, &
                                              contr_ints(:,:,:,:,iprop,igeo), .true.)
                 end do
-                iopt = iopt+dim_unique_geo
               end do
             end if
           end if
@@ -561,13 +559,13 @@ module gen1int_shell
                                              min_row_idx, max_row_idx,       &
                                              min_col_idx, max_col_idx,       &
                                              contr_ints(:,:,:,:,iprop,igeo), &
-                                             unique_expt(igeo,iprop,idens), .false.)
+                                             unique_expt(iprop,igeo,idens), .false.)
                     if (ishell/=jshell)                                        &
                       call MatMultBlockedTrace(ao_dens(idens),                 &
                                                min_row_idx, max_row_idx,       &
                                                min_col_idx, max_col_idx,       &
                                                contr_ints(:,:,:,:,iprop,igeo), &
-                                               unique_expt(igeo,iprop,idens), .true.)
+                                               unique_expt(iprop,igeo,idens), .true.)
                   end do
                 end do
               end do
@@ -576,7 +574,7 @@ module gen1int_shell
               do idens = 1, num_dens
                 do igeo = 1, num_unique_geo
                   do iprop = 1, num_prop
-                    iopt = base_unique_geo+igeo+(iprop-1)*dim_unique_geo &
+                    iopt = iprop+(base_unique_geo+igeo-1)*num_prop &
                          + (idens-1)*dim_unique_geo*num_prop
                     call MatMultBlockedTrace(ao_dens(idens),                 &
                                              min_row_idx, max_row_idx,       &
@@ -706,42 +704,40 @@ module gen1int_shell
               allocate(redunt_list(2,num_redunt_geo), stat=ierr)
               if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate redunt_list!")
               call GeomTreeReduntList(geom_tree, redunt_list)
-              iopt = 0
-              do iprop = 1, num_prop
-                do igeo = 1, num_redunt_geo
-                  call MatSetBlockedValues(val_ints(iopt+redunt_list(2,igeo)), &
-                                           min_row_idx, max_row_idx,           &
-                                           min_col_idx, max_col_idx,           &
-                                           contr_ints(:,:,:,:,iprop,           &
-                                                      redunt_list(1,igeo)),    &
+              do igeo = 1, num_redunt_geo
+                iopt = num_prop*(redunt_list(2,igeo)-1)
+                do iprop = 1, num_prop
+                  call MatSetBlockedValues(val_ints(iprop+iopt),            &
+                                           min_row_idx, max_row_idx,        &
+                                           min_col_idx, max_col_idx,        &
+                                           contr_ints(:,:,:,:,iprop,        &
+                                                      redunt_list(1,igeo)), &
                                            .false.)
-                  if (ishell/=jshell)                                            &
-                    call MatSetBlockedValues(val_ints(iopt+redunt_list(2,igeo)), &
-                                             min_row_idx, max_row_idx,           &
-                                             min_col_idx, max_col_idx,           &
-                                             -contr_ints(:,:,:,:,iprop,          &
-                                                         redunt_list(1,igeo)),   &
+                  if (ishell/=jshell)                                         &
+                    call MatSetBlockedValues(val_ints(iprop+iopt),            &
+                                             min_row_idx, max_row_idx,        &
+                                             min_col_idx, max_col_idx,        &
+                                             -contr_ints(:,:,:,:,iprop,       &
+                                                        redunt_list(1,igeo)), &
                                              .true.)
                 end do
-                iopt = iopt+dim_redunt_geo
               end do
               deallocate(redunt_list)
             ! returns integrals matrices with unique total geometric derivatives
             else
-              iopt = 0
-              do iprop = 1, num_prop
-                do igeo = 1, num_unique_geo
-                  call MatSetBlockedValues(val_ints(iopt+base_unique_geo+igeo), &
-                                           min_row_idx, max_row_idx,            &
-                                           min_col_idx, max_col_idx,            &
+              do igeo = 1, num_unique_geo
+                iopt = num_prop*(base_unique_geo+igeo-1)
+                do iprop = 1, num_prop
+                  call MatSetBlockedValues(val_ints(iprop+iopt),     &
+                                           min_row_idx, max_row_idx, &
+                                           min_col_idx, max_col_idx, &
                                            contr_ints(:,:,:,:,iprop,igeo), .false.)
-                  if (ishell/=jshell)                                             &
-                    call MatSetBlockedValues(val_ints(iopt+base_unique_geo+igeo), &
-                                             min_row_idx, max_row_idx,            &
-                                             min_col_idx, max_col_idx,            &
+                  if (ishell/=jshell)                                  &
+                    call MatSetBlockedValues(val_ints(iprop+iopt),     &
+                                             min_row_idx, max_row_idx, &
+                                             min_col_idx, max_col_idx, &
                                              -contr_ints(:,:,:,:,iprop,igeo), .true.)
                 end do
-                iopt = iopt+dim_unique_geo
               end do
             end if
           end if
@@ -756,13 +752,13 @@ module gen1int_shell
                                              min_row_idx, max_row_idx,       &
                                              min_col_idx, max_col_idx,       &
                                              contr_ints(:,:,:,:,iprop,igeo), &
-                                             unique_expt(igeo,iprop,idens), .false.)
+                                             unique_expt(iprop,igeo,idens), .false.)
                     if (ishell/=jshell)                                         &
                       call MatMultBlockedTrace(ao_dens(idens),                  &
                                                min_row_idx, max_row_idx,        &
                                                min_col_idx, max_col_idx,        &
                                                -contr_ints(:,:,:,:,iprop,igeo), &
-                                               unique_expt(igeo,iprop,idens), .true.)
+                                               unique_expt(iprop,igeo,idens), .true.)
                   end do
                 end do
               end do
@@ -771,7 +767,7 @@ module gen1int_shell
               do idens = 1, num_dens
                 do igeo = 1, num_unique_geo
                   do iprop = 1, num_prop
-                    iopt = base_unique_geo+igeo+(iprop-1)*dim_unique_geo &
+                    iopt = iprop+(base_unique_geo+igeo-1)*num_prop &
                          + (idens-1)*dim_unique_geo*num_prop
                     call MatMultBlockedTrace(ao_dens(idens),                 &
                                              min_row_idx, max_row_idx,       &
@@ -901,30 +897,28 @@ module gen1int_shell
               allocate(redunt_list(2,num_redunt_geo), stat=ierr)
               if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate redunt_list!")
               call GeomTreeReduntList(geom_tree, redunt_list)
-              iopt = 0
-              do iprop = 1, num_prop
-                do igeo = 1, num_redunt_geo
-                  call MatSetBlockedValues(val_ints(iopt+redunt_list(2,igeo)), &
-                                           min_row_idx, max_row_idx,           &
-                                           min_col_idx, max_col_idx,           &
-                                           contr_ints(:,:,:,:,iprop,           &
-                                                      redunt_list(1,igeo)),    &
+              do igeo = 1, num_redunt_geo
+                iopt = num_prop*(redunt_list(2,igeo)-1)
+                do iprop = 1, num_prop
+                  call MatSetBlockedValues(val_ints(iprop+iopt),            &
+                                           min_row_idx, max_row_idx,        &
+                                           min_col_idx, max_col_idx,        &
+                                           contr_ints(:,:,:,:,iprop,        &
+                                                      redunt_list(1,igeo)), &
                                            .false.)
                 end do
-                iopt = iopt+dim_redunt_geo
               end do
               deallocate(redunt_list)
             ! returns integrals matrices with unique total geometric derivatives
             else
-              iopt = 0
-              do iprop = 1, num_prop
-                do igeo = 1, num_unique_geo
-                  call MatSetBlockedValues(val_ints(iopt+base_unique_geo+igeo), &
-                                           min_row_idx, max_row_idx,            &
-                                           min_col_idx, max_col_idx,            &
+              do igeo = 1, num_unique_geo
+                iopt = num_prop*(base_unique_geo+igeo-1)
+                do iprop = 1, num_prop
+                  call MatSetBlockedValues(val_ints(iprop+iopt),     &
+                                           min_row_idx, max_row_idx, &
+                                           min_col_idx, max_col_idx, &
                                            contr_ints(:,:,:,:,iprop,igeo), .false.)
                 end do
-                iopt = iopt+dim_unique_geo
               end do
             end if
           end if
@@ -939,7 +933,7 @@ module gen1int_shell
                                              min_row_idx, max_row_idx,       &
                                              min_col_idx, max_col_idx,       &
                                              contr_ints(:,:,:,:,iprop,igeo), &
-                                             unique_expt(igeo,iprop,idens), .false.)
+                                             unique_expt(iprop,igeo,idens), .false.)
                   end do
                 end do
               end do
@@ -948,7 +942,7 @@ module gen1int_shell
               do idens = 1, num_dens
                 do igeo = 1, num_unique_geo
                   do iprop = 1, num_prop
-                    iopt = base_unique_geo+igeo+(iprop-1)*dim_unique_geo &
+                    iopt = iprop+(base_unique_geo+igeo-1)*num_prop &
                          + (idens-1)*dim_unique_geo*num_prop
                     call MatMultBlockedTrace(ao_dens(idens),                 &
                                              min_row_idx, max_row_idx,       &
@@ -966,7 +960,7 @@ module gen1int_shell
     end select
     ! returns expectation values with redundant high order (>1) total geometric derivatives
     if (p_redunt_expt) then
-      call GeomTreeReduntExpt(geom_tree, num_unique_geo, num_prop*num_dens, &
+      call GeomTreeReduntExpt(geom_tree, num_prop, num_unique_geo, num_dens, &
                               unique_expt, dim_redunt_geo, val_expt)
       deallocate(unique_expt)
     end if
