@@ -21,17 +21,18 @@ module polarizable_embedding
 
     ! options
     logical, public, save :: peqm = .false.
-    logical, public, save :: pe_iter = .false.
-    logical, public, save :: pe_border = .false.
-    logical, public, save :: pe_damp = .false.
-    logical, public, save :: pe_gspol = .false.
-    logical, public, save :: pe_nomb = .false.
+    logical, save :: pe_iter = .false.
+    logical, save :: pe_border = .false.
+    logical, save :: pe_damp = .false.
+    logical, save :: pe_gspol = .false.
+    logical, save :: pe_nomb = .false.
+    logical, save :: pe_gauss = .false.
     logical, public, save :: pe_mep = .false.
     logical, public, save :: pe_twoint = .false.
     logical, public, save :: pe_repuls = .false.
     logical, public, save :: pe_savden = .false.
     logical, public, save :: pe_fd = .false.
-    logical, public, save :: pe_timing = .false.
+    logical, save :: pe_timing = .false.
 
     ! calculation type
     logical, save :: fock = .false.
@@ -57,6 +58,7 @@ module polarizable_embedding
     integer, save :: scfcycle = 0
     real(dp), save :: thriter = 1.0d-8
     real(dp), save :: damp = 2.1304d0
+    real(dp), save :: gauss = 1.0d0
     real(dp), save :: Rmin = 2.2d0
     character(len=6), save :: border_type = 'REDIST'
 
@@ -164,6 +166,7 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: mepgrid
 
 ! TODO:
+! electric field damping
 ! write results after redistributing parameters
 ! better solution for lmul and lpol
 ! use allocate/deallocate where possible?
@@ -241,6 +244,15 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! neglect many-body interactions
         else if (trim(option(2:)) == 'NOMB') then
             pe_nomb = .true.
+        ! use Gaussian broadened multipoles and FD nuclear charges
+        else if (trim(option(2:)) == 'GAUSS') then
+            read(luinp,*) option
+            backspace(luinp)
+            if (option(1:1) /= '.' .and. option(1:1) /= '*'&
+               &.and. option(1:1) /= '!') then
+                read(luinp,*) gauss
+            end if
+            pe_gauss = .true.
         ! calculate intermolecular two-electron integrals
         else if (trim(option(2:)) == 'TWOINT') then
             read(luinp,*) fdnucs
@@ -342,7 +354,7 @@ subroutine pe_read_potential(coords, charges)
         if (pe_savden) then
             return
         else if (pe_fd) then
-            return
+            goto 101
         else if (pe_mep) then
             goto 101
         else
@@ -477,8 +489,8 @@ subroutine pe_read_potential(coords, charges)
     if (lpol(1)) then
         write(luout,'(4x,a)') '(An)isotropic dipole-dipole polarizabilities.'
         if (pe_damp) then
-            write(luout,'(4x,a,f8.4)') 'Induced dipole-induced dipole       &
-                                       & interactions will be damped using  &
+            write(luout,'(4x,a,f8.4)') 'Induced dipole-induced dipole&
+                                       & interactions will be damped using&
                                        & damping coefficient:', damp
         end if
         if (pe_gspol) then
@@ -499,6 +511,9 @@ subroutine pe_read_potential(coords, charges)
     end if
     if (pe_fd) then
         write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
+        if (pe_gauss) then
+            write(luout,'(4x,a,f5.3)') 'Using Gaussian charges with broadening:', gauss
+        end if
     end if
 
    ! default exclusion list (everything polarizes everything)
@@ -1468,7 +1483,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
 
         do j = 1, fdnucs
 #ifdef BUILD_GEN1INT
-            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), .true., 1.0d0) 
+            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), pe_gauss, gauss) 
 #else
             call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), work, size(work))
 #endif
@@ -1744,9 +1759,9 @@ subroutine induced_dipoles(M1inds, Fs)
             iter = 1
             do
                 norm = 0.0d0
+                l = 1
                 do i = 1, nsites(ncores-1)
                     if (zeroalphas(i)) cycle
-                    l = i + 2 * i - 2
 !                    if (pe_damp) then
 !                        ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
 !                    end if
@@ -1784,6 +1799,7 @@ subroutine induced_dipoles(M1inds, Fs)
                         call spmv(T, M1inds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
                         m = m + 3
                     end do
+
 #ifdef VAR_MPI
                     if (myid == 0 .and. ncores > 1) then
                         call mpi_reduce(MPI_IN_PLACE, Ftmp, 3, MPI_REAL8,&
@@ -1793,12 +1809,14 @@ subroutine induced_dipoles(M1inds, Fs)
                                        &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
                     end if
 #endif
+
                     if (myid == 0) then
                         M1tmp = M1inds(l:l+2,n)
                         Ftmp = Ftmp + Fs(l:l+2,n)
                         call spmv(P1s(:,i), Ftmp, M1inds(l:l+2,n), 'L')
                         norm = norm + nrm2(M1inds(l:l+2,n) - M1tmp)
                     end if
+
 #ifdef VAR_MPI
                     if (myid == 0 .and. ncores > 1) then
                         call mpi_scatterv(M1inds(:,n), 3*npoldists, displs,&
@@ -1810,6 +1828,7 @@ subroutine induced_dipoles(M1inds, Fs)
                                          &MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
                     end if
 #endif
+                    l = l + 3
                 end do
 
                 if (myid == 0) then
@@ -1904,7 +1923,6 @@ subroutine electron_fields(Fels, denmats)
 #else
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), work, size(work))
 #endif
-!        i = site + 2 * site - 2
         do j = 1, 3
             do k = 1, ndens
                 l = (k - 1) * nnbas + 1
@@ -1980,7 +1998,6 @@ subroutine nuclear_fields(Fnucs)
             do j = 1, qmnucs
                 Rms = Rs(:,site) - Rm(:,j)
                 call Tk_tensor(Tms, Rms)
-!                i = site + 2 * site - 2
                 do k = 1, 3
                     Fnucs(i+k) = Fnucs(i+k) - Zm(1,j) * Tms(k)
                 end do
@@ -2070,9 +2087,9 @@ subroutine multipole_fields(Fmuls)
         end if
     else
         Fmuls = 0.0d0
+        l = 1
         do i = 1, nsites(ncores-1)
             if (zeroalphas(i)) cycle
-            l = i + 2 * i - 2
             k = 1
             do j = nsites(myid-1)+1, nsites(myid)
                 if (i == j) then
@@ -2122,6 +2139,7 @@ subroutine multipole_fields(Fmuls)
                 end if
                 k = k + 1
             end do
+            l = l + 3
         end do
 #ifdef VAR_MPI
         if (myid == 0 .and. ncores > 1) then
