@@ -1829,7 +1829,7 @@ C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
-     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.XXXXXX', '.XXXXXX'/
+     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.ERFGAU', '.XXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -1948,8 +1948,9 @@ C&&&        Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)/(r_12)
  37            CALL QUIT('Error reading CHIVAL for *TWOINT/.ERF')
    11          CONTINUE
 C&&& ERFEXP: Value of \chi in separation of two-electron operator
-C&&&         Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)+N*exp(\chi)/(r_12)
-               ERFEXP = .TRUE.
+C&&&         NEW VERSION March 2010 mnp+hjaj
+               ERFEXP(0) = .TRUE.
+               ERFEXP(2) = .TRUE.
                READ (LUCMD,*,ERR=39) CHIVAL
                GO TO 100
  39            CALL QUIT('Error reading CHIVAL for *TWOINT/.ERFEXP')
@@ -1966,8 +1967,13 @@ C&&& KSPT2M
                GO TO 100
  38            CALL QUIT('Error reading CHIVAL for *TWOINT/.MU ')
    14          CONTINUE
-C&&&
+C&&& ERFGAU: Value of \chi in separation of two-electron operator
+C&&&         Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)+N*exp(\chi)/(r_12)
+               ERFEXP(0) = .TRUE.
+               ERFEXP(1) = .TRUE.
+               READ (LUCMD,*,ERR=141) CHIVAL
                GO TO 100
+  141          CALL QUIT('Error reading CHIVAL for *TWOINT/.ERFGAU')
    15          CONTINUE
 C&&&
                GO TO 100
@@ -2009,8 +2015,10 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
                   WRITE (LUPRI,'(A)') 
      &              ' DFT optimization is run .DIRECT' 
                ELSE
-                  IF (ERFEXP) THEN
+                  IF (ERFEXP(1)) THEN
                      WRITE (LUPRI,410)
+                  ELSE IF (ERFEXP(2)) THEN
+                     WRITE (LUPRI,420)
                   ELSE
                      WRITE (LUPRI,400)
                   ENDIF
@@ -2052,7 +2060,8 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
             END IF
          END IF
  400  FORMAT(/' DFT-hybrid : Using a Erf type two-elec. operator')
- 410  FORMAT(/' DFT-hybrid : Using a Erf+Exp type two-elec. operator')
+ 410  FORMAT(/' DFT-hybrid : Using a Erf+Gau type two-elec. operator')
+ 420  FORMAT(/' DFT-hybrid : Using a Erf+Exp type two-elec. operator')
       END IF
  199  CALL QEXIT('HR2INP')
       RETURN

@@ -16,6 +16,7 @@ C
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST,
      &        EMBEDDING, QM3, QMMM
+      DIMENSION ERFEXP(0:2)
 #if defined (SYS_CRAY)
       REAL GRADML, PANAS,  CHIVAL, THR_REDFAC
 #else

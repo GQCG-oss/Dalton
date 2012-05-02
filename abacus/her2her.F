@@ -75,7 +75,8 @@ C     Modified for r12 integrals (WK/UniKA/15-11-2002).
 #include "drw2el.h"
 #include "maxaqn.h"
       PARAMETER (D1 = 1.D0)
-      LOGICAL NOINT, ONECEN, ERFEXP, SRINTS
+      LOGICAL NOINT, ONECEN, SRINTS
+      LOGICAL ERFEXP(0:*)
 #include "twosta.h"
 C     HERINT is declared 3-dimensional for r12 integrals (WK/UniKA/14-11-2002).
       DIMENSION HERINT(NUABCD,NTUV,2), INDHER(*), IODDHR(*),
@@ -198,7 +199,8 @@ C
 #include "maxaqn.h"
 #include "twosta.h"
 #include "r12int.h"
-      LOGICAL ONECEN, NOINT, ERFEXP, SRINTS
+      LOGICAL ONECEN, NOINT, SRINTS
+      LOGICAL ERFEXP(0:*)
       DIMENSION RJ000(*), PQX(*), PQY(*), PQZ(*), COOR12(*), COOR34(*),
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
      &          WORK(LWORK)
@@ -207,7 +209,7 @@ C     =============================================
 C     Parameters used for memory-allocations
 C     =============================================
       LXJ000 = (JMAX+1)*NUABCD
-      IF(ERFEXP) THEN
+      IF(ERFEXP(0)) THEN
 C      Allocate extra memory for exponential factors 
 C      in modified two-electron operator. \jkp
          NTALPHX = 2
@@ -225,7 +227,7 @@ C     =============================================
       KALPHJ = KALPHA + NTALPHX*NUABCD
       KINDAD = KALPHJ + NTALPHX*NUABCD
       KEJ000 = KINDAD + (NUABCD + 1)/IRAT
-      IF(ERFEXP) THEN
+      IF(ERFEXP(0)) THEN
          KSJ000 = KEJ000 + LXJ000
       ELSE
          KSJ000 = KEJ000
@@ -262,8 +264,10 @@ C
 #include "aovec.h"
 #include "codata.h"
 #include "drw2el.h"
-      PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0,DP25 = 0.25D0)
-      LOGICAL ONECEN, NOINT, ERFEXP, SRINTS
+      PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0,D5=5.0D0,
+     &           DP25=0.25D0,D10=10.0D0,D18=18.0D0)
+      LOGICAL ONECEN, NOINT, SRINTS
+      LOGICAL ERFEXP(0:*)
       DIMENSION RJ000(NUABCD,0:JMAX),EJ000(NUABCD,0:JMAX),
      &          SJ000(NUABCD,0:JMAX),PQX(NUABCD),PQY(NUABCD),
      &          PQZ(NUABCD),COOR12(NUC1*NUC2,3),COOR34(NUC3*NUC4,3),
@@ -288,9 +292,11 @@ C     this may in the case of one-center integrals introduce
 C     numerical instabilities for large exponents.
 C
       NOINT = .FALSE.
-      IF (ERFEXP) IEJ = 2
-      IF (SRINTS.AND.ERFEXP) IEJ = 3
-      IF (ERFEXP) CALL DZERO(EJ000(1,0),(JMAX+1)*NUABCD)
+      IF (ERFEXP(0)) THEN
+         IEJ = 2
+         IF (SRINTS) IEJ = 3
+         CALL DZERO(EJ000(1,0),(JMAX+1)*NUABCD)
+      END IF
       IF (AD2DAR) DRWFAC=DP25*ALPHA2*DARFAC
       IF (DO2DAR) DRWFAC=DP25*ALPHA2
       IF (S4CENT) DRWFAC=-DP25/PI
@@ -386,12 +392,24 @@ c              --- Modified
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
                   TALPHA(IODS,2) = - D2*EXPPQII
                   SJ000(IODS,0) = FACTOR
-                  IF(ERFEXP) THEN
+c               --- Old ERFEXP function 2*chival/sqrt(pi)*exp(-chisq/3*r**2)
+                  IF(ERFEXP(1)) THEN
+                     AI = D3/CHISQ    
                      AI = D3/CHISQ
                      EXPFAC  = EXPPI + EXPQI + AI
                      EXPFACI = D1/EXPFAC
                      TALPHA(IODS,IEJ) = - D2*EXPFACI
                      EJ000(IODS,0) = - FAC12I*FAC34(IOD34)*CHIVAL*
+     &               SQRT((AI*EXPFACI)**3/(EXPP*EXPQ))
+                  ENDIF
+C               --- New ERFEXP function (10*chival)/(9*sqrt(pi))*exp(-3*chisq/5 *r**2)
+                  IF(ERFEXP(2)) THEN
+                     AI = D5/(D3*CHISQ)   
+                     EXPFAC  = EXPPI + EXPQI + AI
+                     EXPFACI = D1/EXPFAC
+                     TALPHA(IODS,IEJ) = - D2*EXPFACI
+                     EJ000(IODS,0) = 
+     &             - FAC12I*FAC34(IOD34)*(D10/D18)*CHIVAL*
      &               SQRT((AI*EXPFACI)**3/(EXPP*EXPQ))
                   ENDIF
 c              ---
@@ -412,12 +430,21 @@ C
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
                   TALPHA(IODS,1) = - D2*EXPPQII
                   RJ000(IODS,0) = FACTOR
-                  IF(ERFEXP) THEN
+                  IF(ERFEXP(1)) THEN
                      AI = D3/CHISQ
                      EXPFAC  = EXPPI + EXPQI + AI
                      EXPFACI = D1/EXPFAC
                      TALPHA(IODS,IEJ) = - D2*EXPFACI
                      EJ000(IODS,0) = - FAC12I*FAC34(IOD34)*CHIVAL*
+     &               SQRT((AI*EXPFACI)**3/(EXPP*EXPQ))
+                  ENDIF
+                  IF(ERFEXP(2)) THEN
+                     AI = D5/(D3*CHISQ)
+                     EXPFAC  = EXPPI + EXPQI + AI
+                     EXPFACI = D1/EXPFAC
+                     TALPHA(IODS,IEJ) = - D2*EXPFACI
+                     EJ000(IODS,0) =
+     &             - FAC12I*FAC34(IOD34)*(D10/D18)*CHIVAL*
      &               SQRT((AI*EXPFACI)**3/(EXPP*EXPQ))
                   ENDIF
                END DO
@@ -456,7 +483,7 @@ C
             ELSE
                CALL DCOPY(NUABCD,TALPHA(1,1),1,SCLFAC(1,1),1)
                IF(SRINTS) CALL DCOPY(NUABCD,TALPHA(1,2),1,SCLFAC(1,2),1)
-               IF(ERFEXP) 
+               IF(ERFEXP(0)) 
      &                CALL DCOPY(NUABCD,TALPHA(1,IEJ),1,SCLFAC(1,IEJ),1)
                IF (SRINTS) THEN
 C             ... Calculate SJ000 for short-range integrals
@@ -468,7 +495,7 @@ C             ... Calculate SJ000 for short-range integrals
                      END DO
                   END DO
                END IF
-               IF (ERFEXP) THEN
+               IF (ERFEXP(0)) THEN
 C             ... Calculate EJ000 for long-range integrals
                   DO J = 1, JMAX
                      DO I = 1, NUABCD
@@ -617,11 +644,20 @@ c                --- Modified
                   PQY(IODS) = PQYI
                   PQZ(IODS) = PQZI
                   PQXYZI    = PQXI*PQXI+PQYI*PQYI+PQZI*PQZI
-                  IF(ERFEXP) THEN
+                  IF(ERFEXP(1)) THEN
                      AI = D3/CHISQ
                      EXPFAC  = EXPPI + EXPQI + AI
                      EXPFACI = D1/EXPFAC
                      FACTOR = FAC12I*FAC34(IOD34)*
+     &               CHIVAL*SQRT(D1/(EXPP*EXPQ))*(SQRT(AI*EXPFACI))**3
+                     EJ000(IODS,0) = - FACTOR * DEXP(- EXPFACI*PQXYZI)
+                     TALPHA(IODS,IEJ) = - D2*EXPFACI
+                  ENDIF
+                  IF(ERFEXP(2)) THEN
+                     AI = D5/(CHISQ*D3)
+                     EXPFAC  = EXPPI + EXPQI + AI
+                     EXPFACI = D1/EXPFAC
+                     FACTOR = FAC12I*FAC34(IOD34)*(D10/D18)*
      &               CHIVAL*SQRT(D1/(EXPP*EXPQ))*(SQRT(AI*EXPFACI))**3
                      EJ000(IODS,0) = - FACTOR * DEXP(- EXPFACI*PQXYZI)
                      TALPHA(IODS,IEJ) = - D2*EXPFACI
@@ -663,7 +699,7 @@ C
                   PQZ(IODS) = PQZI
                   PQXYZI    = PQXI*PQXI+PQYI*PQYI+PQZI*PQZI
                   WVALU(NODS,1) = EXPPQII*PQXYZI
-                  IF (ERFEXP) THEN
+                  IF (ERFEXP(1)) THEN
                      AI = D3/CHISQ
                      EXPFAC  = EXPPI + EXPQI + AI
                      EXPFACI = D1/EXPFAC
@@ -671,6 +707,15 @@ C
                      FACTOR = FAC12I*FAC34(IOD34)*CHIVAL*
      &                        SQRT(D1/(EXPP*EXPQ))*(SQRT(AI*EXPFACI))**3
                      EJ000(IODS,0) = - FACTOR* DEXP(- EXPFACI*PQXYZI)
+                  ENDIF
+                  IF(ERFEXP(2)) THEN
+                     AI = D5/(CHISQ*D3)
+                     EXPFAC  = EXPPI + EXPQI + AI
+                     EXPFACI = D1/EXPFAC
+                     FACTOR = FAC12I*FAC34(IOD34)*(D10/D18)*
+     &               CHIVAL*SQRT(D1/(EXPP*EXPQ))*(SQRT(AI*EXPFACI))**3
+                     EJ000(IODS,0) = - FACTOR * DEXP(- EXPFACI*PQXYZI)
+                     TALPHA(IODS,IEJ) = - D2*EXPFACI
                   ENDIF
                   INDADR(NODS) = IODS
 #if defined (SYS_IRIX)
@@ -746,7 +791,7 @@ C
      &            CALL GETGAM(NODS,INDADR,WVALU(1,2),SJ000,JMAX,NUABCD,
      &                        WORK(KFJW),WORK(KINDAD),WORK(KWVALS),
      &                        WORK(KREXPW),IPRINT)
-               IF (ERFEXP)
+               IF (ERFEXP(0))
      &            CALL DCOPY(NUABCD,TALPHA(1,IEJ),1,SCLFAC(1,IEJ),1)
             END IF
 C
@@ -779,7 +824,7 @@ C          ... Calculate SJ000 for short-range integrals
                   END DO
                END DO
             END IF
-            IF (ERFEXP) THEN
+            IF (ERFEXP(0)) THEN
 C          ... Calculate EJ000 for long-range integrals
                DO J = 1, JMAX
                   DO I = 1, NUABCD
@@ -802,11 +847,11 @@ C
 C     For modified operators, R000(I,J) can now be assigned correctly
 C
       IF(SRINTS) THEN
-         IF (ERFEXP) 
+         IF (ERFEXP(0)) 
      &      CALL DAXPY(NUABCD*(JMAX+1), D1,EJ000(1,0),1,SJ000(1,0),1)
             CALL DAXPY(NUABCD*(JMAX+1),-D1,SJ000(1,0),1,RJ000(1,0),1)
       ELSE
-         IF (ERFEXP)
+         IF (ERFEXP(0))
      &      CALL DAXPY(NUABCD*(JMAX+1),D1,EJ000(1,0),1,RJ000(1,0),1)
       ENDIF
 C

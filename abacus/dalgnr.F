@@ -1220,7 +1220,7 @@ C       where CHIVAL .ge. 0, and CHIVAL.eq.0 is normal 1/R12
 C     For ERFEXP true:
 C       g(R12) = g_erfexp(R12)
 C              = g_erf(R12) - 2*CHIVAL/SQRT(PI) * EXP(-CHIVAL**2*R12**2/3.0D0)
-      ERFEXP = .FALSE.
+      ERFEXP(0:2) = .FALSE.
 C
 C     IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                             ELSE calculate g(R12) listed above
