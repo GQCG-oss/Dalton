@@ -983,20 +983,14 @@ subroutine pe_sync()
         if (myid /= 0) allocate(zeroalphas(nsites(ncores-1)))
         call mpi_bcast(zeroalphas, nsites(ncores-1), MPI_LOGICAL,&
                       &0, MPI_COMM_WORLD, ierr)
-!        if (myid == 0) then
-!            displs(0) = 0
-!            do i = 1, ncores-1
-!                displs(i) = displs(i-1) + 6 * ndists(i-1)
-!            end do
-!            call mpi_scatterv(P1s, 6*ndists, displs, MPI_REAL8,&
-!                             &MPI_IN_PLACE, 0, MPI_REAL8,&
-!                             &0, MPI_COMM_WORLD, ierr)
-!        else if (myid /= 0) then
-!            allocate(P1s(1,6*ndists(myid)))
-!            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-!                             &P1s, 6*ndists(myid), MPI_REAL8,&
-!                             &0, MPI_COMM_WORLD, ierr)
-!        end if
+        call mpi_bcast(pe_nomb, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(pe_iter, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(pe_damp, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(damp, 1, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
+        if (pe_iter .and. pe_damp) then
+            call mpi_bcast(P1s, 6*nsites(ncores-1), MPI_REAL8,&
+                          &0, MPI_COMM_WORLD, ierr)
+        end if
     end if
 
     call mpi_bcast(mulorder, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
@@ -1693,15 +1687,9 @@ subroutine induced_dipoles(M1inds, Fs)
     logical :: converged = .false.
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
-    real(dp) :: R, Rd, ai, aj, norm, redthr
+    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp
-
-#ifdef VAR_MPI
-    if (ncores > 1) then
-        call mpi_bcast(pe_iter, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-    end if
-#endif
 
     if (pe_iter) then
         if (myid == 0) then
@@ -1744,6 +1732,8 @@ subroutine induced_dipoles(M1inds, Fs)
                 end if
             end if
 
+            if (pe_nomb) cycle
+
 #ifdef VAR_MPI
             if (myid == 0 .and. ncores > 1) then
                 call mpi_scatterv(M1inds(:,n), 3*npoldists, displs, MPI_REAL8,&
@@ -1762,9 +1752,9 @@ subroutine induced_dipoles(M1inds, Fs)
                 l = 1
                 do i = 1, nsites(ncores-1)
                     if (zeroalphas(i)) cycle
-!                    if (pe_damp) then
-!                        ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
-!                    end if
+                    if (pe_damp) then
+                        ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
+                    end if
                     m = 1
                     Ftmp = 0.0d0
                     do j = nsites(myid-1)+1, nsites(myid)
@@ -1780,22 +1770,28 @@ subroutine induced_dipoles(M1inds, Fs)
                             m = m + 3
                             cycle
                         end if
+                        ! damping parameters
+                        ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
+                        ! a = 2.1304 = damp
+                        ! u = R / (alpha_i * alpha_j)**(1/6)
+                        ! fe = 1-(a²u²/2+au+1)*exp(-au)
+                        ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
+                        if (pe_damp) then
+                            aj = P1s(1,j) + P1s(4,j) + P1s(6,j)
+                            Rd = (damp * R)/(((ai * aj) / 9.0d0)**(d6i))
+                            fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
+                            ft = fe - (Rd**3 * d6i) * exp(-Rd)
+                        end if
                         Rij = Rs(:,j) - Rs(:,i)
-                        call Tk_tensor(T, Rij)
-!                        ! damping parameters
-!                        ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
-!                        ! a = 2.1304 = damp
-!                        ! u = R / (alpha_i * alpha_j)**(1/6)
-!                        ! fe = 1-(a²u²/2+au+1)*exp(-au)
-!                        ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
-!                        if (pe_damp) then
-!                            R = nrm2(Rij)
-!                            aj = P1s(1,j) + P1s(4,j) + P1s(6,j)
-!                            Rd = (damp * R)/(((ai * aj) / 9.0d0)**(d6i))
-!                            fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
-!                            ft = fe - (Rd**3 * d6i) * exp(-Rd)
-! TODO: damping not complete
-!                        end if
+                        R = nrm2(Rij)
+                        R3 = R**3
+                        R5 = R**5
+                        T(1) = 3.0d0 * Rij(1) * Rij(1) * ft / R5 - fe / R3
+                        T(2) = 3.0d0 * Rij(1) * Rij(2) * ft / R5
+                        T(3) = 3.0d0 * Rij(1) * Rij(3) * ft / R5
+                        T(4) = 3.0d0 * Rij(2) * Rij(2) * ft / R5 - fe / R3
+                        T(5) = 3.0d0 * Rij(2) * Rij(3) * ft / R5
+                        T(6) = 3.0d0 * Rij(3) * Rij(3) * ft / R5 - fe / R3
                         call spmv(T, M1inds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
                         m = m + 3
                     end do
@@ -1879,6 +1875,7 @@ subroutine induced_dipoles(M1inds, Fs)
             l = 1
             do i = 1, nsites(ncores-1)
                 if (zeroalphas(i)) cycle
+                print '(i2,3f16.12)', i, M1inds(l:l+2,n)
                 if (nrm2(M1inds(l:l+2,n)) > 1.0d0) then
                     write(luout,'(4x,a,i6)') 'Large induced dipole encountered&
                                              & at site:', i
@@ -2219,7 +2216,7 @@ subroutine response_matrix(B, invert, wrt2file)
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
     real(dp) :: Rd, ai, aj
-    real(dp) :: R, R2, R3, R5, T
+    real(dp) :: R, R3, R5, T
     real(dp), dimension(3) :: Rij
     real(dp), dimension(6) :: P1inv
 
@@ -2289,7 +2286,6 @@ subroutine response_matrix(B, invert, wrt2file)
                         end if
                         Rij = Rs(:,j) - Rs(:,i)
                         R = nrm2(Rij)
-                        R2 = R**2
                         R3 = R**3
                         R5 = R**5
 ! TODO: cutoff radius
