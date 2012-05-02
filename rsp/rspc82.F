@@ -695,8 +695,8 @@ C    [ E(P,Q) , H ] =
 C
 C    ACTIVE-INACTIVE (P,Q) = (T,I)
 C                             L,K
-C    FCX(I,X)*DV(T,X)-2*FCX(I,T)-2FVX(I,T)+QBX(I,T)
-C        K       L          K,L       K,L      K,L
+C    FCX(I,X)*DV(T,X)-2*FCX(I,T)-2*FVX(I,T)+QBX(I,T)
+C        K       L          K,L        K,L      K,L
 C
 C    INACTIVE-ACTIVE         (I,U)
 C                             K,L
@@ -722,8 +722,8 @@ C           L       K      L,K
 C
 C    INACTIVE-SECONDARY      (I,A)
 C                             K,L
-C    2*FCX(A,I)+2FVX(A,I)
-C          L,K       L,K
+C    2*FCX(A,I)+2*FVX(A,I)
+C          L,K        L,K
 C
 C    SECONDARY-INACTIVE      (A,J)
 C                             L,K
@@ -848,7 +848,7 @@ C
      *                     + QBX(K,NWL,ISIM)
                   END IF
  2000          CONTINUE
-            ELSE
+            ELSE   ! ITYPK is JTACT
               IF (ITYPL.EQ.JTACT) THEN
                   NWL = ISW(L) - NISHT
                   NWK = ISW(K) - NISHT
@@ -959,8 +959,8 @@ C
  3000 CONTINUE
 C
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  E(2)'
-         CALL OUTPUT(EVECS,1,KZYVAR,1,NSIM,KZYVAR,NSIM,1,LUPRI)
+         WRITE(LUPRI,*)' RSPORB: LINEAR TRANSFORMATION WITH  E(2)'
+         CALL OUTPUT(EVECS,1,KZVAR,1,2*NSIM,KZVAR,2*NSIM,-1,LUPRI)
       END IF
 C
 C END OF RSPORB
@@ -2768,6 +2768,12 @@ C
             NCTOT = NCTOT + 1
          END IF
       END DO
+!     write(lupri,'(//A,I5)') ' RSPRED: new b_c vectors',NCTOT
+!     call output(BCVEC,1,KZCONF,1,NCTOT,KZCONF,NCTOT,-1,LUPRI)
+!     write(lupri,'(//A,I5)') ' RSPRED: new b_o vectors',NOTOT
+!     call output(BOVEC,1,KZWOPT,1,2*NOTOT,KZWOPT,2*NOTOT,-1,LUPRI)
+!     write(lupri,'(//A,I5)') ' RSPRED: new sigma vectors',N
+!     call output(EVECS,1,KZVAR,1,2*N,KZVAR,2*N,-1,lupri)
       ICTOT = 0
       IOTOT = 0
       DO INUM = 1,N
@@ -2802,10 +2808,11 @@ C
      *         CALL OUTPUT(REDGD,1,IZYRED,1,KEXSIM,IZYRED,KEXSIM,1,
      &                     LUPRI)
          ENDIF
-         DO 14 I=1,KEXSIM
-            IF (IZYRED.GT.0)
-     *         CALL DCOPY(IZYRED,REDGD((I-1)*IZYRED+1),1,EIVEC(1,I),1)
- 14      CONTINUE
+         IF (IZYRED.GT.0) THEN
+            DO I=1,KEXSIM
+               CALL DCOPY(IZYRED,REDGD((I-1)*IZYRED+1),1,EIVEC(1,I),1)
+            END DO
+         END IF
          DO 12 J = 1,KEXSIM
             ISTBC = 1
             ISTBO = 1
@@ -3017,8 +3024,16 @@ C
 C           CALL DSPSLI(N,NSIM,AP,B,KPIVOT,INFO,DET,INERT)
 C
             IF (INFO .NE. 0) THEN
-               WRITE (LUPRI,'(/A,I5)')
-     *              ' *** ERROR IN RSPRED.DSPSLI, INFO =',INFO
+               WRITE (LUPRI,'(/A,I5/A/)')
+     *              ' *** ERROR IN RSPRED.DSPSLI, INFO =',INFO,
+     &              ' *** Dump of information about DSPSLI call:'
+               WRITE(LUPRI,*)' AFREQ,KZYRED,IGD',AFREQ,KZYRED,IGD
+               WRITE(LUPRI,'(/A)') ' REDUCED E(2) MATRIX:'
+               CALL OUTPAK(REDE,KZYRED,-1,LUPRI)
+               WRITE(LUPRI,'(/A)') ' REDUCED S(2) MATRIX:'
+               CALL OUTPAK(REDS,KZYRED,-1,LUPRI)
+               WRITE(LUPRI,*)'REDUCED GRADIENT VECTORS DIM KZYRED',KZYRED
+               CALL OUTPUT(EIVEC(1,IGD),1,KZYRED,1,1,KZYRED,1,1,LUPRI)
                CALL QUIT('*** ERROR IN RSPRED.DSPSLI')
             END IF
 C

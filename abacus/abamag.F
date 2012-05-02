@@ -2034,7 +2034,7 @@ ckr               IDORCT(IREC) = 1
      &                   ' Norms:     ',DN1,DN2
                END IF
                IF (IPRTRP .GT. 10) THEN
-                  CALL OUTPUT(WORK,1,NVARPT,1,2,NVARPT,1,2,LUPRI)
+                  CALL OUTPUT(WORK,1,NVARPT,1,2,NVARPT,2,1,LUPRI)
                END IF
  10         CONTINUE
          END IF

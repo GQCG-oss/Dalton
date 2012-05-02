@@ -41,6 +41,7 @@ C
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
+#include "dftcom.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
 C
