@@ -8,20 +8,24 @@
 !
 !     HFXSET: used in input to determine if HFXFAC has been specified by user with .HFXFAC
       REAL*8  HFXFAC, HFXATT, HFXMU,                                    &
-     &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC
+     &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
+     &        XMULFAC_READIN, DSFAC, HEAVISIDE_PVALUE
       INTEGER IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT
       LOGICAL DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,   &
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG, HFXSET,   &
      &        GRDONE_OLD                                                  ! GRDONE for REAQUA, GRDONE_OLD for REAQUA_OLD ("grid done")
 !     variables for srDFT /hjaaj
       LOGICAL DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
-     &        DOSRC_LDA, DOSRC_GGA, DOSRMULO, DOSRGGA2, DOSRLYPT,       &
+     &        DOSRC_LDA, DOSRC_GGA, DOSRC_MULOCAL,                      &
+     &        DOSRGGA2, DOSRLYPT, SRCMULOFAC, DSLOCALFAC,               &
      &        DOSRC_WIB, ISJT, DOSRX_PBEHSE, DOSRX_PBETCS, DOSRC_PBETCS,&
      &        DOSRC_PBETCSJ, DOSRC_PBERI, DOSRC_PBEWI, DOSRX_PBERI,     &
      &        DOSRX_PBEGWS, DOSRC_PBEGWS, DOSRX_LDAS, DOSRC_LDAS,       &
-     &        DFT_SPINDNS,  DFT_LOCALSPIN
+     &        DOSRC_MULOC_GGA, DOSRC_MULOD_GGA, DOSRC_MULOE_GGA,        &
+     &        DFT_SPINDNS,  DFT_LOCALSPIN, DOSRC_PBELO
       COMMON /DFTCOM/ HFXFAC, HFXATT, HFXMU,                            &
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
+     &        XMULFAC_READIN, DSFAC, HEAVISIDE_PVALUE,                  &
 ! integer:
      &        IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT,                    &
 ! logical:
@@ -30,11 +34,13 @@
      &        GRDONE_OLD,                                               &
 ! srDFT (logical):
      &        DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
-     &        DOSRC_LDA, DOSRC_GGA, DOSRMULO, DOSRGGA2, DOSRLYPT,       &
+     &        DOSRC_LDA, DOSRC_GGA, DOSRC_MULOCAL(0:3),                 &
+     &        DOSRGGA2, DOSRLYPT, SRCMULOFAC, DSLOCALFAC,               &
      &        DOSRC_WIB, ISJT, DOSRX_PBEHSE, DOSRX_PBETCS, DOSRC_PBETCS,&
      &        DOSRC_PBETCSJ, DOSRC_PBERI, DOSRC_PBEWI, DOSRX_PBERI,     &
      &        DOSRX_PBEGWS, DOSRC_PBEGWS, DOSRX_LDAS,  DOSRC_LDAS,      &
-     &        DFT_SPINDNS,  DFT_LOCALSPIN
+     &        DOSRC_MULOC_GGA, DOSRC_MULOD_GGA, DOSRC_MULOE_GGA,        &
+     &        DFT_SPINDNS,  DFT_LOCALSPIN, DOSRC_PBELO
 !
       CHARACTER*6  DFTTYP
 !     variables for srDFT

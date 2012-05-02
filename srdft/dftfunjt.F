@@ -287,14 +287,14 @@ C*****************************************************************************
       double precision t1,t2,t3,t4
 
       double precision XKSR(3)
-      logical ERFEXP
+      logical ERFEXP(0:2)
 
 ! function 
       double precision berft
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP = .false.
+      ERFEXP(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       exerflda = XKSR(1)
 
@@ -1960,6 +1960,58 @@ C
 C end Manu
 C
 C****************************************************************************
+      subroutine ESRC_PBELOERF(rho,grd,mu,e)
+C*****************************************************************************
+C     Our new local energy formula for sr correlation functional.
+C     With PBE functional.
+C
+C     E_sr_c = max( E_c_pbe, E_c_srlda(mu) )
+C
+C     Input: rho    : density
+C            grd    : norm of gradient of density
+C            mu     : Interaction parameter
+C
+C     Ouput: e      : energy
+C
+C     Author: M. N. Pedersen
+C     Date  : Nov. 2011
+C*****************************************************************************
+      implicit none
+      
+      double precision rho, grd, mu 
+      double precision e, e_pbe, e_lda,p,z,Ha,Hb
+      double precision rho13
+ 
+      logical ERFEXP(0:2), MULOCAL(0:2)
+      double precision ZKSR(3)
+
+      rho13 = rho**(1.0d0/3.0d0)
+
+!     PBE correlation energy (mu=0)
+      call ECPBE(rho,grd,e_pbe)
+      if (abs(e_pbe) .lt. 1.0D-15) then
+         e = 0.0d0
+         return
+      end if
+
+!    short-range LDA energy
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
+      call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
+      e_lda = ZKSR(1)
+
+!      e = max(e_lda,e_pbe)
+!     Instead of max(e_lda,e_pbe) we use a smoothing function HS
+      z = (e_pbe - e_lda)/(e_pbe**2 + e_lda**2)
+     
+      call HS(z,1.5d0,Ha)
+      call HS(-z,1.5d0,Hb)
+      e = e_pbe*Ha + e_lda*Hb
+     
+      return
+      end 
+
+C****************************************************************************
       subroutine ESRC_PBEWIERF(rho,grd,mu,e)
 C*****************************************************************************
 C     weighted interpolation for for short-range erf correlation functional
@@ -1979,7 +2031,7 @@ C*****************************************************************************
       double precision rho, grd, mu
       double precision e, derfc
 
-      logical ERFEXP, MULOCAL
+      logical ERFEXP(0:2), MULOCAL(0:2)
       double precision mu0,rho13, rs, pi
       double precision elda,epbe,eldamu
       double precision ZKSR(3)
@@ -1988,8 +2040,8 @@ C
 !      print *,'ESRC_PBEWIERF: rho=',rho,' grd=',grd
 
       pi = 3.141592653589793d0
-      ERFEXP = .false.
-      MULOCAL = .false.
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
       rho13 = rho**(1.d0/3.d0)
       rs = (3.d0/(4.d0*pi*rho))**(1.d0/3.d0)
 
@@ -2041,7 +2093,7 @@ C*****************************************************************************
       double precision ecerfpbe
       double precision t1
 
-      logical ERFEXP, MULOCAL
+      logical ERFEXP(0:2), MULOCAL(0:2)
       double precision XKSR(3), ZKSR(3)
 
 ! function 
@@ -2052,8 +2104,8 @@ C*****************************************************************************
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP = .false.
-      MULOCAL = .false.
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
       exerflda = XKSR(1)
@@ -2113,7 +2165,7 @@ C*****************************************************************************
       double precision ecerfpbe
       double precision t1
 
-      logical ERFEXP, MULOCAL
+      logical ERFEXP(0:2), MULOCAL(0:2)
       double precision XKSR(3), ZKSR(3)
 
       double precision epbe
@@ -2126,8 +2178,8 @@ C*****************************************************************************
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP = .false.
-      MULOCAL = .false.
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
       exerflda = XKSR(1)
@@ -2203,7 +2255,7 @@ C*****************************************************************************
       double precision t1,t2,t3,t4,t5,t6,t7,t8,t9,t10
       double precision t11,t12,t13,t14,t15,t16,t17,t18,t19
 
-      logical ERFEXP, MULOCAL
+      logical ERFEXP(0:2), MULOCAL(0:2)
       double precision XKSR(3), ZKSR(3)
 
 ! function 
@@ -2219,8 +2271,8 @@ C*****************************************************************************
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP = .false.
-      MULOCAL = .false.
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
       exerflda = XKSR(1)
@@ -2566,14 +2618,14 @@ C*****************************************************************************
       double precision kappa,sq,fx
 
       double precision XKSR(3)
-      logical ERFEXP
+      logical ERFEXP(0:2)
 
 ! function 
       double precision berf
 
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP = .false.
+      ERFEXP(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       exerflda = XKSR(1)
 
@@ -2620,13 +2672,13 @@ C*****************************************************************************
       double precision t1
       double precision alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
  
-      logical ERFEXP, MULOCAL
+      logical ERFEXP(0:2), MULOCAL(0:2)
       double precision XKSR(3), ZKSR(3)
 
 !     short-range LDA energy
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP = .false.
-      MULOCAL = .false.
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
       ecerflda = ZKSR(1)
 
@@ -2716,6 +2768,137 @@ C*****************************************************************************
       end
 
 C****************************************************************************
+      subroutine ESRC_MULOC_GGA(rho,grd,mu,e)
+C*****************************************************************************
+C     Modified version of local mu formula C short-range correlation functional from
+C     J. Toulouse, F. Colonna and A. Savin, J. Chem. Phys., 122, 014110 (2005)
+C
+C     Our modification: factor alpha below
+C
+C     Input: rho    : density
+C            grd    : norm of gradient of density
+C            mu     : Interaction parameter
+C
+C     Ouput: e             : energy
+C
+C     Author: M.N.P
+C     Date  : 20-09-11
+C*****************************************************************************
+      implicit none
+
+      double precision rho, grd, mu, mu_new, amul
+      double precision e
+      double precision alpha, x, a1, b1, c1
+      parameter(a1 = 0.559463d0, b1 = -0.134086d0, c1 = 0.0296811d0)
+      double precision rho13
+ 
+      logical ERFEXP(0:2), MULOCAL(0:2)
+      double precision ZKSR(3)
+!     local mu parameter 
+      rho13 = rho**(1.0d0/3.0d0)
+!     Multiplication factor for mu parameter
+      x = grd/rho
+      alpha = a1 + b1*exp(-c1*x)
+      amul = x*alpha
+      mu_new = max(amul,mu) 
+!     short-range LDA energy
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
+      call VCSRLDA(ZKSR,rho,rho13,mu_new,MULOCAL,0,ERFEXP)
+      e = ZKSR(1)
+      return
+      end
+
+C****************************************************************************
+      subroutine ESRC_MULOD_GGA(rho,grd,mu,e)
+C*****************************************************************************
+C     Modified version of SRCMULO_A functional
+C
+C
+C     Input: rho    : density
+C            grd    : norm of gradient of density
+C            mu     : Interaction parameter
+C
+C     Ouput: e             : energy
+C
+C     Author: M.N.P
+C     Date  : 20-09-11
+C*****************************************************************************
+
+      implicit none
+
+      double precision rho, grd, mu, amul, mu_new
+      double precision e
+      double precision rsfac, rs, x, a, b, c, d
+      parameter(rsfac = 0.62035049089940008660d0)
+      parameter(b = 1.741930d0, c = -0.528057d0, d = 0.0720226d0 )
+      double precision rho13
+ 
+      logical ERFEXP(0:2), MULOCAL(0:2)
+      double precision ZKSR(3)
+
+      rho13 = rho**(1.0d0/3.0d0)
+      rs   = rsfac/rho13
+!     Multiplying factor for mu parameter
+      x = grd/rho
+      a = b + c*exp(-d*x)
+!     local mu parameter 
+      amul = a/rs
+      mu_new = max(amul,mu) 
+!     short-range LDA energy
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
+!      print *,'mu = 0.1' , mu
+      call VCSRLDA(ZKSR,rho,rho13,mu_new,MULOCAL,0,ERFEXP)
+      e = ZKSR(1)
+      return
+      end
+
+C****************************************************************************
+      subroutine ESRC_MULOE_GGA(rho,grd,mu,e)
+C*****************************************************************************
+C     Modified version of SRCMULO_B correlation functional 
+C
+C
+C
+C     Input: rho    : density
+C            grd    : norm of gradient of density
+C            mu     : Interaction parameter
+C
+C     Ouput: e             : energy
+C
+C     Author: M.N.P
+C     Date  : 20-09-11
+C*****************************************************************************
+
+      implicit none
+
+      double precision rho, grd, mu, amul, mu_new, x, rs, alpha
+      double precision e
+      double precision rsfac, a, b, bfac
+      parameter(rsfac = 0.62035049089940008660d0, a = 0.878435d0)
+      parameter(b = 0.5676020d0, bfac = 0.814516076948D0)
+      double precision rho13
+ 
+      logical ERFEXP(0:2), MULOCAL(0:2)
+      double precision ZKSR(3)
+
+      rho13 = rho**(1.0d0/3.0d0)
+      rs   = rsfac/rho13
+      x = grd/rho
+      alpha = a*x**b
+!     local mu parameter 
+      amul = (alpha*bfac)/sqrt(rs)
+      mu_new = max(amul,mu) 
+!     short-range LDA energy
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
+!      print *,'mu = 0.1' , mu
+      call VCSRLDA(ZKSR,rho,rho13,mu_new,MULOCAL,0,ERFEXP)
+      e = ZKSR(1)
+      return
+      end
+C****************************************************************************
       subroutine ESRX_LDAERFSPIN (rhot,rhos,mu,dospin,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA exchange functional
@@ -2778,7 +2961,6 @@ C       Limit for large a
         else
           e = 0.d0
         end if
-
       
 C     Spin-polarized case
       else
@@ -3316,5 +3498,25 @@ ccc Gd is d/drs G
      $     beta4*x**2))))-2.d0*Ac*alfa1*dlog(1.d0+1.d0/(2.d0*Ac*
      $     (beta1*sqrt(x)+beta2*x+beta3*x**(3.d0/2.d0)+
      $     beta4*x**2)))
+      return
+      end
+C*****************************************************************************
+      subroutine HS(z,k,H)
+C
+C     Smoothening formula for the SRCMULO and SRCPBELO functionals 
+C     Cancels the discontinuety arising from the max() function.
+C
+C     INPUT:   
+C             a,b :   max(a,b)
+C             k   :   
+C     OUTPUT:
+C             H  
+C
+C*****************************************************************************
+#include <dftcom.h>
+      double precision a,b,z,h,k
+
+      H = 1/(1+k*exp(-heaviside_pvalue*z))
+
       return
       end

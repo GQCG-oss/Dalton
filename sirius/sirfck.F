@@ -535,7 +535,7 @@ C
          IF (NFSRTYP .EQ. 3) THEN
             JFSRAO = KFSRAO + 2*NSR_DMAT*N2BASX
             CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(JFSRAO),1,FMAT(1,3),1) ! add Ksr_spin
-            write (lupri,'(/A)') 'SIRFCK SPIN DENSITY EXX TERM'
+            write (lupri,'(/A)') 'SIRFCK SPIN DENSITY EXX TERM DIRECT'
          END IF
 ! hjaaj: my first code, can soon be removed after testing (25.jan.2012)
 ! hjaaj: I have now removed the factor 2 again, is that OK ???

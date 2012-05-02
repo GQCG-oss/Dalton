@@ -22,7 +22,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 
 !define SRDFT_DEBUG
 #undef SRDFT_DEBUG
@@ -41,14 +41,14 @@ C     which defines the Exchange and Correlation functionals
 C     to be used for the DFT-hybrid model in question.
 C
 C**************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dftcom.h"
 C     variables for SRCPBERI
       double precision mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
-      PARAMETER  (NXTABLE = 16, NCTABLE = 16)
+      PARAMETER  (NXTABLE = 16, NCTABLE = 21) 
       CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
@@ -59,10 +59,12 @@ C
      >             'HFEXCH    ','SRGGA2    ','SRXWIB    ','SRXWI2    ',
      >             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ',
      >             'SRXPBERI  ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    '/
-      DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRMULO    ',
+      DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRCMULO_A ',
      >             'SRLYPT    ','SRCWIB    ','SRCWI2    ','SRCWI3    ',
      >             'SRCWI4    ','SRCPBETCS ','SRCPBETCSJ','SRCPBERI  ',
-     >             'SRCPBEWI  ','SRCPBEGWS ','SRCLDA_S  ','NULL_S    '/
+     >             'SRCPBELO  ','SRCPBEWI  ','SRCPBEGWS ','SRCLDA_S  ',
+     >             'SRCMULO_B ','SRCMULO_C ','SRCMULO_D ','SRCMULO_E ',
+     >             'NULL_S    '/
       DATA SETXFUN,SETCFUN /2*.FALSE./
       CALL QENTER('SRFUN_INPUT')
       IXWINT = 0
@@ -194,7 +196,7 @@ C
       DO 200 II = 1, NCTABLE
         IF (CTABLE(II) .EQ. SRCFUN) THEN
           GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
-     &           214,215,216),II
+     &           214,215,216,217,218,219,220,221),II
         END IF
  200  CONTINUE
       SETCFUN = .FALSE.
@@ -205,7 +207,9 @@ C
       GO TO 20
  203  DOSRC_GGA = .TRUE.
       GO TO 20
- 204  DOSRMULO = .TRUE.
+C     SRCMULO_A : AMUL = A/r_s
+ 204  DOSRC_MULOCAL(0) = .TRUE.
+      DOSRC_MULOCAL(1) = .TRUE.
       GO TO 20
  205  DOSRLYPT = .TRUE.
       GO TO 20
@@ -247,27 +251,55 @@ CFRAN      IF (Nfld .ge. 3) THEN
       END IF
       GO TO 20
 
+ 213  DOSRC_PBELO   = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
 C     Weighted interpolation
- 213  DOSRC_PBEWI = .TRUE.
+ 214  DOSRC_PBEWI = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
 C JT 12-02-05 end
 
 C Short-range correlation PBE function of GWS (JT 11-08-09)
- 214  DOSRC_PBEGWS = .TRUE.
-      ISJT    = .TRUE.
+ 215  DOSRC_PBEGWS = .TRUE.
+      ISJT    = .TRUE. 
       GO TO 20
 
 C Short-range correlation PBE function of GWS (JT 18-08-09)
- 215  DOSRC_LDAS = .TRUE.
-      DFT_SPINDNS = .TRUE.
-      ISJT    = .TRUE.
+ 216  DOSRC_LDAS = .TRUE.
+      DFT_SPINDNS   = .TRUE.
+      ISJT    = .TRUE. 
+      GO TO 20
+
+C     SRCMULO_B :
+C Short-range LDA type correlation functional with lokal mu value
+C of mu=2*sqrt(alpha/pi)/sqrt(r_s)
+ 217  DOSRC_MULOCAL(0) = .TRUE.   
+      DOSRC_MULOCAL(2) = .TRUE.
+      GO TO 20
+C     SRCMULO_C :
+C Short-range LDA type correlation functional with lokal mu value
+C of mu=abs(grad n(r))/4*n(r)
+ 218  DOSRC_MULOC_GGA = .TRUE.
+      ISJT = .TRUE.
+      GO TO 20
+C     SRCMULO_D :
+C
+ 219  DOSRC_MULOD_GGA = .TRUE.
+      ISJT = .TRUE.
+      GO TO 20
+C     SRCMULO_E :
+C Extension of the SRCMULO_A functional: XMULFAC depends on grd/rho
+C
+ 220  DOSRC_MULOE_GGA = .TRUE.
+      ISJT = .TRUE.
       GO TO 20
 
 C 'NULL_S   ' Spin density with no correlation functional
- 216  DFT_SPINDNS = .TRUE.
+ 221  DFT_SPINDNS = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
+
 C
   20  CONTINUE
 C
@@ -324,14 +356,15 @@ C
 C    Created: Jesper Kielberg Pedersen, Mar. 2003
 C    Modified: 17-08-09, J. Toulouse, add spin density matrix
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <dftinf.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "dftinf.h"
+#include "dftcom.h"
 C
       LOGICAL   DOGGA,DOLND,DOGRD,DOERG,DOATR
       DIMENSION EXCMAT(N2BASX,*),DMAT(N2BASX,*),WORK(LWORK)
@@ -352,7 +385,8 @@ C               be calling Becke and LYP functionals.
       DOGGA = DOSRX_GGA.OR.DOSRC_GGA.OR.DOSRBCK.OR.DOSRGGA2.OR.
      >        DOSRX_WIB.OR.DOSRC_WIB.OR.DOSRX_PBEHSE.OR.DOSRX_PBETCS.OR.
      >        DOSRC_PBETCS.OR.DOSRX_PBERI.OR.DOSRC_PBERI.OR.DOSRX_PBEGWS
-     >        .OR.DOSRC_PBEGWS
+     >        .OR.DOSRC_PBEGWS.OR.DOSRC_MULOC_GGA.OR.DOSRC_MULOD_GGA
+     >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO  
 C
 
       NDER  = 0
@@ -478,23 +512,23 @@ C               SR-DFT hybrid methods.
 C
 C*****************************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpar.h>
-#include <nuclei.h>
-#include <dftinf.h>
-#include <dftcom.h>
-#include <gnrinf.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpar.h"
+#include "nuclei.h"
+#include "dftinf.h"
+#include "dftcom.h"
+#include "gnrinf.h"
 C
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR
       LOGICAL   LDOGGA,LSRHYBR,RTEST,ldebug
@@ -504,15 +538,13 @@ C
      &          RHGT(3),RHGSR(3),ZKSR(3,3),XKSR(3,3), COR(3)
       CHARACTER*16 QUADNAME
 C
-#include <chrnos.h>
+#include "chrnos.h"
 C
 #ifdef SRDFT_DEBUG
       write(lupri,*) 'Entered SRDFT1, SRDFT_DEBUG defined'
-CFRAN DEBUG
       WRITE(LUPRI,*) 'SRDFT1: ND_SIM=',ND_SIM
       WRITE(LUPRI,*) 'SRDFT1: DOGGA =',DOGGA
-      WRITE(LUPRI,*) 'SRDFT1: ERFEXP=',ERFEXP
-CFRAN
+      WRITE(LUPRI,*) 'SRDFT1: ERFEXP(0:2)=',ERFEXP(0:2)
 #endif
 
       IF (ND_SIM .NE. 1) THEN
@@ -847,7 +879,7 @@ C
       CALL GPCLOSE(LUQUAD,'KEEP')
 #if defined  (VAR_SRDFT_MPI)
       if (nodtot .gt. 0) then
-      call quit('MPI code not correct, finish coding ...')
+!      call quit('MPI code not correct, finish coding ...')
       CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
 C
       CALL MPI_REDUCE(ELCTRN,EELCTRN,1,MPI_DOUBLE_PRECISION,MPI_SUM,
@@ -949,15 +981,15 @@ C     Purpose : Driver for Short-range DFT exchange and correlation
 C               contributions to energy and potential.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <dftinf.h>
-#include <dftcom.h>
-      LOGICAL ERFEXP,LSRLDA,ldebug
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "dftinf.h"
+#include "dftcom.h"
+      LOGICAL ERFEXP(0:2),LSRLDA,ldebug
       DIMENSION XKSR(3,2), ZKSR(3,2), ZMU(3)
 c
       VB    = 0.0D0
@@ -1033,8 +1065,8 @@ c     -------------------------------------------------------
 c     Correlation energy and potential
 c     -------------------------------------------------------
 c
-      IF ((DOSRC_LDA.OR.DOSRMULO).OR.(SRHYBR.AND.LSRLDA)) THEN
-          CALL VCSRLDA(ZKSR,RHO,RHO13,CHIVAL,DOSRMULO,1,ERFEXP)
+      IF ((DOSRC_LDA.OR.DOSRC_MULOCAL(0)).OR.(SRHYBR.AND.LSRLDA)) THEN
+          CALL VCSRLDA(ZKSR,RHO,RHO13,CHIVAL,DOSRC_MULOCAL,1,ERFEXP)
       END IF
       IF (DOSRC_GGA) THEN
           CALL VCSRGGA(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,
@@ -1044,13 +1076,14 @@ c
           CALL ELYP(ZKSR(1,1),RHO,RHO13,RHOGRD)
           CALL VLYP(ZKSR(2,1),RHO,RHO13,RHOGRD,RHOLAP)
           IF (IWINT.EQ.1) THEN
-             CALL VCSRLDA(ZMU,RHO,RHO13,CHIVAL,DOSRMULO,1,ERFEXP)
+             CALL VCSRLDA(ZMU,RHO,RHO13,CHIVAL,DOSRC_MULOCAL,1,ERFEXP)
+  
              CALL WVWN(VLDA,RHO,RHO13,ELDA,.TRUE.,.TRUE.)
              ZKSR(1,1) = ZKSR(1,1) - ELDA*RHO
              ZKSR(2,1) = ZKSR(2,1) - VLDA
              CALL VSRWINT(ZKSR,ZMU,RHO,RHO13,CHIVAL,1,ERFEXP)
           ELSE IF (IWINT.GE.2.OR.IWINT.EQ.3) THEN
-             CALL VCSRLDA(ZMU,RHO,RHO13,CHIVAL,DOSRMULO,1,ERFEXP)
+             CALL VCSRLDA(ZMU,RHO,RHO13,CHIVAL,DOSRC_MULOCAL,1,ERFEXP)
              CALL VSRWINT2(ZKSR,ZMU,RHO,RHO13,CHIVAL,1,ERFEXP)
           ELSE IF (IWINT.GT.10) THEN
              CALL VSRWINT2(ZKSR,ZMU,RHO,RHO13,CHIVAL,1,ERFEXP)
@@ -1092,13 +1125,13 @@ C     Purpose : Generate active density from multiconfigurationel
 C               wavefunction on a grid.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <dftinf.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "dftinf.h"
+#include "dftcom.h"
 C
       LOGICAL DOGGA,DOBCK,DOLYP,DOLND,DOGRD,DODCAO
       DIMENSION CMO(*),WORK(LWORK)
@@ -1183,22 +1216,22 @@ C               wavefunction on a grid.
 C
 C*****************************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpar.h>
-#include <nuclei.h>
-#include <dftinf.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpar.h"
+#include "nuclei.h"
+#include "dftinf.h"
+#include "dftcom.h"
 C
       LOGICAL   DOLND,DOGGA,DODCAO
       DIMENSION CMO(*),DV(NNASHX),CORX(NBUF),CORY(NBUF),
@@ -1207,7 +1240,7 @@ C
      &          DCAO(NBAST,NBAST),DVAO(NBAST,NBAST),WORK(LWORK), COR(3)
       CHARACTER*16 QUADNAME
 C
-#include <chrnos.h>
+#include "chrnos.h"
 C
 C     =============================
 C     Open file for dumping density
@@ -1365,23 +1398,23 @@ C     Purpose : Generate the 1-index transformed dft Hessian
 C               needed for short-range DFT hybrids.
 C     Based on DFTLTR used in regular DFT.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0,
      >           D13=1.0D0/3.0D0,
      >          RSFAC = 0.62035 04908 99400 08660 D0)
 C               RSFAC = (D3/(D4*PI))**THIRD
-      LOGICAL INVGGA,DOGGA,ERFEXP,LSRLDA
+      LOGICAL INVGGA,DOGGA,ERFEXP(0:2),LSRLDA
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <dftinf.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "dftinf.h"
+#include "dftcom.h"
 C
       DIMENSION DTRMAT(NBAST,NBAST),GAO(NBAST),GAO1(NBAST,3),
      &          EXCMAT(NBAST,NBAST),RHG(3),DTGAO(NBAST),
@@ -1434,7 +1467,7 @@ C        *****************************
 C        ** Calculate exchange part **
 C        *****************************
 C
-         IF (.NOT.DOSRMULO) THEN
+         IF (.NOT.DOSRC_MULOCAL(0)) THEN
 c
             IF (LSRLDA) THEN
 c        ...  Do not do SRLDA if SRDFTLTR is called with LSRLDA false
@@ -1507,7 +1540,7 @@ c          ... Special case for SRDFT in DFT embedding.
               FRZBCK = 0D0
               FZZBCK = 0D0
             ENDIF
-         ENDIF  ! IF (.NOT.DOSRMULO) THEN
+         ENDIF  ! IF (.NOT.DOSRC_MULOCAL(0)) THEN
 C
 C        ********************************
 C        ** Calculate correlation part **
@@ -1516,7 +1549,7 @@ C
          IF (LSRLDA) THEN
 c     ... Don't do SRLDA if SRDFTLTR is called with LSRHYBR true
 c          (regular Kohm-Sham part with total density for SRHYBR).
-           CALL VCSRLDA(ZKSR,RHO,RHO13,CHIVAL,DOSRMULO,2,ERFEXP)
+           CALL VCSRLDA(ZKSR,RHO,RHO13,CHIVAL,DOSRC_MULOCAL,2,ERFEXP)
          END IF
 c
 c     ... Below are various corrections to the SRLDA energy/potential
@@ -1702,7 +1735,7 @@ C
 C     Driver for Fock matrix construction of short-range terms
 C     needed for CI-DFT (J_ee,E_xc)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FMAT(*), CMO(*), DVREF(*), WRK(*)
       DIMENSION ISYMDM(2), IFCTYP(2)
       LOGICAL   LSRHYBR, DFT_SPINDNS_SAVE
@@ -1710,17 +1743,17 @@ C
       SAVE ISYMDM, IFCTYP
       DATA ISYMDM/1,1/, IFCTYP/999,999/
 C
-#include <dummy.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infpri.h>
-#include <dftcom.h>
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "dftcom.h"
 C
       CALL QENTER('SRFMAT')
 C
@@ -1847,7 +1880,7 @@ C  for MCSRDFT (based on SOLGO code).
 C
 C  Purpose: Add V2C_SR orbital sigma vector contribution to EOVEC.
 C
-#include <implicit.h>
+#include "implicit.h"
 #include "priunit.h"
       DIMENSION UDV(NASHT,*), V2C_SR(NORBT,*), EOVEC(*)
 C
@@ -1856,12 +1889,12 @@ C    INFORB: NISHT,NASHT
 C    INFVAR: NWOPH,JWOP(2,*)
 C    INFIND: IOBTYP(*),ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infind.h>
-#include <dftcom.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infind.h"
+#include "dftcom.h"
 C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -1920,8 +1953,8 @@ C        <0| [q_KL, V^([2c],xc-SR) ] |0>
 C
 C  UDV    : active density matrix of reference state |0>
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION UDV(NASHDI,*), V2C_SR(NORBT,*), EVEC(*)
 C
 C  Used from common blocks:
@@ -1929,15 +1962,15 @@ C    INFORB: NISHT,NASHT
 C    INFVAR: NWOPH,JWOP(2,*)
 C    INFIND: IOBTYP(*),ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infdim.h>
-#include <dftcom.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infdim.h"
+#include "dftcom.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C

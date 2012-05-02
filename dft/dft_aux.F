@@ -36,13 +36,13 @@ C------------------------------------------------------------------------------
 #include "dftacb.h"
       IPRDFT = IPRUSR
       HFXFAC = D1
-      HFXMU  = D0 
+      HFXMU  = D0
       HFXSET = .FALSE. !hjaaj: HFXFAC has not been set (i.e. redefined) by user
       WDFTX  = D0
       WDFTC  = D0
       WDFTL  = D0
       WDFTB  = D0
-      WDFTMP = 0.27D0 
+      WDFTMP = 0.27D0
       DFTHR0 = 1.0D-9
       DFTHRL = 1.0D-10
       DFTHRI = 2.0D-12
@@ -68,11 +68,14 @@ C
 C
 C     Common block used by SR-DFT hybrids.
 C
-      IF (ERFEXP) THEN
-C        default scaling factor for ERFEXP, as proposed by Savin & Toulouse
+      IF (ERFEXP(1)) THEN
+C        default scaling factor for ERFGAU, as proposed by Savin & Toulouse
 C        (COPFAC becomes approx. 1/3.375)
          COPFAC   = 1.0D0+6.0D0*SQRT(3.0D0)
          COPFAC   = 1.0D0/SQRT(COPFAC)
+      ELSE IF (ERFEXP(2)) THEN
+         COPFAC = 1.0D0/2.25D0 ! mu=1 for erf is mu=2.25 for new erfexp(2)
+         ! COPFAC*MU is used when the erf functionals are used for new erfexp(2)
       ELSE
          COPFAC   = D1
       ENDIF
@@ -109,8 +112,17 @@ C JT 17-08-09 end
       DOSRC_LDA = .FALSE.
       DOSRC_GGA = .FALSE.
       DOSRC_WIB = .FALSE.
-      DOSRMULO = .FALSE.
+      DOSRC_MULOCAL(0:3) = .FALSE.
       DOSRLYPT = .FALSE.
+
+C MNP 30.01.12
+      SRCMULOFAC = .FALSE.
+      DSLOCALFAC = .FALSE.
+      DOSRC_MULOC_GGA = .FALSE.
+      DOSRC_MULOD_GGA = .FALSE.
+      DOSRC_MULOE_GGA = .FALSE.
+      DOSRC_PBELO = .FALSE.
+      HEAVISIDE_PVALUE = 10.0d0
 
       RETURN
       END
@@ -196,7 +208,7 @@ csymmetry is not completely implemented here yet.
       NDEG   = MULT(MULCNT)
       NAT = 0
       IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
-         DO ISYMOP = 0, MAXOPR         
+         DO ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                NAT = NAT + 1
                X(NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
@@ -233,13 +245,13 @@ c
          JSYM  = MULD2H(ISYM,KSYMOP)
          NORBI = NORB(ISYM)
          NORBJ = NORB(JSYM)
-         IF (NORBI.GT.0 .AND. NORBJ.GT.0) THEN 
+         IF (NORBI.GT.0 .AND. NORBJ.GT.0) THEN
             CALL AUTPV(ISYM,JSYM,CMO(ICMO(ISYM)+1),CMO(ICMO(JSYM)+1),
      &                 FAOMAT,NBAS,NBAST,WORK(KDA1),NORB,
      &                 NORBT,WORK(KLST),LWRK)
          END IF
       END DO
-      CALL DAXPY(N2ORBX,D2,WORK(KDA1),1,FMAT,1) 
+      CALL DAXPY(N2ORBX,D2,WORK(KDA1),1,FMAT,1)
       END
 c     dft_get_ao_dens_mat:
 c     compute AO density matrix dmat using provided CMO.
@@ -247,7 +259,7 @@ c     dmat must be previously allocated.
 c
       SUBROUTINE dft_get_ao_dens_mat(cmo,dmat,work,lwork)
 #include "implicit.h"
-#include "infvar.h"      
+#include "infvar.h"
       DIMENSION CMO(*), DMAT(*),WORK(LWORK)
       JKEEP = JWOPSY
       JWOPSY = 1
@@ -282,7 +294,7 @@ c
 #include "dftcom.h"
       HFXFAC = W
       END
-C     
+C
       FUNCTION dftgethf()
 #include "implicit.h"
 #include "dftcom.h"
@@ -294,7 +306,7 @@ C
 #include "dftcom.h"
       WDFTMP = W
       END
-C     
+C
       FUNCTION dftgetmp2()
 #include "implicit.h"
 #include "dftcom.h"
@@ -305,7 +317,7 @@ c
 #include "implicit.h"
 #include "dftcom.h"
       HFXMU = W
-      HFXATT = BETA 
+      HFXATT = BETA
       END
 c
       SUBROUTINE DFT_GET_THRESHOLDS(TDFTI,TDFT0)

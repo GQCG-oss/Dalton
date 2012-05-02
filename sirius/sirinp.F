@@ -2211,7 +2211,7 @@ C
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
      *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
-     *            '.SRHYBR','.COPFAC','xXXXXXX','xXXXXXX','xXXXXXX'/
+     *            '.SRHYBR','.COPFAC','.MULOFA','.DSFAC ','.PVALUE'/
 C
 C
 C
@@ -2565,9 +2565,15 @@ C     .COPFAC (for some srDFT testing)
   132 READ (LUCMD,*) COPFAC
       GO TO 100
 C
-  133 CONTINUE
-  134 CONTINUE
-  135 CONTINUE
+  133 READ (LUCMD,*) XMULFAC_READIN
+      SRCMULOFAC = .TRUE. 
+      GO TO 100 
+C     Multiplication factor for DS in the localspin model 
+  134 READ (LUCMD,*) DSFAC
+      DSLOCALFAC = .TRUE.
+      GO TO 100
+
+  135 READ (LUCMD,*) HEAVISIDE_PVALUE
       GO TO 100
 C
  8000 CONTINUE
@@ -5489,7 +5495,9 @@ C        ... Check for inconsistencies :
      &        SRCFUN,' short range correlation functional'
          IF (SRLOCALSPIN .NE. ' ') WRITE (IWUNIT,'(7X,2A)')
      &        SRLOCALSPIN, ' local spin model'
-
+         IF (DOSRC_PBELO .EQV. .TRUE. ) THEN
+             write(lupri,*) 'HEAVISIDE_PVALUE = ', HEAVISIDE_PVALUE
+         END IF
          IF (IWINT.NE.0) WRITE(IWUNIT,'(/5X,A,F10.6)')
      &        'Weighted short range interpolation, COPFAC = ',COPFAC
          WRITE (IWUNIT,'(/5X,A,2F12.6)')

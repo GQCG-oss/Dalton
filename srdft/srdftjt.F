@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 
 #undef SRDFT_DEBUG
 !define SRDFT_DEBUG
@@ -39,22 +39,22 @@ C
 C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpar.h>
-#include <nuclei.h>
-#include <dftinf.h>
-#include <dftcom.h>
-#include <gnrinf.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpar.h"
+#include "nuclei.h"
+#include "dftinf.h"
+#include "dftcom.h"
+#include "gnrinf.h"
+#include "chrnos.h"
 
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
 
@@ -84,7 +84,7 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
 !     Debug
       WRITE(LUPRI,*) 'SRDFT1JT: entering, ND_SIM = ',ND_SIM
       WRITE(LUPRI,*) 'SRDFT1JT: DOATR,DOGRD,DOGGA  =',DOATR,DOGRD,DOGGA
-      WRITE(LUPRI,*) 'SRDFT1JT: ERFEXP =',ERFEXP
+      WRITE(LUPRI,*) 'SRDFT1JT: ERFEXP(0:2) =',ERFEXP(0:2)
       WRITE(LUPRI,*) 'SRDFT1JT: LUPRI  =',LUPRI, IPRINT
       WRITE(LUPRI,*) 'SRDFT1JT: HFXFAC =',HFXFAC
       WRITE(LUPRI,*) 'SRDFT1JT: DOSRX_PBERI=',DOSRX_PBERI, DOERG
@@ -149,6 +149,9 @@ C     from grid integration less than DFTHR
 C     Skipped grid points and nb of electrons
       NSKIP1 = 0     
       ELCTRSKIP = D0 
+C
+C     Counter for how many times RHO(2) > RHO(1)
+      NRSGTR = 0
 
 C     For quadrature integration
 C
@@ -219,7 +222,14 @@ C     Spin density
 C        DMAT(1,3) is the spin density matrix
          CALL GETRHO_OLD(DMAT(1,3),GSO(KSO0),RHO(2),RHOS13,
      &                   DMAGAOSR(1,2),THRINT,IPRINT)
-         
+C        In our local spin model we can get unphysical densities
+C        because we allow DS > DV in some regions.          
+         IF (DFT_LOCALSPIN) THEN
+            IF (RHO(2) .GT. RHO(1)) THEN
+                RHO(2) = RHO(1)
+                NRSGTR = NRSGTR + 1 
+            END IF
+         END IF
 C        Contribution to spin density (N_alpha - N_beta)
          SPINDEN = SPINDEN + WGHT*RHO(2)
       ELSE
@@ -365,6 +375,8 @@ C     Print section
      &'Correlation energy                                  :',EcInt
          WRITE (LUPRI,'(1X,A,F18.10)')
      &'DFT exchange-correlation energy                     :',EDFTY
+         WRITE (LUPRI,*)
+     &'Number of times RHO(2) > RHO(1)                     :',NRSGTR
       END IF 
 
       IF (DOATR) THEN
@@ -404,19 +416,19 @@ C
 C    Created : 15-02-05, J. Toulouse
 C    Modified: 17-08-09, J. Toulouse, add spin density
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <dftinf.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "dftinf.h"
+#include "dftcom.h"
 
       double precision rho(4),rhg(3,4),CHIVAL ! input
       double precision rhogrd(4) ! local variable for norm of RHG(1:3,*)
       integer NORDER
-      logical ERFEXP
+      logical ERFEXP(0:2)
       double precision Ex,d1Exdrhot,d1Exdrhos,d1Exdgrd,d1Exdgrda2
       double precision d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos
       double precision d2Exdgrddgrd,d2Exdrhodgrd
@@ -424,6 +436,7 @@ C*****************************************************************************
       double precision d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos
       double precision d2Ecdgrddgrd,d2Ecdrhodgrd
 C The new terms
+      double precision mu, mu_new
       double precision Exa,Exb d1Exdrhoa,d1Exdrhob,d1Exdgrda
       double precision d1Exdgrdb,d1Exdgrda2a,d1Exdgrda2b
       double precision d2Exdrhoadrhoa,d2Exdrhobdrhob,d2Exdrhoadgrda
@@ -434,17 +447,19 @@ C     functionals
       external ESRX_PBEHSEERF,  ESRX_PBETCSERF, ESRX_PBERIERF
       external ESRX_PBEGWSERF
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
-      external ESRC_PBEWIERF,   ESRC_PBEGWSERF
+      external ESRC_PBEWIERF,   ESRC_PBEGWSERF, ESRC_PBELOERF     
 C     spin functionals
       external ESRX_LDAERFSPIN, ESRC_LDAERFSPIN
-
+      external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA   
+       
+     
 c  Exchange  ------------------------------------------------------------
 
       icall = icall + 1
-      IF (ERFEXP) THEN
+      IF (ERFEXP(0)) THEN
          write (lupri,*)
      &   'WARNING srdftexcjt: erfexp true in call no. ',icall
-         erfexp = .false.
+         erfexp(1:2) = .false.
 !        CALL QUIT('erfgau not implemented in SRDFTEXCJT')
       END IF
 
@@ -609,6 +624,13 @@ C     Initialisations
      >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
       ENDIF
 
+!     PBE local energy formula
+      IF(DOSRC_PBELO) THEN
+        call ESRC_PBELOERF(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_PBELOERF,rho,RHOGRD,CHIVAL,NORDER,
+     >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
+     >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
+      ENDIF
 !     weighted interpolation
       IF(DOSRC_PBEWI) THEN
         call ESRC_PBEWIERF(rho,RHOGRD,CHIVAL,Ec)
@@ -624,6 +646,38 @@ C     Initialisations
      >             CHIVAL,DFT_SPINDNS,NORDER,
      >             d1Ecdrhot,d1Ecdrhos,
      >             d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos)
+      ENDIF
+
+!     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
+      IF(DOSRC_MULOC_GGA) THEN
+C      IF (SRCMULOFAC) THEN
+C         xfac = XMULFAC_READIN
+C      ELSE
+C         xfac = 1.0d0/4.0d0 
+C      END IF
+C      mu = RHOGRD(1)/rho(1)
+C      mu = xfac*mu
+C      mu_new = max(mu,CHIVAL)
+!      print *,'xfac,SRCMULOFAC,mu_new ==>', xfac, SRCMULOFAC,mu_new
+        call ESRC_MULOC_GGA(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_MULOC_GGA,rho,RHOGRD,CHIVAL,NORDER,
+     >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
+     >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
+      ENDIF
+
+!     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
+      IF(DOSRC_MULOD_GGA) THEN
+        call ESRC_MULOD_GGA(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_MULOD_GGA,rho,RHOGRD,CHIVAL,NORDER,
+     >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
+     >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
+      ENDIF
+!     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
+      IF(DOSRC_MULOE_GGA) THEN
+        call ESRC_MULOE_GGA(rho,RHOGRD,CHIVAL,Ec)
+        call DESR(ESRC_MULOE_GGA,rho,RHOGRD,CHIVAL,NORDER,
+     >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
+     >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
       ENDIF
 
       RETURN
@@ -642,20 +696,20 @@ C
 C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
 C***************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <dftinf.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "dftinf.h"
+#include "dftcom.h"
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0,
      >           D13=1.0D0/3.0D0)
-      LOGICAL DOGGA,ERFEXP
+      LOGICAL DOGGA,ERFEXP(0:2)
 
       DIMENSION RHO(4), RHG(3,4)
       double precision rhogrd(4) ! local variable for norm of RHG(1:3,*)

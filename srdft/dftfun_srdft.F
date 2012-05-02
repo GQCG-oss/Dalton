@@ -1189,7 +1189,7 @@ C     Based on implementation in Molpro by A. Savin
 C
 C*****************************************************************************
 #include <implicit.h>
-      LOGICAL MULOCAL,ERFEXP
+      LOGICAL MULOCAL(0:2),ERFEXP(*)
       CALL VCSRLDA(ECV,RHO,RHO13,CHI,MULOCAL,0,ERFEXP)
       RETURN
       END
@@ -1209,7 +1209,7 @@ C     and fitted from RPA values with rs=0.2,0.5,1,2,3,4,5,6,7,8,9,10
 C
 C*****************************************************************************
 #include <implicit.h>
-      LOGICAL MULOCAL,ERFEXP,POTENT
+      LOGICAL MULOCAL(0:2),ERFEXP(0:2),POTENT
       DIMENSION DENOM(3),ZKSR(3),ZVWN(3)
 C
       POTENT = (NORDER.GT.0)
@@ -1242,57 +1242,109 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <pi.h>
+#include <dftcom.h>
       PARAMETER (D0 = 0.0D0, DP25=0.25D0, DP5= 0.5D0, D1 = 1.0D0,
      >           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0, D6 = 6.0D0,
      >           D9 = 9.0D0,
      >           D32= 32.0D0, THIRD = D1/D3, DP75=0.75D0,D1P5=1.5D0, 
-C                RSFAC = (D3/(D4*PI))**THIRD
-     >           RSFAC = 0.62035 04908 99400 08660 D0)
+C                RSFAC = (D3/(D4*PI))**THIRD 
+     >           RSFAC = 0.62035 04908 99400 08660 D0, 
+     >           D1P62 = 1.62D0)
 C     Constants for g(0)
       PARAMETER (D = 3.39530545262710070631D0, A = 3.2581D0,
      >           BET = 163.44D0, GAM = 4.7125D0)
 C     For ERFEXP we need :
 C                CERFGAU = D1 + D6*SQRT(D3)
       PARAMETER (CERFGAU = 11.39230484541326376112)
-      LOGICAL ERFEXP,MULOCAL, LMULOCAL
+      LOGICAL ERFEXP(0:2),MULOCAL(0:2), LMULOCAL, LMULOCAL2
       DIMENSION DENOM(3),ZVWN(3)
 C
 C     Operator specific parameters :
 C
-      IF (ERFEXP) THEN
+      IF (ERFEXP(1)) THEN
+         AMU  = CHI
          U1=0.4795415558493149D0
          U2=1.0094069779513646D0
          V1=10.124678249931538D0
-         XMULFAC=4.3D0
-      ELSE
+C        Factor for SRCMULO_A functional
+         XMULFAC=4.3D0  
+C        Factor for the SRCMULO_B functional fitted to the ERF operator
+C        must be changed if used with ERFGAU operator
+         XMULFAC2=0.814516076948D0
+      ELSE IF (ERFEXP(2)) THEN
+         ! we use the erf correlation functional
+         AMU = CHI/D1P62 ! mu(erf) = mu(erfexp) / 1.62
          U1=1.0270741452992294D0
          U2=-0.230160617208092D0
          V1=0.6196884832404359D0
-         XMULFAC=1.3D0
+C        Factor for SRCMULO_A functional
+         IF (SRCMULOFAC) THEN
+            XMULFAC = XMULFAC_READIN
+         ELSE
+            XMULFAC=1.3D0
+         END IF
+C        Factor for the SRCMULO_B functional fitted to the ERF operator
+C        must be changed if used with ERFEXP operator
+         XMULFAC2=0.814516076948D0
+      ELSE
+         AMU = CHI
+         U1=1.0270741452992294D0
+         U2=-0.230160617208092D0
+         V1=0.6196884832404359D0
+C        Factor for SRCMULO_A functional
+         IF (SRCMULOFAC) THEN
+            XMULFAC = XMULFAC_READIN
+         ELSE
+            XMULFAC=1.3D0
+         END IF
+C        Factor for the SRCMULO_B functional
+         XMULFAC2=0.814516076948D0
+         IF (SRCMULOFAC) THEN
+            XFAC = XMULFAC_READIN * XMULFAC2
+         ELSE
+            XFAC= XMULFAC2
+         END IF
       ENDIF
 C
-      RHO2 = RHO*RHO
-      RS   = RSFAC/RHO13
-      RS2  = RS*RS
-      DRS  = -RS/(D3*RHO)
-      DRS2 = DRS*DRS
-      D2RS = D4*RS/(D9*RHO2)
-      AMU  = CHI
-      LMULOCAL = MULOCAL
-      IF (LMULOCAL) THEN
-         AMUL = XMULFAC/RS
-         IF (AMUL .GT. AMU) THEN
-            AMU = AMUL
-            DAMU = -DRS*AMUL/RS
-            D2AMU = -D2RS*AMUL/RS + DRS2*D2*AMUL/RS2
-         ELSE
-C           ... global \mu used
-            LMULOCAL = .FALSE.
+            RHO2 = RHO*RHO
+            RS   = RSFAC/RHO13
+            RS2  = RS*RS
+            DRS  = -RS/(D3*RHO)
+            DRS2 = DRS*DRS
+            D2RS = D4*RS/(D9*RHO2)
+            LMULOCAL = MULOCAL(1)
+            LMULOCAL2 = MULOCAL(2)
+
+      IF(MULOCAL(0)) THEN
+         IF(LMULOCAL) THEN
+               ! SRCMULO_A
+C            WRITE(LUPRI,*) 'XMULFAC ==>', XMULFAC
+            AMUL = XMULFAC/RS
+             print *, 'AMUL, AMU', AMUL, AMU
+C            write(lupri,*) 'amul,mu==>',AMUL,AMU
+            IF (AMUL .GT. AMU) THEN
+               AMU = AMUL
+               DAMU = -DRS*AMUL/RS
+               D2AMU = -D2RS*AMUL/RS + DRS2*D2*AMUL/RS2
+            ELSE
+C               ... global \mu used
+               LMULOCAL = .FALSE.
+            END IF
+         ELSE IF(LMULOCAL2) THEN
+             AMUL = XFAC/SQRT(RS)
+             IF (AMUL .GT. AMU) THEN
+                AMU = AMUL
+                DAMU = -AMUL*DRS*(D1/(D2*RS))
+                D2AMU = -(D2RS*AMUL)/(D2*RS) + (D3*DRS2*AMUL)/(D4/RS2)
+             ELSE
+C               ... global \mu used
+               LMULOCAL2 = .FALSE.
+             END IF
          END IF
       END IF
 C
       AMU2 = AMU*AMU
-      IF (ERFEXP) AMU2 = AMU2 / CERFGAU
+      IF (ERFEXP(1)) AMU2 = AMU2 / CERFGAU
 C     ... in this case
 C         C2 * AMU2 -> (C2/CERFGAU) * AMU2 = C2 * (AMU2 / CERFGAU)
 C         we can thus get the right numbers by correcting AMU2
@@ -1324,6 +1376,9 @@ c
       IF (LMULOCAL) THEN
          DENOM(2) = DENOM(2) + DAMU*(C1 +C2*D2*AMU2/AMU)
       END IF
+      IF (LMULOCAL2) THEN
+         DENOM(2) = DENOM(2) + DAMU*(C1 +C2*D2*AMU2/AMU)
+      END IF
 c
       ENDIF
 C
@@ -1339,7 +1394,7 @@ C   % So we need :
       DC1FAC = D2*U2*DRS + D2*U2*V1*RS*DRS
       C1D4   = C1D2*C1D2
       DC1D2  = D2*C1D*V1*DRS
-C   % All in all 
+C   % All in all
       D2C1 = ((DC1FAC*DRS + C1FAC*D2RS)*C1D2 - C1FAC*DRS*DC1D2)/C1D4
 C   % Get D2C2, first derive D2G0
 c     DG0  = D*D1P5*GRS12*DRS*EXPGRS12
@@ -1353,6 +1408,10 @@ c    &     - G0*A*DP5*DRS/GRS12
 C   % And finally !
       DENOM(3)  = D2C1*AMU + D2C2*AMU2
       IF (LMULOCAL) THEN
+         DENOM(3) = DENOM(3) + D2AMU*(C1 +C2*D2*AMU2/AMU)
+     &                       + DAMU*DAMU*C2*D2*AMU2/(AMU*AMU)
+      END IF
+      IF (LMULOCAL2) THEN
          DENOM(3) = DENOM(3) + D2AMU*(C1 +C2*D2*AMU2/AMU)
      &                       + DAMU*DAMU*C2*D2*AMU2/(AMU*AMU)
       END IF
@@ -1372,12 +1431,14 @@ C
 C     Description :
 C     Short-range LDA (Dirac) exchange-functional suitable for the 
 C     erf and erf+exp type short-range two-electron
+C     - MNP has also implemented srLDA exchange-functional for the modified
+C     erf+exp type short-range two electron
 C
 C     Based on implementation in Molpro by J. Toulouse and A. Savin
 C
 C*****************************************************************************
 #include <implicit.h>
-      LOGICAL ERFEXP
+      LOGICAL ERFEXP(*)
       CALL VXSRLDA (ECV,RHO,RHO13,CHI,0,ERFEXP)
       RETURN
       END
@@ -1391,18 +1452,25 @@ C
 #include <priunit.h>
 #include <pi.h>
       PARAMETER (D0 = 0.0D0, DP25=0.25D0, DP5 = 0.5D0, D1 = 1.0D0,
-     >           D2 = 2.0D0, D3 = 3.0D0 , D4 = 4.0D0 , D6 = 6.0D0,
-     >           D8 = 8.0D0, D16=16.0D0 , D24=24.0D0, D96 =96.0D0,
-     >           THIRD = D1/D3, SIXTH = D1/D6, D1P5 = 1.5D0)
-      LOGICAL ERFEXP
+     >           D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0 , D5 = 5.0D0,
+     >           D6 = 6.0D0, D7 = 7.0D0, D8 = 8.0D0 , D9 = 9.0D0,
+     >           D10 = 10.0, D15=15.0D0, D16=16.0D0 , D20 = 20.0D0,
+     >           D24=24.0D0, D25=25.0D0, D27 = 27.0D0, D30 = 30.D0,
+     >           D40 = 40.0D0, D50 = 50.0D0, D60 = 60.0D0, D81 = 81.0D0,
+     >           D96 =96.0D0, THIRD = D1/D3, SIXTH = D1/D6,
+     >           FIVSIX = D5/D6, D1P5 = 1.5D0)
+      LOGICAL ERFEXP(0:2)
       DIMENSION XKSR(3)
 C
       CHISQ = CHI*CHI
       AMU = CHI
       COEF = - D2*CHI/SQRTPI
+      COEFM = - (D10*CHI)/(D9*SQRTPI)
       EXPO = CHISQ/D3
       FACGAU  = 0.07106785043055514894D0
       DFACGAU = 16.3241942781079606553D0
+      FACEXP  = 0.029428248996D0
+      DFACEXP = 3.7553506259D0
       AKF = RHO13*((D3*PI2)**THIRD)
       A = AMU/(D2*AKF)
       A2 = A*A
@@ -1410,6 +1478,12 @@ C
       B = SQRT(EXPO)/(D2*AKF)
       B2 = B*B
       RHO2 = RHO*RHO
+      EXPQ = (D3*CHISQ)/D5
+      C = SQRT(EXPQ)/(D2*AKF)
+      C2 = C*C
+      B3 = B2*B
+      C3 = C2*C
+      D = D30*SQRT(D5/D3)
 C
 C     ... <<< Energy >>>
 C        ================
@@ -1426,11 +1500,10 @@ C        ================
          ELSE
             XKSR(1) = D0
          ENDIF
-         IF (ERFEXP) THEN
+         IF (ERFEXP(1)) THEN
 C           ================
-C           EXP CONTRIBUTION
+C           EXP CONTRIBUTION to erfgau operator
 C           ================
-            B3 = B2*B
             IF (B .LT. 1.D-9) THEN
 C           ... nothing done at this point ???
             ELSE IF (B.LE.1.D+2) THEN
@@ -1439,8 +1512,22 @@ C           ... nothing done at this point ???
      >                *RHO*(D2*B3*(SQRTPI*DERF(DP5/B)
      >                +(D2*B-D16*B3)*EXP(-DP25/B2)-D6*B
      >                +D16*B3))
-            ELSEIF (B.LT.1.D+9) THEN
-               XKSR(1) = XKSR(1) - FACGAU*RHO13/B2
+            ELSE IF (B.LT.1.D+9) THEN
+               XKSR(1) = XKSR(1) - FACGAU*RHO13*RHO/B2 ! The old form was missing RHO -MNP
+            ENDIF
+         ELSE IF (ERFEXP(2)) THEN
+
+C           The modified exp contribution
+            IF (C .LT. 1.D-9) THEN
+C           ... nothing done at this point ???
+            ELSE IF (C.LE.1.D+2) THEN
+                  XKSR(1) = XKSR(1) - RHO*
+     >                RHO*(D10*D10*SQRT(D15)*PI)/(D27*AMU*AMU)
+     >                *(D2*C3*(SQRTPI*DERF(DP5/C)
+     >                  +(D2*C-D16*C3)*EXP(-DP25/C2)-D6*C
+     >                  +D16*C3))
+            ELSEIF (C.LT.1.D+9) THEN
+               XKSR(1) = XKSR(1) - FACEXP*RHO13*RHO/C2
             ENDIF
          ENDIF
       IF (NORDER.GT.0) THEN
@@ -1453,16 +1540,17 @@ C        =================
          ELSE IF (A.LE.1.D+2) THEN
             XKSR(2) = - RHO13*(D3/PI)**THIRD
      >      + D2*A*AMU/PI*(EXP(-DP25/A2)-D1)+AMU/SQRTPI
-     >      * DERF(DP5/A) 
+     >      * DERF(DP5/A)
          ELSEIF (A.LT.1.D+9) THEN
             XKSR(2) = - PI*RHO/(D2*AMU*AMU)
          ELSE
             XKSR(2)=D0
          ENDIF
-         IF (ERFEXP) THEN
+         IF (ERFEXP(1)) THEN
 C           ================
 C           EXP CONTRIBUTION
 C           ================
+c           ------- Old erf+exp
             IF (B.LT.1.D-9) THEN
 C           ... nothing done at this point ???
             ELSE IF (B.LE.1.D+2) THEN
@@ -1470,6 +1558,16 @@ C           ... nothing done at this point ???
      >              (EXP(-DP25/B2)-D1)+DP5*DERF(DP5/B))
             ELSE IF (B.LT.1.D+9) THEN
                XKSR(2) = XKSR(2) - DFACGAU*RHO/(AMU*AMU)
+            ENDIF
+         ELSE IF (ERFEXP(2)) THEN
+c           ------- Modified erf+exp
+            IF (C.LT.1.D-9) THEN
+C           ... nothing done at this point ???
+            ELSE IF (C.LE.1.D+2) THEN
+            XKSR(2) = XKSR(2) + COEFM*(D2*C/SQRTPI*
+     >              (EXP(-DP25/C2)-D1)+DERF(DP5/C)*DP5)
+            ELSE IF (C.LT.1.D+9) THEN
+               XKSR(2) = XKSR(2) - DFACEXP*RHO/(AMU*AMU)
             ENDIF
          ENDIF
       ENDIF
@@ -1489,10 +1587,11 @@ C        =================
          ELSE
             XKSR(3)=D0
          ENDIF
-         IF (ERFEXP) THEN
+         IF (ERFEXP(1)) THEN
 C           ================
 C           EXP CONTRIBUTION
 C           ================
+c            ------- Old erf+exp
             IF (B.LT.1.D-9) THEN
 C           ... nothing done at this point ???
             ELSE IF (B.LE.1.D+2) THEN
@@ -1501,6 +1600,17 @@ C           ... nothing done at this point ???
      >                 (((RHO2*PI)**THIRD)*(D3**SIXTH))
             ELSE IF (B.LT.1.D+9) THEN
                XKSR(3) = XKSR(3) - DFACGAU/(AMU*AMU)
+            ENDIF
+         ELSE IF (ERFEXP(2)) THEN
+c           --------- Modified erf+exp
+            IF (C.LT.1.D-9) THEN
+C           ... nothing done at this point ???
+            ELSE IF (C.LE.1.D+2) THEN
+               XKSR(3) = XKSR(3) -
+     >                ((D40*SQRT(D5)*D3**FIVSIX)/(D81*(PI*RHO2)**THIRD))
+     >                *C2*(EXP(-DP25/C2)*(D1+(DP25/C2)) - D1)
+            ELSE IF (C.LT.1.D+9) THEN
+               XKSR(3) = XKSR(3) - DFACEXP/(AMU*AMU)
             ENDIF
          ENDIF
       ENDIF
@@ -1515,7 +1625,7 @@ C
 C     Written by Jesper Kielberg Pedersen, Apr. 2003
 C
 C     Description :
-C     OLD VERSION of Correlation-functional suitable for the 
+C     OLD VERSION of Correlation-functional suitable for the
 C     erf short-range two-electron operator.
 C
 C     Based on implementation in Molpro by A. Savin
@@ -1530,7 +1640,7 @@ C*****************************************************************************
      > AA=-1/(6*PI2)      ,X0A=-4.75840D-3,BA=1.13107D0,CA=13.0045D0,
      > D1= 1.0D0          ,D2 = 2.0D0     ,D3= 3.0D0   ,D4= 4.0D0   ,
      > D6= 6.0D0          ,D9= 9.0D0 )
-      PARAMETER(FTHIRDPI=D4*PI/D3,TNINTHPI=D2*PI/D9,THIRD=D1/D3, 
+      PARAMETER(FTHIRDPI=D4*PI/D3,TNINTHPI=D2*PI/D9,THIRD=D1/D3,
      >          FTHIRD  =D4/D3  , SIXTHM=-D1/D6)
 C     some fit parameters:
       PARAMETER( FLAM2 = 0.0010D0, FLAM1 = 0.0050D0,
@@ -1899,7 +2009,7 @@ C*****************************************************************************
 #include <implicit.h>
 C
       DIMENSION XKSR(2)
-      LOGICAL ERFEXP
+      LOGICAL ERFEXP(0:2)
 C     ... Get regular LDA exchange Energy and Potential (Dirac exchange)
           CALL EDRC(EXLDA,RHO,RHO13)
           CALL VDRC(VXLDA,RHO13)
@@ -1945,7 +2055,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 C
-      LOGICAL ERFEXP
+      LOGICAL ERFEXP(0:2)
       DIMENSION DENOM(3),ZVWN(2),XKSR(2)
 C     ... Get regular LDA exchange Energy and Potential (Dirac exchange)
           CALL EDRC(EXLDA,RHO,RHO13)
@@ -1986,7 +2096,7 @@ C                 as used for the SR-LDA func. (E_sr,lda ~ A * E_lda)
 C
 C*****************************************************************************
 #include <implicit.h>
-      LOGICAL ERFEXP
+      LOGICAL ERFEXP(0:2)
       DIMENSION ZKSR(2),DENOM(3),ZVWN(2)
 C
       CALL ELYP(ECLYP,RHO,RHO13,RHOGRD)
@@ -2037,7 +2147,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <pi.h>
 #include <dftcom.h>
-      LOGICAL ERFEXP
+      LOGICAL ERFEXP(0:2)
       DIMENSION ZKSR(3),ZMU(3)
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      >           D9 = 9.0D0,
@@ -2092,7 +2202,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <pi.h>
 #include <dftcom.h>
-      LOGICAL ERFEXP
+      LOGICAL ERFEXP(0:2)
       DIMENSION ZKSR(3),ZMU(3)
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      >           D9 = 9.0D0, D13= 1.0D0/3.0D0,D23=2.0D0/3.0D0,
