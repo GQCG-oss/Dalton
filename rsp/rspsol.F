@@ -319,7 +319,7 @@ C
       ELSE IF (QMMM) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QMMMLNO TO LINEAR TRANSFORMATION'
-         CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
+         CALL QMMMLTR(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
       ELSE
@@ -561,6 +561,8 @@ C
          END IF
          TLM   = TN(LM) - SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
 C
+C        edh: Txc = < g(l)sum(lm,pq)< 0(L)|Te|0 > + < 0|Te|0(R) > )tpq Epq  
+C
          JRXC  = KRXC
          DO 200 ICSIM = 1,NCSIM
             TTT = SLVELM(DTV(1,ICSIM),WRK(KRLMAC),WRK(KRLM),TAC)
@@ -626,9 +628,9 @@ C     ... orbital part of sigma vector(s)
 C
       IF (KZWOPT .GT. 0) THEN
          JRXC   = KRXC
-         CALL DSPTSI(NORBT,WRK(KRYC),WRK(KURYC))
+         CALL DSPTSI(NORBT,WRK(KRYC),WRK(KURYC))    ! Tyo = tilde{T}g = - 2 sum(lm,pq)g(l)<T(lm)> Q(pq)Epq 
          DO 800 ICSIM = 1,NCSIM
-            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KURXC))
+            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KURXC)) ! Txo = 2 sum{lm,pq}g(l)<Q(lm)>Epq
             IF (TRPLET) THEN
                CALL SLVSOR(.TRUE.,.FALSE.,1,UDVTR,
      *                     SVEC(1,ICSIM),WRK(KURXC))

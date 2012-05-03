@@ -22,9 +22,121 @@
 !
 !
 C**************************************************************************
+C  /* Deck peltr */
+      SUBROUTINE QMMMLTR(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
+     &                  UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,SOVECS,
+     &                  WRK,LWRK)
+     
+C
+C Erik Donovan Hedegaard 24 oct 12: Based on PELIN
+C
+C Common driver for QMMMLNC and QMMMLNO
+#include "implicit.h"
+#include "dummy.h"
+
+      DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
+      DIMENSION UDV(*),DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
+      DIMENSION UDVTR(*),DVTR(*),DTVTR(*)
+C
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+C
+      CALL QENTER('PCMLTR')
+C
+      CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',
+     *        'UNFORMATTED',IDUMMY,.FALSE.)
+      IF (NCSIM .GT. 0) THEN
+          IF (IPQMMM .GT. 2) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' **** BEFORE QMMMLNC **** '
+            CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+         END IF
+         CALL QMMMLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
+     *               UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,WRK,LWRK)
+         IF (IPQMMM .GT. 2) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' **** AFTER QMMMLNC **** '
+            CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+         END IF
+      END IF
+      IF ( NOSIM .GT.0 ) THEN
+         IF (IPQMMM .GT. 2) THEN
+             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+             WRITE(LUPRI,*)' **** BEFORE QMMMLNO **** '
+             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+          END IF
+         CALL QMMMLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
+     *               UDV,DV,UDVTR,DVTR,SOVECS,WRK,LWRK)
+
+         IF (IPQMMM .GT. 2) THEN
+             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+             WRITE(LUPRI,*)' **** AFTER QMMMLNO **** '
+             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+          END IF
+      END IF
+      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      CALL QEXIT('QMMMLTR')
+      RETURN
+      END
+C  /* Deck ieflnc */
+      SUBROUTINE QMMMLNC(NCSIM,BCVEC,CREF,CMO,INDXCI,
+     *                  UDV,DV,UDVTR,DVTR,DTV,DTVTR,SVEC,
+     *                  WRK,LFREE)
+
+C Erik Donovan Hedegård 2. may 2012
+C
+C  Purpose:  Calculate MCSCF E2 contribution from a
+C            PE surrounding medium to a csf trial vector.
+C
+#include "implicit.h"
+C
+      DIMENSION BCVEC(*),  CREF(*), CMO(*)
+      DIMENSION INDXCI(*), UDV(*), DV(*),   DTV(N2ASHX,*)
+      DIMENSION SVEC(KZYVAR,*),     WRK(*)
+      DIMENSION UDVTR(*),DVTR(*),DTVTR(N2ASHX,*)
+C
+#include "iratdef.h"
+C
+      PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 , THRZER = 1.0D-14 )
+      LOGICAL FNDLAB
+C
+C
+C  Used from common blocks:
+C    INFINP : NLMSOL, LSOLMX, INERSI
+C    INFORB : NNASHX, NNORBX, NNBASX, etc.
+C    INFTAP : LUSOL, LBSYMB
+
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+!#include "pcmdef.h"
+#include "priunit.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
+!#include "pcm.h"
+!#include "pcmlog.h"
+
+      CALL QENTER('QMMMLNC')
+
+      WRITE(LUPRI,*)' ***** IN QMMMLNC RESPONSE ******'
+
+      CALL QEXIT('QMMMLNC')
+      RETURN
+C     end of QMMMLNC.
+      END
 C  /* Deck qmmmlno */
       SUBROUTINE QMMMLNO(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,
      &                  DVTR,EVECS,WRK,LWRK)
+
 C
 C  JK, Nov.08
 C
@@ -74,6 +186,8 @@ C
       LOCDEB = .FALSE.
 
       CALL QENTER('QMMMLNO')
+
+      WRITE(LUPRI,*)' ***** IN QMMMLNO RESPONSE ******'
 
       IF (MMTIME) THEN 
         DTIME = SECOND()
