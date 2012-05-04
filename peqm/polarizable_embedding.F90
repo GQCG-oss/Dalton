@@ -58,7 +58,7 @@ module polarizable_embedding
     integer, save :: scfcycle = 0
     real(dp), save :: thriter = 1.0d-8
     real(dp), save :: damp = 2.1304d0
-    real(dp), save :: gauss = 1.0d0
+    real(dp), save :: gauss = 0.44d0
     real(dp), save :: Rmin = 2.2d0
     character(len=6), save :: border_type = 'REDIST'
 
@@ -512,7 +512,7 @@ subroutine pe_read_potential(coords, charges)
     if (pe_fd) then
         write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
         if (pe_gauss) then
-            write(luout,'(4x,a,f5.3)') 'Using Gaussian charges with broadening:', gauss
+            write(luout,'(4x,a,f4.2)') 'Using Gaussian charges with broadening: ', gauss
         end if
     end if
 
@@ -988,6 +988,7 @@ subroutine pe_sync()
         call mpi_bcast(pe_damp, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(damp, 1, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
         if (pe_iter .and. pe_damp) then
+            if (myid /= 0) allocate(P1s(6,nsites(ncores-1)))
             call mpi_bcast(P1s, 6*nsites(ncores-1), MPI_REAL8,&
                           &0, MPI_COMM_WORLD, ierr)
         end if
@@ -1438,10 +1439,10 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
     real(dp), intent(out) :: Enuc
     real(dp), dimension(:), intent(inout), optional :: fckmats
 
-    integer :: i, j, l, m, n, o
-    integer, parameter :: k = 0
+    integer :: i, j, k, l, m, n, o
     integer :: lufck, lexist, lu
     real(dp) :: Ene, Enn
+    real(dp) :: R
     real(dp), dimension(ndens) :: Een, Eee
     real(dp), dimension(1) :: Tfm
     real(dp), dimension(3) :: Rfm
@@ -1466,7 +1467,10 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         read(lufck) fdnucs
         allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
         read(lufck) Rfd, Zfd
+!        read(lufck) gauss
         close(lufck)
+
+!        gauss = 1 - gauss
 
         do j = 1, ndens
             l = (j - 1) * nnbas + 1
@@ -1476,6 +1480,13 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         end do
 
         do j = 1, fdnucs
+            R = 1.0d66
+            do k = 1, qmnucs
+                Rfm = Rm(:,k) - Rfd(:,j)
+                if (R > nrm2(Rfm)) R = nrm2(Rfm)
+                call Tk_tensor(Tfm, Rfm)
+                Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
+            end do
 #ifdef BUILD_GEN1INT
             call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), pe_gauss, gauss) 
 #else
@@ -1488,11 +1499,6 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
                 o = m * nnbas
                 Een(m) = Een(m) + dot(denmats(n:o), Zfd_ints(:,1))
                 if (fock) fckmats(n:o) = fckmats(n:o) + Zfd_ints(:,1)
-            end do
-            do l = 1, qmnucs
-                Rfm = Rm(:,l) - Rfd(:,j)
-                call Tk_tensor(Tfm, Rfm)
-                Enn = Enn + Zm(1,l) * Zfd(1,j) * Tfm(1)
             end do
         end do
 
@@ -1591,14 +1597,7 @@ subroutine pe_polarization(denmats, fckmats)
 
     if (response) then
         call electron_fields(Fels, denmats)
-        if (myid == 0) then
-            call cpu_time(t1)
-        end if
         call induced_dipoles(M1inds, Fels)
-        if (myid == 0) then
-            call cpu_time(t2)
-            print '(a,f8.4)', 'Time used in induced_dipoles: ', t2-t1
-        end if
     else
         call electron_fields(Fels, denmats)
         call nuclear_fields(Fnucs)
@@ -1613,14 +1612,7 @@ subroutine pe_polarization(denmats, fckmats)
                 Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Ffd
             end do
         end if
-        if (myid == 0) then
-            call cpu_time(t1)
-        end if
         call induced_dipoles(M1inds, Ftots)
-        if (myid == 0) then
-            call cpu_time(t2)
-            print '(a,f8.4)', 'Time used in induced_dipoles: ', t2-t1
-        end if
         if (myid == 0) then
             do i = 1, ndens
                 Epol(1,i) = - 0.5d0 * dot(M1inds(:,i), Fels(:,i))
@@ -1688,6 +1680,7 @@ subroutine induced_dipoles(M1inds, Fs)
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
     real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr
+    real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp
 
@@ -1753,7 +1746,7 @@ subroutine induced_dipoles(M1inds, Fs)
                 do i = 1, nsites(ncores-1)
                     if (zeroalphas(i)) cycle
                     if (pe_damp) then
-                        ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
+                        ai = (P1s(1,i) + P1s(4,i) + P1s(6,i)) * d3i
                     end if
                     m = 1
                     Ftmp = 0.0d0
@@ -1777,10 +1770,10 @@ subroutine induced_dipoles(M1inds, Fs)
                         ! fe = 1-(a²u²/2+au+1)*exp(-au)
                         ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
                         if (pe_damp) then
-                            aj = P1s(1,j) + P1s(4,j) + P1s(6,j)
-                            Rd = (damp * R)/(((ai * aj) / 9.0d0)**(d6i))
+                            aj = (P1s(1,j) + P1s(4,j) + P1s(6,j)) * d3i
+                            Rd = damp * R / (ai * aj)**(d6i)
                             fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
-                            ft = fe - (Rd**3 * d6i) * exp(-Rd)
+                            ft = fe - d6i * Rd**3 * exp(-Rd)
                         end if
                         Rij = Rs(:,j) - Rs(:,i)
                         R = nrm2(Rij)
@@ -1875,7 +1868,6 @@ subroutine induced_dipoles(M1inds, Fs)
             l = 1
             do i = 1, nsites(ncores-1)
                 if (zeroalphas(i)) cycle
-                print '(i2,3f16.12)', i, M1inds(l:l+2,n)
                 if (nrm2(M1inds(l:l+2,n)) > 1.0d0) then
                     write(luout,'(4x,a,i6)') 'Large induced dipole encountered&
                                              & at site:', i
@@ -2212,6 +2204,7 @@ subroutine response_matrix(B, invert, wrt2file)
     logical :: exclude, lexist, inv, wrt
     integer :: info, lu
     integer :: i, j, k, l, m, n
+    real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
@@ -2248,7 +2241,7 @@ subroutine response_matrix(B, invert, wrt2file)
             P1inv = P1s(:,i)
             call invert_packed_matrix(P1inv, 's')
             if (pe_damp) then
-                ai = P1s(1,i) + P1s(4,i) + P1s(6,i)
+                ai = (P1s(1,i) + P1s(4,i) + P1s(6,i)) * d3i
             end if
             do l = 3, 1, -1
                 do j = i, nsites(ncores-1)
@@ -2300,10 +2293,10 @@ subroutine response_matrix(B, invert, wrt2file)
                         ! fe = 1-(a²u²/2+au+1)*exp(-au)
                         ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
                         if (pe_damp) then
-                            aj = P1s(1,j) + P1s(4,j) + P1s(6,j)
-                            Rd = (damp * R)/(((ai * aj) / 9.0d0)**(d6i))
+                            aj = (P1s(1,j) + P1s(4,j) + P1s(6,j)) * d3i
+                            Rd = damp * R / (ai * aj)**d6i
                             fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
-                            ft = fe - (Rd**3 * d6i) * exp(-Rd)
+                            ft = fe - d6i * Rd**3 * exp(-Rd)
                         end if
                         if (l == 3) then
                             do k = 1, 3
@@ -2659,6 +2652,12 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     real(dp), dimension(:,:), allocatable :: frozen_density, full_density
     real(dp), dimension(:,:), allocatable :: full_fock
 
+    external :: rdonel, dsptge
+    real(dp) :: fbnrm
+    real(dp), dimension(:), allocatable :: packed_overlap
+    real(dp), dimension(:,:), allocatable :: full_overlap
+    real(dp), dimension(:,:), allocatable :: intmol_overlap
+
     work => dalwrk
 
     call openfile('pe_density.bin', luden, 'old', 'unformatted')
@@ -2677,12 +2676,33 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
 
     cbas = nbas - fbas
 
+    allocate(packed_overlap(nbas*(nbas+1)/2))
+    allocate(full_overlap(nbas,nbas))
+    allocate(intmol_overlap(cbas,cbas))
+    call rdonel('OVERLAP', .true., packed_overlap, nbas*(nbas+1)/2)
+    call dsptge(nbas, packed_overlap, full_overlap)
+    deallocate(packed_overlap)
+    call gemm(full_overlap(fbas+1:nbas,1:fbas),&
+             &full_overlap(1:fbas,fbas+1:nbas),&
+             &intmol_overlap, transb='T')
+    deallocate(full_overlap)
+    fbnrm = 0.0d0
+    do i = 1, cbas
+        do j = 1, cbas
+            print *, intmol_overlap(i,j)
+            fbnrm = fbnrm + intmol_overlap(i,j)**2
+        end do
+    end do
+    fbnrm = sqrt(fbnrm)
+    deallocate(intmol_overlap)
+
     ! density matrix with frozen density in first block
     allocate(full_density(nbas,nbas)); full_density = 0.0d0
     full_density(1:fbas,1:fbas) = frozen_density
+    deallocate(frozen_density)
 
     ! get two-electron part of Fock matrix using resized density matrix
-    allocate(full_fock(nbas,nbas)); full_fock = 0.0d0
+    allocate(full_fock(nbas,nbas))
 !     IFCTYP = +/-XY
 !       X indicates symmetry about diagonal
 !         X = 0 No symmetry
@@ -2700,7 +2720,6 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     ifctyp = 11
     call sirfck(full_fock, full_density, 1, isymdm, ifctyp, .false.,&
                 work, size(work))
-
     deallocate(full_density)
 
     ! extract upper triangle part of full Fock matrix corresponding to
@@ -2713,7 +2732,6 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
             l = l + 1
         end do
     end do
-
     deallocate(full_fock)
 
     ! save core Fock matrix
@@ -2724,6 +2742,7 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     write(lufck) core_fock
     write(lufck) fdnucs
     write(lufck) Rfd, Zfd
+    write(lufck) fbnrm
     close(lufck)
 
     deallocate(core_fock, Rfd, Zfd, Ffd)
