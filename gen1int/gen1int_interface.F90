@@ -424,8 +424,11 @@
     character*(*), intent(inout) :: word
     ! uses MXCORB
 #include "maxorb.h"
+#ifndef PRG_DIRAC
+    ! DO_CUBE not available in DIRAC
     ! uses DO_CUBE
 #include "infinp.h"
+#endif
     character(MAX_LEN_STR) key_word  !key words read from standard input
     type(decode_str_t) str_idx_mo    !string of indices of MOs
     integer ipoint                   !incremental recorder over points
@@ -528,8 +531,12 @@
 
     ! returns the last read keyword back
     word = trim(key_word)
+
     ! doing cube file generation later on
+#ifndef PRG_DIRAC
+    ! DO_CUBE not available in DIRAC
     DO_CUBE = .TRUE.
+#endif
 
     call QEXIT("gen1int_cube_input")
 

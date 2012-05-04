@@ -166,8 +166,13 @@ module gen1int_cube
 #else
         call QUIT("Unknown kind of real numbers!")
 #endif
+#ifdef PRG_DIRAC
+        print *, 'error: RD_SIRIFC not available in DIRAC'
+        stop 1
+#else
         call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(NCMOT+1), &
                        len_work-NCMOT)
+#endif
         if (.not.found) call QUIT("CMO IS NOT FOUND ON SIRIFC!")
         ! gets the required MOs
         if (do_homo_cube) num_cube_mo = num_cube_mo+1
