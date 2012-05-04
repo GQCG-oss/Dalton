@@ -340,6 +340,12 @@
                                  triangular=triangular, symmetric=symmetric,     &
                                  threshold=ERR_THRSH, ratio_thrsh=RATIO_THRSH)
         if (.not.almost_equal) test_failed = .true.
+
+#ifdef PRG_DIRAC
+        ! radovan: debugging
+        call MatView(A=val_ints(imat), io_viewer=io_viewer)
+#endif
+
         call MatDestroy(A=val_ints(imat))
         strt_herm_int = end_herm_int+1
       end do
