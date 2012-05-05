@@ -276,12 +276,28 @@ module gen1int_shell
   !> \param wrt_expt indicates if writing expectation values on file
   !> \return val_ints contains the integral matrices
   !> \return val_expt contains the expectation values
-  subroutine Gen1IntShellIntegral(num_shells, sub_shells, one_prop, london_ao,   &
-                                  order_mag_bra, order_mag_ket, order_mag_total, &
-                                  order_ram_bra, order_ram_ket, order_ram_total, &
-                                  order_geo_bra, order_geo_ket, geom_tree,       &
-                                  num_ints, val_ints, redunt_ints, wrt_ints,     &
-                                  num_dens, ao_dens, val_expt, redunt_expt, wrt_expt)
+  subroutine Gen1IntShellIntegral(num_shells,      &
+                                  sub_shells,      &
+                                  one_prop,        &
+                                  london_ao,       &
+                                  order_mag_bra,   &
+                                  order_mag_ket,   &
+                                  order_mag_total, &
+                                  order_ram_bra,   &
+                                  order_ram_ket,   &
+                                  order_ram_total, &
+                                  order_geo_bra,   &
+                                  order_geo_ket,   &
+                                  geom_tree,       &
+                                  num_ints,        &
+                                  val_ints,        &
+                                  redunt_ints,     &
+                                  wrt_ints,        &
+                                  num_dens,        &
+                                  ao_dens,         &
+                                  val_expt,        &
+                                  redunt_expt,     &
+                                  wrt_expt)
     ! matrix module
     use gen1int_matrix
     integer, intent(in) :: num_shells
