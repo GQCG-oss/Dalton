@@ -142,6 +142,10 @@ module dalton_shell
           KBCH = IDX_BLOCK
           ! angular momentum 1=s, 2=p, 3=d, etc.
           do IANG = 1, ang_numbers(ITYP,icomp)
+            !fixme radovan: iang does not always start with 1
+            !               the small component block (icomp == 2)
+            !               can start with a p function for instance
+
             ! next block
             KBCH = KBCH+1
             ! gets the contraction coefficients

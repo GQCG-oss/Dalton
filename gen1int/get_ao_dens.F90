@@ -80,8 +80,15 @@
 #else
     call QUIT("Unknown kind of real numbers!")
 #endif
+
+#ifdef PRG_DIRAC
+    print *, 'error: RD_SIRIFC not available in DIRAC'
+    stop 1
+#else
     call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(start_left_wrk), &
                    len_left_wrk)
+#endif
+
     if (.not.found) call QUIT("CMO IS NOT FOUND ON SIRIFC!")
     ! reads active part of one-electron density matrix (MO)
     if (GETDV) then
@@ -92,8 +99,15 @@
 #else
       call QUIT("Unknown kind of real numbers!")
 #endif
+
+#ifdef PRG_DIRAC
+    print *, 'error: RD_SIRIFC not available in DIRAC'
+    stop 1
+#else
       call RD_SIRIFC("DV", found, wrk_space(start_dv_mo), &
                      wrk_space(start_left_wrk), len_left_wrk)
+#endif
+
       if (.not.found) call QUIT("DV IS NOT FOUND ON SIRIFC!")
 #if REALK == 4
       call SZERO(wrk_space(start_dv_ao), N2BASX)
