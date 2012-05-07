@@ -120,8 +120,11 @@ module dalton_shell
         do ICENT = 1, num_sym_atom(ITYP)
           ! angular momentum 1=s, 2=p, 3=d, etc.
           do IANG = 1, ang_numbers(ITYP,icomp)
-            num_sub_shells = num_sub_shells+1
-            if (SPH(IANG)) spher_gto = .true.
+            if (num_cgto(IANG, ITYP, icomp) > 0) then
+              ! radovan: basis does not have to start with s
+              num_sub_shells = num_sub_shells+1
+              if (SPH(IANG)) spher_gto = .true.
+            end if
           end do
          end do
       end do
@@ -142,6 +145,10 @@ module dalton_shell
           KBCH = IDX_BLOCK
           ! angular momentum 1=s, 2=p, 3=d, etc.
           do IANG = 1, ang_numbers(ITYP,icomp)
+
+            ! radovan: basis does not have to start with s
+            if (num_cgto(IANG, ITYP, icomp) < 1) cycle
+
             ! next block
             KBCH = KBCH+1
             ! gets the contraction coefficients

@@ -439,6 +439,7 @@ module gen1int_matrix
         A%triangular = .false.
       end if
     end if
+    A%elms_alpha = 0.0d0
   end subroutine MatCreate
 
   !> \brief frees space taken by a matrix
