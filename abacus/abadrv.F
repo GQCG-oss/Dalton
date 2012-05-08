@@ -519,7 +519,7 @@ cx            gautever
          ENDIF
          write(lupri,*) ' We should call here LREC module, not yet, 
      &   still developing;' 
-cjim point to lresc module   CALL LRSCLIN(WORK(KLST2),LWRK2)
+         CALL LRSCLIN(WORK(KLST2),LWRK2)
 cx       KLST2 final pointer on mem. LWRK2 the lenght of it
 cx       CALL AQRDRV(WORK(KLST2),LWRK2)
       END IF
