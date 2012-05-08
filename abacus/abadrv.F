@@ -776,7 +776,7 @@ CKeinSPASmehr
 CPFP: 27/03-2006: SOS for spin-spin coupling included
 #include "locinf.h"
 Cend-PFP
-C
+
 C  jim-dbg (abainp.778) : add LROPTS and .LRESC . check  INTRST gaugeo stuff
 C  jim-gesc 1.0: TABDIR(#17) "*LRESC " and TABLE(60) ".LRESC "
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
@@ -830,7 +830,7 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI', '.LRESC ' / ! jim May-12 for LRESC
+     &             '.VIB_G ', '.LOCALI', '.LRESC '/ ! jim May-12 for LRESC
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -1040,7 +1040,7 @@ C
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-     &                151,152,153,154,155,156,157,158,159),I
+     &                151,152,153,154,155,156,157,158,159,160),I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1323,6 +1323,7 @@ C        .LOCALI
 Cend-PFP
 Cx jim-dbg 1.3: (abainp.1322) set RNLRSC, JIMPRT .TRUE. 
  160     CONTINUE
+          write(lupri,*)  ' set true RNLRSC'   
           RNLRSC = .TRUE.
           JIMPRT = .TRUE.  ! for debugging only !! should be taken off
          GOTO 100
