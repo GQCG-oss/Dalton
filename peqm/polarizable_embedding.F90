@@ -1470,7 +1470,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
 !        read(lufck) gauss
         close(lufck)
 
-!        gauss = 1 - gauss
+!        print *, 'gauss: ', gauss
 
         do j = 1, ndens
             l = (j - 1) * nnbas + 1
@@ -1480,7 +1480,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         end do
 
         do j = 1, fdnucs
-            R = 1.0d66
+            R = 1.0d6
             do k = 1, qmnucs
                 Rfm = Rm(:,k) - Rfd(:,j)
                 if (R > nrm2(Rfm)) R = nrm2(Rfm)
@@ -1763,6 +1763,7 @@ subroutine induced_dipoles(M1inds, Fs)
                             m = m + 3
                             cycle
                         end if
+! TODO: damping needs to be fixed
                         ! damping parameters
                         ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
                         ! a = 2.1304 = damp
@@ -2653,7 +2654,7 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     real(dp), dimension(:,:), allocatable :: full_fock
 
     external :: rdonel, dsptge
-    real(dp) :: fbnrm
+    real(dp) :: nrm
     real(dp), dimension(:), allocatable :: packed_overlap
     real(dp), dimension(:,:), allocatable :: full_overlap
     real(dp), dimension(:,:), allocatable :: intmol_overlap
@@ -2684,16 +2685,15 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     deallocate(packed_overlap)
     call gemm(full_overlap(fbas+1:nbas,1:fbas),&
              &full_overlap(1:fbas,fbas+1:nbas),&
-             &intmol_overlap, transb='T')
+             &intmol_overlap)
     deallocate(full_overlap)
-    fbnrm = 0.0d0
+    nrm = 0.0d0
     do i = 1, cbas
         do j = 1, cbas
-            print *, intmol_overlap(i,j)
-            fbnrm = fbnrm + intmol_overlap(i,j)**2
+            nrm = nrm + intmol_overlap(i,j)**2
         end do
     end do
-    fbnrm = sqrt(fbnrm)
+    nrm = sqrt(nrm)
     deallocate(intmol_overlap)
 
     ! density matrix with frozen density in first block
@@ -2702,7 +2702,7 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     deallocate(frozen_density)
 
     ! get two-electron part of Fock matrix using resized density matrix
-    allocate(full_fock(nbas,nbas))
+    allocate(full_fock(nbas,nbas)); full_fock = 0.0d0
 !     IFCTYP = +/-XY
 !       X indicates symmetry about diagonal
 !         X = 0 No symmetry
@@ -2742,7 +2742,7 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     write(lufck) core_fock
     write(lufck) fdnucs
     write(lufck) Rfd, Zfd
-    write(lufck) fbnrm
+    write(lufck) nrm
     close(lufck)
 
     deallocate(core_fock, Rfd, Zfd, Ffd)
