@@ -490,6 +490,9 @@ pdpack/linextra.F
 pdpack/linpack.F
 pdpack/printpkg.F
 rsp/absorp.F
+rsp/abscomplex.F
+rsp/complexpp.F
+rsp/gpcpp.F
 rsp/deq27.F
 rsp/expone.F
 rsp/fone.F
