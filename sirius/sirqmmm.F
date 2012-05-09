@@ -6426,7 +6426,7 @@ C     2.a) ...Loop over MM sites
       KWRK2    = KMATAC + 3*NNASHX
       LWRK2    = LFREE  - KWRK2
 
-C     1. KMATAO  : QM dipole one-elctron integrals (F^(1) in ao basis)
+C     1. KMATAO  : QM dipole one-elctron integrals (Fel^(1) in ao basis)
 C     2. KMATMO  : QM dipole one-elctron integrals (mo basis)
 C     3. KMATAC  : Active part of F^(1)
 
@@ -6450,9 +6450,9 @@ C     3. KMATAC  : Active part of F^(1)
         DIPORG(2) = MMCORD(2,I)
         DIPORG(3) = MMCORD(3,I)
 
-C       2.b) Dipole one-electron integrals (Fel(1) operator in AO basis) 
+C       2.b) Fel^(1) operator in AO basis
 
-C       ...Get Fel(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.  
+C       ...Get Fel^(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.  
 
          RUNQM3 = .TRUE.
 
@@ -6462,7 +6462,7 @@ C       ...Get Fel(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.
 
          RUNQM3 = .FALSE.
 
-C        2.c) Dipole one-electron integrals (Fel(1) operator in MO basis)
+C        2.c) Fel^(1) operator in MO basis
 
          CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
      &             WRK(KWRK2),NBAST,NORBT)
