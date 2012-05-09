@@ -285,6 +285,7 @@ C     *****************************
 C     ***** CTOCD-DZ response *****
 C     *****************************
 C
+Cx jim-dbg : leer aca too
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (CTOCD) THEN
         CALL CTOABA(WORK(KLAST),LWRK) 
@@ -501,6 +502,28 @@ cs
          CALL AQRDRV(WORK(KLST2),LWRK2)
       END IF
 C
+C     ******************************************
+C     ***** Lresc Response Properties      *****
+C     ******************************************
+C
+C  jim-gesc : call to LRSCDRV  
+      CALL GETTIM(TIMSTR,TIMDUM)
+      IF (RNLRSC) THEN
+         IF (JIMPRT) THEN 
+            write(lupri,*)'ABACTL #513 : call LRSCDRV, comp ABACTOCD '
+            write(lupri,*)'ahora parche. hace linear solamente, CAMBIAR'
+cx          CALL LRSCDRV(WORK(KLST2),LWRK2)
+cx            en realidad llamar a LRSCDRV y de ahi hacer linear o quad o
+cx            gautever
+            write(lupri,*)'Calling LRSCLIN : WORK(KLST2),LWRK2'
+         ENDIF
+         write(lupri,*) ' We should call here LREC module, not yet, 
+     &   still developing;' 
+cjim point to lresc module   CALL LRSCLIN(WORK(KLST2),LWRK2)
+cx       KLST2 final pointer on mem. LWRK2 the lenght of it
+cx       CALL AQRDRV(WORK(KLST2),LWRK2)
+      END IF
+C
 C     ****************************************
 C     ***** Add contributions calculated *****
 C     ****************************************
@@ -710,7 +733,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-      PARAMETER (NDIR = 28, NTABLE = 59, D0 = 0.D0)
+      PARAMETER (NDIR = 28, NTABLE = 60, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP
@@ -755,12 +778,14 @@ CPFP: 27/03-2006: SOS for spin-spin coupling included
 #include "locinf.h"
 Cend-PFP
 C
+C  jim-dbg (abainp.778) : add LROPTS and .LRESC . check  INTRST gaugeo stuff
+C  jim-gesc 1.0: TABDIR(#17) "*LRESC " and TABLE(60) ".LRESC "
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
      &             '*ONEINT', '*TWOEXP', '*GETSGY',
      &             '*EXCITA', '*REORT ', '*RESPON',
      &             '*TROINV', '*FMM   ', '*DIPCTL',
      &             '*RELAX ', '*GEOANA', '*VIBANA',
-     &             '*FLOAT ', 'xxxxxxx', '*QPGCTL',
+     &             '*FLOAT ', '*LROPTS', '*QPGCTL', ! LROPTS: jim May-12 for LRESC 
      &             'xXXXXXX', '*LOCALI', '*SOPPA ', ! *LOCALI: PFP 27/03-2006 - SOS for spin-spin coupling included
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
@@ -806,7 +831,7 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI'/
+     &             '.VIB_G ', '.LOCALI', '.LRESC' / ! jim May-12 for LRESC
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -910,6 +935,9 @@ C
       THIRDM = .FALSE.
       ESG    = .FALSE.
       VIB_G  = .FALSE.
+C  jim-gesc 1.1: (abainp.935) logic RNLRSC .FALSE. init 
+      RNLRSC = .FALSE.
+      JIMPRT = .FALSE.  
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
       CALL DZERO(DIPORG,3)
@@ -984,9 +1012,14 @@ C         geometry if not overridden with '**START' /Feb 2003 hjaaj
             GO TO 900
          END IF
          CALL ABAINIALL
+c jim-dbg 1.2: (abainp.1011) init lresc in ABAINIALL?  not done yet
          GOTO 1
   930 CONTINUE
       WORD1 = WORD
+cx jim-dbg : (abainp.1015)  take it off 
+      IF (JIMPRT) then 
+         write(lupri,*)'abainp #1017 read LUCMOD up 2 WORD : ',WORD
+      ENDIF
 C
       CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
      &            ,'*',108)
@@ -1289,6 +1322,11 @@ C        .LOCALI
             ABALOC = .TRUE.
          GOTO 100
 Cend-PFP
+Cx jim-dbg 1.3: (abainp.1322) set RNLRSC, JIMPRT .TRUE. 
+ 160     CONTINUE
+          RNLRSC = .TRUE.
+          JIMPRT = .TRUE.  ! for debugging only !! should be taken off
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1741,6 +1779,13 @@ cLig >> added the control to right CTOCD input
          CALL QUIT('Not supported input in ABAINP')
       ENDIF
 cLig <<
+C  jim-gesc 1.4: (abainp.1775) Print section 'lresc will be done '  to  output
+Cx jim-dbg :  note : aca puedo poner que no se puede london u otras cosas 
+Cx                 y hacer un call quit
+Cx    preguntando al logic q sea ejplo if GAUGEO tonces ...  o SOPPA
+       IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
+     &    ' Linear Response Elimination of Small Component scheme will',
+     &    ' be used to shielding constants' 
       IF (ABASOP) THEN
          IERR = 0
          IF (MOLGRD) THEN
@@ -1944,7 +1989,11 @@ cs
       GO TO 200
    16   CALL FLTINP(WORD)
       GO TO 200
-   17   CONTINUE
+C jim-gesc 1.5 : (abainp.1985) reading TABDIR call lrscinp
+   17 if(JIMPRT)  Write(lupri,*) ' Calling lrsec inp for word', WORD
+        CALL LRSCINP(WORD)
+cx jim-dbg : take this out
+      if(JIMPRT)  Write(lupri,*) ' volvi de LRSCINP ', WORD
       GO TO 200
    18   CONTINUE
          CALL QPGINP(WORD)
@@ -2080,6 +2129,7 @@ C     We need to change the origin to the center of mass when calculating
 C     spin-rotation constants and molecular g-factors.
 C     This is now default for all molecular properties, unless turned off.
 C
+Cx jim-dbg  1.6: (abainp.2125) check GAUGEO origin : not done yet
       KGEOM = 1
       KMASS = KGEOM + 3*(NATOMS + NFLOAT)
       KNAT  = KMASS + NATOMS + NFLOAT
@@ -3573,5 +3623,8 @@ C
       CALL LNRINI
       CALL AQRINI
       CALL LOCINI !PFP: 27/03-2006: SOS for spin-spin coupling included
+cx jim-dbg (iniall.3611): call LRSCINI not sure to do this here 
+C     CALL LRSCINI
+cx jim-dbg  : aca se pueden setear las corridas a hacer ? not yet
       RETURN
       END

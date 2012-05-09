@@ -256,7 +256,8 @@
       ! computes the integrals and/or expectation values
       wrk_space(1:num_expt) = 0.0_REALK
 !FIXME: to evaluate expectaion values
-      call DaltonShellIntegral(one_prop=prop_operator, london_ao=LONDON_AO(itst), &
+      call DaltonShellIntegral(comp_bra=1, comp_ket=1,                            &
+                               one_prop=prop_operator, london_ao=LONDON_AO(itst), &
                                num_ints=num_opt_derv, val_ints=val_ints,          &
                                wrt_ints=WRT_INTS, num_dens=NUM_DENS,              &
                                io_viewer=io_viewer, level_print=level_print)

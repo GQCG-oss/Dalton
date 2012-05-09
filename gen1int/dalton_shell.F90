@@ -44,10 +44,12 @@ module dalton_shell
 
   ! if Dalton AO sub-shells is created
   logical, private, save :: shells_created = .false.
-  ! number of AO sub-shells from Dalton
-  integer, private, save :: num_sub_shells = 0
-  ! AO sub-shells from Dalton
-  type(sub_shell_t), private, allocatable, save :: sub_shells(:)
+  ! number of AO sub-shells from Dalton/DIRAC
+  ! Dalton only uses num_sub_shells(1), DIRAC uses either the first or both
+  integer, private, save :: num_sub_shells(2) = 0
+  ! AO sub-shells from Dalton/DIRAC
+  ! Dalton only uses sub_shells(:, 1), DIRAC uses either only sub_shells(:, 1) or both sub_shells(:, 1:2)
+  type(sub_shell_t), private, allocatable, save :: sub_shells(:, :)
 
   public :: DaltonShellCreate
 
@@ -122,7 +124,7 @@ module dalton_shell
           do IANG = 1, ang_numbers(ITYP,icomp)
             if (num_cgto(IANG, ITYP, icomp) > 0) then
               ! radovan: basis does not have to start with s
-              num_sub_shells = num_sub_shells+1
+              num_sub_shells(icomp) = num_sub_shells(icomp) + 1
               if (SPH(IANG)) spher_gto = .true.
             end if
           end do
@@ -130,11 +132,11 @@ module dalton_shell
       end do
     end do
     ! initializes the AO sub-shells
-    allocate(sub_shells(num_sub_shells), stat=ierr)
+    allocate(sub_shells(maxval(num_sub_shells), 2), stat=ierr)
     if (ierr/=0) call QUIT("DaltonShellCreate>> failed to allocate sub_shells!")
-    ishell = 0
     ! loops over components of basis sets
     do icomp = 1, num_comp
+      ishell = 0
       IDX_BLOCK = 0
       IDX_CENT = 0
       ! number of atomic types
@@ -173,24 +175,34 @@ module dalton_shell
             end if
             !-ISTBNU(IDX_CENT)  !stabiliser: basic sym. op. that do not move center
             ishell = ishell+1
-            if (ishell>1) then
-              !-call Gen1IntShellCreate(spher_gto=SPH(IANG), idx_cent=IDX_CENT,  &
-              call Gen1IntShellCreate(spher_gto=spher_gto, idx_cent=IDX_CENT, &
-                     coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,          &
-                     num_prim=num_prim(KBCH,icomp),                           &
-                     exponents=exponents(1:num_prim(KBCH,icomp),KBCH,icomp),  &
-                     num_contr=num_contr(KBCH,icomp), contr_coef=contr_coef,  &
-                     last_shell=sub_shells(ishell-1), sub_shell=sub_shells(ishell))
-            ! sets the first AO sub-shell
-            else
-              !-call Gen1IntShellCreate(spher_gto=SPH(IANG), idx_cent=IDX_CENT,  &
-              call Gen1IntShellCreate(spher_gto=spher_gto, idx_cent=IDX_CENT, &
-                     coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,          &
-                     num_prim=num_prim(KBCH,icomp),                           &
-                     exponents=exponents(1:num_prim(KBCH,icomp),KBCH,icomp),  &
-                     num_contr=num_contr(KBCH,icomp), contr_coef=contr_coef,  &
-                     sub_shell=sub_shells(ishell))
-            end if
+                  if (ishell>1) then
+                    call Gen1IntShellCreate(spher_gto=spher_gto, idx_cent=IDX_CENT, &
+                           coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,          &
+                           num_prim=num_prim(KBCH,icomp),                           &
+                           exponents=exponents(1:num_prim(KBCH,icomp),KBCH,icomp),  &
+                           num_contr=num_contr(KBCH,icomp), contr_coef=contr_coef,  &
+                           last_shell=sub_shells(ishell-1, icomp), sub_shell=sub_shells(ishell, icomp))
+                  else
+                    ! sets the first AO sub-shell
+                    select case (icomp)
+                       case (1)
+                          call Gen1IntShellCreate(spher_gto=spher_gto, idx_cent=IDX_CENT, &
+                                 coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,          &
+                                 num_prim=num_prim(KBCH,icomp),                           &
+                                 exponents=exponents(1:num_prim(KBCH,icomp),KBCH,icomp),  &
+                                 num_contr=num_contr(KBCH,icomp), contr_coef=contr_coef,  &
+                                 sub_shell=sub_shells(ishell, icomp))
+                       case (2)
+                          ! put small component block behind large component block
+                          call Gen1IntShellCreate(spher_gto=spher_gto, idx_cent=IDX_CENT, &
+                                 coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,          &
+                                 num_prim=num_prim(KBCH,icomp),                           &
+                                 exponents=exponents(1:num_prim(KBCH,icomp),KBCH,icomp),  &
+                                 num_contr=num_contr(KBCH,icomp), contr_coef=contr_coef,  &
+                                 last_shell=sub_shells(num_sub_shells(1), 1),             &
+                                 sub_shell=sub_shells(ishell, icomp))
+                    end select
+                  end if
             deallocate(contr_coef)
             ! skips other CGTOs in this AO block for this angular momentum
             KBCH = KBCH+num_cgto(IANG,ITYP,icomp)-1
@@ -209,8 +221,14 @@ module dalton_shell
   !> \param io_viewer is the logical unit number of the viewer
   subroutine DaltonShellView(io_viewer)
     integer, intent(in) :: io_viewer
-    call Gen1IntShellView(num_shells=num_sub_shells, sub_shells=sub_shells, &
-                          io_viewer=io_viewer)
+    if (num_sub_shells(1) > 0) then
+       call Gen1IntShellView(num_shells=num_sub_shells(1), sub_shells=sub_shells(1, 1), &
+                             io_viewer=io_viewer)
+    end if
+    if (num_sub_shells(2) > 0) then
+       call Gen1IntShellView(num_shells=num_sub_shells(2), sub_shells=sub_shells(1, 2), &
+                             io_viewer=io_viewer)
+    end if
   end subroutine DaltonShellView
 
   !> \brief gets the number of atomic orbitals from the Dalton AO sub-shells
@@ -221,8 +239,20 @@ module dalton_shell
     integer, intent(out) :: num_ao
     integer idx_first  !index of the first orbital in the last AO sub-shells
     ! gets the number of atomic orbitals
-    call Gen1IntShellGetRangeAO(sub_shell=sub_shells(num_sub_shells), &
-                                idx_first=idx_first, idx_last=num_ao)
+    integer :: n
+    num_ao = 0
+    if (num_sub_shells(1) > 0) then
+       n = 0
+       call Gen1IntShellGetRangeAO(sub_shell=sub_shells(num_sub_shells(1), 1), &
+                                   idx_first=idx_first, idx_last=n)
+       num_ao = num_ao + n
+    end if
+    if (num_sub_shells(2) > 0) then
+       n = 0
+       call Gen1IntShellGetRangeAO(sub_shell=sub_shells(num_sub_shells(2), 2), &
+                                   idx_first=idx_first, idx_last=n)
+       num_ao = num_ao + n
+    end if
   end subroutine DaltonShellGetNumAO
 
   !> \brief evaluates the integral matrices and/or expectation values with Dalton AO sub-shells
@@ -251,13 +281,15 @@ module dalton_shell
   !> \return val_ints contains the integral matrices
   !> \return val_expt contains the expectation values
   !> \note \var(val_expt) should be zero by users before calculations
-  subroutine DaltonShellIntegral(one_prop, london_ao,                                &
+  subroutine DaltonShellIntegral(comp_bra, comp_ket, one_prop, london_ao,            &
                                  order_mag_bra, order_mag_ket, order_mag_total,      &
                                  order_ram_bra, order_ram_ket, order_ram_total,      &
                                  order_geo_bra, order_geo_ket, geom_tree,            &
                                  num_ints, val_ints, redunt_ints, wrt_ints,          &
                                  num_dens, ao_dens, val_expt, redunt_expt, wrt_expt, &
                                  io_viewer, level_print)
+    integer,           intent(in) :: comp_bra
+    integer,           intent(in) :: comp_ket
     type(one_prop_t), intent(in) :: one_prop
     logical, optional, intent(in) :: london_ao
     integer, optional, intent(in) :: order_mag_bra
@@ -369,27 +401,30 @@ module dalton_shell
       call GeomTreeIdxPath(geom_tree=geom_tree, idx_path=curr_path)
       call GeomTreeNumPath(geom_tree=geom_tree, num_paths=num_paths)
       ! calculates the property integrals of current path
-      call Gen1IntShellIntegral(num_shells=num_sub_shells,       &
-                                sub_shells=sub_shells,           &
-                                one_prop=one_prop,               &
-                                london_ao=london_ao,             &
-                                order_mag_bra=order_mag_bra,     &
-                                order_mag_ket=order_mag_ket,     &
-                                order_mag_total=order_mag_total, &
-                                order_ram_bra=order_ram_bra,     &
-                                order_ram_ket=order_ram_ket,     &
-                                order_ram_total=order_ram_total, &
-                                order_geo_bra=order_geo_bra,     &
-                                order_geo_ket=order_geo_ket,     &
-                                geom_tree=geom_tree,             &
-                                num_ints=num_ints,               &
-                                val_ints=val_ints,               &
-                                redunt_ints=redunt_ints,         &
-                                wrt_ints=wrt_ints,               &
-                                num_dens=num_dens,               &
-                                ao_dens=ao_dens,                 &
-                                val_expt=val_expt,               &
-                                redunt_expt=redunt_expt,         &
+      call Gen1IntShellIntegral(num_shells_bra=num_sub_shells(comp_bra), &
+                                num_shells_ket=num_sub_shells(comp_ket), &
+                                sub_shells_bra=sub_shells(1, comp_bra),  &
+                                sub_shells_ket=sub_shells(1, comp_ket),  &
+                                bra_same_as_ket=(comp_bra==comp_ket),    &
+                                one_prop=one_prop,                       &
+                                london_ao=london_ao,                     &
+                                order_mag_bra=order_mag_bra,             &
+                                order_mag_ket=order_mag_ket,             &
+                                order_mag_total=order_mag_total,         &
+                                order_ram_bra=order_ram_bra,             &
+                                order_ram_ket=order_ram_ket,             &
+                                order_ram_total=order_ram_total,         &
+                                order_geo_bra=order_geo_bra,             &
+                                order_geo_ket=order_geo_ket,             &
+                                geom_tree=geom_tree,                     &
+                                num_ints=num_ints,                       &
+                                val_ints=val_ints,                       &
+                                redunt_ints=redunt_ints,                 &
+                                wrt_ints=wrt_ints,                       &
+                                num_dens=num_dens,                       &
+                                ao_dens=ao_dens,                         &
+                                val_expt=val_expt,                       &
+                                redunt_expt=redunt_expt,                 &
                                 wrt_expt=wrt_expt)
       ! loops over other paths
       do ipath = curr_path+1, num_paths
@@ -399,51 +434,57 @@ module dalton_shell
         if (level_print>=20) &
           call GeomTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
         ! calculates the property integrals of current path
-        call Gen1IntShellIntegral(num_shells=num_sub_shells,       &
-                                  sub_shells=sub_shells,           &
-                                  one_prop=one_prop,               &
-                                  london_ao=london_ao,             &
-                                  order_mag_bra=order_mag_bra,     &
-                                  order_mag_ket=order_mag_ket,     &
-                                  order_mag_total=order_mag_total, &
-                                  order_ram_bra=order_ram_bra,     &
-                                  order_ram_ket=order_ram_ket,     &
-                                  order_ram_total=order_ram_total, &
-                                  order_geo_bra=order_geo_bra,     &
-                                  order_geo_ket=order_geo_ket,     &
-                                  geom_tree=geom_tree,             &
-                                  num_ints=num_ints,               &
-                                  val_ints=val_ints,               &
-                                  redunt_ints=redunt_ints,         &
-                                  wrt_ints=wrt_ints,               &
-                                  num_dens=num_dens,               &
-                                  ao_dens=ao_dens,                 &
-                                  val_expt=val_expt,               &
-                                  redunt_expt=redunt_expt,         &
+        call Gen1IntShellIntegral(num_shells_bra=num_sub_shells(comp_bra), &
+                                  num_shells_ket=num_sub_shells(comp_ket), &
+                                  sub_shells_bra=sub_shells(1, comp_bra),  &
+                                  sub_shells_ket=sub_shells(1, comp_ket),  &
+                                  bra_same_as_ket=(comp_bra==comp_ket),    &
+                                  one_prop=one_prop,                       &
+                                  london_ao=london_ao,                     &
+                                  order_mag_bra=order_mag_bra,             &
+                                  order_mag_ket=order_mag_ket,             &
+                                  order_mag_total=order_mag_total,         &
+                                  order_ram_bra=order_ram_bra,             &
+                                  order_ram_ket=order_ram_ket,             &
+                                  order_ram_total=order_ram_total,         &
+                                  order_geo_bra=order_geo_bra,             &
+                                  order_geo_ket=order_geo_ket,             &
+                                  geom_tree=geom_tree,                     &
+                                  num_ints=num_ints,                       &
+                                  val_ints=val_ints,                       &
+                                  redunt_ints=redunt_ints,                 &
+                                  wrt_ints=wrt_ints,                       &
+                                  num_dens=num_dens,                       &
+                                  ao_dens=ao_dens,                         &
+                                  val_expt=val_expt,                       &
+                                  redunt_expt=redunt_expt,                 &
                                   wrt_expt=wrt_expt)
       end do
     ! no total geometric derivatives
     else
-      call Gen1IntShellIntegral(num_shells=num_sub_shells,       &
-                                sub_shells=sub_shells,           &
-                                one_prop=one_prop,               &
-                                london_ao=london_ao,             &
-                                order_mag_bra=order_mag_bra,     &
-                                order_mag_ket=order_mag_ket,     &
-                                order_mag_total=order_mag_total, &
-                                order_ram_bra=order_ram_bra,     &
-                                order_ram_ket=order_ram_ket,     &
-                                order_ram_total=order_ram_total, &
-                                order_geo_bra=order_geo_bra,     &
-                                order_geo_ket=order_geo_ket,     &
-                                num_ints=num_ints,               &
-                                val_ints=val_ints,               &
-                                redunt_ints=redunt_ints,         &
-                                wrt_ints=wrt_ints,               &
-                                num_dens=num_dens,               &
-                                ao_dens=ao_dens,                 &
-                                val_expt=val_expt,               &
-                                redunt_expt=redunt_expt,         &
+      call Gen1IntShellIntegral(num_shells_bra=num_sub_shells(comp_bra), &
+                                num_shells_ket=num_sub_shells(comp_ket), &
+                                sub_shells_bra=sub_shells(1, comp_bra),  &
+                                sub_shells_ket=sub_shells(1, comp_ket),  &
+                                bra_same_as_ket=(comp_bra==comp_ket),    &
+                                one_prop=one_prop,                       &
+                                london_ao=london_ao,                     &
+                                order_mag_bra=order_mag_bra,             &
+                                order_mag_ket=order_mag_ket,             &
+                                order_mag_total=order_mag_total,         &
+                                order_ram_bra=order_ram_bra,             &
+                                order_ram_ket=order_ram_ket,             &
+                                order_ram_total=order_ram_total,         &
+                                order_geo_bra=order_geo_bra,             &
+                                order_geo_ket=order_geo_ket,             &
+                                num_ints=num_ints,                       &
+                                val_ints=val_ints,                       &
+                                redunt_ints=redunt_ints,                 &
+                                wrt_ints=wrt_ints,                       &
+                                num_dens=num_dens,                       &
+                                ao_dens=ao_dens,                         &
+                                val_expt=val_expt,                       &
+                                redunt_expt=redunt_expt,                 &
                                 wrt_expt=wrt_expt)
     end if
 100 format("DaltonShellIntegral>> ",A,I4)
@@ -477,11 +518,13 @@ module dalton_shell
     integer, optional, intent(in) :: order_mag
     integer, optional, intent(in) :: order_ram
     integer, optional, intent(in) :: order_geo
-    call Gen1IntShellMO(num_shells=num_sub_shells, sub_shells=sub_shells,      &
-                        num_ao=num_ao, num_mo=num_mo, mo_coef=mo_coef,         &
-                        num_points=num_points, grid_points=grid_points,        &
-                        num_derv=num_derv, val_mo=val_mo, london_ao=london_ao, &
-                        order_mag=order_mag, order_ram=order_ram, order_geo=order_geo)
+    print *, 'error: implement daltonshellmo'
+    stop 1
+!   call Gen1IntShellMO(num_shells=num_sub_shells, sub_shells=sub_shells,      &
+!                       num_ao=num_ao, num_mo=num_mo, mo_coef=mo_coef,         &
+!                       num_points=num_points, grid_points=grid_points,        &
+!                       num_derv=num_derv, val_mo=val_mo, london_ao=london_ao, &
+!                       order_mag=order_mag, order_ram=order_ram, order_geo=order_geo)
   end subroutine DaltonShellMO
 
   !> \brief frees the space taken by Dalton AO sub-shells after all calculations
@@ -490,7 +533,8 @@ module dalton_shell
   subroutine DaltonShellDestroy
     ! backs if the AO sub-shells are not created
     if (.not. shells_created) return
-    call Gen1IntShellDestroy(num_sub_shells, sub_shells)
+    call Gen1IntShellDestroy(num_sub_shells(1), sub_shells(1, 1))
+    call Gen1IntShellDestroy(num_sub_shells(2), sub_shells(1, 2))
     deallocate(sub_shells)
     num_sub_shells = 0
     shells_created = .false.
