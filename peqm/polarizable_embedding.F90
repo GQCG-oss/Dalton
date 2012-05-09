@@ -987,7 +987,7 @@ subroutine pe_sync()
         call mpi_bcast(pe_iter, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(pe_damp, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(damp, 1, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
-        if (pe_iter .and. pe_damp) then
+        if (pe_iter) then
             if (myid /= 0) allocate(P1s(6,nsites(ncores-1)))
             call mpi_bcast(P1s, 6*nsites(ncores-1), MPI_REAL8,&
                           &0, MPI_COMM_WORLD, ierr)
@@ -1625,10 +1625,6 @@ subroutine pe_polarization(denmats, fckmats)
 
 #ifdef VAR_MPI
     if (myid == 0 .and. ncores > 1) then
-        displs(0) = 0
-        do i = 1, ncores-1
-            displs(i) = displs(i-1) + 3 * npoldists(i-1)
-        end do
         do i = 1, ndens
             call mpi_scatterv(M1inds(:,i), 3*npoldists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
@@ -1715,14 +1711,36 @@ subroutine induced_dipoles(M1inds, Fs)
         allocate(T(6), Rij(3), Ftmp(3), M1tmp(3))
         do n = 1, ndens
             if (.not.lexist .or. response) then
-                if (myid == 0) then
-                    l = 1
-                    do i = 1, nsites(ncores-1)
-                        if (zeroalphas(i)) cycle
-                        call spmv(P1s(:,i), Fs(l:l+2,n), M1inds(l:l+2,n), 'L')
-                        l = l + 3
-                    end do
+#ifdef VAR_MPI
+                if (myid == 0 .and. ncores > 1) then
+                    call mpi_scatterv(Fs(:,n), 3*npoldists, displs, MPI_REAL8,&
+                                     &MPI_IN_PLACE, 0, MPI_REAL8,&
+                                     &0, MPI_COMM_WORLD, ierr)
+                else if (myid /= 0) then
+                    call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                                     &Fs(:,n), 3*npoldists(myid), MPI_REAL8,&
+                                     &0, MPI_COMM_WORLD, ierr)
                 end if
+#endif
+
+                l = 1
+                do i = nsites(myid-1)+1, nsites(myid)
+                    if (zeroalphas(i)) cycle
+                    call spmv(P1s(:,i), Fs(l:l+2,n), M1inds(l:l+2,n), 'L')
+                    l = l + 3
+                end do
+
+#ifdef VAR_MPI
+                if (myid == 0 .and. ncores > 1) then
+                    call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
+                                    &M1inds(:,n), 3*npoldists, displs, MPI_REAL8,&
+                                    &0, MPI_COMM_WORLD, ierr)
+                else if (myid /= 0) then
+                    call mpi_gatherv(M1inds(:,n), 3*npoldists(myid), MPI_REAL8,&
+                                    &0, 0, 0, MPI_REAL8,&
+                                    &0, MPI_COMM_WORLD, ierr)
+                end if
+#endif
             end if
 
             if (pe_nomb) cycle
@@ -1996,10 +2014,6 @@ subroutine nuclear_fields(Fnucs)
         end do
 #ifdef VAR_MPI
         if (myid == 0 .and. ncores > 1) then
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + 3 * npoldists(i-1)
-            end do
             call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
                             &Fnucs, 3*npoldists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
