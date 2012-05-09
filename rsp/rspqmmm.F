@@ -49,6 +49,8 @@ C
 C
       CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',
      *        'UNFORMATTED',IDUMMY,.FALSE.)
+C edh: Test write statement
+      WRITE(LUPRI,*)' NCSIM = ' , NCSIM       
       IF (NCSIM .GT. 0) THEN
           IF (IPQMMM .GT. 2) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
@@ -63,6 +65,7 @@ C
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
       END IF
+C
       IF ( NOSIM .GT.0 ) THEN
          IF (IPQMMM .GT. 2) THEN
              WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
@@ -683,7 +686,7 @@ C     Read the relay matrix from file
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 2) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from file'
           DO I = 1, N*(N+1)/2
@@ -767,7 +770,7 @@ C        Calculate the induced dipoles corresponding to this field
      *                 IOPT,IPQMMM)
          ENDIF
 
-         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
+         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
            WRITE(LUPRI,*) 'Transformed induced dipole moments' 
            CALL OUTPUT(WRK(KINDMOM),1,N,1,1,N,1,1,LUPRI)
            WRITE(LUPRI,*)
@@ -982,7 +985,7 @@ C     Unpack symmetry blocked CMO
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from file'
           DO I = 1, N*(N+1)/2
@@ -1284,7 +1287,7 @@ C     Unpack symmetry blocked CMO
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from file'
           DO I = 1, N*(N+1)/2
