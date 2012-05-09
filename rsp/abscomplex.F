@@ -347,7 +347,7 @@ C     Print-out a summary of results
 C
       CALL ABSLRSRESULT(WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
 c
-      CLOSE(LUABSVECS,status='save')
+      CLOSE(LUABSVECS,status='keep')
 C
       RETURN
       END
