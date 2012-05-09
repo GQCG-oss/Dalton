@@ -276,8 +276,11 @@ module gen1int_shell
   !> \param wrt_expt indicates if writing expectation values on file
   !> \return val_ints contains the integral matrices
   !> \return val_expt contains the expectation values
-  subroutine Gen1IntShellIntegral(num_shells,      &
-                                  sub_shells,      &
+  subroutine Gen1IntShellIntegral(num_shells_bra,  &
+                                  num_shells_ket,  &
+                                  sub_shells_bra,  &
+                                  sub_shells_ket,  &
+                                  bra_same_as_ket, &
                                   one_prop,        &
                                   london_ao,       &
                                   order_mag_bra,   &
@@ -300,8 +303,12 @@ module gen1int_shell
                                   wrt_expt)
     ! matrix module
     use gen1int_matrix
-    integer, intent(in) :: num_shells
-    type(sub_shell_t), intent(in) :: sub_shells(*)
+    integer,           intent(in) :: num_shells_bra
+    integer,           intent(in) :: num_shells_ket
+    type(sub_shell_t), intent(in) :: sub_shells_bra(*)
+    type(sub_shell_t), intent(in) :: sub_shells_ket(*)
+    logical,           intent(in) :: bra_same_as_ket
+
     type(one_prop_t), intent(in) :: one_prop
     logical, optional, intent(in) :: london_ao
     integer, optional, intent(in) :: order_mag_bra
@@ -421,37 +428,39 @@ module gen1int_shell
     ! symmetric integral matrices (column- or ket-major, upper and diagonal parts)
     case(SYMM_INT_MAT)
       ! loops over AO sub-shells on ket center
-      do jshell = 1, num_shells
+      do jshell = 1, num_shells_ket
         ! sets the minimum and maximum of indices of columns of the integral matrices
-        min_col_idx = sub_shells(jshell)%base_idx+1
-        max_col_idx = sub_shells(jshell)%base_idx &
-                    + sub_shells(jshell)%num_ao*sub_shells(jshell)%num_contr
+        min_col_idx = sub_shells_ket(jshell)%base_idx+1
+        max_col_idx = sub_shells_ket(jshell)%base_idx &
+                    + sub_shells_ket(jshell)%num_ao*sub_shells_ket(jshell)%num_contr
         ! loops over AO sub-shells on bra center (upper and diagonal parts)
-        do ishell = 1, jshell
-          spher_gto = sub_shells(ishell)%spher_gto .or. sub_shells(jshell)%spher_gto
-          allocate(contr_ints(sub_shells(ishell)%num_ao,    &
-                              sub_shells(ishell)%num_contr, &
-                              sub_shells(jshell)%num_ao,    &
-                              sub_shells(jshell)%num_contr, &
+        do ishell = 1, num_shells_bra
+          if (bra_same_as_ket .and. (ishell > jshell)) cycle
+
+          spher_gto = sub_shells_bra(ishell)%spher_gto .or. sub_shells_ket(jshell)%spher_gto
+          allocate(contr_ints(sub_shells_bra(ishell)%num_ao,    &
+                              sub_shells_bra(ishell)%num_contr, &
+                              sub_shells_ket(jshell)%num_ao,    &
+                              sub_shells_ket(jshell)%num_contr, &
                               num_prop,num_unique_geo), stat=ierr)
           if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate contr_ints!")
           ! spherical GTOs
           if (spher_gto) then
             ! calls Gen1Int subroutines to evaluate property integrals
-            call OnePropEvaluate(idx_bra=sub_shells(ishell)%idx_cent,          &
-                                 coord_bra=sub_shells(ishell)%coord_cent,      &
-                                 angular_bra=sub_shells(ishell)%ang_num,       &
-                                 num_prim_bra=sub_shells(ishell)%num_prim,     &
-                                 exponent_bra=sub_shells(ishell)%exponents,    &
-                                 num_contr_bra=sub_shells(ishell)%num_contr,   &
-                                 contr_coef_bra=sub_shells(ishell)%contr_coef, &
-                                 idx_ket=sub_shells(jshell)%idx_cent,          &
-                                 coord_ket=sub_shells(jshell)%coord_cent,      &
-                                 angular_ket=sub_shells(jshell)%ang_num,       &
-                                 num_prim_ket=sub_shells(jshell)%num_prim,     &
-                                 exponent_ket=sub_shells(jshell)%exponents,    &
-                                 num_contr_ket=sub_shells(jshell)%num_contr,   &
-                                 contr_coef_ket=sub_shells(jshell)%contr_coef, &
+            call OnePropEvaluate(idx_bra=sub_shells_bra(ishell)%idx_cent,          &
+                                 coord_bra=sub_shells_bra(ishell)%coord_cent,      &
+                                 angular_bra=sub_shells_bra(ishell)%ang_num,       &
+                                 num_prim_bra=sub_shells_bra(ishell)%num_prim,     &
+                                 exponent_bra=sub_shells_bra(ishell)%exponents,    &
+                                 num_contr_bra=sub_shells_bra(ishell)%num_contr,   &
+                                 contr_coef_bra=sub_shells_bra(ishell)%contr_coef, &
+                                 idx_ket=sub_shells_ket(jshell)%idx_cent,          &
+                                 coord_ket=sub_shells_ket(jshell)%coord_cent,      &
+                                 angular_ket=sub_shells_ket(jshell)%ang_num,       &
+                                 num_prim_ket=sub_shells_ket(jshell)%num_prim,     &
+                                 exponent_ket=sub_shells_ket(jshell)%exponents,    &
+                                 num_contr_ket=sub_shells_ket(jshell)%num_contr,   &
+                                 contr_coef_ket=sub_shells_ket(jshell)%contr_coef, &
                                  spher_gto=spher_gto,                          &
                                  london_ao=london_ao,                          &
                                  one_prop=one_prop,                            &
@@ -464,38 +473,38 @@ module gen1int_shell
                                  order_geo_bra=order_geo_bra,                  &
                                  order_geo_ket=order_geo_ket,                  &
                                  geom_tree=geom_tree,                          &
-                                 num_gto_bra=sub_shells(ishell)%num_ao,        &
-                                 num_gto_ket=sub_shells(jshell)%num_ao,        &
+                                 num_gto_bra=sub_shells_bra(ishell)%num_ao,        &
+                                 num_gto_ket=sub_shells_ket(jshell)%num_ao,        &
                                  num_opt=num_opt, contr_ints=contr_ints)
             ! reorders p-shell spherical GTOs
-            if (sub_shells(ishell)%ang_num==1)                      &
-              call reorder_p_sgto(1, sub_shells(ishell)%num_contr   &
-                                     *sub_shells(jshell)%num_ao     &
-                                     *sub_shells(jshell)%num_contr, &
+            if (sub_shells_bra(ishell)%ang_num==1)                      &
+              call reorder_p_sgto(1, sub_shells_bra(ishell)%num_contr   &
+                                     *sub_shells_ket(jshell)%num_ao     &
+                                     *sub_shells_ket(jshell)%num_contr, &
                                   num_opt, contr_ints)
-            if (sub_shells(jshell)%ang_num==1)                   &
-              call reorder_p_sgto(sub_shells(ishell)%num_ao      &
-                                  *sub_shells(ishell)%num_contr, &
-                                  sub_shells(jshell)%num_contr,  &
+            if (sub_shells_ket(jshell)%ang_num==1)                   &
+              call reorder_p_sgto(sub_shells_bra(ishell)%num_ao      &
+                                  *sub_shells_bra(ishell)%num_contr, &
+                                  sub_shells_ket(jshell)%num_contr,  &
                                   num_opt, contr_ints)
           ! Cartesian GTOs
           else
             ! calls Gen1Int subroutines to evaluate property integrals, and reorders
             ! the integrals according to Cartesian powers
-            call OnePropEvaluate(idx_bra=sub_shells(ishell)%idx_cent,          &
-                                 coord_bra=sub_shells(ishell)%coord_cent,      &
-                                 angular_bra=sub_shells(ishell)%ang_num,       &
-                                 num_prim_bra=sub_shells(ishell)%num_prim,     &
-                                 exponent_bra=sub_shells(ishell)%exponents,    &
-                                 num_contr_bra=sub_shells(ishell)%num_contr,   &
-                                 contr_coef_bra=sub_shells(ishell)%contr_coef, &
-                                 idx_ket=sub_shells(jshell)%idx_cent,          &
-                                 coord_ket=sub_shells(jshell)%coord_cent,      &
-                                 angular_ket=sub_shells(jshell)%ang_num,       &
-                                 num_prim_ket=sub_shells(jshell)%num_prim,     &
-                                 exponent_ket=sub_shells(jshell)%exponents,    &
-                                 num_contr_ket=sub_shells(jshell)%num_contr,   &
-                                 contr_coef_ket=sub_shells(jshell)%contr_coef, &
+            call OnePropEvaluate(idx_bra=sub_shells_bra(ishell)%idx_cent,          &
+                                 coord_bra=sub_shells_bra(ishell)%coord_cent,      &
+                                 angular_bra=sub_shells_bra(ishell)%ang_num,       &
+                                 num_prim_bra=sub_shells_bra(ishell)%num_prim,     &
+                                 exponent_bra=sub_shells_bra(ishell)%exponents,    &
+                                 num_contr_bra=sub_shells_bra(ishell)%num_contr,   &
+                                 contr_coef_bra=sub_shells_bra(ishell)%contr_coef, &
+                                 idx_ket=sub_shells_ket(jshell)%idx_cent,          &
+                                 coord_ket=sub_shells_ket(jshell)%coord_cent,      &
+                                 angular_ket=sub_shells_ket(jshell)%ang_num,       &
+                                 num_prim_ket=sub_shells_ket(jshell)%num_prim,     &
+                                 exponent_ket=sub_shells_ket(jshell)%exponents,    &
+                                 num_contr_ket=sub_shells_ket(jshell)%num_contr,   &
+                                 contr_coef_ket=sub_shells_ket(jshell)%contr_coef, &
                                  spher_gto=spher_gto,                          &
                                  london_ao=london_ao,                          &
                                  one_prop=one_prop,                            &
@@ -508,16 +517,16 @@ module gen1int_shell
                                  order_geo_bra=order_geo_bra,                  &
                                  order_geo_ket=order_geo_ket,                  &
                                  geom_tree=geom_tree,                          &
-                                 num_gto_bra=sub_shells(ishell)%num_ao,        &
-                                 num_gto_ket=sub_shells(jshell)%num_ao,        &
+                                 num_gto_bra=sub_shells_bra(ishell)%num_ao,        &
+                                 num_gto_ket=sub_shells_ket(jshell)%num_ao,        &
                                  num_opt=num_opt, contr_ints=contr_ints,       &
-                                 powers_bra=sub_shells(ishell)%powers,         &
-                                 powers_ket=sub_shells(jshell)%powers)
+                                 powers_bra=sub_shells_bra(ishell)%powers,         &
+                                 powers_ket=sub_shells_ket(jshell)%powers)
           end if
           ! sets the minimum and maximum of indices of rows of the integral matrices
-          min_row_idx = sub_shells(ishell)%base_idx+1
-          max_row_idx = sub_shells(ishell)%base_idx &
-                      + sub_shells(ishell)%num_ao*sub_shells(ishell)%num_contr
+          min_row_idx = sub_shells_bra(ishell)%base_idx+1
+          max_row_idx = sub_shells_bra(ishell)%base_idx &
+                      + sub_shells_bra(ishell)%num_ao*sub_shells_bra(ishell)%num_contr
 !FIXME: the returned index order of \var(num_prop)
           ! assigns the returned integrals, and write the integrals on file if required
           if (present(val_ints)) then
@@ -614,37 +623,39 @@ module gen1int_shell
     ! anti-symmetric integral matrices (column- or ket-major, upper and diagonal parts)
     case(ANTI_INT_MAT)
       ! loops over AO sub-shells on ket center
-      do jshell = 1, num_shells
+      do jshell = 1, num_shells_ket
         ! sets the minimum and maximum of indices of columns of the integral matrices
-        min_col_idx = sub_shells(jshell)%base_idx+1
-        max_col_idx = sub_shells(jshell)%base_idx & 
-                    + sub_shells(jshell)%num_ao*sub_shells(jshell)%num_contr
+        min_col_idx = sub_shells_ket(jshell)%base_idx+1
+        max_col_idx = sub_shells_ket(jshell)%base_idx & 
+                    + sub_shells_ket(jshell)%num_ao*sub_shells_ket(jshell)%num_contr
         ! loops over AO sub-shells on bra center (upper and diagonal parts)
-        do ishell = 1, jshell
-          spher_gto = sub_shells(ishell)%spher_gto .or. sub_shells(jshell)%spher_gto
-          allocate(contr_ints(sub_shells(ishell)%num_ao,    &
-                              sub_shells(ishell)%num_contr, &
-                              sub_shells(jshell)%num_ao,    &
-                              sub_shells(jshell)%num_contr, &
+        do ishell = 1, num_shells_bra
+          if (bra_same_as_ket .and. (ishell > jshell)) cycle
+
+          spher_gto = sub_shells_bra(ishell)%spher_gto .or. sub_shells_ket(jshell)%spher_gto
+          allocate(contr_ints(sub_shells_bra(ishell)%num_ao,    &
+                              sub_shells_bra(ishell)%num_contr, &
+                              sub_shells_ket(jshell)%num_ao,    &
+                              sub_shells_ket(jshell)%num_contr, &
                               num_prop,num_unique_geo), stat=ierr)
           if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate contr_ints!")
           ! spherical GTOs
           if (spher_gto) then
             ! calls Gen1Int subroutines to evaluate property integrals
-            call OnePropEvaluate(idx_bra=sub_shells(ishell)%idx_cent,          &
-                                 coord_bra=sub_shells(ishell)%coord_cent,      &
-                                 angular_bra=sub_shells(ishell)%ang_num,       &
-                                 num_prim_bra=sub_shells(ishell)%num_prim,     &
-                                 exponent_bra=sub_shells(ishell)%exponents,    &
-                                 num_contr_bra=sub_shells(ishell)%num_contr,   &
-                                 contr_coef_bra=sub_shells(ishell)%contr_coef, &
-                                 idx_ket=sub_shells(jshell)%idx_cent,          &
-                                 coord_ket=sub_shells(jshell)%coord_cent,      &
-                                 angular_ket=sub_shells(jshell)%ang_num,       &
-                                 num_prim_ket=sub_shells(jshell)%num_prim,     &
-                                 exponent_ket=sub_shells(jshell)%exponents,    &
-                                 num_contr_ket=sub_shells(jshell)%num_contr,   &
-                                 contr_coef_ket=sub_shells(jshell)%contr_coef, &
+            call OnePropEvaluate(idx_bra=sub_shells_bra(ishell)%idx_cent,          &
+                                 coord_bra=sub_shells_bra(ishell)%coord_cent,      &
+                                 angular_bra=sub_shells_bra(ishell)%ang_num,       &
+                                 num_prim_bra=sub_shells_bra(ishell)%num_prim,     &
+                                 exponent_bra=sub_shells_bra(ishell)%exponents,    &
+                                 num_contr_bra=sub_shells_bra(ishell)%num_contr,   &
+                                 contr_coef_bra=sub_shells_bra(ishell)%contr_coef, &
+                                 idx_ket=sub_shells_ket(jshell)%idx_cent,          &
+                                 coord_ket=sub_shells_ket(jshell)%coord_cent,      &
+                                 angular_ket=sub_shells_ket(jshell)%ang_num,       &
+                                 num_prim_ket=sub_shells_ket(jshell)%num_prim,     &
+                                 exponent_ket=sub_shells_ket(jshell)%exponents,    &
+                                 num_contr_ket=sub_shells_ket(jshell)%num_contr,   &
+                                 contr_coef_ket=sub_shells_ket(jshell)%contr_coef, &
                                  spher_gto=spher_gto,                          &
                                  london_ao=london_ao,                          &
                                  one_prop=one_prop,                            &
@@ -657,38 +668,38 @@ module gen1int_shell
                                  order_geo_bra=order_geo_bra,                  &
                                  order_geo_ket=order_geo_ket,                  &
                                  geom_tree=geom_tree,                          &
-                                 num_gto_bra=sub_shells(ishell)%num_ao,        &
-                                 num_gto_ket=sub_shells(jshell)%num_ao,        &
+                                 num_gto_bra=sub_shells_bra(ishell)%num_ao,        &
+                                 num_gto_ket=sub_shells_ket(jshell)%num_ao,        &
                                  num_opt=num_opt, contr_ints=contr_ints)
             ! reorders p-shell spherical GTOs
-            if (sub_shells(ishell)%ang_num==1)                      &
-              call reorder_p_sgto(1, sub_shells(ishell)%num_contr   &
-                                     *sub_shells(jshell)%num_ao     &
-                                     *sub_shells(jshell)%num_contr, &
+            if (sub_shells_bra(ishell)%ang_num==1)                      &
+              call reorder_p_sgto(1, sub_shells_bra(ishell)%num_contr   &
+                                     *sub_shells_ket(jshell)%num_ao     &
+                                     *sub_shells_ket(jshell)%num_contr, &
                                   num_opt, contr_ints)
-            if (sub_shells(jshell)%ang_num==1)                   &
-              call reorder_p_sgto(sub_shells(ishell)%num_ao      &
-                                  *sub_shells(ishell)%num_contr, &
-                                  sub_shells(jshell)%num_contr,  &
+            if (sub_shells_ket(jshell)%ang_num==1)                   &
+              call reorder_p_sgto(sub_shells_bra(ishell)%num_ao      &
+                                  *sub_shells_bra(ishell)%num_contr, &
+                                  sub_shells_ket(jshell)%num_contr,  &
                                   num_opt, contr_ints)
           ! Cartesian GTOs
           else
             ! calls Gen1Int subroutines to evaluate property integrals, and reorders
             ! the integrals according to Cartesian powers
-            call OnePropEvaluate(idx_bra=sub_shells(ishell)%idx_cent,          &
-                                 coord_bra=sub_shells(ishell)%coord_cent,      &
-                                 angular_bra=sub_shells(ishell)%ang_num,       &
-                                 num_prim_bra=sub_shells(ishell)%num_prim,     &
-                                 exponent_bra=sub_shells(ishell)%exponents,    &
-                                 num_contr_bra=sub_shells(ishell)%num_contr,   &
-                                 contr_coef_bra=sub_shells(ishell)%contr_coef, &
-                                 idx_ket=sub_shells(jshell)%idx_cent,          &
-                                 coord_ket=sub_shells(jshell)%coord_cent,      &
-                                 angular_ket=sub_shells(jshell)%ang_num,       &
-                                 num_prim_ket=sub_shells(jshell)%num_prim,     &
-                                 exponent_ket=sub_shells(jshell)%exponents,    &
-                                 num_contr_ket=sub_shells(jshell)%num_contr,   &
-                                 contr_coef_ket=sub_shells(jshell)%contr_coef, &
+            call OnePropEvaluate(idx_bra=sub_shells_bra(ishell)%idx_cent,          &
+                                 coord_bra=sub_shells_bra(ishell)%coord_cent,      &
+                                 angular_bra=sub_shells_bra(ishell)%ang_num,       &
+                                 num_prim_bra=sub_shells_bra(ishell)%num_prim,     &
+                                 exponent_bra=sub_shells_bra(ishell)%exponents,    &
+                                 num_contr_bra=sub_shells_bra(ishell)%num_contr,   &
+                                 contr_coef_bra=sub_shells_bra(ishell)%contr_coef, &
+                                 idx_ket=sub_shells_ket(jshell)%idx_cent,          &
+                                 coord_ket=sub_shells_ket(jshell)%coord_cent,      &
+                                 angular_ket=sub_shells_ket(jshell)%ang_num,       &
+                                 num_prim_ket=sub_shells_ket(jshell)%num_prim,     &
+                                 exponent_ket=sub_shells_ket(jshell)%exponents,    &
+                                 num_contr_ket=sub_shells_ket(jshell)%num_contr,   &
+                                 contr_coef_ket=sub_shells_ket(jshell)%contr_coef, &
                                  spher_gto=spher_gto,                          &
                                  london_ao=london_ao,                          &
                                  one_prop=one_prop,                            &
@@ -701,16 +712,16 @@ module gen1int_shell
                                  order_geo_bra=order_geo_bra,                  &
                                  order_geo_ket=order_geo_ket,                  &
                                  geom_tree=geom_tree,                          &
-                                 num_gto_bra=sub_shells(ishell)%num_ao,        &
-                                 num_gto_ket=sub_shells(jshell)%num_ao,        &
+                                 num_gto_bra=sub_shells_bra(ishell)%num_ao,        &
+                                 num_gto_ket=sub_shells_ket(jshell)%num_ao,        &
                                  num_opt=num_opt, contr_ints=contr_ints,       &
-                                 powers_bra=sub_shells(ishell)%powers,         &
-                                 powers_ket=sub_shells(jshell)%powers)
+                                 powers_bra=sub_shells_bra(ishell)%powers,         &
+                                 powers_ket=sub_shells_ket(jshell)%powers)
           end if
           ! sets the minimum and maximum of indices of rows of the integral matrices
-          min_row_idx = sub_shells(ishell)%base_idx+1
-          max_row_idx = sub_shells(ishell)%base_idx &
-                      + sub_shells(ishell)%num_ao*sub_shells(ishell)%num_contr
+          min_row_idx = sub_shells_bra(ishell)%base_idx+1
+          max_row_idx = sub_shells_bra(ishell)%base_idx &
+                      + sub_shells_bra(ishell)%num_ao*sub_shells_bra(ishell)%num_contr
 !FIXME: the returned index order of \var(num_prop)
           ! assigns the returned integrals, and write the integrals on file if required
           if (present(val_ints)) then
@@ -807,37 +818,37 @@ module gen1int_shell
     ! square integral matrices (column- or ket-major)
     case default
       ! loops over AO sub-shells on ket center
-      do jshell = 1, num_shells
+      do jshell = 1, num_shells_ket
         ! sets the minimum and maximum of indices of columns of the integral matrices
-        min_col_idx = sub_shells(jshell)%base_idx+1
-        max_col_idx = sub_shells(jshell)%base_idx & 
-                    + sub_shells(jshell)%num_ao*sub_shells(jshell)%num_contr
+        min_col_idx = sub_shells_ket(jshell)%base_idx+1
+        max_col_idx = sub_shells_ket(jshell)%base_idx & 
+                    + sub_shells_ket(jshell)%num_ao*sub_shells_ket(jshell)%num_contr
         ! loops over AO sub-shells on bra center (upper and diagonal parts)
-        do ishell = 1, num_shells
-          spher_gto = sub_shells(ishell)%spher_gto .or. sub_shells(jshell)%spher_gto
-          allocate(contr_ints(sub_shells(ishell)%num_ao,    &
-                              sub_shells(ishell)%num_contr, &
-                              sub_shells(jshell)%num_ao,    &
-                              sub_shells(jshell)%num_contr, &
+        do ishell = 1, num_shells_bra
+          spher_gto = sub_shells_bra(ishell)%spher_gto .or. sub_shells_ket(jshell)%spher_gto
+          allocate(contr_ints(sub_shells_bra(ishell)%num_ao,    &
+                              sub_shells_bra(ishell)%num_contr, &
+                              sub_shells_ket(jshell)%num_ao,    &
+                              sub_shells_ket(jshell)%num_contr, &
                               num_prop,num_unique_geo), stat=ierr)
           if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate contr_ints!")
           ! spherical GTOs
           if (spher_gto) then
             ! calls Gen1Int subroutines to evaluate property integrals
-            call OnePropEvaluate(idx_bra=sub_shells(ishell)%idx_cent,          &
-                                 coord_bra=sub_shells(ishell)%coord_cent,      &
-                                 angular_bra=sub_shells(ishell)%ang_num,       &
-                                 num_prim_bra=sub_shells(ishell)%num_prim,     &
-                                 exponent_bra=sub_shells(ishell)%exponents,    &
-                                 num_contr_bra=sub_shells(ishell)%num_contr,   &
-                                 contr_coef_bra=sub_shells(ishell)%contr_coef, &
-                                 idx_ket=sub_shells(jshell)%idx_cent,          &
-                                 coord_ket=sub_shells(jshell)%coord_cent,      &
-                                 angular_ket=sub_shells(jshell)%ang_num,       &
-                                 num_prim_ket=sub_shells(jshell)%num_prim,     &
-                                 exponent_ket=sub_shells(jshell)%exponents,    &
-                                 num_contr_ket=sub_shells(jshell)%num_contr,   &
-                                 contr_coef_ket=sub_shells(jshell)%contr_coef, &
+            call OnePropEvaluate(idx_bra=sub_shells_bra(ishell)%idx_cent,          &
+                                 coord_bra=sub_shells_bra(ishell)%coord_cent,      &
+                                 angular_bra=sub_shells_bra(ishell)%ang_num,       &
+                                 num_prim_bra=sub_shells_bra(ishell)%num_prim,     &
+                                 exponent_bra=sub_shells_bra(ishell)%exponents,    &
+                                 num_contr_bra=sub_shells_bra(ishell)%num_contr,   &
+                                 contr_coef_bra=sub_shells_bra(ishell)%contr_coef, &
+                                 idx_ket=sub_shells_ket(jshell)%idx_cent,          &
+                                 coord_ket=sub_shells_ket(jshell)%coord_cent,      &
+                                 angular_ket=sub_shells_ket(jshell)%ang_num,       &
+                                 num_prim_ket=sub_shells_ket(jshell)%num_prim,     &
+                                 exponent_ket=sub_shells_ket(jshell)%exponents,    &
+                                 num_contr_ket=sub_shells_ket(jshell)%num_contr,   &
+                                 contr_coef_ket=sub_shells_ket(jshell)%contr_coef, &
                                  spher_gto=spher_gto,                          &
                                  london_ao=london_ao,                          &
                                  one_prop=one_prop,                            &
@@ -850,38 +861,38 @@ module gen1int_shell
                                  order_geo_bra=order_geo_bra,                  &
                                  order_geo_ket=order_geo_ket,                  &
                                  geom_tree=geom_tree,                          &
-                                 num_gto_bra=sub_shells(ishell)%num_ao,        &
-                                 num_gto_ket=sub_shells(jshell)%num_ao,        &
+                                 num_gto_bra=sub_shells_bra(ishell)%num_ao,        &
+                                 num_gto_ket=sub_shells_ket(jshell)%num_ao,        &
                                  num_opt=num_opt, contr_ints=contr_ints)
             ! reorders p-shell spherical GTOs
-            if (sub_shells(ishell)%ang_num==1)                      &
-              call reorder_p_sgto(1, sub_shells(ishell)%num_contr   &
-                                     *sub_shells(jshell)%num_ao     &
-                                     *sub_shells(jshell)%num_contr, &
+            if (sub_shells_bra(ishell)%ang_num==1)                      &
+              call reorder_p_sgto(1, sub_shells_bra(ishell)%num_contr   &
+                                     *sub_shells_ket(jshell)%num_ao     &
+                                     *sub_shells_ket(jshell)%num_contr, &
                                   num_opt, contr_ints)
-            if (sub_shells(jshell)%ang_num==1)                   &
-              call reorder_p_sgto(sub_shells(ishell)%num_ao      &
-                                  *sub_shells(ishell)%num_contr, &
-                                  sub_shells(jshell)%num_contr,  &
+            if (sub_shells_ket(jshell)%ang_num==1)                   &
+              call reorder_p_sgto(sub_shells_bra(ishell)%num_ao      &
+                                  *sub_shells_bra(ishell)%num_contr, &
+                                  sub_shells_ket(jshell)%num_contr,  &
                                   num_opt, contr_ints)
           ! Cartesian GTOs
           else
             ! calls Gen1Int subroutines to evaluate property integrals, and reorders
             ! the integrals according to Cartesian powers
-            call OnePropEvaluate(idx_bra=sub_shells(ishell)%idx_cent,          &
-                                 coord_bra=sub_shells(ishell)%coord_cent,      &
-                                 angular_bra=sub_shells(ishell)%ang_num,       &
-                                 num_prim_bra=sub_shells(ishell)%num_prim,     &
-                                 exponent_bra=sub_shells(ishell)%exponents,    &
-                                 num_contr_bra=sub_shells(ishell)%num_contr,   &
-                                 contr_coef_bra=sub_shells(ishell)%contr_coef, &
-                                 idx_ket=sub_shells(jshell)%idx_cent,          &
-                                 coord_ket=sub_shells(jshell)%coord_cent,      &
-                                 angular_ket=sub_shells(jshell)%ang_num,       &
-                                 num_prim_ket=sub_shells(jshell)%num_prim,     &
-                                 exponent_ket=sub_shells(jshell)%exponents,    &
-                                 num_contr_ket=sub_shells(jshell)%num_contr,   &
-                                 contr_coef_ket=sub_shells(jshell)%contr_coef, &
+            call OnePropEvaluate(idx_bra=sub_shells_bra(ishell)%idx_cent,          &
+                                 coord_bra=sub_shells_bra(ishell)%coord_cent,      &
+                                 angular_bra=sub_shells_bra(ishell)%ang_num,       &
+                                 num_prim_bra=sub_shells_bra(ishell)%num_prim,     &
+                                 exponent_bra=sub_shells_bra(ishell)%exponents,    &
+                                 num_contr_bra=sub_shells_bra(ishell)%num_contr,   &
+                                 contr_coef_bra=sub_shells_bra(ishell)%contr_coef, &
+                                 idx_ket=sub_shells_ket(jshell)%idx_cent,          &
+                                 coord_ket=sub_shells_ket(jshell)%coord_cent,      &
+                                 angular_ket=sub_shells_ket(jshell)%ang_num,       &
+                                 num_prim_ket=sub_shells_ket(jshell)%num_prim,     &
+                                 exponent_ket=sub_shells_ket(jshell)%exponents,    &
+                                 num_contr_ket=sub_shells_ket(jshell)%num_contr,   &
+                                 contr_coef_ket=sub_shells_ket(jshell)%contr_coef, &
                                  spher_gto=spher_gto,                          &
                                  london_ao=london_ao,                          &
                                  one_prop=one_prop,                            &
@@ -894,16 +905,16 @@ module gen1int_shell
                                  order_geo_bra=order_geo_bra,                  &
                                  order_geo_ket=order_geo_ket,                  &
                                  geom_tree=geom_tree,                          &
-                                 num_gto_bra=sub_shells(ishell)%num_ao,        &
-                                 num_gto_ket=sub_shells(jshell)%num_ao,        &
+                                 num_gto_bra=sub_shells_bra(ishell)%num_ao,        &
+                                 num_gto_ket=sub_shells_ket(jshell)%num_ao,        &
                                  num_opt=num_opt, contr_ints=contr_ints,       &
-                                 powers_bra=sub_shells(ishell)%powers,         &
-                                 powers_ket=sub_shells(jshell)%powers)
+                                 powers_bra=sub_shells_bra(ishell)%powers,         &
+                                 powers_ket=sub_shells_ket(jshell)%powers)
           end if
           ! sets the minimum and maximum of indices of rows of the integral matrices
-          min_row_idx = sub_shells(ishell)%base_idx+1
-          max_row_idx = sub_shells(ishell)%base_idx &
-                      + sub_shells(ishell)%num_ao*sub_shells(ishell)%num_contr
+          min_row_idx = sub_shells_bra(ishell)%base_idx+1
+          max_row_idx = sub_shells_bra(ishell)%base_idx &
+                      + sub_shells_bra(ishell)%num_ao*sub_shells_bra(ishell)%num_contr
 !FIXME: the returned index order of \var(num_prop)
           ! assigns the returned integrals, and write the integrals on file if required
           if (present(val_ints)) then
