@@ -97,6 +97,7 @@ cdx      ENDIF
       KFREE  = 1
       LFREE  = LWORK
 C      
+      write(*,*)' testing git' 
       write(lupri,*) 'NASHT INTEGER common inforb :', NASHT
       write(lupri,*) '      Total Number of Active orbitals, '
       write(lupri,*) '      deberia ser ZERO para este caso '
