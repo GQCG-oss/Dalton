@@ -117,7 +117,8 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
         end do
     end do
 
-    call DaltonShellIntegral(one_prop=prop_operator,&
+    call DaltonShellIntegral(comp_bra=1, comp_ket=1,&
+                             one_prop=prop_operator,&
                              num_ints=num_prop,     &
                              val_ints=intmats,      &
                              num_dens=1,            &
