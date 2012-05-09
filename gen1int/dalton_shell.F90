@@ -44,9 +44,11 @@ module dalton_shell
 
   ! if Dalton AO sub-shells is created
   logical, private, save :: shells_created = .false.
-  ! number of AO sub-shells from Dalton
+  ! number of AO sub-shells from Dalton/DIRAC
+  ! Dalton only uses num_sub_shells(1), DIRAC uses either the first or both
   integer, private, save :: num_sub_shells(2) = 0
-  ! AO sub-shells from Dalton
+  ! AO sub-shells from Dalton/DIRAC
+  ! Dalton only uses sub_shells(:, 1), DIRAC uses either only sub_shells(:, 1) or both sub_shells(:, 1:2)
   type(sub_shell_t), private, allocatable, save :: sub_shells(:, :)
 
   public :: DaltonShellCreate
