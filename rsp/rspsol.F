@@ -323,9 +323,11 @@ C
          CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-      else if (peqm .and. .not. (nasht == 0 .and. trplet)) then
-        if (ncsim .gt. 0) then
+      else if (peqm) then
+        if (ncsim > 0) then
            call quit('PE response calc. not implemented for ncsim > 0.')
+        else if (nasht >= 1 .and. trplet) then
+           call quit('PE response calc. not implemented for openshell.')
         end if
 
         call memget('REAL', kuev, n2orbx*nosim, wrk, kfree, lfree)
