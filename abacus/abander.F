@@ -2465,40 +2465,6 @@ C
 C
       RETURN
       END
-C /* Deck addnuc */
-c      SUBROUTINE ADDNUC(WORK,LWORK)
-c#include <implicit.h>
-c#include <priunit.h>
-c#include <mxcent.h>
-cC
-c      DIMENSION WORK(LWORK)
-cC
-c#include <energy.h>
-c#include <taymol.h>
-c#include <trkoor.h>
-c#include <cbiwlk.h>
-cC
-cC     Calculate nuclear contributions
-cC
-c      NDIM = 3*MXCOOR*MXCOOR
-c      IF (LWORK .LT. NDIM) CALL STOPIT('ADDNUC',' ',LWORK,NDIM)
-c      CALL NUCREP(WORK,WORK(MXCOOR*MXCOOR+1),WORK(2*MXCOOR*MXCOOR+1))
-C
-C     Add nuclear contributions to gradient and Hessian
-C
-c      IF (NUMGRD) THEN
-c         DO 100 I = 1, NCOOR
-c            GRDMOL(I) = GRDMOL(I) + GRADNN(I)
-c  100    CONTINUE
-c      END IF
-C     IF (NUMHES) THEN
-C        DO 200 I = 1, NCOOR
-C        DO 200 J = 1, NCOOR
-C           HESMOL(J,I) = HESMOL(J,I) + WORK((I-1)*MXCOOR + J)
-C 200    CONTINUE
-C     END IF
-c      RETURN
-c      END
 C /* Deck GTCOMP */
       LOGICAL FUNCTION GTCOMP()
 #include "implicit.h"
