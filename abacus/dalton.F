@@ -295,6 +295,8 @@ C
      *'Andrea Ligabue,','University of Modena,','Italy',
      &  '(CTOCD, AOSOPPA)',
      *'Ola B. Lutnaes,','University of Oslo,','Norway','(DFT Hessian)',
+     *'Juan I. Melo,','University of Buenos Aires,','Argentina',
+     &'(LRESC, Relativistic Effects on NMR Shieldings)',
      *'Kurt V. Mikkelsen,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF and QM/MM code)',
      *'Christian Neiss,','Univ. Erlangen-Nuernberg,','Germany',

@@ -120,7 +120,9 @@ module gen1int_cube
                  stat=ierr)
         if (ierr/=0) call QUIT("Failed to allocate cube_values!")
         cube_values = 0.0_REALK  !necessary to zero
-        call DaltonShellIntegral(one_prop=prop_operator,      &
+        call DaltonShellIntegral(comp_bra=1,                  &
+                                 comp_ket=1,                  &
+                                 one_prop=prop_operator,      &
                                  num_ints=num_cube_points,    &
                                  num_dens=1, ao_dens=ao_dens, &
                                  val_expt=cube_values,        &
