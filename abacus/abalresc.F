@@ -47,8 +47,8 @@ C  /* Deck lrscinp */
 #include <dorps.h>
 #include <spnout.h>
 C jim  aca van las opctiones para LRESC , aun no las defino
-      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.NODSO ','.NOSD',
-     &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDxFC','.ISOTOP',
+      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.LINEAR ','.QUADRA',
+     &            '.GESC  ','.NOPSO ','.SD+FC ','.SDxFC','.ISOTOP',
      &            '.COUPLI'/
 C
       write(lupri,*) ' LRSCOPTS :  called with : ' , WORD
@@ -58,7 +58,7 @@ C
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
-            write(lupri,*) ' LRSCOPTS : read WORD : ' , WORD
+            write(lupri,*) ' LRSCOPTS : read : ' , WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
