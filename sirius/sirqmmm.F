@@ -6221,7 +6221,8 @@ C  /* Deck pelin */
       SUBROUTINE PELIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &                  DV,DTV,SCVECS,SOVECS,ORBLIN,WRK,LWRK)          
 C
-C Copyright 25-Apr-1990 Hans Joergen Aa. Jensen
+C Written by Erik Donovan Hedegård december 2011 
+C after original code by  Hans Joergen Aa. Jensen
 C Common driver for PELNC and PELNO
 C
 #include "implicit.h"

@@ -105,7 +105,7 @@ C
 #include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 , THRZER = 1.0D-14 )
-      LOGICAL FNDLAB
+      LOGICAL FNDLAB, LPOL
 C
 C
 C  Used from common blocks:
@@ -140,6 +140,12 @@ C    INFTAP : LUSOL, LBSYMB
 
       WRITE(LUPRI,*)' ***** IN QMMMLNC RESPONSE ******'
       WRITE(LUPRI,*) 'LPOL =' ,LPOL
+
+      IF (.NOT. LPOL) THEN ! no pol. and nothing to do here
+        CALL QEXIT('QMMMLNC')
+        RETURN
+      ENDIF
+
 
       XSAVE = DIPORG(1)
       YSAVE = DIPORG(2)
@@ -561,7 +567,7 @@ C     ...Restore the dipole origin.
 C     end of QMMMLNC.
       END
 C  /* Deck qmmmlno */
-      SUBROUTINE QMMMLNO(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,
+      SUBROUTINE QMMMLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,
      &                  DVTR,EVECS,WRK,LWRK)
 
 C
