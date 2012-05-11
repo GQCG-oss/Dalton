@@ -696,11 +696,10 @@ c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE)
           END IF
         END IF
       END DO
-      call flshfo(lupri)
       CALL DZERO(XTMP,KZYVAR*NNMAX)
       IF (NASHT.GT.0) THEN
         CALL MEMGET('REAL',KDUM,N2ORBX,WRK,KFREE,LFREE)
-        call dzero(wrk(kdum),N2ORBX) 
+        call DZERO(WRK(KDUM),N2ORBX) 
         CALL FCKOIN(NNMAX,FC,FV,ZYMB,WRK(KFMMO(1)),WRK(KFVMO(1)))
         CALL RSPORB(.TRUE.,NNMAX,FC,WRK(KFMMO(1)),WRK(KFVMO(1)),
      &              WRK(KDUM),WRK(KDUM),UDV,
