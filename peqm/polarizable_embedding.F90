@@ -714,9 +714,8 @@ subroutine pe_read_potential(coords, charges)
                     P1s(:,idxs(i)) = 0.0d0
                 end if
 
-                write(luout,'(4x,a,i6)') 'Redistributing parameters on site:',&
-                                         & idxs(i)
-                write(luout,'(4x,a,3i6)') 'equally to sites:', idx, jdx, kdx
+                write(luout,'(4x,a,i6,3i6)') 'Redistributing parameters on site:',&
+                                             &idxs(i), ' to sites:', idx, jdx, kdx
             end do
         end if
     end if
@@ -1890,15 +1889,23 @@ subroutine induced_dipoles(M1inds, Fs)
                 close(lu)
             else
                 call response_matrix(B)
-                call pptrf(B, 'L', info)
-                if (info /= 0) then
-                    print *, 'Cholesky factorization failed. Trying regular...'
+                if (chol) then
+                    call pptrf(B, 'L', info)
+                    if (info /= 0) then
+                        print *, 'Cholesky factorization failed. Trying regular...'
+                        allocate(ipiv(3*npols))
+                        call sptrf(B, 'L', ipiv, info)
+                        if (info /= 0) then
+                            stop 'ERROR: cannot create response matrix.'
+                        else
+                            chol = .false.
+                        end if
+                    end if
+                else
                     allocate(ipiv(3*npols))
                     call sptrf(B, 'L', ipiv, info)
                     if (info /= 0) then
                         stop 'ERROR: cannot create response matrix.'
-                    else
-                        chol = .false.
                     end if
                 end if
                 call openfile('pe_response_matrix.bin', lu, 'new', 'unformatted')
@@ -1936,7 +1943,6 @@ subroutine induced_dipoles(M1inds, Fs)
             end do
         end do
     end if
-
 
 end subroutine induced_dipoles
 
@@ -2279,6 +2285,8 @@ subroutine response_matrix(B)
             call sptrf(P1inv, 'L', ipiv, info)
             if (info /= 0) then
                 stop 'ERROR: could not factorize polarizability.'
+            else if (chol) then
+                chol = .false.
             end if
             call sptri(P1inv, ipiv, 'L')
         else
