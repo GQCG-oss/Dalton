@@ -61,6 +61,7 @@ module polarizable_embedding
     real(dp), save :: gauss = 0.44d0
     real(dp), save :: Rmin = 2.2d0
     character(len=6), save :: border_type = 'REDIST'
+    logical, save :: chol = .true.
 
     ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
     ! C^(n)_ij coefficients for calculating T(k) tensor elements
@@ -166,7 +167,9 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: mepgrid
 
 ! TODO:
-! electric field damping
+! electric field damping in iterative solver
+! damping of electric field from QM system
+! check for positive definiteness of the response matrix?
 ! write results after redistributing parameters
 ! better solution for lmul and lpol
 ! use allocate/deallocate where possible?
@@ -179,7 +182,7 @@ module polarizable_embedding
 ! nonlinear response properties
 ! magnetic properties
 ! cutoffs and damping
-! memory management
+! memory management (dalton work, pointer, allocate)
 ! add error catching
 ! parallelization (openMP, MPI, CUDA/openCL?)
 
@@ -1669,8 +1672,9 @@ subroutine induced_dipoles(M1inds, Fs)
     real(dp), dimension(:,:), intent(out) :: M1inds
     real(dp), dimension(:,:), intent(in) :: Fs
 
-    integer :: lu, iter
+    integer :: lu, iter, info
     integer :: i, j, k, l, m, n
+    integer, dimension(:), allocatable :: ipiv
     logical :: exclude, lexist
     logical :: converged = .false.
     real(dp) :: fe = 1.0d0
@@ -1873,11 +1877,47 @@ subroutine induced_dipoles(M1inds, Fs)
     else
         if (myid == 0) then
             allocate(B(3*npols*(3*npols+1)/2))
-            call response_matrix(B)
-            do n = 1, ndens
-                call spmv(B, Fs(:,n), M1inds(:,n), 'L')
-            end do
-            deallocate(B)
+            inquire(file='pe_response_matrix.bin', exist=lexist)
+            if (lexist) then
+                call openfile('pe_response_matrix.bin', lu, 'old', 'unformatted')
+                rewind(lu)
+                if (chol) then
+                    read(lu) B
+                else
+                    allocate(ipiv(3*npols))
+                    read(lu) B, ipiv
+                end if
+                close(lu)
+            else
+                call response_matrix(B)
+                call pptrf(B, 'L', info)
+                if (info /= 0) then
+                    print *, 'Cholesky factorization failed. Trying regular...'
+                    allocate(ipiv(3*npols))
+                    call sptrf(B, 'L', ipiv, info)
+                    if (info /= 0) then
+                        stop 'ERROR: cannot create response matrix.'
+                    else
+                        chol = .false.
+                    end if
+                end if
+                call openfile('pe_response_matrix.bin', lu, 'new', 'unformatted')
+                rewind(lu)
+                if (chol) then
+                    write(lu) B
+                else
+                    write(lu) B, ipiv
+                end if
+                close(lu)
+            end if
+            M1inds = Fs
+            if (chol) then
+                call pptrs(B, M1inds, 'L')
+                deallocate(B)
+            else
+                call sptrs(B, M1inds, ipiv, 'L')
+                deallocate(B, ipiv)
+            end if
         end if
     end if
 
@@ -2209,16 +2249,16 @@ end subroutine multipole_field
 
 !------------------------------------------------------------------------------
 
-subroutine response_matrix(B, invert, wrt2file)
+subroutine response_matrix(B)
 
 ! TODO: Cutoff radius
 
     real(dp), dimension(:), intent(out) :: B
-    logical, intent(in), optional :: invert, wrt2file
 
-    logical :: exclude, lexist, inv, wrt
+    logical :: exclude
     integer :: info, lu
     integer :: i, j, k, l, m, n
+    integer, dimension(3) :: ipiv
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp) :: fe = 1.0d0
@@ -2228,125 +2268,104 @@ subroutine response_matrix(B, invert, wrt2file)
     real(dp), dimension(3) :: Rij
     real(dp), dimension(6) :: P1inv
 
-    if (present(invert)) then
-        inv = invert
-    else
-        inv = .true.
-    end if
-
-    if (present(wrt2file)) then
-        wrt = wrt2file
-    else
-        wrt = .true.
-    end if
-
     B = 0.0d0
-
-    inquire(file='pe_response_matrix.bin', exist=lexist)
-
-    if (lexist) then
-        call openfile('pe_response_matrix.bin', lu, 'old', 'unformatted')
-        rewind(lu)
-        read(lu) B
-        close(lu)
-    else
-        m = 0
-        do i = 1, nsites(ncores-1)
-            if (zeroalphas(i)) cycle
+    m = 0
+    do i = 1, nsites(ncores-1)
+        if (zeroalphas(i)) cycle
+        P1inv = P1s(:,i)
+        call pptrf(P1inv, 'L', info)
+        if (info /= 0) then
             P1inv = P1s(:,i)
-            call invert_packed_matrix(P1inv, 's')
-            if (pe_damp) then
-                ai = (P1s(1,i) + P1s(4,i) + P1s(6,i)) * d3i
+            call sptrf(P1inv, 'L', ipiv, info)
+            if (info /= 0) then
+                stop 'ERROR: could not factorize polarizability.'
             end if
-            do l = 3, 1, -1
-                do j = i, nsites(ncores-1)
-                    if (zeroalphas(j)) cycle
-                    if (j == i) then
-                        if (l == 3) then
-                            do k = 1, l
-                                B(m+k) = P1inv(k)
-                            end do
-                        else if (l == 2) then
-                            do k = 1, l
-                                B(m+k) = P1inv(3+k)
-                            end do
-                        else if (l == 1) then
-                            do k = 1, l
-                                B(m+k) = P1inv(5+k)
-                            end do
-                        end if
-                        m = m + l
-                    else
-                        if (pe_nomb) then
-                            m = m + 3
-                            cycle
-                        end if
-                        exclude = .false.
-                        do k = 1, lexlst
-                            if (exlists(k,i) == exlists(1,j)) then
-                                exclude = .true.
-                                exit
-                            end if
+            call sptri(P1inv, ipiv, 'L')
+        else
+            call pptri(P1inv, 'L')
+        end if
+        if (pe_damp) then
+            ai = (P1s(1,i) + P1s(4,i) + P1s(6,i)) * d3i
+        end if
+        do l = 3, 1, -1
+            do j = i, nsites(ncores-1)
+                if (zeroalphas(j)) cycle
+                if (j == i) then
+                    if (l == 3) then
+                        do k = 1, l
+                            B(m+k) = P1inv(k)
                         end do
-                        if (exclude) then
-                            m = m + 3
-                            cycle
+                    else if (l == 2) then
+                        do k = 1, l
+                            B(m+k) = P1inv(3+k)
+                        end do
+                    else if (l == 1) then
+                        do k = 1, l
+                            B(m+k) = P1inv(5+k)
+                        end do
+                    end if
+                    m = m + l
+                else
+                    if (pe_nomb) then
+                        m = m + 3
+                        cycle
+                    end if
+                    exclude = .false.
+                    do k = 1, lexlst
+                        if (exlists(k,i) == exlists(1,j)) then
+                            exclude = .true.
+                            exit
                         end if
-                        Rij = Rs(:,j) - Rs(:,i)
-                        R = nrm2(Rij)
-                        R3 = R**3
-                        R5 = R**5
+                    end do
+                    if (exclude) then
+                        m = m + 3
+                        cycle
+                    end if
+                    Rij = Rs(:,j) - Rs(:,i)
+                    R = nrm2(Rij)
+                    R3 = R**3
+                    R5 = R**5
 ! TODO: cutoff radius
 !                        if (R > cutoff) then
 !                            m = m + 3
 !                            cycle
 !                        end if
-                        ! damping parameters
-                        ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
-                        ! a = 2.1304 = damp
-                        ! u = R / (alpha_i * alpha_j)**(1/6)
-                        ! fe = 1-(a²u²/2+au+1)*exp(-au)
-                        ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
-                        if (pe_damp) then
-                            aj = (P1s(1,j) + P1s(4,j) + P1s(6,j)) * d3i
-                            Rd = damp * R / (ai * aj)**d6i
-                            fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
-                            ft = fe - d6i * Rd**3 * exp(-Rd)
-                        end if
-                        if (l == 3) then
-                            do k = 1, 3
-                                T = 3.0d0 * Rij(1) * Rij(k) * ft / R5
-                                if (k == 1) T = T - fe / R3
-                                B(m+k) = - T
-                            end do
-                        else if (l == 2) then
-                            do k = 1, 3
-                                T = 3.0d0 * Rij(2) * Rij(k) * ft / R5
-                                if (k == 2) T = T - fe / R3
-                                B(m+k) = - T
-                            end do
-                        else if (l == 1) then
-                            do k = 1, 3
-                                T = 3.0d0 * Rij(3) * Rij(k) * ft / R5
-                                if (k == 3) T = T - fe / R3
-                                B(m+k) = - T
-                            end do
-                        end if
-                        m = m + 3
+                    ! damping parameters
+                    ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
+                    ! a = 2.1304 = damp
+                    ! u = R / (alpha_i * alpha_j)**(1/6)
+                    ! fe = 1-(a²u²/2+au+1)*exp(-au)
+                    ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
+                    if (pe_damp) then
+                        aj = (P1s(1,j) + P1s(4,j) + P1s(6,j)) * d3i
+                        Rd = damp * R / (ai * aj)**d6i
+                        fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
+                        ft = fe - d6i * Rd**3 * exp(-Rd)
                     end if
-                end do
+                    if (l == 3) then
+                        do k = 1, 3
+                            T = 3.0d0 * Rij(1) * Rij(k) * ft / R5
+                            if (k == 1) T = T - fe / R3
+                            B(m+k) = - T
+                        end do
+                    else if (l == 2) then
+                        do k = 1, 3
+                            T = 3.0d0 * Rij(2) * Rij(k) * ft / R5
+                            if (k == 2) T = T - fe / R3
+                            B(m+k) = - T
+                        end do
+                    else if (l == 1) then
+                        do k = 1, 3
+                            T = 3.0d0 * Rij(3) * Rij(k) * ft / R5
+                            if (k == 3) T = T - fe / R3
+                            B(m+k) = - T
+                        end do
+                    end if
+                    m = m + 3
+                end if
             end do
         end do
-        if (inv) then
-            call invert_packed_matrix(B, 's')
-        end if
-        if (wrt) then
-            call openfile('pe_response_matrix.bin', lu, 'new', 'unformatted')
-            rewind(lu)
-            write(lu) B
-            close(lu)
-        end if
-    end if
+    end do
 
 end subroutine response_matrix
 
@@ -2798,174 +2817,7 @@ end subroutine pe_repulsion
 
 !------------------------------------------------------------------------------
 
-function nrm2(x)
-
-    real(dp), external :: dnrm2
-
-    real(dp) :: nrm2
-    real(dp), dimension(:), intent(in) :: x
-
-    integer :: n
-    integer :: incx
-
-    incx = 1
-
-    n = size(x)
-
-    nrm2 = dnrm2(n, x, incx)
-
-end function nrm2
-
-!------------------------------------------------------------------------------
-
-function dot(x,y)
-
-    real(dp), external :: ddot
-
-    real(dp) :: dot
-    real(dp), dimension(:), intent(in) :: x, y
-
-    integer :: n
-    integer :: incx, incy
-
-    incx = 1
-    incy = 1
-
-    n = size(x)
-
-    dot = ddot(n, x, incx, y, incy)
-
-end function dot
-
-!------------------------------------------------------------------------------
-
-subroutine axpy(x, y, a)
-
-    external :: daxpy
-
-    real(dp), intent(in), optional :: a
-    real(dp), dimension(:), intent(in) :: x
-    real(dp), dimension(:), intent(inout) :: y
-
-    real(dp) :: o_a
-    integer :: n
-    integer :: incx, incy
-
-    if (present(a)) then
-        o_a = a
-    else
-        o_a = 1.0d0
-    end if
-
-    incx = 1
-    incy = 1
-
-    n = size(x)
-
-    call daxpy(n, o_a, x, incx, y, incy)
-
-end subroutine axpy
-
-!------------------------------------------------------------------------------
-
-subroutine gemm(a, b, c, transa, transb, alpha, beta)
-
-    external :: dgemm
-
-    real(dp), intent(in), optional :: alpha, beta
-    character(len=1), intent(in), optional :: transa, transb
-    real(dp), dimension(:,:), intent(in) :: a, b
-    real(dp), dimension(:,:) , intent(inout) :: c
-
-    integer :: m, n, k, lda, ldb, ldc
-    character(len=1) :: o_transa, o_transb
-    real(dp) :: o_alpha, o_beta
-
-    if (present(alpha)) then
-        o_alpha = alpha
-    else
-        o_alpha = 1.0d0
-    end if
-
-    if (present(beta)) then
-        o_beta = beta
-    else
-        o_beta = 0.0d0
-    end if
-
-    if (present(transa)) then
-        o_transa = transa
-    else
-        o_transa = 'N'
-    end if
-
-    if (present(transb)) then
-        o_transb = transb
-    else
-        o_transb = 'N'
-    end if
-
-    if (o_transa == 'N') then
-        k = size(a, 2)
-    else
-        k = size(a, 1)
-    end if
-
-    m = size(c, 1)
-    n = size(c, 2)
-    lda = max(1, size(a, 1))
-    ldb = max(1, size(b, 1))
-    ldc = max(1, size(c, 1))
-
-    call dgemm(o_transa, o_transb, m, n, k, o_alpha, a, lda, b, ldb, o_beta, c, ldc)
-
-end subroutine gemm
-
-!------------------------------------------------------------------------------
-
-subroutine spmv(ap, x, y, uplo, alpha, beta)
-
-    external :: dspmv
-
-    real(dp), dimension(:), intent(in) :: ap
-    real(dp), dimension(:), intent(in) :: x
-    real(dp), dimension(:), intent(inout) :: y
-    character(len=1), optional :: uplo
-    real(dp), intent(in), optional :: alpha, beta
-
-    integer :: n, incx, incy
-    real(dp) :: o_alpha, o_beta
-    character(len=1) :: o_uplo
-
-    if (present(uplo)) then
-        o_uplo = uplo
-    else
-        o_uplo = 'U'
-    end if
-
-    if (present(alpha)) then
-        o_alpha = alpha
-    else
-        o_alpha = 1.0d0
-    end if
-
-    if (present(beta)) then
-        o_beta = beta
-    else
-        o_beta = 0.0d0
-    end if
-
-    incx = 1
-    incy = 1
-    n = size(x)
-
-    call dspmv(o_uplo, n, o_alpha, ap, x, incx, o_beta, y, incy)
-
-end subroutine spmv
-
-!------------------------------------------------------------------------------
-
-subroutine invert_packed_matrix(ap, sp)
+subroutine invert_matrix(ap, sp)
 
     external :: dpptrf, dpptri, dsptrf, dsptri, xerbla
 
@@ -2996,13 +2848,11 @@ subroutine invert_packed_matrix(ap, sp)
         deallocate(ipiv, wrk)
     end if
 
-end subroutine invert_packed_matrix
+end subroutine invert_matrix
 
 !------------------------------------------------------------------------------
 
 subroutine solve(ap, b)
-
-    external :: dspsv
 
     real(dp), dimension(:), intent(inout) :: ap
     real(dp), dimension(:,:), intent(inout) :: b
@@ -3014,12 +2864,6 @@ subroutine solve(ap, b)
     nrhs = size(b, 2)
 
     allocate(ipiv(n))
-
-    info = 0
-
-    call dspsv('L', n, nrhs, ap, ipiv, b, n, info)
-
-    if (info /= 0) call xerbla('spsv', info)
 
 end subroutine solve
 
@@ -3129,6 +2973,418 @@ subroutine chcase(string, uplo)
     end do
 
 end subroutine chcase
+
+!------------------------------------------------------------------------------
+
+function nrm2(x)
+
+    real(dp), external :: dnrm2
+
+    real(dp) :: nrm2
+    real(dp), dimension(:), intent(in) :: x
+
+    integer :: n, incx
+
+    incx = 1
+
+    n = size(x)
+
+    nrm2 = dnrm2(n, x, incx)
+
+end function nrm2
+
+!------------------------------------------------------------------------------
+
+function dot(x,y)
+
+    real(dp), external :: ddot
+
+    real(dp) :: dot
+    real(dp), dimension(:), intent(in) :: x, y
+
+    integer :: n, incx, incy
+
+    incx = 1
+    incy = 1
+
+    n = size(x)
+
+    dot = ddot(n, x, incx, y, incy)
+
+end function dot
+
+!------------------------------------------------------------------------------
+
+subroutine axpy(x, y, a)
+
+    external :: daxpy
+
+    real(dp), intent(in), optional :: a
+    real(dp), dimension(:), intent(in) :: x
+    real(dp), dimension(:), intent(inout) :: y
+
+    real(dp) :: o_a
+    integer :: n, incx, incy
+
+    if (present(a)) then
+        o_a = a
+    else
+        o_a = 1.0d0
+    end if
+
+    incx = 1
+    incy = 1
+
+    n = size(x)
+
+    call daxpy(n, o_a, x, incx, y, incy)
+
+end subroutine axpy
+
+!------------------------------------------------------------------------------
+
+subroutine gemm(a, b, c, transa, transb, alpha, beta)
+
+    external :: dgemm
+
+    real(dp), intent(in), optional :: alpha, beta
+    character(len=1), intent(in), optional :: transa, transb
+    real(dp), dimension(:,:), intent(in) :: a, b
+    real(dp), dimension(:,:) , intent(inout) :: c
+
+    integer :: m, n, k, lda, ldb, ldc
+    character(len=1) :: o_transa, o_transb
+    real(dp) :: o_alpha, o_beta
+
+    if (present(alpha)) then
+        o_alpha = alpha
+    else
+        o_alpha = 1.0d0
+    end if
+
+    if (present(beta)) then
+        o_beta = beta
+    else
+        o_beta = 0.0d0
+    end if
+
+    if (present(transa)) then
+        o_transa = transa
+    else
+        o_transa = 'N'
+    end if
+
+    if (present(transb)) then
+        o_transb = transb
+    else
+        o_transb = 'N'
+    end if
+
+    if (o_transa == 'N') then
+        k = size(a, 2)
+    else
+        k = size(a, 1)
+    end if
+
+    m = size(c, 1)
+    n = size(c, 2)
+    lda = max(1, size(a, 1))
+    ldb = max(1, size(b, 1))
+    ldc = max(1, size(c, 1))
+
+    call dgemm(o_transa, o_transb, m, n, k, o_alpha, a, lda, b, ldb, o_beta, c, ldc)
+
+end subroutine gemm
+
+!------------------------------------------------------------------------------
+
+subroutine spmv(ap, x, y, uplo, alpha, beta)
+
+    external :: dspmv
+
+    real(dp), dimension(:), intent(in) :: ap
+    real(dp), dimension(:), intent(in) :: x
+    real(dp), dimension(:), intent(inout) :: y
+    character(len=1), intent(in), optional :: uplo
+    real(dp), intent(in), optional :: alpha, beta
+
+    integer :: n, incx, incy
+    real(dp) :: o_alpha, o_beta
+    character(len=1) :: o_uplo
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'U'
+    end if
+
+    if (present(alpha)) then
+        o_alpha = alpha
+    else
+        o_alpha = 1.0d0
+    end if
+
+    if (present(beta)) then
+        o_beta = beta
+    else
+        o_beta = 0.0d0
+    end if
+
+    incx = 1
+    incy = 1
+    n = size(x)
+
+    call dspmv(o_uplo, n, o_alpha, ap, x, incx, o_beta, y, incy)
+
+end subroutine spmv
+
+!------------------------------------------------------------------------------
+
+subroutine sptrf(ap, uplo, ipiv, info)
+
+    external :: dsptrf
+
+    real(dp), dimension(:), intent(inout) :: ap
+    character(len=1), optional :: uplo
+    integer, dimension(:), optional, target :: ipiv
+    integer, intent(out), optional :: info
+
+    character(len=1) :: o_uplo
+    integer :: o_info
+    integer :: n, nn
+    integer, dimension(:), pointer :: o_ipiv
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'U'
+    end if
+
+    nn = size(ap)
+
+    if (nn <= 0) then
+        n = nn
+    else
+        n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
+    end if
+
+    if (present(ipiv)) then
+        o_ipiv => ipiv
+    else
+        allocate(o_ipiv(n))
+    end if
+
+    call dsptrf(o_uplo, n, ap, o_ipiv, o_info)
+
+    if (.not. present(ipiv)) then
+        deallocate(o_ipiv)
+    end if
+
+    if (present(info)) then
+        info = o_info
+    else if (o_info <= -1000) then
+        call xerbla('SPTRF', - o_info)
+    end if
+
+end subroutine sptrf
+
+!------------------------------------------------------------------------------
+
+subroutine sptri(ap, ipiv, uplo, info)
+
+    external :: dsptri
+
+    real(dp), dimension(:), intent(inout) :: ap
+    integer, dimension(:), intent(in) :: ipiv
+    character(len=1), intent(in), optional :: uplo
+    integer, intent(out), optional :: info
+
+    character(len=1) :: o_uplo
+    integer :: o_info
+    integer :: n, nn
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'U'
+    end if
+
+    nn = size(ap)
+
+    if (nn <= 0) then
+        n = nn
+    else
+        n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
+    end if
+
+    call dsptri(o_uplo, n, ap, ipiv, work, o_info)
+
+    if (present(info)) then
+        info = o_info
+    else if (o_info <= -1000) then
+        call xerbla('SPTRI', - o_info)
+    end if
+
+end subroutine sptri
+
+!------------------------------------------------------------------------------
+
+subroutine sptrs(ap, b, ipiv, uplo, info)
+
+    external :: dsptrs
+
+    real(dp), dimension(:), intent(in) :: ap
+    real(dp), dimension(:,:), intent(inout) :: b
+    integer, dimension(:), intent(in) :: ipiv
+    character(len=1), optional :: uplo
+    integer, optional :: info
+
+    character(len=1) :: o_uplo
+    integer :: o_info
+    integer :: n, nn, nrhs, ldb
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'U'
+    end if
+
+    nn = size(ap)
+    nrhs = size(b, 2)
+    ldb = max(1, size(b, 1))
+
+    if (nn <= 0) then
+        n = nn
+    else
+        n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
+    end if
+
+    call dsptrs(o_uplo, n, nrhs, ap, ipiv, b, ldb, o_info)
+
+    if (present(info)) then
+        info = o_info
+    else if (o_info <= -1000) then
+        call xerbla('SPTRS', - o_info)
+    end if
+
+end subroutine sptrs
+
+!------------------------------------------------------------------------------
+
+subroutine pptrf(ap, uplo, info)
+
+    external :: dpptrf
+
+    real(dp), dimension(:), intent(inout) :: ap
+    character(len=1), optional :: uplo
+    integer, optional :: info
+
+    character(len=1) :: o_uplo
+    integer :: o_info
+    integer :: n, nn
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'U'
+    end if
+
+    nn = size(ap)
+
+    if (nn <= 0) then
+        n = nn
+    else
+        n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
+    end if
+
+    call dpptrf(o_uplo, n, ap, o_info)
+
+    if (present(info)) then
+        info = o_info
+    else if (o_info <= -1000) then
+        call xerbla('PPTRF', - o_info)
+    end if
+
+end subroutine pptrf
+
+!------------------------------------------------------------------------------
+
+subroutine pptri(ap, uplo, info)
+
+    external :: dpptri
+
+    real(dp), dimension(:), intent(inout) :: ap
+    character(len=1), optional :: uplo
+    integer, optional :: info
+
+    character(len=1) :: o_uplo
+    integer :: o_info
+    integer :: n, nn
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'U'
+    end if
+
+    nn = size(ap)
+
+    if (nn <= 0) then
+        n = nn 
+    else
+        n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
+    end if
+
+    call dpptri(o_uplo, n, ap, o_info)
+
+    if (present(info)) then
+        info = o_info
+    else if (o_info <= -1000) then
+        call xerbla('PPTRI', - o_info)
+    end if
+
+end subroutine pptri
+
+!------------------------------------------------------------------------------
+
+subroutine pptrs(ap, b, uplo, info)
+
+    external :: dpptrs
+
+    real(dp), dimension(:), intent(inout) :: ap
+    real(dp), dimension(:,:), intent(inout) :: b
+    character(len=1), optional :: uplo
+    integer, optional :: info
+
+    character(len=1) :: o_uplo
+    integer :: o_info
+    integer :: n, nn, nrhs, ldb
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'U'
+    end if
+
+    nn = size(ap)
+    nrhs = size(b, 2)
+    ldb = max(1, size(b, 1))
+
+    if (nn <= 0) then
+        n = nn
+    else
+        n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
+    end if
+
+    call dpptrs(o_uplo, n, nrhs, ap, b, ldb, o_info)
+
+    if (present(info)) then
+        info = o_info
+    else if (o_info <= -1000) then
+        call xerbla('PPTRS', - o_info)
+    end if
+
+end subroutine pptrs
 
 !------------------------------------------------------------------------------
 
