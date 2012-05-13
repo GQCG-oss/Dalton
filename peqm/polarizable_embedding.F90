@@ -714,8 +714,8 @@ subroutine pe_read_potential(coords, charges)
                     P1s(:,idxs(i)) = 0.0d0
                 end if
 
-                write(luout,'(4x,a,i6,3i6)') 'Redistributing parameters on site:',&
-                                             &idxs(i), ' to sites:', idx, jdx, kdx
+                write(luout,'(4x,a,i6)') 'Redistributing parameters on site:', idxs(i)
+                write(luout,'(6x,a,3i6)') 'to neighbouring sites:', idx, jdx, kdx
             end do
         end if
     end if
