@@ -1880,53 +1880,57 @@ subroutine induced_dipoles(M1inds, Fs)
             if (lexist) then
                 call openfile('pe_response_matrix.bin', lu, 'old', 'unformatted')
                 rewind(lu)
-                if (chol) then
-                    read(lu) B
-                else
+!                if (chol) then
+!                    read(lu) B
+!                else
                     allocate(ipiv(3*npols))
                     read(lu) B, ipiv
-                end if
+!                end if
                 close(lu)
             else
                 call response_matrix(B)
-                if (chol) then
-                    call pptrf(B, 'L', info)
-                    if (info /= 0) then
-                        print *, 'Cholesky factorization failed. Trying regular...'
-                        allocate(ipiv(3*npols))
-                        call sptrf(B, 'L', ipiv, info)
-                        if (info /= 0) then
-                            stop 'ERROR: cannot create response matrix.'
-                        else
-                            chol = .false.
-                        end if
-                    end if
-                else
+!                if (chol) then
+!                    call pptrf(B, 'L', info)
+!                    if (info /= 0) then
+!                        print *, 'Cholesky factorization failed. Trying regular...'
+!                        allocate(ipiv(3*npols))
+!                        call sptrf(B, 'L', ipiv, info)
+!                        if (info /= 0) then
+!                            stop 'ERROR: cannot create response matrix.'
+!                        else
+!                            chol = .false.
+!                        end if
+!                    end if
+!                else
                     allocate(ipiv(3*npols))
                     call sptrf(B, 'L', ipiv, info)
                     if (info /= 0) then
                         stop 'ERROR: cannot create response matrix.'
                     end if
-                end if
+!                end if
                 call openfile('pe_response_matrix.bin', lu, 'new', 'unformatted')
                 rewind(lu)
-                if (chol) then
-                    write(lu) B
-                else
+!                if (chol) then
+!                    write(lu) B
+!                else
                     write(lu) B, ipiv
-                end if
+!                end if
                 close(lu)
             end if
             M1inds = Fs
-            if (chol) then
-                call pptrs(B, M1inds, 'L')
-                deallocate(B)
-            else
+!            if (chol) then
+!                call pptrs(B, M1inds, 'L')
+!                deallocate(B)
+!            else
                 call sptrs(B, M1inds, ipiv, 'L')
                 deallocate(B, ipiv)
-            end if
+!            end if
         end if
     end if
+
+#ifdef VAR_MPI
+    call mpi_barrier(MPI_COMM_WORLD, ierr)
+#endif
 
     ! check induced dipoles
     if (myid == 0) then
@@ -2262,7 +2266,7 @@ subroutine response_matrix(B)
     real(dp), dimension(:), intent(out) :: B
 
     logical :: exclude
-    integer :: info, lu
+    integer :: info
     integer :: i, j, k, l, m, n
     integer, dimension(3) :: ipiv
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
@@ -2279,19 +2283,19 @@ subroutine response_matrix(B)
     do i = 1, nsites(ncores-1)
         if (zeroalphas(i)) cycle
         P1inv = P1s(:,i)
-        call pptrf(P1inv, 'L', info)
-        if (info /= 0) then
-            P1inv = P1s(:,i)
+!        call pptrf(P1inv, 'L', info)
+!        if (info /= 0) then
+!            P1inv = P1s(:,i)
             call sptrf(P1inv, 'L', ipiv, info)
             if (info /= 0) then
                 stop 'ERROR: could not factorize polarizability.'
-            else if (chol) then
-                chol = .false.
+!            else if (chol) then
+!                chol = .false.
             end if
             call sptri(P1inv, ipiv, 'L')
-        else
-            call pptri(P1inv, 'L')
-        end if
+!        else
+!            call pptri(P1inv, 'L')
+!        end if
         if (pe_damp) then
             ai = (P1s(1,i) + P1s(4,i) + P1s(6,i)) * d3i
         end if
