@@ -720,6 +720,56 @@ subroutine pe_read_potential(coords, charges)
 
                 write(luout,'(4x,a,i6)') 'Redistributing parameters on site:', idxs(i)
                 write(luout,'(6x,a,3i6)') 'to neighbouring sites:', idx, jdx, kdx
+
+                if (lmul(0)) then
+                    write(luout,'(4x,a)' 'Resulting monopoles:'
+                    write(luout,'(4x,a)' '--------------------'
+                    write(luout,'(4x,i6,f8.6)') idx, M0s(:,idx)
+                    write(luout,'(4x,i6,f8.6)') idx, M0s(:,jdx)
+                    write(luout,'(4x,i6,f8.6)') idx, M0s(:,kdx)
+                end if
+                if (lmul(1)) then
+                    write(luout,'(4x,a)' 'Resulting dipoles:'
+                    write(luout,'(4x,a)' '------------------'
+                    write(luout,'(4x,i6,3f8.6)') idx, M1s(:,idx)
+                    write(luout,'(4x,i6,3f8.6)') idx, M1s(:,jdx)
+                    write(luout,'(4x,i6,3f8.6)') idx, M1s(:,kdx)
+                end if
+                if (lmul(2)) then
+                    write(luout,'(4x,a)' 'Resulting quadrupoles:'
+                    write(luout,'(4x,a)' '----------------------'
+                    write(luout,'(4x,i6,6f8.6)') idx, M2s(:,idx)
+                    write(luout,'(4x,i6,6f8.6)') idx, M2s(:,jdx)
+                    write(luout,'(4x,i6,6f8.6)') idx, M2s(:,kdx)
+                end if
+                if (lmul(3)) then
+                    write(luout,'(4x,a)' 'Resulting octopoles:'
+                    write(luout,'(4x,a)' '--------------------'
+                    write(luout,'(4x,i6,10f8.6)') idx, M3s(:,idx)
+                    write(luout,'(4x,i6,10f8.6)') idx, M3s(:,jdx)
+                    write(luout,'(4x,i6,10f8.6)') idx, M3s(:,kdx)
+                end if
+                if (lmul(4)) then
+                    write(luout,'(4x,a)' 'Resulting hexadecapoles:'
+                    write(luout,'(4x,a)' '------------------------'
+                    write(luout,'(4x,i6,15f8.6)') idx, M4s(:,idx)
+                    write(luout,'(4x,i6,15f8.6)') idx, M4s(:,jdx)
+                    write(luout,'(4x,i6,15f8.6)') idx, M4s(:,kdx)
+                end if
+                if (lmul(5)) then
+                    write(luout,'(4x,a)' 'Resulting ditriacontapoles:'
+                    write(luout,'(4x,a)' '---------------------------'
+                    write(luout,'(4x,i6,21f8.6)') idx, M5s(:,idx)
+                    write(luout,'(4x,i6,21f8.6)') idx, M5s(:,jdx)
+                    write(luout,'(4x,i6,21f8.6)') idx, M5s(:,kdx)
+                end if
+                if (lpol(1)) then
+                    write(luout,'(4x,a)' 'Resulting polarizabilities:'
+                    write(luout,'(4x,a)' '---------------------------'
+                    write(luout,'(4x,i6,6f8.6)') idx, P1s(:,idx)
+                    write(luout,'(4x,i6,6f8.6)') idx, P1s(:,jdx)
+                    write(luout,'(4x,i6,6f8.6)') idx, P1s(:,kdx)
+                end if
             end do
         end if
     end if
