@@ -921,7 +921,7 @@ end subroutine pe_mpi
 
 subroutine pe_sync()
 
-    integer :: i
+    integer :: i, j, k
     integer :: ndist, nrest
 
     allocate(ndists(0:ncores-1))
@@ -971,14 +971,16 @@ subroutine pe_sync()
     if (lpol(1)) then
         allocate(npoldists(0:ncores-1))
         if (myid == 0) then
-            ndist = npols / ncores
-            npoldists = ndist
-            if (ncores * ndist < npols) then
-                nrest = npols - ncores * ndist
-                do i = 0, nrest-1
-                    npoldists(i) = npoldists(i) + 1
+            npoldists = 0
+            do i = 0, ncores-1
+                do j = nsites(i-1)+1, nsites(i)
+                    if (zeroalphas(j)) then
+                        continue
+                    else
+                        npoldists(i) = npoldists(i) + 1
+                    end if
                 end do
-            end if
+            end do
         end if
         call mpi_bcast(npoldists, ncores, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(npols, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
