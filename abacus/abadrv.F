@@ -509,17 +509,17 @@ C
 C  jim-gesc : call to LRSCDRV  
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
-         IF (JIMPRT) THEN 
+cxx         IF (JIMPRT) THEN 
             write(lupri,*)'ABACTL #513 : call LRSCDRV, comp ABACTOCD '
             write(lupri,*)'ahora parche. hace linear solamente, CAMBIAR'
 cx          CALL LRSCDRV(WORK(KLST2),LWRK2)
 cx            en realidad llamar a LRSCDRV y de ahi hacer linear o quad o
 cx            gautever
             write(lupri,*)'Calling LRSCLIN : WORK(KLST2),LWRK2'
-         ENDIF
+cxx         ENDIF
          write(lupri,*) ' We should call here LREC module, not yet, 
      &   still developing;' 
-cjim point to lresc module   CALL LRSCLIN(WORK(KLST2),LWRK2)
+         CALL LRSCLIN(WORK(KLST2),LWRK2)
 cx       KLST2 final pointer on mem. LWRK2 the lenght of it
 cx       CALL AQRDRV(WORK(KLST2),LWRK2)
       END IF
@@ -830,7 +830,11 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
+<<<<<<< HEAD
+     &             '.VIB_G ', '.LOCALI', '.LRESC ' / ! jim May-12 for LRESC
+=======
      &             '.VIB_G ', '.LOCALI', '.LRESC '/ ! jim May-12 for LRESC
+>>>>>>> master
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -1016,9 +1020,9 @@ c jim-dbg 1.2: (abainp.1011) init lresc in ABAINIALL?  not done yet
   930 CONTINUE
       WORD1 = WORD
 cx jim-dbg : (abainp.1015)  take it off 
-      IF (JIMPRT) then 
+cxx      IF (JIMPRT) then 
          write(lupri,*)'abainp #1017 read LUCMOD up 2 WORD : ',WORD
-      ENDIF
+cxx      ENDIF
 C
       CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
      &            ,'*',108)
@@ -1986,10 +1990,10 @@ cs
    16   CALL FLTINP(WORD)
       GO TO 200
 C jim-gesc 1.5 : (abainp.1985) reading TABDIR call lrscinp
-   17 if(JIMPRT)  Write(lupri,*) ' Calling lrsec inp for word', WORD
-        CALL LRSCINP(WORD)
+   17 Write(lupri,*) ' Calling lrsec inp for word', WORD
+      CALL LRSCINP(WORD)
 cx jim-dbg : take this out
-      if(JIMPRT)  Write(lupri,*) ' volvi de LRSCINP ', WORD
+      Write(lupri,*) ' volvi de LRSCINP ', WORD
       GO TO 200
    18   CONTINUE
          CALL QPGINP(WORD)
