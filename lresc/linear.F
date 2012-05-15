@@ -77,7 +77,7 @@ cxu
       CALL QENTER('LRSCLIN')
       CALL TIMER('START ',TIMEIN,TIMOUT)
       IF (IPRLNR .GT. 0) WRITE (LUPRI,'(A,/)')
-     *    ' <<<<<<<<<< Output from CTOABA jim >>>>>>>>>> '
+     *    ' <<<<<<<<<< Output from linear-lresc >>>>>>>>>> '
 C
       IPRRSP = IPRLNR
 C
