@@ -1,3 +1,7 @@
+1. Installation
+
+Please skip this if you use git submodule.
+
 First, please download Gen1Int library from one of the following sites:
 
    http://repo.ctcc.no/projects/gen1int
@@ -12,10 +16,13 @@ Then run Dalton setup by providing the path of Gen1Int library:
 and make. Hope everything is OK, otherwise, please write to Bin Gao at
 bin.gao@uit.no.
 
-Afterwards, we may suggest you to run the test suite in Gen1Int lirbary (you
-need to comiple Gen1Int library and its test suite by yourself) and the test
-of Gen1Int interface in Dalton (those test/gen1int_*), make sure there is no
-error. Otherwise, please also write to Bin Gao with detailed error message.
+2. Test suite
+
+Afterwards, you may need to run the test suite in Gen1Int lirbary (you need
+to comiple Gen1Int library and its test suite by yourself if you do not use
+git submodule) and the test of Gen1Int interface at Dalton/Dirac (those
+test/gen1int_*), make sure there is no error. Otherwise, please write to
+Bin Gao with detailed error message.
 
 Bin Gao (bin.gao@uit.no)
 March 30, 2011

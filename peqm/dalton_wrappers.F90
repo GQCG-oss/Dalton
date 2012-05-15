@@ -1,7 +1,8 @@
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
 subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
 
-    use dalton_shell
+       ! Gen1Int API
+       use gen1int_api
 ! TODO:
 !    use polarizable_embedding
 
@@ -17,7 +18,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
 
     integer :: num_ao
     integer :: num_prop
-    integer :: kind_prop
+    integer :: prop_sym
     integer :: io
     integer :: printlvl = 0
     integer :: ierr
@@ -30,6 +31,11 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
     integer :: i, j, k, x, y, z
     integer, dimension(3,ncomps) :: row2col
     real(8), dimension(1) :: charge
+
+    ! non-zero components for the operator, the first dimension is for bra and
+    ! ket sub-shells, the last is the number of non-zero components, which should
+    ! be 1 for non-relativistic calcualtions
+    integer nnz_comp(2,1)
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1
 
@@ -45,35 +51,35 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
         call OnePropCreate(prop_name=INT_GAUSSIAN_POT,&
                            one_prop=prop_operator,    &
                            info_prop=ierr,            &
-                           num_prop=num_prop,         &
-                           kind_prop=kind_prop,       &
                            idx_gauorg=(/-1/),         &
                            gaupot_origin=R,           &
                            gaupot_charge=charge,      &
-                           gaupot_expt=gauexp,      &
+                           gaupot_expt=gauexp,        &
                            order_geo_pot=k)
-
     else
         call OnePropCreate(prop_name=INT_POT_ENERGY,&
                            one_prop=prop_operator,  &
                            info_prop=ierr,          &
-                           num_prop=num_prop,       &
-                           kind_prop=kind_prop,     &
                            idx_nuclei=(/-1/),       &
                            coord_nuclei=R,          &
                            charge_nuclei=charge,    &
                            order_geo_pot=k)
     end if
     if (ierr /= 0) stop 'Failed to create property operator.'
+    ! gets the number of property integrals and their symmetry
+    call OnePropGetNumProp(one_prop=prop_operator, &
+                           num_prop=num_prop)
+    call OnePropGetSymmetry(one_prop=prop_operator, &
+                            prop_sym=prop_sym)
     if (num_prop /= ncomps) stop 'Wrong number of components.'
 
-    call DaltonShellGetNumAO(num_ao=num_ao)
+    call Gen1IntAPIGetNumAO(num_ao=num_ao)
     if (num_ao /= nbas) stop 'Array size inconsistency.'
 
-    select case(kind_prop)
+    select case(prop_sym)
         case(SYMM_INT_MAT, ANTI_INT_MAT)
             triangular = .true.
-            symmetric = (kind_prop == SYMM_INT_MAT)
+            symmetric = (prop_sym == SYMM_INT_MAT)
         case default
             triangular = .false.
             symmetric = .false.
@@ -117,13 +123,20 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
         end do
     end do
 
-    call DaltonShellIntegral(comp_bra=1, comp_ket=1,&
-                             one_prop=prop_operator,&
-                             num_ints=num_prop,     &
-                             val_ints=intmats,      &
-                             num_dens=1,            &
-                             io_viewer=io,          &
-                             level_print=printlvl)
+    ! sets the non-zero components for the one-electron operator, here we only
+    ! consider the (large,large) part
+    nnz_comp(1,1) = 1
+    nnz_comp(2,1) = 1
+
+    ! calculates the integrals, please refer to the comments in subroutine
+    ! \fn(Gen1IntOnePropGetIntExpt) in gen1int_api.F90
+    call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,      &
+                                  one_prop=prop_operator, &
+                                  num_ints=num_prop,      &
+                                  val_ints=intmats,       &
+                                  num_dens=1,             &
+                                  io_viewer=io,           &
+                                  level_print=printlvl)
 
     call OnePropDestroy(one_prop=prop_operator)
 
