@@ -511,7 +511,7 @@ C  jim-gesc : call to LRSCDRV
       IF (RNLRSC) THEN
          write(lupri,*)'ABACTL should call LRESC ',  
      & ' Now is  commented till we finish developing '
-Cjim     CALL LRSCLIN(WORK(KLST2),LWRK2)
+         CALL LRSCLIN(WORK(KLST2),LWRK2)
       END IF
 C
 C     ****************************************
