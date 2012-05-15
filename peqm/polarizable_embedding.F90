@@ -482,45 +482,45 @@ subroutine pe_read_potential(coords, charges)
         write(luout,'(/4x,a,i6)') 'Number of classical sites: ', nsites(0)
     end if
     if (mulorder == 5) then
-        write(luout,'(4x,a)') 'Multipole moments upto 5th order.'
+        write(luout,'(/4x,a)') 'Multipole moments upto 5th order.'
     else if (mulorder == 4) then
-        write(luout,'(4x,a)') 'Multipole moments upto 4th order.'
+        write(luout,'(/4x,a)') 'Multipole moments upto 4th order.'
     else if (mulorder == 3) then
-        write(luout,'(4x,a)') 'Multipole moments upto 3rd order.'
+        write(luout,'(/4x,a)') 'Multipole moments upto 3rd order.'
     else if (mulorder == 2) then
-        write(luout,'(4x,a)') 'Multipole moments upto 2nd order.'
+        write(luout,'(/4x,a)') 'Multipole moments upto 2nd order.'
     else if (mulorder == 1) then
-        write(luout,'(4x,a)') 'Multipole moments upto 1st order.'
+        write(luout,'(/4x,a)') 'Multipole moments upto 1st order.'
     else if (mulorder == 0) then
-        write(luout,'(4x,a)') 'Multipole moments upto 0th order.'
+        write(luout,'(/4x,a)') 'Multipole moments upto 0th order.'
     end if
     if (lpol(1)) then
-        write(luout,'(4x,a)') '(An)isotropic dipole-dipole polarizabilities.'
+        write(luout,'(/4x,a)') '(An)isotropic dipole-dipole polarizabilities.'
         if (pe_damp) then
-            write(luout,'(4x,a,f8.4)') 'Induced dipole-induced dipole&
-                                       & interactions will be damped using&
-                                       & damping coefficient:', damp
+            write(luout,'(/4x,a)') 'Induced dipole-induced dipole&
+                                   & interactions will be damped'
+            write(luout,'(4x,a,f8.4)') 'using damping coefficient:', damp
         end if
         if (pe_gspol) then
-            write(luout,'(4x,a)') 'Dynamic response from environment will be&
-                                  & neglected during response calculation.'
+            write(luout,'(/4x,a)') 'Dynamic response from environment will be&
+                                   & neglected during response calculation.'
         end if
         if (pe_nomb) then
-            write(luout,'(4x,a)') 'Many-body interactions will be neglected.'
+            write(luout,'(/4x,a)') 'Many-body interactions will be neglected.'
         end if
         if (pe_iter) then
-            write(luout,'(4x,a)') 'Iterative solver for induced dipoles will&
-                                  & be used'
+            write(luout,'(/4x,a)') 'Iterative solver for induced dipoles will&
+                                   & be used'
             write(luout,'(4x,a,es7.1)') 'with convergence threshold: ', thriter
         else
-            write(luout,'(4x,a)') 'Direct solver for induced dipoles will be&
+            write(luout,'(/4x,a)') 'Direct solver for induced dipoles will be&
                                   & used.'
         end if
     end if
     if (pe_fd) then
-        write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
+        write(luout,'(/4x,a,i4)') 'Number of frozen densities:', nfds
         if (pe_gauss) then
-            write(luout,'(4x,a,f4.2)') 'Using Gaussian charges with broadening: ', gauss
+            write(luout,'(/4x,a,f4.2)') 'Using Gaussian charges with broadening: ', gauss
         end if
     end if
 
@@ -719,66 +719,58 @@ subroutine pe_read_potential(coords, charges)
                     P1s(:,idxs(i)) = 0.0d0
                 end if
 
-                write(luout,'(4x,a,i6)') 'Redistributing parameters on site:', idxs(i)
+                write(luout,'(/4x,a,i6)') 'Redistributing parameters on&
+                                          & site:', idxs(i)
                 write(luout,'(4x,a,3i6)') 'to neighbouring sites:', idx, jdx, kdx
 
-                write(luout,*) ''
-
                 if (lmul(0)) then
-                    write(luout,'(4x,a)') 'Resulting monopoles:'
+                    write(luout,'(/4x,a)') 'Resulting monopoles:'
                     write(luout,'(4x,a)') '--------------------'
                     write(luout,'(4x,i6,2x,f9.4)') idx, M0s(:,idx)
                     write(luout,'(4x,i6,2x,f9.4)') jdx, M0s(:,jdx)
                     write(luout,'(4x,i6,2x,f9.4)') kdx, M0s(:,kdx)
-                    write(luout,*) ''
                 end if
                 if (lmul(1)) then
-                    write(luout,'(4x,a)') 'Resulting dipoles:'
+                    write(luout,'(/4x,a)') 'Resulting dipoles:'
                     write(luout,'(4x,a)') '------------------'
                     write(luout,'(4x,i6,2x,3f9.4)') idx, M1s(:,idx)
                     write(luout,'(4x,i6,2x,3f9.4)') jdx, M1s(:,jdx)
                     write(luout,'(4x,i6,2x,3f9.4)') kdx, M1s(:,kdx)
-                    write(luout,*) ''
                 end if
                 if (lmul(2)) then
-                    write(luout,'(4x,a)') 'Resulting quadrupoles:'
+                    write(luout,'(/4x,a)') 'Resulting quadrupoles:'
                     write(luout,'(4x,a)') '----------------------'
                     write(luout,'(4x,i6,2x,6f9.4)') idx, M2s(:,idx)
                     write(luout,'(4x,i6,2x,6f9.4)') jdx, M2s(:,jdx)
                     write(luout,'(4x,i6,2x,6f9.4)') kdx, M2s(:,kdx)
-                    write(luout,*) ''
                 end if
                 if (lmul(3)) then
-                    write(luout,'(4x,a)') 'Resulting octopoles:'
+                    write(luout,'(/4x,a)') 'Resulting octopoles:'
                     write(luout,'(4x,a)') '--------------------'
                     write(luout,'(4x,i6,2x,10f9.4)') idx, M3s(:,idx)
                     write(luout,'(4x,i6,2x,10f9.4)') jdx, M3s(:,jdx)
                     write(luout,'(4x,i6,2x,10f9.4)') kdx, M3s(:,kdx)
-                    write(luout,*) ''
                 end if
                 if (lmul(4)) then
-                    write(luout,'(4x,a)') 'Resulting hexadecapoles:'
+                    write(luout,'(/4x,a)') 'Resulting hexadecapoles:'
                     write(luout,'(4x,a)') '------------------------'
                     write(luout,'(4x,i6,2x,15f9.4)') idx, M4s(:,idx)
                     write(luout,'(4x,i6,2x,15f9.4)') jdx, M4s(:,jdx)
                     write(luout,'(4x,i6,2x,15f9.4)') kdx, M4s(:,kdx)
-                    write(luout,*) ''
                 end if
                 if (lmul(5)) then
-                    write(luout,'(4x,a)') 'Resulting ditriacontapoles:'
+                    write(luout,'(/4x,a)') 'Resulting ditriacontapoles:'
                     write(luout,'(4x,a)') '---------------------------'
                     write(luout,'(4x,i6,2x,21f9.4)') idx, M5s(:,idx)
                     write(luout,'(4x,i6,2x,21f9.4)') jdx, M5s(:,jdx)
                     write(luout,'(4x,i6,2x,21f9.4)') kdx, M5s(:,kdx)
-                    write(luout,*) ''
                 end if
                 if (lpol(1)) then
-                    write(luout,'(4x,a)') 'Resulting polarizabilities:'
+                    write(luout,'(/4x,a)') 'Resulting polarizabilities:'
                     write(luout,'(4x,a)') '---------------------------'
                     write(luout,'(4x,i6,2x,6f9.4)') idx, P1s(:,idx)
                     write(luout,'(4x,i6,2x,6f9.4)') jdx, P1s(:,jdx)
                     write(luout,'(4x,i6,2x,6f9.4)') kdx, P1s(:,kdx)
-                    write(luout,*) ''
                 end if
             end do
         end if

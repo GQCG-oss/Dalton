@@ -31,6 +31,8 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
     integer, dimension(3,ncomps) :: row2col
     real(8), dimension(1) :: charge
 
+    Tk_ints = 0.0d0
+
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1
 
     nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
