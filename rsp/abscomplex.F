@@ -414,6 +414,11 @@ C
      &                 MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
      &                 WRK(KFREE),LFREE)
 C
+               CALL GET_LRF(LUABSVECS,LABEL,ABS_NFREQ_INTERVAL,
+     &                     ABS_FREQ_ALPHA,FC,FV,CMO,UDV,PV,XINDX,
+     &                     RESLRF,KZVAR,WRK(KFREE),LFREE)
+C
+
             END DO
          END IF
       END DO
@@ -691,11 +696,10 @@ c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE)
           END IF
         END IF
       END DO
-      call flshfo(lupri)
       CALL DZERO(XTMP,KZYVAR*NNMAX)
       IF (NASHT.GT.0) THEN
         CALL MEMGET('REAL',KDUM,N2ORBX,WRK,KFREE,LFREE)
-        call dzero(wrk(kdum),N2ORBX) 
+        call DZERO(WRK(KDUM),N2ORBX) 
         CALL FCKOIN(NNMAX,FC,FV,ZYMB,WRK(KFMMO(1)),WRK(KFVMO(1)))
         CALL RSPORB(.TRUE.,NNMAX,FC,WRK(KFMMO(1)),WRK(KFVMO(1)),
      &              WRK(KDUM),WRK(KDUM),UDV,
@@ -1195,5 +1199,46 @@ c     imag part
       END DO
       END IF
 C     
+      RETURN
+      END
+      SUBROUTINE GET_LRF(LU,LABEL,NFREQ_ABS,FREQ_ABS,
+     &     FC,FV,CMO,UDV,PV,XINDX,RESLRF,KZVAR,
+     &     WRK,LWRK)
+#include <implicit.h>
+#include <abslrs.h>
+C
+      CHARACTER*8 LABEL,LABGD
+      LOGICAL FOUND,CONV
+      DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),XINDX(*),
+     &     WRK(LWRK),RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2),
+     &     FREQ_ABS(NMXFREQ)
+C
+      KFREE = 1
+      LFREE = LWRK
+C
+      CALL DIPLAB(LABEL,INDEX)
+C
+      KZYVAR=2*KZVAR
+      CALL MEMGET('REAL',KVEC,2*KZYVAR,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
+C
+      DO IOPER=1,ABS_NOPER(ABS_GRADSYM)
+         LABGD = ABS_LABOP(IOPER,ABS_GRADSYM)
+         IF (LABEL(2:8).EQ.LABGD(2:8)) THEN
+            CALL DIPLAB(LABGD,INXGD)
+            CALL GETGPV(LABGD,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
+     &           WRK(KGD),LFREE)
+            DO IFREQ=1,ABS_NFREQ_INTERVAL
+                 CALL READ_XVEC(LU,2*KZYVAR,WRK(KVEC),
+     &              LABEL,
+     &              ABS(FREQ_ABS(IFREQ)),ABS_THCLR,FOUND,CONV)
+               RESLRF(1,IFREQ,INXGD,INDEX,1) =
+     &              DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC),1)
+               RESLRF(2,IFREQ,INXGD,INDEX,1) =
+     &              DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC+KZYVAR),1)
+            END DO
+         END IF
+      END DO
+C
       RETURN
       END
