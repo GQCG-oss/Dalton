@@ -1057,109 +1057,142 @@ subroutine pe_sync()
     call mpi_bcast(mulorder, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
     call mpi_bcast(lmul, 6, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
 
-    if (lmul(0)) then
-        if (myid == 0) then
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + ndists(i-1)
-            end do
-            call mpi_scatterv(M0s, ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 0, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        else if (myid /= 0) then
-            allocate(M0s(1,ndists(myid)))
-            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M0s, ndists(myid), MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
+    if (mep) then
+        if (lmul(0)) then
+            if (myid /= 0) allocate(M0s(1,nsites(ncores-1)))
+            call mpi_bcast(M0s, nsites(ncores-1), MPI_REAL8,&
+                           0, MPI_COMM_WORLD, ierr)
+        end if
+        if (lmul(1)) then
+            if (myid /= 0) allocate(M1s(3,nsites(ncores-1)))
+            call mpi_bcast(M1s, 3*nsites(ncores-1), MPI_REAL8,&
+                           0, MPI_COMM_WORLD, ierr)
+        end if
+        if (lmul(2)) then
+            if (myid /= 0) allocate(M2s(6,nsites(ncores-1)))
+            call mpi_bcast(M2s, 6*nsites(ncores-1), MPI_REAL8,&
+                           0, MPI_COMM_WORLD, ierr)
+        end if
+        if (lmul(3)) then
+            if (myid /= 0) allocate(M3s(10,nsites(ncores-1)))
+            call mpi_bcast(M3s, 10*nsites(ncores-1), MPI_REAL8,&
+                           0, MPI_COMM_WORLD, ierr)
+        end if
+        if (lmul(4)) then
+            if (myid /= 0) allocate(M4s(15,nsites(ncores-1)))
+            call mpi_bcast(M4s, 15*nsites(ncores-1), MPI_REAL8,&
+                           0, MPI_COMM_WORLD, ierr)
+        end if
+        if (lmul(5)) then
+            if (myid /= 0) allocate(M5s(21,nsites(ncores-1)))
+            call mpi_bcast(M5s, 21*nsites(ncores-1), MPI_REAL8,&
+                           0, MPI_COMM_WORLD, ierr)
+        end if
+    else
+        if (lmul(0)) then
+            if (myid == 0) then
+                displs(0) = 0
+                do i = 1, ncores-1
+                    displs(i) = displs(i-1) + ndists(i-1)
+                end do
+                call mpi_scatterv(M0s, ndists, displs, MPI_REAL8,&
+                                 &MPI_IN_PLACE, 0, MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            else if (myid /= 0) then
+                allocate(M0s(1,ndists(myid)))
+                call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                                 &M0s, ndists(myid), MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            end if
+        end if
+    
+        if (lmul(1)) then
+            if (myid == 0) then
+                displs(0) = 0
+                do i = 1, ncores-1
+                    displs(i) = displs(i-1) + 3 * ndists(i-1)
+                end do
+                call mpi_scatterv(M1s, 3*ndists, displs, MPI_REAL8,&
+                                 &MPI_IN_PLACE, 0, MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            else if (myid /= 0) then
+                allocate(M1s(3,ndists(myid)))
+                call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                                 &M1s, 3*ndists(myid), MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            end if
+        end if
+    
+        if (lmul(2)) then
+            if (myid == 0) then
+                displs(0) = 0
+                do i = 1, ncores-1
+                    displs(i) = displs(i-1) + 6 * ndists(i-1)
+                end do
+                call mpi_scatterv(M2s, 6*ndists, displs, MPI_REAL8,&
+                                 &MPI_IN_PLACE, 0, MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            else if (myid /= 0) then
+                allocate(M2s(6,ndists(myid)))
+                call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                                 &M2s, 6*ndists(myid), MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            end if
+        end if
+    
+        if (lmul(3)) then
+            if (myid == 0) then
+                displs(0) = 0
+                do i = 1, ncores-1
+                    displs(i) = displs(i-1) + 10 * ndists(i-1)
+                end do
+                call mpi_scatterv(M3s, 10*ndists, displs, MPI_REAL8,&
+                                 &MPI_IN_PLACE, 0, MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            else if (myid /= 0) then
+                allocate(M3s(10,ndists(myid)))
+                call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                                 &M3s, 10*ndists(myid), MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            end if
+        end if
+    
+        if (lmul(4)) then
+            if (myid == 0) then
+                displs(0) = 0
+                do i = 1, ncores-1
+                    displs(i) = displs(i-1) + 15 * ndists(i-1)
+                end do
+                call mpi_scatterv(M4s, 15*ndists, displs, MPI_REAL8,&
+                                 &MPI_IN_PLACE, 0, MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            else if (myid /= 0) then
+                allocate(M4s(15,ndists(myid)))
+                call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                                 &M4s, 15*ndists(myid), MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            end if
+        end if
+    
+        if (lmul(5)) then
+            if (myid == 0) then
+                displs(0) = 0
+                do i = 1, ncores-1
+                    displs(i) = displs(i-1) + 21 * ndists(i-1)
+                end do
+                call mpi_scatterv(M5s, 21*ndists, displs, MPI_REAL8,&
+                                 &MPI_IN_PLACE, 0, MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            else if (myid /= 0) then
+                allocate(M5s(21,ndists(myid)))
+                call mpi_scatterv(0, 0, 0, MPI_REAL8,&
+                                 &M5s, 21*ndists(myid), MPI_REAL8,&
+                                 &0, MPI_COMM_WORLD, ierr)
+            end if
         end if
     end if
 
-    if (lmul(1)) then
-        if (myid == 0) then
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + 3 * ndists(i-1)
-            end do
-            call mpi_scatterv(M1s, 3*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 0, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        else if (myid /= 0) then
-            allocate(M1s(3,ndists(myid)))
-            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M1s, 3*ndists(myid), MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        end if
-    end if
-
-    if (lmul(2)) then
-        if (myid == 0) then
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + 6 * ndists(i-1)
-            end do
-            call mpi_scatterv(M2s, 6*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 0, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        else if (myid /= 0) then
-            allocate(M2s(6,ndists(myid)))
-            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M2s, 6*ndists(myid), MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        end if
-    end if
-
-    if (lmul(3)) then
-        if (myid == 0) then
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + 10 * ndists(i-1)
-            end do
-            call mpi_scatterv(M3s, 10*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 0, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        else if (myid /= 0) then
-            allocate(M3s(10,ndists(myid)))
-            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M3s, 10*ndists(myid), MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        end if
-    end if
-
-    if (lmul(4)) then
-        if (myid == 0) then
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + 15 * ndists(i-1)
-            end do
-            call mpi_scatterv(M4s, 15*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 0, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        else if (myid /= 0) then
-            allocate(M4s(15,ndists(myid)))
-            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M4s, 15*ndists(myid), MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        end if
-    end if
-
-    if (lmul(5)) then
-        if (myid == 0) then
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + 21 * ndists(i-1)
-            end do
-            call mpi_scatterv(M5s, 21*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 0, MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        else if (myid /= 0) then
-            allocate(M5s(21,ndists(myid)))
-            call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M5s, 21*ndists(myid), MPI_REAL8,&
-                             &0, MPI_COMM_WORLD, ierr)
-        end if
-    end if
-
-     if (mep) then
+    if (mep) then
         allocate(nmepdists(0:ncores-1))
         if (myid == 0) then
             ndist = npoints(0) / ncores
@@ -1196,7 +1229,7 @@ subroutine pe_sync()
         end if
     end if
 
-   initialized = .true.
+    initialized = .true.
 
 end subroutine pe_sync
 #endif
@@ -1212,10 +1245,16 @@ subroutine pe_compmep(denmats)
     integer :: i, j, k
     integer :: ndist, nrest
     real(dp), dimension(3) :: Tm
-    real(dp), dimension(:,:), allocatable :: Vs, Fs
+    real(dp), dimension(:,:), allocatable :: Vp, Fp
     real(dp), dimension(nnbas,3) :: Tk_ints
 
-    allocate(Vs(1,npoints(ncores-1)), Fs(3,npoints(ncores-1)))
+    integer :: site, ncomps
+    real(dp) :: taylor
+    real(dp), dimension(3) :: Rsp, Fs, Ftot
+    real(dp), dimension(:), allocatable :: Tsp
+    real(dp), dimension(:), allocatable :: factors
+
+    allocate(Vp(1,npoints(ncores-1)), Fp(3,npoints(ncores-1)))
 
     i = 1
     do point = npoints(myid-1)+1, npoints(myid)
@@ -1226,11 +1265,73 @@ subroutine pe_compmep(denmats)
                          &work, size(work))
 #endif
 
-        Vs(1,i) = dot(denmats, Tk_ints(:,1))
+        Vp(1,i) = dot(denmats, Tk_ints(:,1))
 
         do j = 1, qmnucs
             call Tk_tensor(Tm(1:1), mepgrid(:,i) - Rm(:,j))
-            Vs(1,i) = Vs(1,i) + Zm(1,j) * Tm(1)
+            Vp(1,i) = Vp(1,i) + Zm(1,j) * Tm(1)
+        end do
+
+        do j = 1, nsites(ncores-1)
+            Rsp = mepgrid(:,i) - Rs(:,j)
+            if (lmul(0)) then
+                allocate(Tsp(1), factors(1))
+                call symmetry_factors(factors)
+                taylor = 1.0d0 / factorial(0)
+                call Tk_tensor(Tsp, Rsp)
+                Vp(1,i) = Vp(1,i) - taylor * factors(1) * Tsp(1) * M0s(1,j)
+                deallocate(Tsp, factors)
+            end if
+            if (lmul(1)) then
+                allocate(Tsp(3), factors(3))
+                call symmetry_factors(factors)
+                taylor = - 1.0d0 / factorial(1)
+                call Tk_tensor(Tsp, Rsp)
+                do k = 1, 3
+                    Vp(1,i) = Vp(1,i) - taylor * factors(k) * Tsp(k) * M1s(k,j)
+                end do
+                deallocate(Tsp, factors)
+            end if
+            if (lmul(2)) then
+                allocate(Tsp(6), factors(6))
+                call symmetry_factors(factors)
+                taylor = 1.0d0 / factorial(2)
+                call Tk_tensor(Tsp, Rsp)
+                do k = 1, 6
+                    Vp(1,i) = Vp(1,i) - taylor * factors(k) * Tsp(k) * M2s(k,j)
+                end do
+                deallocate(Tsp, factors)
+            end if
+            if (lmul(3)) then
+                allocate(Tsp(10), factors(10))
+                call symmetry_factors(factors)
+                taylor = - 1.0d0 / factorial(3)
+                call Tk_tensor(Tsp, Rsp)
+                do k = 1, 10
+                    Vp(1,i) = Vp(1,i) - taylor * factors(k) * Tsp(k) * M3s(k,j)
+                end do
+                deallocate(Tsp, factors)
+            end if
+            if (lmul(4)) then
+                allocate(Tsp(15), factors(15))
+                call symmetry_factors(factors)
+                taylor = 1.0d0 / factorial(4)
+                call Tk_tensor(Tsp, Rsp)
+                do k = 1, 15
+                    Vp(1,i) = Vp(1,i) - taylor * factors(k) * Tsp(k) * M4s(k,j)
+                end do
+                deallocate(Tsp, factors)
+            end if
+            if (lmul(5)) then
+                allocate(Tsp(21), factors(21))
+                call symmetry_factors(factors)
+                taylor = - 1.0d0 / factorial(5)
+                call Tk_tensor(Tsp, Rsp)
+                do k = 1, 21
+                    Vp(1,i) = Vp(1,i) - taylor * factors(k) * Tsp(k) * M5s(k,j)
+                end do
+                deallocate(Tsp, factors)
+            end if
         end do
 
 #if defined(BUILD_GEN1INT)
@@ -1240,14 +1341,48 @@ subroutine pe_compmep(denmats)
 #endif
 
         do j = 1, 3
-            Fs(j,i) = dot(denmats, Tk_ints(:,j))
+            Fp(j,i) = dot(denmats, Tk_ints(:,j))
         end do
 
         do j = 1, qmnucs
             call Tk_tensor(Tm, mepgrid(:,i) - Rm(:,j))
             do k = 1, 3
-                Fs(k,i) = Fs(k,i) - Zm(1,j) * Tm(k)
+                Fp(k,i) = Fp(k,i) - Zm(1,j) * Tm(k)
             end do
+        end do
+
+        do j = 1, nsites(ncores-1)
+            Rsp = mepgrid(:,i) - Rs(:,j)
+            if (lmul(0)) then
+                Fs = 0.0d0
+                call multipole_field(Fs, Rsp, M0s(:,j))
+                Fp(:,i) = Fp(:,i) - Fs
+            end if
+            if (lmul(1)) then
+                Fs = 0.0d0
+                call multipole_field(Fs, Rsp, M1s(:,j))
+                Fp(:,i) = Fp(:,i) - Fs
+            end if
+            if (lmul(2)) then
+                Fs = 0.0d0
+                call multipole_field(Fs, Rsp, M2s(:,j))
+                Fp(:,i) = Fp(:,i) - Fs
+            end if
+            if (lmul(3)) then
+                Fs = 0.0d0
+                call multipole_field(Fs, Rsp, M3s(:,j))
+                Fp(:,i) = Fp(:,i) - Fs
+            end if
+            if (lmul(4)) then
+                Fs = 0.0d0
+                call multipole_field(Fs, Rsp, M4s(:,j))
+                Fp(:,i) = Fp(:,i) - Fs
+            end if
+            if (lmul(5)) then
+                Fs = 0.0d0
+                call multipole_field(Fs, Rsp, M5s(:,j))
+                Fp(:,i) = Fp(:,i) - Fs
+            end if
         end do
         i = i + 1
     end do
@@ -1259,33 +1394,33 @@ subroutine pe_compmep(denmats)
             displs(i) = displs(i-1) + 3 * nmepdists(i-1)
         end do
         call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                        &Fs, 3*nmepdists, displs, MPI_REAL8,&
+                        &Fp, 3*nmepdists, displs, MPI_REAL8,&
                         &0, MPI_COMM_WORLD, ierr)
         displs(0) = 0
         do i = 1, ncores-1
             displs(i) = displs(i-1) + nmepdists(i-1)
         end do
         call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                        &Vs, nmepdists, displs, MPI_REAL8,&
+                        &Vp, nmepdists, displs, MPI_REAL8,&
                         &0, MPI_COMM_WORLD, ierr)
     else if (myid /= 0) then
-        call mpi_gatherv(Fs, 3*nmepdists(myid), MPI_REAL8,&
+        call mpi_gatherv(Fp, 3*nmepdists(myid), MPI_REAL8,&
                         &0, 0, 0, MPI_REAL8,&
                         &0, MPI_COMM_WORLD, ierr)
-        call mpi_gatherv(Vs, nmepdists(myid), MPI_REAL8,&
+        call mpi_gatherv(Vp, nmepdists(myid), MPI_REAL8,&
                         &0, 0, 0, MPI_REAL8,&
                         &0, MPI_COMM_WORLD, ierr)
     end if
 #endif
 
     if (myid == 0) then
-        call openfile('qm_mep.dat', lu, 'new', 'formatted')
+        call openfile('mep.dat', lu, 'new', 'formatted')
         rewind(lu)
         write(lu,'(i7)') npoints(ncores-1)
         write(lu,'(a)') 'AU'
         do i = 1, npoints(ncores-1)
             write(lu,'(7(f15.8,2x))') (mepgrid(j,i), j = 1, 3),&
-                                      & Vs(1,i), (Fs(j,i), j = 1, 3)
+                                      & Vp(1,i), (Fp(j,i), j = 1, 3)
         end do
         close(lu)
     end if
@@ -2566,7 +2701,7 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
 #endif
 
     ! get symmetry factors
-    allocate(factors(ncomps)); factors = 0.0d0
+    allocate(factors(ncomps))
     call symmetry_factors(factors)
 
     ! dot T^(k) integrals with multipole to get M^(k) integrals
