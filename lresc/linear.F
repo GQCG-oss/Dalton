@@ -97,7 +97,6 @@ cdx      ENDIF
       KFREE  = 1
       LFREE  = LWORK
 C      
-      write(*,*)' testing git' 
       write(lupri,*) 'NASHT INTEGER common inforb :', NASHT
       write(lupri,*) '      Total Number of Active orbitals, '
       write(lupri,*) '      deberia ser ZERO para este caso '
@@ -381,7 +380,7 @@ cx                 ANTSYM_GP = ANTSYM
 cx                 WRK = WORK(KWRKG1)
 cx                 LWRK = LWRKG1
 cx    DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
-
+      write(lupri,*) 'KUDV ' , WORK(KUDV)
 
 cx      CALL PRPCTL(WORD,WRK(KGP),CMO,UDV,PV,XINDX,ANTSYM_GP,
 cx     &               WRK(KWRK1),LWRK1)
