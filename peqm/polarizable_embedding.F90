@@ -1219,7 +1219,7 @@ subroutine pe_compmep(denmats)
 
     i = 1
     do point = npoints(myid-1)+1, npoints(myid)
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
         call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i), .false., 0.0d0)
 #else
         call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i),&
@@ -1233,7 +1233,7 @@ subroutine pe_compmep(denmats)
             Vs(1,i) = Vs(1,i) + Zm(1,j) * Tm(1)
         end do
 
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
         call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
 #else
         call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), work, size(work))
@@ -1547,7 +1547,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
                 call Tk_tensor(Tfm, Rfm)
                 Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
             end do
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
             call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), pe_gauss, gauss) 
 #else
             call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), work, size(work))
@@ -1704,7 +1704,7 @@ subroutine pe_polarization(denmats, fckmats)
         i = 0
         do site = nsites(myid-1)+1, nsites(myid)
             if (zeroalphas(site)) cycle
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
             call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), .false., 0.0d0)
 #else
             call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), work, size(work))
@@ -2030,7 +2030,7 @@ subroutine electron_fields(Fels, denmats)
             end do
             if (skip) cycle
         end if
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), .false., 0.0d0)
 #else
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), work, size(work))
@@ -2559,7 +2559,7 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
     ncomps = size(Mk_ints, 2)
 
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
     call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, .false., 0.0d0)
 #else
     call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, work, size(work))
@@ -2708,7 +2708,7 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
         call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .false., 0.0d0)
 #else
         call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), work, size(work))

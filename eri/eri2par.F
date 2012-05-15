@@ -959,6 +959,10 @@ C
 C infpar.h: MASTER,MYNUM
 #include "maxorb.h"
 #include "infpar.h"
+#if defined(BUILD_GEN1INT)
+C defined calculation types
+#include "iprtyp.h"
+#endif
 !     DIMENSION WORK(MWORK)
       DIMENSION WORK(0:MWORK)
 C
@@ -1053,6 +1057,17 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL MEP_SLAVE(WORK(1),MWORK)
          else if (iprtyp == 44) then
             call pe_mpi(work(1:mwork), iprint)
+#if defined(BUILD_GEN1INT)
+C added by Bin Gao, May 12, 2012
+         ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
+            CALL gen1int_worker_init()
+         ELSE IF (IPRTYP.EQ.GEN1INT_GET_INT) THEN
+            CALL gen1int_worker_get_int(MWORK,WORK(1),LUPRI,IPRINT)
+         ELSE IF (IPRTYP.EQ.GEN1INT_GET_EXPT) THEN
+            CALL gen1int_worker_get_expt(MWORK,WORK(1),LUPRI,IPRINT)
+         ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
+            CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
+#endif
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(NODEDRIVER) ERROR on slave',MYTID,

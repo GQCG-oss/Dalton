@@ -3,7 +3,7 @@ module dirac_gen1int_interface
 !  radovan: this file is only used in DIRAC
 !           but i keep it here for interface refactoring
 
-   use dalton_shell
+   use gen1int_api
 
    implicit none
 
@@ -18,18 +18,15 @@ contains
       integer, intent(in) :: io_viewer
 
       character(20), parameter :: PROP_NAME               = INT_OVERLAP
-      logical,       parameter :: LONDON_AO               = .false.
       integer,       parameter :: ORDER_MOM               = 0
       integer,       parameter :: ORDER_GEO_TOTAL         = 0
       integer,       parameter :: MAX_NUM_CENT            = 0
       logical,       parameter :: write_integrals_to_file = .false.
-      type(one_prop_t)         :: prop_operator
+      type(prop_comp_t)        :: prop_operator
       integer                  :: num_ao
       integer, parameter       :: nr_dens_mat = 1
       integer                  :: ierr
 
-! origins
-#include "orgcom.h"
 ! uses \var(MXCENT)
 #include "mxcent.h"
 ! number of atomic centers
@@ -45,31 +42,21 @@ contains
       integer                   :: kind_prop        !kind of property integral matrices
       logical                   :: triangular       !integral matrices are triangularized or squared
       logical                   :: symmetric        !integral matrices are symmetric or anti-symmetric
-      integer                   :: dim_unique_geo   !dimension of all unique total geometric derivatives
+      integer                   :: num_redunt_geo   !number of all redundant total geometric derivatives
       integer                   :: num_opt_derv     !number of operators including derivatives
       type(matrix), allocatable :: val_ints(:)      !integral matrices
       integer                   :: imat             !incremental recorder over matrices
 
       ! gets the number of atomic orbitals
-      call DaltonShellGetNumAO(num_ao=num_ao)
+      call Gen1IntAPIGetNumAO(num_ao=num_ao)
 
-      ! initializes the information of one-electron property integrals
-      call OnePropCreate(prop_name=trim(PROP_NAME),       &
-                         one_prop=prop_operator,          &
-                         info_prop=ierr,                  &
-                         num_prop=num_prop,               &
-                         kind_prop=kind_prop,             &
-                         coord_nuclei=CORD(:,1:NUCDEP),   &
-                         charge_nuclei=-CHARGE(1:NUCDEP), &
-                         dipole_origin=DIPORG,            &
-                         order_mom=ORDER_MOM)
-      if (ierr /= 0) then
-         print *, 'failed to create '//trim(PROP_NAME)
-         stop 1
-      end if
+!FIXME: implements subroutines in gen1int_host.F90 to return the number of property integrals
+      ! gets the number of property integrals and total geometric derivatives
+      num_prop = 1
+      kind_prop = SYMM_INT_MAT
+      num_redunt_geo = (3*NUCDEP)**ORDER_GEO_TOTAL
+      num_opt_derv = num_redunt_geo*num_prop
 
-      dim_unique_geo = (3*NUCDEP)**ORDER_GEO_TOTAL
-      num_opt_derv = dim_unique_geo*num_prop
       ! number and addresses of expectation values
       ! size and addresses of referenced integrals
 
@@ -97,33 +84,22 @@ contains
          end if
       end do
 
-      ! computes the integrals and/or expectation values
+      ! computes the integrals (using \fn(gen1int_host_get_expt) for expectation values);
+      ! the operator will be created in \fn(Gen1IntAPIPropCreate) of gen1int_api.F90 (please
+      ! update the operator there)
+      call gen1int_host_get_int(NON_LAO, trim(PROP_NAME),      &
+                                ORDER_MOM,                     &  !multipole moments
+                                0, 0, 0,                       &  !magnetic derivatives
+                                0, 0, 0,                       &  !derivatives w.r.t. total RAM
+                                0, 0,                          &  !partial geometric derivatives
+                                MAX_NUM_CENT, ORDER_GEO_TOTAL, &  !total geometric derivatives
+                                0, (/0/), REDUNDANT_GEO,       &  !total geometric derivatives
+                                .false., .false., .false.,     &  !not implemented
+                                num_opt_derv, val_ints,        &
+                                write_integrals_to_file,       &
+                                io_viewer, 0)
 
-      call DaltonShellIntegral(comp_bra=1,                       &
-                               comp_ket=1,                       &
-                               one_prop=prop_operator,           &
-                               london_ao=LONDON_AO,              &
-                               num_ints=num_opt_derv,            &
-                               val_ints=val_ints,                &
-                               wrt_ints=write_integrals_to_file, &
-                               num_dens=nr_dens_mat,             &
-                               io_viewer=io_viewer,              &
-                               level_print=0)
-
-      call DaltonShellIntegral(comp_bra=2,                       &
-                               comp_ket=2,                       &
-                               one_prop=prop_operator,           &
-                               london_ao=LONDON_AO,              &
-                               num_ints=num_opt_derv,            &
-                               val_ints=val_ints,                &
-                               wrt_ints=write_integrals_to_file, &
-                               num_dens=nr_dens_mat,             &
-                               io_viewer=io_viewer,              &
-                               level_print=0)
-
-      ! frees space taken by the information of one-electron property integrals
-      call OnePropDestroy(one_prop=prop_operator)
-
+      ! frees spaces of matrices
       do imat = 1, num_opt_derv
          print *, 'raboof'
          call MatView(A=val_ints(imat), io_viewer=io_viewer)

@@ -1,15 +1,16 @@
 !! Give future long- and short-term developments
 
 Short-term:
-1) cleans the test suite in gen1int_interface.F90
+0) finish MANUAL
+1) cleans the test suite in gen1int_host.F90
 2) tests Cartesian/spherical multipole moment integrals
-3) parallelizes gen1int_shell.F90
-4) tests the calculations of expectation values; why calling PR1IN1
+3) tests the calculations of expectation values; why calling PR1IN1
    with expectation values returned gives wrong results
-5) enables London atomic orbitals (indicating by logical variable \var(london_ao))
-6) uses header files in Gen1Int library?
+4) enables London atomic orbitals
+5) uses header files in Gen1Int library?
 
 Long-term:
 1) adds functionality of reading/writing integrals and/or expectation values on file
 2) considers molecular symmetry
-3) works together with other modules, such as geometry optimization and response calculations
+3) works together with other modules, such as geometry optimization and response
+   theory calculations
