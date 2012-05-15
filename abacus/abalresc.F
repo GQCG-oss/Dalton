@@ -47,11 +47,12 @@ C  /* Deck lrscinp */
 #include <dorps.h>
 #include <spnout.h>
 C jim  aca van las opctiones para LRESC , aun no las defino
-      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.LINEAR ','.QUADRA',
+      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.LINEAR','.QUADRA',
      &            '.GESC  ','.NOPSO ','.SD+FC ','.SDxFC','.ISOTOP',
      &            '.COUPLI'/
 C
-      write(lupri,*) ' LRSCOPTS :  called with : ' , WORD
+      write(lupri,*) ' LRESC OPTS :  called with : ' , WORD
+      write(lupri,*) ' still developing '
       NEWDEF = (WORD .EQ. '*LROPTS')
       ICHANG = 0
       IF (NEWDEF) THEN
