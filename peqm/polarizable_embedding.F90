@@ -558,8 +558,8 @@ subroutine pe_read_potential(coords, charges)
 
         if (border_type == 'REMOVE') then
             do i = 1, nidx
-                write(luout,'(4x,a,i6,a)') 'Removing parameters on site:',&
-                                           & idxs(i), elems(1,idxs(i))
+                write(luout,'(/4x,a,i6,2x,a)') 'Removing parameters on site:',&
+                                               & idxs(i), elems(1,idxs(i))
                 if (lmul(0)) then
                     M0s(:,idxs(i)) = 0.0d0
                 endif
