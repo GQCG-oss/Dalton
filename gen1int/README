@@ -82,15 +82,6 @@
      #define MAX_LEN_STR 80
      is the maximum length of a string
 
-     #if defined(PROG_DIRAC)
-     #define NUM_COMPONENTS 2
-     #define LARGE_COMP 1
-     #define SMALL_COMP 2
-     #else
-     #define NUM_COMPONENTS 1
-     #endif
-     are the large and small components (the latter is only used in Dirac by -DPROG_DIRAC)
-
      #if defined(VAR_MPI)
      #define MANAGER 0
      #define REQUEST_WORK 0

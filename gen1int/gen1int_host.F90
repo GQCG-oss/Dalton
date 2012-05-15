@@ -221,30 +221,30 @@
                                   prop_comp, geom_tree)
     ! performs calculations
     if (order_geo_total>0) then
-      call Gen1IntAPIGetIntExpt(prop_comp=prop_comp,     &
-                                geom_tree=geom_tree,     &
-                                geom_type=geom_type,     &
+      call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
+                                    geom_tree=geom_tree,     &
+                                    geom_type=geom_type,     &
 #if defined(VAR_MPI)
-                                api_comm=MPI_COMM_WORLD, &
+                                    api_comm=MPI_COMM_WORLD, &
 #endif
-                                num_ints=num_ints,       &
-                                val_ints=val_ints,       &
-                                write_ints=write_ints,   &
-                                num_dens=0,              &
-                                io_viewer=io_viewer,     &
-                                level_print=level_print)
+                                    num_ints=num_ints,       &
+                                    val_ints=val_ints,       &
+                                    write_ints=write_ints,   &
+                                    num_dens=0,              &
+                                    io_viewer=io_viewer,     &
+                                    level_print=level_print)
     else
-      call Gen1IntAPIGetIntExpt(prop_comp=prop_comp,     &
-                                geom_type=geom_type,     &
+      call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
+                                    geom_type=geom_type,     &
 #if defined(VAR_MPI)
-                                api_comm=MPI_COMM_WORLD, &
+                                    api_comm=MPI_COMM_WORLD, &
 #endif
-                                num_ints=num_ints,       &
-                                val_ints=val_ints,       &
-                                write_ints=write_ints,   &
-                                num_dens=0,              &
-                                io_viewer=io_viewer,     &
-                                level_print=level_print)
+                                    num_ints=num_ints,       &
+                                    val_ints=val_ints,       &
+                                    write_ints=write_ints,   &
+                                    num_dens=0,              &
+                                    io_viewer=io_viewer,     &
+                                    level_print=level_print)
     end if
     ! free spaces
     call Gen1IntAPIPropDestroy(prop_comp=prop_comp)
@@ -292,22 +292,22 @@
                                     prop_comp, geom_tree)
     ! performs calculations
     if (order_geo_total>0) then
-      call Gen1IntAPIGetIntExpt(prop_comp=prop_comp,     &
-                                geom_tree=geom_tree,     &
-                                geom_type=geom_type,     &
-                                api_comm=MPI_COMM_WORLD, &
-                                num_ints=num_ints,       &
-                                num_dens=0,              &
-                                io_viewer=io_viewer,     &
-                                level_print=level_print)
+      call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
+                                    geom_tree=geom_tree,     &
+                                    geom_type=geom_type,     &
+                                    api_comm=MPI_COMM_WORLD, &
+                                    num_ints=num_ints,       &
+                                    num_dens=0,              &
+                                    io_viewer=io_viewer,     &
+                                    level_print=level_print)
     else
-      call Gen1IntAPIGetIntExpt(prop_comp=prop_comp,     &
-                                geom_type=geom_type,     &
-                                api_comm=MPI_COMM_WORLD, &
-                                num_ints=num_ints,       &
-                                num_dens=0,              &
-                                io_viewer=io_viewer,     &
-                                level_print=level_print)
+      call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
+                                    geom_type=geom_type,     &
+                                    api_comm=MPI_COMM_WORLD, &
+                                    num_ints=num_ints,       &
+                                    num_dens=0,              &
+                                    io_viewer=io_viewer,     &
+                                    level_print=level_print)
     end if
     ! free spaces
     call Gen1IntAPIPropDestroy(prop_comp=prop_comp)
@@ -415,32 +415,32 @@
                                   prop_comp, geom_tree)
     ! performs calculations
     if (order_geo_total>0) then
-      call Gen1IntAPIGetIntExpt(prop_comp=prop_comp,     &
-                                geom_tree=geom_tree,     &
-                                geom_type=geom_type,     &
+      call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
+                                    geom_tree=geom_tree,     &
+                                    geom_type=geom_type,     &
 #if defined(VAR_MPI)
-                                api_comm=MPI_COMM_WORLD, &
+                                    api_comm=MPI_COMM_WORLD, &
 #endif
-                                num_dens=num_dens,       &
-                                ao_dens=ao_dens,         &
-                                num_ints=num_ints,       &
-                                val_expt=val_expt,       &
-                                write_expt=write_expt,   &
-                                io_viewer=io_viewer,     &
-                                level_print=level_print)
+                                    num_dens=num_dens,       &
+                                    ao_dens=ao_dens,         &
+                                    num_ints=num_ints,       &
+                                    val_expt=val_expt,       &
+                                    write_expt=write_expt,   &
+                                    io_viewer=io_viewer,     &
+                                    level_print=level_print)
     else
-      call Gen1IntAPIGetIntExpt(prop_comp=prop_comp,     &
-                                geom_type=geom_type,     &
+      call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
+                                    geom_type=geom_type,     &
 #if defined(VAR_MPI)
-                                api_comm=MPI_COMM_WORLD, &
+                                    api_comm=MPI_COMM_WORLD, &
 #endif
-                                num_dens=num_dens,       &
-                                ao_dens=ao_dens,         &
-                                num_ints=num_ints,       &
-                                val_expt=val_expt,       &
-                                write_expt=write_expt,   &
-                                io_viewer=io_viewer,     &
-                                level_print=level_print)
+                                    num_dens=num_dens,       &
+                                    ao_dens=ao_dens,         &
+                                    num_ints=num_ints,       &
+                                    val_expt=val_expt,       &
+                                    write_expt=write_expt,   &
+                                    io_viewer=io_viewer,     &
+                                    level_print=level_print)
     end if
     ! free spaces
     call Gen1IntAPIPropDestroy(prop_comp=prop_comp)
@@ -502,24 +502,24 @@
                                     prop_comp, geom_tree)
     ! performs calculations
     if (order_geo_total>0) then
-      call Gen1IntAPIGetIntExpt(prop_comp=prop_comp,     &
-                                geom_tree=geom_tree,     &
-                                geom_type=geom_type,     &
-                                api_comm=MPI_COMM_WORLD, &
-                                num_dens=num_dens,       &
-                                ao_dens=ao_dens,         &
-                                num_ints=num_ints,       &
-                                io_viewer=io_viewer,     &
-                                level_print=level_print)
+      call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
+                                    geom_tree=geom_tree,     &
+                                    geom_type=geom_type,     &
+                                    api_comm=MPI_COMM_WORLD, &
+                                    num_dens=num_dens,       &
+                                    ao_dens=ao_dens,         &
+                                    num_ints=num_ints,       &
+                                    io_viewer=io_viewer,     &
+                                    level_print=level_print)
     else
-      call Gen1IntAPIGetIntExpt(prop_comp=prop_comp,     &
-                                geom_type=geom_type,     &
-                                api_comm=MPI_COMM_WORLD, &
-                                num_dens=num_dens,       &
-                                ao_dens=ao_dens,         &
-                                num_ints=num_ints,       &
-                                io_viewer=io_viewer,     &
-                                level_print=level_print)
+      call Gen1IntAPIPropGetIntExpt(prop_comp=prop_comp,     &
+                                    geom_type=geom_type,     &
+                                    api_comm=MPI_COMM_WORLD, &
+                                    num_dens=num_dens,       &
+                                    ao_dens=ao_dens,         &
+                                    num_ints=num_ints,       &
+                                    io_viewer=io_viewer,     &
+                                    level_print=level_print)
     end if
     ! free spaces
     call Gen1IntAPIPropDestroy(prop_comp=prop_comp)
@@ -762,19 +762,19 @@
         stop "gen1int_host_get_cube>> failed to allocate cube_values!"
       end if
       cube_values = 0.0_REALK  !necessary to zero
-      call Gen1IntAPIGetFunExpt(prop_comp=prop_comp,     &
-                                geom_tree=geom_tree,     &
-                                geom_type=UNIQUE_GEO,    &
+      call Gen1IntAPIPropGetFunExpt(prop_comp=prop_comp,     &
+                                    geom_tree=geom_tree,     &
+                                    geom_type=UNIQUE_GEO,    &
 !FIXME: be parallel
-                                !api_comm=MPI_COMM_WORLD, &
-                                num_points=num_points,   &
-                                grid_points=grid_points, &
-                                num_dens=1,              &
-                                ao_dens=ao_dens,         &
-                                num_ints=1,              &
-                                val_expt=cube_values,    &
-                                io_viewer=io_viewer,     &
-                                level_print=level_print)
+                                    !api_comm=MPI_COMM_WORLD, &
+                                    num_points=num_points,   &
+                                    grid_points=grid_points, &
+                                    num_dens=1,              &
+                                    ao_dens=ao_dens,         &
+                                    num_ints=1,              &
+                                    val_expt=cube_values,    &
+                                    io_viewer=io_viewer,     &
+                                    level_print=level_print)
       ! free spaces
       call MatDestroy(A=ao_dens(1))
       call Gen1IntAPIPropDestroy(prop_comp=prop_comp)

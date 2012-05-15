@@ -6,15 +6,6 @@
 
 #define MAX_LEN_STR 80
 
-#if defined(PROG_DIRAC)
-#define NUM_COMPONENTS 2
-#define LARGE_COMP 1
-#define SMALL_COMP 2
-#else
-#define NUM_COMPONENTS 1
-#define LARGE_COMP 1
-#endif
-
 #if defined(VAR_MPI)
 #define MANAGER 0
 #define REQUEST_WORK 0

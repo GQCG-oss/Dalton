@@ -46,8 +46,6 @@ module gen1int_api
 
   implicit none
 
-  public :: geom_tree_t
-
   ! one-electron operator with non-zero components
   type, public :: prop_comp_t
     private
@@ -59,6 +57,16 @@ module gen1int_api
 
   ! if Gen1Int interface initialized
   logical, save, private :: api_inited = .false.
+
+  ! large and small components (the latter is only used in Dirac by -DPROG_DIRAC)
+#if defined(PROG_DIRAC)
+  integer, parameter, public :: NUM_COMPONENTS = 2
+  integer, parameter, public :: LARGE_COMP = 1
+  integer, parameter, public :: SMALL_COMP = 2
+#else
+  integer, parameter, public :: NUM_COMPONENTS = 1
+  integer, parameter, public :: LARGE_COMP = 1
+#endif
 
   ! number of AO sub-shells from Dalton/DIRAC
   ! Dalton only uses num_sub_shells(1), DIRAC uses either the first or both
@@ -81,18 +89,22 @@ module gen1int_api
   public :: Gen1IntAPIInited
   public :: Gen1IntAPIShellView
   public :: Gen1IntAPIGetNumAO
-  public :: Gen1IntAPIGetIntExpt
-  public :: Gen1IntAPIGetFunExpt
   public :: Gen1IntAPIGetMO
   public :: Gen1IntAPIDestroy
 
   public :: Gen1IntAPIPropCreate
   public :: Gen1IntAPIPropView
+  public :: Gen1IntAPIPropGetNumProp
+  public :: Gen1IntAPIPropGetSymmetry
+  public :: Gen1IntAPIPropGetIntExpt
+  public :: Gen1IntAPIPropGetFunExpt
   public :: Gen1IntAPIPropDestroy
 
   public :: Gen1IntAPIGeoTreeCreate
   public :: Gen1IntAPIGeoTreeView
   public :: Gen1IntAPIGeoTreeDestroy
+
+  public :: Gen1IntOnePropGetIntExpt
 
   contains
 
@@ -408,470 +420,6 @@ module gen1int_api
     end if
   end subroutine Gen1IntAPIGetNumAO
 
-  !> \brief evaluates the integral matrices and/or expectation values
-  !> \author Bin Gao and Radovan Bast
-  !> \date 2011-01-11
-  !> \param prop_comp contains the information of one-electron property integrals and non-zero components
-  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
-  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
-  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
-  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
-  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
-  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
-  !> \param api_comm is the MPI communicator
-  !> \param num_ints is the number of property integral matrices including various derivatives
-  !> \param write_ints indicates if writing integral matrices on file
-  !> \param num_dens is the number of AO density matrices
-  !> \param ao_dens contains the AO density matrices
-  !> \param write_expt indicates if writing expectation values on file
-  !> \param io_viewer is the logical unit number of the viewer
-  !> \param level_print is the level of print
-  !> \return val_ints contains the integral matrices
-  !> \return val_expt contains the expectation values
-  !> \note the arrangement of var(val_ints) and \var(val_expt) will be in the order of
-  !>       \var(order_mom), \var(order_mag_bra), ..., \var(order_geo_total), and each of
-  !>       them is arranged in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz),
-  !>       see Gen1Int library manual, for instance Section 2.2;
-  !>       \var(val_expt) should be zero by users before calculations
-  subroutine Gen1IntAPIGetIntExpt(prop_comp, geom_tree, geom_type, api_comm, &
-                                  num_ints, val_ints, write_ints,            &
-                                  num_dens, ao_dens, val_expt, write_expt,   &
-                                  io_viewer, level_print)
-    type(prop_comp_t), intent(in) :: prop_comp
-    type(geom_tree_t), optional, intent(inout) :: geom_tree
-    integer, optional, intent(in) :: geom_type
-    integer, optional, intent(in) :: api_comm
-    integer, intent(in) :: num_ints
-    type(matrix), optional, intent(inout) :: val_ints(num_ints)
-    logical, optional, intent(in) :: write_ints
-    integer, intent(in) :: num_dens
-    type(matrix), optional, intent(in) :: ao_dens(num_dens)
-    real(REALK), optional, intent(inout) :: val_expt(num_ints*num_dens)
-    logical, optional, intent(in) :: write_expt
-    integer, intent(in) :: io_viewer
-    integer, intent(in) :: level_print
-    integer num_nnz_comp                    !number of non-zero components
-    integer num_prop                        !number of property integrals
-    integer order_geo                       !order of total geometric derivatives
-    integer p_geom_type                     !type of returned total geometric derivatives
-    integer num_return_geo                  !number of returned total geometric derivatives
-    integer idx_path                        !index of current path of N-ary tree
-    integer num_paths                       !total number of different paths of N-ary tree
-    integer ipath                           !incremental recorder over different paths
-    integer icomp                           !incremental recorder over components
-    integer comp_bra                        !which component of AO sub-shells on bra center
-    integer comp_ket                        !which component of AO sub-shells on ket center
-    logical same_braket                     !if the AO sub-shells are the same on bra and ket centers
-    ! checks if the AO sub-shells are created
-    if (.not.api_inited) then
-      stop "Gen1IntAPIGetIntExpt>> sub-shells are not created!"
-    end if
-    ! gets the number of non-zero components
-    num_nnz_comp = size(prop_comp%nnz_comp,2)
-    ! gets the number of property integrals
-    call OnePropGetNumProp(one_prop=prop_comp%one_prop, num_prop=num_prop)
-    ! sets the type of total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the order of total geometric derivatives
-      call GeomTreeGetOrder(geom_tree=geom_tree, order_geo=order_geo)
-      ! gets the type of total geometric derivatives
-      if (order_geo>1) then
-        if (present(geom_type)) then
-          select case (geom_type)
-          case (REDUNDANT_GEO)
-            p_geom_type = REDUNDANT_GEO
-          case default
-            p_geom_type = UNIQUE_GEO
-          end select
-        ! default are unique total geometric derivatives
-        else
-          p_geom_type = UNIQUE_GEO
-        end if
-      ! the first order total geometric derivatives are unique
-      else
-        p_geom_type = UNIQUE_GEO
-      end if
-      ! gets the number of returned geometric derivatives
-      select case (p_geom_type)
-      case (REDUNDANT_GEO)
-        call GeomTreeGetNumAtoms(geom_tree=geom_tree, num_atoms=num_return_geo)
-        num_return_geo = (3*num_return_geo)**order_geo
-      case default
-        call GeomTreeGetNumGeo(geom_tree=geom_tree, num_unique_geo=num_return_geo)
-      end select
-    ! no total geometric derivatives
-    else
-      p_geom_type = UNIQUE_GEO
-      num_return_geo = 1
-    end if
-    ! checks the validity of \var(num_ints)
-    if (present(val_ints) .or. present(val_expt)) then
-      if (num_prop*num_return_geo>num_ints) then
-        stop "Gen1IntAPIGetIntExpt>> input num_ints is not enough!"
-      end if
-    end if
-    ! dumps AO sub-shells
-    if (level_print>=15) then
-      do icomp = 1, num_nnz_comp
-        comp_bra = prop_comp%nnz_comp(1,icomp)
-        comp_ket = prop_comp%nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        write(io_viewer,100) "AO sub-shells on bra center", comp_bra
-        call Gen1IntShellView(num_shells=num_sub_shells(comp_bra), &
-                              sub_shells=sub_shells(:,comp_bra),   &
-                              io_viewer=io_viewer)
-        if (.not.same_braket) then
-          write(io_viewer,100) "AO sub-shells on ket center", comp_ket
-          call Gen1IntShellView(num_shells=num_sub_shells(comp_ket), &
-                                sub_shells=sub_shells(:,comp_ket),   &
-                                io_viewer=io_viewer)
-        end if
-      end do
-    end if
-    ! dumps other information to check
-    if (level_print>=10) then
-      ! the information of one-electron property integrals
-      call OnePropView(one_prop=prop_comp%one_prop, io_viewer=io_viewer)
-      if (present(geom_tree)) then
-        write(io_viewer,100) "evalutes total geometric derivatives"
-        call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
-        ! type of total geometric derivatives
-        select case (p_geom_type)
-        case (REDUNDANT_GEO)
-          write(io_viewer,100) "redundant total geometric derivatives required"
-        case default
-          write(io_viewer,100) "unique total geometric derivatives required"
-        end select
-      end if
-      ! MPI communicator
-      if (present(api_comm)) write(io_viewer,100) "MPI communicator provided"
-      ! arguments related to integral matrices
-      if (present(val_ints)) write(io_viewer,100) "integral matrices returned"
-      if (present(write_ints)) then
-        if (write_ints) write(io_viewer,100) "integral matrices will be written on file"
-      end if
-      ! arguments related to expectation values
-      if (present(ao_dens)) then
-        write(io_viewer,100) "number of AO density matrices", num_dens
-        if (level_print>=20) then
-          do icomp = 1, num_dens
-            write(io_viewer,"()")
-            write(io_viewer,100) "AO density matrix", icomp
-            call MatView(A=ao_dens(icomp), io_viewer=io_viewer)
-            write(io_viewer,"()")
-          end do
-        end if
-        if (present(val_expt)) write(io_viewer,100) "expectation values returned"
-        if (present(write_expt)) then
-          if (write_expt) write(io_viewer,100) "expectation values will be written on file"
-        end if
-      end if
-    end if
-    ! calculates total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the index of current path and total number of different paths
-      call GeomPathGetIndex(geom_tree=geom_tree, idx_path=idx_path)
-      call GeomTreeGetNumPaths(geom_tree=geom_tree, num_paths=num_paths)
-      ! calculates the property integrals of current path
-      do icomp = 1, num_nnz_comp
-        comp_bra = prop_comp%nnz_comp(1,icomp)
-        comp_ket = prop_comp%nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                    sub_shells_bra=sub_shells(:,comp_bra),   &
-                                    num_shells_ket=num_sub_shells(comp_ket), &
-                                    sub_shells_ket=sub_shells(:,comp_ket),   &
-                                    same_braket=same_braket,                 &
-                                    one_prop=prop_comp%one_prop,             &
-                                    geom_tree=geom_tree,                     &
-                                    geom_type=p_geom_type,                   &
-                                    api_comm=api_comm,                       &
-                                    num_ints=num_ints,                       &
-                                    val_ints=val_ints,                       &
-                                    write_ints=write_ints,                   &
-                                    num_dens=num_dens,                       &
-                                    ao_dens=ao_dens,                         &
-                                    val_expt=val_expt,                       &
-                                    write_expt=write_expt)
-      end do
-      ! loops over other paths
-      do ipath = idx_path+1, num_paths
-        ! generates the differentiated centers and their orders
-        call GeomTreeSearch(geom_tree=geom_tree)
-        ! dumps the information of current path
-        if (level_print>=20) &
-          call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
-        ! calculates the property integrals of current path
-        do icomp = 1, num_nnz_comp
-          comp_bra = prop_comp%nnz_comp(1,icomp)
-          comp_ket = prop_comp%nnz_comp(2,icomp)
-          same_braket = comp_bra==comp_ket
-          call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                      sub_shells_bra=sub_shells(:,comp_bra),   &
-                                      num_shells_ket=num_sub_shells(comp_ket), &
-                                      sub_shells_ket=sub_shells(:,comp_ket),   &
-                                      same_braket=same_braket,                 &
-                                      one_prop=prop_comp%one_prop,             &
-                                      geom_tree=geom_tree,                     &
-                                      geom_type=p_geom_type,                   &
-                                      api_comm=api_comm,                       &
-                                      num_ints=num_ints,                       &
-                                      val_ints=val_ints,                       &
-                                      write_ints=write_ints,                   &
-                                      num_dens=num_dens,                       &
-                                      ao_dens=ao_dens,                         &
-                                      val_expt=val_expt,                       & 
-                                      write_expt=write_expt)
-        end do
-      end do
-    ! no total geometric derivatives
-    else
-      do icomp = 1, num_nnz_comp
-        comp_bra = prop_comp%nnz_comp(1,icomp)
-        comp_ket = prop_comp%nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                    sub_shells_bra=sub_shells(:,comp_bra),   &
-                                    num_shells_ket=num_sub_shells(comp_ket), &
-                                    sub_shells_ket=sub_shells(:,comp_ket),   &
-                                    same_braket=same_braket,                 &
-                                    one_prop=prop_comp%one_prop,             &
-                                    api_comm=api_comm,                       &
-                                    num_ints=num_ints,                       &
-                                    val_ints=val_ints,                       &
-                                    write_ints=write_ints,                   &
-                                    num_dens=num_dens,                       &
-                                    ao_dens=ao_dens,                         &
-                                    val_expt=val_expt,                       & 
-                                    write_expt=write_expt)
-      end do
-    end if
-100 format("Gen1IntAPIGetIntExpt>> ",A,I4)
-  end subroutine Gen1IntAPIGetIntExpt
-
-  !> \brief evaluates the one-electron property intergrands contracted with AO density matrices
-  !> \author Bin Gao
-  !> \date 2012-05-15
-  !> \param prop_comp contains the information of one-electron property integrals and non-zero components
-  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
-  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
-  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
-  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
-  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
-  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
-  !> \param api_comm is the MPI communicator
-  !> \param num_points is the number of grid points
-  !> \param grid_points contains the coordinates of grid points
-  !> \param num_dens is the number of AO density matrices
-  !> \param ao_dens contains the AO density matrices
-  !> \param num_ints is the number of property integral matrices including various derivatives
-  !> \param io_viewer is the logical unit number of the viewer
-  !> \param level_print is the level of print
-  !> \return val_expt contains the one-electron property intergrands contracted with AO density matrices
-  !> \note the arrangement of \var(val_expt) will be in the order of
-  !>       \var(order_mom), \var(order_mag_bra), ..., \var(order_geo_total), and each of
-  !>       them is arranged in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz),
-  !>       see Gen1Int library manual, for instance Section 2.2;
-  !>       \var(val_expt) should be zero by users before calculations
-  subroutine Gen1IntAPIGetFunExpt(prop_comp, geom_tree, geom_type,       &
-                                  api_comm, num_points, grid_points,     &
-                                  num_dens, ao_dens, num_ints, val_expt, &
-                                  io_viewer, level_print)
-    type(prop_comp_t), intent(in) :: prop_comp
-    type(geom_tree_t), optional, intent(inout) :: geom_tree
-    integer, optional, intent(in) :: geom_type
-    integer, optional, intent(in) :: api_comm
-    integer, intent(in) :: num_points
-    real(REALK), intent(in) :: grid_points(3,num_points)
-    integer, intent(in) :: num_dens
-    type(matrix), intent(in) :: ao_dens(num_dens)
-    integer, intent(in) :: num_ints
-    real(REALK), intent(inout) :: val_expt(num_points,num_ints,num_dens)
-    integer, intent(in) :: io_viewer
-    integer, intent(in) :: level_print
-    integer num_nnz_comp                    !number of non-zero components
-    integer num_prop                        !number of property integrals
-    integer order_geo                       !order of total geometric derivatives
-    integer p_geom_type                     !type of returned total geometric derivatives
-    integer num_return_geo                  !number of returned total geometric derivatives
-    integer idx_path                        !index of current path of N-ary tree
-    integer num_paths                       !total number of different paths of N-ary tree
-    integer ipath                           !incremental recorder over different paths
-    integer icomp                           !incremental recorder over components
-    integer comp_bra                        !which component of AO sub-shells on bra center
-    integer comp_ket                        !which component of AO sub-shells on ket center
-    logical same_braket                     !if the AO sub-shells are the same on bra and ket centers
-    ! checks if the AO sub-shells are created
-    if (.not.api_inited) then
-      stop "Gen1IntAPIGetFunExpt>> sub-shells are not created!"
-    end if
-    ! gets the number of non-zero components
-    num_nnz_comp = size(prop_comp%nnz_comp,2)
-    ! gets the number of property integrals
-    call OnePropGetNumProp(one_prop=prop_comp%one_prop, num_prop=num_prop)
-    ! sets the type of total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the order of total geometric derivatives
-      call GeomTreeGetOrder(geom_tree=geom_tree, order_geo=order_geo)
-      ! gets the type of total geometric derivatives
-      if (order_geo>1) then
-        if (present(geom_type)) then
-          select case (geom_type)
-          case (REDUNDANT_GEO)
-            p_geom_type = REDUNDANT_GEO
-          case default
-            p_geom_type = UNIQUE_GEO
-          end select
-        ! default are unique total geometric derivatives
-        else
-          p_geom_type = UNIQUE_GEO
-        end if
-      ! the first order total geometric derivatives are unique
-      else
-        p_geom_type = UNIQUE_GEO
-      end if
-      ! gets the number of returned geometric derivatives
-      select case (p_geom_type)
-      case (REDUNDANT_GEO)
-        call GeomTreeGetNumAtoms(geom_tree=geom_tree, num_atoms=num_return_geo)
-        num_return_geo = (3*num_return_geo)**order_geo
-      case default
-        call GeomTreeGetNumGeo(geom_tree=geom_tree, num_unique_geo=num_return_geo)
-      end select
-    ! no total geometric derivatives
-    else
-      p_geom_type = UNIQUE_GEO
-      num_return_geo = 1
-    end if
-    ! checks the validity of \var(num_ints)
-    if (num_prop*num_return_geo>num_ints) then
-      stop "Gen1IntAPIGetFunExpt>> input num_ints is not enough!"
-    end if
-    ! dumps AO sub-shells
-    if (level_print>=15) then
-      do icomp = 1, num_nnz_comp
-        comp_bra = prop_comp%nnz_comp(1,icomp)
-        comp_ket = prop_comp%nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        write(io_viewer,100) "AO sub-shells on bra center", comp_bra
-        call Gen1IntShellView(num_shells=num_sub_shells(comp_bra), &
-                              sub_shells=sub_shells(:,comp_bra),   &
-                              io_viewer=io_viewer)
-        if (.not.same_braket) then
-          write(io_viewer,100) "AO sub-shells on ket center", comp_ket
-          call Gen1IntShellView(num_shells=num_sub_shells(comp_ket), &
-                                sub_shells=sub_shells(:,comp_ket),   &
-                                io_viewer=io_viewer)
-        end if
-      end do
-    end if
-    ! dumps other information to check
-    if (level_print>=10) then
-      ! the information of one-electron property integrals
-      call OnePropView(one_prop=prop_comp%one_prop, io_viewer=io_viewer)
-      if (present(geom_tree)) then
-        write(io_viewer,100) "evalutes total geometric derivatives"
-        call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
-        ! type of total geometric derivatives
-        select case (p_geom_type)
-        case (REDUNDANT_GEO)
-          write(io_viewer,100) "redundant total geometric derivatives required"
-        case default
-          write(io_viewer,100) "unique total geometric derivatives required"
-        end select
-      end if
-      ! MPI communicator
-      if (present(api_comm)) write(io_viewer,100) "MPI communicator provided"
-      ! arguments related to AO density matrices
-      write(io_viewer,100) "number of AO density matrices", num_dens
-      if (level_print>=20) then
-        do icomp = 1, num_dens
-          write(io_viewer,"()")
-          write(io_viewer,100) "AO density matrix", icomp
-          call MatView(A=ao_dens(icomp), io_viewer=io_viewer)
-          write(io_viewer,"()")
-        end do
-      end if
-    end if
-    ! calculates total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the index of current path and total number of different paths
-      call GeomPathGetIndex(geom_tree=geom_tree, idx_path=idx_path)
-      call GeomTreeGetNumPaths(geom_tree=geom_tree, num_paths=num_paths)
-      ! calculates the property integrals of current path
-      do icomp = 1, num_nnz_comp
-        comp_bra = prop_comp%nnz_comp(1,icomp)
-        comp_ket = prop_comp%nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                    sub_shells_bra=sub_shells(:,comp_bra),   &
-                                    num_shells_ket=num_sub_shells(comp_ket), &
-                                    sub_shells_ket=sub_shells(:,comp_ket),   &
-                                    same_braket=same_braket,                 &
-                                    one_prop=prop_comp%one_prop,             &
-                                    geom_tree=geom_tree,                     &
-                                    geom_type=p_geom_type,                   &
-                                    api_comm=api_comm,                       &
-                                    num_points=num_points,                   &
-                                    grid_points=grid_points,                 &
-                                    num_dens=num_dens,                       &
-                                    ao_dens=ao_dens,                         &
-                                    num_ints=num_ints,                       &
-                                    val_expt=val_expt)
-      end do
-      ! loops over other paths
-      do ipath = idx_path+1, num_paths
-        ! generates the differentiated centers and their orders
-        call GeomTreeSearch(geom_tree=geom_tree)
-        ! dumps the information of current path
-        if (level_print>=20) &
-          call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
-        ! calculates the property integrals of current path
-        do icomp = 1, num_nnz_comp
-          comp_bra = prop_comp%nnz_comp(1,icomp)
-          comp_ket = prop_comp%nnz_comp(2,icomp)
-          same_braket = comp_bra==comp_ket
-          call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                      sub_shells_bra=sub_shells(:,comp_bra),   &
-                                      num_shells_ket=num_sub_shells(comp_ket), &
-                                      sub_shells_ket=sub_shells(:,comp_ket),   &
-                                      same_braket=same_braket,                 &
-                                      one_prop=prop_comp%one_prop,             &
-                                      geom_tree=geom_tree,                     &
-                                      geom_type=p_geom_type,                   &
-                                      api_comm=api_comm,                       &
-                                      num_points=num_points,                   &
-                                      grid_points=grid_points,                 &
-                                      num_dens=num_dens,                       &
-                                      ao_dens=ao_dens,                         &
-                                      num_ints=num_ints,                       &
-                                      val_expt=val_expt)
-        end do
-      end do
-    ! no total geometric derivatives
-    else
-      do icomp = 1, num_nnz_comp
-        comp_bra = prop_comp%nnz_comp(1,icomp)
-        comp_ket = prop_comp%nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                    sub_shells_bra=sub_shells(:,comp_bra),   &
-                                    num_shells_ket=num_sub_shells(comp_ket), &
-                                    sub_shells_ket=sub_shells(:,comp_ket),   &
-                                    same_braket=same_braket,                 &
-                                    one_prop=prop_comp%one_prop,             &
-                                    api_comm=api_comm,                       &
-                                    num_points=num_points,                   &
-                                    grid_points=grid_points,                 &
-                                    num_dens=num_dens,                       &
-                                    ao_dens=ao_dens,                         &
-                                    num_ints=num_ints,                       &
-                                    val_expt=val_expt)
-      end do
-    end if
-100 format("Gen1IntAPIGetFunExpt>> ",A,I4)
-  end subroutine Gen1IntAPIGetFunExpt
-
   !> \brief calculates molecular orbitals at grid points
   !> \author Bin Gao and Radovan Bast
   !> \date 2012-03-11
@@ -1150,8 +698,316 @@ module gen1int_api
     do icomp = 1, size(prop_comp%nnz_comp,2)
       write(io_viewer,100) "non-zero components", prop_comp%nnz_comp(:,icomp)
     end do
-100 format("Gen1IntAPIPropView>> ",A,NUM_COMPONENTS(I4))
+100 format("Gen1IntAPIPropView>> ",A,2I4)
   end subroutine Gen1IntAPIPropView
+
+  !> \brief returns the number of property integral matrices for given one-electron property integrals
+  !> \author Bin Gao
+  !> \date 2012-05-15
+  !> \param prop_comp is the operator of property integrals
+  !> \return num_prop is the number of property integral matrices
+  subroutine Gen1IntAPIPropGetNumProp(prop_comp, num_prop)
+    type(prop_comp_t), intent(in) :: prop_comp
+    integer, intent(out) :: num_prop
+    call OnePropGetNumProp(one_prop=prop_comp%one_prop, num_prop=num_prop)
+  end subroutine Gen1IntAPIPropGetNumProp
+
+  !> \brief returns the symmetry of property integral matrices for given one-electron property integrals
+  !> \author Bin Gao
+  !> \date 2012-01-12
+  !> \param prop_comp is the operator of property integrals
+  !> \return prop_sym indicates the symmetry of property integral matrices (SYMM_INT_MAT,
+  !>         ANTI_INT_MAT, or SQUARE_INT_MAT)
+  subroutine Gen1IntAPIPropGetSymmetry(prop_comp, prop_sym)
+    type(prop_comp_t), intent(in) :: prop_comp
+    integer, intent(out) :: prop_sym
+    call OnePropGetSymmetry(one_prop=prop_comp%one_prop, prop_sym=prop_sym)
+  end subroutine Gen1IntAPIPropGetSymmetry
+
+  !> \brief evaluates the integral matrices and/or expectation values
+  !> \author Bin Gao and Radovan Bast
+  !> \date 2011-01-11
+  !> \param prop_comp contains the information of one-electron property integrals and non-zero components
+  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
+  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
+  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
+  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
+  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
+  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
+  !> \param api_comm is the MPI communicator
+  !> \param num_ints is the number of property integral matrices including various derivatives
+  !> \param write_ints indicates if writing integral matrices on file
+  !> \param num_dens is the number of AO density matrices
+  !> \param ao_dens contains the AO density matrices
+  !> \param write_expt indicates if writing expectation values on file
+  !> \param io_viewer is the logical unit number of the viewer
+  !> \param level_print is the level of print
+  !> \return val_ints contains the integral matrices
+  !> \return val_expt contains the expectation values
+  !> \note the arrangement of var(val_ints) and \var(val_expt) will be in the order of
+  !>       \var(order_mom), \var(order_mag_bra), ..., \var(order_geo_total), and each of
+  !>       them is arranged in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz),
+  !>       see Gen1Int library manual, for instance Section 2.2;
+  !>       \var(val_expt) should be zero by users before calculations
+  subroutine Gen1IntAPIPropGetIntExpt(prop_comp, geom_tree, geom_type, api_comm, &
+                                      num_ints, val_ints, write_ints,            &
+                                      num_dens, ao_dens, val_expt, write_expt,   &
+                                      io_viewer, level_print)
+    type(prop_comp_t), intent(in) :: prop_comp
+    type(geom_tree_t), optional, intent(inout) :: geom_tree
+    integer, optional, intent(in) :: geom_type
+    integer, optional, intent(in) :: api_comm
+    integer, intent(in) :: num_ints
+    type(matrix), optional, intent(inout) :: val_ints(num_ints)
+    logical, optional, intent(in) :: write_ints
+    integer, intent(in) :: num_dens
+    type(matrix), optional, intent(in) :: ao_dens(num_dens)
+    real(REALK), optional, intent(inout) :: val_expt(num_ints*num_dens)
+    logical, optional, intent(in) :: write_expt
+    integer, intent(in) :: io_viewer
+    integer, intent(in) :: level_print
+    ! checks if the AO sub-shells are created
+    if (.not.api_inited) then
+      stop "Gen1IntAPIPropGetIntExpt>> sub-shells are not created!"
+    end if
+    call Gen1IntOnePropGetIntExpt(nnz_comp=prop_comp%nnz_comp, &
+                                  one_prop=prop_comp%one_prop, &
+                                  geom_tree=geom_tree,         &
+                                  geom_type=geom_type,         &
+                                  api_comm=api_comm,           &
+                                  num_ints=num_ints,           &
+                                  val_ints=val_ints,           &
+                                  write_ints=write_ints,       &
+                                  num_dens=num_dens,           &
+                                  ao_dens=ao_dens,             &
+                                  val_expt=val_expt,           &
+                                  write_expt=write_expt,       &
+                                  io_viewer=io_viewer,         &
+                                  level_print=level_print)
+  end subroutine Gen1IntAPIPropGetIntExpt
+
+  !> \brief evaluates the one-electron property intergrands contracted with AO density matrices
+  !> \author Bin Gao
+  !> \date 2012-05-15
+  !> \param prop_comp contains the information of one-electron property integrals and non-zero components
+  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
+  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
+  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
+  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
+  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
+  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
+  !> \param api_comm is the MPI communicator
+  !> \param num_points is the number of grid points
+  !> \param grid_points contains the coordinates of grid points
+  !> \param num_dens is the number of AO density matrices
+  !> \param ao_dens contains the AO density matrices
+  !> \param num_ints is the number of property integral matrices including various derivatives
+  !> \param io_viewer is the logical unit number of the viewer
+  !> \param level_print is the level of print
+  !> \return val_expt contains the one-electron property intergrands contracted with AO density matrices
+  !> \note the arrangement of \var(val_expt) will be in the order of
+  !>       \var(order_mom), \var(order_mag_bra), ..., \var(order_geo_total), and each of
+  !>       them is arranged in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz),
+  !>       see Gen1Int library manual, for instance Section 2.2;
+  !>       \var(val_expt) should be zero by users before calculations
+  subroutine Gen1IntAPIPropGetFunExpt(prop_comp, geom_tree, geom_type,       &
+                                      api_comm, num_points, grid_points,     &
+                                      num_dens, ao_dens, num_ints, val_expt, &
+                                      io_viewer, level_print)
+    type(prop_comp_t), intent(in) :: prop_comp
+    type(geom_tree_t), optional, intent(inout) :: geom_tree
+    integer, optional, intent(in) :: geom_type
+    integer, optional, intent(in) :: api_comm
+    integer, intent(in) :: num_points
+    real(REALK), intent(in) :: grid_points(3,num_points)
+    integer, intent(in) :: num_dens
+    type(matrix), intent(in) :: ao_dens(num_dens)
+    integer, intent(in) :: num_ints
+    real(REALK), intent(inout) :: val_expt(num_points,num_ints,num_dens)
+    integer, intent(in) :: io_viewer
+    integer, intent(in) :: level_print
+    integer num_nnz_comp                    !number of non-zero components
+    integer num_prop                        !number of property integrals
+    integer order_geo                       !order of total geometric derivatives
+    integer p_geom_type                     !type of returned total geometric derivatives
+    integer num_return_geo                  !number of returned total geometric derivatives
+    integer idx_path                        !index of current path of N-ary tree
+    integer num_paths                       !total number of different paths of N-ary tree
+    integer ipath                           !incremental recorder over different paths
+    integer icomp                           !incremental recorder over components
+    integer comp_bra                        !which component of AO sub-shells on bra center
+    integer comp_ket                        !which component of AO sub-shells on ket center
+    logical same_braket                     !if the AO sub-shells are the same on bra and ket centers
+    ! checks if the AO sub-shells are created
+    if (.not.api_inited) then
+      stop "Gen1IntAPIPropGetFunExpt>> sub-shells are not created!"
+    end if
+    ! gets the number of non-zero components
+    num_nnz_comp = size(prop_comp%nnz_comp,2)
+    ! gets the number of property integrals
+    call OnePropGetNumProp(one_prop=prop_comp%one_prop, num_prop=num_prop)
+    ! sets the type of total geometric derivatives
+    if (present(geom_tree)) then
+      ! gets the order of total geometric derivatives
+      call GeomTreeGetOrder(geom_tree=geom_tree, order_geo=order_geo)
+      ! gets the type of total geometric derivatives
+      if (order_geo>1) then
+        if (present(geom_type)) then
+          select case (geom_type)
+          case (REDUNDANT_GEO)
+            p_geom_type = REDUNDANT_GEO
+          case default
+            p_geom_type = UNIQUE_GEO
+          end select
+        ! default are unique total geometric derivatives
+        else
+          p_geom_type = UNIQUE_GEO
+        end if
+      ! the first order total geometric derivatives are unique
+      else
+        p_geom_type = UNIQUE_GEO
+      end if
+      ! gets the number of returned geometric derivatives
+      select case (p_geom_type)
+      case (REDUNDANT_GEO)
+        call GeomTreeGetNumAtoms(geom_tree=geom_tree, num_atoms=num_return_geo)
+        num_return_geo = (3*num_return_geo)**order_geo
+      case default
+        call GeomTreeGetNumGeo(geom_tree=geom_tree, num_unique_geo=num_return_geo)
+      end select
+    ! no total geometric derivatives
+    else
+      p_geom_type = UNIQUE_GEO
+      num_return_geo = 1
+    end if
+    ! checks the validity of \var(num_ints)
+    if (num_prop*num_return_geo>num_ints) then
+      stop "Gen1IntAPIPropGetFunExpt>> input num_ints is not enough!"
+    end if
+    ! dumps AO sub-shells
+    if (level_print>=15) then
+      do icomp = 1, num_nnz_comp
+        comp_bra = prop_comp%nnz_comp(1,icomp)
+        comp_ket = prop_comp%nnz_comp(2,icomp)
+        same_braket = comp_bra==comp_ket
+        write(io_viewer,100) "AO sub-shells on bra center", comp_bra
+        call Gen1IntShellView(num_shells=num_sub_shells(comp_bra), &
+                              sub_shells=sub_shells(:,comp_bra),   &
+                              io_viewer=io_viewer)
+        if (.not.same_braket) then
+          write(io_viewer,100) "AO sub-shells on ket center", comp_ket
+          call Gen1IntShellView(num_shells=num_sub_shells(comp_ket), &
+                                sub_shells=sub_shells(:,comp_ket),   &
+                                io_viewer=io_viewer)
+        end if
+      end do
+    end if
+    ! dumps other information to check
+    if (level_print>=10) then
+      ! the information of one-electron property integrals
+      call OnePropView(one_prop=prop_comp%one_prop, io_viewer=io_viewer)
+      if (present(geom_tree)) then
+        write(io_viewer,100) "evalutes total geometric derivatives"
+        call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
+        ! type of total geometric derivatives
+        select case (p_geom_type)
+        case (REDUNDANT_GEO)
+          write(io_viewer,100) "redundant total geometric derivatives required"
+        case default
+          write(io_viewer,100) "unique total geometric derivatives required"
+        end select
+      end if
+      ! MPI communicator
+      if (present(api_comm)) write(io_viewer,100) "MPI communicator provided"
+      ! arguments related to AO density matrices
+      write(io_viewer,100) "number of AO density matrices", num_dens
+      if (level_print>=20) then
+        do icomp = 1, num_dens
+          write(io_viewer,"()")
+          write(io_viewer,100) "AO density matrix", icomp
+          call MatView(A=ao_dens(icomp), io_viewer=io_viewer)
+          write(io_viewer,"()")
+        end do
+      end if
+    end if
+    ! calculates total geometric derivatives
+    if (present(geom_tree)) then
+      ! gets the index of current path and total number of different paths
+      call GeomPathGetIndex(geom_tree=geom_tree, idx_path=idx_path)
+      call GeomTreeGetNumPaths(geom_tree=geom_tree, num_paths=num_paths)
+      ! calculates the property integrals of current path
+      do icomp = 1, num_nnz_comp
+        comp_bra = prop_comp%nnz_comp(1,icomp)
+        comp_ket = prop_comp%nnz_comp(2,icomp)
+        same_braket = comp_bra==comp_ket
+        call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
+                                    sub_shells_bra=sub_shells(:,comp_bra),   &
+                                    num_shells_ket=num_sub_shells(comp_ket), &
+                                    sub_shells_ket=sub_shells(:,comp_ket),   &
+                                    same_braket=same_braket,                 &
+                                    one_prop=prop_comp%one_prop,             &
+                                    geom_tree=geom_tree,                     &
+                                    geom_type=p_geom_type,                   &
+                                    api_comm=api_comm,                       &
+                                    num_points=num_points,                   &
+                                    grid_points=grid_points,                 &
+                                    num_dens=num_dens,                       &
+                                    ao_dens=ao_dens,                         &
+                                    num_ints=num_ints,                       &
+                                    val_expt=val_expt)
+      end do
+      ! loops over other paths
+      do ipath = idx_path+1, num_paths
+        ! generates the differentiated centers and their orders
+        call GeomTreeSearch(geom_tree=geom_tree)
+        ! dumps the information of current path
+        if (level_print>=20) &
+          call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
+        ! calculates the property integrals of current path
+        do icomp = 1, num_nnz_comp
+          comp_bra = prop_comp%nnz_comp(1,icomp)
+          comp_ket = prop_comp%nnz_comp(2,icomp)
+          same_braket = comp_bra==comp_ket
+          call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
+                                      sub_shells_bra=sub_shells(:,comp_bra),   &
+                                      num_shells_ket=num_sub_shells(comp_ket), &
+                                      sub_shells_ket=sub_shells(:,comp_ket),   &
+                                      same_braket=same_braket,                 &
+                                      one_prop=prop_comp%one_prop,             &
+                                      geom_tree=geom_tree,                     &
+                                      geom_type=p_geom_type,                   &
+                                      api_comm=api_comm,                       &
+                                      num_points=num_points,                   &
+                                      grid_points=grid_points,                 &
+                                      num_dens=num_dens,                       &
+                                      ao_dens=ao_dens,                         &
+                                      num_ints=num_ints,                       &
+                                      val_expt=val_expt)
+        end do
+      end do
+    ! no total geometric derivatives
+    else
+      do icomp = 1, num_nnz_comp
+        comp_bra = prop_comp%nnz_comp(1,icomp)
+        comp_ket = prop_comp%nnz_comp(2,icomp)
+        same_braket = comp_bra==comp_ket
+        call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
+                                    sub_shells_bra=sub_shells(:,comp_bra),   &
+                                    num_shells_ket=num_sub_shells(comp_ket), &
+                                    sub_shells_ket=sub_shells(:,comp_ket),   &
+                                    same_braket=same_braket,                 &
+                                    one_prop=prop_comp%one_prop,             &
+                                    api_comm=api_comm,                       &
+                                    num_points=num_points,                   &
+                                    grid_points=grid_points,                 &
+                                    num_dens=num_dens,                       &
+                                    ao_dens=ao_dens,                         &
+                                    num_ints=num_ints,                       &
+                                    val_expt=val_expt)
+      end do
+    end if
+100 format("Gen1IntAPIPropGetFunExpt>> ",A,I4)
+  end subroutine Gen1IntAPIPropGetFunExpt
 
   !> \brief frees space taken by the operator of property integrals with non-zero components
   !> \author Bin Gao
@@ -1213,5 +1069,254 @@ module gen1int_api
       stop "Gen1IntAPIGeoTreeCreate>> negative order of geometric derivatives!"
     end if
   end subroutine Gen1IntAPIGeoTreeCreate
+
+  !> \brief evaluates the integral matrices and/or expectation values
+  !> \author Bin Gao and Radovan Bast
+  !> \date 2011-01-11
+  !> \param nnz_comp contains the non-zero components
+  !> \param one_prop contains the information of one-electron property integrals
+  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
+  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
+  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
+  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
+  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
+  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
+  !> \param api_comm is the MPI communicator
+  !> \param num_ints is the number of property integral matrices including various derivatives
+  !> \param write_ints indicates if writing integral matrices on file
+  !> \param num_dens is the number of AO density matrices
+  !> \param ao_dens contains the AO density matrices
+  !> \param write_expt indicates if writing expectation values on file
+  !> \param io_viewer is the logical unit number of the viewer
+  !> \param level_print is the level of print
+  !> \return val_ints contains the integral matrices
+  !> \return val_expt contains the expectation values
+  !> \note the arrangement of var(val_ints) and \var(val_expt) will be in the order of
+  !>       \var(order_mom), \var(order_mag_bra), ..., \var(order_geo_total), and each of
+  !>       them is arranged in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz),
+  !>       see Gen1Int library manual, for instance Section 2.2;
+  !>       \var(val_expt) should be zero by users before calculations
+  subroutine Gen1IntOnePropGetIntExpt(nnz_comp, one_prop, geom_tree, geom_type, &
+                                      api_comm, num_ints, val_ints, write_ints, &
+                                      num_dens, ao_dens, val_expt, write_expt,  &
+                                      io_viewer, level_print)
+    integer, intent(in) :: nnz_comp(:,:)
+    type(one_prop_t), intent(in) :: one_prop
+    type(geom_tree_t), optional, intent(inout) :: geom_tree
+    integer, optional, intent(in) :: geom_type
+    integer, optional, intent(in) :: api_comm
+    integer, intent(in) :: num_ints
+    type(matrix), optional, intent(inout) :: val_ints(num_ints)
+    logical, optional, intent(in) :: write_ints
+    integer, intent(in) :: num_dens
+    type(matrix), optional, intent(in) :: ao_dens(num_dens)
+    real(REALK), optional, intent(inout) :: val_expt(num_ints*num_dens)
+    logical, optional, intent(in) :: write_expt
+    integer, intent(in) :: io_viewer
+    integer, intent(in) :: level_print
+    integer num_nnz_comp                    !number of non-zero components
+    integer num_prop                        !number of property integrals
+    integer order_geo                       !order of total geometric derivatives
+    integer p_geom_type                     !type of returned total geometric derivatives
+    integer num_return_geo                  !number of returned total geometric derivatives
+    integer idx_path                        !index of current path of N-ary tree
+    integer num_paths                       !total number of different paths of N-ary tree
+    integer ipath                           !incremental recorder over different paths
+    integer icomp                           !incremental recorder over components
+    integer comp_bra                        !which component of AO sub-shells on bra center
+    integer comp_ket                        !which component of AO sub-shells on ket center
+    logical same_braket                     !if the AO sub-shells are the same on bra and ket centers
+    ! checks if the AO sub-shells are created
+    if (.not.api_inited) then
+      stop "Gen1IntOnePropGetIntExpt>> sub-shells are not created!"
+    end if
+    ! gets the number of non-zero components
+    if (size(nnz_comp,1)/=2) then
+      stop "Gen1IntOnePropGetIntExpt>> needs non-zero components on bra and ket centers!"
+    end if
+    num_nnz_comp = size(nnz_comp,2)
+    if (num_nnz_comp>NUM_COMPONENTS) then
+      stop "Gen1IntOnePropGetIntExpt>> too many components!"
+    end if
+    ! gets the number of property integrals
+    call OnePropGetNumProp(one_prop=one_prop, num_prop=num_prop)
+    ! sets the type of total geometric derivatives
+    if (present(geom_tree)) then
+      ! gets the order of total geometric derivatives
+      call GeomTreeGetOrder(geom_tree=geom_tree, order_geo=order_geo)
+      ! gets the type of total geometric derivatives
+      if (order_geo>1) then
+        if (present(geom_type)) then
+          select case (geom_type)
+          case (REDUNDANT_GEO)
+            p_geom_type = REDUNDANT_GEO
+          case default
+            p_geom_type = UNIQUE_GEO
+          end select
+        ! default are unique total geometric derivatives
+        else
+          p_geom_type = UNIQUE_GEO
+        end if
+      ! the first order total geometric derivatives are unique
+      else
+        p_geom_type = UNIQUE_GEO
+      end if
+      ! gets the number of returned geometric derivatives
+      select case (p_geom_type)
+      case (REDUNDANT_GEO)
+        call GeomTreeGetNumAtoms(geom_tree=geom_tree, num_atoms=num_return_geo)
+        num_return_geo = (3*num_return_geo)**order_geo
+      case default
+        call GeomTreeGetNumGeo(geom_tree=geom_tree, num_unique_geo=num_return_geo)
+      end select
+    ! no total geometric derivatives
+    else
+      p_geom_type = UNIQUE_GEO
+      num_return_geo = 1
+    end if
+    ! checks the validity of \var(num_ints)
+    if (present(val_ints) .or. present(val_expt)) then
+      if (num_prop*num_return_geo>num_ints) then
+        stop "Gen1IntOnePropGetIntExpt>> input num_ints is not enough!"
+      end if
+    end if
+    ! dumps AO sub-shells
+    if (level_print>=15) then
+      do icomp = 1, num_nnz_comp
+        comp_bra = nnz_comp(1,icomp)
+        comp_ket = nnz_comp(2,icomp)
+        same_braket = comp_bra==comp_ket
+        write(io_viewer,100) "AO sub-shells on bra center", comp_bra
+        call Gen1IntShellView(num_shells=num_sub_shells(comp_bra), &
+                              sub_shells=sub_shells(:,comp_bra),   &
+                              io_viewer=io_viewer)
+        if (.not.same_braket) then
+          write(io_viewer,100) "AO sub-shells on ket center", comp_ket
+          call Gen1IntShellView(num_shells=num_sub_shells(comp_ket), &
+                                sub_shells=sub_shells(:,comp_ket),   &
+                                io_viewer=io_viewer)
+        end if
+      end do
+    end if
+    ! dumps other information to check
+    if (level_print>=10) then
+      ! the information of one-electron property integrals
+      call OnePropView(one_prop=one_prop, io_viewer=io_viewer)
+      if (present(geom_tree)) then
+        write(io_viewer,100) "evalutes total geometric derivatives"
+        call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
+        ! type of total geometric derivatives
+        select case (p_geom_type)
+        case (REDUNDANT_GEO)
+          write(io_viewer,100) "redundant total geometric derivatives required"
+        case default
+          write(io_viewer,100) "unique total geometric derivatives required"
+        end select
+      end if
+      ! MPI communicator
+      if (present(api_comm)) write(io_viewer,100) "MPI communicator provided"
+      ! arguments related to integral matrices
+      if (present(val_ints)) write(io_viewer,100) "integral matrices returned"
+      if (present(write_ints)) then
+        if (write_ints) write(io_viewer,100) "integral matrices will be written on file"
+      end if
+      ! arguments related to expectation values
+      if (present(ao_dens)) then
+        write(io_viewer,100) "number of AO density matrices", num_dens
+        if (level_print>=20) then
+          do icomp = 1, num_dens
+            write(io_viewer,"()")
+            write(io_viewer,100) "AO density matrix", icomp
+            call MatView(A=ao_dens(icomp), io_viewer=io_viewer)
+            write(io_viewer,"()")
+          end do
+        end if
+        if (present(val_expt)) write(io_viewer,100) "expectation values returned"
+        if (present(write_expt)) then
+          if (write_expt) write(io_viewer,100) "expectation values will be written on file"
+        end if
+      end if
+    end if
+    ! calculates total geometric derivatives
+    if (present(geom_tree)) then
+      ! gets the index of current path and total number of different paths
+      call GeomPathGetIndex(geom_tree=geom_tree, idx_path=idx_path)
+      call GeomTreeGetNumPaths(geom_tree=geom_tree, num_paths=num_paths)
+      ! calculates the property integrals of current path
+      do icomp = 1, num_nnz_comp
+        comp_bra = nnz_comp(1,icomp)
+        comp_ket = nnz_comp(2,icomp)
+        same_braket = comp_bra==comp_ket
+        call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
+                                    sub_shells_bra=sub_shells(:,comp_bra),   &
+                                    num_shells_ket=num_sub_shells(comp_ket), &
+                                    sub_shells_ket=sub_shells(:,comp_ket),   &
+                                    same_braket=same_braket,                 &
+                                    one_prop=one_prop,                       &
+                                    geom_tree=geom_tree,                     &
+                                    geom_type=p_geom_type,                   &
+                                    api_comm=api_comm,                       &
+                                    num_ints=num_ints,                       &
+                                    val_ints=val_ints,                       &
+                                    write_ints=write_ints,                   &
+                                    num_dens=num_dens,                       &
+                                    ao_dens=ao_dens,                         &
+                                    val_expt=val_expt,                       &
+                                    write_expt=write_expt)
+      end do
+      ! loops over other paths
+      do ipath = idx_path+1, num_paths
+        ! generates the differentiated centers and their orders
+        call GeomTreeSearch(geom_tree=geom_tree)
+        ! dumps the information of current path
+        if (level_print>=20) &
+          call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
+        ! calculates the property integrals of current path
+        do icomp = 1, num_nnz_comp
+          comp_bra = nnz_comp(1,icomp)
+          comp_ket = nnz_comp(2,icomp)
+          same_braket = comp_bra==comp_ket
+          call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
+                                      sub_shells_bra=sub_shells(:,comp_bra),   &
+                                      num_shells_ket=num_sub_shells(comp_ket), &
+                                      sub_shells_ket=sub_shells(:,comp_ket),   &
+                                      same_braket=same_braket,                 &
+                                      one_prop=one_prop,                       &
+                                      geom_tree=geom_tree,                     &
+                                      geom_type=p_geom_type,                   &
+                                      api_comm=api_comm,                       &
+                                      num_ints=num_ints,                       &
+                                      val_ints=val_ints,                       &
+                                      write_ints=write_ints,                   &
+                                      num_dens=num_dens,                       &
+                                      ao_dens=ao_dens,                         &
+                                      val_expt=val_expt,                       & 
+                                      write_expt=write_expt)
+        end do
+      end do
+    ! no total geometric derivatives
+    else
+      do icomp = 1, num_nnz_comp
+        comp_bra = nnz_comp(1,icomp)
+        comp_ket = nnz_comp(2,icomp)
+        same_braket = comp_bra==comp_ket
+        call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
+                                    sub_shells_bra=sub_shells(:,comp_bra),   &
+                                    num_shells_ket=num_sub_shells(comp_ket), &
+                                    sub_shells_ket=sub_shells(:,comp_ket),   &
+                                    same_braket=same_braket,                 &
+                                    one_prop=one_prop,                       &
+                                    api_comm=api_comm,                       &
+                                    num_ints=num_ints,                       &
+                                    val_ints=val_ints,                       &
+                                    write_ints=write_ints,                   &
+                                    num_dens=num_dens,                       &
+                                    ao_dens=ao_dens,                         &
+                                    val_expt=val_expt,                       & 
+                                    write_expt=write_expt)
+      end do
+    end if
+100 format("Gen1IntOnePropGetIntExpt>> ",A,I4)
+  end subroutine Gen1IntOnePropGetIntExpt
 
 end module gen1int_api
