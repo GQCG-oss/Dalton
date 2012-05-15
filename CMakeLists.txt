@@ -145,12 +145,10 @@ if(ENABLE_GEN1INT)
         ${FREE_FORTRAN_SOURCES}
         ${Gen1Int_LIB_SRCS}
         gen1int/gen1int_matrix.F90
-        gen1int/reorder_p_sgto.F90
         gen1int/gen1int_shell.F90
-        gen1int/dalton_shell.F90
-        gen1int/get_ao_dens.F90
         gen1int/gen1int_cube.F90
-        gen1int/gen1int_interface.F90)
+        gen1int/gen1int_api.F90
+        gen1int/gen1int_host.F90)
 endif()
 
 # set cdash buildname

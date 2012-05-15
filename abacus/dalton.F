@@ -541,6 +541,12 @@ C
 !     release dynamically allocated memory
       deallocate(work)
 
+#if defined(BUILD_GEN1INT)
+C...  added by Bin Gao, May 13, 2012
+C...  terminates Gen1Int interface
+      call gen1int_host_finalize()
+#endif
+
       CALL MPIXFINALIZE
 C
 C     All below is not relevant for MPI as all proc. has stopped
@@ -585,6 +591,11 @@ C     IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
       CALL GPCLOSE(LUNDPF,'KEEP')
       CALL GPCLOSE(LUNMPF,'KEEP')
       CALL GPCLOSE(LUPRI,'KEEP')
+#if defined(BUILD_GEN1INT)
+C...  added by Bin Gao, Oct. 2, 2011
+C...  terminates Gen1Int interface
+      call gen1int_host_finalize()
+#endif
 #endif
 #if defined (VAR_PVM)
       IF (PARCAL) THEN
@@ -598,12 +609,6 @@ C
          CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
          CALL PVMXEXIT
       END IF
-#endif
-
-#ifdef BUILD_GEN1INT
-C...  added by Bin Gao, Oct. 2, 2011
-C...  frees space used in Gen1Int interface
-      call gen1int_ifc_clean
 #endif
       CALL QEXIT('DALTON main')
       END
