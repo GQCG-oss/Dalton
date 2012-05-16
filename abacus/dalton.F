@@ -53,6 +53,8 @@ Cef end
       INTEGER omp_get_num_procs
 #endif
       CHARACTER LABEL1*8, STHELP*10
+C defined parallel calculation types  
+#include "iprtyp.h"
 
 !     this is to echo input files to the output
       character(100)     :: line
@@ -478,7 +480,7 @@ C        IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
 C
-         IPRTYP = 0
+         IPRTYP = ENDING_SIGNAL
          CALL MPIXBCAST(IPRTYP,1,'INTEGER',MYNUM)
          CALL GPCLOSE(LUCME,'KEEP')
          CALL GPCLOSE(LUSTAT,'KEEP')
@@ -603,7 +605,7 @@ C
 C        Tell slaves to quit.
 C        --------------------
 C
-         IPRTYP = 0
+         IPRTYP = ENDING_SIGNAL
          CALL PVMXINITSEND(NCODE)
          CALL PVMXPACK(IPRTYP,1,'INTEGER')
          CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)

@@ -357,9 +357,11 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
       IF(MYNUM.EQ.MASTER) THEN
-c        IPRTYP=4 is registered for KSM Slave driver.
-         IPRTYP = 4
+c        DFT_KSM_WORK is registered for KSM Slave driver.
+         IPRTYP = DFT_KSM_WORK
          CALL MPI_Bcast(iprtyp,1, my_MPI_INTEGER,
      &                  MASTER, MPI_COMM_WORLD,IERR)
          CALL MPI_Bcast(iprint,1, my_MPI_INTEGER,
