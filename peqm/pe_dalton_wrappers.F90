@@ -1,8 +1,8 @@
 #if defined(BUILD_GEN1INT)
 subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
 
-       ! Gen1Int API
-       use gen1int_api
+    ! Gen1Int API
+    use gen1int_api
 ! TODO:
 !    use polarizable_embedding
 
@@ -187,96 +187,97 @@ subroutine Tk_integrals(Tk_ints, nints, ncomps, coord, work, nwrk)
         print *, 'WARNING: using EFG integrals which can result in unstable&
                  & behavior.'
         inttype = 'ELFGRDC'
-    else if (k == 3) then
-        print *, 'WARNING: using simple finite difference to obtain EFH&
-                 & integrals from potentially unstable EFG integrals.'
-        if (nwrk < 24 * nints) then
-            print *, 'Not enough work space for T^(3) integrals!'
-        end if
-        inttype = 'ELFGRDC'
-    else
-        stop 'wrong order specified or not implemented'
+    else if (k >= 3) then
+        stop 'Electric field hessian and higher order integrals not implemented.'
+!        print *, 'WARNING: using simple finite difference to obtain EFH&
+!                 & integrals from potentially unstable EFG integrals.'
+!        if (nwrk < 24 * nints) then
+!            print *, 'Not enough work space for T^(3) integrals!'
+!        end if
+!        inttype = 'ELFGRDC'
+!    else
+!        stop 'wrong order specified or not implemented'
     end if
 
     Tk_ints = 0.0d0
 
-    if (k <= 2) then
+    if (k <= 1) then
         n = ncomps
         call get1in(Tk_ints(1), inttype, n, work(1), nwrk, labint, intrep,  &
                     intadr, 0, .false., 0, trimat, dummy, .false., dummy, 1)
-!    else if (k == 2) then
-!        n = 3
-!        m = 3 * nints
-!        ! xx, xy, xz
-!        diporg(1) = coord(1) + 0.01d0
-!        call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,               &
-!                    labint, intrep, intadr, 0, .false., 0, trimat, dummy,   &
-!                    .false., dummy, 1)
-!        diporg(1) = coord(1) - 0.01d0
-!        call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,         &
-!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
-!                    dummy, .false., dummy, 1)
-!        diporg = coord
-!        Tk_ints(1:3*nints) = - (work(1:m) - work(1+m:2*m))                  &
-!                                / (2.0d0 * 0.01d0)
-! 
-!        ! yy, yz
-!        diporg(2) = diporg(2) + 0.01d0
-!        call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,               &
-!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
-!                    dummy, .false., dummy, 1)
-!        diporg(2) = diporg(2) - 2.0d0 * 0.01d0
-!        call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,         &
-!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
-!                    dummy, .false., dummy, 1)
-!        diporg = coord
-!        Tk_ints(1+3*nints:5*nints) = - (work(1+nints:m)                     &
-!                                        - work(1+4*nints:2*m))              &
-!                                        / (2.0d0 * 0.01d0)
-! 
-!        ! zz
-!        diporg(3) = diporg(3) + 0.01d0
-!        call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,               &
-!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
-!                    dummy, .false., dummy, 1)
-!        diporg(3) = diporg(3) - 2.0d0 * 0.01d0
-!        call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1),nwrk,          &
-!                    labint, intrep, intadr, 0, .false., 0, trimat,          &
-!                    dummy, .false., dummy, 1)
-!        diporg = coord
-!        Tk_ints(1+5*nints:6*nints) = - (work(1+2*nints:m)                   &
-!                                        - work(1+5*nints:2*m))              &
-!                                        / (2.0d0 * 0.01d0)
-    else if (k == 3) then
-        n = 6
-        m = nints
-        i = n * nints
-        l = 0
-        do j = 1, 3
-            diporg(j) = diporg(j) + 0.01d0
-            call get1in(work(l*i+1), inttype, n, work(j*i+1), nwrk,     &
-                        labint, intrep, intadr, 0, .false., 0, trimat,  &
-                        dummy, .false., dummy, 1)
-            diporg(j) = diporg(j) - 2.0d0 * 0.01d0
-            call get1in(work(j*i+1), inttype, n, work((j+1)*i+1), nwrk, &
-                        labint, intrep, intadr, 0, .false., 0, trimat,  &
-                        dummy, .false., dummy, 1)
-            diporg(j) = coord(j)
-            work(l*i+1:j*i) = (work(l*i+1:j*i) - work(j*i+1:(j+1)*i))   &
-                              / (2.0d0 * 0.01d0)
-            l = l + 1
-        end do
-        Tk_ints(1:m) = work(1:m)
-        Tk_ints(m+1:2*m) = work(i+1:i+1+m)
-        Tk_ints(2*m+1:3*m) = work(2*i+1:2*i+1+m)
-        Tk_ints(3*m+1:4*m) = work(i+1+m:i+1+2*m)
-        Tk_ints(4*m+1:5*m) = work(2*i+1+m:2*i+1+2*m)
-        Tk_ints(5*m+1:6*m) = work(2*i+1+2*m:2*i+1+3*m)
-        Tk_ints(6*m+1:7*m) = work(i+1+3*m:i+1+4*m)
-        Tk_ints(7*m+1:8*m) = work(2*i+1+3*m:2*i+1+4*m)
-        Tk_ints(8*m+1:9*m) = work(2*i+1+4*m:2*i+1+5*m)
-        Tk_ints(9*m+1:10*m) = work(2*i+1+5*m:2*i+1+6*m)
-        Tk_ints = -1.0d0 * Tk_ints
+    else if (k == 2) then
+        n = 3
+        m = 3 * nints
+        ! xx, xy, xz
+        diporg(1) = coord(1) + 0.001d0
+        call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,               &
+                    labint, intrep, intadr, 0, .false., 0, trimat, dummy,   &
+                    .false., dummy, 1)
+        diporg(1) = coord(1) - 0.001d0
+        call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,         &
+                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+                    dummy, .false., dummy, 1)
+        diporg = coord
+        Tk_ints(1:3*nints) = - (work(1:m) - work(1+m:2*m))                  &
+                                / (2.0d0 * 0.001d0)
+ 
+        ! yy, yz
+        diporg(2) = diporg(2) + 0.001d0
+        call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,               &
+                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+                    dummy, .false., dummy, 1)
+        diporg(2) = diporg(2) - 2.0d0 * 0.001d0
+        call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,         &
+                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+                    dummy, .false., dummy, 1)
+        diporg = coord
+        Tk_ints(1+3*nints:5*nints) = - (work(1+nints:m)                     &
+                                        - work(1+4*nints:2*m))              &
+                                        / (2.0d0 * 0.001d0)
+ 
+        ! zz
+        diporg(3) = diporg(3) + 0.001d0
+        call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,               &
+                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+                    dummy, .false., dummy, 1)
+        diporg(3) = diporg(3) - 2.0d0 * 0.001d0
+        call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1),nwrk,          &
+                    labint, intrep, intadr, 0, .false., 0, trimat,          &
+                    dummy, .false., dummy, 1)
+        diporg = coord
+        Tk_ints(1+5*nints:6*nints) = - (work(1+2*nints:m)                   &
+                                        - work(1+5*nints:2*m))              &
+                                        / (2.0d0 * 0.001d0)
+!    else if (k == 3) then
+!        n = 6
+!        m = nints
+!        i = n * nints
+!        l = 0
+!        do j = 1, 3
+!            diporg(j) = diporg(j) + 0.01d0
+!            call get1in(work(l*i+1), inttype, n, work(j*i+1), nwrk,     &
+!                        labint, intrep, intadr, 0, .false., 0, trimat,  &
+!                        dummy, .false., dummy, 1)
+!            diporg(j) = diporg(j) - 2.0d0 * 0.01d0
+!            call get1in(work(j*i+1), inttype, n, work((j+1)*i+1), nwrk, &
+!                        labint, intrep, intadr, 0, .false., 0, trimat,  &
+!                        dummy, .false., dummy, 1)
+!            diporg(j) = coord(j)
+!            work(l*i+1:j*i) = (work(l*i+1:j*i) - work(j*i+1:(j+1)*i))   &
+!                              / (2.0d0 * 0.01d0)
+!            l = l + 1
+!        end do
+!        Tk_ints(1:m) = work(1:m)
+!        Tk_ints(m+1:2*m) = work(i+1:i+1+m)
+!        Tk_ints(2*m+1:3*m) = work(2*i+1:2*i+1+m)
+!        Tk_ints(3*m+1:4*m) = work(i+1+m:i+1+2*m)
+!        Tk_ints(4*m+1:5*m) = work(2*i+1+m:2*i+1+2*m)
+!        Tk_ints(5*m+1:6*m) = work(2*i+1+2*m:2*i+1+3*m)
+!        Tk_ints(6*m+1:7*m) = work(i+1+3*m:i+1+4*m)
+!        Tk_ints(7*m+1:8*m) = work(2*i+1+3*m:2*i+1+4*m)
+!        Tk_ints(8*m+1:9*m) = work(2*i+1+4*m:2*i+1+5*m)
+!        Tk_ints(9*m+1:10*m) = work(2*i+1+5*m:2*i+1+6*m)
+!        Tk_ints = -1.0d0 * Tk_ints
     end if
 
     runqm3 = .false.
