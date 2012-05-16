@@ -578,11 +578,12 @@ mpi_sync_data(const SyncData* data, int count)
     }
 }
 
-
+/* defined parallel calculation types */
+#include "iprtyp.h"
 void
 dft_wake_slaves(DFTPropEvalMaster evaluator)
 {
-    static integer iprtyp = 5; /* magic DFT/C number */
+    static integer iprtyp = DFT_C_WORK; /* magic DFT/C number */
     static integer iprint = 0;
     int id, mynum;
 

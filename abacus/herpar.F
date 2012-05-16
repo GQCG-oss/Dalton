@@ -2467,13 +2467,15 @@ C
 #include "infpar.h"
 #include "wrkrsp.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       IF (TOFILE) CALL QUIT('Parallel calculations do not allow for '//
      &     'storing PCM-integrals on disk')
 C     
 C     Wake up the slaves
 C     
-      IPRTYP = 12
+      IPRTYP = J1XP_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
 C
@@ -2749,10 +2751,12 @@ C
 #include "mtags.h"
 #include "pcm.h"
 #include "mpif.h"      
+C defined parallel calculation types  
+#include "iprtyp.h"
 C     
 C     Wake up the slaves
 C     
-      IPRTYP = 14
+      IPRTYP = J2XP_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
 C

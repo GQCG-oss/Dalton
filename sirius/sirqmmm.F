@@ -4488,7 +4488,8 @@ C ----
 #include "mpif.h"
 #endif
 C#include <cbiher.h>
-
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), DCAO(NNBASX)
       LOGICAL LOCDEB
@@ -4519,7 +4520,7 @@ C#include <cbiher.h>
 
 C     Wake up slaves (Rock and roll all nite)
 
-      IPRTYP = 21
+      IPRTYP = PARQMMM__WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
@@ -4835,6 +4836,8 @@ C ----
 #endif
 #include "cbiher.h"
 #include "gnrinf.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
@@ -4853,7 +4856,7 @@ C ----
 
 C     Beginning of parallel section
 
-      IPRTYP = 22
+      IPRTYP = MM_FIELD_1_WORK
 
 C     Wake up slaves
 
@@ -5096,6 +5099,8 @@ C ----
 #endif
 #include "cbiher.h"
 #include "gnrinf.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
@@ -5109,7 +5114,7 @@ C ----
 
 C     Beginning of parallel section
 
-      IPRTYP = 23
+      IPRTYP = MM_FIELD_2_WORK
 
 C     Wake up slaves
 
@@ -5315,6 +5320,8 @@ C ----
 #endif
 #include "cbiher.h"
 #include "gnrinf.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), CINDMOM(*)
 
@@ -5340,7 +5347,7 @@ C ----
 
 C     Beginning of parallel section
 
-      IPRTYP = 24
+      IPRTYP = MM_POLAR_CONTR_WORK
 
 C     Wake up slaves
 
@@ -5593,7 +5600,8 @@ C      IMPLICIT NONE
 #if defined(VAR_MPI)
 #include "mpif.h"
 #endif
-
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       INTEGER POLDIM, POLARRAY
       DIMENSION POLARRAY(POLDIM)
@@ -5625,7 +5633,7 @@ C     Make a vector of pol sites
 
 C     Beginning of parallel section 
 
-      IPRTYP = 25
+      IPRTYP = MMITER_INDDIP_WORK
 
 C     Wake up slaves
 
