@@ -491,6 +491,7 @@ module gen1int_matrix
     if (A%triangular) then
       if (A%num_row==A%num_col) then
         allocate(A%elms_alpha(A%num_row*(A%num_row+1)/2), stat=info_mat)
+        A%elms_alpha = 0.0d0
         if (info_mat/=0) then
           A%num_row = huge(1)
           A%num_col = huge(1)
@@ -508,6 +509,7 @@ module gen1int_matrix
     ! matrix element storage in square format
     else
       allocate(A%elms_alpha(A%num_row*A%num_col), stat=info_mat)
+      A%elms_alpha = 0.0d0
       if (info_mat/=0) then
         A%num_row = huge(1)
         A%num_col = huge(1)

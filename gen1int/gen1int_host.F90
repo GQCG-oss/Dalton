@@ -812,8 +812,13 @@
       rewind(LUSIFC)
       ! reads the molecular orbital coefficients
       wrk_space(1:NCMOT) = 0.0_REALK
+#ifdef PRG_DIRAC
+      print *, 'error: RD_SIRIFC not available in DIRAC'
+      stop 1
+#else
       call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(NCMOT+1), &
                      len_work-NCMOT)
+#endif
       if (.not.found) then
         stop "gen1int_host_get_cube>> CMO is not found on SIRIFC!"
       end if
@@ -881,7 +886,7 @@
       if (ierr/=0) then
         stop "gen1int_host_get_cube>> failed to allocate cube_values!"
       end if
-#if defined(PROG_DIRAC)
+#ifdef PRG_DIRAC
       call Gen1IntAPIGetMO(comp_shell=(/1,2/),      &
 #else
       call Gen1IntAPIGetMO(comp_shell=(/1/),        &
@@ -1529,16 +1534,26 @@
     rewind(LUSIFC)
     ! reads the molecular orbital coefficients
     wrk_space(1:NCMOT) = 0.0_REALK
+#ifdef PRG_DIRAC
+      print *, 'error: RD_SIRIFC not available in DIRAC'
+      stop 1
+#else
     call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(start_left_wrk), &
                    len_left_wrk)
+#endif
     if (.not.found) then
       stop "gen1int_host_get_dens>> CMO is not found on SIRIFC!"
     end if
     ! reads active part of one-electron density matrix (MO)
     if (get_dv) then
       wrk_space(start_dv_mo:start_dv_mo+NNASHX-1) = 0.0_REALK
+#ifdef PRG_DIRAC
+      print *, 'error: RD_SIRIFC not available in DIRAC'
+      stop 1
+#else
       call RD_SIRIFC("DV", found, wrk_space(start_dv_mo), &
                      wrk_space(start_left_wrk), len_left_wrk)
+#endif
       if (.not.found) then
         stop "gen1int_host_get_dens>> DV is not found on SIRIFC!"
       end if
