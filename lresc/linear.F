@@ -34,8 +34,8 @@ C
       SUBROUTINE LRSCLIN(WORK,LWORK)
 C based on CTOABA 
 C...
-C...  This subroutine was written by Andrea Ligabue using
-C...  the subroutine LNRABA as a model (1999)
+C...  This subroutine was written by Juan Ignacio Melo using
+C...  the subroutine ABACTOCD  as a model (2012)
 C...
 #include <implicit.h>
 #include <dummy.h>
@@ -93,15 +93,19 @@ C
       LPVX   = 0
       KFREE  = 1
       LFREE  = LWORK
-      write(lupri,*) ' KFREE = 1' 
-      write(lupri,*) ' LFREE = LWORK : ', LWORK 
+      write(lupri,*) ' alocando 1 : '
+      write(lupri,*) ' ----------------------------'
+      write(lupri,*) '     KFREE = 1' 
+      write(lupri,*) '     LFREE = LWORK :         ', LWORK 
+      write(lupri,*) '                             '     
 C      
-      write(lupri,*)'COMMON VARIABLES on LINEAR '
-      write(lupri,*)'      N2ASHX : ni idea ' , N2ASHX
-      write(lupri,*)'      NASHT # Active Orbitals = 0 ? :', NASHT
-      write(lupri,*)'      LABINT (4*MXCOOR+9) = ', 4*MXCOOR+9
-      write(lupri,*)'      MXCOOR              = ', MXCOOR
-      write(lupri,*)'      NCMOT = NORB * NORB = ', NCMOT
+      write(lupri,*) ' COMMON VARIABLES on LINEAR '
+      write(lupri,*) ' ----------------------------'
+      write(lupri,*) '     N2ASHX : ni idea ' , N2ASHX
+      write(lupri,*) '     NASHT # Active Orbitals = 0 ? :', NASHT
+      write(lupri,*) '     LABINT (4*MXCOOR+9) = ', 4*MXCOOR+9
+      write(lupri,*) '     MXCOOR              = ', MXCOOR
+      write(lupri,*) '     NCMOT = NORB * NORB = ', NCMOT
       write(lupri,*) '   '     
       write(lupri,*) ' memget....  '     
 
@@ -114,18 +118,22 @@ c            dimensiona work(KCMO, KCMO+NCMOT)
 C
       KWORK1 = KFREE
       WORK1 = LFREE
-      write(lupri,*)'  AFTER MEMGET : KCMO, NCMOT     = ', KCMO,NCMOT
-      write(lupri,*)'  AFTER MEMGET : KUDV, LUDV      = ', KUDV,LUDV
-      write(lupri,*)'  AFTER MEMGET : KPVX, LPVX      = ', KPVX,LPVX
-      write(lupri,*)'  AFTER MEMGET : KPXINDX, LCINDX = ', KXINDX,KXINDX
-      write(lupri,*) ' KWORK1 = KFREE : ', KFREE 
-      write(lupri,*) ' WORK1  = LFREE : ', LFREE 
+      write(lupri,*) '   '     
+      write(lupri,*) ' AFTER MEMGET  '
+      write(lupri,*) ' ----------------------------'
+      write(lupri,*) '        KCMO, NCMOT     =  ', KCMO,NCMOT
+      write(lupri,*) '        KUDV, LUDV      =  ', KUDV,LUDV
+      write(lupri,*) '        KPVX, LPVX      =  ', KPVX,LPVX
+      write(lupri,*) '        KPXINDX, LCINDX =  ', KXINDX,KXINDX
+      write(lupri,*) '        KWORK1 = KFREE :   ', KFREE 
+      write(lupri,*) '        WORK1  = LFREE :   ', LFREE 
+      write(lupri,*) '   '     
 
       CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
 C          RD_SIRIFC( KEY ,FOUND,   AMAT   ,  WRK      ,LWRK)
       IF (.NOT.FOUND) CALL QUIT('LRSCLIN error: CMO not on SIRIFC')
-      write(lupri,*)' CMOS :  dan bien !!!' 
-      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
+Cjim      write(lupri,*)' CMOS :  dan bien !!!' 
+Cjim      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
       write(lupri,*) '   '     
 
 cx ACA es para alguna capa activa
@@ -138,16 +146,24 @@ cx         CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
 cx      END IF
 C
       ISYM = 1
-      write(lupri,*)'   ' 
-      write(lupri,*)' about to call LNRVAR' 
-      write(lupri,*)'       ISYM ', ISYM 
-      write(lupri,*)'       KWORK1 ', KWORK1
-      write(lupri,*)'       LWORK1 ', LWORK1
+      write(lupri,*) '   ' 
+      write(lupri,*) ' about to call LNRVAR' 
+      write(lupri,*) ' ----------------------------'
+      write(lupri,*) '       ISYM     : ', ISYM 
+      write(lupri,*) '       KWORK1   : ', KWORK1
+      write(lupri,*) '       LWORK1   : ', LWORK1
+      write(lupri,*) '   '     
       CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
-
-
 C
+c tirar esto
+      IPRCIX = 10
+c
+cd      write(lupri,*) '   ' 
+cd      write(lupri,*) ' output of getcix            ' 
       CALL GETCIX(WORK(KXINDX),IREFSY,IREFSY,WORK(KWORK1),LWORK1,0)
+cd      write(lupri,*) ' ----------------------------'
+cd      write(lupri,*) ' INDXCI(*)  :  ' , WORK(KXINDX)
+cd      write(lupri,*)  '  '
 C
 C     SOPPA :
 C
@@ -217,6 +233,7 @@ C
       KIDADR = KIDSYM + 9*MXCENT
       KWORK2 = KIDADR + 9*MXCENT
       LWORK2 = LWORK  - KWORK2
+      write(lupri,*) '        '
       write(lupri,*) ' sigo alocando : '
       write(lupri,*) ' ----------------------------'
       write(lupri,*) ' KIDSYM = KWORK1           : ' , KIDSYM
@@ -224,25 +241,24 @@ C
       write(lupri,*) ' KWORK2 = KIDADR + 9MXCENT : ' , KWORK2
       write(lupri,*) ' LWORK2 = LWORK - KWORK2   : ' , LWORK2
 C
-      NLBTOT = 0
-C
-      
-C
 C  Look for NSCO LABELS 
 C
       write(lupri,*)
       LABEL1='NSCO'
       write(lupri,*) '@Linear setting  LABEL1 :', LABEL1
+      IJ = 1
       DO I=1,NCOOR
         DO J=1,3
           LABEL1=CHRNOS(I/10)//CHRNOS(I/10)//CHRNOS(MOD(I,10))
      &           //'NCSO'//CHRXYZ(J)
           write(lupri,*) '   LABEL1 : ', LABEL1
-          LABINT(IJ)=LABEL1
-          LABSYM(IJ)='ANTI'
+          LABINT(IJ) = LABEL1
+          LABSYM(IJ)=1
+          IJ = IJ + 1
         END DO
       END DO
       NLAB = 3*NCOOR
+c      NLBTOT = 0
 c.      CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 c                             LAB1   ISYM1 -->   LAB2  ISYM2
 c     NLAB   = local  numero de labels?
@@ -252,40 +268,29 @@ c     WORK
 c     LABAPP = common cbiexe, cbiqr, LABAPP(MAXPP) character *8
 c              MAXAPP = parameter = 80
 c     LABSYM =  common cbiexe, cbiqr,   LABSYM(MAXPP)
-
-
-
 C
 C  Look for DARWIN LABELS 
 C
       write(lupri,*)
       LABEL2='DARWIN  '
       write(lupri,*) '@Linear setting  LABEL1 :', LABEL2
-      write(lupri,*) '   LABEL1 : ', LABEL2
+      write(lupri,*) '   LABEL2 : ', LABEL2
 
 cf take as example whe need to calculate integrals.
 cf      NCOMP  = 0
 cf      NPATOM = 0
-cf        CALL GET1IN(DUMMY,'DARWIN ',NCOMP,WORK(KWORK2),LWORK2,
-cf     &              LABINT,WORK(KIDSYM),WORK(KIDADR),
-cf     &              IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
-        
-      NLAB = 1
-      CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
-c                              LAB1   ISYM1 -->   LAB2  ISYM2
-
 cdx      IF (SHIELD) THEN
 cdx         IF (TODOINT('RPSO    ',LUPROP)) THEN
-           CALL GETLAB('RPSO',4,LABINT,WORK(KIDSYM),LUPROP)
+cdx           CALL GETLAB('RPSO',4,LABINT,WORK(KIDSYM),LUPROP)
 cdx         ELSE
-           CALL GET1IN(DUMMY,'RPSO   ',NCOMP,WORK(KWORK2),LWORK2,
-     &                 LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &                 IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+cdx           CALL GET1IN(DUMMY,'RPSO   ',NCOMP,WORK(KWORK2),LWORK2,
+cdx     &                 LABINT,WORK(KIDSYM),WORK(KIDADR),
+cdx     &                 IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
 cdx         ENDIF
-         NLAB = 3*NCOOR
-         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
-         write(lupri,*)'RPSO : LABAPP ' , LABAPP
-         write(lupri,*)'RPSO : LABSYM ' , LABSYM
+cdx         NLAB = 3*NCOOR
+cdx         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+cdx         write(lupri,*)'RPSO : LABAPP ' , LABAPP
+cdx         write(lupri,*)'RPSO : LABSYM ' , LABSYM
 cdx         NLBSHIE = NLBTOT
 cdx      ENDIF
 C
@@ -324,15 +329,17 @@ C
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 cxv      DO 300 IDIP = 1,3
-            IDIP = 1
-           LABEL1 = '001NSCOX' 
+           IDIP = 1
+           LABEL1 = LABINT(1)
+           write(lupri,*)' label1 : ', LABEL1  
 C
 cx         ISYM=ISYMAX(IDIP,1)+1
 C
          ISYM =1          
-         write(lupri,*)' ISYM :',ISYM
+         write(lupri,*)' ISYM    :              ',ISYM
 c        set variables for response module
-         write(lupri,*)' about to call LNRVAR' 
+         write(lupri,*) ' about to call LNRVAR' 
+         write(lupri,*) ' ----------------------------'
          CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK2),LWORK2)
 C
          IF (NFRVAL.GT.0) THEN
@@ -346,7 +353,10 @@ C
             LWRKG1 = LWORK - KWRKG1
             KSLV   = KGD1 + 2*NVARPT
             KLAST  = KSLV + 2*NVARPT
-            IF (KLAST.GT.LWORK) CALL STOPIT('CTOABjim',' ',KLAST,LWORK)
+            write(lupri,*) ' KLAST ',KLAST
+            write(lupri,*) ' LWORK ',LWORK
+            write(lupri,*) ' KLAST GT LWORK ! error '
+            IF (KLAST.GT.LWORK) CALL STOPIT('LINEARjim',' ',KLAST,LWORK)
             KWRK = KLAST
             LWRK = LWORK - KLAST + 1
             write(lupri,*)' NVARPT :', NVARPT 
@@ -360,6 +370,11 @@ C
 C   
             write(lupri,*) ' about to call GETPV'  
             write(lupri,*) ' ANTSYM', ANTSYM  
+            IPRSP = 15 
+            ANTSYM = 1 
+C jim sym to be read on luprop
+C ANTSYM : matrix symmetry of PRPMO matrix
+C          (1: symmetric, -1: antisymmetric, 0: unknown)
 
             CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
      &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
