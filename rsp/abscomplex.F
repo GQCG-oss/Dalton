@@ -716,7 +716,7 @@ C
 c     FLAG(16) MEANS SOLVENT CALCULATION
 C
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
-     &    (peqm .and. lpol(1)) THEN
+     &    (peqm .and. lpol(1))) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
      *               XTMP,WRK(KFREE),LFREE)
       ENDIF
