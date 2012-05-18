@@ -125,7 +125,8 @@ class MolecularSurface(object):
         areas = []
         vertices = []
         for sphere in self.spheres:
-            areas.append(sphere.area)
+            for vert in sphere.vertices:
+                areas.append(sphere.area)
             vertices.extend(sphere.vertices)
         self.areas = areas
         self.vertices = vertices
