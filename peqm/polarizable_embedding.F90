@@ -1417,10 +1417,10 @@ subroutine pe_compmep(denmats)
         call openfile('mep.dat', lu, 'new', 'formatted')
         rewind(lu)
         write(lu,'(i7)') npoints(ncores-1)
-        write(lu,'(a)') 'AU'
+        write(lu,'(a)') 'AA'
         do i = 1, npoints(ncores-1)
-            write(lu,'(7(f15.8,2x))') (mepgrid(j,i), j = 1, 3),&
-                                      & Vp(1,i), (Fp(j,i), j = 1, 3)
+            write(lu,'(6(f15.8,",",x),f15.8)') (mepgrid(j,i)/aa2au, j = 1, 3),&
+                                               Vp(1,i), (Fp(j,i), j = 1, 3)
         end do
         close(lu)
     end if

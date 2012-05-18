@@ -478,7 +478,7 @@ C
 C
 C PURPOSE:
 C
-      use polarizable_embedding, only: peqm
+      use polarizable_embedding, only: peqm, lpol
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h" !THZER
@@ -715,7 +715,8 @@ c     &        DUMMY,DUMMY,XTMP(1,I),1.0D0,UDV,MJWOP)
 C
 c     FLAG(16) MEANS SOLVENT CALCULATION
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
+     &    (peqm .and. lpol(1)) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
      *               XTMP,WRK(KFREE),LFREE)
       ENDIF
