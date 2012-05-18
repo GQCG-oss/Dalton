@@ -137,76 +137,18 @@ if(ENABLE_GEN1INT)
     message("-- Gen1Int library at "${LIB_GEN1INT_PATH})
     add_definitions(-DBUILD_GEN1INT)
     # Gen1int library source code
-    set(Gen1Int_SRCS ${LIB_GEN1INT_PATH}/src/error_stop.F90
-                     ${LIB_GEN1INT_PATH}/src/xtimer.F90
-                     ${LIB_GEN1INT_PATH}/src/norm_contr_cgto.F90
-                     ${LIB_GEN1INT_PATH}/src/norm_contr_sgto.F90
-                     ${LIB_GEN1INT_PATH}/src/reorder_ints.F90
-                     ${LIB_GEN1INT_PATH}/src/trace_ints.F90
-                     ${LIB_GEN1INT_PATH}/src/dump_info.F90
-                     ${LIB_GEN1INT_PATH}/src/binom_coeff.F90
-                     ${LIB_GEN1INT_PATH}/src/next_permutation.F90
-                     ${LIB_GEN1INT_PATH}/src/geom_total.F90
-                     ${LIB_GEN1INT_PATH}/src/sort_cents.F90
-                     ${LIB_GEN1INT_PATH}/src/shell_scatter.F90
-                     ${LIB_GEN1INT_PATH}/src/geom_part_zero.F90
-                     ${LIB_GEN1INT_PATH}/src/geom_part_one.F90
-                     ${LIB_GEN1INT_PATH}/src/hgto_to_cgto.F90
-                     ${LIB_GEN1INT_PATH}/src/hgto_to_lcgto.F90
-                     ${LIB_GEN1INT_PATH}/src/hgto_to_sgto.F90
-                     ${LIB_GEN1INT_PATH}/src/london_mom_hgto.F90
-                     ${LIB_GEN1INT_PATH}/src/const_contr_ints.F90
-                     ${LIB_GEN1INT_PATH}/src/const_contr_gto.F90
-                     ${LIB_GEN1INT_PATH}/src/carmom_deriv.F90
-                     ${LIB_GEN1INT_PATH}/src/carmom_hbra.F90
-                     ${LIB_GEN1INT_PATH}/src/carmom_hrr_ket.F90
-                     ${LIB_GEN1INT_PATH}/src/carmom_moment.F90
-                     ${LIB_GEN1INT_PATH}/src/prim_hgto_carmom.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_cgto_carmom.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_sgto_carmom.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_csgto_carmom.F90
-                     ${LIB_GEN1INT_PATH}/src/delta_geom.F90
-                     ${LIB_GEN1INT_PATH}/src/delta_hket.F90
-                     ${LIB_GEN1INT_PATH}/src/delta_moment.F90
-                     ${LIB_GEN1INT_PATH}/src/prim_hgto_delta.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_cgto_delta.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_sgto_delta.F90
-                     ${LIB_GEN1INT_PATH}/src/aux_boys_vec.F90
-                     ${LIB_GEN1INT_PATH}/src/nucpot_geom.F90
-                     ${LIB_GEN1INT_PATH}/src/nucpot_hket.F90
-                     ${LIB_GEN1INT_PATH}/src/nucpot_hbra.F90
-                     ${LIB_GEN1INT_PATH}/src/prim_hgto_nucpot.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_cgto_nucpot.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_sgto_nucpot.F90
-                     ${LIB_GEN1INT_PATH}/src/gaupot_geom.F90
-                     ${LIB_GEN1INT_PATH}/src/prim_hgto_gaupot.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_cgto_gaupot.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_sgto_gaupot.F90
-                     ${LIB_GEN1INT_PATH}/src/prim_hgto_odist.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_cgto_odist.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_sgto_odist.F90
-                     ${LIB_GEN1INT_PATH}/src/prim_hgto_value.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_cgto_value.F90
-                     ${LIB_GEN1INT_PATH}/src/contr_sgto_value.F90
-                     ${LIB_GEN1INT_PATH}/tools/str_decode.F90
-                     ${LIB_GEN1INT_PATH}/src/gen1int_geom.F90
-                     ${LIB_GEN1INT_PATH}/src/gen1int_carmom.F90
-                     ${LIB_GEN1INT_PATH}/src/gen1int_nucpot.F90
-                     ${LIB_GEN1INT_PATH}/src/gen1int_onehamil.F90
-                     ${LIB_GEN1INT_PATH}/src/gen1int_gaupot.F90
-                     ${LIB_GEN1INT_PATH}/src/gen1int_odist.F90
-                     ${LIB_GEN1INT_PATH}/src/gen1int.F90)
+    include(${LIB_GEN1INT_PATH}/cmake/Sources.cmake)
+    # Gen1int library header files
+    include_directories(${LIB_GEN1INT_PATH}/include)
     # Gen1Int interface source code
     set(FREE_FORTRAN_SOURCES
         ${FREE_FORTRAN_SOURCES}
-        ${Gen1Int_SRCS}
+        ${Gen1Int_LIB_SRCS}
         gen1int/gen1int_matrix.F90
-        gen1int/reorder_p_sgto.F90
         gen1int/gen1int_shell.F90
-        gen1int/dalton_shell.F90
-        gen1int/get_ao_dens.F90
         gen1int/gen1int_cube.F90
-        gen1int/gen1int_interface.F90)
+        gen1int/gen1int_api.F90
+        gen1int/gen1int_host.F90)
 endif()
 
 # set cdash buildname

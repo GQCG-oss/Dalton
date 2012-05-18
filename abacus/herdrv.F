@@ -225,10 +225,10 @@ C
   753   CONTINUE
       END IF
 
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
 C     test suite of Gen1Int interface, added by Bin Gao, Oct. 7, 2011
       if (TEST_GEN1INT)
-     &  call gen1int_ifc_test(LWORK, WORK, LUPRI, IPRDEF)
+     &  call gen1int_host_test(LWORK, WORK, LUPRI, IPRDEF)
 #endif
 
 C
@@ -1221,7 +1221,7 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             ONEPRP = .TRUE.
             GOTO 100
   239    CONTINUE
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
             TEST_GEN1INT = .true.
 #endif
             goto 100

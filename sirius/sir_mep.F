@@ -30,6 +30,8 @@ C  /* Deck calc_mep */
 #include "infpar.h"
 #include "mpif.h"
 #endif
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LFRSAV)
       DIMENSION CMO(*)
@@ -132,7 +134,7 @@ C     Only scf for the moment
          MLOOP = 0
        END IF
 
-       IPRTYP = 43
+       IPRTYP = MEP_WORK
        ISOMETHING = -1
        CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
        CALL MPIXBCAST(ISOMETHING,1,'INTEGER',MASTER)

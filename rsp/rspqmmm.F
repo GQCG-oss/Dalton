@@ -2238,6 +2238,8 @@ C
 #endif
 #include "cbiher.h"
 #include "infdim.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK), UBO(*), UCMO(*)
       DIMENSION UDVTR(*), UDV(NASHDI,NASHDI), CEFIELD(3*NNZAL)
@@ -2251,7 +2253,7 @@ C
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO_M1',-KLAST,LWRK2)
 
 C     Wake up slaves
-      IPRTYP = 28
+      IPRTYP = QMMMLNO_1_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
 
@@ -2440,6 +2442,8 @@ C
 #endif
 #include "cbiher.h"
 #include "infdim.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION UCMO(*), RXYO(N2ORBX), XINDMOM(3*NNZAL)
@@ -2453,7 +2457,7 @@ C
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO_M2',-KLAST,LWRK2)
 
 C     Wake up slaves
-      IPRTYP = 29
+      IPRTYP = QMMMLNO_2_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
@@ -2597,6 +2601,8 @@ C
 #endif
 #include "cbiher.h"
 #include "infdim.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION UDV(NASHDI,NASHDI),UCMO(*),ZYM1(*),ZYM2(*),EF1(*),EF2(*)
@@ -2611,7 +2617,7 @@ C
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMQRO_M1',-KLAST,LWRK2)
 
 C     Wake up slaves
-      IPRTYP = 30
+      IPRTYP = QMMMQRO_1_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
 
@@ -2804,6 +2810,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION UCMO(*),ZYM2(*),TRES(*),ZIND1(3*NNZAL),ZIND2(3*NNZAL)
@@ -2817,7 +2825,7 @@ C
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMQRO_M2',-KLAST,LWRK2)
 
 C     Wake up slaves
-      IPRTYP = 31
+      IPRTYP = QMMMQRO_2_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
 
@@ -2978,6 +2986,8 @@ C
 #endif
 #include "cbiher.h"
 #include "infdim.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION UCMO(*),UDV(NASHDI,NASHDI)
@@ -2994,7 +3004,7 @@ C
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMCRO_M1',-KLAST,LWRK2)
 
 C     Wake up slaves
-      IPRTYP = 32
+      IPRTYP = QMMMCRO_1_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
 
@@ -3204,6 +3214,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION ZIND1(3*NNZAL),ZIND2(3*NNZAL),ZIND3(3*NNZAL)
@@ -3218,7 +3230,7 @@ C
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMCRO_M2',-KLAST,LWRK2)
 
 C     Wake up slaves
-      IPRTYP = 33
+      IPRTYP = QMMMCRO_2_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
 

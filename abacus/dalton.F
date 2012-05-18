@@ -58,6 +58,8 @@ Cef end
       INTEGER omp_get_num_procs
 #endif
       CHARACTER LABEL1*8, STHELP*10
+C defined parallel calculation types  
+#include "iprtyp.h"
 
 !     this is to echo input files to the output
       character(100)     :: line
@@ -300,6 +302,8 @@ C
      *'Andrea Ligabue,','University of Modena,','Italy',
      &  '(CTOCD, AOSOPPA)',
      *'Ola B. Lutnaes,','University of Oslo,','Norway','(DFT Hessian)',
+     *'Juan I. Melo,','University of Buenos Aires,','Argentina',
+     &'(LRESC, Relativistic Effects on NMR Shieldings)',
      *'Kurt V. Mikkelsen,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF and QM/MM code)',
      *'Christian Neiss,','Univ. Erlangen-Nuernberg,','Germany',
@@ -481,7 +485,7 @@ C        IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
 C
-         IPRTYP = 0
+         IPRTYP = ENDING_SIGNAL
          CALL MPIXBCAST(IPRTYP,1,'INTEGER',MYNUM)
 
 !        check for open parallel models (e.g. those that are used in lucita)
@@ -548,6 +552,12 @@ C
 !     release dynamically allocated memory
       deallocate(work)
 
+#if defined(BUILD_GEN1INT)
+C...  added by Bin Gao, May 13, 2012
+C...  terminates Gen1Int interface
+      call gen1int_host_finalize()
+#endif
+
       CALL MPIXFINALIZE
 C
 C     All below is not relevant for MPI as all proc. has stopped
@@ -592,6 +602,11 @@ C     IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
       CALL GPCLOSE(LUNDPF,'KEEP')
       CALL GPCLOSE(LUNMPF,'KEEP')
       CALL GPCLOSE(LUPRI,'KEEP')
+#if defined(BUILD_GEN1INT)
+C...  added by Bin Gao, Oct. 2, 2011
+C...  terminates Gen1Int interface
+      call gen1int_host_finalize()
+#endif
 #endif
 #if defined (VAR_PVM)
       IF (PARCAL) THEN
@@ -599,18 +614,12 @@ C
 C        Tell slaves to quit.
 C        --------------------
 C
-         IPRTYP = 0
+         IPRTYP = ENDING_SIGNAL
          CALL PVMXINITSEND(NCODE)
          CALL PVMXPACK(IPRTYP,1,'INTEGER')
          CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
          CALL PVMXEXIT
       END IF
-#endif
-
-#ifdef BUILD_GEN1INT
-C...  added by Bin Gao, Oct. 2, 2011
-C...  frees space used in Gen1Int interface
-      call gen1int_ifc_clean
 #endif
       CALL QEXIT('DALTON main')
       END

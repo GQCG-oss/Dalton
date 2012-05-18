@@ -1261,6 +1261,8 @@ C
 C
 Clf Do not insert other definitions below the following include
 #include "ibtfun.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       NBASTOLD  = NBAST
       NNBASXOLD = NNBASX
@@ -1269,12 +1271,12 @@ C
       N2BASX = NBAST*NBAST
       IF (INTLAB .EQ. 'PCMBSOL') THEN
          MATDIM = N2BASX
-         IPRTYP = 13
+         IPRTYP = PCMBSOL_WORK
          NCOMP  = 3
          TRIMAT = .FALSE.
       ELSE
          MATDIM = NNBASX
-         IPRTYP = 11
+         IPRTYP = NPETES2_WORK
          NCOMP  = 1
          TRIMAT = .TRUE.
       END IF

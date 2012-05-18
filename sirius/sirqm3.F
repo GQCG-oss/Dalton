@@ -548,7 +548,9 @@ C
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
 #include "ibtfun.h"
-      IPRTYP = 16
+C defined parallel calculation types  
+#include "iprtyp.h"
+      IPRTYP = QM3_NSP_WORK
       
       CALL QENTER('QM3_NSP')
 
