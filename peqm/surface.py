@@ -1,6 +1,12 @@
 #!/usr/bin/env python
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
+try:
+    from mpl_toolkits.mplot3d import Axes3D
+except ImportError:
+    print('Import from matplotlib failed! Plotting will fail.')
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    print('Import from matplotlib failed! Plotting will fail.')
 import numpy as np
 
 # TODO: tuples vs. lists?
