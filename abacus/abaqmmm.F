@@ -910,6 +910,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),VEC2(*)
 
@@ -922,7 +924,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST_M1',-KLAST,LWORK)
 
-      IPRTYP = 34
+      IPRTYP = QMMMFIRST_1_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -1132,6 +1134,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),VEC2(*)
 
@@ -1144,7 +1148,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST_M2',-KLAST,LWORK)
 
-      IPRTYP = 35
+      IPRTYP = QMMMFIRST_2_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -1385,6 +1389,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),VEC2(*),AINDMOM(3*NNZAL)
 
@@ -1397,7 +1403,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST_M3',-KLAST,LWORK)
 
-      IPRTYP = 36
+      IPRTYP = QMMMFIRST_3_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(INTPRI,1,'INTEGER',MASTER)
@@ -1647,6 +1653,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(LWORK),VEC2(3*N2BASX),TOTMOM(3*MMCENT)
 
@@ -1659,7 +1667,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST_M4',-KLAST,LWORK)
 
-      IPRTYP = 37
+      IPRTYP = QMMMFIRST_4_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -1915,6 +1923,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(LWORK),EXPVAL(6), DENMAT(NNBASX)
 
@@ -1927,7 +1937,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMB2_M1',-KLAST,LWORK)
 
-      IPRTYP = 38
+      IPRTYP = QMMMB2_1_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -2130,6 +2140,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),EXPVAL(6), DENMAT(NNBASX)
 
@@ -2142,7 +2154,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMB2_M2',-KLAST,LWORK)
 
-      IPRTYP = 39
+      IPRTYP = QMMMB2_2_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -2356,6 +2368,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),EXPVAL(6),AINDMOM(3*NNZAL), DENMAT(NNBASX)
 
@@ -2368,7 +2382,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMB2_M3',-KLAST,LWORK)
 
-      IPRTYP = 40
+      IPRTYP = QMMMB2_3_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -2588,6 +2602,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(LWORK),EXPVAL(6),TOTMOM(3*MMCENT), DENMAT(NNBASX)
 
@@ -2600,7 +2616,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMB2_M4',-KLAST,LWORK)
 
-      IPRTYP = 41
+      IPRTYP = QMMMB2_4_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)

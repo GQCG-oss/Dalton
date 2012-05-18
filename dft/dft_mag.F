@@ -563,12 +563,14 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       LOGICAL DOVB
       DIMENSION DMAT(NBAST,NBAST)
 C
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 7
+         IPRTYP = DFT_BRHS_WORK
          CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
@@ -637,10 +639,12 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       DIMENSION DMAT(N2BASX)
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 10
+         IPRTYP = DFT_SUSCEP_WORK
          CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,

@@ -2632,6 +2632,8 @@ C
 #include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       CHARACTER*1 STARM, STARE, STARG, STARS, STARH
       CHARACTER*42 WLKTYP(0:8)
@@ -2648,8 +2650,8 @@ C
       CALL TITLER('FINAL RESULTS FROM WALK','*',125)
 C
       IPRTYP = IWKTYP
-      IF (IWKTYP .EQ. 1 .AND. IWKIND .EQ. 0) IPRTYP = 0
-      IF (IMAGE) IPRTYP = 8
+      IF (IWKTYP .EQ. 1 .AND. IWKIND .EQ. 0) IPRTYP = ENDING_SIGNAL
+      IF (IMAGE) IPRTYP = DFT_HESSTAT_WORK
       WRITE (LUPRI,'(/2A)') ' Walk type: ', WLKTYP(IPRTYP)
       WRITE (LUPRI,'(/A,I3)') ' Iteration number:', IPOINT
       IF (REJECT) WRITE (LUPRI,'(/A)')
