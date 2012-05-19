@@ -1414,7 +1414,7 @@ subroutine pe_compmep(denmats)
 #endif
 
     if (myid == 0) then
-        call openfile('mep.dat', lu, 'new', 'formatted')
+        call openfile('mep.csv', lu, 'new', 'formatted')
         rewind(lu)
         write(lu,'(i7)') npoints(ncores-1)
         write(lu,'(a)') 'AA'
