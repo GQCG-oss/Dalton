@@ -245,15 +245,15 @@ C  Look for NSCO LABELS
 C
       write(lupri,*)
       LABEL1='NSCO'
-      write(lupri,*) '@Linear setting  LABEL1 :', LABEL1
+      write(lupri,*) '@Linear setting  LABEL1 : NSCO '
       IJ = 1
       DO I=1,NCOOR
         DO J=1,3
-          LABEL1=CHRNOS(I/10)//CHRNOS(I/10)//CHRNOS(MOD(I,10))
-     &           //'NCSO'//CHRXYZ(J)
-          write(lupri,*) '   LABEL1 : ', LABEL1
-          LABINT(IJ) = LABEL1
+          LABINT(IJ)= CHRNOS(I/10)//CHRNOS(I/10)//CHRNOS(MOD(I,10))//
+     &     'NSCO'//CHRXYZ(J)
           LABSYM(IJ)=1
+          IF (LABEL1.EQ.'001NSCOX') write(lupri,*) 'equal'
+          write(lupri,*) '   LABEL1 : ', LABINT(IJ), LABSYM(IJ)
           IJ = IJ + 1
         END DO
       END DO
@@ -273,7 +273,7 @@ C  Look for DARWIN LABELS
 C
       write(lupri,*)
       LABEL2='DARWIN  '
-      write(lupri,*) '@Linear setting  LABEL1 :', LABEL2
+      write(lupri,*) '@Linear setting  LABEL2 :', LABEL2
       write(lupri,*) '   LABEL2 : ', LABEL2
 
 cf take as example whe need to calculate integrals.
@@ -331,12 +331,17 @@ C
 cxv      DO 300 IDIP = 1,3
            IDIP = 1
            LABEL1 = LABINT(1)
-           write(lupri,*)' label1 : ', LABEL1  
+c           LABEL1 = '001NSCOX'
+           write(lupri,*)' label1 : ', LABEL1 ,'|',LABINT(1) 
 C
-cx         ISYM=ISYMAX(IDIP,1)+1
-C
+cx       ISYM=ISYMAX(IDIP,1)+1
          ISYM =1          
-         write(lupri,*)' ISYM    :              ',ISYM
+C     
+          write(lupri,*) ' isymax', ISYMAX(1,1), ISYMAX(2,1)
+          write(lupri,*) ' isymax', ISYMAX(2,1), ISYMAX(2,2)
+          write(lupri,*) ' isymax', ISYMAX(3,1), ISYMAX(2,1)
+          write(lupri,*) ' isymaxxxxx', ISYMAX
+          write(lupri,*)' ISYM    :              ',ISYM
 c        set variables for response module
          write(lupri,*) ' about to call LNRVAR' 
          write(lupri,*) ' ----------------------------'
@@ -367,33 +372,17 @@ C           =========================================================
 C
             KSYMOP = ISYM
             TRPLET = .FALSE.
+            IPRSP = 15 
+            ANTSYM = 0
 C   
             write(lupri,*) ' about to call GETPV'  
-            write(lupri,*) ' ANTSYM', ANTSYM  
-            IPRSP = 15 
-            ANTSYM = 1 
+            write(*,*) '@linearLRESC  ANTSYM', ANTSYM  
 C jim sym to be read on luprop
 C ANTSYM : matrix symmetry of PRPMO matrix
 C          (1: symmetric, -1: antisymmetric, 0: unknown)
 
             CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
      &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
-cx                 WORD = LABEL1
-cx                 FC = DUMMY
-cx                 FV = DUMMY
-cx                 CMO = WORK(KCMO)
-cx                 UDV = WORK(KUDV)
-cx                 PV = WORK(KPVX)    --- 4 SOPPA
-cx                 XINDX = WORK(KXINDX)
-cx                 ANTSYM_GP = ANTSYM
-cx                 WRK = WORK(KWRKG1)
-cx                 LWRK = LWRKG1
-cx    DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
-      write(lupri,*) 'KUDV ' , WORK(KUDV)
-
-cx      CALL PRPCTL(WORD,WRK(KGP),CMO,UDV,PV,XINDX,ANTSYM_GP,
-cx     &               WRK(KWRK1),LWRK1)
-
             REWIND LUGDVE
             CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
 cvx            IF (IPRLNR.GT.-1) THEN
