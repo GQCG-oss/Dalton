@@ -12,7 +12,7 @@ module polarizable_embedding
 
     private
 
-    intrinsic :: allocated, present, max, size, cpu_time
+    intrinsic :: allocated, present, min, minval, max, maxval, size, cpu_time
 
     public :: pe_dalton_input, pe_read_potential, pe_master
     public :: pe_save_density, pe_intmol_twoints, pe_repulsion
@@ -166,6 +166,12 @@ module polarizable_embedding
     integer, dimension(:), save, allocatable :: nmepdists
     ! grid points
     real(dp), dimension(:,:), allocatable, save :: mepgrid
+    ! CUBE file origin and step sizes
+    real(dp), dimension(3), save :: origin, step
+    ! number of steps in x, y and z direction
+    integer, save :: xsteps = 40
+    integer, save :: ysteps = 40
+    integer, save :: zsteps = 40
 
 ! TODO:
 ! electric field damping in iterative solver
@@ -275,6 +281,12 @@ subroutine pe_dalton_input(word, luinp, lupri)
             pe_fd = .true.
         ! evaluate molecular electrostatic potential 
         else if (trim(option(2:)) == 'MEP') then
+            read(luinp,*) option
+            backspace(luinp)
+            if (option(1:1) /= '.' .and. option(1:1) /= '*'&
+               &.and. option(1:1) /= '!') then
+                read(luinp,*) xsteps, ysteps, zsteps
+            end if
             pe_mep = .true.
         else if (option(1:1) == '*') then
             word = option
@@ -298,7 +310,7 @@ subroutine pe_read_potential(coords, charges)
     real(dp), dimension(:), intent(in), optional :: charges
     real(dp), dimension(:,:), intent(in), optional :: coords
 
-    integer :: i, j, k, s
+    integer :: i, j, k, l, s
     integer :: lupot, lumep, nlines
     integer :: nidx, idx, jdx, kdx, ldx
     integer, dimension(:), allocatable :: idxs
@@ -332,24 +344,46 @@ subroutine pe_read_potential(coords, charges)
     end if
 
     if (pe_mep) then
+        origin(1) = minval(Rm(1,:)) - 4.0d0
+        origin(2) = minval(Rm(2,:)) - 4.0d0
+        origin(3) = minval(Rm(3,:)) - 4.0d0
+        step(1) = (maxval(Rm(1,:)) + 4.0d0 - origin(1)) / real(xsteps, dp)
+        step(2) = (maxval(Rm(2,:)) + 4.0d0 - origin(2)) / real(ysteps, dp)
+        step(3) = (maxval(Rm(3,:)) + 4.0d0 - origin(3)) / real(zsteps, dp)
         allocate(npoints(-1:ncores-1))
         npoints = 0
-        inquire(file='MEP.INP', exist=lexist)
-        if (lexist) then
-            call openfile('MEP.INP', lumep, 'old', 'formatted')
-        else
-            stop 'MEP.INP not found!'
-        end if
-        read(lumep,*) npoints(0)
-        read(lumep,*) auoraa
+        npoints(0) = xsteps * ysteps * zsteps
         allocate(mepgrid(3,npoints(0)))
-        do i = 1, npoints(0)
-            read(lumep,*) (mepgrid(j,i), j = 1, 3)
+        l = 1
+        do i = 1, xsteps
+            do j = 1, ysteps
+                do k = 1, zsteps
+                    mepgrid(1,l) = origin(1) + i * step(1)
+                    mepgrid(2,l) = origin(2) + j * step(2)
+                    mepgrid(3,l) = origin(3) + k * step(3)
+                    l = l + 1
+                end do
+            end do
         end do
-        close(lumep)
-        if (auoraa == 'AA') then
-            mepgrid  = mepgrid * aa2au
-        end if
+        
+!        allocate(npoints(-1:ncores-1))
+!        npoints = 0
+!        inquire(file='MEP.INP', exist=lexist)
+!        if (lexist) then
+!            call openfile('MEP.INP', lumep, 'old', 'formatted')
+!        else
+!            stop 'MEP.INP not found!'
+!        end if
+!        read(lumep,*) npoints(0)
+!        read(lumep,*) auoraa
+!        allocate(mepgrid(3,npoints(0)))
+!        do i = 1, npoints(0)
+!            read(lumep,*) (mepgrid(j,i), j = 1, 3)
+!        end do
+!        close(lumep)
+!        if (auoraa == 'AA') then
+!            mepgrid  = mepgrid * aa2au
+!        end if
     end if
 
     inquire(file='POTENTIAL.INP', exist=lexist)
@@ -1242,7 +1276,7 @@ subroutine pe_compmep(denmats)
 
     integer :: lu
     integer :: point
-    integer :: i, j, k
+    integer :: i, j, k, l, m, n
     integer :: ndist, nrest
     real(dp), dimension(3) :: Tm
     real(dp), dimension(:,:), allocatable :: Vp, Fp
@@ -1334,56 +1368,56 @@ subroutine pe_compmep(denmats)
             end if
         end do
 
-#if defined(BUILD_GEN1INT)
-        call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
-#else
-        call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), work, size(work))
-#endif
-
-        do j = 1, 3
-            Fp(j,i) = dot(denmats, Tk_ints(:,j))
-        end do
-
-        do j = 1, qmnucs
-            call Tk_tensor(Tm, mepgrid(:,i) - Rm(:,j))
-            do k = 1, 3
-                Fp(k,i) = Fp(k,i) - Zm(1,j) * Tm(k)
-            end do
-        end do
-
-        do j = 1, nsites(ncores-1)
-            Rsp = mepgrid(:,i) - Rs(:,j)
-            if (lmul(0)) then
-                Fs = 0.0d0
-                call multipole_field(Fs, Rsp, M0s(:,j))
-                Fp(:,i) = Fp(:,i) - Fs
-            end if
-            if (lmul(1)) then
-                Fs = 0.0d0
-                call multipole_field(Fs, Rsp, M1s(:,j))
-                Fp(:,i) = Fp(:,i) - Fs
-            end if
-            if (lmul(2)) then
-                Fs = 0.0d0
-                call multipole_field(Fs, Rsp, M2s(:,j))
-                Fp(:,i) = Fp(:,i) - Fs
-            end if
-            if (lmul(3)) then
-                Fs = 0.0d0
-                call multipole_field(Fs, Rsp, M3s(:,j))
-                Fp(:,i) = Fp(:,i) - Fs
-            end if
-            if (lmul(4)) then
-                Fs = 0.0d0
-                call multipole_field(Fs, Rsp, M4s(:,j))
-                Fp(:,i) = Fp(:,i) - Fs
-            end if
-            if (lmul(5)) then
-                Fs = 0.0d0
-                call multipole_field(Fs, Rsp, M5s(:,j))
-                Fp(:,i) = Fp(:,i) - Fs
-            end if
-        end do
+!#if defined(BUILD_GEN1INT)
+!        call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
+!#else
+!        call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), work, size(work))
+!#endif
+!
+!        do j = 1, 3
+!            Fp(j,i) = dot(denmats, Tk_ints(:,j))
+!        end do
+!
+!        do j = 1, qmnucs
+!            call Tk_tensor(Tm, mepgrid(:,i) - Rm(:,j))
+!            do k = 1, 3
+!                Fp(k,i) = Fp(k,i) - Zm(1,j) * Tm(k)
+!            end do
+!        end do
+!
+!        do j = 1, nsites(ncores-1)
+!            Rsp = mepgrid(:,i) - Rs(:,j)
+!            if (lmul(0)) then
+!                Fs = 0.0d0
+!                call multipole_field(Fs, Rsp, M0s(:,j))
+!                Fp(:,i) = Fp(:,i) - Fs
+!            end if
+!            if (lmul(1)) then
+!                Fs = 0.0d0
+!                call multipole_field(Fs, Rsp, M1s(:,j))
+!                Fp(:,i) = Fp(:,i) - Fs
+!            end if
+!            if (lmul(2)) then
+!                Fs = 0.0d0
+!                call multipole_field(Fs, Rsp, M2s(:,j))
+!                Fp(:,i) = Fp(:,i) - Fs
+!            end if
+!            if (lmul(3)) then
+!                Fs = 0.0d0
+!                call multipole_field(Fs, Rsp, M3s(:,j))
+!                Fp(:,i) = Fp(:,i) - Fs
+!            end if
+!            if (lmul(4)) then
+!                Fs = 0.0d0
+!                call multipole_field(Fs, Rsp, M4s(:,j))
+!                Fp(:,i) = Fp(:,i) - Fs
+!            end if
+!            if (lmul(5)) then
+!                Fs = 0.0d0
+!                call multipole_field(Fs, Rsp, M5s(:,j))
+!                Fp(:,i) = Fp(:,i) - Fs
+!            end if
+!        end do
         i = i + 1
     end do
 
@@ -1414,14 +1448,42 @@ subroutine pe_compmep(denmats)
 #endif
 
     if (myid == 0) then
-        call openfile('mep.csv', lu, 'new', 'formatted')
+        call openfile('mep.cube', lu, 'new', 'formatted')
         rewind(lu)
-        write(lu,'(i7)') npoints(ncores-1)
-        write(lu,'(a)') 'AA'
-        do i = 1, npoints(ncores-1)
-            write(lu,'(6(f15.8,",",x),f15.8)') (mepgrid(j,i)/aa2au, j = 1, 3),&
-                                               Vp(1,i), (Fp(j,i), j = 1, 3)
+        write(lu,'(a)') 'CUBE file'
+        write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+        write(lu,'(i5,3f12.6)') qmnucs, origin
+        write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0    
+        write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+        write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+        do i = 1, qmnucs
+            write(lu,'(i5,4f12.6)') int(Zm(1,i)), Zm(1,i), Rm(:,i)
         end do
+        l = 1
+        m = 1
+        do i = 1, xsteps
+            do j = 1, ysteps
+                do k = 1, zsteps
+                    if (m < 6) then
+                        write(lu,'(e13.5)', advance='no') Vp(1,l)
+                        m = m + 1
+                    else if (m == 6) then
+                        write(lu,'(e13.5)') Vp(1,l)
+                        m = 1
+                    else if (k == zsteps) then
+                        write(lu,'(e13.5)') Vp(1,l)
+                        m = 1
+                    end if
+                    l = l + 1
+                end do
+            end do
+        end do
+!        write(lu,'(i7)') npoints(ncores-1)
+!        write(lu,'(a)') 'AA'
+!        do i = 1, npoints(ncores-1)
+!            write(lu,'(6(f15.8,",",x),f15.8)') (mepgrid(j,i)/aa2au, j = 1, 3),&
+!                                               Vp(1,i), (Fp(j,i), j = 1, 3)
+!        end do
         close(lu)
     end if
 
