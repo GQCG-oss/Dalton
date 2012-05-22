@@ -58,6 +58,7 @@ module polarizable_embedding
     real(dp), parameter :: aa2au = 1.8897261249935897d0
     real(dp), parameter :: zero = 1.0d-6
     integer, save :: scfcycle = 0
+    integer, save :: print_lvl = 0
     real(dp), save :: thriter = 1.0d-8
     real(dp), save :: damp = 2.1304d0
     real(dp), save :: gauss = 0.44d0
@@ -289,7 +290,8 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! Do a PE-COSMO calculation 
         else if (trim(option(2:)) == 'PESOL') then
             pe_sol = .true.
-            call pe_read_tesselation()
+        else if (trim(option(2:)) == 'PRINT') then
+            read(luinp,*) print_lvl
         else if (option(1:1) == '*') then
             word = option
             exit
@@ -297,12 +299,10 @@ subroutine pe_dalton_input(word, luinp, lupri)
             cycle
         end if
     end do
-
     if (pe_mep .and. peqm) stop 'PEQM and MEP are not compatible'
     if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible'
     if (peqm .and. pe_savden) stop 'PEQM and SAVDEN are not compatible'
     if (peqm .and. pe_twoint) stop 'PEQM and TWOINT are not compatible'
-!    if (peqm .and. pe_sol) stop 'PE-COSMO not implemented yet!!'
 
 end subroutine pe_dalton_input
 
@@ -344,6 +344,11 @@ subroutine pe_read_potential(coords, charges)
         stop
     else if (.not. present(coords) .and. present(charges)) then
         print *, 'ERROR: nuclear coordinates of the QM system are missing.'
+    end if
+
+!   Do a PE-COSMO calculation   
+    if (pe_sol) then
+        call pe_read_tesselation()
     end if
 
     if (pe_mep) then
@@ -841,16 +846,16 @@ subroutine pe_read_tesselation()
 100 continue
 
     close(lusurf)
-
-    write(luout,*) 'Sp in pe_read_tesselation'
-    do i=1,nsurp
-           write (luout,*) Sp(:,i)
-    end do
-    write(luout,*) 'A in pe_read_tesselation'
-    do i=1,nsurp
-        write (luout,*) A(i)
-    end do
-
+    if (print_lvl .gt. 100) then
+       write(luout,*) 'Sp in pe_read_tesselation'
+       do i=1,nsurp
+              write (luout,*) Sp(:,i)
+       end do
+       write(luout,*) 'A in pe_read_tesselation'
+       do i=1,nsurp
+          write (luout,*) A(i)
+       end do
+    end if
 end subroutine pe_read_tesselation
 
 !------------------------------------------------------------------------------
