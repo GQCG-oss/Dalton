@@ -185,8 +185,10 @@ class MolecularSurface(object):
     def write_surface(self):
         """Write input files for PE module."""
         fout = open('surface.dat', 'w')
+        fout.write('NPOINTS\n')
         fout.write('{}\n'.format(len(self.areas)))
         output = ''
+        fout.write('coordinates\n')
         for area, centroid in zip(self.areas, self.centroids):
             output += ('{0[0]:12.6f} {0[1]:12.6f} {0[2]:12.6f}'.format(centroid) +
                        '{0:12.6f}\n'.format(area))

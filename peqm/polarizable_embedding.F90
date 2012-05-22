@@ -34,6 +34,7 @@ module polarizable_embedding
     logical, public, save :: pe_savden = .false.
     logical, public, save :: pe_fd = .false.
     logical, save :: pe_timing = .false.
+    logical, public, save :: pe_sol = .false.
 
     ! calculation type
     logical, save :: fock = .false.
@@ -167,6 +168,15 @@ module polarizable_embedding
     ! grid points
     real(dp), dimension(:,:), allocatable, save :: mepgrid
 
+    ! PE-COSMO info
+    ! ---------
+
+    ! Area of tesselation point
+    real(dp), dimension(:), allocatable, save :: A
+    ! coordinates of tesselation point
+    real(dp), dimension(:,:), allocatable, save :: Sp
+
+
 ! TODO:
 ! electric field damping in iterative solver
 ! damping of electric field from QM system
@@ -276,6 +286,10 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! evaluate molecular electrostatic potential 
         else if (trim(option(2:)) == 'MEP') then
             pe_mep = .true.
+        ! Do a PE-COSMO calculation 
+        else if (trim(option(2:)) == 'PESOL') then
+            pe_sol = .true.
+            call pe_read_tesselation()
         else if (option(1:1) == '*') then
             word = option
             exit
@@ -288,6 +302,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
     if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible'
     if (peqm .and. pe_savden) stop 'PEQM and SAVDEN are not compatible'
     if (peqm .and. pe_twoint) stop 'PEQM and TWOINT are not compatible'
+!    if (peqm .and. pe_sol) stop 'PE-COSMO not implemented yet!!'
 
 end subroutine pe_dalton_input
 
@@ -790,6 +805,53 @@ subroutine pe_read_potential(coords, charges)
     end if
 
 end subroutine pe_read_potential
+
+!------------------------------------------------------------------------------
+
+subroutine pe_read_tesselation()
+
+    logical :: lexist
+    integer :: nsurp, i, j, lusurf
+    character(len=80) :: word
+    
+    inquire(file='surface.dat', exist=lexist)
+    if (lexist) then
+        call openfile('surface.dat', lusurf, 'old', 'formatted')
+    else
+        stop 'surface.dat not found!'
+    end if
+    
+    do    
+        read(lusurf,*,end=100) word
+
+        if (trim(word) == 'NPOINTS') then
+           read(lusurf,*) nsurp 
+           write(luout,*) 'Number of tesselation points', nsurp
+        else if (trim(word) == 'coordinates') then
+           allocate(Sp(3,nsurp))
+           allocate(A(nsurp))
+           do i = 1, nsurp 
+                read(lusurf,*) (Sp(j,i), j = 1, 3), A(i)
+           end do
+        else if (word(1:1) == '!' .or. word(1:1) == '#') then
+           cycle
+        end if
+    end do
+
+100 continue
+
+    close(lusurf)
+
+    write(luout,*) 'Sp in pe_read_tesselation'
+    do i=1,nsurp
+           write (luout,*) Sp(:,i)
+    end do
+    write(luout,*) 'A in pe_read_tesselation'
+    do i=1,nsurp
+        write (luout,*) A(i)
+    end do
+
+end subroutine pe_read_tesselation
 
 !------------------------------------------------------------------------------
 
