@@ -172,6 +172,11 @@ module polarizable_embedding
     integer, save :: xsteps = 40
     integer, save :: ysteps = 40
     integer, save :: zsteps = 40
+    ! box size relative to molecule size
+    real(dp), save :: xbox = 5.0d0
+    real(dp), save :: ybox = 5.0d0
+    real(dp), save :: zbox = 5.0d0
+
 
 ! TODO:
 ! electric field damping in iterative solver
@@ -285,7 +290,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
             backspace(luinp)
             if (option(1:1) /= '.' .and. option(1:1) /= '*'&
                &.and. option(1:1) /= '!') then
-                read(luinp,*) xsteps, ysteps, zsteps
+                read(luinp,*) xbox, xsteps, ybox, ysteps, zbox, zsteps
             end if
             pe_mep = .true.
         else if (option(1:1) == '*') then
@@ -344,12 +349,12 @@ subroutine pe_read_potential(coords, charges)
     end if
 
     if (pe_mep) then
-        origin(1) = minval(Rm(1,:)) - 4.0d0
-        origin(2) = minval(Rm(2,:)) - 4.0d0
-        origin(3) = minval(Rm(3,:)) - 4.0d0
-        step(1) = (maxval(Rm(1,:)) + 4.0d0 - origin(1)) / real(xsteps, dp)
-        step(2) = (maxval(Rm(2,:)) + 4.0d0 - origin(2)) / real(ysteps, dp)
-        step(3) = (maxval(Rm(3,:)) + 4.0d0 - origin(3)) / real(zsteps, dp)
+        origin(1) = minval(Rm(1,:)) - xbox
+        origin(2) = minval(Rm(2,:)) - ybox
+        origin(3) = minval(Rm(3,:)) - zbox
+        step(1) = (maxval(Rm(1,:)) + xbox - origin(1)) / real(xsteps, dp)
+        step(2) = (maxval(Rm(2,:)) + ybox - origin(2)) / real(ysteps, dp)
+        step(3) = (maxval(Rm(3,:)) + zbox - origin(3)) / real(zsteps, dp)
         allocate(npoints(-1:ncores-1))
         npoints = 0
         npoints(0) = xsteps * ysteps * zsteps
