@@ -4,7 +4,7 @@ module polarizable_embedding
     use blas_f90
     use lapack_f90
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     use mpi
 #endif
 
@@ -16,7 +16,7 @@ module polarizable_embedding
 
     public :: pe_dalton_input, pe_read_potential, pe_master
     public :: pe_save_density, pe_intmol_twoints, pe_repulsion
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     public :: pe_mpi
 #endif
 
@@ -80,7 +80,7 @@ module polarizable_embedding
     integer, save :: npols = 0
     ! exclusion list length
     integer, save :: lexlst = 0
-    
+
     ! specifies what type of parameters are present
     ! lmul(0): monopoles, lmul(1): dipoles etc.
     logical, dimension(0:5), public, save :: lmul = .false.
@@ -284,7 +284,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
             ! number of frozen densities
             read(luinp,*) nfds
             pe_fd = .true.
-        ! evaluate molecular electrostatic potential 
+        ! evaluate molecular electrostatic potential
         else if (trim(option(2:)) == 'MEP') then
             read(luinp,*) option
             backspace(luinp)
@@ -325,7 +325,7 @@ subroutine pe_read_potential(coords, charges)
     character(len=80) :: word
     logical :: lexist
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 #else
@@ -841,7 +841,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
     real(dp), dimension(:), intent(out), optional :: Epe
     real(dp), dimension(:), target, intent(inout) :: dalwrk
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 #else
@@ -891,7 +891,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
     ndens = nmats
     nnbas = size(denmats) / ndens
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
         call mpi_bcast(44, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
         if (fock) then
@@ -926,7 +926,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         call pe_compmep(denmats)
     end if
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
         if (fock .or. response) then
             call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, MPI_REAL8,&
@@ -941,7 +941,7 @@ end subroutine pe_master
 
 !------------------------------------------------------------------------------
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
 subroutine pe_mpi(dalwrk, runtype)
 
     real(dp), dimension(:), target, intent(inout) :: dalwrk
@@ -1077,7 +1077,7 @@ subroutine pe_sync()
         call mpi_bcast(npols, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(lexlst, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
         if (myid /= 0) allocate(exlists(lexlst,nsites(ncores-1)))
-        call mpi_bcast(exlists, lexlst*nsites(ncores-1), MPI_INTEGER,& 
+        call mpi_bcast(exlists, lexlst*nsites(ncores-1), MPI_INTEGER,&
                       &0, MPI_COMM_WORLD, ierr)
         if (myid /= 0) allocate(zeroalphas(nsites(ncores-1)))
         call mpi_bcast(zeroalphas, nsites(ncores-1), MPI_LOGICAL,&
@@ -1426,7 +1426,7 @@ subroutine pe_compmep(denmats)
         i = i + 1
     end do
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
         displs(0) = 0
         do i = 1, ncores-1
@@ -1553,7 +1553,7 @@ subroutine pe_electrostatic(denmats, fckmats)
         inquire(file='pe_electrostatics.bin', exist=lexist)
     end if
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     if (ncores > 1) then
         call mpi_bcast(lexist, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
     end if
@@ -1653,7 +1653,7 @@ subroutine pe_electrostatic(denmats, fckmats)
             end if
         end if
         if (fock) then
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
             if (myid == 0 .and. ncores > 1) then
                 allocate(tmpfcks(ndens*nnbas))
                 tmpfcks = fckmats
@@ -1679,7 +1679,7 @@ subroutine pe_electrostatic(denmats, fckmats)
                 deallocate(tmpfcks)
             end if
         end if
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
         if (myid == 0 .and. ncores > 1) then
             call mpi_reduce(MPI_IN_PLACE, Ees, 7*ndens, MPI_REAL8, MPI_SUM,&
                            &0, MPI_COMM_WORLD, ierr)
@@ -1750,7 +1750,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
                 Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
             end do
 #if defined(BUILD_GEN1INT)
-            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), pe_gauss, gauss) 
+            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), pe_gauss, gauss)
 #else
             call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), work, size(work))
 #endif
@@ -1885,7 +1885,7 @@ subroutine pe_polarization(denmats, fckmats)
         end if
     end if
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
         do i = 1, ndens
             call mpi_scatterv(M1inds(:,i), 3*npoldists, displs, MPI_REAL8,&
@@ -1956,7 +1956,7 @@ subroutine induced_dipoles(M1inds, Fs)
             inquire(file='pe_induced_dipoles.bin', exist=lexist)
         end if
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
         if (ncores > 1) then
             call mpi_bcast(lexist, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         end if
@@ -1974,7 +1974,7 @@ subroutine induced_dipoles(M1inds, Fs)
         allocate(T(6), Rij(3), Ftmp(3), M1tmp(3))
         do n = 1, ndens
             if (.not.lexist .or. response) then
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
                 if (myid == 0 .and. ncores > 1) then
                     call mpi_scatterv(Fs(:,n), 3*npoldists, displs, MPI_REAL8,&
                                      &MPI_IN_PLACE, 0, MPI_REAL8,&
@@ -1993,7 +1993,7 @@ subroutine induced_dipoles(M1inds, Fs)
                     l = l + 3
                 end do
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
                 if (myid == 0 .and. ncores > 1) then
                     call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
                                     &M1inds(:,n), 3*npoldists, displs, MPI_REAL8,&
@@ -2008,7 +2008,7 @@ subroutine induced_dipoles(M1inds, Fs)
 
             if (pe_nomb) cycle
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
             if (myid == 0 .and. ncores > 1) then
                 call mpi_scatterv(M1inds(:,n), 3*npoldists, displs, MPI_REAL8,&
                                  &MPI_IN_PLACE, 0, MPI_REAL8,&
@@ -2071,7 +2071,7 @@ subroutine induced_dipoles(M1inds, Fs)
                         m = m + 3
                     end do
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
                     if (myid == 0 .and. ncores > 1) then
                         call mpi_reduce(MPI_IN_PLACE, Ftmp, 3, MPI_REAL8,&
                                        &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
@@ -2088,7 +2088,7 @@ subroutine induced_dipoles(M1inds, Fs)
                         norm = norm + nrm2(M1inds(l:l+2,n) - M1tmp)
                     end if
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
                     if (myid == 0 .and. ncores > 1) then
                         call mpi_scatterv(M1inds(:,n), 3*npoldists, displs,&
                                          &MPI_REAL8, MPI_IN_PLACE, 0,&
@@ -2115,7 +2115,7 @@ subroutine induced_dipoles(M1inds, Fs)
                     end if
                 end if
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
                 if (ncores > 1) then
                     call mpi_bcast(converged, 1, MPI_LOGICAL, 0,&
                                   &MPI_COMM_WORLD, ierr)
@@ -2247,7 +2247,7 @@ subroutine electron_fields(Fels, denmats)
         i = i + 3
     end do
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
         displs(0) = 0
         do i = 1, ncores-1
@@ -2284,7 +2284,7 @@ subroutine nuclear_fields(Fnucs)
         inquire(file='pe_nuclear_field.bin', exist=lexist)
     end if
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     if (ncores > 1) then
         call mpi_bcast(lexist, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
     end if
@@ -2318,7 +2318,7 @@ subroutine nuclear_fields(Fnucs)
             end do
             i = i + 3
         end do
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
         if (myid == 0 .and. ncores > 1) then
             call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
                             &Fnucs, 3*npoldists, displs, MPI_REAL8,&
@@ -2382,7 +2382,7 @@ subroutine multipole_fields(Fmuls)
         inquire(file='pe_multipole_field.bin', exist=lexist)
     end if
 
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
     if (ncores > 1) then
         call mpi_bcast(lexist, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
     end if
@@ -2451,7 +2451,7 @@ subroutine multipole_fields(Fmuls)
             end do
             l = l + 3
         end do
-#ifdef VAR_MPI
+#if defined(VAR_MPI)
         if (myid == 0 .and. ncores > 1) then
             call mpi_reduce(MPI_IN_PLACE, Fmuls, 3*npols, MPI_REAL8,&
                            &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
@@ -2869,7 +2869,7 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     allocate(Rm(3,qmnucs), Zm(1,qmnucs))
     Rm = coords
     Zm(1,:) = charges
-    
+
     ! read in information about qm core
     call openfile('core.dat', lucore, 'old', 'formatted')
     rewind(lucore)
