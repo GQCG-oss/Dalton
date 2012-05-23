@@ -34,6 +34,10 @@ C
 #include <single.h>
 C
 C  /* Deck lrscinp */
+C This module read nesserary input for LRESC calculations.
+C jim - May-2012
+C
+C
       SUBROUTINE LRSCINP(WORD)
 #include <implicit.h>
 #include <priunit.h>
@@ -52,7 +56,6 @@ C jim  aca van las opctiones para LRESC , aun no las defino
      &            '.COUPLI'/
 C
       write(lupri,*) ' LRESC OPTS :  called with : ' , WORD
-      write(lupri,*) ' still developing '
       NEWDEF = (WORD .EQ. '*LROPTS')
       ICHANG = 0
       IF (NEWDEF) THEN
