@@ -42,6 +42,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <lrescinf.h>
 #include <nuclei.h>
 #include <abainf.h>
       PARAMETER (NTABLE = 11, D0 = 0.0D0)
@@ -51,9 +52,9 @@ C
 #include <dorps.h>
 #include <spnout.h>
 C jim  aca van las opctiones para LRESC , aun no las defino
-      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.LINEAR','.QUADRA',
-     &            '.GESC  ','.NOPSO ','.SD+FC ','.SDxFC','.ISOTOP',
-     &            '.COUPLI'/
+      DATA TABLE /'.GAUGEO','.PRINT ','.SELECT','.xINEAR','.xUADRA',
+     &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
+     &            '.DIAM1S'/
 C
       write(lupri,*) ' LRESC OPTS :  called with : ' , WORD
       NEWDEF = (WORD .EQ. '*LROPTS')
@@ -81,83 +82,77 @@ C
      &               '" not recognized in SPIN-S.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Input keywords in SPNINP')
+C   READ GAUGEO : DEFINIR AKLGUNA VAR PARA GAUGEO
  1             CONTINUE
-                    write(lupri,*)' i have just read ', WORD
+                    write(lupri,*)' aca leo gaugeo ', WORD
 cx                  READ (LUCMD,*) ABUND
 cx                  IF (ABUND .EQ. 1.0D0) ICHANG = ICHANG - 1
                GOTO 100
+C   SET PRINT LEVEL 
  2             CONTINUE
-                  READ (LUCMD,*) ISPPRI
-                  IF (ISPPRI .EQ. 0) ICHANG = ICHANG - 1
+                  write(lupri,*)' aca leo print levels '
+                  READ (LUCMD,*) JIMPRT
+                  IF (JIMPRI .EQ. 0) ICHANG = ICHANG - 1
                GOTO 100
+C   SET WHICH NUC TO DO LRESC 
  3             CONTINUE
-                  DO 1030 I = 1, MXCENT
-                     DOPERT(I,2) = .FALSE.
- 1030             CONTINUE
-                  READ (LUCMD,*) NPERT
-                  READ (LUCMD, *) (IPOINT(I),I=1,NPERT)
+                  write(lupri,*)' aca leo SELECT ATOM : NATOM  '
+                  READ (LUCMD,*) NATOM
                   CALL HEADER('Only the spin-spin couplings between'//
      &               ' the following nuclei will be calculated:',1)
-                  WRITE (LUPRI,*) ' ',(IPOINT(I), I = 1 , NPERT)
-                  WRITE (LUPRI,'()')
-                  DO 1031 I = 1, NPERT
-                     DOPERT(IPOINT(I),2) = .TRUE.
- 1031             CONTINUE
-                  DOSELE = .TRUE.
                GOTO 100
+C   SET WHICH NUC TO DO LRESC 
  4             CONTINUE
-                  DODSO = .FALSE.
+c                  do algo 
                GOTO 100
  5             CONTINUE
-                  DOSD  = .FALSE.
+c                  do algo 
                GOTO 100
  6             CONTINUE
-                  DOFC  = .FALSE.
+                  SIGMAP1S=.TRUE.
                GOTO 100
  7             CONTINUE
-                  DOPSO = .FALSE.
+                  SIGMAP1T=.TRUE.
                GOTO 100
  8             CONTINUE
-                  DOSDFC= .TRUE.
-                  DOSD  = .FALSE.
-                  DOFC  = .FALSE.
+                  SIGMAP3S=.TRUE.
                GOTO 100
  9             CONTINUE
-                  ANISON = .TRUE.
+                  SIGMAP3T=.TRUE.
                GOTO 100
  10            CONTINUE
-                  SPNISO = .TRUE.
-                  READ (LUCMD, *) (ISOTPS(IS), IS = 1, NATOMS)
-                  ABUND = D0
+                  SIGMAD0S=.TRUE.
+c                  READ (LUCMD, *) (ISOTPS(IS), IS = 1, NATOMS)
                GOTO 100
  11            CONTINUE
-                  READ (LUCMD, *)  NUCSPI
-                  READ (LUCMD, *) (IPOINT(IS), IS = 1, NUCSPI)
-                  IF (NUCSPI .GT. 0) THEN
-                     DO IS = 1, MXCENT
-                        NCSPNI(IS) = .FALSE.
-                     END DO
-                  END IF
-                  DO IS = 1, NUCSPI
-                     IF (IPOINT(IS) .LE. 0 .OR.
-     &                   IPOINT(IS) .GT. NUCIND) THEN
-                        WRITE (LUPRI,*) 'Non-existent '//
-     &                     'symmetry-dependent nucleus specified for'//
-     &                     ' .COUPLING NUCLEUS'
-                        CALL QUIT('Inconsistent input in *SPIN-SPIN'//
-     &                            'module')
-                     ELSE
-                        NCSPNI(IPOINT(IS)) = .TRUE.
-                     END IF
-                  END DO
+                  SIGMAD1S=.TRUE.
+c                  READ (LUCMD, *)  NUCSPI
+c                  READ (LUCMD, *) (IPOINT(IS), IS = 1, NUCSPI)
+c                  IF (NUCSPI .GT. 0) THEN
+c                     DO IS = 1, MXCENT
+c                        NCSPNI(IS) = .FALSE.
+c                     END DO
+c                  END IF
+c                  DO IS = 1, NUCSPI
+c                     IF (IPOINT(IS) .LE. 0 .OR.
+c     &                   IPOINT(IS) .GT. NUCIND) THEN
+c                        WRITE (LUPRI,*) 'Non-existent '//
+c     &                     'symmetry-dependent nucleus specified for'//
+c     &                     ' .COUPLING NUCLEUS'
+c                        CALL QUIT('Inconsistent input in *SPIN-SPIN'//
+c    &                            'module')
+c                     ELSE
+c                        NCSPNI(IPOINT(IS)) = .TRUE.
+c                     END IF
+c                  END DO
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     &               '" not recognized in SPIN-S'
+     &               '" not recognized in LRESC'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT ('Illegal keyword in SPIN-S')
+               CALL QUIT ('Illegal keyword in LRESC')
             END IF
       END IF
  300  CONTINUE
@@ -165,15 +160,15 @@ c jim ICHANG > 0 cambios en default variables
 c jim ICHANG < 0 no cambios
 
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for SPIN-S:',0)
+         CALL HEADER('Changes of defaults for LRESC :',0)
          IF (ABUND .NE. 1.0D0) THEN
             WRITE (LUPRI,'(A,F8.3,A)')
      &            ' Spin-spin couplings printed for atoms with '//
      &            'abundance greater than :', ABUND,' %'
          END IF
-         IF (ISPPRI .NE. 0) THEN
+         IF (JIMPRT .NE. 0) THEN
             WRITE (LUPRI,'(A,I5)')
-     &            ' Print level in spin-spin output routine: ', ISPPRI
+     &            ' Print level in lresc output routine: ', JIMPRT
          END IF
          IF (.NOT. DODSO) WRITE (LUPRI,'(A)')
      &      ' No diamagnetic spin-orbit contribution calculated'

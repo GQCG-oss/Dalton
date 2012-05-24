@@ -926,7 +926,6 @@ C
       VIB_G  = .FALSE.
 C  jim-gesc 1.1: (abainp.935) logic RNLRSC .FALSE. init 
       RNLRSC = .FALSE.
-      JIMPRT = .FALSE.  
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
       CALL DZERO(DIPORG,3)
@@ -1006,9 +1005,7 @@ c jim-dbg 1.2: (abainp.1011) init lresc in ABAINIALL?  not done yet
   930 CONTINUE
       WORD1 = WORD
 cx jim-dbg : (abainp.1015)  take it off 
-cxx      IF (JIMPRT) then 
          write(lupri,*)'abainp #1017 read LUCMOD up 2 WORD : ',WORD
-cxx      ENDIF
 C
       CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
      &            ,'*',108)
@@ -1311,11 +1308,10 @@ C        .LOCALI
             ABALOC = .TRUE.
          GOTO 100
 Cend-PFP
-Cx jim-dbg 1.3: (abainp.1322) set RNLRSC, JIMPRT .TRUE. 
+Cx jim-dbg 1.3: (abainp.1322) set RNLRSC,  
  160     CONTINUE
-          write(lupri,*)  ' set true RNLRSC'   
-          RNLRSC = .TRUE.
-          JIMPRT = .TRUE.  ! for debugging only !! should be taken off
+         write(lupri,*)  ' set true RNLRSC'   
+         RNLRSC = .TRUE.
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999

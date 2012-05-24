@@ -5,11 +5,11 @@
 !     NOTE: 
 !
 cx jim-gesc : RNLRSC login included in abainf.h, jimprt for debugging prints
-!      INTEGER NSYML, IPRDEF, NWNABA, IRVIBG
-!      PARAMETER (NSYML = 8)
+      INTEGER NATOM, JIMPRT
+!      PARAMETER (NSYMLasc = 8)
       LOGICAL SIGMAP1S, SIGMAP1T, SIGMAD1S, SIGMAD0S, 
      &        SIGMAP3S, SIGMAP3T 
       COMMON /LRESCINF/ SIGMAP1S, SIGMAP1T, SIGMAD1S, SIGMAD0S,
-    &        SIGMAP3S, SIGMAP3T  
+     &        SIGMAP3S, SIGMAP3T
 
 ! -- end of abainf.h --
