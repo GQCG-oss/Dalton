@@ -55,11 +55,12 @@ module polarizable_embedding
     ! constants, thresholds and stuff
     ! 1 bohr = 0.5291772108 Aa (codata 2002)
     real(dp), parameter :: aa2au = 1.8897261249935897d0
+    real(dp), parameter :: pi = 3.141592653589793d0
     real(dp), parameter :: zero = 1.0d-6
     integer, save :: scfcycle = 0
     real(dp), save :: thriter = 1.0d-8
     real(dp), save :: damp = 2.1304d0
-    real(dp), save :: gauss = 0.44d0
+    real(dp), save :: gauss_factor = 1.0d0
     real(dp), save :: Rmin = 2.2d0
     character(len=6), save :: border_type = 'REDIST'
     logical, save :: chol = .true.
@@ -266,7 +267,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
             backspace(luinp)
             if (option(1:1) /= '.' .and. option(1:1) /= '*'&
                &.and. option(1:1) /= '!') then
-                read(luinp,*) gauss
+                read(luinp,*) gauss_factor
             end if
             pe_gauss = .true.
         ! calculate intermolecular two-electron integrals
@@ -559,7 +560,7 @@ subroutine pe_read_potential(coords, charges)
     if (pe_fd) then
         write(luout,'(/4x,a,i4)') 'Number of frozen densities:', nfds
         if (pe_gauss) then
-            write(luout,'(/4x,a,f4.2)') 'Using Gaussian charges with broadening: ', gauss
+            write(luout,'(/4x,a,f4.2)') 'Using Gaussian charges for FDs.'
         end if
     end if
 
@@ -1703,8 +1704,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
 
     integer :: i, j, k, l, m, n, o
     integer :: lufck, lexist, lu
-    real(dp) :: Ene, Enn
-    real(dp) :: R
+    real(dp) :: Ene, Enn, overlap, gauss
     real(dp), dimension(ndens) :: Een, Eee
     real(dp), dimension(1) :: Tfm
     real(dp), dimension(3) :: Rfm
@@ -1729,10 +1729,10 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         read(lufck) fdnucs
         allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
         read(lufck) Rfd, Zfd
-!        read(lufck) gauss
+        read(lufck) overlap
         close(lufck)
 
-!        print *, 'gauss: ', gauss
+        print *, 'overlap: ', overlap
 
         do j = 1, ndens
             l = (j - 1) * nnbas + 1
@@ -1742,15 +1742,15 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         end do
 
         do j = 1, fdnucs
-            R = 1.0d6
+            gauss = (8.0d0  * gauss_factor) / ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
+            print *, Zfd(1,j), gauss
             do k = 1, qmnucs
                 Rfm = Rm(:,k) - Rfd(:,j)
-                if (R > nrm2(Rfm)) R = nrm2(Rfm)
                 call Tk_tensor(Tfm, Rfm)
                 Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
             end do
 #if defined(BUILD_GEN1INT)
-            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), pe_gauss, gauss)
+            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), pe_gauss, gauss) 
 #else
             call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), work, size(work))
 #endif
@@ -3019,7 +3019,7 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
 !     sirfck(fock, density, ?, isymdm, ifctyp, direct, work, nwrk)
     isymdm = 1
     ifctyp = 11
-    call sirfck(full_fock, full_density, 1, isymdm, ifctyp, .false.,&
+    call sirfck(full_fock, full_density, 1, isymdm, ifctyp, .true.,&
                 work, size(work))
     deallocate(full_density)
 
@@ -3137,7 +3137,7 @@ function elem2charge(elem)
                 & 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',&
                 & 'Pa', 'U ', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',&
                 & 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds',&
-                & 'Rg', 'Cn'/)
+                & 'Rg', 'Cn' /)
 
     if (elem == 'X') then
         elem2charge = 0.0d0
