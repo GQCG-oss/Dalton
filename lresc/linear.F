@@ -31,6 +31,28 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+c    ---------------------------------------
+C  /* Deck lrscdrv */
+      SUBROUTINE LRSCDRV(WORK,LWORK)
+cs jim-lresc
+cs we should direct from here which lresc claculation will be done
+cs  linear, quadratic, gesc depending on what was read on INPUT file
+#include <implicit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <priunit.h>
+#include <wrkrsp.h>
+
+
+      write(lupri,*)' ja jaja jarai jojo' 
+      CALL LRSCLIN(WORK,LWORK)
+
+      RETURN
+      END
+C...
+c    ---------------------------------------
+c    ---------------------------------------
+
       SUBROUTINE LRSCLIN(WORK,LWORK)
 C based on CTOABA 
 C...

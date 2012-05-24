@@ -509,9 +509,7 @@ C
 C  jim-gesc : call to LRSCDRV  
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
-         write(lupri,*)'ABACTL should call LRESC ',  
-     & ' Now is  commented till we finish developing '
-         CALL LRSCLIN(WORK(KLST2),LWRK2)
+         CALL LRSCDRV(WORK(KLST2),LWRK2)
       END IF
 C
 C     ****************************************
@@ -774,7 +772,7 @@ C  jim-gesc 1.0: TABDIR(#17) "*LRESC " and TABLE(60) ".LRESC "
      &             '*EXCITA', '*REORT ', '*RESPON',
      &             '*TROINV', '*FMM   ', '*DIPCTL',
      &             '*RELAX ', '*GEOANA', '*VIBANA',
-     &             '*FLOAT ', '*LROPTS', '*QPGCTL', ! LROPTS: jim May-12 for LRESC 
+     &             '*FLOAT ', '*LROPTS', '*QPGCTL',
      &             'xXXXXXX', '*LOCALI', '*SOPPA ', ! *LOCALI: PFP 27/03-2006 - SOS for spin-spin coupling included
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
@@ -820,7 +818,7 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI', '.LRESC '/ ! jim May-12 for LRESC
+     &             '.VIB_G ', '.LOCALI', '.LRESC '/ 
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -924,7 +922,7 @@ C
       THIRDM = .FALSE.
       ESG    = .FALSE.
       VIB_G  = .FALSE.
-C  jim-gesc 1.1: (abainp.935) logic RNLRSC .FALSE. init 
+C  jim-gesc 1.1: (abainp.927) RNLRSC .FALSE. init 
       RNLRSC = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
@@ -1000,7 +998,6 @@ C         geometry if not overridden with '**START' /Feb 2003 hjaaj
             GO TO 900
          END IF
          CALL ABAINIALL
-c jim-dbg 1.2: (abainp.1011) init lresc in ABAINIALL?  not done yet
          GOTO 1
   930 CONTINUE
       WORD1 = WORD
@@ -1761,9 +1758,9 @@ cLig >> added the control to right CTOCD input
          CALL QUIT('Not supported input in ABAINP')
       ENDIF
 cLig <<
-C  jim-gesc 1.4: (abainp.1775) Print section 'lresc will be done '  to  output
-Cx jim-dbg :  note : aca puedo poner que no se puede london u otras cosas 
-Cx                 y hacer un call quit
+C  jim-gesc 1.4: (abainp.1775) Print section 'lresc will be done ' 
+Cx jim-dbg :  aca puedo poner que no se puede london u otras cosas 
+Cx            y hacer un call quit
 Cx    preguntando al logic q sea ejplo if GAUGEO tonces ...  o SOPPA
        IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
      &    ' Linear Response Elimination of Small Component scheme will',
@@ -1973,9 +1970,7 @@ cs
       GO TO 200
 C jim-gesc 1.5 : (abainp.1985) reading TABDIR call lrscinp
    17 Write(lupri,*) ' Calling lrsec inp for word', WORD
-      CALL LRSCINP(WORD)
-cx jim-dbg : take this out
-      Write(lupri,*) ' volvi de LRSCINP ', WORD
+      CALL LRSCINP(WORD)  ! *LRESC
       GO TO 200
    18   CONTINUE
          CALL QPGINP(WORD)
@@ -3605,8 +3600,6 @@ C
       CALL LNRINI
       CALL AQRINI
       CALL LOCINI !PFP: 27/03-2006: SOS for spin-spin coupling included
-cx jim-dbg (iniall.3611): call LRSCINI not sure to do this here 
-C     CALL LRSCINI
-cx jim-dbg  : aca se pueden setear las corridas a hacer ? not yet
+      CALL LRSCINI !jim-gesc call LRSCINI to Init all for lresc
       RETURN
       END
