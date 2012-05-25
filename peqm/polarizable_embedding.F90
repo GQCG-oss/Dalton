@@ -180,8 +180,7 @@ module polarizable_embedding
 
 
 ! TODO:
-! electric field damping in iterative solver
-! damping of electric field from QM system
+! damping of electric field from QM system?
 ! check for positive definiteness of the response matrix?
 ! write results after redistributing parameters
 ! better solution for lmul and lpol
@@ -1932,7 +1931,7 @@ subroutine induced_dipoles(M1inds, Fs)
     real(dp), dimension(:,:), intent(in) :: Fs
 
     integer :: lu, iter, info
-    integer :: i, j, k, l, m, n
+    integer :: i, j, k, l, m, n, o, p, q
     integer, dimension(:), allocatable :: ipiv
     logical :: exclude, lexist
     logical :: converged = .false.
@@ -2044,7 +2043,10 @@ subroutine induced_dipoles(M1inds, Fs)
                             m = m + 3
                             cycle
                         end if
-! TODO: damping needs to be fixed
+                        Rij = Rs(:,j) - Rs(:,i)
+                        R = nrm2(Rij)
+                        R3 = R**3
+                        R5 = R**5
                         ! damping parameters
                         ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
                         ! a = 2.1304 = damp
@@ -2053,20 +2055,20 @@ subroutine induced_dipoles(M1inds, Fs)
                         ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
                         if (pe_damp) then
                             aj = (P1s(1,j) + P1s(4,j) + P1s(6,j)) * d3i
-                            Rd = damp * R / (ai * aj)**(d6i)
+                            Rd = damp * R / (ai * aj)**d6i
                             fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
                             ft = fe - d6i * Rd**3 * exp(-Rd)
                         end if
-                        Rij = Rs(:,j) - Rs(:,i)
-                        R = nrm2(Rij)
-                        R3 = R**3
-                        R5 = R**5
-                        T(1) = 3.0d0 * Rij(1) * Rij(1) * ft / R5 - fe / R3
-                        T(2) = 3.0d0 * Rij(1) * Rij(2) * ft / R5
-                        T(3) = 3.0d0 * Rij(1) * Rij(3) * ft / R5
-                        T(4) = 3.0d0 * Rij(2) * Rij(2) * ft / R5 - fe / R3
-                        T(5) = 3.0d0 * Rij(2) * Rij(3) * ft / R5
-                        T(6) = 3.0d0 * Rij(3) * Rij(3) * ft / R5 - fe / R3
+                        q = 1
+                        do o = 1, 3
+                            do p = o, 3
+                                T(q) = 3.0d0 * Rij(o) * Rij(p) * ft / R5
+                                if (o == p) then
+                                    T(q) = T(q) - fe / R3
+                                end if
+                                q = q + 1
+                            end do
+                        end do
                         call spmv(T, M1inds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
                         m = m + 3
                     end do
