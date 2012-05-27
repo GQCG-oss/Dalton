@@ -18,6 +18,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/architecture
     ${CMAKE_SOURCE_DIR}/cmake/binary-info
     ${CMAKE_SOURCE_DIR}/cmake/compilers
+    ${CMAKE_SOURCE_DIR}/cmake/math
     )
 
 if(NOT CMAKE_BUILD_TYPE)
