@@ -182,7 +182,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     ${PROJECT_BINARY_DIR}/lib
     )
 
-include(ConfigureScript)
+include(GenericMacros)
 configure_script(
     ${CMAKE_SOURCE_DIR}/dalton.in
     ${CMAKE_BINARY_DIR}/dalton
