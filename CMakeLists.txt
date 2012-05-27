@@ -211,5 +211,5 @@ add_custom_target(
     COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dalton.x
     )
 
-include(Install)
+include(ConfigPackaging)
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
