@@ -2,11 +2,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
 project(DALTON Fortran C)
 
-# set version
-set(VERSION_MAJOR 2011)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
-
 set(THIS_CODE "trunk")
 if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DVAR_LINSCA)
@@ -97,6 +92,7 @@ if(THIS_CODE STREQUAL "linsca")
 endif()
 
 include(ConfigArchitecture)
+include(ConfigVersion)
 include(BinaryInfo)
 include(Sources)
 include(ConfigCompilerFlags)
