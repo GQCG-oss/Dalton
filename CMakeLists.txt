@@ -13,6 +13,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/binary-info
     ${CMAKE_SOURCE_DIR}/cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
+    ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
     )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -96,23 +97,11 @@ include(ConfigVersion)
 include(BinaryInfo)
 include(Sources)
 include(ConfigCompilerFlags)
+include(ConfigParallelEnvironment)
 
 set(LIBS)
 
 include(ConfigMath)
-
-if(ENABLE_MPI)
-    find_package(MPI)
-    if(MPI_FOUND)
-        add_definitions(-DVAR_MPI)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
-        include_directories(${MPI_INCLUDE_PATH})
-    endif()
-endif()
-
-if(ENABLE_OMP)
-    add_definitions(-DVAR_OMP)
-endif()
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_INT64)
@@ -185,7 +174,7 @@ configure_script(
     )
 
 add_library(
-    dalton 
+    dalton
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
@@ -199,7 +188,7 @@ target_link_libraries(
     dalton.x
     dalton
     ${LIBS}
-    ) 
+    )
 
 # get size of static allocations
 add_custom_target(
