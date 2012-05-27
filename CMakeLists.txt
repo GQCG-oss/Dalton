@@ -31,12 +31,50 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/testing
     )
 
+set(LIBS)
 
+include(Sources)
 
+include(ConfigArchitecture)
+include(ConfigCompilerFlags)
+include(ConfigExternal)
+include(ConfigMath)
+include(ConfigParallelEnvironment)
 include(ConfigSafeGuards)
 include(ConfigTesting)
+include(ConfigVersion)
+include(GenericMacros)
+include(BinaryInfo)
 
-add_definitions(-DVAR_MFDS -D_FILE_OFFSET_BITS=64 -DIMPLICIT_NONE)
+include_directories(
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/mm
+    ${PROJECT_SOURCE_DIR}/dft
+    ${CMAKE_Fortran_MODULE_DIRECTORY}
+    )
+
+set(CMAKE_Fortran_MODULE_DIRECTORY
+    ${PROJECT_BINARY_DIR}/modules
+    )
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+    ${PROJECT_BINARY_DIR}/lib
+    )
+
+# set definitions
+
+add_definitions(-DBUILD_GEN1INT)
+add_definitions(-DVAR_MFDS)
+add_definitions(-D_FILE_OFFSET_BITS=64)
+add_definitions(-DIMPLICIT_NONE)
+if(ENABLE_64BIT_INTEGERS)
+    add_definitions(-DVAR_INT64)
+endif()
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
+endif()
 
 set(WORK_MEM_WORDS
     "64000000"
@@ -75,63 +113,8 @@ set(BASIS_DIR
     FORCE
     )
 
-include(ConfigArchitecture)
-include(ConfigVersion)
-include(BinaryInfo)
-include(Sources)
-include(ConfigCompilerFlags)
-include(ConfigParallelEnvironment)
+add_subdirectory(gen1int)
 
-set(LIBS)
-
-include(ConfigMath)
-
-if(ENABLE_64BIT_INTEGERS)
-    add_definitions(-DVAR_INT64)
-endif()
-
-# forward CPP directly to the code
-set(CPP)
-if(NOT "${CPP}" STREQUAL "")
-    add_definitions(${CPP})
-endif()
-
-# set Gen1Int library and interface
-if(ENABLE_GEN1INT)
-    message("-- Enable Gen1Int module")
-    message("-- Gen1Int library at "${LIB_GEN1INT_PATH})
-    add_definitions(-DBUILD_GEN1INT)
-    # Gen1int library source code
-    include(${LIB_GEN1INT_PATH}/cmake/Sources.cmake)
-    # Gen1int library header files
-    include_directories(${LIB_GEN1INT_PATH}/include)
-    # Gen1Int interface source code
-    set(FREE_FORTRAN_SOURCES
-        ${FREE_FORTRAN_SOURCES}
-        ${Gen1Int_LIB_SRCS}
-        gen1int/gen1int_matrix.F90
-        gen1int/gen1int_shell.F90
-        gen1int/gen1int_cube.F90
-        gen1int/gen1int_api.F90
-        gen1int/gen1int_host.F90)
-endif()
-
-set(CMAKE_Fortran_MODULE_DIRECTORY
-    ${PROJECT_BINARY_DIR}/modules
-    )
-
-include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/mm
-    ${PROJECT_SOURCE_DIR}/dft
-    ${CMAKE_Fortran_MODULE_DIRECTORY}
-    )
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-    ${PROJECT_BINARY_DIR}/lib
-    )
-
-include(GenericMacros)
 configure_script(
     ${CMAKE_SOURCE_DIR}/dalton.in
     ${CMAKE_BINARY_DIR}/dalton
@@ -144,13 +127,18 @@ add_library(
     ${FIXED_FORTRAN_SOURCES}
     )
 
+add_dependencies(dalton gen1int_interface)
+
 add_executable(
     dalton.x
     ${CMAKE_SOURCE_DIR}/abacus/dalton.F
-)
+    )
+
 target_link_libraries(
     dalton.x
     dalton
+    gen1int_interface
+    ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
     ${LIBS}
     )
 
