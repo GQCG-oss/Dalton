@@ -9,7 +9,6 @@ add_library(
     gen1int_shell.F90
     )
 
-# set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DBUILD_OPENRSP -DVAR_DALTON")
 set(ExternalProjectCMakeArgs
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
