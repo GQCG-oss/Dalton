@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+
+# suppress Windows warning about policy
+cmake_policy(SET CMP0010 OLD)
+
+# do not rebuild if rules (compiler flags) change
+set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 project(DALTON Fortran C)
 
@@ -32,9 +38,6 @@ if(    NOT cmake_build_type_tolower STREQUAL "debug"
 	message(FATAL_ERROR "Unknown build type \"${CMAKE_BUILD_TYPE}\".
 	Allowed values are Debug, Release, RelWithDebInfo (case-insensitive).")
 endif()
-
-# do not rebuild if rules (compiler flags) change
-set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
