@@ -8,11 +8,6 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 project(DALTON Fortran C)
 
-set(THIS_CODE "trunk")
-if(THIS_CODE STREQUAL "linsca")
-    add_definitions(-DVAR_LINSCA)
-endif()
-
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -91,10 +86,6 @@ set(BASIS_DIR
     FORCE
     )
 
-if(THIS_CODE STREQUAL "linsca")
-    add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
-endif()
-
 include(ConfigArchitecture)
 include(ConfigVersion)
 include(BinaryInfo)
@@ -108,9 +99,6 @@ include(ConfigMath)
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_INT64)
-    if(THIS_CODE STREQUAL "linsca")
-        add_definitions(-DVAR_64BITS)
-    endif()
 endif()
 
 # forward CPP directly to the code
