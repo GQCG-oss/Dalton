@@ -28,11 +28,13 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
+    ${CMAKE_SOURCE_DIR}/cmake/testing
     )
 
 
 
 include(ConfigSafeGuards)
+include(ConfigTesting)
 
 add_definitions(-DVAR_MFDS -D_FILE_OFFSET_BITS=64 -DIMPLICIT_NONE)
 
@@ -113,22 +115,6 @@ if(ENABLE_GEN1INT)
         gen1int/gen1int_api.F90
         gen1int/gen1int_host.F90)
 endif()
-
-# set cdash buildname
-set(BUILDNAME
-    "BUILDNAME-not-set"
-    CACHE STRING
-    "Name of build on the dashboard"
-    )
-# set ctest own timeout
-set(DART_TESTING_TIMEOUT
-    "1200"
-    CACHE STRING
-    "Set timeout in seconds for every single test"
-    )
-include(Tests)
-include(CTest)
-enable_testing()
 
 set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
