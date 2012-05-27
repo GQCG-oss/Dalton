@@ -3233,17 +3233,12 @@ subroutine response_matrix_full(B)
     real(dp), dimension(3) :: Rij, Rij_sol, Rij_tes
     real(dp), dimension(6) :: P1inv
     
-!   Logical testing is set true if the full PE-COSMO B matrix is wanted
-!   testing is false if only PE and no COSMO is wanted
-!    testing = .true.
-    testing = .false.
-    if (testing) then
-       allocate(B_full(3*npols+nsurp,3*npols+nsurp))
+    if (pe_sol) then
+        allocate(B_full(3*npols+nsurp,3*npols+nsurp))
     else
-       allocate(B_full(3*npols,3*npols))
-       pe_sol =.false.
+        allocate(B_full(3*npols,3*npols))
+        pe_sol =.false.
     end if
-    write(luout,*) 'pe_sol = ', pe_sol
     B_full = 0.0d0
     B = 0.0d0
     ipcm_off = 3*nsites(ncores-1)
@@ -3277,86 +3272,86 @@ subroutine response_matrix_full(B)
         B_full(icol_off+3,icol_off+3) = P1inv(6) ! zz
 
         do j = i+1, nsites(ncores-1) ! loop over blocks of 3 rows per site
-           jrow_off = (j-1)*3
-                    exclude = .false.
-                    do k = 1, lexlst
-                        if (exlists(k,i) == exlists(1,j)) then
-                            exclude = .true.
-                            exit
-                        end if
-                    end do
-                    if (exclude) then
-                        cycle
-                    end if
+            jrow_off = (j-1)*3
+            exclude = .false.
+            do k = 1, lexlst
+                if (exlists(k,i) == exlists(1,j)) then
+                    exclude = .true.
+                    exit
+                end if
+            end do
+            if (exclude) then
+                cycle
+            end if
            
-           Rij = Rs(:,j) - Rs(:,i)
-           R = nrm2(Rij)
-           R3 = R**3
-           R5 = R**5
-           B_full(jrow_off+1,icol_off+1) = - (3.0d0 * Rij(1) * Rij(1) * ft / R5 - fe / R3)
-           B_full(jrow_off+2,icol_off+1) = - (3.0d0 * Rij(1) * Rij(2) * ft / R5)
-           B_full(jrow_off+3,icol_off+1) = - (3.0d0 * Rij(1) * Rij(3) * ft / R5)
-           B_full(jrow_off+1,icol_off+2) = - (3.0d0 * Rij(2) * Rij(1) * ft / R5)
-           B_full(jrow_off+2,icol_off+2) = - (3.0d0 * Rij(2) * Rij(2) * ft / R5 - fe / R3)
-           B_full(jrow_off+3,icol_off+2) = - (3.0d0 * Rij(2) * Rij(3) * ft / R5)
-           B_full(jrow_off+1,icol_off+3) = - (3.0d0 * Rij(3) * Rij(1) * ft / R5)
-           B_full(jrow_off+2,icol_off+3) = - (3.0d0 * Rij(3) * Rij(2) * ft / R5)
-           B_full(jrow_off+3,icol_off+3) = - (3.0d0 * Rij(3) * Rij(3) * ft / R5 - fe / R3)
-           B_full(icol_off+1,jrow_off+1) = B_full(jrow_off+1,icol_off+1) 
-           B_full(icol_off+1,jrow_off+2) = B_full(jrow_off+2,icol_off+1) 
-           B_full(icol_off+1,jrow_off+3) = B_full(jrow_off+3,icol_off+1) 
-           B_full(icol_off+2,jrow_off+1) = B_full(jrow_off+1,icol_off+2) 
-           B_full(icol_off+2,jrow_off+2) = B_full(jrow_off+2,icol_off+2) 
-           B_full(icol_off+2,jrow_off+3) = B_full(jrow_off+3,icol_off+2) 
-           B_full(icol_off+3,jrow_off+1) = B_full(jrow_off+1,icol_off+3) 
-           B_full(icol_off+3,jrow_off+2) = B_full(jrow_off+2,icol_off+3) 
-           B_full(icol_off+3,jrow_off+3) = B_full(jrow_off+3,icol_off+3) 
+            Rij = Rs(:,j) - Rs(:,i)
+            R = nrm2(Rij)
+            R3 = R**3
+            R5 = R**5
+            B_full(jrow_off+1,icol_off+1) = - (3.0d0 * Rij(1) * Rij(1) * ft / R5 - fe / R3)
+            B_full(jrow_off+2,icol_off+1) = - (3.0d0 * Rij(1) * Rij(2) * ft / R5)
+            B_full(jrow_off+3,icol_off+1) = - (3.0d0 * Rij(1) * Rij(3) * ft / R5)
+            B_full(jrow_off+1,icol_off+2) = - (3.0d0 * Rij(2) * Rij(1) * ft / R5)
+            B_full(jrow_off+2,icol_off+2) = - (3.0d0 * Rij(2) * Rij(2) * ft / R5 - fe / R3)
+            B_full(jrow_off+3,icol_off+2) = - (3.0d0 * Rij(2) * Rij(3) * ft / R5)
+            B_full(jrow_off+1,icol_off+3) = - (3.0d0 * Rij(3) * Rij(1) * ft / R5)
+            B_full(jrow_off+2,icol_off+3) = - (3.0d0 * Rij(3) * Rij(2) * ft / R5)
+            B_full(jrow_off+3,icol_off+3) = - (3.0d0 * Rij(3) * Rij(3) * ft / R5 - fe / R3)
+            B_full(icol_off+1,jrow_off+1) = B_full(jrow_off+1,icol_off+1) 
+            B_full(icol_off+1,jrow_off+2) = B_full(jrow_off+2,icol_off+1) 
+            B_full(icol_off+1,jrow_off+3) = B_full(jrow_off+3,icol_off+1) 
+            B_full(icol_off+2,jrow_off+1) = B_full(jrow_off+1,icol_off+2) 
+            B_full(icol_off+2,jrow_off+2) = B_full(jrow_off+2,icol_off+2) 
+            B_full(icol_off+2,jrow_off+3) = B_full(jrow_off+3,icol_off+2) 
+            B_full(icol_off+3,jrow_off+1) = B_full(jrow_off+1,icol_off+3) 
+            B_full(icol_off+3,jrow_off+2) = B_full(jrow_off+2,icol_off+3) 
+            B_full(icol_off+3,jrow_off+3) = B_full(jrow_off+3,icol_off+3) 
         end do ! j = i+1, nsites(ncores-1)
 
-      if (pe_sol) then
-        do j = 1, nsurp
-           Rij_sol = Rs(:,i) - Sp(:,j)
-           R_sol = nrm2(Rij_sol)
-           R3_sol = R_sol**3
+        if (pe_sol) then
+            do j = 1, nsurp
+                 Rij_sol = Rs(:,i) - Sp(:,j)
+                 R_sol = nrm2(Rij_sol)
+                 R3_sol = R_sol**3
 
-           B_full(ipcm_off+j,icol_off+1) = Rij_sol(1)/R3_sol
-           B_full(ipcm_off+j,icol_off+2) = Rij_sol(2)/R3_sol
-           B_full(ipcm_off+j,icol_off+3) = Rij_sol(3)/R3_sol
+                 B_full(ipcm_off+j,icol_off+1) = Rij_sol(1)/R3_sol
+                 B_full(ipcm_off+j,icol_off+2) = Rij_sol(2)/R3_sol
+                 B_full(ipcm_off+j,icol_off+3) = Rij_sol(3)/R3_sol
 
-           B_full(icol_off+1,ipcm_off+j) = B_full(ipcm_off+j,icol_off+1) 
-           B_full(icol_off+2,ipcm_off+j) = B_full(ipcm_off+j,icol_off+2) 
-           B_full(icol_off+3,ipcm_off+j) = B_full(ipcm_off+j,icol_off+3)
-        end do ! j = 1, nsurp
-      end if  
+                 B_full(icol_off+1,ipcm_off+j) = B_full(ipcm_off+j,icol_off+1) 
+                 B_full(icol_off+2,ipcm_off+j) = B_full(ipcm_off+j,icol_off+2) 
+                 B_full(icol_off+3,ipcm_off+j) = B_full(ipcm_off+j,icol_off+3)
+            end do ! j = 1, nsurp
+        end if  
     end do !i = 1, nsites(ncores-1)
-   if (pe_sol) then
-    do i = 1, nsurp ! loop over PCM column points
-       B_full(ipcm_off+i,ipcm_off+i) = cfac * diel_fac * sqrt((4.0d0*pi)/A(i))
-       do j = i+1, nsurp
-          Rij_tes = Sp(:,i) - Sp(:,j)
-          R_tes = nrm2(Rij_tes)
-          B_full(ipcm_off+j,ipcm_off+i) = diel_fac * 1.0d0 / R_tes
-          B_full(ipcm_off+i,ipcm_off+j) = B_full(ipcm_off+j,ipcm_off+i)
-       end do
-    end do !i = 1, nsurp
-   end if
+    if (pe_sol) then
+        do i = 1, nsurp ! loop over PCM column points
+            B_full(ipcm_off+i,ipcm_off+i) = cfac * diel_fac * sqrt((4.0d0*pi)/A(i))
+            do j = i+1, nsurp
+                Rij_tes = Sp(:,i) - Sp(:,j)
+                R_tes = nrm2(Rij_tes)
+                B_full(ipcm_off+j,ipcm_off+i) = diel_fac * 1.0d0 / R_tes
+                B_full(ipcm_off+i,ipcm_off+j) = B_full(ipcm_off+j,ipcm_off+i)
+            end do
+        end do !i = 1, nsurp
+    end if
 !     Pack B_full to lower triangular form in B
-   koff = 1
-   if (pe_sol) then 
-      leng = 3*npols + nsurp
-   else
-      leng = 3*npols
-   end if
-   do k = 1, leng
-      do j = k, leng
-         B(koff) = B_full(k,j)
-         koff = koff + 1
-      end do 
-   end do
+    koff = 1
+    if (pe_sol) then 
+        leng = 3*npols + nsurp
+    else
+        leng = 3*npols
+    end if
+    do k = 1, leng
+        do j = k, leng
+            B(koff) = B_full(k,j)
+            koff = koff + 1
+        end do 
+    end do
   
-   do i=1, leng
+    do i=1, leng
         write (luout,*) 'Response matrix', B(i)
-   end do
+    end do
 end subroutine response_matrix_full
 
 !------------------------------------------------------------------------------
