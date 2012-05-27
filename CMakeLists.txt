@@ -6,7 +6,7 @@ cmake_policy(SET CMP0010 OLD)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-project(DALTON Fortran C)
+project(DALTON Fortran C CXX)
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
@@ -15,8 +15,6 @@ option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
-option(ENABLE_GEN1INT        "Enable Gen1Int module"         OFF)
-option(ENABLE_XCFUN          "Enable XCFun library"          OFF)
 option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
