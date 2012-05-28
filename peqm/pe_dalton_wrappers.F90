@@ -4,7 +4,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
     ! Gen1Int API
     use gen1int_api
 ! TODO:
-!    use polarizable_embedding
+    use polarizable_embedding, only: luout
 
     implicit none
 
@@ -184,11 +184,18 @@ subroutine Tk_integrals(Tk_ints, nints, ncomps, coord, work, nwrk)
     else if (k == 1) then
         inttype = 'NEFIELD'
     else if (k == 2) then
-        print *, 'WARNING: using EFG integrals which can result in unstable&
-                 & behavior.'
+        write(luout,*) 'WARNING: using finite difference derivatives to derive&
+                       & EFG integrals which can result in unstable behavior.'
+        write(luout,*) 'Use the Gen1Int option during installation if&
+                       & necessary.'
         inttype = 'ELFGRDC'
     else if (k >= 3) then
-        stop 'Electric field hessian and higher order integrals not implemented.'
+        write(luout,*) 'ERROR: electric field hessian and higher order&
+                       & integrals not implemented.'
+        write(luout,*) 'Use the Gen1Int option during installation if&
+                       & necessary.'
+        stop 'ERROR: electric field hessian and higher order integrals not&
+             & implemented.'
 !        print *, 'WARNING: using simple finite difference to obtain EFH&
 !                 & integrals from potentially unstable EFG integrals.'
 !        if (nwrk < 24 * nints) then
