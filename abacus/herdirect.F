@@ -469,6 +469,8 @@ C
 #include "veclen.h"
 C
 #include "memint.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       CALL QENTER('HERFCK')
 C
@@ -504,7 +506,7 @@ C
          IF (PARCAL) THEN
             if (iprfck .gt. 1) write (lupri,*) '- using parallel ERI'
             CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)           
-            IPRTYP = 2
+            IPRTYP = ERI_WORK
             CALL PARDRV(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,WORK(KFREE),
      &                  WORK(KNSTAT),DUMMY,LFREE,IDUMMY,IDUMMY,IDUMMY,
      &                  LDUMMY,LDUMMY,LDUMMY,LDUMMY,LDUMMY,
@@ -593,6 +595,8 @@ C
 #include "blocks.h"
 C
 #include "memint.h" 
+C defined parallel calculation types  
+#include "iprtyp.h"
       IF (NDMAT .LE. 0) RETURN  
       CALL QENTER('HRFCK1')
       I2TYP = 0
@@ -692,7 +696,7 @@ C
          IATOM = 0
          CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
 C
-         IPRTYP = 1
+         IPRTYP = HER_WORK
          HFXM0 = HFXMU
          HFXMU = D0
          CALL PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,
@@ -711,7 +715,7 @@ C
 C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
 C
          IF (HFXMU.NE.D0) THEN
-            IPRTYP = 1
+            IPRTYP = HER_WORK
             IATOM  = 1
             HFXFC0 = HFXFAC
             HFXFAC = HFXATT 

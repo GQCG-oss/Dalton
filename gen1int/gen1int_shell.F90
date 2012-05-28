@@ -214,7 +214,7 @@ module gen1int_shell
   !> \param api_comm is the MPI communicator
   subroutine Gen1IntShellBcast(num_shells, sub_shells, root, api_comm)
     integer, intent(in) :: num_shells
-    type(sub_shell_t), intent(inout) :: sub_shells(*)
+    type(sub_shell_t), intent(inout) :: sub_shells(num_shells)
     integer, intent(in) :: root
     integer, intent(in) :: api_comm
 #include "mpif.h"
@@ -306,7 +306,7 @@ module gen1int_shell
   !> \param io_viewer is the logical unit number of the viewer
   subroutine Gen1IntShellView(num_shells, sub_shells, io_viewer)
     integer, intent(in) :: num_shells
-    type(sub_shell_t), intent(in) :: sub_shells(*)
+    type(sub_shell_t), intent(in) :: sub_shells(num_shells)
     integer, intent(in) :: io_viewer
     integer ishell, iprim  !incremental recorders
     write(io_viewer,100) "number of AO sub-shells", num_shells
@@ -1806,7 +1806,7 @@ module gen1int_shell
                                order_mag, order_ram, order_geo)
     use gen1int_matrix
     integer, intent(in) :: num_shells
-    type(sub_shell_t), intent(in) :: sub_shells(*)
+    type(sub_shell_t), intent(in) :: sub_shells(num_shells)
     type(matrix), intent(in) :: mo_coef
     integer, intent(in) :: num_points
     real(REALK), intent(in) :: grid_points(3,num_points)
@@ -1978,7 +1978,7 @@ module gen1int_shell
   !> \param sub_shells are the AO sub-shells
   subroutine Gen1IntShellDestroy(num_shells, sub_shells)
     integer, intent(in) :: num_shells
-    type(sub_shell_t), intent(inout) :: sub_shells(*)
+    type(sub_shell_t), intent(inout) :: sub_shells(num_shells)
     integer ishell  !incremental recorder
     do ishell = 1, num_shells
       if (allocated(sub_shells(ishell)%exponents)) &

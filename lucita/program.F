@@ -5372,10 +5372,12 @@ C       WRITE(6,'(5X,A)')  ' No transformation of CI vectors'
 ***********************************************************************
 #include "implicit.h"
 #include "parluci.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
-C     iprtyp = 42 for parallel LUCITA
+C     LUCITA_WORK for parallel LUCITA
 C
-      iprtyp =  42
+      iprtyp =  LUCITA_WORK
       idummy = - 1
       call mpixbcast(iprtyp,1,'INTEGER',luci_master)
       call mpixbcast(idummy,1,'INTEGER',luci_master)

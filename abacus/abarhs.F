@@ -461,6 +461,8 @@ C
 #include "cbieri.h"
 #include "dftcom.h"
 #include "infinp.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
 C     For GDHAM true:
 C
@@ -838,7 +840,7 @@ C
                   IF (KLAST .GT. LWRK)
      &               CALL STOPIT('RHSIDE','PARDRV',KLAST,LWRK)
                   LWRK = LWRK - KLAST
-                  IPRTYP = 1
+                  IPRTYP = HER_WORK
                   HFXM0 = HFXMU
                   HFXMU = D0
                   CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,

@@ -1342,12 +1342,18 @@ C
      &          (INDEX('   X   ',NAMN(NCTOT)) .GT. 0 .OR.
      &           INDEX('   x   ',NAMN(NCTOT)) .GT. 0)) THEN
                IF (J .EQ. 1) THEN
+                  IF (LCMMAX .eq. 1234567890) THEN
+                     WRITE(LUPRI,'(/A)') ' FATAL ERROR:'//
+     &                  ' only one "X" center allowed for .CM FUN'
+                     CALL QUIT('ERROR: max one "X" center for .CM FUN')
+                  END IF
                   IQM(I,J) = LCMMAX + 1
                   CALL CMBAS(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                 NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                 ALPHA(1,IBLOCK(J),J),
      &                 CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
      &                 NBLOCK,KAOVEC,KPRIM)
+                  LCMMAX = 1234567890
                ELSE
                   IQM(I,J) = 0
                END IF
@@ -1673,6 +1679,12 @@ C
             END IF
          END IF
   100 CONTINUE
+C
+      IF (LCMMAX .GT. -1 .AND. LCMMAX .NE. 1234567890) THEN
+         WRITE(LUPRI,'(//A)') ' FATAL ERROR:'//
+     &     ' .CM FUN specified but no "X" center in .mol input'
+         CALL QUIT('ERROR: no "X" center in .mol input for .CM FUN')
+      END IF
 C
       IF (.NOT. ONLYOV) THEN
         IF (QM3) THEN

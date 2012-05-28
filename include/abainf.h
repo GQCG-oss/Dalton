@@ -5,9 +5,10 @@
 !     NOTE: DOSYM(NSYML) is sent to slaves in a parallel calculation and
 !           should not be moved from this common block !
 !
-cx jim-gesc : RNLRSC login included, jimprt for debugging prints
+!  jim-gesc : RNLRSC login included, jimprt for debugging prints
       INTEGER NSYML, IPRDEF, NWNABA, IRVIBG
       PARAMETER (NSYML = 8)
+<<<<<<< HEAD
       LOGICAL MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,
      &        H2MO,   DOSYM(NSYML),   DOLRES, DOEXCI, SHIELD,
@@ -20,7 +21,7 @@ cx jim-gesc : RNLRSC login included, jimprt for debugging prints
      &        ABA_ALPHA,      EXPGRD, CTOCD,  NUMHES, DOD2DQ2,
      &        OECD,   MVEOR,  QPGRAD, SECNDM, THIRDM, VIB_G,
      &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU,
-     &        VIBGIR, RNLRSC
+     &        VIBGIR, RNLRSC, JIMPRT
       COMMON /ABAINF/ IPRDEF, NWNABA, IRVIBG,
      &        MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -34,5 +35,5 @@ cx jim-gesc : RNLRSC login included, jimprt for debugging prints
      &        ABA_ALPHA,      EXPGRD, CTOCD,  NUMHES, DOD2DQ2,
      &        OECD,   MVEOR,  QPGRAD, SECNDM, THIRDM, VIB_G,
      &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU,
-     &        VIBGIR, RNLRSC
+     &        VIBGIR, RNLRSC, JIMPRT
 ! -- end of abainf.h --

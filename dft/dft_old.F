@@ -1152,6 +1152,8 @@ C
 #include "orgcom.h"
 #include "maxaqn.h"
 #include "symmet.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       INTEGER A, B
       LOGICAL DOERG, DOGRD, DODRC, DOVWN, DOBCK, DOLYP, 
@@ -1165,7 +1167,7 @@ C
 C
 C     start up the nodes:  
 C
-      IPRTYP = 4
+      IPRTYP = DFT_KSM_WORK
       FINNISH = .FALSE.      
 #if defined (VAR_MPI)
       CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
