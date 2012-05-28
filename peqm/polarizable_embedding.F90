@@ -22,7 +22,7 @@ module polarizable_embedding
 
     ! options
     logical, public, save :: peqm = .false.
-    logical, save :: pe_iter = .false.
+    logical, save :: pe_iter = .true.
     logical, save :: pe_border = .false.
     logical, save :: pe_damp = .false.
     logical, save :: pe_gspol = .false.
@@ -222,7 +222,10 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! do a Polarizable Embedding calculation
         if (trim(option(2:)) == 'PEQM') then
             peqm = .true.
-        ! iterative solver for induced dipoles
+        ! direct solver for induced dipoles
+        else if (trim(option(2:)) == 'DIRECT') then
+            pe_iter = .false.
+        ! iterative solver for induced dipoles (defaults to true)
         else if (trim(option(2:)) == 'ITERAT') then
             read(luinp,*) option
             backspace(luinp)
@@ -2206,11 +2209,15 @@ subroutine induced_dipoles(M1inds, Fs)
 
                 if (myid == 0) then
                     if (norm < redthr * thriter) then
-                        write (luout,'(a,i2,a)') 'Induced dipoles converged in ',&
-                                                 & iter, ' iterations.'
+                        write (luout,'(4x,a,i2,a)') 'Induced dipole moments&
+                                                    & converged in ',&
+                                                    & iter, ' iterations.'
                         converged = .true.
                     else if (iter > 50) then
-                        stop 'Maximum iterations reached.'
+                        write(luout,*) 'ERROR: could not converge induced&
+                                       & dipole moments.'
+                        stop 'ERROR: could not converge induced dipole&
+                             & moments.'
                     else
                         converged = .false.
                         iter = iter + 1
