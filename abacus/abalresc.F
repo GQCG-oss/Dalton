@@ -35,7 +35,7 @@ C
 C
 C  /* Deck lrscinp */
 C This module read nesserary input for LRESC calculations.
-C jim - May-2012
+C jim-gesc : May-2012
 C
 C
       SUBROUTINE LRSCINP(WORD)
@@ -51,7 +51,7 @@ C
       DIMENSION IPOINT(MXCENT)
 C#include <dorps.h>
 #include <spnout.h>
-C jim  aca van las opctiones para LRESC , aun no las defino
+C jim  aca van las opctiones para LRESC , aun no las defino todas
       DATA TABLE /'.GAUGEO','.PRINT ','.SELECT','.xINEAR','.xUADRA',
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
@@ -86,14 +86,14 @@ C   READ GAUGEO : DEFINIR AKLGUNA VAR PARA GAUGEO
                     write(lupri,*)' ..aca leo gaugeo ', WORD
                     READ (LUCMD, *) (LRGAUG(IS), IS = 1, 3)
                     GAUCHANG =.TRUE.
-               ICHANG = ICHANG + 1
+                    ICHANG = ICHANG + 1
                GOTO 100
 C   SET PRINT LEVEL 
  2             CONTINUE
                   write(lupri,*)' ..aca leo print levels '
                   READ (LUCMD,*) JIMPRT
 c                  IF (JIMPRT.EQ.0) THEN write(lupri,*)'hacer algo  '  
-               ICHANG = ICHANG + 1
+                  ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  3             CONTINUE
@@ -101,7 +101,7 @@ C   SET WHICH NUC TO DO LRESC
                   READ (LUCMD,*) NATOM
               CALL HEADER('Remember to set GAUGEO on INTEGRAL SECTION'//
      &            ' it is important GAUGEO placed on selected NATOM',1)
-               ICHANG = ICHANG + 1
+                  ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  4             CONTINUE
@@ -150,8 +150,8 @@ c                  do algo
             END IF
       END IF
  300  CONTINUE
-c jim ICHANG > 0 cambios en default variables
-c jim ICHANG < 0 no cambios
+c jim-dbg ICHANG > 0 cambios en default variables
+c jim-dbg ICHANG < 0 no cambios
 
       IF ((SIGMAD0S).AND.(SIGMAD1S).AND.(SIGMAP1S).AND.(SIGMAP1T).AND.
      &    (SIGMAP3S).AND.(SIGMAP3T)) THEN 
@@ -162,10 +162,8 @@ c jim ICHANG < 0 no cambios
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for LRESC :',0)
          IF (GAUCHANG) THEN
-            WRITE (LUPRI,'(A,F8.3,A)')
-     &       ' cambiaste el origen de gauge .. ojo lo mejor es dejar '
-c     &       ' en el atomo a calcular. Ahora gauge : ', LRGAUG
-c     &       (LRGAUG(I), I = 1,3)
+            WRITE (LUPRI,*) 'cambiaste origen de gauge .. ojo  '
+            write(lupri,*) ' a ver ', GAUCHANG
          END IF
          IF (JIMPRT.NE.0) THEN
             WRITE (LUPRI,'(A,I5)')
@@ -201,9 +199,9 @@ C
 #include <implicit.h>
 #include <lrescinf.h>
 C#include <mxcent.h>
-C#include <cbiqr.h>
+C#include <cbiqr.h
 #include <abainf.h>
-c jim sacar esto de abajo
+c jim-dbg : sacar esto de abajo
 #include <priunit.h>
 C
       Write(lupri,*)'  @LRSCINI for LRESC defaults' 
