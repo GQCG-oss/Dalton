@@ -509,7 +509,7 @@ C
 C  jim-gesc : call to LRSCDRV  
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
-         CALL LRSCDRV(WORK(KLST2),LWRK2)
+c         CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
       END IF
 C
 C     ****************************************

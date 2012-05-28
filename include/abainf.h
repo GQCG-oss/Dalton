@@ -5,7 +5,6 @@
 !     NOTE: DOSYM(NSYML) is sent to slaves in a parallel calculation and
 !           should not be moved from this common block !
 !
-!  jim-gesc : RNLRSC login included, jimprt for debugging prints
       INTEGER NSYML, IPRDEF, NWNABA, IRVIBG
       PARAMETER (NSYML = 8)
 <<<<<<< HEAD
