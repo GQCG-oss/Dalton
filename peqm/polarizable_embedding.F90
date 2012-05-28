@@ -50,7 +50,7 @@ module polarizable_embedding
     integer, dimension(:), save, allocatable :: npoldists, ndists, displs
 
     ! logical unit from dalton
-    integer, public, save :: luout = 0
+    integer, save :: luout = 0
 
     ! constants, thresholds and stuff
     ! 1 bohr = 0.5291772108 Aa (codata 2002)
@@ -1308,12 +1308,8 @@ subroutine pe_compmep(denmats)
 
     i = 1
     do point = npoints(myid-1)+1, npoints(myid)
-#if defined(BUILD_GEN1INT)
+
         call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i), .false., 0.0d0)
-#else
-        call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i),&
-                         &work, size(work))
-#endif
 
         Vqm(1,i) = dot(denmats, Tk_ints(:,1))
 
@@ -1384,11 +1380,7 @@ subroutine pe_compmep(denmats)
             end if
         end do
 
-!#if defined(BUILD_GEN1INT)
 !        call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
-!#else
-!        call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), work, size(work))
-!#endif
 !
 !        do j = 1, 3
 !            Fqm(j,i) = dot(denmats, Tk_ints(:,j))
@@ -1864,11 +1856,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
                 call Tk_tensor(Tfm, Rfm)
                 Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
             end do
-#if defined(BUILD_GEN1INT)
             call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), pe_gauss, gauss) 
-#else
-            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), work, size(work))
-#endif
             Zfd_ints = Zfd(1,j) * Zfd_ints
 !            call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
             do m = 1, ndens
@@ -2021,11 +2009,7 @@ subroutine pe_polarization(denmats, fckmats)
         i = 0
         do site = nsites(myid-1)+1, nsites(myid)
             if (zeroalphas(site)) cycle
-#if defined(BUILD_GEN1INT)
             call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), .false., 0.0d0)
-#else
-            call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), work, size(work))
-#endif
             do j = 1, 3
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
@@ -2350,11 +2334,7 @@ subroutine electron_fields(Fels, denmats)
             end do
             if (skip) cycle
         end if
-#if defined(BUILD_GEN1INT)
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), .false., 0.0d0)
-#else
-        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), work, size(work))
-#endif
         do j = 1, 3
             do k = 1, ndens
                 l = (k - 1) * nnbas + 1
@@ -2879,11 +2859,7 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
     ncomps = size(Mk_ints, 2)
 
-#if defined(BUILD_GEN1INT)
     call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, .false., 0.0d0)
-#else
-    call Tk_integrals(Mk_ints, nnbas, ncomps, Rij, work, size(work))
-#endif
 
     ! get symmetry factors
     allocate(factors(ncomps))
@@ -3028,11 +3004,7 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-#if defined(BUILD_GEN1INT)
         call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .false., 0.0d0)
-#else
-        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), work, size(work))
-#endif
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(density, T0_ints(:,1))
     end do
