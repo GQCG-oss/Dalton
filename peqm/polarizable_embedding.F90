@@ -50,7 +50,7 @@ module polarizable_embedding
     integer, dimension(:), save, allocatable :: npoldists, ndists, displs
 
     ! logical unit from dalton
-    integer, save :: luout = 0
+    integer, public, save :: luout = 0
 
     ! constants, thresholds and stuff
     ! 1 bohr = 0.5291772108 Aa (codata 2002)
