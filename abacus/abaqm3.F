@@ -354,6 +354,8 @@ C
 #if defined(VAR_MPI)
 #include "mpif.h"
 #endif
+C defined parallel calculation types 
+#include "iprtyp.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL EXP1VL, TRIMAT
@@ -371,7 +373,7 @@ C
       KVEC2 = 1
       JVEC2 = KVEC2 + 3*N2BASX
       KLAST = JVEC2 + 3*N2BASX
-      IPRTYP = 19
+      IPRTYP = QM3FIRST_1_WORK
 C
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -551,6 +553,8 @@ C-----------------------------------------------------
 #if defined(VAR_MPI)
 #include "mpif.h"
 #endif
+C defined parallel calculation types 
+#include "iprtyp.h"
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL EXP1VL, TRIMAT
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -570,7 +574,7 @@ C-----------------------------------------------------
       JVEC2 = KVEC2 + 3*N2BASX
       KLAST = JVEC2 + 3*N2BASX
 
-      IPRTYP = 20
+      IPRTYP = QM3FIRST_2_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)

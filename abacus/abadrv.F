@@ -509,7 +509,7 @@ C
 C  jim-gesc : call to LRSCDRV  
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
-         CALL LRSCDRV(WORK(KLST2),LWRK2)
+c         CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
       END IF
 C
 C     ****************************************
@@ -636,10 +636,7 @@ C
      &            WORK(KSCTRA),WORK(KDSO),WORK(KPSO),WORK(KSD),
      &            WORK(KFC),WORK(KSDFC),WORK(KTRLEN),
      &            WORK(KTRVEL),WORK(KTQLEN),WORK(KTQVEL),
-CSPAS:23/5-11: second and third moment sum rules
-C    &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),
      &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),WORK(KTTLEN),
-CKeinSPASmehr
      &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),WORK(KFOVIB),
      &            WORK(KSECMT),
      &            WORK(KRMLEN),WORK(KRQLEN),WORK(KRLEN),
@@ -2177,12 +2174,8 @@ C  /* Deck result */
       SUBROUTINE ABARESULT(POLDD,POLDL,POLDA,POLVL,POLVV,
      &                  CSTRA,SCTRA,SPNDSO,SPNPSO,
      &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TQLEN,TQVEL,
-CSPAS:23/5-11: second and third moment sum rules
-C    &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,FOVIBG,
-C    &                  SECMAT,
-     &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,FONAC,FONA2,
-     &                  FOVIBG,SECMAT,
-CKeinSPASmehr
+     &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,
+     &                  FONAC,FONA2,FOVIBG,SECMAT,
      &                  RMLEN,RQLEN,RLEN,RMVEL,RQVEL,RVEL,SLEN,SVEL,
      &                  WORK,LWORK)
 C
@@ -2206,10 +2199,7 @@ C
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
      &          SPNSD (MXCOOR,MXCOOR), SPNFC (MXCOOR,MXCOOR),
      &          SPSDFC(MXCOOR,MXCOOR)
-CSPAS:23/5-11: second and third moment sum rules
-C     DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*),
       DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*), TTLEN(*),
-CKeinSPASmehr
      &          TRLON(*), TRMAG(*), BSRLON(*),
      &          EXENG(*), FONAC(*), FONA2(*), FOVIBG(*),
 CSPAS : 6/11-2009 AO-SOPPA included
@@ -2571,18 +2561,11 @@ C     Excitation energies and (oriented) electronic circular dichroism
 C
       IF (DOEXCI) THEN
          IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-CSPAS:23/5-11: second and third moment sum rules
-C           CALL SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
-C    &                     FONAC,FONA2,SECMAT,WORK,LWORK)
             CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
      &                     TTLEN,EXENG,FONAC,FONA2,SECMAT,WORK,LWORK)
-CKeinSPASmehr
          ELSE
             CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
-CSPAS:23/5-11: second and third moment sum rules
-C    &                  TRMAG,TRLON,BSRLON,EXENG,
      &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,
-CKeinSPASmehr
      &                  FONAC,FONA2,RMLEN,RQLEN,
      &                  RLEN,RMVEL,RQVEL,RVEL,
      &                  SLEN,SVEL,WORK,LWORK)

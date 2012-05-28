@@ -1,3 +1,4 @@
+#define ENDING_SIGNAL 0
 #define HER_WORK 1
 #define ERI_WORK 2
 #define GEM_WORK 3

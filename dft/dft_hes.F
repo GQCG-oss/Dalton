@@ -1285,9 +1285,11 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 8
+         IPRTYP = DFT_HESSTAT_WORK
          CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
@@ -1372,12 +1374,14 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
 C
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 9
+         IPRTYP = DFTHED_WORK
          CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
