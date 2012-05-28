@@ -56,14 +56,14 @@ C jim  aca van las opctiones para LRESC , aun no las defino todas
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
 C
-      write(lupri,*) ' LRESC OPTS :  called with : ' , WORD
+      write(lupri,*) ' @LRSCINP to read dal file :' , WORD
       NEWDEF = (WORD .EQ. '*LROPTS')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
-            write(lupri,*) ' @LRSCOPTS : reading : ' , WORD
+            write(lupri,*) '  @LRSCINP : reading : ' , WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
@@ -171,7 +171,7 @@ c jim-dbg ICHANG < 0 no cambios
          END IF
          IF (.NOT. LRESCALL) WRITE (LUPRI,'(A)')
      &      ' Not LRESC for all corrections, will be calculated. ' //
-     &      'Only the following will be done : '
+     &      'Only the following will be done, as asked for : '
          IF (SIGMAP1S)  WRITE (LUPRI,'(A)')
      &   '   Paramagnetic first order singlet corrections to shielding'
          IF (SIGMAP1T) WRITE (LUPRI,'(A)')
