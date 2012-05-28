@@ -506,10 +506,11 @@ C     ******************************************
 C     ***** Lresc Response Properties      *****
 C     ******************************************
 C
-C  jim-gesc : call to LRSCDRV  
+C  jim-gesc : call to LRSCDRV 
+c  jim-dbg : comment lrscdrv when pushing to master 
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
-c         CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
+         CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
       END IF
 C
 C     ****************************************

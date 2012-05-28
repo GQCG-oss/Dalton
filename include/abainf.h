@@ -7,7 +7,6 @@
 !
       INTEGER NSYML, IPRDEF, NWNABA, IRVIBG
       PARAMETER (NSYML = 8)
-<<<<<<< HEAD
       LOGICAL MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,
      &        H2MO,   DOSYM(NSYML),   DOLRES, DOEXCI, SHIELD,
@@ -20,7 +19,7 @@
      &        ABA_ALPHA,      EXPGRD, CTOCD,  NUMHES, DOD2DQ2,
      &        OECD,   MVEOR,  QPGRAD, SECNDM, THIRDM, VIB_G,
      &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU,
-     &        VIBGIR, RNLRSC, JIMPRT
+     &        VIBGIR, RNLRSC
       COMMON /ABAINF/ IPRDEF, NWNABA, IRVIBG,
      &        MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -34,5 +33,5 @@
      &        ABA_ALPHA,      EXPGRD, CTOCD,  NUMHES, DOD2DQ2,
      &        OECD,   MVEOR,  QPGRAD, SECNDM, THIRDM, VIB_G,
      &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU,
-     &        VIBGIR, RNLRSC, JIMPRT
+     &        VIBGIR, RNLRSC
 ! -- end of abainf.h --
