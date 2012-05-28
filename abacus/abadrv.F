@@ -765,7 +765,7 @@ CPFP: 27/03-2006: SOS for spin-spin coupling included
 #include "locinf.h"
 Cend-PFP
 
-C  jim-dbg (abainp.778) : add LROPTS and .LRESC . check  INTRST gaugeo stuff
+C  jim-dbg : add LROPTS and .LRESC . check  INTRST gaugeo stuff
 C  jim-gesc 1.0: TABDIR(#17) "*LRESC " and TABLE(60) ".LRESC "
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
      &             '*ONEINT', '*TWOEXP', '*GETSGY',
@@ -922,7 +922,7 @@ C
       THIRDM = .FALSE.
       ESG    = .FALSE.
       VIB_G  = .FALSE.
-C  jim-gesc 1.1: (abainp.927) RNLRSC .FALSE. init 
+C  jim-gesc 1.1: RNLRSC .FALSE. init 
       RNLRSC = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
@@ -1001,8 +1001,6 @@ C         geometry if not overridden with '**START' /Feb 2003 hjaaj
          GOTO 1
   930 CONTINUE
       WORD1 = WORD
-cx jim-dbg : (abainp.1015)  take it off 
-         write(lupri,*)'abainp #1017 read LUCMOD up 2 WORD : ',WORD
 C
       CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
      &            ,'*',108)
@@ -1305,9 +1303,7 @@ C        .LOCALI
             ABALOC = .TRUE.
          GOTO 100
 Cend-PFP
-Cx jim-dbg 1.3: (abainp.1322) set RNLRSC,  
- 160     CONTINUE
-         write(lupri,*)  ' set true RNLRSC'   
+ 160     CONTINUE ! jim-dbg : set RNLRSC true
          RNLRSC = .TRUE.
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1764,7 +1760,13 @@ Cx            y hacer un call quit
 Cx    preguntando al logic q sea ejplo if GAUGEO tonces ...  o SOPPA
        IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
      &    ' Linear Response Elimination of Small Component scheme will',
-     &    ' be used to shielding constants' 
+     &    ' DEVELOPING NOTES :   ' ,
+     &    '                   -uncontracted basis set not checked  ',
+     &    '                   -selected atom not yet #1 set internally',
+     &    '                   -no man pages.. yet ',
+     &    '                   -no test runs .. yet.. ',
+     &    '                   -ONLY diam sinlget corrections and ',
+     &    '                   -     param singlet first order '
       IF (ABASOP) THEN
          IERR = 0
          IF (MOLGRD) THEN
@@ -1968,7 +1970,7 @@ cs
       GO TO 200
    16   CALL FLTINP(WORD)
       GO TO 200
-C jim-gesc 1.5 : (abainp.1985) reading TABDIR call lrscinp
+C jim-gesc 1.5 : reading TABDIR call lrscinp
    17 Write(lupri,*) ' Calling lrsec inp for word', WORD
       CALL LRSCINP(WORD)  ! *LRESC
       GO TO 200
@@ -2106,7 +2108,7 @@ C     We need to change the origin to the center of mass when calculating
 C     spin-rotation constants and molecular g-factors.
 C     This is now default for all molecular properties, unless turned off.
 C
-Cx jim-dbg  1.6: (abainp.2125) check GAUGEO origin : not done yet
+Cx jim-dbg : check GAUGEO origin here ?: not done yet
       KGEOM = 1
       KMASS = KGEOM + 3*(NATOMS + NFLOAT)
       KNAT  = KMASS + NATOMS + NFLOAT
