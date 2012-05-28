@@ -483,6 +483,7 @@ lucita/strings.F
 lucita/transform.F
 lucita/utils.F
 lucita/vecmat.F
+lresc/linear.F
 pdpack/arhpack.F
 pdpack/eispack.F
 pdpack/jacobi.F

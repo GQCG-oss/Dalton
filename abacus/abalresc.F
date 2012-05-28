@@ -34,37 +34,40 @@ C
 #include <single.h>
 C
 C  /* Deck lrscinp */
+C This module read nesserary input for LRESC calculations.
+C jim-gesc : May-2012
+C
+C
       SUBROUTINE LRSCINP(WORD)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <lrescinf.h>
 #include <nuclei.h>
 #include <abainf.h>
       PARAMETER (NTABLE = 11, D0 = 0.0D0)
-      LOGICAL NEWDEF
+      LOGICAL NEWDEF 
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
-#include <dorps.h>
+C#include <dorps.h>
 #include <spnout.h>
-C jim  aca van las opctiones para LRESC , aun no las defino
-      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.LINEAR','.QUADRA',
-     &            '.GESC  ','.NOPSO ','.SD+FC ','.SDxFC','.ISOTOP',
-     &            '.COUPLI'/
+C jim  aca van las opctiones para LRESC , aun no las defino todas
+      DATA TABLE /'.GAUGEO','.PRINT ','.SELECT','.xINEAR','.xUADRA',
+     &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
+     &            '.DIAM1S'/
 C
       write(lupri,*) ' LRESC OPTS :  called with : ' , WORD
-      write(lupri,*) ' still developing '
       NEWDEF = (WORD .EQ. '*LROPTS')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
-            write(lupri,*) ' LRSCOPTS : read : ' , WORD
+            write(lupri,*) ' @LRSCOPTS : reading : ' , WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
             ELSE IF (PROMPT .EQ. '.') THEN
-               ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GOTO (1,2,3,4,5,6,7,8,9,10,11), I
@@ -75,113 +78,112 @@ C
                  GOTO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "', WORD,
-     &               '" not recognized in SPIN-S.'
+     &               '" not recognized in LRESC.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Input keywords in SPNINP')
+C   READ GAUGEO : DEFINIR AKLGUNA VAR PARA GAUGEO
  1             CONTINUE
-                    write(lupri,*)' i have just read ', WORD
-cx                  READ (LUCMD,*) ABUND
-cx                  IF (ABUND .EQ. 1.0D0) ICHANG = ICHANG - 1
+                    write(lupri,*)' ..aca leo gaugeo ', WORD
+                    READ (LUCMD, *) (LRGAUG(IS), IS = 1, 3)
+                    GAUCHANG =.TRUE.
+                    ICHANG = ICHANG + 1
                GOTO 100
+C   SET PRINT LEVEL 
  2             CONTINUE
-                  READ (LUCMD,*) ISPPRI
-                  IF (ISPPRI .EQ. 0) ICHANG = ICHANG - 1
+                  write(lupri,*)' ..aca leo print levels '
+                  READ (LUCMD,*) JIMPRT
+c                  IF (JIMPRT.EQ.0) THEN write(lupri,*)'hacer algo  '  
+                  ICHANG = ICHANG + 1
                GOTO 100
+C   SET WHICH NUC TO DO LRESC 
  3             CONTINUE
-                  DO 1030 I = 1, MXCENT
-                     DOPERT(I,2) = .FALSE.
- 1030             CONTINUE
-                  READ (LUCMD,*) NPERT
-                  READ (LUCMD, *) (IPOINT(I),I=1,NPERT)
-                  CALL HEADER('Only the spin-spin couplings between'//
-     &               ' the following nuclei will be calculated:',1)
-                  WRITE (LUPRI,*) ' ',(IPOINT(I), I = 1 , NPERT)
-                  WRITE (LUPRI,'()')
-                  DO 1031 I = 1, NPERT
-                     DOPERT(IPOINT(I),2) = .TRUE.
- 1031             CONTINUE
-                  DOSELE = .TRUE.
+                  write(lupri,*)' ..aca leo SELECT NATOM '
+                  READ (LUCMD,*) NATOM
+              CALL HEADER('Remember to set GAUGEO on INTEGRAL SECTION'//
+     &            ' it is important GAUGEO placed on selected NATOM',1)
+                  ICHANG = ICHANG + 1
                GOTO 100
+C   SET WHICH NUC TO DO LRESC 
  4             CONTINUE
-                  DODSO = .FALSE.
+c                  do algo 
                GOTO 100
  5             CONTINUE
-                  DOSD  = .FALSE.
+c                  do algo 
                GOTO 100
  6             CONTINUE
-                  DOFC  = .FALSE.
+                  SIGMAP1S = .TRUE.
+                  LRESCALL = .FALSE.
+                  ICHANG = ICHANG + 1
                GOTO 100
  7             CONTINUE
-                  DOPSO = .FALSE.
+                  SIGMAP1T = .TRUE.
+                  LRESCALL = .FALSE.
+                  ICHANG = ICHANG + 1
                GOTO 100
  8             CONTINUE
-                  DOSDFC= .TRUE.
-                  DOSD  = .FALSE.
-                  DOFC  = .FALSE.
+                  SIGMAP3S = .TRUE.
+                  LRESCALL = .FALSE.
+                  ICHANG = ICHANG + 1
                GOTO 100
  9             CONTINUE
-                  ANISON = .TRUE.
+                  SIGMAP3T = .TRUE.
+                  LRESCALL = .FALSE.
+                  ICHANG = ICHANG + 1
                GOTO 100
  10            CONTINUE
-                  SPNISO = .TRUE.
-                  READ (LUCMD, *) (ISOTPS(IS), IS = 1, NATOMS)
-                  ABUND = D0
+                  SIGMAD0S = .TRUE.
+                  LRESCALL = .FALSE.
+                  ICHANG = ICHANG + 1
                GOTO 100
  11            CONTINUE
-                  READ (LUCMD, *)  NUCSPI
-                  READ (LUCMD, *) (IPOINT(IS), IS = 1, NUCSPI)
-                  IF (NUCSPI .GT. 0) THEN
-                     DO IS = 1, MXCENT
-                        NCSPNI(IS) = .FALSE.
-                     END DO
-                  END IF
-                  DO IS = 1, NUCSPI
-                     IF (IPOINT(IS) .LE. 0 .OR.
-     &                   IPOINT(IS) .GT. NUCIND) THEN
-                        WRITE (LUPRI,*) 'Non-existent '//
-     &                     'symmetry-dependent nucleus specified for'//
-     &                     ' .COUPLING NUCLEUS'
-                        CALL QUIT('Inconsistent input in *SPIN-SPIN'//
-     &                            'module')
-                     ELSE
-                        NCSPNI(IPOINT(IS)) = .TRUE.
-                     END IF
-                  END DO
+                  SIGMAD1S=.TRUE.
+                  LRESCALL = .FALSE.
+                  ICHANG = ICHANG + 1
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     &               '" not recognized in SPIN-S'
+     &               '" not recognized in LRESC'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT ('Illegal keyword in SPIN-S')
+               CALL QUIT ('Illegal keyword in LRESC')
             END IF
       END IF
  300  CONTINUE
-c jim ICHANG > 0 cambios en default variables
-c jim ICHANG < 0 no cambios
+c jim-dbg ICHANG > 0 cambios en default variables
+c jim-dbg ICHANG < 0 no cambios
 
+      IF ((SIGMAD0S).AND.(SIGMAD1S).AND.(SIGMAP1S).AND.(SIGMAP1T).AND.
+     &    (SIGMAP3S).AND.(SIGMAP3T)) THEN 
+            ICHANG = ICHANG -6 
+            LRESCALL=.TRUE.
+            Write(lupri,*) 'You asked for all LRESC corrections.'
+      ENDIF
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for SPIN-S:',0)
-         IF (ABUND .NE. 1.0D0) THEN
-            WRITE (LUPRI,'(A,F8.3,A)')
-     &            ' Spin-spin couplings printed for atoms with '//
-     &            'abundance greater than :', ABUND,' %'
+         CALL HEADER('Changes of defaults for LRESC :',0)
+         IF (GAUCHANG) THEN
+            WRITE (LUPRI,*) 'cambiaste origen de gauge .. ojo  '
+            write(lupri,*) ' a ver ', GAUCHANG
          END IF
-         IF (ISPPRI .NE. 0) THEN
+         IF (JIMPRT.NE.0) THEN
             WRITE (LUPRI,'(A,I5)')
-     &            ' Print level in spin-spin output routine: ', ISPPRI
+     &       ' Print level in lresc output routine now is : ', JIMPRT
          END IF
-         IF (.NOT. DODSO) WRITE (LUPRI,'(A)')
-     &      ' No diamagnetic spin-orbit contribution calculated'
-         IF (.NOT. DOSD)  WRITE (LUPRI,'(A)')
-     &      ' No spin-dipole contribution calculated'
-         IF (.NOT. DOFC) WRITE (LUPRI,'(A)')
-     &      ' No Fermi contact contribution calculated'
-         IF (.NOT. DOPSO) WRITE (LUPRI,'(A)')
-     &      ' No paramagnetic spin-orbit contribution calculated'
-         IF (DOSDFC) WRITE (LUPRI,'(A)')
-     &      ' Only the sum of SD and FC will be calculated'
+         IF (.NOT. LRESCALL) WRITE (LUPRI,'(A)')
+     &      ' Not LRESC for all corrections, will be calculated. ' //
+     &      'Only the following will be done : '
+         IF (SIGMAP1S)  WRITE (LUPRI,'(A)')
+     &   '   Paramagnetic first order singlet corrections to shielding'
+         IF (SIGMAP1T) WRITE (LUPRI,'(A)')
+     &   '   Paramagnetic first order triplet corrections to shielding'
+         IF (SIGMAP3S) WRITE (LUPRI,'(A)')
+     &   '   Paramagnetic third order singlet corrections to shielding'
+         IF (SIGMAP3T) WRITE (LUPRI,'(A)')
+     &   '   Paramagnetic third order triplet corrections to shielding'
+         IF (SIGMAD0S) WRITE (LUPRI,*)
+     &   '   Diamagnetic zero order singlet corrections to shielding'
+         IF (SIGMAD1S) WRITE (LUPRI,*)
+     &   '   Diamagnetic first order singlet corrections to shielding'
          IF (NUCSPI .GT. 0)
      &      WRITE (LUPRI,'(A)')' The spin-spin couplings of selected '//
      &           'nuclei with all the others will be calculated'
@@ -192,42 +194,33 @@ c
 C  /* Deck lrscini */
       SUBROUTINE LRSCINI 
 C
-C     Initialize /QRSRES/
 C     Initialize /LRSCINI/
 C
 #include <implicit.h>
-#include <mxcent.h>
-#include <cbiqr.h>
+#include <lrescinf.h>
+C#include <mxcent.h>
+C#include <cbiqr.h
 #include <abainf.h>
-c jim sacar esto de abajo
+c jim-dbg : sacar esto de abajo
 #include <priunit.h>
 C
-cs    iprdef= deve essere il default (applicato per entrambi i print level)
-cs
-      Write(lupri,*)' jim At LRSCINI ' 
-      IPRINT = IPRDEF
-      IPRQR  = IPRINT
-      SKIP   = .FALSE.
-        CUT    = .FALSE.
-cx      OOTV   = .FALSE.
-cx      THRESH = 1.D-04
-cx      MAXITE = 60
-cx      MXRM   = 400
-cx      MXPHP  = 0
-cs    LABAPP = 0 ?????????
-cx      NABAPP = 0
-cx      LBFREQ = 1
-cx      LCFREQ = 1
-cx      CALL DZERO (QBFREQ,NFMAX)
+      Write(lupri,*)'  @LRSCINI for LRESC defaults' 
+      JIMPRT   = 0
+      NATOM    = 1 
+      LRGAUG(1) = 0.000
+      LRGAUG(2) = 0.000
+      LRGAUG(3) = 0.000
+      GAUCHANG = .FALSE.
+      SIGMAP1S = .FALSE. 
+      SIGMAP1T = .FALSE. 
+      SIGMAD1S = .FALSE. 
+      SIGMAD0S = .FALSE. 
+      SIGMAP3S = .FALSE. 
+      SIGMAP3T = .FALSE. 
+      LRESCALL = .TRUE.
 cx      CALL DZERO (QCFREQ,NFMAX)
 C
       RETURN
       END
 c    ---------------------------------------
-C  /* Deck lrscdrv */
-cs      SUBROUTINE LRSCDRV(WORK,LWORK)
-cs jim-lresc
-cs we should direct from here which lresc claculation will be done
-cs  linear, quadratic, gesc depending on what was read on INPUT file  
-
 
