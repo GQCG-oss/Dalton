@@ -3238,6 +3238,8 @@ function elem2charge(elem)
         if (elem == trim(elements(i))) then
             elem2charge = real(i, dp)
             exit
+        else
+            elem2charge = 0.0d0
         end if
     end do
 
