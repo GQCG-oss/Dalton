@@ -1408,6 +1408,7 @@ C
       IF (IPRPHP .GE. 50) THEN
          WRITE(LUPRI,*) 'NEWCI: OLSEN =',OLSEN
          WRITE(LUPRI,*) 'NEWCI: ENER  =',ENER
+         WRITE(LUPRI,*) 'NEWCI: NPCVAR=',NPCVAR
       END IF
       KFREE = 1
       LFREE = LWRK

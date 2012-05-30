@@ -3822,6 +3822,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
                NCONF  = NCONSV
                DO 50 I=1,KZCONF
                   WRK(KECDIA-1+I) = WRK(KECDIA-1+I) - EACTIV
+                  wrk(kecdia-1+i) = 1.0d0
  50            CONTINUE
             ENDIF
 #if defined (VAR_SPLITFILES)
@@ -4211,6 +4212,13 @@ C
              FC(I) = FC(I) - WRK(I)
  21       CONTINUE
         END IF
+      END IF
+         write (lupri,*) 'FCAC before GETAC for QMMM'
+         call outpak(fcac,nasht,-1,lupri)
+      IF (QMMM) THEN
+          CALL GETAC(FC,FCAC)
+          write (lupri,*) 'FCAC after GETAC for QMMM'
+          call outpak(fcac,nasht,-1,lupri)
       END IF
 
       IF (SOPPA) THEN

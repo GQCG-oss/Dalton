@@ -1101,6 +1101,8 @@ C------------------
          KFCSOL = KWRKG
          KWRKG  = KFCSOL + NNORBT
          LWRKG  = LFREE  - (KWRKG-1)
+Ctest
+         write(lupri,*) 'PEFCMO after convergence'
          CALL PEFCMO(WRK(KCMO),WRK(KFCSOL),WRK(KDV),
      &               WRK(KWRKG),LWRKG,IPRINT)     ! NB: only works without symmetry
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
@@ -2543,7 +2545,7 @@ C
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
-     *            'PCMINFO ','PCMJXMAT', 'PETMAT'/
+     *            'PCMINFO ','PCMJXMAT','PETMAT  '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
@@ -2651,7 +2653,12 @@ C
 C
       WRITE (LUSIFC) LAB123,LBSIFC
 C     ... the label LBSIFC is initialized in block data sbdtap
-      WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
+      if (qmmm) then
+         eactiv_tot = eactiv + esolt
+      else
+         eactiv_tot = eactiv
+      end if
+      WRITE (LUSIFC) POTNUC,EMY,EACTIV_tot,EMCSCF,
      &               ISTATE,ISPIN,NACTEL,LSYM
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,

@@ -5895,12 +5895,15 @@ C
       KDENV  = KDENC  + N2BASX        
       KDENT  = KDENV  + N2BASX
       KDENTF = KDENT  + N2BASX
+C     ------------------------------
       KFPE   = KDENTF + NNBASX        ! X = no symmetry packing; T = symmetry packed
       KUCMO  = KFPE   + NNBASX        ! X = no symmetry packing; T = symmetry packed
       KFPEMO = KUCMO  + NORBT*NBAST   
       KFPEAC = KFPEMO + NNORBX
+C     ------------------------------
       KGRDPE = KFPEAC + NNASHX        
-      KDIAPE = KGRDPE + NVARH         
+      KDIAPE = KGRDPE + NVARH       
+C     ------------------------------  
       KWRK1  = KDIAPE + NVAR          
       LWRK1  = LFREE  - KWRK1 
 
@@ -5910,10 +5913,12 @@ C     1. KDENC  : Core (inactive) density matrix from fckden routine
 C     2. KDENV  : Valence (active) density matrix 
 C     3. KDENT  : Total density matrix (sum DC + DV)
 C     4. KDENTF : Folded total density matrix 
+C     ---------------------------------------------------------------
 C     6. KFPE   : Polarizable Embedded (PE) Tg operator (AO basis)
 C     7. KUCMO  : MO coefficients
 C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
 C     9. KFPEAC : - active part
+C     --------------------------------------------------------------
 C    10. KGRDPE : Solvent contr. to MCSCF gradient (G) 
 C                 - Output from SOLGC and SOLGO 
 C    11. KDIAPE : -Output from SOLDIA (what is this??) 
@@ -6206,12 +6211,12 @@ C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
       CALL UTHU(WRK(KFPE),FSOL,WRK(KUCMO),WRK(KWRK1),
      &              NBAST,NORBT)                         
 
-      IF (IPQMMM .GE. 15) THEN
+Ctest      IF (IPQMMM .GE. 15) THEN
          WRITE (LUPRI,'(/A)') ' PE_ao matrix in PEFCMO:'
          CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' PE_mo matrix in PEFCMO:'
          CALL OUTPAK(FSOL,NORBT,1,LUPRI)
-       END IF
+Ctest       END IF
 
       CALL QEXIT('PEFCMO')
 C     end of pefcmo.

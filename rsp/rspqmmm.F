@@ -142,7 +142,8 @@ C    INFTAP : LUSOL, LBSYMB
       WRITE(LUPRI,*) 'LPOL =' ,LPOL
 
       IF (.NOT. LPOL) THEN ! no pol. and nothing to do here
-        CALL QEXIT('QMMMLNC')
+      WRITE(LUPRI,*) 'No polarization leaving QMMMLNC' 
+      CALL QEXIT('QMMMLNC')
         RETURN
       ENDIF
 
@@ -463,7 +464,7 @@ C            CALL OUTPAK(WRK(KFXC + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
         LRI = LRI + 3
       END DO
 
-      DO ICSIM = 1,NCSIM ! what does this do ??
+      DO ICSIM = 1,NCSIM
          IF (TRPLET) THEN 
             TFXC = SOLELM(DVTR,WRK(KFXCAC + (ICSIM-1)*NNASHX),
      &                    WRK(KFXC + (ICSIM-1)*NNORBT),TFXCAC)
@@ -628,6 +629,7 @@ C
       ENDIF
 
       IF (NNZAL .EQ. 0) THEN ! no pol. and nothing to do here
+      WRITE(LUPRI,*) 'No polarization leaving QMMMLNO'
         CALL QEXIT('QMMMLNO')
         RETURN
       ENDIF

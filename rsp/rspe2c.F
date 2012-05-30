@@ -1511,8 +1511,13 @@ C
                ELSE
                   KGDC = KZVAR + 1
                END IF
+       write(lupri,*) ' hjaaj: WVAL is ',WVAL,KZCONF
+       write(lupri,*) ' hjaaj: GDC  is ',GD(KGDC:KGDC+2)
+       write(lupri,*) ' hjaaj: DIAE is ',WRK(KDIAE:KDIAE+2)
+       write(lupri,*) ' hjaaj: BC   is ',WRK(ISTBC:ISTBC+2)
                CALL NEXCI(.FALSE.,WVAL,KZCONF,WRK(ISTBC),DUMMY,
      *                    GD(KGDC),WRK(KDIAE),IPRRSP,WRK(KWRK1),LWRK1)
+       write(lupri,*) ' hjaaj: BC   is ',WRK(ISTBC:ISTBC+2)
                NCSIM = NCSIM + 1
                ISTBC = ISTBC + KZCONF
             ENDIF
