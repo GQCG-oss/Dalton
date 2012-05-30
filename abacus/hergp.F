@@ -150,12 +150,12 @@ C
 #include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
-      DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR),
-     &          CSTRA(*), SCTRA(*)
+      DIMENSION SHESS(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
       INTEGER BEGIN
+      real(8), allocatable :: CHESS(:,:)
 C
       IF (KEY .EQ. 'CENTERS') THEN
          NROW = 3*NUCDEP
@@ -222,9 +222,11 @@ C        Print in non-symmetry basis
 C
          WRITE (LUPRI,'(//)')
          NCOOR = 3*NUCDEP
+         allocate( CHESS(NCOOR,NCOOR) )
          CALL DZERO(CHESS,NCOOR*NCOOR)
-         CALL TRAHES(SHESS,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,ITYPE)
-         CALL PR2DER(CHESS,NCOOR,MXCOOR,LUPRI)
+         CALL TRAHES(SHESS,MXCOOR,CHESS,CSTRA,SCTRA,NCOOR,NCOOR,ITYPE)
+         CALL PR2DER(CHESS,NCOOR,NCOOR,LUPRI)
+         deallocate( CHESS )
       END IF
       WRITE (LUPRI,'()')
       CALL FLSHFO(LUPRI)
@@ -234,6 +236,10 @@ C
       END
 C  /* Deck tragrd */
       SUBROUTINE TRAGRD(SGRAD,CGRAD,CSTRA,SCTRA,NCR0,NCOOR)
+C
+C     Transform molecular gradient from symmetry nuclear coordinates
+C     to cartesian nuclear coordinates
+C
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION SGRAD(MXCOOR), CGRAD(MXCOOR)
@@ -247,12 +253,17 @@ C  /* Deck tragrd */
       END
 C  /* Deck trahes */
       SUBROUTINE TRAHES(SHESS,NDIMS,CHESS,CSTRA,SCTRA,NDIMC,NCOOR,ITYPE)
+C
+C     Transform molecular Hessian from symmetry nuclear coordinates
+C     to cartesian nuclear coordinates
+C
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC),
-     &          AMAT(MXCOOR,MXCOOR), CSTRA(NCOOR,NCOOR),
-     &          SCTRA(NCOOR,NCOOR)
+     &          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
+      real(8), allocatable :: AMAT(:,:)
 C
+      allocate( AMAT(NCOOR,NCOOR) )
       CALL TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,0)
       DO 100 I = 1, NCOOR
          DO 200 J = 1, I - 1
@@ -262,11 +273,12 @@ C
       CALL DGEMM('N','N',NCOOR,NCOOR,NCOOR,1.D0,
      &           SCTRA(1,1),NCOOR,
      &           SHESS,NDIMS,0.D0,
-     &           AMAT,MXCOOR)
+     &           AMAT,NCOOR)
       CALL DGEMM('N','T',NCOOR,NCOOR,NCOOR,1.D0,
-     &           AMAT,MXCOOR,
+     &           AMAT,NCOOR,
      &           SCTRA(1,1),NCOOR,0.D0,
      &           CHESS,NDIMC)
+      deallocate( AMAT )
       RETURN
       END
 C  /* Deck prigeolu */
@@ -1932,7 +1944,8 @@ C
 #include "symmet.h"
       DIMENSION DIPOLE(3)
       IF (NAXREP(0,1) .EQ. 0) THEN
-         WRITE (LUPRI,'(20X,A)') ' All components are zero by symmetry'
+         WRITE (LUPRI,'(20X,A)')
+     &      'All dipole components are zero by symmetry'
       ELSE
             WRITE (LUPRI,'(17X,A,15X,A,10X,A/)') 
      *             'au','Debye','C m (/(10**-30)'

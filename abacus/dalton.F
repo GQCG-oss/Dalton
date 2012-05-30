@@ -119,9 +119,9 @@ C
 !     allocate memory using f90 utilities
       allocate(work(lmwork+2),stat=i)
 
-      IF(I .NE. 0)THEN
+      IF (I .NE. 0) THEN
          WRITE (LUERR,*) MYNUM,': ALLOCATE command failed to allocate'//
-     &        ' the requested memory'
+     &        ' the requested memory. Error code:',I
          WRITE (LUERR,*) 'Reduce the memory demands and be welcome back'
          CALL QUIT('Failed to allocate memory')
       END IF

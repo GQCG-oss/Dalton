@@ -58,8 +58,8 @@ module gen1int_api
   ! if Gen1Int interface initialized
   logical, save, private :: api_inited = .false.
 
-  ! large and small components (the latter is only used in Dirac by -DPROG_DIRAC)
-#if defined(PROG_DIRAC)
+  ! large and small components (the latter is only used in Dirac by -DPRG_DIRAC)
+#ifdef PRG_DIRAC
   integer, parameter, public :: NUM_COMPONENTS = 2
   integer, parameter, public :: LARGE_COMP = 1
   integer, parameter, public :: SMALL_COMP = 2
@@ -250,7 +250,7 @@ module gen1int_api
                                       sub_shell=sub_shells(ishell,icomp))
             ! sets the first AO sub-shell
             else
-#if defined(PROG_DIRAC)
+#ifdef PRG_DIRAC
               select case (icomp)
               case (LARGE_COMP)
 #endif
@@ -264,7 +264,7 @@ module gen1int_api
                                         num_contr=num_contr(KBCH,icomp),            &
                                         contr_coef=contr_coef,                      &
                                         sub_shell=sub_shells(ishell,icomp))
-#if defined(PROG_DIRAC)
+#ifdef PRG_DIRAC
               case (SMALL_COMP)
                 ! put small component block behind large component block
                 call Gen1IntShellCreate(spher_gto=spher_gto,                              &
@@ -555,7 +555,7 @@ module gen1int_api
                          info_prop=ierr,              &
                          coord_nuclei=coord_atoms,    &
                          charge_nuclei=charge_atoms)
-#if defined(PROG_DIRAC)
+#ifdef PRG_DIRAC
       allocate(prop_comp%nnz_comp(2,2), stat=ierr)
       if (ierr/=0) then
         stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
@@ -578,7 +578,7 @@ module gen1int_api
                          info_prop=ierr,               &
                          dipole_origin=dipole_origin,  &
                          order_mom=order_mom)
-#if defined(PROG_DIRAC)
+#ifdef PRG_DIRAC
       allocate(prop_comp%nnz_comp(2,2), stat=ierr)
       if (ierr/=0) then
         stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
@@ -597,7 +597,7 @@ module gen1int_api
       call OnePropCreate(prop_name=INT_OVERLAP,       &
                          one_prop=prop_comp%one_prop, &
                          info_prop=ierr)
-#if defined(PROG_DIRAC)
+#ifdef PRG_DIRAC
       allocate(prop_comp%nnz_comp(2,2), stat=ierr)
       if (ierr/=0) then
         stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
@@ -616,7 +616,7 @@ module gen1int_api
       call OnePropCreate(prop_name=INT_KIN_ENERGY,    &
                          one_prop=prop_comp%one_prop, &
                          info_prop=ierr)
-#if defined(PROG_DIRAC)
+#ifdef PRG_DIRAC
       allocate(prop_comp%nnz_comp(2,2), stat=ierr)
       if (ierr/=0) then
         stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
@@ -637,7 +637,7 @@ module gen1int_api
                          info_prop=ierr,              &
                          coord_nuclei=coord_atoms,    &
                          charge_nuclei=charge_atoms)
-#if defined(PROG_DIRAC)
+#ifdef PRG_DIRAC
       allocate(prop_comp%nnz_comp(2,2), stat=ierr)
       if (ierr/=0) then
         stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
