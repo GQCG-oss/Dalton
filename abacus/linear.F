@@ -32,55 +32,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 c    ---------------------------------------
-C  /* Deck lrscdrv */
-      SUBROUTINE LRSCDRV(WORK,LWORK)
-C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <lrescinf.h>
-C
-
-      write(lupri,*)'@ LRSCDRV : ' 
-      IF (.NOT. LRESCALL) THEN 
-         WRITE (LUPRI,'(A)')  '   all logic  '
-      END IF
-
-      IF (SIGMAP1S)  THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : ', WORD
-          CALL LRSCLIN('P1S',WORK,LWORK)
-      END IF 
-
-      IF (SIGMAP1T) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1T for : ', WORD
-      END IF
-
-      IF (SIGMAP3S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA3S for : ', WORD
-      END IF
-
-      IF (SIGMAP3T) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA3T for : ', WORD
-      END IF
-
-      IF (SIGMAD0S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : ', WORD
-      END IF
-
-      IF (SIGMAD1S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : ', WORD
-         CALL LRSCLIN('D1S',WORK,LWORK)
-      END IF
-
-      RETURN
-      END
-C...
 c    ---------------------------------------
-c    ---------------------------------------
-
-      SUBROUTINE LRSCLIN(KEY,WORK,LWORK)
+C
+      SUBROUTINE LINEARS(KEY,WORK,LWORK)
 C based on CTOABA 
 C...
 C...  This subroutine was written by Juan Ignacio Melo using
@@ -130,9 +84,12 @@ cxu  sacar lo de abajo
 cxu
       CALL QENTER('LRSCLIN')
       CALL TIMER('START ',TIMEIN,TIMOUT)
-      IF (IPRLNR .GT. 0) WRITE (LUPRI,'(A,/)')
-     *    ' <<<<<<<<<< Output from CTOABA jim >>>>>>>>>> '
-      WRITE(LUPRI,'(A)') 'Called to do ', KEY
+      IF (IPRLNR .GT. 0) THEN
+         WRITE (LUPRI,'(A,/)') ' <<<<<<<<<< Output from LRESC-'//
+     &       'LINEAR-SINGLET jim >>>>>>>>>> '
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(A,A)') 'Called to do ', KEY
+      END IF
 C
       IPRRSP = IPRLNR
 C
@@ -145,12 +102,9 @@ C
       LPVX   = 0
       KFREE  = 1
       LFREE  = LWORK
-      write(lupri,*) ' from orgcom.h : GAGORG '
-      write(lupri,*) GAGORG
-      write(lupri,*) ' from orgcom.h : ORIGIN '
-      write(lupri,*) ORIGIN
-      write(lupri,*) ' from orgcom.h : CMXYZ  '
-      write(lupri,*) CMXYZ
+      write(lupri,'(A,3F12.8)') ' orgcom.h : GAGORG :', GAGORG
+      write(lupri,'(A,3F12.8)') '            ORIGIN :', ORIGIN
+      write(lupri,'(A,3F12.8)') '            CMXYZ  :', CMXYZ
       write(lupri,*)
       write(lupri,*) ' alocando 1 : ANTES MEMGET :'
       write(lupri,*) ' ----------------------------'

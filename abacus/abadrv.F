@@ -1757,13 +1757,14 @@ Cx jim-dbg :  aca puedo poner que no se puede london u otras cosas
 Cx            y hacer un call quit
 Cx    preguntando al logic q sea ejplo if GAUGEO tonces ...  o SOPPA
        IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
-     &    ' Linear Response Elimination of Small Component scheme will',
+     &    ' Linear Response Elimination of Small Component',
      &    ' DEVELOPING NOTES :   ' ,
      &    '                   -uncontracted basis set not checked  ',
      &    '                   -selected atom not yet #1 set internally',
      &    '                   -no man pages.. yet ',
      &    '                   -no test runs .. yet.. ',
-     &    '                   -ONLY diam sinlget corrections and ',
+     &    '                   -ONLY 1st order sinlget corrections.',
+     &    '                   -     diam  singlet first order ',
      &    '                   -     param singlet first order '
       IF (ABASOP) THEN
          IERR = 0
@@ -1968,9 +1969,9 @@ cs
       GO TO 200
    16   CALL FLTINP(WORD)
       GO TO 200
-C jim-gesc 1.5 : reading TABDIR call lrscinp
-   17 Write(lupri,*) ' Calling lrsec inp for word', WORD
-      CALL LRSCINP(WORD)  ! *LRESC
+C jim-gesc 1.5 : LRSCINP to read OPTNS at dal file 
+   17 CONTINUE
+         CALL LRSCINP(WORD)
       GO TO 200
    18   CONTINUE
          CALL QPGINP(WORD)

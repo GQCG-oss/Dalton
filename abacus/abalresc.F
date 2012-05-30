@@ -56,7 +56,6 @@ C jim  aca van las opctiones para LRESC , aun no las defino todas
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
 C
-      write(lupri,*) ' LRESC OPTS :  called with : ' , WORD
       NEWDEF = (WORD .EQ. '*LROPTS')
       ICHANG = 0
       IF (NEWDEF) THEN
@@ -84,7 +83,7 @@ C
 C   READ GAUGEO : DEFINIR AKLGUNA VAR PARA GAUGEO
  1             CONTINUE
                     write(lupri,*)' ..aca leo gaugeo ', WORD
-                    READ (LUCMD, *) (LRGAUG(IS), IS = 1, 3)
+                    READ (LUCMD,*) (LRGAUG(IS), IS = 1, 3)
                     GAUCHANG =.TRUE.
                     ICHANG = ICHANG + 1
                GOTO 100
@@ -163,7 +162,7 @@ c jim-dbg ICHANG < 0 no cambios
          CALL HEADER('Changes of defaults for LRESC :',0)
          IF (GAUCHANG) THEN
             WRITE (LUPRI,*) 'cambiaste origen de gauge .. ojo  '
-            write(lupri,*) ' a ver ', GAUCHANG
+            write(lupri,*) ' a ver : ', GAUCHANG
          END IF
          IF (JIMPRT.NE.0) THEN
             WRITE (LUPRI,'(A,I5)')
@@ -187,6 +186,7 @@ c jim-dbg ICHANG < 0 no cambios
          IF (NUCSPI .GT. 0)
      &      WRITE (LUPRI,'(A)')' The spin-spin couplings of selected '//
      &           'nuclei with all the others will be calculated'
+       WRITE(LUPRI,*)' ' 
       END IF
       RETURN
       END
@@ -204,7 +204,6 @@ C#include <cbiqr.h
 c jim-dbg : sacar esto de abajo
 #include <priunit.h>
 C
-      Write(lupri,*)'  @LRSCINI for LRESC defaults' 
       JIMPRT   = 0
       NATOM    = 1 
       LRGAUG(1) = 0.000
@@ -222,5 +221,52 @@ cx      CALL DZERO (QCFREQ,NFMAX)
 C
       RETURN
       END
+c    ---------------------------------------
+C  /* Deck lrscdrv */
+      SUBROUTINE LRSCDRV(WORK,LWORK)
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <priunit.h>
+#include <wrkrsp.h>
+#include <lrescinf.h>
+C
+
+      write(lupri,*)'@ LRSCDRV : '
+      IF (.NOT. LRESCALL) THEN
+         WRITE (LUPRI,'(A)')  '   LRESC ALL set to NOT '
+      END IF
+
+      IF (SIGMAP1S)  THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : '
+          CALL LINEARS('P1S',WORK,LWORK)
+      END IF
+
+      IF (SIGMAP1T) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA1T for : '
+      END IF
+
+      IF (SIGMAP3S) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA3S for : '
+      END IF
+
+      IF (SIGMAP3T) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA3T for : '
+      END IF
+
+      IF (SIGMAD0S) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : '
+      END IF
+
+      IF (SIGMAD1S) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : '
+         CALL LINEARS('D1S',WORK,LWORK)
+      END IF
+
+      RETURN
+      END
+C...
+c    ---------------------------------------
 c    ---------------------------------------
 
