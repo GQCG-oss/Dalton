@@ -1233,7 +1233,8 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             GO TO 100
   241    CONTINUE
 Cx jim-dbg : here we set all the integrals to do LRESC
-            write(lupri,*)'  Here we read LRESC integrals to be done'
+            write(lupri,*)'  Here we set LRESC integrals to be done'
+            DOLRINTS=.TRUE.
             GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
@@ -4018,6 +4019,7 @@ cLig >> setting RANGMO and RPSO false
       RANGMO = .FALSE.
       RPSO   = .FALSE.
 cLig <<
+      DOLRINTS=.FALSE. ! jim-dgb DOLRINT init to FALSE
 C
       CALL DZERO(ORIGIN,3)
 chj may 09: GAGORG and DIPORG now initialized in READIN
