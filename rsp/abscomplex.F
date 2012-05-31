@@ -474,11 +474,10 @@ C
       RETURN
       END
       SUBROUTINE ABS_LINE2(KZVAR,XTMP,ZYMB,ISYMDM,ISYMB,NNMAX,
-     &                     CMO,FC,FCAC,FV,UDV,MJWOP,WRK,LWRK)
+     &                     CMO,FC,FCAC,FV,UDV,XINDX,MJWOP,WRK,LWRK)
 C
 C PURPOSE:
 C
-      use polarizable_embedding, only: peqm, lpol
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h" !THZER
@@ -494,6 +493,7 @@ C
       DIMENSION XTMP(2*KZVAR,NNMAX)
       DIMENSION ZYMB(NORBT,NORBT,NNMAX)
       DIMENSION CMO(*),FC(*),FCAC(*),UDV(*),FV(*),WRK(LWRK)
+      DIMENSION XINDX(*)
       DIMENSION ISYMDM(2*NNMAX),IFCTYP(2*NNMAX),KDMAO(NNMAX),
      &          KFMAO(NNMAX),
      &          KFMMO(NNMAX),KDVAO(NNMAX),KFVAO(NNMAX),KFVMO(NNMAX)
@@ -707,28 +707,24 @@ c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE)
      &              XTMP,ZYMB)
       ELSE
         CALL FCKOIN(NNMAX,FC,DUMMY,ZYMB,WRK(KFMMO(1)),DUMMY)
+C
         CALL RSPORB(.TRUE.,NNMAX,FC,WRK(KFMMO(1)),DUMMY,
      &               DUMMY,DUMMY,UDV,XTMP,ZYMB)
 c         CALL ORBEX(ISYMB,ISYMB,KZYVAR,WRK(KFMMO(I)),DUMMY,
 c     &        DUMMY,DUMMY,XTMP(1,I),1.0D0,UDV,MJWOP)
       ENDIF
 C
-c     FLAG(16) MEANS SOLVENT CALCULATION
-C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
-     &    (peqm .and. lpol(1))) THEN
-         CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
-     *               XTMP,WRK(KFREE),LFREE)
-      ENDIF
 c
       CALL QEXIT('ABS_LINE2')
       RETURN
       END
-      SUBROUTINE ABS_LINE2_INTER(KZVAR,VECS,VECB,XTMP,ISYMB,NLT,
-     &                 NNMAX,KNVEC,CMO,FC,FCAC,FV,UDV,MJWOP,WRK,LWRK)
+      SUBROUTINE ABS_LINE2_INTER(KZVAR,VECS,VECB,XTMP,XTEMP,ISYMB,NLT,
+     &                 NNMAX,KNVEC,CMO,FC,FCAC,FV,UDV,XINDX,MJWOP,
+     &                 WRK,LWRK)
 C
 C PURPOSE:
 C
+      use polarizable_embedding, only: peqm, lpol
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h" !THZER
@@ -739,16 +735,18 @@ c#include "infvar.h" !MAXWOP
 #include "infinp.h" !DODFT,HSROHF,DIRFCK
 #include "dftcom.h" !DFT
 c
+#include "pcmlog.h"
+#include "gnrinf.h"
 C
       INTEGER   NLT,NNMAX,KZVAR
       INTEGER   KNVEC(2)
       DIMENSION VECS(KZVAR,NLT)
-      DIMENSION VECB(KZVAR,NLT),XTMP(2*KZVAR,NNMAX)
+      DIMENSION VECB(KZVAR,NLT),XTMP(2*KZVAR,NNMAX),XTEMP(2*KZVAR,NNMAX)
       DIMENSION CMO(*),FC(*),FCAC(*),UDV(*),FV(*),WRK(LWRK)
       DIMENSION ISYMDM(2*NNMAX)
 C
 c      DIMENSION MJWOP(2,MAXWOP,8)
-      DIMENSION MJWOP(*)
+      DIMENSION MJWOP(*),XINDX(*)
       PARAMETER (D2 = 2.0D0)
       PARAMETER (D1 = 1.0D0)
 C     local
@@ -796,6 +794,7 @@ c
           CALL DSCAL(KZVAR,F1,XTMP(KZVAR+1,NKD),1)
         ENDDO
       ENDIF
+          CALL DCOPY(2*KZVAR*NNMAX,XTMP,1,XTEMP,1)
 c
       IF (ABS_BATCH) THEN
          KINT=INT(NNMAX/ABS_NBATCHMAX)
@@ -816,8 +815,15 @@ c
          IF (K.GT.KINT) KNTOT=KMOD
          CALL ABS_LINE2(KZVAR,XTMP(1,(K-1)*KNMAX+1),WRK(KZYMB),ISYMDM,
      &                 ISYMB,KNTOT,CMO,FC,FCAC,FV,
-     &                 UDV,MJWOP,WRK(KFREE),LFREE)
+     &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
        ENDDO
+c     FLAG(16) MEANS SOLVENT CALCULATION
+C
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
+     &    (peqm .and. lpol(1))) THEN
+         CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
+     *               XTMP,WRK(KFREE),LFREE)
+      ENDIF
 c
       CALL DZERO(VECS,NLT*KZVAR)
       DO I=1,MIN(NNS,NNA)
