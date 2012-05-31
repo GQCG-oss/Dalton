@@ -89,16 +89,15 @@ C   READ GAUGEO : DEFINIR AKLGUNA VAR PARA GAUGEO
                GOTO 100
 C   SET PRINT LEVEL 
  2             CONTINUE
-                  write(lupri,*)' ..aca leo print levels '
+                  write(lupri,*)' ..aca leo print level '
                   READ (LUCMD,*) JIMPRT
-c                  IF (JIMPRT.EQ.0) THEN write(lupri,*)'hacer algo  '  
                   ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  3             CONTINUE
                   write(lupri,*)' ..aca leo SELECT NATOM '
                   READ (LUCMD,*) NATOM
-              CALL HEADER('Remember to set GAUGEO on INTEGRAL SECTION'//
+             CALL HEADER('Remember to set GAUGEO on INTEGRAL SECTION'//
      &            ' it is important GAUGEO placed on selected NATOM',1)
                   ICHANG = ICHANG + 1
                GOTO 100
@@ -234,8 +233,9 @@ C
 C
 
       write(lupri,*)'@ LRSCDRV : '
+
       IF (.NOT. LRESCALL) THEN
-         WRITE (LUPRI,'(A)')  '   LRESC ALL set to NOT '
+         WRITE (LUPRI,'(A)')  '   LRESC ALL set : NOT '
       END IF
 
       IF (SIGMAP1S)  THEN

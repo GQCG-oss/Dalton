@@ -291,46 +291,60 @@ cxz          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 cxz          NLBSHIS = 13
 cxz       ENDIF
 
-C
-C  Look for NSCO LABELS 
-C
-      write(lupri,*)
-      LABEL1='NSCO'
-      write(lupri,*) '@Linear setting  LABEL1 : NSCO '
-      IJ = 1
-      DO I=1,NCOOR
-        DO J=1,3
-          LISTA1(IJ)= CHRNOS(I/10)//CHRNOS(I/10)//CHRNOS(MOD(I,10))//
-     &     'NSCO'//CHRXYZ(J)
-          LABSYM(IJ)=1
-          write(lupri,*) '   LABEL1 : ', LISTA1(IJ), LABSYM(IJ)
-          IJ = IJ + 1
-        END DO
-      END DO
-      NLAB1 = 3*NCOOR
-C
-C  Look for DARWIN and MASSVELO LABELS 
-C
-      write(lupri,*)
-      LISTA2(1) ='DARWIN  '
-      LISTA2(2) ='MASSVELO'
-      NLAB2 = 2
-      write(lupri,*) '@Linear setting  LABEL2 :'
-      write(lupri,*) '   LABEL2 : ', LISTA2(1)
-      write(lupri,*) '   LABEL2 : ', LISTA2(2)
 
+C  blanquear todas las labels antes 
+       NLAB1 = 0
+       NLAB2 = 0 
+c       LISTA1
+c       LISTA2
+c       LABSYM 
+c       LABAPP es un common q se usa en rsp ??
+
+      IF(KEY.EQ."D1S") THEN 
+C        Look for NSCO LABELS 
+         write(lupri,*)
+         LABEL1='NSCO'
+         write(lupri,*) '@Linear setting  LABEL1 : NSCO '
+         IJ = 1
+         DO I=1,NCOOR
+           DO J=1,3
+             LISTA1(IJ)= CHRNOS(I/10)//CHRNOS(I/10)//CHRNOS(MOD(I,10))//
+     &       'NSCO'//CHRXYZ(J)
+             LABSYM(IJ)=1
+             write(lupri,*) '   LABEL1 : ', LISTA1(IJ), LABSYM(IJ)
+             IJ = IJ + 1
+           END DO
+         END DO
+         NLAB1 = 3*NCOOR
+C
+C        Look for DARWIN, MASSVELO LABELS 
+C
+         write(lupri,*)
+         LISTA2(1) ='DARWIN  '
+         LISTA2(2) ='MASSVELO'
+         NLAB2 = 2
+         write(lupri,*) '@Linear setting  LABEL2 :'
+         write(lupri,*) '   LABEL2 : ', LISTA2(1)
+         write(lupri,*) '   LABEL2 : ', LISTA2(2)
+
+      ELSE IF (KEY.EQ."P1S") THEN
+C aca van los labels de Lkin y PsoKin
+      ENDIF
 C
 C     Set variables for ABARSP and logicals
 C
-      CICLC  = .FALSE.   ! TRUE for CI calculations
+      CICLC  = .FALSE.      ! TRUE for CI calculations
       HFCLC  = NASHT .LE. 1 ! .T. RHF-closed shell or 1e in one active orbital
-      TRIPLE = .FALSE. ! .T. for triplet perturbation operators
-      EXECLC = .FALSE. ! false for linear response equations
-      NABATY = 1 ! = 1 for real operators .. -1 for imm. op.
-      NABAOP = 1  ! number of right hand sides. dejarlo asi . solo 1
+      TRIPLE = .FALSE.      ! .T. for triplet perturbation operators
+      EXECLC = .FALSE.      ! false for linear response equations
+      IF(KEY.EQ."D1S") THEN 
+         NABATY = 1         ! = 1 for real operators .. -1 for imm. op.
+      ELSE
+         NABATY = 1         ! jim-dbg OJO CAMBIAR P1S tiene ops imaginarios!!!
+      END IF
+      NABAOP = 1            ! number of right hand sides. dejarlo asi . solo 1
 C
 C     Zero the property tensors
-C   por ahora solo un numero sale de aca
 cdx      IF (MAGSUS) CALL DZERO(SUSDZD,9)
 
 C   

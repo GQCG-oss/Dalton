@@ -308,7 +308,7 @@ C
 #include "maxaqn.h"
 C
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 140)
+      PARAMETER (NDIR = 9, NTABLE = 141)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -422,7 +422,10 @@ C     Bin Gao, Oct. 3, 2011
 !                    233        234        235        236
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
 !                    237        238        239        240
-     &             '.NEWTRA', '.KINADI', '.GENINT', 'xxxxxxx'/
+     &             '.NEWTRA', '.KINADI', '.GENINT', '.######',
+!                    241
+     &             '.LRINTS'/ 
+C                     June-12 : jim-dbg  added new key to do lresc integrals
 C
 C
       CALL QENTER('HERINP')
@@ -504,7 +507,7 @@ C
      &                201,202,203,204,205,206,207,208,209,210,
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
-     &                231,232,233,234,235,236,237,238,239,240), I
+     &                231,232,233,234,235,236,237,238,239,240,241), I
             END IF
          END DO
             IF (WORD .EQ. '.OPTION') THEN
@@ -1228,6 +1231,10 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
   240    CONTINUE
             ONEPRP = .TRUE.
             GO TO 100
+  241    CONTINUE
+Cx jim-dbg : here we set all the integrals to do LRESC
+            write(lupri,*)'  Here we read LRESC integrals to be done'
+            GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
