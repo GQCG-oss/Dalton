@@ -28,6 +28,7 @@ module polarizable_embedding
     logical, save :: pe_gspol = .false.
     logical, save :: pe_nomb = .false.
     logical, save :: pe_gauss = .false.
+    logical, public, save :: pe_polar = .false.
     logical, public, save :: pe_mep = .false.
     logical, public, save :: pe_twoint = .false.
     logical, public, save :: pe_repuls = .false.
@@ -478,6 +479,7 @@ subroutine pe_read_potential(coords, charges)
             end do
         else if (trim(word) == 'isoalphas') then
             lpol(1) = .true.
+            pe_polar = .true.
             if (.not. allocated(P1s)) then
                 allocate(P1s(6,nsites(0)))
                 P1s = 0.0d0
@@ -491,6 +493,7 @@ subroutine pe_read_potential(coords, charges)
             end do
         else if (trim(word) == 'alphas') then
             lpol(1) = .true.
+            pe_polar = .true.
             if (.not. allocated(P1s)) then
                 allocate(P1s(6,nsites(0)))
                 P1s = 0.0d0

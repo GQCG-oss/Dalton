@@ -567,7 +567,7 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
-      use polarizable_embedding, only: peqm, lpol
+      use polarizable_embedding, only: pe_polar
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -658,8 +658,7 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
-     *    (peqm .and. lpol(1))) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. pe_polar) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
