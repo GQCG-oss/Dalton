@@ -1698,7 +1698,7 @@ subroutine pe_fock(denmats, fckmats, Epe)
     if (allocated(Ees)) deallocate(Ees)
     if (allocated(Epol)) deallocate(Epol)
     allocate(Ees(0:6,ndens))
-    allocate(Epol(4,ndens))
+    allocate(Epol(8,ndens))
     Ees = 0.0d0
     Epol = 0.0d0
 
@@ -2030,53 +2030,96 @@ subroutine pe_polarization(denmats, fckmats)
     real(dp), dimension(:), intent(inout), optional :: fckmats
 
     integer :: site, ndist, nrest
-    integer :: i, j, k, l, m
+    integer :: i, j, k, l, m, q, lenmk
     logical :: skip
+    real(dp) :: mk_sum
     real(dp), dimension(3*npols) :: Fnucs, Fmuls, Ffd
-    real(dp), dimension(3*npols,ndens) :: M1inds, Fels, Ftots
-    real(dp), dimension(:,:), allocatable :: Fel_ints
+    real(dp), dimension(nsurp) :: Vnucs, Vmuls
+    real(dp), dimension(3*npols,ndens) :: Fels
+    real(dp), dimension(3*npols+nsurp,ndens) :: Ftots
+    real(dp), dimension(3*npols+nsurp,ndens) :: Mkinds
+    real(dp), dimension(nsurp,ndens) :: Vels
+    real(dp), dimension(:,:), allocatable :: Fel_ints, Vel_ints
 
     if (response) fckmats = 0.0d0
 
     if (response) then
         call electron_fields(Fels, denmats)
-        call induced_dipoles(M1inds, Fels)
+        do i = 1, ndens
+            Ftots(:3*npols,i) = Fels(:,i)
+        end do
+        if (pe_sol .and. myid == 0) then
+            call electron_potentials(Vels, denmats)
+            do i = 1, ndens
+                Ftots(3*npols+1:,i) = - Vels(:,i)
+            end do 
+        end if
+        call induced_moments(Mkinds, Ftots)
     else
         call electron_fields(Fels, denmats)
         call nuclear_fields(Fnucs)
         call multipole_fields(Fmuls)
+        if (pe_sol .and. myid == 0) then 
+            call electron_potentials(Vels, denmats)
+            call nuclear_potentials(Vnucs)
+            call multipole_potentials(Vmuls)
+        end if 
         if (myid == 0) then
             if (pe_fd) then
+! TODO frozen density potential
                 call frozen_density_field(Ffd)
             else
                 Ffd = 0.0d0
             end if
             do i = 1, ndens
-                Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Ffd
+                Ftots(:3*npols,i) = Fels(:,i) + Fnucs + Fmuls + Ffd
+                if (pe_sol .and. myid == 0) then
+                    Ftots(3*npols+1:,i) =  - Vels(:,i) - Vnucs - Vmuls 
+                end if
             end do
         end if
-        call induced_dipoles(M1inds, Ftots)
+        call induced_moments(Mkinds, Ftots)
         if (myid == 0) then
             do i = 1, ndens
-                Epol(1,i) = - 0.5d0 * dot(M1inds(:,i), Fels(:,i))
-                Epol(2,i) = - 0.5d0 * dot(M1inds(:,i), Fnucs)
-                Epol(3,i) = - 0.5d0 * dot(M1inds(:,i), Fmuls)
-                if (pe_fd) Epol(4,i) = - 0.5d0 * dot(M1inds(:,i), Ffd)
+                Epol(1,i) = - 0.5d0 * dot(Mkinds(:3*npols,i), Fels(:,i))
+                Epol(2,i) = - 0.5d0 * dot(Mkinds(:3*npols,i), Fnucs)
+                Epol(3,i) = - 0.5d0 * dot(Mkinds(:3*npols,i), Fmuls)
+                Epol(5,i) = 0.5d0 * dot(Mkinds(3*npols+1:,1), Vels(:,i))
+                Epol(6,i) = 0.5d0 * dot(Mkinds(3*npols+1:,1), Vnucs)
+                Epol(7,i) = 0.5d0 * dot(Mkinds(3*npols+1:,1), Vmuls)
+                if (pe_fd) Epol(4,i) = - 0.5d0 * dot(Mkinds(:3*npols,i), Ffd)
             end do
         end if
     end if
-
+   mk_sum = 0.0d0
+   do i = 1, ndens
+       write(luout,*) 'i, Mkinds'
+       if (pe_sol) then 
+           lenmk = 3*npols + nsurp
+       else
+           lenmk = 3*npols
+       end if
+       do j = 1, lenmk
+           write(luout,*) j, Mkinds(j,i)
+       end do
+       if (pe_sol) then
+           do k = 3*npols + 1, lenmk 
+               mk_sum = mk_sum + Mkinds(k,i)
+           end do
+       end if
+       write(luout,*) 'sum of induced charges = ', mk_sum
+   end do
 #if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
         do i = 1, ndens
-            call mpi_scatterv(M1inds(:,i), 3*npoldists, displs, MPI_REAL8,&
+            call mpi_scatterv(Mkinds(:,i), 3*npoldists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &myid, MPI_COMM_WORLD, ierr)
         end do
     else if (myid /= 0) then
         do i = 1, ndens
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &M1inds(:,i), 3*npoldists(myid), MPI_REAL8,&
+                             &Mkinds(:,i), 3*npoldists(myid), MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end do
     end if
@@ -2092,20 +2135,33 @@ subroutine pe_polarization(denmats, fckmats)
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
-                    fckmats(l:m) = fckmats(l:m) - M1inds(i+j,k) * Fel_ints(:,j)
+                    fckmats(l:m) = fckmats(l:m) - Mkinds(i+j,k) * Fel_ints(:,j)
                 end do
             end do
             i = i + 3
         end do
+        if (pe_sol) then
+            q = 1
+            allocate(Vel_ints(nnbas,1))
+            do site = 1, nsurp
+                call Tk_integrals(Vel_ints, nnbas, 1, Sp(:,site), .false., 0.0d0)
+                do k = 1, ndens
+                    l = (k - 1) * nnbas + 1
+                    m = k * nnbas
+                    fckmats(l:m) = fckmats(l:m) + Mkinds(3*npols+q,k) * Vel_ints(:,1)
+                end do
+                q = q + 1
+            end do
+        end if
     end if
 
 end subroutine pe_polarization
 
 !------------------------------------------------------------------------------
 
-subroutine induced_dipoles(M1inds, Fs)
+subroutine induced_moments(Mkinds, Fs)
 
-    real(dp), dimension(:,:), intent(out) :: M1inds
+    real(dp), dimension(:,:), intent(out) :: Mkinds
     real(dp), dimension(:,:), intent(in) :: Fs
 
     integer :: lu, iter, info
@@ -2121,6 +2177,7 @@ subroutine induced_dipoles(M1inds, Fs)
     real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp
 
     if (pe_iter) then
+        write(luout,*) 'I should not be here MNP'
         if (myid == 0) then
             if (fock .and. scfcycle <= 5) then
                 redthr = 10**(5-scfcycle)
@@ -2143,7 +2200,7 @@ subroutine induced_dipoles(M1inds, Fs)
             if (myid == 0) then
                 call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
                 rewind(lu)
-                read(lu) M1inds
+                read(lu) Mkinds
                 close(lu)
             end if
         end if
@@ -2166,17 +2223,17 @@ subroutine induced_dipoles(M1inds, Fs)
                 l = 1
                 do i = nsites(myid-1)+1, nsites(myid)
                     if (zeroalphas(i)) cycle
-                    call spmv(P1s(:,i), Fs(l:l+2,n), M1inds(l:l+2,n), 'L')
+                    call spmv(P1s(:,i), Fs(l:l+2,n), Mkinds(l:l+2,n), 'L')
                     l = l + 3
                 end do
 
 #if defined(VAR_MPI)
                 if (myid == 0 .and. ncores > 1) then
                     call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                                    &M1inds(:,n), 3*npoldists, displs, MPI_REAL8,&
+                                    &Mkinds(:,n), 3*npoldists, displs, MPI_REAL8,&
                                     &0, MPI_COMM_WORLD, ierr)
                 else if (myid /= 0) then
-                    call mpi_gatherv(M1inds(:,n), 3*npoldists(myid), MPI_REAL8,&
+                    call mpi_gatherv(Mkinds(:,n), 3*npoldists(myid), MPI_REAL8,&
                                     &0, 0, 0, MPI_REAL8,&
                                     &0, MPI_COMM_WORLD, ierr)
                 end if
@@ -2187,12 +2244,12 @@ subroutine induced_dipoles(M1inds, Fs)
 
 #if defined(VAR_MPI)
             if (myid == 0 .and. ncores > 1) then
-                call mpi_scatterv(M1inds(:,n), 3*npoldists, displs, MPI_REAL8,&
+                call mpi_scatterv(Mkinds(:,n), 3*npoldists, displs, MPI_REAL8,&
                                  &MPI_IN_PLACE, 0, MPI_REAL8,&
                                  &0, MPI_COMM_WORLD, ierr)
             else if (myid /= 0) then
                 call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                                 &M1inds(:,n), 3*npoldists(myid), MPI_REAL8,&
+                                 &Mkinds(:,n), 3*npoldists(myid), MPI_REAL8,&
                                  &0, MPI_COMM_WORLD, ierr)
             end if
 #endif
@@ -2247,7 +2304,7 @@ subroutine induced_dipoles(M1inds, Fs)
                                 q = q + 1
                             end do
                         end do
-                        call spmv(T, M1inds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
+                        call spmv(T, Mkinds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
                         m = m + 3
                     end do
 
@@ -2262,20 +2319,20 @@ subroutine induced_dipoles(M1inds, Fs)
 #endif
 
                     if (myid == 0) then
-                        M1tmp = M1inds(l:l+2,n)
+                        M1tmp = Mkinds(l:l+2,n)
                         Ftmp = Ftmp + Fs(l:l+2,n)
-                        call spmv(P1s(:,i), Ftmp, M1inds(l:l+2,n), 'L')
-                        norm = norm + nrm2(M1inds(l:l+2,n) - M1tmp)
+                        call spmv(P1s(:,i), Ftmp, Mkinds(l:l+2,n), 'L')
+                        norm = norm + nrm2(Mkinds(l:l+2,n) - M1tmp)
                     end if
 
 #if defined(VAR_MPI)
                     if (myid == 0 .and. ncores > 1) then
-                        call mpi_scatterv(M1inds(:,n), 3*npoldists, displs,&
+                        call mpi_scatterv(Mkinds(:,n), 3*npoldists, displs,&
                                          &MPI_REAL8, MPI_IN_PLACE, 0,&
                                          &MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
                     else if (myid /= 0) then
                         call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                                         &M1inds(:,n), 3*npoldists(myid),&
+                                         &Mkinds(:,n), 3*npoldists(myid),&
                                          &MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
                     end if
 #endif
@@ -2312,14 +2369,18 @@ subroutine induced_dipoles(M1inds, Fs)
             if (myid == 0) then
                 call openfile('pe_induced_dipoles.bin', lu, 'unknown', 'unformatted')
                 rewind(lu)
-                write(lu) M1inds
+                write(lu) Mkinds
                 close(lu)
             end if
         end if
         deallocate(T, Rij, Ftmp, M1tmp)
     else
         if (myid == 0) then
-                allocate(B(3*npols*(3*npols+1)/2))
+                if (pe_sol) then
+                    allocate(B((3*npols+nsurp)*(3*npols+nsurp+1)/2))
+                else
+                    allocate(B(3*npols*(3*npols+1)/2))
+                end if
             inquire(file='pe_response_matrix.bin', exist=lexist)
             if (lexist) then
                 call openfile('pe_response_matrix.bin', lu, 'old', 'unformatted')
@@ -2341,7 +2402,11 @@ subroutine induced_dipoles(M1inds, Fs)
                     call pptrf(B, 'L', info)
                     if (info /= 0) then
                         print *, 'Cholesky factorization failed. Trying regular...'
-                        allocate(ipiv(3*npols))
+                        if (pe_sol) then
+                            allocate(ipiv(3*npols+nsurp))
+                        else
+                            allocate(ipiv(3*npols))
+                        end if
                         call sptrf(B, 'L', ipiv, info)
                         if (info /= 0) then
                             stop 'ERROR: cannot create response matrix.'
@@ -2350,7 +2415,11 @@ subroutine induced_dipoles(M1inds, Fs)
                         end if
                     end if
                 else
-                    allocate(ipiv(3*npols))
+                    if (pe_sol) then
+                        allocate(ipiv(3*npols+nsurp))
+                    else
+                        allocate(ipiv(3*npols))
+                    end if
                     call sptrf(B, 'L', ipiv, info)
                     if (info /= 0) then
                         stop 'ERROR: cannot create response matrix.'
@@ -2365,12 +2434,12 @@ subroutine induced_dipoles(M1inds, Fs)
                 end if
                 close(lu)
             end if
-            M1inds = Fs
+            Mkinds = Fs
             if (chol) then
-                call pptrs(B, M1inds, 'L')
+                call pptrs(B, Mkinds, 'L')
                 deallocate(B)
             else
-                call sptrs(B, M1inds, ipiv, 'L')
+                call sptrs(B, Mkinds, ipiv, 'L')
                 deallocate(B, ipiv)
             end if
         end if
@@ -2382,17 +2451,17 @@ subroutine induced_dipoles(M1inds, Fs)
             l = 1
             do i = 1, nsites(ncores-1)
                 if (zeroalphas(i)) cycle
-                if (nrm2(M1inds(l:l+2,n)) > 1.0d0) then
+                if (nrm2(Mkinds(l:l+2,n)) > 1.0d0) then
                     write(luout,'(4x,a,i6)') 'Large induced dipole encountered&
                                              & at site:', i
-                    write(luout,'(f10.4)') nrm2(M1inds(l:l+2,n))
+                    write(luout,'(f10.4)') nrm2(Mkinds(l:l+2,n))
                 end if
                 l = l + 3
             end do
         end do
     end if
 
-end subroutine induced_dipoles
+end subroutine induced_moments
 
 !------------------------------------------------------------------------------
 
@@ -2818,8 +2887,8 @@ subroutine response_matrix(B)
             end do !  do j = i, nsites(ncores-1)
         end do
     end do
-       do i=1, 3*npols
-          write (luout,*) 'Response matrix', B(i)
+       do i=1, 3*npols 
+          write (luout,*) 'Response matrix(i)',i , B(i)
        end do
 
 end subroutine response_matrix
@@ -3409,6 +3478,7 @@ subroutine response_matrix_full(B)
     B = 0.0d0
     ipcm_off = 3*nsites(ncores-1)
     diel_fac = diel/(diel-1.0d0)
+    write (luout,*) 'diel, diel_fac', diel, diel_fac
     do i = 1, nsites(ncores-1) ! loop over blocks of 3 columns per site
         if (zeroalphas(i)) cycle
         icol_off = (i-1)*3
@@ -3476,13 +3546,13 @@ subroutine response_matrix_full(B)
 
         if (pe_sol) then
             do j = 1, nsurp
-                 Rij_sol = Rs(:,i) - Sp(:,j)
+                 Rij_sol = (Sp(:,j) - Rs(:,i))
                  R_sol = nrm2(Rij_sol)
                  R3_sol = R_sol**3
 
-                 B_full(ipcm_off+j,icol_off+1) = Rij_sol(1)/R3_sol
-                 B_full(ipcm_off+j,icol_off+2) = Rij_sol(2)/R3_sol
-                 B_full(ipcm_off+j,icol_off+3) = Rij_sol(3)/R3_sol
+                 B_full(ipcm_off+j,icol_off+1) = - Rij_sol(1)/R3_sol
+                 B_full(ipcm_off+j,icol_off+2) = - Rij_sol(2)/R3_sol
+                 B_full(ipcm_off+j,icol_off+3) = - Rij_sol(3)/R3_sol
 
                  B_full(icol_off+1,ipcm_off+j) = B_full(ipcm_off+j,icol_off+1) 
                  B_full(icol_off+2,ipcm_off+j) = B_full(ipcm_off+j,icol_off+2) 
@@ -3516,9 +3586,179 @@ subroutine response_matrix_full(B)
     end do
   
     do i=1, leng
-        write (luout,*) 'Response matrix', B(i)
+        write (luout,*) 'Response matrix(i)',i, B(i)
     end do
 end subroutine response_matrix_full
+
+!------------------------------------------------------------------------------
+
+subroutine electron_potentials(Vels, denmats)
+
+    external :: Tk_integrals
+
+    real(dp), dimension(:,:), intent(out) :: Vels
+    real(dp), dimension(:), intent(in) :: denmats
+
+    logical :: skip
+    integer :: site
+    integer :: i, j, k, l, m
+    real(dp), dimension(nnbas,1) :: Vel_ints
+
+    Vels = 0.0d0
+
+    i = 1
+    do site = 1, nsurp 
+        call Tk_integrals(Vel_ints, nnbas, 1, Sp(:,site), .false., 0.0d0)
+        do k = 1, ndens
+            l = (k - 1) * nnbas + 1
+            m = k * nnbas
+            Vels(i,k) = dot(denmats(l:m), Vel_ints(:,1))
+        end do
+        i = i + 1
+    end do
+    if (print_lvl .gt. 100) then
+         do i=1, nsurp 
+             write (luout,*) 'Vels(i)' ,i, Vels(i,:)
+         end do
+    end if
+end subroutine electron_potentials
+
+!------------------------------------------------------------------------------
+
+subroutine nuclear_potentials(Vnucs)
+
+    real(dp), dimension(:), intent(out) :: Vnucs
+
+    logical :: lexist, skip
+    integer :: lu, site
+    integer :: i, j
+    real(dp), dimension(3) :: Rmsp
+    real(dp), dimension(1) :: Tmsp
+
+! TODO: write nuclear potential to file and check if it exists
+!    if (myid == 0) then
+!        inquire(file='pe_nuclear_field.bin', exist=lexist)
+!    end if
+
+!    if (lexist) then
+!        if (myid == 0) then
+!            call openfile('pe_nuclear_field.bin', lu, 'old', 'unformatted')
+!            rewind(lu)
+!            read(lu) Fnucs
+!            close(lu)
+!        end if
+!    else
+        Vnucs = 0.0d0
+        i = 1
+        do site = 1, nsurp 
+            do j = 1, qmnucs
+                Rmsp = Sp(:,site) - Rm(:,j)
+                call Tk_tensor(Tmsp, Rmsp)
+                Vnucs(i) = Vnucs(i) + Zm(1,j) * Tmsp(1)
+            end do
+            i = i + 1
+        end do
+!    end if
+    if (print_lvl .gt. 100) then
+        do i=1, nsurp 
+            write (luout,*) 'Vnucs(i)' ,i, Vnucs(i)
+        end do
+    end if
+
+end subroutine nuclear_potentials
+
+!------------------------------------------------------------------------------
+
+subroutine multipole_potentials(Vmuls)
+
+    real(dp), dimension(:), intent(out) :: Vmuls
+
+    logical :: exclude, lexist
+    integer :: lu
+    integer :: i, j, k, l, m
+    real(dp), dimension(3) :: Rji
+
+        Vmuls = 0.0d0
+        l = 1
+        do i = 1, nsurp
+            k = 1
+            do j = 1, nsites(ncores-1)
+                Rji = Sp(:,i) - Rs(:,j)
+                if (lmul(0)) then
+                    if (abs(maxval(M0s(:,k))) >= zero) then
+                        call multipole_potential(Vmuls(l), Rji, M0s(:,k))
+                    end if
+                end if
+                if (lmul(1)) then
+                    if (abs(maxval(M1s(:,k))) >= zero) then
+                        call multipole_potential(Vmuls(l), Rji, M1s(:,k))
+                    end if
+                end if
+                if (lmul(2)) then
+                    if (abs(maxval(M2s(:,k))) >= zero) then
+                        call multipole_potential(Vmuls(l), Rji, M2s(:,k))
+                    end if
+                end if
+                if (lmul(3)) then
+                    if (abs(maxval(M3s(:,k))) >= zero) then
+                        call multipole_potential(Vmuls(l), Rji, M3s(:,k))
+                    end if
+                end if
+                if (lmul(4)) then
+                    if (abs(maxval(M4s(:,k))) >= zero) then
+                        call multipole_potential(Vmuls(l), Rji, M4s(:,k))
+                    end if
+                end if
+                if (lmul(5)) then
+                    if (abs(maxval(M5s(:,k))) >= zero) then
+                        call multipole_potential(Vmuls(l), Rji, M5s(:,k))
+                    end if
+                end if
+                k = k + 1
+            end do
+            l = l + 1
+        end do
+    if (print_lvl .gt. 100) then
+        do i=1, nsurp 
+            write (luout,*) 'Vmuls(i)' ,i, Vmuls(i)
+        end do
+    end if
+
+end subroutine multipole_potentials
+
+!------------------------------------------------------------------------------
+
+subroutine multipole_potential(Vi, Rji, Mkj)
+
+    real(dp), intent(inout) :: Vi
+    real(dp), dimension(3), intent(in) :: Rji
+    real(dp), dimension(:), intent(in) :: Mkj
+
+    integer :: k
+    integer :: a, x, y, z
+    real(dp) :: taylor
+
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Mkj)) - 1.0d0)) - 1
+
+! TODO Check fortegn
+    if (mod(k,2) == 0) then
+        taylor = 1.0d0 / factorial(k)
+    else if (mod(k,2) /= 0) then
+        taylor = - 1.0d0 / factorial(k)
+    end if
+
+    a = 1
+    do x = k, 0, -1
+        do y = k, 0, -1
+            do z = k, 0, -1
+                if (x+y+z /= k) cycle
+                Vi = Vi + taylor * symfac(x,y,z) * T(Rji,x,y,z) * Mkj(a)
+                a = a + 1
+            end do
+        end do
+     end do
+
+end subroutine multipole_potential
 
 !------------------------------------------------------------------------------
 

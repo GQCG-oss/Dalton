@@ -62,7 +62,7 @@ C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
       use polarizable_embedding, only: peqm, pe_fd, Ees, Epol,
-     &                                 lmul, lpol
+     &                                 lmul, lpol, pe_sol
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -375,6 +375,14 @@ csonia 04/10/95
      &                                     'Nuclear         ', Epol(2,1)
             write(lupri,'(9x,a16,5x,f20.12)')
      &                                     'Multipole       ', Epol(3,1)
+        if (pe_sol) then
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                     'Electronic pot. ', Epol(5,1)
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                     'Nuclear pot.    ', Epol(6,1)
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                     'Multipole pot.  ', Epol(7,1)
+        end if
         if (pe_fd) write(lupri,'(9x,a16,5x,f20.12)')
      &                                     'Frozen densities', Epol(4,1)
         end if
