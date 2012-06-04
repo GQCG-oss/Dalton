@@ -56,6 +56,7 @@ module polarizable_embedding
     ! constants, thresholds and stuff
     ! 1 bohr = 0.5291772108 Aa (codata 2002)
     real(dp), parameter :: aa2au = 1.8897261249935897d0
+    real(dp), parameter :: aa2au2 = aa2au*aa2au
     real(dp), parameter :: pi = 3.141592653589793d0
     real(dp), parameter :: zero = 1.0d-6
     integer, save :: scfcycle = 0
@@ -899,15 +900,28 @@ subroutine pe_read_tesselation()
 
     close(lusurf)
     if (print_lvl .gt. 100) then
-       write(luout,*) 'Sp in pe_read_tesselation'
+       write(luout,*) 'Sp in pe_read_tesselation in AA'
        do i=1,nsurp
               write (luout,*) Sp(:,i)
        end do
-       write(luout,*) 'A in pe_read_tesselation'
+       write(luout,*) 'A in pe_read_tesselation in AA'
        do i=1,nsurp
           write (luout,*) A(i)
        end do
     end if
+    A = aa2au2*A
+    Sp = aa2au*Sp
+    if (print_lvl .gt. 100) then
+       write(luout,*) 'Sp in pe_read_tesselation in AU'
+       do i=1,nsurp
+              write (luout,*) Sp(:,i)
+       end do
+       write(luout,*) 'A in pe_read_tesselation in AU'
+       do i=1,nsurp
+          write (luout,*) A(i)
+       end do
+    end if
+    
 end subroutine pe_read_tesselation
 
 !------------------------------------------------------------------------------
