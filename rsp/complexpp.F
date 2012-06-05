@@ -972,7 +972,6 @@ c
 c
 C       perform linear transformations
 C
-Cpanor
 c         IF (ABS_DALINP) THEN
          CALL ABS_LINE2_INTER(KZVAR,WRK(KE2XF),XVEC,XTMP,WRK(KSVEC),
      &        ABS_GRADSYM,NNLT,NNMAX,KNVEC,CMO,FC,FCAC,FV,UDV,XINDX,
@@ -1174,7 +1173,8 @@ C PURPOSE:
 C      preconditioning 
 C
       IMPLICIT REAL*8 (A-H,O-Z)
-      INTEGER NBPREV,NBNEW,NNR,NNI,KZVAR
+#include "abslrs.h"
+      INTEGER NBPREV,NBNEW,NNR,NNI,KZVAR,LU1
       DIMENSION XRVEC(KZVAR,NBNEW/2),XIVEC(KZVAR,NBNEW/2)
       DIMENSION XORT(NBNEW*KZVAR),WRK(LWRK)
       LOGICAL CONV(NBNEW/2)
@@ -1187,12 +1187,13 @@ C
       IF (LFREE.LT.0) STOP 'ABS_ORTHONORM: out of memory'
 C
       THR_LD=1.0D-8
+      THR_LD2=THR_LD*THR_LD
 c
       DO I=1,NBNEW/2
         ORCHK(I)=CONV(I)
         ORCHK(NBNEW/2+I)=CONV(I)
       ENDDO
-c      
+c     
       DO ITURN=1,2
 C
 C     Orthonormalize trial vectors against the old vectors
@@ -1246,9 +1247,11 @@ c
               DO J = 1,(I-1)
                 IF (.NOT.ORCHK(J)) THEN
                   T1 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XRVEC(1,J),1)
-                  T2 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XRVEC(1,I),1)
-                  TT = T2/T1
-                  CALL DAXPY(KZVAR,-TT,XRVEC(1,J),1,XRVEC(1,I),1)
+                  IF (T1 .GT. THR_LD2) THEN
+                    T2 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XRVEC(1,I),1)
+                    TT = T2/T1
+                    CALL DAXPY(KZVAR,-TT,XRVEC(1,J),1,XRVEC(1,I),1)
+                  ENDIF
                 ENDIF
               END DO
             ENDIF
@@ -1259,19 +1262,23 @@ c
             DO J = 1,NBNEW/2
               IF (.NOT.ORCHK(J)) THEN
                 T1 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XRVEC(1,J),1)
-                T2 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XIVEC(1,I),1)
-                TT = T2/T1
-                CALL DAXPY(KZVAR,-TT,XRVEC(1,J),1,XIVEC(1,I),1)
+                IF (T1 .GT. THR_LD2) THEN
+                  T2 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XIVEC(1,I),1)
+                  TT = T2/T1
+                  CALL DAXPY(KZVAR,-TT,XRVEC(1,J),1,XIVEC(1,I),1)
+                ENDIF
               ENDIF
             END DO
             IF (NBNEW/2.GT.1) THEN
               DO J = 1,(I-1)
                 IF (.NOT.ORCHK(NBNEW/2+J)) THEN
                   T1 = 2.0d0*DDOT(KZVAR,XIVEC(1,J),1,XIVEC(1,J),1)
-                  T2 = 2.0d0*DDOT(KZVAR,XIVEC(1,J),1,
-     &                    XIVEC(1,I),1)
-                  TT = T2/T1
-                  CALL DAXPY(KZVAR,-TT,XIVEC(1,J),1,XIVEC(1,I),1)
+                  IF (T1 .GT. THR_LD2) THEN
+                    T2 = 2.0d0*DDOT(KZVAR,XIVEC(1,J),1,
+     &                   XIVEC(1,I),1)
+                    TT = T2/T1
+                    CALL DAXPY(KZVAR,-TT,XIVEC(1,J),1,XIVEC(1,I),1)
+                  ENDIF
                 ENDIF
               END DO
             ENDIF
@@ -1316,7 +1323,7 @@ c
           ORTHO_QUIT=.FALSE.
 c        ELSE
 c          write(luabspri,*)'vector skipped',I
-        END IF  
+       END IF  
       ENDDO
       NNI=0
       DO I=1,NBNEW/2
