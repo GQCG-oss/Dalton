@@ -2191,7 +2191,6 @@ subroutine induced_moments(Mkinds, Fs)
     real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp
 
     if (pe_iter) then
-        write(luout,*) 'I should not be here MNP'
         if (myid == 0) then
             if (fock .and. scfcycle <= 5) then
                 redthr = 10**(5-scfcycle)
@@ -2901,7 +2900,7 @@ subroutine response_matrix(B)
             end do !  do j = i, nsites(ncores-1)
         end do
     end do
-       do i=1, 3*npols 
+       do i=1, (3*npols*(3*npols+1))/2
           write (luout,*) 'Response matrix(i)',i , B(i)
        end do
 
@@ -3599,7 +3598,7 @@ subroutine response_matrix_full(B)
         end do 
     end do
   
-    do i=1, leng
+    do i=1, (3*npols+nsurp)*(3*npols+nsurp+1)/2
         write (luout,*) 'Response matrix(i)',i, B(i)
     end do
 end subroutine response_matrix_full
