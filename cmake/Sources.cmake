@@ -156,6 +156,7 @@ abacus/hersym.F
 abacus/hertst.F
 abacus/huckel.F
 abacus/abalresc.F
+abacus/linear.F
 amfi/amfi.F
 amfi/symtra.F
 cc/asqr.F
