@@ -2067,7 +2067,7 @@ subroutine induced_dipoles(M1inds, Fs)
         end if
 #endif
 
-        if (lexist .and. fock) then
+        if (lexist .and. (fock .or. energy)) then
             if (myid == 0) then
                 call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
                 rewind(lu)
