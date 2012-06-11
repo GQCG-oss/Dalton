@@ -1090,6 +1090,7 @@ subroutine pe_sync()
         if (myid /= 0) allocate(zeroalphas(nsites(ncores-1)))
         call mpi_bcast(zeroalphas, nsites(ncores-1), MPI_LOGICAL,&
                       &0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(pe_fd, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(pe_nomb, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(pe_iter, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(pe_damp, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
@@ -1845,8 +1846,6 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         read(lufck) overlap
         close(lufck)
 
-        print *, 'overlap: ', overlap
-
         do j = 1, ndens
             l = (j - 1) * nnbas + 1
             m = j * nnbas
@@ -1856,7 +1855,6 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
 
         do j = 1, fdnucs
             gauss = (8.0d0  * gauss_factor) / ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
-            print *, Zfd(1,j), gauss
             do k = 1, qmnucs
                 Rfm = Rm(:,k) - Rfd(:,j)
                 call Tk_tensor(Tfm, Rfm)
@@ -2342,7 +2340,10 @@ subroutine electron_fields(Fels, denmats)
             do j = 1, qmnucs
                 if (nrm2(Rs(:,site) - Rm(:,j)) <= 1.0d0) skip = .true.
             end do
-            if (skip) cycle
+            if (skip) then
+                i = i + 3
+                cycle
+            end if
         end if
         call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site), .false., 0.0d0)
         do j = 1, 3
@@ -2415,7 +2416,10 @@ subroutine nuclear_fields(Fnucs)
                 do j = 1, qmnucs
                     if (nrm2(Rs(:,site) - Rm(:,j)) <= 1.0d0) skip = .true.
                 end do
-                if (skip) cycle
+                if (skip) then
+                    i = i + 3
+                    cycle
+                end if
             end if
             do j = 1, qmnucs
                 Rms = Rs(:,site) - Rm(:,j)
