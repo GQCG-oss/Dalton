@@ -75,7 +75,6 @@ C
 #include "inforb.h"
 #include "infvar.h"
 #include "infpri.h"
-#include "cbdtra.h"
 #include "inftap.h"
 #include "past.h"
 #include "cbisol.h"
@@ -85,9 +84,6 @@ C
       DST = SECOND( )
 C
       IPRNTR = IPRTRA
-C     ... IPRTRA from cbirhs.h, used for IPRTRD in cbdtra.h for
-C         DERTRA, transferred to inftra.h for TRACTL in NSETUP
-C         below.
       IPRINT = MAX(IPRIN4,IPRIN6,IPRNTR)
 C
 C     Set /INFORB/ and /INFVAR/  parameters written on LUSIFC.
@@ -307,10 +303,6 @@ C     Reset some of them:
 C     FLAG( 4) = (NASHT .EQ. NORBT)
 C     ... Full CI case (flag(4) true means CI case)
 C     ... 910118-hjaaj: NO, may be a RAS calc. (e.g. MC-SD)
-C
-C     Set DERTRA control parameters in COMMON /CBDTRA/
-C
-      IPRTRD = IPRNTR
 C
 C     call NSETUP to define CI variables, Sirius unit numbers etc.
 C

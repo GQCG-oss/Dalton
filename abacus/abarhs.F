@@ -1131,7 +1131,6 @@ C
 C
 #include "abainf.h"
 #include "cbisol.h"
-#include "cbdtra.h"
 #include "symmet.h"
 #include "nuclei.h"
 #include "dorps.h"
@@ -1332,10 +1331,10 @@ C
 C        DERTRA and LONTRA
 C
          LH2DAC = N2ASHX*N2ASHX
-         KQD   = KWSQ
-         KH2D  = KQD + NASHT*NORBT
-         KWTRA = KH2D  + LH2DAC
-         LWTRA = LWORK - KWTRA + 1
+         KQD    = KWSQ
+         KH2D   = KQD + NASHT*NORBT
+         KWTRA  = KH2D  + LH2DAC
+         LWTRA  = LWORK - KWTRA + 1
 C
 C        ABARHS
 C
@@ -1399,19 +1398,11 @@ C
                IF (NDSINT(ICOOR,ISYM - 1) .GT. 0) THEN
                   IF (RUNTRA .AND. .NOT.(NOH2 .OR. NOORBI)) THEN
                      IF (IATOM .NE. 0) THEN
-                        DO 310 I = 1, 3
-                           SRTCOO(I) = .FALSE.
- 310                    CONTINUE
-                        DO 320 I = 1, 8
-                           SRTSYM(I) = .FALSE.
- 320                    CONTINUE
-                        SRTCOO(ICOOR) = .TRUE.
-                        SRTSYM(ISYM) = .TRUE.
                         IF (IPRTRA .GT. 2)
      &                       CALL TIMER('START ',TIMSTR,TIMEND)
-                        IPRTRD = IPRTRA
-                        CALL DERTRA(IATOM,CMO,PV,WORK(KH2D),WORK(KQD),
-     &                              WORK(KWTRA),LWTRA,MWORK)
+                        CALL DERTRA(IATOM,icoor,isym,CMO,PV,
+     &                              WORK(KH2D),WORK(KQD),
+     &                              WORK(KWTRA),LWTRA,MWORK,IPRTRA)
                         IF (IPRTRA .GT. 2)
      &                       CALL TIMER('DERTRA',TIMSTR,TIMEND)
                         IF (TRATST) THEN
