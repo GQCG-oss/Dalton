@@ -1989,7 +1989,7 @@ C
 C
 C -- local variables and constants
 C
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
       PARAMETER (NTBMOD = 24)
 #else
       PARAMETER (NTBMOD = 23)
@@ -2008,7 +2008,7 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
      *            '*AUXILL','*LUCITA','*CUBE  ','*END OF'/
 #else
      *            '*AUXILL','*LUCITA','*END OF'/
@@ -2032,7 +2032,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
      *                2900,3000,2400,3200,3600,8000), I
 #else
      *                2900,3000,2400,3200,8000), I
@@ -2112,10 +2112,10 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  3200  lucita_input_provided = .true.
        call move_to_next_star(word,lucmd)
        GO TO 910
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
 C added by Bin Gao, to generate cube files to visualize the results
 C March 9, 2012
- 3600  call gen1int_cube_input(LUCMD, LUPRI, WORD)
+ 3600  call gen1int_host_cube_init(LUCMD, LUPRI, WORD)
        goto 910
 #endif
 C  Here if "*END OF"

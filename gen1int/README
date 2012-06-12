@@ -1,18 +1,22 @@
 1. A brief description of the project
 
+   This is the interface at Dalton/Dirac to use Gen1Int library.
+
    Gen1Int is a Fortran 90 library (with Python interface) to evaluate the
    derivatives of one-electron integrals with respect to the geometry perturbation,
    external electric and magnetic fields, and total rotational angular momentum
    at zero fields with contracted rotational London atomic orbitals (LAO).
 
-   For more details, please visit
+   For more details about Gen1Int library, please visit
 
    http://repo.ctcc.no/projects/gen1int
    http://sourceforge.net/projects/gen1int
 
+   For the idea of designing Gen1Int interface, please check file DESIGN.
+
 2. Notes on the developer's build environment and potential portability problems
 
-   In order to implement Gen1Int into Dalton, we have modified the following files:
+   In order to implement Gen1Int interface, we have modified the following files:
 
    * setup
      enables Gen1Int interface when specifying the path of Gen1Int library
@@ -20,290 +24,73 @@
      sets the corresponding compiler flag (-DBUILD_GEN1INT) and adds the source codes
      of Gen1Int library and interface
    * abacus/dalton.F (please search BUILD_GEN1INT)
-     calls \fn(gen1int_ifc_clean) to clean memory etc. used by Gen1Int interface
+     calls \fn(gen1int_host_finalize) to terminate Gen1Int interface
    * abacus/herdrv.F (please search BUILD_GEN1INT)
-     calls \fn(gen1int_ifc_test) to perform test suite of Gen1Int interface
+     calls \fn(gen1int_host_test) to perform test suite of Gen1Int interface
    * abacus/herrdn.F (please search BUILD_GEN1INT)
-     some modifications for processing different ECPs, and calling \fn(gen1int_ifc_init)
-     to intialize Gen1Int interface
+     some modifications for processing different ECPs, and calling
+     \fn(gen1int_host_init) to initialize Gen1Int interface
    * abacus/her1car.F (please search BUILD_GEN1INT)
      removes the interface of calling old ECP subroutine
    * abacus/her1drv.F (please search BUILD_GEN1INT)
      calls \fn(gen1int_ifc_main) to calculate property integrals
+   * eri/eri2par.F
+     calls Gen1Int interface on worker processors
    * include/cbiher.h
      adds logical variable \var(TEST_GEN1INT) indicating if performing test suite
      of Gen1Int interface
    * include/infinp.h
      adds logical variable \var(DO_CUBE) indicating if generating cube files using
      Gen1Int library
+   * include/iprtyp.h
+     adds options for Gen1Int interface on worker processors
    * sirius/sirinp.F
-     calls \fn(gen1int_cube_input) to process information of cube file in DALTON.INP
+     calls \fn(gen1int_host_cube_init) to process the information of cube file in
+     DALTON.INP, and initialize the information of cube file
    * sirius/sirctl.F
-     calls \fn(gen1int_cube_main) to generate cube files
-
-   and added the following files:
-   * gen1int directory
-     source codes of Gen1Int interface, README, installation instruction, Makefile
+     calls \fn(gen1int_host_get_cube) to generate cube files, and
+     \fn(gen1int_host_cube_finalize) to free spaces taken the information of cube
+     file
 
 3. Important files in Gen1Int interface
 
-   * gen1int_shell.F90      : AO sub-shell module used in Gen1Int interface
-   * gen1int_matrix.F90     : matrix module used in Gen1Int interface
-   * dalton_shell.F90       : Dalton AO sub-shells
-   * gen1int_interface.F90  : interface for Fortran 77 users
-   * reorder_p_sgto.F90     : reorders the p-shell contracted real solid-harmonic Gaussians
-   * get_ao_dens.F90        : gets AO density matrix from SIRIFC, used by gen1int_cube.F90
-   * gen1int_cube.F90       : module to generate cube files
-   * gen1int_cube_input.F90 : processes information of cube files in DALTON.INP
-   * stdout.h               : IO unit of standard output
-   * xkind.h                : kind type parameter of real numbers
-   * max_len_str.h          : maximum length of a string
+   * CMakeLists.txt:     CMake build file
+
+   * DESIGN:             idea of designing the interface
+   * INSTALL:            installation instruction
+   * MANUAL:             manual of using Gen1Int interface in host programs
+   * README:             this file
+   * TODO:               TODO list
+
+   * gen1int_host.F90:   subroutines which could be called by host programs (even Fortran 77)
+   * gen1int_cube.F90:   data module of cube files
+   * gen1int_api.F90:    module of API of Gen1Int interface (some subroutines are host program specific)
+   * gen1int_shell.F90:  module of AO sub-shell, might be portable with minor changes
+   * gen1int_matrix.F90: module of matrix interface, will be replaced by QMatrix library
+
+   * gen1int_host.h:     header file of Gen1Int interface (some of them are temporary
+                         and will be replaced by those in Gen1Int library), in which
+     #define REALK 8
+     #define _REALK _8
+     #define MPI_REALK MPI_DOUBLE_PRECISION
+     are kind type parameter of real numbers (be consistent with host programs and
+     Gen1Int library)     
+
+     #define STDOUT 6
+     is the logical unit number of the standard output
+
+     #define MAX_LEN_STR 80
+     is the maximum length of a string
+
+     #if defined(VAR_MPI)
+     #define MANAGER 0
+     #define REQUEST_WORK 0
+     #define NO_MORE_WORK 0
+     #endif
+     are used for MPI parallelization, MANAGER is the rank of manager processor,
+     REQUEST_WORK means workers request new work from manager, NO_MORE_WORK means
+     there is no more calculation for workers
 
 4. Please see INSTALL for installation instructions
 
-5. Use of Gen1Int interface and Gen1Int library
-
-   5.1 some limitations:
-   (1) current Gen1Int interface in Dalton can only treat molecules by specifying
-       C1 symmetry, i.e., you can not use symmetry in MOLECULE.INP
-   (2) the integrals can not be written on file, you may write them by yourself
-   (3) the interface is not parallel for the time being, the parallelization may be
-       implemented in gen1int_shell.F90 for AO sub-shells
-
-   5.2 a very rough illustration of using the interface:
-
-       ! module of Dalton AO sub-shells
-       use dalton_shell
-
-       ! number of atomic orbtials
-       integer num_ao
-       ! size of integral matrices
-       integer size_ints
-       ! information of property integrals
-       type(one_prop_t) prop_operator
-       ! number of integral matrices for the property
-       integer num_prop
-       ! kind of integrals matrices: symmetric, anti-symmetric or square
-       integer kind_prop
-       ! we could use triangular storage format for symmetric and anti-symmetric matrices
-       logical triangular
-       ! indicates if the integral matrices are symmetric or anti-symmetric
-       logical symmetric
-       ! number of atoms
-       integer :: num_atoms = ?
-       ! order of total geometric derivatives
-       integer :: order_geo_total = ?
-       ! maximum number of differentiated centers for total geometric derivatives,
-       ! should be <=4 and >=0
-       integer :: max_num_cent = ?
-       ! n-ary tree for total geometric derivatives
-       type(geom_tree_t) geom_tree
-       ! number of different derivatives
-       integer num_derv
-       ! number of integral matrices
-       integer num_matrices
-       ! integral matrices, the matrix type is defined in gen1int_matrix.F90
-       type(matrix), allocatable :: Int_Matrix(:)
-       ! integrals to which the above matrices associated to, it is the real place
-       ! where integrals are saved
-       real(REALK), allocatable :: Val_Ints(:)
-       ! start and end addresses of matrix elements in \var(Val_Ints)
-       integer start_elms, end_elms
-       ! IO unit of standard output
-       integer :: io_viewer = ?
-       ! level of print
-       integer :: level_print = ?
-       ! incremental recorder over matrices
-       integer imat
-       ! error information
-       integer ierr
-
-       ! (1) creates an operator -\frac{\partial}{\partial C}\frac{8}{r_{C}},
-       ! where C=(/0.0,0.0,0.0/) and is a non-atomic center (idx_nuclei<1),
-       ! i.e., the first order geometric derivatives of a point charge potential
-       ! around a non-atomic center (/0.0,0.0,0.0/) with respect to the
-       ! non-atomic center
-       !
-       ! as regards the defined property integrals (INT_POT_ENERGY, ...), please refer to
-       ! the manual of Gen1Int library (https://repo.ctcc.no/projects/gen1int), Section 3.2.1
-       call OnePropCreate(prop_name=INT_POT_ENERGY,     &
-                          one_prop=prop_operator,       &
-                          info_prop=ierr,               &
-                          num_prop=num_prop,            &
-                          kind_prop=kind_prop,          &
-                          idx_nuclei=(/-1/),            &
-                          coord_nuclei=(/0.0,0.0,0.0/), &
-                          charge_nuclei=(/-8.0/),       &
-                          order_geo_pot=1)
-       if (ierr/=0) stop "failed to create operator"
-
-       ! for this example, the returned argument \var(num_prop) will be
-       ! (\var(order_geo_pot)+1)*(\var(order_geo_pot)+2)/2
-       !
-       ! if you set \var(order_geo_pot)=2, what you get is the following
-       ! derivatives (6 integral matrices):
-       !     dxdx, dxdy, dydy, dxdz, dydz, dzdz
-       ! 
-       ! you will get 10 integral matrices:
-       !     dxdxdx, dxdxdy, dxdydy, dydydy, dxdxdz, dxdydz, dydydz, dxdzdz, dydzdz, dzdzdz
-       ! for \var(order_geo_pot)=3
-       !
-       ! briefly, if we put the derivatives in a triangle with dx...dxdx, dy...dydy,
-       ! and dz...dzdz in the three corners, the derivatives in Gen1Int starts from
-       ! dx...dxdx to dy...dydy, followed by dx...dxdz to dy...dydz, ..., the last
-       ! is dz...dzdz, you may generate these derivatives from
-       ! 
-       ! do dz = 0, order_geo_pot
-       !   do dy = 0, order_geo_pot-dz
-       !     dx = order_geo_pot-(dy+dz)
-       !     return (/dx,dy,dz/)
-       !   end do
-       ! end do
-       !
-       ! please refer to the manual of Gen1Int library for more details about the results
-       ! you get, see Section 2.2
-
-       ! (2) initializes the information of n-ary tree for total geometric derivatives
-       call GeomTreeCreate(num_atoms=num_atoms, order_geo=order_geo_total, &
-                           max_ncent=max_num_cent, geom_tree=geom_tree,    &
-                           info_geom=ierr)
-       if (ierr/=0) stop "failed to create n-ary tree"
-       ! gets the total number of unique geometric derivatives
-       call GeomTreeDimUnique(geom_tree=geom_tree, dim_unique_geo=num_derv)
-       ! or if you want to return all possible redundant total geometric derivatives,
-       ! you could set
-       ! num_derv = (3*num_atoms)**order_geo_total
-       ! redunt_ints = .true.
-       ! redunt_expt = .true.
-       ! sets the number of integral matrices including property integrals and derivatives
-       num_matrices = num_prop*num_derv
-
-       ! (3) allocates memory for integrals
-       call DaltonShellGetNumAO(num_ao=num_ao)  !gets the number of atomic orbitals
-       select case(kind_prop)
-       ! symmetric, or anti-symmetric matrices, we could use triangular storage format
-       case(SYMM_INT_MAT, ANTI_INT_MAT)
-         triangular = .true.
-         symmetric = (kind_prop==SYMM_INT_MAT)
-         size_ints = num_ao*(num_ao+1)/2
-       ! square matrices
-       case default
-         triangular = .false.
-         symmetric = .false.
-         size_ints = num_ao*num_ao
-       end select
-       allocate(Val_Ints(size_ints*num_matrices), stat=ierr)
-       if (ierr/=0) stop "failed to allocate memory for integrals"
-
-       ! (4) associates the matrices due to that Gen1Int interface requires
-       ! the matrix type arguments
-       allocate(Int_Matrix(num_matrices), stat=ierr)
-       if (ierr/=0) stop "failed to allocate matrices"
-       start_elms = 1
-       end_elms = size_ints
-       do imat = 1, num_matrices
-         call MatAssociate(work_alpha=Val_Ints(start_elms:end_elms), &
-                           num_row=num_ao, A=Int_Matrix(imat),       &
-                           info_mat=ierr, triangular=triangular,     &
-                           symmetric=symmetric)
-         if (ierr/=0) stop "failed to associate integral matrices"
-         start_elms = end_elms+1
-         end_elms = end_elms+size_ints
-       end do
-
-       ! (5) calculates the integrals, please refer to the comments in subroutine
-       ! \fn(DaltonShellIntegral) in dalton_shell.F90, as regards the unique or
-       ! redundant total geometric derivatives, please refer to Section 3.2.2
-       ! and 4.3 of the Gen1Int library manual
-       !
-       ! NOTE:
-       ! \var(Int_Matrix) contains the upper and diagonal parts if using triangular format,
-       ! \var(val_expt) should be zero before calculations, it is intent(inout)
-       call DaltonShellIntegral(one_prop=prop_operator, &  !input
-                                num_ints=num_matrices,  &  !input
-                                geom_tree=geom_tree,    &  !optional input
-                                val_ints=Int_Matrix,    &  !optional output
-                                redunt_ints=?,          &  !optional input
-                                num_dens=?,             &  !input
-                                ao_dens=?,              &  !optional input
-                                val_expt=?,             &  !optional output
-                                redunt_expt=?,          &  !optional input
-                                io_viewer=io_viewer,    &  !input
-                                level_print=level_print)   !input
-
-       ! (6) frees the space of information of property integrals
-       call OnePropDestroy(one_prop=prop_operator)
-
-       ! (7) frees space taken by a n-ary tree for total geometric derivatives
-       call GeomTreeDestroy(geom_tree=geom_tree)
-
-       ! (8) frees the space of matrices
-       do imat = 1, num_matrices
-         call MatNullify(A=Int_Matrix(imat))
-       end do
-       deallocate(Int_Matrix)
-
-       ! the results are saved in Val_Ints(:)
-
-   5.3 FAQ
-
-       (1) It isn't obvious to me what I can set and what is set in your
-           routines. For instance can I set the triangular and symmetric variables?
-
-       Inside Gen1Int module, it will check if the integral matrices is symmetric,
-       anti-symmetric or square, which you can not change.
-
-       But you could have a triangular integral matrix return if it is symmetric
-       (kind_prop=SYMM_INT_MAT) or anti-symmetric (kind_prop=ANTI_INT_MAT) by
-
-       select case(kind_prop)
-       case(SYMM_INT_MAT,ANTI_INT_MAT)
-         ! if the integral matrices are triangular or square
-         triangular = .true.
-         ! if the integral matrices are symmetric or anti-symmetric
-         symmetric = (kind_prop==SYMM_INT_MAT)
-         ! number of elements in one integral matrix, \var(num_ao) is the number of atomic orbitals
-         num_elms = num_ao*(num_ao+1)/2
-       case default
-         triangular = .false.
-         symmetric = .false.
-         num_elms = num_ao*num_ao
-       end select
-       ! number of different derivatives, set as 1 if you do not have any derivatives
-       num_derv = 1
-       ! allocates integral matrices
-       allocate(Int_Matrix(num_prop*num_derv), stat=ierr)
-       if (ierr/=0) stop "failed to allocate matrices"
-       do imat = 1, num_prop*num_derv
-         ! you could have the returned integrals in a real(8) array
-         ! work_space(1:num_elms*num_prop*num_derv),
-         ! the pointers in matrix Int_Matrix(imat) will be associated to
-         ! work_space(num_elms*(imat-1)+1:num_elms*imat)
-         call MatAssociate(work_alpha=work_space(num_elms*(imat-1)+1:num_elms*imat), &
-                           num_row=num_ao, A=Int_Matrix(imat), info_mat=ierr,        &
-                           triangular=triangular, symmetric=symmetric)
-         if (ierr/=0) stop "failed to associate integral matrices"
-       end do
-
-       after you getting the integrals back, you could free space by
-
-       ! frees space taken by integral matrices
-       do imat = 1, num_prop*num_derv
-         ! de-associates the pointers in matrices
-         call MatNullify(A=Int_Matrix(imat))
-       end do
-       deallocate(Int_Matrix)
-
-       the results are still in work_space(:).
-
-       (2) What is the max_num_cent used for?
-
-       max_num_cent is the maximum number of differentiated centers for total
-       geometric derivatives. The reason of using this parameter is that we may
-       only want, for instance, one-center or two-center fourth order total
-       geometric derivatives. Then Gen1Int only return such total geometric
-       derivatives, it will not return three- and four-center fourth order
-       total geometric derivatives.
-
-       you do not need to provide this argument if you do not calcualte total
-       geometric derivatives.
+5. Please check file MANUAL for the use of Gen1Int interface and Gen1Int library
