@@ -609,7 +609,9 @@ C     if the first one is less than D0, it is fixed equal to 1,
 C     otherwise it keeps its value. Each following value less than D0
 C     is changed to 1.
 C
-      IF(ALPHA(1).LE.0.0D+00) ALPHA(1) = 1.2D+00
+C      IF(ALPHA(1).LE.0.0D+00) ALPHA(1) = 1.2D+00
+      IF(ALPHA(1).LE.0.0D+00) ALPHA(1) = 1.17D+00
+      write(lupri,*) 'ALPHA, MNP', ALPHA(1)
       DO I = 2, MXSP
         IF(ALPHA(I).LE.0.0D+00) ALPHA(I) = ALPHA(1)
       ENDDO

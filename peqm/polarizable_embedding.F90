@@ -2176,21 +2176,28 @@ end subroutine pe_polarization
 
 subroutine induced_moments(Mkinds, Fs)
 
+#if defined(PESOL_DEBUG)
+    real(dp), external :: dlansp
+#endif
     real(dp), dimension(:,:), intent(out) :: Mkinds
     real(dp), dimension(:,:), intent(in) :: Fs
 
-    integer :: lu, iter, info
+    integer :: lu, iter, info, leng, info2
     integer :: i, j, k, l, m, n, o, p, q
-    integer, dimension(:), allocatable :: ipiv
+    integer, dimension(:), allocatable :: ipiv, iwork
     logical :: exclude, lexist
     logical :: converged = .false.
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
-    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr
+    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr, anorm, rcond
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
-    real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp
-
+    real(dp), dimension(:), allocatable :: B, T, Rij, Ftmp, M1tmp, work1, work2
+    if (pe_sol) then
+        leng = 3*npols + nsurp
+    else
+        leng = 3*npols
+    end if
     if (pe_iter) then
         if (myid == 0) then
             if (fock .and. scfcycle <= 5) then
@@ -2402,7 +2409,11 @@ subroutine induced_moments(Mkinds, Fs)
                 if (chol) then
                     read(lu) B
                 else
-                    allocate(ipiv(3*npols))
+                    if (pe_sol) then 
+                        allocate(ipiv(3*npols+nsurp))
+                    else 
+                        allocate(ipiv(3*npols))
+                    end if
                     read(lu) B, ipiv
                 end if
                 close(lu)
@@ -2414,6 +2425,21 @@ subroutine induced_moments(Mkinds, Fs)
                 end if
                 if (chol) then
                     call pptrf(B, 'L', info)
+                    if (print_lvl .gt. 0) then ! compute and print the condition number of B
+                        allocate(work1(leng))
+                        anorm = dlansp( 'I', 'L', 3*npols+nsurp,B,work1)
+                        allocate(iwork(leng))
+                        allocate(work2(3*leng))
+                        call dppcon('L', leng, B, anorm, rcond, work2, iwork,info2)
+                        deallocate(iwork(leng))
+                        deallocate(work1(leng))
+                        deallocate(work2(3*leng))
+                        if (info2 .eq. 0) then
+                           write(luout,*) 'Condition number of Response matrix B = ', rcond
+                        else
+                            stop 'ERROR: cannot compute the condition number of B'
+                        end if
+                    end if
                     if (info /= 0) then
                         print *, 'Cholesky factorization failed. Trying regular...'
                         if (pe_sol) then
@@ -2435,6 +2461,21 @@ subroutine induced_moments(Mkinds, Fs)
                         allocate(ipiv(3*npols))
                     end if
                     call sptrf(B, 'L', ipiv, info)
+                    if (print_lvl .gt. 0) then ! compute and print the condition number of B
+                        allocate(work1(leng))
+                        anorm = dlansp( 'I', 'L', 3*npols+nsurp,B,work1)
+                        allocate(iwork(leng))
+                        allocate(work2(3*leng))
+                        call dspcon('L', leng, B, anorm, rcond, work2, iwork,info2)
+                        deallocate(iwork(leng))
+                        deallocate(work1(leng))
+                        deallocate(work2(3*leng))
+                        if (info2 .eq. 0) then
+                           write(luout,*) 'Condition number of Response matrix B = ', rcond
+                        else
+                            stop 'ERROR: cannot compute the condition number of B'
+                        end if
+                    end if
                     if (info /= 0) then
                         stop 'ERROR: cannot create response matrix.'
                     end if

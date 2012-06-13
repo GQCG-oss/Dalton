@@ -101,7 +101,6 @@ C     Se stiamo costruendo una nuova cavita' per il calcolo del
 C     contributo dispersivo e repulsivo:
 C
       IDISREP = 0
-      IPRCAV = 0
 C
 C
 C se icesph=0
@@ -468,6 +467,11 @@ C
          LUCAVD = -8675
          CALL GPOPEN(LUCAVD,'CAVDATA','UNKNOWN','SEQUENTIAL'
      $        ,'UNFORMATTED',IDUMMY,.FALSE.)
+         write(lupri,*) 'NTS = ', NTS
+         write(lupri,*) 'Tesselation coordinates'
+         do i = 1, NN
+             WRITE(lupri,*) XTSCOR(i), YTSCOR(i), ZTSCOR(i), AS(i)
+         end do
          WRITE(LUCAVD) NTS
          WRITE(LUCAVD) ISPHE
          WRITE(LUCAVD) XTSCOR
@@ -1230,7 +1234,7 @@ C     beeing the analytical algorithm is not used because I'm already
 C     debugging it. In the future it will be the only option.
 C
 C      LAN = .TRUE.
-      IPRCAV = 0
+      IPRCAV = 0 
       LAN = .FALSE.
       AREA = 0.0D+00
       DO J=1, 3
