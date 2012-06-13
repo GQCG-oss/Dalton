@@ -489,7 +489,7 @@ C
 C
       AMAX = ZERO
       N_NAN = 0
-      DO I=1,J
+      DO I=1,MATDIM
          IF ( IS_NAN(AMATRX(I),AMATRX(I)) ) THEN
             N_NAN = N_NAN + 1
          ELSE
@@ -1077,8 +1077,14 @@ C
 C     May 2010, Hans Joergen Aa. Jensen
 C     Purpose: N_NAN returns number of NAN entries in AVEC(1:N)
 C
-      REAL*8 AVEC(N)
-      N_NAN  = N_NOT_EQUAL(N,AVEC,AVEC)
+      LOGICAL IS_NAN
+      INTEGER N, I, J
+      REAL*8  AVEC(N)
+      J = 0
+      DO I = 1,N
+         IF ( IS_NAN(AVEC(I),AVEC(I)) ) J = J + 1
+      END DO
+      N_NAN  = J
       RETURN
       END
 C === Deck n_not_equal ===============
