@@ -100,7 +100,7 @@ endforeach()
 
 # set scratch directory
 set(SCRATCH_DIR
-    "${DEFAULT_SCRATCH_BASE_DIR}/DALTON_scratch"
+    "${DEFAULT_SCRATCH_BASE_DIR}/DALTON_scratch_$ENV{USER}"
     CACHE STRING
     "Default scratch directory"
     )
