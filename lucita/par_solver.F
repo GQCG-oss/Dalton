@@ -727,7 +727,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,luwrt)
         sigmatime = MPI_WTIME()
 *
 *=======================================================================
-        CALL SIGDEN_CI(VEC1,VEC2,C2,ILUC,ILU2,cdummy,sdummy,1,-1 
+        CALL SIGDEN_CI(VEC1,VEC2,C2,ILUC,ILU2,cdummy,sdummy,1,-1,xxs2dm
 #ifdef VAR_MPI
      &           ,LUCLIST,LU2LIST,IBLOCKL,NBLOCKDN,RCCTOS,IGROUPLIST,
      &           IPROCLIST
@@ -1000,7 +1000,7 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
         sigmatime = MPI_WTIME()
 *
 *==================================================================
-        CALL SIGDEN_CI(VEC1,VEC2,C2,ILUC,ILU4,cdummy,sdummy,1,-1 
+        CALL SIGDEN_CI(VEC1,VEC2,C2,ILUC,ILU4,cdummy,sdummy,1,-1,xxs2dm
 #ifdef VAR_MPI
      &           ,LUCLIST,LU4LIST,IBLOCKL,NBLOCKDN,RCCTOS,IGROUPLIST,
      &           IPROCLIST

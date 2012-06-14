@@ -189,7 +189,7 @@
 #endif
 
         CALL SIGDEN_CI(VEC1,VEC2,C2,lusc_vector_file,lusc1,
-     &                 cdummy,sdummy,ISIGDEN,-1
+     &                 cdummy,sdummy,ISIGDEN,-1,xxs2dm
 #ifdef VAR_MPI
      &                 ,lu_BVClst,
      &                 LU_scrlst,
@@ -273,7 +273,7 @@
 #endif
 
         CALL SIGDEN_CI(VEC1,VEC2,C2,lusc_vector_file,luhc_vector_file,
-     &                 cdummy,sdummy,ISIGDEN,-1
+     &                 cdummy,sdummy,ISIGDEN,-1,xxs2dm
 #ifdef VAR_MPI
      &                 ,lu_BVClst,
      &                  LU_scrlst,

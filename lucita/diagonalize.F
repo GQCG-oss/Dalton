@@ -182,7 +182,8 @@ c      IPRT = IPRTXX
 *       Check timings for sigma vector generation
         CALL GETTIM(CPUSIG1,WALLSIG1)
 
-        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN,-1)
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN,-1,
+     &                 xxs2dum)
 
         CALL GETTIM(CPUSIG2,WALLSIG2)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
@@ -316,10 +317,11 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
 *
          CALL FLSHFO(LUWRTOUT)
 *
-         write(LUWRTOUT,*) 'RNORM, THRQC, abs, THRQE',
-     &                      RNORM, THRQC, 
-     &                      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)),
-     &                      THRQE
+!        write(LUWRTOUT,*) 'RNORM, THRQC, abs, THRQE',
+!    &                      RNORM, THRQC, 
+!    &                      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)),
+!    &                      THRQE
+
 !hjajj/s IF(RNORM.LT. THRQC .OR.
 !    &      (ITER.GT.2.AND.
 !    &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.THRQE)) THEN
@@ -491,7 +493,8 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
         CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
 *Check timings for sigma vector generation
         CALL GETTIM(CPUSIG1,WALLSIG1)
-        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN,-1)
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN,-1,
+     &                 xxs2dum)
         CALL GETTIM(CPUSIG2,WALLSIG2)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
         if(ivec .eq. 1)then
@@ -2879,7 +2882,7 @@ C       IDOH2 = JDOH2
 *
       call quit('*** HTV is disabled in this lucita version. ***')
       CALL SIGDEN_CI(VECIN,VECOUT,C2,LUIN,LUOUT,cdummy,sdummy,
-     &               ISIGDEN,-1)
+     &               ISIGDEN,-1,xxs2dum)
 *
       RETURN
       END
@@ -3384,7 +3387,8 @@ C
        DO 10 IVEC = 1,NINVEC
          CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
          CALL quit('*** MINDV4 is disabled in this lucita version. ***')
-         CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN,-1)
+         CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN,-1,
+     &                  xxs2dum)
          CALL TODSC_LUCI(VEC2,NVAR,-1  ,LU2)
 *        PROJECTED MATRIX
          CALL REWINE( LU1,-1)
@@ -3579,7 +3583,8 @@ C
       DO 150 IVEC = 1, IADD
         CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
         call quit('*** MINDV4 is disabled in this lucita version. ***')
-        CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN,-1)
+        CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN,-1,
+     &                  xxs2dum)
         CALL TODSC_LUCI(VEC2,NVAR,-1  ,LU2)
 *   AUGMENT PROJECTED MATRIX
         CALL REWINE( LU1,-1)

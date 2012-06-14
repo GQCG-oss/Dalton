@@ -446,6 +446,9 @@ contains
 !     set level of particle-density matrix calculation
       i12 = idensi
 
+!     initialize s**2 expectation value
+      exps2 = 0.0d0
+
 !     set rhotype
       rhotype = 1
 !     remember: lucita-internal routines for natorbs expects an unpacked density matrix
@@ -627,7 +630,7 @@ contains
 !
         if(luci_nmproc > 1 .and. luci_myproc == luci_master .and.  rhotype == 1)then
           call sigden_ci(cref,work(k_scratchsbatch),resolution_mat,lusc_vector_file,luhc_vector_file,&
-                         cv_dummy,hcv_dummy,isigden,rhotype                                          &
+                         cv_dummy,hcv_dummy,isigden,rhotype,exps2                                    &
 #ifdef VAR_MPI
                         ,file_info%ilublist,file_info%iluxlist(1,file_info%current_file_nr_active2), &
                          block_list,par_dist_block_list,                                             &
@@ -636,7 +639,7 @@ contains
                         )
         else
           call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,                   &
-                         cv_dummy,hcv_dummy,isigden,rhotype                                          &
+                         cv_dummy,hcv_dummy,isigden,rhotype,exps2                                    &
 #ifdef VAR_MPI
                         ,file_info%ilublist,file_info%iluxlist(1,file_info%current_file_nr_active2), &
                          block_list,par_dist_block_list,                                             &
@@ -663,10 +666,18 @@ contains
             if(i12 > 1)then
               call mpi_reduce(work(krho2),mpi_in_place,nacob**2*(nacob**2+1)/2,      &
                               mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(exps2,mpi_in_place,1,                                  &
+                              mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
             end if
           end if
 #endif
         end if ! luci_nmproc > 1
+
+        if(i12 > 1)then
+          write(luwrt,'(/a      )')  '   ------------------------------------------------'
+          write(luwrt,'(a,1f10.3)')  '   expectation value of operator <S**2> =', exps2
+          write(luwrt,'(a/      )')  '   ------------------------------------------------'
+        end if
 
 !       export 1-/2-particle density matrix to MCSCF format
 !       ---------------------------------------------------
@@ -778,7 +789,7 @@ contains
       real(8),           intent(inout) :: int1_or_rho1(*)
       real(8),           intent(inout) :: int2_or_rho2(*)
 !-------------------------------------------------------------------------------
-      real(8)                          :: cv_dummy, hcv_dummy
+      real(8)                          :: cv_dummy, hcv_dummy,exps2
       integer                          :: eigen_state_id
       integer                          :: imzero, iampack
       integer                          :: lusc_vector_file
@@ -909,7 +920,7 @@ contains
         end if
 !
         call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,                  &
-                       cv_dummy,hcv_dummy,isigden,-1                                              &
+                       cv_dummy,hcv_dummy,isigden,-1,exps2                                        &
 #ifdef VAR_MPI
                       ,file_info%ilublist,file_info%iluxlist(1,file_info%current_file_nr_active2),&
                        block_list,par_dist_block_list,                                            &

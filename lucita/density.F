@@ -1755,7 +1755,9 @@ C?              call WRTMT_LU(x,ni*nj,nk*nl,ni*nj,nk*nl)
                       IJ = (J-1)*NI+I
                       JI = (I-1)*NJ+J
                       NIJ = NI*NJ
+!                     write(6,*) 's2_term1 ... before',s2_term1
                       S2_TERM1 = S2_TERM1-X((JI-1)*NIJ+IJ)
+!                     write(6,*) 's2_term1 ... after',s2_term1
                     END DO
                   END DO
                 END IF

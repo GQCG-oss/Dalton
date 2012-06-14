@@ -4184,7 +4184,8 @@ C     CALL QEXIT('SKICK')
       END IF
       END
 
-      SUBROUTINE SIGDEN_CI(C,HC,C2,LUC,LUHC,CV,HCV,ISIGDEN,rhotype
+      SUBROUTINE SIGDEN_CI(C,HC,C2,LUC,LUHC,CV,HCV,ISIGDEN,rhotype,
+     &                     exps2
 #ifdef VAR_MPI
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                IGROUPLIST,IPROCLIST
@@ -4242,7 +4243,8 @@ C
       INTEGER RCCTOS(*),IGROUPLIST(*),IPROCLIST(*)
 #endif
 C
-      integer, intent(in) :: rhotype
+      integer, intent(in)    :: rhotype
+      real(8), intent(inout) :: exps2
 * Blocks of C and sigma
       DIMENSION C(*),HC(*)
 !     resolution matrix
@@ -4352,7 +4354,17 @@ C
         LRHO1 = NTOOB**2
         LRHO2 = NTOOB**2*(NTOOB**2+1)/2
         CALL dzero(work(krho1),lrho1)
-        if(idoh2 .eq. 1) CALL dzero(WORK(KRHO2),LRHO2)
+        if(idoh2 .eq. 1)then
+          CALL dzero(WORK(KRHO2),LRHO2)
+!         initialize s**2 on master
+          if(LUCI_MYPROC == 0)then 
+!           write(luwrt,*) 'NAEL, NBEL',NAEL, NBEL
+            exps2 = NAEL +
+     &              0.5*(NAEL-NBEL)*(0.5*(NAEL-NBEL)-1)
+          end if
+        else
+          exps2 = 0.0d0
+        end if
       END IF
       
       IF(ICISTR.EQ.1) THEN
@@ -4362,7 +4374,7 @@ C
         CALL SIGDEN2_CI(C,HC,C2,CV,HCV,ISIGDEN,
      &       NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &       WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,
-     &       WORK(KISCLFAC),WORK(KSCALLOC),rhotype
+     &       WORK(KISCLFAC),WORK(KSCALLOC),rhotype,exps2 
 #ifdef VAR_MPI
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                IGROUPLIST,IPROCLIST
@@ -4385,7 +4397,7 @@ C
       END
       SUBROUTINE SIGDEN2_CI(CB,SB,C2,CV,SV,ISIGDEN,
      &                  NBATS,LBATS,LEBATS,I1BATS,IBATS,
-     &                  LUC,LUHC,SSCLFAC,ISCLFAC_GROUP,rhotype
+     &                  LUC,LUHC,SSCLFAC,ISCLFAC_GROUP,rhotype,exps2 
 #ifdef VAR_MPI
      &                  ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                   IGROUPLIST,IPROCLIST
@@ -4408,6 +4420,7 @@ C
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
       integer, intent(in) :: rhotype
+      real(8), intent(inout :: exps2
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
       INTEGER IPROCLIST(*), RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
@@ -4625,7 +4638,7 @@ C
 C
        CALL SIGDEN3_CI(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
      &                 CB,SB,C2,CV,ISIGDEN,LUC,0,0,0,0,0,SSCLFAC,
-     &                 ISCLFAC_GROUP,rhotype,ls
+     &                 ISCLFAC_GROUP,rhotype,ls,exps2
 #ifdef VAR_MPI
      &                ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -4768,7 +4781,8 @@ C
       SUBROUTINE SIGDEN3_CI(NBLOCK,IBLOCK,IBOFF,CB,HCB,C2,CV,ISIGDEN,
      &                      LUC,IRESTRICT,
      &                      LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END,
-     &                      SSCLFAC,ISCLFAC_GROUP,rhotype,sigma_batchl
+     &                      SSCLFAC,ISCLFAC_GROUP,rhotype,sigma_batchl,
+     &                      exps2
 #ifdef VAR_MPI
      &                 ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -4843,7 +4857,8 @@ C
       COMMON/HIDSCR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 !                                     length of sigma vector batch
-      integer, intent(in) :: rhotype, sigma_batchl
+      integer, intent(in)    :: rhotype, sigma_batchl
+      real(8), intent(inout) :: exps2
       dimension XIJILS(MXTSOB)
       INTEGER MLTHCHCK, ITEMPP
       DIMENSION SSCLFAC(*),ISCLFAC_GROUP(*)
@@ -5073,6 +5088,7 @@ C
 !     KCJPA and KSIPA are used as transpose/scatter scratch space in order to avoid 
 !     overwriting of C2. sk - nov 2011
 !
+      S2_TERM1 = 0.0d0
 
       CALL SIGDEN4_CI(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,CV,ISIGDEN,
      &     C2,
@@ -5097,7 +5113,7 @@ C
      &     LUCBLK,IPERTOP,IH0INSPC,WORK(KLH0SPC),
      &     ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,I_RES_AB,
      &     IUSE_PA,WORK(KCJPA),WORK(KSIPA),ISCLFAC_GROUP,SSCLFAC,
-     &     WORK(KRHO1S),rhotype
+     &     WORK(KRHO1S),rhotype,S2_TERM1
 #ifdef VAR_MPI
      &    ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -5116,18 +5132,11 @@ C
       END IF
 
       IF(isigden.eq.2 .and. I12.EQ.2) THEN
-* <L!S**2|R>
-        EXPS2 = NAEL +
-     &          0.5*(NAEL-NBEL)*(0.5*(NAEL-NBEL)-1)
+!       <L!S**2|R>
         EXPS2 = EXPS2 + S2_TERM1
-!       write(luwrt,*) 'NAEL, NBEL',NAEL, NBEL
 !       WRITE(luwrt,*) ' Term 1 to S2 ', S2_TERM1
-!       WRITE(luwrt,*) ' Expectation value of S2 ', EXPS2
-      ELSE
-        EXPS2 = 0.0D0
       END IF
-
-*
+!
       IF(LUCBLK.GT.0) THEN
         CALL ITODS(-1,1,-1,LUCBLK)
       END IF
@@ -5156,7 +5165,7 @@ C
      &           LUCBLK,IPERTOP,IH0INSPC,IH0SPC,
      &           ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,
      &           I_RES_AB,IUSE_PA,CJPA,SIPA,ISCLFAC_GROUP,SSCLFAC,
-     &           RHO1S,rhotype
+     &           RHO1S,rhotype,S2_TERM1
 #ifdef VAR_MPI
      &          ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
