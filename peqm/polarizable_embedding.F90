@@ -1818,7 +1818,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
 
     integer :: i, j, k, l, m, n, o
     integer :: lufck, lexist, lu
-    real(dp) :: Ene, Enn, overlap, gauss
+    real(dp) :: Ene, Enn, gauss
     real(dp), dimension(ndens) :: Een, Eee
     real(dp), dimension(1) :: Tfm
     real(dp), dimension(3) :: Rfm
@@ -1843,7 +1843,6 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         read(lufck) fdnucs
         allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
         read(lufck) Rfd, Zfd
-        read(lufck) overlap
         close(lufck)
 
         do j = 1, ndens
@@ -2945,11 +2944,11 @@ end function factorial
 
 !------------------------------------------------------------------------------
 
-subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
+subroutine pe_save_density(density, nbas, nocc, coords, charges, dalwrk)
 
     external :: Tk_integrals
 
-    integer, intent(in) :: nbas
+    integer, intent(in) :: nbas, nocc
     real(dp), dimension(:), intent(in) :: density
     real(dp), dimension(:), intent(in) :: charges
     real(dp), dimension(:,:), intent(in) :: coords
@@ -3032,7 +3031,7 @@ subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
     write(luden) Rm, Zm
     write(luden) npols
     write(luden) Ffd
-    write(luden) nbas
+    write(luden) nbas, nocc
     write(luden) full_density
     close(luden)
 
@@ -3042,27 +3041,21 @@ end subroutine pe_save_density
 
 !------------------------------------------------------------------------------
 
-subroutine pe_intmol_twoints(nbas, dalwrk)
+subroutine pe_intmol_twoints(nbas, nocc, dalwrk)
 
     external :: sirfck
 
-    integer, intent(in) :: nbas
+    integer, intent(in) :: nbas, nocc
     real(dp), dimension(:), target, intent(inout) :: dalwrk
 
     integer :: i, j, k, l
-    integer :: fbas, cbas
+    integer :: fbas, focc, cbas, cocc
     integer :: luden, lufck
     integer, dimension(1) :: isymdm, ifctyp
     real(dp) :: Ene
     real(dp), dimension(:), allocatable :: core_fock, Ffd
     real(dp), dimension(:,:), allocatable :: frozen_density, full_density
     real(dp), dimension(:,:), allocatable :: full_fock
-
-    external :: rdonel, dsptge
-    real(dp) :: nrm
-    real(dp), dimension(:), allocatable :: packed_overlap
-    real(dp), dimension(:,:), allocatable :: full_overlap
-    real(dp), dimension(:,:), allocatable :: intmol_overlap
 
     work => dalwrk
 
@@ -3075,31 +3068,12 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     read(luden) npols
     allocate(Ffd(3*npols))
     read(luden) Ffd
-    read(luden) fbas
+    read(luden) fbas, focc
     allocate(frozen_density(fbas, fbas))
     read(luden) frozen_density
     close(luden)
 
     cbas = nbas - fbas
-
-    allocate(packed_overlap(nbas*(nbas+1)/2))
-    allocate(full_overlap(nbas,nbas))
-    allocate(intmol_overlap(cbas,cbas))
-    call rdonel('OVERLAP', .true., packed_overlap, nbas*(nbas+1)/2)
-    call dsptge(nbas, packed_overlap, full_overlap)
-    deallocate(packed_overlap)
-    call gemm(full_overlap(fbas+1:nbas,1:fbas),&
-             &full_overlap(1:fbas,fbas+1:nbas),&
-             &intmol_overlap)
-    deallocate(full_overlap)
-    nrm = 0.0d0
-    do i = 1, cbas
-        do j = 1, cbas
-            nrm = nrm + intmol_overlap(i,j)**2
-        end do
-    end do
-    nrm = sqrt(nrm)
-    deallocate(intmol_overlap)
 
     ! density matrix with frozen density in first block
     allocate(full_density(nbas,nbas)); full_density = 0.0d0
@@ -3147,7 +3121,6 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
     write(lufck) core_fock
     write(lufck) fdnucs
     write(lufck) Rfd, Zfd
-    write(lufck) nrm
     close(lufck)
 
     deallocate(core_fock, Rfd, Zfd, Ffd)
@@ -3156,34 +3129,113 @@ end subroutine pe_intmol_twoints
 
 !------------------------------------------------------------------------------
 
-subroutine pe_repulsion()
+subroutine pe_repulsion(fock, nbas, nocc, dalwrk)
 
-!    external :: rdonel
-!
-!    real(dp), dimension(:), intent(in) :: fckmat
-!    real(dp), dimension(:), intent(inout) :: dalwrk
-!
-!    integer :: i, j, k, l
-!    integer :: nbas, fbas, cbas, nnbas
-!    real(dp), dimension(:), allocatable :: overlap
-!
-!    nnbas = size(fckmat)
-!    nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
-!
-!    call openfile('pe_density.bin', luden, 'old', 'unformatted')
-!    rewind(luden)
-!    read(luden) dalwrk
-!    read(luden) dalwrk
-!    read(luden) dalwrk
-!    read(luden) dalwrk
-!    read(luden) dalwrk
-!    read(luden) fbas
-!    close(luden)
-!
-!    cbas = nbas - fbas
-!
-!    call rdonel('OVERLAP', .true., overlap, nnbas)
+    external :: sirfck
 
+    real(dp), dimension(:), intent(in) :: fock
+    integer, intent(in) :: nbas
+    real(dp), dimension(:), target, intent(inout) :: dalwrk
+
+    integer :: i, j, k, l
+    integer :: fbas, focc, cbas, cocc
+    integer :: luden, lufck
+    integer, dimension(1) :: isymdm, ifctyp
+    real(dp) :: Ene
+    real(dp), dimension(:), allocatable :: core_fock, Ffd
+    real(dp), dimension(:,:), allocatable :: frozen_density, full_density
+    real(dp), dimension(:,:), allocatable :: full_fock
+
+    external :: rdonel, dsptge
+    real(dp), dimension(:), allocatable :: packed_overlap
+    real(dp), dimension(:,:), allocatable :: full_overlap
+    real(dp), dimension(:,:), allocatable :: intmol_overlap
+    real(dp), dimension(:,:), allocatable :: Vrep
+
+    work => dalwrk
+
+    call openfile('pe_density.bin', luden, 'old', 'unformatted')
+    rewind(luden)
+    read(luden) Ene
+    read(luden) fdnucs
+    allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
+    read(luden) Rfd, Zfd
+    read(luden) npols
+    allocate(Ffd(3*npols))
+    read(luden) Ffd
+    read(luden) fbas, focc
+    allocate(frozen_density(fbas, fbas))
+    read(luden) frozen_density
+    close(luden)
+
+    cbas = nbas - fbas
+
+    allocate(packed_overlap(nbas*(nbas+1)/2))
+    allocate(full_overlap(nbas,nbas))
+    allocate(intmol_overlap(cbas,cbas))
+    call rdonel('OVERLAP', .true., packed_overlap, nbas*(nbas+1)/2)
+    call dsptge(nbas, packed_overlap, full_overlap)
+    deallocate(packed_overlap)
+    call gemm(full_overlap(fbas+1:nbas,1:fbas),&
+             &full_overlap(1:fbas,fbas+1:nbas),&
+             &intmol_overlap)
+    deallocate(full_overlap)
+
+    ! density matrix with frozen density in first block
+    allocate(full_density(nbas,nbas)); full_density = 0.0d0
+    full_density(1:fbas,1:fbas) = frozen_density
+    deallocate(frozen_density)
+
+    ! get two-electron part of Fock matrix using resized density matrix
+    allocate(full_fock(nbas,nbas)); full_fock = 0.0d0
+!     IFCTYP = +/-XY
+!       X indicates symmetry about diagonal
+!         X = 0 No symmetry
+!         X = 1 Symmetric
+!         X = 2 Anti-symmetric
+!       Y indicates contributions
+!         Y = 0 no contribution !
+!         Y = 1 Coulomb
+!         Y = 2 Exchange
+!         Y = 3 Coulomb + Exchange
+!       + sign: alpha + beta matrix (singlet)
+!       - sign: alpha - beta matrix (triplet)
+!     sirfck(fock, density, ?, isymdm, ifctyp, direct, work, nwrk)
+    isymdm = 1
+    ifctyp = 11
+    call sirfck(full_fock, full_density, 1, isymdm, ifctyp, .true.,&
+                work, size(work))
+    deallocate(full_density)
+
+    ! extract upper triangle part of full Fock matrix corresponding to
+    ! core fragment
+    allocate(core_fock(cbas*(cbas+1)/2)); core_fock = 0.0d0
+    l = 1
+    do i = fbas + 1, nbas
+        do j = fbas + 1, i
+            core_fock(l) = full_fock(j,i)
+            l = l + 1
+        end do
+    end do
+
+    ! Repulsion stuff from here
+    
+
+
+
+    deallocate(full_fock)
+
+    ! save core Fock matrix
+    call openfile('pe_fock.bin', lufck, 'new', 'unformatted')
+    rewind(lufck)
+    write(lufck) Ffd
+    write(lufck) Ene
+    write(lufck) core_fock
+    write(lufck) fdnucs
+    write(lufck) Rfd, Zfd
+    close(lufck)
+
+    deallocate(core_fock, Rfd, Zfd, Ffd)
 
 end subroutine pe_repulsion
 

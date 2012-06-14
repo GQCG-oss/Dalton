@@ -122,7 +122,7 @@ C
 ! *** Save intermolecular part of two-electron Fock matrix and quit ***
 ! *********************************************************************
       if (pe_twoint .and. .not. pe_repuls) then
-          call pe_intmol_twoints(nbast, work)
+          call pe_intmol_twoints(nbast, nisht, work)
           iconv = 1
           goto 8000
       end if
