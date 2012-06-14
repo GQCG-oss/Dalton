@@ -59,8 +59,8 @@ C
 #include "inforb.h"
 #include "shells.h"
 #include "dftcom.h"
-#ifdef VAR_MPI
 #include "infpar.h"
+#ifdef VAR_MPI
 #include "mpif.h"
 #endif
 C     choose reasonably large. Exceeding this limit means that boxes are
