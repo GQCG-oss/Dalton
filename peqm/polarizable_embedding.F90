@@ -1823,7 +1823,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
     real(dp), dimension(1) :: Tfm
     real(dp), dimension(3) :: Rfm
     real(dp), dimension(3*npols) :: temp
-    real(dp), dimension(nnbas) :: fd_fock
+    real(dp), dimension(nnbas) :: fd_fock, rep_fock
     real(dp), dimension(nnbas,1) :: Zfd_ints
     character(len=99) :: ci
     character(len=99) :: filename
@@ -1840,6 +1840,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         read(lufck) temp
         read(lufck) Ene
         read(lufck) fd_fock
+        read(lufck) rep_fock
         read(lufck) fdnucs
         allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
         read(lufck) Rfd, Zfd
@@ -3134,7 +3135,7 @@ subroutine pe_repulsion(fock, nbas, nocc, dalwrk)
     external :: sirfck
 
     real(dp), dimension(:), intent(in) :: fock
-    integer, intent(in) :: nbas
+    integer, intent(in) :: nbas, nocc
     real(dp), dimension(:), target, intent(inout) :: dalwrk
 
     integer :: i, j, k, l
@@ -3147,10 +3148,10 @@ subroutine pe_repulsion(fock, nbas, nocc, dalwrk)
     real(dp), dimension(:,:), allocatable :: full_fock
 
     external :: rdonel, dsptge
-    real(dp), dimension(:), allocatable :: packed_overlap
+    real(dp), dimension(:), allocatable :: overlap, rep_fock
     real(dp), dimension(:,:), allocatable :: full_overlap
     real(dp), dimension(:,:), allocatable :: intmol_overlap
-    real(dp), dimension(:,:), allocatable :: Vrep
+    real(dp), dimension(:,:), allocatable :: full_rep
 
     work => dalwrk
 
@@ -3169,13 +3170,14 @@ subroutine pe_repulsion(fock, nbas, nocc, dalwrk)
     close(luden)
 
     cbas = nbas - fbas
+    cocc = nocc - focc
 
-    allocate(packed_overlap(nbas*(nbas+1)/2))
+    allocate(overlap(nbas*(nbas+1)/2))
     allocate(full_overlap(nbas,nbas))
     allocate(intmol_overlap(cbas,cbas))
-    call rdonel('OVERLAP', .true., packed_overlap, nbas*(nbas+1)/2)
-    call dsptge(nbas, packed_overlap, full_overlap)
-    deallocate(packed_overlap)
+    call rdonel('OVERLAP', .true., overlap, nbas*(nbas+1)/2)
+    call dsptge(nbas, overlap, full_overlap)
+    deallocate(overlap)
     call gemm(full_overlap(fbas+1:nbas,1:fbas),&
              &full_overlap(1:fbas,fbas+1:nbas),&
              &intmol_overlap)
@@ -3209,21 +3211,37 @@ subroutine pe_repulsion(fock, nbas, nocc, dalwrk)
 
     ! extract upper triangle part of full Fock matrix corresponding to
     ! core fragment
-    allocate(core_fock(cbas*(cbas+1)/2)); core_fock = 0.0d0
+    allocate(core_fock(cbas*(cbas+1)/2))
     l = 1
-    do i = fbas + 1, nbas
-        do j = fbas + 1, i
-            core_fock(l) = full_fock(j,i)
+    do j = fbas + 1, nbas
+        do i = fbas + 1, j
+            core_fock(l) = full_fock(i,j)
             l = l + 1
         end do
     end do
 
     ! Repulsion stuff from here
-    
-
-
+    call dsptge(nbas, fock, full_fock)
+    allocate(full_rep(cbas,cbas))
+    full_rep = 0.0d0
+    do i = 1, cbas
+        do j = 1, cbas
+            do k = 1, focc
+                full_rep(i,j) = full_rep(i,j) - intmol_overlap(i,j) * full_fock(k,k)
+            end do
+        end do
+    end do
 
     deallocate(full_fock)
+
+    allocate(rep_fock(cbas*(cbas+1)/2))
+    l = 1
+    do j = fbas + 1, nbas
+        do i = fbas + 1, j
+            rep_fock(l) = full_rep(i,j)
+            l = l + 1
+        end do
+    end do
 
     ! save core Fock matrix
     call openfile('pe_fock.bin', lufck, 'new', 'unformatted')
@@ -3231,6 +3249,7 @@ subroutine pe_repulsion(fock, nbas, nocc, dalwrk)
     write(lufck) Ffd
     write(lufck) Ene
     write(lufck) core_fock
+    write(lufck) rep_fock
     write(lufck) fdnucs
     write(lufck) Rfd, Zfd
     close(lufck)
