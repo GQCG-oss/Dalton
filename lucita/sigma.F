@@ -4263,6 +4263,9 @@ C
         WRITE(6,*) ' ISIGDEN = ', ISIGDEN
       END IF
 
+!     WRITE(LUWRT,*) ' C (in) '
+!     CALL WRTMATMN(C,1,L_COMBI,1,L_COMBI,LUWRT)
+
 *
       IF(ICISTR.EQ.1) THEN
         WRITE(6,*) ' SIGDEN_CI does not work for ICISTR = 1'
@@ -4388,6 +4391,8 @@ C
       end if
 #endif
 
+!     WRITE(LUWRT,*) ' C (out) '
+!     CALL WRTMATMN(C,1,L_COMBI,1,L_COMBI,LUWRT)
 *. Eliminate local memory
       CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'SIDE  ')
 *
@@ -4653,6 +4658,7 @@ C       transfer S block to permanent storage
         END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif /* if def VAR_MPI */
 C
+!       NTEST = 100
         if(NTEST.ge.100) then
           WRITE(luwrt,*) ' **********************************'
           WRITE(luwrt,*) ' *                                *'

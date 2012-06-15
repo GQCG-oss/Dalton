@@ -19,10 +19,8 @@ module lucita_mcscf_ci_interface_procedures
 
   private
 
-#ifdef VAR_MPI
   integer, public    :: restore_cref_vector_switch = -1
   logical, public    :: restore_cref               = .false.
-#endif
   integer, parameter, public :: print_lvl_limit = 1000
 
 contains
@@ -195,7 +193,6 @@ contains
           call quit('undefined post LUCITA processing step in MCSCF process flow')
       end select
 
-#ifdef VAR_MPI
 !     write(lupri,*) ' restore_cref, restore_cref_vector_switch', &
 !                      restore_cref, restore_cref_vector_switch
 !     c. restore cref
@@ -205,12 +202,10 @@ contains
         case(.false.)
 !         nothing to do          
       end select
-#endif
 
   end subroutine mcscf_post_lucita_processing
 !*******************************************************************************
 
-#ifdef VAR_MPI
   subroutine restore_cref_lucita(do_restore,switch,c_or_cr,hc_or_cl)
 !*******************************************************************************
 !
@@ -237,7 +232,6 @@ contains
       
   end subroutine restore_cref_lucita
 !*******************************************************************************
-#endif
 
   subroutine mcscf_pre_lucita_bvec_analyze(c_or_cr,print_lvl)
 !*******************************************************************************
@@ -323,14 +317,12 @@ contains
       integer                  :: push_pull = 2
 !-------------------------------------------------------------------------------
       
-#ifdef VAR_MPI
-!     potentially restore cref after the ci task in parallel runs
+!     potentially restore cref after the ci task
 !     write(lupri,*) ' check for restorage, vector_exchange_type1',vector_exchange_type1
       if(vector_exchange_type1 == 1)then
         restore_cref_vector_switch = 1
         restore_cref               = .true.
       end if
-#endif
 
 !     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
@@ -426,7 +418,6 @@ contains
       integer                  :: push_pull = 2
 !-------------------------------------------------------------------------------
 
-#ifdef VAR_MPI
 !     write(lupri,*) ' check for restorage, vector_exchange_type1/2',vector_exchange_type1,vector_exchange_type2
 !     potentially restore cref after the ci task in parallel runs
       if(vector_exchange_type1 == 1 .or. vector_exchange_type2 == 1)then
@@ -434,7 +425,6 @@ contains
         restore_cref_vector_switch = 1
         if(vector_exchange_type2 == 1) restore_cref_vector_switch = 2
       end if
-#endif
       
 !     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
