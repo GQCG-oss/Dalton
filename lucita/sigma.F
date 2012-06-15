@@ -4420,7 +4420,7 @@ C
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
       integer, intent(in) :: rhotype
-      real(8), intent(inout :: exps2
+      real(8), intent(inout) :: exps2
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
       INTEGER IPROCLIST(*), RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
