@@ -661,10 +661,11 @@ C *** Construct diagonal of CI matrix
          call mcscf_lucita_interface(diagc,dummy2,fcac,h2ac,
      &                               'return CIdia',wrk(kw1),lw1,
      &                               iprdia)
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
           write(lupri,*) ' after diag run: hdiag'
           call wrtmatmn(diagc,1,nconf,1,nconf,lupri)
+#undef LUCI_DEBUG
 #endif
       else if(ci_program .eq. 'SIRIUS-CI')then
         KFIJ  = 1
@@ -1201,7 +1202,7 @@ C        .. change from CSf basis to determinant basis
      &                                   .false., ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                   .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
           write(lupri,*) ' before sigma vec run: c'
           call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
