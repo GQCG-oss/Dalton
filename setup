@@ -310,7 +310,7 @@ def print_build_help(build_path):
 def save_setup_command(argv, build_path):
     file_name = os.path.join(build_path, 'setup_command')
     f = open(file_name, 'w')
-    f.write(" ".join(sys.argv[:]))
+    f.write(" ".join(sys.argv[:])+"\n")
     f.close()
 
 def setup_build_path(build_path, only_show_command):
