@@ -15,7 +15,7 @@ module polarizable_embedding
     intrinsic :: allocated, present, min, minval, max, maxval, size, cpu_time
 
     public :: pe_dalton_input, pe_read_potential, pe_master
-    public :: pe_save_density, pe_intmol_twoints, pe_repulsion
+    public :: pe_save_density, pe_twoints
 #if defined(VAR_MPI)
     public :: pe_mpi
 #endif
@@ -33,7 +33,7 @@ module polarizable_embedding
     logical, public, save :: pe_twoint = .false.
     logical, public, save :: pe_repuls = .false.
     logical, public, save :: pe_savden = .false.
-    logical, public, save :: pe_fd = .false.
+    logical, public, save :: pe_pd = .false.
     logical, save :: pe_timing = .false.
 
     ! calculation type
@@ -62,6 +62,7 @@ module polarizable_embedding
     real(dp), save :: thriter = 1.0d-8
     real(dp), save :: damp = 2.1304d0
     real(dp), save :: gauss_factor = 1.0d0
+    real(dp), save :: rep_factor = 1.0d0
     real(dp), save :: Rmin = 2.2d0
     character(len=6), save :: border_type = 'REDIST'
     logical, save :: chol = .true.
@@ -147,17 +148,19 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: Rm
 
 
-    ! frozen density fragment info
+    ! polarizable density fragment info
     ! ----------------------------
 
-    ! number of frozen densities
-    integer, public, save :: nfds = 0
-    ! number of nuclei in current frozen density
-    integer, public, save :: fdnucs = 0
+    ! number of polarizable densities
+    integer, public, save :: npds = 0
+    ! number of nuclei in current polarizable density
+    integer, public, save :: pdnucs = 0
     ! nuclear charges
-    real(dp), dimension(:,:), allocatable, save :: Zfd
+    real(dp), dimension(:,:), allocatable, save :: Zpd
     ! nuclear coordinates
-    real(dp), dimension(:,:), allocatable, save :: Rfd
+    real(dp), dimension(:,:), allocatable, save :: Rpd
+    ! energy contributions
+    real(dp), dimension(:,:), allocatable, public, save :: Epd
 
 
     ! MEP stuff
@@ -189,7 +192,7 @@ module polarizable_embedding
 ! better solution for lmul and lpol
 ! use allocate/deallocate where possible?
 ! insert quit if symmetry or QM3, QMMM etc.
-! find better solution for electric field calculation from frozen densities
+! find better solution for electric field calculation from polarizable densities
 ! higher order polarizabilities
 ! write list of publications which should be cited
 ! write output related to FDs
@@ -277,19 +280,25 @@ subroutine pe_dalton_input(word, luinp, lupri)
             pe_gauss = .true.
         ! calculate intermolecular two-electron integrals
         else if (trim(option(2:)) == 'TWOINT') then
-            read(luinp,*) fdnucs
+            read(luinp,*) pdnucs
             pe_twoint = .true.
         ! save density matrix
         else if (trim(option(2:)) == 'SAVDEN') then
             pe_savden = .true.
         ! get fock matrix for repulsion potential
         else if (trim(option(2:)) == 'REPULS') then
+            read(luinp,*) option
+            backspace(luinp)
+            if (option(1:1) /= '.' .and. option(1:1) /= '*'&
+               &.and. option(1:1) /= '!') then
+                read(luinp,*) rep_factor
+            end if
             pe_repuls = .true.
-        ! electrostatics from frozen densities
-        else if (trim(option(2:)) == 'FD') then
-            ! number of frozen densities
-            read(luinp,*) nfds
-            pe_fd = .true.
+        ! electrostatics from polarizable densities
+        else if (trim(option(2:)) == 'PD') then
+            ! number of polarizable densities
+            read(luinp,*) npds
+            pe_pd = .true.
         ! evaluate molecular electrostatic potential
         else if (trim(option(2:)) == 'MEP') then
             read(luinp,*) option
@@ -403,7 +412,7 @@ subroutine pe_read_potential(coords, charges)
     else
         if (pe_savden) then
             return
-        else if (pe_fd) then
+        else if (pe_pd) then
             goto 101
         else if (pe_mep) then
             goto 101
@@ -564,10 +573,17 @@ subroutine pe_read_potential(coords, charges)
                                   & used.'
         end if
     end if
-    if (pe_fd) then
-        write(luout,'(/4x,a,i4)') 'Number of frozen densities:', nfds
+    if (pe_pd) then
+        write(luout,'(/4x,a,i4)') 'Number of polarizable densities:', npds
+        if (pe_repuls) then
+            write(luout,'(/4x,a)') 'Using repulsion operator for PDs.'
+            write(luout,'(4x,a,f4.2)') 'Repulsion scaling factor: ',&
+                                       rep_factor
+        end if
         if (pe_gauss) then
-            write(luout,'(/4x,a,f4.2)') 'Using Gaussian charges for FDs.'
+            write(luout,'(/4x,a,f4.2)') 'Using Gaussian charges for PDs.'
+            write(luout,'(4x,a,f4.2)') 'Gaussian scaling factor: ',&
+                                       gauss_factor
         end if
     end if
 
@@ -1090,7 +1106,7 @@ subroutine pe_sync()
         if (myid /= 0) allocate(zeroalphas(nsites(ncores-1)))
         call mpi_bcast(zeroalphas, nsites(ncores-1), MPI_LOGICAL,&
                       &0, MPI_COMM_WORLD, ierr)
-        call mpi_bcast(pe_fd, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(pe_pd, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(pe_nomb, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(pe_iter, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(pe_damp, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
@@ -1621,15 +1637,18 @@ subroutine pe_fock(denmats, fckmats, Epe)
     logical :: es = .false.
     logical :: pol = .false.
 
-    if ((mulorder >= 0) .or. pe_fd) es = .true.
+    if ((mulorder >= 0) .or. pe_pd) es = .true.
     if (lpol(1)) pol = .true.
 
     if (allocated(Ees)) deallocate(Ees)
     if (allocated(Epol)) deallocate(Epol)
-    allocate(Ees(0:6,ndens))
-    allocate(Epol(4,ndens))
+    if (allocated(Epd)) deallocate(Epd)
+    allocate(Ees(0:5,ndens))
+    allocate(Epol(3,ndens))
+    allocate(Epd(3,ndens))
     Ees = 0.0d0
     Epol = 0.0d0
+    Epd = 0.0d0
 
     if (fock) fckmats = 0.0d0
 
@@ -1644,7 +1663,7 @@ subroutine pe_fock(denmats, fckmats, Epe)
     if (fock) then
         Epe = 0.0d0
         do i = 1, ndens
-            Epe(i) = sum(Ees(:,i)) + sum(Epol(:,i))
+            Epe(i) = sum(Ees(:,i)) + sum(Epol(:,i)) + sum(Epd(:,i))
         end do
     end if
 
@@ -1755,14 +1774,14 @@ subroutine pe_electrostatic(denmats, fckmats)
             Esave = Esave + Enuc
         end if
         if (myid == 0) then
-            if (pe_fd) then
+            if (pe_pd) then
                 if (fock) then
-                    call es_frozen_densities(denmats, Eel, Enuc, fckmats)
+                    call es_polarizable_densities(denmats, Eel, Enuc, fckmats)
                 else if (energy) then
-                    call es_frozen_densities(denmats, Eel, Enuc)
+                    call es_polarizable_densities(denmats, Eel, Enuc)
                 end if
                 do i = 1, ndens
-                    Ees(6,i) = Ees(6,i) + Eel(i) + Enuc
+                    Epd(1,i) = Epd(1,i) + Eel(i) + Enuc
                 end do
                 Esave = Esave + Enuc
             end if
@@ -1809,7 +1828,7 @@ end subroutine pe_electrostatic
 
 !------------------------------------------------------------------------------
 
-subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
+subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
 
     real(dp), dimension(:), intent(in) :: denmats
     real(dp), dimension(:), intent(out) :: Eel
@@ -1823,14 +1842,14 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
     real(dp), dimension(1) :: Tfm
     real(dp), dimension(3) :: Rfm
     real(dp), dimension(3*npols) :: temp
-    real(dp), dimension(nnbas) :: fd_fock, rep_fock
-    real(dp), dimension(nnbas,1) :: Zfd_ints
+    real(dp), dimension(nnbas) :: pd_fckmat, pd_repmat
+    real(dp), dimension(nnbas,1) :: Zpd_ints
     character(len=99) :: ci
     character(len=99) :: filename
 
     Eel = 0.0d0; Enuc = 0.0d0
 
-    do i = 1, nfds
+    do i = 1, npds
         Eee = 0.0d0; Een = 0.0d0; Ene = 0.0d0; Enn = 0.0d0
         write(ci,*) i
         ci = adjustl(ci)
@@ -1839,39 +1858,44 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         rewind(lufck)
         read(lufck) temp
         read(lufck) Ene
-        read(lufck) fd_fock
-        read(lufck) rep_fock
-        read(lufck) fdnucs
-        allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
-        read(lufck) Rfd, Zfd
+        read(lufck) pd_fckmat
+        read(lufck) pd_repmat
+        read(lufck) pdnucs
+        allocate(Rpd(3,pdnucs), Zpd(1,pdnucs))
+        read(lufck) Rpd, Zpd
         close(lufck)
 
         do j = 1, ndens
             l = (j - 1) * nnbas + 1
             m = j * nnbas
-            if (fock) fckmats(l:m) = fckmats(l:m) + fd_fock
-            Eee(j) = dot(denmats(l:m), fd_fock)
+            if (fock) fckmats(l:m) = fckmats(l:m) + pd_fckmat
+            Eee(j) = dot(denmats(l:m), pd_fckmat)
+            if (pe_repuls) then
+                if (fock) fckmats(l:m) = fckmats(l:m) - rep_factor * pd_repmat
+                Epd(3,j) = dot(denmats(l:m), - rep_factor * pd_repmat)
+            end if
         end do
 
-        do j = 1, fdnucs
-            gauss = (8.0d0  * gauss_factor) / ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
+        do j = 1, pdnucs
+            gauss = (8.0d0  * gauss_factor) /&
+                    ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
             do k = 1, qmnucs
-                Rfm = Rm(:,k) - Rfd(:,j)
+                Rfm = Rm(:,k) - Rpd(:,j)
                 call Tk_tensor(Tfm, Rfm)
-                Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
+                Enn = Enn + Zm(1,k) * Zpd(1,j) * Tfm(1)
             end do
-            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j), pe_gauss, gauss) 
-            Zfd_ints = Zfd(1,j) * Zfd_ints
-!            call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
+            call Tk_integrals(Zpd_ints, nnbas, 1, Rpd(:,j), pe_gauss, gauss) 
+            Zpd_ints = Zpd(1,j) * Zpd_ints
+!            call Mk_integrals(Zpd_ints, Rpd(:,j), Zpd(:,j))
             do m = 1, ndens
                 n = (m - 1) * nnbas + 1
                 o = m * nnbas
-                Een(m) = Een(m) + dot(denmats(n:o), Zfd_ints(:,1))
-                if (fock) fckmats(n:o) = fckmats(n:o) + Zfd_ints(:,1)
+                Een(m) = Een(m) + dot(denmats(n:o), Zpd_ints(:,1))
+                if (fock) fckmats(n:o) = fckmats(n:o) + Zpd_ints(:,1)
             end do
         end do
 
-        deallocate(Rfd, Zfd)
+        deallocate(Rpd, Zpd)
 
         Enuc = Enuc + Ene + Enn
         do j = 1, ndens
@@ -1879,7 +1903,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
         end do
     end do
 
-end subroutine es_frozen_densities
+end subroutine es_polarizable_densities
 
 !------------------------------------------------------------------------------
 
@@ -1958,7 +1982,7 @@ subroutine pe_polarization(denmats, fckmats)
     integer :: site, ndist, nrest
     integer :: i, j, k, l, m
     logical :: skip
-    real(dp), dimension(3*npols) :: Fnucs, Fmuls, Ffd
+    real(dp), dimension(3*npols) :: Fnucs, Fmuls, Fpd
     real(dp), dimension(3*npols,ndens) :: M1inds, Fels, Ftots
     real(dp), dimension(:,:), allocatable :: Fel_ints
 
@@ -1972,13 +1996,13 @@ subroutine pe_polarization(denmats, fckmats)
         call nuclear_fields(Fnucs)
         call multipole_fields(Fmuls)
         if (myid == 0) then
-            if (pe_fd) then
-                call frozen_density_field(Ffd)
+            if (pe_pd) then
+                call polarizable_density_field(Fpd)
             else
-                Ffd = 0.0d0
+                Fpd = 0.0d0
             end if
             do i = 1, ndens
-                Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Ffd
+                Ftots(:,i) = Fels(:,i) + Fnucs + Fmuls + Fpd
             end do
         end if
         call induced_dipoles(M1inds, Ftots)
@@ -1987,7 +2011,7 @@ subroutine pe_polarization(denmats, fckmats)
                 Epol(1,i) = - 0.5d0 * dot(M1inds(:,i), Fels(:,i))
                 Epol(2,i) = - 0.5d0 * dot(M1inds(:,i), Fnucs)
                 Epol(3,i) = - 0.5d0 * dot(M1inds(:,i), Fmuls)
-                if (pe_fd) Epol(4,i) = - 0.5d0 * dot(M1inds(:,i), Ffd)
+                if (pe_pd) Epd(2,i) = - 0.5d0 * dot(M1inds(:,i), Fpd)
             end do
         end if
     end if
@@ -2453,9 +2477,9 @@ end subroutine nuclear_fields
 
 !------------------------------------------------------------------------------
 
-subroutine frozen_density_field(Ffd)
+subroutine polarizable_density_field(Fpd)
 
-    real(dp), dimension(:), intent(out) :: Ffd
+    real(dp), dimension(:), intent(out) :: Fpd
 
     integer :: i
     integer :: lu
@@ -2463,9 +2487,9 @@ subroutine frozen_density_field(Ffd)
     character(len=80) :: filename
     real(dp), dimension(3*npols) :: Ftmp
 
-    Ffd = 0.0d0
+    Fpd = 0.0d0
 
-    do i = 1, nfds
+    do i = 1, npds
         Ftmp = 0.0d0
         write(ci,*) i
         ci = adjustl(ci)
@@ -2474,10 +2498,10 @@ subroutine frozen_density_field(Ffd)
         rewind(lu)
         read(lu) Ftmp
         close(lu)
-        Ffd = Ffd + Ftmp
+        Fpd = Fpd + Ftmp
     end do
 
-end subroutine frozen_density_field
+end subroutine polarizable_density_field
 
 !------------------------------------------------------------------------------
 
@@ -2945,12 +2969,15 @@ end function factorial
 
 !------------------------------------------------------------------------------
 
-subroutine pe_save_density(density, nbas, nocc, coords, charges, dalwrk)
+subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb,&
+                           coords, charges, dalwrk)
 
     external :: Tk_integrals
 
-    integer, intent(in) :: nbas, nocc
-    real(dp), dimension(:), intent(in) :: density
+    integer, intent(in) :: nbas, nocc, norb
+    real(dp), dimension(:), intent(in) :: denmat
+    real(dp), dimension(:), intent(in) :: mofckmat
+    real(dp), dimension(nbas,norb), intent(in) :: cmo
     real(dp), dimension(:), intent(in) :: charges
     real(dp), dimension(:,:), intent(in) :: coords
     real(dp), dimension(:), target, intent(inout) :: dalwrk
@@ -2962,17 +2989,18 @@ subroutine pe_save_density(density, nbas, nocc, coords, charges, dalwrk)
     character(len=2) :: auoraa
     real(dp) :: Ene
     real(dp), dimension(:,:), allocatable :: Rc, Zc
-    real(dp), dimension(:,:), allocatable :: full_density
+    real(dp), dimension(:,:), allocatable :: full_denmat
     real(dp), dimension(:,:), allocatable :: T0_ints
-    real(dp), dimension(:), allocatable :: Ffd
+    real(dp), dimension(:), allocatable :: Fpd
     real(dp), dimension(:,:), allocatable :: Ftmp
+    real(dp), dimension(:), allocatable :: Emo
 
     work => dalwrk
 
     ndens = 1
     nnbas = nbas * (nbas + 1) / 2
 
-    ! frozen density nuclear charges and coordinates
+    ! polarizable density nuclear charges and coordinates
     qmnucs = size(charges)
     allocate(Rm(3,qmnucs), Zm(1,qmnucs))
     Rm = coords
@@ -2993,26 +3021,26 @@ subroutine pe_save_density(density, nbas, nocc, coords, charges, dalwrk)
     end if
 
     ! unfold density matrix
-    allocate(full_density(nbas,nbas)); full_density = 0.0d0
+    allocate(full_denmat(nbas,nbas)); full_denmat = 0.0d0
     l = 1
     do i = 1, nbas
         do j = 1, i
             if (j == i) then
-                full_density(i,j) = density(l)
+                full_denmat(i,j) = denmat(l)
             else
-                full_density(i,j) = 0.5d0 * density(l)
-                full_density(j,i) = 0.5d0 * density(l)
+                full_denmat(i,j) = 0.5d0 * denmat(l)
+                full_denmat(j,i) = 0.5d0 * denmat(l)
             end if
             l = l + 1
         end do
     end do
 
-    ! get electric field from frozen density at polarizable sites
-    allocate(Ftmp(3*npols,1), Ffd(3*npols)); Ftmp = 0.0d0
-    call electron_fields(Ftmp, density)
-    Ffd = Ftmp(:,1)
+    ! get electric field from fragment density at polarizable sites
+    allocate(Ftmp(3*npols,1), Fpd(3*npols)); Ftmp = 0.0d0
+    call electron_fields(Ftmp, denmat)
+    Fpd = Ftmp(:,1)
     call nuclear_fields(Ftmp(:,1))
-    Ffd = Ffd + Ftmp(:,1)
+    Fpd = Fpd + Ftmp(:,1)
 
     ! calculate nuclear - electron energy contribution
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
@@ -3020,9 +3048,14 @@ subroutine pe_save_density(density, nbas, nocc, coords, charges, dalwrk)
     do i = 1, corenucs
         call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i), .false., 0.0d0)
         T0_ints = Zc(1,i) * T0_ints
-        Ene = Ene + dot(density, T0_ints(:,1))
+        Ene = Ene + dot(denmat, T0_ints(:,1))
     end do
     deallocate(T0_ints)
+
+    allocate(Emo(nocc))
+    do i = 1, nocc
+        Emo(i) = mofckmat(i*(i+1)/2)
+    end do
 
     ! save density, energy and field for subsequent calculations
     call openfile('pe_density.bin', luden, 'new', 'unformatted')
@@ -3031,165 +3064,72 @@ subroutine pe_save_density(density, nbas, nocc, coords, charges, dalwrk)
     write(luden) qmnucs
     write(luden) Rm, Zm
     write(luden) npols
-    write(luden) Ffd
+    write(luden) Fpd
     write(luden) nbas, nocc
-    write(luden) full_density
+    write(luden) full_denmat
+    write(luden) cmo(:,1:nocc)
+    write(luden) Emo
     close(luden)
 
-    deallocate(full_density, Ffd, Ftmp)
+    deallocate(full_denmat, Fpd, Ftmp, Emo)
 
 end subroutine pe_save_density
 
 !------------------------------------------------------------------------------
 
-subroutine pe_intmol_twoints(nbas, nocc, dalwrk)
+subroutine pe_twoints(nbas, nocc, norb, dalwrk)
 
-    external :: sirfck
+    external :: sirfck, rdonel, dsptge
 
-    integer, intent(in) :: nbas, nocc
+    integer, intent(in) :: nbas, nocc, norb
     real(dp), dimension(:), target, intent(inout) :: dalwrk
 
-    integer :: i, j, k, l
+    integer :: i, j, k, l, m
     integer :: fbas, focc, cbas, cocc
     integer :: luden, lufck
     integer, dimension(1) :: isymdm, ifctyp
     real(dp) :: Ene
-    real(dp), dimension(:), allocatable :: core_fock, Ffd
-    real(dp), dimension(:,:), allocatable :: frozen_density, full_density
-    real(dp), dimension(:,:), allocatable :: full_fock
-
-    work => dalwrk
-
-    call openfile('pe_density.bin', luden, 'old', 'unformatted')
-    rewind(luden)
-    read(luden) Ene
-    read(luden) fdnucs
-    allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
-    read(luden) Rfd, Zfd
-    read(luden) npols
-    allocate(Ffd(3*npols))
-    read(luden) Ffd
-    read(luden) fbas, focc
-    allocate(frozen_density(fbas, fbas))
-    read(luden) frozen_density
-    close(luden)
-
-    cbas = nbas - fbas
-
-    ! density matrix with frozen density in first block
-    allocate(full_density(nbas,nbas)); full_density = 0.0d0
-    full_density(1:fbas,1:fbas) = frozen_density
-    deallocate(frozen_density)
-
-    ! get two-electron part of Fock matrix using resized density matrix
-    allocate(full_fock(nbas,nbas)); full_fock = 0.0d0
-!     IFCTYP = +/-XY
-!       X indicates symmetry about diagonal
-!         X = 0 No symmetry
-!         X = 1 Symmetric
-!         X = 2 Anti-symmetric
-!       Y indicates contributions
-!         Y = 0 no contribution !
-!         Y = 1 Coulomb
-!         Y = 2 Exchange
-!         Y = 3 Coulomb + Exchange
-!       + sign: alpha + beta matrix (singlet)
-!       - sign: alpha - beta matrix (triplet)
-!     sirfck(fock, density, ?, isymdm, ifctyp, direct, work, nwrk)
-    isymdm = 1
-    ifctyp = 11
-    call sirfck(full_fock, full_density, 1, isymdm, ifctyp, .true.,&
-                work, size(work))
-    deallocate(full_density)
-
-    ! extract upper triangle part of full Fock matrix corresponding to
-    ! core fragment
-    allocate(core_fock(cbas*(cbas+1)/2)); core_fock = 0.0d0
-    l = 1
-    do i = fbas + 1, nbas
-        do j = fbas + 1, i
-            core_fock(l) = full_fock(j,i)
-            l = l + 1
-        end do
-    end do
-    deallocate(full_fock)
-
-    ! save core Fock matrix
-    call openfile('pe_fock.bin', lufck, 'new', 'unformatted')
-    rewind(lufck)
-    write(lufck) Ffd
-    write(lufck) Ene
-    write(lufck) core_fock
-    write(lufck) fdnucs
-    write(lufck) Rfd, Zfd
-    close(lufck)
-
-    deallocate(core_fock, Rfd, Zfd, Ffd)
-
-end subroutine pe_intmol_twoints
-
-!------------------------------------------------------------------------------
-
-subroutine pe_repulsion(fock, nbas, nocc, dalwrk)
-
-    external :: sirfck
-
-    real(dp), dimension(:), intent(in) :: fock
-    integer, intent(in) :: nbas, nocc
-    real(dp), dimension(:), target, intent(inout) :: dalwrk
-
-    integer :: i, j, k, l
-    integer :: fbas, focc, cbas, cocc
-    integer :: luden, lufck
-    integer, dimension(1) :: isymdm, ifctyp
-    real(dp) :: Ene
-    real(dp), dimension(:), allocatable :: core_fock, Ffd
-    real(dp), dimension(:,:), allocatable :: frozen_density, full_density
-    real(dp), dimension(:,:), allocatable :: full_fock
-
-    external :: rdonel, dsptge
-    real(dp), dimension(:), allocatable :: overlap, rep_fock
+    real(dp), dimension(:), allocatable :: core_fckmat, Fpd
+    real(dp), dimension(:,:), allocatable :: frag_denmat, full_denmat
+    real(dp), dimension(:,:), allocatable :: full_fckmat
+    real(dp), dimension(:), allocatable :: overlap, repmat
     real(dp), dimension(:,:), allocatable :: full_overlap
-    real(dp), dimension(:,:), allocatable :: intmol_overlap
     real(dp), dimension(:,:), allocatable :: full_rep
+    real(dp), dimension(:), allocatable :: Emo
+    real(dp), dimension(:,:), allocatable :: cmo
 
     work => dalwrk
 
     call openfile('pe_density.bin', luden, 'old', 'unformatted')
     rewind(luden)
     read(luden) Ene
-    read(luden) fdnucs
-    allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
-    read(luden) Rfd, Zfd
+    read(luden) pdnucs
+    allocate(Rpd(3,pdnucs), Zpd(1,pdnucs))
+    read(luden) Rpd, Zpd
     read(luden) npols
-    allocate(Ffd(3*npols))
-    read(luden) Ffd
+    allocate(Fpd(3*npols))
+    read(luden) Fpd
     read(luden) fbas, focc
-    allocate(frozen_density(fbas, fbas))
-    read(luden) frozen_density
+    allocate(frag_denmat(fbas, fbas))
+    read(luden) frag_denmat
+    allocate(cmo(fbas,focc))
+    read(luden) cmo
+    allocate(Emo(focc))
+    read(luden) Emo
     close(luden)
 
     cbas = nbas - fbas
     cocc = nocc - focc
 
-    allocate(overlap(nbas*(nbas+1)/2))
-    allocate(full_overlap(nbas,nbas))
-    allocate(intmol_overlap(cbas,cbas))
-    call rdonel('OVERLAP', .true., overlap, nbas*(nbas+1)/2)
-    call dsptge(nbas, overlap, full_overlap)
-    deallocate(overlap)
-    call gemm(full_overlap(fbas+1:nbas,1:fbas),&
-             &full_overlap(1:fbas,fbas+1:nbas),&
-             &intmol_overlap)
-    deallocate(full_overlap)
-
-    ! density matrix with frozen density in first block
-    allocate(full_density(nbas,nbas)); full_density = 0.0d0
-    full_density(1:fbas,1:fbas) = frozen_density
-    deallocate(frozen_density)
+    ! full density matrix with fragment density in first block
+    allocate(full_denmat(nbas,nbas))
+    full_denmat = 0.0d0
+    full_denmat(1:fbas,1:fbas) = frag_denmat
+    deallocate(frag_denmat)
 
     ! get two-electron part of Fock matrix using resized density matrix
-    allocate(full_fock(nbas,nbas)); full_fock = 0.0d0
+    allocate(full_fckmat(nbas,nbas))
+    full_fckmat = 0.0d0
 !     IFCTYP = +/-XY
 !       X indicates symmetry about diagonal
 !         X = 0 No symmetry
@@ -3202,61 +3142,70 @@ subroutine pe_repulsion(fock, nbas, nocc, dalwrk)
 !         Y = 3 Coulomb + Exchange
 !       + sign: alpha + beta matrix (singlet)
 !       - sign: alpha - beta matrix (triplet)
-!     sirfck(fock, density, ?, isymdm, ifctyp, direct, work, nwrk)
+!     sirfck(fckmat, denmat, ?, isymdm, ifctyp, direct, work, nwrk)
     isymdm = 1
     ifctyp = 11
-    call sirfck(full_fock, full_density, 1, isymdm, ifctyp, .true.,&
+    call sirfck(full_fckmat, full_denmat, 1, isymdm, ifctyp, .false.,&
                 work, size(work))
-    deallocate(full_density)
+    deallocate(full_denmat)
 
     ! extract upper triangle part of full Fock matrix corresponding to
     ! core fragment
-    allocate(core_fock(cbas*(cbas+1)/2))
+    allocate(core_fckmat(cbas*(cbas+1)/2))
     l = 1
     do j = fbas + 1, nbas
         do i = fbas + 1, j
-            core_fock(l) = full_fock(i,j)
+            core_fckmat(l) = full_fckmat(i,j)
             l = l + 1
         end do
     end do
+
+    deallocate(full_fckmat)
 
     ! Repulsion stuff from here
-    call dsptge(nbas, fock, full_fock)
+    allocate(overlap(nbas*(nbas+1)/2))
+    allocate(full_overlap(nbas,nbas))
+    call rdonel('OVERLAP', .true., overlap, nbas*(nbas+1)/2)
+    call dsptge(nbas, overlap, full_overlap)
+    deallocate(overlap)
+!    call gemm(full_overlap(fbas+1:nbas,1:fbas),&
+!             &full_overlap(1:fbas,fbas+1:nbas),&
+!             &intmol_overlap)
+
+    do i = 1, focc
+        cmo(:,i) = Emo(i) * cmo(:,i)
+    end do
     allocate(full_rep(cbas,cbas))
     full_rep = 0.0d0
-    do i = 1, cbas
-        do j = 1, cbas
-            do k = 1, focc
-                full_rep(i,j) = full_rep(i,j) - intmol_overlap(i,j) * full_fock(k,k)
-            end do
-        end do
-    end do
+    full_rep = - 2.0d0 * matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), cmo), matmul(transpose(cmo), full_overlap(1:fbas,fbas+1:nbas)))
 
-    deallocate(full_fock)
+    deallocate(full_overlap, cmo)
 
-    allocate(rep_fock(cbas*(cbas+1)/2))
+    allocate(repmat(cbas*(cbas+1)/2))
     l = 1
-    do j = fbas + 1, nbas
-        do i = fbas + 1, j
-            rep_fock(l) = full_rep(i,j)
+    do j = 1, cbas
+        do i = 1, j
+            repmat(l) = full_rep(i,j)
             l = l + 1
         end do
     end do
+
+    deallocate(full_rep)
 
     ! save core Fock matrix
     call openfile('pe_fock.bin', lufck, 'new', 'unformatted')
     rewind(lufck)
-    write(lufck) Ffd
+    write(lufck) Fpd
     write(lufck) Ene
-    write(lufck) core_fock
-    write(lufck) rep_fock
-    write(lufck) fdnucs
-    write(lufck) Rfd, Zfd
+    write(lufck) core_fckmat
+    write(lufck) repmat
+    write(lufck) pdnucs
+    write(lufck) Rpd, Zpd
     close(lufck)
 
-    deallocate(core_fock, Rfd, Zfd, Ffd)
+    deallocate(core_fckmat, repmat, Rpd, Zpd, Fpd)
 
-end subroutine pe_repulsion
+end subroutine pe_twoints
 
 !------------------------------------------------------------------------------
 
