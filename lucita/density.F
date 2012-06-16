@@ -1257,6 +1257,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
 * Jeppe Olsen, Fall of 96
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *. General input
       INTEGER ADSXA(MXPOBS,2*MXPOBS),SXSTST(NSMSX,NSMST),
      &        STSTSX(NSMST,NSMST), SXDXSX(2*MXPOBS,4*MXPOBS)
@@ -1302,10 +1303,11 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
         JTYP = JTP(IDXTP)
         KTYP = KTP(IDXTP)
         LTYP = LTP(IDXTP)
-        IF(NTEST.GE.1000)
-     &  write(6,*) ' ITYP JTYP KTYP LTYP ', ITYP,JTYP,KTYP,LTYP
+!       IF(NTEST.GE.1000)
+!       write(lupri,*) ' ITYP JTYP KTYP LTYP ', ITYP,JTYP,KTYP,LTYP
         DO 1950 IKOBSM = 1, NSMOB
           JLOBSM = SXDXSX(IKOBSM,IDXSM)
+           
           IF(JLOBSM.EQ.0) GOTO 1950
 *. types + symmetries defined => K strings are defined
           KFRST = 1
@@ -1326,6 +1328,8 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
           JOFF = IOBPTS(JTYP,JSM)
           KOFF = IOBPTS(KTYP,KSM)
           LOFF = IOBPTS(LTYP,LSM)
+!         write(lupri,'(a,6i6)') 'ni,nk,nj,nl,ioff,joff',
+!    &    ni,nk,nj,nl,ioff,joff
 *
           IF(IOFF.LT.KOFF) GOTO 1930
           IF(JOFF.LT.LOFF) GOTO 1930
@@ -1372,6 +1376,9 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
                   I12 = 1
                   K12 = 1
                   IONE = 1
+!                 write(lupri,*) 'ada round 1',nj,nl
+!                 write(lupri,'(a,12i4)') 'input to adast_gas',
+!    &            ione,JSM,JTYP,NJ,LSM,LTYP,NL,I12,K12,ICCTP,ICCSM,IGRP
                   CALL ADADST_GAS(IONE,JSM,JTYP,NJ,
      &                            IONE,LSM,LTYP,NL,
      &                        ICCTP,ICCSM,IGRP,
@@ -1380,6 +1387,8 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
                   JFRST = 0
                   KFRST = 0
 *
+!                                write(lupri,*) 'this nkbtc',nkbtc
+!                 IF(NKBTC.EQ.0) write(lupri,*) 'skip nkbtc',nkbtc
 !                 CALL QEXIT('ADADS')
                   IF(NKBTC.EQ.0) GOTO 1930
 *. Loop over jl in TS classes
@@ -1434,6 +1443,7 @@ CT                CALL QENTER('ADADS')
                   IONE = 1
                   IF(IFRST.EQ.1) KFRST = 1
                   ONE = 1.0D0
+!                 write(lupri,*) 'ada round 2',ni,nk
                   CALL ADADST_GAS(IONE,ISM,ITYP,NI,
      &                            IONE,KSM,KTYP,NK,
      &                        ISCTP,ISCSM,IGRP,

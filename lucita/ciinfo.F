@@ -1434,9 +1434,11 @@ C
 *. Input
       INTEGER ITPOP(*),IACOP(*)
 *. Number of active spaces  (NGAS )
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "strbas.inc"
+#include "gasstr.inc"
 #include "wrkspc.inc"
 *. Local scratch
       DIMENSION IEL(MXPNGAS)

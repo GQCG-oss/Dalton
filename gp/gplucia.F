@@ -1041,17 +1041,18 @@ COLD    END IF
 * only combinations with type(I) .ge. type(K) and type(J).ge.type(L)
 * are included
 *
+#include "priunit.h"
       INTEGER IL(NOBTP),IR(NOBTP)
       INTEGER ITP(*),JTP(*),KTP(*),LTP(*)
 *
-      NTEST = 00
+      NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' DXTYP_GAS in action '
-        WRITE(6,*) ' ===================='
-        WRITE(6,*) ' Occupation of left string '
-        CALL IWRTMA(IL,1,NOBTP,1,NOBTP)
-        WRITE(6,*) ' Occupation of right string '
-        CALL IWRTMA(IR,1,NOBTP,1,NOBTP)
+        WRITE(lupri,*) ' DXTYP_GAS in action '
+        WRITE(lupri,*) ' ===================='
+        WRITE(lupri,*) ' Occupation of left string '
+        CALL IWRTMAMN(IL,1,NOBTP,1,NOBTP,lupri)
+        WRITE(lupri,*) ' Occupation of right string '
+        CALL IWRTMAMN(IR,1,NOBTP,1,NOBTP,lupri)
       END IF
 *
 *. Number of differing occupations
@@ -1147,13 +1148,13 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
       END IF
 *
       IF(NTEST.NE.0) THEN
-        WRITE(6,'(A,I4)')
+        WRITE(lupri,'(A,I4)')
      &  ' Number of connecting double excitations ', NDXTP
         IF(NDXTP.NE.0) THEN
-          WRITE(6,*) '  ITYP KTYP LTYP JTYP '
-          WRITE(6,*) '  ===================='
+          WRITE(lupri,*) '  ITYP KTYP LTYP JTYP '
+          WRITE(lupri,*) '  ===================='
           DO  IDX = 1,NDXTP
-            WRITE(6,'(1X,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
+            WRITE(lupri,'(1X,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
           END DO
         END IF
       END IF
@@ -2760,6 +2761,7 @@ C 100     CONTINUE
 * Jeppe Olsen, April 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *. General input
       INTEGER ISPGPAN(NGAS,*),ISPGPCR(NGAS,*)
 *. Specific input
@@ -2768,9 +2770,13 @@ C 100     CONTINUE
       INTEGER OUTSPGP
 *
       OUTSPGP = INSPGP
+!     write(lupri,'(a,4i4)') 'NGAS, NOP,IACOP(IOP),INSPGP',
+!    &NGAS, NOP,IACOP(NOP),INSPGP
       DO IOP = 1, NOP
-        IF(IACOP(IOP).EQ.1) THEN
+        IF(IACOP(IOP) == 1) THEN
+!         write(lupri,*) 'OUTSPGP befor',OUTSPGP
           OUTSPGP = ISPGPAN(ITPOP(IOP),OUTSPGP)
+!         write(lupri,*) 'OUTSPGP after',OUTSPGP
         ELSE
           OUTSPGP = ISPGPCR(ITPOP(IOP),OUTSPGP)
         END IF
@@ -3993,10 +3999,13 @@ C
 * Jeppe Olsen, April 1, 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *. General input : Number of electrons in each gasspace
       INTEGER INSPGRP(MXPNGAS,*),IOUTSPGRP(MXPNGAS,*)
 *. Output
       INTEGER ISPGRP_AC(NGAS,*)
+!     scratch
+      integer :: iamokay(1)
 *. Check first that supergroups + IAC information is consistent
       NELIN = 0
       NELOUT = 0
@@ -4021,12 +4030,13 @@ C
 *. Find corresponding supergroup
           ITO = 0
           DO JSPGRP = IBASEOUT, IBASEOUT+NOUTSPGRP-1
-            IAMOKAY = 1
+            call isetvc(iamokay,1,1)
             DO JGAS = 1, NGAS
-              IF( INSPGRP(JGAS,ISPGRP).NE.IOUTSPGRP(JGAS,JSPGRP))
-     &        IAMOKAY=0
+              IF(INSPGRP(JGAS,ISPGRP) /= IOUTSPGRP(JGAS,JSPGRP))then
+                call isetvc(iamokay,0,1)
+              END IF
             END DO
-            IF(IAMOKAY.EQ.1) ITO = JSPGRP
+            if(iamokay(1) == 1) ITO = JSPGRP
           END DO
           ISPGRP_AC(IGAS,ISPGRP) = ITO
 *. And clean up
@@ -4038,23 +4048,25 @@ C
         END DO
       END DO
 *
-      NTEST = 000
+!     NTEST = 1000 ! debug
+      NTEST = 0000
       IF(NTEST.GE.1000) THEN
-        WRITE(6,*) ' Input supergroups '
-        CALL IWRTMA(INSPGRP(1,IBASEIN),NGAS,NINSPGRP,
-     &  MXPNGAS,NINSPGRP)
-        WRITE(6,*) ' Output supergroups '
-        CALL IWRTMA(IOUTSPGRP(1,IBASEOUT),NGAS,NOUTSPGRP,
-     &  MXPNGAS,NOUTSPGRP)
+        WRITE(lupri,*) ' Input supergroups '
+        CALL IWRTMAmn(INSPGRP(1,IBASEIN),NGAS,NINSPGRP,
+     &  MXPNGAS,NINSPGRP,lupri)
+        WRITE(lupri,*) ' Output supergroups '
+        CALL IWRTMAmn(IOUTSPGRP(1,IBASEOUT),NGAS,NOUTSPGRP,
+     &  MXPNGAS,NOUTSPGRP,lupri)
       END IF
 *
       IF(NTEST.GE.100) THEN
-       WRITE(6,*) ' Output from SPGP_AC '
-       WRITE(6,*) ' ===================='
-       WRITE(6,*)
-       WRITE(6,*) ' IAC = ', IAC
-       WRITE(6,*) ' Mapping : '
-       CALL IWRTMA(ISPGRP_AC(1,IBASEIN),NGAS,NINSPGRP,NGAS,NINSPGRP)
+       WRITE(lupri,*) ' Output from SPGP_AC '
+       WRITE(lupri,*) ' ===================='
+       WRITE(lupri,*)
+       WRITE(lupri,*) ' IAC = ', IAC
+       WRITE(lupri,*) ' Mapping : '
+       CALL IWRTMAmn(ISPGRP_AC(1,IBASEIN),NGAS,NINSPGRP,NGAS,NINSPGRP,
+     &               lupri)
       END IF
 *
       RETURN

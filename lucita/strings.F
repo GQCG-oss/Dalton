@@ -758,6 +758,7 @@ C?            END IF
       INTEGER*8 KLLOC, KLLZ, KLLREO
 !     for addressing of WORK
 #include "mxpdim.inc"
+#include "priunit.h"
 *./BIGGY
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
@@ -781,17 +782,17 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       INTEGER I1(*)
       DIMENSION XI1S(*)
 *
-      NTEST = 00
+      NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*) ' ADAADST_GAS in service '
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*)
-        WRITE(6,*) ' IOB,IOBSM,IOBTP,IAC ', IOB,IOBSM,IOBTP,IAC
-        WRITE(6,*) ' JOB,JOBSM,JOBTP,JAC ', JOB,JOBSM,JOBTP,JAC
-        WRITE(6,*) ' I12, K12 ', I12, K12
-        WRITE(6,*) ' IFRST,KFRST', IFRST,KFRST
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' ====================== '
+        WRITE(lupri,*) ' ADAADST_GAS in service '
+        WRITE(lupri,*) ' ====================== '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' IOB,IOBSM,IOBTP,IAC ', IOB,IOBSM,IOBTP,IAC
+        WRITE(lupri,*) ' JOB,JOBSM,JOBTP,JAC ', JOB,JOBSM,JOBTP,JAC
+        WRITE(lupri,*) ' I12, K12 ', I12, K12
+        WRITE(lupri,*) ' IFRST,KFRST', IFRST,KFRST
       END IF
 *
 *
@@ -1016,6 +1017,7 @@ C     CALL MEMCHK
 
 !     for addressing of WORK
 #include "mxpdim.inc"
+#include "priunit.h"
 *./BIGGY
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
@@ -1038,13 +1040,13 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*) ' ADADST_GAS in service '
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*)
-        WRITE(6,*) ' IOB,IOBSM,IOBTP ', IOB,IOBSM,IOBTP
-        WRITE(6,*) ' JOB,JOBSM,JOBTP ', JOB,JOBSM,JOBTP
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' ====================== '
+        WRITE(lupri,*) ' ADADST_GAS in service '
+        WRITE(lupri,*) ' ====================== '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' IOB,IOBSM,IOBTP ', IOB,IOBSM,IOBTP
+        WRITE(lupri,*) ' JOB,JOBSM,JOBTP ', JOB,JOBSM,JOBTP
       END IF
 *
 C?    IF(SCLFAC.NE.1.0D0) THEN
@@ -1068,11 +1070,28 @@ C?    END IF
 *. Supergroup and symmetry of K strings
 *
       ISPGPABS = IBSPGPFTP(ITP)-1+ISPGP
+!     WRITE(lupri,'(a,6i4)')
+!    & ' ISPGP, ISPGPABS, ITP, IBSPGPFTP(ITP), IOBTP, JOBTP: ',
+!    &   ISPGP, ISPGPABS, ITP, IBSPGPFTP(ITP), IOBTP, JOBTP
+
       CALL NEWTYP(ISPGPABS,1,IOBTP,1,K1SPGPABS)
+
+      IF(K1SPGPABS.EQ.0) THEN
+        NK = 0
+        RETURN
+      END IF
+
       CALL NEWTYP(K1SPGPABS,1,JOBTP,1,KSPGPABS)
+
+!     write(lupri,*) ' KSPGPABS',KSPGPABS
+      IF(KSPGPABS.EQ.0) THEN
+        NK = 0
+        RETURN
+      END IF
+
       CALL SYMCOM(2,0,IOBSM,K1SM,ISM)
       CALL SYMCOM(2,0,JOBSM,KSM,K1SM)
-      IF(NTEST.GE.100) WRITE(6,*)
+      IF(NTEST.GE.100) WRITE(lupri,*)
      & ' K1SM,K1SPGPABS,KSM,KSPGPABS : ',
      &   K1SM,K1SPGPABS,KSM,KSPGPABS
 * In ADADS1_GAS we need : Occupation of KSTRINGS
@@ -2846,7 +2865,7 @@ C?        write(6,*) ' before call to add_str_group '
 !     call LMEMCHK('before KSTINF')
 *. Start of string information
       CALL MEMMAN(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
-      IF(iprint.GE.10)
+      IF(ntest.GE.10)
      &WRITE(lupri,*) ' First word with string information',KSTINF
 *
 *.  Offsets for occupation and reorder array of strings
@@ -4223,7 +4242,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
      &         NSTFGP(JGRP),IEL,NGSOBP,IGSOB,WORK(KZ(JGRP)),
      &         WORK(KSTREO(JGRP)),0,IDUM,IDUM,
      &         WORK(KSTSTM(IGRP,1)),WORK(KSTSTM(IGRP,2)),NACOB,IEC,
-     /         LROW,NTEST)
+     &         LROW,NTEST)
         END IF
       END DO
 *
@@ -4326,38 +4345,41 @@ CMOD &  = MAX(MAX_STR_OC_BLK,NEL*NSTFSMSPGP(ISTSM,ISPGP))
 *
       DO ISTTYP = 1,NSTTYP
 *. Creation map from this type
-        IIEL = NELFTP(ISTTYP)
-*. Type of string with one elec more
-        ISTTYPC = 0
-        DO JSTTYP = 1, NSTTYP
-          IF(MOD(ISTTYP,2).EQ.MOD(JSTTYP,2).AND.
-     &       NELFTP(JSTTYP).EQ.IIEL+1           ) ISTTYPC = JSTTYP
-        END DO
-C?      WRITE(6,*) ' ISTTYP and ISTTYPC ',ISTTYP,ISTTYPC
         IF(NSPGPFTP(ISTTYP).GT.0) THEN
+          IIEL = NELFTP(ISTTYP)
+*. Type of string with one elec more
+          ISTTYPC = 0
+          DO JSTTYP = 1, NSTTYP
+            IF(MOD(ISTTYP,2).EQ.MOD(JSTTYP,2).AND.
+     &         NELFTP(JSTTYP).EQ.IIEL+1           ) ISTTYPC = JSTTYP
+          END DO
+!         WRITE(lupri,*) ' ISTTYP and ISTTYPC ',ISTTYP,ISTTYPC
 *
-        IF(ISTTYPC.GE.1.AND.NSPGPFTP(ISTTYPC).GT.0) THEN
-           CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
-     &                  NELFSPGP(1,1),NSPGPFTP(ISTTYPC),
-     &                  NGAS,MXPNGAS,2,WORK(KSPGPCR),
-     &                  IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPC))
-        ELSE
-        END IF
+          IF(ISTTYPC.GE.1.AND.NSPGPFTP(ISTTYPC).GT.0) THEN
+!           WRITE(lupri,*) ' creation map called'
+            CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
+     &                   NELFSPGP(1,1),NSPGPFTP(ISTTYPC),
+     &                   NGAS,MXPNGAS,2,WORK(KSPGPCR),
+     &                   IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPC))
+          END IF
 *. Annihilation maps
-        ISTTYPA = 0
-        DO JSTTYP = 1, NSTTYP
-          IF(MOD(ISTTYP,2).EQ.MOD(JSTTYP,2).AND.
-     &       NELFTP(JSTTYP).EQ.IIEL-1           ) ISTTYPA = JSTTYP
-        END DO
-C?      WRITE(6,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
-        IF(ISTTYPA.GE.1 .AND.NSPGPFTP(ISTTYPA).GT.0) THEN
-           CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
-     &                  NELFSPGP(1,1),NSPGPFTP(ISTTYPA),
-     &                  NGAS,MXPNGAS,1,WORK(KSPGPAN),
-     &                  IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPA))
-        END IF
+          ISTTYPA = 0
+          DO JSTTYP = 1, NSTTYP
+            IF(MOD(ISTTYP,2).EQ.MOD(JSTTYP,2).AND.
+     &         NELFTP(JSTTYP).EQ.IIEL-1           ) ISTTYPA = JSTTYP
+          END DO
+!         WRITE(lupri,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
+          IF(ISTTYPA.GE.1 .AND.NSPGPFTP(ISTTYPA).GT.0) THEN
+!           WRITE(lupri,*) ' annihilation map called'
+            CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
+     &                   NELFSPGP(1,1),NSPGPFTP(ISTTYPA),
+     &                   NGAS,MXPNGAS,1,WORK(KSPGPAN),
+     &                   IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPA))
+          END IF
         END IF
       END DO
+!     write(lupri,*) 'annihilation map'
+!     call iwrtmamn(WORK(KSPGPAN),1,NGAS*NTSPGP,1,NGAS*NTSPGP,lupri)
 *
       CALL QEXIT('STRIN')
       END
