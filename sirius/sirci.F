@@ -361,9 +361,9 @@ C     CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
 C
 !     set keyword for saving the final vector(s) in SIRSAV (called from CISAVE)
       keywrd = 'CISAVE' 
-      write(lupri,*) ' incoming thrcit ==> ',thrcit
-      thrcit = 1.0d-11
-      write(lupri,*) ' incoming thrcit (updated) ==> ',thrcit
+!     write(lupri,*) ' incoming thrcit ==> ',thrcit
+!     thrcit = 1.0d-11
+!     write(lupri,*) ' incoming thrcit (updated) ==> ',thrcit
 
       IF(CI_PROGRAM .eq. 'LUCITA   ')THEN
 !
