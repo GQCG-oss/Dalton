@@ -459,9 +459,11 @@ contains
       select case(A%push_pull_switch)
         case(1) 
           if(A%my_process_id > 0)then
+            write(lupri,*) 'A%my_process_id ',A%my_process_id, B%total_present_vec, current_offset
             call mpi_reduce(xmat(1+current_offset),mpi_in_place,B%total_present_vec,MPI_REAL8,      &
                             mpi_sum,0,mpi_comm_world,ierr)
           else
+            write(lupri,*) 'A%my_process_id ',A%my_process_id, B%total_present_vec, current_offset
             call mpi_reduce(mpi_in_place,xmat(1+current_offset),B%total_present_vec,MPI_REAL8,      &
                             mpi_sum,0,mpi_comm_world,ierr)
           end if
