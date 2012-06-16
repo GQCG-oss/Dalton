@@ -56,7 +56,7 @@ module gasci_input_cfg
   integer, public :: gasci_input_restart_ci           =  0
   integer, public :: gasci_input_max_dav_subspace_dim =  0
   integer, public :: gasci_input_max_nr_dav_ci_iter   =  30
-  integer, public :: gasci_input_max_batch_size       =  100000000
+  integer, public :: gasci_input_max_batch_size       =  64000000
   integer, public :: gasci_input_init_wave_f_type     =  0
   integer, public :: gasci_input_init_input_type      =  0
   integer, public :: gasci_input_ttss_dist_strategy   =  2

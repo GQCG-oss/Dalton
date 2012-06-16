@@ -70,7 +70,7 @@ module lucita_cfg
   integer, public :: lucita_cfg_restart_ci           =  0
   integer, public :: lucita_cfg_max_dav_subspace_dim =  0
   integer, public :: lucita_cfg_max_nr_dav_ci_iter   =  30
-  integer, public :: lucita_cfg_max_batch_size       =  100000000
+  integer, public :: lucita_cfg_max_batch_size       =  64000000
   integer, public :: lucita_cfg_init_wave_f_type     =  0
   integer, public :: lucipar_cfg_ttss_dist_strategy  =  2
   integer, public :: lucipar_cfg_mem_reduction_multp =  3

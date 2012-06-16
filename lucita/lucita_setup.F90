@@ -334,7 +334,8 @@ contains
 !     do not dum integrals
       IDMPIN = 0
 !     define dimension of resolution matrices
-      mxinka = 100000
+!SK12 mxinka = 100000
+      mxinka = 1000
 !     use CJKAIB matrices as intermediate matrices in alpha-beta-loop
       icjkaib = 1
 !     use minimal operatioon count method for alpha-alpha and beta-beta
@@ -953,14 +954,14 @@ contains
           print *, ' unknown CI run id: ',ci_run_id,' no memory allocated for the coworkers.'
       end select
 
-      if(print_lvl > 0)then
-        write(lupri,*) ' statistics for CI matrix / integral array dimensions:' 
-        write(lupri,*) ' -----------------------------------------------------' 
-        write(lupri,*) ' ci matrix #1     ==> ',len_cref_mc2lu
-        write(lupri,*) ' ci matrix #2     ==> ',len_hc_mc2lu
-        write(lupri,*) ' resolution block ==> ',len_resolution_mat_mc2lu
-        write(lupri,*) ' 1-el ij          ==> ',len_int1_or_rho1_mc2lu
-        write(lupri,*) ' 2-el ijkl        ==> ',len_int2_or_rho2_mc2lu
+      if(print_lvl > -1)then
+        write(lupri,'(/a     )') '  dimensions of CI matrix / integral arrays:'
+        write(lupri,'( a     )') '  -----------------------------------------'
+        write(lupri,'( a,i15 )') '  ci matrix #1     ==> ',len_cref_mc2lu
+        write(lupri,'( a,i15 )') '  ci matrix #2     ==> ',len_hc_mc2lu
+        write(lupri,'( a,i15 )') '  resolution block ==> ',len_resolution_mat_mc2lu
+        write(lupri,'( a,i15 )') '  1-el ij          ==> ',len_int1_or_rho1_mc2lu
+        write(lupri,'( a,i15/)') '  2-el ijkl        ==> ',len_int2_or_rho2_mc2lu
         call flshfo(lupri)
       end if
 

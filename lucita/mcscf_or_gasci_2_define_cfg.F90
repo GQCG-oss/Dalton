@@ -89,7 +89,7 @@ contains
           lucita_cfg_nr_gas_spaces                 = ngas_opt
 !         lucita_cfg_restart_ci                    =  0         ! use automatic detection
           lucita_cfg_max_dav_subspace_dim          =  0         ! default
-          lucita_cfg_max_batch_size                =  100000000 ! default
+          lucita_cfg_max_batch_size                =  64000000  ! default
           lucipar_cfg_ttss_dist_strategy           =  2         ! default
           lucipar_cfg_mem_reduction_multp          =  3         ! default
 
