@@ -659,6 +659,8 @@ contains
             if(i12 > 1)then
               call mpi_reduce(mpi_in_place,work(krho2),nacob**2*(nacob**2+1)/2,      &
                               mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(mpi_in_place,exps2,1,                                  &
+                              mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
             end if
           else
             call mpi_reduce(work(krho1),mpi_in_place,nacob**2,mpi_real8,             &
