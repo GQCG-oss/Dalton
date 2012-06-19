@@ -130,8 +130,8 @@ class MolecularSurface(object):
         self.vdwfactor = vdwfactor
         vdws = []
         for elem in elems:
-#            vdws.append(1.17 * self.elem2vdw[elem])
-            vdws.append(2.0 * self.elem2vdw[elem])
+            vdws.append(1.17 * self.elem2vdw[elem])
+#            vdws.append(2.0 * self.elem2vdw[elem])
         self.vdws = vdws
         self.create_surface()
 
@@ -208,12 +208,12 @@ if __name__ == "__main__":
             [ 2.004448, -0.101417, -0.000710],
             [ 0.879028, -3.000685,  0.000484],
             [ 2.675323, -2.516779, -0.000673],
-            [-6.290050, -0.195076, -0.000786],
-            [-4.731487,  0.780875,  0.000641],
-            [-7.633008,  1.033168, -0.001606],
-            [ 3.292464,  4.424531, -0.001408],
-            [ 1.590541,  3.726175, -0.001550],
-            [ 3.085089,  6.232886,  0.007850]]
+            [-3.328551, -0.103229, -0.000415],
+            [-2.503795,  0.413221,  0.000339],
+            [-4.039214,  0.546729, -0.000849],
+            [ 1.742297,  2.341361, -0.000745],
+            [ 0.841678,  1.971807, -0.000820],
+            [ 3.085089,  6.232886,  0.004154]]
 
 
 
@@ -240,6 +240,6 @@ if __name__ == "__main__":
 #            [ 3.995000, -0.300000,  0.887000],
 #            [ 3.995000, -0.300000, -0.887000]]
 
-    mol = MolecularSurface(elems, coords)
+    mol = MolecularSurface(elems, coords, detail=1)
     mol.write_surface()
     mol.plot()

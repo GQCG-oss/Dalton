@@ -1711,7 +1711,7 @@ subroutine pe_fock(denmats, fckmats, Epe)
     logical :: pol = .false.
 
     if ((mulorder >= 0) .or. pe_fd) es = .true.
-    if (lpol(1)) pol = .true.
+    if (lpol(1) .or. pe_sol) pol = .true.
 
     if (allocated(Ees)) deallocate(Ees)
     if (allocated(Epol)) deallocate(Epol)
@@ -2055,7 +2055,7 @@ subroutine pe_polarization(denmats, fckmats)
     real(dp), dimension(3*npols+nsurp,ndens) :: Mkinds
     real(dp), dimension(nsurp,ndens) :: Vels
     real(dp), dimension(:,:), allocatable :: Fel_ints, Vel_ints
-
+ 
     if (response) fckmats = 0.0d0
 
     if (response) then
@@ -2114,9 +2114,11 @@ subroutine pe_polarization(denmats, fckmats)
        else
            lenmk = 3*npols
        end if
-       do j = 1, lenmk
-           write(luout,*) j, Mkinds(j,i)
-       end do
+       if (print_lvl .gt. 100) then
+           do j = 1, lenmk
+               write(luout,*) j, Mkinds(j,i)
+           end do
+       end if
        if (pe_sol) then
            do k = 3*npols + 1, lenmk 
                mk_sum = mk_sum + Mkinds(k,i)
@@ -2176,9 +2178,9 @@ end subroutine pe_polarization
 
 subroutine induced_moments(Mkinds, Fs)
 
-#if defined(PESOL_DEBUG)
+!#if defined(PESOL_DEBUG)
     real(dp), external :: dlansp
-#endif
+!#endif
     real(dp), dimension(:,:), intent(out) :: Mkinds
     real(dp), dimension(:,:), intent(in) :: Fs
 
@@ -2431,9 +2433,9 @@ subroutine induced_moments(Mkinds, Fs)
                         allocate(iwork(leng))
                         allocate(work2(3*leng))
                         call dppcon('L', leng, B, anorm, rcond, work2, iwork,info2)
-                        deallocate(iwork(leng))
-                        deallocate(work1(leng))
-                        deallocate(work2(3*leng))
+                        deallocate(iwork)
+                        deallocate(work1)
+                        deallocate(work2)
                         if (info2 .eq. 0) then
                            write(luout,*) 'Condition number of Response matrix B = ', rcond
                         else
@@ -2467,9 +2469,9 @@ subroutine induced_moments(Mkinds, Fs)
                         allocate(iwork(leng))
                         allocate(work2(3*leng))
                         call dspcon('L', leng, B, anorm, rcond, work2, iwork,info2)
-                        deallocate(iwork(leng))
-                        deallocate(work1(leng))
-                        deallocate(work2(3*leng))
+                        deallocate(iwork)
+                        deallocate(work1)
+                        deallocate(work2)
                         if (info2 .eq. 0) then
                            write(luout,*) 'Condition number of Response matrix B = ', rcond
                         else
@@ -2533,7 +2535,6 @@ subroutine electron_fields(Fels, denmats)
     real(dp), dimension(nnbas,3) :: Fel_ints
 
     Fels = 0.0d0
-
     i = 0
     do site = nsites(myid-1)+1, nsites(myid)
         if (zeroalphas(site)) cycle
@@ -2948,9 +2949,11 @@ subroutine response_matrix(B)
             end do !  do j = i, nsites(ncores-1)
         end do
     end do
-       do i=1, (3*npols*(3*npols+1))/2
-          write (luout,*) 'Response matrix(i)',i , B(i)
-       end do
+    if (print_lvl .gt. 100) then
+        do i=1, (3*npols*(3*npols+1))/2
+           write (luout,*) 'Response matrix(i)',i , B(i)
+        end do
+    end if
 
 end subroutine response_matrix
 
@@ -3539,8 +3542,9 @@ subroutine response_matrix_full(B)
     B = 0.0d0
     ipcm_off = 3*nsites(ncores-1)
     diel_fac = diel/(diel-1.0d0)
-    write (luout,*) 'diel, diel_fac', diel, diel_fac
+    write (luout,*) 'diel, diel_fac, nsites,npols', diel, diel_fac, nsites(ncores-1),npols
     do i = 1, nsites(ncores-1) ! loop over blocks of 3 columns per site
+        write(luout,*) 'MNP I should not be here 1'
         if (zeroalphas(i)) cycle
         icol_off = (i-1)*3
         P1inv = P1s(:,i)
@@ -3645,10 +3649,11 @@ subroutine response_matrix_full(B)
             koff = koff + 1
         end do 
     end do
-  
-    do i=1, (3*npols+nsurp)*(3*npols+nsurp+1)/2
-        write (luout,*) 'Response matrix(i)',i, B(i)
-    end do
+    if (print_lvl .gt. 100) then 
+        do i=1, (3*npols+nsurp)*(3*npols+nsurp+1)/2
+            write (luout,*) 'Response matrix(i)',i, B(i)
+        end do
+    end if
 end subroutine response_matrix_full
 
 !------------------------------------------------------------------------------
