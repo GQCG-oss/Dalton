@@ -47,12 +47,13 @@ C
 #include "dorps.h"
 #include "nuclei.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "codata.h"
 #include "pcmlog.h"
 C
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
       LOGICAL NEWDEF, LOCFIN
       CHARACTER*8 DIPLEN(3),DIPLOC(3), ANGMOM(3), LONMAG(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -64,8 +65,9 @@ C
 C
       DATA TABLE /'.SKIP  ', '.WAVELE','.MAX IT','.THRESH',
      &            '.MAXRED', '.MAXPHP','.STATIC','.VIBGRE',
-     *            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
-     *            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE'/
+     &            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
+     &            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE',
+     &            '.ABSLRS'/
 C
       NEWDEF = (WORD .EQ. '*ABALNR')
       ICHANG = 0
@@ -83,7 +85,8 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), 
+     &                      I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -226,6 +229,9 @@ CKeinSPASmehr
                GO TO 100
  16            CONTINUE
                  ABS_REDUCE=.TRUE.
+               GO TO 100
+ 17            CONTINUE
+                 ABSLRS=.TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -462,6 +468,7 @@ C
 #include "gnrinf.h"
 #include "infsop.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "pcmlog.h"
 C
       IF (SKIP) RETURN
@@ -867,13 +874,23 @@ C     ===================================
 C     
                      IF (.NOT.ABSORP) REWIND LUSOVE
                      DO 100 IFRVAL = 1,NFRVAL
-                        IF (ABSORP) THEN
+                       IF (ABSORP) THEN
+                         IF (ABSLRS) THEN
+                           OPEN(LUABSVECS,file='ABSVECS',
+     &                          status='unknown',
+     &                          form='unformatted')
+                                CALL READ_XVEC(LUABSVECS,4*NVARPT,
+     &                               WORK(KSLV),LABEL1,ISYM,
+     &                               FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
+                            CLOSE(LUABSVECS,status='keep')
+                          ELSE
                            CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
      &                          ' ',IDUMMY,.FALSE.)
                            CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),LABEL1,
      &                          'COMPLEX ',FRVAL(IFRVAL),0.0D0,
      &                          ISYM,0,THCLR_ABSORP,FOUND,CONV,ANTSYM)
                            CALL GPCLOSE(LURSP,'KEEP')
+                          ENDIF
                            SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
      &                          WORK(KGD1),1)
                            SNDPRP(2)=DDOT(2*NVARPT,
@@ -2155,6 +2172,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "inforb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -2484,7 +2502,7 @@ cmbh end
          END DO
       ENDIF
 C
-      IF (ABSORP .AND. IPRINT.GE.0) THEN
+      IF (ABSORP .AND. IPRINT.GE.0 .AND. (.NOT. ABSLRS)) THEN
          WRITE(LUPRI,'(/10X,A4,A6,A21,/10X,A)') 
      &        'Sym.','State','Excitation energy',
      &        '---------------------------------------------------'
