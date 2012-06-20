@@ -199,6 +199,7 @@ class MolecularSurface(object):
 if __name__ == "__main__":
     elems = ['C', 'C', 'C', 'O', 'H', 'H', 'H', 'H', 'O', 'H', 'H', 'O', 
             'H', 'H']  
+#    elems = ['C', 'C', 'C', 'O', 'H', 'H', 'H', 'H']
  
     coords=[[-0.145335, -0.546770,  0.000607],
             [ 1.274009, -0.912471, -0.000167],
@@ -213,7 +214,7 @@ if __name__ == "__main__":
             [-4.039214,  0.546729, -0.000849],
             [ 1.742297,  2.341361, -0.000745],
             [ 0.841678,  1.971807, -0.000820],
-            [ 3.085089,  6.232886,  0.004154]]
+            [ 1.632558,  3.298301,  0.004154]]
 
 
 
@@ -241,5 +242,6 @@ if __name__ == "__main__":
 #            [ 3.995000, -0.300000, -0.887000]]
 
     mol = MolecularSurface(elems, coords, detail=1)
+#    mol = MolecularSurface(elems, coords, detail=2)
     mol.write_surface()
     mol.plot()

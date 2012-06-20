@@ -36,6 +36,7 @@ module polarizable_embedding
     logical, public, save :: pe_fd = .false.
     logical, save :: pe_timing = .false.
     logical, public, save :: pe_sol = .false.
+    logical, public, save :: qmcos = .false.
 
     ! calculation type
     logical, save :: fock = .false.
@@ -317,6 +318,12 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! Do a PE-COSMO calculation 
         else if (trim(option(2:)) == 'PESOL') then
             pe_sol = .true.
+            pe_polar = .true.
+        else if (trim(option(2:)) == 'QMCOS') then
+            pe_sol = .true.
+            pe_polar = .true.
+!            lpol(1) = .false.
+            qmcos = .true.
         else if (trim(option(2:)) == 'DIELEC') then
             read(luinp,*) diel
         else if (trim(option(2:)) == 'PRINT') then
@@ -432,6 +439,8 @@ subroutine pe_read_potential(coords, charges)
         else if (pe_fd) then
             goto 101
         else if (pe_mep) then
+            goto 101
+        else if (qmcos) then
             goto 101
         else
             stop 'POTENTIAL.INP not found!'
@@ -967,8 +976,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         mep = .false.
     else if (runtype == 'response') then
         if (pe_gspol) return
-        if (npols < 1) return
-        if (.not. lpol(1)) return
+!        if (.not. lpol(1) .and. .not. pe_sol) return
         fock = .false.
         energy = .false.
         response = .true.
@@ -2055,7 +2063,7 @@ subroutine pe_polarization(denmats, fckmats)
     real(dp), dimension(3*npols+nsurp,ndens) :: Mkinds
     real(dp), dimension(nsurp,ndens) :: Vels
     real(dp), dimension(:,:), allocatable :: Fel_ints, Vel_ints
- 
+    
     if (response) fckmats = 0.0d0
 
     if (response) then
