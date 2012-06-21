@@ -62,7 +62,7 @@ C
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
-            write(lupri,*) ' @LRSCOPTS : reading : ' , WORD
+            write(lupri,*) ' @LRSCINP : reading : ' , WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
@@ -97,8 +97,8 @@ C   SET WHICH NUC TO DO LRESC
  3             CONTINUE
                   write(lupri,*)' ..aca leo SELECT NATOM '
                   READ (LUCMD,*) NATOM
-             CALL HEADER('Remember to set GAUGEO on INTEGRAL SECTION'//
-     &            ' it is important GAUGEO placed on selected NATOM',1)
+            write(lupri,*)'Remember to set GAUGEO on INTEGRAL SECTION'//
+     &            ' it is important GAUGEO placed on selected NATOM'
                   ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
@@ -237,14 +237,32 @@ C
       IF (.NOT. LRESCALL) THEN
          WRITE (LUPRI,'(A)')  '   LRESC ALL set : NOT '
       END IF
-
+C 
+C First Order SINLGET 
+C
       IF (SIGMAP1S)  THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : '
-          CALL LINEARS('P1S',WORK,LWORK)
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : PsoKin'
+         WRITE (LUPRI,'(A)')'           NOT FOR NOW, some bugs inside'
+          CALL LINEARS('PSOK',WORK,LWORK)
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : Lkin'
+          CALL LINEARS('LKIN',WORK,LWORK)
       END IF
 
+      IF (SIGMAD1S) THEN
+         WRITE (LUPRI,'(A)')'  Calling to SIGMA1S for : Diamagnetic'// 
+     &         ' Singlet First Order Shielding corrections'
+         CALL LINEARS('D1S ',WORK,LWORK)
+      END IF
+C 
+C First Order TRIPLET
+C
       IF (SIGMAP1T) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1T for : '
+         WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
+     &         ' Triplet First Order Shielding corrections'
+         CALL LINEART('FCZK',WORK,LWORK)
+c         CALL LINEART('SDZK',WORK,LWORK)
+c         CALL LINEART('FCBSO',WORK,LWORK)
+c         CALL LINEART('SDBSO',WORK,LWORK)
       END IF
 
       IF (SIGMAP3S) THEN
@@ -259,10 +277,6 @@ C
          WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : '
       END IF
 
-      IF (SIGMAD1S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : '
-         CALL LINEARS('D1S',WORK,LWORK)
-      END IF
 
       RETURN
       END
