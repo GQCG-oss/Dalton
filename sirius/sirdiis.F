@@ -278,8 +278,7 @@ C DFT modifications T.  Helgaker
 C
 C
       use polarizable_embedding, only: peqm, pe_mep, pe_master,
-     &                                 pe_repuls, pe_savden,
-     &                                 pe_repulsion, pe_save_density
+     &                                 pe_savden, pe_save_density
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -1354,13 +1353,11 @@ C
         if (nsym > 1) then
             call quit('PEQM cannot be combined with symmetry.')
         end if
-        lucmo = nbast*norbt
-        call pe_save_density(daosav(:,1), nbast, cord(:,1:natoms),
-     &                       charge(1:natoms), wrk(kfree:lfree))
+        call pe_save_density(daosav(:,1), fcao(1:norbt*(norbt+1)/2),
+     &                       cmo(1:nbast*norbt), nbast, nisht, norbt,
+     &                       cord(:,1:natoms), charge(1:natoms),
+     &                       wrk(kfree:lfree))
        end if
-!       if (pe_repuls) then
-!        call pe_repulsion(faosav(1,indevc,1), wrk(kfree), lfree)
-!       end if
 C
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
