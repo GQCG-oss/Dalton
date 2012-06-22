@@ -3650,7 +3650,7 @@ subroutine response_matrix_full(B)
 !                 B_full(icol_off+1,ipcm_off+j) = 0.0d0
 !                 B_full(icol_off+2,ipcm_off+j) = 0.0d0 
 !                 B_full(icol_off+3,ipcm_off+j) = 0.0d0 
-                  call Tk_tensor(Tk, Rij)
+                 call Tk_tensor(Tk, Rij_sol)
 
                  B_full(ipcm_off+j,icol_off+1) = Tk(1)
                  B_full(ipcm_off+j,icol_off+2) = Tk(2) 
