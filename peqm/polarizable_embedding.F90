@@ -3559,7 +3559,7 @@ subroutine response_matrix_full(B)
     real(dp) :: ft = 1.0d0
     real(dp) :: pi = 3.14159265d0
     real(dp) :: R, R3, R5, R_sol, R3_sol, diel_fac, R_tes
-    real(dp), dimension(3) :: Rij, Rij_sol, Rij_tes
+    real(dp), dimension(3) :: Rij, Rij_sol, Rij_tes, Tk
     real(dp), dimension(6) :: P1inv
     
     if (pe_sol) then
@@ -3642,12 +3642,19 @@ subroutine response_matrix_full(B)
         if (pe_sol) then
             do j = 1, nsurp
                  Rij_sol = (Sp(:,j) - Rs(:,i))
-                 R_sol = nrm2(Rij_sol)
-                 R3_sol = R_sol**3
+! Setting this block zero prevents coupling between PE and COSMO region
+!                 B_full(ipcm_off+j,icol_off+1) = 0.0d0
+!                 B_full(ipcm_off+j,icol_off+2) = 0.0d0
+!                 B_full(ipcm_off+j,icol_off+3) = 0.0d0
 
-                 B_full(ipcm_off+j,icol_off+1) = - Rij_sol(1)/R3_sol
-                 B_full(ipcm_off+j,icol_off+2) = - Rij_sol(2)/R3_sol
-                 B_full(ipcm_off+j,icol_off+3) = - Rij_sol(3)/R3_sol
+!                 B_full(icol_off+1,ipcm_off+j) = 0.0d0
+!                 B_full(icol_off+2,ipcm_off+j) = 0.0d0 
+!                 B_full(icol_off+3,ipcm_off+j) = 0.0d0 
+                  call Tk_tensor(Tk, Rij)
+
+                 B_full(ipcm_off+j,icol_off+1) = Tk(1)
+                 B_full(ipcm_off+j,icol_off+2) = Tk(2) 
+                 B_full(ipcm_off+j,icol_off+3) = Tk(3) 
 
                  B_full(icol_off+1,ipcm_off+j) = B_full(ipcm_off+j,icol_off+1) 
                  B_full(icol_off+2,ipcm_off+j) = B_full(ipcm_off+j,icol_off+2) 
