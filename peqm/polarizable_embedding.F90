@@ -414,8 +414,6 @@ subroutine pe_read_potential(coords, charges)
             return
         else if (pe_pd) then
             goto 101
-        else if (pe_mep) then
-            goto 101
         else
             stop 'POTENTIAL.INP not found!'
         end if
@@ -574,17 +572,16 @@ subroutine pe_read_potential(coords, charges)
         end if
     end if
     if (pe_pd) then
-        write(luout,'(/4x,a,i4)') 'Number of polarizable densities:', npds
+        write(luout,'(/4x,a,i4)') 'Number of polarizable densities: ', npds
         if (pe_repuls) then
-            write(luout,'(/4x,a)') 'Repulsion operator will be used for PDs'
-            write(luout,'(4x,a,f4.2)') 'using a scaling factor: ',&
-                                       rep_factor
+            write(luout,'(/4x,a,f5.3)') 'Repulsion operator will be used for&
+                                        & PDs using the scaling factor: ',&
+                                        & rep_factor
         end if
         if (pe_gauss) then
-            write(luout,'(/4x,a,f4.2)') 'Gaussian nuclear charges will be&
-                                        & used for PDs'
-            write(luout,'(4x,a,f4.2)') 'using a scaling factor: ',&
-                                       gauss_factor
+            write(luout,'(/4x,a,f5.3)') 'Gaussian nuclear charges will be&
+                                        & used for PDs using a scaling&
+                                        & factor: ', gauss_factor
         end if
     end if
 
@@ -3146,7 +3143,7 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
 !     sirfck(fckmat, denmat, ?, isymdm, ifctyp, direct, work, nwrk)
     isymdm = 1
     ifctyp = 11
-    call sirfck(full_fckmat, full_denmat, 1, isymdm, ifctyp, .false.,&
+    call sirfck(full_fckmat, full_denmat, 1, isymdm, ifctyp, .true.,&
                 work, size(work))
     deallocate(full_denmat)
 
