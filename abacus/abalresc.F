@@ -259,9 +259,9 @@ C
       IF (SIGMAP1T) THEN
          WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
      &         ' Triplet First Order Shielding corrections'
-         CALL LINEART('FCZK',WORK,LWORK)
+c         CALL LINEART('FCZK',WORK,LWORK)
 c         CALL LINEART('SDZK',WORK,LWORK)
-c         CALL LINEART('FCBSO',WORK,LWORK)
+         CALL LINEART('FCBS',WORK,LWORK)
 c         CALL LINEART('SDBSO',WORK,LWORK)
       END IF
 
