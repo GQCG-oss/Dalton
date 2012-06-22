@@ -151,11 +151,20 @@ C     Calculate polarizability
 C
       DO J=1,NEQ2S
         CALL DIPLAB(LABEL,INDEX)
-        RESLRF(1,J,INDEX,INDEX,1) = 
+        IF (LABEL(2:8).EQ.'DIPLEN') THEN
+          ITYPE = 1
+        ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
+          ITYPE = 2
+        ELSE
+           WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
+          RETURN
+        END IF
+
+        RESLRF(1,J,INDEX,INDEX,ITYPE) = 
      &         DDOT(KZYVAR,GD,1,XSOL(1,1,J),1)
-        RESLRF(2,J,INDEX,INDEX,1) = 
+        RESLRF(2,J,INDEX,INDEX,ITYPE) = 
      &         DDOT(KZYVAR,GD,1,XSOL(1,2,J),1)
-C     
+C    
       ENDDO
 c
 C     Check status

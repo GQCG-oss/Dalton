@@ -2231,6 +2231,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "wrkrsp.h"
 #include "infvar.h"
 #include "maxaqn.h"
@@ -2295,9 +2296,15 @@ C
      &        ' B operator, symmetry, frequency: ',BLAB,ISYMB,FREQB,
      &        ' C operator, symmetry, frequency: ',CLAB,ISYMC,FREQC
 C
-         CALL QRRDVE(ISYMA,ISYMB,ISYMC,ALAB,BLAB,CLAB,
+           IF (ABSLRS) THEN
+              CALL ABS_QRRDVE(ISYMA,ISYMB,ISYMC,ALAB,BLAB,CLAB,
      &        FREQA,FREQB,FREQC,KZYVA,KZYVB,KZYVC,WRK(KVECA),WRK(KVECB),
      &        WRK(KVECC))
+           ELSE 
+              CALL QRRDVE(ISYMA,ISYMB,ISYMC,ALAB,BLAB,CLAB,
+     &        FREQA,FREQB,FREQC,KZYVA,KZYVB,KZYVC,WRK(KVECA),WRK(KVECB),
+     &        WRK(KVECC))
+           ENDIF
 C
 C     Calculate Na B[2] Nc type terms (two permutations)
 C
@@ -2518,6 +2525,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
+#include "abslrs.h"
 C
       PARAMETER (THRZERO = 1.0D-6)
       LOGICAL DOHYP,NEWFRQ
@@ -2528,7 +2536,7 @@ C
 C
 C     Operator requirement for magnetic circular dichroism
 C
-      IF (ABS_MCD) THEN
+      IF (ABS_MCD .OR. ABSLRS_MCD) THEN
          IF (ALAB(2:8).NE.'DIPLEN' .OR. BLAB(2:8).NE.'DIPLEN' .OR.
      &       CLAB(2:8).NE.'ANGMOM') DOHYP = .FALSE.
       END IF
