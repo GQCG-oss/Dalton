@@ -918,7 +918,9 @@ subroutine pe_read_tesselation()
            allocate(Sp(3,nsurp))
            allocate(A(nsurp))
            do i = 1, nsurp 
-                read(lusurf,*) (Sp(j,i), j = 1, 3), A(i)
+!                read(lusurf,*) (Sp(j,i), j = 1, 3), A(i)
+                read(lusurf,*) (Sp(j,i), j = 1, 3)
+                read(lusurf,*) A(i)
            end do
         else if (word(1:1) == '!' .or. word(1:1) == '#') then
            cycle
@@ -931,15 +933,15 @@ subroutine pe_read_tesselation()
     if (print_lvl .gt. 100) then
        write(luout,*) 'Sp in pe_read_tesselation in AA'
        do i=1,nsurp
-              write (luout,*) Sp(:,i)
+              write (luout,*) i, Sp(:,i)
        end do
        write(luout,*) 'A in pe_read_tesselation in AA'
        do i=1,nsurp
-          write (luout,*) A(i)
+          write (luout,*) i, A(i)
        end do
     end if
-    A = aa2au2*A
-    Sp = aa2au*Sp
+!    A = aa2au2*A
+!    Sp = aa2au*Sp
     if (print_lvl .gt. 100) then
        write(luout,*) 'Sp in pe_read_tesselation in AU'
        do i=1,nsurp
@@ -3570,11 +3572,11 @@ subroutine response_matrix_full(B)
     end if
     B_full = 0.0d0
     B = 0.0d0
-    ipcm_off = 3*nsites(ncores-1)
+    ipcm_off = 3*npols
     diel_fac = diel/(diel-1.0d0)
     write (luout,*) 'diel, diel_fac, nsites,npols', diel, diel_fac, nsites(ncores-1),npols
     do i = 1, nsites(ncores-1) ! loop over blocks of 3 columns per site
-        write(luout,*) 'MNP I should not be here 1'
+    write (luout,*) 'i',i
         if (zeroalphas(i)) cycle
         icol_off = (i-1)*3
         P1inv = P1s(:,i)
@@ -3646,7 +3648,7 @@ subroutine response_matrix_full(B)
 !                 B_full(ipcm_off+j,icol_off+1) = 0.0d0
 !                 B_full(ipcm_off+j,icol_off+2) = 0.0d0
 !                 B_full(ipcm_off+j,icol_off+3) = 0.0d0
-
+!
 !                 B_full(icol_off+1,ipcm_off+j) = 0.0d0
 !                 B_full(icol_off+2,ipcm_off+j) = 0.0d0 
 !                 B_full(icol_off+3,ipcm_off+j) = 0.0d0 
@@ -3671,7 +3673,7 @@ subroutine response_matrix_full(B)
                 B_full(ipcm_off+j,ipcm_off+i) = diel_fac * 1.0d0 / R_tes
                 B_full(ipcm_off+i,ipcm_off+j) = B_full(ipcm_off+j,ipcm_off+i)
             end do
-        end do !i = 1, nsurp
+       end do !i = 1, nsurp
     end if
 !     Pack B_full to lower triangular form in B
     koff = 1
