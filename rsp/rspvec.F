@@ -907,13 +907,13 @@ C
       IF (.NOT. FOUND) THEN
          WRITE (LUPRI,'(/3A,F12.8,A,I3/A)') 
      &        ' Response label ',LABEL,' with frequency ',
-     &        FREQ, ' and symmetry',MSYM,' not found on file LURSP'
-         CALL QUIT('Response vector not found on file')
+     &        FREQ, ' and symmetry',MSYM,' not found on file RSPVEC'
+         CALL QUIT('Response vector not found on file RSPVEC')
       ELSE
          WRITE (LUPRI,'(/3A,F12.8/A,I3,A)') 
      &        ' @WARNING>>>>'//
      &        ' Response label ',LABEL,' with frequency ', FREQ,
-     &        ' and symmetry',MSYM,' not converged on file LURSP'
+     &        ' and symmetry',MSYM,' not converged on file RSPVEC'
       END IF
       END
 C  /* Deck qrhyp */
