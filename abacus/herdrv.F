@@ -424,8 +424,7 @@ C     Bin Gao, Oct. 3, 2011
 !                    237        238        239        240
      &             '.NEWTRA', '.KINADI', '.GENINT', '.######',
 !                    241
-     &             '.LRINTS'/ 
-C                     June-12 : jim-dbg  added new key to do lresc integrals
+     &             '.LRINTS'/ !jim-dbg  added new key to do lresc integrals
 C
 C
       CALL QENTER('HERINP')
@@ -508,6 +507,7 @@ C
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
      &                231,232,233,234,235,236,237,238,239,240,241), I
+c jim-dbg :  i would do a llop over the lresc ints to do, ... 
             END IF
          END DO
             IF (WORD .EQ. '.OPTION') THEN
@@ -1233,7 +1233,7 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             GO TO 100
   241    CONTINUE
 Cx jim-dbg : here we set all the integrals to do LRESC
-            write(lupri,*)'  Here we set LRESC integrals to be done'
+            write(lupri,*)'jim-dbg : We set LRESC integrals to be done'
             DOLRINTS=.TRUE.
             GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN

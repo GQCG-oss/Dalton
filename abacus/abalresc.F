@@ -243,15 +243,15 @@ C
       IF (SIGMAP1S)  THEN
          WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : PsoKin'
          WRITE (LUPRI,'(A)')'           NOT FOR NOW, some bugs inside'
-          CALL LINEARS('PSOK',WORK,LWORK)
+c. anda          CALL LINEARS('PSOK',WORK,LWORK)
          WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : Lkin'
-          CALL LINEARS('LKIN',WORK,LWORK)
+c. anda          CALL LINEARS('LKIN',WORK,LWORK)
       END IF
 
       IF (SIGMAD1S) THEN
          WRITE (LUPRI,'(A)')'  Calling to SIGMA1S for : Diamagnetic'// 
      &         ' Singlet First Order Shielding corrections'
-         CALL LINEARS('D1S ',WORK,LWORK)
+c. anda         CALL LINEARS('D1S ',WORK,LWORK)
       END IF
 C 
 C First Order TRIPLET
@@ -259,10 +259,10 @@ C
       IF (SIGMAP1T) THEN
          WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
      &         ' Triplet First Order Shielding corrections'
-c         CALL LINEART('FCZK',WORK,LWORK)
-c         CALL LINEART('SDZK',WORK,LWORK)
-         CALL LINEART('FCBS',WORK,LWORK)
-c         CALL LINEART('SDBSO',WORK,LWORK)
+c. anda         CALL LINEART('FCZK',WORK,LWORK)
+c. anda         CALL LINEART('SDZK',WORK,LWORK)
+c. anda         CALL LINEART('FCBS',WORK,LWORK)
+c. anda         CALL LINEART('SDBSO',WORK,LWORK)
       END IF
 
       IF (SIGMAP3S) THEN

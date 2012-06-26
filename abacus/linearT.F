@@ -288,95 +288,119 @@ C  nidx = 3.NATOM-2, 3.NATOM-1, 3.NATOM
 
 C --------------------------------------------------------------
       IF((KEY.EQ."FCZK").OR.(KEY.EQ."FCBS")) THEN 
+C
 C        Look for LABELS : FERMI  
 C        ------------------------
          write(lupri,*)
+c jim-dbg LABEL2 should be a string to atom name
          LABEL2='FC'
-         write(lupri,*) '@Linear setting  LABEL2 : ', LABEL2
-         write(lupri,*) ' Por AHORA solo |FC X 01| '
-cx         DO I=1,NCOOR
-            LISTA2(1)= 'FC X  01'
-            LABSYM(1)=1
-cx            write(lupri,*) '   LABEL1 : ', LISTA1(I), LABSYM(I)
-cx         END DO
-cx         NLAB1 = 3*NCOOR
+         write(lupri,*) '@Linear setting  LABEL2 : FC'
+         write(lupri,*) '   LABEL 2 : Por AHORA solo |FC X 01| '
+cx       DO I=1,NCOOR
+           LISTA2(1)= 'FC X  01'
+           LABSYM(1)=1
+cx         write(lupri,*) '   LABEL2 : ', LISTA2(I), LABSYM(I)
+cx       END DO
+cx       NLAB1 = 3*NCOOR
          NLAB2 = 1
-      ENDIF
-C        Look for LABELS : KINENERG
-C        -----------------------------------
-      IF(KEY.EQ."FCZK") THEN
-         write(lupri,*)
-         LISTA1(1) ='KINENERG'
-         NLAB1 = 1
-         write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
-      ENDIF
-C        Look for LABELS : BSO
-C        -----------------------------------
-      IF(KEY.EQ."FCBS") THEN
-         write(lupri,*)
-         LISTA1(1) ='SOMF  XX'
-         LISTA1(2) ='SOMF  YY'
-         LISTA1(3) ='SOMF  ZZ'
-         NLAB1 = 3
-         write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
-      ENDIF
-C --------------------------------------------------------------
-cx      ELSE IF (KEY.EQ."SDZK") THEN
-C        Look for LABELS : PSO 
-C        ----------------------       
-cx         write(lupri,*)
-cx         LABEL1='PSO'
-cx         write(lupri,*) '@Linear setting  LABEL1 : PSO ', LABEL1
-cx         IJ = 1
-cx         DO I=1, NUCDEP
-cx           DO J=1,3
-cx             LISTA1(IJ)= 'PSO '//CHRNOS(J/10)//CHRNOS(J/10)//
-cx     &                    CHRNOS(MOD(IJ,10))
-cx             LABSYM(IJ)=1
-cx             write(lupri,*) '   LABEL1 : ', LISTA1(IJ), LABSYM(IJ)
-cx             IJ = IJ + 1
-cx           END DO
-cx         END DO
-cx         NLAB1 = 3*NUCDEP
+C         
+         IF(KEY.EQ."FCZK") THEN
 C
 C        Look for LABELS : KINENERG
 C        -----------------------------------
-cx         write(lupri,*)
-cx         LISTA2(1) ='KINENERG'
-cx         NLAB2 = 1
-cx         write(lupri,*) '@Linear setting  LABEL2 :'
-cx         write(lupri,*) '   LABEL2 : ', LISTA2(1)
-C -----------------------------------------------------------------
-cx      ELSE IF (KEY.EQ."FCBS") THEN
-C        Look for LABELS : ANGMOM
-C        -------------------------       
-cx         write(lupri,*)
-cx         LABEL1='ANGMOM'
-cx         write(lupri,*) '@Linear setting  LABEL1 : ANGMOM '
-cx         DO J=1,3
-cx           LISTA1(J)= CHRXYZ(J)//'ANGMOM '
-cx           LABSYM(J)=1
-cx           write(lupri,*) '   LABEL1 : ', LISTA1(J), LABSYM(J)
-cx         END DO
-cx         NLAB1 = 3
+            write(lupri,*)
+            LISTA1(1) ='KINENERG'
+            NLAB1 = 1
+            write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
+C
 C        Look for LABELS : BSO
-C        -------------------------       
-cx         write(lupri,*)
-cx         LABEL2='PSOKE'
-cx         write(lupri,*) '@Linear setting  LABEL2 : PSO-KE '
-cx         IJ = 1
-cx         DO I=1,NUCDEP
-cx           DO J=1,3
-cx             LISTA2(IJ)= 'PSOKE'//CHRNOS(J/10)//CHRNOS(J/10)//
-cx     &                    CHRNOS(MOD(IJ,10))
-cx             LABSYM(IJ)=1
-cx             write(lupri,*) '   LABEL2 : ', LISTA2(IJ), LABSYM(IJ)
-cx             IJ = IJ + 1
-cx           END DO
-cx         END DO
-cx         NLAB2 = 3*NUCDEP
-cxx       END IF
-C -----------------------------------------------------------------
+C        -----------------------------------
+         ELSE IF(KEY.EQ."FCBS") THEN
+            write(lupri,*)
+            LISTA1(1) ='SOMF  XX'
+            LISTA1(2) ='SOMF  YX'
+            LISTA1(3) ='SOMF  ZX'
+            LISTA1(4) ='SOMF  XY'
+            LISTA1(5) ='SOMF  YY'
+            LISTA1(6) ='SOMF  ZY'
+            LISTA1(7) ='SOMF  XZ'
+            LISTA1(8) ='SOMF  YZ'
+            LISTA1(9) ='SOMF  ZZ'
+            NLAB1 = 9
+            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
+            write(lupri,*) '   LABEL1 : ', LISTA1(1)
+            write(lupri,*) '   LABEL1 : ', LISTA1(2)
+            write(lupri,*) '   LABEL1 : ', LISTA1(3)
+            write(lupri,*) '   LABEL1 : ', LISTA1(4)
+            write(lupri,*) '   LABEL1 : ', LISTA1(5)
+            write(lupri,*) '   LABEL1 : ', LISTA1(6)
+            write(lupri,*) '   LABEL1 : ', LISTA1(7)
+            write(lupri,*) '   LABEL1 : ', LISTA1(8)
+            write(lupri,*) '   LABEL1 : ', LISTA1(9)
+         ENDIF
+      ENDIF
+C --------------------------------------------------------------
+      IF((KEY.EQ."SDZK").OR.(KEY.EQ."SDBS")) THEN 
+C
+C        Look for LABELS : SD
+C        ------------------------
+         write(lupri,*)
+         LABEL2='SD'
+         write(lupri,*) '@Linear setting  LABEL2 : ', LABEL2
+         IJ = 1
+         DO I=1, 3*NUCDEP
+           DO J=1,3
+             LISTA2(IJ)= 'SD '//CHRNOS(J/10)//CHRNOS(J/10)//
+     &                    CHRNOS(MOD(I,10))//' '//CHRXYZ(-J)
+             LABSYM(IJ)=1
+             write(lupri,*) '   LABEL2 : ', LISTA2(IJ), LABSYM(IJ)
+             IJ = IJ + 1
+           END DO
+         END DO
+         NLAB2 = 9   ! jim-dbg: NLAB2 = 9*NUCDEP
+C
+C        Look for LABELS : dd/didj
+C        -----------------------------------
+         IF(KEY.EQ."SDZK") THEN
+            write(lupri,*)
+            LISTA1(1) ='dd/dxdx'
+            LISTA1(2) ='dd/dxdy'
+            LISTA1(3) ='dd/dxdz'
+            LISTA1(4) ='dd/dxdy'
+            LISTA1(5) ='dd/dydy'
+            LISTA1(6) ='dd/dydz'
+            LISTA1(7) ='dd/dxdz'
+            LISTA1(8) ='dd/dydz'
+            LISTA1(9) ='dd/dzdz'
+            NLAB1 = 9
+            write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
+         ELSE IF(KEY.EQ."SDBS") THEN
+C        Look for LABELS : BSO
+C        -----------------------------------
+            write(lupri,*)
+            LISTA1(1) ='SOMF  XX'
+            LISTA1(2) ='SOMF  YX'
+            LISTA1(3) ='SOMF  ZX'
+            LISTA1(4) ='SOMF  XY'
+            LISTA1(5) ='SOMF  YY'
+            LISTA1(6) ='SOMF  ZY'
+            LISTA1(7) ='SOMF  XZ'
+            LISTA1(8) ='SOMF  YZ'
+            LISTA1(9) ='SOMF  ZZ'
+            NLAB1 = 9
+            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
+            write(lupri,*) '   LABEL1 : ', LISTA1(1)
+            write(lupri,*) '   LABEL1 : ', LISTA1(2)
+            write(lupri,*) '   LABEL1 : ', LISTA1(3)
+            write(lupri,*) '   LABEL1 : ', LISTA1(4)
+            write(lupri,*) '   LABEL1 : ', LISTA1(5)
+            write(lupri,*) '   LABEL1 : ', LISTA1(6)
+            write(lupri,*) '   LABEL1 : ', LISTA1(7)
+            write(lupri,*) '   LABEL1 : ', LISTA1(8)
+            write(lupri,*) '   LABEL1 : ', LISTA1(9)
+         ENDIF
+      ENDIF
+C --------------------------------------------------------------
 C
 C     Set variables for ABARSP and logicals
 C
@@ -384,13 +408,14 @@ C
       HFCLC  = NASHT .LE. 1 ! .T. RHF-closed shell or 1e in one active orbital
       TRIPLE = .TRUE.       ! .T. for triplet perturbation operators
       EXECLC = .FALSE.      ! false for linear response equations
-      IF(KEY.EQ."FCZK") THEN 
-         NABATY = 1         ! = 1 for real operators .. -1 for imm. op.
-         ELSE IF(KEY.EQ."FCBS") THEN 
-         NABATY = 1     
+      NABATY = 1
+cb      IF(KEY.EQ."FCZK") THEN 
+cb         NABATY = 1         ! = 1 for real operators .. -1 for imm. op.
+cb         ELSE IF(KEY.EQ."FCBS") THEN 
+cb         NABATY = 1     
 cx         ELSE IF (KEY.EQ."PSOK") THEN 
 cx           NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
-      END IF
+cb      END IF
       NABAOP = 1            ! number of right hand sides. dejarlo asi . solo 1
 C
 C     Zero the property tensors
@@ -433,8 +458,7 @@ C
             KLAST  = KSLV + 2*NVARPT
             write(lupri,*) ' KLAST ',KLAST
             write(lupri,*) ' LWORK ',LWORK
-            write(lupri,*) ' KLAST GT LWORK ! error '
-            IF (KLAST.GT.LWORK) CALL STOPIT('LINEARjim',' ',KLAST,LWORK)
+            IF (KLAST.GT.LWORK) CALL STOPIT('LINEART',' ',KLAST,LWORK)
             KWRK = KLAST
             LWRK = LWORK - KLAST + 1
             write(lupri,*)' NVARPT :', NVARPT 
