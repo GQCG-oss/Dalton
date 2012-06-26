@@ -550,8 +550,7 @@ c
 C
       RETURN
       END
-      SUBROUTINE ABS2INTER(MJWOP,
-     &                    ABS_KZVAR,WRK,LWRK)
+      SUBROUTINE ABS2INTER(MJWOP,ABS_KZVAR)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -570,10 +569,8 @@ c
 #include "infind.h"
 #include "infpri.h"
 c
-      DIMENSION MJWOP(2,MAXWOP,8),WRK(LWRK)
-      INTEGER ABS_KZVAR,ISYM
-C     local
-      INTEGER KFREE,LFREE
+      DIMENSION MJWOP(2,MAXWOP,8)
+      INTEGER ABS_KZVAR
 c     
       KFREE=1
       LFREE=LWRK
@@ -598,9 +595,10 @@ C
 c 
       ABS_MAXRM=MAXRM
       ABS_NFREQ_INTERVAL=NFREQ_INTERVAL
+      ABS_NFREQ_ALPHA=NFREQ_ALPHA
       IPRABSLRS=IPRABS
       DO I=1,ABS_NFREQ_INTERVAL
-      ABS_FREQ_ALPHA(I)=FREQ_ALPHA(I)
+        ABS_FREQ_ALPHA(I)=FREQ_ALPHA(I)
       ENDDO
 C
       RETURN

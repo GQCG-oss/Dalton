@@ -1196,7 +1196,8 @@ C
       IF (LFREE.LT.0) STOP 'ABS_ORTHONORM: out of memory'
 C
       THR_LD=1.0D-8
-      THR_LD2=THR_LD*THR_LD
+c      THR_LD2=THR_LD*THR_LD
+      THR_LD2=0.0d0
 c
       DO I=1,NBNEW/2
         ORCHK(I)=CONV(I)
