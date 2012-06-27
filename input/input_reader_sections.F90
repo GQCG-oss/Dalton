@@ -22,7 +22,7 @@
 !
 !
 
-module dalton_input_processing
+module input_reader_sections
 
 ! stefan: - this module reads the input section of a specific module
 !           within Dalton.
@@ -35,14 +35,16 @@ module dalton_input_processing
 
   implicit none
 
-  public read_dalton_input
+  public read_input_sections
+
+  private
 
 #include "inforb.h"
 #include "priunit.h"
 
 contains
 
-  subroutine read_dalton_input(word, kw_section)
+  subroutine read_input_sections(word, kw_section)
 
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
@@ -60,7 +62,7 @@ contains
          
     end select
 
-  end subroutine read_dalton_input
+  end subroutine
 
   subroutine read_input_lucita(word, kw_section)
 

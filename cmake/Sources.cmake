@@ -719,7 +719,7 @@ soppa/so_wrtve.F
 set(FREE_FORTRAN_SOURCES
 gp/binary_info.F90
 input/character_processing.F90
-input/dalton_input_processing.F90
+input/input_reader_sections.F90
 input/input_reader.F90
 input/keyword.F90
 lucita/dalton_mpi.F90
