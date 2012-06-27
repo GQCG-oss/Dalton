@@ -1980,7 +1980,6 @@ C 80 OTRIAL=TRUE; use orbital trial vectors each macro     OPT : ORB_TR
 C
 C******************************************
 C
-      use keyword
       use lucita_cfg
       use lucita_orbital_spaces
 #include "implicit.h"
