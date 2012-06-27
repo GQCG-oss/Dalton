@@ -1981,7 +1981,6 @@ C
 C******************************************
 C
       use keyword
-      use input_reader
       use lucita_cfg
       use lucita_orbital_spaces
 #include "implicit.h"
@@ -2129,7 +2128,8 @@ C  Here if "*END OF"
          CALL GPCLOSE(LUCMD,'KEEP')
 
 !        read lucita input
-         call read_menu_input('*LUCITA',lucita_input_provided)
+         call read_menu_input('DALTON.INP', lucmd,
+     &                        '*LUCITA', lucita_input_provided)
          if (.not. lucita_input_provided) then
          call quit('Oops, read_menu_input could not find *LUCITA input')
          end if

@@ -1,50 +1,8 @@
-!
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
-!
-!
-
-module input_reader_sections
-
-! stefan: - this module reads the input section of a specific module
-!           within Dalton.
-!
-!radovan: please feel free to copy/use/improve this inside DIRAC/Dalton
-!         without asking
-
-  use keyword
-  use character_processing
-
-  implicit none
-
-  public read_input_sections
-
-  private
-
-#include "inforb.h"
-#include "priunit.h"
-
-contains
-
   subroutine read_input_sections(word, kw_section)
+
+    use input_reader
+
+    implicit none
 
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
@@ -66,7 +24,10 @@ contains
 
   subroutine read_input_lucita(word, kw_section)
 
+    use input_reader
     use lucita_cfg
+
+    implicit none
 
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
@@ -76,6 +37,9 @@ contains
     integer                          :: i, j
     integer                          :: ios, islash
 !   ----------------------------------------------------------------------------
+
+#include "priunit.h"
+#include "inforb.h"
 
     call reset_available_kw_list()
 
@@ -118,7 +82,7 @@ contains
     if (kw_matches(word, '.INACTI')) then
 
       lucita_cfg_inactive_shell_set = .true.
-      read(unit_in, *) (nish_lucita(i), i=1,nsym)
+      read(get_file_unit(), *) (nish_lucita(i), i=1,nsym)
 
     end if
 
@@ -137,7 +101,7 @@ contains
 !     process the min max occupation / per orbital occupation in each GAS shell
       do i = 1, lucita_cfg_nr_gas_spaces
 
-        read(unit_in,'(a)') input_line
+        read(get_file_unit(),'(a)') input_line
         call upcase(input_line)
  
         islash = index(input_line,'/')
@@ -179,20 +143,20 @@ contains
       lucita_cfg_ras1_set         = .true.
       lucita_cfg_init_wave_f_type = 2
 
-      read(unit_in, *) (nas1_lucita(i), i=1,nsym)
+      read(get_file_unit(), *) (nas1_lucita(i), i=1,nsym)
       call kw_read(word, lucita_cfg_max_holes_ras1)
 
     end if
 
     if (kw_matches(word, '.RAS2  ')) then
       lucita_cfg_ras2_set = .true.
-      read(unit_in, *) (nas2_lucita(i), i=1,nsym)
+      read(get_file_unit(), *) (nas2_lucita(i), i=1,nsym)
     end if
 
     if (kw_matches(word, '.RAS3  ')) then
 
       lucita_cfg_ras3_set = .true.
-      read(unit_in, *) (nas3_lucita(i), i=1,nsym)
+      read(get_file_unit(), *) (nas3_lucita(i), i=1,nsym)
       call kw_read(word, lucita_cfg_max_e_ras3)
 
     end if
@@ -245,5 +209,3 @@ contains
     call check_whether_kw_found(word, kw_section)
 
   end subroutine
-
-end module
