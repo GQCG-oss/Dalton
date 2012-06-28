@@ -86,7 +86,6 @@ C...
 C...  This subroutine was written by Juan Ignacio Melo using
 C...  the subroutine ABACTOCD  as a model (2012)
 C
->>>>>>> lresc-linear
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
