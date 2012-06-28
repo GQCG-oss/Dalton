@@ -32,52 +32,6 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 c    ---------------------------------------
-C  /* Deck lrscdrv */
-      SUBROUTINE LRSCDRV(WORK,LWORK)
-C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <lrescinf.h>
-C
-
-      write(lupri,*)'@ LRSCDRV : ' 
-      IF (.NOT. LRESCALL) THEN 
-         WRITE (LUPRI,'(A)')  '   all logic  '
-      END IF
-
-      IF (SIGMAP1S)  THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : ', WORD
-          CALL LRSCLIN('P1S',WORK,LWORK)
-      END IF 
-
-      IF (SIGMAP1T) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1T for : ', WORD
-      END IF
-
-      IF (SIGMAP3S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA3S for : ', WORD
-      END IF
-
-      IF (SIGMAP3T) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA3T for : ', WORD
-      END IF
-
-      IF (SIGMAD0S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : ', WORD
-      END IF
-
-      IF (SIGMAD1S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : ', WORD
-         CALL LRSCLIN('D1S',WORK,LWORK)
-      END IF
-
-      RETURN
-      END
-C...
-c    ---------------------------------------
 c    ---------------------------------------
 C
       SUBROUTINE LINEARS(KEY,WORK,LWORK)
