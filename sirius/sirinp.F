@@ -3816,6 +3816,8 @@ C             although code in GNRLIN in dalton.F also takes care of that
              IRDMO = 9
           ELSE IF (INDEX(REWORD,'SIRIFC') .GT. 0) THEN
              IRDMO = 10
+          ELSE IF (INDEX(REWORD,'LUCIA') .GT. 0) THEN
+             IRDMO = 11
           ELSE IF (INDEX(REWORD,'HUCKEL') .GT. 0 .OR.
      &             INDEX(REWORD,'EHT')    .GT. 0) THEN
              IRDMO = 8
