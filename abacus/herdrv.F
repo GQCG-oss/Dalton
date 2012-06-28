@@ -507,7 +507,6 @@ C
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
      &                231,232,233,234,235,236,237,238,239,240,241), I
-c jim-dbg :  i would do a llop over the lresc ints to do, ... 
             END IF
          END DO
             IF (WORD .EQ. '.OPTION') THEN
@@ -1232,9 +1231,22 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             ONEPRP = .TRUE.
             GO TO 100
   241    CONTINUE
-Cx jim-dbg : here we set all the integrals to do LRESC
-            write(lupri,*)'jim-dbg : We set LRESC integrals to be done'
+c jim-dbg : setting all integrals for LRESC module
+            ONEPRP = .TRUE.
             DOLRINTS=.TRUE.
+            FERMI = .TRUE.  ! 115.Fermi 
+            KINENE = .TRUE. ! 133.Kinenerg
+            SOFLD  = .TRUE. ! 184.somf
+            DPTOVL = .TRUE. ! 191.
+            SPIDIP = .TRUE. ! 117.Sd
+            ANGMOM = .TRUE. ! 127.
+            DARWIN = .TRUE. ! 164
+            MASSVL = .TRUE. ! 163
+            NSTCGO = .TRUE. ! 161.Dia
+            PSO = .TRUE.    ! 116.Pso
+            DIPVEL = .TRUE. ! 108.DipVel
+            OZKE   = .TRUE. ! 215.Lkin
+            PSOKE  = .TRUE. ! 216.PsoKin
             GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
