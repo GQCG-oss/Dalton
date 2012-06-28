@@ -56,14 +56,13 @@ C jim  aca van las opctiones para LRESC , aun no las defino todas
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
 C
-      write(lupri,*) ' @LRSCINP to read dal file :' , WORD
       NEWDEF = (WORD .EQ. '*LROPTS')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
-            write(lupri,*) '  @LRSCINP : reading : ' , WORD
+            write(lupri,*) ' @LRSCINP : reading : ' , WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
@@ -84,23 +83,22 @@ C
 C   READ GAUGEO : DEFINIR AKLGUNA VAR PARA GAUGEO
  1             CONTINUE
                     write(lupri,*)' ..aca leo gaugeo ', WORD
-                    READ (LUCMD, *) (LRGAUG(IS), IS = 1, 3)
+                    READ (LUCMD,*) (LRGAUG(IS), IS = 1, 3)
                     GAUCHANG =.TRUE.
                     ICHANG = ICHANG + 1
                GOTO 100
 C   SET PRINT LEVEL 
  2             CONTINUE
-                  write(lupri,*)' ..aca leo print levels '
+                  write(lupri,*)' ..aca leo print level '
                   READ (LUCMD,*) JIMPRT
-c                  IF (JIMPRT.EQ.0) THEN write(lupri,*)'hacer algo  '  
                   ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  3             CONTINUE
                   write(lupri,*)' ..aca leo SELECT NATOM '
                   READ (LUCMD,*) NATOM
-              CALL HEADER('Remember to set GAUGEO on INTEGRAL SECTION'//
-     &            ' it is important GAUGEO placed on selected NATOM',1)
+            write(lupri,*)'Remember to set GAUGEO on INTEGRAL SECTION'//
+     &            ' it is important GAUGEO placed on selected NATOM'
                   ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
@@ -163,7 +161,7 @@ c jim-dbg ICHANG < 0 no cambios
          CALL HEADER('Changes of defaults for LRESC :',0)
          IF (GAUCHANG) THEN
             WRITE (LUPRI,*) 'cambiaste origen de gauge .. ojo  '
-            write(lupri,*) ' a ver ', GAUCHANG
+            write(lupri,*) ' a ver : ', GAUCHANG
          END IF
          IF (JIMPRT.NE.0) THEN
             WRITE (LUPRI,'(A,I5)')
@@ -187,6 +185,7 @@ c jim-dbg ICHANG < 0 no cambios
          IF (NUCSPI .GT. 0)
      &      WRITE (LUPRI,'(A)')' The spin-spin couplings of selected '//
      &           'nuclei with all the others will be calculated'
+       WRITE(LUPRI,*)' ' 
       END IF
       RETURN
       END
@@ -204,7 +203,6 @@ C#include <cbiqr.h
 c jim-dbg : sacar esto de abajo
 #include <priunit.h>
 C
-      Write(lupri,*)'  @LRSCINI for LRESC defaults' 
       JIMPRT   = 0
       NATOM    = 1 
       LRGAUG(1) = 0.000
@@ -222,5 +220,67 @@ cx      CALL DZERO (QCFREQ,NFMAX)
 C
       RETURN
       END
+c    ---------------------------------------
+C  /* Deck lrscdrv */
+      SUBROUTINE LRSCDRV(WORK,LWORK)
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <priunit.h>
+#include <wrkrsp.h>
+#include <lrescinf.h>
+C
+
+      write(lupri,*)'@ LRSCDRV : '
+
+      IF (.NOT. LRESCALL) THEN
+         WRITE (LUPRI,'(A)')  '   LRESC ALL set : NOT '
+      END IF
+C 
+C First Order SINLGET 
+C
+      IF (SIGMAP1S)  THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : PsoKin'
+         WRITE (LUPRI,'(A)')'           NOT FOR NOW, some bugs inside'
+c         CALL LINEARS('PSOK',WORK,LWORK) ! NOOOO ANDA
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : Lkin'
+         CALL LINEARS('LKIN',WORK,LWORK) ! ANDA
+      END IF
+
+      IF (SIGMAD1S) THEN
+         WRITE (LUPRI,'(A)')'  Calling to SIGMA1S for : Diamagnetic'// 
+     &         ' Singlet First Order Shielding corrections'
+c. anda         CALL LINEARS('D1S ',WORK,LWORK) ! ANDA
+      END IF
+C 
+C First Order TRIPLET
+C
+      IF (SIGMAP1T) THEN
+         WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
+     &         ' Triplet First Order Shielding corrections'
+         CALL LINEART('FCZK',WORK,LWORK) !ANDA
+         CALL LINEART('SDZK',WORK,LWORK) !ANDA
+         CALL LINEART('FCBS',WORK,LWORK) !ANDA 
+         CALL LINEART('SDBSO',WORK,LWORK) !ANDA
+      END IF
+
+      IF (SIGMAP3S) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA3S for : '
+      END IF
+
+      IF (SIGMAP3T) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA3T for : '
+      END IF
+
+      IF (SIGMAD0S) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : '
+      END IF
+
+
+      RETURN
+      END
+C...
+c    ---------------------------------------
 c    ---------------------------------------
 

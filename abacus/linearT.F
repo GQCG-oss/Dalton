@@ -1,92 +1,15 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-c    ---------------------------------------
-C  /* Deck lrscdrv */
-      SUBROUTINE LRSCDRV(WORK,LWORK)
-C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <lrescinf.h>
-C
+Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-      write(lupri,*)'@ LRSCDRV : ' 
-      IF (.NOT. LRESCALL) THEN 
-         WRITE (LUPRI,'(A)')  '   all logic  '
-      END IF
 
-      IF (SIGMAP1S)  THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : ', WORD
-          CALL LRSCLIN('P1S',WORK,LWORK)
-      END IF 
-
-      IF (SIGMAP1T) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1T for : ', WORD
-      END IF
-
-      IF (SIGMAP3S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA3S for : ', WORD
-      END IF
-
-      IF (SIGMAP3T) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA3T for : ', WORD
-      END IF
-
-      IF (SIGMAD0S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : ', WORD
-      END IF
-
-      IF (SIGMAD1S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : ', WORD
-         CALL LRSCLIN('D1S',WORK,LWORK)
-      END IF
-
-      RETURN
-      END
-C...
-c    ---------------------------------------
-c    ---------------------------------------
-C
-      SUBROUTINE LINEARS(KEY,WORK,LWORK)
+      SUBROUTINE LINEART(KEY,WORK,LWORK)
 C  
 C...
 C...  This subroutine was written by Juan Ignacio Melo using
-C...  the subroutine ABACTOCD  as a model (2012)
+C...  the subroutine LINEARS  as a model (2012)
 C
->>>>>>> lresc-linear
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
@@ -116,7 +39,7 @@ C
 #include <wrkrsp.h>
 #include <maxmom.h>
 #include <maxaqn.h>
-#include <symmet.h>
+C#include <symmet.h>
 #include <abainf.h>
 #include <gnrinf.h>
 c#include <infsop.h>
@@ -128,25 +51,26 @@ C
 #include "orgcom.h"
 C
 cxu  sacar lo de abajo
-      IPRLNR =2
+      IPRLNR =12
 cxu
 C
 C
-C  LINEAR LRESC SINGLET ROUTINE
-C   KEY = 'D1S '  DIAMAGNETIC <<DIA,MV>> + <<DIA,DW>> 
-C         'PSOK'  PARAMAGNETIC 
-C         'LKIN'  PARAMAGNETIC
+C  LINEAR LRESC TRIPLET ROUTINE
+C   KEY = 'FCZK'  PARAMAGNETIC <<Fc,KIN>>  
+C         'SDZK'  PARAMAGNETIC <<Sd,KIN>>
+C         'FCBS'  PARAMAGNETIC <<Fc,KIN>>
+C         'SDBS'  PARAMAGNETIC <<Sd,KIN>>
 C
 C
-      CALL QENTER('LRSCLIN')
+      CALL QENTER('LINEART')
       CALL TIMER('START ',TIMEIN,TIMOUT)
       IF (IPRLNR .GT. 0) THEN
          WRITE (LUPRI,'(A,/)') ' <<<<<<<<<< Output from LRESC-'//
-     &       'LINEAR-S >>>>>>>>>> '
+     &       'LINEAR-T >>>>>>>>>> '
          WRITE (LUPRI,'(A,/)') ' <<<<<< Por Ahora solo PRIMER atomo '//
-     &       'LINEAR-S >>>>>>>>>> '
+     &       'LINEAR-T >>>>>>>>>> '
          WRITE(LUPRI,*)
-         WRITE(LUPRI,'(2A)') '@LINEARS to do ', KEY
+         WRITE(LUPRI,'(2A)') '@LINEART to do ', KEY
          WRITE(LUPRI,*) 'NATOM set to ', NATOM
       END IF
 C
@@ -203,7 +127,7 @@ C
 
       CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
 C          RD_SIRIFC( KEY ,FOUND,   AMAT   ,  WRK      ,LWRK)
-      IF (.NOT.FOUND) CALL QUIT('LRSCLIN error: CMO not on SIRIFC')
+      IF (.NOT.FOUND) CALL QUIT('LINEART error: CMO not on SIRIFC')
 Cjim      write(lupri,*)' CMOS :  dan bien !!!' 
 Cjim      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
       write(lupri,*) '   '     
@@ -349,6 +273,8 @@ cxz          NLAB = 9
 cxz          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 cxz          NLBSHIS = 13
 cxz       ENDIF
+
+
 C  blanquear todas las labels antes 
        NLAB1 = 0
        NLAB2 = 0 
@@ -360,116 +286,144 @@ c       LABAPP es un common q se usa en rsp ??
 C  nidx = 3.NATOM-2, 3.NATOM-1, 3.NATOM 
 
 
-      IF(KEY.EQ."D1S ") THEN 
-C        Look for LABELS : NSCO  
-C        -----------------------
-         write(lupri,*)
-         LABEL1='NSCO'
-         write(lupri,*) '@Linear setting  LABEL1 : NSCO '
-         IJ = 1
-         DO I=1,NCOOR
-           DO J=1,3
-             LISTA1(IJ)= CHRNOS(I/10)//CHRNOS(I/10)//CHRNOS(MOD(I,10))//
-     &       'NSCO'//CHRXYZ(J)
-             LABSYM(IJ)=1
-             write(lupri,*) '   LABEL1 : ', LISTA1(IJ), LABSYM(IJ)
-             IJ = IJ + 1
-           END DO
-         END DO
-         NLAB1 = 3*NCOOR
-C        Look for LABELS : DARWIN, MASSVELO
-C        -----------------------------------
-         write(lupri,*)
-         LISTA2(1) ='DARWIN  '
-         LISTA2(2) ='MASSVELO'
-         NLAB2 = 2
-         write(lupri,*) '@Linear setting  LABEL2 :'
-         write(lupri,*) '   LABEL2 : ', LISTA2(1)
-         write(lupri,*) '   LABEL2 : ', LISTA2(2)
 C --------------------------------------------------------------
-      ELSE IF (KEY.EQ."LKIN") THEN
-C        Look for LABELS : PSO 
-C        ----------------------       
+      IF((KEY.EQ."FCZK").OR.(KEY.EQ."FCBS")) THEN 
+C
+C        Look for LABELS : FERMI  
+C        ------------------------
          write(lupri,*)
-         LABEL1='PSO'
-         write(lupri,*) '@Linear setting  LABEL1 : PSO '
+c jim-dbg LABEL2 should be a string to atom name
+         LABEL2='FC'
+         write(lupri,*) '@Linear setting  LABEL2 : FC'
+         write(lupri,*) '   LABEL 2 : Por AHORA solo |FC X 01| '
+cx       DO I=1,NCOOR
+           LISTA2(1)= 'FC X  01'
+           LABSYM(1)=1
+cx         write(lupri,*) '   LABEL2 : ', LISTA2(I), LABSYM(I)
+cx       END DO
+cx       NLAB1 = 3*NCOOR
+         NLAB2 = 1
+C         
+         IF(KEY.EQ."FCZK") THEN
+C
+C        Look for LABELS : KINENERG
+C        -----------------------------------
+            write(lupri,*)
+            LISTA1(1) ='KINENERG'
+            NLAB1 = 1
+            write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
+C
+C        Look for LABELS : BSO
+C        -----------------------------------
+         ELSE IF(KEY.EQ."FCBS") THEN
+            write(lupri,*)
+            LISTA1(1) ='SOMF  XX'
+            LISTA1(2) ='SOMF  YX'
+            LISTA1(3) ='SOMF  ZX'
+            LISTA1(4) ='SOMF  XY'
+            LISTA1(5) ='SOMF  YY'
+            LISTA1(6) ='SOMF  ZY'
+            LISTA1(7) ='SOMF  XZ'
+            LISTA1(8) ='SOMF  YZ'
+            LISTA1(9) ='SOMF  ZZ'
+            NLAB1 = 9
+            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
+            write(lupri,*) '   LABEL1 : ', LISTA1(1)
+            write(lupri,*) '   LABEL1 : ', LISTA1(2)
+            write(lupri,*) '   LABEL1 : ', LISTA1(3)
+            write(lupri,*) '   LABEL1 : ', LISTA1(4)
+            write(lupri,*) '   LABEL1 : ', LISTA1(5)
+            write(lupri,*) '   LABEL1 : ', LISTA1(6)
+            write(lupri,*) '   LABEL1 : ', LISTA1(7)
+            write(lupri,*) '   LABEL1 : ', LISTA1(8)
+            write(lupri,*) '   LABEL1 : ', LISTA1(9)
+         ENDIF
+      ENDIF
+C --------------------------------------------------------------
+      IF((KEY.EQ."SDZK").OR.(KEY.EQ."SDBS")) THEN 
+C
+C        Look for LABELS : SD
+C        ------------------------
+         write(lupri,*)
+         LABEL2='SD'
+         write(lupri,*) '@Linear setting  LABEL2 : ', LABEL2
          IJ = 1
-         DO I=1, NUCDEP
+         DO I=1, 3*NUCDEP
            DO J=1,3
-             LISTA1(IJ)= 'PSO '//CHRNOS(J/10)//CHRNOS(J/10)//
-     &                    CHRNOS(MOD(IJ,10))
-             LABSYM(IJ)=1
-             write(lupri,*) '   LABEL1 : ', LISTA1(IJ), LABSYM(IJ)
-             IJ = IJ + 1
-           END DO
-         END DO
-         NLAB1 = 3*NUCDEP
-C        Look for LABELS : OZ-KE
-C        ------------------------       
-         write(lupri,*)
-         LABEL2='OZKE   '
-         write(lupri,*) '@Linear setting  LABEL1 : OZ-KE '
-         DO J=1,3
-           LISTA2(J)= CHRXYZ(J)//'OZKE   '
-           LABSYM(J)=1 
-           write(lupri,*) '   LABEL2 : ', LISTA2(J), LABSYM(J)
-         END DO 
-         NLAB2 = 3
-C -----------------------------------------------------------------
-      ELSE IF (KEY.EQ."PSOK") THEN
-C        Look for LABELS : ANGMOM
-C        -------------------------       
-         write(lupri,*)
-         LABEL1='ANGMOM'
-         write(lupri,*) '@Linear setting  LABEL1 : ANGMOM '
-         DO J=1,3
-           LISTA1(J)= CHRXYZ(J)//'ANGMOM '
-           LABSYM(J)=1
-           write(lupri,*) '   LABEL1 : ', LISTA1(J), LABSYM(J)
-         END DO
-         NLAB1 = 3
-C        Look for LABELS : PSO-KE
-C        -------------------------       
-         write(lupri,*)
-         LABEL2='PSOKE'
-         write(lupri,*) '@Linear setting  LABEL2 : PSO-KE '
-         IJ = 1
-         DO I=1,NUCDEP
-           DO J=1,3
-             LISTA2(IJ)= 'PSOKE'//CHRNOS(J/10)//CHRNOS(J/10)//
-     &                    CHRNOS(MOD(IJ,10))
+             LISTA2(IJ)= 'SD '//CHRNOS(J/10)//CHRNOS(J/10)//
+     &                    CHRNOS(MOD(I,10))//' '//CHRXYZ(-J)
              LABSYM(IJ)=1
              write(lupri,*) '   LABEL2 : ', LISTA2(IJ), LABSYM(IJ)
              IJ = IJ + 1
            END DO
          END DO
-         NLAB2 = 3*NUCDEP
-      END IF
-C -----------------------------------------------------------------
+         NLAB2 = 9   ! jim-dbg: NLAB2 = 9*NUCDEP
+C
+C        Look for LABELS : dd/didj
+C        -----------------------------------
+         IF(KEY.EQ."SDZK") THEN
+            write(lupri,*)
+            LISTA1(1) ='dd/dxdx'
+            LISTA1(2) ='dd/dxdy'
+            LISTA1(3) ='dd/dxdz'
+            LISTA1(4) ='dd/dxdy'
+            LISTA1(5) ='dd/dydy'
+            LISTA1(6) ='dd/dydz'
+            LISTA1(7) ='dd/dxdz'
+            LISTA1(8) ='dd/dydz'
+            LISTA1(9) ='dd/dzdz'
+            NLAB1 = 9
+            write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
+         ELSE IF(KEY.EQ."SDBS") THEN
+C        Look for LABELS : BSO
+C        -----------------------------------
+            write(lupri,*)
+            LISTA1(1) ='SOMF  XX'
+            LISTA1(2) ='SOMF  YX'
+            LISTA1(3) ='SOMF  ZX'
+            LISTA1(4) ='SOMF  XY'
+            LISTA1(5) ='SOMF  YY'
+            LISTA1(6) ='SOMF  ZY'
+            LISTA1(7) ='SOMF  XZ'
+            LISTA1(8) ='SOMF  YZ'
+            LISTA1(9) ='SOMF  ZZ'
+            NLAB1 = 9
+            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
+            write(lupri,*) '   LABEL1 : ', LISTA1(1)
+            write(lupri,*) '   LABEL1 : ', LISTA1(2)
+            write(lupri,*) '   LABEL1 : ', LISTA1(3)
+            write(lupri,*) '   LABEL1 : ', LISTA1(4)
+            write(lupri,*) '   LABEL1 : ', LISTA1(5)
+            write(lupri,*) '   LABEL1 : ', LISTA1(6)
+            write(lupri,*) '   LABEL1 : ', LISTA1(7)
+            write(lupri,*) '   LABEL1 : ', LISTA1(8)
+            write(lupri,*) '   LABEL1 : ', LISTA1(9)
+         ENDIF
+      ENDIF
+C --------------------------------------------------------------
 C
 C     Set variables for ABARSP and logicals
 C
       CICLC  = .FALSE.      ! TRUE for CI calculations
       HFCLC  = NASHT .LE. 1 ! .T. RHF-closed shell or 1e in one active orbital
-      TRIPLE = .FALSE.      ! .T. for triplet perturbation operators
+      TRIPLE = .TRUE.       ! .T. for triplet perturbation operators
       EXECLC = .FALSE.      ! false for linear response equations
-      IF(KEY.EQ."D1S ") THEN 
-         NABATY = 1         ! = 1 for real operators .. -1 for imm. op.
-         ELSE IF(KEY.EQ."LKIN") THEN 
-           NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
-         ELSE IF (KEY.EQ."PSOK") THEN 
-           NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
-           write(lupri,*) ' NO SE QUE PONERLE NABATY A PSOKIN' 
-      END IF
+      NABATY = 1
+cb      IF(KEY.EQ."FCZK") THEN 
+cb         NABATY = 1         ! = 1 for real operators .. -1 for imm. op.
+cb         ELSE IF(KEY.EQ."FCBS") THEN 
+cb         NABATY = 1     
+cx         ELSE IF (KEY.EQ."PSOK") THEN 
+cx           NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
+cb      END IF
       NABAOP = 1            ! number of right hand sides. dejarlo asi . solo 1
 C
 C     Zero the property tensors
 cdx      IF (MAGSUS) CALL DZERO(SUSDZD,9)
 
 C   
-C        Loop over the right operators which are the
-C        the dipole velocity operators 
-C        ===========================================
+C        Loop over the right operators which are the KINENERG or BSO
+C        ============================================================
 C   
       LUSOVE = 456
       LUGDVE = 457
@@ -483,8 +437,8 @@ c      nidx = 1
 c      nidy = nidx+NLAB1
       DO 300 IDIP = 1,NLAB1
          LABEL1 = LISTA1(IDIP)
-C
-         ISYM=ISYMAX(IDIP,1)+1
+cv         ISYM=LABSYM(IDIP) 
+         ISYM=1
          write(lupri,*)' isimax :', ISYM   ! ISYM =1  deberia ser 1        
 C     
 c        set variables for response module
@@ -504,8 +458,7 @@ C
             KLAST  = KSLV + 2*NVARPT
             write(lupri,*) ' KLAST ',KLAST
             write(lupri,*) ' LWORK ',LWORK
-            write(lupri,*) ' KLAST GT LWORK ! error '
-            IF (KLAST.GT.LWORK) CALL STOPIT('LINEARjim',' ',KLAST,LWORK)
+            IF (KLAST.GT.LWORK) CALL STOPIT('LINEART',' ',KLAST,LWORK)
             KWRK = KLAST
             LWRK = LWORK - KLAST + 1
             write(lupri,*)' NVARPT :', NVARPT 
@@ -515,12 +468,12 @@ C           Find right hand side for right operator and write to file
 C           =========================================================
 C
             KSYMOP = ISYM
-            TRPLET = .FALSE.
+            TRPLET = .TRUE.
             IPRSP = -2 
-            ANTSYM = 0
+            ANTSYM = -1
 C   
             write(lupri,*) ' about to call GETPV'  
-C jim sym to be read on luprop
+C  
 C ANTSYM : matrix symmetry of PRPMO matrix
 C          (1: symmetric, -1: antisymmetric, 0: unknown)
 
@@ -551,6 +504,7 @@ C
                LABEL2 = LISTA2(IPL)
                write(lupri,*)'      LABAPP IPL           ' , LABEL2
                write(lupri,*) '     KSYM   = LABSYM(IPL) ', KSYM 
+c            IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
                KSYM   = 1
                write(lupri,*) '     else KSYM   = 1      ', KSYM 
 C
@@ -561,7 +515,7 @@ C              (otherwise 2. order property SNDPRP is zero)
 C
 cx               IF (KSYM.EQ.ISYM) THEN
                   KSYMOP = ISYM
-                  TRPLET = .FALSE.
+                  TRPLET = .TRUE.
 C
 C                 Find right hand side for left operator
 C                 ========================================
@@ -583,10 +537,10 @@ C
                   CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
 C
 cd                  IF (IPRLNR.GT.-1) THEN
-cd                     WRITE (LUPRI,'(2A)') 'Solution Vector, label: ',
-cd     &                                    LABEL1
-cd                     CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,1,
-cd     &                           LUPRI)
+                     WRITE (LUPRI,'(2A)') 'Solution Vector, label: ',
+     &                                    LABEL1
+                     CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,1,
+     &                           LUPRI)
 cd                  ENDIF
 C
                   SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
@@ -654,66 +608,12 @@ cb          ENDDO
 cb        ENDDO
       ENDIF
 C
-      CALL TIMER ('LRSCLIN',TIMEIN,TIMOUT)
+      CALL TIMER ('LINIEART',TIMEIN,TIMOUT)
 C
-      CALL QEXIT('LRSCLIN')
+      CALL QEXIT('LINEART')
       RETURN
       END
 C...
-Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-
 c    ---------------------------------------
 c    ---------------------------------------
-C  /* Deck todoint */
-cx      LOGICAL FUNCTION TODOINT(LABEL,IFILE)
-C     07-06-2000 ALig
-C
-C     is a non generic function to check if some property (LABEL) are 
-C     already stored in file (IFILE).
-C     ... it search always in the AOPROPER file
-C
-C     It could be necessary to correct the PSO part for molecules with 
-C     more then 33 atoms
-C
-cx#include <implicit.h>
-cx#include <mxcent.h>
-cx#include <trkoor.h>
-cx#include <chrnos.h>
-cLig DEBUG <>
-cx#include <priunit.h>
-cx      CHARACTER*8 LABEL,LABEL1
-cx      LOGICAL FNDLAB
-C
-cx     TODOINT = .FALSE. 
-cx      NOINT = 0
-cx      CALL GPOPEN(IFILE,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
-cx     &            .FALSE.)
-cx      REWIND IFILE
-cx      IF (LABEL.EQ.'DIPLEN  ') THEN
-cx         IF (FNDLAB('XDIPLEN ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('YDIPLEN ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('ZDIPLEN ',IFILE)) NOINT=NOINT+1
-cx         IF (NOINT.EQ.3) TODOINT=.TRUE.
-cx      ELSE IF (LABEL.EQ.'DIPVEL  ') THEN
-cx         IF (FNDLAB('XDIPVEL ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('YDIPVEL ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('ZDIPVEL ',IFILE)) NOINT=NOINT+1
-cx         IF (NOINT.EQ.3) TODOINT=.TRUE.
-cx      ELSE IF (LABEL.EQ.'ANGMOM  ') THEN
-cx         IF (FNDLAB('XANGMOM ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('YANGMOM ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('ZANGMOM ',IFILE)) NOINT=NOINT+1
-cx         IF (NOINT.EQ.3) TODOINT=.TRUE.
-cx      ELSE IF (LABEL.EQ.'RPSO    ') THEN
-cx         IF (FNDLAB('01RPSO X',IFILE))  TODOINT = .TRUE.
-cx      ELSE IF (LABEL.EQ.'PSO     ') THEN
-cx         DO I=1,NCOOR
-cx            LABEL1='PSO '//CHRNOS(I/10)//CHRNOS(MOD(I,10))//'  '
-cx            IF (FNDLAB(LABEL1,IFILE)) NOINT=NOINT+1
-cx         END DO  
-cx         IF (NOINT.EQ.NCOOR) TODOINT=.TRUE.
-cx      ENDIF   
-cx      CALL GPCLOSE(IFILE,'KEEP')
-cx      RETURN  
-cx      END     
+
