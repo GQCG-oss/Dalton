@@ -169,7 +169,7 @@ c jim-dbg ICHANG < 0 no cambios
          END IF
          IF (.NOT. LRESCALL) WRITE (LUPRI,'(A)')
      &      ' Not LRESC for all corrections, will be calculated. ' //
-     &      'Only the following will be done : '
+     &      'Only the following will be done, as asked for : '
          IF (SIGMAP1S)  WRITE (LUPRI,'(A)')
      &   '   Paramagnetic first order singlet corrections to shielding'
          IF (SIGMAP1T) WRITE (LUPRI,'(A)')

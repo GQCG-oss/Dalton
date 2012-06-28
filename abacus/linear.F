@@ -302,8 +302,6 @@ cxz          NLAB = 9
 cxz          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 cxz          NLBSHIS = 13
 cxz       ENDIF
-
-
 C  blanquear todas las labels antes 
        NLAB1 = 0
        NLAB2 = 0 
@@ -620,8 +618,6 @@ Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-
 
 
 
