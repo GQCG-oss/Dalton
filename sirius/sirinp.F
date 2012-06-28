@@ -2124,17 +2124,11 @@ C  Here if "*END OF"
 
 !      read LUCITA input if applicable
        if(lucita_input_provided)then
-         CALL GPCLOSE(LUCMD,'KEEP')
-
-!        read lucita input
          call read_menu_input('DALTON.INP', lucmd,
      &                        '*LUCITA', lucita_input_provided)
          if (.not. lucita_input_provided) then
          call quit('Oops, read_menu_input could not find *LUCITA input')
          end if
-
-         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
        end if
 
 C
