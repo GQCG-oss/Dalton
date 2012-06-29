@@ -638,6 +638,7 @@ C   4      formatted input: (6F12.8)
 C   7      from LUIT1 with label "OLDORB"
 C   9      from LUIT1 with label "NEWORB"
 C  10      from SIRIFC (LUSIFC)
+C  11      from LUCIA program, formatted file LUCIA.CMO
 C
 C
 #include "implicit.h"
@@ -664,10 +665,10 @@ C
       ELSE
          NOSTOP = .FALSE.
       END IF
-      IF (IRDMO.LT.1 .OR. IRDMO.GT.10) THEN
+      IF (IRDMO.LT.1 .OR. IRDMO.GT.11) THEN
          WRITE (LUPRI,10000) IRDMO
          WRITE (LUERR ,10000) IRDMO
-10000    FORMAT(/' *** READMO-ERROR *** IRDMO =',I4,' out of range')
+10000    FORMAT(/' *** READMO-ERROR *** IRDMO =',I4,' is out of range')
          CALL QTRACE(LUPRI)
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -675,7 +676,8 @@ C
             CALL QUIT('*** ERROR *** illegal option in READMO')
          END IF
       END IF
-      GO TO (9000,9000,300,300,8000,8000,700,8000,700,1000),IRDMO
+      GO TO (9000,9000,300,300,8000,8000,700,8000,700,1000,
+     &       1100),IRDMO
 C
 C-- IRDMO=3 or 4:
 C
@@ -758,7 +760,7 @@ C
       IF (JLUIT1 .LE. 0) CALL GPCLOSE(LUIT1,'KEEP')
       GO TO 9000
 C
-C-- IRDMO = 10:
+C-- IRDMO = 10: read CMO from SIRIFC (LUSIFC)
 C
  1000 CONTINUE
       CALL RD_SIRIFC('CMO',FOUND,CMO,WRK,LFREE)
@@ -771,7 +773,13 @@ C
       END IF
       GO TO 9000
 C
-C--   IRDMO 5,6,8 not defined any more.
+C-- IRDMO = 11: read CMO from LUCIA program, formatted file LUCIA.CMO
+C
+ 1100 CONTINUE
+         CALL QUIT('RD_LUCIA is not implemented yet')
+      GO TO 9000
+C
+C--  IRDMO 5,6,8 are not defined any more.
 C
  8000 CONTINUE
 C
