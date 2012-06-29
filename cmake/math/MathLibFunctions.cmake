@@ -28,8 +28,8 @@ macro(find_math_header _service _header)
     string(TOUPPER ${_service} _SERVICE)
     find_path(${_SERVICE}_INCLUDE_DIRS
         NAMES ${_header}
-        PATHS ${${_SERVICE}_ROOT} 
-        HINTS ${${_SERVICE}_ROOT}/include 
+        PATHS ${${_SERVICE}_ROOT}
+        HINTS ${${_SERVICE}_ROOT}/include
         PATH_SUFFIXES ${MATH_INCLUDE_PATH_SUFFIXES}
         NO_DEFAULT_PATH
         )
@@ -52,7 +52,7 @@ macro(find_math_libs _service)
         find_library(_lib
             NAMES ${l}
             PATHS ${${_SERVICE}_ROOT}
-            HINTS ${${_SERVICE}_ROOT}/lib64 ${${_SERVICE}_ROOT}/lib 
+            HINTS ${${_SERVICE}_ROOT}/lib64 ${${_SERVICE}_ROOT}/lib
             PATH_SUFFIXES ${MATH_LIBRARY_PATH_SUFFIXES}
             NO_DEFAULT_PATH
             )
@@ -89,7 +89,7 @@ macro(cache_math_result _service MATH_TYPE)
     endif()
 
     if (${_SERVICE}_FOUND)
-        set(${_SERVICE}_TYPE ${MATH_TYPE} CACHE STRING 
+        set(${_SERVICE}_TYPE ${MATH_TYPE} CACHE STRING
             "${_SERVICE} type")
         mark_as_advanced(${_SERVICE}_TYPE)
 
@@ -102,7 +102,7 @@ macro(cache_math_result _service MATH_TYPE)
             )
         mark_as_advanced(${_SERVICE}_LIBRARIES)
         if (DEFINED ${_SERVICE}_INCLUDE_DIRS)
-            set(${_SERVICE}_H ${${_SERVICE}_H} CACHE STRING 
+            set(${_SERVICE}_H ${${_SERVICE}_H} CACHE STRING
                 "${_SERVICE} header file")
             mark_as_advanced(${_SERVICE}_H)
             set(${_SERVICE}_INCLUDE_DIRS ${${_SERVICE}_INCLUDE_DIRS}

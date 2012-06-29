@@ -1342,12 +1342,18 @@ C
      &          (INDEX('   X   ',NAMN(NCTOT)) .GT. 0 .OR.
      &           INDEX('   x   ',NAMN(NCTOT)) .GT. 0)) THEN
                IF (J .EQ. 1) THEN
+                  IF (LCMMAX .eq. 1234567890) THEN
+                     WRITE(LUPRI,'(/A)') ' FATAL ERROR:'//
+     &                  ' only one "X" center allowed for .CM FUN'
+                     CALL QUIT('ERROR: max one "X" center for .CM FUN')
+                  END IF
                   IQM(I,J) = LCMMAX + 1
                   CALL CMBAS(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                 NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                 ALPHA(1,IBLOCK(J),J),
      &                 CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
      &                 NBLOCK,KAOVEC,KPRIM)
+                  LCMMAX = 1234567890
                ELSE
                   IQM(I,J) = 0
                END IF
@@ -1673,6 +1679,12 @@ C
             END IF
          END IF
   100 CONTINUE
+C
+      IF (LCMMAX .GT. -1 .AND. LCMMAX .NE. 1234567890) THEN
+         WRITE(LUPRI,'(//A)') ' FATAL ERROR:'//
+     &     ' .CM FUN specified but no "X" center in .mol input'
+         CALL QUIT('ERROR: no "X" center in .mol input for .CM FUN')
+      END IF
 C
       IF (.NOT. ONLYOV) THEN
         IF (QM3) THEN
@@ -4692,24 +4704,23 @@ C
             DO 300 ISHELL = 1, KMAX
                ICENT  = NCENT(ISHELL)
                ISTABO = ISTBAO(ISHELL)
-               DO 400 ICMP = 1, KHKT(ISHELL)
+               DO ICMP = 1, KHKT(ISHELL)
 Clf
 Clf Molden needs d, f,.. functions ordered in the following way
 Clf 0,+1,-1,+2,-2,+3,-3 etc...
 Clf therefore we provide the following index to reorder
 Clf the coefficients in the molden.inp file.
-Clf The shift index is ISHIFT and it has to be placed
-Clf in KAO=IAO-ISHIFT
+Clf The shift index is ISHIFT and it has to be placed in KAO=IAO-ISHIFT
 Clf WARNING: this only works for spherical functions 
 Clf and not for cartesians. 
 !
 !   Example - f-orbital, LMAX=3
-!      index         :  1,  2,  3,  4,  5,  6,  7
-!      standard order: -3, -2, -1,  0, +1, +2, +3  is LZ + LMAX + 1
-!      molden   order:  0, +1, -1, +2, -2, +3, -3  is 2*LZ, for LZ.gt.0; -2*LZ + 1 for LZ.le.0
-!      LZ:       -3 -2 -1  0 +1 +2 +3
-!      ISHIFT:   -6 -3  0 +3 +3 +2 +1
+!      index               :  1,  2,  3,  4,  5,  6,  7
+!      LZ in standard order: -3, -2, -1,  0, +1, +2, +3  index is LZ + LMAX + 1
+!      LZ in Molden   order:  0, +1, -1, +2, -2, +3, -3  index is 2*LZ, for LZ.gt.0; -2*LZ + 1 for LZ.le.0
 !
+!      LZ value            : -3  -2  -1   0  +1  +2  +3
+!      ISHIFT              : -6  -3   0  +3  +3  +2  +1  index(LZ in dalton) - index(LZ in molden) !
 Clf
                   IF(KHKT(ISHELL) .GE. 5) THEN
                      LMAX = (KHKT(ISHELL)-1)/2
@@ -4725,21 +4736,19 @@ Clf
                      ISHIFT = 0
                   END IF
 
-                  DO 500 JSYMOP = 0, MAXREP
+                  DO JSYMOP = 0, MAXREP
                   IF (IBTAND(JSYMOP,ISTABO) .EQ. 0) THEN
-                     JAO = JAO + 1
+                     JAO = JAO + 1 ! AO in symmetry order
                      JCENT = NUCNUM(ICENT,JSYMOP+1)
                      IF (JATOM .EQ. JCENT) THEN
                         IAO = IAO + 1
-                        IAOAO(JAO) = IAO
-                        JAOAO(IAO,1) = JAO
-
-                        KAO = IAO - ISHIFT ! for molden
-                        JAOAO(KAO,2) = JAOAO(KAO,1) + ISHIFT ! for molden
+                        IAOAO(JAO)   = IAO         ! pointer to AO in C1 order of AO in symmetry order
+                        JAOAO(IAO,1) = JAO         ! pointer to AO in symmetry order of AO in C1 order
+                        JAOAO(IAO-ISHIFT,2) = JAO  ! pointer to AO in symmetry order of AO in Molden order
                      END IF
                   END IF
-  500             CONTINUE
-  400          CONTINUE
+                  END DO  ! JSYMOP = 0, AXREP
+               END DO  ! ICMP = 1, KHKT(ISHELL)
   300       CONTINUE
 C
 C           End loop over orbitals

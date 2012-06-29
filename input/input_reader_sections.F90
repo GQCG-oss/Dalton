@@ -1,48 +1,8 @@
-!
-!...   Copyright (c) 2011 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2011 (2011), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
-!
-!
+  subroutine read_input_sections(word, kw_section)
 
-module dalton_input_processing
+    use input_reader
 
-! stefan: - this module reads the input section of a specific module
-!           within Dalton.
-!
-!radovan: please feel free to copy/use/improve this inside DIRAC/Dalton
-!         without asking
-
-  use keyword
-  use character_processing
-
-  implicit none
-
-  public read_dalton_input
-
-#include "inforb.h"
-#include "priunit.h"
-
-contains
-
-  subroutine read_dalton_input(word, kw_section)
+    implicit none
 
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
@@ -60,11 +20,14 @@ contains
          
     end select
 
-  end subroutine read_dalton_input
+  end subroutine
 
   subroutine read_input_lucita(word, kw_section)
 
-  use gasci_input_cfg
+    use gasci_input_cfg
+    use input_reader
+
+    implicit none
 
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
@@ -74,6 +37,9 @@ contains
     integer                          :: i, j
     integer                          :: ios, islash
 !   ----------------------------------------------------------------------------
+
+#include "priunit.h"
+#include "inforb.h"
 
     call reset_available_kw_list()
 
@@ -116,7 +82,7 @@ contains
     if (kw_matches(word, '.INACTI')) then
 
       gasci_input_inactive_shell_set = .true.
-      read(unit_in, *) (nish_gasci_input(i), i=1,nsym)
+      read(get_file_unit(), *) (nish_gasci_input(i), i=1,nsym)
 
     end if
 
@@ -135,7 +101,7 @@ contains
 !     process the min max occupation / per orbital occupation in each GAS shell
       do i = 1, gasci_input_nr_gas_spaces
 
-        read(unit_in,'(a)') input_line
+        read(get_file_unit(),'(a)') input_line
         call upcase(input_line)
  
         islash = index(input_line,'/')
@@ -177,20 +143,20 @@ contains
       gasci_input_ras1_set         = .true.
       gasci_input_init_wave_f_type = 2
 
-      read(unit_in, *) (nas1_gasci_input(i), i=1,nsym)
+      read(get_file_unit(), *) (nas1_gasci_input(i), i=1,nsym)
       call kw_read(word, gasci_input_max_holes_ras1)
 
     end if
 
     if (kw_matches(word, '.RAS2  ')) then
       gasci_input_ras2_set = .true.
-      read(unit_in, *) (nas2_gasci_input(i), i=1,nsym)
+      read(get_file_unit(), *) (nas2_gasci_input(i), i=1,nsym)
     end if
 
     if (kw_matches(word, '.RAS3  ')) then
 
       gasci_input_ras3_set = .true.
-      read(unit_in, *) (nas3_gasci_input(i), i=1,nsym)
+      read(get_file_unit(), *) (nas3_gasci_input(i), i=1,nsym)
       call kw_read(word, gasci_input_max_e_ras3)
 
     end if
@@ -255,5 +221,3 @@ contains
     call check_whether_kw_found(word, kw_section)
 
   end subroutine
-
-end module

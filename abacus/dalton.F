@@ -35,7 +35,7 @@ C
       use parallel_models
 #ifdef BUILD_GEN1INT
 C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
-      use gen1int_interface
+!      use gen1int_interface
 #endif
 #include "implicit.h"
 #include "dummy.h"
@@ -124,9 +124,9 @@ C
 !     allocate memory using f90 utilities
       allocate(work(lmwork+2),stat=i)
 
-      IF(I .NE. 0)THEN
+      IF (I .NE. 0) THEN
          WRITE (LUERR,*) MYNUM,': ALLOCATE command failed to allocate'//
-     &        ' the requested memory'
+     &        ' the requested memory. Error code:',I
          WRITE (LUERR,*) 'Reduce the memory demands and be welcome back'
          CALL QUIT('Failed to allocate memory')
       END IF
@@ -555,7 +555,7 @@ C
 #if defined(BUILD_GEN1INT)
 C...  added by Bin Gao, May 13, 2012
 C...  terminates Gen1Int interface
-      call gen1int_host_finalize()
+!     call gen1int_host_finalize()
 #endif
 
       CALL MPIXFINALIZE

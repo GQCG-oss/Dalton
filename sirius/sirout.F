@@ -206,11 +206,12 @@ C
      *                    DINFO(8,I),DINFO(9,I),I=1,ITM)
         IST = IINFO(13,1)
         IEND = IST - 1 + IINFO(14,1)
-        IF (IST .LT. 1 .OR. IEND .GT. 10) THEN
-           WRITE (LUERR,'(/A,2I20/2A)')
+        IF (IEND .LT. IST) THEN
+           ! no optimization in this run; initialization: IST=0, IEND=-1
+        ELSE IF (IST .LT. 1 .OR. IEND .GT. 10) THEN
+           WRITE (LUPRI,'(/A,2I20/A)')
      *        ' SIROUT stat info, IST and IEND =',IST,IEND,
-     *        ' IST or IEND out of bounds',
-     *        ' - probably no optimization in this run.'
+     *        ' IST or IEND out of bounds (1:10)'
         ELSE
            DO 300 J = IST,IEND
              WRITE(LUPRI,4100) J,(IINFO(1,I),DINFO(20+J,I),
@@ -501,7 +502,7 @@ C    &              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
        CALL MOMOS(1,WRK(KCMO), WRK(KOCCNO), WRK(KAOSO),
      $            WRK(KUCMO), WRK(KOVEC))
        CALL MEMREL('SIROUT.MOMOS',WRK,KREL2,KREL2,KFREE,LFREE)
-      END IF
+      END IF ! (MOLDEN)
 C     
 C ***  Print final MCSCF orbitals ***
 C

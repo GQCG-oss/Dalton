@@ -216,9 +216,9 @@ C***********************************************************************
       DO 100 I = 1, MXQNM
          DO 200 J = 1, I
             IJ = IJ + 1
-            ISTEP(IJ) = I
-            MVAL(IJ) = I - J
-            NVAL(IJ) = J - 1
+            ISTEP(IJ) = I     ! LVALUE is 2*L+1 - ISTEP(IJ)
+            MVAL(IJ)  = I - J
+            NVAL(IJ)  = J - 1
   200    CONTINUE
   100 CONTINUE
       RETURN
