@@ -2,7 +2,7 @@
       PARAMETER (MAXSUB = 20)
       LOGICAL DIPOL, DOVCD, HESFIL, HESPUN, ROACID
       real(8)         SCALE, COEF
-      integer         NCARD,  NINTCM, IPRINT, MAXDIF, NISOTP
+      integer         NCARD,  NINTCM, IPRINT, MAXDIF, NISOTP, iatoms
       COMMON /CBIVIB/ SCALE(MXCOOR), COEF(MXCOOR), IATOMS(4,MXCOOR),    &
      &                NCARD,  NINTCM, DIPOL,  IPRINT, MAXDIF, NISOTP,   &
      &                ISOTP(MAXSUB,MXCENT), DOVCD, HESFIL,              &
