@@ -954,7 +954,7 @@ contains
           print *, ' unknown CI run id: ',ci_run_id,' no memory allocated for the coworkers.'
       end select
 
-      if(print_lvl > -1)then
+      if(print_lvl > +1)then
         write(lupri,'(/a     )') '  dimensions of CI matrix / integral arrays:'
         write(lupri,'( a     )') '  -----------------------------------------'
         write(lupri,'( a,i15 )') '  ci matrix #1     ==> ',len_cref_mc2lu

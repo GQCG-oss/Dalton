@@ -374,7 +374,7 @@
       character(len=20)      :: lucitabasf
       character(len=24)      :: lucifiln
       integer                :: outfile_node
-      integer                :: k1, kfree, kfrsav, lfree
+      integer                :: k1, kymat,kfree, kfrsav, lfree
       integer                :: kcref, khc, kresolution_mat 
       integer                :: kint1_or_rho1, kint2_or_rho2
       integer                :: lupri_save, lufil, print_lvl
@@ -498,6 +498,12 @@
             type2                 = .true.
           end if
 
+!         release marker on incoming work space
+          call memrel('ex.vec',work_dalton,kfrsav,kfrsav,kfree,lfree)
+          call memget('REAL',kcref,l_combi+2,work_dalton,kfree,lfree)
+!         call memget('REAL',kymat,l_combi+2,work_dalton,kfree,lfree)
+!         for now - kymat is not used
+          kymat = 1
           call vector_exchange_interface_cw(active_xc_vector_type,      &
                                             vector_update_mc2lu_lu2mc(  &
                                             (exchange_f_info%           &
@@ -505,7 +511,7 @@
                                             vector_exchange_types+      &
                                             active_xc_vector_type),     &
                                             work_dalton(kcref),         &
-                                            work_dalton(kfree))
+                                            work_dalton(kymat))
           if(type2)then
             vector_exchange_type2 = active_xc_vector_type
           else
