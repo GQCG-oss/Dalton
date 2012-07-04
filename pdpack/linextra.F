@@ -1036,4 +1036,26 @@ C
 C
       RETURN
       END
+      real*8 function ddot_128(n,da,inca,db,incb)
+!
+!     Purpose: accumulate in quadruple precision
+!              to avoid round-off errors for big vectors
+!     hjaaj July 2012
+!
+      implicit none
+      real*8 da(*), db(*), ddot
+      integer n, inca, incb, i
+      real*16 ddot_value
+
+      if (inca .ne. 1 .or. incb .ne. 1) then
+         ddot_128 =  ddot(n,da,inca,db,incb)
+         return
+      end if
+      ddot_value = 0.0q0
+      do i = 1,n
+         ddot_value = ddot_value + da(i)*db(i)
+      end do
+      ddot_128 = ddot_value
+      return
+      end
 C --- end of linextra.F ---

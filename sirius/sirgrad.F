@@ -2875,15 +2875,15 @@ C
 !       write(lupri,*) ' element i, dv(i) and fcac(i) ==> ',
 !    &                   i,dv(i),fcac(i)
 !     end do
-!     write(lupri,*) 'ENRACT: eact after ddot... ==> ',eact
+      write(lupri,*) 'ENRACT: eact after ddot... ==> ',eact
 !     diagonal elements counted twice now.
       DO 100 NI = 1,NASHT
         NII  = IROW(NI+1)
         I    = ISX(NISHT+NI)
         EACT = EACT + DP5*FQ(I,NI) - DV(NII)*FCAC(NII)
-!       write(lupri,*) 'ENRACT: ni, nii, i elements  ... ==> ',ni,nii,i
-!       write(lupri,*) 'ENRACT: eact after element ni... ==> ',ni,eact
-!       write(lupri,*) 'ENRACT: FQ(i,ni)             ... ==> ',fq(i,ini)
+        write(lupri,*) 'ENRACT: ni, nii, i elements  ... ==> ',ni,nii,i
+        write(lupri,*) 'ENRACT: eact after element ni... ==> ',ni,eact
+        write(lupri,*) 'ENRACT: FQ(i,ni)             ... ==> ',fq(i,ini)
  100  CONTINUE
       ENRACT = EACT
       RETURN
