@@ -2858,7 +2858,7 @@ C
 #include "priunit.h"
 !
       EACT = D2 * DDOT(NNASHX,DV,1,FCAC,1)
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       do i = 1, NNASHX
         write(lupri,*) ' element i, dv(i) and fcac(i) ==> ',
