@@ -5725,18 +5725,22 @@ C                   not exact Hamiltonian in use
                     END IF
 
 !                   sk + jeppe - july 2012 at Sostrup summer school: take care of the transpose procedure: 
+!                   note: the following applies only to sequential runs - in a parallel run CB and SB are 
+!                         always located in different parts of the physical memory
 !                      a. regular DM run       (rhotype == 1): CB and SB ARE IDENTICAL memory arrays!!! 
 !                      b. TDMs in MCSCF        (rhotype == 3): CB and SB ARE DIFFERENT memory arrays!!! 
 !                      c. regular DM run in CI (rhotype == 0): CB and SB ARE DIFFERENT memory arrays!!! 
 
                     itrsp_once = 0
 
-                    if(rhotype == 1)then 
+#ifndef VAR_MPI
+                    if(luci_myproc == 0 .and. rhotype == 1)then 
                       if(iasm == jasm .and. iatp == jatp .and. 
      &                   ibsm == jbsm .and. ibtp == jbtp)then
                         itrsp_once = 1
                       end if
                     end if
+#endif
 
                     CALL GSDNBB2(I12_local,WORK(KRHO1),WORK(KRHO2),
      &                           rhotype,IASM,IATP,IBSM,IBTP,
