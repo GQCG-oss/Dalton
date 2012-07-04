@@ -189,7 +189,8 @@ c jim-dbg ICHANG < 0 no cambios
       END IF
       RETURN
       END
-c
+C -----------------------------------------------------------------------
+C
 C  /* Deck lrscini */
       SUBROUTINE LRSCINI 
 C
@@ -197,8 +198,8 @@ C     Initialize /LRSCINI/
 C
 #include <implicit.h>
 #include <lrescinf.h>
-C#include <mxcent.h>
-C#include <cbiqr.h
+#include <mxcent.h>
+#include <cbiqr.h>
 #include <abainf.h>
 c jim-dbg : sacar esto de abajo
 #include <priunit.h>
@@ -216,7 +217,24 @@ C
       SIGMAP3S = .FALSE. 
       SIGMAP3T = .FALSE. 
       LRESCALL = .TRUE.
-cx      CALL DZERO (QCFREQ,NFMAX)
+C
+C     Initialize /CUADRA/
+C
+      IPRINT = IPRDEF
+      IPRQR  = IPRINT
+      SKIP   = .FALSE.
+      CUT    = .FALSE.
+      OOTV   = .FALSE.
+      THRESH = 1.D-04
+      MAXITE = 60
+      MXRM   = 400
+      MXPHP  = 0
+cs    LABAPP = 0 ?????????
+      NABAPP = 0
+      LBFREQ = 1
+      LCFREQ = 1
+      CALL DZERO (QBFREQ,NFMAX)
+      CALL DZERO (QCFREQ,NFMAX) 
 C
       RETURN
       END
@@ -251,7 +269,7 @@ c         CALL LINEARS('PSOK',WORK,LWORK) ! NOOOO ANDA
       IF (SIGMAD1S) THEN
          WRITE (LUPRI,'(A)')'  Calling to SIGMA1S for : Diamagnetic'// 
      &         ' Singlet First Order Shielding corrections'
-c. anda         CALL LINEARS('D1S ',WORK,LWORK) ! ANDA
+         CALL LINEARS('D1S ',WORK,LWORK) ! ANDA
       END IF
 C 
 C First Order TRIPLET
@@ -262,15 +280,22 @@ C
          CALL LINEART('FCZK',WORK,LWORK) !ANDA
          CALL LINEART('SDZK',WORK,LWORK) !ANDA
          CALL LINEART('FCBS',WORK,LWORK) !ANDA 
-         CALL LINEART('SDBSO',WORK,LWORK) !ANDA
+         CALL LINEART('SDBS',WORK,LWORK) !ANDA
       END IF
-
+C 
+C Third Order SINLGET 
+C
       IF (SIGMAP3S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA3S for : '
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA3S for : Paramagnetic'//
+     &         ' Singlet Second Order Shielding corrections'
+cv         CALL CUADRAS('LPSO')
       END IF
-
+C 
+C Third Order TRIPLET 
+C
       IF (SIGMAP3T) THEN
          WRITE (LUPRI,'(A)')'   Calling to SIGMA3T for : '
+cv         CALL CUADRAS('LFCO')
       END IF
 
       IF (SIGMAD0S) THEN
