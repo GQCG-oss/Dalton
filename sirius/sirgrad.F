@@ -2871,10 +2871,10 @@ C
 #include "priunit.h"
 !
       EACT = D2 * DDOT(NNASHX,DV,1,FCAC,1)
-!     do i = 1, NNASHX
-!       write(lupri,*) ' element i, dv(i) and fcac(i) ==> ',
-!    &                   i,dv(i),fcac(i)
-!     end do
+      do i = 1, NNASHX
+        write(lupri,*) ' element i, dv(i) and fcac(i) ==> ',
+     &                   i,dv(i),fcac(i)
+      end do
       write(lupri,*) 'ENRACT: eact after ddot... ==> ',eact
 !     diagonal elements counted twice now.
       DO 100 NI = 1,NASHT
