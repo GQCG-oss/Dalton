@@ -485,6 +485,13 @@ C          We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
                  DN = D1 / DN
                  CALL DSCAL(NCONF,DN,WRK(KY+(J-1)*NCONF),1)
               END IF
+!#define DEBUG_TRICK
+#ifdef DEBUG_TRICK
+             call dzero(wrk(ky+(j-1)*nconf),nconf)
+             xxx = nconf
+             xxx = 1.0d0/sqrt(xxx)
+             call setvec(wrk(ky+(j-1)*nconf),xxx,nconf)
+#endif
               CALL WRITT(LUIT1,NC4,WRK(KY+(J-1)*NCONF))
  5400      CONTINUE
            JOFF = JOFF + NSIM
@@ -510,6 +517,11 @@ C          We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
                DN = D1 / DN
                CALL DSCAL(NCONF,DN,wrk(kbvec+(j-1)*nconf),1)
              END IF
+
+#ifdef DEBUG_TRICK
+             call dzero(wrk(kbvec+(j-1)*nconf),nconf)
+             call setvec(wrk(kbvec+(j-1)*nconf),xxx,nconf)
+#endif
              call writt(luit1,nc4,wrk(kbvec+(j-1)*nconf))
            end do
          end if ! ci_program switch
