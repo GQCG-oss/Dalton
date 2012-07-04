@@ -488,9 +488,12 @@ C          We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
 !#define DEBUG_TRICK
 #ifdef DEBUG_TRICK
              call dzero(wrk(ky+(j-1)*nconf),nconf)
-             xxx = nconf
-             xxx = 1.0d0/sqrt(xxx)
-             call setvec(wrk(ky+(j-1)*nconf),xxx,nconf)
+             xxx = 1.0d0
+!            xxx = nconf
+!            xxx = 1.0d0/sqrt(xxx)
+!            call setvec(wrk(ky+(j-1)*nconf),xxx,nconf)
+             wrk(ky+1+(j-1)*nconf) = xxx
+             
 #endif
               CALL WRITT(LUIT1,NC4,WRK(KY+(J-1)*NCONF))
  5400      CONTINUE
@@ -520,7 +523,8 @@ C          We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
 
 #ifdef DEBUG_TRICK
              call dzero(wrk(kbvec+(j-1)*nconf),nconf)
-             call setvec(wrk(kbvec+(j-1)*nconf),xxx,nconf)
+             xxx = 1.0d0
+             wrk(kbvec+1+(j-1)*nconf) = xxx
 #endif
              call writt(luit1,nc4,wrk(kbvec+(j-1)*nconf))
            end do

@@ -5724,6 +5724,20 @@ C                   not exact Hamiltonian in use
      &                                 IDOH2.EQ.1
                     END IF
 
+!                   sk + jeppe - july 2012 at Sostrup summer school: take care of the transpose procedure: 
+!                      a. regular DM run       (rhotype == 1): CB and SB ARE IDENTICAL memory arrays!!! 
+!                      b. TDMs in MCSCF        (rhotype == 3): CB and SB ARE DIFFERENT memory arrays!!! 
+!                      c. regular DM run in CI (rhotype == 0): CB and SB ARE DIFFERENT memory arrays!!! 
+
+                    itrsp_once = 0
+
+                    if(rhotype == 1)then 
+                      if(iasm == jasm .and. iatp == jatp .and. 
+     &                   ibsm == jbsm .and. ibtp == jbtp)then
+                        itrsp_once = 1
+                      end if
+                    end if
+
                     CALL GSDNBB2(I12_local,WORK(KRHO1),WORK(KRHO2),
      &                           rhotype,IASM,IATP,IBSM,IBTP,
      &                           JASM,JATP,JBSM,JBTP,NGAS,
@@ -5741,7 +5755,8 @@ C                   not exact Hamiltonian in use
      &                           NIA,NIB,NJA,NJB,MXPOBS,
      &                           IPRNT,NACOB,RHO1S,XFAC,
      &                           S2_TERM1,IUSE_PH,IPHGAS,
-     &                           MXTSOB)
+     &                           MXTSOB,itrsp_once)
+
                     IF(NTEST.GE.100) THEN
                       write(luwrt,*) ' Updated rho1 '
                       call WRTMT_LU(WORK(KRHO1),nacob,nacob,nacob,nacob)

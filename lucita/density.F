@@ -713,7 +713,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &                    NIIA,NIIB,NJA,NJB,MXPOBS,
      &                    IPRNT,NACOB,RHO1S,SCLFAC,
      &                    S2_TERM1,IUSE_PH,IPHGAS,
-     &                    MXTSOB)
+     &                    MXTSOB,-1)
                           IF(NTEST.GE.100) THEN
                             write(lupri,*) ' Updated rho1 '
                             call WRTMT_LU(rho1,nacob,nacob,nacob,nacob)
@@ -1808,7 +1808,8 @@ C?              call prsym(rho2,NORB*NORB)
      &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                  X,NSMOB,NSMST,NSMSX,NSMDX,
      &                  NIA,NIB,NJA,NJB,MXPOBS,IPRNT,NACOB,RHO1S,
-     &                  SCLFAC,S2_TERM1,IUSE_PH,IPHGAS,MXTSOB)
+     &                  SCLFAC,S2_TERM1,IUSE_PH,IPHGAS,MXTSOB,
+     &                  itrsp_once)
 *
 * Contributions to density matrix from sigma block (iasm iatp, ibsm ibtp ) and
 * C block (jasm jatp , jbsm, jbtp)
@@ -1877,13 +1878,15 @@ C?              call prsym(rho2,NORB*NORB)
       DIMENSION SSCR(*),CSCR(*),scatS(*),scatC(*)
       DIMENSION  I1(*),XI1S(*),I2(*),XI2S(*),I3(*),XI3S(*),I4(*),XI4S(*)
       DIMENSION C2(*)
+      integer, intent(in) :: itrsp_once
 #include "priunit.h"
 *
       CALL QENTER('GSDNB')
-!     NTEST = 500 ! debug
+!     NTEST = 1000 ! debug
       NTEST = 000 ! no debug
       NTEST = MAX(NTEST,IPRNT)
       NTESTO= NTEST
+
       IF(NTEST.GE.200) THEN
         WRITE(lupri,*) ' =================='
         WRITE(lupri,*) ' GSDNBB2 :  R block '
@@ -1933,6 +1936,10 @@ C?              call prsym(rho2,NORB*NORB)
      &       SSCR,CSCR,I1,XI1S,I2,XI2S,X,
      &       NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
      &       IUSE_PH,IPHGAS)
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho1 after GSBBD1, b '
+          CALL WRTMAT(RHO1,nacob,nacob,nacob,nacob)
+        END IF
 C?      WRITE(6,*) ' GSBBD1 was called '
 C?      WRITE(6,*) ' Memory check '
 C?      CALL MEMCHK
@@ -1949,6 +1956,10 @@ C?        WRITE(6,*) ' GSBBD2A will be called (beta)'
      &         NOBPTS,IOBPTS,MAXI,MAXK,
      &         SSCR,CSCR,I1,XI1S,I2,XI2S,X,
      &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC)
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho2 after GSBBD2a, bb '
+          CALL PRSYM(RHO2,nacob**2)
+        END IF
 C?        WRITE(6,*) ' GSBBD2A was called '
 *
 C              GSBBD2A(RHO2,NACOB,ISCSM,ISCTP,ICCSM,ICCTP,IGRP,NROW,
@@ -1975,11 +1986,11 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
 
         CALL TRPMT3(CB,NJA,NJB,C2)
         CALL DCOPY(NJA*NJB,C2,1,CB,1)
-!       sk - nov 2011: take care of the transpose procedure: 
-!                      a. regular DM run       (rhotype == 1): CB and SB ARE IDENTICAL memory arrays!!! 
-!                      b. TDMs in MCSCF        (rhotype == 3): CB and SB ARE DIFFERENT memory arrays!!! 
-!                      c. regular DM run in CI (rhotype == 0): CB and SB ARE DIFFERENT memory arrays!!! 
-        if(rhotype .eq. 0 .or. rhotype .gt. 1)then
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' CB after transpose'
+          call wrtmatmn(cb,nja,njb,nja,njb,lupri)
+#endif
+        if(itrsp_once == 0)then
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
           WRITE(lupri,*) ' SB before          transpose'
@@ -1989,10 +2000,10 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
         else
           CALL DCOPY(NIA*NIB,SB,1,scatS,1)
         end if
-!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
           WRITE(lupri,*) ' ingoing scatS'
           call wrtmatmn(scatS,nia,nib,nia,nib,lupri)
+#undef LUCI_DEBUG
 #endif
 
         CALL GSBBD1(RHO1,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
@@ -2003,6 +2014,10 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
      &       NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
      &       IUSE_PH,IPHGAS)
 C?        WRITE(6,*) ' GSBBD1 was called '
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho1 after GSBBD1, a '
+          CALL WRTMAT(RHO1,nacob,nacob,nacob,nacob)
+        END IF
         IF(I12.EQ.2.AND.NAEL.GE.2) THEN
 *
 * ===================================
@@ -2020,6 +2035,10 @@ C?        WRITE(6,*) ' GSBBD2A was called '
         END IF
         CALL TRPMT3(CB,NJB,NJA,C2)
         CALL DCOPY(NJA*NJB,C2,1,CB,1)
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho2 after GSBBD2a, aa '
+          CALL PRSYM(RHO2,nacob**2)
+        END IF
       END IF
 *
 * ===================================
@@ -2030,19 +2049,42 @@ C?        WRITE(6,*) ' GSBBD2A was called '
 *. Routine uses transposed blocks
         CALL TRPMT3(CB,NJA,NJB,C2)
         CALL DCOPY(NJA*NJB,C2,1,CB,1)
-        CALL TRPMT3(SB,NIA,NIB,C2)
-        CALL DCOPY(NIB*NIA,C2,1,SB,1)
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+        WRITE(lupri,*) ' CB after transpose ab'
+        call wrtmatmn(cb,nja,njb,nja,njb,lupri)
+#endif
+        if(itrsp_once == 0)then
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' SB before          transpose ab'
+          call wrtmatmn(sb,nia,nib,nia,nib,lupri)
+#endif
+          CALL TRPMT3(SB,NIA,NIB,scatS)
+        else
+          CALL DCOPY(NIA*NIB,SB,1,scatS,1)
+        end if
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' ingoing scatS'
+          call wrtmatmn(scatS,nia,nib,nia,nib,lupri)
+#undef LUCI_DEBUG
+#endif
 C?      WRITE(6,*) ' GSBBD2B will be called '
         IUSEAB = 0
         CALL GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
      &                    JASM,JATP,JBSM,JBTP,NJA,NJB,
      &                    IJAGRP,IJBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
-     &                    SB,CB,ADSXA,STSTSX,MXPNGAS,
+     &                    scatS,CB,ADSXA,STSTSX,MXPNGAS,
      &                    NOBPTS,IOBPTS,MAXK,
      &                    I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,X,
      &                    NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
      &                    SSCR,CSCR,NACOB,NTEST,SCLFAC,S2_TERM1,
      &                    MXTSOB)
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho2 after GSBBD2b, ab '
+          CALL PRSYM(RHO2,nacob**2)
+        END IF
 C?      WRITE(6,*) ' GSBBD2B was called '
 C     GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
 C    &                        JASM,JATP,JBSM,JBTP,NJA,NJB,
@@ -2055,8 +2097,6 @@ C    &                  CJRES,SIRES,NORB,NTEST,
 C    &                  MXTSOB)
         CALL TRPMT3(CB,NJB,NJA,C2)
         CALL DCOPY(NJA*NJB,C2,1,CB,1)
-        CALL TRPMT3(SB,NIB,NIA,C2)
-        CALL DCOPY(NIB*NIA,C2,1,SB,1)
       END IF
 *
       CALL QEXIT('GSDNB')
