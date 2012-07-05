@@ -104,10 +104,11 @@ C /* Deck dftmo2 */
      &                  RHOA,GRADA,COORD,WGHT,WORK)
 #include "implicit.h"
 #include "inforb.h"
-      DIMENSION WORK(*)
-      K1 = 1
-      K2 = K1 + N2BASX ! must be same off-set as in DFTMOMO
-      CALL DFTMOX(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,WGHT,WORK(K1),WORK(K2))
+      DIMENSION NBLCNT(*), NBLOCKS(*), GAO(*), WGHT(*), WORK(*)
+      KCMOS = 1
+      KCMO2 = KCMOS + N2BASX ! must be same off-set as in DFTMOMO
+      CALL DFTMOX(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,WGHT,
+     &   WORK(KCMOS),WORK(KCMO2))
       RETURN
       END
 C /* Deck dftmoX */
@@ -120,11 +121,10 @@ C /* Deck dftmoX */
      &          CMOAO(NBLEN,NORBT),
      &          CMO(NCMOT),
      &          CMO2(NORBT,NORBT,2)
-C     
+C
       CALL DZERO(CMOAO,NBLEN*NORBT)
-      IEND = 0
       DO ISYM = 1, NSYM
-         IENDI = IEND
+         IENDI = ICMO(ISYM) - IBAS(ISYM)
          DO P = IORB(ISYM) + 1, IORB(ISYM) + NORB(ISYM)
             DO JBL = 1, NBLCNT(ISYM)
             DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
@@ -135,7 +135,6 @@ C
             END DO
             IENDI = IENDI + NBAS(ISYM)
          END DO
-         IEND = IEND + NORB(ISYM)*NBAS(ISYM)
       END DO
 C
       DO Q = 1, NORBT
@@ -143,8 +142,15 @@ C
          DO I = 1, NBLEN 
             CMO2(P,Q,1) = CMO2(P,Q,1) 
      &                  + WGHT(I)*ABS(CMOAO(I,P))*ABS(CMOAO(I,Q))
+#ifdef DFTMOS_DEBUG
+! The following two lines produce the MO overlap matrix, that is a unit matrix,
+! in CMO2(:,:,2), if the code is correct.
+            CMO2(P,Q,2) = CMO2(P,Q,2) 
+     &                  + WGHT(I)*CMOAO(I,P)*CMOAO(I,Q)
+#else
             CMO2(P,Q,2) = CMO2(P,Q,2) 
      &                  + WGHT(I)*(CMOAO(I,P)**2)*(CMOAO(I,Q)**2)
+#endif
          END DO
       END DO
       END DO 
