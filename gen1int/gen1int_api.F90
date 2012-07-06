@@ -412,7 +412,7 @@ module gen1int_api
         if (num_sub_shells(icomp)>0) then
           call Gen1IntShellGetRangeAO(sub_shell=sub_shells(num_sub_shells(icomp),icomp), &
                                       idx_first=idx_first, idx_last=idx_last)
-          num_ao = num_ao+idx_last
+          num_ao = idx_last
         end if
       end do
     else
