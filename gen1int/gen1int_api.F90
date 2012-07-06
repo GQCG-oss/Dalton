@@ -159,6 +159,8 @@ module gen1int_api
     real(REALK), allocatable :: contr_coef(:,:)  !contraction coefficients
     integer icontr, iprim                        !incremental recorder over contractions
     integer ierr                                 !error information
+    integer iang_sub
+
     if (num_comp>NUM_COMPONENTS) then
       stop "Gen1IntAPICreate>> too many components!"
     end if
@@ -175,11 +177,12 @@ module gen1int_api
         do ICENT = 1, num_sym_atom(ITYP)
           ! angular momentum 1=s, 2=p, 3=d, etc.
           do IANG = 1, ang_numbers(ITYP,icomp)
-            if (num_cgto(IANG,ITYP,icomp)>0) then
-              ! radovan: basis does not have to start with s
-              num_sub_shells(icomp) = num_sub_shells(icomp)+1
-              if (SPH(IANG)) spher_gto = .true.  !Dalton always marks s and p sub-shells as CGTOs
-            end if
+             ! radovan: basis does not have to start with s
+             !          the blocks do not have to be s p d f
+             !          they can be s p p d f
+             num_sub_shells(icomp) = num_sub_shells(icomp) &
+                                   + num_cgto(IANG, ITYP, icomp)
+             if (SPH(IANG)) spher_gto = .true.  !Dalton always marks s and p sub-shells as CGTOs
           end do
          end do
       end do
@@ -202,89 +205,92 @@ module gen1int_api
           KBCH = IDX_BLOCK
           ! angular momentum 1=s, 2=p, 3=d, etc.
           do IANG = 1, ang_numbers(ITYP,icomp)
+
             ! radovan: basis does not have to start with s
-            if (num_cgto(IANG,ITYP,icomp)<1) cycle
-            ! next block
-            KBCH = KBCH+1
-            ! gets the contraction coefficients
-            allocate(contr_coef(num_contr(KBCH,icomp),num_prim(KBCH,icomp)), stat=ierr)
-            if (ierr/=0) then
-              stop "Gen1IntAPICreate>> failed to allocate contr_coef!"
-            end if
-            do iprim = 1, num_prim(KBCH,icomp)
-              do icontr = 1, num_contr(KBCH,icomp)
-                contr_coef(icontr,iprim) = ucontr_coefs(iprim,icontr,KBCH,icomp)
-              end do
+            !          and there can be two consecutive blocks
+            !          with the same IANG
+
+            do iang_sub = 1, num_cgto(IANG, ITYP, icomp)
+               ! next block
+               KBCH = KBCH+1
+               ! gets the contraction coefficients
+               allocate(contr_coef(num_contr(KBCH,icomp),num_prim(KBCH,icomp)), stat=ierr)
+               if (ierr/=0) then
+                 stop "Gen1IntAPICreate>> failed to allocate contr_coef!"
+               end if
+               do iprim = 1, num_prim(KBCH,icomp)
+                 do icontr = 1, num_contr(KBCH,icomp)
+                   contr_coef(icontr,iprim) = ucontr_coefs(iprim,icontr,KBCH,icomp)
+                 end do
+               end do
+               ! normalizes the contraction coefficients
+               ang_num = IANG-1
+               ! Dalton/Dirac do not use mixed CGTOs and SGTOs
+               !if (SPH(IANG).neqv.spher_gto) then
+               !  stop "Gen1IntAPICreate>> mixed CGTOs and SGTOs not supported!"
+               !end if
+               ! Gen1Int library uses HGTOs in recurrence relations, while Dalton uses
+               ! CGTOs, so that we need to normalize the contraction coefficients of
+               ! SGTOs using Gen1Int subroutines
+               if (spher_gto) then
+                 call norm_contr_sgto(ang_num, num_prim(KBCH,icomp),                &
+                                      exponents(1:num_prim(KBCH,icomp),KBCH,icomp), &
+                                      num_contr(KBCH,icomp), contr_coef)
+               else
+                 call norm_contr_cgto(ang_num, num_prim(KBCH,icomp),                &
+                                      exponents(1:num_prim(KBCH,icomp),KBCH,icomp), &
+                                      num_contr(KBCH,icomp), contr_coef)
+               end if
+               !-ISTBNU(IDX_CENT)  !stabiliser: basic sym. op. that do not move center
+               ishell = ishell+1
+               if (ishell>1) then
+                 call Gen1IntShellCreate(spher_gto=spher_gto,                        &
+                                         idx_cent=IDX_CENT,                          &
+                                         coord_cent=CORD(1:3,IDX_CENT),              &
+                                         ang_num=ang_num,                            &
+                                         num_prim=num_prim(KBCH,icomp),              &
+                                         exponents=exponents(1:num_prim(KBCH,icomp), &
+                                                             KBCH,icomp),            &
+                                         num_contr=num_contr(KBCH,icomp),            &
+                                         contr_coef=contr_coef,                      &
+                                         last_shell=sub_shells(ishell-1,icomp),      &
+                                         sub_shell=sub_shells(ishell,icomp))
+               ! sets the first AO sub-shell
+               else
+#ifdef PRG_DIRAC
+                 select case (icomp)
+                 case (LARGE_COMP)
+#endif         
+                   call Gen1IntShellCreate(spher_gto=spher_gto,                        &
+                                           idx_cent=IDX_CENT,                          &
+                                           coord_cent=CORD(1:3,IDX_CENT),              &
+                                           ang_num=ang_num,                            &
+                                           num_prim=num_prim(KBCH,icomp),              &
+                                           exponents=exponents(1:num_prim(KBCH,icomp), &
+                                                               KBCH,icomp),            &
+                                           num_contr=num_contr(KBCH,icomp),            &
+                                           contr_coef=contr_coef,                      &
+                                           sub_shell=sub_shells(ishell,icomp))
+#ifdef PRG_DIRAC
+                 case (SMALL_COMP)
+                   ! put small component block behind large component block
+                   call Gen1IntShellCreate(spher_gto=spher_gto,                              &
+                                           idx_cent=IDX_CENT,                                &
+                                           coord_cent=CORD(1:3,IDX_CENT),                    &
+                                           ang_num=ang_num,                                  &
+                                           num_prim=num_prim(KBCH,icomp),                    &
+                                           exponents=exponents(1:num_prim(KBCH,icomp),       &
+                                                               KBCH,icomp),                  &
+                                           num_contr=num_contr(KBCH,icomp),                  &
+                                           contr_coef=contr_coef,                            &
+                                           last_shell=sub_shells(num_sub_shells(LARGE_COMP), &
+                                                                 LARGE_COMP),                &
+                                           sub_shell=sub_shells(ishell,icomp))
+                 end select
+#endif         
+               end if
+               deallocate(contr_coef)
             end do
-            ! normalizes the contraction coefficients
-            ang_num = IANG-1
-            ! Dalton/Dirac do not use mixed CGTOs and SGTOs
-            !if (SPH(IANG).neqv.spher_gto) then
-            !  stop "Gen1IntAPICreate>> mixed CGTOs and SGTOs not supported!"
-            !end if
-            ! Gen1Int library uses HGTOs in recurrence relations, while Dalton uses
-            ! CGTOs, so that we need to normalize the contraction coefficients of
-            ! SGTOs using Gen1Int subroutines
-            if (spher_gto) then
-              call norm_contr_sgto(ang_num, num_prim(KBCH,icomp),                &
-                                   exponents(1:num_prim(KBCH,icomp),KBCH,icomp), &
-                                   num_contr(KBCH,icomp), contr_coef)
-            else
-              call norm_contr_cgto(ang_num, num_prim(KBCH,icomp),                &
-                                   exponents(1:num_prim(KBCH,icomp),KBCH,icomp), &
-                                   num_contr(KBCH,icomp), contr_coef)
-            end if
-            !-ISTBNU(IDX_CENT)  !stabiliser: basic sym. op. that do not move center
-            ishell = ishell+1
-            if (ishell>1) then
-              call Gen1IntShellCreate(spher_gto=spher_gto,                        &
-                                      idx_cent=IDX_CENT,                          &
-                                      coord_cent=CORD(1:3,IDX_CENT),              &
-                                      ang_num=ang_num,                            &
-                                      num_prim=num_prim(KBCH,icomp),              &
-                                      exponents=exponents(1:num_prim(KBCH,icomp), &
-                                                          KBCH,icomp),            &
-                                      num_contr=num_contr(KBCH,icomp),            &
-                                      contr_coef=contr_coef,                      &
-                                      last_shell=sub_shells(ishell-1,icomp),      &
-                                      sub_shell=sub_shells(ishell,icomp))
-            ! sets the first AO sub-shell
-            else
-#ifdef PRG_DIRAC
-              select case (icomp)
-              case (LARGE_COMP)
-#endif
-                call Gen1IntShellCreate(spher_gto=spher_gto,                        &
-                                        idx_cent=IDX_CENT,                          &
-                                        coord_cent=CORD(1:3,IDX_CENT),              &
-                                        ang_num=ang_num,                            &
-                                        num_prim=num_prim(KBCH,icomp),              &
-                                        exponents=exponents(1:num_prim(KBCH,icomp), &
-                                                            KBCH,icomp),            &
-                                        num_contr=num_contr(KBCH,icomp),            &
-                                        contr_coef=contr_coef,                      &
-                                        sub_shell=sub_shells(ishell,icomp))
-#ifdef PRG_DIRAC
-              case (SMALL_COMP)
-                ! put small component block behind large component block
-                call Gen1IntShellCreate(spher_gto=spher_gto,                              &
-                                        idx_cent=IDX_CENT,                                &
-                                        coord_cent=CORD(1:3,IDX_CENT),                    &
-                                        ang_num=ang_num,                                  &
-                                        num_prim=num_prim(KBCH,icomp),                    &
-                                        exponents=exponents(1:num_prim(KBCH,icomp),       &
-                                                            KBCH,icomp),                  &
-                                        num_contr=num_contr(KBCH,icomp),                  &
-                                        contr_coef=contr_coef,                            &
-                                        last_shell=sub_shells(num_sub_shells(LARGE_COMP), &
-                                                              LARGE_COMP),                &
-                                        sub_shell=sub_shells(ishell,icomp))
-              end select
-#endif
-            end if
-            deallocate(contr_coef)
-            ! skips other CGTOs in this AO block for this angular momentum
-            KBCH = KBCH+num_cgto(IANG,ITYP,icomp)-1
           end do
         end do
         IDX_BLOCK = IDX_BLOCK+NBLCK(ITYP,icomp)
