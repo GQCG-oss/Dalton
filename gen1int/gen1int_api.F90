@@ -536,23 +536,43 @@ module gen1int_api
                                   order_ram_total,                &
                                   order_geo_bra, order_geo_ket,   &
                                   add_sr, add_so, add_london,     &
+                                  nr_active_blocks,               &
+                                  active_component_pairs,         &
                                   prop_comp)
-    integer, intent(in) :: gto_type
-    character*(*), intent(in) :: prop_name
-    integer, intent(in) :: order_mom
-    integer, intent(in) :: order_mag_bra
-    integer, intent(in) :: order_mag_ket
-    integer, intent(in) :: order_mag_total
-    integer, intent(in) :: order_ram_bra
-    integer, intent(in) :: order_ram_ket
-    integer, intent(in) :: order_ram_total
-    integer, intent(in) :: order_geo_bra
-    integer, intent(in) :: order_geo_ket
-    logical, intent(in) :: add_sr
-    logical, intent(in) :: add_so
-    logical, intent(in) :: add_london
+
+    integer,           intent(in)    :: gto_type
+    character*(*),     intent(in)    :: prop_name
+    integer,           intent(in)    :: order_mom
+    integer,           intent(in)    :: order_mag_bra
+    integer,           intent(in)    :: order_mag_ket
+    integer,           intent(in)    :: order_mag_total
+    integer,           intent(in)    :: order_ram_bra
+    integer,           intent(in)    :: order_ram_ket
+    integer,           intent(in)    :: order_ram_total
+    integer,           intent(in)    :: order_geo_bra
+    integer,           intent(in)    :: order_geo_ket
+    logical,           intent(in)    :: add_sr
+    logical,           intent(in)    :: add_so
+    logical,           intent(in)    :: add_london
+    integer,           intent(in)    :: nr_active_blocks
+    integer,           intent(in)    :: active_component_pairs(*)
     type(prop_comp_t), intent(inout) :: prop_comp
+
     integer ierr  !error information
+
+    ! in Dalton active_component_pairs is (/1, 1/)
+    ! in DIRAC active_component_pairs can be (/1, 1, 2, 2/)
+    !                                        (/1, 2, 2, 1/)
+    !                                        (/1, 1/)
+    !                                        (/2, 2/)
+    !                                        (/1, 2/)
+    !                                        (/2, 1/)
+    allocate(prop_comp%nnz_comp(2, nr_active_blocks), stat=ierr)
+    if (ierr /= 0) then
+       stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
+    end if
+    prop_comp%nnz_comp = reshape(active_component_pairs(1:nr_active_blocks*2), (/2, nr_active_blocks/))
+
     select case (trim(prop_name))
     ! one-electron Hamiltonian
     case (INT_ONE_HAMIL)
@@ -561,22 +581,6 @@ module gen1int_api
                          info_prop=ierr,              &
                          coord_nuclei=coord_atoms,    &
                          charge_nuclei=charge_atoms)
-#ifdef PRG_DIRAC
-      allocate(prop_comp%nnz_comp(2,2), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      ! which components are non-zero, valid options include LARGE_COMP and
-      ! SMALL_COMP, see gen1int_host.h
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-      prop_comp%nnz_comp(:,2) = SMALL_COMP
-#else
-      allocate(prop_comp%nnz_comp(2,1), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-#endif
     ! Cartesian multipole moments
     case (INT_CART_MULTIPOLE)
       call OnePropCreate(prop_name=INT_CART_MULTIPOLE, &
@@ -584,58 +588,16 @@ module gen1int_api
                          info_prop=ierr,               &
                          dipole_origin=dipole_origin,  &
                          order_mom=order_mom)
-#ifdef PRG_DIRAC
-      allocate(prop_comp%nnz_comp(2,2), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-      prop_comp%nnz_comp(:,2) = SMALL_COMP
-#else
-      allocate(prop_comp%nnz_comp(2,1), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-#endif
     ! overlap integrals
     case (INT_OVERLAP)
       call OnePropCreate(prop_name=INT_OVERLAP,       &
                          one_prop=prop_comp%one_prop, &
                          info_prop=ierr)
-#ifdef PRG_DIRAC
-      allocate(prop_comp%nnz_comp(2,2), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-      prop_comp%nnz_comp(:,2) = SMALL_COMP
-#else
-      allocate(prop_comp%nnz_comp(2,1), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-#endif
     ! kinetic energy integrals
     case (INT_KIN_ENERGY)
       call OnePropCreate(prop_name=INT_KIN_ENERGY,    &
                          one_prop=prop_comp%one_prop, &
                          info_prop=ierr)
-#ifdef PRG_DIRAC
-      allocate(prop_comp%nnz_comp(2,2), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-      prop_comp%nnz_comp(:,2) = SMALL_COMP
-#else
-      allocate(prop_comp%nnz_comp(2,1), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-#endif
     ! one-electron potential energy integrals
     case (INT_POT_ENERGY)
       call OnePropCreate(prop_name=INT_POT_ENERGY,    &
@@ -643,22 +605,6 @@ module gen1int_api
                          info_prop=ierr,              &
                          coord_nuclei=coord_atoms,    &
                          charge_nuclei=charge_atoms)
-#ifdef PRG_DIRAC
-      allocate(prop_comp%nnz_comp(2,2), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      ! which components are non-zero, valid options include LARGE_COMP and
-      ! SMALL_COMP, see gen1int_host.h
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-      prop_comp%nnz_comp(:,2) = SMALL_COMP
-#else
-      allocate(prop_comp%nnz_comp(2,1), stat=ierr)
-      if (ierr/=0) then
-        stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
-      end if
-      prop_comp%nnz_comp(:,1) = LARGE_COMP
-#endif
     case default
       write(STDOUT,999) "unknown property "//trim(prop_name)//"!"
       stop
