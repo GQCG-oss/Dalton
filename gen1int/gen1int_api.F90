@@ -530,6 +530,7 @@ module gen1int_api
   !> \param add_london transforms the operator by the LAO type gauge-including projector, not implemented
   !> \return prop_comp is the operator of property integrals
   subroutine Gen1IntAPIPropCreate(gto_type, prop_name, order_mom, &
+                                  order_elec,                     &
                                   order_mag_bra, order_mag_ket,   &
                                   order_mag_total,                &
                                   order_ram_bra, order_ram_ket,   &
@@ -543,6 +544,7 @@ module gen1int_api
     integer,           intent(in)    :: gto_type
     character*(*),     intent(in)    :: prop_name
     integer,           intent(in)    :: order_mom
+    integer,           intent(in)    :: order_elec
     integer,           intent(in)    :: order_mag_bra
     integer,           intent(in)    :: order_mag_ket
     integer,           intent(in)    :: order_mag_total
@@ -587,7 +589,8 @@ module gen1int_api
                          one_prop=prop_comp%one_prop,  &
                          info_prop=ierr,               &
                          dipole_origin=dipole_origin,  &
-                         order_mom=order_mom)
+                         order_mom=order_mom,          &
+                         order_elec=order_elec)
     ! overlap integrals
     case (INT_OVERLAP)
       call OnePropCreate(prop_name=INT_OVERLAP,       &
