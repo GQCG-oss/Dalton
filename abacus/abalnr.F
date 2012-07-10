@@ -753,6 +753,21 @@ CSPAS:20/3-2011: allowing for VIB_G perturbations in only one irrep
             IF (VIB_G .AND. VIBGIR .AND. (ISYM .NE. IRVIBG)) CYCLE
 CKeinSPASmehr
             KSYMOP = ISYM
+            IF (ABSLRS) THEN
+              ABS_KLRED(1)=0
+              ABS_KLRED(2)=0
+C
+c             LUSB = 80
+c             LUAB = 81
+c             LUSS = 82
+c             LUAS = 83
+C
+              OPEN(LUSB,STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUAB,STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUSS,STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUAS,STATUS='NEW',FORM='UNFORMATTED')
+            ENDIF
+C
             DO IOPER=1,NOPER(KSYMOP)
                KOPER=IOPER
                LABEL1 = LABOP(IOPER,KSYMOP)
@@ -876,13 +891,13 @@ C
                      DO 100 IFRVAL = 1,NFRVAL
                        IF (ABSORP) THEN
                          IF (ABSLRS) THEN
-                           OPEN(LUABSVECS,file='ABSVECS',
-     &                          status='unknown',
-     &                          form='unformatted')
+                           OPEN(LUABSVECS,FILE='ABSVECS',
+     &                          STATUS='UNKNOWN',
+     &                          FORM='UNFORMATTED')
                                 CALL READ_XVEC(LUABSVECS,4*NVARPT,
      &                               WORK(KSLV),LABEL1,ISYM,
      &                               FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
-                            CLOSE(LUABSVECS,status='keep')
+                            CLOSE(LUABSVECS,STATUS='KEEP')
                           ELSE
                            CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
      &                          ' ',IDUMMY,.FALSE.)
@@ -1072,6 +1087,13 @@ C
 C     End loop over operator in this symmetry
 C     
             END DO
+C
+            IF (ABSLRS) THEN
+              CLOSE(LUSB,STATUS='DELETE')
+              CLOSE(LUAB,STATUS='DELETE')
+              CLOSE(LUSS,STATUS='DELETE')
+              CLOSE(LUAS,STATUS='DELETE')
+            ENDIF
 C     
 C     End loop over symmetries
 C     

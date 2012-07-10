@@ -368,12 +368,18 @@ C
 C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(LWRK)
+      LOGICAL EX
 C
       KFREE = 1
       LFREE = LWRK
 C
-      OPEN(LUABSVECS,file='ABSVECS',status='unknown',form='unformatted')
-      WRITE(LUABSVECS) 'EOFLABEL'
+      CALL GPINQ('ABSVECS','EXIST',EX)
+      IF (.NOT.EX) THEN
+        OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+        WRITE(LUABSVECS) 'EOFLABEL'
+      ELSE
+        OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+      END IF
 c
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
      &     KFREE,LFREE)
@@ -456,6 +462,19 @@ C
             KXSOL = KGD + 2*KZVAR
             KFREE = KXSOL + 4*ABS_NFREQ_INTERVAL*KZVAR
             LFREE = LWRK - KFREE 
+c
+            ABS_KLRED(1)=0
+            ABS_KLRED(2)=0
+C
+c      LUSB = 80
+c      LUAB = 81
+c      LUSS = 82
+c      LUAS = 83
+C
+      OPEN(LUSB,status='new',form='unformatted')
+      OPEN(LUAB,status='new',form='unformatted')
+      OPEN(LUSS,status='new',form='unformatted')
+      OPEN(LUAS,status='new',form='unformatted')
 C
             DO IOPER=1,ABS_NOPER(ISYM)
                LABEL=ABS_LABOP(IOPER,ISYM)
@@ -489,6 +508,10 @@ C
 C
 
             END DO
+            CLOSE(LUSB,status='delete')
+            CLOSE(LUAB,status='delete')
+            CLOSE(LUSS,status='delete')
+            CLOSE(LUAS,status='delete')
          END IF
       END DO
       IF (IPRABSLRS.GT.0) CALL TIMER('ABSVEC',TIMSTR,TIMEND)
@@ -570,11 +593,8 @@ c
 #include "infpri.h"
 c
       DIMENSION MJWOP(2,MAXWOP,8)
-      INTEGER ABS_KZVAR
+      INTEGER ABS_KZVAR,ISYM
 c     
-      KFREE=1
-      LFREE=LWRK
-C
       ABS_GRADSYM = KSYMOP
       ABS_NSYM    = NSYM
       DO I = 1,NSYM
@@ -1684,5 +1704,87 @@ C
 C
 C     End of BETA_SETUP
 C
+      RETURN
+      END
+      SUBROUTINE ABS_REDSPACE_REBUILD(KZVAR,GD,REDE,REDS,REDGD,
+     &          KNVEC,WRK,LWRK)
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+C
+#include "abslrs.h"
+C
+C PURPOSE:
+C 
+C      rebuild reduce space from vectors on disk
+C
+      DIMENSION GD(KZVAR,4),REDE(ABS_MAXRM,ABS_MAXRM,2)
+      DIMENSION REDS(ABS_MAXRM,ABS_MAXRM),REDGD(ABS_MAXRM,2)
+      DIMENSION WRK(LWRK)
+      INTEGER KLRED(2),KNVEC(2)
+
+      KBVEC = 1
+      KEVEC = KBVEC + KZVAR
+      KSVEC = KEVEC + KZVAR
+      KFREE = KSVEC + KZVAR
+      LFREE = LWRK - KFREE
+c
+      PR1=0.0d0
+      REWIND(LUSB)
+      DO I=1,ABS_KLRED(1)
+         CALL READ_VEC(LUSB,KZVAR,WRK(KBVEC))
+          REDGD(I,1)= ABS(DDOT(KZVAR,WRK(KBVEC),1,GD(1,1),1))
+          PR1=MAX(PR1,REDGD(I,1))
+      ENDDO
+      REWIND(LUAB)
+      DO I=1,ABS_KLRED(2)
+         CALL READ_VEC(LUAB,KZVAR,WRK(KBVEC))
+         REDGD(I,2)= ABS(DDOT(KZVAR,WRK(KBVEC),1,GD(1,2),1))
+         PR1=MAX(PR1,REDGD(I,2))
+      ENDDO
+      IF (ABS(PR1).LE.(1.0d-8)) THEN
+        REWIND(LUSB)
+        REWIND(LUAB)
+        REWIND(LUSS)
+        REWIND(LUAS)
+        CALL DZERO(REDGD(1,1),KLRED(1))
+        CALL DZERO(REDGD(1,2),KLRED(2))
+        ABS_KLRED(1)=0
+        ABS_KLRED(2)=0
+        KNVEC(1)=2*ABS_NFREQ_INTERVAL
+        KNVEC(2)=2*ABS_NFREQ_INTERVAL
+      ELSE
+c
+C        rebuild reduced spaces
+c
+        REWIND(LUSB)
+        DO I=1,ABS_KLRED(1)
+          CALL READ_VEC(LUSB,KZVAR,WRK(KBVEC))
+          REWIND(LUSS)
+          DO J=1,I
+            CALL READ_VEC(LUSS,KZVAR,WRK(KEVEC))
+            REDE(I,J,1)= 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KEVEC),1)
+            IF (I .NE. J) REDE(J,I,1)=REDE(I,J,1)
+          ENDDO
+        REWIND(LUAB)
+          DO J=1,ABS_KLRED(2)
+            CALL READ_VEC(LUAB,KZVAR,WRK(KEVEC))
+            CALL GETSVEC(KZVAR,1,WRK(KEVEC),WRK(KSVEC))
+            REDS(I,J)=2.0d0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KSVEC),1)
+          ENDDO
+        ENDDO
+        REWIND(LUAB)
+        DO I=1,ABS_KLRED(2)
+          CALL READ_VEC(LUAB,KZVAR,WRK(KBVEC))
+          REWIND(LUAS)
+          DO J=1,I
+            CALL READ_VEC(LUAS,KZVAR,WRK(KEVEC))
+            REDE(I,J,2)= 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KEVEC),1)
+            IF (I .NE. J) REDE(J,I,2)=REDE(I,J,2)
+          ENDDO
+        ENDDO
+        KNVEC(1)=0
+        KNVEC(2)=0
+      ENDIF
+c
       RETURN
       END
