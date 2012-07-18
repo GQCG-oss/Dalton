@@ -113,12 +113,6 @@ group.add_argument('--prefix',
         default=None,
         help='set the install path for make install [default: %(default)s]',
         metavar='PATH')
-group.add_argument('--cmake',
-        action='store',
-        dest='alternative_cmake',
-        default=None,
-        help='give full path to alternative cmake binary (use this if default cmake is too old)',
-        metavar='PATH')
 
 group = parser.add_argument_group('Advanced options')
 group.add_argument('--explicit-libs',
@@ -223,14 +217,11 @@ def gen_cmake_command():
     if args.cxx:
         command += ' CXX=%s' % args.cxx
 
-    if args.alternative_cmake:
-        command += ' %s' % args.alternative_cmake
+    # fix for Windows
+    if sys.platform != "win32":
+        command += ' cmake'
     else:
-        # fix for Windows
-        if sys.platform != "win32":
-            command += ' cmake'
-        else:
-            command = ' cmake ' + command
+        command = ' cmake ' + command
 
     # if compiler starts with 'mp' turn on mpi
     # it is possible to call compilers with long paths
