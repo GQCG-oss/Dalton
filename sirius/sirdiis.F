@@ -286,6 +286,8 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
+
+      real*8, dimension(:), allocatable :: pefock
 C
 C Used from common blocks:
 C  INFINP : FLAG(*)
@@ -713,24 +715,18 @@ C
          ENDIF
 
          if (peqm) then
-           call memget('REAL', kfcpe, nnbasx, wrk, kfree, lfree)
-           call memget('REAL', kepe, 1, wrk, kfree, lfree)
-           if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
+           allocate(pefock(nnbasx))
+           if (nasht .gt. 0 .and. .not. (dodft .or. hsrohf)) then
              call pe_master(runtype='fock',
      &                      denmats=(daosav(:,1) + daosav(:,2)),
-     &                      fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
-     &                      nmats=1, Epe=wrk(kepe:kepe),
+     &                      fckmats=pefock, nmats=1, Epe=esolt,
      &                      dalwrk=wrk(kfree:lfree))
            else
              call pe_master(runtype='fock', denmats=daosav(:,1),
-     &                      fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
-     &                      nmats=1, Epe=wrk(kepe:kepe),
+     &                      fckmats=pefock, nmats=1, Epe=esolt,
      &                      dalwrk=wrk(kfree:lfree))
            end if
-           esolt = wrk(kepe)
-           call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
-           call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfcpe, kfree,
-     &                 lfree)
+           call daxpy(nnbasx, 1.0d0, pefock, 1, faosav(1,indevc,1), 1)
          end if
 
          
