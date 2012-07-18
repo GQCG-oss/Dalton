@@ -775,9 +775,12 @@ C
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
-#ifdef BUILD_GEN1INT
+#if defined(BUILD_GEN1INT)
 C... added by Bin Gao, to generate cube files
-      if (DO_CUBE) call gen1int_cube_main(LFREE, WORK(KFREE), LUPRI)
+      if (DO_CUBE) then
+        call gen1int_host_get_cube(LFREE, WORK(KFREE), LUPRI, IPRSIR)
+        call gen1int_host_cube_finalize()
+      end if
 #endif
 C
  8000 CALL GETTIM(TEND,WEND)

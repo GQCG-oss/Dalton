@@ -354,10 +354,12 @@ C
 #include "priunit.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       DIMENSION DMAT(NBAST,NBAST,NDMAT)
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 6
+         IPRTYP = DFT_GRAD_WORK
          CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,

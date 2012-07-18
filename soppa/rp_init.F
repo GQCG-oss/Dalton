@@ -263,7 +263,6 @@ C
 C
       CALL CC_NODINP(WORD,.TRUE.)
 C
-      MSYMS = MSYM 
 C----------------------------------------------------------------
 C Initialize additional labels for CCSD(T)-gradient optimization
 C and FOP

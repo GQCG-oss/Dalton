@@ -628,6 +628,8 @@ C
 #include "mpif.h"
 #endif
 #include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, EXP1VL, TRIMAT
@@ -642,7 +644,7 @@ C
       IF (TOFILE) CALL QUIT('Parallel calculations do not allow '//
      &                     'for storing integrals on disk')
 
-      IPRTYP = 17
+      IPRTYP = QM3LNO_WORK
       KRXYO = 1
       JRXYO = KRXYO + N2ORBX
       KLAST = JRXYO + N2ORBX
@@ -1503,6 +1505,8 @@ C
 #if defined(VAR_MPI)
 #include "mpif.h"
 #endif
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1519,7 +1523,7 @@ C
       IF (TOFILE) CALL QUIT('Parallel calculations do not allow '//
      &                     'for storing integrals on disk')
 
-      IPRTYP = 18
+      IPRTYP = QM3QRO_WORK
       KTRES = 1
       JTRES = KTRES + N2ORBX
       KLAST = JTRES + N2ORBX

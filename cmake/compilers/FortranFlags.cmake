@@ -1,4 +1,4 @@
-if(NOT DEFINED DEFAULT_Fortran_COMPILER_FLAGS_SET)
+if(NOT DEFINED DEFAULT_Fortran_FLAGS_SET)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -g -fbacktrace")
