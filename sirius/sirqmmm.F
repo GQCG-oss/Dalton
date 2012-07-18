@@ -6211,12 +6211,12 @@ C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
       CALL UTHU(WRK(KFPE),FSOL,WRK(KUCMO),WRK(KWRK1),
      &              NBAST,NORBT)                         
 
-Ctest      IF (IPQMMM .GE. 15) THEN
+      IF (IPQMMM .GE. 15) THEN
          WRITE (LUPRI,'(/A)') ' PE_ao matrix in PEFCMO:'
          CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' PE_mo matrix in PEFCMO:'
          CALL OUTPAK(FSOL,NORBT,1,LUPRI)
-Ctest       END IF
+      END IF
 
       CALL QEXIT('PEFCMO')
 C     end of pefcmo.

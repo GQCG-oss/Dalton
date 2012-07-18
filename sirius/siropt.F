@@ -2652,13 +2652,7 @@ C
 C
 C
       WRITE (LUSIFC) LAB123,LBSIFC
-C     ... the label LBSIFC is initialized in block data sbdtap
-      if (qmmm) then
-         eactiv_tot = eactiv + esolt
-      else
-         eactiv_tot = eactiv
-      end if
-      WRITE (LUSIFC) POTNUC,EMY,EACTIV_tot,EMCSCF,
+      WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
      &               ISTATE,ISPIN,NACTEL,LSYM
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
