@@ -1217,7 +1217,7 @@ C
   140    CONTINUE
             FCKEXP = .TRUE.
          GO TO 100
-  141    CONTINUE!          .GAUGEO
+  141    CONTINUE!   .GAUGEO
             READ (LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
             GAGORG_SET = .TRUE.
          GOTO 100
