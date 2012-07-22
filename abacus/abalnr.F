@@ -311,44 +311,40 @@ C
          ELSE
             IF (ABSORP) THEN
                IF (ABS_INTERVAL) THEN
+                 IF (FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
+     &              (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.
+     &              FREQ_INTERVAL(3).OR. FREQ_INTERVAL(3).LE.0.0D0) THEN
+                     CALL QUIT('.FREQ_INTERVAL not specify correctly')
+                  ENDIF
+                  DSMALL=1.0000001
                   NFREQ_INTERVAL = 1 +
-     &                 INT((FREQ_INTERVAL(2)-FREQ_INTERVAL(1))/
+     &                 INT(DSMALL*(FREQ_INTERVAL(2)-FREQ_INTERVAL(1))/
      &                 FREQ_INTERVAL(3))
                   NFRVAL = NFREQ_INTERVAL
                   DO I=1,NFRVAL
                      FRVAL(I)=FREQ_INTERVAL(1) + (I-1)*FREQ_INTERVAL(3)
-                  END DO                  
+                  END DO          
+                  NFREQ_ALPHA = NFRVAL
+                  NFREQ_INTERVAL = NFRVAL
+                  ABS_NFREQ_ALPHA = NFRVAL
+                  ABS_NFREQ_INTERVAL = NFRVAL
+                  DO I=1,ABS_NFREQ_ALPHA
+                     FREQ_ALPHA(I) = FRVAL(I)
+                     ABS_FREQ_ALPHA(I) = FRVAL(I)
+                  END DO        
                ELSE
                   NFREQ_ALPHA = NFRVAL
                   NFREQ_INTERVAL = NFRVAL
+                  ABS_NFREQ_ALPHA = NFRVAL
+                  ABS_NFREQ_INTERVAL = NFRVAL
                   DO I=1,NFREQ_ALPHA
                      FREQ_ALPHA(I) = FRVAL(I)
+                     ABS_FREQ_ALPHA(I) = FRVAL(I)
                   END DO
                END IF
                THCLR_ABSORP = THCLNR
                IPRABS = IPRLNR
                MAX_MACRO  = MAXITE
-               IF(ABS_INTERVAL .AND.
-     &              (FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
-     &           (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.FREQ_INTERVAL(3)
-     &            .OR. FREQ_INTERVAL(3).LE.0.0D0) ) THEN
-                  WRITE(LUPRI,'(/,A,/,A,/,/,A,/,A,/,/,A)')
-     & ' Warning: Frequency interval for absorption calculation is not',
-     & '          correctly specified according to:',
-     & '                 .FREQ_INTERVAL',
-     & '                 STARTFREQ ENDFREQ STEPSIZE',
-     & '          This input will be ignored. Calculation continues.'
-                  ABS_INTERVAL = .FALSE.
-                  FREQ_INTERVAL(1)=0.0D0
-                  FREQ_INTERVAL(2)=0.0D0
-                  FREQ_INTERVAL(3)=1.0D0
-               END IF
-            ELSE IF (ABS_INTERVAL) THEN
-               ABS_INTERVAL = .FALSE.
-               WRITE(LUPRI,'(/A,/A)')
-     & ' Warning: Frequency interval input only available for'//
-     & '          absorption calculation.',
-     & '          This input will be ignored. Calculation continues.'
             END IF
             IF (NFRVAL .GT. 0) THEN
                IF (NFRVLT .EQ. 0) NFRVLT = NFRVAL
@@ -753,6 +749,21 @@ CSPAS:20/3-2011: allowing for VIB_G perturbations in only one irrep
             IF (VIB_G .AND. VIBGIR .AND. (ISYM .NE. IRVIBG)) CYCLE
 CKeinSPASmehr
             KSYMOP = ISYM
+            IF (ABSLRS) THEN
+              ABS_KLRED(1)=0
+              ABS_KLRED(2)=0
+C
+c             LUSB = 80
+c             LUAB = 81
+c             LUSS = 82
+c             LUAS = 83
+C
+              OPEN(LUSB,STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUAB,STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUSS,STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUAS,STATUS='NEW',FORM='UNFORMATTED')
+            ENDIF
+C
             DO IOPER=1,NOPER(KSYMOP)
                KOPER=IOPER
                LABEL1 = LABOP(IOPER,KSYMOP)
@@ -876,13 +887,13 @@ C
                      DO 100 IFRVAL = 1,NFRVAL
                        IF (ABSORP) THEN
                          IF (ABSLRS) THEN
-                           OPEN(LUABSVECS,file='ABSVECS',
-     &                          status='unknown',
-     &                          form='unformatted')
+                           OPEN(LUABSVECS,FILE='ABSVECS',
+     &                          STATUS='UNKNOWN',
+     &                          FORM='UNFORMATTED')
                                 CALL READ_XVEC(LUABSVECS,4*NVARPT,
      &                               WORK(KSLV),LABEL1,ISYM,
      &                               FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
-                            CLOSE(LUABSVECS,status='keep')
+                            CLOSE(LUABSVECS,STATUS='KEEP')
                           ELSE
                            CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
      &                          ' ',IDUMMY,.FALSE.)
@@ -1072,6 +1083,13 @@ C
 C     End loop over operator in this symmetry
 C     
             END DO
+C
+            IF (ABSLRS) THEN
+              CLOSE(LUSB,STATUS='DELETE')
+              CLOSE(LUAB,STATUS='DELETE')
+              CLOSE(LUSS,STATUS='DELETE')
+              CLOSE(LUAS,STATUS='DELETE')
+            ENDIF
 C     
 C     End loop over symmetries
 C     
