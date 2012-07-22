@@ -9,7 +9,7 @@ modules/
 include/compinfo.h
 gp/binary_info.F90
 dalton.setup
-build
+build*
 Doc/*.aux
 Doc/Master.bbl
 Doc/Master.blg
