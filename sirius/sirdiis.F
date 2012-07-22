@@ -287,6 +287,7 @@ C
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
 
+      real*8, dimension(1) :: pe_energy
       real*8, dimension(:), allocatable :: pefock
 C
 C Used from common blocks:
@@ -719,13 +720,14 @@ C
            if (nasht .gt. 0 .and. .not. (dodft .or. hsrohf)) then
              call pe_master(runtype='fock',
      &                      denmats=(daosav(:,1) + daosav(:,2)),
-     &                      fckmats=pefock, nmats=1, Epe=esolt,
+     &                      fckmats=pefock, nmats=1, Epe=pe_energy,
      &                      dalwrk=wrk(kfree:lfree))
            else
              call pe_master(runtype='fock', denmats=daosav(:,1),
-     &                      fckmats=pefock, nmats=1, Epe=esolt,
+     &                      fckmats=pefock, nmats=1, Epe=pe_energy,
      &                      dalwrk=wrk(kfree:lfree))
            end if
+           esolt = pe_energy(1)
            call daxpy(nnbasx, 1.0d0, pefock, 1, faosav(1,indevc,1), 1)
          end if
 
