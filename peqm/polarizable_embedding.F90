@@ -166,8 +166,8 @@ module polarizable_embedding
     ! MEP stuff
     ! ---------
     ! external electric field
-    logical, save :: mep_extfield = .true.
-    real(dp), dimension(3), save :: extfield = 0.0d0
+    logical, save :: mep_extfld = .true.
+    real(dp), dimension(3), save :: extfld = 0.0d0
     ! calculate electric field
     logical, save :: mep_field = .false.
     logical, save :: mep_fieldnrm = .false.
@@ -329,9 +329,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
                     else if (trim(option(1:)) == 'SKIPQM') then
                         stop 'SKIPQM not implemented yet.'
                         mep_skipqm = .true.
-                    else if (trim(option(1:)) == 'EXTFIEL') then
-                        read(luinp,*) extfield(1), extfield(2), extfield(3)
-                        mep_extfield = .true.
+                    else if (trim(option(1:)) == 'EXTFLD') then
+                        read(luinp,*) extfld(1), extfld(2), extfld(3)
+                        mep_extfld = .true.
                     else if (option(1:1) == '.' .or. option(1:1) == '*') then
                         exit
                     else if (option(1:1) == '!' .or. option(1:1) == '#') then
@@ -1390,10 +1390,10 @@ subroutine pe_compute_mep(denmats)
         allocate(Fmuls(3*npols,1))
         allocate(M1inds(3*npols,1))
         call multipole_fields(Fmuls(:,1))
-        if (mep_extfield) then
+        if (mep_extfld) then
             j = 1
             do i = 1, npols
-                Fmuls(j:j+2,1) = Fmuls(j:j+2,1) + extfield 
+                Fmuls(j:j+2,1) = Fmuls(j:j+2,1) + extfld 
                 j = j + 3
             end do
         end if
