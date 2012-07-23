@@ -918,9 +918,9 @@ subroutine pe_read_tesselation()
            allocate(Sp(3,nsurp))
            allocate(A(nsurp))
            do i = 1, nsurp 
-!                read(lusurf,*) (Sp(j,i), j = 1, 3), A(i)
-                read(lusurf,*) (Sp(j,i), j = 1, 3)
-                read(lusurf,*) A(i)
+                read(lusurf,*) (Sp(j,i), j = 1, 3), A(i)
+!                read(lusurf,*) (Sp(j,i), j = 1, 3)
+!                read(lusurf,*) A(i)
            end do
         else if (word(1:1) == '!' .or. word(1:1) == '#') then
            cycle
@@ -940,8 +940,8 @@ subroutine pe_read_tesselation()
           write (luout,*) i, A(i)
        end do
     end if
-!    A = aa2au2*A
-!    Sp = aa2au*Sp
+    A = aa2au2*A
+    Sp = aa2au*Sp
     if (print_lvl .gt. 100) then
        write(luout,*) 'Sp in pe_read_tesselation in AU'
        do i=1,nsurp
@@ -2086,12 +2086,14 @@ subroutine pe_polarization(denmats, fckmats)
     real(dp), dimension(3*npols) :: Fnucs, Fmuls, Fpd
     real(dp), dimension(nsurp) :: Vnucs, Vmuls
     real(dp), dimension(3*npols,ndens) :: Fels
-    real(dp), dimension(3*npols+nsurp,ndens) :: Ftots
+!    real(dp), dimension(3*npols+nsurp,ndens) :: Ftots
     real(dp), dimension(3*npols+nsurp,ndens) :: Mkinds
     real(dp), dimension(nsurp,ndens) :: Vels
-    real(dp), dimension(:,:), allocatable :: Fel_ints, Vel_ints
+    real(dp), dimension(:,:), allocatable :: Fel_ints, Vel_ints, Ftots
     
     if (response) fckmats = 0.0d0
+
+    allocate(Ftots(3*npols+nsurp,ndens))
 
     if (response) then
         call electron_fields(Fels, denmats)
@@ -3644,6 +3646,8 @@ subroutine response_matrix_full(B)
         if (pe_sol) then
             do j = 1, nsurp
                  Rij_sol = (Sp(:,j) - Rs(:,i))
+                 R_sol = nrm2(Rij)
+                 R3_sol = R_sol**3
 ! Setting this block zero prevents coupling between PE and COSMO region
 !                 B_full(ipcm_off+j,icol_off+1) = 0.0d0
 !                 B_full(ipcm_off+j,icol_off+2) = 0.0d0
@@ -3652,15 +3656,15 @@ subroutine response_matrix_full(B)
 !                 B_full(icol_off+1,ipcm_off+j) = 0.0d0
 !                 B_full(icol_off+2,ipcm_off+j) = 0.0d0 
 !                 B_full(icol_off+3,ipcm_off+j) = 0.0d0 
-                 call Tk_tensor(Tk, Rij_sol)
+!                 call Tk_tensor(Tk, Rij_sol)
 
-                 B_full(ipcm_off+j,icol_off+1) = Tk(1)
-                 B_full(ipcm_off+j,icol_off+2) = Tk(2) 
-                 B_full(ipcm_off+j,icol_off+3) = Tk(3) 
+                 B_full(ipcm_off+j,icol_off+1) = Rij_sol(1)/R3_sol
+                 B_full(ipcm_off+j,icol_off+2) = Rij_sol(2)/R3_sol 
+                 B_full(ipcm_off+j,icol_off+3) = Rij_sol(3)/R3_sol 
 
-                 B_full(icol_off+1,ipcm_off+j) = B_full(ipcm_off+j,icol_off+1) 
-                 B_full(icol_off+2,ipcm_off+j) = B_full(ipcm_off+j,icol_off+2) 
-                 B_full(icol_off+3,ipcm_off+j) = B_full(ipcm_off+j,icol_off+3)
+                 B_full(icol_off+1,ipcm_off+j) = - B_full(ipcm_off+j,icol_off+1) 
+                 B_full(icol_off+2,ipcm_off+j) = - B_full(ipcm_off+j,icol_off+2) 
+                 B_full(icol_off+3,ipcm_off+j) = - B_full(ipcm_off+j,icol_off+3)
             end do ! j = 1, nsurp
         end if  
     end do !i = 1, nsites(ncores-1)
@@ -3693,6 +3697,7 @@ subroutine response_matrix_full(B)
             write (luout,*) 'Response matrix(i)',i, B(i)
         end do
     end if
+    write(luout,*) 'Rij_sol', Rij_sol
 end subroutine response_matrix_full
 
 !------------------------------------------------------------------------------
