@@ -170,7 +170,7 @@ module polarizable_embedding
     real(dp), dimension(3), save :: extfield = 0.0d0
     ! calculate electric field
     logical, save :: mep_field = .false.
-    logical, save :: mep_fieldnrm = .true.
+    logical, save :: mep_fieldnrm = .false.
     ! skip QM electrostatic potential (and electric field)
     logical, public, save :: mep_skipqm = .false.
     ! number of grid points
@@ -324,6 +324,8 @@ subroutine pe_dalton_input(word, luinp, lupri)
                         read(luinp,*) xsize, xgrid, ysize, ygrid, zsize, zgrid
                     else if (trim(option(1:)) == 'FIELD') then
                         mep_field = .true.
+                    else if (trim(option(1:)) == 'FLDNRM') then
+                        mep_fieldnrm = .true.
                     else if (trim(option(1:)) == 'SKIPQM') then
                         stop 'SKIPQM not implemented yet.'
                         mep_skipqm = .true.
@@ -1347,19 +1349,18 @@ subroutine pe_compute_mep(denmats)
 
     real(dp), dimension(:), intent(in) :: denmats
 
+    character(len=1) :: tcl
+    character(len=99) :: cl
     integer :: point
     integer :: i, j, k, l
     integer :: ndist, nrest
     integer :: lu, luqm, lum0, lum1, lum2, lum3, lum4, lum5, luind
-    real(dp), dimension(3) :: Tm
+    real(dp) :: taylor
+    real(dp), dimension(3) :: Tm, Rsp, Fs
     real(dp), dimension(:,:), allocatable :: Vqm, Vpe, Vind
     real(dp), dimension(:,:), allocatable :: Fqm, Fpe, Find
     real(dp), dimension(:,:), allocatable :: Fmuls, M1inds
     real(dp), dimension(nnbas,3) :: Tk_ints
-
-    integer :: site, ncomps
-    real(dp) :: taylor
-    real(dp), dimension(3) :: Rsp, Fs, Ftot
     real(dp), dimension(:), allocatable :: Tsp
     real(dp), dimension(:), allocatable :: factors
 
@@ -1544,12 +1545,24 @@ subroutine pe_compute_mep(denmats)
             end do
 
             if (mep_fieldnrm) then
-                Fpe(1,i) = nrm2(Fpe(1:3,i))
-                Fpe(4,i) = nrm2(Fpe(4:6,i))
-                Fpe(7,i) = nrm2(Fpe(7:9,i))
-                Fpe(10,i) = nrm2(Fpe(10:12,i))
-                Fpe(13,i) = nrm2(Fpe(13:15,i))
-                Fpe(16,i) = nrm2(Fpe(16:18,i))
+                if (lmul(0)) then
+                    Fpe(1,i) = nrm2(Fpe(1:3,i))
+                end if
+                if (lmul(1)) then
+                    Fpe(4,i) = nrm2(Fpe(4:6,i))
+                end if
+                if (lmul(2)) then
+                    Fpe(7,i) = nrm2(Fpe(7:9,i))
+                end if
+                if (lmul(3)) then
+                    Fpe(10,i) = nrm2(Fpe(10:12,i))
+                end if
+                if (lmul(4)) then
+                    Fpe(13,i) = nrm2(Fpe(13:15,i))
+                end if
+                if (lmul(5)) then
+                    Fpe(16,i) = nrm2(Fpe(16:18,i))
+                end if
             end if
 
             if (lpol(1)) then
@@ -1759,7 +1772,7 @@ subroutine pe_compute_mep(denmats)
             close(luind)
         end if
 
-        if (mep_field) then
+        if (mep_field .and. mep_fieldnrm) then
             call openfile('qm_field.cube', luqm, 'new', 'formatted')
             if (mulorder >= 0) then
                 call openfile('m0_field.cube', lum0, 'new', 'formatted')
@@ -1868,6 +1881,119 @@ subroutine pe_compute_mep(denmats)
             if (lpol(1)) then
                 close(luind)
             end if
+        else if (mep_field .and. .not. mep_fieldnrm) then
+            do l = 0, 2
+                write(cl,*) l
+                tcl = trim(adjustl(cl))
+                call openfile('qm_field_'//tcl//'.cube', luqm, 'new', 'formatted')
+                if (mulorder >= 0) then
+                    call openfile('m0_field_'//tcl//'.cube', lum0, 'new', 'formatted')
+                end if
+                if (mulorder >= 1) then
+                    call openfile('m1_field_'//tcl//'.cube', lum1, 'new', 'formatted')
+                end if
+                if (mulorder >= 2) then
+                    call openfile('m2_field_'//tcl//'.cube', lum2, 'new', 'formatted')
+                end if
+                if (mulorder >= 3) then
+                    call openfile('m3_field_'//tcl//'.cube', lum3, 'new', 'formatted')
+                end if
+                if (mulorder >= 4) then
+                    call openfile('m4_field_'//tcl//'.cube', lum4, 'new', 'formatted')
+                end if
+                if (mulorder >= 5) then
+                    call openfile('m5_field_'//tcl//'.cube', lum5, 'new', 'formatted')
+                end if
+                if (lpol(1)) then
+                    call openfile('ind_field_'//tcl//'.cube', luind, 'new', 'formatted')
+                end if
+                do i = 1, mulorder + 3
+                    if (i == 1) then
+                        lu = luqm
+                    else if (i == 2) then
+                        if (lpol(1)) then
+                            lu = luind
+                        else
+                            cycle
+                        end if
+                    else if (i == 3) then
+                        lu = lum0
+                    else if (i == 4) then
+                        lu = lum1
+                    else if (i == 5) then
+                        lu = lum2
+                    else if (i == 6) then
+                        lu = lum3
+                    else if (i == 7) then
+                        lu = lum4
+                    else if (i == 8) then
+                        lu = lum5
+                    end if
+                    write(lu,'(a)') 'CUBE file'
+                    write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+                    write(lu,'(i5,3f12.6)') qmnucs, origin
+                    write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+                    write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+                    write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+                    do j = 1, qmnucs
+                        write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+                    end do
+                end do
+                do i = 1, xsteps * ysteps
+                    j = (i - 1) * zsteps + 1
+                    k = j - 1 + zsteps
+                    write(luqm,'(6e13.5)') Fqm(1+l,j:k)
+                    if (mulorder >= 0) then
+                        write(lum0,'(6e13.5)') Fpe(1+l,j:k)
+                    end if
+                    if (mulorder >= 1) then
+                        write(lum1,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k))
+                    end if
+                    if (mulorder >= 2) then
+                        write(lum2,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
+                                                + Fpe(7+l,j:k))
+                    end if
+                    if (mulorder >= 3) then
+                        write(lum3,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
+                                                + Fpe(7+l,j:k) + Fpe(10+l,j:k))
+                    end if
+                    if (mulorder >= 4) then
+                        write(lum4,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
+                                                + Fpe(7+l,j:k) + Fpe(10+l,j:k)&
+                                                + Fpe(13+l,j:k))
+                    end if
+                    if (mulorder >= 5) then
+                        write(lum5,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
+                                                + Fpe(7+l,j:k) + Fpe(10+l,j:k)&
+                                                + Fpe(13+l,j:k) + Fpe(16+l,j:k))
+                    end if
+                    if (lpol(1)) then
+                        write(luind,'(6e13.5)') Find(1+l,j:k)
+                    end if
+                end do
+                close(luqm)
+                if (mulorder >= 0) then
+                    close(lum0)
+                end if
+                if (mulorder >= 1) then
+                    close(lum1)
+                end if
+                if (mulorder >= 2) then
+                    close(lum2)
+                end if
+                if (mulorder >= 3) then
+                    close(lum3)
+                end if
+                if (mulorder >= 4) then
+                    close(lum4)
+                end if
+                if (mulorder >= 5) then
+                    close(lum5)
+                end if
+                if (lpol(1)) then
+                    close(luind)
+                end if
+            end do
         end if
     end if
 
