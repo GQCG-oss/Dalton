@@ -100,7 +100,7 @@ module polarizable_embedding
     ! elements
     character(len=2), dimension(:,:), allocatable, save :: elems
     ! exclusion list
-    integer, dimension(:,:), allocatable, save :: exlists
+    integer, dimension(:,:), allocatable, save :: exclists
 
     ! energy contributions
     ! electrostatic
@@ -171,7 +171,7 @@ module polarizable_embedding
     ! calculate electric field
     logical, save :: mep_field = .false.
     ! skip QM electrostatic potential (and electric field)
-    logical, public, save :: mep_noqm = .false.
+    logical, public, save :: mep_skipqm = .false.
     ! number of grid points
     integer, dimension(:), allocatable, save :: npoints
     ! point distribution
@@ -323,8 +323,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
                         read(luinp,*) xsize, xgrid, ysize, ygrid, zsize, zgrid
                     else if (trim(option(1:)) == 'FIELD') then
                         mep_field = .true.
-                    else if (trim(option(1:)) == 'NOQM') then
-                        mep_noqm = .true.
+                    else if (trim(option(1:)) == 'SKIPQM') then
+                        stop 'SKIPQM not implemented yet.'
+                        mep_skipqm = .true.
                     else if (trim(option(1:)) == 'EXTFIEL') then
                         read(luinp,*) extfield(1), extfield(2), extfield(3)
                         mep_extfield = .true.
@@ -554,11 +555,11 @@ subroutine pe_read_potential(coords, charges)
                 read(lupot,*) s, (temp(j), j = 1, 6)
                 P1s(:,s) = temp(1:6)
             end do
-        else if (trim(word) == 'exlists') then
+        else if (trim(word) == 'exclists') then
             read(lupot,*) lexlst
-            allocate(exlists(lexlst,nsites(0)))
+            allocate(exclists(lexlst,nsites(0)))
             do i = 1, nsites(0)
-                read(lupot,*) (exlists(j,i), j = 1, lexlst)
+                read(lupot,*) (exclists(j,i), j = 1, lexlst)
             end do
         else if (word(1:1) == '!' .or. word(1:1) == '#') then
             cycle
@@ -630,11 +631,11 @@ subroutine pe_read_potential(coords, charges)
     end if
 
    ! default exclusion list (everything polarizes everything)
-    if (.not. allocated(exlists)) then
+    if (.not. allocated(exclists)) then
         lexlst = 1
-        allocate(exlists(lexlst,nsites(0)))
+        allocate(exclists(lexlst,nsites(0)))
         do i = 1, nsites(0)
-            exlists(1,i) = i
+            exclists(1,i) = i
         end do
     end if
 
@@ -1142,8 +1143,8 @@ subroutine pe_sync()
         call mpi_bcast(npoldists, ncores, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(npols, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(lexlst, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-        if (myid /= 0) allocate(exlists(lexlst,nsites(ncores-1)))
-        call mpi_bcast(exlists, lexlst*nsites(ncores-1), MPI_INTEGER,&
+        if (myid /= 0) allocate(exclists(lexlst,nsites(ncores-1)))
+        call mpi_bcast(exclists, lexlst*nsites(ncores-1), MPI_INTEGER,&
                       &0, MPI_COMM_WORLD, ierr)
         if (myid /= 0) allocate(zeroalphas(nsites(ncores-1)))
         call mpi_bcast(zeroalphas, nsites(ncores-1), MPI_LOGICAL,&
@@ -1672,21 +1673,21 @@ subroutine pe_compute_mep(denmats)
                 write(lum0,'(6e13.5)') Vpe(0,j:k)
             end if
             if (mulorder >= 1) then
-                write(lum1,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k))
+                write(lum1,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k))
             end if
             if (mulorder >= 2) then
-                write(lum2,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k) + Vpe(2,j:k))
+                write(lum2,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) + Vpe(2,j:k))
             end if
             if (mulorder >= 3) then
-                write(lum3,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k) + Vpe(2,j:k)&
+                write(lum3,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) + Vpe(2,j:k)&
                                         + Vpe(3,j:k))
             end if
             if (mulorder >= 4) then
-                write(lum4,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k) + Vpe(2,j:k)&
+                write(lum4,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) + Vpe(2,j:k)&
                                         + Vpe(3,j:k) + Vpe(4,j:k))
             end if
             if (mulorder >= 5) then
-                write(lum5,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k) + Vpe(2,j:k)&
+                write(lum5,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) + Vpe(2,j:k)&
                                         + Vpe(3,j:k) + Vpe(4,j:k) + Vpe(5,j:k))
             end if
             if (lpol(1)) then
@@ -1721,6 +1722,7 @@ subroutine pe_compute_mep(denmats)
         if (lpol(1)) then
             close(luind)
         end if
+
 !        if (mep_field) then
 !
 !        end if
@@ -2265,7 +2267,7 @@ subroutine induced_dipoles(M1inds, Fs)
                         if (zeroalphas(j)) cycle
                         exclude = .false.
                         do k = 1, lexlst
-                            if (exlists(k,i) == exlists(1,j)) then
+                            if (exclists(k,i) == exclists(1,j)) then
                                 exclude = .true.
                                 exit
                             end if
@@ -2647,7 +2649,7 @@ subroutine multipole_fields(Fmuls)
                 end if
                 exclude = .false.
                 do m = 1, lexlst
-                    if (exlists(m,i) == exlists(1,j)) then
+                    if (exclists(m,i) == exclists(1,j)) then
                         exclude = .true.
                         k = k + 1
                         exit
@@ -2819,7 +2821,7 @@ subroutine response_matrix(B)
                     end if
                     exclude = .false.
                     do k = 1, lexlst
-                        if (exlists(k,i) == exlists(1,j)) then
+                        if (exclists(k,i) == exclists(1,j)) then
                             exclude = .true.
                             exit
                         end if
