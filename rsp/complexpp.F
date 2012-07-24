@@ -62,23 +62,6 @@ c      LUAB = 81
 c      LUSS = 82
 c      LUAS = 83
 C
-c      OPEN(LUSB,status='unknown',form='formatted')
-c      OPEN(LUAB,status='unknown',form='formatted')
-c      OPEN(LUSS,status='unknown',form='formatted')
-c      OPEN(LUAS,status='unknown',form='formatted')
-      OPEN(LUSB,status='unknown',form='unformatted')
-      OPEN(LUAB,status='unknown',form='unformatted')
-      OPEN(LUSS,status='unknown',form='unformatted')
-      OPEN(LUAS,status='unknown',form='unformatted')
-c      CALL GPOPEN(LUSB,' ','UNKNOWN',' ','UNFORMATTED',
-c     &            IDUMMY,.FALSE.)
-c      CALL GPOPEN(LUAB,' ','UNKNOWN',' ','UNFORMATTED',
-c     &            IDUMMY,.FALSE.)
-c      CALL GPOPEN(LUSS,' ','UNKNOWN',' ','UNFORMATTED',
-c     &            IDUMMY,.FALSE.)
-c      CALL GPOPEN(LUAS,' ','UNKNOWN',' ','UNFORMATTED',
-c     &            IDUMMY,.FALSE.)
-C
       NEQ2S=ABS_NFREQ_INTERVAL
       KZYVAR=2*KZVAR
       KGD    = 1
@@ -92,15 +75,43 @@ C
       LFREE  = LWRK - KFREE
       IF (LFREE.LT.0) STOP 'ABS_CTL: out of memory'
 c
+      CALL ABS_CHKONFILE(LUABSVECS,CONVERGED,LABEL,ABS_GRADSYM,
+     &     ABS_DAMP,NEQ2S,FREQS,ABS_THCLR,WRK(KFREE))
+      IF (CONVERGED) THEN
+         WRITE(LUABSPRI,'(/A,I3)')
+     &        ' ABSCTL: converged response vectors found on file'//
+     &        ' RSPVEC with unit=',LUABSVECS
+         CALL GET_LRF(LUABSVECS,LABEL,NEQ2S,FREQS,FC,FV,CMO,UDV,PV,
+     &               XINDX,RESLRF,KZVAR,WRK(KFREE),LFREE)
+         GOTO 900
+      END IF
+c
       WRK(KGD:KGD+4*KZVAR) = 0.0d0
       WRK(KXRED:KXRED+4*NEQ2S*ABS_MAXRM) = 0.0d0
-      WRK(KRESD:KRESD+4*NEQ2S*KZVAR) = 0.0d0
-      WRK(KREDE:KREDE+3*ABS_MAXRM*ABS_MAXRM) = 0.0d0
-      WRK(KREDGD:KREDGD+2*ABS_MAXRM) = 0.0d0
-c
       DO I=1,NEQ2S
         CONV(I)=.FALSE.
       ENDDO
+C
+      IF (MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0) THEN
+        DO I=1,KZVAR
+          WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
+          WRK(KGD+KZVAR-1+I)=0.5d0*(GD(I)-GD(KZVAR+I))
+        END DO
+        CALL ABS_REDSPACE_REBUILD(KZVAR,WRK(KGD),WRK(KREDE),WRK(KREDS),
+     &                            WRK(KREDGD),
+     &                             KNVEC,WRK(KFREE),LFREE)
+        KLRED(1)=ABS_KLRED(1)
+        KLRED(2)=ABS_KLRED(2)
+        NNLT=KNVEC(1)+KNVEC(2)
+        IF (NNLT .GT.0) THEN
+          CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
+     &               WRK(KRESD),
+     &               KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
+        ENDIF
+      ELSE
+      WRK(KRESD:KRESD+4*NEQ2S*KZVAR) = 0.0d0
+      WRK(KREDE:KREDE+3*ABS_MAXRM*ABS_MAXRM) = 0.0d0
+      WRK(KREDGD:KREDGD+2*ABS_MAXRM) = 0.0d0
 c
         KNVEC(1)=2*NEQ2S
         KNVEC(2)=2*NEQ2S
@@ -109,6 +120,7 @@ c
         KLRED(2)=0
         CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
      &               WRK(KRESD),KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
+      ENDIF
 c      
       ITER = 1
  100  CONTINUE
@@ -201,14 +213,8 @@ C
 C
  777  CONTINUE
 C
-c      CALL GPCLOSE(LUSB,'DELETE')
-c      CALL GPCLOSE(LUAB,'DELETE')
-c      CALL GPCLOSE(LUSS,'DELETE')
-c      CALL GPCLOSE(LUAS,'DELETE')
-      CLOSE(LUSB,status='delete')
-      CLOSE(LUAB,status='delete')
-      CLOSE(LUSS,status='delete')
-      CLOSE(LUAS,status='delete')
+      ABS_KLRED(1)=KLRED(1)
+      ABS_KLRED(2)=KLRED(2)
 C
       END
       SUBROUTINE ABS_SOLV(FREQS,NFREQS,REDE,REDS,REDGD,RDX,KLRED,
@@ -1196,7 +1202,8 @@ C
       IF (LFREE.LT.0) STOP 'ABS_ORTHONORM: out of memory'
 C
       THR_LD=1.0D-8
-      THR_LD2=THR_LD*THR_LD
+c      THR_LD2=THR_LD*THR_LD
+      THR_LD2=0.0d0
 c
       DO I=1,NBNEW/2
         ORCHK(I)=CONV(I)

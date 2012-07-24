@@ -557,7 +557,7 @@ C    &              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
        CALL MOMOS(1,WRK(KCMO), WRK(KOCCNO), WRK(KAOSO),
      $            WRK(KUCMO), WRK(KOVEC))
        CALL MEMREL('SIROUT.MOMOS',WRK,KREL2,KREL2,KFREE,LFREE)
-      END IF
+      END IF ! (MOLDEN)
 C     
 C ***  Print final MCSCF orbitals ***
 C

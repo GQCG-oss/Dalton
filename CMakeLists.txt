@@ -18,6 +18,7 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
 option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
+option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -98,7 +99,7 @@ endforeach()
 
 # set scratch directory
 set(SCRATCH_DIR
-    "${DEFAULT_SCRATCH_BASE_DIR}/DALTON_scratch_$ENV{USER}"
+    "${DEFAULT_SCRATCH_BASE_DIR}/DALTON_scratch_\${USER}"
     CACHE STRING
     "Default scratch directory"
     )
