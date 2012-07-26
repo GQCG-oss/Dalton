@@ -729,6 +729,11 @@ lucita/par_communication_model.F90
 lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
+peqm/pe_dalton_wrappers.F90
+peqm/pe_precision.F90
+peqm/pe_blas.F90
+peqm/pe_lapack.F90
+peqm/polarizable_embedding.F90
     )
 set(OWN_BLAS_SOURCES
     pdpack/gp_dblas1.F

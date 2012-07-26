@@ -112,6 +112,7 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
+      use polarizable_embedding, only: peqm, pe_master
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -323,6 +324,54 @@ C
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               WRK(KDVT),WRK(KDVTTR),
      &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+      else if (peqm .and. .not. (nasht == 0 .and. trplet)) then
+        if (ncsim > 0) then
+           call quit('PE response calc. not implemented for ncsim > 0.')
+        end if
+
+        call memget('REAL', kuev, n2orbx*nosim, wrk, kfree, lfree)
+        call memget('REAL', kev, nnorbx, wrk, kfree, lfree)
+        call memget('REAL', kevao, nnbasx*nosim, wrk, kfree, lfree)
+        call memget('REAL', kdao, nnbasx*nosim, wrk, kfree, lfree)
+        call memget('REAL', kudvao, n2basx, wrk, kfree, lfree)
+        call memget('REAL', kudcao, n2basx, wrk, kfree, lfree)
+        call memget('REAL', kubv, n2orbx*nosim, wrk, kfree, lfree)
+
+        call rspzym(nosim, bovecs, wrk(kubv))
+
+        ! have no idea why but it works :-)
+        call dscal(n2orbx*nosim, -2.0d0, wrk(kubv), 1)
+
+        do i = 1, nosim
+            jubv = kubv + (i-1)*n2orbx
+            jdao = kdao + (i-1)*nnbasx
+            call deq27(cmo, wrk(jubv), udv, wrk(kudcao), wrk(kudvao),
+     &                 wrk(kfree), lfree)
+            if (nasht > 0) call daxpy(n2basx, 1.0d0, wrk(kudvao), 1,
+     &                                wrk(kudcao), 1)
+            call dgefsp(nbast, wrk(kudcao), wrk(jdao))
+        end do
+
+        call memrel('RSPSLV.pe_master', wrk, 1, kudvao, kfree, lfree)
+
+        call pe_master(runtype='response',
+     &                 denmats=wrk(kdao:kdao+nosim*nnbasx-1),
+     &                 fckmats=wrk(kevao:kevao+nosim*nnbasx-1),
+     &                 nmats=nosim, dalwrk=wrk(kfree:lfree))
+
+        call memrel('RSPSLV.pe_master', wrk, 1, kdao, kfree, lfree)
+
+        do i = 1, nosim
+            juev = kuev + (i-1)*n2orbx
+            jevao = kevao + (i-1)*nnbasx
+            call uthu(wrk(jevao), wrk(kev), cmo, wrk(kfree),
+     &                nbast, norbt)
+            call dsptsi(norbt, wrk(kev), wrk(juev))
+        end do
+
+        call slvsor(.true., .true., nosim, udv, evecs, wrk(kuev))
+
+        call memrel('RSPSLV.pe_master', wrk, 1, kuev, kfree, lfree)
       ELSE
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'

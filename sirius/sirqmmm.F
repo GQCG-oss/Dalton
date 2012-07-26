@@ -48,11 +48,9 @@ C  /* Deck qmmmfck */
 #include "symmet.h"
 #include "orgcom.h"
 
-
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
       LOGICAL HSFOCK
-
 
       CALL QENTER('QMMMFCK')
       KDTAO = 1

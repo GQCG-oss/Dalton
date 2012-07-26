@@ -62,23 +62,6 @@ c      LUAB = 81
 c      LUSS = 82
 c      LUAS = 83
 C
-c      OPEN(LUSB,status='unknown',form='formatted')
-c      OPEN(LUAB,status='unknown',form='formatted')
-c      OPEN(LUSS,status='unknown',form='formatted')
-c      OPEN(LUAS,status='unknown',form='formatted')
-      OPEN(LUSB,status='unknown',form='unformatted')
-      OPEN(LUAB,status='unknown',form='unformatted')
-      OPEN(LUSS,status='unknown',form='unformatted')
-      OPEN(LUAS,status='unknown',form='unformatted')
-c      CALL GPOPEN(LUSB,' ','UNKNOWN',' ','UNFORMATTED',
-c     &            IDUMMY,.FALSE.)
-c      CALL GPOPEN(LUAB,' ','UNKNOWN',' ','UNFORMATTED',
-c     &            IDUMMY,.FALSE.)
-c      CALL GPOPEN(LUSS,' ','UNKNOWN',' ','UNFORMATTED',
-c     &            IDUMMY,.FALSE.)
-c      CALL GPOPEN(LUAS,' ','UNKNOWN',' ','UNFORMATTED',
-c     &            IDUMMY,.FALSE.)
-C
       NEQ2S=ABS_NFREQ_INTERVAL
       KZYVAR=2*KZVAR
       KGD    = 1
@@ -92,15 +75,43 @@ C
       LFREE  = LWRK - KFREE
       IF (LFREE.LT.0) STOP 'ABS_CTL: out of memory'
 c
+      CALL ABS_CHKONFILE(LUABSVECS,CONVERGED,LABEL,ABS_GRADSYM,
+     &     ABS_DAMP,NEQ2S,FREQS,ABS_THCLR,WRK(KFREE))
+      IF (CONVERGED) THEN
+         WRITE(LUABSPRI,'(/A,I3)')
+     &        ' ABSCTL: converged response vectors found on file'//
+     &        ' RSPVEC with unit=',LUABSVECS
+         CALL GET_LRF(LUABSVECS,LABEL,NEQ2S,FREQS,FC,FV,CMO,UDV,PV,
+     &               XINDX,RESLRF,KZVAR,WRK(KFREE),LFREE)
+         GOTO 900
+      END IF
+c
       WRK(KGD:KGD+4*KZVAR) = 0.0d0
       WRK(KXRED:KXRED+4*NEQ2S*ABS_MAXRM) = 0.0d0
-      WRK(KRESD:KRESD+4*NEQ2S*KZVAR) = 0.0d0
-      WRK(KREDE:KREDE+3*ABS_MAXRM*ABS_MAXRM) = 0.0d0
-      WRK(KREDGD:KREDGD+2*ABS_MAXRM) = 0.0d0
-c
       DO I=1,NEQ2S
         CONV(I)=.FALSE.
       ENDDO
+C
+      IF (MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0) THEN
+        DO I=1,KZVAR
+          WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
+          WRK(KGD+KZVAR-1+I)=0.5d0*(GD(I)-GD(KZVAR+I))
+        END DO
+        CALL ABS_REDSPACE_REBUILD(KZVAR,WRK(KGD),WRK(KREDE),WRK(KREDS),
+     &                            WRK(KREDGD),
+     &                             KNVEC,WRK(KFREE),LFREE)
+        KLRED(1)=ABS_KLRED(1)
+        KLRED(2)=ABS_KLRED(2)
+        NNLT=KNVEC(1)+KNVEC(2)
+        IF (NNLT .GT.0) THEN
+          CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
+     &               WRK(KRESD),
+     &               KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
+        ENDIF
+      ELSE
+      WRK(KRESD:KRESD+4*NEQ2S*KZVAR) = 0.0d0
+      WRK(KREDE:KREDE+3*ABS_MAXRM*ABS_MAXRM) = 0.0d0
+      WRK(KREDGD:KREDGD+2*ABS_MAXRM) = 0.0d0
 c
         KNVEC(1)=2*NEQ2S
         KNVEC(2)=2*NEQ2S
@@ -109,6 +120,7 @@ c
         KLRED(2)=0
         CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
      &               WRK(KRESD),KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
+      ENDIF
 c      
       ITER = 1
  100  CONTINUE
@@ -123,8 +135,9 @@ C
 C     Perform linear transformation and build reduce spaces
 C
       CALL ABS_RED(ITER,KZVAR,WRK(KGD),WRK(KXTRL),WRK(KRESD),
-     &             WRK(KREDGD),WRK(KREDE),WRK(KREDS),NEQ2S,NNLT,KLRED,
-     &             KNVEC,MJWOP,CMO,UDV,FC,FCAC,FV,PV,WRK(KFREE),LFREE)
+     &             WRK(KREDGD),WRK(KREDE),WRK(KREDS),NEQ2S,
+     &             NNLT,KLRED,KNVEC,MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,
+     &             WRK(KFREE),LFREE)
 C
 C     Solve RPA equation in a reduced space
 C
@@ -150,11 +163,20 @@ C     Calculate polarizability
 C
       DO J=1,NEQ2S
         CALL DIPLAB(LABEL,INDEX)
-        RESLRF(1,J,INDEX,INDEX,1) = 
+        IF (LABEL(2:8).EQ.'DIPLEN') THEN
+          ITYPE = 1
+        ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
+          ITYPE = 2
+        ELSE
+           WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
+          RETURN
+        END IF
+
+        RESLRF(1,J,INDEX,INDEX,ITYPE) = 
      &         DDOT(KZYVAR,GD,1,XSOL(1,1,J),1)
-        RESLRF(2,J,INDEX,INDEX,1) = 
+        RESLRF(2,J,INDEX,INDEX,ITYPE) = 
      &         DDOT(KZYVAR,GD,1,XSOL(1,2,J),1)
-C     
+C    
       ENDDO
 c
 C     Check status
@@ -191,14 +213,8 @@ C
 C
  777  CONTINUE
 C
-c      CALL GPCLOSE(LUSB,'DELETE')
-c      CALL GPCLOSE(LUAB,'DELETE')
-c      CALL GPCLOSE(LUSS,'DELETE')
-c      CALL GPCLOSE(LUAS,'DELETE')
-      CLOSE(LUSB,status='delete')
-      CLOSE(LUAB,status='delete')
-      CLOSE(LUSS,status='delete')
-      CLOSE(LUAS,status='delete')
+      ABS_KLRED(1)=KLRED(1)
+      ABS_KLRED(2)=KLRED(2)
 C
       END
       SUBROUTINE ABS_SOLV(FREQS,NFREQS,REDE,REDS,REDGD,RDX,KLRED,
@@ -931,7 +947,7 @@ C
       SUBROUTINE ABS_RED(ITER,KZVAR,GD,XVEC,XTMP,REDGD,REDE,REDS,
      &                   NFREQS,
      &                   NNLT,KLRED,KNVEC,MJWOP,CMO,UDV,FC,FCAC,FV,PV,
-     &                   WRK,LWRK)
+     &                   XINDX,WRK,LWRK)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
 C
@@ -945,7 +961,7 @@ C
       DIMENSION GD(4*KZVAR),XVEC(KZVAR,NNLT)
       DIMENSION REDE(ABS_MAXRM,ABS_MAXRM,2),REDS(ABS_MAXRM,ABS_MAXRM),
      &          REDGD(ABS_MAXRM,2),E2XF(KZVAR,NNLT),XTMP(4*NFREQS*KZVAR)
-      DIMENSION MJWOP(*)
+      DIMENSION MJWOP(*),XINDX(*)
       DIMENSION CMO(*),UDV(*),FC(*),FCAC(*),FV(*),PV(*)
       DIMENSION WRK(LWRK)
       PARAMETER (D1 = -1.0D0)
@@ -962,7 +978,8 @@ C
       KBVEC = 1
       KE2XF = KBVEC + KZVAR
       KSVEC = KE2XF + NNLT*KZVAR
-      KFREE = KSVEC + NNLT*KZVAR
+c      KFREE = KSVEC + NNLT*KZVAR
+      KFREE = KSVEC + 4*NFREQS*KZVAR
       LFREE = LWRK - KFREE
       IF (LFREE.LT.0) STOP 'ABS_RED: out of memory'
 c
@@ -970,16 +987,16 @@ c
 c
 C       perform linear transformations
 C
-Cpanor
 c         IF (ABS_DALINP) THEN
-         CALL ABS_LINE2_INTER(KZVAR,WRK(KE2XF),XVEC,XTMP,
-     &        ABS_GRADSYM,NNLT,NNMAX,KNVEC,CMO,FC,FCAC,FV,UDV,MJWOP,
-     &        WRK(KFREE),LFREE)
+         CALL ABS_LINE2_INTER(KZVAR,WRK(KE2XF),XVEC,XTMP,WRK(KSVEC),
+     &        ABS_GRADSYM,NNLT,NNMAX,KNVEC,CMO,FC,FCAC,FV,UDV,XINDX,
+     &        MJWOP,WRK(KFREE),LFREE)
 C         ELSE
 C         get linear transformations A(x) -> WRK(KE2XF)
 C         ENDIF
 C
-        WRK(KSVEC:KSVEC+NNLT*KZVAR)=0.0d0
+C        WRK(KSVEC:KSVEC+NNLT*KZVAR)=0.0d0
+        WRK(KSVEC:KSVEC+4*NFREQS*KZVAR)=0.0d0
         CALL GETSVEC(KZVAR,NNLT,XVEC,WRK(KSVEC))
         IF (IPRABSLRS.GE.200) THEN
            WRITE(LUABSPRI,'(//A)') 
@@ -1171,7 +1188,8 @@ C PURPOSE:
 C      preconditioning 
 C
       IMPLICIT REAL*8 (A-H,O-Z)
-      INTEGER NBPREV,NBNEW,NNR,NNI,KZVAR
+#include "abslrs.h"
+      INTEGER NBPREV,NBNEW,NNR,NNI,KZVAR,LU1
       DIMENSION XRVEC(KZVAR,NBNEW/2),XIVEC(KZVAR,NBNEW/2)
       DIMENSION XORT(NBNEW*KZVAR),WRK(LWRK)
       LOGICAL CONV(NBNEW/2)
@@ -1184,12 +1202,14 @@ C
       IF (LFREE.LT.0) STOP 'ABS_ORTHONORM: out of memory'
 C
       THR_LD=1.0D-8
+c      THR_LD2=THR_LD*THR_LD
+      THR_LD2=0.0d0
 c
       DO I=1,NBNEW/2
         ORCHK(I)=CONV(I)
         ORCHK(NBNEW/2+I)=CONV(I)
       ENDDO
-c      
+c     
       DO ITURN=1,2
 C
 C     Orthonormalize trial vectors against the old vectors
@@ -1243,9 +1263,11 @@ c
               DO J = 1,(I-1)
                 IF (.NOT.ORCHK(J)) THEN
                   T1 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XRVEC(1,J),1)
-                  T2 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XRVEC(1,I),1)
-                  TT = T2/T1
-                  CALL DAXPY(KZVAR,-TT,XRVEC(1,J),1,XRVEC(1,I),1)
+                  IF (T1 .GT. THR_LD2) THEN
+                    T2 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XRVEC(1,I),1)
+                    TT = T2/T1
+                    CALL DAXPY(KZVAR,-TT,XRVEC(1,J),1,XRVEC(1,I),1)
+                  ENDIF
                 ENDIF
               END DO
             ENDIF
@@ -1256,19 +1278,23 @@ c
             DO J = 1,NBNEW/2
               IF (.NOT.ORCHK(J)) THEN
                 T1 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XRVEC(1,J),1)
-                T2 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XIVEC(1,I),1)
-                TT = T2/T1
-                CALL DAXPY(KZVAR,-TT,XRVEC(1,J),1,XIVEC(1,I),1)
+                IF (T1 .GT. THR_LD2) THEN
+                  T2 = 2.0d0*DDOT(KZVAR,XRVEC(1,J),1,XIVEC(1,I),1)
+                  TT = T2/T1
+                  CALL DAXPY(KZVAR,-TT,XRVEC(1,J),1,XIVEC(1,I),1)
+                ENDIF
               ENDIF
             END DO
             IF (NBNEW/2.GT.1) THEN
               DO J = 1,(I-1)
                 IF (.NOT.ORCHK(NBNEW/2+J)) THEN
                   T1 = 2.0d0*DDOT(KZVAR,XIVEC(1,J),1,XIVEC(1,J),1)
-                  T2 = 2.0d0*DDOT(KZVAR,XIVEC(1,J),1,
-     &                    XIVEC(1,I),1)
-                  TT = T2/T1
-                  CALL DAXPY(KZVAR,-TT,XIVEC(1,J),1,XIVEC(1,I),1)
+                  IF (T1 .GT. THR_LD2) THEN
+                    T2 = 2.0d0*DDOT(KZVAR,XIVEC(1,J),1,
+     &                   XIVEC(1,I),1)
+                    TT = T2/T1
+                    CALL DAXPY(KZVAR,-TT,XIVEC(1,J),1,XIVEC(1,I),1)
+                  ENDIF
                 ENDIF
               END DO
             ENDIF
@@ -1313,7 +1339,7 @@ c
           ORTHO_QUIT=.FALSE.
 c        ELSE
 c          write(luabspri,*)'vector skipped',I
-        END IF  
+       END IF  
       ENDDO
       NNI=0
       DO I=1,NBNEW/2

@@ -2164,6 +2164,7 @@ C  /* Deck sir_geninp */
 C
 C 1-Oct 1987 Hans Agren
 C
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2311,6 +2312,7 @@ C *** Option 6 >HARTRE<  Restricted Hartree-Fock SCF
 C           ... DOSCF may also be set with .CC
             DOSCF    = .TRUE.
             FLAG(21) = .TRUE.
+            if (peqm) flag(21) = .false.
 C           ... flag for QCSCF -- quadratically convergent HF or DFT
             NUMRUN = NUMRUN + 1
          END IF
@@ -2424,6 +2426,7 @@ C           ... DOSCF may also be set with .CC
          DODFT    = .TRUE.
          DOSCF    = .TRUE.
          FLAG(21) = .TRUE.
+         if (peqm) flag(21) = .false.
 C        ... flag for QCSCF -- quadratically convergent HF or DFT
 
 c     dodft should be enough but it is sometimes necessary to have also dftrun set.
@@ -5040,6 +5043,7 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
 C
 C Used from common blocks:
@@ -5274,16 +5278,39 @@ C          to get here unless someone modifies SIRIUS incorrectly
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *      'Time-dependent HF-srDFT calculation (response properties).'
          ELSE IF (DODFT) THEN
-            IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
-            WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
-            IF ( DORSP ) WRITE (IWUNIT,1050)
-     *         'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
+            if (peqm) then
+                if (wftype == ' ') then
+                    wftype = 'PE-DFT'
+                    write(iwunit,1053)
+     &                      ' Polarizable Embedding KS-DFT calculation.'
+                end if
+                if (dorsp) write(iwunit,1050)
+     &              'Time-dependent Polarizable Embedding KS-DFT'//
+     &              ' calculation (PE-TDDFT)'
+            else
+                IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
+                WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
+                IF ( DORSP ) WRITE (IWUNIT,1050)
+     &              'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
+            end if
          ELSE
-            IF (WFTYPE .EQ. ' ') WFTYPE='HF'
-            WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
-            IF ( DORSP ) WRITE (IWUNIT,1050)
-     *         'Time-dependent Hartree-Fock calculation '//
-     *         '(random phase approximation).'
+            if (peqm) then
+                if (wftype == ' ') then
+                    wftype = 'PE-HF'
+                    write(iwunit,1053)
+     &                       ' Polarizable Embedding Hartree-Fock'//
+     &                       ' calculation.'
+                end if
+                if (dorsp) write(iwunit,1050)
+     &              'Time-dependent Polarizable Embedding KS-DFT'//
+     &              ' calculation (PE-TDDFT)'
+            else
+                IF (WFTYPE .EQ. ' ') WFTYPE='HF'
+                WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
+                IF ( DORSP ) WRITE (IWUNIT,1050)
+     *              'Time-dependent Hartree-Fock calculation '//
+     *              '(random phase approximation).'
+            end if
          END IF
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE

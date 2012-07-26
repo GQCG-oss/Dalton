@@ -53,6 +53,7 @@ C
 C
 
       use lucita_orbital_spaces
+      use polarizable_embedding, only: pe_twoint, pe_twoints
 
 #include "implicit.h"
 C
@@ -116,6 +117,14 @@ C
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
       CALL FLSHFO(LUSTAT)
+! *********************************************************************
+! *** Save intermolecular part of two-electron Fock matrix and quit ***
+! *********************************************************************
+      if (pe_twoint) then
+          call pe_twoints(nbast, nisht, norbt, work)
+          iconv = 1
+          goto 8000
+      end if
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions
