@@ -285,6 +285,7 @@ C     *****************************
 C     ***** CTOCD-DZ response *****
 C     *****************************
 C
+Cx jim-dbg : leer aca too
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (CTOCD) THEN
         CALL CTOABA(WORK(KLAST),LWRK) 
@@ -501,6 +502,17 @@ cs
          CALL AQRDRV(WORK(KLST2),LWRK2)
       END IF
 C
+C     ******************************************
+C     ***** Lresc Response Properties      *****
+C     ******************************************
+C
+C  jim-gesc : call to LRSCDRV  
+      CALL GETTIM(TIMSTR,TIMDUM)
+      IF (RNLRSC) THEN
+       write(lupri,*) ' LRSCDRV is nt called yet, still developing' 
+c         CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
+      END IF
+C
 C     ****************************************
 C     ***** Add contributions calculated *****
 C     ****************************************
@@ -625,10 +637,7 @@ C
      &            WORK(KSCTRA),WORK(KDSO),WORK(KPSO),WORK(KSD),
      &            WORK(KFC),WORK(KSDFC),WORK(KTRLEN),
      &            WORK(KTRVEL),WORK(KTQLEN),WORK(KTQVEL),
-CSPAS:23/5-11: second and third moment sum rules
-C    &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),
      &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),WORK(KTTLEN),
-CKeinSPASmehr
      &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),WORK(KFOVIB),
      &            WORK(KSECMT),
      &            WORK(KRMLEN),WORK(KRQLEN),WORK(KRLEN),
@@ -709,7 +718,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-      PARAMETER (NDIR = 28, NTABLE = 59, D0 = 0.D0)
+      PARAMETER (NDIR = 28, NTABLE = 60, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP
@@ -753,13 +762,15 @@ CKeinSPASmehr
 CPFP: 27/03-2006: SOS for spin-spin coupling included
 #include "locinf.h"
 Cend-PFP
-C
+
+C  jim-dbg : add LROPTS and .LRESC . check  INTRST gaugeo stuff
+C  jim-gesc 1.0: TABDIR(#17) "*LRESC " and TABLE(60) ".LRESC "
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
      &             '*ONEINT', '*TWOEXP', '*GETSGY',
      &             '*EXCITA', '*REORT ', '*RESPON',
      &             '*TROINV', '*FMM   ', '*DIPCTL',
      &             '*RELAX ', '*GEOANA', '*VIBANA',
-     &             '*FLOAT ', 'xxxxxxx', '*QPGCTL',
+     &             '*FLOAT ', '*LROPTS', '*QPGCTL',
      &             'xXXXXXX', '*LOCALI', '*SOPPA ', ! *LOCALI: PFP 27/03-2006 - SOS for spin-spin coupling included
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
@@ -805,7 +816,7 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI'/
+     &             '.VIB_G ', '.LOCALI', '.LRESC '/ 
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -909,6 +920,8 @@ C
       THIRDM = .FALSE.
       ESG    = .FALSE.
       VIB_G  = .FALSE.
+C  jim-gesc 1.1: RNLRSC .FALSE. init 
+      RNLRSC = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
       CALL DZERO(DIPORG,3)
@@ -1007,7 +1020,7 @@ C
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-     &                151,152,153,154,155,156,157,158,159),I
+     &                151,152,153,154,155,156,157,158,159,160),I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1288,6 +1301,9 @@ C        .LOCALI
             ABALOC = .TRUE.
          GOTO 100
 Cend-PFP
+ 160     CONTINUE ! jim-dbg : set RNLRSC true
+         RNLRSC = .TRUE.
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1736,6 +1752,19 @@ cLig >> added the control to right CTOCD input
          CALL QUIT('Not supported input in ABAINP')
       ENDIF
 cLig <<
+C  jim-gesc 1.4: (abainp.1775) Print section 'lresc will be done ' 
+Cx jim-dbg :  aca puedo poner que no se puede london u otras cosas 
+Cx            y hacer un call quit
+Cx    preguntando al logic q sea ejplo if GAUGEO tonces ...  o SOPPA
+       IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
+     &    ' Linear Response Elimination of Small Component scheme will',
+     &    ' DEVELOPING NOTES :   ' ,
+     &    '                   -uncontracted basis set not checked  ',
+     &    '                   -selected atom not yet #1 set internally',
+     &    '                   -no man pages.. yet ',
+     &    '                   -no test runs .. yet.. ',
+     &    '                   -ONLY diam sinlget corrections and ',
+     &    '                   -     param singlet first order '
       IF (ABASOP) THEN
          IERR = 0
          IF (MOLGRD) THEN
@@ -1939,7 +1968,9 @@ cs
       GO TO 200
    16   CALL FLTINP(WORD)
       GO TO 200
-   17   CONTINUE
+C jim-gesc 1.5 : reading TABDIR call lrscinp
+   17 Write(lupri,*) ' Calling lrsec inp for word', WORD
+      CALL LRSCINP(WORD)  ! *LRESC
       GO TO 200
    18   CONTINUE
          CALL QPGINP(WORD)
@@ -2075,6 +2106,7 @@ C     We need to change the origin to the center of mass when calculating
 C     spin-rotation constants and molecular g-factors.
 C     This is now default for all molecular properties, unless turned off.
 C
+Cx jim-dbg : check GAUGEO origin here ?: not done yet
       KGEOM = 1
       KMASS = KGEOM + 3*(NATOMS + NFLOAT)
       KNAT  = KMASS + NATOMS + NFLOAT
@@ -2143,12 +2175,8 @@ C  /* Deck result */
       SUBROUTINE ABARESULT(POLDD,POLDL,POLDA,POLVL,POLVV,
      &                  CSTRA,SCTRA,SPNDSO,SPNPSO,
      &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TQLEN,TQVEL,
-CSPAS:23/5-11: second and third moment sum rules
-C    &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,FOVIBG,
-C    &                  SECMAT,
-     &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,FONAC,FONA2,
-     &                  FOVIBG,SECMAT,
-CKeinSPASmehr
+     &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,
+     &                  FONAC,FONA2,FOVIBG,SECMAT,
      &                  RMLEN,RQLEN,RLEN,RMVEL,RQVEL,RVEL,SLEN,SVEL,
      &                  WORK,LWORK)
 C
@@ -2172,10 +2200,7 @@ C
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
      &          SPNSD (MXCOOR,MXCOOR), SPNFC (MXCOOR,MXCOOR),
      &          SPSDFC(MXCOOR,MXCOOR)
-CSPAS:23/5-11: second and third moment sum rules
-C     DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*),
       DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*), TTLEN(*),
-CKeinSPASmehr
      &          TRLON(*), TRMAG(*), BSRLON(*),
      &          EXENG(*), FONAC(*), FONA2(*), FOVIBG(*),
 CSPAS : 6/11-2009 AO-SOPPA included
@@ -2537,18 +2562,11 @@ C     Excitation energies and (oriented) electronic circular dichroism
 C
       IF (DOEXCI) THEN
          IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-CSPAS:23/5-11: second and third moment sum rules
-C           CALL SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
-C    &                     FONAC,FONA2,SECMAT,WORK,LWORK)
             CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
      &                     TTLEN,EXENG,FONAC,FONA2,SECMAT,WORK,LWORK)
-CKeinSPASmehr
          ELSE
             CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
-CSPAS:23/5-11: second and third moment sum rules
-C    &                  TRMAG,TRLON,BSRLON,EXENG,
      &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,
-CKeinSPASmehr
      &                  FONAC,FONA2,RMLEN,RQLEN,
      &                  RLEN,RMVEL,RQVEL,RVEL,
      &                  SLEN,SVEL,WORK,LWORK)
@@ -3568,5 +3586,6 @@ C
       CALL LNRINI
       CALL AQRINI
       CALL LOCINI !PFP: 27/03-2006: SOS for spin-spin coupling included
+      CALL LRSCINI !jim-gesc call LRSCINI to Init all for lresc
       RETURN
       END

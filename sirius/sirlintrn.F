@@ -459,12 +459,12 @@ C
      &               WRK(KVTEX),WRK(KWPCM),LWPCM)
          CALL GETTIM(T5,W5)
       ELSEIF (QMMM) THEN
-          WRITE (LUPRI,*) 'QMMM:',QMMM
-          WRITE (LUPRI,*) '****** BEFORE PELIN ******'
+C          WRITE (LUPRI,*) 'QMMM:',QMMM
+C          WRITE (LUPRI,*) '****** BEFORE PELIN ******'
          CALL PELIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &              WRK(K3A),L3A)
-          WRITE(LUPRI,*) '****** AFTER PELIN ******'
+C          WRITE(LUPRI,*) '****** AFTER PELIN ******'
          CALL FLSHFO(LUPRI)
          CALL GETTIM(T5,W5)
       ELSE

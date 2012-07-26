@@ -26,7 +26,7 @@
 !...  2011-12-10, Bin Gao
 !...  * first version
 
-#include "xkind.h"
+#include "gen1int_host.h"
 
 !> \brief matrix module used in Gen1Int interface
 !> \note the reason of introducing matrix type is due to other codes (like OpenRSP) ask
@@ -43,11 +43,22 @@ module gen1int_matrix
   use matrix_backend, MatDestroy => mat_free
 
   implicit none
-#else
-!-#if defined (VAR_MPI)
-!-#include "mpif.h"
-!-#endif
 
+  public :: MatView
+
+  contains
+
+  !> \brief visualizes the information of a matrix
+  !> \author Bin Gao
+  !> \date 2012-05-14
+  !> \param A is the matrix
+  !> \param io_viewer is the logical unit number of the viewer
+  subroutine MatView(A, io_viewer)
+    type(matrix), intent(in) :: A
+    integer, intent(in) :: io_viewer
+    call mat_print(A=A, unit=io_viewer)
+  end subroutine MatView
+#else
   implicit none
 
   ! definition of matrix
@@ -73,11 +84,15 @@ module gen1int_matrix
   public :: MatView
 
   ! public subroutines used in Gen1Int interface
-  public :: MatSetBlockedValues
+  public :: MatSetValues
+  public :: MatGetValues
   public :: MatMultBlockedTrace
 
   ! public subroutines for test suite of Gen1Int interface
   public :: MatCreate
+#if defined(VAR_MPI)
+  public :: MatBcast
+#endif
   public :: MatDestroy
   public :: MatArrayAlmostEqual
 
@@ -232,9 +247,9 @@ module gen1int_matrix
   !> \param values contains the block of values
   !> \param trans indicates if transposing the values
   !> \return A is the matrix
-  subroutine MatSetBlockedValues(A, min_row_idx, max_row_idx, &
-                                 min_col_idx, max_col_idx,    &
-                                 values, trans)
+  subroutine MatSetValues(A, min_row_idx, max_row_idx, &
+                          min_col_idx, max_col_idx,    &
+                          values, trans)
     type(matrix), intent(inout) :: A
     integer, intent(in) :: min_row_idx
     integer, intent(in) :: max_row_idx
@@ -283,14 +298,74 @@ module gen1int_matrix
         end do
       else
         do icol = min_col_idx, max_col_idx
-          base_col = (icol-1)*A%num_col
+          base_col = (icol-1)*A%num_row
           do irow = min_row_idx, max_row_idx
             A%elms_alpha(irow+base_col) = values(irow,icol)
           end do
         end do
       end if
     end if
-  end subroutine MatSetBlockedValues
+  end subroutine MatSetValues
+
+  !> \brief gets a block of values from a matrix
+  !> \author Bin Gao
+  !> \date 2012-01-17
+  !> \param A is the matrix
+  !> \param min_row_idx is the minimum row index
+  !> \param max_row_idx is the maximum row index
+  !> \param min_col_idx is the minimum column index
+  !> \param max_col_idx is the maximum column index
+  !> \return values contains the block of values
+  subroutine MatGetValues(A, min_row_idx, max_row_idx, &
+                          min_col_idx, max_col_idx,    &
+                          values)
+    type(matrix), intent(in) :: A
+    integer, intent(in) :: min_row_idx
+    integer, intent(in) :: max_row_idx
+    integer, intent(in) :: min_col_idx
+    integer, intent(in) :: max_col_idx
+    real(REALK), intent(out) :: values(min_row_idx:max_row_idx,min_col_idx:max_col_idx)
+    integer irow, icol  !incremental recorders over rows and columns
+    integer base_col    !base address of a specific column
+    integer addr_elms   !address of element in matrix
+    ! matrix element storage in triangular format
+    if (A%triangular) then
+      ! symmetric matrix
+      if (A%symmetric) then
+        do icol = min_col_idx, max_col_idx
+          do irow = min_row_idx, max_row_idx
+            if (icol>=irow) then
+              addr_elms = icol*(icol-1)/2+irow
+            else
+              addr_elms = irow*(irow-1)/2+icol
+            end if
+            values(irow,icol) = A%elms_alpha(addr_elms)
+          end do
+        end do
+      ! anti-symmetric matrix
+      else
+        do icol = min_col_idx, max_col_idx
+          do irow = min_row_idx, max_row_idx
+            if (icol>=irow) then
+              addr_elms = icol*(icol-1)/2+irow
+              values(irow,icol) = A%elms_alpha(addr_elms)
+            else
+              addr_elms = irow*(irow-1)/2+icol
+              values(irow,icol) = -A%elms_alpha(addr_elms)
+            end if
+          end do
+        end do
+      end if
+    ! matrix element storage in square format
+    else
+      do icol = min_col_idx, max_col_idx
+        base_col = (icol-1)*A%num_row
+        do irow = min_row_idx, max_row_idx
+          values(irow,icol) = A%elms_alpha(irow+base_col)
+        end do
+      end do
+    end if
+  end subroutine MatGetValues
 
   !> \brief gets the trace of the product of a block of values and the
   !>        corresponding part of a matrix
@@ -416,6 +491,7 @@ module gen1int_matrix
     if (A%triangular) then
       if (A%num_row==A%num_col) then
         allocate(A%elms_alpha(A%num_row*(A%num_row+1)/2), stat=info_mat)
+        A%elms_alpha = 0.0d0
         if (info_mat/=0) then
           A%num_row = huge(1)
           A%num_col = huge(1)
@@ -433,6 +509,7 @@ module gen1int_matrix
     ! matrix element storage in square format
     else
       allocate(A%elms_alpha(A%num_row*A%num_col), stat=info_mat)
+      A%elms_alpha = 0.0d0
       if (info_mat/=0) then
         A%num_row = huge(1)
         A%num_col = huge(1)
@@ -440,6 +517,37 @@ module gen1int_matrix
       end if
     end if
   end subroutine MatCreate
+
+#if defined(VAR_MPI)
+  !> \brief broadcasts matrix
+  !> \author Bin Gao
+  !> \date 2012-05-13
+  !> \param A is the matrix
+  !> \param root is the root processor which broadcasts the matrix
+  !> \param mat_comm is the MPI communicator
+  subroutine MatBcast(A, root, mat_comm)
+    type(matrix), intent(inout) :: A
+    integer, intent(in) :: root
+    integer, intent(in) :: mat_comm
+#include "mpif.h"
+    integer rank_proc  !rank of processor
+    integer ierr       !error information
+    ! broadcasts information of the matrix
+    call MPI_Bcast(A%num_row, 1, MPI_INTEGER, root, mat_comm, ierr)
+    call MPI_Bcast(A%num_col, 1, MPI_INTEGER, root, mat_comm, ierr)
+    call MPI_Bcast(A%triangular, 1, MPI_LOGICAL, root, mat_comm, ierr)
+    call MPI_Bcast(A%symmetric, 1, MPI_LOGICAL, root, mat_comm, ierr)
+    ! allocates memory for the matrix on other processors
+    call MPI_Comm_rank(mat_comm, rank_proc, ierr)
+    if (rank_proc==root) then
+      call MPI_Bcast(A%elms_alpha, size(A%elms_alpha), MPI_REALK, root, mat_comm, ierr)
+    else
+      call MatCreate(A=A, num_row=A%num_row, info_mat=ierr, num_col=A%num_col, &
+                     triangular=A%triangular, symmetric=A%symmetric)
+      call MPI_Bcast(A%elms_alpha, size(A%elms_alpha), MPI_REALK, root, mat_comm, ierr)
+    end if
+  end subroutine MatBcast
+#endif
 
   !> \brief frees space taken by a matrix
   !> \author Bin Gao
@@ -885,37 +993,37 @@ module gen1int_matrix
         min_row_idx = (irow-1)*NUM_BLOCK_ROW+1
         max_row_idx = irow*NUM_BLOCK_ROW
         ! symmetric matrix in triangular format
-        call MatSetBlockedValues(A=TrSym,                                           &
+        call MatSetValues(A=TrSym,                                                  &
                 min_row_idx=min_row_idx, max_row_idx=max_row_idx,                   &
                 min_col_idx=min_col_idx, max_col_idx=max_col_idx,                   &
                 values=ref_sq_sym(min_row_idx:max_row_idx,min_col_idx:max_col_idx), &
                 trans=.false.)
         ! anti-symmetric matrix in triangular format
-        call MatSetBlockedValues(A=TrAnti,                                           &
+        call MatSetValues(A=TrAnti,                                                  &
                 min_row_idx=min_row_idx, max_row_idx=max_row_idx,                    &
                 min_col_idx=min_col_idx, max_col_idx=max_col_idx,                    &
                 values=ref_sq_anti(min_row_idx:max_row_idx,min_col_idx:max_col_idx), &
                 trans=.false.)
         ! symmetric matrix in square format
-        call MatSetBlockedValues(A=SqSym,                                           &
+        call MatSetValues(A=SqSym,                                                  &
                 min_row_idx=min_row_idx, max_row_idx=max_row_idx,                   &
                 min_col_idx=min_col_idx, max_col_idx=max_col_idx,                   &
                 values=ref_sq_sym(min_row_idx:max_row_idx,min_col_idx:max_col_idx), &
                 trans=.false.)
         if (irow/=icol)                                                               &
-          call MatSetBlockedValues(A=SqSym,                                           &
+          call MatSetValues(A=SqSym,                                                  &
                   min_row_idx=min_row_idx, max_row_idx=max_row_idx,                   &
                   min_col_idx=min_col_idx, max_col_idx=max_col_idx,                   &
                   values=ref_sq_sym(min_row_idx:max_row_idx,min_col_idx:max_col_idx), &
                   trans=.true.)
         ! anti-symmetric matrix in square format
-        call MatSetBlockedValues(A=SqAnti,                                           &
+        call MatSetValues(A=SqAnti,                                                  &
                 min_row_idx=min_row_idx, max_row_idx=max_row_idx,                    &
                 min_col_idx=min_col_idx, max_col_idx=max_col_idx,                    &
                 values=ref_sq_anti(min_row_idx:max_row_idx,min_col_idx:max_col_idx), &
                 trans=.false.)
         if (irow/=icol)                                                                 &
-          call MatSetBlockedValues(A=SqAnti,                                            &
+          call MatSetValues(A=SqAnti,                                                   &
                   min_row_idx=min_row_idx, max_row_idx=max_row_idx,                     &
                   min_col_idx=min_col_idx, max_col_idx=max_col_idx,                     &
                   values=-ref_sq_anti(min_row_idx:max_row_idx,min_col_idx:max_col_idx), &

@@ -554,7 +554,7 @@ C
       CALL IZERO(ISOFRA, 8)
 
 C-Bin Gao: disabled temporarily before F77 driver implemented
-C-#ifdef BUILD_GEN1INT
+C-#if defined(BUILD_GEN1INT)
 C-C...  added by Bin Gao, Feb. 15, 2011
 C-      if (ECP) then
 C-C...    computes expectation values

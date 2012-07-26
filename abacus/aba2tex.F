@@ -279,6 +279,8 @@ C
 #include "dftcom.h"
 #include "rspprp.h"
 #include "esg.h"
+C defined parallel calculation types 
+#include "iprtyp.h"
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
@@ -500,7 +502,7 @@ C
             LWRK = LWRK - KLAST
 C
             IATOM = 0
-            IPRTYP = 1
+            IPRTYP = HER_WORK
             HFXM0 = HFXMU
             HFXMU = D0
             CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,

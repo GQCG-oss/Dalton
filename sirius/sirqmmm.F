@@ -1077,7 +1077,7 @@ C     file. ELSE: read matrix from the file. CONMAT = CONstruct MATrix
 
         CALL MAKE_QMMM_INVERSE_RESPONSE_MATRIX(INVMAT,POLDIM) ! Construct inverse response matrix
 
-        IF (IPRINT .GT. 1) THEN
+        IF (IPRINT .GT. 15) THEN
           WRITE(LUPRI,*)
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' explicitly constructed. '
@@ -1137,7 +1137,7 @@ C       We write the classical response matrix to file
 
       ELSE  ! read the inverted matrix from the file
 
-        IF (IPRINT .GT. 5) THEN
+        IF (IPRINT .GT. 15) THEN
           WRITE(LUPRI,*)
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from the file. '
@@ -4490,8 +4490,10 @@ C ----
 #if defined(VAR_MPI)
 #include "mpif.h"
 #endif
-C#include "cbiher.h"
 
+C#include <cbiher.h>
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), DCAO(NNBASX)
       LOGICAL LOCDEB
@@ -4522,7 +4524,7 @@ C#include "cbiher.h"
 
 C     Wake up slaves (Rock and roll all nite)
 
-      IPRTYP = 21
+      IPRTYP = PARQMMM__WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
@@ -4838,6 +4840,8 @@ C ----
 #endif
 #include "cbiher.h"
 #include "gnrinf.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
@@ -4856,7 +4860,7 @@ C ----
 
 C     Beginning of parallel section
 
-      IPRTYP = 22
+      IPRTYP = MM_FIELD_1_WORK
 
 C     Wake up slaves
 
@@ -5099,6 +5103,8 @@ C ----
 #endif
 #include "cbiher.h"
 #include "gnrinf.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
@@ -5112,7 +5118,7 @@ C ----
 
 C     Beginning of parallel section
 
-      IPRTYP = 23
+      IPRTYP = MM_FIELD_2_WORK
 
 C     Wake up slaves
 
@@ -5318,6 +5324,8 @@ C ----
 #endif
 #include "cbiher.h"
 #include "gnrinf.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), CINDMOM(*)
 
@@ -5343,7 +5351,7 @@ C ----
 
 C     Beginning of parallel section
 
-      IPRTYP = 24
+      IPRTYP = MM_POLAR_CONTR_WORK
 
 C     Wake up slaves
 
@@ -5596,7 +5604,8 @@ C      IMPLICIT NONE
 #if defined(VAR_MPI)
 #include "mpif.h"
 #endif
-
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       INTEGER POLDIM, POLARRAY
       DIMENSION POLARRAY(POLDIM)
@@ -5628,7 +5637,7 @@ C     Make a vector of pol sites
 
 C     Beginning of parallel section 
 
-      IPRTYP = 25
+      IPRTYP = MMITER_INDDIP_WORK
 
 C     Wake up slaves
 
@@ -5895,12 +5904,15 @@ C
       KDENV  = KDENC  + N2BASX        
       KDENT  = KDENV  + N2BASX
       KDENTF = KDENT  + N2BASX
+C     ------------------------------
       KFPE   = KDENTF + NNBASX        ! X = no symmetry packing; T = symmetry packed
       KUCMO  = KFPE   + NNBASX        ! X = no symmetry packing; T = symmetry packed
       KFPEMO = KUCMO  + NORBT*NBAST   
       KFPEAC = KFPEMO + NNORBX
+C     ------------------------------
       KGRDPE = KFPEAC + NNASHX        
-      KDIAPE = KGRDPE + NVARH         
+      KDIAPE = KGRDPE + NVARH       
+C     ------------------------------  
       KWRK1  = KDIAPE + NVAR          
       LWRK1  = LFREE  - KWRK1 
 
@@ -5910,10 +5922,12 @@ C     1. KDENC  : Core (inactive) density matrix from fckden routine
 C     2. KDENV  : Valence (active) density matrix 
 C     3. KDENT  : Total density matrix (sum DC + DV)
 C     4. KDENTF : Folded total density matrix 
+C     ---------------------------------------------------------------
 C     6. KFPE   : Polarizable Embedded (PE) Tg operator (AO basis)
 C     7. KUCMO  : MO coefficients
 C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
 C     9. KFPEAC : - active part
+C     --------------------------------------------------------------
 C    10. KGRDPE : Solvent contr. to MCSCF gradient (G) 
 C                 - Output from SOLGC and SOLGO 
 C    11. KDIAPE : -Output from SOLDIA (what is this??) 
@@ -6211,7 +6225,7 @@ C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
          CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' PE_mo matrix in PEFCMO:'
          CALL OUTPAK(FSOL,NORBT,1,LUPRI)
-       END IF
+      END IF
 
       CALL QEXIT('PEFCMO')
 C     end of pefcmo.
@@ -6221,7 +6235,8 @@ C  /* Deck pelin */
       SUBROUTINE PELIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &                  DV,DTV,SCVECS,SOVECS,ORBLIN,WRK,LWRK)          
 C
-C Copyright 25-Apr-1990 Hans Joergen Aa. Jensen
+C Written by Erik Donovan Hedegård december 2011 
+C after original code by  Hans Joergen Aa. Jensen
 C Common driver for PELNC and PELNO
 C
 #include "implicit.h"
@@ -6426,7 +6441,7 @@ C     2.a) ...Loop over MM sites
       KWRK2    = KMATAC + 3*NNASHX
       LWRK2    = LFREE  - KWRK2
 
-C     1. KMATAO  : QM dipole one-elctron integrals (F^(1) in ao basis)
+C     1. KMATAO  : QM dipole one-elctron integrals (Fel^(1) in ao basis)
 C     2. KMATMO  : QM dipole one-elctron integrals (mo basis)
 C     3. KMATAC  : Active part of F^(1)
 
@@ -6450,9 +6465,9 @@ C     3. KMATAC  : Active part of F^(1)
         DIPORG(2) = MMCORD(2,I)
         DIPORG(3) = MMCORD(3,I)
 
-C       2.b) Dipole one-electron integrals (Fel(1) operator in AO basis) 
+C       2.b) Fel^(1) operator in AO basis
 
-C       ...Get Fel(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.  
+C       ...Get Fel^(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.  
 
          RUNQM3 = .TRUE.
 
@@ -6462,7 +6477,7 @@ C       ...Get Fel(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.
 
          RUNQM3 = .FALSE.
 
-C        2.c) Dipole one-electron integrals (Fel(1) operator in MO basis)
+C        2.c) Fel^(1) operator in MO basis
 
          CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
      &             WRK(KWRK2),NBAST,NORBT)

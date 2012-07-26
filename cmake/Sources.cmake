@@ -155,6 +155,8 @@ abacus/hersol.F
 abacus/hersym.F
 abacus/hertst.F
 abacus/huckel.F
+abacus/abalresc.F
+abacus/linear.F
 amfi/amfi.F
 amfi/symtra.F
 cc/asqr.F
@@ -489,6 +491,9 @@ pdpack/linextra.F
 pdpack/linpack.F
 pdpack/printpkg.F
 rsp/absorp.F
+rsp/abscomplex.F
+rsp/complexpp.F
+rsp/gpcpp.F
 rsp/deq27.F
 rsp/expone.F
 rsp/fone.F
@@ -713,10 +718,9 @@ soppa/so_wrtve.F
     )
 set(FREE_FORTRAN_SOURCES
 gp/binary_info.F90
-gp/character_processing.F90
-gp/dalton_input_processing.F90
-gp/input_reader.F90
-gp/keyword.F90
+input/input_reader_sections.F90
+input/input_reader.F90
+input/parse_input.F90
 lucita/dalton_mpi.F90
 lucita/lucita_cfg.F90
 lucita/lucita_mcscf_ci_cfg.F90

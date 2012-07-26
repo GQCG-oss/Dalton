@@ -24,12 +24,11 @@
 #include "single.h"
 
 C  /* Deck twoint */
-
-      SUBROUTINE TWOINT(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,IREPDM,
-     &                  IFCTYP,GMAT,
-     &                  INDXAB,NUMDIS,MAXDIS,ITYPE,MAXDIF,JATOM,NODV,
-     &                  NOPV,NOCONT,TTIME,JPRINT,IPRNTA,IPRNTB,IPRNTC,
-     &                  IPRNTD,RETUR,ISHLA,I2TYP,JSTRSH,NPRIMS,NCONTS,
+      SUBROUTINE TWOINT(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
+     &                  GMAT,INDXAB,NUMDIS,MAXDIS,ITYPE,MAXDIF,JATOM,
+     &                  NODV,NOPV,NOCONT,TTIME,
+     &                  JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRINTD,
+     &                  RETUR,ISHLA,I2TYP,JSTRSH,NPRIMS,NCONTS,
      &                  IORBSH,ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &                  DINTSKP,RELCAL)
 C
@@ -78,7 +77,7 @@ C
 C
 Cholesky
 #include "ccdeco.h"
-Cholesky  
+Cholesky
 C
       CALL QENTER('TWOINT')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOINT','*',103)
@@ -582,7 +581,7 @@ Cef end
       IPREVB = 0
       IPREVC = 0
       IPREVD = 0
-      
+
 C
 C     *****************************
 C     ***** First Shell Index *****
@@ -701,7 +700,6 @@ C
                IF (.NOT.(SPNORB .OR. DIA2SO) .AND.
      &                  (ISHELA.EQ.ISHELC)) IDMAX = ISHELB
                DO 400 ISHELD = IDSTRT,IDMAX
-               
 C
 C                 Check for basis-set identifier (WK/UniKA/04-11-2002).
                   MBSABCD = MBSABC + MBSISH(ISHELD)
@@ -1021,7 +1019,7 @@ C        Check for basis-set identifier (WK/UniKA/04-11-2002).
          MBSAB = MBSA + MBSISH(ISHELB)
          IF (ISHELB .NE. IBSMAX) THEN
             IF (.NOT. (R12HYB .AND. COMBSS)) THEN
-            IF ((.NOT. R12TRA .OR. ONEAUX) 
+            IF ((.NOT. R12TRA .OR. ONEAUX)
      &           .AND. MBSISH(ISHELB) .GT. 1) GOTO 200
             END IF
             IF (MBSAB .GT. MBSMAX) GOTO 200
@@ -1102,7 +1100,7 @@ C              Check for basis-set identifier (WK/UniKA/04-11-2002).
      &             ISHELC .NE. ICSMAX .OR.
      &             ISHELD .NE. ICMAX) THEN
                   IF (.NOT. (R12HYB .AND. COMBSS)) THEN
-                  IF ((.NOT. R12TRA .OR. ONEAUX) 
+                  IF ((.NOT. R12TRA .OR. ONEAUX)
      &                 .AND. MBSISH(ISHELD) .GT. 1) GOTO 400
                   END IF
                   IF (MBSABCD .GT. MBSMAX) GOTO 400
@@ -1265,94 +1263,98 @@ C
             WRITE (LUPRI,'(/A/)')
      &         '  All integral distributions have now been calculated.'
          END IF
-      ELSE
-         CALL UNPKIJ(ISHLAB,ISHELA,ISHELB)
+         GO TO 9999 ! exit
+      END IF
+
+      CALL UNPKIJ(ISHLAB,ISHELA,ISHELB)
 C
-C        First Shell Index
-C        =================
+C     First Shell Index
+C     =================
 C
-         ICA    = LCLASH(ISHELA)
+      ICA    = LCLASH(ISHELA)
 C
-         NHKTA  = NHKTSH(ISHELA)
-         KHKTA  = KHKTSH(ISHELA)
-         KCKTA  = KCKTSH(ISHELA)
-         SPHRA  = SPHRSH(ISHELA)
-         NCENTA = NCNTSH(ISHELA)
-         MULA   = ISTBSH(ISHELA)
-         MULTA  = MULT(MULA)
-         NSTRA  = IORBSB(IORBSH(ISHELA,1))
-         NUCA   = NUCOSH(ISHELA)
-         NORBA  = NORBSH(ISHELA)
-         IF (.NOT.BIGVEC) THEN
-            CORAX0 = CENTSH(ISHELA,1)
-            CORAY0 = CENTSH(ISHELA,2)
-            CORAZ0 = CENTSH(ISHELA,3)
-         END IF
-C
-C        Second Shell Index
-C        ==================
-C
-         ICB    = LCLASH(ISHELB)
-C
-         NHKTB  = NHKTSH(ISHELB)
-         KHKTB  = KHKTSH(ISHELB)
-         KCKTB  = KCKTSH(ISHELB)
-         SPHRB  = SPHRSH(ISHELB)
-         NCENTB = NCNTSH(ISHELB)
-         MULB   = ISTBSH(ISHELB)
-         MULTB  = MULT(MULB)
-         NSTRB  = IORBSB(IORBSH(ISHELB,1))
-         NUCB   = NUCOSH(ISHELB)
-         NORBB  = NORBSH(ISHELB)
-         IF (.NOT.BIGVEC) THEN
-            CORBX0 = CENTSH(ISHELB,1)
-            CORBY0 = CENTSH(ISHELB,2)
-            CORBZ0 = CENTSH(ISHELB,3)
-         END IF
-         GENAB  = .NOT.(SEGMSH(ISHELA) .AND. SEGMSH(ISHELB))
-         IGENAB = 1
-         IF (.NOT.GENAB) IGENAB = 2
-         NSETA  = NSETSH(ISHELA,IGENAB)
-         NSETB  = NSETSH(ISHELB,IGENAB)
-         SHAEQB = ISHELA .EQ. ISHELB
-         DIAGAB = SHAEQB .AND. .NOT.BIGVEC
-C
-         NUMDIS = NDISTR(INDXAB,MAXDIS,JPRINT)
-         CALL DZERO(GMAT,NBAST*NBAST*NUMDIS)
-         IF (JPRINT .GT. 1) THEN
-            WRITE (LUPRI,'(//,2(1X,A,I5,/))')
-     &         ' Calculation of integral distribution set:',ISHLAB,
-     &         ' Number of distributions in this set:     ',NUMDIS
-            IF (JPRINT .GT. 4) THEN
-               CALL HEADER('Pair index   Orbital A    Orbital B',2)
-               DO 100 I = 1, NUMDIS
-                  CALL UNPKIJ(INDXAB(I),IA,IB)
-                  WRITE (LUPRI,'(1X,3(I8,5X))')  INDXAB(I), IA, IB
- 100           CONTINUE
-            END IF
-         END IF
-         CALL DISLOP(GMAT,FMAT,DMAT,NDMAT,HESSEE,WORK,LWORK,MAXDER,
-     &               EXPECT,
-     &               SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,DISTRI,LONDON,
-     &               SPNORB,DIA2SO,ZFS2EL,
-     &               PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,THRESH,
-     &               JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,SQ12EL,INDHSQ,
-     &               IODDHR,INDHER,IFCTYP,ADISTR,JSTRSH,NPRIMS,NCONTS,
-     &               IORBSH,I2TYP,MBSAB)
- 999     ISHLAB = ISHLAB + 1
+      NHKTA  = NHKTSH(ISHELA)
+      KHKTA  = KHKTSH(ISHELA)
+      KCKTA  = KCKTSH(ISHELA)
+      SPHRA  = SPHRSH(ISHELA)
+      NCENTA = NCNTSH(ISHELA)
+      MULA   = ISTBSH(ISHELA)
+      MULTA  = MULT(MULA)
+      NSTRA  = IORBSB(IORBSH(ISHELA,1))
+      NUCA   = NUCOSH(ISHELA)
+      NORBA  = NORBSH(ISHELA)
+      IF (.NOT.BIGVEC) THEN
+         CORAX0 = CENTSH(ISHELA,1)
+         CORAY0 = CENTSH(ISHELA,2)
+         CORAZ0 = CENTSH(ISHELA,3)
       END IF
 C
+C     Second Shell Index
+C     ==================
+C
+      ICB    = LCLASH(ISHELB)
+C
+      NHKTB  = NHKTSH(ISHELB)
+      KHKTB  = KHKTSH(ISHELB)
+      KCKTB  = KCKTSH(ISHELB)
+      SPHRB  = SPHRSH(ISHELB)
+      NCENTB = NCNTSH(ISHELB)
+      MULB   = ISTBSH(ISHELB)
+      MULTB  = MULT(MULB)
+      NSTRB  = IORBSB(IORBSH(ISHELB,1))
+      NUCB   = NUCOSH(ISHELB)
+      NORBB  = NORBSH(ISHELB)
+      IF (.NOT.BIGVEC) THEN
+         CORBX0 = CENTSH(ISHELB,1)
+         CORBY0 = CENTSH(ISHELB,2)
+         CORBZ0 = CENTSH(ISHELB,3)
+      END IF
+      GENAB  = .NOT.(SEGMSH(ISHELA) .AND. SEGMSH(ISHELB))
+      IGENAB = 1
+      IF (.NOT.GENAB) IGENAB = 2
+      NSETA  = NSETSH(ISHELA,IGENAB)
+      NSETB  = NSETSH(ISHELB,IGENAB)
+      SHAEQB = ISHELA .EQ. ISHELB
+      DIAGAB = SHAEQB .AND. .NOT.BIGVEC
+C
+      NUMDIS = NDISTR(INDXAB,MAXDIS,JPRINT)
+      CALL DZERO(GMAT,NBAST*NBAST*NUMDIS)
+      IF (JPRINT .GT. 1) THEN
+         WRITE (LUPRI,'(//,2(1X,A,I5,/))')
+     &      ' Calculation of integral distribution set:',ISHLAB,
+     &      ' Number of distributions in this set:     ',NUMDIS
+         IF (JPRINT .GT. 4) THEN
+            CALL HEADER('Pair index   Orbital A    Orbital B',2)
+            DO 100 I = 1, NUMDIS
+               CALL UNPKIJ(INDXAB(I),IA,IB)
+               WRITE (LUPRI,'(1X,3(I8,5X))')  INDXAB(I), IA, IB
+ 100        CONTINUE
+         END IF
+      END IF
+C
+      CALL DISLOP(GMAT,FMAT,DMAT,NDMAT,HESSEE,
+     &            WORK,LWORK,MAXDER,EXPECT,
+     &            SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,
+     &            DISTRI,LONDON,SPNORB,DIA2SO,ZFS2EL,
+     &            PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,THRESH,
+     &            JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,SQ12EL,INDHSQ,
+     &            IODDHR,INDHER,IFCTYP,ADISTR,I2TYP,
+     &            JSTRSH,NPRIMS,NCONTS,IORBSH,MBSAB)
+ 999  ISHLAB = ISHLAB + 1
+C
+ 9999 CONTINUE
       CALL QEXIT('TWODIS')
       RETURN
       END
 C  /* Deck dislop */
-      SUBROUTINE DISLOP(GMAT,FMAT,DMAT,NDMAT,HESSEE,WORK,LWORK,MAXDER,
-     &                  EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,
-     &                  DISTRI,LONDON,
-     &                  SPNORB,DIA2SO,ZFS2EL,PERTUR,IATOM,MULE,MULTE,
-     &                  NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,
-     &                  IPRNTC,IPRNTD,SQ12EL,INDHSQ,IODDHR,INDHER,
-     &                  IFCTYP,ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,I2TYP,
+      SUBROUTINE DISLOP(GMAT,FMAT,DMAT,NDMAT,HESSEE,
+     &                  WORK,LWORK,MAXDER,EXPECT,
+     &                  SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,
+     &                  DISTRI,LONDON,SPNORB,DIA2SO,ZFS2EL,
+     &                  PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,
+     &                  THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
+     &                  SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
+     &                  JSTRSH,NPRIMS,NCONTS,IORBSH,I2TYP,
      &                  MBSAB)
 C
 #include "implicit.h"
@@ -1378,6 +1380,7 @@ C
 #include "symmet.h"
 #include "r12int.h"
 C
+      CALL QENTER('DISLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from DISLOP','*',103)
 C
       PRINTA = .TRUE.
@@ -1479,8 +1482,8 @@ C           *******************************
 C
             CALL TWOODS(FMAT,DMAT,NDMAT,GMAT,HESSEE,WORK,LWORK,UNDIFF,
      &                  PERTUR,LONDON,SPNORB,DIA2SO,ZFS2EL,EXPECT,
-     &                  SUSCEP,DDFOCK,DIRFCK,SOFOCK,DISTRI,IATOM,MULE,
-     &                  MULTE,MAXDER,NOCONT,
+     &                  SUSCEP,DDFOCK,DIRFCK,SOFOCK,DISTRI,IATOM,
+     &                  MULE,MULTE,MAXDER,NOCONT,
      &                  NODV,NOPV,THRESH,IPRINT,FIRST,SQ12EL,INDHSQ,
      &                  IODDHR,INDHER,IFCTYP,ADISTR,JSTRSH,NPRIMS,
      &                  NCONTS,IORBSH,DUMMY,
@@ -1488,13 +1491,14 @@ C
      &                  IDUMMY)
   200    CONTINUE
   100 CONTINUE
+      CALL QEXIT('DISLOP')
       RETURN
       END
 C  /* Deck twoods */
       SUBROUTINE TWOODS(FMAT,DMAT,NDMAT,GMAT,HESSEE,WORK,LWORK,UNDIFF,
      &                  PERTUR,LONDON,SPNORB,DIA2SO,ZFS2EL,EXPECT,
-     &                  SUSCEP,DDFOCK,DIRFCK,SOFOCK,DISTRI,IATOM,MULE,
-     &                  MULTE,MAXDER,NOCONT,
+     &                  SUSCEP,DDFOCK,DIRFCK,SOFOCK,DISTRI,IATOM,
+     &                  MULE,MULTE,MAXDER,NOCONT,
      &                  NODV,NOPV,THRESH,IPRINT,FIRST,SQ12EL,INDHSQ,
      &                  IODDHR,INDHER,IFCTYP,ADISTR,JSTRSH,NPRIMS,
      &                  NCONTS,IORBSH,WRKBUF,ICEDIF,
@@ -1567,8 +1571,7 @@ C
 C
 C     Number of two-electron densities elements
 C
-C
-      IF ((EXPECT .OR. SUSCEP .OR. DIA2SO .OR. ZFS2EL) 
+      IF ((EXPECT .OR. SUSCEP .OR. DIA2SO .OR. ZFS2EL)
      &     .AND. .NOT.NOPV) THEN
 #if defined (VAR_SPLITFILES)
          READ (LUPAO,END=414) NPMAT
@@ -1742,7 +1745,7 @@ C
       LWTOT  = LWTOT - KLAST
       RETURN
       END
-C  /* Deck twood1 */      
+C  /* Deck twood1 */
       SUBROUTINE TWOOD1(FMAT,DMAT,NDMAT,GMAT,HESSEE,WORK,LWORK,PSO,PSA,
      &                  NPMAT,COORAB,COORCD,EXPAB,EXPCD,FACAB,FACCD,
      &                  CONTA,CONTB,CONTC,CONTD,UNDIFF,PERTUR,LONDON,
@@ -1830,7 +1833,7 @@ C
             READ (LUPAS) (PSA(I),I=1,NPMAT)
          ELSEIF (DIA2SO) THEN
             READ (LUPAO) (PSO(I),I=1,NPMAT)
-         ELSEIF (ZFS2EL) THEN   
+         ELSEIF (ZFS2EL) THEN
             READ (LUPAO) (PSO(I),I=1,NPMAT)
          END IF
       END IF
@@ -1847,7 +1850,7 @@ C
      &            KHKTA,KHKTB,EXPECT,DIRFCK,WORK,LWORK,RPRIAB,RCNTAB,
      &            IXPAB,IPRINT)
 C
-      IF (ISUM(NODCAB,NUCTAB,1).EQ.0.AND..NOT.LAST) RETURN
+      IF (ISUM(NODCAB,NUCTAB,1) .EQ. 0 .AND. .NOT.LAST) RETURN
 C
 C     Overlap distributions for second electron
 C     =========================================
@@ -1859,7 +1862,7 @@ C
      &            MULC,MULD,NODCCD,NORTCD,NINDCD,NPNTCD,NREDCD,
      &            KHKTC,KHKTD,EXPECT,DIRFCK,WORK,LWORK,RPRICD,RCNTCD,
      &            IXPCD,IPRINT)
-      IF (ISUM(NODCCD,NUCTCD,1).EQ.0.AND..NOT.LAST) RETURN
+      IF (ISUM(NODCCD,NUCTCD,1) .EQ. 0 .AND. .NOT.LAST) RETURN
 C
       CALL GETLMN(LMNVLS,IPRINT)
       KHKTAB = KHKTA*KHKTB
@@ -1965,15 +1968,15 @@ C
      &               COORCD,EXPAB,EXPCD,FACAB,FACCD,CONTA,CONTB,CONTC,
      &               CONTD,NSOINT,NPMAT,UNDIFF,PERTUR,LONDON,SPNORB,
      &               DIA2SO,ZFS2EL,EXPECT,SUSCEP,DDFOCK,DIRFCK,SOFOCK,
-     &               DISTRI,IATOM,MULE,
-     &               MULTE,MAXDER,NOCONT,NODV,NOPV,THRESH,IPRINT,FIRST,
-     &               LAST,SQ12EL,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,NUCSCD,
-     &               NINDAB,NINDCD,JSTRA,JSTRB,JSTRC,JSTRD,WORK(KCORBA),
-     &               WORK(KCORBB),WORK(KCORBC),WORK(KCORBD),
-     &               WORK(KPNTAO),WORK(KPNTOP),WORK(KPNTNO),
-     &               WORK(KPNTRP),WORK(KPNTLG),NUCTAB,NUCTCD,INDHSQ,
-     &               IODDHR,INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
-     &               IFCTYP,ADISTR,IORBSH,WRKBUF,
+     &               DISTRI,IATOM,MULE,MULTE,
+     &               MAXDER,NOCONT,NODV,NOPV,THRESH,IPRINT,
+     &               FIRST,LAST,SQ12EL,NPCOA,NPCOB,NPCOC,NPCOD,
+     &               NUCSAB,NUCSCD,NINDAB,NINDCD,JSTRA,JSTRB,JSTRC,
+     &               JSTRD,WORK(KCORBA),WORK(KCORBB),WORK(KCORBC),
+     &               WORK(KCORBD),WORK(KPNTAO),WORK(KPNTOP),
+     &               WORK(KPNTNO),WORK(KPNTRP),WORK(KPNTLG),
+     &               NUCTAB,NUCTCD,INDHSQ,IODDHR,INDHER,LMNVLS,NPNTAB,
+     &               NPNTCD,NREDAB,NREDCD,IFCTYP,ADISTR,IORBSH,WRKBUF,
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
      &               IXPAB,IXPCD,CHOINT)
 C
@@ -1982,7 +1985,6 @@ C
       RETURN
       END
 C  /* Deck symlop */
-Cef begin
       SUBROUTINE SYMLOP(SOINT,FMAT,DMAT,NDMAT,GMAT,PSO,PSA,HESSEE,WORK,
      &                  LWORK,COEFAB,COEFCD,COORAB,COORCD,EXPAB,EXPCD,
      &                  FACAB,FACCD,CONTA,CONTB,CONTC,CONTD,NSOINT,
@@ -2060,7 +2062,7 @@ C
       XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
-      
+C
       CALL QENTER('SYMLOP')
 C
       INTS = .FALSE.
@@ -2172,8 +2174,8 @@ C        ***** Charge Distributions for First Electron *****
 C        ***************************************************
 C
          TPRIAB = .FALSE.
-         CAEQCB = .NOT.BIGVEC .AND. ICENTA .EQ. ICENTB
-     &                        .AND. IATOM  .NE. NCENTA
+         CAEQCB = ICENTA .EQ. ICENTB .AND. IATOM  .NE. NCENTA
+     &            .AND. .NOT.BIGVEC
          CALL ODCOEF(COEFAB,COORAB(1,1,1,NSYMR),EXPAB(1,1,NSYMR),WORK,
      &               LWORK,JMAXA,JMAXB,NHKTA,NHKTB,NSETA,NSETB,NUCA,
      &               NUCB,NUCAB,MXUCAB,NORBA,NORBB,NPCOA,NPCOB,
@@ -2250,9 +2252,9 @@ C
                SIGNDX = XAND(ISYMTS)
                SIGNDY = YAND(ISYMTS)
                SIGNDZ = ZAND(ISYMTS)
-               CCEQCD = .NOT.BIGVEC .AND. (ICENTC .EQ. ICENTD)
-     &              .AND. (NCENTC .NE. IATOM)
-C     
+               CCEQCD = (ICENTC .EQ. ICENTD) .AND. (NCENTC .NE. IATOM)
+     &                  .AND. .NOT.BIGVEC
+C
 C              If necessary change sign of expansion coefficients
 C              ==================================================
 C
@@ -2263,7 +2265,7 @@ ckr           Do we need anything fancy changing of sign for ZFS2EL
 C
 C
 C              b) atom to be differentiated does not enter integral
-C     
+C
                IF (PERTUR .AND. MAXDER .GT. 0) THEN
                   IF (IATOM .NE. NCENTA .AND. IATOM .NE. NCENTB
      &                                  .AND. IATOM .NE. NCENTC
@@ -2287,7 +2289,7 @@ C
                      END IF
                   ELSE
                      IF (PERTUR .OR. EXPECT .OR. LONDON) THEN
-                        LINTMP = LINTSV 
+                        LINTMP = LINTSV
                         GO TO 300
                      END IF
                   END IF
@@ -2305,7 +2307,7 @@ C
                IF (.NOT. (DOX .OR. DOY .OR. DOZ)) THEN
                   LINTMP = LINTSV
                   GO TO 300
-               END IF          
+               END IF
 C
 C              Check whether this integral gives zero contribution
 C              ===================================================
@@ -2357,7 +2359,7 @@ C Largest exchange contribution
      &        ISHELD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
      &        SPDCAR(NHKTSH(ISHELD)-1),')'
 #if defined (VAR_MPI)
-          IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND. 
+          IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND.
      &        DIRFCK .AND. HFXMU .EQ. D0) THEN
              I_SHL = I_SHL + 1
              IF (I_SHL .GT. MXTSK) THEN
@@ -2366,9 +2368,9 @@ C Largest exchange contribution
                 CALL QUIT('AOSAVE: I_SHL exceeds MXTSK.')
              END IF
 #else
-                  IF (AOSAVE .AND. INDX_SHL1 .GE. ISHELA .AND. 
+                  IF (AOSAVE .AND. INDX_SHL1 .GE. ISHELA .AND.
      &                 INDX_SHL2 .GE. ISHELB .AND.
-     &                 INDX_SHL3 .GE. ISHELC .AND. 
+     &                 INDX_SHL3 .GE. ISHELC .AND.
      &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1
      &                 .AND. HFXMU .EQ. D0) THEN
                      NINTYP = 1
@@ -2385,7 +2387,7 @@ C Largest exchange contribution
                       ENDIF
                     ENDIF
                   ENDIF
-C     
+C
 C              Integral contributes
 C              ====================
 C
@@ -2450,7 +2452,7 @@ C     &                 ISYMR,ISYMS
 C
                      CALL DCOPY(NCCINT*NINTYP,
      &                    AOINTSCORE(INDX_SHL(I_SHL)),1,WORK(KAOINT),1)
-C                     write(lupri,*) 'I_SHL,INDX_SHL(I_SHL)', 
+C                     write(lupri,*) 'I_SHL,INDX_SHL(I_SHL)',
 C     &                    I_SHL,INDX_SHL(I_SHL)
 C
 C                     write(lupri,*) 'WORK(KAOINT): ',(WORK(KAOINT+II),
@@ -2482,9 +2484,9 @@ C     &                 maxder
      &             HFXMU .EQ. D0) THEN
                   NINTYP = 1
 
-                  IF (INDX_SHL1 .GE. ISHELA .AND. 
+                  IF (INDX_SHL1 .GE. ISHELA .AND.
      &                INDX_SHL2 .GE. ISHELB .AND.
-     &                INDX_SHL3 .GE. ISHELC .AND. 
+     &                INDX_SHL3 .GE. ISHELC .AND.
      &                INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1) THEN
 C
 C                  IF (LINTSV) THEN
@@ -2493,10 +2495,10 @@ C     &                    ishela,ishelb,ishelc,isheld,indx_shl1,
 C     &                    indx_shl2,indx_shl3,indx_shl4,lintsv
 C
                      LINTMP = .TRUE.
-                     KAOINT = 1 
+                     KAOINT = 1
 C
                      CALL DCOPY(NCCINT*NINTYP,
-     &                    AOINTSCORE(I_SHL),1,WORK(KAOINT),1)   
+     &                    AOINTSCORE(I_SHL),1,WORK(KAOINT),1)
 C
                      CALL INTFCK(FMAT,WORK(KAOINT),DMAT,NDMAT,
      &                    NCCINT,NINTYP,ICORBA,ICORBB,ICORBC,ICORBD,
@@ -2536,7 +2538,7 @@ C
 C              ************************
 C              ***** AO integrals *****
 C              ************************
-C     
+C
                KAOINT = 1
                LAOINT = NCCINT*NINTYP
                KLAST  = KAOINT + LAOINT
@@ -2568,14 +2570,14 @@ C
      &              NREDAB,NREDCD,IFCTYP,HESSEE,DNSBUF,DINTSKP,
      &              NSOINT,IXPAB(1,1,NSYMR),IXPCD(1,1,NSYMS))
                LWTOT  = LWTOT - KLAST
-C               
+C
 C               write(lupri,*) 'WORK(KAOINT)2: ',(WORK(KAOINT+II-1),
 C     &                    II=1,NCCINT)
                IF (N_SHL .GT. MXTSK) THEN
                   write(lupri,*) 'Received quit because '//
      &                 'N_SHL exceeds MXTSK',N_SHL,MXTSK
                   CALL QUIT('AOSAVE: N_SHL exceeds MXTSK')
-               END IF 
+               END IF
                ITOTNT = ITOTNT + NINTYP*NCCINT
                IF (AOSAVE
      &              .AND. MMCORE .GT. (NCCINT*NINTYP)
@@ -2602,7 +2604,7 @@ C                  INDX_SHL(4,1) = ISHELD
                   INDX_SHL2 = ISHELB
                   INDX_SHL3 = ISHELC
                   INDX_SHL4 = ISHELD
-#if defined (VAR_MPI)                  
+#if defined (VAR_MPI)
                   INDX_SHL(N_SHL) = ISCORE
 C                  write (lupri,*) 'n_shl,indx',n_shl,indx_shl(n_shl)
                   N_SHL = N_SHL + 1
@@ -2614,7 +2616,7 @@ C                  write (lupri,*) 'n_shl,indx',n_shl,indx_shl(n_shl)
                   END IF
 #else
                   ISCORE = ISCORE + (NINTYP*NCCINT)
-#endif                  
+#endif
 C     Lagrer integraler i minne: Oppdaterer array med beregnede ishela/b/c/d
 C  =  Store integrals in memory: Update array with calculated ishela/b/c/d
                ELSE
@@ -2750,15 +2752,14 @@ C    &                  FIRST,LAST,THRESH,SQ12EL,IPRINT)
             FIRST = .FALSE.
          END IF
       ELSE IF (EXPECT) THEN
-         IF (IPRINT .GE. 6) 
-     & 	    CALL PRIGRD(GRADEE,WORK,WORK(1+MXCOOR*MXCOOR))
+         IF (IPRINT .GE. 6)
+     &      CALL PRIGRD(GRADEE,WORK,WORK(1+MXCOOR*MXCOOR))
       END IF
 C
       CALL QEXIT('SYMLOP')
       RETURN
-C     
+C
       END
-Cef end
 C  /* Deck caoint */
       SUBROUTINE CAOINT(SOINT,DMAT,NDMAT,PSO,PSA,FMAT,AOINT,WORK,LWORK,
      &                  COEFAB,COEFCD,COORAB,COORCD,EXPAB,EXPCD,FACAB,

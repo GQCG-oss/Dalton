@@ -318,10 +318,11 @@ C
          END IF
       ELSE IF (QMMM) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
-     *   ' CONTRIBUTIONS FROM QMMMLNO TO LINEAR TRANSFORMATION'
-         CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
+     *   ' CONTRIBUTIONS FROM QMMMLTR TO LINEAR TRANSFORMATION'
+         CALL QMMMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+     &               WRK(KDVT),WRK(KDVTTR),
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
       ELSE
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
@@ -561,6 +562,8 @@ C
          END IF
          TLM   = TN(LM) - SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
 C
+C        edh: Txc = < g(l)sum(lm,pq)< 0(L)|Te|0 > + < 0|Te|0(R) > )tpq Epq  
+C
          JRXC  = KRXC
          DO 200 ICSIM = 1,NCSIM
             TTT = SLVELM(DTV(1,ICSIM),WRK(KRLMAC),WRK(KRLM),TAC)
@@ -626,9 +629,9 @@ C     ... orbital part of sigma vector(s)
 C
       IF (KZWOPT .GT. 0) THEN
          JRXC   = KRXC
-         CALL DSPTSI(NORBT,WRK(KRYC),WRK(KURYC))
+         CALL DSPTSI(NORBT,WRK(KRYC),WRK(KURYC))    ! Tyo = tilde{T}g = - 2 sum(lm,pq)g(l)<T(lm)> Q(pq)Epq 
          DO 800 ICSIM = 1,NCSIM
-            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KURXC))
+            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KURXC)) ! Txo = 2 sum{lm,pq}g(l)<Q(lm)>Epq
             IF (TRPLET) THEN
                CALL SLVSOR(.TRUE.,.FALSE.,1,UDVTR,
      *                     SVEC(1,ICSIM),WRK(KURXC))
@@ -1030,7 +1033,7 @@ C
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
       IF ( KZCONF.GT.0 .AND. IREFSY.EQ.KSYMST) THEN
-         IF (NCREF .NE. KZCONF) CALL QUIT('SLVLNO: NCREF .ne. KZCONF')
+        IF (NCREF .NE. KZCONF) CALL QUIT('SLVLNO: NCREF .ne. KZCONF')
 C
 C        ... test orthogonality
 C

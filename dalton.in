@@ -233,7 +233,6 @@ echo;
 
 
 ierr=0
-if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
    if [ -d "$SCRATCHDIR" ]; then
       if [ $optd -eq 1 ] ; then
          rm -rf $SCRATCHDIR/*
@@ -306,10 +305,7 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
          ierr=1
       fi
    fi
-else
-   echo "$TMPDIR does not exist or is not writeable"
-   ierr=1
-fi
+
 if [ $ierr = 1 ]; then
    exit 1
 fi
@@ -318,9 +314,22 @@ if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -s $DALMPI -a -x $DALMPI ]; then
          cp $DALMPI ./dalton_mpi_copy.x
+         echo 'Copying dalton executable from master node: ' ${HOSTNAME}
+         cat $PBS_NODEFILE
+         for node in `cat $PBS_NODEFILE`
+         do
+            if [ ${node} == $HOSTNAME ]
+            then
+                continue
+            else
+#               If your cluster setup requires scp, then you must change the following line.
+                rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
+                echo 'Succesfully copied executable to: ' ${node}
+            fi
+         done
          if [ -n "$optlam" ] ; then
             lamboot -v  $WRKDIR/$optlam
-            $MPIRUN -wd $TMPDIR -np $optn ./dalton_mpi_copy.x
+            $MPIRUN -wd $SCRATCHDIR -np $optn ./dalton_mpi_copy.x
             ierr=$?
             wipe    -v  $WRKDIR/$optlam
          else

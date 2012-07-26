@@ -1159,7 +1159,9 @@ C
 C     Sets up transformation matrices between SO and AO orbitals
 C     tuh Sep 07 1988
 C
-C     hjaaj 2008: IATOM .eq. -1 introduced, called p.t. by abamolden.F
+C     IATOM >  0 : SO -> AO transformation, modified for atom IATOM
+C     IATOM =  0 : SO -> AO transformation
+C     IATOM = -1 : AO -> SO transformation
 C
 #include "implicit.h"
 #include "priunit.h"

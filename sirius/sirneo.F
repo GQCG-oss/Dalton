@@ -111,6 +111,7 @@ C
       DATA NCONSV,NWOPSV,MXRLSV,LFRESV /-1,-1,-1,-1/
 C
       CALL QENTER('SIRNEO')
+
 C
 C *** Work space allocation
 C
@@ -428,10 +429,10 @@ C
 C        CALL NEORED (ICTL,NCSIM,NOSIM,BVECS,SVECS,BETVAL,
 C    *                G,IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
 C
-c         IF (P6FLAG(51)) THEN                         ! edh checks symmetry of reduced matrix
+         IF (P6FLAG(51)) THEN                         ! edh checks symmetry of reduced matrix
 C           check symmetry of REDL
             CALL NEORED_CHK(IBNDX,WRK(KWRK1),LWRK1)
-c         END IF
+         END IF
 C
 C        *** update BETA in UPDBET as if eigenvector was exact
 C           (dynamic update of BETA in micro iterations,
@@ -731,13 +732,7 @@ C
 #include "infdim.h"
 #include "inftap.h"
 #include "infpri.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 #include "gnrinf.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 C
 C     local variables:
 C
@@ -772,7 +767,7 @@ C     ... symmetrize CI vector
 C----------------------
 C CBN+JK 03.01.06
 C----------------------
-      IF (SOLVNT .OR. PCM .OR. QM3) DOPHP = .FALSE.
+      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM) DOPHP = .FALSE.
 C-----------------------
 C CBN+JK 03.01.06
 C----------------------
@@ -2824,13 +2819,13 @@ C
 C
 C     check reduced matrices
 C
-      WRITE (LUPRI,'(//A/A/A,1P,D10.2,A)')
+        WRITE (LUPRI,'(//A/A/A,1P,D10.2,A)')
      *    ' %%% Non-symmetric elements in redH',
      *    '     and wrong elements in redS',
      *    '     ( threshold is',DIFTST,' ) :'
-      NERROR = 0
-      DO 340 I = 2,NREDH
-         DO 320 J = 1,(I-1)
+        NERROR = 0
+        DO 340 I = 2,NREDH
+          DO 320 J = 1,(I-1)
             DIFF = ABS( REDH(I,J) - REDH(J,I) )
             IF (DIFF .GT. DIFTST) THEN
                NERROR = NERROR + 1
@@ -2859,16 +2854,17 @@ C
      *         ' i, i, reds(i,i)            :',
      *         I,I,REDS(I+1,I+1)
          END IF
-  340 CONTINUE
+  340  CONTINUE
       IF (NERROR .EQ. 0) WRITE (LUPRI,'(A)') ' None, redH is symmetric.'
 C
-      WRITE (LUPRI,'(/A,(/15I5))') ' IBNDX vector:',
-     &   (IBNDX(I), I = 1,NREDL)
-      WRITE (LUPRI,'(//A)') ' Reduced Hessian (as bT*s) :'
-      CALL OUTPUT(WRK(KREDH),1,NREDH,1,NREDH,NREDH,NREDH,1,LUPRI)
-      WRITE (LUPRI,'(//A)') ' Reduced overlap (as bT*b) :'
-      CALL OUTPUT(WRK(KREDS),1,NREDL,1,NREDL,NREDL,NREDL,1,LUPRI)
+        WRITE (LUPRI,'(/A,(/15I5))') ' IBNDX vector:',
+     &    (IBNDX(I), I = 1,NREDL)
+        WRITE (LUPRI,'(//A)') ' Reduced Hessian (as bT*s) :'
+        CALL OUTPUT(WRK(KREDH),1,NREDH,1,NREDH,NREDH,NREDH,1,LUPRI)
+        WRITE (LUPRI,'(//A)') ' Reduced overlap (as bT*b) :'
+        CALL OUTPUT(WRK(KREDS),1,NREDL,1,NREDL,NREDL,NREDL,1,LUPRI)
 C
-      IF (NERROR .GT. 0) CALL QUIT('ERROR detected in NEORED_CHK.')
+        IF (NERROR .GT. 0) CALL QUIT('ERROR detected in NEORED_CHK.')
+
  9999 RETURN
       END

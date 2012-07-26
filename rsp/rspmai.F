@@ -114,6 +114,7 @@ C
 #include "infave.h"
 #include "mxcent.h"
 #include "esrhfc.h"
+#include "abslrs.h"
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX, NEED_PVX
 C
@@ -211,7 +212,8 @@ C
      &      ' because cubic or quadratic response has been requested.'
          END IF
       END IF
-      DORESP = DORESP .OR. ESRCAL .OR. ABSORP .OR. GCALC .OR. I.GT.0
+      DORESP = DORESP .OR. ESRCAL .OR. ABSORP .OR. ABSLRS .OR. GCALC 
+     &                .OR. I.GT.0
       DORESP = DORESP .OR. ESRHFC
       TRPFLG = TRPFLG .OR. ESRHFC
 C
@@ -465,6 +467,16 @@ C
          GO TO 9999
       END IF
 C
+C     Calculate response properties with absorption using new cpp
+C     ===========================================================
+C
+      IF (ABSLRS) THEN
+         CALL ABSLRSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
+     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
+     *                WRK(KINDX),WRK(KWRK1),LWRK1)
+         GO TO 9999
+      END IF
+C
 C     Calculate cubic response properties (fourth order)
 C     ==================================================
 C
@@ -618,7 +630,7 @@ C <<< GENERAL INPUT FOR RESPONSE >>>
 C
 #include "implicit.h"
 #include "dummy.h"
-      PARAMETER ( NTABLE = 11 )
+      PARAMETER ( NTABLE = 12 )
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -639,12 +651,13 @@ C
 #include "absorp.h"
 #include "mxcent.h"
 #include "esrhfc.h"
+#include "abslrs.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7
 C
       DATA TABLE /'*END OF', '**RESPO', '*LINEAR', '*QUADRA',
      *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP',
-     *            '*SPIN-O', '*ESG   ', '*HFC   '/
+     *            '*SPIN-O', '*ESG   ', '*HFC   ', '*ABSLRS'/
 
       logical, external :: fun_is_ready_for_qr
       logical, external :: fun_is_ready_for_cr
@@ -691,7 +704,7 @@ C     end of this input module
       IF (PROMPT .EQ. '*') THEN
          DO I=1, NTABLE
             IF (WORD .EQ. TABLE(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
          END DO
 C
@@ -754,6 +767,8 @@ C
  10   CALL ESGINP(WORD)
       GO TO 200
  11   CALL HFCINP(WORD)
+      GO TO 200
+ 12   CALL ABSLRS_INPUT(WORD)
       GO TO 200
 C
  1    CONTINUE
@@ -1053,6 +1068,7 @@ C
 #include "esg.h"
 #include "channel.h"
 #include "esrhfc.h"
+#include "abslrs.h"
 C
 C     Initialization of RSPINP
       DATA INPTES/.FALSE./, AVDIA /.TRUE./
@@ -1168,7 +1184,16 @@ C  Initializing ESRHFC
       DATA HFCFC/.FALSE./,HFCSD/.FALSE./,HFCSO/.FALSE./
       DATA UNGAUSS/.TRUE./
       DATA HSOBRT/.FALSE./,HSOEFF/.FALSE./
-      DATA IPRHFC/5/     
+      DATA IPRHFC/5/
+C  Initializing ABSLRS
+       DATA ABSLRS/.FALSE./,ABSLRS_INTERVAL/.FALSE./
+       DATA ABSLRS_ALPHA/.FALSE./,ABS_BATCH/.FALSE./
+       DATA ABSLRS_ANALYZE/.FALSE./,ABS_IMFREQ/.FALSE./
+       DATA ABS_MAXITER/150/,IPRABSLRS/0/,ABS_NFREQ_ALPHA/1/
+       DATA ABS_MAXRM/200/
+       DATA ABS_FREQ_INTERVAL/0.0D0,0.0D0,1.0D0/,ABS_THD_LD/1.0D-8/
+       DATA ABS_THCLR/1.0D-3/,ABS_FREQ_ALPHA(1)/0.0D0/
+       DATA LUSB/80/,LUAB/81/,LUSS/82/,LUAS/83/,LUABSVECS/84/     
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)
@@ -3822,6 +3847,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
                NCONF  = NCONSV
                DO 50 I=1,KZCONF
                   WRK(KECDIA-1+I) = WRK(KECDIA-1+I) - EACTIV
+C                  wrk(kecdia-1+i) = 1.0d0
  50            CONTINUE
             ENDIF
 #if defined (VAR_SPLITFILES)
@@ -4203,6 +4229,22 @@ C
         ENDDO
       END IF
 C
+      
+c      WRITE(LUPRI,*) 'NCONRF............................ =' , NCONRF
+c      WRITE(LUPRI,*) 'Configuration variables (KZCONF).. =' , KZCONF
+c      WRITE(LUPRI,*) '# of configurations (NCONF)....... =' , NCONF
+c      write(lupri,*) 'QMMM', QMMM 
+      IF ((NCONRF .GT. 1) .AND. QMMM) THEN     ! edh: Find MCSCF specific variable Note that NCONRF = 1 for HF calc. => NOT APPROPRIATE!! 
+c         write(lupri,*) 'Do correction to Fock matrix from PE'
+c         WRITE(LUPRI,*) 'KZCONF > 0 Found: Expects QMMM MCSCF'
+c         WRITE(LUPRI,*) 'Going to PCM-like implementation'
+         CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI) 
+         CALL READT (LUSIFC,NNORBT,WRK)
+         DO I = 1,NNORBT
+             FC(I) = FC(I) - WRK(I)
+         ENDDO
+      END IF
+
       IF (QM3) THEN
         IF (OLDTG .OR. (.NOT. LOSPC)) THEN
           CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
