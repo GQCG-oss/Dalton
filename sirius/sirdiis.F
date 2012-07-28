@@ -729,6 +729,7 @@ C
            end if
            esolt = pe_energy(1)
            call daxpy(nnbasx, 1.0d0, pefock, 1, faosav(1,indevc,1), 1)
+           deallocate(pefock)
          end if
 
          

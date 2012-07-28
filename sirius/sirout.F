@@ -71,6 +71,9 @@ C
       logical lmuls
 #include "iratdef.h"
       PARAMETER (D0 = 0.0D0)
+
+      logical :: lmuls
+
 C
 C Used from common blocks:
 C   INFINP : ISPIN,LSYM,ISTATE, NACTEL,POTNUC, THRPWF, DOCINO, MCTYPE

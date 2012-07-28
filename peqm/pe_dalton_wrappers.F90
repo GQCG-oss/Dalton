@@ -1,4 +1,4 @@
-subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
+subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
 
     ! Gen1Int API
     use gen1int_api
@@ -9,7 +9,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
     intrinsic :: present
 
     integer, intent(in) :: nnbas, ncomps
-    real(dp), dimension(3,1), intent(in) :: R
+    real(dp), dimension(3,1), intent(in) :: coord
     real(dp), dimension(nnbas,ncomps), intent(out) :: Tk_ints
     logical, intent(in) :: gauss
     real(dp), dimension(1), intent(in) :: gauexp
@@ -52,7 +52,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
                            one_prop=prop_operator,    &
                            info_prop=ierr,            &
                            idx_gauorg=(/-1/),         &
-                           gaupot_origin=R,           &
+                           gaupot_origin=coord,       &
                            gaupot_charge=charge,      &
                            gaupot_expt=gauexp,        &
                            order_geo_pot=k)
@@ -61,7 +61,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, gauss, gauexp)
                            one_prop=prop_operator,  &
                            info_prop=ierr,          &
                            idx_nuclei=(/-1/),       &
-                           coord_nuclei=R,          &
+                           coord_nuclei=coord,      &
                            charge_nuclei=charge,    &
                            order_geo_pot=k)
     end if

@@ -104,7 +104,7 @@ module polarizable_embedding
     ! elements
     character(len=2), dimension(:,:), allocatable, save :: elems
     ! exclusion list
-    integer, dimension(:,:), allocatable, save :: exlists
+    integer, dimension(:,:), allocatable, save :: exclists
 
     ! energy contributions
     ! electrostatic
@@ -170,12 +170,13 @@ module polarizable_embedding
     ! MEP stuff
     ! ---------
     ! external electric field
-    logical, save :: mep_extfield = .true.
-    real(dp), dimension(3), save :: extfield = 0.0d0
+    logical, save :: mep_extfld = .true.
+    real(dp), dimension(3), save :: extfld = 0.0d0
     ! calculate electric field
     logical, save :: mep_field = .false.
+    logical, save :: mep_fldnrm = .false.
     ! skip QM electrostatic potential (and electric field)
-    logical, public, save :: mep_noqm = .false.
+    logical, public, save :: mep_skipqm = .false.
     ! number of grid points
     integer, dimension(:), allocatable, save :: npoints
     ! point distribution
@@ -339,12 +340,16 @@ subroutine pe_dalton_input(word, luinp, lupri)
                         read(luinp,*) xsize, xgrid, ysize, ygrid, zsize, zgrid
                     else if (trim(option(1:)) == 'FIELD') then
                         mep_field = .true.
-                    else if (trim(option(1:)) == 'NOQM') then
-                        mep_noqm = .true.
-                    else if (trim(option(1:)) == 'EXTFIEL') then
-                        read(luinp,*) extfield(1), extfield(2), extfield(3)
-                        mep_extfield = .true.
+                    else if (trim(option(1:)) == 'FLDNRM') then
+                        mep_fldnrm = .true.
+                    else if (trim(option(1:)) == 'SKIPQM') then
+                        stop 'SKIPQM not implemented yet.'
+                        mep_skipqm = .true.
+                    else if (trim(option(1:)) == 'EXTFLD') then
+                        read(luinp,*) extfld(1), extfld(2), extfld(3)
+                        mep_extfld = .true.
                     else if (option(1:1) == '.' .or. option(1:1) == '*') then
+                        backspace(luinp)
                         exit
                     else if (option(1:1) == '!' .or. option(1:1) == '#') then
                         cycle
@@ -442,9 +447,6 @@ subroutine pe_read_potential(coords, charges)
         xsteps = int((maxval(Rm(1,:)) + xsize - origin(1)) / step(1))
         ysteps = int((maxval(Rm(2,:)) + ysize - origin(2)) / step(2))
         zsteps = int((maxval(Rm(3,:)) + zsize - origin(3)) / step(3))
-!        step(1) = (maxval(Rm(1,:)) + xsize - origin(1)) / real(xgrid - 1, dp)
-!        step(2) = (maxval(Rm(2,:)) + ysize - origin(2)) / real(ygrid - 1, dp)
-!        step(3) = (maxval(Rm(3,:)) + zsize - origin(3)) / real(zgrid - 1, dp)
         allocate(npoints(-1:ncores-1))
         npoints = 0
         npoints(0) = xsteps * ysteps * zsteps
@@ -460,25 +462,6 @@ subroutine pe_read_potential(coords, charges)
                 end do
             end do
         end do
-        
-!        allocate(npoints(-1:ncores-1))
-!        npoints = 0
-!        inquire(file='MEP.INP', exist=lexist)
-!        if (lexist) then
-!            call openfile('MEP.INP', lumep, 'old', 'formatted')
-!        else
-!            stop 'MEP.INP not found!'
-!        end if
-!        read(lumep,*) npoints(0)
-!        read(lumep,*) auoraa
-!        allocate(mepgrid(3,npoints(0)))
-!        do i = 1, npoints(0)
-!            read(lumep,*) (mepgrid(j,i), j = 1, 3)
-!        end do
-!        close(lumep)
-!        if (auoraa == 'AA') then
-!            mepgrid  = mepgrid * aa2au
-!        end if
     end if
 
     inquire(file='POTENTIAL.INP', exist=lexist)
@@ -589,11 +572,11 @@ subroutine pe_read_potential(coords, charges)
                 read(lupot,*) s, (temp(j), j = 1, 6)
                 P1s(:,s) = temp(1:6)
             end do
-        else if (trim(word) == 'exlists') then
+        else if (trim(word) == 'exclists' .or. trim(word) == 'exlists') then
             read(lupot,*) lexlst
-            allocate(exlists(lexlst,nsites(0)))
+            allocate(exclists(lexlst,nsites(0)))
             do i = 1, nsites(0)
-                read(lupot,*) (exlists(j,i), j = 1, lexlst)
+                read(lupot,*) (exclists(j,i), j = 1, lexlst)
             end do
         else if (word(1:1) == '!' .or. word(1:1) == '#') then
             cycle
@@ -669,11 +652,11 @@ subroutine pe_read_potential(coords, charges)
     end if
 
    ! default exclusion list (everything polarizes everything)
-    if (.not. allocated(exlists)) then
+    if (.not. allocated(exclists)) then
         lexlst = 1
-        allocate(exlists(lexlst,nsites(0)))
+        allocate(exclists(lexlst,nsites(0)))
         do i = 1, nsites(0)
-            exlists(1,i) = i
+            exclists(1,i) = i
         end do
     end if
 
@@ -1241,8 +1224,8 @@ subroutine pe_sync()
         call mpi_bcast(npoldists, ncores, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(npols, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(lexlst, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-        if (myid /= 0) allocate(exlists(lexlst,nsites(ncores-1)))
-        call mpi_bcast(exlists, lexlst*nsites(ncores-1), MPI_INTEGER,&
+        if (myid /= 0) allocate(exclists(lexlst,nsites(ncores-1)))
+        call mpi_bcast(exclists, lexlst*nsites(ncores-1), MPI_INTEGER,&
                       &0, MPI_COMM_WORLD, ierr)
         if (myid /= 0) allocate(zeroalphas(nsites(ncores-1)))
         call mpi_bcast(zeroalphas, nsites(ncores-1), MPI_LOGICAL,&
@@ -1398,6 +1381,9 @@ subroutine pe_sync()
     end if
 
     if (mep) then
+        call mpi_bcast(mep_field, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(mep_fldnrm, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(mep_extfld, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         allocate(nmepdists(0:ncores-1))
         if (myid == 0) then
             ndist = npoints(0) / ncores
@@ -1444,202 +1430,33 @@ subroutine pe_compute_mep(denmats)
 
     real(dp), dimension(:), intent(in) :: denmats
 
+    character(len=1) :: tcl
+    character(len=99) :: cl
     integer :: point
     integer :: i, j, k, l
     integer :: ndist, nrest
-    integer :: lu, luqm, lum0, lum1, lum2, lum3, lum4, lum5, luind
-    real(dp), dimension(3) :: Tm
+    integer :: lu, lum0, lum1, lum2, lum3, lum4, lum5
+    real(dp) :: taylor
+    real(dp), dimension(3) :: Tm, Rsp, Fs
     real(dp), dimension(:,:), allocatable :: Vqm, Vpe, Vind
     real(dp), dimension(:,:), allocatable :: Fqm, Fpe, Find
     real(dp), dimension(:,:), allocatable :: Fmuls, M1inds
-    real(dp), dimension(nnbas,3) :: Tk_ints
-
-    integer :: site, ncomps
-    real(dp) :: taylor
-    real(dp), dimension(3) :: Rsp, Fs, Ftot
-    real(dp), dimension(:), allocatable :: Tsp
-    real(dp), dimension(:), allocatable :: factors
+    real(dp), dimension(:,:), allocatable :: Tk_ints
+    real(dp), dimension(:), allocatable :: factors, Tsp
 
     allocate(Vqm(1,npoints(ncores-1)))
-    if (mulorder >= 0) then
-        allocate(Vpe(0:mulorder,npoints(ncores-1)))
-        Vpe = 0.0d0
-    end if
-    if (lpol(1)) then
-        allocate(Vind(1,npoints(ncores-1)))
-        Vind = 0.0d0
-    end if
-
-    if (mep_field) then
-        allocate(Fqm(3,npoints(ncores-1)))
-        if (mulorder >= 0) then
-            allocate(Fpe(3*(mulorder+1),npoints(ncores-1)))
-            Fpe = 0.0d0
-        end if
-        if (lpol(1)) then
-            allocate(Find(3,npoints(ncores-1)))
-            Find = 0.0d0
-        end if
-    end if
-
-    if (lpol(1)) then
-        allocate(Fmuls(3*npols,1))
-        allocate(M1inds(3*npols,1))
-        call multipole_fields(Fmuls(:,1))
-        if (mep_extfield) then
-            j = 1
-            do i = 1, npols
-                Fmuls(j:j+2,1) = Fmuls(j:j+2,1) + extfield 
-                j = j + 3
-            end do
-        end if
-        call induced_dipoles(M1inds, Fmuls)
-        deallocate(Fmuls)
-        print *, M1inds
-    end if
-
+    allocate(Tk_ints(nnbas,1))
     i = 1
     do point = npoints(myid-1)+1, npoints(myid)
-
         call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i), .false., 0.0d0)
-
         Vqm(1,i) = dot(denmats, Tk_ints(:,1))
-
         do j = 1, qmnucs
             call Tk_tensor(Tm(1:1), mepgrid(:,i) - Rm(:,j))
             Vqm(1,i) = Vqm(1,i) + Zm(1,j) * Tm(1)
         end do
-
-        do j = 1, nsites(ncores-1)
-            Rsp = mepgrid(:,i) - Rs(:,j)
-            if (lmul(0)) then
-                allocate(Tsp(1), factors(1))
-                call symmetry_factors(factors)
-                taylor = 1.0d0 / factorial(0)
-                call Tk_tensor(Tsp, Rsp)
-                Vpe(0,i) = Vpe(0,i) + taylor * factors(1) * Tsp(1) * M0s(1,j)
-                deallocate(Tsp, factors)
-            end if
-            if (lmul(1)) then
-                allocate(Tsp(3), factors(3))
-                call symmetry_factors(factors)
-                taylor = - 1.0d0 / factorial(1)
-                call Tk_tensor(Tsp, Rsp)
-                do k = 1, 3
-                    Vpe(1,i) = Vpe(1,i) + taylor * factors(k) * Tsp(k) * M1s(k,j)
-                end do
-                deallocate(Tsp, factors)
-            end if
-            if (lmul(2)) then
-                allocate(Tsp(6), factors(6))
-                call symmetry_factors(factors)
-                taylor = 1.0d0 / factorial(2)
-                call Tk_tensor(Tsp, Rsp)
-                do k = 1, 6
-                    Vpe(2,i) = Vpe(2,i) + taylor * factors(k) * Tsp(k) * M2s(k,j)
-                end do
-                deallocate(Tsp, factors)
-            end if
-            if (lmul(3)) then
-                allocate(Tsp(10), factors(10))
-                call symmetry_factors(factors)
-                taylor = - 1.0d0 / factorial(3)
-                call Tk_tensor(Tsp, Rsp)
-                do k = 1, 10
-                    Vpe(3,i) = Vpe(3,i) + taylor * factors(k) * Tsp(k) * M3s(k,j)
-                end do
-                deallocate(Tsp, factors)
-            end if
-            if (lmul(4)) then
-                allocate(Tsp(15), factors(15))
-                call symmetry_factors(factors)
-                taylor = 1.0d0 / factorial(4)
-                call Tk_tensor(Tsp, Rsp)
-                do k = 1, 15
-                    Vpe(4,i) = Vpe(4,i) + taylor * factors(k) * Tsp(k) * M4s(k,j)
-                end do
-                deallocate(Tsp, factors)
-            end if
-            if (lmul(5)) then
-                allocate(Tsp(21), factors(21))
-                call symmetry_factors(factors)
-                taylor = - 1.0d0 / factorial(5)
-                call Tk_tensor(Tsp, Rsp)
-                do k = 1, 21
-                    Vpe(5,i) = Vpe(5,i) + taylor * factors(k) * Tsp(k) * M5s(k,j)
-                end do
-                deallocate(Tsp, factors)
-            end if
-        end do
-
-        if (lpol(1)) then
-            l = 0
-            do j = 1, npols
-                allocate(Tsp(3), factors(3))
-                call symmetry_factors(factors)
-                taylor = - 1.0d0 / factorial(1)
-                call Tk_tensor(Tsp, Rsp)
-                do k = 1, 3
-                    Vind(1,i) = Vind(1,i) +&
-                                taylor * factors(k) * Tsp(k) * M1inds(l+k,1)
-                end do
-                l = l + 3
-                deallocate(Tsp, factors)
-            end do
-        end if
-
-        if (mep_field) then
-            call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
-    
-            do j = 1, 3
-                Fqm(j,i) = dot(denmats, Tk_ints(:,j))
-            end do
-    
-            do j = 1, qmnucs
-                call Tk_tensor(Tm, mepgrid(:,i) - Rm(:,j))
-                do k = 1, 3
-                    Fqm(k,i) = Fqm(k,i) - Zm(1,j) * Tm(k)
-                end do
-            end do
-    
-            do j = 1, nsites(ncores-1)
-                Rsp = mepgrid(:,i) - Rs(:,j)
-                if (lmul(0)) then
-                    Fs = 0.0d0
-                    call multipole_field(Fs, Rsp, M0s(:,j))
-                    Fpe(1:3,i) = Fpe(1:3,i) + Fs
-                end if
-                if (lmul(1)) then
-                    Fs = 0.0d0
-                    call multipole_field(Fs, Rsp, M1s(:,j))
-                    Fpe(4:6,i) = Fpe(4:6,i) + Fs
-                end if
-                if (lmul(2)) then
-                    Fs = 0.0d0
-                    call multipole_field(Fs, Rsp, M2s(:,j))
-                    Fpe(7:9,i) = Fpe(7:9,i) + Fs
-                end if
-                if (lmul(3)) then
-                    Fs = 0.0d0
-                    call multipole_field(Fs, Rsp, M3s(:,j))
-                    Fpe(10:12,i) = Fpe(10:12,i) + Fs
-                end if
-                if (lmul(4)) then
-                    Fs = 0.0d0
-                    call multipole_field(Fs, Rsp, M4s(:,j))
-                    Fpe(13:15,i) = Fpe(13:15,i) + Fs
-                end if
-                if (lmul(5)) then
-                    Fs = 0.0d0
-                    call multipole_field(Fs, Rsp, M5s(:,j))
-                    Fpe(16:18,i) = Fpe(16:18,i) + Fs
-                end if
-            end do
-        end if
-
         i = i + 1
     end do
-
+    deallocate(Tk_ints)
 #if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
         displs(0) = 0
@@ -1649,12 +1466,102 @@ subroutine pe_compute_mep(denmats)
         call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
                         &Vqm, nmepdists, displs, MPI_REAL8,&
                         &0, MPI_COMM_WORLD, ierr)
-        if (lpol(1)) then
-            call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                            &Vind, nmepdists, displs, MPI_REAL8,&
-                            &0, MPI_COMM_WORLD, ierr)
-        end if
-        if (mulorder >= 0) then
+    else if (myid /= 0) then
+        call mpi_gatherv(Vqm, nmepdists(myid), MPI_REAL8,&
+                        &0, 0, 0, MPI_REAL8,&
+                        &0, MPI_COMM_WORLD, ierr)
+    end if
+#endif
+    if (myid == 0) then
+        call openfile('qm_mep.cube', lu, 'new', 'formatted')
+        write(lu,'(a)') 'QM MEP'
+        write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+        write(lu,'(i5,3f12.6)') qmnucs, origin
+        write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+        write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+        write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+        do j = 1, qmnucs
+            write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+        end do
+        do i = 1, xsteps * ysteps
+            j = (i - 1) * zsteps + 1
+            k = j - 1 + zsteps
+            write(lu,'(6e13.5)') Vqm(1,j:k)
+        end do
+        close(lu)
+    end if
+    deallocate(Vqm)
+
+    if (mulorder >= 0) then
+        allocate(Vpe(0:mulorder,npoints(ncores-1)))
+        Vpe = 0.0d0
+        i = 1
+        do point = npoints(myid-1)+1, npoints(myid)
+            do j = 1, nsites(ncores-1)
+                Rsp = mepgrid(:,i) - Rs(:,j)
+                if (lmul(0)) then
+                    allocate(Tsp(1), factors(1))
+                    call symmetry_factors(factors)
+                    taylor = 1.0d0 / factorial(0)
+                    call Tk_tensor(Tsp, Rsp)
+                    Vpe(0,i) = Vpe(0,i) + taylor * factors(1) * Tsp(1) * M0s(1,j)
+                    deallocate(Tsp, factors)
+                end if
+                if (lmul(1)) then
+                    allocate(Tsp(3), factors(3))
+                    call symmetry_factors(factors)
+                    taylor = - 1.0d0 / factorial(1)
+                    call Tk_tensor(Tsp, Rsp)
+                    do k = 1, 3
+                        Vpe(1,i) = Vpe(1,i) + taylor * factors(k) * Tsp(k) * M1s(k,j)
+                    end do
+                    deallocate(Tsp, factors)
+                end if
+                if (lmul(2)) then
+                    allocate(Tsp(6), factors(6))
+                    call symmetry_factors(factors)
+                    taylor = 1.0d0 / factorial(2)
+                    call Tk_tensor(Tsp, Rsp)
+                    do k = 1, 6
+                        Vpe(2,i) = Vpe(2,i) + taylor * factors(k) * Tsp(k) * M2s(k,j)
+                    end do
+                    deallocate(Tsp, factors)
+                end if
+                if (lmul(3)) then
+                    allocate(Tsp(10), factors(10))
+                    call symmetry_factors(factors)
+                    taylor = - 1.0d0 / factorial(3)
+                    call Tk_tensor(Tsp, Rsp)
+                    do k = 1, 10
+                        Vpe(3,i) = Vpe(3,i) + taylor * factors(k) * Tsp(k) * M3s(k,j)
+                    end do
+                    deallocate(Tsp, factors)
+                end if
+                if (lmul(4)) then
+                    allocate(Tsp(15), factors(15))
+                    call symmetry_factors(factors)
+                    taylor = 1.0d0 / factorial(4)
+                    call Tk_tensor(Tsp, Rsp)
+                    do k = 1, 15
+                        Vpe(4,i) = Vpe(4,i) + taylor * factors(k) * Tsp(k) * M4s(k,j)
+                    end do
+                    deallocate(Tsp, factors)
+                end if
+                if (lmul(5)) then
+                    allocate(Tsp(21), factors(21))
+                    call symmetry_factors(factors)
+                    taylor = - 1.0d0 / factorial(5)
+                    call Tk_tensor(Tsp, Rsp)
+                    do k = 1, 21
+                        Vpe(5,i) = Vpe(5,i) + taylor * factors(k) * Tsp(k) * M5s(k,j)
+                    end do
+                    deallocate(Tsp, factors)
+                end if
+            end do
+            i = i + 1
+        end do
+#if defined(VAR_MPI)
+        if (myid == 0 .and. ncores > 1) then
             displs(0) = 0
             do i = 1, ncores-1
                 displs(i) = displs(i-1) + (mulorder + 1) * nmepdists(i-1)
@@ -1662,98 +1569,162 @@ subroutine pe_compute_mep(denmats)
             call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
                             &Vpe, (mulorder+1)*nmepdists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
-        end if
-        if (mep_field) then
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + 3 * nmepdists(i-1)
-            end do
-            call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                            &Fqm, 3*nmepdists, displs, MPI_REAL8,&
-                            &0, MPI_COMM_WORLD, ierr)
-            if (mulorder >= 0) then
-                displs(0) = 0
-                do i = 1, ncores-1
-                    displs(i) = displs(i-1) + (mulorder + 1) * 3 * nmepdists(i-1)
-                end do
-                call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                                &Fpe, (mulorder+1)*3*nmepdists, displs, MPI_REAL8,&
-                                &0, MPI_COMM_WORLD, ierr)
-            end if
-        end if
-    else if (myid /= 0) then
-        call mpi_gatherv(Vqm, nmepdists(myid), MPI_REAL8,&
-                        &0, 0, 0, MPI_REAL8,&
-                        &0, MPI_COMM_WORLD, ierr)
-        if (lpol(1)) then
-            call mpi_gatherv(Vind, nmepdists(myid), MPI_REAL8,&
-                            &0, 0, 0, MPI_REAL8,&
-                            &0, MPI_COMM_WORLD, ierr)
-        end if
-        if (mulorder >= 0) then
+        else if (myid /= 0) then
             call mpi_gatherv(Vpe, (mulorder+1)*nmepdists(myid), MPI_REAL8,&
                             &0, 0, 0, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         end if
-        if (mep_field) then
-            call mpi_gatherv(Fqm, 3*nmepdists(myid), MPI_REAL8,&
+#endif
+        if (myid == 0) then
+            if (mulorder >= 0) then
+                call openfile('m0_mep.cube', lum0, 'new', 'formatted')
+            end if
+            if (mulorder >= 1) then
+                call openfile('m1_mep.cube', lum1, 'new', 'formatted')
+            end if
+            if (mulorder >= 2) then
+                call openfile('m2_mep.cube', lum2, 'new', 'formatted')
+            end if
+            if (mulorder >= 3) then
+                call openfile('m3_mep.cube', lum3, 'new', 'formatted')
+            end if
+            if (mulorder >= 4) then
+                call openfile('m4_mep.cube', lum4, 'new', 'formatted')
+            end if
+            if (mulorder >= 5) then
+                call openfile('m5_mep.cube', lum5, 'new', 'formatted')
+            end if
+            do i = 1, mulorder + 1
+                if (i == 1) then
+                    lu = lum0
+                else if (i == 2) then
+                    lu = lum1
+                else if (i == 3) then
+                    lu = lum2
+                else if (i == 4) then
+                    lu = lum3
+                else if (i == 5) then
+                    lu = lum4
+                else if (i == 6) then
+                    lu = lum5
+                end if
+                write(lu,'(a)') 'PE electrostatic potential'
+                write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+                write(lu,'(i5,3f12.6)') qmnucs, origin
+                write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+                write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+                write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+                do j = 1, qmnucs
+                    write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+                end do
+            end do
+            do i = 1, xsteps * ysteps
+                j = (i - 1) * zsteps + 1
+                k = j - 1 + zsteps
+                if (mulorder >= 0) then
+                    write(lum0,'(6e13.5)') Vpe(0,j:k)
+                end if
+                if (mulorder >= 1) then
+                    write(lum1,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k))
+                end if
+                if (mulorder >= 2) then
+                    write(lum2,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) + Vpe(2,j:k))
+                end if
+                if (mulorder >= 3) then
+                    write(lum3,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) + Vpe(2,j:k)&
+                                            + Vpe(3,j:k))
+                end if
+                if (mulorder >= 4) then
+                    write(lum4,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) + Vpe(2,j:k)&
+                                            + Vpe(3,j:k) + Vpe(4,j:k))
+                end if
+                if (mulorder >= 5) then
+                    write(lum5,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) + Vpe(2,j:k)&
+                                            + Vpe(3,j:k) + Vpe(4,j:k) + Vpe(5,j:k))
+                end if
+            end do
+            if (mulorder >= 0) then
+                close(lum0)
+            end if
+            if (mulorder >= 1) then
+                close(lum1)
+            end if
+            if (mulorder >= 2) then
+                close(lum2)
+            end if
+            if (mulorder >= 3) then
+                close(lum3)
+            end if
+            if (mulorder >= 4) then
+                close(lum4)
+            end if
+            if (mulorder >= 5) then
+                close(lum5)
+            end if
+        endif
+        deallocate(Vpe)
+    end if
+
+    if (lpol(1)) then
+        allocate(Fmuls(3*npols,1))
+        allocate(M1inds(3*npols,1))
+        call multipole_fields(Fmuls(:,1))
+        if (mep_extfld) then
+            j = 1
+            do i = 1, npols
+                Fmuls(j:j+2,1) = Fmuls(j:j+2,1) + extfld
+                j = j + 3
+            end do
+        end if
+        call induced_dipoles(M1inds, Fmuls)
+        deallocate(Fmuls)
+#if defined(VAR_MPI)
+        if (ncores > 1) then
+            call mpi_bcast(M1inds, 3*npols, MPI_REAL8,&
+                          &0, MPI_COMM_WORLD, ierr)
+        end if
+#endif
+        allocate(Vind(1,npoints(ncores-1)))
+        Vind = 0.0d0
+        allocate(Tsp(3), factors(3))
+        call symmetry_factors(factors)
+        taylor = - 1.0d0 / factorial(1)
+        i = 1
+        do point = npoints(myid-1)+1, npoints(myid)
+            l = 0
+            do j = 1, nsites(ncores-1)
+                if (zeroalphas(j)) cycle
+                Rsp = mepgrid(:,i) - Rs(:,j)
+                Tsp = 0.0d0
+                call Tk_tensor(Tsp, Rsp)
+                do k = 1, 3
+                    Vind(1,i) = Vind(1,i) +&
+                                taylor * factors(k) * Tsp(k) * M1inds(l+k,1)
+                end do
+                l = l + 3
+            end do
+            i = i + 1
+        end do
+        deallocate(Tsp, factors)
+        deallocate(M1inds)
+#if defined(VAR_MPI)
+        if (myid == 0 .and. ncores > 1) then
+            displs(0) = 0
+            do i = 1, ncores-1
+                displs(i) = displs(i-1) + nmepdists(i-1)
+            end do
+            call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
+                            &Vind, nmepdists, displs, MPI_REAL8,&
+                            &0, MPI_COMM_WORLD, ierr)
+        else if (myid /= 0) then
+            call mpi_gatherv(Vind, nmepdists(myid), MPI_REAL8,&
                             &0, 0, 0, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
-            if (mulorder >= 0) then
-                call mpi_gatherv(Fpe, (mulorder+1)*3*nmepdists(myid), MPI_REAL8,&
-                                &0, 0, 0, MPI_REAL8,&
-                                &0, MPI_COMM_WORLD, ierr)
-            end if
         end if
-    end if
 #endif
-
-    if (myid == 0) then
-        call openfile('qm_mep.cube', luqm, 'new', 'formatted')
-        if (mulorder >= 0) then
-            call openfile('m0_mep.cube', lum0, 'new', 'formatted')
-        end if
-        if (mulorder >= 1) then
-            call openfile('m1_mep.cube', lum1, 'new', 'formatted')
-        end if
-        if (mulorder >= 2) then
-            call openfile('m2_mep.cube', lum2, 'new', 'formatted')
-        end if
-        if (mulorder >= 3) then
-            call openfile('m3_mep.cube', lum3, 'new', 'formatted')
-        end if
-        if (mulorder >= 4) then
-            call openfile('m4_mep.cube', lum4, 'new', 'formatted')
-        end if
-        if (mulorder >= 5) then
-            call openfile('m5_mep.cube', lum5, 'new', 'formatted')
-        end if
-        if (lpol(1)) then
-            call openfile('ind_mep.cube', luind, 'new', 'formatted')
-        end if
-        do i = 1, mulorder + 3
-            if (i == 1) then
-                lu = luqm
-            else if (i == 2) then
-                if (lpol(1)) then
-                    lu = luind
-                else
-                    cycle
-                end if
-            else if (i == 3) then
-                lu = lum0
-            else if (i == 4) then
-                lu = lum1
-            else if (i == 5) then
-                lu = lum2
-            else if (i == 6) then
-                lu = lum3
-            else if (i == 7) then
-                lu = lum4
-            else if (i == 8) then
-                lu = lum5
-            end if
-            write(lu,'(a)') 'CUBE file'
+        if (myid == 0) then
+            call openfile('ind_mep.cube', lu, 'new', 'formatted')
+            write(lu,'(a)') 'PE induced potential'
             write(lu,'(a)') 'Generated by the Polarizable Embedding module'
             write(lu,'(i5,3f12.6)') qmnucs, origin
             write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
@@ -1762,68 +1733,505 @@ subroutine pe_compute_mep(denmats)
             do j = 1, qmnucs
                 write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
             end do
-        end do
-        do i = 1, xsteps * ysteps
-            j = (i - 1) * zsteps + 1
-            k = j - 1 + zsteps
-            write(luqm,'(6e13.5)') Vqm(1,j:k)
-            if (mulorder >= 0) then
-                write(lum0,'(6e13.5)') Vpe(0,j:k)
-            end if
-            if (mulorder >= 1) then
-                write(lum1,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k))
-            end if
-            if (mulorder >= 2) then
-                write(lum2,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k) + Vpe(2,j:k))
-            end if
-            if (mulorder >= 3) then
-                write(lum3,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k) + Vpe(2,j:k)&
-                                        + Vpe(3,j:k))
-            end if
-            if (mulorder >= 4) then
-                write(lum4,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k) + Vpe(2,j:k)&
-                                        + Vpe(3,j:k) + Vpe(4,j:k))
-            end if
-            if (mulorder >= 5) then
-                write(lum5,'(6e13.5)') (Vpe(0,j:k)+ Vpe(1,j:k) + Vpe(2,j:k)&
-                                        + Vpe(3,j:k) + Vpe(4,j:k) + Vpe(5,j:k))
-            end if
-            if (lpol(1)) then
-                write(luind,'(6e13.5)') Vind(1,j:k)
-            end if
-        end do
-!        write(lu,'(i7)') npoints(ncores-1)
-!        write(lu,'(a)') 'AA'
-!        do i = 1, npoints(ncores-1)
-!            write(lu,'(6(f15.8,",",x),f15.8)') (mepgrid(j,i)/aa2au, j = 1, 3),&
-!                                               Vp(1,i), (Fp(j,i), j = 1, 3)
-!        end do
-        close(luqm)
-        if (mulorder >= 0) then
-            close(lum0)
+            do i = 1, xsteps * ysteps
+                j = (i - 1) * zsteps + 1
+                k = j - 1 + zsteps
+                write(lu,'(6e13.5)') Vind(1,j:k)
+            end do
+            close(lu)
         end if
-        if (mulorder >= 1) then
-            close(lum1)
-        end if
-        if (mulorder >= 2) then
-            close(lum2)
-        end if
-        if (mulorder >= 3) then
-            close(lum3)
-        end if
-        if (mulorder >= 4) then
-            close(lum4)
-        end if
-        if (mulorder >= 5) then
-            close(lum5)
-        end if
-        if (lpol(1)) then
-            close(luind)
-        end if
-!        if (mep_field) then
-!
-!        end if
+        deallocate(Vind)
     end if
+
+    if (mep_field) then
+        if (mep_fldnrm) then
+            allocate(Fqm(1,npoints(ncores-1)))
+        else
+            allocate(Fqm(3,npoints(ncores-1)))
+        end if
+        allocate(Tk_ints(nnbas,3))
+        i = 1
+        do point = npoints(myid-1)+1, npoints(myid)
+            call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
+            do j = 1, 3
+                if (mep_fldnrm) then
+                    Fs(j) = dot(denmats, Tk_ints(:,j))
+                else
+                    Fqm(j,i) = dot(denmats, Tk_ints(:,j))
+                end if
+            end do
+            do j = 1, qmnucs
+                call Tk_tensor(Tm, mepgrid(:,i) - Rm(:,j))
+                do k = 1, 3
+                    if (mep_fldnrm) then
+                        Fs(k) = Fs(k) - Zm(1,j) * Tm(k)
+                    else
+                        Fqm(k,i) = Fqm(k,i) - Zm(1,j) * Tm(k)
+                    end if
+                end do
+            end do
+            if (mep_fldnrm) Fqm(1,i) = nrm2(Fs)
+            i = i + 1
+        end do
+        deallocate(Tk_ints)
+#if defined(VAR_MPI)
+        if (mep_fldnrm) then
+            j = 1
+        else
+            j = 3
+        end if
+        if (myid == 0 .and. ncores > 1) then
+            displs(0) = 0
+            do i = 1, ncores-1
+                displs(i) = displs(i-1) + j * nmepdists(i-1)
+            end do
+            call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
+                            &Fqm, j*nmepdists, displs, MPI_REAL8,&
+                            &0, MPI_COMM_WORLD, ierr)
+        else if (myid /= 0) then
+            call mpi_gatherv(Fqm, j*nmepdists(myid), MPI_REAL8,&
+                            &0, 0, 0, MPI_REAL8,&
+                            &0, MPI_COMM_WORLD, ierr)
+        end if
+#endif
+        if (myid == 0) then
+            if (mep_fldnrm) then
+                call openfile('qm_field.cube', lu, 'new', 'formatted')
+                write(lu,'(a)') 'QM electric field norm'
+                write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+                write(lu,'(i5,3f12.6)') qmnucs, origin
+                write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+                write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+                write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+                do j = 1, qmnucs
+                    write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+                end do
+                do i = 1, xsteps * ysteps
+                    j = (i - 1) * zsteps + 1
+                    k = j - 1 + zsteps
+                    write(lu,'(6e13.5)') Fqm(1,j:k)
+                end do
+                close(lu)
+            else
+                do l = 0, 2
+                    write(cl,*) l
+                    tcl = trim(adjustl(cl))
+                    call openfile('qm_field_'//tcl//'.cube', lu, 'new', 'formatted')
+                    write(lu,'(a)') 'QM electric field component '//tcl
+                    write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+                    write(lu,'(i5,3f12.6)') qmnucs, origin
+                    write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+                    write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+                    write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+                    do j = 1, qmnucs
+                        write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+                    end do
+                    do i = 1, xsteps * ysteps
+                        j = (i - 1) * zsteps + 1
+                        k = j - 1 + zsteps
+                        write(lu,'(6e13.5)') Fqm(1+l,j:k)
+                    end do
+                    close(lu)
+                end do
+            end if
+        end if
+        deallocate(Fqm)
+
+        if (mulorder >= 0) then
+            if (mep_fldnrm) then
+                allocate(Fpe(0:mulorder,npoints(ncores-1)))
+            else
+                allocate(Fpe(3*(mulorder+1),npoints(ncores-1)))
+            end if
+            Fpe = 0.0d0
+            i = 1
+            do point = npoints(myid-1)+1, npoints(myid)
+                do j = 1, nsites(ncores-1)
+                    Rsp = mepgrid(:,i) - Rs(:,j)
+                    if (lmul(0)) then
+                        Fs = 0.0d0
+                        call multipole_field(Fs, Rsp, M0s(:,j))
+                        if (mep_fldnrm) then
+                            Fpe(0,i) = nrm2(Fs)
+                        else
+                            Fpe(1:3,i) = Fpe(1:3,i) + Fs
+                        end if
+                    end if
+                    if (lmul(1)) then
+                        Fs = 0.0d0
+                        call multipole_field(Fs, Rsp, M1s(:,j))
+                        if (mep_fldnrm) then
+                            Fpe(1,i) = nrm2(Fs)
+                        else
+                            Fpe(4:6,i) = Fpe(4:6,i) + Fs
+                        end if
+                    end if
+                    if (lmul(2)) then
+                        Fs = 0.0d0
+                        call multipole_field(Fs, Rsp, M2s(:,j))
+                        if (mep_fldnrm) then
+                            Fpe(2,i) = nrm2(Fs)
+                        else
+                            Fpe(7:9,i) = Fpe(7:9,i) + Fs
+                        end if
+                    end if
+                    if (lmul(3)) then
+                        Fs = 0.0d0
+                        call multipole_field(Fs, Rsp, M3s(:,j))
+                        if (mep_fldnrm) then
+                            Fpe(3,i) = nrm2(Fs)
+                        else
+                            Fpe(10:12,i) = Fpe(10:12,i) + Fs
+                        end if
+                    end if
+                    if (lmul(4)) then
+                        Fs = 0.0d0
+                        call multipole_field(Fs, Rsp, M4s(:,j))
+                        if (mep_fldnrm) then
+                            Fpe(4,i) = nrm2(Fs)
+                        else
+                            Fpe(13:15,i) = Fpe(13:15,i) + Fs
+                        end if
+                    end if
+                    if (lmul(5)) then
+                        Fs = 0.0d0
+                        call multipole_field(Fs, Rsp, M5s(:,j))
+                        if (mep_fldnrm) then
+                            Fpe(5,i) = nrm2(Fs)
+                        else
+                            Fpe(16:18,i) = Fpe(16:18,i) + Fs
+                        end if
+                    end if
+                end do
+                i = i + 1
+            end do
+#if defined(VAR_MPI)
+            if (mep_fldnrm) then
+                j = 1
+            else
+                j = 3
+            end if
+            if (myid == 0 .and. ncores > 1) then
+                displs(0) = 0
+                do i = 1, ncores-1
+                    displs(i) = displs(i-1) + j * (mulorder + 1) * nmepdists(i-1)
+                end do
+                call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
+                                &Fpe, j*(mulorder+1)*nmepdists, displs, MPI_REAL8,&
+                                &0, MPI_COMM_WORLD, ierr)
+            else if (myid /= 0) then
+                call mpi_gatherv(Fpe, j*(mulorder+1)*nmepdists(myid), MPI_REAL8,&
+                                &0, 0, 0, MPI_REAL8,&
+                                &0, MPI_COMM_WORLD, ierr)
+            end if
+#endif
+            if (myid == 0) then
+                if (mep_fldnrm) then
+                    if (mulorder >= 0) then
+                        call openfile('m0_field.cube', lum0, 'new', 'formatted')
+                    end if
+                    if (mulorder >= 1) then
+                        call openfile('m1_field.cube', lum1, 'new', 'formatted')
+                    end if
+                    if (mulorder >= 2) then
+                        call openfile('m2_field.cube', lum2, 'new', 'formatted')
+                    end if
+                    if (mulorder >= 3) then
+                        call openfile('m3_field.cube', lum3, 'new', 'formatted')
+                    end if
+                    if (mulorder >= 4) then
+                        call openfile('m4_field.cube', lum4, 'new', 'formatted')
+                    end if
+                    if (mulorder >= 5) then
+                        call openfile('m5_field.cube', lum5, 'new', 'formatted')
+                    end if
+                    do i = 1, mulorder + 1
+                        if (i == 1) then
+                            lu = lum0
+                        else if (i == 2) then
+                            lu = lum1
+                        else if (i == 3) then
+                            lu = lum2
+                        else if (i == 4) then
+                            lu = lum3
+                        else if (i == 5) then
+                            lu = lum4
+                        else if (i == 6) then
+                            lu = lum5
+                        end if
+                        write(lu,'(a)') 'PE electric field norm'
+                        write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+                        write(lu,'(i5,3f12.6)') qmnucs, origin
+                        write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+                        write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+                        write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+                        do j = 1, qmnucs
+                            write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+                        end do
+                    end do
+                    do i = 1, xsteps * ysteps
+                        j = (i - 1) * zsteps + 1
+                        k = j - 1 + zsteps
+                        if (mulorder >= 0) then
+                            write(lum0,'(6e13.5)') Fpe(0,j:k)
+                        end if
+                        if (mulorder >= 1) then
+                            write(lum1,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k))
+                        end if
+                        if (mulorder >= 2) then
+                            write(lum2,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k)&
+                                                    + Fpe(2,j:k))
+                        end if
+                        if (mulorder >= 3) then
+                            write(lum3,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k)&
+                                                    + Fpe(2,j:k) + Fpe(3,j:k))
+                        end if
+                        if (mulorder >= 4) then
+                            write(lum4,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k)&
+                                                    + Fpe(2,j:k) + Fpe(3,j:k)&
+                                                    + Fpe(4,j:k))
+                        end if
+                        if (mulorder >= 5) then
+                            write(lum5,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k)&
+                                                    + Fpe(2,j:k) + Fpe(3,j:k)&
+                                                    + Fpe(4,j:k) + Fpe(5,j:k))
+                        end if
+                    end do
+                    if (mulorder >= 0) then
+                        close(lum0)
+                    end if
+                    if (mulorder >= 1) then
+                        close(lum1)
+                    end if
+                    if (mulorder >= 2) then
+                        close(lum2)
+                    end if
+                    if (mulorder >= 3) then
+                        close(lum3)
+                    end if
+                    if (mulorder >= 4) then
+                        close(lum4)
+                    end if
+                    if (mulorder >= 5) then
+                        close(lum5)
+                    end if
+                else
+                    do l = 0, 2
+                        write(cl,*) l
+                        tcl = trim(adjustl(cl))
+                        if (mulorder >= 0) then
+                            call openfile('m0_field_'//tcl//'.cube', lum0,&
+                                          'new', 'formatted')
+                        end if
+                        if (mulorder >= 1) then
+                            call openfile('m1_field_'//tcl//'.cube', lum1,&
+                                          'new', 'formatted')
+                        end if
+                        if (mulorder >= 2) then
+                            call openfile('m2_field_'//tcl//'.cube', lum2,&
+                                          'new', 'formatted')
+                        end if
+                        if (mulorder >= 3) then
+                            call openfile('m3_field_'//tcl//'.cube', lum3,&
+                                          'new', 'formatted')
+                        end if
+                        if (mulorder >= 4) then
+                            call openfile('m4_field_'//tcl//'.cube', lum4,&
+                                          'new', 'formatted')
+                        end if
+                        if (mulorder >= 5) then
+                            call openfile('m5_field_'//tcl//'.cube', lum5,&
+                                          'new', 'formatted')
+                        end if
+                        do i = 1, mulorder + 1
+                            if (i == 1) then
+                                lu = lum0
+                            else if (i == 2) then
+                                lu = lum1
+                            else if (i == 3) then
+                                lu = lum2
+                            else if (i == 4) then
+                                lu = lum3
+                            else if (i == 5) then
+                                lu = lum4
+                            else if (i == 6) then
+                                lu = lum5
+                            end if
+                            write(lu,'(a)') 'PE electric field component '//tcl
+                            write(lu,'(a)') 'Generated by the Polarizable&
+                                            & Embedding module'
+                            write(lu,'(i5,3f12.6)') qmnucs, origin
+                            write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+                            write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+                            write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+                            do j = 1, qmnucs
+                                write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+                            end do
+                        end do
+                        do i = 1, xsteps * ysteps
+                            j = (i - 1) * zsteps + 1
+                            k = j - 1 + zsteps
+                            if (mulorder >= 0) then
+                                write(lum0,'(6e13.5)') Fpe(1+l,j:k)
+                            end if
+                            if (mulorder >= 1) then
+                                write(lum1,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k))
+                            end if
+                            if (mulorder >= 2) then
+                                write(lum2,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
+                                                        + Fpe(7+l,j:k))
+                            end if
+                            if (mulorder >= 3) then
+                                write(lum3,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
+                                                        + Fpe(7+l,j:k) + Fpe(10+l,j:k))
+                            end if
+                            if (mulorder >= 4) then
+                                write(lum4,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
+                                                        + Fpe(7+l,j:k) + Fpe(10+l,j:k)&
+                                                        + Fpe(13+l,j:k))
+                            end if
+                            if (mulorder >= 5) then
+                                write(lum5,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
+                                                        + Fpe(7+l,j:k) + Fpe(10+l,j:k)&
+                                                        + Fpe(13+l,j:k) + Fpe(16+l,j:k))
+                            end if
+                        end do
+                        if (mulorder >= 0) then
+                            close(lum0)
+                        end if
+                        if (mulorder >= 1) then
+                            close(lum1)
+                        end if
+                        if (mulorder >= 2) then
+                            close(lum2)
+                        end if
+                        if (mulorder >= 3) then
+                            close(lum3)
+                        end if
+                        if (mulorder >= 4) then
+                            close(lum4)
+                        end if
+                        if (mulorder >= 5) then
+                            close(lum5)
+                        end if
+                    end do
+                end if
+            end if
+            deallocate(Fpe)
+        end if
+
+        if (lpol(1)) then
+            allocate(Fmuls(3*npols,1))
+            allocate(M1inds(3*npols,1))
+            call multipole_fields(Fmuls(:,1))
+            if (mep_extfld) then
+                j = 1
+                do i = 1, npols
+                    Fmuls(j:j+2,1) = Fmuls(j:j+2,1) + extfld
+                    j = j + 3
+                end do
+            end if
+            call induced_dipoles(M1inds, Fmuls)
+            deallocate(Fmuls)
+#if defined(VAR_MPI)
+            if (ncores > 1) then
+                call mpi_bcast(M1inds, 3*npols, MPI_REAL8,&
+                              &0, MPI_COMM_WORLD, ierr)
+            end if
+#endif
+            if (mep_fldnrm) then
+                allocate(Find(1,npoints(ncores-1)))
+            else
+                allocate(Find(3,npoints(ncores-1)))
+            end if
+            Find = 0.0d0
+            i = 1
+            do point = npoints(myid-1)+1, npoints(myid)
+                l = 1
+                do j = 1, nsites(ncores-1)
+                    if (zeroalphas(j)) cycle
+                    Rsp = mepgrid(:,i) - Rs(:,j)
+                    Fs = 0.0d0
+                    call multipole_field(Fs, Rsp, M1inds(l:l+2,1))
+                    if (mep_fldnrm) then
+                        Find(1,i) = Find(1,i) + nrm2(Fs)
+                    else
+                        Find(:,i) = Find(:,i) + Fs
+                    end if
+                    l = l + 3
+                end do
+                i = i + 1
+            end do
+            deallocate(M1inds)
+#if defined(VAR_MPI)
+            if (mep_fldnrm) then
+                j = 1
+            else
+                j = 3
+            end if
+            if (myid == 0 .and. ncores > 1) then
+                displs(0) = 0
+                do i = 1, ncores-1
+                    displs(i) = displs(i-1) + j * nmepdists(i-1)
+                end do
+                call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
+                                &Find, j*nmepdists, displs, MPI_REAL8,&
+                                &0, MPI_COMM_WORLD, ierr)
+            else if (myid /= 0) then
+                call mpi_gatherv(Find, j*nmepdists(myid), MPI_REAL8,&
+                                &0, 0, 0, MPI_REAL8,&
+                                &0, MPI_COMM_WORLD, ierr)
+            end if
+#endif
+            if (myid == 0) then
+                if (mep_fldnrm) then
+                    call openfile('ind_field.cube', lu, 'new', 'formatted')
+                    write(lu,'(a)') 'PE induced electric field norm'
+                    write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+                    write(lu,'(i5,3f12.6)') qmnucs, origin
+                    write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+                    write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+                    write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+                    do j = 1, qmnucs
+                        write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+                    end do
+                    do i = 1, xsteps * ysteps
+                        j = (i - 1) * zsteps + 1
+                        k = j - 1 + zsteps
+                        write(lu,'(6e13.5)') Find(1,j:k)
+                    end do
+                    close(lu)
+                else
+                    do l = 0, 2
+                        write(cl,*) l
+                        tcl = trim(adjustl(cl))
+                        call openfile('ind_field_'//tcl//'.cube', lu,&
+                                      'new', 'formatted')
+                        write(lu,'(a)') 'PE induced electric field'
+                        write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+                        write(lu,'(i5,3f12.6)') qmnucs, origin
+                        write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+                        write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+                        write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+                        do j = 1, qmnucs
+                            write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+                        end do
+                        do i = 1, xsteps * ysteps
+                            j = (i - 1) * zsteps + 1
+                            k = j - 1 + zsteps
+                            write(lu,'(6e13.5)') Find(1+l,j:k)
+                        end do
+                        close(lu)
+                    end do
+                end if
+            end if
+            deallocate(Find)
+        end if
+    end if
+
+#if defined(VAR_MPI)
+    call mpi_barrier(MPI_COMM_WORLD, ierr)
+#endif
 
 end subroutine pe_compute_mep
 
@@ -2431,7 +2839,7 @@ subroutine induced_moments(Mkinds, Fs)
                         if (zeroalphas(j)) cycle
                         exclude = .false.
                         do k = 1, lexlst
-                            if (exlists(k,i) == exlists(1,j)) then
+                            if (exclists(k,i) == exclists(1,j)) then
                                 exclude = .true.
                                 exit
                             end if
@@ -2862,7 +3270,7 @@ subroutine multipole_fields(Fmuls)
                 end if
                 exclude = .false.
                 do m = 1, lexlst
-                    if (exlists(m,i) == exlists(1,j)) then
+                    if (exclists(m,i) == exclists(1,j)) then
                         exclude = .true.
                         k = k + 1
                         exit
@@ -3034,7 +3442,7 @@ subroutine response_matrix(B)
                     end if
                     exclude = .false.
                     do k = 1, lexlst
-                        if (exlists(k,i) == exlists(1,j)) then
+                        if (exclists(k,i) == exclists(1,j)) then
                             exclude = .true.
                             exit
                         end if
@@ -3501,7 +3909,7 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     allocate(full_rep(cbas,cbas))
     full_rep = 0.0d0
     full_rep = - 2.0d0 * matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), cmo),&
-                         matmul(transpose(cmo), full_overlap(1:fbas,fbas+1:nbas)))
+               matmul(transpose(cmo), full_overlap(1:fbas,fbas+1:nbas)))
 
     deallocate(full_overlap, cmo)
 
