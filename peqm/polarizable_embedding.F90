@@ -333,6 +333,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
                         read(luinp,*) extfld(1), extfld(2), extfld(3)
                         mep_extfld = .true.
                     else if (option(1:1) == '.' .or. option(1:1) == '*') then
+                        backspace(luinp)
                         exit
                     else if (option(1:1) == '!' .or. option(1:1) == '#') then
                         cycle
@@ -1370,7 +1371,6 @@ subroutine pe_compute_mep(denmats)
         call mpi_gatherv(Vqm, nmepdists(myid), MPI_REAL8,&
                         &0, 0, 0, MPI_REAL8,&
                         &0, MPI_COMM_WORLD, ierr)
-        deallocate(Vqm)
     end if
 #endif
     if (myid == 0) then
@@ -1390,8 +1390,8 @@ subroutine pe_compute_mep(denmats)
             write(lu,'(6e13.5)') Vqm(1,j:k)
         end do
         close(lu)
-        deallocate(Vqm)
     end if
+    deallocate(Vqm)
 
     if (mulorder >= 0) then
         allocate(Vpe(0:mulorder,npoints(ncores-1)))
@@ -1474,7 +1474,6 @@ subroutine pe_compute_mep(denmats)
             call mpi_gatherv(Vpe, (mulorder+1)*nmepdists(myid), MPI_REAL8,&
                             &0, 0, 0, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
-            deallocate(Vpe)
         end if
 #endif
         if (myid == 0) then
@@ -1563,8 +1562,8 @@ subroutine pe_compute_mep(denmats)
             if (mulorder >= 5) then
                 close(lum5)
             end if
-            deallocate(Vpe)
         endif
+        deallocate(Vpe)
     end if
 
     if (lpol(1)) then
@@ -1622,7 +1621,6 @@ subroutine pe_compute_mep(denmats)
             call mpi_gatherv(Vind, nmepdists(myid), MPI_REAL8,&
                             &0, 0, 0, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
-            deallocate(Vind)
         end if
 #endif
         if (myid == 0) then
@@ -1642,8 +1640,8 @@ subroutine pe_compute_mep(denmats)
                 write(lu,'(6e13.5)') Vind(1,j:k)
             end do
             close(lu)
-            deallocate(Vind)
         end if
+        deallocate(Vind)
     end if
 
     if (mep_field) then
@@ -1677,28 +1675,24 @@ subroutine pe_compute_mep(denmats)
             i = i + 1
         end do
         deallocate(Tk_ints)
-        if (myid == 0) then
-            print *, Fqm(1,1:149)
-        end if
 #if defined(VAR_MPI)
-!        if (mep_fldnrm) then
-!           j = 1
-!       else
-!           j = 3
-!       end if
+        if (mep_fldnrm) then
+            j = 1
+        else
+            j = 3
+        end if
         if (myid == 0 .and. ncores > 1) then
             displs(0) = 0
             do i = 1, ncores-1
-                displs(i) = displs(i-1) + nmepdists(i-1)
+                displs(i) = displs(i-1) + j * nmepdists(i-1)
             end do
             call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                            &Fqm, nmepdists, displs, MPI_REAL8,&
+                            &Fqm, j*nmepdists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         else if (myid /= 0) then
-            call mpi_gatherv(Fqm, nmepdists(myid), MPI_REAL8,&
+            call mpi_gatherv(Fqm, j*nmepdists(myid), MPI_REAL8,&
                             &0, 0, 0, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
-            deallocate(Fqm)
         end if
 #endif
         if (myid == 0) then
@@ -1741,8 +1735,8 @@ subroutine pe_compute_mep(denmats)
                     close(lu)
                 end do
             end if
-            deallocate(Fqm)
         end if
+        deallocate(Fqm)
 
         if (mulorder >= 0) then
             if (mep_fldnrm) then
@@ -1830,7 +1824,6 @@ subroutine pe_compute_mep(denmats)
                 call mpi_gatherv(Fpe, j*(mulorder+1)*nmepdists(myid), MPI_REAL8,&
                                 &0, 0, 0, MPI_REAL8,&
                                 &0, MPI_COMM_WORLD, ierr)
-                deallocate(Fpe)
             end if
 #endif
             if (myid == 0) then
@@ -2024,8 +2017,8 @@ subroutine pe_compute_mep(denmats)
                         end if
                     end do
                 end if
-                deallocate(Fpe)
             end if
+            deallocate(Fpe)
         end if
 
         if (lpol(1)) then
@@ -2089,7 +2082,6 @@ subroutine pe_compute_mep(denmats)
                 call mpi_gatherv(Find, j*nmepdists(myid), MPI_REAL8,&
                                 &0, 0, 0, MPI_REAL8,&
                                 &0, MPI_COMM_WORLD, ierr)
-                deallocate(Find)
             end if
 #endif
             if (myid == 0) then
@@ -2133,10 +2125,14 @@ subroutine pe_compute_mep(denmats)
                         close(lu)
                     end do
                 end if
-                deallocate(Find)
             end if
+            deallocate(Find)
         end if
     end if
+
+#if defined(VAR_MPI)
+    call mpi_barrier(MPI_COMM_WORLD, ierr)
+#endif
 
 end subroutine pe_compute_mep
 
@@ -2801,7 +2797,8 @@ subroutine induced_dipoles(M1inds, Fs)
                 if (chol) then
                     call pptrf(B, 'L', info)
                     if (info /= 0) then
-                        print *, 'Cholesky factorization failed. Trying regular...'
+                        write(luout,*) 'Cholesky factorization failed.&
+                                       & Trying regular...'
                         allocate(ipiv(3*npols))
                         call sptrf(B, 'L', ipiv, info)
                         if (info /= 0) then
