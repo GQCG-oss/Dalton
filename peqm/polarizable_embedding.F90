@@ -2530,6 +2530,10 @@ subroutine pe_polarization(denmats, fckmats)
 #if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
         do i = 1, ndens
+            displs(0) = 0
+            do j = 1, ncores-1
+                displs(j) = displs(j-1) + 3 * npoldists(j-1)
+            end do
             call mpi_scatterv(M1inds(:,i), 3*npoldists, displs, MPI_REAL8,&
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &myid, MPI_COMM_WORLD, ierr)
@@ -2614,6 +2618,10 @@ subroutine induced_dipoles(M1inds, Fs)
             if (.not.lexist .or. response) then
 #if defined(VAR_MPI)
                 if (myid == 0 .and. ncores > 1) then
+                    displs(0) = 0
+                    do i = 1, ncores-1
+                        displs(i) = displs(i-1) + 3 * npoldists(i-1)
+                    end do
                     call mpi_scatterv(Fs(:,n), 3*npoldists, displs, MPI_REAL8,&
                                      &MPI_IN_PLACE, 0, MPI_REAL8,&
                                      &0, MPI_COMM_WORLD, ierr)
@@ -2633,6 +2641,10 @@ subroutine induced_dipoles(M1inds, Fs)
 
 #if defined(VAR_MPI)
                 if (myid == 0 .and. ncores > 1) then
+                    displs(0) = 0
+                    do i = 1, ncores-1
+                        displs(i) = displs(i-1) + 3 * npoldists(i-1)
+                    end do
                     call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
                                     &M1inds(:,n), 3*npoldists, displs, MPI_REAL8,&
                                     &0, MPI_COMM_WORLD, ierr)
@@ -2648,6 +2660,10 @@ subroutine induced_dipoles(M1inds, Fs)
 
 #if defined(VAR_MPI)
             if (myid == 0 .and. ncores > 1) then
+                displs(0) = 0
+                do i = 1, ncores-1
+                    displs(i) = displs(i-1) + 3 * npoldists(i-1)
+                end do
                 call mpi_scatterv(M1inds(:,n), 3*npoldists, displs, MPI_REAL8,&
                                  &MPI_IN_PLACE, 0, MPI_REAL8,&
                                  &0, MPI_COMM_WORLD, ierr)
@@ -2731,6 +2747,10 @@ subroutine induced_dipoles(M1inds, Fs)
 
 #if defined(VAR_MPI)
                     if (myid == 0 .and. ncores > 1) then
+                        displs(0) = 0
+                        do j = 1, ncores-1
+                            displs(j) = displs(j-1) + 3 * npoldists(j-1)
+                        end do
                         call mpi_scatterv(M1inds(:,n), 3*npoldists, displs,&
                                          &MPI_REAL8, MPI_IN_PLACE, 0,&
                                          &MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
@@ -2968,6 +2988,10 @@ subroutine nuclear_fields(Fnucs)
         end do
 #if defined(VAR_MPI)
         if (myid == 0 .and. ncores > 1) then
+            displs(0) = 0
+            do i = 1, ncores-1
+                displs(i) = displs(i-1) + 3 * npoldists(i-1)
+            end do
             call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
                             &Fnucs, 3*npoldists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
