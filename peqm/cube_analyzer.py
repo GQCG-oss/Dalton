@@ -204,56 +204,62 @@ def inplane(point, a, b, c, d):
     else:
         return False
 
-def vdw_analysis(cube, refcub, mini, maxi, step):
+def vdw_analysis(cubelist, refcub, mini, maxi, step):
     if maxi < mini:
         exit('ERROR: maximum is less than minimum')
     rmsds = []
+    for i in range(len(cubelist)):
+        rmsds.append([])
     grdpts = []
     shells = []
     inner = mini
     outer = mini + step
     while round(outer, 4) <= round(maxi, 4):
-        rmsds.append(0.0)
+        for i in range(len(cubelist)):
+            rmsds[i].append(0.0)
         grdpts.append(0)
         shells.append([round(inner, 4), round(outer, 4)])
         inner += step
         outer += step
     point = [0.0, 0.0, 0.0]
-    for x in xrange(cube.xpoints):
-        for y in xrange(cube.ypoints):
-            for z in xrange(cube.zpoints):
-                point[0] = cube.origo[0] + x * cube.xstep
-                point[1] = cube.origo[1] + y * cube.ystep
-                point[2] = cube.origo[2] + z * cube.zstep
-                for idx, shell in enumerate(shells):
+    for x in xrange(refcub.xpoints):
+        for y in xrange(refcub.ypoints):
+            for z in xrange(refcub.zpoints):
+                point[0] = refcub.origo[0] + x * refcub.xstep
+                point[1] = refcub.origo[1] + y * refcub.ystep
+                point[2] = refcub.origo[2] + z * refcub.zstep
+                for ish, shell in enumerate(shells):
                     inner = shell[0]
                     outer = shell[1]
                     include = False
-                    for center, charge in zip(cube.coords, cube.charges):
+                    for center, charge in zip(refcub.coords, refcub.charges):
                         radius = charge2radius[charge] * aa2au
                         if (involume(point, center, inner * radius,
                                      outer * radius) and not
-                            overlap(point, cube.coords, cube.charges, inner)):
+                            overlap(point, refcub.coords, refcub.charges, inner)):
                             include = True
                             break
                         else:
                             continue
                     if include:
-                        rmsds[idx] += (cube.grid[x][y][z] - refcub.grid[x][y][z])**2
-                        grdpts[idx] += 1
-    fvdw = open('{}.log'.format(cube.filename[:-5]), 'w')
-    vdw = 'Reference: {}\n'.format(refcub.filename)
-    vd += '{}\n'.format(cube.filename)
-    vdw += ' Points  Volume   Midpoint    RMSD\n'
-    for idx, shell in enumerate(shells):
-        inner = shell[0]
-        outer = shell[1]
-        vdw += '{0:6d} '.format(grdpts[idx])
-        vdw += '{0:5.2f}-{1:<5.2f} '.format(inner, outer)
-        vdw += '{0:5.2f} '.format(round(inner + 0.5 * step, 4))
-        vdw += '{0:12.4e}\n'.format(math.sqrt(rmsds[idx] / grdpts[idx]))
-    fvdw.write(vdw)
-    fvdw.close()
+                        for ic, cube in enumerate(cubelist):
+                            rmsds[ic][ish] += (cube.grid[x][y][z] -
+                                               refcub.grid[x][y][z])**2
+                        grdpts[ish] += 1
+    for ic, cube in enumerate(cubelist):
+        fvdw = open('{}.log'.format(cube.filename[:-5]), 'w')
+        vdw = 'Reference: {}\n'.format(refcub.filename)
+        vdw += '{}\n'.format(cube.filename)
+        vdw += ' Points  Volume   Midpoint    RMSD\n'
+        for ish, shell in enumerate(shells):
+            inner = shell[0]
+            outer = shell[1]
+            vdw += '{0:6d} '.format(grdpts[ish])
+            vdw += '{0:5.2f}-{1:<5.2f} '.format(inner, outer)
+            vdw += '{0:5.2f} '.format(round(inner + 0.5 * step, 4))
+            vdw += '{0:12.4e}\n'.format(math.sqrt(rmsds[ic][ish] / grdpts[ish]))
+        fvdw.write(vdw)
+        fvdw.close()
 
 def overlap(point, coords, charges, vdwfac):
     """"Return True if point is inside other vdw sphere"""
@@ -324,10 +330,12 @@ if __name__ == "__main__":
 
     if args.vdw:
         refcub = cubelist[args.refidx]
+        cubana = []
         for cube in cubelist:
             if cube == refcub:
                 continue
-            vdw_analysis(cube, refcub, *args.vdw)
+            cubana.append(cube)
+        vdw_analysis(cubana, refcub, *args.vdw)
 
     if args.plnpts:
         plane_analysis(cube, args.plnpts[0:3], args.plnpts[3:6], args.plnpts[6:9])
