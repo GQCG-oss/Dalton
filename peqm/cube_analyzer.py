@@ -5,8 +5,8 @@ import sys
 import argparse as ap
 import math
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+#import matplotlib as mpl
+#import matplotlib.pyplot as plt
 
 parser = ap.ArgumentParser(description='Cube analyzer 0.1',
                            epilog='Have a nice day :-)',
@@ -241,8 +241,10 @@ def vdw_analysis(cube, refcub, mini, maxi, step):
                     if include:
                         rmsds[idx] += (cube.grid[x][y][z] - refcub.grid[x][y][z])**2
                         grdpts[idx] += 1
-    fvdw = open('vdw.log', 'w')
-    vdw = ' Points  Volume   Midpoint    RMSD\n'
+    fvdw = open('{}.log'.format(cube.filename[:-5]), 'w')
+    vdw = 'Reference: {}\n'.format(refcub.filename)
+    vd += '{}\n'.format(cube.filename)
+    vdw += ' Points  Volume   Midpoint    RMSD\n'
     for idx, shell in enumerate(shells):
         inner = shell[0]
         outer = shell[1]
@@ -313,6 +315,7 @@ if __name__ == "__main__":
     if args.mae:
         print('MAEs:')
         refcub = cubelist[args.refidx]
+        print('Reference: {}'.format(refcub.filename))
         for cube in cubelist:
             if cube == refcub:
                 continue
