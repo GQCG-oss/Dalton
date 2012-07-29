@@ -61,7 +61,7 @@ charge2radius = { 1.0: 1.20,  2.0: 1.40,  3.0: 2.20,  4.0: 1.90,  5.0: 1.80,
                  11.0: 2.40, 12.0: 2.20, 13.0: 2.10, 14.0: 2.10, 15.0: 1.95,
                  16.0: 1.80, 17.0: 1.80, 18.0: 1.88, 19.0: 1.90,  0.0: 1.00}
 
-
+aa2au = 1.8897261249935897
 
 class Cube(object):
 
@@ -207,49 +207,66 @@ def inplane(point, a, b, c, d):
 def vdw_analysis(cube, refcub, mini, maxi, step):
     if maxi < mini:
         exit('ERROR: maximum is less than minimum')
-    fvdw = open('vdw.log', 'w')
-    vdw = '  Points   Volume  Midpoint    RMSD\n'
-    point = [0.0, 0.0, 0.0]
+    rmsds = []
+    grdpts = []
+    shells = []
     inner = mini
     outer = mini + step
-    while outer <= maxi:
-        rmsd = 0.0
-        gridpoints = 0
-        for x in xrange(cube.xpoints):
-            for y in xrange(cube.ypoints):
-                for z in xrange(cube.zpoints):
-                    point[0] = cube.origo[0] + x * cube.xstep
-                    point[1] = cube.origo[1] + y * cube.ystep
-                    point[2] = cube.origo[2] + z * cube.zstep
+    while round(outer, 4) <= round(maxi, 4):
+        rmsds.append(0.0)
+        grdpts.append(0)
+        shells.append([round(inner, 4), round(outer, 4)])
+        inner += step
+        outer += step
+    point = [0.0, 0.0, 0.0]
+    for x in xrange(cube.xpoints):
+        for y in xrange(cube.ypoints):
+            for z in xrange(cube.zpoints):
+                point[0] = cube.origo[0] + x * cube.xstep
+                point[1] = cube.origo[1] + y * cube.ystep
+                point[2] = cube.origo[2] + z * cube.zstep
+                for idx, shell in enumerate(shells):
+                    inner = shell[0]
+                    outer = shell[1]
                     include = False
                     for center, charge in zip(cube.coords, cube.charges):
-                        radius = charge2radius[charge]
-                        if (outside(point, center, inner * radius) and
-                            inside(point, center, outer * radius) and not
+                        radius = charge2radius[charge] * aa2au
+                        if (involume(point, center, inner * radius,
+                                     outer * radius) and not
                             overlap(point, cube.coords, cube.charges, inner)):
                             include = True
                             break
                         else:
                             continue
                     if include:
-                        rmsd += (cube.grid[x][y][z] - refcub.grid[x][y][z])**2
-                        gridpoints += 1
-        vdw += '   {0}'.format(gridpoints)
-        vdw += '   {0}-{1}'.format(inner, outer)
-        vdw += '   {0}'.format(inner + step)
-        vdw += '   {0:10.6f}\n'.format(math.sqrt(rmsd / gridpoints))
-        inner += step
-        outer += step
+                        rmsds[idx] += (cube.grid[x][y][z] - refcub.grid[x][y][z])**2
+                        grdpts[idx] += 1
+    fvdw = open('vdw.log', 'w')
+    vdw = ' Points  Volume   Midpoint    RMSD\n'
+    for idx, shell in enumerate(shells):
+        inner = shell[0]
+        outer = shell[1]
+        vdw += '{0:6d} '.format(grdpts[idx])
+        vdw += '{0:5.2f}-{1:<5.2f} '.format(inner, outer)
+        vdw += '{0:5.2f} '.format(round(inner + 0.5 * step, 4))
+        vdw += '{0:12.4e}\n'.format(math.sqrt(rmsds[idx] / grdpts[idx]))
     fvdw.write(vdw)
     fvdw.close()
 
 def overlap(point, coords, charges, vdwfac):
     """"Return True if point is inside other vdw sphere"""
     for coord, charge in zip(coords, charges):
-        if inside(point, coord, vdwfac * charge2radius[charge]):
+        if inside(point, coord, vdwfac * charge2radius[charge] * aa2au):
             return True
         else:
             return False
+
+def involume(point, center, inner, outer):
+    """return True if point is inside volume"""
+    r2 = ((point[0] - center[0])**2 +
+          (point[1] - center[1])**2 +
+          (point[2] - center[2])**2)
+    return (r2 < outer**2 and r2 >= inner**2)
 
 def inside(point, center, radius):
     """Return True if point is inside sphere"""
@@ -259,7 +276,7 @@ def inside(point, center, radius):
     return r2 < radius**2
 
 def outside(point, center, radius):
-    """Return True if point is outside  or on sphere"""
+    """Return True if point is outside or on sphere"""
     r2 = ((point[0] - center[0])**2 +
           (point[1] - center[1])**2 +
           (point[2] - center[2])**2)
