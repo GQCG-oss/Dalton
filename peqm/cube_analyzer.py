@@ -234,8 +234,11 @@ def vdw_analysis(cubelist, refcub, mini, maxi, step):
                     include = False
                     for center, charge in zip(refcub.coords, refcub.charges):
                         radius = charge2radius[charge] * aa2au
-                        if (involume(point, center, inner * radius,
-                                     outer * radius) and not
+                        r2 = ((point[0] - center[0])**2 +
+                              (point[1] - center[1])**2 +
+                              (point[2] - center[2])**2)
+                        if (r2 < (outer * radius)**2 and 
+                            r2 >= (inner * radius)**2 and not
                             overlap(point, refcub.coords, refcub.charges, inner)):
                             include = True
                             break
@@ -246,6 +249,7 @@ def vdw_analysis(cubelist, refcub, mini, maxi, step):
                             rmsds[ic][ish] += (cube.grid[x][y][z] -
                                                refcub.grid[x][y][z])**2
                         grdpts[ish] += 1
+                        break
     for ic, cube in enumerate(cubelist):
         fvdw = open('{}.log'.format(cube.filename[:-5]), 'w')
         vdw = 'Reference: {}\n'.format(refcub.filename)
