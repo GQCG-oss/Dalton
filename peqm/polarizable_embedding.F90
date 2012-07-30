@@ -1676,7 +1676,7 @@ subroutine pe_compute_mep(denmats)
                 j = j + 3
             end do
         end if
-        call induced_dipoles(M1inds, Fmuls)
+!        call induced_dipoles(M1inds, Fmuls)
         deallocate(Fmuls)
 #if defined(VAR_MPI)
         if (ncores > 1) then
@@ -2131,7 +2131,7 @@ subroutine pe_compute_mep(denmats)
                     j = j + 3
                 end do
             end if
-            call induced_dipoles(M1inds, Fmuls)
+!            call induced_dipoles(M1inds, Fmuls)
             deallocate(Fmuls)
 #if defined(VAR_MPI)
             if (ncores > 1) then
@@ -4120,7 +4120,7 @@ subroutine response_matrix_full(B)
             jrow_off = (j-1)*3
             exclude = .false.
             do k = 1, lexlst
-                if (exlists(k,i) == exlists(1,j)) then
+                if (exclists(k,i) == exclists(1,j)) then
                     exclude = .true.
                     exit
                 end if

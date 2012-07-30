@@ -68,7 +68,6 @@ C
 C
 #include "litinfo.h"
       DIMENSION IINFO(LIINFO,*),DINFO(LDINFO,*),WRK(LWRK)
-      logical lmuls
 #include "iratdef.h"
       PARAMETER (D0 = 0.0D0)
 
