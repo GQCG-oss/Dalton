@@ -5849,11 +5849,6 @@ C     Output:
 C     G          MCSCF gradient with solvation contribution added
 C     ESOLT      total solvation energy
 C
-C
-C ****** Comment edh: The two include files <priunit.h> and <pi.h> ****** 
-C ****** seems be specific for pcm! See what they do!!!!           ******
-C
-C
 C Used from common blocks:
 C   INFVAR: NCONF,  NWOPT,  NVAR,   NVARH
 C   INFORB: NNASHX, NNBASX, NNORBX, etc.
@@ -5903,8 +5898,8 @@ C
       KDENT  = KDENV  + N2BASX
       KDENTF = KDENT  + N2BASX
 C     ------------------------------
-      KFPE   = KDENTF + NNBASX        ! X = no symmetry packing; T = symmetry packed
-      KUCMO  = KFPE   + NNBASX        ! X = no symmetry packing; T = symmetry packed
+      KFPE   = KDENTF + NNBASX        
+      KUCMO  = KFPE   + NNBASX        
       KFPEMO = KUCMO  + NORBT*NBAST   
       KFPEAC = KFPEMO + NNORBX
 C     ------------------------------
@@ -5941,7 +5936,7 @@ C    11. KDIAPE : -Output from SOLDIA (what is this??)
       CALL DZERO(WRK(KGRDPE),NVARH)
       CALL DZERO(WRK(KDIAPE),NVAR)
 
-C ****** edh: Write statements for debugging ******************
+C ************* Write statements for debugging ****************
 C *************************************************************
 
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) )THEN
@@ -5969,15 +5964,12 @@ C *************************************************************
       CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDENC),WRK(KDENV),
      &            CMO,DV,WRK(KWRK1),LWRK1)
       CALL DCOPY(N2BASX,WRK(KDENC),1,WRK(KDENT),1)        ! Construct DC dens. matetrix (KDENC)
-      CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENT),1)  ! Add up valence density matrix DV to total dens. matrix
-      CALL DGEFSP(NBAST,WRK(KDENT),WRK(KDENTF))           ! Fold total dens. matrix (in memory KDENC) to AO_QMMM_FCK 
+      CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENT),1)  ! Add valence density matrix DV (DC + DV)
+      CALL DGEFSP(NBAST,WRK(KDENT),WRK(KDENTF))           ! Fold total dens. matrix 
 C
       IF (LOCDEB) THEN
         WRITE(LUPRI,*) 'FOLDED TOTAL DENSITY MATRIX'
         CALL OUTPAK(WRK(KDENTF),NBAST,1,LUPRI)
-      ENDIF 
-      
-      IF (LOCDEB) THEN
         CALL DCOPY(NNBASX,WRK(KDENTF),1,WRK(KDENC),1)      
       ENDIF
 
@@ -5992,29 +5984,11 @@ C
          CALL GETAC2(WRK(KFPEMO),WRK(KFPEAC))             
       END IF
 C
-
-C ****** edh: Write statements for debugging ******************
-C *************************************************************
-
-      IF ((IPQMMM .GE. 15) .OR. (LOCDEB) )THEN
-         WRITE (LUPRI,'(/A)') ' PE_ao matrix in PEGRD:'
-         CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)
-         WRITE (LUPRI,'(/A)') ' PE_mo matrix in PEGRD:'
-         CALL OUTPAK(WRK(KFPEMO),  NORBT,1,LUPRI)
-         IF (NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(/A)') ' PE_ac matrix in PEGRD:'
-         CALL OUTPAK(WRK(KFPEAC),NASHT,1,LUPRI)
-         END IF
-      END IF
-
-C *************************************************************
-C *************************************************************
-
 C     Expextation value of FPE
 
       TFPEMO     = SOLELM(DV,WRK(KFPEAC),WRK(KFPEMO),TFPEAC) 
 C
-C ****** edh: Write statements for debugging ******************
+C ************* Write statements for debugging ****************
 C *************************************************************
 
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) )THEN
@@ -6022,6 +5996,14 @@ C *************************************************************
      *   ' --- FPE expectation value MO :',TFPEMO
          WRITE (LUPRI,'(A,F17.8)')
      *   ' --- active part of FPE    :',TFPEAC
+
+         WRITE (LUPRI,'(/A)') ' PE_ao matrix in PEGRD:'
+         CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)
+         WRITE (LUPRI,'(/A)') ' PE_mo matrix in PEGRD:'
+         CALL OUTPAK(WRK(KFPEMO),  NORBT,1,LUPRI)
+         IF (NASHT .GT. 0) THEN
+         WRITE (LUPRI,'(/A)') ' PE_ac matrix in PEGRD:'
+         CALL OUTPAK(WRK(KFPEAC),NASHT,1,LUPRI)
       END IF
 
 C *************************************************************
@@ -6036,22 +6018,22 @@ C ******* output: GLMCI(NCONF)  = CI solv. gradient    *******
 
       IF (NCONF .GT. 1) THEN
          CALL SOLGC(CREF,WRK(KFPEAC),TFPEAC,WRK(KGRDPE),INDXCI, ! NOTE: Output here is GRDPE (solv. CI PE contribution)
-     &              WRK(KWRK1),LWRK1)
+     &              WRK(KWRK1),LWRK1)                           ! edh: SOLGC calc. < u | Fg | 0 > + < 0 | Fg | 0 > c_u
       END IF
 
       IF (NWOPT .GT. 0) THEN
-         CALL SOLGO(DCVAL,DV,WRK(KFPEMO),WRK(KGRDPE+NCONF))
+         CALL SOLGO(DCVAL,DV,WRK(KFPEMO),WRK(KGRDPE+NCONF))     ! edh: SOLGO calc. 2 < 0 | [Ers, Fg] | 0 > 
       END IF
 
-      CALL SOLDIA(TFPEAC,WRK(KFPEAC),INDXCI,                    ! edh: Check sign of diagonal
+      CALL SOLDIA(TFPEAC,WRK(KFPEAC),INDXCI,                    
      *            WRK(KFPEMO),DV,WRK(KDIAPE),WRK(KWRK1),LWRK1)
 
-      DO 420 I = 0,(NVAR-1)                                    ! edh: Check purpose: Sign of diagonal?
+      DO 420 I = 0,(NVAR-1)                                    
          WRK(KDIAPE+I) = - WRK(KDIAPE+I)
   420 CONTINUE
 
 C     
-C ****** edh: Orthogonality test ******************************
+C ******************* Orthogonality test **********************
 C *************************************************************
 C     
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
@@ -6122,10 +6104,10 @@ C
 C     end of pegrd.
       END
 
-#include "single.h"                    ! edh:Is this one required ?
+#include "single.h"                    
 C
-C ****** Comment edh: <single.h> Technical. For equalence of ****** 
-C ****** compiling bewteen CRAY machine and other machines   ******
+C edh: single.h is technical. For equalence of
+C compiling bewteen CRAY and other machines 
 C
 C  /* Deck pcmgrd */
       SUBROUTINE PEFCMO(CMO,FSOL,DV,WRK,LFREE,IPRINT)
@@ -6133,7 +6115,7 @@ C
 C
 C     Written Erik Donovan Hedegård (edh)
 C
-C     Purpose:  Transform (MCSCF) Tg PE operator to MO basis
+C     Purpose:  Transform (MCSCF) Fg PE operator to MO basis
 C               
 C     Output:
 C     FSOL          Tg PE operator in MO basis
@@ -6173,24 +6155,27 @@ C
 
 C     Core allocation
 C
-C     1. KDENC  : Core (inactive) density matrix). CALL from fckden subroutine
+      KDENC  = 1                      
+      KDENV  = KDENC  + N2BASX        
+      KDENT  = KDENV  + N2BASX
+      KDENTF = KDENT  + N2BASX
+C     -------------------------------
+      KFPE   = KDENTF + NNBASX
+      KUCMO  = KFPE   + NNBASX        
+      KFPEMO = KUCMO  + NORBT*NBAST 
+C     ------------------------------  
+      KWRK1  = KFPEMO + NNORBX        
+      LWRK1  = LFREE  - KWRK1
+
+C     1. KDENC  : Core (inactive) density matrix. CALL from fckden subroutine
 C     2. KDENV  : Valence (active) density matrix 
 C     3. KDENT  : Total density matrix (sum DC + DA)
 C     4. KDENTF : Folded total density matrix 
-C     5. KDENS  : Symmetry packed total density matrix
+C     ------------------------------
 C     6. KFPE   : Polarizable Embedded (PE) Tg operator (AO basis)
 C     7. KUCMO  : MO coefficients
 C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
 
-      KDENC  = 1                      ! Core density for FCKDEN
-      KDENV  = KDENC  + N2BASX        ! Valence density for FCKDEN
-      KDENT  = KDENV  + N2BASX
-      KDENTF = KDENT  + N2BASX
-      KFPE   = KDENTF + NNBASX
-      KUCMO  = KFPE   + NNBASX        !NNBASX or NNBAST??
-      KFPEMO = KUCMO  + NORBT*NBAST   !AO and MO version of KFPE are for transformation from ao to mo basis
-      KWRK1  = KFPEMO + NNORBX        
-      LWRK1  = LFREE  - KWRK1
 
       CALL DZERO(WRK(KDENC),N2BASX)
       CALL DZERO(WRK(KDENV),N2BASX)

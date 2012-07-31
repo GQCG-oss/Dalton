@@ -51,14 +51,14 @@ C
      *        'UNFORMATTED',IDUMMY,.FALSE.)
 
       IF (NCSIM .GT. 0) THEN
-          IF (IPQMMM .GT. 2) THEN
+          IF (IPQMMM .GT. 15) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** BEFORE QMMMLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
          CALL QMMMLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
      *                UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,WRK,LWRK)
-         IF (IPQMMM .GT. 2) THEN
+         IF (IPQMMM .GT. 15) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** AFTER QMMMLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
@@ -66,7 +66,7 @@ C
       END IF
 C
       IF ( NOSIM .GT.0 ) THEN
-         IF (IPQMMM .GT. 1) THEN
+         IF (IPQMMM .GT. 15) THEN
              WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
              WRITE(LUPRI,*)' **** BEFORE QMMMLNO **** '
              CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
@@ -74,7 +74,7 @@ C
          CALL QMMMLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
      *                UDV,DV,UDVTR,DVTR,SOVECS,WRK,LWRK)
 
-         IF (IPQMMM .GT. 1) THEN
+         IF (IPQMMM .GT. 15) THEN
              WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
              WRITE(LUPRI,*)' **** AFTER QMMMLNO **** '
              CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
@@ -602,6 +602,8 @@ C
 
 c     Exit if not MCSCF (with- or without pol.) or HF/DFT without polarization
 
+      WRITE(LUPRI,*) 'EDH: KZCONF QMMMLNO', KZKONF
+
       IF ((NNZAL .EQ. 0) .AND. (KZCONF .EQ. 0)) THEN ! edh: No pol. (and not MCSCF) and nothing to do here
         CALL QEXIT('QMMMLNO')                        ! edh: KZCONF *not* optimal for triplet response
         RETURN
@@ -681,8 +683,6 @@ C    --------------------------------------
       CALL DZERO(WRK(KOVLP),NOSIM)
 
 C     ************* Read the relay matrix from file **************
-
-      WRITE(LUPRI,*) 'EDH IN QMMMLNO'
 
       N = 3*NNZAL 
 
@@ -765,7 +765,7 @@ C
         CALL DZERO(WRK(KUFPEX),N2ORBX)                        
         CALL ONEXH1(WRK(JUBO),WRK(KUFPE),WRK(KUFPEX))
 
-      WRITE(LUPRI,*) 'EDH TRIPLET TEST' , TRPLET 
+C      WRITE(LUPRI,*) 'EDH TRIPLET TEST' , TRPLET 
 
           IF (TRPLET) THEN
             CALL DAXPY(N2ORBX,ONE,WRK(KUFPEX),1,WRK(JRXYOT),1)
@@ -783,9 +783,6 @@ C-------------------------------------------------------
       IF (LPOL) THEN
 
         CALL DZERO(WRK(KEFIELD),3*NNZAL)
-
-        WRITE(LUPRI,*) 'TDHF EDH TEST'    
-        WRITE(LUPRI,*) 'TDHF', TDHF
 
         IF ((NODTOT .GE. 1) .AND. TDHF) THEN 
         CALL QMMMLNO_M1(UDV,UDVTR,WRK(KEFIELD),WRK(KUCMO),

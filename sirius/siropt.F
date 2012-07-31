@@ -734,13 +734,9 @@ C                    need higher int. transf. level for NEO/NR
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KWRKG),LWRKG)
                   ELSEIF (QMMM) THEN
-                      WRITE (LUPRI,*) 'QMMM',QMMM
-                      WRITE (LUPRI,*) '****** BEFORE PEGRD (2) ******'
                      CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KWRKG),LWRKG)
-                      WRITE (LUPRI,*) '****** AFTER PEGRD (2) ******'
-                      call flshfo(lupri)
                   END IF
 #endif
                ELSE
