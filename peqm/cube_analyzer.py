@@ -254,11 +254,11 @@ def vdw_analysis(cubelist, refcub, mini, maxi, step):
         fvdw = open('{}.log'.format(cube.filename[:-5]), 'w')
         vdw = 'Reference: {}\n'.format(refcub.filename)
         vdw += '{}\n'.format(cube.filename)
-        vdw += ' Points  Volume   Midpoint    RMSD\n'
+        vdw += ' Points   vdW Volume   Midpoint    RMSD\n'
         for ish, shell in enumerate(shells):
             inner = shell[0]
             outer = shell[1]
-            vdw += '{0:6d} '.format(grdpts[ish])
+            vdw += '{0:8d} '.format(grdpts[ish])
             vdw += '{0:5.2f}-{1:<5.2f} '.format(inner, outer)
             vdw += '{0:5.2f} '.format(round(inner + 0.5 * step, 4))
             vdw += '{0:12.4e}\n'.format(math.sqrt(rmsds[ic][ish] / grdpts[ish]))
@@ -271,14 +271,8 @@ def overlap(point, coords, charges, vdwfac):
         if inside(point, coord, vdwfac * charge2radius[charge] * aa2au):
             return True
         else:
-            return False
-
-def involume(point, center, inner, outer):
-    """return True if point is inside volume"""
-    r2 = ((point[0] - center[0])**2 +
-          (point[1] - center[1])**2 +
-          (point[2] - center[2])**2)
-    return (r2 < outer**2 and r2 >= inner**2)
+            continue
+    return False
 
 def inside(point, center, radius):
     """Return True if point is inside sphere"""
@@ -286,13 +280,6 @@ def inside(point, center, radius):
           (point[1] - center[1])**2 +
           (point[2] - center[2])**2)
     return r2 < radius**2
-
-def outside(point, center, radius):
-    """Return True if point is outside or on sphere"""
-    r2 = ((point[0] - center[0])**2 +
-          (point[1] - center[1])**2 +
-          (point[2] - center[2])**2)
-    return r2 >= radius**2
 
 def mae_analysis(cube, refcub):
     mae = 0.0
