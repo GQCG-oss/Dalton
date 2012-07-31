@@ -30,6 +30,7 @@ module polarizable_embedding
     logical, save :: pe_gauss = .false.
     logical, public, save :: pe_polar = .false.
     logical, public, save :: pe_mep = .false.
+    logical, public, save :: pe_skipqm = .false.
     logical, public, save :: pe_twoint = .false.
     logical, public, save :: pe_repuls = .false.
     logical, public, save :: pe_savden = .false.
@@ -171,8 +172,6 @@ module polarizable_embedding
     ! calculate electric field
     logical, save :: mep_field = .false.
     logical, save :: mep_fldnrm = .false.
-    ! skip QM electrostatic potential (and electric field)
-    logical, public, save :: mep_skipqm = .false.
     ! number of grid points
     integer, dimension(:), allocatable, save :: npoints
     ! point distribution
@@ -311,6 +310,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
             ! number of polarizable densities
             read(luinp,*) npds
             pe_pd = .true.
+        ! skip QM calculations, i.e. go directly into PE module
+        else if (trim(option(2:)) == 'SKIPQM') then
+            pe_skipqm = .true.
         ! evaluate molecular electrostatic potential
         else if (trim(option(2:)) == 'MEP') then
             read(luinp,*) option
@@ -326,9 +328,6 @@ subroutine pe_dalton_input(word, luinp, lupri)
                         mep_field = .true.
                     else if (trim(option(1:)) == 'FLDNRM') then
                         mep_fldnrm = .true.
-                    else if (trim(option(1:)) == 'SKIPQM') then
-                        stop 'SKIPQM not implemented yet.'
-                        mep_skipqm = .true.
                     else if (trim(option(1:)) == 'EXTFLD') then
                         read(luinp,*) extfld(1), extfld(2), extfld(3)
                         mep_extfld = .true.
@@ -1753,7 +1752,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M0s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(0,i) = nrm2(Fs)
+                            Fpe(0,i) = Fpe(0,i) + nrm2(Fs)
                         else
                             Fpe(1:3,i) = Fpe(1:3,i) + Fs
                         end if
@@ -1762,7 +1761,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M1s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(1,i) = nrm2(Fs)
+                            Fpe(1,i) = Fpe(1,i) + nrm2(Fs)
                         else
                             Fpe(4:6,i) = Fpe(4:6,i) + Fs
                         end if
@@ -1771,7 +1770,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M2s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(2,i) = nrm2(Fs)
+                            Fpe(2,i) = Fpe(2,i) + nrm2(Fs)
                         else
                             Fpe(7:9,i) = Fpe(7:9,i) + Fs
                         end if
@@ -1780,7 +1779,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M3s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(3,i) = nrm2(Fs)
+                            Fpe(3,i) = Fpe(3,i) + nrm2(Fs)
                         else
                             Fpe(10:12,i) = Fpe(10:12,i) + Fs
                         end if
@@ -1789,7 +1788,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M4s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(4,i) = nrm2(Fs)
+                            Fpe(4,i) = Fpe(4,i) + nrm2(Fs)
                         else
                             Fpe(13:15,i) = Fpe(13:15,i) + Fs
                         end if
@@ -1798,7 +1797,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M5s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(5,i) = nrm2(Fs)
+                            Fpe(5,i) = Fpe(5,i) + nrm2(Fs)
                         else
                             Fpe(16:18,i) = Fpe(16:18,i) + Fs
                         end if
