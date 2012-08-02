@@ -4444,9 +4444,9 @@ subroutine surface_atoms()
         end do
         if (neighbors < 4 ) then
            write(luout,*) 'I found a surface atom... YEPEE'
-           surfatm(:,nsa) = all_coords(:,i)
            nsa = nsa + 1
-           write(luout,*) 'Checking surfatm', surfatm(:,i)
+           surfatm(:,nsa) = all_coords(:,i)
+           write(luout,*) 'Checking surfatm', surfatm(:,nsa)
         end if
         write(luout,*) 'Atom nr:',i,'with',neighbors,'neighbors'
         write(luout,*) 'Atom coords', all_coords(:,i)
