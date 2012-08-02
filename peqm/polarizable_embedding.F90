@@ -369,6 +369,8 @@ subroutine pe_dalton_input(word, luinp, lupri)
         else if (trim(option(2:)) == 'PESOL') then
             pe_sol = .true.
             pe_polar = .true.
+!            call surface_atoms()
+! Not yet....
         else if (trim(option(2:)) == 'QMCOS') then
             pe_sol = .true.
             pe_polar = .true.
@@ -915,7 +917,11 @@ subroutine pe_read_potential(coords, charges)
             end if
         end do
     end if
-
+!Should not be hear, but ok for testing purpose
+            call cpu_time(t1)
+            call surface_atoms()
+            call cpu_time(t2)
+            write(luout,*) 'Time for identifying surface atoms', t2-t1
 end subroutine pe_read_potential
 
 !------------------------------------------------------------------------------
@@ -4379,6 +4385,105 @@ subroutine multipole_potential(Vi, Rji, Mkj)
      end do
 
 end subroutine multipole_potential
+
+!------------------------------------------------------------------------------
+!The following routines have the purpose of generating the cavity of the
+!molecule of interest used for a COSMO calculation.
+!------------------------------------------------------------------------------
+!subroutine cavity_generation()
+!
+!    call surface_atoms()
+!    call discritazation_of_atoms()
+!    call compute_overlap_of_atoms()
+!
+!end subroutine
+
+!------------------------------------------------------------------------------
+
+subroutine surface_atoms()
+    
+     real(dp), dimension(:,:), allocatable :: all_coords
+     real(dp), dimension(:,:), allocatable :: all_charges
+     real(dp), dimension(:,:), allocatable :: surfatm, surfatm2
+     integer :: i, j, neighbors, nsa, k
+     real(dp) :: vdwrad_i, vdwrad_j, vdw_ij, dist_rij, charge_check
+     real(dp), dimension(3) :: rij
+
+     allocate(all_coords(3,qmnucs+nsites(0)))
+     allocate(all_charges(1,qmnucs+nsites(0)))
+     allocate(surfatm(3,qmnucs+nsites(0)))
+     all_coords(:,1:qmnucs) = Rm
+     all_coords(:,qmnucs+1:) = Rs
+     all_charges(:,1:qmnucs) = Zm
+     all_charges(:,qmnucs+1:) = Zs
+     write(luout,*) 'Rs = ', Rs
+     write(luout,*) 'Rm = ', Rm
+     write(luout,*) 'Rs+Rm = ', all_coords
+     write(luout,*) 'Zs = ', Zs
+     write(luout,*) 'Zm = ', Zm
+     write(luout,*) 'Zs+Zm = ', all_charges
+     nsa = 0
+     do i = 1, qmnucs+nsites(0)
+        neighbors = 0 
+        charge_check = all_charges(1,i)
+        if (charge_check < 1 ) cycle
+        vdwrad_i = charge2vdw(all_charges(1,i))
+        do j = 1, qmnucs+nsites(0) 
+           if (i == j ) cycle
+           vdwrad_j = charge2vdw(all_charges(1,j)) 
+           rij = (all_coords(:,j) - all_coords(:,i))
+           dist_rij = nrm2(rij)
+           vdw_ij = vdwrad_i + vdwrad_j 
+           write(luout,*) 'vdwrad_i', vdwrad_i
+           write(luout,*) 'vdwrad_j', vdwrad_j
+           write(luout,*) 'vdwrad_j+i', vdw_ij
+           write(luout,*) 'dist_rij', dist_rij
+           if (dist_rij <= vdw_ij ) then
+              neighbors = neighbors + 1
+           end if
+        end do
+        if (neighbors < 4 ) then
+           write(luout,*) 'I found a surface atom... YEPEE'
+           surfatm(:,nsa) = all_coords(:,i)
+           nsa = nsa + 1
+           write(luout,*) 'Checking surfatm', surfatm(:,i)
+        end if
+        write(luout,*) 'Atom nr:',i,'with',neighbors,'neighbors'
+        write(luout,*) 'Atom coords', all_coords(:,i)
+     end do
+     allocate(surfatm2(3,nsa))
+     do k = 1, nsa
+        surfatm2(:,k) = surfatm(:,k)
+     end do
+     write(luout,*) 'Coords of all atoms' 
+     write(luout,*)  all_coords
+     write(luout,*) 'Coords of surface atoms'
+     write(luout,*)  surfatm
+     write(luout,*) 'Coords of surface atoms2'
+     write(luout,*)  surfatm2
+
+end subroutine surface_atoms
+
+!------------------------------------------------------------------------------
+
+
+function charge2vdw(charge) 
+
+    real(dp) :: charge
+    real(dp) :: charge2vdw
+    real(dp), dimension(19) :: vdw
+
+    integer :: i
+    
+    vdw = (/ 1.20, 1.40, 2.20, 1.90, 1.80, &
+          &  1.70, 1.60, 1.55, 1.50, 1.54, &
+          &  2.40, 2.20, 2.10, 2.10, 1.95, &
+          &  1.80, 1.80, 1.88, 1.90 /)
+
+    charge2vdw = vdw(charge)*aa2au
+    return
+
+end function charge2vdw
 
 !------------------------------------------------------------------------------
 
