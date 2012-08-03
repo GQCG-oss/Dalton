@@ -169,7 +169,7 @@ class Cube(object):
 def plane_analysis(cube, pt1, pt2, pt3):
     fpln = open('test.dat', 'w')
     plnlog = ''
-    plnfmt = '{0[0]:12.6f}{0[1]:12.6f}{0[2]:12.6f}{1:12.6f}\n'
+    plnfmt = '{0[0]:12.6f}{0[1]:12.6f}{1:12.6f}\n'
     plane = []
     a = (pt1[1] * (pt2[2] - pt3[2]) + 
          pt2[1] * (pt3[2] - pt1[2]) + 
@@ -183,26 +183,30 @@ def plane_analysis(cube, pt1, pt2, pt3):
     d = - (pt1[0] * (pt2[1] * pt3[2] - pt3[1] * pt2[2]) +
            pt2[0] * (pt3[1] * pt1[2] - pt1[1] * pt3[2]) +
            pt3[0] * (pt1[1] * pt2[2] - pt2[1] * pt1[2]))
-    point = [0.0, 0.0, 0.0]
+    newz = np.array([a, b, c])
+    newx = np.array([pt2[0] - pt1[0], pt2[1] - pt1[1], pt2[2] - pt1[2]])
+    newy = np.cross(newz, newx)
+    newx = newx / np.linalg.norm(newx)
+    newy = newy / np.linalg.norm(newy)
+    newz = newz / np.linalg.norm(newz)
+    rotmat = np.array([newx, newy, newz])
+    point = np.array([0.0, 0.0, 0.0])
     for x in xrange(cube.xpoints):
         for y in xrange(cube.ypoints):
             for z in xrange(cube.zpoints):
                 point[0] = cube.origo[0] + x * cube.xstep
                 point[1] = cube.origo[1] + y * cube.ystep
                 point[2] = cube.origo[2] + z * cube.zstep
-                if inplane(point, a, b, c, d):
+                s = a * point[0] + b * point[1] + c * point[2] + d
+                if s < 0.1 and s > -0.1:
+                    point = np.dot(point, rotmat)
                     plane.append([point, cube.grid[x][y][z]])
                     plnlog += plnfmt.format(point, cube.grid[x][y][z])
-        plnlog += '\n'
-    fpln.write(plnlog)
+        if plnlog:
+            plnlog += '\n'
+            fpln.write(plnlog)
+            plnlog = ''
     fpln.close()
-
-def inplane(point, a, b, c, d):
-    s = a * point[0] + b * point[1] + c * point[2] + d
-    if s < 0.1 and s > -0.1:
-        return True
-    else:
-        return False
 
 def vdw_analysis(cubelist, refcub, mini, maxi, step):
     if maxi < mini:
@@ -329,7 +333,7 @@ if __name__ == "__main__":
         vdw_analysis(cubana, refcub, *args.vdw)
 
     if args.plnpts:
-        plane_analysis(cube, args.plnpts[0:3], args.plnpts[3:6], args.plnpts[6:9])
+        plane_analysis(newcube, args.plnpts[0:3], args.plnpts[3:6], args.plnpts[6:9])
 
     if args.outputfile:
         newcube.writecube(args.outputfile)
