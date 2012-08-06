@@ -471,6 +471,7 @@ C
             TRPLET = .FALSE.
             IPRSP = -2 
             ANTSYM = 0
+c            IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
 C   
             write(lupri,*) ' about to call GETPV'  
 C jim sym to be read on luprop
@@ -614,6 +615,10 @@ C
       END
 C...
 Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
 
 
 c    ---------------------------------------
