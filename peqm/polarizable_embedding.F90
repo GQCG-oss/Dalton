@@ -1339,7 +1339,7 @@ subroutine pe_compute_mep(denmats)
     real(dp) :: taylor
     real(dp), dimension(3) :: Tm, Rsp, Fs
     real(dp), dimension(:,:), allocatable :: Vqm, Vpe, Vind
-    real(dp), dimension(:,:), allocatable :: Fqm, Fpe, Find
+    real(dp), dimension(:,:), allocatable :: Fqm, Fpe, Find, Ftmp
     real(dp), dimension(:,:), allocatable :: Fmuls, M1inds
     real(dp), dimension(:,:), allocatable :: Tk_ints
     real(dp), dimension(:), allocatable :: factors, Tsp
@@ -1739,6 +1739,7 @@ subroutine pe_compute_mep(denmats)
 
         if (mulorder >= 0) then
             if (mep_fldnrm) then
+                allocate(Ftmp(3,0:mulorder))
                 allocate(Fpe(0:mulorder,npoints(ncores-1)))
             else
                 allocate(Fpe(3*(mulorder+1),npoints(ncores-1)))
@@ -1746,13 +1747,14 @@ subroutine pe_compute_mep(denmats)
             Fpe = 0.0d0
             i = 1
             do point = npoints(myid-1)+1, npoints(myid)
+                Ftmp = 0.0d0
                 do j = 1, nsites(ncores-1)
                     Rsp = mepgrid(:,i) - Rs(:,j)
                     if (lmul(0)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M0s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(0,i) = Fpe(0,i) + nrm2(Fs)
+                            Ftmp(:,0) = Ftmp(:,0) + Fs
                         else
                             Fpe(1:3,i) = Fpe(1:3,i) + Fs
                         end if
@@ -1761,7 +1763,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M1s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(1,i) = Fpe(1,i) + nrm2(Fs)
+                            Ftmp(:,1) = Ftmp(:,1) + Fs
                         else
                             Fpe(4:6,i) = Fpe(4:6,i) + Fs
                         end if
@@ -1770,7 +1772,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M2s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(2,i) = Fpe(2,i) + nrm2(Fs)
+                            Ftmp(:,2) = Ftmp(:,2) + Fs
                         else
                             Fpe(7:9,i) = Fpe(7:9,i) + Fs
                         end if
@@ -1779,7 +1781,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M3s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(3,i) = Fpe(3,i) + nrm2(Fs)
+                            Ftmp(:,3) = Ftmp(:,3) + Fs
                         else
                             Fpe(10:12,i) = Fpe(10:12,i) + Fs
                         end if
@@ -1788,7 +1790,7 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M4s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(4,i) = Fpe(4,i) + nrm2(Fs)
+                            Ftmp(:,4) = Ftmp(:,4) + Fs
                         else
                             Fpe(13:15,i) = Fpe(13:15,i) + Fs
                         end if
@@ -1797,14 +1799,20 @@ subroutine pe_compute_mep(denmats)
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M5s(:,j))
                         if (mep_fldnrm) then
-                            Fpe(5,i) = Fpe(5,i) + nrm2(Fs)
+                            Ftmp(:,5) = Ftmp(:,5) + Fs
                         else
                             Fpe(16:18,i) = Fpe(16:18,i) + Fs
                         end if
                     end if
                 end do
+                if (mep_fldnrm) then
+                    do j = 0, mulorder
+                        Fpe(j,i) = nrm2(Ftmp(:,j))
+                    end do
+                end if
                 i = i + 1
             end do
+            deallocate(Ftmp)
 #if defined(VAR_MPI)
             if (mep_fldnrm) then
                 j = 1
@@ -2040,6 +2048,7 @@ subroutine pe_compute_mep(denmats)
             end if
 #endif
             if (mep_fldnrm) then
+                allocate(Ftmp(3,1))
                 allocate(Find(1,npoints(ncores-1)))
             else
                 allocate(Find(3,npoints(ncores-1)))
@@ -2048,20 +2057,25 @@ subroutine pe_compute_mep(denmats)
             i = 1
             do point = npoints(myid-1)+1, npoints(myid)
                 l = 1
+                Ftmp = 0.0d0
                 do j = 1, nsites(ncores-1)
                     if (zeroalphas(j)) cycle
                     Rsp = mepgrid(:,i) - Rs(:,j)
                     Fs = 0.0d0
                     call multipole_field(Fs, Rsp, M1inds(l:l+2,1))
                     if (mep_fldnrm) then
-                        Find(1,i) = Find(1,i) + nrm2(Fs)
+                        Ftmp(:,1) = Ftmp(:,1) + Fs
                     else
                         Find(:,i) = Find(:,i) + Fs
                     end if
                     l = l + 3
                 end do
+                if (mep_fldnrm) then
+                    Find(1,i) = nrm2(Ftmp(:,1))
+                end if
                 i = i + 1
             end do
+            deallocate(Ftmp)
             deallocate(M1inds)
 #if defined(VAR_MPI)
             if (mep_fldnrm) then
