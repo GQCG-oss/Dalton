@@ -1339,7 +1339,8 @@ subroutine pe_compute_mep(denmats)
     real(dp) :: taylor
     real(dp), dimension(3) :: Tm, Rsp, Fs
     real(dp), dimension(:,:), allocatable :: Vqm, Vpe, Vind
-    real(dp), dimension(:,:), allocatable :: Fqm, Fpe, Find, Ftmp
+    real(dp), dimension(:,:), allocatable :: Fqm, Find
+    real(dp), dimension(:,:,:), allocatable :: Fpe
     real(dp), dimension(:,:), allocatable :: Fmuls, M1inds
     real(dp), dimension(:,:), allocatable :: Tk_ints
     real(dp), dimension(:), allocatable :: factors, Tsp
@@ -1644,52 +1645,34 @@ subroutine pe_compute_mep(denmats)
     end if
 
     if (mep_field) then
-        if (mep_fldnrm) then
-            allocate(Fqm(1,npoints(ncores-1)))
-        else
-            allocate(Fqm(3,npoints(ncores-1)))
-        end if
+        allocate(Fqm(3,npoints(ncores-1)))
         allocate(Tk_ints(nnbas,3))
         i = 1
         do point = npoints(myid-1)+1, npoints(myid)
             call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i), .false., 0.0d0)
             do j = 1, 3
-                if (mep_fldnrm) then
-                    Fs(j) = dot(denmats, Tk_ints(:,j))
-                else
-                    Fqm(j,i) = dot(denmats, Tk_ints(:,j))
-                end if
+                Fqm(j,i) = dot(denmats, Tk_ints(:,j))
             end do
             do j = 1, qmnucs
                 call Tk_tensor(Tm, mepgrid(:,i) - Rm(:,j))
                 do k = 1, 3
-                    if (mep_fldnrm) then
-                        Fs(k) = Fs(k) - Zm(1,j) * Tm(k)
-                    else
-                        Fqm(k,i) = Fqm(k,i) - Zm(1,j) * Tm(k)
-                    end if
+                    Fqm(k,i) = Fqm(k,i) - Zm(1,j) * Tm(k)
                 end do
             end do
-            if (mep_fldnrm) Fqm(1,i) = nrm2(Fs)
             i = i + 1
         end do
         deallocate(Tk_ints)
 #if defined(VAR_MPI)
-        if (mep_fldnrm) then
-            j = 1
-        else
-            j = 3
-        end if
         if (myid == 0 .and. ncores > 1) then
             displs(0) = 0
             do i = 1, ncores-1
-                displs(i) = displs(i-1) + j * nmepdists(i-1)
+                displs(i) = displs(i-1) + 3 * nmepdists(i-1)
             end do
             call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                            &Fqm, j*nmepdists, displs, MPI_REAL8,&
+                            &Fqm, 3*nmepdists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         else if (myid /= 0) then
-            call mpi_gatherv(Fqm, j*nmepdists(myid), MPI_REAL8,&
+            call mpi_gatherv(Fqm, 3*nmepdists(myid), MPI_REAL8,&
                             &0, 0, 0, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         end if
@@ -1709,11 +1692,11 @@ subroutine pe_compute_mep(denmats)
                 do i = 1, xsteps * ysteps
                     j = (i - 1) * zsteps + 1
                     k = j - 1 + zsteps
-                    write(lu,'(6e13.5)') Fqm(1,j:k)
+                    write(lu,'(6e13.5)') (nrm2(Fqm(:,l)), l = j, k)
                 end do
                 close(lu)
             else
-                do l = 0, 2
+                do l = 1, 3
                     write(cl,*) l
                     tcl = trim(adjustl(cl))
                     call openfile('qm_field_'//tcl//'.cube', lu, 'new', 'formatted')
@@ -1729,7 +1712,7 @@ subroutine pe_compute_mep(denmats)
                     do i = 1, xsteps * ysteps
                         j = (i - 1) * zsteps + 1
                         k = j - 1 + zsteps
-                        write(lu,'(6e13.5)') Fqm(1+l,j:k)
+                        write(lu,'(6e13.5)') Fqm(l,j:k)
                     end do
                     close(lu)
                 end do
@@ -1738,97 +1721,56 @@ subroutine pe_compute_mep(denmats)
         deallocate(Fqm)
 
         if (mulorder >= 0) then
-            if (mep_fldnrm) then
-                allocate(Ftmp(3,0:mulorder))
-                allocate(Fpe(0:mulorder,npoints(ncores-1)))
-            else
-                allocate(Fpe(3*(mulorder+1),npoints(ncores-1)))
-            end if
+            allocate(Fpe(3,0:mulorder,npoints(ncores-1)))
             Fpe = 0.0d0
             i = 1
             do point = npoints(myid-1)+1, npoints(myid)
-                Ftmp = 0.0d0
                 do j = 1, nsites(ncores-1)
                     Rsp = mepgrid(:,i) - Rs(:,j)
                     if (lmul(0)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M0s(:,j))
-                        if (mep_fldnrm) then
-                            Ftmp(:,0) = Ftmp(:,0) + Fs
-                        else
-                            Fpe(1:3,i) = Fpe(1:3,i) + Fs
-                        end if
+                        Fpe(:,0,i) = Fpe(:,0,i) + Fs
                     end if
                     if (lmul(1)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M1s(:,j))
-                        if (mep_fldnrm) then
-                            Ftmp(:,1) = Ftmp(:,1) + Fs
-                        else
-                            Fpe(4:6,i) = Fpe(4:6,i) + Fs
-                        end if
+                        Fpe(:,1,i) = Fpe(:,1,i) + Fs
                     end if
                     if (lmul(2)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M2s(:,j))
-                        if (mep_fldnrm) then
-                            Ftmp(:,2) = Ftmp(:,2) + Fs
-                        else
-                            Fpe(7:9,i) = Fpe(7:9,i) + Fs
-                        end if
+                        Fpe(:,2,i) = Fpe(:,2,i) + Fs
                     end if
                     if (lmul(3)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M3s(:,j))
-                        if (mep_fldnrm) then
-                            Ftmp(:,3) = Ftmp(:,3) + Fs
-                        else
-                            Fpe(10:12,i) = Fpe(10:12,i) + Fs
-                        end if
+                        Fpe(:,3,i) = Fpe(:,3,i) + Fs
                     end if
                     if (lmul(4)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M4s(:,j))
-                        if (mep_fldnrm) then
-                            Ftmp(:,4) = Ftmp(:,4) + Fs
-                        else
-                            Fpe(13:15,i) = Fpe(13:15,i) + Fs
-                        end if
+                        Fpe(:,4,i) = Fpe(:,4,i) + Fs
                     end if
                     if (lmul(5)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M5s(:,j))
-                        if (mep_fldnrm) then
-                            Ftmp(:,5) = Ftmp(:,5) + Fs
-                        else
-                            Fpe(16:18,i) = Fpe(16:18,i) + Fs
-                        end if
+                        Fpe(:,5,i) = Fpe(:,5,i) + Fs
                     end if
                 end do
-                if (mep_fldnrm) then
-                    do j = 0, mulorder
-                        Fpe(j,i) = nrm2(Ftmp(:,j))
-                    end do
-                end if
                 i = i + 1
             end do
-            deallocate(Ftmp)
 #if defined(VAR_MPI)
-            if (mep_fldnrm) then
-                j = 1
-            else
-                j = 3
-            end if
             if (myid == 0 .and. ncores > 1) then
                 displs(0) = 0
                 do i = 1, ncores-1
-                    displs(i) = displs(i-1) + j * (mulorder + 1) * nmepdists(i-1)
+                    displs(i) = displs(i-1) + 3 * (mulorder + 1) * nmepdists(i-1)
                 end do
                 call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                                &Fpe, j*(mulorder+1)*nmepdists, displs, MPI_REAL8,&
+                                &Fpe, 3*(mulorder+1)*nmepdists, displs, MPI_REAL8,&
                                 &0, MPI_COMM_WORLD, ierr)
             else if (myid /= 0) then
-                call mpi_gatherv(Fpe, j*(mulorder+1)*nmepdists(myid), MPI_REAL8,&
+                call mpi_gatherv(Fpe, 3*(mulorder+1)*nmepdists(myid), MPI_REAL8,&
                                 &0, 0, 0, MPI_REAL8,&
                                 &0, MPI_COMM_WORLD, ierr)
             end if
@@ -1881,28 +1823,37 @@ subroutine pe_compute_mep(denmats)
                         j = (i - 1) * zsteps + 1
                         k = j - 1 + zsteps
                         if (mulorder >= 0) then
-                            write(lum0,'(6e13.5)') Fpe(0,j:k)
+                            write(lum0,'(6e13.5)') (nrm2(Fpe(:,0,l)), l = j, k)
                         end if
                         if (mulorder >= 1) then
-                            write(lum1,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k))
+                            write(lum1,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
+                                                         Fpe(:,1,l)), l = j, k)
                         end if
                         if (mulorder >= 2) then
-                            write(lum2,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k)&
-                                                    + Fpe(2,j:k))
+                            write(lum2,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
+                                                         Fpe(:,1,l) +&
+                                                         Fpe(:,2,l)), l = j, k)
                         end if
                         if (mulorder >= 3) then
-                            write(lum3,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k)&
-                                                    + Fpe(2,j:k) + Fpe(3,j:k))
+                            write(lum3,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
+                                                         Fpe(:,1,l) +&
+                                                         Fpe(:,2,l) +&
+                                                         Fpe(:,3,l)), l = j, k)
                         end if
                         if (mulorder >= 4) then
-                            write(lum4,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k)&
-                                                    + Fpe(2,j:k) + Fpe(3,j:k)&
-                                                    + Fpe(4,j:k))
+                            write(lum4,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
+                                                         Fpe(:,1,l) +&
+                                                         Fpe(:,2,l) +&
+                                                         Fpe(:,3,l) +&
+                                                         Fpe(:,4,l)), l = j, k)
                         end if
                         if (mulorder >= 5) then
-                            write(lum5,'(6e13.5)') (Fpe(0,j:k) + Fpe(1,j:k)&
-                                                    + Fpe(2,j:k) + Fpe(3,j:k)&
-                                                    + Fpe(4,j:k) + Fpe(5,j:k))
+                            write(lum5,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
+                                                         Fpe(:,1,l) +&
+                                                         Fpe(:,2,l) +&
+                                                         Fpe(:,3,l) +&
+                                                         Fpe(:,4,l) +&
+                                                         Fpe(:,5,l)), l = j, k)
                         end if
                     end do
                     if (mulorder >= 0) then
@@ -1924,7 +1875,7 @@ subroutine pe_compute_mep(denmats)
                         close(lum5)
                     end if
                 else
-                    do l = 0, 2
+                    do l = 1, 3
                         write(cl,*) l
                         tcl = trim(adjustl(cl))
                         if (mulorder >= 0) then
@@ -1980,28 +1931,28 @@ subroutine pe_compute_mep(denmats)
                             j = (i - 1) * zsteps + 1
                             k = j - 1 + zsteps
                             if (mulorder >= 0) then
-                                write(lum0,'(6e13.5)') Fpe(1+l,j:k)
+                                write(lum0,'(6e13.5)') Fpe(l,0,j:k)
                             end if
                             if (mulorder >= 1) then
-                                write(lum1,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k))
+                                write(lum1,'(6e13.5)') (Fpe(l,0,j:k) + Fpe(l,1,j:k))
                             end if
                             if (mulorder >= 2) then
-                                write(lum2,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
-                                                        + Fpe(7+l,j:k))
+                                write(lum2,'(6e13.5)') (Fpe(l,0,j:k) + Fpe(l,1,j:k)&
+                                                        + Fpe(l,2,j:k))
                             end if
                             if (mulorder >= 3) then
-                                write(lum3,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
-                                                        + Fpe(7+l,j:k) + Fpe(10+l,j:k))
+                                write(lum3,'(6e13.5)') (Fpe(l,0,j:k) + Fpe(l,1,j:k)&
+                                                        + Fpe(l,2,j:k) + Fpe(l,3,j:k))
                             end if
                             if (mulorder >= 4) then
-                                write(lum4,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
-                                                        + Fpe(7+l,j:k) + Fpe(10+l,j:k)&
-                                                        + Fpe(13+l,j:k))
+                                write(lum4,'(6e13.5)') (Fpe(l,0,j:k) + Fpe(l,1,j:k)&
+                                                        + Fpe(l,2,j:k) + Fpe(l,3,j:k)&
+                                                        + Fpe(l,4,j:k))
                             end if
                             if (mulorder >= 5) then
-                                write(lum5,'(6e13.5)') (Fpe(1+l,j:k) + Fpe(4+l,j:k)&
-                                                        + Fpe(7+l,j:k) + Fpe(10+l,j:k)&
-                                                        + Fpe(13+l,j:k) + Fpe(16+l,j:k))
+                                write(lum5,'(6e13.5)') (Fpe(l,0,j:k) + Fpe(l,1,j:k)&
+                                                        + Fpe(l,2,j:k) + Fpe(l,3,j:k)&
+                                                        + Fpe(l,4,j:k) + Fpe(l,5,j:k))
                             end if
                         end do
                         if (mulorder >= 0) then
@@ -2025,7 +1976,7 @@ subroutine pe_compute_mep(denmats)
                     end do
                 end if
             end if
-            deallocate(Fpe)
+            if (.not. lpol(1)) deallocate(Fpe)
         end if
 
         if (lpol(1)) then
@@ -2047,52 +1998,33 @@ subroutine pe_compute_mep(denmats)
                               &0, MPI_COMM_WORLD, ierr)
             end if
 #endif
-            if (mep_fldnrm) then
-                allocate(Ftmp(3,1))
-                allocate(Find(1,npoints(ncores-1)))
-            else
-                allocate(Find(3,npoints(ncores-1)))
-            end if
+            allocate(Find(3,npoints(ncores-1)))
             Find = 0.0d0
             i = 1
             do point = npoints(myid-1)+1, npoints(myid)
                 l = 1
-                Ftmp = 0.0d0
                 do j = 1, nsites(ncores-1)
                     if (zeroalphas(j)) cycle
                     Rsp = mepgrid(:,i) - Rs(:,j)
                     Fs = 0.0d0
                     call multipole_field(Fs, Rsp, M1inds(l:l+2,1))
-                    if (mep_fldnrm) then
-                        Ftmp(:,1) = Ftmp(:,1) + Fs
-                    else
-                        Find(:,i) = Find(:,i) + Fs
-                    end if
+                    Find(:,i) = Find(:,i) + Fs
                     l = l + 3
                 end do
-                if (mep_fldnrm) then
-                    Find(1,i) = nrm2(Ftmp(:,1))
-                end if
                 i = i + 1
             end do
-            deallocate(Ftmp)
             deallocate(M1inds)
 #if defined(VAR_MPI)
-            if (mep_fldnrm) then
-                j = 1
-            else
-                j = 3
-            end if
             if (myid == 0 .and. ncores > 1) then
                 displs(0) = 0
                 do i = 1, ncores-1
-                    displs(i) = displs(i-1) + j * nmepdists(i-1)
+                    displs(i) = displs(i-1) + 3 * nmepdists(i-1)
                 end do
                 call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
-                                &Find, j*nmepdists, displs, MPI_REAL8,&
+                                &Find, 3*nmepdists, displs, MPI_REAL8,&
                                 &0, MPI_COMM_WORLD, ierr)
             else if (myid /= 0) then
-                call mpi_gatherv(Find, j*nmepdists(myid), MPI_REAL8,&
+                call mpi_gatherv(Find, 3*nmepdists(myid), MPI_REAL8,&
                                 &0, 0, 0, MPI_REAL8,&
                                 &0, MPI_COMM_WORLD, ierr)
             end if
@@ -2112,7 +2044,7 @@ subroutine pe_compute_mep(denmats)
                     do i = 1, xsteps * ysteps
                         j = (i - 1) * zsteps + 1
                         k = j - 1 + zsteps
-                        write(lu,'(6e13.5)') Find(1,j:k)
+                        write(lu,'(6e13.5)') (nrm2(Find(:,l)), l = j, k)
                     end do
                     close(lu)
                 else
