@@ -5893,9 +5893,16 @@ C     Core allocation
 C
       LOCDEB = .FALSE.
 
-      KUCMO  = 1        
-      KFPEMO = KUCMO  + NORBT*NBAST   
-      KFPEAC = KFPEMO + NNORBX
+      KDENC  = 1
+      KDENV  = KDENC  + N2BASX
+      KDENT  = KDENV  + N2BASX
+      KDENTF = KDENT  + N2BASX
+C     -------------------------------
+      KFPE   = KDENTF + NNBASX
+      KUCMO  = KFPE   + NNBASX
+      KFPEMO = KUCMO  + NORBT*NBAST
+      KFPEM  = KFPEMO + NNORBX ! extra temporary  
+      KFPEAC = KFPEM  + NNORBX
 C     ------------------------------
       KGRDPE = KFPEAC + NNASHX        
       KDIAPE = KGRDPE + NVARH       
@@ -5919,8 +5926,15 @@ C    10. KGRDPE : Solvent contr. to MCSCF gradient (G)
 C                 - Output from SOLGC and SOLGO 
 C    11. KDIAPE : -Output from SOLDIA (what is this??) 
 
+
+      CALL DZERO(WRK(KDENC),N2BASX)
+      CALL DZERO(WRK(KDENV),N2BASX)
+      CALL DZERO(WRK(KDENT),N2BASX)
+      CALL DZERO(WRK(KDENTF),NNBASX)
+      CALL DZERO(WRK(KFPE),NNBASX)
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
       CALL DZERO(WRK(KFPEMO),NNORBX)
+      CALL DZERO(WRK(KFPEM),NNORBX) ! extra temporary
       CALL DZERO(WRK(KFPEAC),NNASHX)
       CALL DZERO(WRK(KGRDPE),NVARH)
       CALL DZERO(WRK(KDIAPE),NVAR)
@@ -5942,43 +5956,48 @@ C *************************************************************
  50      CONTINUE
       END IF
 
-C      IF ( (IPQMMM .GE. 15 .AND. NASHT .GT. 0) .OR. (LOCDEB) ) THEN
+      IF ( (IPQMMM .GE. 15 .AND. NASHT .GT. 0) .OR. (LOCDEB) ) THEN
          WRITE (LUPRI,'(/A)') ' >>> PEGRD - DV matrix :'
          CALL OUTPAK(DV,NASHT,1,LUPRI)
-C      END IF
+      END IF
 
 C *************************************************************
 C *************************************************************
 
-C      CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDENC),WRK(KDENV),
-C     &            CMO,DV,WRK(KWRK1),LWRK1)
-C      CALL DCOPY(N2BASX,WRK(KDENC),1,WRK(KDENT),1)        ! Construct DC dens. matetrix (KDENC)
-C      CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENT),1)  ! Add valence density matrix DV (DC + DV)
-C      CALL DGEFSP(NBAST,WRK(KDENT),WRK(KDENTF))           ! Fold total dens. matrix 
-C
-C      IF (LOCDEB) THEN
-C        WRITE(LUPRI,*) 'FOLDED TOTAL DENSITY MATRIX'
-C        CALL OUTPAK(WRK(KDENTF),NBAST,1,LUPRI)
-C        CALL DCOPY(NNBASX,WRK(KDENTF),1,WRK(KDENC),1)      
-C      ENDIF
+      CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDENC),WRK(KDENV),
+     &            CMO,DV,WRK(KWRK1),LWRK1)
 
-C      CALL QMMM_FCK_AO(WRK(KFPE),WRK(KDENTF),EQMMM,WRK(KWRK1),LWRK1, 
-C     &                 IPQMMM)                                       
+      CALL DCOPY(N2BASX,WRK(KDENC),1,WRK(KDENT),1)        ! Construct DC dens. matetrix (KDENC)
+      CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENT),1)  ! Add valence density matrix DV (DC + DV)
 
-C      CALL UPKCMO(CMO,WRK(KUCMO))
-C      CALL UTHU(WRK(KFPE),WRK(KFPEMO),WRK(KUCMO),WRK(KWRK1),
-C     &              NBAST,NORBT)                     
-C
+      CALL DGEFSP(NBAST,WRK(KDENT),WRK(KDENTF))           ! Fold total dens. matrix 
 
-      CALL PEFCMO(CMO,WRK(KFPEMO),DV,WRK(KWRK1),LWRK1,IPQMMM)
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*) 'KDENTF IN PEGRD BEFORE QMMM_FCK_AO'
+        CALL OUTPAK(WRK(KDENTF),NBAST,1,LUPRI)
+        CALL DCOPY(NNBASX,WRK(KDENTF),1,WRK(KDENC),1)      
+      ENDIF
+
+      CALL QMMM_FCK_AO(WRK(KFPE),WRK(KDENTF),EQMMM,WRK(KWRK1),LWRK1, ! Gradient routine needs EQMMM
+     &                 IPQMMM)                                       ! PEFCMO should be changed  
+                                                                     ! to deliver EQMMM as well
+      CALL UPKCMO(CMO,WRK(KUCMO))                                    ! requires call change for other places where 
+      CALL UTHU(WRK(KFPE),WRK(KFPEMO),WRK(KUCMO),WRK(KWRK1),         ! PEFCMO
+     &              NBAST,NORBT)                     
+
+      CALL PEFCMO(WRK(KUCMO),WRK(KFPEM),DV,WRK(KWRK1),LWRK1,IPQMMM) ! edh: KFPEM is a temp. variable used to debug 
+                                                                    ! and prepare this module to magnus' PE module
+      WRITE (LUPRI,'(/A)') ' PE_mo matrix from PEFCMO:'             ! problem is that PEFCMO doesn't calc. EQMMM
+      CALL OUTPAK(WRK(KFPEM),NORBT,1,LUPRI)                         ! and now we get it from QMMM_FCK_AO
 
       IF (NASHT .GT. 0) THEN
-         CALL GETAC2(WRK(KFPEMO),WRK(KFPEAC))             
-      END IF
+         CALL GETAC2(WRK(KFPEM),WRK(KFPEAC))             
+      END IF 
+
 C
 C     Expextation value of FPE
 
-      TFPEMO     = SOLELM(DV,WRK(KFPEAC),WRK(KFPEMO),TFPEAC) 
+      TFPEMO     = SOLELM(DV,WRK(KFPEAC),WRK(KFPEM),TFPEAC) 
 
 C
 C ************* Write statements for debugging ****************
@@ -5991,16 +6010,16 @@ C *************************************************************
      *   ' --- active part of FPE    :',TFPEAC
       ENDIF
 
-C      IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
+      IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
          WRITE (LUPRI,'(/A)') ' PE_ao matrix in PEGRD:'
          CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' PE_mo matrix in PEGRD:'
-         CALL OUTPAK(WRK(KFPEMO),  NORBT,1,LUPRI)
+         CALL OUTPAK(WRK(KFPEMO),NORBT,1,LUPRI)
          IF (NASHT .GT. 0) THEN
          WRITE (LUPRI,'(/A)') ' PE_ac matrix in PEGRD:'
          CALL OUTPAK(WRK(KFPEAC),NASHT,1,LUPRI)
          ENDIF
-C      ENDIF
+      ENDIF
 
 C *************************************************************
 C *************************************************************
@@ -6018,11 +6037,11 @@ C ******* output: GLMCI(NCONF)  = CI solv. gradient    *******
       END IF
 
       IF (NWOPT .GT. 0) THEN
-         CALL SOLGO(DCVAL,DV,WRK(KFPEMO),WRK(KGRDPE+NCONF))     ! edh: SOLGO calc. 2 < 0 | [Ers, Fg] | 0 > 
+         CALL SOLGO(DCVAL,DV,WRK(KFPEM),WRK(KGRDPE+NCONF))     ! edh: SOLGO calc. 2 < 0 | [Ers, Fg] | 0 > 
       END IF
 
       CALL SOLDIA(TFPEAC,WRK(KFPEAC),INDXCI,                    
-     *            WRK(KFPEMO),DV,WRK(KDIAPE),WRK(KWRK1),LWRK1)
+     *            WRK(KFPEM),DV,WRK(KDIAPE),WRK(KWRK1),LWRK1)
 
       DO 420 I = 0,(NVAR-1)                                    
          WRK(KDIAPE+I) = - WRK(KDIAPE+I)
@@ -6177,7 +6196,7 @@ C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
       CALL DZERO(WRK(KDENV),N2BASX)
       CALL DZERO(WRK(KDENT),N2BASX)
       CALL DZERO(WRK(KDENTF),NNBASX)
-      CALL DZERO(WRK(KFPE),NNBASX)
+      CALL DZERO(WRK(KFPE),NNBASX) 
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
       CALL DZERO(WRK(KFPEMO),NNORBX)
 
@@ -6190,21 +6209,26 @@ C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
 
       CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDENC),WRK(KDENV),
      &            CMO,DV,WRK(KWRK1),LWRK1)
+
       CALL DCOPY(N2BASX,WRK(KDENC),1,WRK(KDENT),1)        
-      CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENT),1)  
-      CALL DGEFSP(NBAST,WRK(KDENT),WRK(KDENTF))           
+      CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENT),1) 
+ 
+      CALL DGEFSP(NBAST,WRK(KDENT),WRK(KDENTF))      
+     
       CALL QMMM_FCK_AO(WRK(KFPE),WRK(KDENTF),EQMMM,WRK(KWRK1),LWRK1, 
-     &                 IPQMMM)                                      
-      CALL UPKCMO(CMO,WRK(KUCMO))
+     &                 IPQMMM)  
+                                    
+      CALL UPKCMO(CMO,WRK(KUCMO)) 
       CALL UTHU(WRK(KFPE),FSOL,WRK(KUCMO),WRK(KWRK1),
      &              NBAST,NORBT)                         
 
 C      IF (IPQMMM .GE. 15) THEN
          WRITE (LUPRI,'(/A)') ' PE_ao matrix in PEFCMO:'
-         CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)
+         CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)  
          WRITE (LUPRI,'(/A)') ' PE_mo matrix in PEFCMO:'
          CALL OUTPAK(FSOL,NORBT,1,LUPRI)
 C      END IF
+
 
       CALL QEXIT('PEFCMO')
 C     end of pefcmo.
