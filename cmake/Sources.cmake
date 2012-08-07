@@ -600,6 +600,7 @@ sirius/sirpcmder.F
 sirius/sirpop.F
 sirius/sirqm3.F
 sirius/sirqmmm.F
+sirius/sirpe.F
 sirius/sirsav.F
 sirius/sirset.F
 sirius/sirsol.F

@@ -5978,6 +5978,8 @@ C *************************************************************
         CALL DCOPY(NNBASX,WRK(KDENTF),1,WRK(KDENC),1)      
       ENDIF
 
+
+
       CALL QMMM_FCK_AO(WRK(KFPE),WRK(KDENTF),EQMMM,WRK(KWRK1),LWRK1, ! Gradient routine needs EQMMM
      &                 IPQMMM)                                       ! PEFCMO should be changed  
                                                                      ! to deliver EQMMM as well
