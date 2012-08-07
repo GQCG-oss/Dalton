@@ -133,8 +133,8 @@ C *************************************************************
 
       CALL DGEFSP(NBAST,WRK(KDENT),WRK(KDENTF))           ! Fold total dens. matrix 
 
-      call pe_master('fock', denmats=wrk(kdentf:kdentf+nnbasx),
-     &               fckmats=wrk(kfpe:kfpe+nnbasx), nmats=1,
+      call pe_master('fock', denmats=wrk(kdentf:kdentf+nnbasx-1),
+     &               fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
      &               Epe=wrk(kwrk1:kwrk1),
      &               dalwrk=wrk(kwrk1+1:kwrk1+1+lwrk1))
       eqmmm = wrk(kwrk1)
