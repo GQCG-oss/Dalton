@@ -396,7 +396,7 @@ subroutine pe_mappot2points(o_coords)
     integer :: i, j, k, l
     integer :: lu
     real(dp) :: taylor, t_Vind, t_Vind_qmconv
-    real(dp), dimension(3) :: Fs, Fs_qmconv
+    real(dp), dimension(3) :: Fs, Fs_qmconv, Rsp
     real(dp), dimension(:), allocatable :: t_Vpe, t_Fpe
     real(dp), dimension(:,:), allocatable :: Vpe, Vind, Vind_qmconv
     real(dp), dimension(:,:), allocatable :: Vtot, Ftot
@@ -404,7 +404,7 @@ subroutine pe_mappot2points(o_coords)
     real(dp), dimension(:,:), allocatable :: Fpe, Fnrm, Fnrm_qmconv 
     real(dp), dimension(:,:), allocatable :: Fmuls, Find, Find_qmconv
     real(dp), dimension(:,:), allocatable :: M1inds, M1inds_qmconv
-    real(dp), dimension(:), allocatable :: factors, Tsp, Rsp
+    real(dp), dimension(:), allocatable :: factors, Tsp
     real(dp), dimension(:,:), pointer :: coords
     
     if (present(o_coords)) then
@@ -533,6 +533,7 @@ subroutine pe_mappot2points(o_coords)
                 Rsp = coords(:,i) - Rs(:,j)
                 Tsp = 0.0d0
                 t_Vind = 0.0d0
+                t_Vind_qmconv = 0.0d0
                 call Tk_tensor(Tsp, Rsp)
               !  write(luout,*) 'After call Tk_tensor'
                 do k = 1, 3
@@ -791,7 +792,7 @@ subroutine pe_mappot2points(o_coords)
         write(luout,*) 
 
         do j = 1, mulorder + 1
-            write(cmul,*) mulorder
+            write(cmul,*) j-1
             tcmul = trim(adjustl(cmul))
             write(luout,*) 'M'//tcmul//'                                     &
                        &                    '
