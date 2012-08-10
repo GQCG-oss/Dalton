@@ -3168,7 +3168,7 @@ subroutine induced_dipoles(M1inds, Fs)
                 end do
 
                 if (myid == 0) then
-                    if (norm < redthr * thriter) then
+                    if (norm < thriter) then
                         write (luout,'(4x,a,i2,a)') 'Induced dipole moments&
                                                     & converged in ',&
                                                     & iter, ' iterations.'
