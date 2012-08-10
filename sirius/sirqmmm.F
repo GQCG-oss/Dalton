@@ -5978,8 +5978,6 @@ C *************************************************************
         CALL DCOPY(NNBASX,WRK(KDENTF),1,WRK(KDENC),1)      
       ENDIF
 
-
-
       CALL QMMM_FCK_AO(WRK(KFPE),WRK(KDENTF),EQMMM,WRK(KWRK1),LWRK1, ! Gradient routine needs EQMMM
      &                 IPQMMM)                                       ! PEFCMO should be changed  
                                                                      ! to deliver EQMMM as well
@@ -5989,9 +5987,8 @@ C *************************************************************
 
       CALL PEFCMO(WRK(KUCMO),WRK(KFPEM),DV,WRK(KWRK1),LWRK1,IPQMMM) ! edh: KFPEM is a temp. variable used to debug 
                                                                     ! and prepare this module to magnus' PE module
-      WRITE (LUPRI,'(/A)') ' PE_mo matrix from PEFCMO:'             ! problem is that PEFCMO doesn't calc. EQMMM
-      CALL OUTPAK(WRK(KFPEM),NORBT,1,LUPRI)                         ! and now we get it from QMMM_FCK_AO
-
+                                                                    ! problem is that PEFCMO doesn't calc. EQMMM
+                                                                    ! and now we get it from QMMM_FCK_AO
       IF (NASHT .GT. 0) THEN
          CALL GETAC2(WRK(KFPEM),WRK(KFPEAC))             
       END IF 
@@ -6015,13 +6012,20 @@ C *************************************************************
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
          WRITE (LUPRI,'(/A)') ' PE_ao matrix in PEGRD:'
          CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)
-         WRITE (LUPRI,'(/A)') ' PE_mo matrix in PEGRD:'
+         WRITE (LUPRI,'(/A)') ' PE_mo matrix in KFPEMO:'
          CALL OUTPAK(WRK(KFPEMO),NORBT,1,LUPRI)
          IF (NASHT .GT. 0) THEN
          WRITE (LUPRI,'(/A)') ' PE_ac matrix in PEGRD:'
          CALL OUTPAK(WRK(KFPEAC),NASHT,1,LUPRI)
          ENDIF
       ENDIF
+
+      IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN    
+         WRITE (LUPRI,'(/A)') ' PE_ao matrix from pefcmo call in PEGRD:'  
+         CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)                         
+         WRITE (LUPRI,'(/A)') ' PE_mo matrix in KFPEM:'  
+         CALL OUTPAK(WRK(KFPEM),NORBT,1,LUPRI)    
+      ENDIF 
 
 C *************************************************************
 C *************************************************************
@@ -6214,7 +6218,6 @@ C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
 
       CALL DCOPY(N2BASX,WRK(KDENC),1,WRK(KDENT),1)        
       CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENT),1) 
- 
       CALL DGEFSP(NBAST,WRK(KDENT),WRK(KDENTF))      
      
       CALL QMMM_FCK_AO(WRK(KFPE),WRK(KDENTF),EQMMM,WRK(KWRK1),LWRK1, 
@@ -6224,13 +6227,12 @@ C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
       CALL UTHU(WRK(KFPE),FSOL,WRK(KUCMO),WRK(KWRK1),
      &              NBAST,NORBT)                         
 
-C      IF (IPQMMM .GE. 15) THEN
+      IF (IPQMMM .GE. 15) THEN
          WRITE (LUPRI,'(/A)') ' PE_ao matrix in PEFCMO:'
          CALL OUTPAK(WRK(KFPE),NBAST,1,LUPRI)  
          WRITE (LUPRI,'(/A)') ' PE_mo matrix in PEFCMO:'
          CALL OUTPAK(FSOL,NORBT,1,LUPRI)
-C      END IF
-
+      END IF
 
       CALL QEXIT('PEFCMO')
 C     end of pefcmo.
@@ -6257,12 +6259,12 @@ C edh 13/12 2011
 C   Used from common blocks:
 C   INFLIN : NWOPPT,NVARPT
 
+     
       DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       LOGICAL   ORBLIN, LOCDEB
 
       LOCDEB = .FALSE.
-
 
       CALL QENTER('PELIN')
 
@@ -6536,10 +6538,6 @@ C         z-value
 C         start from x MM center of next root
           LCI = LCI + 3*NNZAL
 
-C          write(lupri,*) 'KEFIELD VECTOR 1'
-C          do k=1,3*nnzal*ncsim
-C          write(lupri,*) wrk(kefield+k-1)
-C          enddo
 
         END DO ! NCSIM
 
@@ -6548,11 +6546,6 @@ C          enddo
       END DO ! MMCENT
 
 C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B > vector
-
-C      write(lupri,*) 'KEFIELD VECTOR 2'
-C      do k=1,3*nnzal*ncsim
-C      write(lupri,*) wrk(kefield+k-1)
-C      enddo
 
       DO ICSIM = 1, NCSIM
 
@@ -6568,19 +6561,7 @@ C      enddo
      &               WRK(KWRK2),LWRK2,IOPT,IPQMMM)
       ENDIF
 
-C      write(lupri,*) 'ncsim:',ncsim
-C      write(lupri,*) 'KINDMOM VECTOR 1'
-C      do k=1,3*nnzal*ncsim
-C      write(lupri,*) wrk(kindmom+k-1)
-C      enddo
-
       END DO ! ICSIM
-
-C      write(lupri,*) 'ncsim:',ncsim
-C      write(lupri,*) 'KINDMOM VECTOR 2'
-C      do k=1,3*nnzal*ncsim
-C        write(lupri,*) wrk(kindmom+k-1)
-C      enddo
 
 C     3) Make F(el) and daxpy first x, then y and then z
 C        for each CI B vector
@@ -6618,49 +6599,27 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-C        write(lupri,*) 'KMAT MO MATRIX 1'
-C        CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
-C        write(lupri,*) 'KMAT MO MATRIX 2'
-C        CALL OUTPAK(WRK(KMATMO + 1*NNORBT),NORBT,1,LUPRI)
-C        write(lupri,*) 'KMAT MO MATRIX 3'
-C        CALL OUTPAK(WRK(KMATMO + 2*NNORBT),NORBT,1,LUPRI)
-         
+        
           LCI = 0 ! alternative set LCI = 3*NNZAL*(ICSIM-1)
 
           DO ICSIM = 1,NCSIM
 
             FACx = -WRK(KINDMOM + LRI + 0 + LCI)        
 
-C            write(lupri,*) 'FACx:', FACx
-
             CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
      &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-C            write(lupri,*) 'KFXC MATRIX 1'
-C            write(lupri,*) 'ICSIM #' , ICSIM
-C            CALL OUTPAK(WRK(KFXC +  (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
             FACy = -WRK(KINDMOM + LRI + 1 + LCI)
 
-C           write(lupri,*) 'FACy:', FACy
 
             CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
      &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
 
-C           write(lupri,*) 'KFXC MATRIX 2'
-C           write(lupri,*) 'ICSIM #' , ICSIM
-C           CALL OUTPAK(WRK(KFXC  + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
-
             FACz = -WRK(KINDMOM + LRI + 2 + LCI)       
-
-C            write(lupri,*) 'FACz:', FACz
 
             CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
      &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
- 
-C            write(lupri,*) 'KFXC MATRIX 3'
-C            write(lupri,*) 'ICSIM #' , ICSIM
-C            CALL OUTPAK(WRK(KFXC + (ICSIM-1)*NNORBT),NORBT,1,LUPRI)
 
             IF (NASHT .GT. 0) THEN
               CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
@@ -6715,17 +6674,6 @@ C *************************************************************
 C *************************************************************
 
 C    ...CSF part of sigma vectors    
-
-
-c      write(lupri,*) 'operator that should be zero if no pol'
-c      do k=1,NCSIM*NNASHX
-c        write(lupri,*) wrk(kfxcac+k-1)
-c      end do 
-c
-c      write(lupri,*) 'exp. that should be zero if no pol'
-c      do k=1,ncsim
-c        write(lupri,*) wrk(ktfxcac+k-1)
-c      end do
  
       CALL SOLSC(NCSIM,0,BCVEC,CREF,SVEC,WRK(KFXCAC),WRK(KFPEAC), ! KRYCAC = KFPEAC (i.e. KRYC = KFPEMO)
      *           WRK(KTFXCAC),TFPEAC,INDXCI,WRK(KWRK1),LWRK1)      ! KRXCAC = KFXCAC (i.e. KRXC = KFXC  )  
@@ -6818,9 +6766,6 @@ C
 
       CALL QENTER('PELNO')
 
-C      WRITE(LUPRI,*) 'IN PELNO *******'
-C      WRITE(LUPRI,*) 'QMMM =' ,QMMM       
-C
 C     Determine if full Hessian or only orbital Hessian
 C
       FULHES = (NSVEC .EQ. NVARPT)
@@ -6934,11 +6879,6 @@ C     1) Read B(r) response (Relay) matrix from file.
         CALL GPCLOSE(LUQMMM,'KEEP')
 
       ENDIF
-
-c      WRITE(LUPRI,*) 'Relay Matrix in work array KINVMAT '
-c      CALL OUTPUT(WRK(KINVMAT),1,3*NNZAL*(3*NNZAL+1)/2,1,
-c     &            3*NNZAL*(3*NNZAL+1)/2,3*NNZAL*(3*NNZAL+1)/2,
-c     &            3*NNZAL*(3*NNZAL+1)/2,3*NNZAL*(3*NNZAL+1)/2,1,LUPRI)
 
       KPATOM = 0
       NCOM  = 3       ! edh: sometimes called NOSIM but denoted NCOM here 
@@ -7069,33 +7009,6 @@ c     &               1,NORBT,NORBT,NORBT,1,LUPRI)
      &                  WRK(JMTX + 2*NNORBX))              
 
 
-C            WRITE(LUPRI,*) 'x-coord: Square fel(1) operator'
-C            WRITE(LUPRI,*) 'Vector:' , IOSIM
-C            CALL OUTPUT(WRK(KMTXSQ),1,NORBT,1,NORBT,NORBT,
-C     &                  NORBT,1,LUPRI)
-
-C            WRITE(LUPRI,*) 'x-coord: fel(1) operator'
-C            WRITE(LUPRI,*) 'Vector:' , IOSIM
-C            CALL OUTPAK(WRK(KMTX),NORBT,1,LUPRI)
-
-C            WRITE(LUPRI,*) 'y-coord: Square fel(1) operator'
-C            WRITE(LUPRI,*) 'Vector:' , IOSIM
-C            CALL OUTPUT(WRK(KMTXSQ + 1*N2ORBX),1,NORBT,1,NORBT,
-C     &                  NORBT,NORBT,1,LUPRI)
-
-C            WRITE(LUPRI,*) 'y-coord: fel(1) operator'
-C            WRITE(LUPRI,*) 'Vector:' , IOSIM
-C            CALL OUTPAK(WRK(KMTX + 1*NNORBX),NORBT,1,LUPRI)
-
-C            WRITE(LUPRI,*) 'z-coord: Square fel(1) operator'
-C            WRITE(LUPRI,*) 'Vector:' , IOSIM
-C            CALL OUTPUT(WRK(KMTXSQ + 2*N2ORBX),1,NORBT,1,NORBT,
-C     &              NORBT,NORBT,1,LUPRI)
-
-C            WRITE(LUPRI,*) 'z-coord: fel(1) operator'
-C            WRITE(LUPRI,*) 'Vector:' , IOSIM
-C            CALL OUTPAK(WRK(KMTX + 2*NNORBX),NORBT,1,LUPRI)
-
            IF (NASHT .GT. 0) THEN
              CALL GETAC2(WRK(JMTX),WRK(JMTXAC))
              CALL GETAC2(WRK(JMTX + 1*NNORBX),WRK(JMTXAC + 1*NNASHX))
@@ -7110,15 +7023,6 @@ C          ... Calculate < 0 | f^(1) | 0 >
      &                           WRK(JMTX + 1*NNORBX),TFXAC2)
            TFX3 = SOLELM(DV,WRK(JMTXAC + 2*NNASHX),
      &                           WRK(JMTX + 2*NNORBX),TFXAC3)
-
-C          WRITE(LUPRI,*) 'x-comp. f(1)el expectation value', TFX1  
-C          WRITE(LUPRI,*) 'active part', TFXAC1
-
-C          WRITE(LUPRI,*) 'y-comp. f(1)el expectation value', TFX2
-C          WRITE(LUPRI,*) 'active part', TFXAC2
-
-C          WRITE(LUPRI,*) 'z-comp. f(1)el expectation value', TFX3
-C          WRITE(LUPRI,*) 'active part', TFXAC3
 
 C        **** x-component ****                          
          WRK(KEFIEX + 3*NNZAL*(IOSIM - 1) + LRI + 0) = TFX1 
@@ -7154,22 +7058,12 @@ C     induced moment:  u = B * < 0 | f^(1) | 0 >
         END IF
       END DO
 
-C         write(lupri,*) 'nosim:', nosim
-C         write(lupri,*) 'KINDMOM vector:'
-C           do I=1,3*NOSIM*NNZAL
-C             write(lupri,*) wrk(kindmom+i-1)
-C           end do
 
 C     3) Make F^(1)el and daxpy to get one-index transformed u; first x, then y and then z
 C        
       LRI = 0
 
         DO I = 1, MMCENT
-
-c        WRITE(LUPRI,*) ' *** u = B * < 0 | fel(1) | 0 > *** ' 
-c        WRITE(LUPRI,*) ' # Pol. site ' , I
-c        WRITE(LUPRI,*) ' # orbital trial vector ' , IOSIM
-c        WRITE(LUPRI,*) , WRK(KINDMOM + I - 1 + 3*NNZAL*(IOSIM - 1))
 
         DIPORG(1) = MMCORD(1,I)
         DIPORG(2) = MMCORD(2,I)

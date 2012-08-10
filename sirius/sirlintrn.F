@@ -89,6 +89,8 @@ C                               starting at WRK(1+NCSIM*NVAR)
 C                          else SOVECS(NWOPT,NOSIM),
 C                               starting at WRK(1)
 C
+      use polarizable_embedding, only: peqm
+
 #include "implicit.h"
       DIMENSION BCVECS(NCONDI,*), BOVECS(NWOPDI,*)
       DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
@@ -459,12 +461,15 @@ C
      &               WRK(KVTEX),WRK(KWPCM),LWPCM)
          CALL GETTIM(T5,W5)
       ELSEIF (QMMM) THEN
-C          WRITE (LUPRI,*) 'QMMM:',QMMM
-C          WRITE (LUPRI,*) '****** BEFORE PELIN ******'
          CALL PELIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &              WRK(K3A),L3A)
-C          WRITE(LUPRI,*) '****** AFTER PELIN ******'
+         CALL FLSHFO(LUPRI)
+         CALL GETTIM(T5,W5)
+      else if (peqm) then
+         CALL pe_lin(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
+     &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
+     &              WRK(K3A),L3A)
          CALL FLSHFO(LUPRI)
          CALL GETTIM(T5,W5)
       ELSE
