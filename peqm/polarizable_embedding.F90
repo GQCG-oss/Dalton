@@ -2517,7 +2517,7 @@ subroutine pe_compute_mep(denmats)
                     end do
                     close(lu)
                 else
-                    do l = 0, 2
+                    do l = 1, 3
                         write(cl,*) l
                         tcl = trim(adjustl(cl))
                         call openfile('ind_field_'//tcl//'.cube', lu,&
@@ -2534,7 +2534,7 @@ subroutine pe_compute_mep(denmats)
                         do i = 1, xsteps * ysteps
                             j = (i - 1) * zsteps + 1
                             k = j - 1 + zsteps
-                            write(lu,'(6e13.5)') Find(1+l,j:k)
+                            write(lu,'(6e13.5)') Find(l,j:k)
                         end do
                         close(lu)
                     end do
