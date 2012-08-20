@@ -422,9 +422,9 @@ C
       END IF ! CI_PROGRAM switch
 
       DO 810 I = 1,NCROOT
-!       write(lupri,*) 'EMY_CI, energy_root(i),pot,tot',
-!    &                  EMY_CI, energy_root(i),potnuc,
-!    &                  EMY_CI+energy_root(i)+potnuc
+        write(lupri,*) 'EMY_CI, energy_root(i),pot,tot',
+     &                  EMY_CI, energy_root(i),potnuc,
+     &                  EMY_CI+energy_root(i)+potnuc
         ECI(I) = EMY_CI + energy_root(i)
   810 CONTINUE
 
