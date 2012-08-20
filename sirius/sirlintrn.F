@@ -693,7 +693,6 @@ C
 #include "infdim.h"
 #include "infpri.h"
 #include "dftcom.h"
-#include "priunit.h"
 
 C
 C ***** Step 1: calculate sigma vectors of configuration trial vectors
