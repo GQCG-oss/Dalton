@@ -952,6 +952,7 @@ C  /* Deck nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
 C
+      use parallel_models
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
@@ -964,6 +965,7 @@ C defined parallel calculation types
       DIMENSION WORK(0:MWORK)
 C
       CALL QENTER('NODEDRIVER')
+
 C
 C     Get calculation type (IPRTYP)
 C
@@ -1050,7 +1052,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMB2_4_WORK) THEN
             CALL QMMMB2_S4(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.LUCITA_WORK) THEN
-            call lucita_coworker_main(work(1),mwork)
+            call lucita_coworker_main(work(1),mwork,iprint)
+            lucita_models_enabled = .true.
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
 #if defined(BUILD_GEN1INT)
@@ -1073,6 +1076,8 @@ C added by Bin Gao, May 12, 2012
 C
          GO TO 100
       END IF
+
+      call check_parallel_models()
 C
       CALL QEXIT('NODEDRIVER')
       RETURN

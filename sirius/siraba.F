@@ -104,6 +104,7 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "inflin.h"
+#include "infinp.h"
 #include "cbgetdis.h"
 #include "dftcom.h"
 #include "priunit.h"
@@ -160,6 +161,10 @@ C           ... (ij|kl) = (kl|ij) = (ji|kl) = ... 8-fold symmetry
             GDCFAC = D2
          END IF
 C
+         if(ci_program .eq. 'LUCITA   ')then
+           call quit('*** ABARHS --> call to CISIGD: ci program'//
+     &               ' lucita expects triangular packed 1e-ints ***')
+         end if
          DO 200 IGD = 1,NGD
             CALL GETAC1(FDC(1,IGD),WRK(KFDCAC))
             IF (LONDON) CALL DSCAL(N2ASHX,DM1,WRK(KFDCAC),1)

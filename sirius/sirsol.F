@@ -383,12 +383,20 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "infvar.h"
+#include "infinp.h"
 C
       CALL QENTER('SOLGC ')
       KURAC = 1
       KWRK1 = KURAC + N2ASHX
       LWRK1 = LWRK + 1 - KWRK1
-      CALL DSPTSI(NASHT,RLMAC,WRK(KURAC))
+
+      if(ci_program .eq. 'SIRIUS-CI')then
+         CALL DSPTSI(NASHT,RLMAC,WRK(KURAC))
+C        ... unpack RLMAC using CALL DSPTSI(N,ASP,ASI)
+      else if(ci_program .eq. 'LUCITA   ')then
+        CALL DCOPY(NNASHX,RLMAC,1,WRK(KURAC),1)
+      end if
+
       CALL CIPRP(1,CREF,GLMCI,NCONF,WRK(KURAC),INDXCI,WRK(KWRK1),LWRK1)
 C     CALL CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE)
 C
@@ -1882,9 +1890,11 @@ C   INFORB : NNASHX,N2ASHX,NASHT
 C   INFLIN : LSYMRF,LSYMST,LSYMPT,NCONRF,NCONST
 C
 #include "priunit.h"
+#include "maxorb.h"
 #include "inforb.h"
 #include "inflin.h"
 #include "infpri.h"
+#include "infinp.h"
 C
       CALL QENTER('SOLSC ')
 C
@@ -1903,10 +1913,20 @@ C
          KURXAC = KURYAC + N2ASHX
          KW1    = KURXAC + N2ASHX
          LW1    = LWRK + 1 - KW1
-         CALL DSPTSI(NASHT,RYAC,WRK(KURYAC))
+         if(ci_program .eq. 'SIRIUS-CI')then
+           CALL DSPTSI(NASHT,RYAC,WRK(KURYAC))
+C          ... unpack RYAC using CALL DSPTSI(N,ASP,ASI)
+         else if(ci_program .eq. 'LUCITA   ')then
+           CALL DCOPY(NNASHX,RYAC,1,WRK(KURYAC),1)
+         end if
          CALL DSCAL(N2ASHX,D2,WRK(KURYAC),1)
          DO 18 ICSIM = 1,NCSIM
-            CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
+            if(ci_program .eq. 'SIRIUS-CI')then
+              CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
+C             ... unpack RXAC(1,ICSIM) using CALL DSPTSI(N,ASP,ASI)
+            else if(ci_program .eq. 'LUCITA   ')then
+              CALL DCOPY(NNASHX,RXAC(1,ICSIM),1,WRK(KURXAC),1)
+            end if
             CALL DSCAL(N2ASHX,D2,WRK(KURXAC),1)
 C           First SVECS(NA) = SVECS(NA) + < NA | 2*RX | CREF >
             IF (IPRSOL.GT.100) THEN
@@ -1956,7 +1976,12 @@ C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
          KW1    = KURXAC + N2ASHX
          LW1    = LWRK + 1 - KW1
          DO 22 IOSIM = 1,NOSIM
-            CALL DSPTSI(NASHT,RXAC(1,IOSIM),WRK(KURXAC))
+            if(ci_program .eq. 'SIRIUS-CI')then
+              CALL DSPTSI(NASHT,RXAC(1,IOSIM),WRK(KURXAC))
+C             ... unpack RXAC(1,IOSIM) using CALL DSPTSI(N,ASP,ASI)
+            else if(ci_program .eq. 'LUCITA   ')then
+              CALL DCOPY(NNASHX,RXAC(1,IOSIM),1,WRK(KURXAC),1)
+            end if
             CALL DSCAL(N2ASHX,D2,WRK(KURXAC),1)
 C           now SVECS(NA) = SVECS(NA) + <NA | 2*RXY | CREF >
             IF (IPRSOL.GT.100) THEN

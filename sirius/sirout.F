@@ -401,30 +401,30 @@ C        ... DIIS-DFT or QC-DFT optimization
         CALL MM_PROPS(WRK(KFREE),LFREE,IPQMMM)
       ENDIF 
 
- 5000 FORMAT(/T4,'@ Spin multiplicity:',T31,I5,
-     *       /T4,'@ Spatial symmetry:',T31,I5,
-     *       /T4,'@ Total charge of molecule:',T31,I5)
- 5010 FORMAT(/T4,'@ This was a CI-NO calculation.')
- 5012 FORMAT(/T4,'@ This was a CI calculation.')
- 5020 FORMAT( T4,'@ State number:',T31,I5,
-     *      //T4,'@ Final MCSCF energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5021 FORMAT(/T4,'@ Final HF energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5022 FORMAT(/T4,'@ Final DFT energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5023 FORMAT(/T4,'@ Final HF-SRDFT energy:',T31,F20.12,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5024 FORMAT( T4,'@ State number:',T31,I5,
-     *      //T4,'@ Final MC-SRDFT energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5025 FORMAT( T4,'@ Solvation  energy:',T31,F20.12)
- 5030 FORMAT(/T4,'@ Final gradient norm:',T31,F20.12)
+ 5000 FORMAT(/T6,'Spin multiplicity:',T31,I5,
+     *       /T6,'Spatial symmetry:',T31,I5,
+     *       /T6,'Total charge of molecule:',T31,I5)
+ 5010 FORMAT(/T6,'This was a CI-NO calculation.')
+ 5012 FORMAT(/T6,'This was a CI calculation.')
+ 5020 FORMAT( T6,'State number:',T31,I5,
+     *      //T6,'Final MCSCF energy:',T31,F20.12,A,
+     *       /T6,'Nuclear repulsion:',T31,F20.12,
+     *       /T6,'Electronic energy:',T31,F20.12)
+ 5021 FORMAT(/T6,'Final HF energy:',T31,F20.12,A,
+     *       /T6,'Nuclear repulsion:',T31,F20.12,
+     *       /T6,'Electronic energy:',T31,F20.12)
+ 5022 FORMAT(/T6,'Final DFT energy:',T31,F20.12,A,
+     *       /T6,'Nuclear repulsion:',T31,F20.12,
+     *       /T6,'Electronic energy:',T31,F20.12)
+ 5023 FORMAT(/T6,'Final HF-SRDFT energy:',T31,F20.12,
+     *       /T6,'Nuclear repulsion:',T31,F20.12,
+     *       /T6,'Electronic energy:',T31,F20.12)
+ 5024 FORMAT( T6,'State number:',T31,I5,
+     *      //T6,'Final MC-SRDFT energy:',T31,F20.12,A,
+     *       /T6,'Nuclear repulsion:',T31,F20.12,
+     *       /T6,'Electronic energy:',T31,F20.12)
+ 5025 FORMAT( T6,'Solvation  energy:',T31,F20.12)
+ 5030 FORMAT(/T6,'Final gradient norm:',T31,F20.12)
 C
 C       stamp date, time, and hostname to LUPRI
         CALL TSTAMP(' ',LUPRI)
@@ -439,7 +439,7 @@ C     if MC/CI and NO's not already printed
 C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
          IF (NASHT .GT. 1) THEN
             CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-            CALL RDCREF(WRK(KCREF))
+            CALL RDCREF(WRK(KCREF),.true.)
          END IF
          CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
      *              .FALSE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
@@ -477,7 +477,7 @@ C             (CREF was not saved on file)
          IPRNO = -1
          IF (NASHT .GT. 1) THEN
             CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-            CALL RDCREF(WRK(KCREF))
+            CALL RDCREF(WRK(KCREF),.true.)
             CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
      &              .TRUE.,.TRUE.,.TRUE.,MOISNO,WRK(KCINDX),
      &              WRK,KFREE,LFREE,LUPRI,IPRNO)
@@ -529,11 +529,11 @@ C
             END IF
          END IF
          IF (IPRI4 .GT. 10) THEN
-            CALL PRORB(WRK(KCMO), .FALSE., LUPRI)
+            CALL PRORB(WRK(KCMO),.FALSE.,LUPRI)
          ELSE
-            CALL PRORB(WRK(KCMO),  .TRUE., LUPRI)
+            CALL PRORB(WRK(KCMO),.TRUE.,LUPRI)
          END IF
-C        CALL PRORB(CMO, PROCC, IOUT [,THRPRI_in])
+C        CALL PRORB(CMO,PROCC,IOUT)
       END IF
 C
 C *** Print out of wavefunction in MCSCF orbital basis ***
@@ -613,8 +613,9 @@ C
             IF (I .EQ. ISTATE .AND. .NOT. CICALC) WRITE (LUPRI,1051)
             IF (I .EQ. ISTACI .AND.       CICALC) WRITE (LUPRI,1052)
             CALL READT(LUIT1,NCONF,WRK(KCREF))
-            CALL PRWF(WRK(KCREF),WRK(KCINDX),LUPRI,THRPWF)
-C           CALL PRWF(C,INDXCI,IOUT,THRPWF)
+            CALL PRWF(WRK(KCREF),WRK(KCINDX),LUPRI,THRPWF,
+     &                WRK(KWRK2),LWRK2)
+C           CALL PRWF(C,INDXCI,IOUT,THRPWF,WORK,LFREE)
   105    CONTINUE
          CALL MEMREL('SIROUT.PRWF',WRK,KFRSAV,KCINDX,KFREE,LFREE)
       END IF

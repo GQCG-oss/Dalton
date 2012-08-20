@@ -13,7 +13,7 @@
 !...   In particular, no part of the source code or compiled modules may
 !...   be distributed outside the research group of the licence holder.
 !...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
+
 !...   including modified files, with him/her, unless that person has
 !...   obtained his/her own licence.
 !...
@@ -176,7 +176,12 @@ C  ICONV      number of CI states converged
 C             (NCROOT-ICONV states are not converged)
 C  ICROOT(*)  index of CI states not converged
 C
-#include "implicit.h"
+!     module dependencies
+      use lucita_mcscf_ci_interface_procedures
+      use mcscf_or_gasci_2_define_cfg, only :
+     &    define_lucita_cfg_dynamic
+
+#include <implicit.h>
       DIMENSION CMO(*), INDXCI(*), ECI(*), ICROOT(*), WRK(*)
 C
 #include "iratdef.h"
@@ -187,14 +192,16 @@ C
 C
 C Used from common blocks:
 C   CICB01 : NCIRED,NJCR,JCROOT(*),THRCIT
-C   INFINP : POTNUC,FLAG(*),LSYM
+C   INFINP : POTNUC,FLAG(*),LSYM,ISTACI
 C   INFVAR : NCONF
 C   INFORB : NNASHX
 C   INFDIM : LCINDX,LACIMX,LBCIMX,LPHPMX,MAXPHP
 C   INFTAP : LUIT1,LUIT3,LUIT5
+C   cbespn.h : ispin1,ispin2
 C
 #include "maxorb.h"
 #include "priunit.h"
+#include "cbespn.h"
 #include "cicb01.h"
 #include "infinp.h"
 #include "infvar.h"
@@ -205,7 +212,9 @@ C
 C
 C     Local variables
 C
-      LOGICAL DISKH2, NATORB, MOISNO
+      logical           :: diskh2, natorb, moisno
+      character (len=6) :: keywrd
+      integer           :: xctype1, xctype2
 C
 C
 C     *****************************************************************
@@ -281,10 +290,8 @@ C     CALL PHPINI(LPHPT,NCVAR,NOVAR,MAXPHP)
 C
 C
       KREDCI = KW1
-      KEVAL  = KREDCI + (MAXRC*MAXRC+MAXRC) /2
-      KEVEC  = KEVAL  + MAXRC
-      KRESID = KEVEC  + MAXRC * MAXRC
-      KW2    = KRESID + MAXRC
+      KEVEC  = KREDCI + (MAXRC*MAXRC+MAXRC) /2
+      KW2    = KEVEC  + MAXRC * MAXRC
       LW2    = LWRK   - KW2
 C
 C
@@ -349,293 +356,121 @@ C
 C     *** Obtain FCAC and H2AC integral matrices
 C
       CALL CIINTS(DISKH2,CMO,
-     *            EMY,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
+     *            EMY_CI,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
 C     CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
 C
-C     *** Calculate the diagonal of the CI matrix.
-C
-      CALL CIDIAG(LSYM,.FALSE.,WRK(KFCAC),WRK(KH2AC),INDXCI,
-     &            WRK(KCDIAG),WRK(KW1),LW1)
-C     CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
-C
-      EMY = EMY + POTNUC
-      DO 50 I = 0,NCONF-1
-         WRK(KCDIAG+I) = WRK(KCDIAG+I) + EMY
-   50 CONTINUE
-#if defined (VAR_CIHAMTST)
-C
-C     --- 890131 -- explicit CI Hamiltonian matrix ---
-C
-      IF ( FLAG(43) ) THEN
-         WRITE (LUPRI,'(//A/)') ' CICTL: test call of CIHAM'
-         IWAY   = 1
-         MXPRDT = MIN(20,NCONF)
-         IPRHAM = 10
-C
-         KIDET  = KW1
-         KCIDIA = KIDET  + MXPRDT/IRAT + 1
-         KWHAM  = KCIDIA + NCONF
-         LWHAM  = LWRK   - KWHAM
-         CALL DCOPY(NCONF,WRK(KCDIAG),1,WRK(KCIDIA),1)
-         CALL CIHAM(IWAY,MXPRDT,LSYM,WRK(KIDET),WRK(KCIDIA),NCONF,
-     *              EMY,WRK(KFCAC),WRK(KH2AC),INDXCI,
-     *              WRK(KWHAM),LWHAM,IPRHAM)
-C        CALL CIHAM(IWAY,MXPRDT,ICSYM,IDET,CIDIA,NCONF,
-C    *              ECORE,FCAC,H2AC,INDXCI,WRK,LWRK,IPRINT)
-      END IF
-#endif
-C
-C    Get PHP CI matrix (with correct CI energies)
-C
-      IF (MAXPHP .GE. 1) THEN
-         IPWAY = 1
-         IPRPHP = IPRI6 - 3
-         CALL PHPGET(LSYM,NCONF,INDXCI,WRK(KFCAC),WRK(KH2AC),
-     *               WRK(KCDIAG),EMY,IPWAY,IPRPHP,WRK(KW1),LW1)
-      END IF
-C
-C
-C    ******************************
-C    *** GET INITIAL CI VECTORS ***
-C    ******************************
-C
-C    CIST constructs NCROOT start vectors for CI optimization.
-C    The C-vectors are constructed in CIST or from the result of
-C    another run (another geometry).
-C
-      NCSIM = NCROOT
-      CALL CIST(ICICTL,NCSIM,CMO,WRK(KCDIAG),EMY,WRK(KW1),LW1)
-      IF (NCSIM .LE. 0) THEN
-         WRITE (LUPRI,'(//A,I5)')
-     *      ' *** ERROR after CIST, NCSIM =',NCSIM
-         CALL QTRACE(LUPRI)
-         CALL QUIT('*** ERROR (CICTL) NCSIM .le. 0 after CIST')
-      END IF
-C
-C     *****************************************************************
-C     CI-DFT contributions
-C     *****************************************************************
-C
-      IF (DOCISRDFT) THEN
-#ifndef MOD_SRDFT
-         call quit('srdft not implemented in this version')
-#else
-         KDVREF = KW2
-         KFSR = KDVREF + NNASHX
-         KW2A = KFSR   + NNORBT
-         LW2A = LWRK   - KW2A
-         IF (ISTACI .EQ. 0) THEN
-            CALL DZERO(WRK(KDVREF),NNASHX)
-         ELSE
-            IST = ABS(ISTACI)
-            CALL GETDVREF(WRK(KDVREF),IST,INDXCI,WRK(KW2A),LW2A)
-         END IF
-C
-         CALL SRFMAT(WRK(KFSR),CMO,WRK(KDVREF),EJCSR,EJVSR,EDSR,EDFT,
-     &               WRK(KW2A),LW2A,IPRI4)
-C        ... Correct EMY and CI diagonal
-         EMYDFT = EJCSR + EJVSR + EDSR + EDFT
-         EMY = EMY + EMYDFT
-C        ... extract and save SR over active indices
-         CALL GETAC(WRK(KFSR),WRK(KSRAC))
-C        ... add the contributions over the active indices
-         CALL DAXPY(NNASHX,D1,WRK(KSRAC),1,WRK(KFCAC),1)
-C        ... fold SRAC for 
-C         1) Adding it to CI-diagonal to get better pre-conditioning
-C         2) Later printing of CIDFT specific energy contributions
-         CALL DSPTGE(NASHT,WRK(KSRAC),WRK(KFSR))
-         CALL DGEFSP(NASHT,WRK(KFSR),WRK(KSRAC))
-         ESRDV = DDOT(NNASHX,WRK(KDVREF),1,WRK(KSRAC),1)
-         DO I = 0,NCONF-1
-            WRK(KCDIAG+I) = WRK(KCDIAG+I) + EMYDFT + ESRDV
-         END DO
-#endif
-      ENDIF
-C
-C    *******************************
-      IF (MAXITC .LE. 0) GO TO 9999
-C    *******************************
-      CINMEM = (NCSIM .LE. MAXSIM)
-C
-      IF (NCSIM .GT. MXCIRT) THEN
-         WRITE (LUPRI,'(//A,I5,A,I5)')
-     *   ' *** ERROR after CIST, NCSIM =',NCSIM,
-     *   ', maximum (MXCIRT) =',MXCIRT
-         CALL QTRACE(LUPRI)
-         CALL QUIT('*** ERROR (CICTL) MXCIRT parameter .lt. NCSIM')
-      END IF
-      DO 100 I = 1,NCSIM
-         JCROOT(I) = I
-         WRK(KRESID + I-1) = D0
-  100 CONTINUE
-C
-      REWIND LUIT1
-      CALL MOLLAB('STARTVEC',LUIT1,LUPRI)
-      REWIND LUIT3
-      MXCSIM = 2*MAXSIM - 1
-C     reuse space for orthonormalization,
-C     except reserving last NCONF elements for CPREV
-      KCPREV = KCVECS + MXCSIM*NCONF
-      NCPREV = 0
-      DO 490 I = 1,NCSIM,MXCSIM
-         NXSIM = MIN(MXCSIM,(NCSIM-I+1))
-         JCVECS = KCVECS
-         DO 420 J = 1,NXSIM
-            CALL READT(LUIT1,NCONF,WRK(JCVECS))
-            JCVECS = JCVECS + NCONF
-  420    CONTINUE
-         THRLDV = NCONF * THRLDP
-         CALL CIORT(NXSIM,NCPREV,LUIT3,JCROOT(NCPREV+1),
-     *              WRK(KCVECS),THRLDV,WRK(KCPREV))
-  490 CONTINUE
-      IF (NCPREV .NE. NCSIM) THEN
-         WRITE (LUPRI,'(//A,I8,A)')
-     *      ' *** ERROR ***',(NCSIM-NCPREV),' OF THE TRIAL CI VECTORS'//
-     *      ' WERE LINEAR DEPENDENT (CICTL).'
-         CALL QUIT('***ERROR (CICTL) LIN.DEP. AMONG INITIAL CI '//
-     &             'TRIAL VEC.S')
-      END IF
-C
-C     *****************************************************************
-C     CI iteration loop
-C     *****************************************************************
-C
-C
-      TIMLIN = D0
-      TIMCIT = SECOND()
-      NCLIN  = 0
-      ITCI   = 0
-C
-  500 ITCI = ITCI + 1
-         IF (IPRI4 .GT. 5)
-     *      WRITE (LUW4,'(//A,I4,/)') ' *** CI ITERATION NO.',ITCI
-        IF (LUPRI.NE.LUW4 .AND. IPRI6 .GE. 5) WRITE (LUPRI,'(//A,I4,/)')
-     *      ' *** CI ITERATION NO.',ITCI
-         CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         REWIND LUIT5
-         DO 220 I = 1,NCIRED
-  220       READ (LUIT5)
-C
-C        REPEAT UNTIL (NCSIM .LE. 0)
-C
-  240    CONTINUE
-            NXSIM = MIN(MAXSIM,NCSIM)
-            IF (.NOT. CINMEM) THEN
-               REWIND LUIT3
-               DO 310 I = 1,NCIRED
-  310             READ (LUIT3)
-               DO 320 I = 1,NXSIM
-                  JCVECS = KCVECS + (I-1)*NCONF
-                  CALL READT(LUIT3,NCONF,WRK(JCVECS))
-  320          CONTINUE
-            END IF
-            TIMLIN = TIMLIN - SECOND()
-            NCLIN  = NCLIN + NXSIM
-            CALL CILIN(NXSIM,WRK(KCVECS),WRK(KFCAC),WRK(KH2AC),
-     *                 INDXCI,WRK(KSVECS),LSVECS)
-            TIMLIN = TIMLIN + SECOND()
-            DO 340 I = 1,NXSIM
-               JSVECS = KSVECS + (I-1)*NCONF
-               CALL WRITT(LUIT5,NCONF4,WRK(JSVECS))
-  340       CONTINUE
-            NCIRED = NCIRED + NXSIM
-            CALL CIRED(1,NCIRED,WRK(KREDCI),NXSIM,WRK(KCVECS),
-     *                 WRK(KSVECS),DUMMY,DUMMY,WRK(KW3),LW3)
-            NCSIM = NCSIM - NXSIM
-            IF (NCSIM .GT. 0) GO TO 240
-C        ^----------------------------- END REPEAT
-C
-         CALL CIRED(2,NCIRED,WRK(KREDCI),0,WRK(KCVECS),
-     *              DUMMY,WRK(KEVAL),WRK(KEVEC),WRK(KSVECS),LSVECS)
-C        CALL CIRED(ICTL,NCIRED,REDCI,NCNEW,CVECS,SVECS,EVAL,EVEC,WRK,LWRK)
-         IF (P6FLAG(10) .OR. P6FLAG(34)) THEN
-            WRITE (LUPRI,'(/A,I3)')
-     *         ' The reduced CI matrix, iteration',ITCI
-            IF (P6FLAG(34)) CALL OUTPAK(WRK(KREDCI),NCIRED,-1,LUPRI)
-            MCROOT = MIN(NCROOT+2,NCIRED)
-            WRITE (LUPRI,'(/I4,A//,(10X,1P,6D15.6))')
-     *         MCROOT,' lowest eigenvalues of reduced CI matrix :',
-     *         (WRK(KEVAL-1+I),I=1,MCROOT)
-            IF (P6FLAG(34) .OR. IPRI6 .GT. 10) THEN
-               WRITE (LUPRI,'(/A,I3,A)')
-     *            ' - and the lowest',NCROOT,' eigenvectors :'
-               CALL OUTPUT(WRK(KEVEC),1,NCIRED,1,NCROOT,
-     *                     NCIRED,NCIRED,-1,LUPRI)
-            END IF
-         END IF
-         IF (P6FLAG(51)) THEN
-C           ... check symmetry of reduced CI matrix and CI overlap
-            CALL CIRCHK(WRK(KSVECS),LSVECS)
-         END IF
-         ESHIFT = D0
-         NCSIM  = NCROOT
-         CALL CINEX(WRK(KEVAL),WRK(KEVEC),EMY,ESHIFT,WRK(KCDIAG),
-     *              NCSIM,JCONV,WRK(KRESID),WRK(KW2),LW2)
-      IF (JCONV .GT. 0) THEN
-         IF (NCSIM .EQ. 0) THEN
-            GO TO 8100
-         ELSE IF (NCSIM .LT. 0) THEN
-            CINMEM = .FALSE.
-            NCSIM  = -NCSIM
-         ELSE
-            CINMEM = (NCSIM .LE. MAXSIM)
-         END IF
-         IF (ITCI         .GE. MAXITC) GO TO 8000
-         IF (NCIRED+NCSIM .GE. MAXRC ) GO TO 8200
-         GO TO 500
-      END IF
-      WRITE (LUW4,'(//A,I3,A/)')
-     *   ' *** CI converged in',ITCI,' iterations.'
-      IF (LUPRI .NE. LUW4) WRITE (LUPRI,'(//A,I3,A/)')
-     *   ' *** CI converged in',ITCI,' iterations.'
-C
-C
-C     *****************************************************************
-C     Save final result
-C     *****************************************************************
-C
- 6000 CONTINUE
-      TIMCIT = SECOND() - TIMCIT
+!     set keyword for saving the final vector(s) in SIRSAV (called from CISAVE)
+      keywrd = 'CISAVE' 
+!     write(lupri,*) ' incoming thrcit ==> ',thrcit
+!     thrcit = 1.0d-11
+!     write(lupri,*) ' incoming thrcit (updated) ==> ',thrcit
+
+      IF(CI_PROGRAM .eq. 'LUCITA   ')THEN
+!
+!       note for stefan/hjaaj: kcdiag is not used for lucita; we might want to NOT allocate it then above!!!
+!
+        xctype1 = -1
+        xctype2 = -1
+
+        call define_lucita_cfg_dynamic(lsym,
+     &                                 lsym,
+     &                                 istaci,
+     &                                 ispin1,
+     &                                 ispin2,
+     &                                 ncroot,  ! # of CI roots
+     &                                 ispin,
+     &                                 maxitc,  ! max davidson CI iterations
+     &                                 0, ! no 1/2-particle density calcs
+     &                                 iprcix,  ! print level
+     &                                 1.0d-10, ! screening threshold
+     &                                 1.0d-12,
+     &                                 1.0d-12,
+!    &                                 thrcit,  ! default davidson threshold
+!    &                                 thrcit,  ! default davidson threshold
+!    &                                 .false., ! do not calculate nat. orb. occ. num.
+     &                                 .true.,  ! do not calculate nat. orb. occ. num.
+!    &                                 P6FLAG(32).and.FLAG(67), ! wave function analysis
+     &                                 .true.,                  ! wave function analysis
+     &                                 .false., ! no 2-el operators active
+     &                                 .true.,  ! integrals provided by the MCSCF environment
+     &                                 .false., ! calculate 2-particle density matrix
+     &                                 .false., ! calculate transition density matrix
+     &                                 xctype1, ! vector exchange type1
+     &                                 xctype2, ! vector exchange type2
+     &                                 .false., ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
+     &                                 .true.)  ! vector exchange between lucita/mc using io2io, e.g. vectors are written to luit3
+
+        call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),wrk(kfcac),
+     &                              wrk(kh2ac),'initial ci  ',
+     &                              wrk(kw3),lw3,iprcix)
+
+        jconv        = jconv_c  ! jconv_c is set in the interface procedure
+        kvec_generic = kcvecs   ! for a unique interface to CISAVE (--> final CI vectors are stored in wrk(kcvecs) NOT ACTIVE AT PRESENT)
+
+      ELSE IF(CI_PROGRAM .eq. 'SIRIUS-CI')THEN
+
+        kvec_generic = KEVEC    ! for a unique interface to CISAVE
+        
+        CALL CIOPT(EMY_CI,JCONV,ICICTL,NCROOT,MAXITC,CMO,INDXCI,
+     &             EJCSR,EJVSR,EDSR,EDFT,EMYDFT,NCLIN,ITCI,
+     &             TIMLIN,TIMCIT,NCONF4,LSVECS,MAXSIM,
+     &             residual_croot,energy_root,
+     &             KFCAC,KH2AC,KCDIAG,KW1,KCIDIA,KSRAC,
+     &             KCVECS,KSVECS,KW3,KW2,KREDCI,KEVEC,
+     &             LW1,LW2,LW3,WRK,LWRK)
+
+      END IF ! CI_PROGRAM switch
+
       DO 810 I = 1,NCROOT
-         ECI(I) = EMY + WRK(KEVAL-1+I)
+!       write(lupri,*) 'EMY_CI, energy_root(i),pot,tot',
+!    &                  EMY_CI, energy_root(i),potnuc,
+!    &                  EMY_CI+energy_root(i)+potnuc
+        ECI(I) = EMY_CI + energy_root(i)
   810 CONTINUE
-      IF (DOCISRDFT) THEN
-         WRITE(LUPRI,'(/A,I5)') 'SR 0-el. energy for input .STATE',
-     &                            ISTACI
-         WRITE(LUPRI,'(A/)') '-------------------------------------'
-         WRITE(LUPRI,805) '  SR core    Hartree energy   :',EJCSR
-         WRITE(LUPRI,805) '- SR valence Hartree energy   :',EJVSR
-         WRITE(LUPRI,805) '+ SR Exchange-correlation     :',EDFT
-         WRITE(LUPRI,805) '- SR Exchange-correlation pot.:',EDSR
-         WRITE(LUPRI,806) '= Total eff. SR 0-el. energy  :',EMYDFT
+
+
+!       NOTE FOR HANS JOERGEN from STEFAN: i do not understand the 2nd call to 
+!       GETDVREF below. inside GETDVREF we will read the (initial) 
+!       start vectors but not the final CI vectors. they are saved with CISAVE which follows after the  if(DOCISRDFT)... ???
+
+      IF(DOCISRDFT)THEN
+        WRITE(LUPRI,'(/A,I5)') 'SR 0-el. energy for input .STATE',
+     &                          ISTACI
+        WRITE(LUPRI,'(A/)') '-------------------------------------'
+        WRITE(LUPRI,805) '  SR core    Hartree energy   :',EJCSR
+        WRITE(LUPRI,805) '- SR valence Hartree energy   :',EJVSR
+        WRITE(LUPRI,805) '+ SR Exchange-correlation     :',EDFT
+        WRITE(LUPRI,805) '- SR Exchange-correlation pot.:',EDSR
+        WRITE(LUPRI,806) '= Total eff. SR 0-el. energy  :',EMYDFT
 C
-       DO IST = 1,NCROOT
-         KDVREF = KW2
-         KW2A   = KDVREF + NNASHX
-         LW2A   = LWRK   - KW2A
-         CALL GETDVREF(WRK(KDVREF),IST,INDXCI,WRK(KW2A),LW2A)
-C        ... DVREF is equal to DV for state abs(ISTI),
-C            i.e. 1-el. energy can be calculated
-         ESRDV = DDOT(NNASHX,WRK(KDVREF),1,WRK(KSRAC),1)
-         WRITE(LUPRI,'(/A,I5)') 'CI-DFT energy for state no.',IST
-         WRITE(LUPRI,'(A/)') '-------------------------------------'
-         WRITE(LUPRI,805) 'SR eff. 1-el. energy          :',ESRDV
-         EJTOT = ESRDV + EDSR + EJVSR + EJCSR
-         WRITE(LUPRI,805) 'SR total Hartree energy       :',EJTOT
-         ETDFT = EMYDFT + ESRDV
-         WRITE(LUPRI,805) 'SR eff. total DFT energy      :',ETDFT
-         ELRCI = ECI(IST) - ETDFT
-         WRITE(LUPRI,805) 'LR total CI  energy           :',ELRCI
-         WRITE(LUPRI,806) 'Total CI-DFT energy           :',ECI(IST)
+        DO IST = 1,NCROOT
+           KDVREF = KW2
+           KW2A   = KDVREF + NNASHX
+           LW2A   = LWRK   - KW2A
+           CALL GETDVREF(WRK(KDVREF),IST,INDXCI,WRK(KW2A),LW2A)
+C          ... DVREF is equal to DV for state abs(ISTI),
+C              i.e. 1-el. energy can be calculated
+           ESRDV = DDOT(NNASHX,WRK(KDVREF),1,WRK(KSRAC),1)
+           WRITE(LUPRI,'(/A,I5)') 'CI-DFT energy for state no.',IST
+           WRITE(LUPRI,'(A/)') '-------------------------------------'
+           WRITE(LUPRI,805) 'SR eff. 1-el. energy          :',ESRDV
+           EJTOT = ESRDV + EDSR + EJVSR + EJCSR
+           WRITE(LUPRI,805) 'SR total Hartree energy       :',EJTOT
+           ETDFT = EMYDFT + ESRDV
+           WRITE(LUPRI,805) 'SR eff. total DFT energy      :',ETDFT
+           ELRCI = ECI(IST) - ETDFT
+           WRITE(LUPRI,805) 'LR total CI  energy           :',ELRCI
+           WRITE(LUPRI,806) 'Total CI-DFT energy           :',ECI(IST)
         END DO
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
       ENDIF
+
+
       J = LUW4
   815 WRITE (J,'(//A/,(I5,0P,F25.15,1P,D15.2))')
      *   ' CI energies and residuals:',
-     *   (I,ECI(I),WRK(KRESID+I-1), I = 1,NCROOT)
+     *   (I,ECI(I),residual_croot(i), I = 1,NCROOT)
 
       IF(NCROOT .EQ. 1) THEN 
 C JT 22-03-05 : add pretty output line if only one root
@@ -647,11 +482,17 @@ C JT 22-03-05 : add pretty output line if only one root
          GO TO 815
       END IF
 C
+C     *****************************************************************
+C     Save final result
+C     *****************************************************************
+C
 C     Save CI vectors and orbitals on LUIT1
 C
-      CALL CISAVE(NCROOT,NCIRED,ECI,WRK(KRESID),WRK(KEVEC),CMO,INDXCI,
-     *            WRK(KW2),LW2)
-C     CALL CISAVE(NCROOT,NCIRED,ECI,RESID,EVEC,CMO,INDXCI,WRK,LFREE)
+      if(maxitc .gt. 0 .or. ci_program .eq. 'LUCITA   ')then
+        CALL CISAVE(KEYWRD,NCROOT,NCIRED,ECI,residual_croot,
+     &              WRK(kvec_generic),CMO,INDXCI,WRK(KW2),LW2)
+C       CALL CISAVE(NCROOT,NCIRED,ECI,RESID,EVEC,CMO,INDXCI,WRK,LFREE)
+      end if
 C
       ICONV = 0
       J = 0
@@ -698,8 +539,8 @@ C
 C           NATORB is true if CINO and reference state
             WRITE (LUPRI,'(/A,F8.5)')
      &         ' Printout of CI-coefficients abs greater than:',THRPWF
-            CALL PRWF(WRK(KCVEC),INDXCI,LUPRI,THRPWF)
-C           CALL PRWF(C,INDXCI,IOUT,THRPWF)
+            CALL PRWF(WRK(KCVEC),INDXCI,LUPRI,THRPWF,WRK(KW3),LW3)
+C           CALL PRWF(C,INDXCI,IOUT,THRPWF,WORK,LFREE)
          END IF
 C
 C        MAERKE insert calculation of spin-density matrix here,
@@ -761,7 +602,7 @@ C
 C              *** Obtain FCAC and H2AC integral matrices
 C
                CALL CIINTS(DISKH2,CMO,
-     *                     EMY,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
+     *                     EMY_CI,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
 C              CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
 C
 C              *** Calculate the diagonal of the CI matrix.
@@ -770,15 +611,15 @@ C
      &                     WRK(KCDIAG),WRK(KW1),LW1)
 C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
 C
-               EMY = EMY + POTNUC
+               EMY_CI = EMY_CI + POTNUC
             ELSE
 C              subtract EMY from diagonal again, as expected in CIRSPS
                DO 950 I = 0,NCONF-1
-                  WRK(KCDIAG+I) = WRK(KCDIAG+I) - EMY
+                  WRK(KCDIAG+I) = WRK(KCDIAG+I) - EMY_CI
   950          CONTINUE
             END IF
 C
-            CALL CIRSPS(ECI(ISTACI),EMY,CMO,WRK(KFCAC),WRK(KH2AC),
+            CALL CIRSPS(ECI(ISTACI),EMY_CI,CMO,WRK(KFCAC),WRK(KH2AC),
      *                  WRK(KCDIAG),INDXCI,WRK(KW2),LW2)
 C           CALL CIRSPS(ECIREF,EMY,CMO,FCAC,H2AC,HDIAG,INDXCI,WRK,LFREE)
          END IF
@@ -801,25 +642,6 @@ C
       RETURN
 C
 C
-C
- 8000 CONTINUE
-      WRITE (LUPRI,'(//A,I5/I15,A)')
-     *   ' *** Reached maximum number of CI iterations:',MAXITC,
-     *   JCONV,' CI roots are not converged.'
-      GO TO 6000
-C
- 8100 CONTINUE
-      NWARN = NWARN + 1
-      WRITE (LUPRI,'(//A/I15,A)')
-     *   ' *** WARNING, all CI trial vectors linear dependent',
-     *   JCONV,' CI roots are not converged.'
-      GO TO 6000
- 8200 CONTINUE
-      NWARN = NWARN + 1
-      WRITE (LUPRI,'(//A,I5/I15,A)')
-     *   ' *** WARNING, reached maximum dimension of reduced matrix:',
-     *   MAXRC,JCONV,' CI roots are not converged.'
-      GO TO 6000
 C
 C     *****************************************************************
 C     End of CICTL
@@ -2105,7 +1927,7 @@ C
       RETURN
       END
 C  /* Deck cisave */
-      SUBROUTINE CISAVE(NCROOT,NCIRED,ECI,RESID,EVEC,CMO,INDXCI,
+      SUBROUTINE CISAVE(KEYWRD,NCROOT,NCIRED,ECI,RESID,EVEC,CMO,INDXCI,
      *                  WRK,LFREE)
 C
 C 27-Sep-1986 Hans Joergen Aa. Jensen
@@ -2116,6 +1938,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION ECI(*), RESID(*), EVEC(*), CMO(*), INDXCI(*), WRK(*)
+      character (len=6), intent(in) :: keywrd
 #include "dummy.h"
 C
 C Used from common blocks :
@@ -2140,7 +1963,7 @@ C
       NRTSAV = NROOTS
       ISTATE = ISTACI
       NROOTS = NCROOT
-      CALL SIRSAV('CISAVE',CMO,DUMMY,DUMMY,EVEC,DUMMY,INDXCI,WRK,LFREE)
+      CALL SIRSAV(keywrd,CMO,DUMMY,DUMMY,EVEC,DUMMY,INDXCI,WRK,LFREE)
 C     CALL SIRSAV(KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,WRK,LFREE)
       ISTATE = ISTSAV
       NROOTS = NRTSAV
@@ -2532,7 +2355,15 @@ C        ... avoid getting part of a degenerate eigenvalue
          END IF
 #endif
       END IF
+
+#ifdef LUCI_DEBUG_test_case
       CALL DZERO(WRK(NRS+1),NCONF)
+      WRK(NRS+2) = 1.0d0
+      CALL WRITT(LUIT1,NC4,WRK(NRS+1))
+      MCSIM = MCSIM + 1
+      LAST  = IFRST
+#endif
+
       IF (PLUSCB) THEN
 C        ... take plus combination of degenerate diagonal elements
   170    CONTINUE
@@ -2821,3 +2652,307 @@ C
       CALL MAKDV(WRK(KCREF),DVREF,INDXCI,WRK(KW1),LW1)
       RETURN
       END
+!******************************************************************************
+
+      SUBROUTINE CIOPT(EMY,JCONV,ICICTL,NCROOT,MAXITC,CMO,INDXCI,
+     &                 EJCSR,EJVSR,EDSR,EDFT,EMYDFT,NCLIN,ITCI,
+     &                 TIMLIN,TIMCIT,NCONF4,LSVECS,MAXSIM,
+     &                 residual_c,energy_c,
+     &                 KFCAC,KH2AC,KCDIAG,KW1,KCIDIA,KSRAC,
+     &                 KCVECS,KSVECS,KW3,KW2,KREDCI,KEVEC,
+     &                 LW1,LW2,LW3,WRK,LWRK)
+
+#include <implicit.h>
+      DIMENSION CMO(*), INDXCI(*), WRK(*), residual_c(*), energy_c(*)
+C
+#include <iratdef.h>
+#include <thrldp.h>
+      PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0, D1 = 1.0D0 )
+#include <dummy.h>
+C
+C Used from common blocks:
+C   CICB01 : NCIRED,NJCR,JCROOT(*),THRCIT
+C   INFINP : POTNUC,FLAG(*),LSYM
+C   INFVAR : NCONF
+C   INFORB : NNASHX
+C   INFDIM : LCINDX,LACIMX,LBCIMX,LPHPMX,MAXPHP
+C   INFTAP : LUIT1,LUIT3,LUIT5
+C
+#include <maxorb.h>
+#include <priunit.h>
+#include <cicb01.h>
+#include <infinp.h>
+#include <infvar.h>
+#include <inforb.h>
+#include <infdim.h>
+#include <inftap.h>
+#include <infpri.h>
+      LOGICAL CINMEM
+
+C     *** Calculate the diagonal of the CI matrix.
+C
+      CALL CIDIAG(LSYM,.FALSE.,WRK(KFCAC),WRK(KH2AC),INDXCI,
+     &            WRK(KCDIAG),WRK(KW1),LW1)
+C     CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
+C
+      EMY = EMY + POTNUC
+!     write(lupri,*) 'passed CIDIAG ==> EMY',EMY
+      DO 50 I = 0,NCONF-1
+         WRK(KCDIAG+I) = WRK(KCDIAG+I) + EMY
+!        write(lupri,*) 'WRK(KCDIAG+I) ==> ',WRK(KCDIAG+I)
+   50 CONTINUE
+
+#if defined (VAR_CIHAMTST)
+C
+C     --- 890131 -- explicit CI Hamiltonian matrix ---
+C
+      IF ( FLAG(43) ) THEN
+         WRITE (LUPRI,'(//A/)') ' CICTL: test call of CIHAM'
+         IWAY   = 1
+         MXPRDT = MIN(20,NCONF)
+         IPRHAM = 10
+C
+         KIDET  = KW1
+         KCIDIA = KIDET  + MXPRDT/IRAT + 1
+         KWHAM  = KCIDIA + NCONF
+         LWHAM  = LWRK   - KWHAM
+         CALL DCOPY(NCONF,WRK(KCDIAG),1,WRK(KCIDIA),1)
+         CALL CIHAM(IWAY,MXPRDT,LSYM,WRK(KIDET),WRK(KCIDIA),NCONF,
+     *              EMY,WRK(KFCAC),WRK(KH2AC),INDXCI,
+     *              WRK(KWHAM),LWHAM,IPRHAM)
+C        CALL CIHAM(IWAY,MXPRDT,ICSYM,IDET,CIDIA,NCONF,
+C    *              ECORE,FCAC,H2AC,INDXCI,WRK,LWRK,IPRINT)
+      END IF
+#endif
+C
+C    Get PHP CI matrix (with correct CI energies)
+C
+      IF (MAXPHP .GE. 1) THEN
+         IPWAY = 1
+         IPRPHP = IPRI6 - 3
+         CALL PHPGET(LSYM,NCONF,INDXCI,WRK(KFCAC),WRK(KH2AC),
+     *               WRK(KCDIAG),EMY,IPWAY,IPRPHP,WRK(KW1),LW1)
+      END IF
+C
+C
+C    ******************************
+C    *** GET INITIAL CI VECTORS ***
+C    ******************************
+C
+C    CIST constructs NCROOT start vectors for CI optimization.
+C    The C-vectors are constructed in CIST or from the result of
+C    another run (another geometry).
+C
+!     write(lupri,*) 'call CIST ==> NCROOT',NCROOT
+      NCSIM = NCROOT
+      CALL CIST(ICICTL,NCSIM,CMO,WRK(KCDIAG),EMY,WRK(KW1),LW1)
+      IF (NCSIM .LE. 0) THEN
+         WRITE (LUPRI,'(//A,I5)')
+     *      ' *** ERROR after CIST, NCSIM =',NCSIM
+         CALL QTRACE(LUPRI)
+         CALL QUIT('*** ERROR (CICTL) NCSIM .le. 0 after CIST')
+      END IF
+C
+C     *****************************************************************
+C     CI-DFT contributions
+C     *****************************************************************
+C
+      IF (DOCISRDFT) THEN
+#ifndef MOD_SRDFT
+         call quit('srdft not implemented in this version')
+#else
+         KDVREF = KW2
+         KFSR = KDVREF + NNASHX
+         KW2A = KFSR   + NNORBT
+         LW2A = LWRK   - KW2A
+         IF (ISTACI .EQ. 0) THEN
+            CALL DZERO(WRK(KDVREF),NNASHX)
+         ELSE
+            IST = ABS(ISTACI)
+            CALL GETDVREF(WRK(KDVREF),IST,INDXCI,WRK(KW2A),LW2A)
+         END IF
+C
+         CALL SRFMAT(WRK(KFSR),CMO,WRK(KDVREF),EJCSR,EJVSR,EDSR,EDFT,
+     &               WRK(KW2A),LW2A,IPRI4)
+C        ... Correct EMY and CI diagonal
+         EMYDFT = EJCSR + EJVSR + EDSR + EDFT
+         
+C        ... extract and save SR over active indices
+         CALL GETAC(WRK(KFSR),WRK(KSRAC))
+C        ... add the contributions over the active indices
+         CALL DAXPY(NNASHX,D1,WRK(KSRAC),1,WRK(KFCAC),1)
+C        ... fold SRAC for 
+C         1) Adding it to CI-diagonal to get better pre-conditioning
+C         2) Later printing of CIDFT specific energy contributions
+         CALL DSPTGE(NASHT,WRK(KSRAC),WRK(KFSR))
+         CALL DGEFSP(NASHT,WRK(KFSR),WRK(KSRAC))
+         ESRDV = DDOT(NNASHX,WRK(KDVREF),1,WRK(KSRAC),1)
+         DO I = 0,NCONF-1
+            WRK(KCDIAG+I) = WRK(KCDIAG+I) + EMYDFT + ESRDV
+         END DO
+#endif
+      ENDIF
+C
+C    *******************************
+      IF (MAXITC .LE. 0) RETURN
+C    *******************************
+      CINMEM = (NCSIM .LE. MAXSIM)
+C
+      IF (NCSIM .GT. MXCIRT) THEN
+         WRITE (LUPRI,'(//A,I5,A,I5)')
+     *   ' *** ERROR after CIST, NCSIM =',NCSIM,
+     *   ', maximum (MXCIRT) =',MXCIRT
+         CALL QTRACE(LUPRI)
+         CALL QUIT('*** ERROR (CICTL) MXCIRT parameter .lt. NCSIM')
+      END IF
+      DO 100 I = 1,NCSIM
+         JCROOT(I) = I
+         residual_c(i) = D0
+  100 CONTINUE
+C
+      REWIND LUIT1
+      CALL MOLLAB('STARTVEC',LUIT1,LUPRI)
+      REWIND LUIT3
+      MXCSIM = 2*MAXSIM - 1
+C     reuse space for orthonormalization,
+C     except reserving last NCONF elements for CPREV
+      KCPREV = KCVECS + MXCSIM*NCONF
+      NCPREV = 0
+      DO 490 I = 1,NCSIM,MXCSIM
+         NXSIM = MIN(MXCSIM,(NCSIM-I+1))
+         JCVECS = KCVECS
+         DO 420 J = 1,NXSIM
+            CALL READT(LUIT1,NCONF,WRK(JCVECS))
+            JCVECS = JCVECS + NCONF
+  420    CONTINUE
+         THRLDV = NCONF * THRLDP
+         CALL CIORT(NXSIM,NCPREV,LUIT3,JCROOT(NCPREV+1),
+     *              WRK(KCVECS),THRLDV,WRK(KCPREV))
+  490 CONTINUE
+      IF (NCPREV .NE. NCSIM) THEN
+         WRITE (LUPRI,'(//A,I8,A)')
+     *      ' *** ERROR ***',(NCSIM-NCPREV),' OF THE TRIAL CI VECTORS'//
+     *      ' WERE LINEAR DEPENDENT (CICTL).'
+         CALL QUIT('***ERROR (CICTL) LIN.DEP. AMONG INITIAL CI '//
+     &             'TRIAL VEC.S')
+      END IF
+C
+C     *****************************************************************
+C     CI iteration loop
+C     *****************************************************************
+C
+C
+      TIMLIN = D0
+      TIMCIT = SECOND()
+      NCLIN  = 0
+      ITCI   = 0
+C
+  500 ITCI = ITCI + 1
+         IF (IPRI4 .GT. 5)
+     *      WRITE (LUW4,'(//A,I4,/)') ' *** CI ITERATION NO.',ITCI
+        IF (LUPRI.NE.LUW4 .AND. IPRI6 .GE. 5) WRITE (LUPRI,'(//A,I4,/)')
+     *      ' *** CI ITERATION NO.',ITCI
+         CALL FLSHFO(LUW4)
+         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
+         REWIND LUIT5
+         DO 220 I = 1,NCIRED
+  220       READ (LUIT5)
+C
+C        REPEAT UNTIL (NCSIM .LE. 0)
+C
+  240    CONTINUE
+            NXSIM = MIN(MAXSIM,NCSIM)
+            IF (.NOT. CINMEM) THEN
+               REWIND LUIT3
+               DO 310 I = 1,NCIRED
+  310             READ (LUIT3)
+               DO 320 I = 1,NXSIM
+                  JCVECS = KCVECS + (I-1)*NCONF
+                  CALL READT(LUIT3,NCONF,WRK(JCVECS))
+  320          CONTINUE
+            END IF
+            TIMLIN = TIMLIN - SECOND()
+            NCLIN  = NCLIN + NXSIM
+            CALL CILIN(NXSIM,WRK(KCVECS),WRK(KFCAC),WRK(KH2AC),
+     *                 INDXCI,WRK(KSVECS),LSVECS)
+            TIMLIN = TIMLIN + SECOND()
+            DO 340 I = 1,NXSIM
+               JSVECS = KSVECS + (I-1)*NCONF
+               CALL WRITT(LUIT5,NCONF4,WRK(JSVECS))
+  340       CONTINUE
+            NCIRED = NCIRED + NXSIM
+            CALL CIRED(1,NCIRED,WRK(KREDCI),NXSIM,WRK(KCVECS),
+     *                 WRK(KSVECS),DUMMY,DUMMY,WRK(KW3),LW3)
+            NCSIM = NCSIM - NXSIM
+            IF (NCSIM .GT. 0) GO TO 240
+C        ^----------------------------- END REPEAT
+C
+         CALL CIRED(2,NCIRED,WRK(KREDCI),0,WRK(KCVECS),
+     *              DUMMY,energy_c,WRK(KEVEC),WRK(KSVECS),LSVECS)
+C        CALL CIRED(ICTL,NCIRED,REDCI,NCNEW,CVECS,SVECS,EVAL,EVEC,WRK,LWRK)
+         IF (P6FLAG(10) .OR. P6FLAG(34)) THEN
+            WRITE (LUPRI,'(/A,I3)')
+     *         ' The reduced CI matrix, iteration',ITCI
+            IF (P6FLAG(34)) CALL OUTPAK(WRK(KREDCI),NCIRED,-1,LUPRI)
+            MCROOT = MIN(NCROOT+2,NCIRED)
+            WRITE (LUPRI,'(/I4,A//,(10X,1P,6D15.6))')
+     *         MCROOT,' lowest eigenvalues of reduced CI matrix :',
+     *         (energy_c(i),I=1,MCROOT)
+            IF (P6FLAG(34) .OR. IPRI6 .GT. 10) THEN
+               WRITE (LUPRI,'(/A,I3,A)')
+     *            ' - and the lowest',NCROOT,' eigenvectors :'
+               CALL OUTPUT(WRK(KEVEC),1,NCIRED,1,NCROOT,
+     *                     NCIRED,NCIRED,-1,LUPRI)
+            END IF
+         END IF
+         IF (P6FLAG(51)) THEN
+C           ... check symmetry of reduced CI matrix and CI overlap
+            CALL CIRCHK(WRK(KSVECS),LSVECS)
+         END IF
+         ESHIFT = D0
+         NCSIM  = NCROOT
+         CALL CINEX(energy_c,WRK(KEVEC),EMY,ESHIFT,WRK(KCDIAG),
+     *              NCSIM,JCONV,residual_c,WRK(KW2),LW2)
+      IF (JCONV .GT. 0) THEN
+         IF (NCSIM .EQ. 0) THEN
+            GO TO 8100
+         ELSE IF (NCSIM .LT. 0) THEN
+            CINMEM = .FALSE.
+            NCSIM  = -NCSIM
+         ELSE
+            CINMEM = (NCSIM .LE. MAXSIM)
+         END IF
+         IF (ITCI         .GE. MAXITC) GO TO 8000
+         IF (NCIRED+NCSIM .GE. MAXRC ) GO TO 8200
+         GO TO 500
+      END IF
+      WRITE (LUW4,'(//A,I3,A/)')
+     *   ' *** CI converged in',ITCI,' iterations.'
+      IF (LUPRI .NE. LUW4) WRITE (LUPRI,'(//A,I3,A/)')
+     *   ' *** CI converged in',ITCI,' iterations.'
+      GO TO 9000
+ 8000 CONTINUE
+      WRITE (LUPRI,'(//A,I5/I15,A)')
+     *   ' *** Reached maximum number of CI iterations:',MAXITC,
+     *   JCONV,' CI roots are not converged.'
+      GO TO 9000
+ 8100 CONTINUE
+      NWARN = NWARN + 1
+      WRITE (LUPRI,'(//A/I15,A)')
+     *   ' *** WARNING, all CI trial vectors linear dependent',
+     *   JCONV,' CI roots are not converged.'
+      GO TO 9000
+ 8200 CONTINUE
+      NWARN = NWARN + 1
+      WRITE (LUPRI,'(//A,I5/I15,A)')
+     *   ' *** WARNING, reached maximum dimension of reduced matrix:',
+     *   MAXRC,JCONV,' CI roots are not converged.'
+      GO TO 9000
+
+ 9000 CONTINUE
+
+!     finish timing
+      TIMCIT = SECOND() - TIMCIT
+
+      END SUBROUTINE CIOPT
+! - end of file sirci.F - 

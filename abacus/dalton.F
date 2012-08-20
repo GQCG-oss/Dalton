@@ -32,6 +32,11 @@ C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
 C
+      use parallel_models
+#ifdef BUILD_GEN1INT
+C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
+!      use gen1int_interface
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "mtags.h"
@@ -486,6 +491,10 @@ C     Send ending signal to slaves
 C
          IPRTYP = ENDING_SIGNAL
          CALL MPIXBCAST(IPRTYP,1,'INTEGER',MYNUM)
+
+!        check for open parallel models (e.g. those that are used in lucita)
+         call check_parallel_models()
+
          CALL GPCLOSE(LUCME,'KEEP')
          CALL GPCLOSE(LUSTAT,'KEEP')
          CALL GPCLOSE(LUMOLDEN,'KEEP')
@@ -550,7 +559,7 @@ C
 #if defined(BUILD_GEN1INT)
 C...  added by Bin Gao, May 13, 2012
 C...  terminates Gen1Int interface
-      call gen1int_host_finalize()
+!     call gen1int_host_finalize()
 #endif
 
       CALL MPIXFINALIZE

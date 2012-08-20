@@ -484,7 +484,6 @@ C
       MP2_NO_OCCVIR= .FALSE.
       SRMP2_SELFCONSISTENT = .FALSE.
       SRMP2_SRINTS = .FALSE.
-      DCPT2        = .FALSE.
 C
 C
 C********** Default values section OPTINP *****
@@ -539,6 +538,9 @@ C Use average (approximate) orbital Hessian diagonal
       RESPHP = .FALSE.
       JOLSEN = .FALSE.
       MAXPHP = 0
+!
+!     default CI program used as MCSCF backbone 
+      ci_program = 'SIRIUS-CI'
 C
 C********** Default values section CICINP *****
 C
@@ -1368,6 +1370,13 @@ C        JRDMO positive : abort in READMO if error
       END IF
   200 CONTINUE
 C
+C *** If requested, reorder mo:s, using reorder array in IMOORD(*).
+C
+      IF (LMOORD .AND. INPERR .EQ. 0) THEN
+         K1 = 1 + NCMOT
+         CALL REORD(CMO,CMO(K1),IMOORD)
+      END IF
+C
 C *** AUTOCC : find initial occupation (hjaaj-aug95)
 C              and Huckel start orbitals if DOHUCKEL
 C
@@ -1401,15 +1410,6 @@ C               of initial occupation guess
       END IF
       IF (NSYM .EQ. 1) AUTOCC = .FALSE.
 C     ... occupation cannot change if only one symmetry
-C
-C *** If requested, reorder mo:s, using reorder array in IMOORD(*).
-C
-      IF (LMOORD .AND. INPERR .EQ. 0) THEN
-         K1 = 1 + NCMOT
-         CALL REORD(CMO,CMO(K1),IMOORD)
-         WRITE (LUPRI,'(/A)')
-     &   ' INFO: Molecular orbitals have been reordered, as requested.'
-      END IF
 C
 C     Check for input errors of initial occupation
 C
@@ -1981,8 +1981,6 @@ C 80 OTRIAL=TRUE; use orbital trial vectors each macro     OPT : ORB_TR
 C
 C******************************************
 C
-      use keyword
-      use input_reader
       use lucita_cfg
       use lucita_orbital_spaces
 #include "implicit.h"
@@ -2127,34 +2125,16 @@ C  Here if "*END OF"
 
 !      read LUCITA input if applicable
        if(lucita_input_provided)then
-         CALL GPCLOSE(LUCMD,'KEEP')
-
-!        read lucita input
-         call read_menu_input('*LUCITA',lucita_input_provided)
+         call read_menu_input('DALTON.INP', lucmd,
+     &                        '*LUCITA', lucita_input_provided)
          if (.not. lucita_input_provided) then
          call quit('Oops, read_menu_input could not find *LUCITA input')
          end if
-
-         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
        end if
 
 C
 C ********  END OF READ OF INPUT DATA  **********
 C
-      if(lucita_input_provided)then
-!        LUCITA input has been processed - 
-!        complete now the remaining compulsory settings
-!        this is lucita-ci, therefore:
-!        1: ci input
-!        2: mcscf input
-         lucita_cfg_init_input_type = 1
-
-         call define_lucita_orb_spaces(nsym,                        
-     &                                 lucita_cfg_nr_gas_spaces,    
-     &                                 lucita_cfg_init_input_type,  
-     &                                 lucita_cfg_init_wave_f_type)
-      end if
 C
 C     We anyway need to process CC default settings
 C
@@ -2815,6 +2795,10 @@ C *** Option 9 >RAS2 S<   RAS2 orbital space
       END IF
          MCTYPE = 2
          READ(LUCMD,*) (NAS2(I),I=1,NSYM)
+         NAS2T = 0
+         do i = 1, NSYM
+           NAS2T = NAS2T + NAS2(i)
+         end do
       GO TO 100
 C
 C *** Option 10 >RAS3 S<   RAS3 orbital space
@@ -3176,7 +3160,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 33)
+      PARAMETER (NTABLE = 34)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
       LOGICAL ALLOPT
@@ -3207,7 +3191,7 @@ C
      *            '.NEO AL','.PHPRES','.NO ABS','.NR ALW','.OPTIMA',
      *            '.ORB_TR','.MCAVER','.SIMULT','.THRESH','.OLSEN ',
      *            '.TRACI ','.FOCKDI','.NOTRAC','.CI PHP','.NO ACT',
-     *            '.DETERM','.NATONL','.FOCKON'/
+     *            '.DETERM','.NATONL','.FOCKON','.CI PRO'/
 C
 C Internal flags
       IFNSIM = 0
@@ -3227,7 +3211,7 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      *                   111,112,113,114,115,116,117,118,119,120,
      *                   121,122,123,124,125,126,127,128,129,130,
-     *                   131,132,133), II
+     *                   131,132,133,134), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3515,7 +3499,25 @@ C *** Option 33 >FOCKON< Only FOCK (no no:s ) for TRACI and output
         FLAG(48) = .TRUE.
       GO TO 100
 C
+C *** Option 34 >CI PRO< set CI program to be used as MCSCF backbone
+ 134  CONTINUE
+        ci_program = '         '
+        READ (LUCMD,*) ci_program(1:9)
+      GO TO 100
+C
  9000 CONTINUE
+
+!     set default CI program
+      if(ci_program .eq. 'SIRIUS-CI' .or. 
+     &   ci_program .eq. 'LUCITA   ')then
+        write(lupri,'(/a,a9)') ' CI program in use: ',
+     &                           ci_program
+      else   
+        write(lupri,'(/a)') ' wrong CI program entered!'
+        WRITE (LUPRI,9010) ci_program(1:9),'SIRIUS-CI'
+        ci_program = 'SIRIUS-CI'
+      end if
+
       IF (THR_REDFAC .GT. 0.0D0) THEN
          ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
@@ -3549,6 +3551,8 @@ C     Fill out rest of IROOT /hjaaj nov 2006
  9009 FORMAT(/' OPTINP WARNING: number of simultaneous vectors,',I3,
      *  ', is greater than maximum,',I3,
      *  T11,'The number is reduced to the maximum.')
+ 9010 FORMAT(/' Input error: .CI PROG has an unknown input value: ',
+     &       a9,'. default value is used instead: ',a9)
       RETURN
 C
       END
@@ -3830,6 +3834,8 @@ C             although code in GNRLIN in dalton.F also takes care of that
              IRDMO = 9
           ELSE IF (INDEX(REWORD,'SIRIFC') .GT. 0) THEN
              IRDMO = 10
+          ELSE IF (INDEX(REWORD,'LUCIA') .GT. 0) THEN
+             IRDMO = 11
           ELSE IF (INDEX(REWORD,'HUCKEL') .GT. 0 .OR.
      &             INDEX(REWORD,'EHT')    .GT. 0) THEN
              IRDMO = 8
@@ -3987,16 +3993,6 @@ C
       CALL UPCASE(REWORD)
       IF (INDEX(REWORD,'BOYLOC') .GT. 0) THEN
          BOYORB = .TRUE.
-      ELSE IF (INDEX(REWORD,'SELECT') .GT. 0) THEN
-         BOYSEL = .TRUE.
-         CALL IZERO(NBOYS,8)
-         CALL IZERO(BOYSORB,MXBOYS*8)
-         READ(LUCMD,*)(NBOYS(I),I=1,NSYM)
-         DO I=1,NSYM
-            IF (NBOYS(I).GT.0) THEN
-               READ(LUCMD,*)(BOYSORB(J,I),J=1,NBOYS(I))
-            END IF
-         END DO
       ELSE IF (INDEX(REWORD,'PIPLOC') .GT. 0) THEN
          PIPORB = .TRUE.
          CALL QUIT('Pipek-Mezey localization not yet implemented')
@@ -4014,7 +4010,7 @@ C
 C ---
 C
  9000 CONTINUE
-      IF (BOYORB .OR. PIPORB .OR. BOYSEL) THEN
+      IF (BOYORB .OR. PIPORB) THEN
          IF (SUPSYM) THEN
             WRITE(LUPRI,'(/A)')
      &      'WARNING: .SUPSYM ignored because incompatible with .LOCALI'
@@ -5244,9 +5240,6 @@ C     formulation of NEVPT.
             ELSE IF (CORHOL) THEN
                WRITE(IWUNIT,1051)
      *         'Type: Frozen single core hole calculation using RAS'
-               WRITE(IWUNIT,'(T16,A,I4,A,I2,A)')
-     &         '      (The core hole orbital, no.',JCHORB,
-     &         ', in symmetry',JCHSYM,' has been moved to RAS1)'
             ELSE
                WRITE(IWUNIT,1051)
      *         'Type: restricted active space calculation (RAS)'
@@ -5525,7 +5518,7 @@ C
                IF (NAS1T .GT. 0)
      &            WRITE(IWUNIT,1320) NAS1T,(NAS1(I),I=1,NSYM)
                IF (NAS2T .GT. 0)
-     &            WRITE(IWUNIT,1330) NAS3T,(NAS2(I),I=1,NSYM)
+     &            WRITE(IWUNIT,1330) NAS2T,(NAS2(I),I=1,NSYM)
                IF (NAS3T .GT. 0)
      &            WRITE(IWUNIT,1340) NAS3T,(NAS3(I),I=1,NSYM)
                WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)
