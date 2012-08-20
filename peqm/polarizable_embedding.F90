@@ -916,6 +916,7 @@ subroutine pe_read_potential(coords, charges)
             lmul(0) = .true.
             if (mulorder < 0) mulorder = 0
             allocate(M0s(1,nsites(0)))
+            M0s = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, temp(1)
@@ -925,6 +926,7 @@ subroutine pe_read_potential(coords, charges)
             lmul(1) = .true.
             if (mulorder < 1) mulorder = 1
             allocate(M1s(3,nsites(0)))
+            M1s = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 3)
@@ -934,6 +936,7 @@ subroutine pe_read_potential(coords, charges)
             lmul(2) = .true.
             if (mulorder < 2) mulorder = 2
             allocate(M2s(6,nsites(0)))
+            M2s = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 6)
@@ -943,6 +946,7 @@ subroutine pe_read_potential(coords, charges)
             lmul(3) = .true.
             if (mulorder < 3) mulorder = 3
             allocate(M3s(10,nsites(0)))
+            M3s = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 10)
@@ -952,6 +956,7 @@ subroutine pe_read_potential(coords, charges)
             lmul(4) = .true.
             if (mulorder < 4) mulorder = 4
             allocate(M4s(15,nsites(0)))
+            M4s = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 15)
@@ -961,6 +966,7 @@ subroutine pe_read_potential(coords, charges)
             lmul(5) = .true.
             if (mulorder < 5) mulorder = 5
             allocate(M5s(21,nsites(0)))
+            M5s = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 21)
@@ -2809,7 +2815,7 @@ subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
                 call Tk_tensor(Tfm, Rfm)
                 Enn = Enn + Zm(1,k) * Zpd(1,j) * Tfm(1)
             end do
-            call Tk_integrals(Zpd_ints, nnbas, 1, Rpd(:,j), pe_gauss, gauss) 
+            call Tk_integrals(Zpd_ints, nnbas, 1, Rpd(:,j), .false., gauss) 
             Zpd_ints = Zpd(1,j) * Zpd_ints
 !            call Mk_integrals(Zpd_ints, Rpd(:,j), Zpd(:,j))
             do m = 1, ndens
@@ -2892,6 +2898,8 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
         end do
         i = i + 1
     end do
+
+    deallocate(Tsm, symfacs, Mk_ints)
 
 end subroutine es_multipoles
 
