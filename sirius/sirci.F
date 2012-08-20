@@ -2279,41 +2279,6 @@ C     CALL CIFNMN(NELMNT,IPLACE,VEC,NVEC,WRK,LWRK)
 C
 C
 C
-#if defined (VAR_OLDCIST)
-
-... Gave bad convergence, when beginning with 20 roots from, e.g.,
-    10 converged roots (i.e. MCSIM = 10)
-    (870804-hjaaj)
-
-      IF (PLUSCB .AND. MCSIM .GT. 0) THEN
-C        ... if use plus combination of degenerate configurations
-C            and extension of CI space, count were to start:
-         ICSIM = 0
-         IFRST = 1
-  142       IFRST = IFRST + 1
-            IF ( (WRK(IFRST)-WRK(IFRST-1)) .LT. THRSIM ) GO TO 142
-            ICSIM = ICSIM + 1
-            IF (ICSIM .LT. MCSIM) GO TO 142
-         WRITE (LUPRI,'(/A,I5)')
-     *   ' New trial vectors selection starts at element no.',IFRST
-      ELSE IF (.NOT.PLUSCB) THEN
-C        ... else include the degenerate configurations separately,
-C            check if last element is degenerate with next element(s)
-         IFRST = MCSIM + 1
-         LAST  = NCSIM
-         DO 150 I = NCSIM+1,NRS
-            IF ((WRK(I)-WRK(NCSIM)).LT.THRSIM) LAST = I
-  150    CONTINUE
-         IF (LAST .GT. NCSIM) THEN
-            WRITE (LUPRI,1500) NCSIM,LAST
-            NCSIM = LAST
-         END IF
- 1500    FORMAT(//' (CIST1) number of start vectors is increased from',
-     *          I3,' to',I3,' because of degeneracy')
-      ELSE
-         IFRST = 1
-      END IF
-#endif
 #if !defined (VAR_OLDCIST)
       IFRST = 1
       IF (.NOT.PLUSCB) THEN
@@ -2346,14 +2311,6 @@ C        ... some, but not all, requested CI trial vectors available
          DO 161 I = 1,MCSIM
             READ (LUIT1)
   161    CONTINUE
-#if defined (VAR_OLDCIST)
-C        ... avoid getting part of a degenerate eigenvalue
-  162    IF ((WRK(IFRST)-WRK(IFRST-1)).LT.THRSIM) THEN
-            IFRST = IFRST + 1
-            LAST  = MIN(LAST+1,NRS)
-            IF (IFRST .LT. LAST) GO TO 162
-         END IF
-#endif
       END IF
 
 #ifdef LUCI_DEBUG_test_case
@@ -2387,6 +2344,7 @@ C           ... 170: repeat until (MCSIM .GE. NCSIM .OR. NRS .GE. LAST)
          IF (MCSIM .LT. NCSIM .AND. LAST .LT. NRS) GOTO 170
 C           ... end repeat
       ELSE
+         call dzero(wrk,nc4)
          DO 185 I = IFRST,LAST
             MCSIM = MCSIM + 1
             WRK(NRS + NLIST(I)) = D1
