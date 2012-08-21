@@ -27,7 +27,6 @@ C
      &                  ISYM1,ISYM2,RSD,ANTSYM)
 C
 #include "implicit.h"
-#include "iratdef.h"
 #include "priunit.h"
 #include "infrsp.h"
 #include "infopt.h"
@@ -35,7 +34,7 @@ C
 C
       CHARACTER*8 LAB1,LAB2,BLANK,LABEL
       PARAMETER   (BLANK='        ', D0 = 0.0D0)
-      DIMENSION VEC(*)
+      DIMENSION   VEC(*)
 C
       REWIND (LU)
  100  READ(LU) LABEL
@@ -52,7 +51,7 @@ C
          WRITE(LU) LAB1,LAB2,FREQ1,FREQ2,ISYM1,ISYM2,
      &             ANTSYM,RSD,LEN,EMCSCF,NBAST,NORBT
       END IF
-      IF (LEN .GT. 0) CALL WRITI(LU,IRAT*LEN,VEC)
+      IF (LEN .GT. 0) CALL WRITT(LU,LEN,VEC)
       WRITE(LU) 'EOFLABEL'
 C
       CALL FLSHFO(LU)
@@ -64,9 +63,9 @@ C
 C
 C Check if a linear equation needs to be solved or if a solution vector
 C already exists on file. FOUND indicates the result.
+C CONV indicates if the vector is converged better than RSD.
 C
 #include "implicit.h"
-#include "iratdef.h"
 #include "thrzer.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -91,13 +90,13 @@ C
 C
       IF ((NRBX .NE. NORBT) .OR. (NBSX .NE. NBAST)) THEN
          WRITE (LUPRI,'(/A,2(/A,I5,2X,I5))')
-     &        ' Orbital data found on response'//
+     &        ' INFO: Orbital data found on response'//
      &        ' vector file does not match current orbital data',
      &        ' Number of basis functions/orbitals on file      : ',
      &        NBSX,NRBX,
      &        ' Number of basis functions/orbitals in this calc.: ',
      &        NBAST,NORBT
-         WRITE (LUPRI,'(/A)') ' RSPVEC is reset to empty file'
+         WRITE (LUPRI,'(/A)') ' INFO: RSPVEC is reset to empty file'
          REWIND (LU)
          WRITE (LU) 'EOFLABEL'
          GOTO 200
@@ -128,8 +127,16 @@ Chj         from a different calculation /hjaaj-Mar2006
      &        .AND. (LAB1.EQ.LABX1) .AND. (LAB2.EQ.LABX2) .AND.
      &        (ISYM1.EQ.ISYMX1)) THEN 
             FOUND = .TRUE.
-            IF ((RSDX-RSD) .LT. D0) CONV = .TRUE.
-            IF (LEN .GT. 0) CALL READI(LU,IRAT*LEN,VEC)
+            IF ((RSDX-RSD) .LT. D0) THEN
+               CONV = .TRUE.
+            ELSE
+               WRITE(LUPRI,'(2(/A,1P,D10.2))')
+     &         ' WARNING: Solution vector on RSPVEC converged to',RSDX,
+     &         ' WARNING: which is less than desired convergence',RSD
+
+               write(lupri,*) 'RSPVEC: record length is',LEN
+            END IF
+            IF (LEN .GT. 0) CALL READT(LU,LEN,VEC)
             GOTO 199
          ELSE
             IF (LEN .GT. 0) READ (LU)
@@ -145,8 +152,16 @@ Chj         from a different calculation /hjaaj-Mar2006
      &        .AND. LAB1.EQ.LABX2 .AND. LAB2.EQ.LABX1 .AND.
      &        ISYM1.EQ.ISYMX2 .AND. ISYM2.EQ.ISYMX1)) THEN 
             FOUND = .TRUE.
-            IF ((RSDX-RSD) .LT. D0) CONV = .TRUE.
-            IF (LEN .GT. 0) CALL READI(LU,IRAT*LEN,VEC)
+            IF ((RSDX-RSD) .LT. D0) THEN
+               CONV = .TRUE.
+            ELSE
+               WRITE(LUPRI,'(2(/A,1P,D10.2))')
+     &         ' WARNING: Solution vector on RSPVEC converged to',RSDX,
+     &         ' WARNING: which is less than desired convergence',RSD
+
+               write(lupri,*) 'RSPVEC: record length is',LEN
+            END IF
+            IF (LEN .GT. 0) CALL READT(LU,LEN,VEC)
             GOTO 199
          ELSE
             IF (LEN .GT. 0) READ (LU)
