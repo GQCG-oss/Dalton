@@ -2855,13 +2855,27 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "infind.h"
-C
+#include "priunit.h"
+!
       EACT = D2 * DDOT(NNASHX,DV,1,FCAC,1)
-C     diagonal elements counted twice now.
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      do i = 1, NNASHX
+        write(lupri,*) ' element i, dv(i) and fcac(i) ==> ',
+     &                   i,dv(i),fcac(i)
+      end do
+      write(lupri,*) 'ENRACT: eact after ddot... ==> ',eact
+#endif
+!     diagonal elements counted twice now.
       DO 100 NI = 1,NASHT
-         NII = IROW(NI+1)
-         I   = ISX(NISHT+NI)
-         EACT = EACT + DP5*FQ(I,NI) - DV(NII)*FCAC(NII)
+        NII  = IROW(NI+1)
+        I    = ISX(NISHT+NI)
+        EACT = EACT + DP5*FQ(I,NI) - DV(NII)*FCAC(NII)
+#ifdef LUCI_DEBUG
+        write(lupri,*) 'ENRACT: ni, nii, i elements  ... ==> ',ni,nii,i
+        write(lupri,*) 'ENRACT: eact after element ni... ==> ',ni,eact
+        write(lupri,*) 'ENRACT: FQ(i,ni)             ... ==> ',fq(i,ini)
+#endif
  100  CONTINUE
       ENRACT = EACT
       RETURN

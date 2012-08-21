@@ -25,9 +25,9 @@
 C
 C     Original: abamolden  alex a auer 5.2.99
 C
-C this file contains all output routines thar write parts of the molden.inp 
-C file which will be read by MOLDEN.
-C infos about MOLDEN can be obtained at :
+C This file contains all output routines thar write parts of the molden.inp 
+C file which will be read by Molden.
+C Info about Molden can be obtained at :
 C        http://www.caos.kun.nl/~schaft/molden/molden.html
 C
 C
@@ -244,22 +244,26 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
 C
 C CMO    =  contains MO coefficients, symmetry packed
 C UCMO   =  contains MO coefficients, symmetry unpacked
-C itask  =  1 print everything to file
-C           2 save orbital energies in CMO
+C itask  =  1 : print everything to Molden file
+C           2 : save orbital energies in OREN in molde.h
 
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
-#include "inftap.h"
 #include "maxaqn.h"
-#include "mxcent.h"
+
+! inftap.h: LUMOLDEN
+#include "inftap.h"
+! aosotr.h: JAOAO(:,2)
 #include "aosotr.h"
+! molde.h: DONIV, OREN(:)
 #include "molde.h"
-#include "cbieri.h"
+! inforb.h: NBAST, NORBT, ...
 #include "inforb.h"
-#include "nuclei.h"
-#include "symmet.h"
+! pgroup.h: REP
 #include "pgroup.h"
+! ccom.h: SPHNRM
+#include "ccom.h"
     
       LOGICAL WRTELEM,WRTZERO
       DIMENSION CMO(*), OCCUP(*), ORBTRA(*), UCMO(NBAST,NORBT)
@@ -269,6 +273,12 @@ C           2 save orbital energies in CMO
 
       MOPRIN = 0
       IF (ITASK .EQ. 1) THEN
+         IF ( .NOT. SPHNRM ) THEN
+            NINFO = NINFO + 1
+            WRITE (LUPRI,'(//A)') ' INFO: Sorry, plot of MOs with '//
+     &         'Molden is only implemented for spherical GTOs'
+            DONEIV = .TRUE.
+         END IF
          IF (.NOT. DONEIV) THEN 
             WRITE(LUMOLDEN,'(/A)') '[5D]' 
             WRITE(LUMOLDEN,'(/A)') '[MO]' 
@@ -318,7 +328,6 @@ C           call traorb to generate SO to AO transformation
 
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
 #include "implicit.h" 
-#include "mxcent.h"
 #include "maxorb.h"
 #include "codata.h"
 #include "molde.h"
@@ -345,7 +354,6 @@ C           call traorb to generate SO to AO transformation
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
 #include "implicit.h" 
-#include "mxcent.h"
 #include "maxorb.h"
 #include "codata.h"
 #include "molde.h"
@@ -371,7 +379,6 @@ C           call traorb to generate SO to AO transformation
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
 #include "implicit.h" 
-#include "mxcent.h"
 #include "maxorb.h"
 #include "codata.h"
 #include "molde.h"
@@ -398,4 +405,5 @@ C           call traorb to generate SO to AO transformation
       ENDIF
       CALL FLSHFO(LUMOLDEN)
       RETURN
+! -- end of abacus/abamolden.F --
       END

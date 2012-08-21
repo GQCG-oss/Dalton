@@ -638,6 +638,7 @@ C   4      formatted input: (6F12.8)
 C   7      from LUIT1 with label "OLDORB"
 C   9      from LUIT1 with label "NEWORB"
 C  10      from SIRIFC (LUSIFC)
+C  11      from LUCIA program, formatted file LUCIA.CMO
 C
 C
 #include "implicit.h"
@@ -664,10 +665,10 @@ C
       ELSE
          NOSTOP = .FALSE.
       END IF
-      IF (IRDMO.LT.1 .OR. IRDMO.GT.10) THEN
+      IF (IRDMO.LT.1 .OR. IRDMO.GT.11) THEN
          WRITE (LUPRI,10000) IRDMO
          WRITE (LUERR ,10000) IRDMO
-10000    FORMAT(/' *** READMO-ERROR *** IRDMO =',I4,' out of range')
+10000    FORMAT(/' *** READMO-ERROR *** IRDMO =',I4,' is out of range')
          CALL QTRACE(LUPRI)
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -675,7 +676,8 @@ C
             CALL QUIT('*** ERROR *** illegal option in READMO')
          END IF
       END IF
-      GO TO (9000,9000,300,300,8000,8000,700,8000,700,1000),IRDMO
+      GO TO (9000,9000,300,300,8000,8000,700,8000,700,1000,
+     &       1100),IRDMO
 C
 C-- IRDMO=3 or 4:
 C
@@ -758,7 +760,7 @@ C
       IF (JLUIT1 .LE. 0) CALL GPCLOSE(LUIT1,'KEEP')
       GO TO 9000
 C
-C-- IRDMO = 10:
+C-- IRDMO = 10: read CMO from SIRIFC (LUSIFC)
 C
  1000 CONTINUE
       CALL RD_SIRIFC('CMO',FOUND,CMO,WRK,LFREE)
@@ -771,7 +773,22 @@ C
       END IF
       GO TO 9000
 C
-C--   IRDMO 5,6,8 not defined any more.
+C-- IRDMO = 11: read CMO from LUCIA program, formatted file LUCIA.CMO
+C
+ 1100 CONTINUE
+      LU_LUCIA = -1
+      JLUIT1 = LU_LUCIA
+      IF (JLUIT1 .LE. 0) CALL GPOPEN(LU_LUCIA,'LUCIA_91','OLD',' ',
+     &   'FORMATTED',IDUMMY,.FALSE.)
+      REWIND LU_LUCIA
+
+      call rd_lucia(cmo,nbas,norb,nsym,lu_lucia,found)
+
+      IF (JLUIT1 .LE. 0) CALL GPCLOSE(LU_LUCIA,'KEEP')
+
+      GO TO 9000
+C
+C--  IRDMO 5,6,8 are not defined any more.
 C
  8000 CONTINUE
 C
@@ -1323,6 +1340,67 @@ C
  9999 CALL QEXIT('RDONEL')
       RETURN
       END
+      subroutine rd_lucia(cmo,nbas,norb,nsym,lu,found)
+!     
+!     read LUCIA orbital file (fort.91) - v2012 - Stefan Knecht
+!     ------------------------------------------------------------------
+      implicit none
+!     ------------------------------------------------------------------
+      real(8), intent(inout)         :: cmo(*)
+      integer, intent(in)            :: lu
+      integer, intent(in)            :: nsym
+      integer, intent(in)            :: nbas(nsym)
+      integer, intent(in)            :: norb(nsym)
+      logical, intent(inout)         :: found
+!     ------------------------------------------------------------------
+      integer                        :: nsym_lu
+      integer                        :: nbas_lu(nsym)
+      integer                        :: norb_lu(nsym)
+      integer                        :: ncmoao
+      integer                        :: ncmoao_lu
+      integer                        :: nao_tot
+      integer                        :: i
+      character (len=4), allocatable :: ao_cent(:)
+      character (len=4), allocatable :: ao_type(:)
+!     ------------------------------------------------------------------
+      
+      found   = .false.
+      nsym_lu = -1
+      call izero(nbas_lu,nsym)
+      call izero(norb_lu,nsym)
+
+!     symmetry info
+      read(lu,*) nsym_lu
+      if(nsym_lu /= nsym) call quit('*** error in rd_lucia: nsym!')
+      read(lu,*) (norb_lu(i),i=1, nsym_lu)
+      read(lu,*) (nbas_lu(i),i=1, nsym_lu)
+      read(lu,*) ncmoao_lu
+
+!     MO coefficients
+      ncmoao = 0
+      do i = 1, nsym
+        ncmoao = ncmoao + norb(i) * nbas(i)
+      end do
+      if(ncmoao /= ncmoao_lu)call quit('*** error in rd_lucia: ncmoao!')
+
+      read(lu,*) (cmo(i), i=1, ncmoao_lu)
+
+!     AO labels
+      nao_tot = 0
+      do i = 1, nsym_lu
+        nao_tot = nao_tot + nbas_lu(i)
+      end do
+      allocate(ao_cent(nao_tot*4))
+      allocate(ao_type(nao_tot*4))
+      read(lu,'(20A4)') (ao_cent(i),i = 1, nao_tot)
+      read(lu,'(20A4)') (ao_type(i),i = 1, nao_tot)
+      deallocate(ao_type)
+      deallocate(ao_cent)
+
+      found = .true.
+
+      END
+
 C  /* Deck ijkaux */
       SUBROUTINE IJKAUX(II,JJ,KK,LL)
 #include "implicit.h"
