@@ -125,6 +125,8 @@ contains
       select case(run_type)
         case('return CIdia', 'ijkl resort ')
 !         do nothing
+        case('srdft   ci  ')
+          call mcscf_pre_lucita_srdft(print_lvl)
         case('return CIdim')
           call mcscf_pre_lucita_setci(print_lvl)
         case('initial ci  ')
@@ -179,6 +181,8 @@ contains
       select case(run_type)
         case('Xp-density m', 'analyze Cvec', 'ijkl resort ')
 !         do nothing
+        case('srdft   ci  ')
+          call mcscf_post_lucita_srdft(print_lvl)
         case('return CIdim')
           call mcscf_post_lucita_setci(print_lvl)
         case('initial ci  ')
@@ -269,6 +273,34 @@ contains
       end if
 
   end subroutine mcscf_pre_lucita_bvec_analyze
+!*******************************************************************************
+
+  subroutine mcscf_pre_lucita_srdft(print_lvl)
+!*******************************************************************************
+!
+!    purpose: pre-LUCITA processing for CI task: srdft ci  
+!              
+!
+!*******************************************************************************
+! lucita
+! use lucita_mcscf_ci_cfg ! globally included
+! sirius
+#include "cicb01.h"
+#include "priunit.h"
+      integer,   intent(in)    :: print_lvl
+!
+!-------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
+      
+      einact_mc2lu           = emy_ci ! inactive energy
+
+      if(print_lvl >= print_lvl_limit)then
+        write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
+        write(lupri,*) ' inactive energy obtained from MCSCF environment ==> ', einact_mc2lu
+        write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
+      end if
+
+  end subroutine mcscf_pre_lucita_srdft
 !*******************************************************************************
 
   subroutine mcscf_pre_lucita_cistart(print_lvl)
@@ -447,6 +479,75 @@ contains
 
   end subroutine mcscf_pre_lucita_xpdens
 !*******************************************************************************
+
+#ifdef MOD_SRDFT
+  subroutine mcscf_post_lucita_srdft(c_or_cr,print_lvl)
+!*******************************************************************************
+!
+!    purpose: post-LUCITA processing for CI task: srdft ci  
+!              
+!
+!*******************************************************************************
+! lucita
+#include "cstate.inc"
+! sirius
+#include "cicb01.h"
+#include "priunit.h"
+#include "dfterg.h"
+      real(8),   intent(out)   :: c_or_cr(*)
+      integer,   intent(in)    :: print_lvl
+!
+!-------------------------------------------------------------------------------
+      integer                  :: i
+      integer                  :: push_pull = 1
+!-------------------------------------------------------------------------------
+      
+      call dcopy(nroot,eroot,1,energy_root,1)
+      call dcopy(nroot,root_residual,1,residual_croot,1)
+      call icopy(nroot,root_converged,1,jcroot,1)
+      
+      jconv_c = 0
+
+      do i = 1, nroot
+        if(jcroot(i) > 0) jconv_c = jconv_c + 1
+        energy_root(i)            = energy_root(i) - einact_mc2lu
+      end do
+
+      ncired = nfinal_vec
+
+      emy_ci = einact_mc2lu ! inactive energy
+      EMYDFT = emydft_mc2lu
+      EJCSR  = ejcsr_mc2lu
+      EJVSR  = ejvsr_mc2lu
+      EDSR   = edsr_mc2lu
+      EDFT   = edft_mc2lu
+
+!     type 2 - put CI start vector/ vectors on file LUCITA_CVECS.x where x refers to the present symmetry id (a,b,c,...)
+!              to file luit3 if io2io_vector_exchange_mc2lu_lu2mc == .true. 
+      vector_exchange_type1                                                        = 2
+      vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true.
+
+!     (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+      call vector_exchange_driver(push_pull,vector_exchange_type1,nroot,irefsm_c,                                     &
+                                  io2io_vector_exchange_mc2lu_lu2mc,                                                  &
+                                  vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),       &
+                                  .false.,c_or_cr)
+
+      if(print_lvl >= print_lvl_limit)then
+        write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
+        write(lupri,*) ' number of non-converged roots ==> ', jconv_c
+        do i = 1, nroot
+          write(lupri,*) ' energies of eigenstates(orig) ==> ', eroot(i)
+          write(lupri,*) ' energies of eigenstates       ==> ', energy_root(i)
+          write(lupri,*) ' energies of eigenstates+shift ==> ', energy_root(i) + einact_mc2lu
+          write(lupri,*) ' residual of eigenstates       ==> ', residual_croot(i)
+        end do
+        write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
+      end if
+
+  end subroutine mcscf_post_lucita_srdft
+!*******************************************************************************
+#endif
 
   subroutine mcscf_post_lucita_cistart(c_or_cr,print_lvl)
 !*******************************************************************************

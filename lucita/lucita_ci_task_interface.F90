@@ -185,6 +185,9 @@ contains
         case('rotate  Cvec') ! rotate CI vector
           ci_task_list(ci_task_ticket) = 'return rotVC'
 
+        case('srdft   ci  ') ! srdft ci
+           call quit('write me')
+
         case('standard ci ', 'initial ci  ') ! perform Davidson CI run
 
           ci_task_list(ci_task_ticket) = 'return CIdia'

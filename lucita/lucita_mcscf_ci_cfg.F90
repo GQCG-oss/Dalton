@@ -32,6 +32,11 @@ module lucita_mcscf_ci_cfg
 ! real(8) block
 
   real(8),              public :: einact_mc2lu               =  0.0d0
+  real(8),              public :: einact_mc2lu               =  0.0d0
+  real(8),              public :: einact_mc2lu               =  0.0d0
+  real(8),              public :: einact_mc2lu               =  0.0d0
+  real(8),              public :: einact_mc2lu               =  0.0d0
+  real(8),              public :: einact_mc2lu               =  0.0d0
 
 ! integer block
 

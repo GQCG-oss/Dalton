@@ -1078,9 +1078,17 @@ C
      &                                 .false., ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                 .true.)  ! vector exchange between lucita/mc using io2io, e.g. vectors are written to luit3
 
-        call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),wrk(kfcac),
-     &                              wrk(kh2ac),'initial ci  ',
-     &                              wrk(kw3),lw3,iprcix)
+        IF(DOCISRDFT)THEN
+          call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),
+     &                                wrk(kfcac),
+     &                                wrk(kh2ac),'srdft   ci  ',
+     &                                wrk(kw3),lw3,iprcix)
+        else
+          call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),
+     &                                wrk(kfcac),
+     &                                wrk(kh2ac),'initial ci  ',
+     &                                wrk(kw3),lw3,iprcix)
+        end if
 
         jconv        = jconv_c  ! jconv_c is set in the interface procedure
         kvec_generic = kcvecs   ! for a unique interface to CISAVE (--> final CI vectors are stored in wrk(kcvecs) NOT ACTIVE AT PRESENT)
