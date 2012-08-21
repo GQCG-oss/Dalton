@@ -509,7 +509,7 @@ C  jim-gesc 1: call to LRSCDRV
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
        write(lupri,*) ' LRSCDRV is not called yet, still developing' 
-c       CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
+       CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
       END IF
 C
 C     ****************************************
