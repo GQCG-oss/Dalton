@@ -385,17 +385,15 @@ C
      &                                 ncroot,  ! # of CI roots
      &                                 ispin,
      &                                 maxitc,  ! max davidson CI iterations
-     &                                 0, ! no 1/2-particle density calcs
+     &                                 0,       ! no 1/2-particle density calcs
      &                                 iprcix,  ! print level
      &                                 1.0d-10, ! screening threshold
-     &                                 1.0d-12,
-     &                                 1.0d-12,
-!    &                                 thrcit,  ! default davidson threshold
-!    &                                 thrcit,  ! default davidson threshold
-!    &                                 .false., ! do not calculate nat. orb. occ. num.
-     &                                 .true.,  ! do not calculate nat. orb. occ. num.
-!    &                                 P6FLAG(32).and.FLAG(67), ! wave function analysis
-     &                                 .true.,                  ! wave function analysis
+     &                                 thrcit,  ! default davidson threshold
+     &                                 thrcit,  ! default davidson threshold
+     &                                 .false., ! do not calculate nat. orb. occ. num.
+!    &                                 .true.,  ! do not calculate nat. orb. occ. num.
+     &                                 P6FLAG(32).and.FLAG(67), ! wave function analysis
+!    &                                 .true.,                  ! wave function analysis
      &                                 .false., ! no 2-el operators active
      &                                 .true.,  ! integrals provided by the MCSCF environment
      &                                 .false., ! calculate 2-particle density matrix
