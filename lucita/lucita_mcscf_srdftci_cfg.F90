@@ -13,6 +13,13 @@ module lucita_mcscf_srdftci_cfg
 
   save
 
+! integer   
+  integer, parameter,   public :: nr_of_weights_max            =  100
+
+! input parameters
+  real(8),              public :: weights(nr_of_weights_max)   =  0.0d0
+  integer,              public :: nr_of_weights                = -1
+
 ! parameters
 
 ! logical block
@@ -27,5 +34,6 @@ module lucita_mcscf_srdftci_cfg
   real(8),              public :: ejvsr_mc2lu                  =  0.0d0
   real(8),              public :: edsr_mc2lu                   =  0.0d0
   real(8),              public :: edft_mc2lu                   =  0.0d0
+
 
 end module

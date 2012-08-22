@@ -1988,12 +1988,13 @@ C
 C -- local variables and constants
 C
 #if defined(BUILD_GEN1INT)
-      PARAMETER (NTBMOD = 24)
+      PARAMETER (NTBMOD = 25)
 #else
-      PARAMETER (NTBMOD = 23)
+      PARAMETER (NTBMOD = 24)
 #endif
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
+      LOGICAL   ensemble_input_provided
 C needed for lucita: nsym, norb
       DIMENSION NORB(*)
 C
@@ -2007,9 +2008,9 @@ C
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
 #if defined(BUILD_GEN1INT)
-     *            '*AUXILL','*LUCITA','*CUBE  ','*END OF'/
+     *            '*AUXILL','*LUCITA','*ENSEMB','*CUBE  ','*END OF'/
 #else
-     *            '*AUXILL','*LUCITA','*END OF'/
+     *            '*AUXILL','*LUCITA','*ENSEMB','*END OF'/
 #endif
 C
 C
@@ -2019,7 +2020,8 @@ C  ***************************************************
 C
       ALLOPT = .FALSE.
       PTABMO = .FALSE.
-      lucita_input_provided = .false.
+      lucita_input_provided   = .false.
+      ensemble_input_provided = .false.
 C
       WORD = '*GENERA'
       CALL SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
@@ -2031,9 +2033,9 @@ C
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
 #if defined(BUILD_GEN1INT)
-     *                2900,3000,2400,3200,3600,8000), I
+     *                2900,3000,2400,3200,3300,3600,8000), I
 #else
-     *                2900,3000,2400,3200,8000), I
+     *                2900,3000,2400,3200,3300,8000), I
 #endif
             END IF
  920     CONTINUE
@@ -2110,6 +2112,11 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  3200  lucita_input_provided = .true.
        call move_to_next_star(word,lucmd)
        GO TO 910
+!      this is to keep backwards compatibility - ensemble dft input is now
+!      processed via the new input reader module.
+ 3300  ensemble_input_provided = .true.
+       call move_to_next_star(word,lucmd)
+       GO TO 910
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, to generate cube files to visualize the results
 C March 9, 2012
@@ -2129,6 +2136,15 @@ C  Here if "*END OF"
      &                        '*LUCITA', lucita_input_provided)
          if (.not. lucita_input_provided) then
          call quit('Oops, read_menu_input could not find *LUCITA input')
+         end if
+       end if
+
+!      read ensemble dft input if applicable
+       if(ensemble_input_provided)then
+         call read_menu_input('DALTON.INP', lucmd,
+     &                        '*ENSEMB', ensemble_input_provided)
+         if (.not. ensemble_input_provided) then
+         call quit('Oops, read_menu_input could not find *ENSEMB input')
          end if
        end if
 

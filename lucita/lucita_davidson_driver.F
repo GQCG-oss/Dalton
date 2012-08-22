@@ -452,21 +452,28 @@ C
 
            call rewine(lu5,-1)
            call rewine(lu6,-1)
+!                                                            1: sigma vector
 !                                                            2: density matrix
            call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 1,
-     &                    xxs2dum)                          !   1: rhotype == 1 (regular 1p density)
+     &                    xxs2dum)                          !   1: rhotype == 1 (regular 1p density matrix)
+!                                                           !   3: rhotype == 3 (transition density matrix)
          
            call lucita_putdens_generic(work(krho1),work(krho2),
      &                                 fsr,xxdummy,xxdummy,i12,2,1,i)
 !                                                              2: density matrix 
 !                                                                1: rhotype
-           call daxpy(nnashx,1.0d0,work(krho1),1,rho1_accumulated,1)
+           call daxpy(nnashx,weights(i),work(krho1),1,
+     &                rho1_accumulated,1)
          end do ! loop over # roots
 
+!        reset i12 to allow for 1 and most likely 2-electron contributions
          i12 = i12_save
+
          deallocate(fsr)
          close(luci_cvec,status='keep')
 
+!        dump ensemble density on file
+         call lucita_putdens_ensemble(rho1_accumulated)
 
 !        calculate ensemble srDFT contributions
 !        --------------------------------------
@@ -529,11 +536,10 @@ C
          end if
 #endif
 
-!        re"scale" H diagonal 
-!        --------------------
+!        adding esrdv to H diagonal 
+!        ----------------------------
          call manipulate_vcd(ludia,lu5,EMYDFT_mc2lu+ESRDV,
      &                       vec1,-1,-1)
-         call copvcd(lu5,ludia,vec1,-1,-1)
 
 C        eliminate local memory
          IDUM = 0

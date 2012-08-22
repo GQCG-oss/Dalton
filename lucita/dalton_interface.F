@@ -2528,6 +2528,55 @@ C
       END
 ***********************************************************************
 
+      subroutine lucita_putdens_ensemble(rho1_ensemble)
+!
+#include "implicit.h"
+
+      real(8), intent(in)    :: rho1_ensemble(*)
+ 
+! Used from include files:
+!  priunit: LUPRI
+!  inforb: NCMOT, nsym
+!  inftap: LUINTM, FNINTM
+!  mxpdim: MXPOBS
+!  orbinp: ntoobs
+
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cgas.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
+     &              ADSXA(MXPOBS,2*MXPOBS),
+     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
+
+!     scratch space
+      character (len=25)   :: file_name
+!
+!     -------------------------------------------------------
+!
+!     put 1e-density matrix to file
+!     -----------------------------
+
+      LUINT_LUCITA = 99
+      write(file_name,'(a16)') 
+     &      'ENSEMBLE-DENSITY'
+
+         open(file=file_name(1:16),unit=luint_lucita,status='replace',
+     &        form='unformatted',action='write',position='rewind')
+
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIDENS'
+        CALL WRITT(LUINT_LUCITA, NNASHX, rho1_ensemble)
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
+
+      close(luint_lucita,status='keep')
+
+      END
+***********************************************************************
+
       subroutine sirint2luint(h1_in,h2_in,pv_full_scratch,h1_out,h2_out,
      &                        mult_ptg,return_sym_of_jorb,nr_actorb_tot,
      &                        nnashx,nr_orb_per_sym,nr_sym,

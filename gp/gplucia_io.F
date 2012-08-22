@@ -1258,6 +1258,7 @@ C
       SUBROUTINE manipulate_vcd(LUIN,LUOUT,constant,SEGMNT,IREW,LBLK)
 C
 C add constant to each element of the VECTOR ON FILE LUIN AND STORE ON LUOUT
+! copy luout to luin at the end
 C
 C
 C LBLK DEFINES STRUCTURE OF FILES
@@ -1298,6 +1299,8 @@ C
         END IF
 C
       IF( LBL .GE. 0 .AND. LBLK .LE. 0) GOTO 1000
+
+      call copvcd(luout,luin,segmnt,-1,-1)
 C
       RETURN
       END

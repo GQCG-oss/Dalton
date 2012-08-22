@@ -13,6 +13,9 @@
          
       case ('*LUCITA')
         call read_input_lucita(word, kw_section)
+
+      case ('*ENSEMB')
+        call read_input_ensemble_dft(word, kw_section)
          
       case default
 !       activate as soon as everything is merged to here
@@ -216,6 +219,33 @@
 
     if (kw_matches(word, '.SKIP4I')) then
       gasci_input_skip_4index_trafo = .true.
+    end if
+
+    call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+
+  subroutine read_input_ensemble_dft(word, kw_section)
+
+    use lucita_mcscf_srdftci_cfg 
+    use input_reader
+
+    implicit none
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+    integer                          :: i
+!   ----------------------------------------------------------------------------
+
+    call reset_available_kw_list()
+
+    if (kw_matches(word, '.WEIGHT')) then
+
+      call kw_read(word, nr_of_weights)
+      read(get_file_unit(),*) (weights(i), i=1,nr_of_weights)
+      
     end if
 
     call check_whether_kw_found(word, kw_section)
