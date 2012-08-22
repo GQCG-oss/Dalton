@@ -11,7 +11,7 @@ include(ExternalProject)
 
 macro(add_external _project)
 
-    if(DEVELOPMENT_CODE)
+    if(ENABLE_GIT_SUBMODULES)
         set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
     else()
         set(UPDATE_COMMAND echo)
@@ -32,7 +32,7 @@ macro(add_external _project)
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}/external/lib)
-    if(DEVELOPMENT_CODE)
+    if(ENABLE_GIT_SUBMODULES)
         add_dependencies(${_project} git_update)
     endif()
 

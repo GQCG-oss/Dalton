@@ -341,6 +341,7 @@ C     *****************************************************************
 C
 C
       NCIRED = 0
+!     thrcix = 1.0d-11
       THRCIT = THRCIX
       NJCR   = NCROOT
       JCONV  = NCROOT

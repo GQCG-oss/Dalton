@@ -18,6 +18,7 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
 option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
+option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
 option(ENABLE_SRDFT          "Enable srdft module"           ON)
 
