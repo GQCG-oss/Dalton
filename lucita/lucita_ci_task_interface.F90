@@ -113,7 +113,7 @@ contains
           case ('perform Davi')
             call davidson_ci_driver(block_list,par_dist_block_list,proclist,                      &
                                     grouplist,fh_array,rcctos,nblock,print_lvl,                   &
-                                    cref,hc,resolution_mat)
+                                    cref,hc,resolution_mat,docisrdft_mc2lu)
           case ('return sigma')
             call return_sigma_vector(print_lvl,nbatch,block_list,par_dist_block_list,             &
                                      rcctos,grouplist,proclist,                                   &
@@ -186,7 +186,19 @@ contains
           ci_task_list(ci_task_ticket) = 'return rotVC'
 
         case('srdft   ci  ') ! srdft ci
-           call quit('write me')
+          ci_task_list(ci_task_ticket) = 'return CIdia'
+          ci_task_ticket               = ci_task_ticket + 1
+          ci_task_list(ci_task_ticket) = 'perform Davi'
+
+          if(report_ci_analysis > 0)then
+            ci_task_ticket               = ci_task_ticket + 1
+            ci_task_list(ci_task_ticket) = 'report CIana'
+          end if
+
+          if(return_density_matrices > 0)then
+            ci_task_ticket               = ci_task_ticket + 1
+            ci_task_list(ci_task_ticket) = 'return densM'
+          end if
 
         case('standard ci ', 'initial ci  ') ! perform Davidson CI run
 
@@ -689,7 +701,8 @@ contains
 !
         idum = 0
         call memman(idum,idum,'MARK  ',idum,'Xpden1')
-        call memman(k_dens2_scratch,nacob**4,'ADDL  ',2,'PVfull')
+        if(i12  > 1) call memman(k_dens2_scratch,nacob**4,'ADDL  ',2,'PVfull')
+        if(i12 == 1) call memman(k_dens2_scratch,       0,'ADDL  ',2,'PVfull')
 
 
 !       activate for MCSCF/improved CI

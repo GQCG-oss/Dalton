@@ -1,3 +1,4 @@
+!#define LUCI_DEBUG
 !dalton_copyright_start
 !
 !
@@ -332,7 +333,6 @@ contains
                              current_block,ioff
             call wrtmatmn(xmat(ioff),1,B%ttss_block_length(current_block,B%present_sym_irrep,B%present_ci_space),1, &
                           B%ttss_block_length(current_block,B%present_sym_irrep,B%present_ci_space),lupri)
-#undef LUCI_DEBUG
 #endif
 
 !       keep track of core-memory offset
@@ -447,7 +447,6 @@ contains
             write(lupri,*) ' pull/push (1 or 2) block from/to file to/from fh handle offset ==> ',A%push_pull_switch,         &
                              current_block,A%present_fh_par,ioff-block_length_rw
             call wrtmatmn(xmat(ioff-block_length_rw),1,block_length_rw,1,block_length_rw,lupri)
-#undef LUCI_DEBUG
 #endif
 
 !       keep track of file / file-list offsets
@@ -688,3 +687,4 @@ contains
 !*******************************************************************************
 
 end module
+!#undef LUCI_DEBUG

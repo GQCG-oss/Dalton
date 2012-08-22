@@ -729,6 +729,7 @@ input/parse_input.F90
 lucita/dalton_mpi.F90
 lucita/lucita_cfg.F90
 lucita/lucita_mcscf_ci_cfg.F90
+lucita/lucita_mcscf_srdftci_cfg.F90
 lucita/par_sync_cw.F90
 lucita/file_type_module.F90
 lucita/communicator_type_module.F90

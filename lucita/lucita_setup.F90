@@ -943,8 +943,8 @@ contains
           len_cref_mc2lu              =  l_combi
         case('return CIdia', 'analyze Cvec') ! calculate the diagonal part of the CI Hamiltonian matrix , analyze CI vector
           len_cref_mc2lu              =  lblock
-        case('sigma vec   ',      'Xp-density m',               'rotate  Cvec',       'standard ci ', 'initial ci  ') 
-!      calculate sigma vector; 1-/2-particle density matrix;   rotate CI vector;          perform Davidson CI run
+        case('sigma vec   ', 'Xp-density m', 'rotate  Cvec', 'standard ci ', 'initial ci  ', 'srdft   ci  ')
+!      calculate sigma vector; 1-/2-particle density matrix; rotate CI vector; perform Davidson CI run
           len_cref_mc2lu              =  lblock
           len_hc_mc2lu                =  lblock
           len_resolution_mat_mc2lu    =  max(lblock,2*lsingle_resolution_block)

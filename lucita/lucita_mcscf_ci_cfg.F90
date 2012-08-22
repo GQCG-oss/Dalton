@@ -18,6 +18,7 @@ module lucita_mcscf_ci_cfg
 
 ! logical block
 
+  logical,              public :: docisrdft_mc2lu                                      = .false.
   logical,              public :: integrals_from_mcscf_env                             = .false.
   logical,              public :: mcscf_ci_update_ijkl                                 = .true.
   logical,              public :: mcscf_orbital_trial_vector                           = .false.
@@ -31,11 +32,6 @@ module lucita_mcscf_ci_cfg
 
 ! real(8) block
 
-  real(8),              public :: einact_mc2lu               =  0.0d0
-  real(8),              public :: einact_mc2lu               =  0.0d0
-  real(8),              public :: einact_mc2lu               =  0.0d0
-  real(8),              public :: einact_mc2lu               =  0.0d0
-  real(8),              public :: einact_mc2lu               =  0.0d0
   real(8),              public :: einact_mc2lu               =  0.0d0
 
 ! integer block

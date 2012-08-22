@@ -1,6 +1,8 @@
-C File: dfterg.h
-C
-C     ESRDFTY : effective energy correction for SR-DFT,
-C               is calculated in SIRFCK.
-      COMMON /DFTERG/ EDFTX, EDFTC, EDFTY, EDFTK, ESRDFTY,
+! File: dfterg.h
+!
+!     ESRDFTY : effective energy correction for SR-DFT,
+!               is calculated in SIRFCK.
+      real(8) :: EDFTX, EDFTC, EDFTY, EDFTK, ESRDFTY
+      real(8) :: WDFTX, WDFTC, WDFTL, WDFTB, WDFTK
+      COMMON /DFTERG/ EDFTX, EDFTC, EDFTY, EDFTK, ESRDFTY,              &
      &                WDFTX, WDFTC, WDFTL, WDFTB, WDFTK

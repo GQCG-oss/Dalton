@@ -222,6 +222,8 @@ contains
 !-------------------------------------------------------------------------------
 
 !     logical
+        
+      call dalton_mpi_bcast(docisrdft_mc2lu,                  0,mpi_comm_world)
       call dalton_mpi_bcast(integrals_from_mcscf_env,         0,mpi_comm_world)
       call dalton_mpi_bcast(mcscf_ci_update_ijkl,             0,mpi_comm_world)
       call dalton_mpi_bcast(mcscf_orbital_trial_vector,       0,mpi_comm_world)

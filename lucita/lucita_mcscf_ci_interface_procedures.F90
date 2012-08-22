@@ -182,7 +182,7 @@ contains
         case('Xp-density m', 'analyze Cvec', 'ijkl resort ')
 !         do nothing
         case('srdft   ci  ')
-          call mcscf_post_lucita_srdft(print_lvl)
+          call mcscf_post_lucita_srdft(c_or_cr,print_lvl)
         case('return CIdim')
           call mcscf_post_lucita_setci(print_lvl)
         case('initial ci  ')
@@ -286,6 +286,8 @@ contains
 ! use lucita_mcscf_ci_cfg ! globally included
 ! sirius
 #include "cicb01.h"
+#include "maxorb.h"
+#include "infinp.h"
 #include "priunit.h"
       integer,   intent(in)    :: print_lvl
 !
@@ -293,6 +295,7 @@ contains
 !-------------------------------------------------------------------------------
       
       einact_mc2lu           = emy_ci ! inactive energy
+      docisrdft_mc2lu        = docisrdft                                     
 
       if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -440,6 +443,9 @@ contains
 !*******************************************************************************
 ! lucita
   use lucita_cfg
+#ifdef MOD_SRDFT
+  use lucita_mcscf_srdftci_cfg
+#endif
 ! sirius
 ! nothing
 #include "priunit.h"
@@ -452,11 +458,17 @@ contains
 
 !     write(lupri,*) ' check for restorage, vector_exchange_type1/2',vector_exchange_type1,vector_exchange_type2
 !     potentially restore cref after the ci task in parallel runs
-      if(vector_exchange_type1 == 1 .or. vector_exchange_type2 == 1)then
-        restore_cref               = .true.
-        restore_cref_vector_switch = 1
-        if(vector_exchange_type2 == 1) restore_cref_vector_switch = 2
+#ifdef MOD_SRDFT
+      if(srdft_ci_1pdens_cref_restore)then
+#endif
+        if(vector_exchange_type1 == 1 .or. vector_exchange_type2 == 1)then
+          restore_cref               = .true.
+          restore_cref_vector_switch = 1
+          if(vector_exchange_type2 == 1) restore_cref_vector_switch = 2
+        end if
+#ifdef MOD_SRDFT
       end if
+#endif
       
 !     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
@@ -489,6 +501,7 @@ contains
 !
 !*******************************************************************************
 ! lucita
+  use lucita_mcscf_srdftci_cfg
 #include "cstate.inc"
 ! sirius
 #include "cicb01.h"
@@ -510,17 +523,12 @@ contains
 
       do i = 1, nroot
         if(jcroot(i) > 0) jconv_c = jconv_c + 1
-        energy_root(i)            = energy_root(i) - einact_mc2lu
+        energy_root(i)            = energy_root(i) - einact_mc2lu - emydft_mc2lu
       end do
 
       ncired = nfinal_vec
 
-      emy_ci = einact_mc2lu ! inactive energy
-      EMYDFT = emydft_mc2lu
-      EJCSR  = ejcsr_mc2lu
-      EJVSR  = ejvsr_mc2lu
-      EDSR   = edsr_mc2lu
-      EDFT   = edft_mc2lu
+      emy_ci = einact_mc2lu + emydft_mc2lu! inactive energy
 
 !     type 2 - put CI start vector/ vectors on file LUCITA_CVECS.x where x refers to the present symmetry id (a,b,c,...)
 !              to file luit3 if io2io_vector_exchange_mc2lu_lu2mc == .true. 

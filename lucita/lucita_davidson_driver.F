@@ -24,7 +24,8 @@
 
       subroutine davidson_ci_driver(block_list,par_dist_block_list,
      &                              proclist,grouplist,fh_array,rcctos,
-     &                              nblock,iprnt,vec1,vec2,c2)
+     &                              nblock,iprnt,vec1,vec2,c2,
+     &                              docisrdft)
 *
 * CI optimization in defined GAS spaces
 *
@@ -64,6 +65,7 @@
       integer, intent(in)    :: par_dist_block_list(nblock)
       integer, intent(in)    :: block_list(nblock)
       integer, intent(in)    :: rcctos(nblock)
+      logical, intent(in)    :: docisrdft
 !-----------------------------------------------------------------------
       integer(8)             :: cvec_file_size
       integer                :: keep_nr_files
@@ -128,7 +130,7 @@
      &            MXP1,MXP2,MXQ,WORK(KH0SCR),ECORE,ICISTR,LBLK,IDIAG,
      &            THRES_E,THRES_E_aux,INIDEG,LBLOCK,IROOTHOMING,NCISPC,
      &            ICSPC,block_list,par_dist_block_list,RCCTOS,
-     &            PROCLIST,GROUPLIST
+     &            PROCLIST,GROUPLIST,docisrdft
 #ifdef VAR_MPI
      &           ,file_info%iluxlist(1,2), file_info%iluxlist(1,3),
      &            file_info%iluxlist(1,5), file_info%iluxlist(1,6),
@@ -224,7 +226,7 @@
      &                  NP1,NP2,NQ,H0SCR,EIGSHF,ICISTR,LBLK,IDIAG,
      &                  THRES_E,THRES_E_aux,INIDEG,
      &                  MXLNG,IROOTHOMING,NSPC,ISPC,IBLOCKAR,
-     &                  IBLKDSTND,RCCTOS,IPROCLIST,IGROUPLIST
+     &                  IBLKDSTND,RCCTOS,IPROCLIST,IGROUPLIST,docisrdft
 #ifdef VAR_MPI
      &                  ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LU6LIST,LU7LIST,LUCLIST
@@ -234,9 +236,15 @@
 !
 ! Master routine for CI diagonalization
 !
+#ifdef MOD_SRDFT
+      use lucita_mcscf_srdftci_cfg
+#endif
+
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KLXLBT, KLXLEBT, KLXI1BT, KLXIBT
+      INTEGER*8 current_free_mem, ksrdftdal_interface
 !               for addressing of WORK
+      INTEGER   lscr_local
 #ifdef VAR_MPI
 #include "maxorb.h"
 #include "infpar.h"
@@ -269,12 +277,16 @@
 #include "glbbas.inc"
 #include "oper.inc"
       LOGICAL CA
+      LOGICAL docisrdft
 C
 C
       DIMENSION VEC1(*),VEC2(*),C2(*)
       PARAMETER( LLWRK = 100000)
       integer, allocatable  :: iscr1(:)
       real(8), allocatable  :: scr1(:)
+      real(8), allocatable  :: fsr(:)
+      real(8), allocatable  :: rho1_accumulated(:)
+      integer               :: nnorbt_internal, nnashx_internal
 *. Output from Subspace dagonalization
       DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)
 *.
@@ -358,6 +370,7 @@ C
      &                      IROOTSI,LU1LIST)
 #endif
             ELSE
+               write(luwrt,*) 'write start vectors...'
                CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
      &                  LUDIA,JPACK)
             END IF
@@ -382,6 +395,153 @@ C
 
 !     release scratch memory
       deallocate(iscr1)
+
+!
+!     *****************************************************************
+!     CI-DFT contributions
+!     *****************************************************************
+!
+      IF (DOCISRDFT) THEN
+#ifndef MOD_SRDFT
+         call quit('srdft not implemented in this version')
+#else
+
+#ifdef VAR_MPI
+         call quit('help me stefan... parallel srdft-ci')
+#endif
+
+         nnorbt_internal = 0
+         norbt_internal  = 0
+         do i = 1, nirrep
+           nnorbt_internal = nnorbt_internal + 
+     &                       (nmos_env(i)*(nmos_env(i)+1))/2
+           norbt_internal  = norbt_internal + nmos_env(i)
+         end do 
+         nnashx = (ntoob*(ntoob+1))/2
+
+         allocate(rho1_accumulated(nnashx))
+         allocate(fsr(ntoob**2))
+
+         rho1_accumulated = 0.0d0
+
+         i12_save = i12
+         i12      = 1 ! only 1-body terms...
+
+         luci_cvec = 99
+         open(file='srdft-lucita.cvec',unit=luci_cvec,status='replace',
+     &        form='unformatted',action='write',position='rewind')
+
+!        debug print
+        !call wrtvcd(vec1,lu1,-1,-1)
+        !write(luwrt,*) 'calc ensemble dens for ... roots',nrootsl
+
+         call rewine(lu1,-1)
+
+!        calculate ensemble density matrix
+!        ---------------------------------
+         do i = 1, nrootsl
+
+           call rewine(lu5,-1)
+           call rewine(lu6,-1)
+           call copvcd(lu1,lu5,vec1, 0,-1)
+           call copvcd(lu5,lu6,vec1,-1,-1)
+
+!          save initial CI vectors on scratch file
+           call rewine(lu5,-1)
+           call copvcd(lu5,luci_cvec,vec1,0,-1)
+
+           call rewine(lu5,-1)
+           call rewine(lu6,-1)
+!                                                            2: density matrix
+           call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 1,
+     &                    xxs2dum)                          !   1: rhotype == 1 (regular 1p density)
+         
+           call lucita_putdens_generic(work(krho1),work(krho2),
+     &                                 fsr,xxdummy,xxdummy,i12,2,1,i)
+!                                                              2: density matrix 
+!                                                                1: rhotype
+           call daxpy(nnashx,1.0d0,work(krho1),1,rho1_accumulated,1)
+         end do ! loop over # roots
+
+         i12 = i12_save
+         deallocate(fsr)
+         close(luci_cvec,status='keep')
+
+
+!        calculate ensemble srDFT contributions
+!        --------------------------------------
+
+         allocate(fsr(nnorbt_internal))
+         fsr = 0.0d0
+
+         IDUM = 0
+         CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
+         LSCR_local = current_free_mem - 1000
+         idum = 0
+!        set local marker + allocate space for lucita-dalton integral interface
+         call memman(idum,idum,'MARK  ',idum,'srdft1')
+         call memman(ksrdftdal_interface,lscr_local,'ADDL  ',2,'srdft2')
+
+         CALL SRFMAT(FSR,srdft_cmo_lucita,rho1_accumulated,
+     &               EJCSR_mc2lu,EJVSR_mc2lu,EDSR_mc2lu,EDFT_mc2lu,
+     &               work(ksrdftdal_interface),lscr_local,0)
+         
+         if(luci_myproc == luci_master)then
+!          ... Correct EMY/eigshf and CI diagonal
+           EMYDFT_mc2lu = 
+     &            EJCSR_mc2lu + EJVSR_mc2lu + EDSR_mc2lu + EDFT_mc2lu
+
+!          write(luwrt,*) 'eigshf before',eigshf
+!          in lucita: emy is eigshf at this point in the code
+           eigshf = eigshf + EMYDFT_mc2lu
+!          write(luwrt,*) 'eigshf after',eigshf
+!          ... extract and save SR over active indices
+           CALL GETAC(fsr,srdft_srac_lucita)
+
+!          call wrtmatmn(srdft_srac_lucita,1,3,1,3,luwrt)
+!          call wrtmatmn(work(kint1),1,3,1,3,luwrt)
+
+           call dzero(work(krho1),ntoob**2)
+
+!          add the contributions over the active indices (modify h1)
+!          ------------------------------------------------------------
+           call lucita_srdft_h1_adapt(srdft_srac_lucita,work(krho1),
+     &                                work(kint1))
+
+!          call wrtmatmn(work(kint1),1,3,1,3,luwrt)
+!          ... fold SRAC for 
+!          -----------------
+!           1) Adding it to CI-diagonal to get better pre-conditioning
+!           2) Later printing of CIDFT specific energy contributions
+           CALL DSPTGE(ntoob,srdft_srac_lucita,fsr)
+           CALL DGEFSP(ntoob,fsr,srdft_srac_lucita)
+
+           ESRDV = DDOT(ntoob*(ntoob+1)/2,rho1_accumulated,1,
+     &                  srdft_srac_lucita,1)
+!          write(luwrt,*) 'esrdv... ',esrdv
+         end if
+
+#ifdef VAR_MPI
+         if(luci_nmproc > 1)then 
+           call mpi_bcast(eigshf,1,mpi_real8,0,mpi_comm_world,irr)
+           call mpi_bcast(emydft_mc2lu,1,mpi_real8,0,mpi_comm_world,irr)
+           call mpi_bcast(esrdv,1,mpi_real8,0,mpi_comm_world,ierr)
+         end if
+#endif
+
+!        re"scale" H diagonal 
+!        --------------------
+         call manipulate_vcd(ludia,lu5,EMYDFT_mc2lu+ESRDV,
+     &                       vec1,-1,-1)
+         call copvcd(lu5,ludia,vec1,-1,-1)
+
+C        eliminate local memory
+         IDUM = 0
+         CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'srdft1')
+         deallocate(fsr)
+         deallocate(rho1_accumulated)
+#endif
+      ENDIF
 
 !
 !     initialize arrays

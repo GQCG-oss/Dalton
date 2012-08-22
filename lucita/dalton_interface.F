@@ -134,6 +134,7 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
       READ (ITAP30) (CMO(I),I=1,NCOEF)
       CLOSE(ITAP30,STATUS='KEEP')
 *
+      NTEST = 000 !
 !     NTEST = 100 ! hjaaj DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(lupri,*) '  MO - AO expansion matrix '
@@ -2344,6 +2345,66 @@ C
      &                    ntoobs,nsym,mxpobs,nint1,nint2,ireost,ireots,
      &                    ngas,is2e_active,iintden,-1)
       end if
+
+      deallocate(mult_ptg)
+
+      END
+***********************************************************************
+
+      subroutine lucita_srdft_h1_adapt(X1INT,x1int_scr,int1_mcscf)
+C
+#include "implicit.h"
+
+      real(8), intent(inout) :: x1int(*)
+      real(8), intent(inout) :: x1int_scr(*)
+      real(8), intent(inout) :: int1_mcscf(*)
+ 
+C Used from include files:
+C  priunit: LUPRI
+C  inforb: NCMOT, nsym
+C  inftap: LUINTM, FNINTM
+C  mxpdim: MXPOBS
+C  orbinp: ntoobs
+C  cgas: ngas
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cgas.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
+     &              ADSXA(MXPOBS,2*MXPOBS),
+     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
+
+!     scratch space
+      integer, allocatable :: mult_ptg(:,:)
+      integer              :: is2e_active
+      integer              :: iintden = 1
+C
+C     -------------------------------------------------------
+C
+!     allocate scratch matrix
+      allocate(mult_ptg(nsym,nsym))
+
+!     set multiplication table
+      mult_ptg = 0
+      call set_ptg_multiplication_table(mult_ptg,nsym)
+      
+      is2e_active = 1 ! no 2-electron integrals
+
+!-----------------------------------------------------------------
+!     transfer 1e- srDFT contributions from Dalton to LUCITA order
+!-----------------------------------------------------------------
+      call sirint2luint(x1int,dummy,              
+     &                  dummy,x1int_scr,dummy,mult_ptg,
+     &                  adsxa,nasht,nnashx,
+     &                  ntoobs,nsym,mxpobs,nint1,nxxxx,ireost,ireots,
+     &                  ngas,is2e_active,iintden,-1)
+
+!     scale 1-electron integrals with the sr-dft contributions
+      call daxpy(nint1,1.0d0,x1int_scr,1,int1_mcscf,1)
 
       deallocate(mult_ptg)
 
