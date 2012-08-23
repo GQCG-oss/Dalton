@@ -4036,7 +4036,7 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb,&
     write(luden) Emo
     close(luden)
 
-    deallocate(full_denmat, Fpd, Ftmp, Emo)
+    deallocate(full_denmat, Fpd, Emo)
 
 end subroutine pe_save_density
 
