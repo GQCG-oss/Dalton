@@ -2768,7 +2768,8 @@ subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
 
     integer :: i, j, k, l, m, n, o
     integer :: lufck, lexist, lu
-    real(dp) :: Ene, Enn, gauss
+    real(dp) :: gauss = 0.0d0
+    real(dp) :: Ene, Enn
     real(dp), dimension(ndens) :: Een, Eee
     real(dp), dimension(1) :: Tfm
     real(dp), dimension(3) :: Rfm
@@ -2808,8 +2809,8 @@ subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
         end do
 
         do j = 1, pdnucs
-            gauss = (8.0d0  * gauss_factor) /&
-                    ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
+!            gauss = (8.0d0  * gauss_factor) /&
+!                    ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
             do k = 1, qmnucs
                 Rfm = Rm(:,k) - Rpd(:,j)
                 call Tk_tensor(Tfm, Rfm)
