@@ -15,6 +15,7 @@ module polarizable_embedding
 
     public :: get_surface_atoms
     public :: elem2charge
+    public :: icosahedron
 #ifndef UNIT_TEST
     public :: pe_dalton_input, pe_read_potential, pe_master
     public :: pe_save_density, pe_twoints
@@ -4379,6 +4380,8 @@ end subroutine multipole_potential
 !------------------------------------------------------------------------------
 
 subroutine surface_atoms()
+! This routine finds the number of neighbors to each atom. Does not work to find 
+! surface atoms. Maybe delete later MNP
     
      real(dp), dimension(:,:), allocatable :: all_coords
      real(dp), dimension(:,:), allocatable :: all_charges
@@ -4468,7 +4471,9 @@ function charge2vdw(charge)
           &  2.40, 2.20, 2.10, 2.10, 1.95, &
           &  1.80, 1.80, 1.88, 1.90 /)
 
-    charge2vdw = vdw(charge)*aa2au
+    i = nint(charge)
+    if (i > 19) stop 'vdw radius not defined for Z > 19'
+    charge2vdw = vdw(i)*aa2au
     return
 
 end function charge2vdw
@@ -4480,7 +4485,7 @@ subroutine make_pe_cav()
      
      real(dp), dimension(:,:), allocatable :: all_coords
      real(dp), dimension(:,:), allocatable :: all_charges
-     real(dp), dimension(:,:) :: surface_atoms
+!     real(dp), dimension(:,:) :: surface_atoms
      integer :: natoms, charge_check, j
 
 !1) Find the surface atoms of a molecule
@@ -4497,24 +4502,26 @@ subroutine make_pe_cav()
         natoms = natoms + 1 
      end do
 !1)  Find all surface atoms
-     call get_surface_atoms(natoms,all_coords,all_charges, surface_atoms)
-!2)  Do the actual tesselation on surface atoms!
-     call tess(surface_atoms)
+     call get_surface_atoms(natoms,all_coords,all_charges)
+!2)  Do the actual tesselation on each surface atom!
+!     do j = 1, size(surface_atoms)
+!        call tess(surface_atoms(:,i))
+!     end do
 !3)  Compute overlap between surface atoms and all other atoms
 
 end subroutine make_pe_cav
 !------------------------------------------------------------------------------
-subroutine get_surface_atoms(natoms,cart_coords,all_charges, surface_atoms)
+subroutine get_surface_atoms(natoms,cart_coords,all_charges)
      
      integer, intent(in) :: natoms
      real(dp), dimension(3,natoms), intent(in) :: cart_coords
      real(dp), dimension(1,natoms), intent(in) :: all_charges
-     real(dp), dimension(:,:), intent(out) :: surface_atoms
+!     real(dp), dimension(:,:), intent(out) :: surface_atoms
      real(dp), dimension(3,natoms) :: sph_coords
 ! 1) First all coordinates are transformed to spherical coordinates
      call trans_to_sp(natoms,cart_coords, sph_coords)
 ! 2) All atoms are divided into boxes 
-     call divide(natoms,sph_coords,all_charges, cart_coords,surface_atoms)
+     call divide(natoms,sph_coords,all_charges, cart_coords)
 ! 3) The cartesian coordinates of all surface atoms are returned in surface_atoms
 
 end subroutine get_surface_atoms
@@ -4637,17 +4644,20 @@ subroutine divide(natoms,sph_coords,charges,cart_coords)
      integer, intent(in) :: natoms
      real(dp), dimension(3,natoms), intent(in) :: sph_coords, cart_coords
      real(dp), dimension(3,natoms) :: cart_coords_new
-     real(dp), dimension(:,:), allocatable :: cart_coords_surface
+     real(dp), dimension(:,:),   allocatable :: cart_coords_surface
      real(dp), dimension(1,natoms), intent(in) :: charges
-     integer,  dimension(:,:,:),   allocatable :: nbox
-     integer,  dimension(:,:),   allocatable :: j_surface
-     real(dp),  dimension(:,:,:),   allocatable :: r_surface ! r,x,y,z of each surface point
+     integer,  dimension(:,:,:), allocatable :: nbox
+     integer,  dimension(:,:),   allocatable :: j_surface ! j_surface(3,n_surface)
+     real(dp), dimension(:,:),   allocatable :: r_surface ! r of each surface point
+     integer,  dimension(:,:),   allocatable :: k_surface ! which atom gives this surface point
+     integer,  dimension(:),     allocatable :: i_temp
      integer,  dimension(:,:,:), allocatable :: kbox
      real(dp), dimension(:,:,:), allocatable :: rbox, rsurf
      real(dp), dimension(3) :: kv
      real(dp) :: rmax, ltheta, lphi, temp, dtheta, dphimin, dphimax
      real(dp) :: r_atom, r_pcm, c_pcm
      real(dp) :: r_dis
+     real(dp), parameter :: fac_pcm = 1.17D0, add_pcm = 4.0d0 ! standard values: 1.17D0, 4.0d0 (~ 2 water molecules)
      integer :: ntheta, nphi, i, ibox, jbox, nbox_max, j, itemp
      integer :: k, l, ii, jj, n_surface, jmax, imax
      integer :: max_ntheta = 1000
@@ -4659,10 +4669,11 @@ subroutine divide(natoms,sph_coords,charges,cart_coords)
      integer :: add_atom, kk
 
 #ifdef UNIT_TEST
-     print_lvl = 1001
+     !print_lvl = 1001
+     print_lvl = 011
 #endif
      rmax = maxval(sph_coords(1,:))
-     ntheta = 2*int(rmax*0.3d0 + 1.0d0)
+     ntheta = 12*int(rmax*0.3d0 + 1.0d0)
      ntheta = min(ntheta,max_ntheta)
      nphi = 2*ntheta
      ltheta = 180d0/dble(ntheta)
@@ -4744,11 +4755,13 @@ subroutine divide(natoms,sph_coords,charges,cart_coords)
               end do
            end do  
 #ifdef UNIT_TEST
-           write(luout,*) '*** box no.',i,j
+           if (print_lvl > 100) write(luout,*) '*** box no.',i,j
            if (nbox(1,i,j) > 0) then
+             if (print_lvl > 100) then
               do l = 1, nbox(1,i,j)
                  write(luout,'(A,2I8,F10.5,F10.2)') 'l,kbox,rbox= ',l, kbox(i,j,l), rbox(i,j,l), charges(1,kbox(i,j,l))
               end do
+             end if
               rmin = min( rmin, rbox(i,j,1) )
               rmax = max( rmax, rbox(i,j,1) )
               jj = jj + nbox(1,i,j)
@@ -4773,8 +4786,10 @@ subroutine divide(natoms,sph_coords,charges,cart_coords)
 ! - the first one is the atom with the greatest radial value
 
      allocate( j_surface(3,natoms) )
-     allocate( r_surface(0:3,nphi,0:ntheta) )
+     allocate( r_surface(nphi,0:ntheta) )
+     allocate( k_surface(nphi,0:ntheta) )
      r_surface = 0.0d0
+     k_surface = 0
 
 ! North pole atom
      !write(luout,*) 'nbox(2,1,1)', nbox(2,1,1)
@@ -4788,7 +4803,7 @@ subroutine divide(natoms,sph_coords,charges,cart_coords)
      j_surface(3,n_surface) = j
      r_atom = rbox(i,j,l)
      c_pcm = charges(1,kbox(i,j,l))
-     r_pcm = charge2vdw(c_pcm) * 1.170d0 
+     r_pcm = charge2vdw(c_pcm) * fac_pcm + add_pcm
 
      allocate( costheta(ntheta) )
      allocate( sintheta(ntheta) )
@@ -4802,23 +4817,18 @@ subroutine divide(natoms,sph_coords,charges,cart_coords)
         cosphi(ii) = cos(dble(ii)*2.0d0*pi/dble(nphi))
         sinphi(ii) = sin(dble(ii)*2.0d0*pi/dble(nphi))
      end do
-     r_surface(0,:,0) = r_atom + r_pcm
-     r_surface(3,:,0) = r_atom + r_pcm
-     write(luout,*) 'j, r_surface(j)',  0,r_surface(0,1,0)
+     r_surface(1,0) = r_atom + r_pcm
+     k_surface(1,0) = n_surface
+     !write(luout,*) 'jj, r_surface(jj)',  0,r_surface(1,0), k_surface(1,0)
      do jj = 1,ntheta
-        r_dis = (2.0d0*rbox(1,1,1)*costheta(jj))**2 - 4.0d0*(rbox(1,1,1)**2 - r_pcm**2)
+        r_dis = (rbox(1,1,1)*costheta(jj))**2 - (rbox(1,1,1)**2 - r_pcm**2)
         !write(luout,*) 'r_dis for "north pole" atom is:', r_dis,jj
         if ( r_dis < 0.0d0 ) then
            exit 
         else
-           r_surface(0,:,jj) = rbox(1,1,1)*costheta(jj) + sqrt(r_dis)/2.0d0
-           write(luout,*) 'jj, r_surface(jj)', jj, r_surface(0,1,jj)
-           ! calculate x,y,z of surface point
-           r_surface(3,:,jj) = r_surface(0,1,jj) * costheta(jj)
-           do ii = 1, nphi
-              r_surface(2,ii,jj) = r_surface(0,ii,jj) * sintheta(jj) * sinphi(ii)
-              r_surface(1,ii,jj) = r_surface(0,ii,jj) * sintheta(jj) * cosphi(ii)
-           end do
+           r_surface(:,jj) = rbox(1,1,1)*costheta(jj) + sqrt(r_dis)
+           k_surface(:,jj) = n_surface
+           !write(luout,*) 'jj, r_surface(jj)', jj, r_surface(1,jj),k_surface(1,jj)
         end if
      end do
 ! End north pole atom
@@ -4830,14 +4840,11 @@ subroutine divide(natoms,sph_coords,charges,cart_coords)
            add_atom = 0
            r_atom = rbox(i,j,l)
            c_pcm = charges(1,kbox(i,j,l))
-           r_pcm = charge2vdw(c_pcm) * 1.170d0 
+           r_pcm = charge2vdw(c_pcm) * fac_pcm + add_pcm
 ! get the cartesian coordinates from atom i,j,l
-!           cart_ijl(1) = sin( sph_coords(2,kbox(i,j,l))*(pi/180d0) ) * cos( sph_coords(3,kbox(i,j,l))*(pi/180d0) ) 
-!           cart_ijl(2) = sin( sph_coords(2,kbox(i,j,l))*(pi/180d0) ) * sin( sph_coords(3,kbox(i,j,l))*(pi/180d0) ) 
-!           cart_ijl(3) = cos( sph_coords(2,kbox(i,j,l))*(pi/180d0) ) 
-           cart_ijl(1) = sin( sph_coords(2,kbox(i,j,l)) ) * cos( sph_coords(3,kbox(i,j,l)) ) 
-           cart_ijl(2) = sin( sph_coords(2,kbox(i,j,l)) ) * sin( sph_coords(3,kbox(i,j,l)) ) 
-           cart_ijl(3) = cos( sph_coords(2,kbox(i,j,l)) ) 
+           cart_ijl(1) = sin( sph_coords(2,kbox(i,j,l))*(pi/180d0) ) * cos( sph_coords(3,kbox(i,j,l))*(pi/180d0) ) 
+           cart_ijl(2) = sin( sph_coords(2,kbox(i,j,l))*(pi/180d0) ) * sin( sph_coords(3,kbox(i,j,l))*(pi/180d0) ) 
+           cart_ijl(3) = cos( sph_coords(2,kbox(i,j,l))*(pi/180d0) ) 
            !write(luout,*) 'Next atom',l,i,j,r_atom
            !write(luout,*) 'pcm',c_pcm, r_pcm
            !write(luout,*) 'unit vector',cart_ijl(1:3)
@@ -4853,25 +4860,21 @@ subroutine divide(natoms,sph_coords,charges,cart_coords)
                    !end if
 ! Find the angle alpha between cart_ijl and cart_surf
                    cosalpha = dot( cart_ijl(:), cart_surf(:) )  
-                   r_dis = (2.0d0*r_atom*cosalpha)**2 - 4.0d0*(r_atom**2 - r_pcm**2)
+                   r_dis = (r_atom*cosalpha)**2 - (r_atom**2 - r_pcm**2)
                    !write (luout,*) 'cosalpha, r_dis',cosalpha, r_dis
                    if ( r_dis < 0.0d0 ) then
                       cycle
                    else
-                      r_surf = r_atom*cosalpha + sqrt(r_dis)/2.0d0
-                      if ( r_surf < r_surface(0,ii,jj)) then
+                      r_surf = r_atom*cosalpha + sqrt(r_dis)
+                      if ( r_surf < r_surface(ii,jj)) then
                          cycle
                       else
                          add_atom = add_atom + 1
-                         r_surface(0,ii,jj) = r_surf
-                         ! calculate x,y,z of surface point
-                         r_surface(3,ii,jj) = r_surface(0,ii,jj) * costheta(jj)
-                         r_surface(2,ii,jj) = r_surface(0,ii,jj) * sintheta(jj) * sinphi(ii)
-                         r_surface(1,ii,jj) = r_surface(0,ii,jj) * sintheta(jj) * cosphi(ii)
+                         r_surface(ii,jj) = r_surf
+                         k_surface(ii,jj) = n_surface + 1
                          if (print_lvl > 1000) then
                              write(luout,*) 'Surface atom nr.', n_surface+1, 'add_atom', add_atom
-                             write(luout,*) ii, jj, r_atom,r_surface(0,ii,jj)
-                             write(luout,*) r_surface(1,ii,jj), r_surface(2,ii,jj), r_surface(3,ii,jj) 
+                             write(luout,*) ii, jj, r_atom,r_surface(ii,jj)
                          end if
                       end if
                    end if
@@ -4899,35 +4902,35 @@ k_loop: do k = 2, n_surface
         j = j_surface(3,k)
            r_atom = rbox(i,j,l)
            c_pcm = charges(1,kbox(i,j,l))
-           r_pcm = charge2vdw(c_pcm) * 1.170d0 
+           r_pcm = charge2vdw(c_pcm) * fac_pcm + add_pcm
 ! get the cartesian coordinates from atom i,j,l
            cart_ijl(1) = sin( sph_coords(2,kbox(i,j,l))*(pi/180d0) ) * cos( sph_coords(3,kbox(i,j,l))*(pi/180d0) ) 
            cart_ijl(2) = sin( sph_coords(2,kbox(i,j,l))*(pi/180d0) ) * sin( sph_coords(3,kbox(i,j,l))*(pi/180d0) ) 
            cart_ijl(3) = cos( sph_coords(2,kbox(i,j,l))*(pi/180d0) ) 
-           write(luout,*) 'Next atom',l,i,j,r_atom
+           !write(luout,*) 'Next atom',l,i,j,r_atom
            !write(luout,*) 'pcm',c_pcm, r_pcm
            !write(luout,*) 'unit vector',cart_ijl(1:3)
            do jj = 1, ntheta
               do ii = 1, nphi
-                 if (r_atom + r_pcm < r_surface(0,ii,jj)) cycle
+                 if (r_atom + r_pcm < r_surface(ii,jj)) cycle
 ! get the cartesian coordinates from surface point nphi,ntheta
                    cart_surf(1) = sintheta(jj) * cosphi(ii)
                    cart_surf(2) = sintheta(jj) * sinphi(ii)
                    cart_surf(3) = costheta(jj)
 ! Find the angle alpha between cart_ijl and cart_surf
                    cosalpha = dot( cart_ijl(:), cart_surf(:) )  
-                   r_dis = (2.0d0*r_atom*cosalpha)**2 - 4.0d0*(r_atom**2 - r_pcm**2)
+                   r_dis = (r_atom*cosalpha)**2 - (r_atom**2 - r_pcm**2)
                    if ( r_dis < 0.0d0 ) then
                       cycle
                    else
-                      r_surf = r_atom*cosalpha + sqrt(r_dis)/2.0d0
-                      if ( r_surf < 0.999d0*r_surface(0,ii,jj)) then
+                      r_surf = r_atom*cosalpha + sqrt(r_dis)
+                      if ( r_surf < 0.99999d0*r_surface(ii,jj)) then
                          cycle
                       else
                          add_atom = add_atom + 1
                          if (print_lvl > 1000) then
                              write(luout,*) 'Surface atom nr.', k, 'add_atom', add_atom
-                             write(luout,*) ii, jj, r_surf,r_surface(0,ii,jj)
+                             write(luout,*) ii, jj, r_surf,r_surface(ii,jj)
                          end if
                          if (add_atom < k) then
                             j_surface(1,add_atom) = j_surface(1,k)
@@ -4941,58 +4944,206 @@ k_loop: do k = 2, n_surface
            end do
       end do k_loop
       write (luout,*) 'Revised number of surface atoms',add_atom, ' from', n_surface
+      allocate ( i_temp(n_surface) )
+      i_temp = 0
+      i_temp(1) = 1
+      do jj = 1, ntheta
+         do ii = 1, nphi
+           i_temp( k_surface(ii,jj) ) = i_temp( k_surface(ii,jj) ) + 1 
+         end do
+      end do
+      write(luout,*) 'the real surface atoms:'
+      write(luout,'(20I5)') i_temp(1:n_surface)
+      itemp = 0
+      do i = 1, n_surface
+         if ( i_temp(i) > 0 ) itemp = itemp + 1
+      end do
+      write(luout,*) 'Revised number of surface atoms from k_surface',itemp
+
       n_surface = add_atom
-      if (print_lvl > 1000 ) then
+      if (print_lvl > 10 ) then
           allocate( cart_coords_surface(3,n_surface) )
           write(luout,*) 'Surface atoms'
           do i = 1, n_surface
              kk = kbox(j_surface(2,i), j_surface(3,i), j_surface(1,i) )
-             cart_coords_surface(1,i) = sph_coords(1,kk) * sin(sph_coords(2,kk)) * cos(sph_coords(3,kk))
-             cart_coords_surface(2,i) = sph_coords(1,kk) * sin(sph_coords(2,kk)) * sin(sph_coords(3,kk))
-             cart_coords_surface(3,i) = sph_coords(1,kk) * cos(sph_coords(2,kk))
-             write(luout,*) cart_coords_surface(1:3,i)
+             cart_coords_surface(1,i) = sph_coords(1,kk) * sin(sph_coords(2,kk)*pi/180.0D0) * cos(sph_coords(3,kk)*pi/180.0D0)
+             cart_coords_surface(2,i) = sph_coords(1,kk) * sin(sph_coords(2,kk)*pi/180.0D0) * sin(sph_coords(3,kk)*pi/180.0D0)
+             cart_coords_surface(3,i) = sph_coords(1,kk) * cos(sph_coords(2,kk)*pi/180.0D0)
+             write(luout,'(3F15.10)') cart_coords_surface(1:3,i)
           end do
           write(luout,*) 'Surface points'
+          write(luout,'(3F15.10,I10)') 0.0d0,0.0d0,r_surface(1,0), k_surface(1,0)
+          i_temp = 0
           do jj = 1, ntheta
              do ii = 1, nphi
-                 write(luout,*) r_surface(1:3,ii,jj)
+                cart_surf(1) = r_surface(ii,jj) * sintheta(jj) * cosphi(ii)
+                cart_surf(2) = r_surface(ii,jj) * sintheta(jj) * sinphi(ii)
+                cart_surf(3) = r_surface(ii,jj) * costheta(jj)
+                write(luout,'(3F15.10,I10)') cart_surf(1:3), k_surface(ii,jj)
              end do
           end do  
+          write(luout,*) 'Number of surface point for each surface atom'
+          write(luout,'(50I2)') i_temp(1:n_surface)
+
           write(luout,*) 'All coords'
           do i = 1, natoms
-                 cart_coords_new(1,i) = sph_coords(1,i) * sin(sph_coords(2,i)) * cos( sph_coords(3,i) ) 
-                 cart_coords_new(2,i) = sph_coords(1,i) * sin(sph_coords(2,i)) * sin( sph_coords(3,i) ) 
-                 cart_coords_new(3,i) = sph_coords(1,i) * cos(sph_coords(2,i)) 
-                 write(luout,*) cart_coords_new(1:3,i)
+                 cart_coords_new(1,i) = sph_coords(1,i) * sin(sph_coords(2,i)*pi/180.0D0) * cos( sph_coords(3,i)*pi/180.0D0 ) 
+                 cart_coords_new(2,i) = sph_coords(1,i) * sin(sph_coords(2,i)*pi/180.0D0) * sin( sph_coords(3,i)*pi/180.0D0 ) 
+                 cart_coords_new(3,i) = sph_coords(1,i) * cos(sph_coords(2,i)*pi/180.0D0) 
+                 write(luout,'(3F15.10)') cart_coords_new(1:3,i)
           end do 
       end if
 
-#ifdef WORK_CODE
-     r_pcm = 6.0d0 ! max radius for an atomic cavity in the pcm cavity
-     r_max =  max ( rbox(:,1,1) ) - r_pcm
-     r_max_min_minus = r_max
-     r_max_plus = max ( rbox(:,2,1) ) - r_pcm
-     do j = 1, ntheta
-        do i = 1, nphi
-           if (nbox(1,i,j) > 0) then
-              n_surface = n_surface + 1
-              nbox(2,i,j) = 1
-              j_surface(1,n_surface) = 1
-              j_surface(2,n_surface) = i
-              j_surface(3,n_surface) = j
-           end if
-        end do
-     end do
-    
+end subroutine divide
 
-!    treat sections from "north pole" down to "south pole"
-     do j = 2, ntheta-1
-        do i = 1, nphi
-        end do
-     end do
-!    treat "south pole" with special code (has no theta+1)
-#endif
-end subroutine
+!------------------------------------------------------------------------------
+
+subroutine icosahedron(atom_c, r_atom)
+
+      real(dp), dimension(3), intent(in) :: atom_c
+      real(dp), intent(in) :: r_atom
+      real(dp), dimension(20), intent(out) :: area
+      real(dp), dimension(3,20), intent(out) :: tri_c
+      real(dp), parameter :: phi = 26.56505d0
+      real(dp) :: phia, theta
+      real(dp), dimension(3,12) :: verts
+      integer, dimension(1:3,20) :: faces ! Holds pointers to the atoms that define the faces 
+      integer :: i
+      real(dp) :: d, e, f, d2, e2, f2
+
+
+      phia = phi * pi/180.0d0
+
+      verts = 0.0d0
+      !North pole coordinate
+      verts(1,1) = atom_c(1)
+      verts(2,1) = atom_c(2)
+      verts(3,1) = atom_c(3) + r_atom 
+
+      theta = 0.0d0
+
+      do i = 2, 6
+         verts(1,i) = atom_c(1) + r_atom * cos(theta) * cos(phi)
+         verts(2,i) = atom_c(2) + r_atom * sin(theta) * cos(phi)
+         verts(3,i) = atom_c(3) + r_atom * sin(phia) 
+         theta = theta + pi * 72.0d0 / 180.0d0
+      end do
+
+      theta = pi * 36.0d0 / 180.0d0
+ 
+      do i = 7, 11
+         verts(1,i) = atom_c(1) + r_atom * cos(theta) * cos(-phi)
+         verts(2,i) = atom_c(2) + r_atom * sin(theta) * cos(-phi)
+         verts(3,i) = atom_c(3) + r_atom * sin(-phia) 
+         theta = theta + pi * 72.0d0 / 180.0d0
+      end do
+
+      ! South pole coordinate
+      verts(1,12) = atom_c(1)
+      verts(2,12) = atom_c(2)
+      verts(3,12) = atom_c(3) - r_atom 
+      
+      write(luout,*) 'Coordinates of a icosahedron'
+      do i = 1, 12
+         write(luout,*) verts(:,i)
+      end do
+
+! calculate the center and area of each triangle 
+      faces(1,1) = 1
+      faces(2,1) = 2
+      faces(3,1) = 3
+      faces(1,2) = 1
+      faces(2,2) = 3
+      faces(3,2) = 4
+      faces(1,3) = 1
+      faces(2,3) = 4 
+      faces(3,3) = 5
+      faces(1,4) = 1
+      faces(2,4) = 5
+      faces(3,4) = 6 
+      faces(1,5) = 1
+      faces(2,5) = 6
+      faces(3,5) = 2 
+      faces(1,6) = 12
+      faces(2,6) = 7
+      faces(3,6) = 8
+      faces(1,7) = 12
+      faces(2,7) = 8
+      faces(3,7) = 9
+      faces(1,8) = 12
+      faces(2,8) = 9
+      faces(3,8) = 10
+      faces(1,9) = 12
+      faces(2,9) = 10
+      faces(3,9) = 11
+      faces(1,10) = 12
+      faces(2,10) = 11
+      faces(3,10) = 7 
+      faces(1,11) = 2 
+      faces(2,11) = 3 
+      faces(3,11) = 7 
+      faces(1,12) = 3 
+      faces(2,12) = 4 
+      faces(3,12) = 8 
+      faces(1,13) = 4 
+      faces(2,13) = 5 
+      faces(3,13) = 9 
+      faces(1,14) = 5 
+      faces(2,14) = 6 
+      faces(3,14) = 10
+      faces(1,15) = 6 
+      faces(2,15) = 2 
+      faces(3,15) = 11
+      faces(1,16) = 7 
+      faces(2,16) = 8 
+      faces(3,16) = 3 
+      faces(1,17) = 8 
+      faces(2,17) = 9 
+      faces(3,17) = 4 
+      faces(1,18) = 9 
+      faces(2,18) = 10
+      faces(3,18) = 5 
+      faces(1,19) = 10
+      faces(2,19) = 11
+      faces(3,19) = 6 
+      faces(1,20) = 11
+      faces(2,20) = 7 
+      faces(3,20) = 2
+
+      do i = 1, 20 ! loop over faces
+        !d = y1*z2*1 + z1*1*y3 + 1*y2*z3 - y3*z2*1 - z3*1*y1 - 1*y2*z1
+         d = verts(2,faces(1,i))*verts(3,faces(2,i)) + verts(3,faces(1,i))*verts(2,faces(3,i))&
+         & + verts(2,faces(2,i))*verts(3,faces(3,i)) - verts(2,faces(3,i))*verts(3,faces(2,i))&
+         & - verts(3,faces(3,i))*verts(2,faces(1,i)) - verts(2,faces(2,i))*verts(3,faces(1,i))      
+        !e = z1*x2*1 + x1*1*z3 + 1*z2*x3 - z3*x2*1 - x3*1*z1 - 1*z2*x1
+         e = verts(3,faces(1,i))*verts(1,faces(2,i)) + verts(1,faces(1,i))*verts(3,faces(3,i))&
+         & + verts(3,faces(2,i))*verts(1,faces(3,i)) - verts(3,faces(3,i))*verts(1,faces(2,i))&
+         & - verts(1,faces(3,i))*verts(3,faces(1,i)) - verts(3,faces(2,i))*verts(1,faces(1,i))      
+        !f = x1*y2*1 + y1*1*x3 + 1*x2*y3 - x3*y2*1 - y3*1*x1 - 1*x2*y1
+         f = verts(1,faces(1,i))*verts(2,faces(2,i)) + verts(2,faces(1,i))*verts(1,faces(3,i))&
+         & + verts(1,faces(2,i))*verts(2,faces(3,i)) - verts(1,faces(3,i))*verts(2,faces(2,i))&
+         & - verts(2,faces(3,i))*verts(1,faces(1,i)) - verts(1,faces(2,i))*verts(2,faces(1,i))      
+         d2 = d**2
+         e2 = e**2
+         f2 = f**2
+         area(i) = 0.50d0 * sqrt(d2 + e2 + f2)
+         tri_c(1,i) = (1.0d0/3.0d0) * ( verts(1,faces(1,i)) + verts(1,faces(2,i)) + verts(1,faces(3,i)) ) 
+         tri_c(2,i) = (1.0d0/3.0d0) * ( verts(2,faces(1,i)) + verts(2,faces(2,i)) + verts(2,faces(3,i)) ) 
+         tri_c(3,i) = (1.0d0/3.0d0) * ( verts(3,faces(1,i)) + verts(3,faces(2,i)) + verts(3,faces(3,i)) ) 
+      end do
+ 
+      write(luout,*) 'Triangular area'
+      do i = 1, 20
+         write(luout,*) area(i)
+      end do
+      write(luout,*) 'Triangular center'
+      do i = 1, 20
+         write(luout,*) tri_c(:,i)
+      end do
+       
+
+end subroutine icosahedron
+
 !------------------------------------------------------------------------------
 
 end module polarizable_embedding
@@ -5014,6 +5165,8 @@ end module polarizable_embedding
          logical :: lexist
          integer :: i, j, luin=1
          real(dp), parameter :: aa2au = 1.8897261249935897d0
+         real(dp), dimension(3) :: atom_c
+         real(dp) :: r_atom
        
          open (luin, FILE='molecule.xyz', STATUS='OLD')  
     
@@ -5032,7 +5185,11 @@ end module polarizable_embedding
 !            write (luout,*) i, all_coords(:,i)
 !        end do
          all_coords = aa2au*all_coords
-         call get_surface_atoms(natoms, all_coords, all_chg)
+!         call get_surface_atoms(natoms, all_coords, all_chg)
+
+         atom_c = 0.0d0
+         r_atom = 1.0d0
+         call icosahedron(atom_c, r_atom)
 
 !------------------------------------------------------------------------------
      end program unit_test_polarizable_embedding
