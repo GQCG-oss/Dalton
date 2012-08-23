@@ -758,10 +758,10 @@ c             LUAB = 81
 c             LUSS = 82
 c             LUAS = 83
 C
-              OPEN(LUSB,STATUS='NEW',FORM='UNFORMATTED')
-              OPEN(LUAB,STATUS='NEW',FORM='UNFORMATTED')
-              OPEN(LUSS,STATUS='NEW',FORM='UNFORMATTED')
-              OPEN(LUAS,STATUS='NEW',FORM='UNFORMATTED')
+               OPEN(LUSB,STATUS='NEW',FORM='UNFORMATTED')
+               OPEN(LUAB,STATUS='NEW',FORM='UNFORMATTED')
+               OPEN(LUSS,STATUS='NEW',FORM='UNFORMATTED')
+               OPEN(LUAS,STATUS='NEW',FORM='UNFORMATTED')
             ENDIF
 C
             DO IOPER=1,NOPER(KSYMOP)

@@ -471,10 +471,10 @@ c      LUAB = 81
 c      LUSS = 82
 c      LUAS = 83
 C
-      OPEN(LUSB,status='new',form='unformatted')
-      OPEN(LUAB,status='new',form='unformatted')
-      OPEN(LUSS,status='new',form='unformatted')
-      OPEN(LUAS,status='new',form='unformatted')
+       OPEN(LUSB,status='new',form='unformatted')
+       OPEN(LUAB,status='new',form='unformatted')
+       OPEN(LUSS,status='new',form='unformatted')
+       OPEN(LUAS,status='new',form='unformatted')
 C
             DO IOPER=1,ABS_NOPER(ISYM)
                LABEL=ABS_LABOP(IOPER,ISYM)
