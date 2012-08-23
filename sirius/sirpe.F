@@ -441,6 +441,8 @@ C   INFLIN : NWOPPT,NVARPT
       DIMENSION DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       LOGICAL   ORBLIN, LOCDEB
 
+      PRINT*, 'IN pe_lin'
+
       LOCDEB = .FALSE.
 
       CALL QENTER('pe_lin')
@@ -897,6 +899,8 @@ C     end of pelnc.
 
       SUBROUTINE pe_lno(NOSIM,BOVECS,CREF,CMO,INDXCI,    
      *                 DV,SVEC,NSVEC,WRK,LFREE)
+
+      use polarizable_embedding, only: pe_master
 C
 C  Erik Donovan Hedegaard jan. 2012 
 C  after original code by Hans Jorgen Aa. Jensen
@@ -943,7 +947,9 @@ C
       DOUBLE PRECISION D0, D2, D1, DP5
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0 )
 
-      LPOL = .FALSE.
+      PRINT*, 'IN pe_lno'
+
+      LPOL = .FALSE. ! edh : Something needs to be done about LPOL !!
 
       CALL QENTER('pe_lno')
 
@@ -983,22 +989,23 @@ C *************************************************************
 
 C    ...Save the dipole origin
 
-      XSAVE = DIPORG(1)
-      YSAVE = DIPORG(2)
-      ZSAVE = DIPORG(3)
+C      XSAVE = DIPORG(1)
+C      YSAVE = DIPORG(2)
+C      ZSAVE = DIPORG(3)
 C
 C     Core allocation
 C
       KUCMO   = 1
       KUBO    = KUCMO   + NORBT*NBAST
 C     ------------------------------------------
-      KINVMAT = KUBO    + NOSIM*N2ORBX
-      KINDMOM = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2
-      KEFIEX =  KINDMOM + 3*NOSIM*NNZAL
+C      KINVMAT = KUBO    + NOSIM*N2ORBX
+C      KINDMOM = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2
+C      KEFIEX =  KINDMOM + 3*NOSIM*NNZAL
 C     ------------------------------------------
-      KFXO    = KEFIEX  + 3*NOSIM*NNZAL
-      KFPEMO  = KFXO    + NNORBT*NOSIM
-      KFPESQ  = KFPEMO  + NNORBX
+C      KFXO    = KEFIEX  + 3*NOSIM*NNZAL
+C     ------------------------------------------
+      KFPEMO  = KFXO    + NNORBT*NOSIM  
+      KFPESQ  = KFPEMO  + NNORBX        ! still needed
       KFPXSQ  = KFPESQ  + N2ORBX
       KFPX    = KFPXSQ  + N2ORBX
       KFPXAC  = KFPX    + NOSIM*NNORBX
@@ -1010,18 +1017,17 @@ C     ----------------------------------------- 1 to pe_lno new module code!!
       KDXAO   = KDXVAO  + N2BASX
       KDFAO   = KDXAO   + NNBASX*NOSIM
       KDFMO   = KDFAO   + NNBASX*NOSIM
-      KDUFF   = KDFMO   + NNORBX
-      KWRK1   = KDUFF   + N2ORBX*NOSIM
+      KWRK1   = KDFMO   + NNORBX*NOSIM
       LWRK1   = LFREE   - KWRK1  
 
 
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
       CALL DZERO(WRK(KUBO),NOSIM*N2ORBX)
 C     ----------------------------------------- 1 to pe_lno new module code!!
-      CALL DZERO(WRK(KINVMAT), 3*NNZAL*(3*NNZAL+1)/2)
-      CALL DZERO(WRK(KINDMOM), 3*NOSIM*NNZAL)
-      CALL DZERO(WRK(KEFIEX), 3*NOSIM*NNZAL)
-      CALL DZERO(WRK(KFXO), NNORBT*NOSIM)
+C      CALL DZERO(WRK(KINVMAT), 3*NNZAL*(3*NNZAL+1)/2)
+C      CALL DZERO(WRK(KINDMOM), 3*NOSIM*NNZAL)
+C      CALL DZERO(WRK(KEFIEX), 3*NOSIM*NNZAL)
+C      CALL DZERO(WRK(KFXO), NNORBT*NOSIM)
       CALL DZERO(WRK(KFPEMO), NNORBX)
       CALL DZERO(WRK(KFPESQ), N2ORBX)
       CALL DZERO(WRK(KFPXSQ), N2ORBX)
@@ -1034,7 +1040,7 @@ C     ----------------------------------------- 1 to pe_lno new module code!!
       CALL DZERO(WRK(KDXAO),NNBASX*NOSIM)
       CALL DZERO(WRK(KDFAO),NNBASX*NOSIM)
       CALL DZERO(WRK(KDFMO),NNORBX)
-      CALL DZERO(WRK(KDUFF),N2ORBX*NOSIM)
+      CALL DZERO(WRK(KUDFF),N2ORBX*NOSIM) 
 
       IF (LWRK1 .LT. 0) CALL ERRWRK('pe_lno',-KWRK1,LWRK1)
 C
@@ -1056,45 +1062,45 @@ C
          END DO
       END IF
 
-      IF (.NOT. LPOL) GOTO 755
+!      IF (.NOT. LPOL) GOTO 755
 
 C     1) Read B(r) response (Relay) matrix from file.
 
-      IF ( (LPOL) .AND. (MMMAT) ) THEN
-        N = 3*NNZAL
-        LUQMMM = -1
-        CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
-     &               'UNFORMATTED',IDUMMY,.FALSE.)
-        REWIND(LUQMMM)
+C      IF ( (LPOL) .AND. (MMMAT) ) THEN
+C        N = 3*NNZAL
+C        LUQMMM = -1
+C        CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
+C     &               'UNFORMATTED',IDUMMY,.FALSE.)
+C        REWIND(LUQMMM)
+C
+C        IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
+C          CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
+C        ELSE
+C          CALL QUIT('Problem reading the matrix from the QMMMIM file.')
+C        ENDIF
 
-        IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-          CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
-        ELSE
-          CALL QUIT('Problem reading the matrix from the QMMMIM file.')
-        ENDIF
+C        CALL GPCLOSE(LUQMMM,'KEEP')
 
-        CALL GPCLOSE(LUQMMM,'KEEP')
+C      ENDIF
 
-      ENDIF
-
-      KPATOM = 0
-      NCOM  = 3       ! edh: sometimes called NOSIM but denoted NCOM here 
-      TOFILE = .FALSE.       
-      TRIMAT = .TRUE. 
-      EXP1VL = .FALSE.      
+C      KPATOM = 0
+C      NCOM  = 3       ! edh: sometimes called NOSIM but denoted NCOM here 
+C      TOFILE = .FALSE.       
+C      TRIMAT = .TRUE. 
+C      EXP1VL = .FALSE.      
 
 C     2) Construct Fxo(PE) = B(r) * < 0 | f^(1)el | 0 >  ; f(1)el is one-index transformed F(1)el
 
 C     .. memory allocation for field matrix and one-electron transform.      
 
-      KMTAO   = KWRK1
-      KMTMO   = KMTAO  + 3*NNBASX
-      KMTSQ   = KMTMO  + 3*NNORBT  
-      KMTXSQ  = KMTSQ  + 3*N2ORBX
-      KMTX    = KMTXSQ + 3*N2ORBX 
-      KMTXAC  = KMTX   + 3*NOSIM*NNORBX 
-      KWRK2   = KMTXAC + 3*NOSIM*NNASHX
-      LWRK2   = LFREE   - KWRK2
+C      KMTAO   = KWRK1
+C      KMTMO   = KMTAO  + 3*NNBASX
+C      KMTSQ   = KMTMO  + 3*NNORBT  
+C      KMTXSQ  = KMTSQ  + 3*N2ORBX
+C      KMTX    = KMTXSQ + 3*N2ORBX 
+C      KMTXAC  = KMTX   + 3*NOSIM*NNORBX 
+C      KWRK2   = KMTXAC + 3*NOSIM*NNASHX
+C      LWRK2   = LFREE   - KWRK2
 
 C     1. KMTAO ("KMAT") : QM dipole one-elctron integrals (F^(1) in ao basis)
 C     2. KMTMO    -     : QM dipole one-elctron integrals (mo basis)
@@ -1103,227 +1109,245 @@ C     4. KMTXSQ   -     : One-index transformed F^(1)el ( =  f^(1)el )
 C     5. KMTX     -     : f^(1)el triangular packed
 C     6. KMTXAC   -     : Active part of f^(1)el
 
-      CALL DZERO(WRK(KMTAO),3*NNBASX)
-      CALL DZERO(WRK(KMTMO),3*NNORBT)
-      CALL DZERO(WRK(KMTSQ),3*N2ORBX)
-      CALL DZERO(WRK(KMTXSQ),3*N2ORBX)
-      CALL DZERO(WRK(KMTX),3*NOSIM*NNORBX)
-      CALL DZERO(WRK(KMTXAC),3*NOSIM*NNASHX)
+C      CALL DZERO(WRK(KMTAO),3*NNBASX)
+C      CALL DZERO(WRK(KMTMO),3*NNORBT)
+C      CALL DZERO(WRK(KMTSQ),3*N2ORBX)
+C      CALL DZERO(WRK(KMTXSQ),3*N2ORBX)
+C      CALL DZERO(WRK(KMTX),3*NOSIM*NNORBX)
+C      CALL DZERO(WRK(KMTXAC),3*NOSIM*NNASHX)
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('pe_lno',-KWRK2,LWRK2)
+C      IF (LWRK2 .LT. 0) CALL ERRWRK('pe_lno',-KWRK2,LWRK2)
 
 C ********************* UNDER CONSTRUCTION ****************************
 
       ! workground for pe_lno !
 
-      DO IOSIM    = 1, NOSIM
+      DO IOSIM    = 1,NOSIM
           JUBO    = KUBO     + (IOSIM - 1)*N2ORBX
-          JDXAO   = KDXAO    + (IOSIM - 1)*NNBASX          ! NNBASX OR N2BASX
+          JDXAO   = KDXAO    + (IOSIM - 1)*NNBASX               ! NNBASX OR N2BASX
           CALL TR1DEN(CMO,WRK(JUBO),DV,WRK(KDXCAO),WRK(KDXVAO), ! KDXCAO : Trial vectors a.o. (inactive matrix)
      &                WRK(KWRK1),LWRK1)                         ! KDXVAO : Trial vectors a.o. (active matrix) 
 
-      IF (NASHT .GT. 0) THEN
-         DAXPY(N2BASX,1.0D0,WRK(KDXVAO), 1, WRK(KDXCAO), 1)
-      END IF
+          IF (NASHT .GT. 0) THEN
+             CALL DAXPY(N2BASX,1.0D0,WRK(KDXVAO), 1, WRK(KDXCAO), 1)
+          END IF
 
-      CALL DGEFSP(NBAST,WRK(KDXCAO),WRK(JDXAO))
+          CALL DGEFSP(NBAST,WRK(KDXCAO),WRK(JDXAO))             ! Symmetry pack (fold) trial vectors in a.o.
+
+C      WRITE(LUPRI,*) 'KDXAO input to pe_master - IOSIM:', IOSIM
+C      CALL OUTPAK(WRK(JDXAO),NBAST,1,LUPRI)
+
       END DO
 
-     call pe_master(runtype='response',
+      call pe_master(runtype='response',
      &              denmats=wrk(KDXAO:KDXAO+nosim*nnbasx-1), ! input for pe module "response"
      &              fckmats=wrk(KDFAO:KDFAO+nosim*nnbasx-1), ! output for pe module "response 
-     &              nmats=nosim, dalwrk=wrk(KWRK1:KWRK+LWRK1-1))
+     &              nmats=nosim, dalwrk=wrk(KWRK1:KWRK1+LWRK1-1))
+            
+C    Takes fock matrices ()     
+C    Returns which in MO basis was B < 0 | f^(1) | 0 > F^(1) in KDFAO 
 
-      DO IOSIM = 1, NOSIM
-         JUDFF  = KUDFF  + (IOSIM-1)*N2BASX         ! trial vectors (final transformed to MO and folded)
-         JDFAO  = KDFAO + (IOSIM-1)*NNBASX         ! contributions to trial vectors in a.o.
+C      CALL DGEFSP(NBAST,WRK(KDENT),WRK(KDENTF))
+C
+C      call pe_master('fock', denmats=wrk(kdentf:kdentf+nnbasx-1),
+C     &               fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
+C     &               Epe=wrk(kwrk1:kwrk1),
+C     &               dalwrk=wrk(kwrk1+1:kwrk1+1+lwrk1))
+C      eqmmm = wrk(kwrk1)
+
+C     Returns Fg type of contribution... (note: Fy type is obtained by PEFCMO!)
+
+      DO IOSIM  = 1,NOSIM
+         JDFMO  = KDFMO  + (IOSIM-1)*N2BASX                          ! trial vectors (final transformed to MO and folded)
+         JDFAO  = KDFAO  + (IOSIM-1)*NNBASX                          ! contributions to trial vectors in a.o.
          CALL UTHU(WRK(JDFAO),WRK(KDFMO),CMO,WRK(KWRK1),NBAST,NORBT)
-         CALL DSPTSI(NORBT,WRK(KDFMO),WRK(JUDFF))
       END DO      
 
 C**********************************************************************
 
-      LRI = 0 ! counter for index in one-index transformed electric field vector
+C      LRI = 0 ! counter for index in one-index transformed electric field vector
 
-      DO I = 1,MMCENT
+C      DO I = 1,MMCENT
 
-        DIPORG(1) = MMCORD(1,I)
-        DIPORG(2) = MMCORD(2,I)
-        DIPORG(3) = MMCORD(3,I)
+C        DIPORG(1) = MMCORD(1,I)
+C        DIPORG(2) = MMCORD(2,I)
+C        DIPORG(3) = MMCORD(3,I)
 
 C       2.a Dipole one-electron integrals (Fel(1) operator in AO basis) 
 C       ...Get F^(1)el integral: 1) x-coord. 2) y-coord. 3) z-coord.  
 
-        RUNQM3 = .TRUE.
+C       RUNQM3 = .TRUE.
 
-        CALL GET1IN(WRK(KMTAO),'NEFIELD',NCOM,WRK(KWRK2),
-     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
+C        CALL GET1IN(WRK(KMTAO),'NEFIELD',NCOM,WRK(KWRK2),
+C     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
+C     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
 
-         RUNQM3 = .FALSE.
+C         RUNQM3 = .FALSE.
 
 C        2.b Dipole one-electron integrals (F^(1)el operator in MO basis)
 
-         CALL UTHU(WRK(KMTAO),WRK(KMTMO),WRK(KUCMO),
-     &             WRK(KWRK2),NBAST,NORBT)
+C         CALL UTHU(WRK(KMTAO),WRK(KMTMO),WRK(KUCMO),
+C     &             WRK(KWRK2),NBAST,NORBT)
 
-         CALL UTHU(WRK(KMTAO + 1*NNBASX),WRK(KMTMO + 1*NNORBT),
-     &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
+C         CALL UTHU(WRK(KMTAO + 1*NNBASX),WRK(KMTMO + 1*NNORBT),
+C     &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-         CALL UTHU(WRK(KMTAO + 2*NNBASX),WRK(KMTMO + 2*NNORBT),
-     &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
+C         CALL UTHU(WRK(KMTAO + 2*NNBASX),WRK(KMTMO + 2*NNORBT),
+C     &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
 C        2.c F^(1)el from packed (triangular) to unpacked (square) 
 
-         CALL DSPTSI(NORBT,WRK(KMTMO),WRK(KMTSQ))
+C         CALL DSPTSI(NORBT,WRK(KMTMO),WRK(KMTSQ))
 
-         CALL DSPTSI(NORBT,WRK(KMTMO + 1*NNORBT),
-     &               WRK(KMTSQ + 1*N2ORBX))
+C         CALL DSPTSI(NORBT,WRK(KMTMO + 1*NNORBT),
+C     &               WRK(KMTSQ + 1*N2ORBX))
 
-         CALL DSPTSI(NORBT,WRK(KMTMO + 2*NNORBT),
-     &               WRK(KMTSQ + 2*N2ORBX))
+C         CALL DSPTSI(NORBT,WRK(KMTMO + 2*NNORBT),
+C     &               WRK(KMTSQ + 2*N2ORBX))
 
  
-        DO IOSIM = 1, NOSIM
+C        DO IOSIM = 1, NOSIM
            
-            JUBO   = KUBO   + (IOSIM - 1) * N2ORBX         ! Unpacked orbital trial vectors
-            JMTX   = KMTX   + 3 * (IOSIM - 1) * NNORBX     ! F^(1) for each orb. trial vector          
-            JMTXAC = KMTXAC + 3 * (IOSIM - 1) * NNASHX     ! - active part         
+C            JUBO   = KUBO   + (IOSIM - 1) * N2ORBX         ! Unpacked orbital trial vectors
+C            JMTX   = KMTX   + 3 * (IOSIM - 1) * NNORBX     ! F^(1) for each orb. trial vector          
+C            JMTXAC = KMTXAC + 3 * (IOSIM - 1) * NNASHX     ! - active part         
 
-            CALL DZERO(WRK(KMTXSQ),3*N2ORBX) 
+C            CALL DZERO(WRK(KMTXSQ),3*N2ORBX) 
 
-            CALL TR1UH1(WRK(JUBO),WRK(KMTSQ),              !     **** x component **** 
-     &                  WRK(KMTXSQ),1)                     ! one index transform F^(1)el to f^(1)el
+C            CALL TR1UH1(WRK(JUBO),WRK(KMTSQ),              !     **** x component **** 
+C     &                  WRK(KMTXSQ),1)                     ! one index transform F^(1)el to f^(1)el
 
-            CALL DGETSP(NORBT,WRK(KMTXSQ),                 !     pack (triangular) f^(1)el
-     &                  WRK(JMTX))                         
+C            CALL DGETSP(NORBT,WRK(KMTXSQ),                 !     pack (triangular) f^(1)el
+C     &                  WRK(JMTX))                         
 
-            CALL TR1UH1(WRK(JUBO),WRK(KMTSQ + 1*N2ORBX),   !     **** y component ****
-     &                  WRK(KMTXSQ + 1*N2ORBX),1)          ! one index transform F^(1) to f^(1) 
+C            CALL TR1UH1(WRK(JUBO),WRK(KMTSQ + 1*N2ORBX),   !     **** y component ****
+C     &                  WRK(KMTXSQ + 1*N2ORBX),1)          ! one index transform F^(1) to f^(1) 
 
-            CALL DGETSP(NORBT,WRK(KMTXSQ + 1*N2ORBX),      !     pack (triangular) f^(1) 
-     &                  WRK(JMTX + 1*NNORBX))              
-
-
-            CALL TR1UH1(WRK(JUBO),WRK(KMTSQ + 2*N2ORBX),   !     **** z component **** 
-     &                  WRK(KMTXSQ + 2*N2ORBX),1)          ! one index transform F^(1) to f^(1) z
-
-            CALL DGETSP(NORBT,WRK(KMTXSQ + 2*N2ORBX),      !     pack (triangular) f^(1) 
-     &                  WRK(JMTX + 2*NNORBX))              
+C            CALL DGETSP(NORBT,WRK(KMTXSQ + 1*N2ORBX),      !     pack (triangular) f^(1) 
+C     &                  WRK(JMTX + 1*NNORBX))              
 
 
-           IF (NASHT .GT. 0) THEN
-             CALL GETAC2(WRK(JMTX),WRK(JMTXAC))
-             CALL GETAC2(WRK(JMTX + 1*NNORBX),WRK(JMTXAC + 1*NNASHX))
-             CALL GETAC2(WRK(JMTX + 2*NNORBX),WRK(JMTXAC + 2*NNASHX))
-           END IF   
+C            CALL TR1UH1(WRK(JUBO),WRK(KMTSQ + 2*N2ORBX),   !     **** z component **** 
+C     &                  WRK(KMTXSQ + 2*N2ORBX),1)          ! one index transform F^(1) to f^(1) z
+
+C            CALL DGETSP(NORBT,WRK(KMTXSQ + 2*N2ORBX),      !     pack (triangular) f^(1) 
+C     &                  WRK(JMTX + 2*NNORBX))              
+
+
+C           IF (NASHT .GT. 0) THEN
+C             CALL GETAC2(WRK(JMTX),WRK(JMTXAC))
+C             CALL GETAC2(WRK(JMTX + 1*NNORBX),WRK(JMTXAC + 1*NNASHX))
+C             CALL GETAC2(WRK(JMTX + 2*NNORBX),WRK(JMTXAC + 2*NNASHX))
+C           END IF   
 
 C          ... Calculate < 0 | f^(1) | 0 >
 
-           TFX1 = SOLELM(DV,WRK(JMTXAC),                      
-     &                           WRK(JMTX),TFXAC1)
-           TFX2 = SOLELM(DV,WRK(JMTXAC + 1*NNASHX),
-     &                           WRK(JMTX + 1*NNORBX),TFXAC2)
-           TFX3 = SOLELM(DV,WRK(JMTXAC + 2*NNASHX),
-     &                           WRK(JMTX + 2*NNORBX),TFXAC3)
+C           TFX1 = SOLELM(DV,WRK(JMTXAC),                      
+C     &                           WRK(JMTX),TFXAC1)
+C           TFX2 = SOLELM(DV,WRK(JMTXAC + 1*NNASHX),
+C     &                           WRK(JMTX + 1*NNORBX),TFXAC2)
+C           TFX3 = SOLELM(DV,WRK(JMTXAC + 2*NNASHX),
+C     &                           WRK(JMTX + 2*NNORBX),TFXAC3)
 
 
 C        **** x-component ****                          
-         WRK(KEFIEX + 3*NNZAL*(IOSIM - 1) + LRI + 0) = TFX1 
+C         WRK(KEFIEX + 3*NNZAL*(IOSIM - 1) + LRI + 0) = TFX1 
 C        **** y-component ****                         
-         WRK(KEFIEX + 3*NNZAL*(IOSIM - 1) + LRI + 1) = TFX2 
+C         WRK(KEFIEX + 3*NNZAL*(IOSIM - 1) + LRI + 1) = TFX2 
 C        **** z-component ****
-         WRK(KEFIEX + 3*NNZAL*(IOSIM - 1) + LRI + 2) = TFX3
+C         WRK(KEFIEX + 3*NNZAL*(IOSIM - 1) + LRI + 2) = TFX3
 C        ... start from x of the next MM center
 
-           END DO ! NOSIM
+C           END DO ! NOSIM
 
-         LRI = LRI + 3
+C         LRI = LRI + 3
 
-      END DO ! MMCENT
+C      END DO ! MMCENT
 
 C     ... and calculate the one-index transformed 
 C     induced moment:  u = B * < 0 | f^(1) | 0 > 
 
 
-      DO IOSIM = 1, NOSIM
+C      DO IOSIM = 1, NOSIM
 
-        IF (IPOLTP .GT. 0) THEN
-          IF (MMMAT) THEN
-           CALL DSPMV('L',3*NNZAL,D1,WRK(KINVMAT),             ! edh: note KINVMAT is a lower triangular matrix
-     &                WRK(KEFIEX + 3*(IOSIM - 1)*NNZAL),1,D0,  
-     &                WRK(KINDMOM + 3*(IOSIM-1)*NNZAL),1)      
-          ELSE IF (MMITER) THEN
-           IOPT = 2 ! Do not read from file any previuos induced moments
-           CALL F2QMMM(WRK(KEFIEX  + 3*(IOSIM - 1)*NNZAL),NNZAL,
-     &                 WRK(KINDMOM + 3*(IOSIM-1)*NNZAL),  
-     &                 WRK(KWRK2),LWRK2,IOPT,IPQMMM)
-          ENDIF
-        END IF
-      END DO
+C        IF (IPOLTP .GT. 0) THEN
+C          IF (MMMAT) THEN
+C           CALL DSPMV('L',3*NNZAL,D1,WRK(KINVMAT),             ! edh: note KINVMAT is a lower triangular matrix
+C     &                WRK(KEFIEX + 3*(IOSIM - 1)*NNZAL),1,D0,  
+C     &                WRK(KINDMOM + 3*(IOSIM-1)*NNZAL),1)      
+C          ELSE IF (MMITER) THEN
+C           IOPT = 2 ! Do not read from file any previuos induced moments
+C           CALL F2QMMM(WRK(KEFIEX  + 3*(IOSIM - 1)*NNZAL),NNZAL,
+C     &                 WRK(KINDMOM + 3*(IOSIM-1)*NNZAL),  
+C     &                 WRK(KWRK2),LWRK2,IOPT,IPQMMM)
+C          ENDIF
+C        END IF
+C      END DO
 
 C     3) Make F^(1)el and daxpy to get one-index transformed u; first x, then y and then z
 C        
-      LRI = 0
+C      LRI = 0
 
-        DO I = 1, MMCENT
+C        DO I = 1, MMCENT
 
-        DIPORG(1) = MMCORD(1,I)
-        DIPORG(2) = MMCORD(2,I)
-        DIPORG(3) = MMCORD(3,I)
+C        DIPORG(1) = MMCORD(1,I)
+C        DIPORG(2) = MMCORD(2,I)
+C        DIPORG(3) = MMCORD(3,I)
 
-        CALL DZERO(WRK(KMTAO),3*NNBASX)
-        CALL DZERO(WRK(KMTMO),3*NNORBT)
+C        CALL DZERO(WRK(KMTAO),3*NNBASX)
+C        CALL DZERO(WRK(KMTMO),3*NNORBT)
 
 C       3.a) F^(1)el operator in AO basis
 
-        RUNQM3 = .TRUE.
+C        RUNQM3 = .TRUE.
 
-        CALL GET1IN(WRK(KMTAO),'NEFIELD',NCOM,WRK(KWRK2),
-     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
-     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
+C        CALL GET1IN(WRK(KMTAO),'NEFIELD',NCOM,WRK(KWRK2),
+C     &              LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
+C     &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
 
-        RUNQM3 = .FALSE.
+C        RUNQM3 = .FALSE.
 
 C       3.b) Dipole one-electron integrals (F^(1)el operator in MO basis)
 
-        CALL UTHU(WRK(KMTAO),WRK(KMTMO),WRK(KUCMO),
-     &            WRK(KWRK2),NBAST,NORBT)
+C        CALL UTHU(WRK(KMTAO),WRK(KMTMO),WRK(KUCMO),
+C     &            WRK(KWRK2),NBAST,NORBT)
 
-        CALL UTHU(WRK(KMTAO + 1*NNBASX),WRK(KMTMO + 1*NNORBT),
-     &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
+C        CALL UTHU(WRK(KMTAO + 1*NNBASX),WRK(KMTMO + 1*NNORBT),
+C     &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-        CALL UTHU(WRK(KMTAO + 2*NNBASX),WRK(KMTMO + 2*NNORBT),
-     &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
+C        CALL UTHU(WRK(KMTAO + 2*NNBASX),WRK(KMTMO + 2*NNORBT),
+C     &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-        DO IOSIM = 1, NOSIM
+C        DO IOSIM = 1, NOSIM
 
-          FACx = -WRK(KINDMOM + LRI + 0 + 3*NNZAL*(IOSIM-1))        
+C          FACx = -WRK(KINDMOM + LRI + 0 + 3*NNZAL*(IOSIM-1))        
 
-          CALL DAXPY(NNORBT,FACx,WRK(KMTMO),1,            
-     &               WRK(KFXO+(IOSIM-1)*NNORBT),1)
+C          CALL DAXPY(NNORBT,FACx,WRK(KMTMO),1,            
+C     &               WRK(KFXO+(IOSIM-1)*NNORBT),1)
 
-          FACy = -WRK(KINDMOM + LRI + 1 + 3*NNZAL*(IOSIM-1))
+C          FACy = -WRK(KINDMOM + LRI + 1 + 3*NNZAL*(IOSIM-1))
 
-          CALL DAXPY(NNORBT,FACy,WRK(KMTMO + 1*NNORBT),1, 
-     &               WRK(KFXO+(IOSIM-1)*NNORBT),1)
+C          CALL DAXPY(NNORBT,FACy,WRK(KMTMO + 1*NNORBT),1, 
+C     &               WRK(KFXO+(IOSIM-1)*NNORBT),1)
 
-          FACz = -WRK(KINDMOM + LRI + 2 + 3*NNZAL*(IOSIM-1))
+C          FACz = -WRK(KINDMOM + LRI + 2 + 3*NNZAL*(IOSIM-1))
 
-          CALL DAXPY(NNORBT,FACz,WRK(KMTMO+2*NNORBT),1, 
-     &               WRK(KFXO+(IOSIM-1)*NNORBT),1)
+C          CALL DAXPY(NNORBT,FACz,WRK(KMTMO+2*NNORBT),1, 
+C     &               WRK(KFXO+(IOSIM-1)*NNORBT),1)
 
-        END DO
+C        END DO
 
-        LRI = LRI + 3
+C        LRI = LRI + 3
 
-      END DO
+C      END DO
 
 C     Construct Fyo(PE) (corresponds to Fg(PE) one-index transformed)
 
-  755 CONTINUE ! .NOT. LPOL
+C  755 CONTINUE ! .NOT. LPOL
 
-      CALL PEFCMO(WRK(KUCMO),WRK(KFPEMO),DV,WRK(KWRK1),LWRK1,IPQMMM)
+       CALL pe_fcmo(WRK(KUCMO),WRK(KFPEMO),DV,WRK(KWRK1),LWRK1,IPQMMM)
+
+C      CALL PEFCMO(WRK(KUCMO),WRK(KFPEMO),DV,WRK(KWRK1),LWRK1,IPQMMM)
 
       CALL DSPTSI(NORBT,WRK(KFPEMO),WRK(KFPESQ))
 
@@ -1333,7 +1357,13 @@ C     Construct Fyo(PE) (corresponds to Fg(PE) one-index transformed)
          JFPX   = KFPX   + (IOSIM - 1) * NNORBX         ! KFPX = Fyo(PE) 
          JFPXAC = KFPXAC + (IOSIM - 1) * NNASHX         ! - active part 
 
-         JTEST = KFXO + (IOSIM - 1) * NNORBX            
+C         JTEST = KFXO    + (IOSIM - 1) * NNORBX            
+
+C         JUDFF = KUDFF   + (IOSIM - 1) * NNORBX
+          JDFMO = KDFMO   + (IOSIM - 1) * NNORBX
+
+         WRITE(LUPRI,*) 'KDFMO output from pe_master - IOSIM:', IOSIM
+         CALL OUTPAK(WRK(KDFMO),NBAST,1,LUPRI)
 
          CALL DZERO(WRK(KFPXSQ),N2ORBX)
          CALL DZERO(WRK(JFPX),NNORBX)
@@ -1341,9 +1371,13 @@ C     Construct Fyo(PE) (corresponds to Fg(PE) one-index transformed)
 
          CALL TR1UH1(WRK(JUBO),WRK(KFPESQ),WRK(KFPXSQ),1)
 
-         CALL DGETSP(NORBT,WRK(KFPXSQ),WRK(JFPX))
+         CALL DGETSP(NORBT,WRK(KFPXSQ),WRK(JFPX))  ! edh: JFPX = Fyo oeprator
 
-         IF (LPOL) CALL DAXPY(NNORBX,D1,WRK(JTEST),1,WRK(JFPX),1) ! Adds Fxo to Fyo when there are polarization contr.  
+C         IF (LPOL) CALL DAXPY(NNORBX,D1,WRK(JTEST),1,WRK(JFPX),1) ! Adds Fxo to Fyo when there are polarization contr.  
+
+C         CALL DAXPY(NNORBX,D1,WRK(JTEST),1,WRK(JFPX),1)             ! Adds Fxo to Fyo always - if no pol then Fxo = 0. 
+
+        CALL DAXPY(NNORBX,D1,WRK(KDFMO),1,WRK(JFPX),1)             ! Adds Fxo to Fyo always - if no pol then Fxo = 0
 
            IF (NASHT .GT. 0) THEN                                 ! active part of f(PE)g operator (equivalent to Tg = Ryo in RFSCF)
              CALL GETAC2(WRK(JFPX),WRK(JFPXAC))

@@ -7132,6 +7132,9 @@ C     Construct Fyo(PE) (corresponds to Fg(PE) one-index transformed)
 
          JTEST = KFXO + (IOSIM - 1) * NNORBX            
 
+         WRITE(LUPRI,*) 'JTEST - IOSIM:', IOSIM
+         CALL OUTPAK(WRK(JTEST),NBAST,1,LUPRI) 
+
          CALL DZERO(WRK(KFPXSQ),N2ORBX)
          CALL DZERO(WRK(JFPX),NNORBX)
          CALL DZERO(WRK(JFPXAC),NNASHX)
