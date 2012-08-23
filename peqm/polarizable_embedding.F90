@@ -3994,11 +3994,18 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb,&
     end do
 
     ! get electric field from fragment density at polarizable sites
-    allocate(Ftmp(3*npols,1), Fpd(3*npols)); Ftmp = 0.0d0
-    call electron_fields(Ftmp, denmat)
-    Fpd = Ftmp(:,1)
-    call nuclear_fields(Ftmp(:,1))
-    Fpd = Fpd + Ftmp(:,1)
+    ! TODO: better solution for neglecting polarization
+    if (lpol(1)) then
+        allocate(Ftmp(3*npols,1), Fpd(3*npols)); Ftmp = 0.0d0
+        call electron_fields(Ftmp, denmat)
+        Fpd = Ftmp(:,1)
+        call nuclear_fields(Ftmp(:,1))
+        Fpd = Fpd + Ftmp(:,1)
+        deallocate(Ftmp)
+    else
+        allocate(Fpd(3*npols))
+        Fpd = 0.0d0
+    end if
 
     ! calculate nuclear - electron energy contribution
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
