@@ -725,6 +725,13 @@ contains
         if(integrals_from_mcscf_env)then
           call lucita_putdens_generic(work(krho1),work(krho2),int1_or_rho1,int2_or_rho2,             &
                                       work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
+          if(ispnden == 1)then
+            call lucita_spinputdens_1p(work(kSRHO1a),work(krho2),int1_or_rho1,int2_or_rho2,          &
+                                       work(k_dens2_scratch),i12,isigden,      1,eigen_state_id,1)
+            call lucita_spinputdens_1p(work(kSRHO1b),work(krho2),int1_or_rho1,int2_or_rho2,          &
+                                       work(k_dens2_scratch),i12,isigden,      1,eigen_state_id,2)
+          end if
+
         else
           twopart_densdim = 0
           if(i12 > 1) twopart_densdim = (nacob*(nacob+1)/2)**2
@@ -733,6 +740,12 @@ contains
 
           call lucita_putdens_generic(work(krho1),work(krho2),work(k_scratch1),work(k_scratch2),     &
                                       work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
+          if(ispnden == 1)then
+            call lucita_spinputdens_1p(work(ksrho1a),work(krho2),work(k_scratch1),work(k_scratch2),  &
+                                       work(k_dens2_scratch),  1,isigden,      1,eigen_state_id,1)
+            call lucita_spinputdens_1p(work(ksrho1b),work(krho2),work(k_scratch1),work(k_scratch2),  &
+                                       work(k_dens2_scratch),  1,isigden,      1,eigen_state_id,2)
+          end if
         end if
 !
         call memman(kdum ,idum,'FLUSM ',2,'Xpden1')

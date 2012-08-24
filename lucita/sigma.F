@@ -4439,7 +4439,7 @@ C
 #endif
      &             )
       END IF
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       IF(ISIGDEN.EQ. 2)THEN
         write(luwrt,*) 'final rho1 matrix after sigden business'
@@ -4449,7 +4449,7 @@ C
 #undef LUCI_DEBUG
 #endif
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       IF(IDOSRHO1.EQ.1)THEN
         WRITE(luwrt,*) ' One-electron spindensity <0!E(aa) - E(bb)!0> '
