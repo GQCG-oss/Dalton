@@ -140,7 +140,7 @@ C           ... restart CI in next macro CIDFT iteration ...
             WRITE(LUPRI,'(2X,A/)') 
      &      '---------------------------------------------------------'
             WRITE(LUPRI,'(/2X,A,F20.12/)')
-     &      'Final CI-DFT energy  : ',WORK(KECID + IMCITR -1)
+     &      'Final CI-srDFT energy: ',WORK(KECID + IMCITR -1)
 #endif
 C
 C     =================
