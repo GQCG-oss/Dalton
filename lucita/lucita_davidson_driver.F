@@ -437,8 +437,8 @@ C
      &        form='unformatted',action='write',position='rewind')
 
 !        debug print
-         call wrtvcd(vec1,lu1,-1,-1)
-         write(luwrt,*) 'calc ensemble dens for ... roots',nrootsl
+!        call wrtvcd(vec1,lu1,-1,-1)
+!        write(luwrt,*) 'calc ensemble dens for ... roots',nrootsl
 
          call rewine(lu1,-1)
 
@@ -479,7 +479,7 @@ C
 !                                                              1: rhotype
          CALL HEADER(
      &   'lucita: ensemble one-el. density matrix, ap reord   ',-1)
-         CALL OUTPAK(work(krho1),NASHT,-1,LUPRI)
+         CALL OUTPAK(work(krho1_ens),ntoob,-1,LUPRI)
 
 
 !        reset i12 to allow for 1 and most likely 2-electron contributions
