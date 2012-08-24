@@ -1727,13 +1727,38 @@ c
       RETURN
       END
 C  /* Deck srfmat */
+C
+C     initially ...
+C
+C     SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
+C    >                  WRK,LWRK,IPRINT)
+C     
       SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
-     >                  WRK,LWRK,IPRINT)
+     >                  EMYDFTAUX,WRK,LWRK,IPRINT)
 C
 C     20-Mar-2003 Jesper K. Pedersen
 C
 C     Driver for Fock matrix construction of short-range terms
 C     needed for CI-DFT (J_ee,E_xc)
+C
+C     EJCSR =  0.5 * Tr (D^c . J^sr . D^c)
+C     EJVSR = -0.5 * Tr (D^{v,ref} . J^sr . D^{v,ref})
+C     EDSR  = -1.0 * Tr (V^{sr,ref}_{xc} . D^{v,ref})
+C     EDFT  = E^{sr}_{xc} [D^c+D^{v,ref}] 
+C
+C     23-Aug-2012 modified by Manu 
+C   
+C     * added a new argument, EMYDFTAUX, that contains the inactive
+C       short-range contributions to auxiliary energy:
+C
+C       EMYDFTAUX = 1.0 * Tr (D^c . J^sr . D^c)
+C                  +1.0 * Tr (D^{v,ref} . J^sr . D^c)
+C                  +1.0 * Tr (V^{sr,ref}_{xc} . D^c) 
+
+C     * Note that for ensemble CI-srDFT, D^{v,ref} should be, here, equal to the
+C       ensemble density matrix
+C                
+C
 C
 #include "implicit.h"
       DIMENSION FMAT(*), CMO(*), DVREF(*), WRK(*)
@@ -1801,6 +1826,14 @@ C        only Coulomb (Hartree) term
      >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
       EJCSR =  DP5*DDOT(N2BASX,WRK(KDCAO),1,WRK(KFCAO),1)
       EJVSR = -DP5*DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
+C     
+C Manu: compute first and second terms in EMYDFTAUX
+C
+      EMYDFTAUX = 2.0D0*EJCSR 
+      EMYDFTAUX = EMYDFTAUX 
+     >         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
+C
+C
       IF (IPRINT.GT.5) THEN
          WRITE(LUPRI,'(//5X,A//)')
      >   '<<<<  Short-range core Hartree matrix >>>>'
@@ -1829,6 +1862,16 @@ C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       ENDIF
       EDSR = -DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
+C
+C Manu: compute the third term in EMYDFTAUX.
+C       Note that WRK(KDCAO) actually contains the TOTAL density matrix
+C       and we only need the core contribution.
+C
+      EMYDFTAUX = EMYDFTAUX
+     >         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
+     >         +EDSR
+C
+C
       IF (LSRHYBR) THEN
          write (lupri,*) 'WARNING, srdft-hybr exc matrix not used'
 C TODO
