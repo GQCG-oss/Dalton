@@ -285,7 +285,6 @@ C
       integer, allocatable  :: iscr1(:)
       real(8), allocatable  :: scr1(:)
       real(8), allocatable  :: fsr(:)
-      real(8), allocatable  :: rho1_accumulated(:)
       integer               :: nnorbt_internal, nnashx_internal
 *. Output from Subspace dagonalization
       DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)
@@ -305,6 +304,7 @@ C               ====================================
 C  1 :               INITIAL VARIATIONAL SUBSPACE
 C               ====================================
 C
+      ninvec = nrootsl
       IF( IRESTR .EQ. 0 ) THEN
         IF(NPRDET .EQ. 0 ) THEN
 C         ==================================================
@@ -315,6 +315,7 @@ C         in order treat degeneracies, the lowest 4 * NROOTSL
 C         elements are obtained
 C
           NFINDM = MIN(NDIM,4*NROOTSL)
+          ninvec =  NFINDM
 C
           IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
@@ -329,7 +330,7 @@ C
           CALL REWINE(LU1,-1)
           IBASE = 1
           TEST = 1.0D-10
-          DO 100 IROOTSI = 1, NROOTSL
+          DO 100 IROOTSI = 1, ninvec
 *. Number of degenerate elements
             NDEG = 1
             XVAL = SCR1(IBASE)
@@ -344,7 +345,7 @@ C
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
 !             WRITE(luwrt,*) ' WARNING WARNING WARNING WARNING ! '
 !             WRITE(luwrt,*) ' DEGENERATE INITIAL VECTORS FOR CI '
-              NDEG = 1
+!             NDEG = 1
             END IF
 
 *. Initial guess in compressed form in SCR1
@@ -370,7 +371,6 @@ C
      &                      IROOTSI,LU1LIST)
 #endif
             ELSE
-               write(luwrt,*) 'write start vectors...'
                CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
      &                  LUDIA,JPACK)
             END IF
@@ -410,6 +410,9 @@ C
          call quit('help me stefan... parallel srdft-ci')
 #endif
 
+         idum = 0
+!        set local marker + allocate space for lucita-dalton integral interface
+         call memman(idum,idum,'MARK  ',idum,'srdft1')
          nnorbt_internal = 0
          norbt_internal  = 0
          do i = 1, nirrep
@@ -419,21 +422,22 @@ C
          end do 
          nnashx = (ntoob*(ntoob+1))/2
 
-         allocate(rho1_accumulated(nnashx))
          allocate(fsr(ntoob**2))
+         fsr              = 0.0d0
 
-         rho1_accumulated = 0.0d0
+         call dzero(work(KRHO1_ens),ntoob**2)
 
          i12_save = i12
          i12      = 1 ! only 1-body terms...
+!        ispnden  = 1
 
          luci_cvec = 99
          open(file='srdft-lucita.cvec',unit=luci_cvec,status='replace',
      &        form='unformatted',action='write',position='rewind')
 
 !        debug print
-        !call wrtvcd(vec1,lu1,-1,-1)
-        !write(luwrt,*) 'calc ensemble dens for ... roots',nrootsl
+         call wrtvcd(vec1,lu1,-1,-1)
+         write(luwrt,*) 'calc ensemble dens for ... roots',nrootsl
 
          call rewine(lu1,-1)
 
@@ -458,22 +462,35 @@ C
      &                    xxs2dum)                          !   1: rhotype == 1 (regular 1p density matrix)
 !                                                           !   3: rhotype == 3 (transition density matrix)
          
-           call lucita_putdens_generic(work(krho1),work(krho2),
-     &                                 fsr,xxdummy,xxdummy,i12,2,1,i)
-!                                                              2: density matrix 
-!                                                                1: rhotype
-           call daxpy(nnashx,weights(i),work(krho1),1,
-     &                rho1_accumulated,1)
+           write(luwrt,*) 'weights(i)',weights(i)
+           call daxpy(ntoob**2,weights(i),work(krho1),1,
+     &                work(KRHO1_ens),1)
          end do ! loop over # roots
+
+         CALL HEADER(
+     &   'lucita: ensemble one-el. density matrix, active part',-1)
+         CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
+     &               -11,luwrt)
+
+         call lucita_putdens_generic(work(krho1_ens),work(krho2),
+     &                               fsr,xxdummy,xxdummy,i12,2,1,i)
+!                                                            2: density matrix 
+!                                                              1: rhotype
+         CALL HEADER(
+     &   'lucita: ensemble one-el. density matrix, ap reord   ',-1)
+         CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
+     &               -11,luwrt)
 
 !        reset i12 to allow for 1 and most likely 2-electron contributions
          i12 = i12_save
+!        ispnden  = 0
 
          deallocate(fsr)
          close(luci_cvec,status='keep')
 
+
 !        dump ensemble density on file
-         call lucita_putdens_ensemble(rho1_accumulated)
+         call lucita_putdens_ensemble(work(KRHO1_ens))
 
 !        calculate ensemble srDFT contributions
 !        --------------------------------------
@@ -484,12 +501,10 @@ C
          IDUM = 0
          CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
          LSCR_local = current_free_mem - 1000
-         idum = 0
-!        set local marker + allocate space for lucita-dalton integral interface
-         call memman(idum,idum,'MARK  ',idum,'srdft1')
          call memman(ksrdftdal_interface,lscr_local,'ADDL  ',2,'srdft2')
 
-         CALL SRFMAT(FSR,srdft_cmo_lucita,rho1_accumulated,
+         
+         CALL SRFMAT(FSR,srdft_cmo_lucita,work(KRHO1_ens),
      &               EJCSR_mc2lu,EJVSR_mc2lu,EDSR_mc2lu,EDFT_mc2lu,
      &               work(ksrdftdal_interface),lscr_local,0)
          
@@ -498,14 +513,14 @@ C
            EMYDFT_mc2lu = 
      &            EJCSR_mc2lu + EJVSR_mc2lu + EDSR_mc2lu + EDFT_mc2lu
 
-!          write(luwrt,*) 'eigshf before',eigshf
+           write(luwrt,*) 'eigshf before',eigshf
 !          in lucita: emy is eigshf at this point in the code
            eigshf = eigshf + EMYDFT_mc2lu
-!          write(luwrt,*) 'eigshf after',eigshf
+           write(luwrt,*) 'eigshf after',eigshf
 !          ... extract and save SR over active indices
            CALL GETAC(fsr,srdft_srac_lucita)
 
-!          call wrtmatmn(srdft_srac_lucita,1,3,1,3,luwrt)
+           call wrtmatmn(srdft_srac_lucita,1,nnashx,1,nnashx,luwrt)
 !          call wrtmatmn(work(kint1),1,3,1,3,luwrt)
 
            call dzero(work(krho1),ntoob**2)
@@ -523,9 +538,8 @@ C
            CALL DSPTGE(ntoob,srdft_srac_lucita,fsr)
            CALL DGEFSP(ntoob,fsr,srdft_srac_lucita)
 
-           ESRDV = DDOT(ntoob*(ntoob+1)/2,rho1_accumulated,1,
-     &                  srdft_srac_lucita,1)
-!          write(luwrt,*) 'esrdv... ',esrdv
+           ESRDV = DDOT(nnashx,work(KRHO1_ens),1,srdft_srac_lucita,1)
+           write(luwrt,*) 'esrdv... ',esrdv
          end if
 
 #ifdef VAR_MPI
@@ -545,7 +559,6 @@ C        eliminate local memory
          IDUM = 0
          CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'srdft1')
          deallocate(fsr)
-         deallocate(rho1_accumulated)
 #endif
       ENDIF
 
@@ -556,7 +569,7 @@ C        eliminate local memory
         root_residual(i)  = 0.0d0
         root_converged(i) = i
       end do
-      nfinal_vec = nrootsl
+      nfinal_vec = ninvec
 !
 !     check for initial CI vector generation only
       IF(MXCIIT .lt. 0) goto 999
@@ -582,9 +595,9 @@ C        eliminate local memory
 
 *     allocations for SCR1
       KRNRM  = 1
-      KEIG   = KRNRM + MXCIIT*NROOTSL
-      KFIN   = KEIG  + MXCIIT*NROOTSL
-      KAPROJ = KFIN + NROOTSL
+      KEIG   = KRNRM + MXCIIT*ninvec
+      KFIN   = KEIG  + MXCIIT*ninvec
+      KAPROJ = KFIN + ninvec
       KAVEC  = KAPROJ + MAXVEC*(MAXVEC+1)/2
       KWORK  = KAVEC + MAXVEC ** 2
       KLFREE = KWORK + MAXVEC*(MAXVEC+1)
@@ -628,7 +641,7 @@ C     Hamiltonian is totally symmetric)
        CALL MICDV6_PAR(VEC1,VEC2,C2,SCR1(KRNRM),SCR1(KEIG),nfinal_vec,
      &                 EROOT,root_converged,root_residual,
      &                 MXCIIT,NDIM,NROOTSL,
-     &                 MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
+     &                 MAXVEC,ninvec,SCR1(KAPROJ),SCR1(KAVEC),
      &                 SCR1(KWORK),IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
      &                 luwrt,IBLOCKAR,IBLKDSTND,
@@ -640,13 +653,34 @@ C     Hamiltonian is totally symmetric)
 
 #endif
       ELSE ! (LUCI_NMPROC .GT. 1) THEN
+!#define blubb
+#ifndef blubb
        CALL MICDV6(VEC1,VEC2,C2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
      &             nfinal_vec,EROOT,root_converged,root_residual,
      &             MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
      &             LUDIA,NROOTSL,
-     &             MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
+     &             MAXVEC,ninvec,SCR1(KAPROJ),SCR1(KAVEC),
      &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,luwrt)
+#else
+#ifndef blubb2
+       CALL blubb_MICDV4(VEC1,VEC2,C2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
+     &             nfinal_vec,EROOT,root_converged,root_residual,
+     &             MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
+     &             LUDIA,NROOTSL,
+     &             MAXVEC,ninvec,SCR1(KAPROJ),SCR1(KAVEC),
+     &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
+     &             H0SCR,-1,EIGSHF,THRES_E,luwrt)
+#else
+       CALL MICDV4_enlmd(VEC1,VEC2,C2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
+     &             nfinal_vec,EROOT,root_converged,root_residual,
+     &             MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
+     &             LUDIA,NROOTSL,
+     &             MAXVEC,ninvec,SCR1(KAPROJ),SCR1(KAVEC),
+     &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
+     &             H0SCR,-1,EIGSHF,THRES_E,luwrt)
+#endif
+#endif
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 
 #ifdef VAR_MPI

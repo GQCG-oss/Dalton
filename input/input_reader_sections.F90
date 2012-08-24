@@ -168,6 +168,10 @@
       call kw_read(word, gasci_input_density_calc_lvl)
     end if
 
+    if (kw_matches(word, '.SPDENS')) then
+      call kw_read(word, gasci_input_spindensity_calc_lvl)
+    end if
+
     if (kw_matches(word, '.RSTART')) then
       call kw_read(word, gasci_input_restart_ci)
     end if

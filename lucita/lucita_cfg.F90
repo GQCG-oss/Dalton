@@ -67,6 +67,7 @@ module lucita_cfg
   integer, public :: lucita_cfg_max_holes_ras1       =  0
   integer, public :: lucita_cfg_max_e_ras3           =  0
   integer, public :: lucita_cfg_density_calc_lvl     =  1
+  integer, public :: lucita_cfg_spindensity_calc_lvl =  0
   integer, public :: lucita_cfg_restart_ci           =  0
   integer, public :: lucita_cfg_max_dav_subspace_dim =  0
   integer, public :: lucita_cfg_max_nr_dav_ci_iter   =  30

@@ -146,6 +146,7 @@ contains
       call dalton_mpi_bcast(lucita_cfg_global_print_lvl,    0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_local_print_lvl,     0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_density_calc_lvl,    0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_spindensity_calc_lvl,0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_is_spin_multiplett,  0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_max_dav_subspace_dim,0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_max_nr_dav_ci_iter,  0, mpi_comm_world)
@@ -219,11 +220,15 @@ contains
 !              environment.
 !
 !*******************************************************************************
+#ifdef MOD_SRDFT
+      use lucita_mcscf_srdftci_cfg
+#endif
 !-------------------------------------------------------------------------------
 
 !     logical
         
       call dalton_mpi_bcast(docisrdft_mc2lu,                  0,mpi_comm_world)
+      srdft_ci_with_lucita = docisrdft_mc2lu
       call dalton_mpi_bcast(integrals_from_mcscf_env,         0,mpi_comm_world)
       call dalton_mpi_bcast(mcscf_ci_update_ijkl,             0,mpi_comm_world)
       call dalton_mpi_bcast(mcscf_orbital_trial_vector,       0,mpi_comm_world)

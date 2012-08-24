@@ -145,7 +145,7 @@ contains
       A%max_list_length_fac = 1
     else
       A%facofffl( 1)        = 1
-      A%facofffl( 2)        = nr_eigenstates
+      A%facofffl( 2)        = nr_eigenstates * 4
       A%facofffl( 3)        = nr_eigenstates + mx_vector
       A%facofffl( 4)        = 1
       A%facofffl( 5)        = 0

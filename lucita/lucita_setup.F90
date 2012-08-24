@@ -427,7 +427,9 @@ contains
 !     not root homing
       IROOTHOMING = 0
 !     calculation of density matrices
-      idensi = lucita_cfg_density_calc_lvl
+      idensi  = lucita_cfg_density_calc_lvl
+!     calculate spin densities
+      ispnden =  lucita_cfg_spindensity_calc_lvl
 !     no particle-hole simplification in use for compatibility with densities
 !     jeppe + stefan: april 2011
       iuse_ph = 0

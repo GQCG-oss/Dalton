@@ -53,6 +53,7 @@ module gasci_input_cfg
   integer, public :: gasci_input_max_holes_ras1       =  0
   integer, public :: gasci_input_max_e_ras3           =  0
   integer, public :: gasci_input_density_calc_lvl     =  0
+  integer, public :: gasci_input_spindensity_calc_lvl =  0
   integer, public :: gasci_input_restart_ci           =  0
   integer, public :: gasci_input_max_dav_subspace_dim =  0
   integer, public :: gasci_input_max_nr_dav_ci_iter   =  30

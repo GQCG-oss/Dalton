@@ -507,10 +507,10 @@ C     write(6,*) ' FNDMND NSUBMX = ', NSUBMX
             KBLK = -1
           END IF
            CALL FRMDSC_LUCI(SEGMNT,LBL ,-1,LU,IMZERO,IAMPACK)
-           IF(NTEST.GE.100) THEN
+!          IF(NTEST.GE.100) THEN
              WRITE(lupri,*) ' Elements read in '
              CALL WRTMT_LU(SEGMNT,1,LBL,1,LBL)
-           END IF
+!          END IF
            IF(LBL .GE. 0 ) THEN
 *. LOWEST ELEMENTS IN SEGMNT  ( ADD TO PREVIOUS LIST )
              MSUBMX = MIN(NSUBMX,LBL)
@@ -548,12 +548,12 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
              CALL ICOPVE(ISCR(1+2*NSUBMX),ISCR(1),LSUB)
              CALL COPVEC(SUBVAL,SCR,LSUB)
              IBASE = IBASE + LBL
-             IF(NTEST .GE. 20 ) THEN
+!            IF(NTEST .GE. 20 ) THEN
                WRITE(lupri,*)' Lowest elements and their original place'
                WRITE(lupri,*)' Number of elements obtained ', LSUB
                CALL WRTMT_LU(SUBVAL,1,LSUB,1,LSUB)
                CALL IWRTMA(ISCR,1,LSUB,1,LSUB)
-             END IF
+!            END IF
           END IF
 *
         END IF
@@ -562,12 +562,12 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
 *
       NSUB = LSUB
       CALL ICOPVE(ISCR,ISCAT,NSUB)
-      IF(NTEST .GE. 10) THEN
+!     IF(NTEST .GE. 10) THEN
         WRITE(lupri,*) ' Lowest elements and their original place '
         WRITE(lupri,*) ' Number of elements obtained ', NSUB
         CALL WRTMT_LU(SUBVAL,1,NSUB,1,NSUB)
         CALL IWRTMA(ISCAT,1,NSUB,1,NSUB)
-      END IF
+!     END IF
 *
       END
 ***********************************************************************
