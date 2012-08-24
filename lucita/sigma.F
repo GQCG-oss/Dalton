@@ -4217,7 +4217,7 @@ C     CALL QEXIT('SKICK')
 *
 * RHO2AA(i,j,k,l) = <0!a+_ialpha a+_jalpha a_kalpha a_lalpha!0>
 *                   i.ge.j, k.ge.l
-* RHO2AA(i,j,k,l) = <0!a+_ibeta a+_jbeta a_kbeta a_lbeta!0>
+* RHO2BB(i,j,k,l) = <0!a+_ibeta a+_jbeta a_kbeta a_lbeta!0>
 *                   i.ge.j, k.ge.l
 * RHO2AB(i,j,k,l) = <0!a+_ialpha a+_jbeta a_kbeta a_lalpha!0>
 *                   No restrictions on i,j,k,l
@@ -4410,7 +4410,9 @@ C
       end if
 *
       IF(IDOSRHO1.EQ.1) THEN  
-        CALL DZERO(work(kSRHO1),ntoob ** 2)
+        CALL DZERO(work(kSRHO1), ntoob ** 2)
+        CALL DZERO(work(kSRHO1a),ntoob ** 2)
+        CALL DZERO(work(kSRHO1b),ntoob ** 2)
       END IF
 *
       IF(IDOSRHO2.EQ.1) THEN 
@@ -4452,6 +4454,10 @@ C
       IF(IDOSRHO1.EQ.1)THEN
         WRITE(luwrt,*) ' One-electron spindensity <0!E(aa) - E(bb)!0> '
         CALL OUTPUT(work(ksrho1),1,ntoob,1,ntoob,ntoob,ntoob,-11,luwrt)
+        WRITE(luwrt,*) ' One-electron alpha spindensity <0!E(aa)!0> '
+        CALL OUTPUT(work(ksrho1a),1,ntoob,1,ntoob,ntoob,ntoob,-11,luwrt)
+        WRITE(luwrt,*) ' One-electron beta  spindensity <0!E(bb)!0> '
+        CALL OUTPUT(work(ksrho1b),1,ntoob,1,ntoob,ntoob,ntoob,-11,luwrt)
       END IF
 *
       IF(IDOSRHO2.EQ.1) THEN
@@ -5850,6 +5856,7 @@ C                   not exact Hamiltonian in use
      &                           S2_TERM1,IUSE_PH,IPHGAS,
      &                           itrsp_once,
      &                           IDOSRHO1,work(KSRHO1),
+     &                           work(ksrho1a),work(ksrho1b),
      &                           IDOSRHO2,work(KRHO2AA),work(KRHO2AB),
      &                           work(KRHO2BB))
 

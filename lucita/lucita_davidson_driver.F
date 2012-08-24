@@ -345,7 +345,7 @@ C
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
 !             WRITE(luwrt,*) ' WARNING WARNING WARNING WARNING ! '
 !             WRITE(luwrt,*) ' DEGENERATE INITIAL VECTORS FOR CI '
-!             NDEG = 1
+              NDEG = 1
             END IF
 
 *. Initial guess in compressed form in SCR1
