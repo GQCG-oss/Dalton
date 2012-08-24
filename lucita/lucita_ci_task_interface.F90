@@ -671,6 +671,14 @@ contains
           if(luci_myproc == luci_master)then
             call mpi_reduce(mpi_in_place,work(krho1),nacob**2,mpi_real8,             &
                             mpi_sum,luci_master,mpi_comm_world,ierr)
+            if(ispnden > 0)then
+              call mpi_reduce(mpi_in_place,work(ksrho1),nacob**2,mpi_real8,          &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(mpi_in_place,work(ksrho1a),nacob**2,mpi_real8,         &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(mpi_in_place,work(ksrho1b),nacob**2,mpi_real8,         &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+            end if
             if(i12 > 1)then
               call mpi_reduce(mpi_in_place,work(krho2),nacob**2*(nacob**2+1)/2,      &
                               mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
@@ -680,6 +688,14 @@ contains
           else
             call mpi_reduce(work(krho1),mpi_in_place,nacob**2,mpi_real8,             &
                             mpi_sum,luci_master,mpi_comm_world,ierr)
+            if(ispnden > 0)then
+              call mpi_reduce(work(ksrho1),mpi_in_place,nacob**2,mpi_real8,          &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(work(ksrho1a),mpi_in_place,nacob**2,mpi_real8,         &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(work(ksrho1b),mpi_in_place,nacob**2,mpi_real8,         &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+            end if
             if(i12 > 1)then
               call mpi_reduce(work(krho2),mpi_in_place,nacob**2*(nacob**2+1)/2,      &
                               mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)

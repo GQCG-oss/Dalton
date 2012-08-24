@@ -898,7 +898,7 @@ C
       character (len=6) :: keywrd
       integer           :: xctype1, xctype2
 C
-      double precision EMYDFTAUX
+      double precision  :: EMYDFTAUX
       EMYDFTAUX = 0.0D0 ! initialization
 C
 C     *****************************************************************
@@ -1142,11 +1142,12 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
 
         if(ci_program .eq. 'LUCITA   ')then
           call dcopy(nnashx,srdft_srac_lucita,1,wrk(ksrac),1)
-          EMYDFT = emydft_mc2lu
-          EJCSR  = ejcsr_mc2lu
-          EJVSR  = ejvsr_mc2lu
-          EDSR   = edsr_mc2lu
-          EDFT   = edft_mc2lu
+          EMYDFT    = emydft_mc2lu
+          EJCSR     = ejcsr_mc2lu
+          EJVSR     = ejvsr_mc2lu
+          EDSR      = edsr_mc2lu
+          EDFT      = edft_mc2lu
+          EMYDFTAUX = emydftaux_mc2lu
         end if
 
         WRITE(LUPRI,'(/A,I5)') 'SR 0-el. energy for input .STATE',

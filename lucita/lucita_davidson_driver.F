@@ -315,7 +315,7 @@ C         in order treat degeneracies, the lowest 4 * NROOTSL
 C         elements are obtained
 C
           NFINDM = MIN(NDIM,4*NROOTSL)
-          ninvec =  NFINDM
+!         ninvec =  NFINDM
 C
           IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
@@ -506,7 +506,7 @@ C
          
          CALL SRFMAT(FSR,srdft_cmo_lucita,work(KRHO1_ens),
      &               EJCSR_mc2lu,EJVSR_mc2lu,EDSR_mc2lu,EDFT_mc2lu,
-     &               dummy, 
+     &               emydft_aux_mc2lu,
      &               work(ksrdftdal_interface),lscr_local,0)
          
          if(luci_myproc == luci_master)then
