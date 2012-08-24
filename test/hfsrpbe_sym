@@ -56,7 +56,7 @@ SRXPBEHSE SRCPBERI
 '
 
 test='
-check_hfsrdft_energy HF-SRDFT -73.143444870956 5e-9
+check_scfsrdft_energy HF-SRDFT -73.143444870956 5e-9
 '                    
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }
