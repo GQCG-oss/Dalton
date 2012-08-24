@@ -126,7 +126,7 @@ C
        END IF
 *
 !      IPRT = 9999 ! IPRT = 0000  DEBUG
-       IPRT = 0006
+       IPRT = 0000
        lbl  = 0
 c      IPRT = IPRTXX
 #ifdef LUCI_DEBUG
@@ -492,8 +492,8 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
         CALL REWINE(LU6,LBLK)
         CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
 
-        write(luwrtout,*) 'new trial vec ...'
-        CALL WRTVCD(VEC1,LU5,1,LBLK)
+!       write(luwrtout,*) 'new trial vec ...'
+!       CALL WRTVCD(VEC1,LU5,1,LBLK)
 *Check timings for sigma vector generation
         CALL GETTIM(CPUSIG1,WALLSIG1)
         CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN,-1,
@@ -513,7 +513,7 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
           CALL REWINE(LU6,LBLK)
           IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
           APROJ(IJ) = INPRDD(VEC1,VEC2,LU1,LU6,0,LBLK)
-          write(LUWRT,*) 'ij, aproj(ij):',ij,aproj(ij)
+!         write(LUWRT,*) 'ij, aproj(ij):',ij,aproj(ij)
         END DO
 
         CALL REWINE(LU3,LBLK)
@@ -522,15 +522,15 @@ C       DO JVEC = NROOT+1, NVEC+IADD
          CALL REWINE(LU6,LBLK)
          IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
          APROJ(IJ) = INPRDD(VEC1,VEC2,LU3,LU6,0,LBLK)
-         write(LUWRT,*) 'ij, aproj(ij):',ij,aproj(ij)
+!        write(LUWRT,*) 'ij, aproj(ij):',ij,aproj(ij)
         END DO
       END DO
 *     /\ End do over new trial vectors
 *
 *. 2.3 Diagonalize projected matrix
       NVEC = NVEC + IADD
-      write(LUWRT,*) 'Dimension of projected matrix:',NVEC
-      call wrtmatmn(aproj,1,NVEC*(NVEC+1)/2,1,NVEC*(NVEC+1)/2,luwrtout)
+!     write(LUWRT,*) 'Dimension of projected matrix:',NVEC
+!     call wrtmatmn(aproj,1,NVEC*(NVEC+1)/2,1,NVEC*(NVEC+1)/2,luwrtout)
       CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*(NVEC+1)/2)
       CALL EIGEN_LUCI(WORK(KAPROJ),AVEC,NVEC,0,1)
 *. Test : transform projected matrix

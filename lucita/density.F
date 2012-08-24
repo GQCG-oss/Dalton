@@ -1020,7 +1020,8 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &                  NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                  SSCR,CSCR,I1,XI1S,I2,XI2S,H,
      &                  NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
-     &                  IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB)
+     &                  IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB,
+     &                  SRHO1a,SRHO1b)
 *
 * Contributions to one electron density matrix from column excitations
 *
@@ -1083,7 +1084,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       INTEGER ISEL(NGAS),ICEL(NGAS)
       DIMENSION CB(*),SB(*)
 *.Output
-      DIMENSION RHO1(*), SRHO1(*)
+      DIMENSION RHO1(*), SRHO1(*), SRHO1a(*), SRHO1b(*)
 *.Scratch
       DIMENSION SSCR(*),CSCR(*),RHO1S(*)
       DIMENSION I1(*),XI1S(*)
@@ -1302,6 +1303,15 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
                       SRHO1((JORB-1)*nacob+IORB) =
      &                SRHO1((JORB-1)*nacob+IORB) +
      &                XAB*RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)   
+                      if(iab == 1)then
+                        SRHO1a((JORB-1)*nacob+IORB) =
+     &                  SRHO1a((JORB-1)*nacob+IORB) +
+     &                  RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)   
+                      else if(iab == 2)then
+                        SRHO1b((JORB-1)*nacob+IORB) =
+     &                  SRHO1b((JORB-1)*nacob+IORB) +
+     &                  RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)   
+                      end if
                     end if
                   END DO
 #ifdef LUCI_DEBUG
@@ -1946,9 +1956,11 @@ C?              call prsym(rho2,NORB*NORB)
      &                  SSCR,CSCR,scatS,scatC,
      &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                  X,NSMOB,NSMST,NSMSX,NSMDX,
-     &                  NIA,NIB,NJA,NJB,MXPOBS,IPRNT,NACOB,RHO1S,
+     &                  NIA,NIB,NJA,NJB,MXPOBS,IPRNT,NACOB,RHO1S, 
      &                  SCLFAC,S2_TERM1,IUSE_PH,IPHGAS,itrsp_once,
-     &                  IDOSRHO1,SRHO1,IDOSRHO2,RHO2AA,RHO2AB,RHO2BB)
+     &                  IDOSRHO1,SRHO1,
+     &                  SRHO1a,SRHO1b,
+     &                  IDOSRHO2,RHO2AA,RHO2AB,RHO2BB)
 *
 * Contributions to density matrix from sigma block (iasm iatp, ibsm ibtp ) and
 * C block (jasm jatp , jbsm, jbtp)
@@ -2014,7 +2026,7 @@ C?              call prsym(rho2,NORB*NORB)
 *. Output
       DIMENSION RHO1(*),RHO2(*)
       DIMENSION RHO2BB(*),RHO2AA(*), RHO2AB(*)
-      DIMENSION SRHO1(*)
+      DIMENSION SRHO1(*), SRHO1a(*), SRHO1b(*)
 *. Scratch
       DIMENSION SSCR(*),CSCR(*),scatS(*),scatC(*)
       DIMENSION  I1(*),XI1S(*),I2(*),XI2S(*),I3(*),XI3S(*),I4(*),XI4S(*)
@@ -2077,7 +2089,8 @@ C?              call prsym(rho2,NORB*NORB)
      &       NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &       SSCR,CSCR,I1,XI1S,I2,XI2S,X,
      &       NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
-     &       IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB)
+     &       IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB,
+     &       SRHO1a,SRHO1b)
         IF(NTEST.GE.1000) THEN
           WRITE(lupri,*) ' Rho1 after GSBBD1, b '
           CALL WRTMAT(RHO1,nacob,nacob,nacob,nacob)
@@ -2156,7 +2169,8 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
      &       NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &       SSCR,CSCR,I1,XI1S,I2,XI2S,X,
      &       NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
-     &       IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB)
+     &       IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB,
+     &       SRHO1a,SRHO1b)
 C?        WRITE(6,*) ' GSBBD1 was called '
         IF(NTEST.GE.1000) THEN
           WRITE(lupri,*) ' Rho1 after GSBBD1, a '

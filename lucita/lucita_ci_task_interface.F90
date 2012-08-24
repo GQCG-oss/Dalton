@@ -671,6 +671,14 @@ contains
           if(luci_myproc == luci_master)then
             call mpi_reduce(mpi_in_place,work(krho1),nacob**2,mpi_real8,             &
                             mpi_sum,luci_master,mpi_comm_world,ierr)
+            if(ispnden > 0)then
+              call mpi_reduce(mpi_in_place,work(ksrho1),nacob**2,mpi_real8,          &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(mpi_in_place,work(ksrho1a),nacob**2,mpi_real8,         &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(mpi_in_place,work(ksrho1b),nacob**2,mpi_real8,         &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+            end if
             if(i12 > 1)then
               call mpi_reduce(mpi_in_place,work(krho2),nacob**2*(nacob**2+1)/2,      &
                               mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
@@ -680,6 +688,14 @@ contains
           else
             call mpi_reduce(work(krho1),mpi_in_place,nacob**2,mpi_real8,             &
                             mpi_sum,luci_master,mpi_comm_world,ierr)
+            if(ispnden > 0)then
+              call mpi_reduce(work(ksrho1),mpi_in_place,nacob**2,mpi_real8,          &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(work(ksrho1a),mpi_in_place,nacob**2,mpi_real8,         &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(work(ksrho1b),mpi_in_place,nacob**2,mpi_real8,         &
+                              mpi_sum,luci_master,mpi_comm_world,ierr)
+            end if
             if(i12 > 1)then
               call mpi_reduce(work(krho2),mpi_in_place,nacob**2*(nacob**2+1)/2,      &
                               mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
@@ -709,6 +725,13 @@ contains
         if(integrals_from_mcscf_env)then
           call lucita_putdens_generic(work(krho1),work(krho2),int1_or_rho1,int2_or_rho2,             &
                                       work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
+          if(ispnden == 1)then
+            call lucita_spinputdens_1p(work(kSRHO1a),work(krho2),int1_or_rho1,int2_or_rho2,          &
+                                       work(k_dens2_scratch),i12,isigden,      1,eigen_state_id,1)
+            call lucita_spinputdens_1p(work(kSRHO1b),work(krho2),int1_or_rho1,int2_or_rho2,          &
+                                       work(k_dens2_scratch),i12,isigden,      1,eigen_state_id,2)
+          end if
+
         else
           twopart_densdim = 0
           if(i12 > 1) twopart_densdim = (nacob*(nacob+1)/2)**2
@@ -717,6 +740,12 @@ contains
 
           call lucita_putdens_generic(work(krho1),work(krho2),work(k_scratch1),work(k_scratch2),     &
                                       work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
+          if(ispnden == 1)then
+            call lucita_spinputdens_1p(work(ksrho1a),work(krho2),work(k_scratch1),work(k_scratch2),  &
+                                       work(k_dens2_scratch),  1,isigden,      1,eigen_state_id,1)
+            call lucita_spinputdens_1p(work(ksrho1b),work(krho2),work(k_scratch1),work(k_scratch2),  &
+                                       work(k_dens2_scratch),  1,isigden,      1,eigen_state_id,2)
+          end if
         end if
 !
         call memman(kdum ,idum,'FLUSM ',2,'Xpden1')

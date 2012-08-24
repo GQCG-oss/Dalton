@@ -2528,6 +2528,125 @@ C
       END
 ***********************************************************************
 
+      subroutine lucita_spinputdens_1p(rho1slu,rho2lu,rho1gen,rho2gen,
+     &                                 pv_full_scratch,
+     &                                 isrho2_active,iintden,rhotype,
+     &                                 state_id,iab)
+!
+!     Aug 2012 : driver for sorting the 1-particle spin-density matrices from 
+!                LUCITA to a generic format (here: SIRIUS)
+!
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+      use mpi
+#else
+#include "mpif.h"
+#endif
+#endif
+#include "implicit.h"
+#include "parluci.h"
+
+      real(8), intent(in)    :: rho1slu(*)
+      real(8), intent(in)    :: rho2lu(*)
+      real(8), intent(out)   :: rho1gen(*)
+      real(8), intent(out)   :: rho2gen(*)
+      real(8), intent(inout) :: pv_full_scratch(*)
+      integer, intent(in)    :: iintden
+      integer, intent(in)    :: isrho2_active
+      integer, intent(in)    :: rhotype
+      integer, intent(in)    :: state_id
+      integer, intent(in)    :: iab
+ 
+! Used from include files:
+!  priunit: LUPRI
+!  inforb: NCMOT, nsym
+!  inftap: LUINTM, FNINTM
+!  mxpdim: MXPOBS
+!  orbinp: ntoobs
+
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cgas.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
+     &              ADSXA(MXPOBS,2*MXPOBS),
+     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
+
+!     scratch space
+      integer, allocatable :: mult_ptg(:,:)
+      integer              :: noint_tmp
+      character (len=25)   :: file_name
+!
+!     -------------------------------------------------------
+!
+!     allocate scratch matrix
+      allocate(mult_ptg(nsym,nsym))
+
+!---------------------------------------------------------------------
+!     transfer 1e-spin density matrix from LUCITA to Sirius order
+!---------------------------------------------------------------------
+
+!     set multiplication table
+      mult_ptg = 0
+      call set_ptg_multiplication_table(mult_ptg,nsym)
+
+      call dzero(rho1gen,nnashx**1)
+      if(isrho2_active .gt. 1) call dzero(rho2gen,nnashx**2)
+
+      call sirint2luint(rho1gen,rho2gen,pv_full_scratch,
+     &                  rho1slu,rho2lu,mult_ptg,adsxa,nasht,nnashx,
+     &                  ntoobs,nsym,mxpobs,nint1,nint2,ireost,
+     &                  ireots,ngas,isrho2_active,iintden,
+     &                  rhotype)
+
+      deallocate(mult_ptg)
+
+!     put 1e- and 2e-density matrices to file
+!     ---------------------------------------
+
+      select case(iab)
+        case(1) ! alpha spin
+          write(file_name,'(a17,i3,a1,i4)') 
+     &       'SPINDENSITY-A-1p-',state_id,'.',luci_myproc
+        case(2) ! beta  spin
+          write(file_name,'(a17,i3,a1,i4)') 
+     &        'SPINDENSITY-B-1p-',state_id,'.',luci_myproc
+        case default ! ??? ask einstein or dirac
+          stop ' wrong program/hamiltonian - spin is a good quantum num'
+      end select
+
+      do i = 18, 20
+        if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+      end do
+      do i = 22, 25
+        if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+      end do
+
+      LUINT_LUCITA = -1
+      CALL GPOPEN(LUINT_LUCITA,file_name,'UNKNOWN',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIDENS'
+        CALL WRITT(LUINT_LUCITA, NNASHX, rho1gen)
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
+      CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
+
+#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(LUPRI,'(//A,i2)') 
+     & 'lucita_putdens_generic: 1-particle spin density matrix :',iab
+      WRITE(LUPRI,'(A,2i8)') 
+     &            'dimension: NASHT, triangular packed',NASHT
+      CALL OUTPAK(rho1gen,NASHT,-1,LUPRI)
+#undef LUCI_DEBUG
+#endif
+
+      END
+***********************************************************************
+
       subroutine lucita_putdens_ensemble(rho1_ensemble)
 !
 #include "implicit.h"

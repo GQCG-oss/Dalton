@@ -82,6 +82,8 @@ cat > energy_lucita_gasci.dal <<'%EOF%'
  6
 .ANALYZ
 .NATORB
+.SPDENS
+ 1
 *ORBITAL INPUT
 .NOSUPSYM
 **END OF INPUT

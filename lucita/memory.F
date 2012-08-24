@@ -131,9 +131,13 @@
 *.3.1: One-body spin density
 !     ISPNDEN = 1
       IF(ISPNDEN.GE.1) THEN
-        CALL MEMMAN(KSRHO1,ntoob **2, 'ADDS  ',2,'SRHO1 ')
+        CALL MEMMAN(KSRHO1, ntoob **2, 'ADDS  ',2,'SRHO1 ')
+        CALL MEMMAN(KSRHO1a,ntoob **2, 'ADDS  ',2,'SRHO1a')
+        CALL MEMMAN(KSRHO1b,ntoob **2, 'ADDS  ',2,'SRHO1b')
       ELSE 
-        KSRHO1 = 1
+        KSRHO1  = 1
+        KSRHO1a = 1
+        KSRHO1b = 1
       END IF
       IF(ISPNDEN.GE.2) THEN
 *. Two-body spin-density matrices
