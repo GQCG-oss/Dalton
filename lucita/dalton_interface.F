@@ -2639,7 +2639,7 @@ C
       WRITE(LUPRI,'(//A,i2)') 
      & 'lucita_putdens_generic: 1-particle spin density matrix :',iab
       WRITE(LUPRI,'(A,2i8)') 
-     &            'dimension: NASHT,NASHT * NASHT',NASHT,NASHT**2
+     &            'dimension: NASHT, triangular packed',NASHT
       CALL OUTPAK(rho1gen,NASHT,-1,LUPRI)
 #undef LUCI_DEBUG
 #endif
