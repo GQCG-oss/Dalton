@@ -17,7 +17,7 @@ module lucita_mcscf_srdftci_cfg
   integer, parameter,   public :: nr_of_weights_max            =  100
 
 ! input parameters
-  real(8),              public :: weights(nr_of_weights_max)   =  0.0d0
+  real(8),              public :: weights(nr_of_weights_max)   =  1.0d0
   integer,              public :: nr_of_weights                = -1
 
 ! parameters
