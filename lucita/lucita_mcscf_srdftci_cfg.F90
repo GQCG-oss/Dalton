@@ -17,13 +17,14 @@ module lucita_mcscf_srdftci_cfg
   integer, parameter,   public :: nr_of_weights_max            =  100
 
 ! input parameters
-  real(8),              public :: weights(nr_of_weights_max)   =  0.0d0
+  real(8),              public :: weights(1:nr_of_weights_max) =  1.0d0
   integer,              public :: nr_of_weights                = -1
 
 ! parameters
 
 ! logical block
   logical,              public :: srdft_ci_1pdens_cref_restore = .false. 
+  logical,              public :: srdft_ci_with_lucita         = .false. 
 
 ! double precision block
 

@@ -4200,6 +4200,34 @@ C     CALL QEXIT('SKICK')
 * Adopted from MV7 for generating common sigma/density routine
 * Works only for ICISTR .ne. 1, i.e. pure memory version
 * has been eliminated.
+!
+!
+* If the twobody density matrix is calculated, then also the
+* expectation value of the spin is evalueated.
+* The latter is realixed as
+* S**2 
+*      = S+S- + Sz(Sz-1)
+*      = -Sum(ij) a+i alpha a+j beta a i beta a j alpha + Nalpha +
+*        1/2(N alpha - N beta))(1/2(N alpha - Nbeta) - 1)
+*
+* If IDOSRHO12 = 1, spin density is also calculated
+*
+* if IDOSRHO12 = 2, then the spin-components of the 
+* two-body density are also calculated
+*
+* RHO2AA(i,j,k,l) = <0!a+_ialpha a+_jalpha a_kalpha a_lalpha!0>
+*                   i.ge.j, k.ge.l
+* RHO2AA(i,j,k,l) = <0!a+_ibeta a+_jbeta a_kbeta a_lbeta!0>
+*                   i.ge.j, k.ge.l
+* RHO2AB(i,j,k,l) = <0!a+_ialpha a+_jbeta a_kbeta a_lalpha!0>
+*                   No restrictions on i,j,k,l
+*
+* Call tree for densities : 
+* =========================
+*                    GSDNBB2 - GSBBD1
+*                            - GSBBD2A
+*                            - GSBBD2B
+
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KSIOIO, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT, KSBLTP,
      &          KISCLFAC, KSCALLOC
@@ -4369,6 +4397,29 @@ C
           exps2 = 0.0d0
         end if
       END IF
+      IDOSRHO1 = 0
+      IDOSRHO2 = 0
+      if(isigden == 2)then
+        if(ispnden == 1)then
+          IDOSRHO1 = 1
+        else if(ispnden == 2)then
+          IDOSRHO1 = 1
+          if(i12 > 1) IDOSRHO2 = 1
+        end if
+      end if
+*
+      IF(IDOSRHO1.EQ.1) THEN  
+        CALL DZERO(work(kSRHO1),ntoob ** 2)
+      END IF
+*
+      IF(IDOSRHO2.EQ.1) THEN 
+        LEN_RHO2AA = (ntoob*(ntoob+1)/2)**2
+        LEN_RHO2AB = ntoob ** 4
+        CALL dzero(work(kRHO2AA),LEN_RHO2AA)
+        CALL dzero(work(kRHO2BB),LEN_RHO2AA)
+        CALL dzero(work(kRHO2AB),LEN_RHO2AB)
+      END IF
+
       
       IF(ICISTR.EQ.1) THEN
         WRITE(6,*) 'ICISTR = 1 route currently not active'
@@ -4377,19 +4428,49 @@ C
         CALL SIGDEN2_CI(C,HC,C2,CV,HCV,ISIGDEN,
      &       NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &       WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,
-     &       WORK(KISCLFAC),WORK(KSCALLOC),rhotype,exps2 
+     &       WORK(KISCLFAC),WORK(KSCALLOC),rhotype,exps2,
+     &       idosrho1,idosrho2 
 #ifdef VAR_MPI
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                IGROUPLIST,IPROCLIST
 #endif
      &             )
       END IF
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       IF(ISIGDEN.EQ. 2)THEN
         write(luwrt,*) 'final rho1 matrix after sigden business'
-        CALL WRTMATMN(WORK(KRHO1),1,LRHO1,1,LRHO1,luwrt)
+        CALL OUTPUT(work(krho1),1,ntoob,1,ntoob,ntoob,ntoob,-11,luwrt)
+
       end if
+#undef LUCI_DEBUG
 #endif
+
+#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      IF(IDOSRHO1.EQ.1)THEN
+        WRITE(luwrt,*) ' One-electron spindensity <0!E(aa) - E(bb)!0> '
+        CALL WRTMAT(work(kSRHO1),ntoob,ntoob,ntoob,ntoob)
+      END IF
+*
+      IF(IDOSRHO2.EQ.1) THEN
+        WRITE(luwrt,*) ' The RHO2AA(ij,kl) spin density '
+        NDIM_AA = ntoob*(ntoob+1)/2
+        CALL WRTMAT(work(kRHO2AA),NDIM_AA,NDIM_AA,NDIM_AA,NDIM_AA)
+        WRITE(luwrt,*) ' The RHO2BB(ij,kl) spin density '
+        CALL WRTMAT(work(kRHO2BB),NDIM_AA,NDIM_AA,NDIM_AA,NDIM_AA)
+        WRITE(luwrt,*) ' The RHO2AB(ik,lj) spin density '
+        NDIM_AB = ntoob*ntoob
+        CALL WRTMAT(work(kRHO2AB),NDIM_AB,NDIM_AB,NDIM_AB,NDIM_AB)
+      END IF
+#undef LUCI_DEBUG
+#endif
+      I_CHECK_SRHO2 = 1
+      IF(IDOSRHO2.EQ.1.AND.I_CHECK_SRHO2.EQ.1) THEN
+*. Obtain standard rho2 from rho2s and check
+C             TEST_RHO2S(RHO2,RHO2AA,RHO2AB,RHO2BB,NORB)
+         CALL TEST_RHO2S(RHO2,RHO2AA,RHO2AB,RHO2BB,NTOOB,luwrt)
+      END IF
 
 !     WRITE(LUWRT,*) ' C (out) '
 !     CALL WRTMATMN(C,1,L_COMBI,1,L_COMBI,LUWRT)
@@ -4402,7 +4483,8 @@ C
       END
       SUBROUTINE SIGDEN2_CI(CB,SB,C2,CV,SV,ISIGDEN,
      &                  NBATS,LBATS,LEBATS,I1BATS,IBATS,
-     &                  LUC,LUHC,SSCLFAC,ISCLFAC_GROUP,rhotype,exps2 
+     &                  LUC,LUHC,SSCLFAC,ISCLFAC_GROUP,rhotype,exps2,
+     &                  idosrho1,idosrho2 
 #ifdef VAR_MPI
      &                  ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                   IGROUPLIST,IPROCLIST
@@ -4538,7 +4620,7 @@ C
 #endif
       ELSE ! (LUCI_NMPROC .GT. 1) THEN
 
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
          write(luwrt,*) ' rhs vector'
          CALL WRTVCD(cb,luc,1,-1)
@@ -4559,6 +4641,7 @@ C
 C     loop over batches over sigma blocks
 C
       DO JBATS = 1, NBATS
+      write(luwrt,*) ' ... ...ci3 nbats',nbats,jbats
 C
 #ifdef VAR_MPI
        IF (LUCI_NMPROC .GT. 1) THEN
@@ -4629,7 +4712,7 @@ C
             ELSE ! (LUCI_NMPROC .GT. 1) THEN
              CALL IFRMDS(LEN_L,1,-1,LUHC)
              CALL FRMDSC_LUCI(SB(IOFF),LEN_L,-1,LUHC,IMZERO,IAMPACK)
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
               WRITE(luwrt,*) 'I transfer from file block ISBLK',
      &                        ISBLK
@@ -4641,14 +4724,17 @@ C
           END DO ! end of loop over S-blocks
        END IF ! End of ISIGDEN switch
 C
+      write(luwrt,*) ' ... in to ...ci3'
        CALL SIGDEN3_CI(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
      &                 CB,SB,C2,CV,ISIGDEN,LUC,0,0,0,0,0,SSCLFAC,
-     &                 ISCLFAC_GROUP,rhotype,ls,exps2
+     &                 ISCLFAC_GROUP,rhotype,ls,exps2,idosrho1,idosrho2
 #ifdef VAR_MPI
      &                ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
      &                )
+      write(luwrt,*) ' ... home from ...ci3'
       IF(ISIGDEN.EQ.1) THEN
+      write(luwrt,*) ' ... oops home from ...ci3'
 C  
 C       transfer S block to permanent storage
 #ifdef VAR_MPI
@@ -4712,6 +4798,7 @@ C
 C
 #endif
           ELSE ! (LUCI_NMPROC .GT. 1) THEN
+      write(luwrt,*) ' ... oops oops home from ...ci3'
             CALL ITODS(LEN,1,-1,LUHC)
             CALL TODSC_LUCI(SB(IOFF),LEN,-1,LUHC)
           END IF ! (LUCI_NMPROC .GT. 1) THEN
@@ -4770,6 +4857,7 @@ C
 C
 #endif
       ELSE ! (LUCI_NMPROC .GT. 1) THEN
+      write(luwrt,*) ' ... oops oops oops home from ...ci3'
 C       write EOF mark
         CALL ITODS(-1,1,-1,LUHC)
 C
@@ -4788,7 +4876,7 @@ C
      &                      LUC,IRESTRICT,
      &                      LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END,
      &                      SSCLFAC,ISCLFAC_GROUP,rhotype,sigma_batchl,
-     &                      exps2
+     &                      exps2,idosrho1,idosrho2
 #ifdef VAR_MPI
      &                 ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -5096,6 +5184,7 @@ C
 !
       S2_TERM1 = 0.0d0
 
+                    write(luwrt,*) 'blubb.....'
       CALL SIGDEN4_CI(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,CV,ISIGDEN,
      &     C2,
      &     WORK(KCIOIO),ISMOST(1,ICSM),WORK(KCBLTP),
@@ -5119,13 +5208,13 @@ C
      &     LUCBLK,IPERTOP,IH0INSPC,WORK(KLH0SPC),
      &     ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,I_RES_AB,
      &     IUSE_PA,WORK(KCJPA),WORK(KSIPA),ISCLFAC_GROUP,SSCLFAC,
-     &     WORK(KRHO1S),rhotype,S2_TERM1
+     &     WORK(KRHO1S),rhotype,S2_TERM1,idosrho1,idosrho2
 #ifdef VAR_MPI
      &    ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
      &                  )
 *
-      IF(ISGDEN.EQ.1.AND.IDC.EQ.2) THEN
+      IF(ISIGDEN.EQ.1.AND.IDC.EQ.2) THEN
 *       reform
         CALL RFTTS(HCB,CB,IBLOCK(1,IBOFF),NBLOCK,
      &             1,NSMST,NOCTPA,NOCTPB,
@@ -5143,6 +5232,7 @@ C
 !       WRITE(luwrt,*) ' Term 1 to S2 ', S2_TERM1
       END IF
 !
+      write(luwrt,*) 'lucblk ...',lucblk
       IF(LUCBLK.GT.0) THEN
         CALL ITODS(-1,1,-1,LUCBLK)
       END IF
@@ -5171,7 +5261,7 @@ C
      &           LUCBLK,IPERTOP,IH0INSPC,IH0SPC,
      &           ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,
      &           I_RES_AB,IUSE_PA,CJPA,SIPA,ISCLFAC_GROUP,SSCLFAC,
-     &           RHO1S,rhotype,S2_TERM1
+     &           RHO1S,rhotype,S2_TERM1,idosrho1,idosrho2
 #ifdef VAR_MPI
      &          ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -5741,6 +5831,7 @@ C                   not exact Hamiltonian in use
                       end if
                     end if
 #endif
+                    write(luwrt,*) 'blubb..........'
 
                     CALL GSDNBB2(I12_local,WORK(KRHO1),WORK(KRHO2),
      &                           rhotype,IASM,IATP,IBSM,IBTP,
@@ -5759,12 +5850,15 @@ C                   not exact Hamiltonian in use
      &                           NIA,NIB,NJA,NJB,MXPOBS,
      &                           IPRNT,NACOB,RHO1S,XFAC,
      &                           S2_TERM1,IUSE_PH,IPHGAS,
-     &                           MXTSOB,itrsp_once)
+     &                           MXTSOB,itrsp_once,
+     &                           IDOSRHO1,work(KSRHO1),
+     &                           IDOSRHO2,work(KRHO2AA),work(KRHO2AB),
+     &                           work(KRHO2BB))
 
-                    IF(NTEST.GE.100) THEN
+!                   IF(NTEST.GE.100) THEN
                       write(luwrt,*) ' Updated rho1 '
                       call WRTMT_LU(WORK(KRHO1),nacob,nacob,nacob,nacob)
-                    END IF
+!                   END IF
 
                   END IF
 

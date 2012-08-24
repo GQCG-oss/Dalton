@@ -53,6 +53,9 @@
 *           Fall 97 (KPGINT1 added )
 
 *. Input
+#ifdef MOD_SRDFT
+      use lucita_mcscf_srdftci_cfg
+#endif
       IMPLICIT REAL*8(A-H,O-Z)
 #include "priunit.h"
 #include "mxpdim.inc"
@@ -119,6 +122,32 @@
 !     ----------------
 !     one-body density matrix
       CALL MEMMAN(KRHO1,NTOOB ** 2,'ADDS  ',2,'RHO1  ')
+
+!     one-body ensemble density matrix
+      if(srdft_ci_with_lucita)then
+        CALL MEMMAN(KRHO1_ens, NTOOB ** 2,'ADDS  ',2,'RHO1en')
+      end if
+
+*.3.1: One-body spin density
+      IF(ISPNDEN.GE.1) THEN
+        CALL MEMMAN(KSRHO1,ntoob **2, 'ADDS  ',2,'SRHO1 ')
+      ELSE 
+        KSRHO1 = 1
+      END IF
+      IF(ISPNDEN.GE.2) THEN
+*. Two-body spin-density matrices
+        LENSS = (ntoob*(ntoob+1)/2) ** 2
+        CALL MEMMAN(KRHO2AA,LENSS,'ADDS  ',2,'RHO2AA')
+        CALL MEMMAN(KRHO2BB,LENSS,'ADDS  ',2,'RHO2AA')
+        LENAB = ntoob**4
+        CALL MEMMAN(KRHO2AB,LENAB,'ADDS  ',2,'RHO2AB')
+      ELSE
+        KRHO2AA = 1
+        KRHO2BB = 1
+        KROH2AB = 1
+      END IF
+
+
 !     write(lupri,*) ' KRHO1 is...',KRHO1
 !     two-body density matrix
       LRHO2 = NTOOB**2*(NTOOB**2+1)/2

@@ -5,7 +5,7 @@
       integer :: NSEQCI, ISEQCI, IEXTKOP, IE0AVEX,IC1DSC, IH0SPC,NPTSPC
       integer :: IPTSPC, IOCPTSPC, IH0INSPC, IRFROOT
       integer :: INIDEG, LCSBLK,IFINMO,NPSSPC, NPSSH, ICLSSEL,IDENSI
-      integer :: IPTEKT, NPTEKT,LPTEKT, IH0ROOT,IRST2,IPAD
+      integer :: IPTEKT, NPTEKT,LPTEKT, IH0ROOT,IRST2,IPAD, ispnden
       integer :: IXYZSYM, NPROP, ITRAPRP,NEXCSTATE,IEXCSYM,IRESPONS 
       integer :: NRESP, MAXORD_OP, MXITLE,N_AVE_OP,IROOTHOMING,IUSE_PH
       integer :: IADVICE,ITRACI, IUSE_PA,IPTFOCK,ITRANS ,NSXE,NDXEE 
@@ -24,7 +24,7 @@
      &            LCSBLK,IFINMO,NPSSPC,                                 &
      &            NPSSH(MXPIRR,MXPNGAS),ICLSSEL,IDENSI,IPTEKT,          &
      &            NPTEKT,LPTEKT(20,2),IH0ROOT,IRST2,        IPAD,       &
-     &            IXYZSYM(3),NPROP,                                     &
+     &            IXYZSYM(3),NPROP,ispnden,                             &
      &            ITRAPRP,NEXCSTATE,IEXCSYM,IRESPONS,NRESP,             &
      &            MAXORD_OP(2,20), lsingle_resolution_block,            &
      &            MXITLE,N_AVE_OP,IROOTHOMING,IUSE_PH,IADVICE,ITRACI ,  &

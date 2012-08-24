@@ -29,8 +29,7 @@ C
 ***********************************************************************
       SUBROUTINE ABTOR2(SKII,CKJJ,NKA,NIB,NJB,NKB,RHO2B,
      &                  NI,NJ,NK,NL,MAXK,
-     &                  KBIB,XKBIB,KBJB,XKBJB,IKORD,
-     &                  MXTSOB)
+     &                  KBIB,XKBIB,KBJB,XKBJB,IKORD)
 *
 * Obtain contributions alpha-beta contributions to two-particle
 * density matrix
@@ -48,19 +47,6 @@ C
       DIMENSION KBIB(MAXK,*),XKBIB(MAXK,*)
       DIMENSION KBJB(MAXK,*),XKBJB(MAXK,*)
 *. Scratch
-CTF   PARAMETER(MXTSOB=40)
-* Is now defined in mxpdim.inc !!
-* Caution: If XIJILS (now commented out) shall be used again,
-*          it must be included in the parameter list and
-*          passed all the way down from densi2.
-*
-C     DIMENSION XIJILS(MXTSOB)
-      IF(NI.GT.MXTSOB.OR.NJ.GT.MXTSOB.OR.NK.GT.MXTSOB
-     &   .OR.NL.GT.MXTSOB) THEN
-         WRITE(6,*) ' SKICKJ : Too many orbs : NI > MXTSOB '
-         WRITE(6,*) ' NI, MXTSOB ',MAX(NI,NJ,NK,NL),MXTSOB
-         Call Abend2( ' Redim MXTSOB in SKICKJ' )
-      END IF
 *
       IF(IKORD.NE.0) THEN
         WRITE(6,*) ' ABTOR2 : IKORD .NE. 0 '
@@ -376,6 +362,136 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 *
       RETURN
       END
+      SUBROUTINE ADTOR2S(RHO2S,RHO2TS,ITYPE,
+     &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
+*
+* Add contributions to two electron density matrix spin-density matrix
+* RHO2SS ( i.e. RHO2AA or RHO2B) or RHO2AB
+*
+* Jeppe Olsen, Adapted from ADTOR2, Sept. 2004 
+*
+*
+* Itype = 1 => alpha-alpha or beta-beta loop
+*              input is in form Rho2ts(ik,jl), i.ge.k, j.ge.l
+* Itype = 2 => alpha-beta loop
+*              input is in form Rho2ts(ij,kl)
+*               
+      IMPLICIT REAL*8(A-H,O-Z)
+*.Input
+      DIMENSION RHO2TS(*)
+*. Input and output
+      DIMENSION RHO2S(*)
+*
+      NTEST = 00
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Welcome to ADTOR2S '
+        WRITE(6,*) ' ==================='
+        WRITE(6,*) ' NI NJ NK NL = ', NI,NJ,NK,NL
+        WRITE(6,*) ' IOFF JOFF KOFF LOFF =',IOFF,JOFF,KOFF,LOFF
+        WRITE(6,*) ' ITYPE = ',ITYPE
+*
+        IF(ITYPE.EQ.1) THEN
+          IF(IOFF.EQ.KOFF) THEN
+            NROW = NI*(NI+1)/2
+          ELSE
+            NROW = NI*NK
+          END IF
+          IF(JOFF.EQ.LOFF) THEN
+            NCOL = NJ*(NJ+1)/2
+          ELSE
+            NCOL = NJ*NL
+          END IF
+        ELSE IF (ITYPE.EQ.2) THEN
+          NROW = NI*NJ
+          NCOL = NK*NL
+        END IF  
+        IF(ITYPE.EQ.1) THEN
+          WRITE(6,*) ' Input matrix in the form (IK,JL) '
+        ELSE
+          WRITE(6,*) ' Input matrix in the form (IJ,KL) '
+        END IF
+        CALL WRTMAT(RHO2TS,NROW,NCOL,NROW,NCOL)
+      END IF
+*
+      IF(ITYPE.EQ.1) THEN
+*
+* =======================================
+*     Alpha-alpha or beta-beta term
+* =======================================
+*
+*
+       IJOFF = (JOFF-1)*NORB+IOFF
+       KLOFF = (LOFF-1)*NORB+LOFF
+        DO I = 1, NI
+          DO J = 1, NJ
+            IF(IOFF.EQ.KOFF) THEN 
+              KMAX = I
+            ELSE 
+              KMAX = NK
+            END IF
+            DO K = 1, KMAX
+              IF(LOFF.EQ.JOFF) THEN
+               LMAX = J
+              ELSE
+               LMAX = NL
+              END IF
+              DO L = 1, LMAX
+                IF(IOFF.NE.KOFF) THEN
+                  IKIND = (K-1)*NI+I
+                  NIK = NI*NK
+                ELSE
+                  IKIND = I*(I-1)/2 + K
+                  NIK = NI*(NI+1)/2
+                END IF
+                IK_OUT = (I+IOFF-1)*(I+IOFF-2)/2 + K + KOFF - 1
+                IF(JOFF.NE.LOFF) THEN
+                  JLIND = (L-1)*NJ+J
+                ELSE
+                  JLIND = J*(J-1)/2+L
+                END IF
+                JL_OUT = (J+JOFF-1)*(J+JOFF-2)/2 + L + LOFF - 1
+                IKJL_OUT = (JL_OUT-1)*NORB*(NORB+1)/2 + IK_OUT
+                IKJL_IN = (JLIND-1)*NIK+IKIND
+                RHO2S(IKJL_OUT) = RHO2S(IKJL_OUT)
+     &                      + RHO2TS(IKJL_IN)
+              END DO
+            END DO
+          END DO
+        END DO
+      ELSE IF(ITYPE.EQ.2) THEN
+*
+* ====================
+*     Alpha-beta term
+* ====================
+*
+      DO I = 1, NI
+       DO J = 1, NJ
+         DO K = 1, NK
+           DO L = 1, NL
+             IJKLT = (L-1)*NJ*NK*NI+(K-1)*NJ*NI + (J-1)*NI + I
+             IKLJ_OUT = (J+JOFF-2)*NORB**3+(L+LOFF-2)*NORB**2
+     &                + (K+KOFF-2)*NORB   +(I+IOFF-1)
+             RHO2S(IKLJ_OUT) = RHO2S(IKLJ_OUT) + RHO2TS(IJKLT)
+            END DO
+          END DO
+        END DO
+      END DO
+*
+      END IF
+*
+      IF(NTEST.GE.1000) THEN
+        IF(ITYPE.EQ.1)  THEN
+          WRITE(6,*) ' Updated two-body spin-SS density matrix '
+          NDIM = NORB*(NORB+1)/2
+        ELSE 
+          WRITE(6,*) ' Updated two-body spin AB density matrix '
+          NDIM = NORB**2
+        END IF
+        CALL WRTMAT(RHO2S,NDIM,NDIM,NDIM,NDIM)
+      END IF
+!
+      RETURN
+      END 
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -696,6 +812,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
                      END IF
                      rhotype_local = 1 ! set dummy default rhotype here: this 
 !                                        dens-m way here is not active anymore anyway...
+                call quit('no spin density implemented')
                      CALL GSDNBB2(I12,RHO1,RHO2,rhotype_local,
      &                    IIASM,IIATP,IIBSM,IIBTP,
      &                    JASM,JATP,JBSM,JBTP,NGAS,
@@ -713,7 +830,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &                    NIIA,NIIB,NJA,NJB,MXPOBS,
      &                    IPRNT,NACOB,RHO1S,SCLFAC,
      &                    S2_TERM1,IUSE_PH,IPHGAS,
-     &                    MXTSOB,-1)
+     &                    -1)
                           IF(NTEST.GE.100) THEN
                             write(lupri,*) ' Updated rho1 '
                             call WRTMT_LU(rho1,nacob,nacob,nacob,nacob)
@@ -903,7 +1020,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &                  NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                  SSCR,CSCR,I1,XI1S,I2,XI2S,H,
      &                  NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
-     &                  IUSE_PH,IPHGAS)
+     &                  IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB)
 *
 * Contributions to one electron density matrix from column excitations
 *
@@ -966,7 +1083,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       INTEGER ISEL(NGAS),ICEL(NGAS)
       DIMENSION CB(*),SB(*)
 *.Output
-      DIMENSION RHO1(*)
+      DIMENSION RHO1(*), SRHO1(*)
 *.Scratch
       DIMENSION SSCR(*),CSCR(*),RHO1S(*)
       DIMENSION I1(*),XI1S(*)
@@ -980,6 +1097,12 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       DIMENSION ICGRP(16),ISGRP(16)
 #include "priunit.h"
 *
+*. Add or subtract for spindensity
+      IF(IAB.EQ.1) THEN
+        XAB = 1.0D0
+      ELSE
+        XAB = -1.0D0
+      END IF
 *.Local arrays
       NTEST = 000
       IF(NTEST.GE.1000) THEN
@@ -1175,6 +1298,11 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
                     RHO1((JORB-1)*NACOB+IORB) =
      &              RHO1((JORB-1)*NACOB+IORB) +
      &              RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)
+                    IF(IDOSRHO1.EQ.1) THEN  
+                      SRHO1((JORB-1)*nacob+IORB) =
+     &                SRHO1((JORB-1)*nacob+IORB) +
+     &                XAB*RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)   
+                    end if
                   END DO
 #ifdef LUCI_DEBUG
                   WRITE(lupri,*) ' one-body density after scatter'
@@ -1207,7 +1335,8 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
      &                  ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
      &                  NOBPTS,IOBPTS,MAXI,MAXK,
      &                  SSCR,CSCR,I1,XI1S,I2,XI2S,X,
-     &                  NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC)
+     &                  NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC,
+     &                  IDOSRHO2,RHO2SS)
 *
 * Contributions to two-electron density matrix from column excitations
 *
@@ -1243,6 +1372,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
 * Output
 * ======
 * RHO2 : Updated density block
+! RHO2SS : Updated alpha-alpha ( or beta-beta) 2e- spindensity (if IDOSRHO2=1)
 *
 * =======
 * Scratch
@@ -1266,7 +1396,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
       INTEGER ISEL(NGAS),ICEL(NGAS)
       DIMENSION CB(*),SB(*)
 *.Output
-      DIMENSION RHO2(*)
+      DIMENSION RHO2(*), RHO2SS(*)
 *.Scatch
       DIMENSION SSCR(*),CSCR(*)
       DIMENSION I1(MAXK,*),XI1S(MAXK,*),I2(MAXK,*),XI2S(MAXK,*)
@@ -1544,6 +1674,11 @@ C    &                  NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
      &                    NACOB)
 C                  ADTOR2(RHO2,RHO2T,ITYPE,
 C    &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
+               IF(IDOSRHO2.EQ.1) THEN
+*. and add to spin-density 
+              CALL ADTOR2S(RHO2SS,X,1,NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,
+     &                    nacob)
+               END IF
 
  1930       CONTINUE
  1940     CONTINUE
@@ -1566,7 +1701,7 @@ C    &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
      &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,X,
      &                  NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
      &                  CJRES,SIRES,NORB,NTESTG,SCLFAC,S2_TERM1,
-     &                  MXTSOB)
+     &                  IDOSRHO2,RHO2AB)
 *
 * alpha-beta contribution to two-particle density matrix
 * from given c-block and s-block.
@@ -1625,7 +1760,7 @@ C    &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
 *.Input
       DIMENSION CB(*),SB(*)
 *. Output
-      DIMENSION RHO2(*)
+      DIMENSION RHO2(*), RHO2AB(*)
 *.Scratch
       DIMENSION I1(*),XI1S(*),I2(*),XI2S(*)
       DIMENSION I3(*),XI3S(*),I4(*),XI4S(*)
@@ -1752,7 +1887,7 @@ C?              WRITE(6,*) ' Loop 1930, KSM LSM ',KSM,LSM
 C               WRITE(6,*) ' Before call to ABTOR2'
                 CALL ABTOR2(SIRES,CJRES,LKABTC,NIB,NJB,
      &               NKBSTR,X,NI,NJ,NK,NL,NKBSTR,
-     &               I4,XI4S,I2,XI2S,IKORD,MXTSOB)
+     &               I4,XI4S,I2,XI2S,IKORD)
 *. contributions to Rho2(ij,kl) has been obtained, scatter out
 C?              WRITE(6,*) ' Before call to ADTOR2'
 C?              WRITE(6,*) ' RHO2B (X) matrix '
@@ -1775,6 +1910,10 @@ C?              call WRTMT_LU(x,ni*nj,nk*nl,ni*nj,nk*nl)
      &
                 CALL ADTOR2(RHO2,X,2,
      &                NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
+                IF(IDOSRHO2.EQ.1) THEN
+                  CALL ADTOR2S(RHO2AB,X,2,
+     &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,norb)
+                END IF 
 C?              write(6,*) ' updated density matrix '
 C?              call prsym(rho2,NORB*NORB)
 
@@ -1808,8 +1947,8 @@ C?              call prsym(rho2,NORB*NORB)
      &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                  X,NSMOB,NSMST,NSMSX,NSMDX,
      &                  NIA,NIB,NJA,NJB,MXPOBS,IPRNT,NACOB,RHO1S,
-     &                  SCLFAC,S2_TERM1,IUSE_PH,IPHGAS,MXTSOB,
-     &                  itrsp_once)
+     &                  SCLFAC,S2_TERM1,IUSE_PH,IPHGAS,itrsp_once,
+     &                  IDOSRHO1,SRHO1,IDOSRHO2,RHO2AA,RHO2AB,RHO2BB)
 *
 * Contributions to density matrix from sigma block (iasm iatp, ibsm ibtp ) and
 * C block (jasm jatp , jbsm, jbtp)
@@ -1874,6 +2013,8 @@ C?              call prsym(rho2,NORB*NORB)
       integer, intent(in) :: rhotype
 *. Output
       DIMENSION RHO1(*),RHO2(*)
+      DIMENSION RHO2BB(*),RHO2AA(*), RHO2AB(*)
+      DIMENSION SRHO1(*)
 *. Scratch
       DIMENSION SSCR(*),CSCR(*),scatS(*),scatC(*)
       DIMENSION  I1(*),XI1S(*),I2(*),XI2S(*),I3(*),XI3S(*),I4(*),XI4S(*)
@@ -1928,6 +2069,7 @@ C?              call prsym(rho2,NORB*NORB)
         WRITE(lupri,*) ' no transpose: rhotype ==>   ',rhotype
 #undef LUCI_DEBUG
 #endif
+        iab = 2
         CALL GSBBD1(RHO1,NACOB,IBSM,IBTP,JBSM,JBTP,IJBGRP,NIA,
      &       NGAS,IBOC,JBOC,
      &       SB,CB,
@@ -1935,7 +2077,7 @@ C?              call prsym(rho2,NORB*NORB)
      &       NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &       SSCR,CSCR,I1,XI1S,I2,XI2S,X,
      &       NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
-     &       IUSE_PH,IPHGAS)
+     &       IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB)
         IF(NTEST.GE.1000) THEN
           WRITE(lupri,*) ' Rho1 after GSBBD1, b '
           CALL WRTMAT(RHO1,nacob,nacob,nacob,nacob)
@@ -1955,7 +2097,8 @@ C?        WRITE(6,*) ' GSBBD2A will be called (beta)'
      &         ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
      &         NOBPTS,IOBPTS,MAXI,MAXK,
      &         SSCR,CSCR,I1,XI1S,I2,XI2S,X,
-     &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC)
+     &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC,
+     &         IDOSRHO2,RHO2BB)
         IF(NTEST.GE.1000) THEN
           WRITE(lupri,*) ' Rho2 after GSBBD2a, bb '
           CALL PRSYM(RHO2,nacob**2)
@@ -2006,13 +2149,14 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
 #undef LUCI_DEBUG
 #endif
 
+        iab = 1
         CALL GSBBD1(RHO1,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
      &       NGAS,IAOC,JAOC,scatS,CB,
      &       ADSXA,SXSTST,STSTSX,MXPNGAS,
      &       NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &       SSCR,CSCR,I1,XI1S,I2,XI2S,X,
      &       NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
-     &       IUSE_PH,IPHGAS)
+     &       IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB)
 C?        WRITE(6,*) ' GSBBD1 was called '
         IF(NTEST.GE.1000) THEN
           WRITE(lupri,*) ' Rho1 after GSBBD1, a '
@@ -2030,7 +2174,8 @@ C?        WRITE(6,*) ' GSBBD2A will be called (alpha)'
      &         ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
      &         NOBPTS,IOBPTS,MAXI,MAXK,
      &         SSCR,CSCR,I1,XI1S,I2,XI2S,X,
-     &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC)
+     &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC,
+     &         IDOSRHO2,RHO2AA)
 C?        WRITE(6,*) ' GSBBD2A was called '
         END IF
         CALL TRPMT3(CB,NJB,NJA,C2)
@@ -2080,7 +2225,7 @@ C?      WRITE(6,*) ' GSBBD2B will be called '
      &                    I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,X,
      &                    NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
      &                    SSCR,CSCR,NACOB,NTEST,SCLFAC,S2_TERM1,
-     &                    MXTSOB)
+     &                    IDOSRHO2,RHO2AB)
         IF(NTEST.GE.1000) THEN
           WRITE(lupri,*) ' Rho2 after GSBBD2b, ab '
           CALL PRSYM(RHO2,nacob**2)
@@ -2093,8 +2238,8 @@ C    &                  SB,CB,ADSXA,STSTSX,MXPNGAS,
 C    &                  NOBPTS,IOBPTS,MAXK,
 C    &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,X,
 C    &                  NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
-C    &                  CJRES,SIRES,NORB,NTEST,
-C    &                  MXTSOB)
+C    &                  CJRES,SIRES,NORB,NTEST
+C    &                  )
         CALL TRPMT3(CB,NJB,NJA,C2)
         CALL DCOPY(NJA*NJB,C2,1,CB,1)
       END IF
@@ -2317,3 +2462,89 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
       RETURN
       END
+      SUBROUTINE TEST_RHO2S(RHO2,RHO2AA,RHO2AB,RHO2BB,NORB,luwrt)
+*
+* Test two-body spin-density matrices by assembling 
+* the standard two-body matrix from these and compare
+*
+* Jeppe Olsen, sitting in Oak Ridge, Sept. 2004
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*
+      DIMENSION RHO2(*),RHO2AA(*),RHO2AB(*), RHO2BB(*)
+*
+*. Remember the form of the various densities : 
+*
+* RHO2(ij,kl) = sum_(s,s') <L!a+is a+ks' als' aj s!R> (ij.ge.kl)
+* RHO2AA(iklj) = <L!a+iaa+ka aja ala!R> (i.ge.k, j.ge.l)
+* RHO2BB(iklj) = <L!a+iba+kb ajb alb!R> (i.ge.k, j.ge.l)
+* RHO2AB(iklj) = <L!a+iaa+kb alb aja!R> ( no restrictions)
+*
+      NTEST = 1000
+      WRITE(luwrt,*) ' Welcome to test of 2e-spindensities '
+      WRITE(luwrt,*) ' =================================== '
+*
+      NERROR = 0
+      THRES = 1.0D-10
+      DO J = 1, NORB
+        DO L = 1, J
+          DO I = 1, NORB
+            IF(J.EQ.L) THEN
+              MAXK = I
+            ELSE
+              MAXK = NORB
+            END IF
+            DO K = 1, MAXK
+*. address in rho2
+              IJ = (J-1)*NORB + I
+              KL = (L-1)*NORB + K
+              IJKL_RHO2 = IJ*(IJ-1)/2 + KL
+*. addresses in rho2ab
+              IKLJ_RHO2AB = (J-1)*NORB**3 + (L-1)*NORB**2
+     &                    + (K-1)*NORB    +  I
+              KIJL_RHO2AB = (L-1)*NORB**3 + (J-1)*NORB**2
+     &                    + (I-1)*NORB    + K
+*. adress in rho2ss
+              IF(I.GT.K) THEN
+                IK = I*(I-1)/2 + K
+                SIGN = -1.0D0
+              ELSE
+                IK = K*(K-1)/2 + I
+                SIGN = 1.0D0
+              END IF
+C             LJ = L*(L-1)/2 + J
+              LJ = J*(J-1)/2 + L
+              IKLJ_RHO2SS = (LJ-1)*NORB*(NORB+1)/2 + IK
+*
+              RHO2_1 = RHO2(IJKL_RHO2)
+              RHO2_2 = RHO2AB(IKLJ_RHO2AB)
+     &               + RHO2AB(KIJL_RHO2AB)
+     &               + SIGN*RHO2AA(IKLJ_RHO2SS)
+     &               + SIGN*RHO2BB(IKLJ_RHO2SS)
+              IF(ABS(RHO2_1-RHO2_2).GT.THRES) THEN
+                NERROR = NERROR + 1
+                WRITE(luwrt,*) ' Problem with spinden '
+                WRITE(luwrt,*) ' I,J,K,L= ', I,J,K,L
+                WRITE(luwrt,*) ' element from RHO2 and from RHO2S ',
+     &          RHO2_1,RHO2_2
+                WRITE(luwrt,*) ' term from RHO2AB =',
+     &          RHO2AB(IKLJ_RHO2AB)+ RHO2AB(KIJL_RHO2AB)
+                WRITE(luwrt,*) ' term from RHO2SS ',
+     &          SIGN*(RHO2AA(IKLJ_RHO2SS)+RHO2BB(IKLJ_RHO2SS))
+                WRITE(luwrt,*) ' IKLJ_RHO2SS = ', IKLJ_RHO2SS
+              END IF
+            END DO
+          END DO
+        END DO
+      END DO
+*
+      IF(NERROR.EQ.0) THEN
+        WRITE(luwrt,*) ' RHO2 and RHO2S are in agreement '
+      ELSE
+        WRITE(luwrt,*) ' Number of differences between RHO2 and RHO2S',
+     &               NERROR 
+      END IF
+*
+      RETURN
+      END
+

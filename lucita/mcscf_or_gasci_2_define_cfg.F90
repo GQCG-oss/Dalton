@@ -148,6 +148,7 @@ contains
           lucita_cfg_max_batch_size       = gasci_input_max_batch_size
           lucipar_cfg_ttss_dist_strategy  = gasci_input_ttss_dist_strategy
           lucipar_cfg_mem_reduction_multp = gasci_input_mem_reduction_multp
+          lucita_cfg_spindensity_calc_lvl = gasci_input_spindensity_calc_lvl
 
           call icopy(max_number_of_gas_spaces*2,ngso_gasci_input,1,ngso_lucita,1)
           call icopy(max_number_of_gas_spaces*max_number_of_ptg_irreps,ngsh_gasci_input,1,ngsh_lucita,1)
@@ -254,6 +255,10 @@ contains
       lucita_cfg_density_calc_lvl                  = max(lucita_cfg_density_calc_lvl,1)
       if(two_el_dens_matrix)                       &
       lucita_cfg_density_calc_lvl                  = max(lucita_cfg_density_calc_lvl,2)
+
+      if(lucita_cfg_spindensity_calc_lvl > lucita_cfg_density_calc_lvl)then
+        lucita_cfg_spindensity_calc_lvl  = lucita_cfg_density_calc_lvl
+      end if
 
 !     set for mcscf (if not set otherwise)
       if(lucita_cfg_max_dav_subspace_dim == 0) lucita_cfg_max_dav_subspace_dim = 16 * lucita_cfg_nr_roots
