@@ -456,33 +456,38 @@ C
 
            call rewine(lu5,-1)
            call rewine(lu6,-1)
-           write(luwrt,*) ' blubbbbb              ... roots',i
 !                                                            1: sigma vector
 !                                                            2: density matrix
            call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 1,
      &                    xxs2dum)                          !   1: rhotype == 1 (regular 1p density matrix)
-           write(luwrt,*) ' blubbbbb home         ... roots',i
 !                                                           !   3: rhotype == 3 (transition density matrix)
          
-           call lucita_putdens_generic(work(krho1),work(krho2),
-     &                                 fsr,xxdummy,xxdummy,i12,2,1,i)
-!                                                              2: density matrix 
-!                                                                1: rhotype
            write(luwrt,*) 'weights(i)',weights(i)
-           call daxpy(nnashx,weights(i),work(krho1),1,work(KRHO1_ens),1)
+           call daxpy(ntoob**2,weights(i),work(krho1),1,
+     &                work(KRHO1_ens),1)
          end do ! loop over # roots
+
+         CALL HEADER(
+     &   'lucita: ensemble one-el. density matrix, active part',-1)
+         CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
+     &               -11,luwrt)
+
+         call lucita_putdens_generic(work(krho1_ens),work(krho2),
+     &                               fsr,xxdummy,xxdummy,i12,2,1,i)
+!                                                            2: density matrix 
+!                                                              1: rhotype
+         CALL HEADER(
+     &   'lucita: ensemble one-el. density matrix, ap reord   ',-1)
+         CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
+     &               -11,luwrt)
 
 !        reset i12 to allow for 1 and most likely 2-electron contributions
          i12 = i12_save
-         ispnden  = 0
+!        ispnden  = 0
 
          deallocate(fsr)
          close(luci_cvec,status='keep')
 
-         CALL HEADER(
-     &   'luicta: One-el. density matrix, active part, MO-basis',-1)
-         CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
-     &               -11,luwrt)
 
 !        dump ensemble density on file
          call lucita_putdens_ensemble(work(KRHO1_ens))
@@ -516,7 +521,7 @@ C
            CALL GETAC(fsr,srdft_srac_lucita)
 
            call wrtmatmn(srdft_srac_lucita,1,nnashx,1,nnashx,luwrt)
-           call wrtmatmn(work(kint1),1,3,1,3,luwrt)
+!          call wrtmatmn(work(kint1),1,3,1,3,luwrt)
 
            call dzero(work(krho1),ntoob**2)
 

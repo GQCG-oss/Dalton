@@ -4406,6 +4406,7 @@ C
           IDOSRHO1 = 1
           if(i12 > 1) IDOSRHO2 = 1
         end if
+        write(luwrt,*) ' print spindens',idosrho1,idosrho2
       end if
 *
       IF(IDOSRHO1.EQ.1) THEN  
@@ -4450,18 +4451,21 @@ C
 #ifdef LUCI_DEBUG
       IF(IDOSRHO1.EQ.1)THEN
         WRITE(luwrt,*) ' One-electron spindensity <0!E(aa) - E(bb)!0> '
-        CALL WRTMAT(work(kSRHO1),ntoob,ntoob,ntoob,ntoob)
+        CALL OUTPUT(work(ksrho1),1,ntoob,1,ntoob,ntoob,ntoob,-11,luwrt)
       END IF
 *
       IF(IDOSRHO2.EQ.1) THEN
         WRITE(luwrt,*) ' The RHO2AA(ij,kl) spin density '
         NDIM_AA = ntoob*(ntoob+1)/2
-        CALL WRTMAT(work(kRHO2AA),NDIM_AA,NDIM_AA,NDIM_AA,NDIM_AA)
+        CALL WRTMATmn(work(kRHO2AA),NDIM_AA,NDIM_AA,
+     &                NDIM_AA,NDIM_AA,luwrt)
         WRITE(luwrt,*) ' The RHO2BB(ij,kl) spin density '
-        CALL WRTMAT(work(kRHO2BB),NDIM_AA,NDIM_AA,NDIM_AA,NDIM_AA)
+        CALL WRTMATmn(work(kRHO2BB),NDIM_AA,NDIM_AA,
+     &                NDIM_AA,NDIM_AA,luwrt)
         WRITE(luwrt,*) ' The RHO2AB(ik,lj) spin density '
         NDIM_AB = ntoob*ntoob
-        CALL WRTMAT(work(kRHO2AB),NDIM_AB,NDIM_AB,NDIM_AB,NDIM_AB)
+        CALL OUTPUT(work(krho2ab),1,ndim_ab,1,ndim_ab,ndim_ab,ndim_ab,
+     &              -11,luwrt)
       END IF
 #undef LUCI_DEBUG
 #endif
@@ -4469,13 +4473,15 @@ C
       IF(IDOSRHO2.EQ.1.AND.I_CHECK_SRHO2.EQ.1) THEN
 *. Obtain standard rho2 from rho2s and check
 C             TEST_RHO2S(RHO2,RHO2AA,RHO2AB,RHO2BB,NORB)
-         CALL TEST_RHO2S(RHO2,RHO2AA,RHO2AB,RHO2BB,NTOOB,luwrt)
+       CALL TEST_RHO2S(work(kRHO2),work(kRHO2AA),
+     &                 work(kRHO2AB),work(kRHO2BB),NTOOB,luwrt)
       END IF
 
 !     WRITE(LUWRT,*) ' C (out) '
 !     CALL WRTMATMN(C,1,L_COMBI,1,L_COMBI,LUWRT)
 *. Eliminate local memory
-      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'SIDE  ')
+      idum = 0
+      CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'SIDE  ')
 *
       CALL QEXIT('SIDE ')
 *
@@ -4620,7 +4626,7 @@ C
 #endif
       ELSE ! (LUCI_NMPROC .GT. 1) THEN
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
          write(luwrt,*) ' rhs vector'
          CALL WRTVCD(cb,luc,1,-1)
@@ -4641,7 +4647,6 @@ C
 C     loop over batches over sigma blocks
 C
       DO JBATS = 1, NBATS
-      write(luwrt,*) ' ... ...ci3 nbats',nbats,jbats
 C
 #ifdef VAR_MPI
        IF (LUCI_NMPROC .GT. 1) THEN
@@ -4712,7 +4717,7 @@ C
             ELSE ! (LUCI_NMPROC .GT. 1) THEN
              CALL IFRMDS(LEN_L,1,-1,LUHC)
              CALL FRMDSC_LUCI(SB(IOFF),LEN_L,-1,LUHC,IMZERO,IAMPACK)
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
               WRITE(luwrt,*) 'I transfer from file block ISBLK',
      &                        ISBLK
@@ -4724,7 +4729,6 @@ C
           END DO ! end of loop over S-blocks
        END IF ! End of ISIGDEN switch
 C
-      write(luwrt,*) ' ... in to ...ci3'
        CALL SIGDEN3_CI(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
      &                 CB,SB,C2,CV,ISIGDEN,LUC,0,0,0,0,0,SSCLFAC,
      &                 ISCLFAC_GROUP,rhotype,ls,exps2,idosrho1,idosrho2
@@ -4732,9 +4736,7 @@ C
      &                ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
      &                )
-      write(luwrt,*) ' ... home from ...ci3'
       IF(ISIGDEN.EQ.1) THEN
-      write(luwrt,*) ' ... oops home from ...ci3'
 C  
 C       transfer S block to permanent storage
 #ifdef VAR_MPI
@@ -4798,7 +4800,6 @@ C
 C
 #endif
           ELSE ! (LUCI_NMPROC .GT. 1) THEN
-      write(luwrt,*) ' ... oops oops home from ...ci3'
             CALL ITODS(LEN,1,-1,LUHC)
             CALL TODSC_LUCI(SB(IOFF),LEN,-1,LUHC)
           END IF ! (LUCI_NMPROC .GT. 1) THEN
@@ -4820,6 +4821,7 @@ C
 #endif /* if def VAR_MPI */
       END DO
 *
+!     if(isigden > 1) goto 999 ! end of routine
 C
       IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
@@ -4857,7 +4859,6 @@ C
 C
 #endif
       ELSE ! (LUCI_NMPROC .GT. 1) THEN
-      write(luwrt,*) ' ... oops oops oops home from ...ci3'
 C       write EOF mark
         CALL ITODS(-1,1,-1,LUHC)
 C
@@ -4867,7 +4868,7 @@ C
         END IF
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 *
-      CALL QEXIT('SIDE2')
+ 999  CALL QEXIT('SIDE2')
       RETURN
       END
 
@@ -5184,7 +5185,6 @@ C
 !
       S2_TERM1 = 0.0d0
 
-                    write(luwrt,*) 'blubb.....'
       CALL SIGDEN4_CI(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,CV,ISIGDEN,
      &     C2,
      &     WORK(KCIOIO),ISMOST(1,ICSM),WORK(KCBLTP),
@@ -5232,7 +5232,6 @@ C
 !       WRITE(luwrt,*) ' Term 1 to S2 ', S2_TERM1
       END IF
 !
-      write(luwrt,*) 'lucblk ...',lucblk
       IF(LUCBLK.GT.0) THEN
         CALL ITODS(-1,1,-1,LUCBLK)
       END IF
@@ -5831,7 +5830,6 @@ C                   not exact Hamiltonian in use
                       end if
                     end if
 #endif
-                    write(luwrt,*) 'blubb..........'
 
                     CALL GSDNBB2(I12_local,WORK(KRHO1),WORK(KRHO2),
      &                           rhotype,IASM,IATP,IBSM,IBTP,
@@ -5850,15 +5848,15 @@ C                   not exact Hamiltonian in use
      &                           NIA,NIB,NJA,NJB,MXPOBS,
      &                           IPRNT,NACOB,RHO1S,XFAC,
      &                           S2_TERM1,IUSE_PH,IPHGAS,
-     &                           MXTSOB,itrsp_once,
+     &                           itrsp_once,
      &                           IDOSRHO1,work(KSRHO1),
      &                           IDOSRHO2,work(KRHO2AA),work(KRHO2AB),
      &                           work(KRHO2BB))
 
-!                   IF(NTEST.GE.100) THEN
+                    IF(NTEST.GE.100) THEN
                       write(luwrt,*) ' Updated rho1 '
                       call WRTMT_LU(WORK(KRHO1),nacob,nacob,nacob,nacob)
-!                   END IF
+                    END IF
 
                   END IF
 

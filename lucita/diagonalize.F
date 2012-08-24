@@ -126,7 +126,7 @@ C
        END IF
 *
 !      IPRT = 9999 ! IPRT = 0000  DEBUG
-       IPRT = 0010
+       IPRT = 0006
        lbl  = 0
 c      IPRT = IPRTXX
 #ifdef LUCI_DEBUG

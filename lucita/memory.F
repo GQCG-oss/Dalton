@@ -129,6 +129,7 @@
       end if
 
 *.3.1: One-body spin density
+!     ISPNDEN = 1
       IF(ISPNDEN.GE.1) THEN
         CALL MEMMAN(KSRHO1,ntoob **2, 'ADDS  ',2,'SRHO1 ')
       ELSE 
