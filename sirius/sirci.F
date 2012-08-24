@@ -219,6 +219,8 @@ C
       character (len=6) :: keywrd
       integer           :: xctype1, xctype2
 C
+      double precision EMYDFTAUX
+      EMYDFTAUX = 0.0D0 ! initialization
 C
 C     *****************************************************************
 C     Analyze input control specification
@@ -438,12 +440,15 @@ C
         kvec_generic = KEVEC    ! for a unique interface to CISAVE
         
         CALL CIOPT(EMY_CI,JCONV,ICICTL,NCROOT,MAXITC,CMO,INDXCI,
-     &             EJCSR,EJVSR,EDSR,EDFT,EMYDFT,NCLIN,ITCI,
+     &             EJCSR,EJVSR,EDSR,EDFT,EMYDFT,EMYDFTAUX,
+     &             NCLIN,ITCI,
      &             TIMLIN,TIMCIT,NCONF4,LSVECS,MAXSIM,
      &             residual_croot,energy_root,
      &             KFCAC,KH2AC,KCDIAG,KW1,KCIDIA,KSRAC,
      &             KCVECS,KSVECS,KW3,KW2,KREDCI,KEVEC,
      &             LW1,LW2,LW3,WRK,LWRK)
+C      write(lupri,*) 'just after calling ciopt ...'
+C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX      
 
       END IF ! CI_PROGRAM switch
 
@@ -484,6 +489,8 @@ C
 C          ... DVREF is equal to DV for state abs(ISTI),
 C              i.e. 1-el. energy can be calculated
            ESRDV = DDOT(NNASHX,WRK(KDVREF),1,WRK(KSRAC),1)
+C          write(lupri,*) 'before printing final results ...'
+C          write(lupri,*) 'ESRDV = ', ESRDV
            WRITE(LUPRI,'(/A,I5)') 'CI-DFT energy for state no.',IST
            WRITE(LUPRI,'(A/)') '-------------------------------------'
            WRITE(LUPRI,805) 'SR eff. 1-el. energy          :',ESRDV
@@ -494,6 +501,8 @@ C              i.e. 1-el. energy can be calculated
            ELRCI = ECI(IST) - ETDFT
            WRITE(LUPRI,805) 'LR total CI  energy           :',ELRCI
            WRITE(LUPRI,806) 'Total CI-DFT energy           :',ECI(IST)
+           ECIAUX = ELRCI+EMYDFTAUX+ESRDV-POTNUC 
+           WRITE(LUPRI,806) 'Auxiliary CI-srDFT energy     :',ECIAUX
         END DO
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
@@ -2679,12 +2688,18 @@ C
 !******************************************************************************
 
       SUBROUTINE CIOPT(EMY,JCONV,ICICTL,NCROOT,MAXITC,CMO,INDXCI,
-     &                 EJCSR,EJVSR,EDSR,EDFT,EMYDFT,NCLIN,ITCI,
+     &                 EJCSR,EJVSR,EDSR,EDFT,EMYDFT,EMYDFTAUX,
+     &                 NCLIN,ITCI,
      &                 TIMLIN,TIMCIT,NCONF4,LSVECS,MAXSIM,
      &                 residual_c,energy_c,
      &                 KFCAC,KH2AC,KCDIAG,KW1,KCIDIA,KSRAC,
      &                 KCVECS,KSVECS,KW3,KW2,KREDCI,KEVEC,
      &                 LW1,LW2,LW3,WRK,LWRK)
+
+C
+C
+C 23-08-2012 Manu: added one more argument, EMYDFTAUX, in order to compute
+C                  auxiliary long-range interacting energies
 
 #include <implicit.h>
       DIMENSION CMO(*), INDXCI(*), WRK(*), residual_c(*), energy_c(*)
@@ -2798,9 +2813,11 @@ C
          END IF
 C
          CALL SRFMAT(WRK(KFSR),CMO,WRK(KDVREF),EJCSR,EJVSR,EDSR,EDFT,
-     &               WRK(KW2A),LW2A,IPRI4)
+     &               EMYDFTAUX,WRK(KW2A),LW2A,IPRI4)
 C        ... Correct EMY and CI diagonal
          EMYDFT = EJCSR + EJVSR + EDSR + EDFT
+C       write(lupri,*) 'just after srfmat'  
+C       write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
         !write(lupri,*) 'eigshf before ',emy
          EMY = EMY + EMYDFT
         !write(lupri,*) 'eigshf after ',emy
@@ -2817,7 +2834,7 @@ C         2) Later printing of CIDFT specific energy contributions
          CALL DSPTGE(NASHT,WRK(KSRAC),WRK(KFSR))
          CALL DGEFSP(NASHT,WRK(KFSR),WRK(KSRAC))
          ESRDV = DDOT(NNASHX,WRK(KDVREF),1,WRK(KSRAC),1)
-          !write(lupri,*) 'esrdv... ',esrdv
+C          write(lupri,*) 'esrdv... ',esrdv
          DO I = 0,NCONF-1
             WRK(KCDIAG+I) = WRK(KCDIAG+I) + EMYDFT + ESRDV
          END DO
@@ -2984,6 +3001,8 @@ C           ... check symmetry of reduced CI matrix and CI overlap
 
 !     finish timing
       TIMCIT = SECOND() - TIMCIT
-
+      
+C     write(lupri,*) 'right at the end of ine ciopt'
+C     write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
       END SUBROUTINE CIOPT
 ! - end of file sirci.F - 
