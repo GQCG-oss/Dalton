@@ -100,7 +100,7 @@ C
 #ifndef MOD_SRDFT
          call quit('srdft not implemented in this version')
 #else
-         CALL MEMGET('REAL',KECID,NCROOT,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KECID,NCROOT*MXCIDFT,WORK,KFREE,LFREE)
          IMCITR = 0
          DO I = 1,MXCIDFT
             IMCITR = IMCITR + 1
