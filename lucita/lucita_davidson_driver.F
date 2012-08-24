@@ -311,12 +311,13 @@ C         ==================================================
 C          Initial guess from lowest elements of CI diagonal
 C         ==================================================
 C
-C         in order treat degeneracies, the lowest 4 * NROOTSL
+C         in order treat degeneracies, the lowest 6 * NROOTSL
 C         elements are obtained
 C
-          NFINDM = MIN(NDIM,4*NROOTSL)
-!         ninvec =  NFINDM
-C
+          NFINDM = MIN(NDIM,6*NROOTSL)
+
+          ninvec = min(NFINDM,4*nrootsl)
+
           IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
               CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
@@ -478,8 +479,8 @@ C
 !                                                              1: rhotype
          CALL HEADER(
      &   'lucita: ensemble one-el. density matrix, ap reord   ',-1)
-         CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
-     &               -11,luwrt)
+         CALL OUTPAK(work(krho1),NASHT,-1,LUPRI)
+
 
 !        reset i12 to allow for 1 and most likely 2-electron contributions
          i12 = i12_save

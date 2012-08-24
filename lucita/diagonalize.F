@@ -255,7 +255,7 @@ C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
        END IF
 *. And the corresponding Hamiltonian matrix, no problems
 *. with numerical stabilities, so just use eigenvalues
-       CALL dzero(APROJ,NROOT*(NROOT+1)/2)
+       CALL dzero(APROJ,NINVEC*(NINVEC+1)/2)
        DO IROOT = 1, NROOT
         APROJ(IROOT*(IROOT+1)/2) = EIG(1,IROOT)
        END DO

@@ -319,7 +319,7 @@ contains
       timing_par = .false.
       if(lucita_cfg_timing_par) timing_par = .true.
 !     max davidson subspace
-      mxciv = max(3*nroot, lucita_cfg_max_dav_subspace_dim) 
+      mxciv = max(6*nroot, lucita_cfg_max_dav_subspace_dim) 
       if(idiag == 2) mxciv = max(2*nroot, lucita_cfg_max_dav_subspace_dim)
 !     storage mode for vectors
 !     complete vector + block version in core
