@@ -268,7 +268,7 @@ C
 C     KDTV need to be zeroed out in case of FCI solvent calculation
 C     (DTV only set in sirtr1). K.Ruud-July 97
 C
-      CALL DZERO(WRK(KDTV),N_SV*MCSIM*NNASHX)
+      CALL DZERO(WRK(KDTV),N_VS*MCSIM*NNASHX)
       IF (NWOPT.EQ.0.AND. .NOT.DOMCSRDFT) THEN
          T2 = T1
          T3 = T1
