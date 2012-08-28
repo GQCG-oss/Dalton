@@ -2882,7 +2882,8 @@ subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
 
     integer :: i, j, k, l, m, n, o
     integer :: lufck, lexist, lu
-    real(dp) :: Ene, Enn, gauss
+    real(dp) :: gauss = 0.0d0
+    real(dp) :: Ene, Enn
     real(dp), dimension(ndens) :: Een, Eee
     real(dp), dimension(1) :: Tfm
     real(dp), dimension(3) :: Rfm
@@ -2922,8 +2923,8 @@ subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
         end do
 
         do j = 1, pdnucs
-            gauss = (8.0d0  * gauss_factor) /&
-                    ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
+!            gauss = (8.0d0  * gauss_factor) /&
+!                    ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
             do k = 1, qmnucs
                 Rfm = Rm(:,k) - Rpd(:,j)
                 call Tk_tensor(Tfm, Rfm)
@@ -4108,11 +4109,18 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb,&
     end do
 
     ! get electric field from fragment density at polarizable sites
-    allocate(Ftmp(3*npols,1), Fpd(3*npols)); Ftmp = 0.0d0
-    call electron_fields(Ftmp, denmat)
-    Fpd = Ftmp(:,1)
-    call nuclear_fields(Ftmp(:,1))
-    Fpd = Fpd + Ftmp(:,1)
+    ! TODO: better solution for neglecting polarization
+    if (lpol(1)) then
+        allocate(Ftmp(3*npols,1), Fpd(3*npols)); Ftmp = 0.0d0
+        call electron_fields(Ftmp, denmat)
+        Fpd = Ftmp(:,1)
+        call nuclear_fields(Ftmp(:,1))
+        Fpd = Fpd + Ftmp(:,1)
+        deallocate(Ftmp)
+    else
+        allocate(Fpd(3*npols))
+        Fpd = 0.0d0
+    end if
 
     ! calculate nuclear - electron energy contribution
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
@@ -4143,7 +4151,7 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb,&
     write(luden) Emo
     close(luden)
 
-    deallocate(full_denmat, Fpd, Ftmp, Emo)
+    deallocate(full_denmat, Fpd, Emo)
 
 end subroutine pe_save_density
 
