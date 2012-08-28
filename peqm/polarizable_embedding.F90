@@ -169,6 +169,8 @@ module polarizable_embedding
     ! ---------
     ! create QM cubes
     logical, save :: mep_qmcube = .true.
+    ! create multipole cubes
+    logical, save :: mep_mulcube = .true.
     ! external electric field
     logical, save :: mep_extfld = .true.
     real(dp), dimension(3), save :: extfld = 0.0d0
@@ -354,6 +356,8 @@ subroutine pe_dalton_input(word, luinp, lupri)
                         mep_extfld = .true.
                     else if (trim(option(1:)) == 'SKIPQM') then
                         mep_qmcube = .false.
+                    else if (trim(option(1:)) == 'SKIPMUL') then
+                        mep_mulcube = .false.
                     else if (option(1:1) == '.' .or. option(1:1) == '*') then
                         backspace(luinp)
                         exit
@@ -1755,6 +1759,7 @@ subroutine pe_sync()
         call mpi_bcast(mep_fldnrm, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(mep_extfld, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         call mpi_bcast(mep_qmcube, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(mep_mulcube, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
         allocate(nmepdists(0:ncores-1))
         if (myid == 0) then
             ndist = npoints(0) / ncores
@@ -1807,8 +1812,9 @@ subroutine pe_compute_mep(denmats)
     integer :: i, j, k, l
     integer :: ndist, nrest
     integer :: lu, lum0, lum1, lum2, lum3, lum4, lum5
+    logical :: exclude
     real(dp) :: taylor
-    real(dp), dimension(3) :: Tm, Rsp, Fs
+    real(dp), dimension(3) :: Tm, Rsp, Rji, Fs
     real(dp), dimension(:,:), allocatable :: Vqm, Vpe, Vind
     real(dp), dimension(:,:), allocatable :: Fqm, Find
     real(dp), dimension(:,:,:), allocatable :: Fpe
@@ -1866,7 +1872,7 @@ subroutine pe_compute_mep(denmats)
         deallocate(Vqm)
     end if
 
-    if (mulorder >= 0) then
+    if (mulorder >= 0 .and. mep_mulcube) then
         allocate(Vpe(0:mulorder,npoints(ncores-1)))
         Vpe = 0.0d0
         i = 1
@@ -2041,8 +2047,62 @@ subroutine pe_compute_mep(denmats)
 
     if (lpol(1)) then
         allocate(Fmuls(3*npols,1))
+        Fmuls = 0.0d0
+        l = 1
+        do i = 1, nsites(ncores-1)
+            if (zeroalphas(i)) cycle
+            do j = 1, nsites(ncores-1)
+                if (i == j) then
+                    cycle
+                end if
+                exclude = .false.
+                do k = 1, lexlst
+                    if (exclists(k,i) == exclists(1,j)) then
+                        exclude = .true.
+                        exit
+                    end if
+                end do
+                if (exclude) cycle
+                Rji = Rs(:,i) - Rs(:,j)
+                if (lmul(0)) then
+                    if (abs(maxval(M0s(:,j))) >= zero) then
+                        call multipole_field(Fmuls(l:l+2,1), Rji, M0s(:,j))
+                    end if
+                end if
+                if (lmul(1)) then
+                    if (abs(maxval(M1s(:,j))) >= zero) then
+                        call multipole_field(Fmuls(l:l+2,1), Rji, M1s(:,j))
+                    end if
+                end if
+                if (lmul(2)) then
+                    if (abs(maxval(M2s(:,j))) >= zero) then
+                        call multipole_field(Fmuls(l:l+2,1), Rji, M2s(:,j))
+                    end if
+                end if
+                if (lmul(3)) then
+                    if (abs(maxval(M3s(:,j))) >= zero) then
+                        call multipole_field(Fmuls(l:l+2,1), Rji, M3s(:,j))
+                    end if
+                end if
+                if (lmul(4)) then
+                    if (abs(maxval(M4s(:,j))) >= zero) then
+                        call multipole_field(Fmuls(l:l+2,1), Rji, M4s(:,j))
+                    end if
+                end if
+                if (lmul(5)) then
+                    if (abs(maxval(M5s(:,j))) >= zero) then
+                        call multipole_field(Fmuls(l:l+2,1), Rji, M5s(:,j))
+                    end if
+                end if
+            end do
+            l = l + 3
+        end do
         allocate(M1inds(3*npols,1))
-        call multipole_fields(Fmuls(:,1))
+!        call multipole_fields(Fmuls(:,1))
+        if (myid == 0) then
+            write(luout,*) 'Electric fields from static multipole moments:'
+            write(luout,'(3f12.6)') Fmuls
+        end if
         if (mep_extfld) then
             j = 1
             do i = 1, npols
@@ -2051,6 +2111,10 @@ subroutine pe_compute_mep(denmats)
             end do
         end if
         call induced_dipoles(M1inds, Fmuls)
+        if (myid == 0) then
+            write(luout,*) 'Induced dipole moments:'
+            write(luout,'(3f12.6)') M1inds
+        end if
         deallocate(Fmuls)
 #if defined(VAR_MPI)
         if (ncores > 1) then
@@ -2195,7 +2259,7 @@ subroutine pe_compute_mep(denmats)
             deallocate(Fqm)
         end if
 
-        if (mulorder >= 0) then
+        if (mulorder >= 0 .and. mep_mulcube) then
             allocate(Fpe(3,0:mulorder,npoints(ncores-1)))
             Fpe = 0.0d0
             i = 1
@@ -2456,8 +2520,58 @@ subroutine pe_compute_mep(denmats)
 
         if (lpol(1)) then
             allocate(Fmuls(3*npols,1))
+            Fmuls = 0.0d0
+            l = 1
+            do i = 1, nsites(ncores-1)
+                if (zeroalphas(i)) cycle
+                do j = 1, nsites(ncores-1)
+                    if (i == j) then
+                        cycle
+                    end if
+                    exclude = .false.
+                    do k = 1, lexlst
+                        if (exclists(k,i) == exclists(1,j)) then
+                            exclude = .true.
+                            exit
+                        end if
+                    end do
+                    if (exclude) cycle
+                    Rji = Rs(:,i) - Rs(:,j)
+                    if (lmul(0)) then
+                        if (abs(maxval(M0s(:,j))) >= zero) then
+                            call multipole_field(Fmuls(l:l+2,1), Rji, M0s(:,j))
+                        end if
+                    end if
+                    if (lmul(1)) then
+                        if (abs(maxval(M1s(:,j))) >= zero) then
+                            call multipole_field(Fmuls(l:l+2,1), Rji, M1s(:,j))
+                        end if
+                    end if
+                    if (lmul(2)) then
+                        if (abs(maxval(M2s(:,j))) >= zero) then
+                            call multipole_field(Fmuls(l:l+2,1), Rji, M2s(:,j))
+                        end if
+                    end if
+                    if (lmul(3)) then
+                        if (abs(maxval(M3s(:,j))) >= zero) then
+                            call multipole_field(Fmuls(l:l+2,1), Rji, M3s(:,j))
+                        end if
+                    end if
+                    if (lmul(4)) then
+                        if (abs(maxval(M4s(:,j))) >= zero) then
+                            call multipole_field(Fmuls(l:l+2,1), Rji, M4s(:,j))
+                        end if
+                    end if
+                    if (lmul(5)) then
+                        if (abs(maxval(M5s(:,j))) >= zero) then
+                            call multipole_field(Fmuls(l:l+2,1), Rji, M5s(:,j))
+                        end if
+                    end if
+                end do
+                l = l + 3
+            end do
             allocate(M1inds(3*npols,1))
-            call multipole_fields(Fmuls(:,1))
+!            call multipole_fields(Fmuls(:,1))
             if (mep_extfld) then
                 j = 1
                 do i = 1, npols
