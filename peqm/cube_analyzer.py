@@ -95,7 +95,7 @@ class Cube(object):
             line = fcube.readline().split()
             self.charges.append(float(line[1]))
             self.coords.append([float(coord) for coord in line[2:5]])
-        self.grid = np.empty((self.xpoints, self.ypoints, self.zpoints))
+        self.grid = np.zeros((self.xpoints, self.ypoints, self.zpoints))
         fcube.close()
 
     def copyheader(self, cube):
@@ -109,7 +109,7 @@ class Cube(object):
         self.zstep = cube.zstep
         self.charges = cube.charges
         self.coords = cube.coords
-        self.grid = np.empty((self.xpoints, self.ypoints, self.zpoints))
+        self.grid = np.zeros((self.xpoints, self.ypoints, self.zpoints))
 
     def readgrid(self):
         fcube = open(self.filename, 'r')
@@ -161,7 +161,8 @@ class Cube(object):
                     if i == 6:
                         grid += '\n'
                         i = 0
-                grid += '\n'
+                if grid[-1] != '\n':
+                    grid += '\n'
             fcube.write(grid)
             grid = ''
         fcube.close()
