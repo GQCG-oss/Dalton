@@ -52,7 +52,7 @@ C
 C#include <dorps.h>
 #include <spnout.h>
 C jim  aca van las opctiones para LRESC , aun no las defino todas
-      DATA TABLE /'.GAUGEO','.PRINT ','.SELECT','.xINEAR','.xUADRA',
+      DATA TABLE /'.GAUGEO','.PRINT ','.SELECT','.xXXXXx','.xXXXXx',
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
 C
@@ -62,7 +62,7 @@ C
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
-            write(lupri,*) ' @LRSCINP : reading : ' , WORD
+cv            write(lupri,*) ' @LRSCINP : reading : ' , WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
@@ -79,26 +79,24 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "', WORD,
      &               '" not recognized in LRESC.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Input keywords in SPNINP')
-C   READ GAUGEO : DEFINIR AKLGUNA VAR PARA GAUGEO
+               CALL QUIT('Input keywords in LRESC Input, LRSCINP')
+C   READ GAUGEO : DEFINIR ALGUNA VAR PARA GAUGEO
  1             CONTINUE
-                    write(lupri,*)' ..aca leo gaugeo ', WORD
+cv                    write(lupri,*)' ..aca leo gaugeo ', WORD
                     READ (LUCMD,*) (LRGAUG(IS), IS = 1, 3)
                     GAUCHANG =.TRUE.
                     ICHANG = ICHANG + 1
                GOTO 100
 C   SET PRINT LEVEL 
  2             CONTINUE
-                  write(lupri,*)' ..aca leo print level '
+cv                  write(lupri,*)' ..aca leo print level '
                   READ (LUCMD,*) JIMPRT
                   ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  3             CONTINUE
-                  write(lupri,*)' ..aca leo SELECT NATOM '
-                  READ (LUCMD,*) NATOM
-            write(lupri,*)'Remember to set GAUGEO on INTEGRAL SECTION'//
-     &            ' it is important GAUGEO placed on selected NATOM'
+cv                  write(lupri,*)' ..aca leo SELECT LRATOM '
+                  READ (LUCMD,*) LRATOM
                   ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
@@ -153,37 +151,38 @@ c jim-dbg ICHANG < 0 no cambios
 
       IF ((SIGMAD0S).AND.(SIGMAD1S).AND.(SIGMAP1S).AND.(SIGMAP1T).AND.
      &    (SIGMAP3S).AND.(SIGMAP3T)) THEN 
-            ICHANG = ICHANG -6 
+            ICHANG = ICHANG - 6 
             LRESCALL=.TRUE.
             Write(lupri,*) 'You asked for all LRESC corrections.'
       ENDIF
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for LRESC :',0)
          IF (GAUCHANG) THEN
-            WRITE (LUPRI,*) 'cambiaste origen de gauge .. ojo  '
-            write(lupri,*) ' a ver : ', GAUCHANG
+           write(lupri,*)' - Remember to set GAUGEO on INTEGRAL ' //
+     &     ' SECTION. GAUGEO MUST be placed on selected NUCLEUS'
+           WRITE (LUPRI,*) ' - cambiaste origen de gauge .. ojo  '
          END IF
          IF (JIMPRT.NE.0) THEN
             WRITE (LUPRI,'(A,I5)')
-     &       ' Print level in lresc output routine now is : ', JIMPRT
+     &       ' - Print level in lresc output routine now is : ', JIMPRT
          END IF
          IF (.NOT. LRESCALL) WRITE (LUPRI,'(A)')
-     &      ' Not LRESC for all corrections, will be calculated. ' //
-     &      'Only the following will be done, as asked for : '
+     &      ' -  Not LRESC for all corrections. ' //
+     &      'Only the following will be done : '
          IF (SIGMAP1S)  WRITE (LUPRI,'(A)')
-     &   '   Paramagnetic first order singlet corrections to shielding'
+     &   '  **Paramagnetic first order singlet corrections to shielding'
          IF (SIGMAP1T) WRITE (LUPRI,'(A)')
-     &   '   Paramagnetic first order triplet corrections to shielding'
+     &   '  **Paramagnetic first order triplet corrections to shielding'
          IF (SIGMAP3S) WRITE (LUPRI,'(A)')
-     &   '   Paramagnetic third order singlet corrections to shielding'
+     &   '  **Paramagnetic third order singlet corrections to shielding'
          IF (SIGMAP3T) WRITE (LUPRI,'(A)')
-     &   '   Paramagnetic third order triplet corrections to shielding'
+     &   '  **Paramagnetic third order triplet corrections to shielding'
          IF (SIGMAD0S) WRITE (LUPRI,*)
-     &   '   Diamagnetic zero order singlet corrections to shielding'
+     &   '  **Diamagnetic zero order singlet corrections to shielding'
          IF (SIGMAD1S) WRITE (LUPRI,*)
-     &   '   Diamagnetic first order singlet corrections to shielding'
+     &   '  **Diamagnetic first order singlet corrections to shielding'
          IF (NUCSPI .GT. 0)
-     &      WRITE (LUPRI,'(A)')' The spin-spin couplings of selected '//
+     &      WRITE (LUPRI,'(A)')' XXXXXXXXTn couplings of selected '//
      &           'nuclei with all the others will be calculated'
        WRITE(LUPRI,*)' ' 
       END IF
@@ -205,7 +204,7 @@ c jim-dbg : sacar esto de abajo
 #include <priunit.h>
 C
       JIMPRT   = 0
-      NATOM    = 1 
+      LRATOM    = 1 
       LRGAUG(1) = 0.000
       LRGAUG(2) = 0.000
       LRGAUG(3) = 0.000
@@ -250,11 +249,11 @@ C
 #include <lrescinf.h>
 C
 
-      write(lupri,*)'@ LRSCDRV : '
+cv      write(lupri,*)'@ LRSCDRV : '
 
-      IF (.NOT. LRESCALL) THEN
-         WRITE (LUPRI,'(A)')  '   LRESC ALL set : NOT '
-      END IF
+cv      IF (.NOT. LRESCALL) THEN
+cv         WRITE (LUPRI,'(A)')  '   LRESC ALL set : NOT '
+cv      END IF
 C 
 C First Order SINLGET 
 C

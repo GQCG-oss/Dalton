@@ -508,8 +508,8 @@ C
 C  jim-gesc 1: call to LRSCDRV 
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
-       write(lupri,*) ' LRSCDRV is not called yet, still developing' 
-       CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
+c       write(lupri,*) ' LRSCDRV is not called yet, still developing' 
+       CALL LRSCDRV(WORK(KLST2),LWRK2) 
       END IF
 C
 C     ****************************************
@@ -1760,13 +1760,16 @@ cx jim-dbg :  asking to specific logic : ex SOPPA
        IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
      &    ' Linear Response Elimination of Small Component',
      &    ' DEVELOPING NOTES :   ' ,
-     &    '                   -uncontracted basis set not checked  ',
-     &    '                   -selected atom not yet #1 set internally',
-     &    '                   -no man pages.. yet ',
-     &    '                   -no test runs .. yet.. ',
-     &    '                   -ONLY 1st order sinlget corrections.',
-     &    '                   -     diam  singlet first order ',
-     &    '                   -     param singlet first order '
+     &    '         -Uncontracted basis set : not yet ',
+     &    '         -Selected atom          : not yet. #1 set for now ',
+     &    '         -Man pages              : not yet ',
+     &    '         -Test runs              : not yet ',
+     &    '         -LRESC Corrections      : ONLY 0 and 1st order',
+     &    '              diam  singlet first order ',
+     &    '              param singlet first order ',
+     &    '              param triplet first order ',
+     &    '         -Remember to set GAUGEO on INTEGRAL SECTION',
+     &    '              GAUGEO MUST be placed on selected NUCLEUS' 
 
       IF (ABASOP) THEN
          IERR = 0

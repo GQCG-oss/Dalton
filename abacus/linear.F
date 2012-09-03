@@ -81,7 +81,7 @@ C
 #include "orgcom.h"
 C
 cxu  sacar lo de abajo
-      IPRLNR =2
+      IPRLNR = JIMPRT
 cxu
 C
 C
@@ -100,7 +100,7 @@ C
      &       'LINEAR-S >>>>>>>>>> '
          WRITE(LUPRI,*)
          WRITE(LUPRI,'(2A)') '@LINEARS to do ', KEY
-         WRITE(LUPRI,*) 'NATOM set to ', NATOM
+         WRITE(LUPRI,*) 'ATOM set to ', LRATOM
       END IF
 C
       IPRRSP = IPRLNR
@@ -114,26 +114,27 @@ C
       LPVX   = 0
       KFREE  = 1
       LFREE  = LWORK
-      write(lupri,'(A,3F12.8)') ' orgcom.h : GAGORG :', GAGORG
-      write(lupri,'(A,3F12.8)') '            ORIGIN :', ORIGIN
-      write(lupri,'(A,3F12.8)') '            CMXYZ  :', CMXYZ
-      write(lupri,*)
-      write(lupri,*) ' alocando 1 : ANTES MEMGET :'
-      write(lupri,*) ' ----------------------------'
-      write(lupri,*) '     KFREE = 1' 
-      write(lupri,*) '     LFREE = LWORK :         ', LWORK 
-      write(lupri,*) '                             '     
+      IF (JIMPRT.GT.5) Then 
+          write(lupri,'(A,3F12.8)') ' orgcom.h : GAGORG :', GAGORG
+          write(lupri,'(A,3F12.8)') '            ORIGIN :', ORIGIN
+          write(lupri,'(A,3F12.8)') '            CMXYZ  :', CMXYZ
+          write(lupri,*)
+          write(lupri,*) ' alocando 1 : ANTES MEMGET :'
+          write(lupri,*) ' ----------------------------'
+          write(lupri,*) '     KFREE = 1' 
+          write(lupri,*) '     LFREE = LWORK :         ', LWORK 
+          write(lupri,*) '                             '     
 C      
-      write(lupri,*) ' COMMON VARIABLES on LINEAR '
-      write(lupri,*) ' ----------------------------'
-      write(lupri,*) '     N2ASHX : ni idea ' , N2ASHX
-      write(lupri,*) '     NASHT # Active Orbitals = 0 ? :', NASHT
-      write(lupri,*) '     LISTA1y2 (4*MXCOOR+9) = ', 4*MXCOOR+9
-      write(lupri,*) '     MXCOOR              = ', MXCOOR
-      write(lupri,*) '     NCMOT = NORB * NORB = ', NCMOT
-      write(lupri,*) '   '     
-      write(lupri,*) ' memget....  '     
-
+          write(lupri,*) ' COMMON VARIABLES on LINEAR '
+          write(lupri,*) ' ----------------------------'
+          write(lupri,*) '     N2ASHX : ni idea ' , N2ASHX
+          write(lupri,*) '     NASHT # Active Orbitals = 0 ? :', NASHT
+          write(lupri,*) '     LISTA1y2 (4*MXCOOR+9) = ', 4*MXCOOR+9
+          write(lupri,*) '     MXCOOR              = ', MXCOOR
+          write(lupri,*) '     NCMOT = NORB * NORB = ', NCMOT
+          write(lupri,*) '   '     
+          write(lupri,*) ' memget....  '     
+      ENDIF 
       CALL MEMGET('REAL',KCMO  ,NCMOT ,WORK ,KFREE ,LFREE)
       CALL MEMGET('REAL',KUDV  ,LUDV  ,WORK ,KFREE ,LFREE)
       CALL MEMGET('REAL',KPVX  ,LPVX  ,WORK ,KFREE ,LFREE)
@@ -143,16 +144,18 @@ c            dimensiona work(KCMO, KCMO+NCMOT)
 C
       KWORK1 = KFREE
       WORK1 = LFREE
-      write(lupri,*) '   '     
-      write(lupri,*) ' AFTER MEMGET  '
-      write(lupri,*) ' ----------------------------'
-      write(lupri,*) '        KCMO, NCMOT     =  ', KCMO,NCMOT
-      write(lupri,*) '        KUDV, LUDV      =  ', KUDV,LUDV
-      write(lupri,*) '        KPVX, LPVX      =  ', KPVX,LPVX
-      write(lupri,*) '        KPXINDX, LCINDX =  ', KXINDX,KXINDX
-      write(lupri,*) '        KWORK1 = KFREE :   ', KFREE 
-      write(lupri,*) '        WORK1  = LFREE :   ', LFREE 
-      write(lupri,*) '   '     
+      IF (JIMPRT.GT.5) Then 
+          write(lupri,*) '   '     
+          write(lupri,*) ' AFTER MEMGET  '
+          write(lupri,*) ' ----------------------------'
+          write(lupri,*) '        KCMO, NCMOT     =  ', KCMO,NCMOT
+          write(lupri,*) '        KUDV, LUDV      =  ', KUDV,LUDV
+          write(lupri,*) '        KPVX, LPVX      =  ', KPVX,LPVX
+          write(lupri,*) '        KPXINDX, LCINDX =  ', KXINDX,KXINDX
+          write(lupri,*) '        KWORK1 = KFREE :   ', KFREE 
+          write(lupri,*) '        WORK1  = LFREE :   ', LFREE 
+          write(lupri,*) '   '     
+      ENDIF 
 
       CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
 C          RD_SIRIFC( KEY ,FOUND,   AMAT   ,  WRK      ,LWRK)
@@ -171,13 +174,15 @@ cx         CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
 cx      END IF
 C
       ISYM = 1
-      write(lupri,*) '   ' 
-      write(lupri,*) ' about to call LNRVAR' 
-      write(lupri,*) ' ----------------------------'
-      write(lupri,*) '           ISYM   : ', ISYM 
-      write(lupri,*) '   KWORK1=KFREE   : ', KWORK1
-      write(lupri,*) '    WORK1=LFREE   : ', WORK1
-      write(lupri,*) '   '     
+      IF (JIMPRT.GT.5) Then 
+          write(lupri,*) '   ' 
+          write(lupri,*) ' about to call LNRVAR' 
+          write(lupri,*) ' ----------------------------'
+          write(lupri,*) '           ISYM   : ', ISYM 
+          write(lupri,*) '   KWORK1=KFREE   : ', KWORK1
+          write(lupri,*) '    WORK1=LFREE   : ', WORK1
+          write(lupri,*) '   '     
+      ENDIF
       CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
 C
 c tirar esto
@@ -258,13 +263,15 @@ C
       KIDADR = KIDSYM + 9*MXCENT
       KWORK2 = KIDADR + 9*MXCENT
       LWORK2 = LWORK  - KWORK2
-      write(lupri,*) '        '
-      write(lupri,*) ' sigo alocando : '
-      write(lupri,*) ' ----------------------------'
-      write(lupri,*) ' KIDSYM = KWORK1           : ' , KIDSYM
-      write(lupri,*) ' KIDADR = KIDSYM + 9MXCENT : ' , KIDADR
-      write(lupri,*) ' KWORK2 = KIDADR + 9MXCENT : ' , KWORK2
-      write(lupri,*) ' LWORK2 = LWORK - KWORK2   : ' , LWORK2
+      IF (JIMPRT.GT.5) Then 
+          write(lupri,*) '        '
+          write(lupri,*) ' sigo alocando : '
+          write(lupri,*) ' ----------------------------'
+          write(lupri,*) ' KIDSYM = KWORK1           : ' , KIDSYM
+          write(lupri,*) ' KIDADR = KIDSYM + 9MXCENT : ' , KIDADR
+          write(lupri,*) ' KWORK2 = KIDADR + 9MXCENT : ' , KWORK2
+          write(lupri,*) ' LWORK2 = LWORK - KWORK2   : ' , LWORK2
+      ENDIF
 C
 cxz       NLBTOT = 0
 cxz       NLBSHIS = 4
@@ -310,9 +317,18 @@ c       LISTA2
 c       LABSYM 
 c       LABAPP es un common q se usa en rsp ??
 
-C  nidx = 3.NATOM-2, 3.NATOM-1, 3.NATOM 
+C  nidx = 3.LRATOM-2, 3.LRATOM-1, 3.LRATOM 
+
+C ==============================================================================
+C
+C  Staritng Labels stuff
+C
+C ==============================================================================
 
 
+C===============================================================================
+C  SINGLET CALCULATIONS : D1S and P1S 
+C ==============================================================================
       IF(KEY.EQ."D1S ") THEN 
 C        Look for LABELS : NSCO  
 C        -----------------------
@@ -398,7 +414,126 @@ C        -------------------------
          END DO
          NLAB2 = 3*NUCDEP
       END IF
+C===============================================================================
+C  TRIPLET CALCULATIONS : xxxxx
+C ==============================================================================
 C -----------------------------------------------------------------
+       IF((KEY.EQ."FCZK").OR.(KEY.EQ."FCBS")) THEN
+C
+C        Look for LABELS : FERMI  
+C        ------------------------
+         write(lupri,*)
+c jim-dbg LABEL2 should be a string to atom name
+         LABEL2='FC'
+         write(lupri,*) '@Linear setting  LABEL2 : FC'
+         write(lupri,*) '   LABEL 2 : Por AHORA solo |FC X 01| '
+cx       DO I=1,NCOOR
+           LISTA2(1)= 'FC X  01'
+           LABSYM(1)=1
+cx         write(lupri,*) '   LABEL2 : ', LISTA2(I), LABSYM(I)
+cx       END DO
+cx       NLAB1 = 3*NCOOR
+         NLAB2 = 1
+C         
+         IF(KEY.EQ."FCZK") THEN
+C
+C        Look for LABELS : KINENERG
+C        -----------------------------------
+            write(lupri,*)
+            LISTA1(1) ='KINENERG'
+            NLAB1 = 1
+            write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
+C
+C        Look for LABELS : BSO
+C        -----------------------------------
+         ELSE IF(KEY.EQ."FCBS") THEN
+            write(lupri,*)
+            LISTA1(1) ='SOMF  XX'
+            LISTA1(2) ='SOMF  YX'
+            LISTA1(3) ='SOMF  ZX'
+            LISTA1(4) ='SOMF  XY'
+            LISTA1(5) ='SOMF  YY'
+            LISTA1(6) ='SOMF  ZY'
+            LISTA1(7) ='SOMF  XZ'
+            LISTA1(8) ='SOMF  YZ'
+            LISTA1(9) ='SOMF  ZZ'
+            NLAB1 = 9
+            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
+            write(lupri,*) '   LABEL1 : ', LISTA1(1)
+            write(lupri,*) '   LABEL1 : ', LISTA1(2)
+            write(lupri,*) '   LABEL1 : ', LISTA1(3)
+            write(lupri,*) '   LABEL1 : ', LISTA1(4)
+            write(lupri,*) '   LABEL1 : ', LISTA1(5)
+            write(lupri,*) '   LABEL1 : ', LISTA1(6)
+            write(lupri,*) '   LABEL1 : ', LISTA1(7)
+            write(lupri,*) '   LABEL1 : ', LISTA1(8)
+            write(lupri,*) '   LABEL1 : ', LISTA1(9)
+         ENDIF
+      ENDIF
+C --------------------------------------------------------------
+      IF((KEY.EQ."SDZK").OR.(KEY.EQ."SDBS")) THEN
+C
+C        Look for LABELS : SD
+C        ------------------------
+         write(lupri,*)
+         LABEL2='SD'
+         write(lupri,*) '@Linear setting  LABEL2 : ', LABEL2
+         IJ = 1
+         DO I=1, 3*NUCDEP
+           DO J=1,3
+             LISTA2(IJ)= 'SD '//CHRNOS(J/10)//CHRNOS(J/10)//
+     &                    CHRNOS(MOD(I,10))//' '//CHRXYZ(-J)
+             LABSYM(IJ)=1
+             write(lupri,*) '   LABEL2 : ', LISTA2(IJ), LABSYM(IJ)
+             IJ = IJ + 1
+           END DO
+         END DO
+         NLAB2 = 9   ! jim-dbg: NLAB2 = 9*NUCDEP
+C
+C        Look for LABELS : dd/didj
+C        -----------------------------------
+         IF(KEY.EQ."SDZK") THEN
+            write(lupri,*)
+            LISTA1(1) ='dd/dxdx'
+            LISTA1(2) ='dd/dxdy'
+            LISTA1(3) ='dd/dxdz'
+            LISTA1(4) ='dd/dxdy'
+            LISTA1(5) ='dd/dydy'
+            LISTA1(6) ='dd/dydz'
+            LISTA1(7) ='dd/dxdz'
+            LISTA1(8) ='dd/dydz'
+            LISTA1(9) ='dd/dzdz'
+            NLAB1 = 9
+            write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
+         ELSE IF(KEY.EQ."SDBS") THEN
+C        Look for LABELS : BSO
+C        -----------------------------------
+            write(lupri,*)
+            LISTA1(1) ='SOMF  XX'
+            LISTA1(2) ='SOMF  YX'
+            LISTA1(3) ='SOMF  ZX'
+            LISTA1(4) ='SOMF  XY'
+            LISTA1(5) ='SOMF  YY'
+            LISTA1(6) ='SOMF  ZY'
+            LISTA1(7) ='SOMF  XZ'
+            LISTA1(8) ='SOMF  YZ'
+            LISTA1(9) ='SOMF  ZZ'
+            NLAB1 = 9
+            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
+            write(lupri,*) '   LABEL1 : ', LISTA1(1)
+            write(lupri,*) '   LABEL1 : ', LISTA1(2)
+            write(lupri,*) '   LABEL1 : ', LISTA1(3)
+            write(lupri,*) '   LABEL1 : ', LISTA1(4)
+            write(lupri,*) '   LABEL1 : ', LISTA1(5)
+            write(lupri,*) '   LABEL1 : ', LISTA1(6)
+            write(lupri,*) '   LABEL1 : ', LISTA1(7)
+            write(lupri,*) '   LABEL1 : ', LISTA1(8)
+            write(lupri,*) '   LABEL1 : ', LISTA1(9)
+         ENDIF
+      ENDIF
+C ---------------------------------------------------------------------
+C
+C ---------------------------------------------------------------------
 C
 C     Set variables for ABARSP and logicals
 C
@@ -414,6 +549,8 @@ C
            NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
            write(lupri,*) ' NO SE QUE PONERLE NABATY A PSOKIN' 
       END IF
+c juan arregla esto 
+C      IF   TRIPLET THEN NABATY = 1 !!!!!!!!!!!!!!!!!!
       NABAOP = 1            ! number of right hand sides. dejarlo asi . solo 1
 C
 C     Zero the property tensors
@@ -431,7 +568,7 @@ C
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 
-C jim-dbg : put here index to selected atom nidx = 3.NATOM-2 , the first one
+C jim-dbg : put here index to selected atom nidx = 3.LRATOM-2 , the first one
 c      nidx = 1 
 c      nidy = nidx+NLAB1
       DO 300 IDIP = 1,NLAB1
@@ -470,6 +607,7 @@ C
             KSYMOP = ISYM
             TRPLET = .FALSE.
             IPRSP = -2 
+C  juan ANTSYM =-1 IF TRIPLET !!!!!!!
             ANTSYM = 0
 c            IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
 C   
@@ -482,10 +620,10 @@ C          (1: symmetric, -1: antisymmetric, 0: unknown)
      &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
             REWIND LUGDVE
             CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
-cvx            IF (IPRLNR.GT.-1) THEN
+            IF (IPRLNR.GT.5) THEN
                WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL1
                CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
-cvx            ENDIF
+            ENDIF
 C
 C           Calculate eigenvector and write to file
 C           =======================================
@@ -505,6 +643,7 @@ C
                LABEL2 = LISTA2(IPL)
                write(lupri,*)'      LABAPP IPL           ' , LABEL2
                write(lupri,*) '     KSYM   = LABSYM(IPL) ', KSYM 
+c              IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
                KSYM   = 1
                write(lupri,*) '     else KSYM   = 1      ', KSYM 
 C
@@ -524,7 +663,7 @@ C
      &                       WORK(KPVX),WORK(KXINDX),ANTSYM,
      &                       WORK(KWRKG1),LWRKG1)
 C
-                  IF (IPRLNR.GT.-1) THEN
+                  IF (IPRLNR.GT.5) THEN
                      WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
                      CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,
      &                           LUPRI)
@@ -545,7 +684,7 @@ cd                  ENDIF
 C
                   SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
 C
-                  IF (IPRLNR.GT.-1) THEN
+                  IF (IPRLNR.GT.3) THEN
                      WRITE (LUPRI,'(5A,F20.12)')
      &               ' Second order property for ',LABEL2,' , ',LABEL1,
      &               ' = ',SNDPRP
