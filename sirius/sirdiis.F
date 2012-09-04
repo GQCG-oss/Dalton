@@ -717,13 +717,13 @@ C
 
          if (peqm) then
            allocate(pefock(nnbasx))
-           if (nasht .gt. 0 .and. .not. (dodft .or. hsrohf)) then
-             call pe_master(runtype='fock',
-     &                      denmats=(daosav(:,1) + daosav(:,2)),
+           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+             call pe_master(runtype='fock', denmats=daosav(:,1),
      &                      fckmats=pefock, nmats=1, Epe=pe_energy,
      &                      dalwrk=wrk(kfree:lfree))
            else
-             call pe_master(runtype='fock', denmats=daosav(:,1),
+             call pe_master(runtype='fock',
+     &                      denmats=(daosav(:,1) + daosav(:,2)),
      &                      fckmats=pefock, nmats=1, Epe=pe_energy,
      &                      dalwrk=wrk(kfree:lfree))
            end if
@@ -1333,14 +1333,14 @@ C
        ! needed to get specific PE energy contributions for printout
        ! when converged
        if (peqm) then
-         if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
-           call pe_master(runtype='energy',
-     &                    denmats=(daosav(:,1) + daosav(:,2)),
-     &                    nmats=1, dalwrk=wrk(kfree:lfree))
-         else
+         if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
            call pe_master(runtype='energy',
      &                    denmats=daosav(:,1), nmats=1,
      &                    dalwrk=wrk(kfree:lfree))
+         else
+           call pe_master(runtype='energy',
+     &                    denmats=(daosav(:,1) + daosav(:,2)),
+     &                    nmats=1, dalwrk=wrk(kfree:lfree))
          end if
        end if
        if (pe_mep) then
