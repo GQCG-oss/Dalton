@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+import os
+import sys
 try:
     from mpl_toolkits.mplot3d import Axes3D
 except ImportError:
@@ -9,7 +12,28 @@ except ImportError:
     print('Import from matplotlib failed! Plotting will fail.')
 import numpy as np
 
-# TODO: tuples vs. lists?
+au2aa = 0.5291772108
+
+charge2elem = { 0:  'X',  1:  'H',  2: 'He',  3: 'Li',  4: 'Be',  5:  'B',
+                6:  'C',  7:  'N',  8:  'O',  9:  'F', 10: 'Ne', 11: 'Na',
+               12: 'Mg', 13: 'Al', 14: 'Si', 15:  'P', 16:  'S', 17: 'Cl',
+               18: 'Ar', 19:  'K', 20: 'Ca', 21: 'Sc', 22: 'Ti', 23:  'V',
+               24: 'Cr', 25: 'Mn', 26: 'Fe', 27: 'Co', 28: 'Ni', 29: 'Cu',
+               30: 'Zn', 31: 'Ga', 32: 'Ge', 33: 'As', 34: 'Se', 35: 'Br',
+               36: 'Kr', 37: 'Rb', 38: 'Sr', 39:  'Y', 40: 'Zr', 41: 'Nb',
+               42: 'Mo', 43: 'Tc', 44: 'Ru', 45: 'Rh', 46: 'Pd', 47: 'Ag',
+               48: 'Cd', 49: 'In', 50: 'Sn', 51: 'Sb', 52: 'Te', 53:  'I',
+               54: 'Xe', 55: 'Cs', 56: 'Ba', 57: 'La', 58: 'Ce', 59: 'Pr',
+               60: 'Nd', 61: 'Pm', 62: 'Sm', 63: 'Eu', 64: 'Gd', 65: 'Tb',
+               66: 'Dy', 67: 'Ho', 68: 'Er', 69: 'Tm', 70: 'Yb', 71: 'Lu',
+               72: 'Hf', 73: 'Ta', 74:  'W', 75: 'Re', 76: 'Os', 77: 'Ir',
+               78: 'Pt', 79: 'Au', 80: 'Hg', 81: 'Tl', 82: 'Pb', 83: 'Bi',
+               84: 'Po', 85: 'At', 86: 'Rn', 87: 'Fr', 88: 'Ra'}
+
+elem2vdw = { 'H': 1.20, 'He': 1.40, 'Li': 2.20, 'Be': 1.90,  'B': 1.80,
+             'C': 1.70,  'N': 1.60,  'O': 1.55,  'F': 1.50, 'Ne': 1.54,
+            'Na': 2.40, 'Mg': 2.20, 'Al': 2.10, 'Si': 2.10,  'P': 1.95,
+             'S': 1.80, 'Cl': 1.80, 'Ar': 1.88, 'Br': 1.90,  'X': 1.00}
 
 class Sphere(object):
 
@@ -122,16 +146,16 @@ class MolecularSurface(object):
                 'Na': 2.40, 'Mg': 2.20, 'Al': 2.10, 'Si': 2.10,  'P': 1.95,
                  'S': 1.80, 'Cl': 1.80, 'Ar': 1.88, 'Br': 1.90,  'X': 1.00}
 
-    def __init__(self, elems=['X'], coords=[[0.0, 0.0, 0.0]], detail=2,
-                 vdwfactor=1.0):
+    def __init__(self, elems=['X'], coords=[[0.0, 0.0, 0.0]], allcoords=[[0.0, 0.0, 0.0]],
+                 detail=2, vdwfactor=1.17):
         self.elems = elems
         self.coords = coords
+        self.allcoords = allcoords
         self.detail = detail
         self.vdwfactor = vdwfactor
         vdws = []
         for elem in elems:
-            vdws.append(1.17 * self.elem2vdw[elem])
-#            vdws.append(2.0 * self.elem2vdw[elem])
+            vdws.append(self.vdwfactor * self.elem2vdw[elem])
         self.vdws = vdws
         self.create_surface()
 
@@ -147,7 +171,7 @@ class MolecularSurface(object):
     def create_surface(self):
         spheres = []
         for coord, radius in zip(self.coords, self.vdws):
-            sphere = Sphere(coord, self.vdwfactor*radius, self.detail)
+            sphere = Sphere(coord, radius, self.detail)
             spheres.append(sphere)
         self.spheres = spheres
         self.remove_overlap()
@@ -182,6 +206,18 @@ class MolecularSurface(object):
                     centroids.append(centroid)
                 sphere.areas = areas
                 sphere.centroids = centroids
+            for center in self.allcoords:
+                if center in self.coords:
+                    continue
+                areas = []
+                centroid = []
+                for area, centroid in zip(sphere.areas, sphere.centroids):
+                    if self.inside(centroid, center, 2.0):
+                        continue
+                    areas.append(area)
+                    centroids.append(centroid)
+                sphere.areas = areas
+                sphere.centroids = centroids
 
     def write_surface(self):
         """Write input files for PE module."""
@@ -197,51 +233,19 @@ class MolecularSurface(object):
         fout.close()
 
 if __name__ == "__main__":
-    elems = ['C', 'C', 'C', 'O', 'H', 'H', 'H', 'H', 'O', 'H', 'H', 'O', 
-            'H', 'H']  
-#    elems = ['C', 'C', 'C', 'O', 'H', 'H', 'H', 'H']
- 
-    coords=[[-0.145335, -0.546770,  0.000607],
-            [ 1.274009, -0.912471, -0.000167],
-            [ 1.630116, -2.207690, -0.000132],
-            [-0.560104,  0.608977,  0.000534],
-            [-0.871904, -1.386459,  0.001253],
-            [ 2.004448, -0.101417, -0.000710],
-            [ 0.879028, -3.000685,  0.000484],
-            [ 2.675323, -2.516779, -0.000673],
-            [-3.328551, -0.103229, -0.000415],
-            [-2.503795,  0.413221,  0.000339],
-            [-4.039214,  0.546729, -0.000849],
-            [ 1.742297,  2.341361, -0.000745],
-            [ 0.841678,  1.971807, -0.000820],
-            [ 1.632558,  3.298301,  0.004154]]
 
+    fsurf = open(sys.argv[1], 'r')
+    felems = open(sys.argv[2], 'r')
+    fall = open(sys.argv[3], 'r')
+    level = int(sys.argv[4])
 
+    surfcoords = [[float(coord) * au2aa for coord in line.split()] for line in fsurf]
+    elems = [charge2elem[int(line)] for line in felems]
+    allcoords = [[float(coord) * au2aa for coord in line.split()] for line in fall]
 
-#    elems = ['C', 'C', 'C', 'C', 'C', 'O', 'O', 'N', 'N', 'H', 'H', 'H',
-#            'H', 'H', 'H', 'H', 'H', 'H', 'H']
+    fsurf.close()
+    fall.close()
 
-#    coords=[[-3.323000, -1.195000,  0.000000],
-#            [-2.351000, -0.029000,  0.000000],
-#            [ 0.000000,  0.661000,  0.000000],
-#            [ 1.369000, -0.024000,  0.000000],
-#            [ 3.807000,  0.313000,  0.000000],
-#            [-2.732000,  1.143000,  0.000000],
-#            [ 1.486000, -1.250000,  0.000000],
-#            [-1.028000, -0.352000,  0.000000],
-#            [ 2.437000,  0.813000,  0.000000],
-#            [-2.833000, -2.174000,  0.000000],
-#            [-3.967000, -1.118000,  0.883000],
-#            [-3.967000, -1.118000, -0.883000],
-#            [-0.700000, -1.312000,  0.000000],
-#            [-0.099000,  1.311000, -0.880000],
-#            [-0.099000,  1.311000,  0.880000],
-#            [ 2.278000,  1.811000,  0.000000],
-#            [ 4.488000,  1.166000,  0.000000],
-#            [ 3.995000, -0.300000,  0.887000],
-#            [ 3.995000, -0.300000, -0.887000]]
-
-    mol = MolecularSurface(elems, coords, detail=1)
-#    mol = MolecularSurface(elems, coords, detail=2)
+    mol = MolecularSurface(elems, surfcoords, allcoords, detail=level)
     mol.write_surface()
     mol.plot()
