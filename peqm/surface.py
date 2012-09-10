@@ -210,14 +210,16 @@ class MolecularSurface(object):
                 if center in self.coords:
                     continue
                 areas = []
-                centroid = []
+                centroids = []
                 for area, centroid in zip(sphere.areas, sphere.centroids):
-                    if self.inside(centroid, center, 2.0):
+                    if self.inside(centroid, center, 1.0):
                         continue
                     areas.append(area)
                     centroids.append(centroid)
                 sphere.areas = areas
                 sphere.centroids = centroids
+            print 'areas ' + str(len(sphere.areas))
+            print 'centroids ' + str(len(sphere.centroids))
 
     def write_surface(self):
         """Write input files for PE module."""
