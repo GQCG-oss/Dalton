@@ -250,4 +250,4 @@ if __name__ == "__main__":
 
     mol = MolecularSurface(elems, surfcoords, allcoords, detail=level)
     mol.write_surface()
-    mol.plot()
+#    mol.plot()

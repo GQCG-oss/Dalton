@@ -278,6 +278,10 @@ ierr=0
      cp $WRKDIR/mep.inp MEP.INP
    fi
 
+   if [ -s $WRKDIR/surface.py ] ; then
+     cp $WRKDIR/surface.py .
+   fi
+
    # put files listed under -put to scratch directory
    if [ "$PUT_FILES" != "" ]; then
       for file in $PUT_FILES; do
