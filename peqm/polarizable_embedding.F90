@@ -2918,7 +2918,7 @@ subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
             Eee(j) = dot(denmats(l:m), pd_fckmat)
             if (pe_repuls) then
                 if (fock) fckmats(l:m) = fckmats(l:m) - rep_factor * pd_repmat
-                Epd(3,j) = dot(denmats(l:m), - rep_factor * pd_repmat)
+                Epd(3,j) = Epd(3,j) + dot(denmats(l:m), - rep_factor * pd_repmat)
             end if
         end do
 
