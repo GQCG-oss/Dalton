@@ -204,7 +204,9 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: crds
     ! Number of coordinates (length of crds)/3
     integer, save :: ncrds
+
 ! TODO:
+! make only two routines accesible from outside module: pe_init and pe_master
 ! handle interface better, e.g. scale or remove higher order moments and pols
 ! write better output (e.g. in abadrv,F)
 ! damping of electric field from QM system?
@@ -4255,9 +4257,10 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     do i = 1, focc
         cmo(:,i) = Emo(i) * cmo(:,i)
     end do
+    write(lupri,*) Emo
     allocate(full_rep(cbas,cbas))
     full_rep = 0.0d0
-    full_rep = - 2.0d0 * matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), cmo),&
+    full_rep = - 1.0d0 * matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), cmo),&
                matmul(transpose(cmo), full_overlap(1:fbas,fbas+1:nbas)))
 
     deallocate(full_overlap, cmo)
