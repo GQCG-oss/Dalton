@@ -2919,8 +2919,8 @@ subroutine es_polarizable_densities(denmats, Eel, Enuc, fckmats)
             if (fock) fckmats(l:m) = fckmats(l:m) + pd_fckmat
             Eee(j) = dot(denmats(l:m), pd_fckmat)
             if (pe_repuls) then
-                if (fock) fckmats(l:m) = fckmats(l:m) - rep_factor * pd_repmat
-                Epd(3,j) = Epd(3,j) + dot(denmats(l:m), - rep_factor * pd_repmat)
+                if (fock) fckmats(l:m) = fckmats(l:m) + rep_factor * pd_repmat
+                Epd(3,j) = Epd(3,j) + dot(denmats(l:m), rep_factor * pd_repmat)
             end if
         end do
 
@@ -4257,11 +4257,11 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     do i = 1, focc
         cmo(:,i) = Emo(i) * cmo(:,i)
     end do
-    write(lupri,*) Emo
+
     allocate(full_rep(cbas,cbas))
     full_rep = 0.0d0
-    full_rep = - 1.0d0 * matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), cmo),&
-               matmul(transpose(cmo), full_overlap(1:fbas,fbas+1:nbas)))
+    full_rep = 2.0d0 * matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), cmo),&
+                               matmul(transpose(cmo), full_overlap(1:fbas,fbas+1:nbas)))
 
     deallocate(full_overlap, cmo)
 
