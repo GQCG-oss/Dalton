@@ -437,7 +437,7 @@ C
 #include "cbirea.h"
 C
       DIMENSION WORK(LWORK)
-      LOGICAL   HERMIT,NEWFILE,SET,CMDOPN
+      LOGICAL   HERMIT,NEWFILE,FILE_EXISTS,CMDOPN
       CHARACTER KEYWRD*6
 
 #include "molinp.h"
@@ -453,7 +453,7 @@ C
 #include "huckel.h"
 #include "optinf.h"
 C
-C     A SET variable has been replaced by RDINPC. This allows external control
+C     The SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
 C     geometry iteration.
 C
@@ -498,6 +498,12 @@ C read by the master and transferred in common block MOLINP. /hjaaj
 C
       NEWFILE = LUINFO .NE. LUCMD .AND. .NOT. SLAVE
       IF (NEWFILE) THEN
+         INQUIRE(FILE='MOLECULE.INP',EXIST=FILE_EXISTS)
+         IF (.NOT.FILE_EXISTS) THEN
+            WRITE(LUPRI,'(//A)')
+     &      'DALTON FATAL ERROR: no file available with molecule input'
+            CALL QUIT('ERROR: no molecule input available')
+         END IF
          CALL GPOPEN (LUINFO,'MOLECULE.INP','OLD',' ','FORMATTED',
      &                IDUMMY,.FALSE.)
       END IF
