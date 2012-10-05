@@ -111,10 +111,9 @@ C
 C -- local constants
 C
       PARAMETER ( D1 = 1D0, DP5 = 0.5D0, D2 = 2.0D0, DM1 = -1.0D0 )
-      PARAMETER ( MXFMAT = 100 )
       LOGICAL   DFTADX, ROKS
       LOGICAL   DOFXC, DOFXV, DOFTC, DOFTV
-      DIMENSION ISYMDM(MXFMAT), IFCTYP(MXFMAT)
+      integer, allocatable ::  ISYMDM(:), IFCTYP(:)
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
       CALL QENTER('RSPOLI')
 C
@@ -701,11 +700,11 @@ C and active D-matrices and multiply the inactive D-matrix by 2.0
 C to get things to work for RPA !!
 C
       JOFFAO = 0
-      DO 1400 IOSIM = 1,NOSIM
+      DO IOSIM = 1,NOSIM
          CALL DEQ27(CMO,ZYMAT(1,IOSIM),UDV,WRK(KDXCAO+JOFFAO),
      *              WRK(KDXVAO+JOFFAO),WRK(KFREE),LFREE)
-        JOFFAO = JOFFAO + N2BASX
- 1400 CONTINUE
+         JOFFAO = JOFFAO + N2BASX
+      END DO
       IF (NISHT .GT. 0) THEN
          CALL DSCAL(NOSIM*N2BASX,D2,WRK(KDXCAO),1)
       ELSE IF (DOFXC) THEN
@@ -714,15 +713,18 @@ C
 C
 C     Set ISYMDM and IFCTYP information
 C
-      CALL DZERO(WRK(KFXCAO),NFMAT*N2BASX)
-      IF (NFMAT .GT. MXFMAT) THEN
-         CALL QUIT( 'RSPOLI ERROR: NFMAT .gt. MXFMAT')
-      END IF
+
+      allocate(isymdm(nfmat))
+      allocate(ifctyp(nfmat))
+
       JDXCAO = KDXCAO
       IF (ROKS .OR. HSROHF) THEN
          CALL DAXPY(NOSIM*N2BASX,D1,WRK(KDXVAO),1,WRK(KDXCAO),1)
          CALL DSCAL(NOSIM*N2BASX,-D1,WRK(KDXVAO),1)
       END IF
+
+      CALL DZERO(WRK(KFXCAO),NFMAT*N2BASX)
+
       DO I = 1,NFMAT
 C
 C     Changed ISYMDM() from 1 to JWOPSY by hint from hjj, kr-may-95
@@ -1014,6 +1016,10 @@ C
 C           CALL AOTOMO(XAO,XMO,CMO,XSYM,WRK,LWRK)
          END IF
       END IF
+
+      deallocate(isymdm)
+      deallocate(ifctyp)
+
  2000 CONTINUE
 C
 C From here the code is as before DIRFCK

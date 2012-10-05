@@ -120,7 +120,7 @@ Cholesky
 
 * external functions:
       INTEGER ILSTSYM
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
       INTEGER IROPER
       INTEGER IROPER2
       INTEGER IETA1
@@ -243,7 +243,7 @@ Cholesky
 
 * make sure that the zeroth-order Hamiltonian 'HAM0    ' is on our
 * operator list (might be needed for analytic derivatives):
-      INUM = INDPRPCC('HAM0    ')
+      INUM = INDPRP_CC('HAM0    ')
 
 * allocate work space for one set of property AO integrals
       KPROPAO = 1
@@ -255,10 +255,10 @@ Cholesky
       END IF
 
 *---------------------------------------------------------------------*
-* loop over property labels in the PRPLBL list:
+* loop over property labels in the PRPLBL_CC list:
 *---------------------------------------------------------------------*
-      DO IPRP = 1, NPRLBL
-        LABEL = PRPLBL(IPRP)
+      DO IPRP = 1, NPRLBL_CC
+        LABEL = PRPLBL_CC(IPRP)
         
         IF (LABEL(1:5).EQ.'HAM0 ') THEN 
            IERR    = 0
@@ -1401,12 +1401,12 @@ C
 C
 *------------------------------------------------------------------
 * test if operators are available and translate IAXGRO, 
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NAXGRO)
-        LABELA = PRPLBL(IAXGRO(IOPER))
+        LABELA = PRPLBL_CC(IAXGRO(IOPER))
         IF (DEBUG) THEN
           WRITE(LUPRI,'(/2X,A,1X,A)')
      &     'CHECK EXGR OPERATOR:',LABELA
@@ -1533,12 +1533,12 @@ C
 
 *------------------------------------------------------------------
 * test if operators are available and translate ILRSOP array
-* from the PRPLBL list to the new list maintained by IROPER:
+* from the PRPLBL_CC list to the new list maintained by IROPER:
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NLRSOP)
-        LABEL = PRPLBL(ILRSOP(IOPER))
+        LABEL = PRPLBL_CC(ILRSOP(IOPER))
         IF (DEBUG) WRITE(LUPRI,'(/2X,2A)') 'CHECK OPERATOR: ',LABEL
         IF (IROPER(LABEL,ISYMO) .LT. 0) THEN
           WRITE(LUPRI,'(/2X,3A,/2X,2A)')
@@ -1659,12 +1659,12 @@ c /* deck cc_xopaind */
 
 *------------------------------------------------------------------
 * test if operators are available and translate IQR2OP array
-* from the PRPLBL list to the new list maintained by IROPER:
+* from the PRPLBL_CC list to the new list maintained by IROPER:
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NQR2OP)
-        LABEL = PRPLBL(IQR2OP(IOPER))
+        LABEL = PRPLBL_CC(IQR2OP(IOPER))
         IF (DEBUG) WRITE(LUPRI,'(/2X,2A)') 'CHECK OPERATOR: ',LABEL
         IF (IROPER(LABEL,ISYMO) .LT. 0) THEN
           WRITE(LUPRI,'(/2X,3A,/2X,2A)')
@@ -1817,13 +1817,13 @@ C------------------------------------------------------------------
 C
 *------------------------------------------------------------------
 * test if operators are available and translate IALROP, IBLROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NLRSOP)
-        LABELA = PRPLBL(IALRSOP(IOPER))
-        LABELB = PRPLBL(IBLRSOP(IOPER))
+        LABELA = PRPLBL_CC(IALRSOP(IOPER))
+        LABELB = PRPLBL_CC(IBLRSOP(IOPER))
         IF (DEBUG) THEN
           WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
      &     'CHECK LRSD DOUBLE:',LABELA, LABELB
@@ -1970,13 +1970,13 @@ C------------------------------------------------------------------
 C
 *------------------------------------------------------------------
 * test if operators are available and translate IALROP, IBLROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NQR2OP)
-        LABELA = PRPLBL(IAQR2OP(IOPER))
-        LABELB = PRPLBL(IBQR2OP(IOPER))
+        LABELA = PRPLBL_CC(IAQR2OP(IOPER))
+        LABELB = PRPLBL_CC(IBQR2OP(IOPER))
         IF (DEBUG) THEN
           WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
      &     'CHECK QR2R DOUBLE:',LABELA, LABELB
@@ -2162,15 +2162,15 @@ c /* deck cc_lrind */
 
 *------------------------------------------------------------------
 * test if operators are available and translate IALROP, IBLROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
 
         IOPER = 1
         DO WHILE (IOPER .LE. NLROP)
           SKIP_IT = .FALSE.
-          LABELA  = PRPLBL(IALROP(IOPER))
-          LABELB  = PRPLBL(IBLROP(IOPER))
+          LABELA  = PRPLBL_CC(IALROP(IOPER))
+          LABELB  = PRPLBL_CC(IBLROP(IOPER))
           IOPA    = IROPER(LABELA,ISYMA)
           IOPB    = IROPER(LABELB,ISYMB)
 
@@ -2435,7 +2435,7 @@ c /* deck cc_qrind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IAQROP, IBQROP, ICQROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
 
@@ -2443,9 +2443,9 @@ c /* deck cc_qrind */
        DO WHILE (IOPER .LE. NQROPER)
 
         SKIP_IT = .FALSE.
-        LABELA  = PRPLBL(IAQROP(IOPER))
-        LABELB  = PRPLBL(IBQROP(IOPER))
-        LABELC  = PRPLBL(ICQROP(IOPER))
+        LABELA  = PRPLBL_CC(IAQROP(IOPER))
+        LABELB  = PRPLBL_CC(IBQROP(IOPER))
+        LABELC  = PRPLBL_CC(ICQROP(IOPER))
         IOPA    = IROPER(LABELA,ISYMA)
         IOPB    = IROPER(LABELB,ISYMB)
         IOPC    = IROPER(LABELC,ISYMC)
@@ -2784,7 +2784,7 @@ c /* deck cc_crind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IACROP, IBCROP, ICCROP
-* and IDCROP arrays from the PRPLBL list to the new list maintained 
+* and IDCROP arrays from the PRPLBL_CC list to the new list maintained 
 * by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
@@ -2792,10 +2792,10 @@ c /* deck cc_crind */
        IOPER = 1
        DO WHILE (IOPER .LE. NCROPER)
 
-        LABELA = PRPLBL(IACROP(IOPER))
-        LABELB = PRPLBL(IBCROP(IOPER))
-        LABELC = PRPLBL(ICCROP(IOPER))
-        LABELD = PRPLBL(IDCROP(IOPER))
+        LABELA = PRPLBL_CC(IACROP(IOPER))
+        LABELB = PRPLBL_CC(IBCROP(IOPER))
+        LABELC = PRPLBL_CC(ICCROP(IOPER))
+        LABELD = PRPLBL_CC(IDCROP(IOPER))
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
      &       .OR. (IROPER(LABELB,ISYMB) .LT. 0)
@@ -3338,18 +3338,18 @@ c /* deck CC_4RIND */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IA4ROP, IB4ROP, etc.
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
 
        IOPER = 1
        DO WHILE (IOPER .LE. N4ROPER)
 
-        LABELA = PRPLBL(IA4ROP(IOPER))
-        LABELB = PRPLBL(IB4ROP(IOPER))
-        LABELC = PRPLBL(IC4ROP(IOPER))
-        LABELD = PRPLBL(ID4ROP(IOPER))
-        LABELE = PRPLBL(IE4ROP(IOPER))
+        LABELA = PRPLBL_CC(IA4ROP(IOPER))
+        LABELB = PRPLBL_CC(IB4ROP(IOPER))
+        LABELC = PRPLBL_CC(IC4ROP(IOPER))
+        LABELD = PRPLBL_CC(ID4ROP(IOPER))
+        LABELE = PRPLBL_CC(IE4ROP(IOPER))
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
      &       .OR. (IROPER(LABELB,ISYMB) .LT. 0)
@@ -3626,7 +3626,7 @@ c /* deck CC_5RIND */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate I5ROP array
-* from the PRPLBL list to the new list maintained by IROPER.
+* from the PRPLBL_CC list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
 
@@ -3634,7 +3634,7 @@ c /* deck CC_5RIND */
        DO WHILE (IOPER .LE. N5ROPER)
 
         DO IDX = 1, 6
-          LABEL(IDX) = PRPLBL(I5ROP(IOPER,IDX))
+          LABEL(IDX) = PRPLBL_CC(I5ROP(IOPER,IDX))
         END DO
 
         IF (      IROPER(LABEL(A),ISYM(A)) .LT. 0
@@ -3789,7 +3789,7 @@ c /* deck cc_tpaind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IASMOP, IBSMOP, ICSMOP
-* and IDSMOP arrays from the PRPLBL list to the new list maintained 
+* and IDSMOP arrays from the PRPLBL_CC list to the new list maintained 
 * by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
@@ -3797,8 +3797,8 @@ c /* deck cc_tpaind */
        IOPPAIR = 1
        DO WHILE (IOPPAIR .LE. NSMOPER)
 
-        LABELA = PRPLBL(IASMOP(IOPPAIR))
-        LABELB = PRPLBL(IBSMOP(IOPPAIR))
+        LABELA = PRPLBL_CC(IASMOP(IOPPAIR))
+        LABELB = PRPLBL_CC(IBSMOP(IOPPAIR))
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
      &       .OR. (IROPER(LABELB,ISYMB) .LT. 0) ) THEN
@@ -3995,18 +3995,18 @@ c /* deck cc_tmind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IATMOP, IBTMOP, ICTMOP
-* IDTMOP, IETMOP and IFTMOP arrays from the PRPLBL 
+* IDTMOP, IETMOP and IFTMOP arrays from the PRPLBL_CC 
 * list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
        IOPER = 1
        DO WHILE (IOPER .LE. NTMOPER)
 
-        LABELA = PRPLBL(IATMOP(IOPER))
-        LABELB = PRPLBL(IBTMOP(IOPER))
-        LABELC = PRPLBL(ICTMOP(IOPER))
-        LABELD = PRPLBL(IDTMOP(IOPER))
-        LABELE = PRPLBL(IETMOP(IOPER))
-        LABELF = PRPLBL(IFTMOP(IOPER))
+        LABELA = PRPLBL_CC(IATMOP(IOPER))
+        LABELB = PRPLBL_CC(IBTMOP(IOPER))
+        LABELC = PRPLBL_CC(ICTMOP(IOPER))
+        LABELD = PRPLBL_CC(IDTMOP(IOPER))
+        LABELE = PRPLBL_CC(IETMOP(IOPER))
+        LABELF = PRPLBL_CC(IFTMOP(IOPER))
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
      &       .OR. (IROPER(LABELB,ISYMB) .LT. 0)
@@ -4204,7 +4204,7 @@ c /* deck cc_mcdind */
 
 *----------------------------------------------------------------------*
 * test if operators are available and translate IAMCDOP,IBMCDOP,ICMCDOP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 * Note that NMCDOPER is the number of operator-triples (r,L,r)
 *----------------------------------------------------------------------*
   
@@ -4216,9 +4216,9 @@ c /* deck cc_mcdind */
         DO WHILE (IOPER .LE. NMCDOPER)
 
           SKIP_IT = .FALSE.
-          LABELA = PRPLBL(IAMCDOP(IOPER))
-          LABELB = PRPLBL(IBMCDOP(IOPER))
-          LABELC = PRPLBL(ICMCDOP(IOPER))
+          LABELA = PRPLBL_CC(IAMCDOP(IOPER))
+          LABELB = PRPLBL_CC(IBMCDOP(IOPER))
+          LABELC = PRPLBL_CC(ICMCDOP(IOPER))
           LORXA  = LAMCDRX(IOPER)
           LORXB  = LBMCDRX(IOPER)
           LORXC  = LCMCDRX(IOPER)
@@ -4497,7 +4497,7 @@ c /* deck cc_exlrind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IAQROP, IBQROP, ICQROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
        WRITE (LUPRI,*) 'CC_EXLRIND> NEXLROPER = ',NEXLROPER
@@ -4507,8 +4507,8 @@ c /* deck cc_exlrind */
 
           WRITE(LUPRI,'(/2X,A,3I5)') 
      & 'IOPER,IAEXLROP,IBEXLROP:',IOPER,IAEXLROP(IOPER),IBEXLROP(IOPER)
-        LABELA = PRPLBL(IAEXLROP(IOPER))
-        LABELB = PRPLBL(IBEXLROP(IOPER))
+        LABELA = PRPLBL_CC(IAEXLROP(IOPER))
+        LABELB = PRPLBL_CC(IBEXLROP(IOPER))
           WRITE(LUPRI,'(/2X,A,2(1X,A),A)') 'CHECK PAIR:',LABELA, LABELB
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
@@ -4702,7 +4702,7 @@ C  /* Deck iroper */
 * maintain the list of operators labels for the response calculations
 * the operators are specified by a character*8 label (NEWLBL) 
 *
-* in difference to the list maintained by the INDPRPCC function,
+* in difference to the list maintained by the INDPRP_CC function,
 * the list maintained by IROPER is ordered (see routine CCLSTSORT).
 *
 * Christof Haettig, November 1996, modified Januar 97: 
