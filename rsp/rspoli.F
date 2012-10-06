@@ -111,10 +111,9 @@ C
 C -- local constants
 C
       PARAMETER ( D1 = 1D0, DP5 = 0.5D0, D2 = 2.0D0, DM1 = -1.0D0 )
-      PARAMETER ( MXFMAT = 100 )
       LOGICAL   DFTADX, ROKS
       LOGICAL   DOFXC, DOFXV, DOFTC, DOFTV
-      DIMENSION ISYMDM(MXFMAT), IFCTYP(MXFMAT)
+      integer, allocatable ::  ISYMDM(:), IFCTYP(:)
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
       CALL QENTER('RSPOLI')
 C
@@ -663,12 +662,12 @@ C
 #endif
 C
 C
-C Manu about MC-srDFT: Note that for ncsim >0 and doftc 
+C Manu about MC-srDFT: Note that for ncsim >0 and doftc
 C       the core transition DM (DTCAO) is set to zero
 C       --> the corresponding IFCTYP will therefore be zero.
 C
 C
-C     Transform any transition DMs to the AO basis 
+C     Transform any transition DMs to the AO basis
       IF (NCSIM.GT.0 .AND. .NOT.SOPPA) THEN
          IF (DOFTC) CALL DZERO(WRK(KDTCAO),NCSIM*N2BASX)
          JAO = KDTVAO
@@ -711,29 +710,31 @@ C and active D-matrices and multiply the inactive D-matrix by 2.0
 C to get things to work for RPA !!
 C
       JOFFAO = 0
-      DO 1400 IOSIM = 1,NOSIM
+      DO IOSIM = 1,NOSIM
          CALL DEQ27(CMO,ZYMAT(1,IOSIM),UDV,WRK(KDXCAO+JOFFAO),
      *              WRK(KDXVAO+JOFFAO),WRK(KFREE),LFREE)
-        JOFFAO = JOFFAO + N2BASX
- 1400 CONTINUE
+         JOFFAO = JOFFAO + N2BASX
+      END DO
       IF (NISHT .GT. 0) THEN
          CALL DSCAL(NOSIM*N2BASX,D2,WRK(KDXCAO),1)
       ELSE IF (DOFXC) THEN ! FXC needed for DFT/srDFT, also when NISHT.eq.0
          CALL DZERO(WRK(KDXCAO),NOSIM*N2BASX)
       END IF
+C
+C     Set ISYMDM and IFCTYP information
+C
+
+      allocate(isymdm(nfmat))
+      allocate(ifctyp(nfmat))
+
+      JDXCAO = KDXCAO
       IF (ROKS .OR. HSROHF) THEN
          CALL DAXPY(NOSIM*N2BASX,D1,WRK(KDXVAO),1,WRK(KDXCAO),1)
          CALL DSCAL(NOSIM*N2BASX,-D1,WRK(KDXVAO),1)
       END IF
 
-      IF (NFMAT .GT. MXFMAT) THEN
-         CALL QUIT( 'RSPOLI ERROR: NFMAT .gt. MXFMAT')
-      END IF
       CALL DZERO(WRK(KFXCAO),NFMAT*N2BASX)
-C
-C     Set ISYMDM and IFCTYP information
-C
-      JDXCAO = KDXCAO
+
       DO I = 1,NFMAT
 C
 C     Changed ISYMDM() from 1 to JWOPSY by hint from hjj, kr-may-95
@@ -760,7 +761,7 @@ C        INTEGER FUNCTION MATSYM(N,NDIM,AMAT,THRZER)
 C
          IF (IPRRSP .GT. 60) THEN
          write(lupri,*) 'Fock matrix I, IX = ', I, IX 
-         END IF 
+         END IF
 C
          IF (IX .EQ. 30) THEN
 C           zero density matrix, do nothing !
@@ -985,6 +986,10 @@ C
 C           CALL AOTOMO(XAO,XMO,CMO,XSYM,WRK,LWRK)
          END IF
       END IF
+
+      deallocate(isymdm)
+      deallocate(ifctyp)
+
  2000 CONTINUE
 C
 C From here the code is as before DIRFCK
@@ -1199,8 +1204,8 @@ C
      *            'CONF TRIAL VECTOR'
                   CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
      *                                        KZVAR,2,-1,LUPRI)
-                  write(lupri,*) 'kzvar  = ', kzvar  
-                  write(lupri,*) 'kzconf = ', kzconf  
+                  write(lupri,*) 'kzvar  = ', kzvar
+                  write(lupri,*) 'kzconf = ', kzconf
                 END IF
 #endif
 C
