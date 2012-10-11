@@ -1475,7 +1475,9 @@ C           print all occupied and 2 lowest unoccupied this symmetry
             ELSE
 C           print 5 highest occupied and 2 lowest unoccupied this symmetry
 C           (output becomes too big otherwise ... /hjaaj Dec08)
-               IEND  = MAX(0,NOCC(ISYM)-5)
+C           Oct12 hjaaj: do print all active orbitals if MCSCF
+               IEND  = MIN(NISH(ISYM),NOCC(ISYM)-5)
+               IEND  = MAX(0,IEND)
             END IF
             NENDI = NOCC(ISYM)
      &            + MIN(2,NORB(ISYM)-NOCC(ISYM) - NRXR12(ISYM))
