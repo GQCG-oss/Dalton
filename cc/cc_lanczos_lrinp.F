@@ -157,9 +157,9 @@ C                    in length gauge
 C           Not yet implemented!!!!
 C           -----------------------------------------------------
 3           CONTINUE
-!            IDIP(1) = INDPRPCC('XDIPLEN ')
-!            IDIP(2) = INDPRPCC('YDIPLEN ')
-!            IDIP(3) = INDPRPCC('ZDIPLEN ')
+!            IDIP(1) = INDPRP_CC('XDIPLEN ')
+!            IDIP(2) = INDPRP_CC('YDIPLEN ')
+!            IDIP(3) = INDPRP_CC('ZDIPLEN ')
 !            do i=1,3
 !               iop_lancz_A(i) = idip(i)
 !               iop_lancz_B(i) = idip(i)
