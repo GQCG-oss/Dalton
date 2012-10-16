@@ -52,7 +52,7 @@ gen1int_water_spher"
 SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
 energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
 energy_lucita_gasci"
-SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym"
+SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym dft_rspexci_sym dft_rspexci_nosym"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
 geoopt_constrain1b geoopt_delintsad geoopt_exci2 geoopt_numgrd \
 geoopt_preopt geoopt_prop geoopt_prop2 geoopt_redintmin geoopt_vrml"
