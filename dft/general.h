@@ -288,3 +288,6 @@ extern const real ZEROR, ONER, TWOR, FOURR;
                    __FUNCTION__, (unsigned)(req), (unsigned)(lwork));}
 
 #endif
+
+/*strdup() replacement*/
+char *StringDuplicate(const char *s1);
