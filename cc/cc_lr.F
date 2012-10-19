@@ -5205,7 +5205,7 @@ C     ----------------------------------
 C     Allocation 1.
 C     -------------
 
-      NTRMOM = NXLRSST*NPRLBL
+      NTRMOM = NXLRSST*NPRLBL_CC
 
       KRIGHT = 1
       KLEFT  = KRIGHT + NTRMOM
@@ -5222,12 +5222,12 @@ C     ------------------------------------
       CALL DZERO(WORK(KRIGHT),NTRMOM)
       CALL DZERO(WORK(KLEFT),NTRMOM)
 
-C     Loop through operators in PRPLBL.
+C     Loop through operators in PRPLBL_CC.
 C     ---------------------------------
 
-      DO IPRLBL = 1,NPRLBL
+      DO IPRLBL = 1,NPRLBL_CC
 
-         LABELA = PRPLBL(IPRLBL)
+         LABELA = PRPLBL_CC(IPRLBL)
 
 C        Check that the operator enters in at least 1 residue requested.
 C        ---------------------------------------------------------------
@@ -5333,9 +5333,9 @@ C     -------------------------------
       WRITE(LUPRI,'(1X,A,/)')
      &  '-----------------------------------------------'
  
-      DO IPRLBL = 1,NPRLBL
+      DO IPRLBL = 1,NPRLBL_CC
 
-         LABELA = PRPLBL(IPRLBL)
+         LABELA = PRPLBL_CC(IPRLBL)
 
          IAB   = 1
          IOPER = ILRES(LABELA,'A')
@@ -5381,9 +5381,9 @@ C     ------------------------------
       WRITE(LUPRI,'(1X,A,/)')
      &  '-----------------------------------------------'
 
-      DO IPRLBL = 1,NPRLBL
+      DO IPRLBL = 1,NPRLBL_CC
 
-         LABELA = PRPLBL(IPRLBL)
+         LABELA = PRPLBL_CC(IPRLBL)
 
          IAB   = 1
          IOPER = ILRES(LABELA,'A')
@@ -5554,8 +5554,8 @@ C     -----------------------------------------------------------
          LABELA = LBLOPR(IALRSOP(IOPER))
          LABELB = LBLOPR(IBLRSOP(IOPER))
 
-         IPROPA = INDPRPCC(LABELA)
-         IPROPB = INDPRPCC(LABELB)
+         IPROPA = INDPRP_CC(LABELA)
+         IPROPB = INDPRP_CC(LABELB)
 
          DO IRSD = 1,NXLRSST
 
