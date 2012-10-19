@@ -1158,8 +1158,6 @@ C
       IF (FLAG(21) .AND. (DOMP2 .OR. DOCI .OR. DOMC)) LSTLVL = 0
 C     ... if (true) this QCHF will be followed by higher wf level
       IF (LSTLVL .EQ. 1 .AND. ABS(ITRFIN) .LE. 10) THEN
-         CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/2A,I3,A)')
      *   ' >>> Transforming integrals for Abacus/response with',
      *   ' ITRLVL =',ITRFIN,' <<<'

@@ -1082,8 +1082,7 @@ static char*
 grid_get_fname(const char *base, int filenum)
 {
     if(filenum == 0)
-        /*return strdup(base);*/
-        return StringDuplicate(base);
+        return strdup(base);
     else {
         char *res = malloc(strlen(base) + 15);
         sprintf(res, "%s.%05d", base, filenum);
@@ -1122,8 +1121,7 @@ boxify_save_batch(GridGenMolGrid *mg, FILE *f, int cnt,
 #else
 #define boxify_save_batch(mg,f,c,b,s,center,an,r) \
         boxify_save_batch_local((mg),(f),(c),(b),(s),(center),(an),(r)) 
-//#define grid_get_fname(base,num) strdup(base)
-#define grid_get_fname(base,num) StringDuplicate(base)
+#define grid_get_fname(base,num) strdup(base)
 
 #endif
 
@@ -2184,19 +2182,3 @@ main(int argc, char* argv[])
     return 0;
 }
 #endif /* defined(GRID_GEN_TEST) && GRID_GEN_TEST == 1 */
-
-
-/*Replacement for strdup() on certain systems*/
-char *StringDuplicate(const char *s1)
-{
-#if defined(SYS_OSXLION)
-    size_t len = strlen (s1) + 1;
-    char *res = malloc (len);
-    if (res)
-        memcpy (res, s1, len);
-    return res;
-#else
-    return strdup(s1);
-#endif
-}
-

@@ -23,9 +23,6 @@
 !
 #include "single.h"
 C
-
-#define USE_MXMA
-
 #ifdef OLD_REV_LOG
 !===========================================================================
 !MAERKE 940727 ITRSIR=10 og USEDRC (som i .HYPCAL) giver fuldt saet
@@ -168,6 +165,8 @@ C        no, ERRFIX=FIRM changes unit number to error code, if error.
 C
       IF (IPRFIO .GE. 3) CALL FASTIO('STATUS')
 C
+      IF (IPRTRA .GT. 0) DST = SECOND()
+C
 C
 C     Set TRINP and TRUNIT
 C
@@ -177,6 +176,12 @@ C
      &            WORK,KWORK)
 C     CALL TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
 C    &            WRK,MEMX)
+C
+      IF (IPRTRA .GT. -1) THEN
+         TRATIM = SECOND() - DST
+         WRITE (LUPRI,'(/A,F10.2)')
+     &      ' Total CPU time used in integral transformation:',TRATIM
+      END IF
 C
       IF (IPRFIO .GE. 3) CALL FASTIO('STATUS')
 C
@@ -1784,17 +1789,10 @@ C       INTEGRALS (PQ/US)
 C
         IF (DOUSPQ) THEN
 C        ... exchange integrals case 2*
-#ifdef USE_MXMA
          CALL MXMA(X2,        1,NBS,
      &             CMO(LMOR2),1,NBR,
      &             X3,        1,NBS,
      &             NBS,NBR,NOCR)
-#else
-         CALL DGEMM('N','N',NBS,NOCR,NBR, 1.0D0,
-     &              X2,        NBS,
-     &              CMO(LMOR2),NBR, 0.0D0,
-     &              X3,        NBS)
-#endif
          IF (IPRTRA .GT. 50) THEN
           IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &    WRITE(LUPRI,6001) NP,NQ,(X3(I),I=1,NBS*NOCR)
@@ -1817,17 +1815,10 @@ C
 C       INTEGRALS (PQ/RU)
 C
         IF(NOCS.NE.0) THEN
-#ifdef USE_MXMA
          CALL MXMA(X2,        NBS,1,
      &             CMO(LMOS2),1,NBS,
      &             X3,        1,NBR,
      &             NBR,NBS,NOCS)
-#else
-         CALL DGEMM('T','N',NBR,NOCS,NBS, 1.0D0,
-     &              X2,        NBS,
-     &              CMO(LMOS2),NBS, 0.0D0,
-     &              X3,        NBR)
-#endif
          IF (IPRTRA .GT. 50) THEN
           IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &    WRITE(LUPRI,6002) NP,NQ,(X3(I),I=1,NBR*NOCS)
@@ -1859,17 +1850,10 @@ C
      &              X2,
      &              NOCR,NBR)
          ELSE
-#ifdef USE_MXMA
           CALL MXMA(X3,        NBR,1,
      &              CMO(LMOR2),1,NBR,
      &              X2,        1,NOCS,
      &              NOCS,NBR,NOCR)
-#else
-         CALL DGEMM('T','N',NOCS,NOCR,NBR, 1.0D0,
-     &              X3,        NBR,
-     &              CMO(LMOR2),NBR, 0.0D0,
-     &              X2,        NOCS)
-#endif
          ENDIF
          IF (IPRTRA .GT. 50) THEN
           IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
@@ -1996,34 +1980,20 @@ C
 C
        IF(ISP.EQ.ISQ) THEN
         CALL TRASQ(TUPQ(IPQST),X2,1,NBQ,NBQ,+1)
-#ifdef USE_MXMA
         CALL MXMA(X2,       1,NBQ,
      &            CMO(LMOP),1,NBP,
      &            X1,       1,NBP,
      &            NBQ,NBP,NOP)
-#else
-        CALL DGEMM('N','N',NBQ,NOP,NBP, 1.0D0,
-     &             X2,        NBQ,
-     &             CMO(LMOP ),NBP, 0.0D0,
-     &             X1,        NBP)
-#endif
         CALL MXMT(X1,       NBQ,1,
      &            CMO(LMOQ),1,NBQ,
      &            X2,
      &            NOP,NBQ)
         IX2=(NOP+NOP**2)/2
        ELSE
-#ifdef USE_MXMA
         CALL MXMA(TUPQ(IPQST),1,NBQ,
      &            CMO(LMOP),  1,NBP,
      &            X1,         1,NBQ,
      &            NBQ,NBP,NOP)
-#else
-        CALL DGEMM('N','N',NBQ,NOP,NBP, 1.0D0,
-     &             TUPQ(IPQST),NBQ,
-     &             CMO(LMOP),  NBP,
-     &             X1,         NBQ)
-#endif
         CALL MXMA(X1,       NBQ,1,
      &            CMO(LMOQ),1,NBQ,
      &            X2,       NOQ,1,

@@ -31,10 +31,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     # fixme: HAVE_NO_LSEEK64 should be tested by cmake
     #        now just trying to get it compiled
     add_definitions(-DHAVE_NO_LSEEK64)
-    # amt: This definition is a workaround for some missing strdup() used by DFT
-    #      c code on OSX Lion and newer. The workaround also works on older OSX but
-    #      not needed there. For now live with always on.
-    add_definitions(-DSYS_OSXLION)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
