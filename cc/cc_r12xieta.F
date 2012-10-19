@@ -280,13 +280,13 @@ C start loop over operators V
 C-----------------------------------------------------------------------
       IF (LOCDBG) THEN
         CALL AROUND('LABELS on Operator-List:')
-        DO IPRP = 1, NPRLBL_CC
-          WRITE(LUPRI,*) PRPLBL_CC(IPRP)
+        DO IPRP = 1, NPRLBL
+          WRITE(LUPRI,*) PRPLBL(IPRP)
         END DO
       END IF
 
-      DO IPRP = 1, NPRLBL_CC
-        LABEL1 = PRPLBL_CC(IPRP)
+      DO IPRP = 1, NPRLBL
+        LABEL1 = PRPLBL(IPRP)
         IF (LABEL1(1:5).NE.'HAM0 ') THEN
 C
 C-----------------------------------------------------------------------
@@ -923,13 +923,13 @@ C start loop over operators V
 C-----------------------------------------------------------------------
       IF (LOCDBG) THEN
         CALL AROUND('LABELS on Operator-List:')
-        DO IPRP = 1, NPRLBL_CC
-          WRITE(LUPRI,*) PRPLBL_CC(IPRP)
+        DO IPRP = 1, NPRLBL
+          WRITE(LUPRI,*) PRPLBL(IPRP)
         END DO
       END IF
 
-      DO IPRP = 1, NPRLBL_CC
-        LABEL1 = PRPLBL_CC(IPRP)
+      DO IPRP = 1, NPRLBL
+        LABEL1 = PRPLBL(IPRP)
         IF (LABEL1(1:5).NE.'HAM0 ') THEN
 C
 C-----------------------------------------------------------------------

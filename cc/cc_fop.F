@@ -2521,7 +2521,7 @@ C--------------------------------------------------------------
 C
       DO 140 IOP = 1, NAFOP
 C
-         LABEL1 = PRPLBL_CC(IAFOP(IOP))
+         LABEL1 = PRPLBL(IAFOP(IOP))
 C
          IF (IOP .EQ. 1) CALL AROUND( 
      *               ' Electronic contribution to operator ')

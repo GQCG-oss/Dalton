@@ -118,7 +118,6 @@ cBASINP: changed format for nuclear charge from F4.1 to F4.0
 c (such that an entry '6' is read as 6. and not as 0.6 )
 cCNTINP: read in old 3F10 format if error reading coordinates
 c        changed format to 3F20.0 instead of 3F20.15
-C CONTINUUM key added to activate CONTINUUM basis functs of Kaufmann - Sonia 2012
 c===========================================================================
 #endif
 C  /* Deck reainp */
@@ -135,7 +134,7 @@ C  /* Deck reainp */
 #include "r12int.h"
 #include "qm3.h"
 C
-      DATA TABLE /'.PRINT ', '.CONTIN', '.MAXPRI', '.BIGVEC',
+      DATA TABLE /'.PRINT ', 'xXXXXXX', '.MAXPRI', '.BIGVEC',
      *            '.ONLYOV', '.SYMTHR', '.CM FUN', '.ZCMVAL',
      *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX'/
 C
@@ -173,16 +172,8 @@ C                 '.PRINT '
                   READ (LUCMD, *) IPREAD
                   IF (IPREAD .EQ. IPREAD_ini) ICHANG = ICHANG - 1
                GO TO 100
+C                 'xXXXXXX'
     2          CONTINUE
-C                 'CONTINUUM': generate continuum functions of Kaufmann
-C                 Sonia, 2012
-                  READ (LUCMD,*,IOSTAT=IOS) LCMMAX, CMSTR, CMEND
-                  IF (IOS.NE.0) THEN
-                    CALL QUIT('Error reading .CONTINUUM')
-                  ENDIF
-                  NCMSTR = NINT(CMSTR)  !nearest whole number
-                  NCMEND = NINT(CMEND)
-                  LCNTNUUM = .true.
                GO TO 100
 C                 '.MAXPRI'
     3          CONTINUE
@@ -282,15 +273,9 @@ C              (renamed from .AUXBAS) /hjaaj
              CALL QUIT('Option .BIGVEC not allowed.')
          END IF
          IF (LCMMAX .GT. -1) THEN
-            if (LCNTNUUM) then
             WRITE (LUPRI,'(/A,I5)')
-     &           ' Continuum center of mass basis fctns  with l(max) =',
+     &           ' Center of mass basis functions used with l(max) =',
      &           LCMMAX
-            else
-            WRITE (LUPRI,'(/A,I5)')
-     &           ' Rydberg center of mass basis fctns with l(max) =',
-     &           LCMMAX
-            end if
             WRITE (LUPRI,'(2(A,F4.1))')
      &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
             IF (ZCMVAL .NE. D1)
@@ -372,7 +357,6 @@ C     ... parameter MAXPRD is in cbirea.h
       TOL_SYMADD = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
-      LCNTNUUM = .false.
 C
 C     Initialize effective core potential parameters (ecpinf.h)
 C
@@ -437,7 +421,7 @@ C
 #include "cbirea.h"
 C
       DIMENSION WORK(LWORK)
-      LOGICAL   HERMIT,NEWFILE,FILE_EXISTS,CMDOPN
+      LOGICAL   HERMIT,NEWFILE,SET,CMDOPN
       CHARACTER KEYWRD*6
 
 #include "molinp.h"
@@ -453,7 +437,7 @@ C
 #include "huckel.h"
 #include "optinf.h"
 C
-C     The SET variable has been replaced by RDINPC. This allows external control
+C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
 C     geometry iteration.
 C
@@ -498,12 +482,6 @@ C read by the master and transferred in common block MOLINP. /hjaaj
 C
       NEWFILE = LUINFO .NE. LUCMD .AND. .NOT. SLAVE
       IF (NEWFILE) THEN
-         INQUIRE(FILE='MOLECULE.INP',EXIST=FILE_EXISTS)
-         IF (.NOT.FILE_EXISTS) THEN
-            WRITE(LUPRI,'(//A)')
-     &      'DALTON FATAL ERROR: no file available with molecule input'
-            CALL QUIT('ERROR: no molecule input available')
-         END IF
          CALL GPOPEN (LUINFO,'MOLECULE.INP','OLD',' ','FORMATTED',
      &                IDUMMY,.FALSE.)
       END IF
@@ -1370,21 +1348,11 @@ C
                      CALL QUIT('ERROR: max one "X" center for .CM FUN')
                   END IF
                   IQM(I,J) = LCMMAX + 1
-
-                  if (LCNTNUUM) then
-                  CALL CMBAS_CNUUM(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
-     &                 NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
-     &                 ALPHA(1,IBLOCK(J),J),
-     &                 CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
-     &                 NBLOCK,KAOVEC,KPRIM)
-
-                  else
                   CALL CMBAS(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                 NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                 ALPHA(1,IBLOCK(J),J),
      &                 CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
      &                 NBLOCK,KAOVEC,KPRIM)
-                  end if
                   LCMMAX = 1234567890
                ELSE
                   IQM(I,J) = 0
@@ -2927,90 +2895,6 @@ C
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> CMBAS  error, number of contracted functions      ',NRCI,
-     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
-        CALL QUIT('CMBAS: Too many contracted functions')
-      END
-C  /* Deck cmbas_cnuum */
-      SUBROUTINE CMBAS_cnuum(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
-     &                 CPRIMU,NBLOCK,KAOVEC,KPRIM)
-C
-C     CONTINUUM Basis functions according to
-C     K. Kaufmann, W. Baumeister, and M. Jungen
-C     "Universal Gaussian basis sets for an optimum representation
-C     of Rydberg and continuum wavefunctions"
-C     J. Phys. B: At. Mol. Opt. Phys. 22 (1989) 2223-2240
-C     SONIA CORIANI, 2012
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-      LOGICAL SEG, FREE, SEGIJ
-      DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
-     &          ALPHA(KPRIM,KAOVEC),
-     &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
-     &          BASA(0:4), BASB(0:4)
-#include "cbirea.h"
-#include "molinp.h"
-#include "ccom.h"
-      DATA (BASA(I),I=0,4) /0.584342, 0.452615, 0.382362, 0.337027,
-     &                      0.304679/
-      DATA (BASB(I),I=0,4) /0.424483, 0.309805, 0.251333, 0.215013,
-     &                      0.189944/
-C
-      write(lupri,*)"CMBAS_CNUUM to generate CONTINUUM bfs"
-      NBLOCK = 0
-      DO 100 I = 1, IQM
-         NBLOCK = NBLOCK + 1
-         IF(NBLOCK.GT.KAOVEC) GOTO 5000
-C
-         CALL DZERO(ALPHA (1,  NBLOCK),KPRIM)
-         CALL DZERO(CPRIMU(1,1,NBLOCK),KPRIM*KPRIM)
-         CALL DZERO(CPRIM (1,1,NBLOCK),KPRIM*KPRIM)
-C
-         NUCI = 0
-         NRCI = 0
-         SEGIJ  = .TRUE.
-         DO 110 J = NCMSTR, NCMEND
-!            write(lupri,*) 'CNUUM: J=', J
-            NUCI = NUCI + 1
-            NRCI = NRCI + 1
-            IF (NUCI.GT.KPRIM) GOTO 5010
-            IF (NRCI.GT.KPRIM) GOTO 5020
-!            write(lupri,*) 'BASA(I-1), BASB(I-1)', 
-!     &      BASA(I-1), BASB(I-1)
-            ALPHA(NUCI,NBLOCK) = 0.25D0/(BASA(I-1)*J+BASB(I-1))**2
-!            write(lupri,*) 'ALPHA(nuci,nblock)', ALPHA(NUCI,NBLOCK)
-            CPRIMU(NUCI,NRCI,NBLOCK) = 1.0D0
-  110    CONTINUE
-         NUC(NBLOCK) = NUCI
-         NRC(NBLOCK) = NRCI
-C
-         JCO(I) = 1
-         SEG(NBLOCK) = SEGIJ
-C
-C        Normalize orbitals
-C
-         CALL NRMORB(I,NRCI,NUCI,ALPHA(1,NBLOCK),CPRIM(1,1,NBLOCK),
-     &               CPRIMU(1,1,NBLOCK),KPRIM,NBLOCK)
-C
-  100 CONTINUE
-      RETURN
-C
-C     Error messages:
-C
- 5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS_CNUUM error, number of AO-blocks          ',NBLOCK,
-     *  '                   current maximum number MXAOVC =',KAOVEC
-        CALL QUIT('CMBAS_CNUUM: Too many AO-blocks')
- 5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS_CNUUM  error, number of primitives per block ',NUCI,
-     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
-        CALL QUIT('CMBAS_CNUUM: Too many primitives')
- 5020 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS_CNUUM  error, number of contracted functions ',NRCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many contracted functions')
       END

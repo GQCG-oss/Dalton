@@ -281,5 +281,4 @@ Or use Cmake directly (default here is debug mode)::
   $ [FC=ifort CC=icc] cmake ..
   $ make
 
-If you want to modify compiler flags, edit cmake/FCompilers.cmake and/or
-cmake/CCompilers.cmake.
+If you want to modify compiler flags, edit cmake/FCompilers.cmake and/or cmake/CCompilers.cmake.

@@ -30,7 +30,7 @@ Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 
 Revision 1.3  2000/05/24 19:00:24  hjj
 new GETREF and CREF allocation (fix of triplet problem for CSF:s)
-Do not read S(2) CI diagonal but use implicit that it is 1.0D0
+Do not read S(2) CI diagonal but use ilicit that itit is D1
 
 961011-hjaaj
 merged with SOPPA changes by ekd
@@ -3044,7 +3044,7 @@ C        RSPPP if no previous orbital trial vectors.
          LMAXIT = (ITMIC .GE. MAXIT)
          CALL RSPNEX(LINEQ,LMAXIT,NSIM3,IBTYP,EIVAL,RESID,EIVEC,GD,
      *               CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
-C        CALL RSPNEX(LINEQ,LMAXIT,NSIM,IBTYP,EIVAL,RESID,EIVEC,GD,
+C        CALL RSPNEX(LINEQ,LMAXIT,NSIM,IBTYP,EIVAL,EIVEC,GD,
 C    *               CMO,UDV,PVX,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
          OPTORB = OPTSAV
          IF (KCONV.EQ.-2) THEN
@@ -6076,30 +6076,26 @@ C
 #include "inforb.h"
 #include "infvar.h"
  
-      IPRINT_local = 0
+      IF (IPRINT .GT. 4)  CALL HEADER('PBHT MO Overlap Diagnostic',-1)
       IF (NWOPT.GT.0) THEN 
-         CALL HEADER('PBHT MO Overlap Diagnostic',-1)
-         WRITE (LUPRI,'(/2X,A)') 'The dominant contributions:'
-         WRITE (LUPRI,'(/2X,A/)')
-     &      '    I    A    '//
-     &      'K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib'
+         IF (IPRINT .GT. 4) THEN
+            WRITE (LUPRI,1010) JWOPSY
+            WRITE (LUPRI, '(2A/)')  '@@@           I    A       ',
+     &         'K_IA           K_AI         <|I|*|A|>      <I^2*A^2>'
+         END IF
          CMOTOT=0.d0
          WOPTOT=0.d0
          DO IG = 1,NWOPT
             K  = JWOP(1,IG)
             L  = JWOP(2,IG)
+            KS = ISMO(K)
+            LS = ISMO(L)
             WOP1 = WOP(IG)
             WOP2 = WOP(IOFFY+IG)
             IF (IPRINT .GT. 4) THEN
             IF (ABS(WOP1).GT.PTHRS .OR. ABS(WOP2).GT.PTHRS) THEN
-               WMJGP=(WOP1-WOP2)**2
-               CMOMJGP=WMJGP*CMO2(K,L,1)
-               CMOTOT=CMOTOT+CMOMJGP
-               WOPTOT=WOPTOT+WMJGP
-               IF (IPRINT_local .GT. 1 .OR. WMJGP .GT. 0.01D0) THEN
-                  WRITE (LUPRI,'(2X,2I5,6F10.6)') K,L,
-     &            WOP1,WOP2,CMO2(K,L,1),CMO2(K,L,2),WMJGP,CMOMJGP
-               END IF
+               WRITE (LUPRI,'(2X,A,3I5,4F15.10)') 
+     &            '@@@', IG,K,L,WOP1,WOP2,CMO2(K,L,1),CMO2(K,L,2)
             END IF
             END IF
             WMJGP=(WOP1-WOP2)**2.0d0
@@ -6108,14 +6104,12 @@ C
             WOPTOT=WOPTOT+WMJGP
          END DO
          ALAMBDA=CMOTOT/WOPTOT
-         IF (IPRINT_local .GT. 0) THEN
-            WRITE(LUPRI,*) '   CMOTOT, WOPTOT:',CMOTOT,WOPTOT
-         END IF
-         WRITE(LUPRI,'(/"@ Overlap diagnostic LAMBDA =",F10.4)') ALAMBDA
-         WRITE(LUPRI,'(/A/A/)')
-     &  '@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
-     &  '@            J Chem Phys 128, 044118 (2008)'
+         WRITE (LUPRI,'(/A,F17.10)')
+     &      "@ PBHT MO Overlap Diagnostic Lambda:", ALAMBDA
+      WRITE(LUPRI,'(A/A/)')
+     &  '  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
+     &  '             J Chem Phys 128, 044118 (2008)'
       END IF
       RETURN
+ 1010 FORMAT(5X,'Response orbital operator symmetry =',I2,/)
       END
-! -- end of rspe2c.F --

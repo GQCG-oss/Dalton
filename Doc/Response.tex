@@ -161,16 +161,8 @@ label of the operator given in the integral property file.
 \item{\Key{QRREST}}
 Restart quadratic response\index{quadratic response}\index{response!quadratic}
 calculation.
-It is only possible to restart regular quadratic response calculations, not those
-involving residues (as \Key{SINGLE RESIDUE}, \Key{TWO-PHOTON}, and \Key{DOUBLE RESIDUE}).
-because the restarted Dalton does not know the excitation energies associated with the
-residues, and the excitation energies are needed to retrieve the right records from
-the \verb|RSPVEC| file.
-% hjaaj Aug 2012: does not work when excitation energies are involved because Dalton
-% does not know them when restarting, and they are needed to get the right records from
-% the RSPVEC file.
-Requires that \em{all} needed linear response solutions % and excitation vectors
-are available on the \verb|RSPVEC| file.
+Requires that all needed linear response solutions and excitation vectors
+are available on the RSPVEC file.
 
 \item{\Key{S0MIX}}
 Sum rule is calculated in mixed representation, that is, calculate

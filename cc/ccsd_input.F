@@ -295,7 +295,7 @@ C
 C
 C     Initialize the length of the list of response operator labels
 C
-      NPRLBL_CC = 0
+      NPRLBL = 0
 C
 C     Default for evaluation of first derivative integrals
 C
@@ -997,7 +997,7 @@ C
                ! (needed for CCR12 with unrelaxed finite fields)
                IF (NONHF) THEN
                   DO IFIELD = 1, NFIELD
-                     IDX = INDPRP_CC(LFIELD(IFIELD))
+                     IDX = INDPRPCC(LFIELD(IFIELD))
                   END DO
                END IF
             END IF 
@@ -1891,9 +1891,9 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NLRSOP + (IDXA-1)*3+IDXB
@@ -1917,12 +1917,12 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
-              IANG(1) = INDPRP_CC('XANGMOM ')
-              IANG(2) = INDPRP_CC('YANGMOM ')
-              IANG(3) = INDPRP_CC('ZANGMOM ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IANG(1) = INDPRPCC('XANGMOM ')
+              IANG(2) = INDPRPCC('YANGMOM ')
+              IANG(3) = INDPRPCC('ZANGMOM ')
               DO IDXAB=1,3
                 IDX = NLRSOP + IDXAB
                 IALRSOP(IDX) = IDIP(IDXAB)
@@ -1958,8 +1958,8 @@ C
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NLRSOP.LT.MXLRSO) THEN
                     NLRSOP = NLRSOP + 1
-                    IALRSOP(NLRSOP) = INDPRP_CC(LABELA)
-                    IBLRSOP(NLRSOP) = INDPRP_CC(LABELB)
+                    IALRSOP(NLRSOP) = INDPRPCC(LABELA)
+                    IBLRSOP(NLRSOP) = INDPRPCC(LABELB)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATOR DOUBLES SPECIFIED',
@@ -2011,9 +2011,9 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPVEL ')
-              IDIP(2) = INDPRP_CC('YDIPVEL ')
-              IDIP(3) = INDPRP_CC('ZDIPVEL ')
+              IDIP(1) = INDPRPCC('XDIPVEL ')
+              IDIP(2) = INDPRPCC('YDIPVEL ')
+              IDIP(3) = INDPRPCC('ZDIPVEL ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NLRSOP + (IDXA-1)*3+IDXB
@@ -2037,12 +2037,12 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
-              IANG(1) = INDPRP_CC('XDIPVEL ')
-              IANG(2) = INDPRP_CC('YDIPVEL ')
-              IANG(3) = INDPRP_CC('ZDIPVEL ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IANG(1) = INDPRPCC('XDIPVEL ')
+              IANG(2) = INDPRPCC('YDIPVEL ')
+              IANG(3) = INDPRPCC('ZDIPVEL ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NLRSOP + (IDXA-1)*3+IDXB
@@ -2066,12 +2066,12 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPVEL ')
-              IDIP(2) = INDPRP_CC('YDIPVEL ')
-              IDIP(3) = INDPRP_CC('ZDIPVEL ')
-              IANG(1) = INDPRP_CC('XANGMOM ')
-              IANG(2) = INDPRP_CC('YANGMOM ')
-              IANG(3) = INDPRP_CC('ZANGMOM ')
+              IDIP(1) = INDPRPCC('XDIPVEL ')
+              IDIP(2) = INDPRPCC('YDIPVEL ')
+              IDIP(3) = INDPRPCC('ZDIPVEL ')
+              IANG(1) = INDPRPCC('XANGMOM ')
+              IANG(2) = INDPRPCC('YANGMOM ')
+              IANG(3) = INDPRPCC('ZANGMOM ')
               DO IDXAB=1,3
                 IDX = NLRSOP + IDXAB
                 IALRSOP(IDX) = IDIP(IDXAB)
@@ -2094,18 +2094,18 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
-              IQUA(1) = INDPRP_CC('XXSECMOM')
-              IQUA(2) = INDPRP_CC('XYSECMOM')
-              IQUA(3) = INDPRP_CC('XZSECMOM')
-              IQUA(4) = INDPRP_CC('YYSECMOM')
-              IQUA(5) = INDPRP_CC('YZSECMOM')
-              IQUA(6) = INDPRP_CC('ZZSECMOM')
-              IANG(1) = INDPRP_CC('XANGMOM ')
-              IANG(2) = INDPRP_CC('YANGMOM ')
-              IANG(3) = INDPRP_CC('ZANGMOM ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IQUA(1) = INDPRPCC('XXSECMOM')
+              IQUA(2) = INDPRPCC('XYSECMOM')
+              IQUA(3) = INDPRPCC('XZSECMOM')
+              IQUA(4) = INDPRPCC('YYSECMOM')
+              IQUA(5) = INDPRPCC('YZSECMOM')
+              IQUA(6) = INDPRPCC('ZZSECMOM')
+              IANG(1) = INDPRPCC('XANGMOM ')
+              IANG(2) = INDPRPCC('YANGMOM ')
+              IANG(3) = INDPRPCC('ZANGMOM ')
               DO IDXA=1,3
                  DO IDXB=1,6
                    IDX = NLRSOP + (IDXA-1)*6+IDXB
@@ -2138,18 +2138,18 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPVEL ')
-              IDIP(2) = INDPRP_CC('YDIPVEL ')
-              IDIP(3) = INDPRP_CC('ZDIPVEL ')
-              IQUA(1) = INDPRP_CC('XXROTSTR')
-              IQUA(2) = INDPRP_CC('XYROTSTR')
-              IQUA(3) = INDPRP_CC('XZROTSTR')
-              IQUA(4) = INDPRP_CC('YYROTSTR')
-              IQUA(5) = INDPRP_CC('YZROTSTR')
-              IQUA(6) = INDPRP_CC('ZZROTSTR')
-              IANG(1) = INDPRP_CC('XANGMOM ')
-              IANG(2) = INDPRP_CC('YANGMOM ')
-              IANG(3) = INDPRP_CC('ZANGMOM ')
+              IDIP(1) = INDPRPCC('XDIPVEL ')
+              IDIP(2) = INDPRPCC('YDIPVEL ')
+              IDIP(3) = INDPRPCC('ZDIPVEL ')
+              IQUA(1) = INDPRPCC('XXROTSTR')
+              IQUA(2) = INDPRPCC('XYROTSTR')
+              IQUA(3) = INDPRPCC('XZROTSTR')
+              IQUA(4) = INDPRPCC('YYROTSTR')
+              IQUA(5) = INDPRPCC('YZROTSTR')
+              IQUA(6) = INDPRPCC('ZZROTSTR')
+              IANG(1) = INDPRPCC('XANGMOM ')
+              IANG(2) = INDPRPCC('YANGMOM ')
+              IANG(3) = INDPRPCC('ZANGMOM ')
               DO IDXA=1,3
                  DO IDXB=1,6
                    IDX = NLRSOP + (IDXA-1)*6+IDXB
@@ -2212,12 +2212,12 @@ C
      &             ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                    CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
                  END IF
-                 IDIP(1) = INDPRP_CC('XDIPLEN ')
-                 IDIP(2) = INDPRP_CC('YDIPLEN ')
-                 IDIP(3) = INDPRP_CC('ZDIPLEN ')
-                 IANG(1) = INDPRP_CC('XANGMOM ')
-                 IANG(2) = INDPRP_CC('YANGMOM ')
-                 IANG(3) = INDPRP_CC('ZANGMOM ')
+                 IDIP(1) = INDPRPCC('XDIPLEN ')
+                 IDIP(2) = INDPRPCC('YDIPLEN ')
+                 IDIP(3) = INDPRPCC('ZDIPLEN ')
+                 IANG(1) = INDPRPCC('XANGMOM ')
+                 IANG(2) = INDPRPCC('YANGMOM ')
+                 IANG(3) = INDPRPCC('ZANGMOM ')
                  DO IDXAB=1,3
                    IDX = NLRSOP + IDXAB
                    IALRSOP(IDX) = IDIP(IDXAB)
@@ -2233,12 +2233,12 @@ C
      &             ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                    CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
                  END IF
-                 IDIP(1) = INDPRP_CC('XDIPVEL ')
-                 IDIP(2) = INDPRP_CC('YDIPVEL ')
-                 IDIP(3) = INDPRP_CC('ZDIPVEL ')
-                 IANG(1) = INDPRP_CC('XANGMOM ')
-                 IANG(2) = INDPRP_CC('YANGMOM ')
-                 IANG(3) = INDPRP_CC('ZANGMOM ')
+                 IDIP(1) = INDPRPCC('XDIPVEL ')
+                 IDIP(2) = INDPRPCC('YDIPVEL ')
+                 IDIP(3) = INDPRPCC('ZDIPVEL ')
+                 IANG(1) = INDPRPCC('XANGMOM ')
+                 IANG(2) = INDPRPCC('YANGMOM ')
+                 IANG(3) = INDPRPCC('ZANGMOM ')
                  DO IDXAB=1,3
                    IDX = NLRSOP + IDXAB
                    IALRSOP(IDX) = IDIP(IDXAB)
@@ -2263,18 +2263,18 @@ C
      &              ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                     CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
                   END IF
-                  IDIP(1) = INDPRP_CC('XDIPLEN ')
-                  IDIP(2) = INDPRP_CC('YDIPLEN ')
-                  IDIP(3) = INDPRP_CC('ZDIPLEN ')
-                  IQUA(1) = INDPRP_CC('XXSECMOM')
-                  IQUA(2) = INDPRP_CC('XYSECMOM')
-                  IQUA(3) = INDPRP_CC('XZSECMOM')
-                  IQUA(4) = INDPRP_CC('YYSECMOM')
-                  IQUA(5) = INDPRP_CC('YZSECMOM')
-                  IQUA(6) = INDPRP_CC('ZZSECMOM')
-                  IANG(1) = INDPRP_CC('XANGMOM ')
-                  IANG(2) = INDPRP_CC('YANGMOM ')
-                  IANG(3) = INDPRP_CC('ZANGMOM ')
+                  IDIP(1) = INDPRPCC('XDIPLEN ')
+                  IDIP(2) = INDPRPCC('YDIPLEN ')
+                  IDIP(3) = INDPRPCC('ZDIPLEN ')
+                  IQUA(1) = INDPRPCC('XXSECMOM')
+                  IQUA(2) = INDPRPCC('XYSECMOM')
+                  IQUA(3) = INDPRPCC('XZSECMOM')
+                  IQUA(4) = INDPRPCC('YYSECMOM')
+                  IQUA(5) = INDPRPCC('YZSECMOM')
+                  IQUA(6) = INDPRPCC('ZZSECMOM')
+                  IANG(1) = INDPRPCC('XANGMOM ')
+                  IANG(2) = INDPRPCC('YANGMOM ')
+                  IANG(3) = INDPRPCC('ZANGMOM ')
                   DO IDXA=1,3
                      DO IDXB=1,6
                        IDX = NLRSOP + (IDXA-1)*6+IDXB
@@ -2301,18 +2301,18 @@ C
      &              ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                     CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
                   END IF
-                  IDIP(1) = INDPRP_CC('XDIPVEL ')
-                  IDIP(2) = INDPRP_CC('YDIPVEL ')
-                  IDIP(3) = INDPRP_CC('ZDIPVEL ')
-                  IQUA(1) = INDPRP_CC('XXROTSTR')
-                  IQUA(2) = INDPRP_CC('XYROTSTR')
-                  IQUA(3) = INDPRP_CC('XZROTSTR')
-                  IQUA(4) = INDPRP_CC('YYROTSTR')
-                  IQUA(5) = INDPRP_CC('YZROTSTR')
-                  IQUA(6) = INDPRP_CC('ZZROTSTR')
-                  IANG(1) = INDPRP_CC('XANGMOM ')
-                  IANG(2) = INDPRP_CC('YANGMOM ')
-                  IANG(3) = INDPRP_CC('ZANGMOM ')
+                  IDIP(1) = INDPRPCC('XDIPVEL ')
+                  IDIP(2) = INDPRPCC('YDIPVEL ')
+                  IDIP(3) = INDPRPCC('ZDIPVEL ')
+                  IQUA(1) = INDPRPCC('XXROTSTR')
+                  IQUA(2) = INDPRPCC('XYROTSTR')
+                  IQUA(3) = INDPRPCC('XZROTSTR')
+                  IQUA(4) = INDPRPCC('YYROTSTR')
+                  IQUA(5) = INDPRPCC('YZROTSTR')
+                  IQUA(6) = INDPRPCC('ZZROTSTR')
+                  IANG(1) = INDPRPCC('XANGMOM ')
+                  IANG(2) = INDPRPCC('YANGMOM ')
+                  IANG(3) = INDPRPCC('ZANGMOM ')
                   DO IDXA=1,3
                      DO IDXB=1,6
                        IDX = NLRSOP + (IDXA-1)*6+IDXB
@@ -2424,7 +2424,7 @@ C=====================================================================*
 
       LOGICAL GSTOPA, GSTTPA, XSTOPA
       INTEGER IXSYM, IXSTATE, IXSYM2, IXSTATE2, IJUMP
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 #if defined (SYS_CRAY)
       REAL SMFREQ
@@ -2626,7 +2626,7 @@ C           ------------------------
                  IF (GSTOPA) THEN
                   IF (NLRSOP.LT.MXLRSO) THEN
                     NLRSOP = NLRSOP + 1
-                    ILRSOP(NLRSOP) = INDPRP_CC(LABEL)
+                    ILRSOP(NLRSOP) = INDPRPCC(LABEL)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATORS SPECIFIED',
@@ -2636,7 +2636,7 @@ C           ------------------------
                  ELSE IF (XSTOPA) THEN
                   IF (NQR2OP.LT.MXQR2O) THEN
                     NQR2OP = NQR2OP + 1
-                    IQR2OP(NQR2OP) = INDPRP_CC(LABEL)
+                    IQR2OP(NQR2OP) = INDPRPCC(LABEL)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATORS SPECIFIED',
@@ -2654,8 +2654,8 @@ C           ------------------------
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NSMOPER.LT.MXSMOP) THEN
                     NSMOPER = NSMOPER + 1
-                    IASMOP(NSMOPER) = INDPRP_CC(LABELA)
-                    IBSMOP(NSMOPER) = INDPRP_CC(LABELB)
+                    IASMOP(NSMOPER) = INDPRPCC(LABELA)
+                    IBSMOP(NSMOPER) = INDPRPCC(LABELB)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)') 
      &               ' NO. OF OPERATOR PAIRS SPECIFIED',
@@ -3396,9 +3396,9 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQR2O
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCQR2R.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NQR2OP + (IDXA-1)*3+IDXB
@@ -3428,8 +3428,8 @@ C
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NQR2OP.LT.MXQR2O) THEN
                     NQR2OP = NQR2OP + 1
-                    IAQR2OP(NQR2OP) = INDPRP_CC(LABELA)
-                    IBQR2OP(NQR2OP) = INDPRP_CC(LABELB)
+                    IAQR2OP(NQR2OP) = INDPRPCC(LABELA)
+                    IBQR2OP(NQR2OP) = INDPRPCC(LABELB)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATOR DOUBLES SPECIFIED',
@@ -3481,9 +3481,9 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQR2O
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCQR2R.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPVEL ')
-              IDIP(2) = INDPRP_CC('YDIPVEL ')
-              IDIP(3) = INDPRP_CC('ZDIPVEL ')
+              IDIP(1) = INDPRPCC('XDIPVEL ')
+              IDIP(2) = INDPRPCC('YDIPVEL ')
+              IDIP(3) = INDPRPCC('ZDIPVEL ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NQR2OP + (IDXA-1)*3+IDXB
@@ -3717,7 +3717,7 @@ C=====================================================================*
       CHARACTER LABEL*(8), LABHELP*(70)
       CHARACTER TABLE(NTABLE)*(8)
 
-      INTEGER IJUMP, INDPRP_CC
+      INTEGER IJUMP, INDPRPCC
 * data:
       DATA SET /.FALSE./
       DATA TABLE /'.DIPOLE','.QUADRU','.NQCC  ','.OPERAT','XXXXXXX',
@@ -3814,7 +3814,7 @@ C
                 IF (LABEL(1:1).NE.'!') THEN
                   IF (NAXGRO .LT.MXGROP) THEN
                     NAXGRO  = NAXGRO  + 1
-                    IAXGRO(NAXGRO) = INDPRP_CC(LABEL)
+                    IAXGRO(NAXGRO) = INDPRPCC(LABEL)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)') 
      &               ' NO. OF OPERATORS SPECIFIED',
@@ -3982,7 +3982,7 @@ C=====================================================================*
       INTEGER IJUMP
 
 * external function:
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 * data:
       DATA SET /.FALSE./
@@ -4051,9 +4051,9 @@ C
 1           CONTINUE
                DIPMOM = .TRUE.
 CCN         Added for CC-R12:
-               IDUM = INDPRP_CC('XDIPLEN ')
-               IDUM = INDPRP_CC('YDIPLEN ')
-               IDUM = INDPRP_CC('ZDIPLEN ')
+               IDUM = INDPRPCC('XDIPLEN ')
+               IDUM = INDPRPCC('YDIPLEN ')
+               IDUM = INDPRPCC('ZDIPLEN ')
             GO TO 100
 
 C
@@ -4065,12 +4065,12 @@ C
 2           CONTINUE
                QUADRU = .TRUE.
 CCN         Added for CC-R12:
-               IDUM = INDPRP_CC('XXTHETA ')
-               IDUM = INDPRP_CC('XYTHETA ')
-               IDUM = INDPRP_CC('XZTHETA ')
-               IDUM = INDPRP_CC('YYTHETA ')
-               IDUM = INDPRP_CC('YZTHETA ')
-               IDUM = INDPRP_CC('ZZTHETA ')               
+               IDUM = INDPRPCC('XXTHETA ')
+               IDUM = INDPRPCC('XYTHETA ')
+               IDUM = INDPRPCC('XZTHETA ')
+               IDUM = INDPRPCC('YYTHETA ')
+               IDUM = INDPRPCC('YZTHETA ')
+               IDUM = INDPRPCC('ZZTHETA ')               
             GO TO 100
 
 C
@@ -4137,7 +4137,7 @@ C
                 IF (LABEL(1:1).NE.'!') THEN
                   IF (NAFOP .LT.MAFOP) THEN
                     NAFOP  = NAFOP + 1
-                    IAFOP(NAFOP) = INDPRP_CC(LABEL)
+                    IAFOP(NAFOP) = INDPRPCC(LABEL)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATORS SPECIFIED',
@@ -4158,12 +4158,12 @@ C
 9          CONTINUE
                SECMOM = .TRUE.
 CCN         Added for CC-R12:
-               IDUM = INDPRP_CC('XXSECMOM')
-               IDUM = INDPRP_CC('XYSECMOM')
-               IDUM = INDPRP_CC('XZSECMOM')
-               IDUM = INDPRP_CC('YYSECMOM')
-               IDUM = INDPRP_CC('YZSECMOM')
-               IDUM = INDPRP_CC('ZZSECMOM')
+               IDUM = INDPRPCC('XXSECMOM')
+               IDUM = INDPRPCC('XYSECMOM')
+               IDUM = INDPRPCC('XZSECMOM')
+               IDUM = INDPRPCC('YYSECMOM')
+               IDUM = INDPRPCC('YZSECMOM')
+               IDUM = INDPRPCC('ZZSECMOM')
             GO TO 100
 C
 C-------------------------------------------------
@@ -4313,7 +4313,7 @@ CTOCD
       INTEGER IGNCHO(4)
 
 * external function:
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 * data:
       DATA LABDIP /'XDIPLEN ','YDIPLEN ','ZDIPLEN '/
@@ -4569,9 +4569,9 @@ C           -------------------------------------------------------
               END IF
           
               IF (ALPHA_ISO .OR. ALPHA_ANI) THEN
-                IDIP(1) = INDPRP_CC('XDIPLEN ')
-                IDIP(2) = INDPRP_CC('YDIPLEN ')
-                IDIP(3) = INDPRP_CC('ZDIPLEN ')
+                IDIP(1) = INDPRPCC('XDIPLEN ')
+                IDIP(2) = INDPRPCC('YDIPLEN ')
+                IDIP(3) = INDPRPCC('ZDIPLEN ')
                 DO IDX = 1, 2
                   IALROP(NLROP+1)           = IDIP(3)   !cmp 1: alph_zz
                   IBLROP(NLROP+1)           = IDIP(3)
@@ -4664,11 +4664,11 @@ C
                   DO J = 6,8
                      IF (LABELA(J:J) .EQ. ' ') LABELA(J:J) = '0'
                   ENDDO
-                  IGRA(I) = INDPRP_CC(LABELA)
+                  IGRA(I) = INDPRPCC(LABELA)
                ENDDO
-               IDIP(1) = INDPRP_CC('XDIPLEN ')
-               IDIP(2) = INDPRP_CC('YDIPLEN ')
-               IDIP(3) = INDPRP_CC('ZDIPLEN ')
+               IDIP(1) = INDPRPCC('XDIPLEN ')
+               IDIP(2) = INDPRPCC('YDIPLEN ')
+               IDIP(3) = INDPRPCC('ZDIPLEN ')
                DO IDXB = 1,NDIP
                   DO IDXA = 1,NCOOR
                      IDX = NLROP + NCOOR*(IDXB - 1) + IDXA
@@ -5019,8 +5019,8 @@ C
          ENDIF
 
          DO I = 1,NA
-            IOPA(I) = INDPRP_CC(LABELA(I))
-            IOPB(I) = INDPRP_CC(LABELB(I))
+            IOPA(I) = INDPRPCC(LABELA(I))
+            IOPB(I) = INDPRPCC(LABELB(I))
          ENDDO
 
          DO IDXAB = 1,NA
@@ -5045,10 +5045,10 @@ C
          ENDIF
 
          DO I = 1,NA
-            IOPA(I) = INDPRP_CC(LABELA(I))
+            IOPA(I) = INDPRPCC(LABELA(I))
          ENDDO
          DO I = 1,NB
-            IOPB(I) = INDPRP_CC(LABELB(I))
+            IOPB(I) = INDPRPCC(LABELB(I))
          ENDDO
 
          DO IDXA=1,NA
@@ -5129,7 +5129,7 @@ c /* deck cc_qrinp */
      &            '.DISPCF','.ALLDSP','.XYDEGE','.NOBMAT','.USE R2',
      &            '.RELAXE','.UNRELA','.USE AA','.AVANEW','.XXXXXX' /
 
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -5217,9 +5217,9 @@ C           ------------------------------------------
                 ELSE
                   IF (NQROPER.LT.MXQROP) THEN
                     NQROPER = NQROPER + 1
-                    IAQROP(NQROPER) = INDPRP_CC(LABELA)
-                    IBQROP(NQROPER) = INDPRP_CC(LABELB)
-                    ICQROP(NQROPER) = INDPRP_CC(LABELC)
+                    IAQROP(NQROPER) = INDPRPCC(LABELA)
+                    IBQROP(NQROPER) = INDPRPCC(LABELB)
+                    ICQROP(NQROPER) = INDPRPCC(LABELC)
                     LAQLRX(NQROPER) = LALRX
                     LBQLRX(NQROPER) = LBLRX
                     LCQLRX(NQROPER) = LCLRX
@@ -5245,9 +5245,9 @@ C           -------------------------------------------------------
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQROP
                 CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCQR.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -5320,9 +5320,9 @@ C           -------------------------------------------------------
      &             '@ IN *CCQR SECTION WILL BE IGNORED.'
                   NQROPER = 0
                 END IF
-                IDIP(1) = INDPRP_CC('XDIPLEN ')
-                IDIP(2) = INDPRP_CC('YDIPLEN ')
-                IDIP(3) = INDPRP_CC('ZDIPLEN ')
+                IDIP(1) = INDPRPCC('XDIPLEN ')
+                IDIP(2) = INDPRPCC('YDIPLEN ')
+                IDIP(3) = INDPRPCC('ZDIPLEN ')
                 DO IDX=1,2
                   IAQROP(1)     = IDIP(3)    ! component 1: beta_{zzz}
                   IBQROP(1)     = IDIP(3)
@@ -5613,9 +5613,9 @@ C           -----------------------
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQROP
             CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCQR.')
           END IF
-          IDIP(1) = INDPRP_CC('XDIPLEN ')
-          IDIP(2) = INDPRP_CC('YDIPLEN ')
-          IDIP(3) = INDPRP_CC('ZDIPLEN ')
+          IDIP(1) = INDPRPCC('XDIPLEN ')
+          IDIP(2) = INDPRPCC('YDIPLEN ')
+          IDIP(3) = INDPRPCC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -5712,7 +5712,7 @@ C#include <ccrspprp.h>
      &            '.USEXKS','.EXPCOF','.AVERAG','.DISPCF','.ODDISP',
      &            '.NO2NP1','.L2 BCD','.L2 BC ','.XXXXXX','.XXXXXX'/
 
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -5781,10 +5781,10 @@ C           ------------
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NCROPER.LT.MXCROP) THEN
                     NCROPER = NCROPER + 1
-                    IACROP(NCROPER) = INDPRP_CC(LABELA)
-                    IBCROP(NCROPER) = INDPRP_CC(LABELB)
-                    ICCROP(NCROPER) = INDPRP_CC(LABELC)
-                    IDCROP(NCROPER) = INDPRP_CC(LABELD)
+                    IACROP(NCROPER) = INDPRPCC(LABELA)
+                    IBCROP(NCROPER) = INDPRPCC(LABELB)
+                    ICCROP(NCROPER) = INDPRPCC(LABELC)
+                    IDCROP(NCROPER) = INDPRPCC(LABELD)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5/)')
      &               ' NO. OF OPERATOR QUADRUPLES SPECIFIED',
@@ -5807,9 +5807,9 @@ C           -------------------------------------------------------
      &           ' IS GREATER THAN THE ALLOWED NUMBER : ',MXCROP
                 CALL QUIT('TOO MANY OPERATOR QUADRUPLES IN CCCR.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -6096,9 +6096,9 @@ C           ------------------------------------------------
                 END IF
 
 *               set operators quadruples for gamma components:
-                IDIP(1) = INDPRP_CC('XDIPLEN ')
-                IDIP(2) = INDPRP_CC('YDIPLEN ')
-                IDIP(3) = INDPRP_CC('ZDIPLEN ')
+                IDIP(1) = INDPRPCC('XDIPLEN ')
+                IDIP(2) = INDPRPCC('YDIPLEN ')
+                IDIP(3) = INDPRPCC('ZDIPLEN ')
                 DO IDX=1,3
                   IF (IDX.EQ.1) THEN
                     IDXA = 1 ! X \  XXZZ 
@@ -6310,9 +6310,9 @@ C           -------------
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MXCROP
             CALL QUIT('TOO MANY OPERATOR QUADRUPLES IN CCQR.')
           END IF
-          IDIP(1) = INDPRP_CC('XDIPLEN ')
-          IDIP(2) = INDPRP_CC('YDIPLEN ')
-          IDIP(3) = INDPRP_CC('ZDIPLEN ')
+          IDIP(1) = INDPRPCC('XDIPLEN ')
+          IDIP(2) = INDPRPCC('YDIPLEN ')
+          IDIP(3) = INDPRPCC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -6409,7 +6409,7 @@ c /* deck CC_4RINP */
       DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.STATIC','.MIXFRE',
      &            '.4HGFRE','.USECHI','.XXXXXX','.XXXXXX','.XXXXXX'/
 
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -6467,11 +6467,11 @@ C           ------------
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (N4ROPER.LT.MX4ROP) THEN
                     N4ROPER = N4ROPER + 1
-                    IA4ROP(N4ROPER) = INDPRP_CC(LABELA)
-                    IB4ROP(N4ROPER) = INDPRP_CC(LABELB)
-                    IC4ROP(N4ROPER) = INDPRP_CC(LABELC)
-                    ID4ROP(N4ROPER) = INDPRP_CC(LABELD)
-                    IE4ROP(N4ROPER) = INDPRP_CC(LABELE)
+                    IA4ROP(N4ROPER) = INDPRPCC(LABELA)
+                    IB4ROP(N4ROPER) = INDPRPCC(LABELB)
+                    IC4ROP(N4ROPER) = INDPRPCC(LABELC)
+                    ID4ROP(N4ROPER) = INDPRPCC(LABELD)
+                    IE4ROP(N4ROPER) = INDPRPCC(LABELE)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5/)')
      &               ' NO. OF OPERATOR QUADRUPLES SPECIFIED',
@@ -6494,9 +6494,9 @@ C           -----------------------------------------------------------
      &           ' IS GREATER THAN THE ALLOWED NUMBER : ',MX4ROP
                 CALL QUIT('TOO MANY OPERATOR QUINTUPLES IN CC4R.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -6637,9 +6637,9 @@ C           -------------
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MX4ROP
             CALL QUIT('TOO MANY OPERATOR QUINTUPLES IN CC4R.')
           END IF
-          IDIP(1) = INDPRP_CC('XDIPLEN ')
-          IDIP(2) = INDPRP_CC('YDIPLEN ')
-          IDIP(3) = INDPRP_CC('ZDIPLEN ')
+          IDIP(1) = INDPRPCC('XDIPLEN ')
+          IDIP(2) = INDPRPCC('YDIPLEN ')
+          IDIP(3) = INDPRPCC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -6743,7 +6743,7 @@ c /* deck CC_5RINP */
       DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.STATIC','.MIXFRE',
      &            '.5HGFRE','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -6800,7 +6800,7 @@ C           ------------
                   IF (N5ROPER.LT.MX5ROP) THEN
                     N5ROPER = N5ROPER + 1
                     DO IDX = 1, 6
-                      I5ROP(N5ROPER,IDX) = INDPRP_CC(LABEL(IDX))
+                      I5ROP(N5ROPER,IDX) = INDPRPCC(LABEL(IDX))
                     END DO
                     WRITE (LUPRI,*) 'CC_5RINP>',N5ROPER,LABEL
                   ELSE
@@ -6825,9 +6825,9 @@ C           -----------------------------------------------------------
      &           ' IS GREATER THAN THE ALLOWED NUMBER : ',MX5ROP
                 CALL QUIT('TOO MANY OPERATOR HEXTUPLES IN CC5R.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -6969,9 +6969,9 @@ C           -------------
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MX5ROP
             CALL QUIT('TOO MANY OPERATOR QUINTUPLES IN CC5R.')
           END IF
-          IDIP(1) = INDPRP_CC('XDIPLEN ')
-          IDIP(2) = INDPRP_CC('YDIPLEN ')
-          IDIP(3) = INDPRP_CC('ZDIPLEN ')
+          IDIP(1) = INDPRPCC('XDIPLEN ')
+          IDIP(2) = INDPRPCC('YDIPLEN ')
+          IDIP(3) = INDPRPCC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -7025,33 +7025,32 @@ C           -------------
 *=====================================================================*
 *---------------------------------------------------------------------*
 C  /* Deck indprpcc */
-      INTEGER FUNCTION INDPRP_CC(NEWLBL_CC)
+      INTEGER FUNCTION INDPRPCC(NEWLBL)
 C
 #include "ccrspprp.h"
 #include "priunit.h"
 C
-      CHARACTER*8 NEWLBL_CC
+      CHARACTER*8 NEWLBL
       INTEGER I
 
-      DO 100 I = 1,NPRLBL_CC
-         IF ( NEWLBL_CC.EQ.PRPLBL_CC(I) ) THEN
-            INDPRP_CC = I
+      DO 100 I = 1,NPRLBL
+         IF ( NEWLBL.EQ.PRPLBL(I) ) THEN
+            INDPRPCC = I
             RETURN
          END IF
  100  CONTINUE
 
-      NPRLBL_CC = NPRLBL_CC + 1
+      NPRLBL = NPRLBL + 1
 
-      IF (NPRLBL_CC.GT.MAXLBL_CC) THEN
-         WRITE(LUPRI,'(/A/A,I5,A,I5/A/)')
-     &'@ Number of specified CC properties exceeds the maximum allowed',
-     &'@ MAXPRP =',MAXLBL_CC,' NPRLBL_CC= ',NPRLBL_CC,
-     &'@ Increase MAXLBL_CC in include/ccrsprp.h and recompile.'
-         CALL QUIT(' INDPRP_CC: TOO MANY PROPERTIES SPECIFIED')
+      IF (NPRLBL.GT.MAXLBL) THEN
+         WRITE(LUPRI,'(A/A,I5,A,I5)')
+     *   '@ NUMBER OF SPECIFIED PROPERTIES EXCEED THE MAXIMUM ALLOWED',
+     *   '@ MAXPRP =',MAXLBL,' NPRLBL= ',NPRLBL
+         CALL QUIT(' INDPRPCC: TOO MANY PROPERTIES SPECIFIED')
       END IF
 
-      PRPLBL_CC(NPRLBL_CC) = NEWLBL_CC
-      INDPRP_CC            = NPRLBL_CC
+      PRPLBL(NPRLBL) = NEWLBL
+      INDPRPCC       = NPRLBL
 
       RETURN
       END
@@ -7073,51 +7072,51 @@ C
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRP_CC('XDIPLEN ')
-          INDOP(NOP+2) = INDPRP_CC('YDIPLEN ')
-          INDOP(NOP+3) = INDPRP_CC('ZDIPLEN ')
+          INDOP(NOP+1) = INDPRPCC('XDIPLEN ')
+          INDOP(NOP+2) = INDPRPCC('YDIPLEN ')
+          INDOP(NOP+3) = INDPRPCC('ZDIPLEN ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'DIPVEL') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRP_CC('XDIPVEL ')
-          INDOP(NOP+2) = INDPRP_CC('YDIPVEL ')
-          INDOP(NOP+3) = INDPRP_CC('ZDIPVEL ')
+          INDOP(NOP+1) = INDPRPCC('XDIPVEL ')
+          INDOP(NOP+2) = INDPRPCC('YDIPVEL ')
+          INDOP(NOP+3) = INDPRPCC('ZDIPVEL ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'ANGMOM') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRP_CC('XANGMOM ')
-          INDOP(NOP+2) = INDPRP_CC('YANGMOM ')
-          INDOP(NOP+3) = INDPRP_CC('ZANGMOM ')
+          INDOP(NOP+1) = INDPRPCC('XANGMOM ')
+          INDOP(NOP+2) = INDPRPCC('YANGMOM ')
+          INDOP(NOP+3) = INDPRPCC('ZANGMOM ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'SECMOM') THEN
         NEWOP = 6
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRP_CC('XXSECMOM')
-          INDOP(NOP+2) = INDPRP_CC('XYSECMOM')
-          INDOP(NOP+3) = INDPRP_CC('XZSECMOM')
-          INDOP(NOP+4) = INDPRP_CC('YYSECMOM')
-          INDOP(NOP+5) = INDPRP_CC('YZSECMOM')
-          INDOP(NOP+6) = INDPRP_CC('ZZSECMOM')
+          INDOP(NOP+1) = INDPRPCC('XXSECMOM')
+          INDOP(NOP+2) = INDPRPCC('XYSECMOM')
+          INDOP(NOP+3) = INDPRPCC('XZSECMOM')
+          INDOP(NOP+4) = INDPRPCC('YYSECMOM')
+          INDOP(NOP+5) = INDPRPCC('YZSECMOM')
+          INDOP(NOP+6) = INDPRPCC('ZZSECMOM')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'ROTSTR') THEN
         NEWOP = 6
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRP_CC('XXROTSTR')
-          INDOP(NOP+2) = INDPRP_CC('XYROTSTR')
-          INDOP(NOP+3) = INDPRP_CC('XZROTSTR')
-          INDOP(NOP+4) = INDPRP_CC('YYROTSTR')
-          INDOP(NOP+5) = INDPRP_CC('YZROTSTR')
-          INDOP(NOP+6) = INDPRP_CC('ZZROTSTR')
+          INDOP(NOP+1) = INDPRPCC('XXROTSTR')
+          INDOP(NOP+2) = INDPRPCC('XYROTSTR')
+          INDOP(NOP+3) = INDPRPCC('XZROTSTR')
+          INDOP(NOP+4) = INDPRPCC('YYROTSTR')
+          INDOP(NOP+5) = INDPRPCC('YZROTSTR')
+          INDOP(NOP+6) = INDPRPCC('ZZROTSTR')
         END IF
       ELSE
         CALL QUIT('Unknown OPERATOR in CC_PUT1OP')
@@ -7153,27 +7152,27 @@ C
         IF ( (NOP+NEWOP*NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          IOP(1) = INDPRP_CC('XDIPLEN ')
-          IOP(2) = INDPRP_CC('YDIPLEN ')
-          IOP(3) = INDPRP_CC('ZDIPLEN ')
+          IOP(1) = INDPRPCC('XDIPLEN ')
+          IOP(2) = INDPRPCC('YDIPLEN ')
+          IOP(3) = INDPRPCC('ZDIPLEN ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'DIPVEL') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP*NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          IOP(1) = INDPRP_CC('XDIPVEL ')
-          IOP(2) = INDPRP_CC('YDIPVEL ')
-          IOP(3) = INDPRP_CC('ZDIPVEL ')
+          IOP(1) = INDPRPCC('XDIPVEL ')
+          IOP(2) = INDPRPCC('YDIPVEL ')
+          IOP(3) = INDPRPCC('ZDIPVEL ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'ANGMOM') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP*NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          IOP(1) = INDPRP_CC('XANGMOM ')
-          IOP(2) = INDPRP_CC('YANGMOM ')
-          IOP(3) = INDPRP_CC('ZANGMOM ')
+          IOP(1) = INDPRPCC('XANGMOM ')
+          IOP(2) = INDPRPCC('YANGMOM ')
+          IOP(3) = INDPRPCC('ZANGMOM ')
         END IF
       ELSE
         CALL QUIT('Unknown OPERATOR in CC_PUT2OP')
@@ -7258,7 +7257,7 @@ c /* deck cc_exlrinp */
      &            '.HALFFR','.USELEF','.FREQ  ','.FREQUE','.STATIC',
      &            '.USE O2','.NOPROJ'/
 
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -7323,8 +7322,8 @@ C           --------------------------------------
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NEXLROPER.LT.MXEXLROP) THEN
                     NEXLROPER = NEXLROPER + 1
-                    IAEXLROP(NEXLROPER) = INDPRP_CC(LABELA)
-                    IBEXLROP(NEXLROPER) = INDPRP_CC(LABELB)
+                    IAEXLROP(NEXLROPER) = INDPRPCC(LABELA)
+                    IBEXLROP(NEXLROPER) = INDPRPCC(LABELB)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5/)') 
      &               ' NO. OF OPERATOR PAIRS SPECIFIED',
@@ -7347,9 +7346,9 @@ C           ------------------------------------------------
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXEXLROP
                 CALL QUIT('TOO MANY OPERATOR PAIRS IN CCEXLR.')
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
                 IDX = NEXLROPER + (IDXA-1)*3+IDXB
@@ -7534,8 +7533,8 @@ C           -----------------------------------------------------------
      &    ' IS GREATER THAN THE ALLOWED NUMBER : ',MXEXLROP
           CALL QUIT('TOO MANY OPERATOR PAIRS IN CCEXLR.')
         END IF
-        IDIP(1) = INDPRP_CC('XDIPLEN ')
-        IDIP(2) = INDPRP_CC('YDIPLEN ')
+        IDIP(1) = INDPRPCC('XDIPLEN ')
+        IDIP(2) = INDPRPCC('YDIPLEN ')
         DO IDXA=1,3
         DO IDXB=1,3
           IDX = NEXLROPER + (IDXA-1)*3+IDXB
@@ -7631,7 +7630,7 @@ C#endif
       DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.XXXXXX','.XXXXXX',
      &            '.SELSTA','.THIRDF','.XXXXXX','.XXXXXX','.XXXXXX'/
 
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -7698,12 +7697,12 @@ C           -------------------------------------------------
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NTMOPER.LT.MXTMOP) THEN
                     NTMOPER = NTMOPER + 1
-                    IATMOP(NTMOPER) = INDPRP_CC(LABELA)
-                    IBTMOP(NTMOPER) = INDPRP_CC(LABELB)
-                    ICTMOP(NTMOPER) = INDPRP_CC(LABELC)
-                    IDTMOP(NTMOPER) = INDPRP_CC(LABELD)
-                    IETMOP(NTMOPER) = INDPRP_CC(LABELE)
-                    IFTMOP(NTMOPER) = INDPRP_CC(LABELF)
+                    IATMOP(NTMOPER) = INDPRPCC(LABELA)
+                    IBTMOP(NTMOPER) = INDPRPCC(LABELB)
+                    ICTMOP(NTMOPER) = INDPRPCC(LABELC)
+                    IDTMOP(NTMOPER) = INDPRPCC(LABELD)
+                    IETMOP(NTMOPER) = INDPRPCC(LABELE)
+                    IFTMOP(NTMOPER) = INDPRPCC(LABELF)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)') 
      &               ' NO. OF OPERATOR QUADRUPLES SPECIFIED',
@@ -7729,9 +7728,9 @@ C           -------------------------------------------------------
                 CALL QUIT('TOO MANY OPERATOR QUADRUPLES IN CCTM.')
 
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -7862,9 +7861,9 @@ C           _______________________________________________
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MXTMOP
             CALL QUIT('TOO MANY OPERATOR SIXTUPLES IN CCTM.')
           END IF
-          IDIP(1) = INDPRP_CC('XDIPLEN ')
-          IDIP(2) = INDPRP_CC('YDIPLEN ')
-          IDIP(3) = INDPRP_CC('ZDIPLEN ')
+          IDIP(1) = INDPRPCC('XDIPLEN ')
+          IDIP(2) = INDPRPCC('YDIPLEN ')
+          IDIP(3) = INDPRPCC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -7969,7 +7968,7 @@ C           _______________________________________________
       DATA IDB / 2, 1, 3, 2, 1, 3 /
       DATA IDC / 3, 3, 1, 1, 2, 2 /
 * external function:
-      INTEGER INDPRP_CC
+      INTEGER INDPRPCC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -8047,9 +8046,9 @@ C                      RELORB1   = .TRUE.
                 ELSE 
                    IF (NMCDOPER.LT.MXMCDOP) THEN
                       NMCDOPER = NMCDOPER + 1
-                      IAMCDOP(NMCDOPER) = INDPRP_CC(LABELA)
-                      IBMCDOP(NMCDOPER) = INDPRP_CC(LABELB)
-                      ICMCDOP(NMCDOPER) = INDPRP_CC(LABELC)
+                      IAMCDOP(NMCDOPER) = INDPRPCC(LABELA)
+                      IBMCDOP(NMCDOPER) = INDPRPCC(LABELB)
+                      ICMCDOP(NMCDOPER) = INDPRPCC(LABELC)
                       LAMCDRX(NMCDOPER) = LARLX
                       LBMCDRX(NMCDOPER) = LBRLX
                       LCMCDRX(NMCDOPER) = LCRLX     
@@ -8076,12 +8075,12 @@ C                      RELORB1   = .TRUE.
                 CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCMCD.')
 
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
-              IANG(1) = INDPRP_CC('XANGMOM ')
-              IANG(2) = INDPRP_CC('YANGMOM ')
-              IANG(3) = INDPRP_CC('ZANGMOM ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IANG(1) = INDPRPCC('XANGMOM ')
+              IANG(2) = INDPRPCC('YANGMOM ')
+              IANG(3) = INDPRPCC('ZANGMOM ')
               DO IJ = 1,6
                 IAMCDOP(IJ+NMCDOPER) = IDIP(IDA(IJ))
                 IBMCDOP(IJ+NMCDOPER) = IANG(IDB(IJ))
@@ -8105,12 +8104,12 @@ C                      RELORB1   = .TRUE.
                 CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCMCD.')
 
               END IF
-              IDIP(1) = INDPRP_CC('XDIPLEN ')
-              IDIP(2) = INDPRP_CC('YDIPLEN ')
-              IDIP(3) = INDPRP_CC('ZDIPLEN ')
-              IANG(1) = INDPRP_CC('dh/dBX  ')
-              IANG(2) = INDPRP_CC('dh/dBY  ')
-              IANG(3) = INDPRP_CC('dh/dBZ  ')
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IANG(1) = INDPRPCC('dh/dBX  ')
+              IANG(2) = INDPRPCC('dh/dBY  ')
+              IANG(3) = INDPRPCC('dh/dBZ  ')
               DO IJ = 1,6
                 IAMCDOP(IJ+NMCDOPER) = IDIP(IDA(IJ))
                 IBMCDOP(IJ+NMCDOPER) = IANG(IDB(IJ))
@@ -8235,12 +8234,12 @@ C                      RELORB1   = .TRUE.
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MXMCDOP
             CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCMCD.')
          END IF
-         IDIP(1) = INDPRP_CC('XDIPLEN ')
-         IDIP(2) = INDPRP_CC('YDIPLEN ')
-         IDIP(3) = INDPRP_CC('ZDIPLEN ')
-         IANG(1) = INDPRP_CC('XANGMOM ')
-         IANG(2) = INDPRP_CC('YANGMOM ')
-         IANG(3) = INDPRP_CC('ZANGMOM ')
+         IDIP(1) = INDPRPCC('XDIPLEN ')
+         IDIP(2) = INDPRPCC('YDIPLEN ')
+         IDIP(3) = INDPRPCC('ZDIPLEN ')
+         IANG(1) = INDPRPCC('XANGMOM ')
+         IANG(2) = INDPRPCC('YANGMOM ')
+         IANG(3) = INDPRPCC('ZANGMOM ')
          DO ITOT=1,6
             IAMCDOP(ITOT+NMCDOPER) = IDIP(IDA(ITOT))
             IBMCDOP(ITOT+NMCDOPER) = IANG(IDB(ITOT))

@@ -57,6 +57,7 @@ C
 #include "cclr.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
+#include "ccrspprp.h"
 #include "ccsdio.h"
 #include "ccsdinp.h"
 #include "ccsections.h"
