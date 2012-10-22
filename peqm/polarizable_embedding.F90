@@ -1,14 +1,25 @@
 module polarizable_embedding
 
+#if defined(VAR_MPI)
+#if defined(VAR_USE_MPIF)
     use double_precision
     use blas_f90
     use lapack_f90
-
-#if defined(VAR_MPI)
-    use mpi
-#endif
-
     implicit none
+#include "mpif.h"
+#else
+    use mpi
+    use double_precision
+    use blas_f90
+    use lapack_f90
+    implicit none
+#endif
+#else
+    use double_precision
+    use blas_f90
+    use lapack_f90
+    implicit none
+#endif
 
     private
 
