@@ -1424,9 +1424,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         if (fock) then
             call mpi_bcast(1, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
         else if (energy) then
-            if (.not. pe_infld) then
-                call mpi_bcast(2, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
-            end if
+            call mpi_bcast(2, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
         else if (response) then
             call mpi_bcast(3, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
         else if (mep) then
@@ -1448,7 +1446,9 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         call pe_fock(denmats, fckmats, Epe)
     else if (energy) then
         call pe_fock(denmats)
-        if (pe_infld) then
+        if (pe_infld .and. ncores > 1) then
+            stop 'infld not parallelized yet.'
+        else if (pe_infld) then
             if (allocated(crds)) then
                 call pe_mappot2points(crds)
             else 
