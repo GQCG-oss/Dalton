@@ -396,7 +396,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
         end if
     end do
 
-    if (pe_mep .and. peqm) stop 'PEQM and MEP are not compatible'
+! TODO: check
     if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible'
     if (peqm .and. pe_savden) stop 'PEQM and SAVDEN are not compatible'
     if (peqm .and. pe_twoint) stop 'PEQM and TWOINT are not compatible'
