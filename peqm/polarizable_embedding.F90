@@ -1424,7 +1424,9 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         if (fock) then
             call mpi_bcast(1, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
         else if (energy) then
-            call mpi_bcast(2, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
+            if (.not. pe_infld) then
+                call mpi_bcast(2, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
+            end if
         else if (response) then
             call mpi_bcast(3, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
         else if (mep) then
