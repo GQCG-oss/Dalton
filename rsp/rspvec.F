@@ -262,7 +262,13 @@ C
      *         ' QRVEC EXCITATIONS: NO VARIABLES IN SYMMETRY',KSYMOP
             GO TO 100
          END IF
-         IF (QRREST) GO TO 100
+         IF (QRREST) THEN
+            ! GO TO 100   ! hjaaj aug 2012: does not work, stop instead
+            WRITE(LUPRI,'(//A)')
+     &      'FATAL ERROR: .QRREST is not possible for quadratic '//
+     &      'properties involving residues (i.e. excitation energies)'
+            CALL QUIT('.QRREST not possible for QR excitation energies')
+         END IF
 C
 C        ... FIND EXCITATION ENERGIES AND TRANSITION MOMENTS
 C
