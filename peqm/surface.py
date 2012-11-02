@@ -147,12 +147,13 @@ class MolecularSurface(object):
                  'S': 1.80, 'Cl': 1.80, 'Ar': 1.88, 'Br': 1.90,  'X': 1.00}
 
     def __init__(self, elems=['X'], coords=[[0.0, 0.0, 0.0]], allcoords=[[0.0, 0.0, 0.0]],
-                 detail=2, vdwfactor=1.17):
+                 detail=2, vdwfactor=1.0, vdwadd=1.0):
         self.elems = elems
         self.coords = coords
         self.allcoords = allcoords
         self.detail = detail
         self.vdwfactor = vdwfactor
+        self.vdwadd = vdwadd
         vdws = []
         for elem in elems:
             vdws.append(self.vdwfactor * self.elem2vdw[elem])
@@ -171,9 +172,14 @@ class MolecularSurface(object):
     def create_surface(self):
         spheres = []
         for coord, radius in zip(self.coords, self.vdws):
-            sphere = Sphere(coord, radius, self.detail)
+            sphere = Sphere(coord, (radius + 1.0), self.detail)
             spheres.append(sphere)
         self.spheres = spheres
+        spheres = []
+        for coord, radius in zip(self.coords, self.vdws):
+            sphere = Sphere(coord, radius, self.detail)
+            spheres.append(sphere)
+        self.innerspheres = spheres
         self.remove_overlap()
         areas = []
         centroids = []
@@ -188,31 +194,35 @@ class MolecularSurface(object):
         r2 = ((point[0] - center[0])**2 +
               (point[1] - center[1])**2 +
               (point[2] - center[2])**2)
-        return r2 <= (radius + 0.01 * radius)**2
+        return r2 <= (radius)**2
 
     def remove_overlap(self):
         """Remove vertices from spheres that are overlapping with other
         spheres"""
-        for sphere in self.spheres:
+        for sphere, inner in zip(self.spheres, self.innerspheres):
             for other in self.spheres:
                 if other.center == sphere.center:
                     continue
+                elif np.linalg.norm(sphere.center - other.center) > 5.0:
+                    continue
                 areas = []
                 centroids = []
-                for area, centroid in zip(sphere.areas, sphere.centroids):
+                for area, innercentroid, centroid in zip(innersphere.areas, innersphere.centroids, sphere.centroids):
                     if self.inside(centroid, other.center, other.radius):
                         continue
                     areas.append(area)
-                    centroids.append(centroid)
+                    centroids.append(innercentroid)
                 sphere.areas = areas
                 sphere.centroids = centroids
             for center in self.allcoords:
                 if center in self.coords:
                     continue
+                elif np.linalg.norm(sphere.center - center) > 5.0:
+                    continue
                 areas = []
                 centroids = []
-                for area, centroid in zip(sphere.areas, sphere.centroids):
-                    if self.inside(centroid, center, 1.0):
+                for area, innercentroid, centroid in zip(innersphere.areas, innersphere.centroids, sphere.centroids):
+                    if self.inside(centroid, center, 2.0):
                         continue
                     areas.append(area)
                     centroids.append(centroid)
