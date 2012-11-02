@@ -5067,6 +5067,7 @@ C     Purpose: Calculate linear response residues.
 C              The Eta and Ksi vectors are calculated only once.
 C
 C     NOTE: it is probably better to use *CCOPA ....
+C     Added sum rules for stopping power. Sonia, 2012
 C
 #include "implicit.h"
       DIMENSION WORK(LWORK)
@@ -5101,6 +5102,8 @@ C
       INTEGER NLOCS(8)
 
       INTEGER ILRES
+      !SUMRULE sum rules and mean excitation energy (Sonia)
+      DIMENSION DSSUML(-6:2,4),DLSUML(-6:2,4),DISUML(-6:2,4)
 
       CALL QENTER(SECNAM)
 
@@ -5202,7 +5205,7 @@ C     ----------------------------------
 C     Allocation 1.
 C     -------------
 
-      NTRMOM = NXLRSST*NPRLBL
+      NTRMOM = NXLRSST*NPRLBL_CC
 
       KRIGHT = 1
       KLEFT  = KRIGHT + NTRMOM
@@ -5219,12 +5222,12 @@ C     ------------------------------------
       CALL DZERO(WORK(KRIGHT),NTRMOM)
       CALL DZERO(WORK(KLEFT),NTRMOM)
 
-C     Loop through operators in PRPLBL.
+C     Loop through operators in PRPLBL_CC.
 C     ---------------------------------
 
-      DO IPRLBL = 1,NPRLBL
+      DO IPRLBL = 1,NPRLBL_CC
 
-         LABELA = PRPLBL(IPRLBL)
+         LABELA = PRPLBL_CC(IPRLBL)
 
 C        Check that the operator enters in at least 1 residue requested.
 C        ---------------------------------------------------------------
@@ -5330,9 +5333,9 @@ C     -------------------------------
       WRITE(LUPRI,'(1X,A,/)')
      &  '-----------------------------------------------'
  
-      DO IPRLBL = 1,NPRLBL
+      DO IPRLBL = 1,NPRLBL_CC
 
-         LABELA = PRPLBL(IPRLBL)
+         LABELA = PRPLBL_CC(IPRLBL)
 
          IAB   = 1
          IOPER = ILRES(LABELA,'A')
@@ -5378,9 +5381,9 @@ C     ------------------------------
       WRITE(LUPRI,'(1X,A,/)')
      &  '-----------------------------------------------'
 
-      DO IPRLBL = 1,NPRLBL
+      DO IPRLBL = 1,NPRLBL_CC
 
-         LABELA = PRPLBL(IPRLBL)
+         LABELA = PRPLBL_CC(IPRLBL)
 
          IAB   = 1
          IOPER = ILRES(LABELA,'A')
@@ -5551,8 +5554,8 @@ C     -----------------------------------------------------------
          LABELA = LBLOPR(IALRSOP(IOPER))
          LABELB = LBLOPR(IBLRSOP(IOPER))
 
-         IPROPA = INDPRPCC(LABELA)
-         IPROPB = INDPRPCC(LABELB)
+         IPROPA = INDPRP_CC(LABELA)
+         IPROPB = INDPRP_CC(LABELB)
 
          DO IRSD = 1,NXLRSST
 
@@ -5840,6 +5843,42 @@ C     ----------------------------
                CALL CC_OSCPRI(WORK(KTRSI),WORK(KOSCSI),EIGV,
      &                        IEX,ISYM,WORK(KEND2),LEND2,MODELP,LCALC,
      &                        LDIP,LUOSC)
+! SONIA/SPASAUER ---
+!          Sum rules and mean exc energy
+!          components already summed up inside oscpri
+!          2/3*eigv prefactor is also already included
+!          therefore I reduce the exponent in the S(n) series
+!          Removed a factor 3 so TOTAL is just sum of individual comps! 
+           if (sumrules) then
+             write(lupri,*)'DSSUMLI=', DSSUMLI
+             DO K = -6,2
+             DO ICOM = 1,3
+                DSSUML(K,ICOM) = DSSUML(K,ICOM)
+     &                              + EIGV**(K)
+     &                              * WORK(KOSCSI+3*(icom-1)+icom-1)
+                DLSUML(K,ICOM) = DLSUML(K,ICOM)
+     &                              + EIGV**(K)
+     &                              * DLOG(EIGV)
+     &                              * WORK(KOSCSI+3*(icom-1)+icom-1)
+                if (DSSUML(K,ICOM).EQ.ZERO) then
+                    DISUML(K,ICOM) = ZERO
+                else
+                    DISUML(K,ICOM) = DEXP(DLSUML(K,ICOM)/DSSUML(K,ICOM))
+     *                           *XTEV
+                end if
+             ENDDO
+             DSSUML(K,4) = DSSUML(K,1)+DSSUML(K,2)+DSSUML(K,3)
+             DLSUML(K,4) = DLSUML(K,1)+DLSUML(K,2)+DLSUML(K,3)
+             if (DSSUML(K,4).EQ.ZERO) then
+                    DISUML(K,4) = ZERO
+             else
+                    DISUML(K,4) = DEXP(DLSUML(K,4)/DSSUML(K,4))
+     *                           *XTEV
+             end if
+             ENDDO
+           end if
+! end of mean exc energy/sum rules. Sonia
+
             END DO
             IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
                NREST = 0
@@ -6422,6 +6461,7 @@ C     ----------------------------
 
       END IF
 
+      
       IF (ROTLEN .OR. ROTVEL .OR. RTNLEN .OR. RTNVEL) THEN
          WRITE(LUOSC,'(/,1X,A)')
      &   'Conversion factors for rotatory strengths:'
@@ -6430,6 +6470,26 @@ C     ----------------------------
          WRITE(LUOSC,'(3X,A,F15.10,A)')
      &   'cgs units:   1 a.u. = ',RAUCGS,'D-40 cm^5 g s^-2'
       END IF
+!mean exc energy - stopping power - Sonia
+      IF (SUMRULES) THEN
+         CALL HEADER('CC Oscillator strength sum rules',30)
+         WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
+     &   'S(K) Sum Rules : Dipole Length Approximation in a.u.',
+     &   'K','xx - component','yy - component','zz - component','total'
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
+     &         (K,(DSSUML(K,J),J=1,4),K=-6,2)
+         WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
+     &   'L(K) Sum Rules : Dipole Length Approximation in a.u.',
+     &   'K','xx - component','yy - component','zz - component','total'
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
+     &         (K,(DLSUML(K,J),J=1,4),K=-6,2)
+         WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
+     &   'I(K) Sum Rules : Dipole Length Approximation in eV',
+     &   'K','xx - component','yy - component','zz - component','total'
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
+     &         (K,(DISUML(K,J),J=1,4),K=-6,2)
+      END IF
+!end of mex
 
 C     Print timings and exit.
 C     -----------------------

@@ -1878,7 +1878,7 @@ C     -----------
 
       DO IOP = 1,NAFOP
 
-         LABEL = PRPLBL(IAFOP(IOP))
+         LABEL = PRPLBL_CC(IAFOP(IOP))
 
 C        Read integrals. Get the symmetry and
 C        Hermiticity of the operator.
@@ -2116,8 +2116,8 @@ C     ------------------------------------
 
       DO IABFOP = 1,NABFOP
 
-         LABELA = PRPLBL(IACFOP(IABFOP))
-         LABELB = PRPLBL(IBCFOP(IABFOP))
+         LABELA = PRPLBL_CC(IACFOP(IABFOP))
+         LABELB = PRPLBL_CC(IBCFOP(IABFOP))
 
          IERRA = -1
          CALL CCPRPAO(LABELA,WORK(KINTA),ISYMA,IHERA,IERRA,
