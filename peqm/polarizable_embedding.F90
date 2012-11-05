@@ -1399,7 +1399,7 @@ subroutine pe_read_potential(coords, charges)
          write(luout,*) 'All coords before get_surface'
          do i = 1, natoms
             write(atoms,*) all_coords(:,i)
-!            write(luout,*) all_coords(:,i)
+            write(luout,*) all_coords(:,i)
          end do
          close( atoms ) 
          allocate( kk(natoms) )
@@ -1407,18 +1407,20 @@ subroutine pe_read_potential(coords, charges)
          call openfile( 'surface_atoms.dat',surf,'new','formatted')
          call openfile( 'surface_atom_charges.dat',surf_charges,'new','formatted')
          write(luout,*) 'Surface atoms before surface.py'
+         do i = 1, natoms
+            write(luout,*) all_coords(:,i)
+         end do
          do i = 1, size(surf_atoms,dim=2)
             write(surf,*) all_coords(:,kk(i))
             write(surf_charges,*) int(all_charges(:,kk(i)))
-!            write(luout,*) all_coords(:,kk(i)), int(all_charges(:,kk(i))), kk(i)
+            write(luout,*) all_coords(:,kk(i)), int(all_charges(:,kk(i))), kk(i)
          end do
          close( surf ) 
          close( surf_charges ) 
 ! surface.py must read in the list of all atoms and the list of surface atoms
-         call system( "./surface.py surface_atoms.dat surface_atom_charges.dat all_atoms.dat 2" )
+         call system( "./surface.py surface_atoms.dat surface_atom_charges.dat all_atoms.dat 3" )
 ! surface.py must create surface.dat which contains all tesselation points.
          call pe_read_tesselation()
-         STOP 'I have now created the surface'
     end if
 end subroutine pe_read_potential
 
@@ -1474,18 +1476,18 @@ subroutine pe_read_tesselation()
           write (luout,*) i, A(i)
        end do
     end if
-    A = aa2au2*A
-    Sp = aa2au*Sp
-    if (print_lvl .gt. 100) then
-       write(luout,*) 'Sp in pe_read_tesselation in AU'
-       do i=1,nsurp
-              write (luout,*) Sp(:,i)
-       end do
-       write(luout,*) 'A in pe_read_tesselation in AU'
-       do i=1,nsurp
-          write (luout,*) A(i)
-       end do
-    end if
+!    A = aa2au2*A
+!    Sp = aa2au*Sp
+!    if (print_lvl .gt. 100) then
+!       write(luout,*) 'Sp in pe_read_tesselation in AU'
+!       do i=1,nsurp
+!              write (luout,*) Sp(:,i)
+!       end do
+!       write(luout,*) 'A in pe_read_tesselation in AU'
+!       do i=1,nsurp
+!          write (luout,*) A(i)
+!       end do
+!    end if
     
 end subroutine pe_read_tesselation
 
@@ -3141,8 +3143,8 @@ subroutine pe_polarization(denmats, fckmats)
            do k = 3*npols + 1, lenmk 
                mk_sum = mk_sum + Mkinds(k,i)
            end do
-       end if
        write(luout,*) 'sum of induced charges = ', mk_sum
+       end if
    end do
 #if defined(VAR_MPI)
     if (myid == 0 .and. ncores > 1) then
@@ -4580,7 +4582,7 @@ subroutine response_matrix_full(B)
     real(dp) :: R, R3, R5, R_sol, R3_sol, diel_fac, R_tes
     real(dp), dimension(3) :: Rij, Rij_sol, Rij_tes, Tk
     real(dp), dimension(6) :: P1inv
-    
+    write(luout,*) 'Am I Here??' 
     if (pe_sol) then
         allocate(B_full(3*npols+nsurp,3*npols+nsurp))
     else
@@ -5608,9 +5610,14 @@ k_loop: do k = 2, n_surface
           write(luout,*) 'Surface atoms'
           do i = 1, n_surface
              kk(i) = kbox(j_surface(2,i), j_surface(3,i), j_surface(1,i) )
-             cart_coords_surface(1,i) = sph_coords(1,kk(i)) * sin(sph_coords(2,kk(i))*pi/180.0D0) * cos(sph_coords(3,kk(i))*pi/180.0D0)
-             cart_coords_surface(2,i) = sph_coords(1,kk(i)) * sin(sph_coords(2,kk(i))*pi/180.0D0) * sin(sph_coords(3,kk(i))*pi/180.0D0)
-             cart_coords_surface(3,i) = sph_coords(1,kk(i)) * cos(sph_coords(2,kk(i))*pi/180.0D0)
+             cart_coords_surface(1,i) = sph_coords(1,kk(i)) &
+                                      & * sin(sph_coords(2,kk(i))*pi/180.0D0) &
+                                      & * cos(sph_coords(3,kk(i))*pi/180.0D0)
+             cart_coords_surface(2,i) = sph_coords(1,kk(i)) &
+                                      & * sin(sph_coords(2,kk(i))*pi/180.0D0) &
+                                      & * sin(sph_coords(3,kk(i))*pi/180.0D0)
+             cart_coords_surface(3,i) = sph_coords(1,kk(i)) &
+                                      & * cos(sph_coords(2,kk(i))*pi/180.0D0)
           end do
 !          write(luout,*) 'Surface points'
           write( luout,*) 0.0d0,0.0d0,r_surface(1,0), area, 1
@@ -5632,9 +5639,14 @@ k_loop: do k = 2, n_surface
       if (print_lvl > 10 ) then
           write(luout,*) 'All coords'
           do i = 1, natoms
-                 cart_coords_new(1,i) = sph_coords(1,i) * sin(sph_coords(2,i)*pi/180.0D0) * cos( sph_coords(3,i)*pi/180.0D0 ) 
-                 cart_coords_new(2,i) = sph_coords(1,i) * sin(sph_coords(2,i)*pi/180.0D0) * sin( sph_coords(3,i)*pi/180.0D0 ) 
-                 cart_coords_new(3,i) = sph_coords(1,i) * cos(sph_coords(2,i)*pi/180.0D0) 
+                 cart_coords_new(1,i) = sph_coords(1,i) &
+                                      & * sin(sph_coords(2,i)*pi/180.0D0) &
+                                      & * cos( sph_coords(3,i)*pi/180.0D0 ) 
+                 cart_coords_new(2,i) = sph_coords(1,i) & 
+                                      & * sin(sph_coords(2,i)*pi/180.0D0) & 
+                                      & * sin( sph_coords(3,i)*pi/180.0D0 ) 
+                 cart_coords_new(3,i) = sph_coords(1,i) &
+                                      & * cos(sph_coords(2,i)*pi/180.0D0) 
                  write(luout,'(3F15.10)') cart_coords_new(1:3,i)
           end do 
       end if

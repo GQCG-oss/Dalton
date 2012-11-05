@@ -172,7 +172,7 @@ class MolecularSurface(object):
     def create_surface(self):
         spheres = []
         for coord, radius in zip(self.coords, self.vdws):
-            sphere = Sphere(coord, (radius + 1.0), self.detail)
+            sphere = Sphere(coord, (radius + self.vdwadd), self.detail)
             spheres.append(sphere)
         self.spheres = spheres
         spheres = []
@@ -183,7 +183,7 @@ class MolecularSurface(object):
         self.remove_overlap()
         areas = []
         centroids = []
-        for sphere in self.spheres:
+        for sphere in self.innerspheres:
             areas.extend(sphere.areas)
             centroids.extend(sphere.centroids)
         self.areas = areas
@@ -199,40 +199,48 @@ class MolecularSurface(object):
     def remove_overlap(self):
         """Remove vertices from spheres that are overlapping with other
         spheres"""
-        for sphere, inner in zip(self.spheres, self.innerspheres):
+        for sphere, innersphere in zip(self.spheres, self.innerspheres):
             for other in self.spheres:
                 if other.center == sphere.center:
                     continue
-                elif np.linalg.norm(sphere.center - other.center) > 5.0:
+                elif np.linalg.norm(np.array(sphere.center) - np.array(other.center)) > 5.0:
                     continue
                 areas = []
                 centroids = []
+                innercentroids = []
                 for area, innercentroid, centroid in zip(innersphere.areas, innersphere.centroids, sphere.centroids):
                     if self.inside(centroid, other.center, other.radius):
                         continue
                     areas.append(area)
-                    centroids.append(innercentroid)
-                sphere.areas = areas
+                    centroids.append(centroid)
+                    innercentroids.append(innercentroid)
                 sphere.centroids = centroids
+                innersphere.areas = areas
+                innersphere.centroids = innercentroids
             for center in self.allcoords:
                 if center in self.coords:
                     continue
-                elif np.linalg.norm(sphere.center - center) > 5.0:
+                elif np.linalg.norm(np.array(sphere.center) - np.array(center)) > 5.0:
                     continue
                 areas = []
                 centroids = []
+                innercentroids = []
                 for area, innercentroid, centroid in zip(innersphere.areas, innersphere.centroids, sphere.centroids):
-                    if self.inside(centroid, center, 2.0):
+                    if self.inside(centroid, center, 1.0):
                         continue
                     areas.append(area)
                     centroids.append(centroid)
-                sphere.areas = areas
+                    innercentroids.append(innercentroid)
+                innersphere.areas = areas
                 sphere.centroids = centroids
+                innersphere.centroids = innercentroids
             print 'areas ' + str(len(sphere.areas))
             print 'centroids ' + str(len(sphere.centroids))
 
     def write_surface(self):
         """Write input files for PE module."""
+        self.areas = np.array(self.areas)/au2aa**2
+        self.centroids = np.array(self.centroids)/au2aa
         fout = open('surface.dat', 'w')
         fout.write('NPOINTS\n')
         fout.write('{}\n'.format(len(self.areas)))
@@ -258,6 +266,6 @@ if __name__ == "__main__":
     fsurf.close()
     fall.close()
 
-    mol = MolecularSurface(elems, surfcoords, allcoords, detail=level)
+    mol = MolecularSurface(elems=elems, coords=surfcoords, allcoords=allcoords, detail=level, vdwfactor=1.0, vdwadd=1.0)
     mol.write_surface()
 #    mol.plot()
