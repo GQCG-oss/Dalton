@@ -847,7 +847,8 @@ subroutine pe_read_potential(coords, charges)
     integer :: lupot, lumep, nlines
     integer :: nidx, idx, jdx, kdx, ldx
     integer, dimension(:), allocatable :: idxs
-    real(dp) :: rclose
+    real(dp) :: rclose, trace
+    real(dp), parameter :: i3 = 1.0d0 / 3.0d0
     real(dp), dimension(21) :: temp
     character(len=2) :: auoraa
     character(len=80) :: word
@@ -914,7 +915,7 @@ subroutine pe_read_potential(coords, charges)
         else if (pe_mep) then
             return
         else
-            stop 'POTENTIAL.INP not found!'
+            stop 'POTENTIAL.INP not found'
         end if
     end if
 
@@ -957,6 +958,11 @@ subroutine pe_read_potential(coords, charges)
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 6)
+                ! remove trace
+                trace = (1.0d0 / 3.0d0) * (temp(1) + temp(4) + temp(6))
+                temp(1) = temp(1) - trace
+                temp(4) = temp(4) - trace
+                temp(6) = temp(6) - trace
                 M2s(:,s) = temp(1:6)
             end do
         else if (trim(word) == 'octopoles') then
@@ -3018,13 +3024,11 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
 
         ! electron - multipole interaction energy
         call Mk_integrals(Mk_ints, Rs(:,site), Mks(:,i))
-        do j = 1, ncomps
-            do l = 1, ndens
-                m = (l - 1) * nnbas + 1
-                n = l * nnbas
-                Eel(l) = Eel(l) + dot(denmats(m:n), Mk_ints(:,j))
-                if (fock) fckmats(m:n) = fckmats(m:n) + Mk_ints(:,j)
-            end do
+        do l = 1, ndens
+            m = (l - 1) * nnbas + 1
+            n = l * nnbas
+            Eel(l) = Eel(l) + dot(denmats(m:n), sum(Mk_ints, 2))
+            if (fock) fckmats(m:n) = fckmats(m:n) + sum(Mk_ints, 2)
         end do
         i = i + 1
     end do
