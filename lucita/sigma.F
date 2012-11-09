@@ -4406,7 +4406,7 @@ C
           IDOSRHO1 = 1
           if(i12 > 1) IDOSRHO2 = 1
         end if
-        write(luwrt,*) ' print spindens',idosrho1,idosrho2
+!       write(luwrt,*) ' print spindens',idosrho1,idosrho2
       end if
 *
       IF(IDOSRHO1.EQ.1) THEN  
@@ -5114,8 +5114,16 @@ C
       LSCR12 = MAX(LBLOCK,2*LSCR2)
 *
 *     space for active/passive blocks
-      CALL MEMMAN(KCJPA,LSCR2,'ADDL  ',2,'KCJPA ')
-      CALL MEMMAN(KSIPA,LSCR2,'ADDL  ',2,'KSIPA ')
+      if(iuse_pa == 1)then
+!       stefan: active/passive changed - i need ksipa for transpose
+!orig   CALL MEMMAN(KCJPA,LSCR2  ,'ADDL  ',2,'KCJPA ')
+!orig   CALL MEMMAN(KSIPA,LSCR2  ,'ADDL  ',2,'KSIPA ')
+        CALL MEMMAN(KCJPA,LSCR12 ,'ADDL  ',2,'KCJPA ')
+        CALL MEMMAN(KSIPA,LSCR12 ,'ADDL  ',2,'KSIPA ')
+      else
+        CALL MEMMAN(KCJPA,0      ,'ADDL  ',2,'KCJPA ')
+        CALL MEMMAN(KSIPA,L0BLOCK,'ADDL  ',2,'KSIPA ')
+      end if
 *
 *     vectors able to hold strings of given sym and type
       MAXIK = MAX(MAXI,MAXK)

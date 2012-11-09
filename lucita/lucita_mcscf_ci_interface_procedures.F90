@@ -190,7 +190,7 @@ contains
         case('return CIdia')
           call mcscf_post_lucita_hdiag(c_or_cr,print_lvl)
         case('sigma vec   ')
-          call mcscf_post_lucita_return_e2b(hc_or_cl,print_lvl)
+          call mcscf_post_lucita_return_e2b(hc_or_cl,c_or_cr,print_lvl)
         case('rotate  Cvec')
           call mcscf_post_lucita_rotate_cref(c_or_cr,print_lvl)
         case default
@@ -656,7 +656,7 @@ contains
   end subroutine mcscf_post_lucita_hdiag
 !*******************************************************************************
 
-  subroutine mcscf_post_lucita_return_e2b(hc_or_cl,print_lvl)
+  subroutine mcscf_post_lucita_return_e2b(hc_or_cl,c_or_cr,print_lvl)
 !*******************************************************************************
 !
 !    purpose: post-LUCITA processing for CI task: sigma vec   
@@ -669,6 +669,7 @@ contains
 ! nothing
 #include "priunit.h"
       real(8),   intent(inout) :: hc_or_cl(*)
+      real(8),   intent(inout) :: c_or_cr(*)
       integer,   intent(in)    :: print_lvl
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 1
@@ -682,6 +683,17 @@ contains
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                   &
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),        &
                                   .true.,hc_or_cl)
+
+      if(.not.restore_cref)then ! bvec == ci trial vector: need to restore for reduced matrix calculation
+        vector_exchange_type1                      = 2
+        vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
+
+!       rhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+        call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                 &
+                                    io2io_vector_exchange_mc2lu_lu2mc,                                                   &
+                                    vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),        &
+                                    .true.,c_or_cr)
+      end if
 
       if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'

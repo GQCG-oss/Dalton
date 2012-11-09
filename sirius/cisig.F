@@ -881,7 +881,11 @@ C
 C ---
       PARAMETER (IDTIM = 2)
 #include "inftim.h"
+#include "priunit.h"
 C
+#ifdef LUCI_DEBUG
+      real(8), allocatable :: btmp(:)
+#endif
 C
 C *** SCVECS(I,K) = SUM(J) OF L_CI(I,J)*BCVECS(J,K)
 C
@@ -920,16 +924,45 @@ C     ... singlet-singlet coupling of 2-electron integrals
         end if
       end if
 
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      write(lupri,*) ' mcscf_ci_trial_vector,  vector_exchange_type1 '//
+     &               ' cref_is_active_bvec_for_sigma , nsim , noh2',
+     &                 mcscf_ci_trial_vector,  vector_exchange_type1,
+     &                 cref_is_active_bvec_for_sigma , nsim, noh2
+      allocate (btmp(nconst))
+#endif
+
       DO isim = 1,nsim ! loop over sigma vectors to calculate
 
         call dzero(scvecs(1,isim),nconst)
+
+#ifdef LUCI_DEBUG
+        btmp(1:nconst) = bcvecs(1:nconst,isim)
+#endif
 
         CALL CISIGD(LSYMST,LSYMST,NCONST,NCONST,
      &              BCVECS(1,ISIM),SCVECS(1,ISIM), WRK(KUFCAC),H2AC,
      &              NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK(KW1),LW1)
 C       CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
 C    &              NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
+
+#ifdef LUCI_DEBUG
+        btmp(1:nconst) = btmp(1:nconst) - bcvecs(1:nconst,isim)
+        do i = 1, nconst
+           if (abs(btmp(i)) .gt. 1.0D-14) then
+              write(lupri,*) 'B changed ',i, bcvecs(i,isim), btmp(i)
+           end if
+           if (abs(bcvecs(i,isim)) .gt. 0.1d0 ) then
+              write(lupri,*) 'big B ',i, bcvecs(i,isim), scvecs(i,isim)
+           end if
+        end do
+#endif
       end do
+
+#ifdef LUCI_DEBUG
+      deallocate(btmp)
+#endif
 C
 !     reset flag for CI trial vector in MCSCF (needed for LUCITA interface)
       mcscf_ci_trial_vector = .false.

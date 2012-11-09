@@ -1402,20 +1402,22 @@ C        CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,
 C    *               RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
 C    *               XNDXCI,WORK,KFREE,LWRK)
 C
-!#define LUCI_DEBUG
-#ifdef LUCI_DEBUG
-         write(lupri,*) 'dens 1 after - part 1...'
-         call wrtmatmn(WORK(KRHO1),1,N2ASHX,1,N2ASHX,lupri)
-#endif
          if(ci_program .eq. 'SIRIUS-CI')then
            CALL DSITSP(NASHT,WORK(KRHO1),RHO1(1,ICSIM,1))
 C          ... pack RHO1 as triangular matrix
          else if(ci_program .eq. 'LUCITA   ')then
            call dcopy(nnashx,work(krho1),1,rho1(1,ICSIM,1),1)
          end if
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-         write(lupri,*) 'dens 1 after - part 2...'
+         write(lupri,*) 'TDM dens 1 after - part 2...'
          call wrtmatmn(RHO1(1,ICSIM,1),1,NNASHX,1,NNASHX,lupri)
+         write(lupri,*) 'TDM dens 2               ...'
+         WRITE (LUPRI,1200)
+         CALL OUTPUT(RHO2(1,ICSIM),1,NNASHX,1,NNASHX,NNASHX,NNASHX,
+     &               -1,LUPRI)
+ 1200 FORMAT(/' TDM: Two-el. density matrix, active part, MO-basis')
+
 #undef LUCI_DEBUG
 #endif
          IF (IPRDNS .GE. 6) WRITE (LUPRI,'(/5X,A,2I5,2I10)')

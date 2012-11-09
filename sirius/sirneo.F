@@ -1703,6 +1703,7 @@ C         and for the reduced L-matrix (section 2)
 C         dimension: NVAR and NREDL*(NREDL+1)/2+2*NREDL, rsp.
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "infvar.h"
       DIMENSION BVECS(*),SVECS(NVAR,*), REDL(*),IBNDX(*),G(*)
       DIMENSION EVEC(NREDL,*),EVAL(*)
@@ -2740,8 +2741,10 @@ C
 C
       LOGICAL CITYPE
 C
+!     start of statement function definition!!!
       REDH(I,J) = WRK((J-1)*NREDH+I)
       REDS(I,J) = WRK((KREDS-1)+(J-1)*NREDL+I)
+!     end of statement function definition!!!
 C
       NREDH  = NREDL - 1
       NCOMAX = MAX(NCONF,NWOPT)

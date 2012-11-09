@@ -1021,8 +1021,11 @@ C     Set up initial guess for CI vectors
 C     *****************************************************************
 C
 C
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      thrcix = 1.0d-11
+#endif
       NCIRED = 0
-!     thrcix = 1.0d-11
       THRCIT = THRCIX
       NJCR   = NCROOT
       JCONV  = NCROOT

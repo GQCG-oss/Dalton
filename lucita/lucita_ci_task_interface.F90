@@ -932,6 +932,10 @@ contains
           else
             call rewino(lusc1)
             call copvcd(luc_internal,lusc1,cref,0,-1)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            call wrtvcd(cref,lusc1,-1,-1)
+#endif
             call rewino(lusc1)
           end if
           lusc_vector_file = lusc1

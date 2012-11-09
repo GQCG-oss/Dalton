@@ -2152,15 +2152,21 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
           WRITE(lupri,*) ' SB before          transpose'
           call wrtmatmn(sb,nia,nib,nia,nib,lupri)
 #endif
+!         call lmemchk('scats1')
           CALL TRPMT3(SB,NIA,NIB,scatS)
+!         write(lupri,*) 'nia, nib',nia,nib,nia*nib
+!         call lmemchk('scats2')
         else
+!         call lmemchk('scats3')
           CALL DCOPY(NIA*NIB,SB,1,scatS,1)
+!         call lmemchk('scats4')
         end if
 #ifdef LUCI_DEBUG
           WRITE(lupri,*) ' ingoing scatS'
           call wrtmatmn(scatS,nia,nib,nia,nib,lupri)
 #undef LUCI_DEBUG
 #endif
+!         call lmemchk('scats5')
 
         iab = 1
         CALL GSBBD1(RHO1,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
@@ -2171,6 +2177,7 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
      &       NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
      &       IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB,
      &       SRHO1a,SRHO1b)
+!         call lmemchk('scats6')
 C?        WRITE(6,*) ' GSBBD1 was called '
         IF(NTEST.GE.1000) THEN
           WRITE(lupri,*) ' Rho1 after GSBBD1, a '
@@ -2182,6 +2189,7 @@ C?        WRITE(6,*) ' GSBBD1 was called '
 *  alpha-alpha contribution to RHO2
 * ===================================
 *
+!         call lmemchk('scats7')
 C?        WRITE(6,*) ' GSBBD2A will be called (alpha)'
           CALL GSBBD2A(RHO2,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
      &         NGAS,IAOC,JAOC,scatS,CB,
@@ -2190,6 +2198,7 @@ C?        WRITE(6,*) ' GSBBD2A will be called (alpha)'
      &         SSCR,CSCR,I1,XI1S,I2,XI2S,X,
      &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC,
      &         IDOSRHO2,RHO2AA)
+!         call lmemchk('scats8')
 C?        WRITE(6,*) ' GSBBD2A was called '
         END IF
         CALL TRPMT3(CB,NJB,NJA,C2)
@@ -2219,9 +2228,13 @@ C?        WRITE(6,*) ' GSBBD2A was called '
           WRITE(lupri,*) ' SB before          transpose ab'
           call wrtmatmn(sb,nia,nib,nia,nib,lupri)
 #endif
+!         call lmemchk('scats9')
           CALL TRPMT3(SB,NIA,NIB,scatS)
+!         call lmemchk('scats10')
         else
+!         call lmemchk('scats11')
           CALL DCOPY(NIA*NIB,SB,1,scatS,1)
+!         call lmemchk('scats12')
         end if
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
@@ -2229,6 +2242,7 @@ C?        WRITE(6,*) ' GSBBD2A was called '
           call wrtmatmn(scatS,nia,nib,nia,nib,lupri)
 #undef LUCI_DEBUG
 #endif
+!         call lmemchk('scats13')
 C?      WRITE(6,*) ' GSBBD2B will be called '
         IUSEAB = 0
         CALL GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
@@ -2240,6 +2254,7 @@ C?      WRITE(6,*) ' GSBBD2B will be called '
      &                    NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
      &                    SSCR,CSCR,NACOB,NTEST,SCLFAC,S2_TERM1,
      &                    IDOSRHO2,RHO2AB)
+!         call lmemchk('scats14')
         IF(NTEST.GE.1000) THEN
           WRITE(lupri,*) ' Rho2 after GSBBD2b, ab '
           CALL PRSYM(RHO2,nacob**2)

@@ -137,6 +137,10 @@ contains
               end do
           end select
         end do
+
+      case default ! whatever
+
+        tmp_nr_gas_spaces = -1
  
     end select
 
