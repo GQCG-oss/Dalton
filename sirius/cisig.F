@@ -939,6 +939,11 @@ C     ... singlet-singlet coupling of 2-electron integrals
 
 #ifdef LUCI_DEBUG
         btmp(1:nconst) = bcvecs(1:nconst,isim)
+        do i = 1, nconst
+          if (abs(bcvecs(i,isim)) .gt. 0.2d0 ) then
+              write(lupri,*) 'big B in',i, bcvecs(i,isim)
+          end if
+        end do
 #endif
 
         CALL CISIGD(LSYMST,LSYMST,NCONST,NCONST,
