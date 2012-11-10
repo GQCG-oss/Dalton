@@ -3275,11 +3275,11 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
       NUM_BLOCKS  = ttss_info%total_present_ttss
       NUM_BLOCKS2 = ttss_info%total_present_ttss
 
-      WRITE(LUWRT,'(/a,i22)')
-     &     '  @@ total number of TTSS-blocks: ',NBLOCK
       IF(NTEST.GE.1)THEN
+         WRITE(LUWRT,'(/a,i22)')
+     &     '  @@ total number of TTSS-blocks:   ',NBLOCK
          WRITE(LUWRT,'(a,i22)') 
-     &     ' @@ total number of vector batches',NBATCH
+     &     '  @@ total number of vector batches:',NBATCH
       END IF
 
 !     calculate length of half of the resolution block

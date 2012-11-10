@@ -120,6 +120,7 @@ contains
     integer(8)             :: offset_2_work_space_out
     integer(8)             :: k8base_lucita
     integer(8)             :: work_space_out_length_scratch
+    logical, save          :: first_time_print = .true.
 !-------------------------------------------------------------------------------
 
 !     compute offset to LUCITA work space
@@ -156,8 +157,10 @@ contains
 
       work_space_out_length         = work_space_out_length_scratch
 
-
-      write(print_unit,'(/A,I18)') '          dimension of LUCITA work space : ', work_space_out_length
+      if(first_time_print)then
+        write(print_unit,'(/A,I18)') '          dimension of LUCITA work space : ', work_space_out_length
+        first_time_print = .false.
+      end if
 
 !     initialize LUCITA internal memory
       call memman(offset_2_work_space_out,work_space_out_length_scratch,'INI   ',dummy,'DUMMY')

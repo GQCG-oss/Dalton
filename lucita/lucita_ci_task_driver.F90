@@ -203,12 +203,16 @@
 
       CALL QENTER('LUCITA_MASTER')
 
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
       write(lupri,'(/a)')                                               &
       '   ------------------------------------------------'
       write(lupri,'(a,a12)')                                            &
       '   LUCITA module started with run-id = ',lucita_ci_run_id
       write(lupri,'(a/)')                                               &
       '   ------------------------------------------------'
+#undef LUCI_DEBUG
+#endif
 
 !     set LUCITA internal control and task-individual common block information
 !     ------------------------------------------------------------------------
@@ -318,12 +322,16 @@
                                          ,nblock,1,1,.false.,.true.)
       end if
      
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
       write(lupri,'(/a)')                                               &
       '   ----------------------------------------------------------'
       write(lupri,'(a,a12,a)') '   LUCITA run, run-id = ',              &
             lucita_ci_run_id(1:12),' finished with no errors.'
       write(lupri,'(a )')                                               &
       '   ----------------------------------------------------------'
+#undef LUCI_DEBUG
+#endif
 
       call qexit('LUCITA_MASTER')
 
