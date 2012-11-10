@@ -1520,7 +1520,11 @@ C
 #include "ciinfo.h"
 #include "strnum.h"
 C
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
       real(8), allocatable :: atmp(:), btmp(:)
+#undef LUCI_DEBUG
+#endif
       integer :: xctype1, xctype2
 #include "infpri.h"
 C
@@ -1701,7 +1705,7 @@ C        ... determinant basis
      &                                    xctype2,     ! vector_exchange_type2
      &                                    .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
            allocate(btmp(nldet))
            allocate(atmp(nrdet))
@@ -1718,6 +1722,7 @@ C        ... determinant basis
            end do
 #undef LUCI_DEBUG
 #endif
+
 #ifdef LUCI_DEBUG
            write(lupri,*) ' before dens run: cl'
            call wrtmatmn(cl,1,NLDET,1,NLDET,lupri)
@@ -1729,7 +1734,7 @@ C        ... determinant basis
      &                                 'Xp-density m',
      &                                 work(kfree),lwrk,iprdns)
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
            btmp(1:nldet) = btmp(1:nldet) - cl(1:nldet)
            atmp(1:nrdet) = atmp(1:nrdet) - cr(1:nrdet)
@@ -1752,6 +1757,7 @@ C        ... determinant basis
            deallocate(atmp)
 #undef LUCI_DEBUG
 #endif
+
 #ifdef LUCI_DEBUG
            write(lupri,*) ' after dens run: cl'
            call wrtmatmn(cl,1,NLDET,1,NLDET,lupri)

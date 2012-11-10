@@ -883,7 +883,7 @@ C ---
 #include "inftim.h"
 #include "priunit.h"
 C
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       real(8), allocatable :: btmp(:)
 #endif

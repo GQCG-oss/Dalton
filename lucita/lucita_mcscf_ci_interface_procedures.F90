@@ -179,7 +179,7 @@ contains
 
 !     b. choose post-process task
       select case(run_type)
-        case('Xp-density m', 'analyze Cvec', 'ijkl resort ')
+        case('analyze Cvec', 'ijkl resort ')
 !         do nothing
         case('srdft   ci  ')
           call mcscf_post_lucita_srdft(c_or_cr,print_lvl)
@@ -193,6 +193,8 @@ contains
           call mcscf_post_lucita_return_e2b(hc_or_cl,c_or_cr,print_lvl)
         case('rotate  Cvec')
           call mcscf_post_lucita_rotate_cref(c_or_cr,print_lvl)
+        case('Xp-density m')
+          call mcscf_post_lucita_xpdens(hc_or_cl,c_or_cr,print_lvl)
         case default
           call quit('undefined post LUCITA processing step in MCSCF process flow')
       end select
@@ -353,11 +355,11 @@ contains
 !-------------------------------------------------------------------------------
       
 !     potentially restore cref after the ci task
-      write(lupri,*) ' check for restorage, vector_exchange_type1',vector_exchange_type1
+!     write(lupri,*) ' check for restorage, vector_exchange_type1',vector_exchange_type1
       if(vector_exchange_type1 == 1)then
         restore_cref_vector_switch = 1
         restore_cref               = .true.
-        write(lupri,*) ' restore cref activated'
+!       write(lupri,*) ' restore cref activated'
       end if
 
 !     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
@@ -459,17 +461,18 @@ contains
 
 !     write(lupri,*) ' check for restorage, vector_exchange_type1/2',vector_exchange_type1,vector_exchange_type2
 !     potentially restore cref after the ci task in parallel runs
-#ifdef MOD_SRDFT
-      if(srdft_ci_1pdens_cref_restore)then
-#endif
+!#ifdef MOD_SRDFT
+!      if(srdft_ci_1pdens_cref_restore)then
+!#endif
         if(vector_exchange_type1 == 1 .or. vector_exchange_type2 == 1)then
           restore_cref               = .true.
           restore_cref_vector_switch = 1
           if(vector_exchange_type2 == 1) restore_cref_vector_switch = 2
+!         write(lupri,*) ' xpdens: restore_cref ==>', restore_cref
         end if
-#ifdef MOD_SRDFT
-      end if
-#endif
+!#ifdef MOD_SRDFT
+!      end if
+!#endif
       
 !     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
@@ -686,7 +689,7 @@ contains
                                   .true.,hc_or_cl)
 
       if(.not.restore_cref)then ! bvec == ci trial vector: need to restore for reduced matrix calculation
-        write(lupri,*) ' restore lhs activated',vector_exchange_type1
+!       write(lupri,*) ' restore lhs activated',vector_exchange_type1
         vector_exchange_type1                      = 2
         vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
 
@@ -743,6 +746,63 @@ contains
       end if
 
   end subroutine mcscf_post_lucita_rotate_cref
+!*******************************************************************************
+
+  subroutine mcscf_post_lucita_xpdens(hc_or_cl,c_or_cr,print_lvl)
+!*******************************************************************************
+!
+!    purpose: post-LUCITA processing for CI task: Xpdens m
+!              
+!
+!*******************************************************************************
+! lucita
+  use lucita_cfg
+! sirius
+! nothing
+#include "priunit.h"
+      real(8),   intent(inout) :: hc_or_cl(*)
+      real(8),   intent(inout) :: c_or_cr(*)
+      integer,   intent(in)    :: print_lvl
+!-------------------------------------------------------------------------------
+      integer                  :: push_pull = 1
+!-------------------------------------------------------------------------------
+      
+!     write(lupri,*) ' post xpdens: restore_cref, switch ==>', restore_cref, restore_cref_vector_switch
+ 
+      if(restore_cref_vector_switch == 1)then
+
+        vector_exchange_type1                      = 2
+        vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
+
+!       write(lupri,*) ' restore lhs activated',vector_exchange_type1
+
+!       lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+        call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,              &
+                                    io2io_vector_exchange_mc2lu_lu2mc,                                                 &
+                                    vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),      &
+                                    .true.,hc_or_cl)
+
+      else if(restore_cref_vector_switch == 2)then
+
+        vector_exchange_type1                      = 2
+        vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
+
+!       write(lupri,*) ' restore rhs activated',vector_exchange_type1
+
+!       rhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+        call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                 &
+                                    io2io_vector_exchange_mc2lu_lu2mc,                                                   &
+                                    vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),        &
+                                    .true.,c_or_cr)
+      end if
+
+      if(print_lvl >= print_lvl_limit)then
+        write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
+        write(lupri,*) ' lhs vector pushed to mc core-memory'
+        write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
+      end if
+
+  end subroutine mcscf_post_lucita_xpdens
 !*******************************************************************************
 
   subroutine mcscf_post_lucita_setci(print_lvl)

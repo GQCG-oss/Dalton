@@ -2725,7 +2725,7 @@ C   asymmetry would indicate probable bug in LINTRN module.
 C
 #include "implicit.h"
       DIMENSION IBNDX(*), WRK(LFREE)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DIFTST = 1.0D-8)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DIFTST = 1.0D-7)
 #include "ibndxdef.h"
 C
 C  Used from common blocks:
