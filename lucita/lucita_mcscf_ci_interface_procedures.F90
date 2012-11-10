@@ -353,10 +353,11 @@ contains
 !-------------------------------------------------------------------------------
       
 !     potentially restore cref after the ci task
-!     write(lupri,*) ' check for restorage, vector_exchange_type1',vector_exchange_type1
+      write(lupri,*) ' check for restorage, vector_exchange_type1',vector_exchange_type1
       if(vector_exchange_type1 == 1)then
         restore_cref_vector_switch = 1
         restore_cref               = .true.
+        write(lupri,*) ' restore cref activated'
       end if
 
 !     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
@@ -685,6 +686,7 @@ contains
                                   .true.,hc_or_cl)
 
       if(.not.restore_cref)then ! bvec == ci trial vector: need to restore for reduced matrix calculation
+        write(lupri,*) ' restore lhs activated',vector_exchange_type1
         vector_exchange_type1                      = 2
         vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
 

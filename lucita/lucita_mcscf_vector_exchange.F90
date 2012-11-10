@@ -68,11 +68,13 @@ contains
       logical, intent(in)                 :: parallel_vector_xc
 !-------------------------------------------------------------------------------
 
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       write(lupri,*) ' do_vector_exchange ==> ',do_vector_exchange
       write(lupri,*) ' vector_type        ==> ',vector_type
       write(lupri,*) ' nr_vectors         ==> ',nr_vectors
       write(lupri,*) ' vector_symmetry    ==> ',vector_symmetry
+#undef LUCI_DEBUG
 #endif
 
 !     switch to exchange_files info for symmetry vector_symmetry
@@ -214,6 +216,7 @@ contains
       current_vector = 0
       current_offset = 0
       ioff           = 1
+#define LUCI_DEBUG
 
       do ! loop over vectors
 
@@ -223,6 +226,9 @@ contains
 
         select case(A%exchange_file_io2io)
           case(.true.)
+#ifdef LUCI_DEBUG
+            write(lupri,*)'io2io exchange'
+#endif
 #ifdef VAR_MPI
             if(parallel_vector_xc)then
 !             call push_pull_vector_exchange_io2io_parallel()
@@ -266,6 +272,7 @@ contains
 !
       end do
 
+#undef LUCI_DEBUG
       if(A%my_process_id == 0)then
 !       close file(s) if they were opened only for the present task
         if(.not. A%exchange_file_open(1)) call gpclose(A%present_fh_lu,'KEEP')
@@ -302,7 +309,7 @@ contains
       integer                    :: packing
       integer                    :: block_length_rw
       integer, parameter         :: no_zeroing  = 0
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
 #include "priunit.h"
 #endif
@@ -328,11 +335,13 @@ contains
             call todsc_luci(xmat(ioff),B%ttss_block_length(current_block,B%present_sym_irrep,B%present_ci_space), &
                             -1,A%present_fh_lu)
         end select
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-            write(lupri,*) ' pull/push (1 or 2) block from/to file to/from offset ==> ',A%push_pull_switch,         &
+            write(lupri,*) 'seq  pull/push (1 or 2) block from/to file to/from offset ==> ',A%push_pull_switch,   &
                              current_block,ioff
-            call wrtmatmn(xmat(ioff),1,B%ttss_block_length(current_block,B%present_sym_irrep,B%present_ci_space),1, &
-                          B%ttss_block_length(current_block,B%present_sym_irrep,B%present_ci_space),lupri)
+!           call wrtmatmn(xmat(ioff),1,B%ttss_block_length(current_block,B%present_sym_irrep,B%present_ci_space),1, &
+!                         B%ttss_block_length(current_block,B%present_sym_irrep,B%present_ci_space),lupri)
+#undef LUCI_DEBUG
 #endif
 
 !       keep track of core-memory offset
@@ -399,8 +408,10 @@ contains
                          0,mpi_comm_world,ierr)
       end select
 
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      write(lupri,*) ' present fh handle ==> ',A%present_fh_par
+      write(lupri,*) ' present fh handle ==> ',A%present_fh_par, A%push_pull_switch
+#undef LUCI_DEBUG
 #endif
 !
 !     initialize
@@ -442,11 +453,12 @@ contains
               D%iluxlist(ioffset_int,A%present_vector_type) = 1
             end if
         end select
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
             write(lupri,*) ' pull/push (1 or 2) block from/to file to/from fh handle offset ==> ',A%push_pull_switch,         &
                              current_block,A%present_fh_par,ioff-block_length_rw
-            call wrtmatmn(xmat(ioff-block_length_rw),1,block_length_rw,1,block_length_rw,lupri)
+!           call wrtmatmn(xmat(ioff-block_length_rw),1,block_length_rw,1,block_length_rw,lupri)
+#undef LUCI_DEBUG
 #endif
 
 !       keep track of file / file-list offsets
@@ -458,11 +470,11 @@ contains
       select case(A%push_pull_switch)
         case(1) 
           if(A%my_process_id > 0)then
-!           write(lupri,*) 'A%my_process_id ',A%my_process_id, B%total_present_vec, current_offset
+            write(lupri,*) 'A%my_process_id ',A%my_process_id, B%total_present_vec, current_offset
             call mpi_reduce(xmat(1+current_offset),mpi_in_place,B%total_present_vec,MPI_REAL8,      &
                             mpi_sum,0,mpi_comm_world,ierr)
           else
-!           write(lupri,*) 'A%my_process_id ',A%my_process_id, B%total_present_vec, current_offset
+            write(lupri,*) 'A%my_process_id ',A%my_process_id, B%total_present_vec, current_offset
             call mpi_reduce(mpi_in_place,xmat(1+current_offset),B%total_present_vec,MPI_REAL8,      &
                             mpi_sum,0,mpi_comm_world,ierr)
           end if
