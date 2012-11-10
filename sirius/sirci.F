@@ -1024,6 +1024,7 @@ C
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       thrcix = 1.0d-11
+#undef LUCI_DEBUG
 #endif
       NCIRED = 0
       THRCIT = THRCIX

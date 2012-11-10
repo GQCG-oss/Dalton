@@ -932,8 +932,7 @@ contains
 
       if(integrals_from_mcscf_env)then
 !       1-p density matrix / 1-e integrals
-        tmp_length_p1 = (nacob*(nacob+1)/2)**1
-        if(ci_run_id == 'rotate  Cvec') tmp_length_p1 = nacob**2
+        tmp_length_p1 = nacob**2
 !       2-p density matrix / 2-e integrals
         if(lucita_cfg_el_operator_level > 1) tmp_length_p2 = (nacob*(nacob+1)/2)**2
       end if
@@ -1066,6 +1065,15 @@ contains
         print *, ' kresolution_mat_pointer ==> ',kresolution_mat_pointer
         print *, ' kint1_or_rho1_pointer   ==> ',kint1_or_rho1_pointer
         print *, ' kint2_or_rho2_pointer   ==> ',kint2_or_rho2_pointer
+        print *, ' -------------------------------------------------------'
+
+        print *, ' memory allocated for the coworkers; length  values are:'
+        print *, ' -------------------------------------------------------'
+        print *, ' kcref_pointer           ==> ',len_cref_internal
+        print *, ' khc_pointer             ==> ',len_hc_internal
+        print *, ' kresolution_mat_pointer ==> ',len_resolution_mat_internal
+        print *, ' kint1_or_rho1_pointer   ==> ',len_int1_or_rho1_internal
+        print *, ' kint2_or_rho2_pointer   ==> ',len_int2_or_rho2_internal
       end if
 
   end subroutine setup_lucita_inc_wrkspc_alloc_cw
