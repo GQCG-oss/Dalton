@@ -216,7 +216,7 @@ contains
       current_vector = 0
       current_offset = 0
       ioff           = 1
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 
       do ! loop over vectors
 
