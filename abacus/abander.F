@@ -1946,7 +1946,10 @@ C
                      WRINDX = .TRUE.
                      LUSUPM = -1
                      WORK(1) = WRKDLM
-                     CALL ABAINP('**PROPE',WORK(2),LWORK)
+CRF 9/11-12  Should be **EACH  to be consistent with NAORDR > 0
+CRF                  CALL ABAINP('**PROPE',WORK(2),LWORK)
+                     CALL ABAINP('**EACH ',WORK(2),LWORK)
+CRFend
                      CALL EXEABA(WORK(1),LWORK-1,WRKDLM)
 C
                      KTRAMT = 1

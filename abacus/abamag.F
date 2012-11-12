@@ -2647,7 +2647,7 @@ C 2: DSO-contribution
 C 3: PSO-contribution
 C 4: SD-contribution
 C 5: FC-contribution
-C
+C 6: FC/SD-contribution
 C
 C Construction of total spin-spin coupling matrix
 C
