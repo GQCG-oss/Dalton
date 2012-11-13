@@ -86,10 +86,10 @@ C
      *        '" not recognized for '//WORD1
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal keyword for '//WORD1)
- 1       CONTINUE
+ 1       CONTINUE    ! .DORDR
             READ (LUCMD,'(2I4)') NMORDR, NAORDR
             GOTO 100
- 2       CONTINUE
+ 2       CONTINUE    ! .SYMMET
             READ (LUCMD,'(A)') GRPTMP
             IJ = 0
             DO II = 1, 15
@@ -99,67 +99,67 @@ C
                END IF
             END DO
             GOTO 100
- 3       CONTINUE
+ 3       CONTINUE    ! .SDRTST
             SDRTST = .TRUE.
             GOTO 100
- 4       CONTINUE
+ 4       CONTINUE    ! .RESTRT
             RESTRT = .TRUE.
             GOTO 100
- 5       CONTINUE
+ 5       CONTINUE    ! .DRYRUN
             DRYRUN = .TRUE.
             READ (LUCMD,*)  NMREDU
             READ (LUCMD,*) (KDRYRN(II),II=1,NMREDU)
             GOTO 100
- 6       CONTINUE
+ 6       CONTINUE    ! .XXXXXX
             GOTO 100
- 7       CONTINUE
+ 7       CONTINUE    ! .NORMAL
             NRMCRD = .TRUE.
             GOTO 100
- 8       CONTINUE
+ 8       CONTINUE    ! .PRECAL
             PREHES = .TRUE.
             GOTO 100
- 9       CONTINUE
+ 9       CONTINUE    ! .REUSE
             REUHES = .TRUE.
             GOTO 100
- 10      CONTINUE
+ 10      CONTINUE    ! .XXXXXX
             GOTO 100
- 11      CONTINUE
+ 11      CONTINUE    ! .VIBANA
             NUMVIB = .TRUE.
             GOTO 100
- 12      CONTINUE
+ 12      CONTINUE    ! .TEST N
             NRMCRD = .TRUE.
             HTEST  = .TRUE.
             GOTO 100
- 13      CONTINUE
+ 13      CONTINUE    ! .DISPLA
             READ (LUCMD, *) DISPLC
             GOTO 100
- 14      CONTINUE
+ 14      CONTINUE    ! .PROPER
             NPRPDR = .TRUE.
             READ (LUCMD, *) NMRDRP, NARDRP
             IF (NMORDR.EQ.0) NAORDR = 0
             NMORDR = MAX(NMRDRP,NMORDR)
             GOTO 100
- 15      CONTINUE
+ 15      CONTINUE    ! .PRINT
             READ (LUCMD, *) IDRPRI
             GOTO 100
- 16      CONTINUE
+ 16      CONTINUE    ! .MANUAL
             MANUAL = .TRUE.
-            GOTO 100
- 17      CONTINUE
+            GOTO 100   
+ 17      CONTINUE    ! .HARMON
             HARMON = .TRUE.
             VIB    = .TRUE.
             MAXDIF = 2
             GOTO 100
- 18      CONTINUE
+ 18      CONTINUE    ! .SPECTR
             SPECTR = .TRUE.
             GOTO 100
- 19      CONTINUE
+ 19      CONTINUE    ! .MIDAS
             MIDAS  = .TRUE.
             GOTO 100
- 20      CONTINUE
+ 20      CONTINUE    ! .THRMID
             READ (LUCMD, *) XTHR
             THRMID = ABS(XTHR)
- 21      CONTINUE
+ 21      CONTINUE    ! .MINOUT
             MINOUT = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -276,12 +276,12 @@ C
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in ABAINP, error in prompt.')
       END IF
- 101  CONTINUE
+ 101  CONTINUE  ! *PROPAV
         CALL NVBINP(WORD)
         GOTO 400
  102  CONTINUE
         GOTO 400
- 103  CONTINUE
+ 103  CONTINUE  ! *VIBANA
         CALL VIBINP(WORD)
         GOTO 400
 C
@@ -442,6 +442,8 @@ C     /NUMDER/
       FRSTNM = .FALSE.
       PRPVIB = .FALSE.
       MANUAL = .FALSE.
+CRF added
+      PRPONL = .FALSE.
 C
 C     /FCSYM/
       FCLASS = 'C1             '
@@ -531,8 +533,18 @@ C
       DO 200 I = 1, J
          MAXADR = MAXADR + 1
  200  CONTINUE
-C
+C     
+C     NDERIV -> number derivatives to save space 
+C               for in WORK
       DO 300 IORDR = 3, NMORDR+NAORDR
+CRF   if we need to allocate DERIV anyway, but shouldn't be required
+C       IF ( PRPONL ) then
+C         IMAXOR = 3
+C       ELSE
+C         IMAXOR = NMORDR + NAORDR
+C       END IF
+C       DO 300 IORDR = 3, IMAXOR
+CRFend
          IKDRV = 1
          DO 400 IIORDR =1, IORDR
             IKDRV = IKDRV*(NCOOR+IIORDR-1)/IIORDR
@@ -988,7 +1000,7 @@ C
          END IF
 C
 C
-         IF ((NAORDR+NMORDR).GT.1) THEN
+         IF ( ((NAORDR+NMORDR).GT.1) .OR. PRPONL ) THEN
             IF (.NOT.DRYRUN) THEN
                IF (HARMON) THEN
                   KBKPHS = 2
@@ -1069,7 +1081,8 @@ C
          END IF
       END IF
 C
-      IF (NRMCRD .AND. ((NAORDR+NMORDR).GT.2)) THEN
+CRF   Also need to take this branch if we evaluate property derivatis only
+      IF (NRMCRD .AND. ( ((NAORDR+NMORDR).GT.2) .OR. PRPONL  ) ) THEN
          FRSTNM = .FALSE.
 C
 C        *** Restart ***
@@ -5641,6 +5654,9 @@ C     /*Deck prpder*/
 #include "pvibav.h"
 #include "prpc.h"
       LOGICAL PRIVAL,CCPRP
+CRFtest
+      INTEGER   NDISPL,LURFTEST
+CRFendtest
       DIMENSION COEFF(-MXCOEF:MXCOEF,0:NMRDRP), SYMCOR(NCOOR,NCOOR),
      &          SPSPDR(NCOOR ,NCOOR,6,NPPDER), GRIREP(NGORDR,NGVERT),
      &          SPSPFV(NCOOR,NCOOR,6,NMPCAL),EXENFV(NSYM,MXNEXI,NMPCAL),
@@ -5667,6 +5683,17 @@ C
      &            WORK(KEXTMP),WORK(KTRTMP),WORK(KEXERF),
      &            WORK(KLAST),WORK(KNREDS),LWRK1,IPRINT,CCPRP)
       IF (NPRPDR) CALL GPCLOSE(LUNDPR,'DELETE')
+
+CRFtest 12/11 - 12 Backup property displacements  
+c      CALL GPOPEN(LURFTEST,'WLK.bak','UNKNOWN','SEQUENTIAL',
+c     &            'FORMATTED',IDUMMY,.FALSE.)
+c      DO NDISPL=1,NMPCAL
+c       CALL WRAVFL(SPSPFV(1,1,1,NDISPL),NCOOR,NCOOR,6,
+c     &             'SPIN-SPIN',IPRINT)
+c      END DO
+c      CALL GPCLOSE(LURFTEST,'KEEP')
+CRFendtest
+
 c      KTRAMA = 1
 c      KLAST  = KTRAMA + NMPCAL*NCOOR**2
 c      LWRK1  = LWORK - KLAST + 1

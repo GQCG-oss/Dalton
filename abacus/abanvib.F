@@ -37,7 +37,7 @@ C     ************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 5)
+      PARAMETER (NTABLE = 7)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7,
      &          WORD1*7
 #include "numder.h"
@@ -47,7 +47,8 @@ C     ************************************************
 #include "abainf.h"
 #include "cbiwlk.h"
 C
-      DATA TABLE /'.EFFECT','.HARM-P','.ANHA-P','.SPIN-S','.MODE A'/
+      DATA TABLE /'.EFFECT','.HARM-P','.ANHA-P','.SPIN-S','.MODE A',
+     &            '.ONLY-P','.CUBIC '/
 C
       ICHANG = 0
       WORD1 = WORD
@@ -61,7 +62,7 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GO TO (1,2,3,4,5), I
+               GO TO (1,2,3,4,5,6,7), I
             END IF
  200     CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -72,12 +73,12 @@ C
      *        '" not recognized in NVBINP.'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal keyword in NVBINP.')
- 1       CONTINUE
+ 1       CONTINUE  ! .EFFECT
             NUMVIB = .TRUE.
             ANALZ1 = .TRUE.
             NMORDR = MAX(NMORDR,3-NAORDR)
             GOTO 100
- 2       CONTINUE
+ 2       CONTINUE  ! .HARM-P
             NRMCRD = .TRUE.
             NPRPDR = .TRUE.
             FRSTNM = .TRUE.
@@ -85,9 +86,16 @@ C
             ANALZ1 = .TRUE.
             NMRDRP = 2
             NARDRP = 0
-            NMORDR = MAX(NMORDR,3-NAORDR)
+            NMORDR = MAX(NMORDR,3-NAORDR) ! Should be 2-NAORDR ??
             FCLASS = 'C1 '
- 3       CONTINUE
+CRF 12/11 - 12 Added GOTO that seemed to have been left out
+CRF            Also .HARM-P and .ANHA-P seems to do the same
+CRF            only .HARM-P sets symmetry to C1.
+CRF            This is somewhat counter intuitive and doesn't agree with manual
+CRF            Problem seems to be that there's no branch around the anharmonic
+CRF            averaging, for harmonic only
+            GOTO 100
+ 3       CONTINUE  ! .ANHA-P
             NRMCRD = .TRUE.
             NPRPDR = .TRUE.
             FRSTNM = .TRUE.
@@ -97,12 +105,32 @@ C
             NARDRP = 0
             NMORDR = MAX(NMORDR,3-NAORDR)
             GOTO 100
- 4       CONTINUE
+ 4       CONTINUE  ! .SPIN-S
             NSPNSP = .TRUE.
             GOTO 100
- 5       CONTINUE
+ 5       CONTINUE  ! .MODE A
             MDEANA = .TRUE.
             GOTO 100
+CRF 12/11 - 12 Test keywords for splitting forcefield from property derivatives
+ 6       CONTINUE  ! .ONLY-P
+            NRMCRD = .TRUE.
+            NPRPDR = .TRUE.
+            ANALZ1 = .TRUE.
+            PRPVIB = .TRUE.
+            FRSTNM = .TRUE.
+            NMRDRP = 2
+            NARDRP = 0
+            NMORDR = 2 ! Seems like we'll have to keep this at 2 for now
+            NAORDR = 0
+            PRPONL = .TRUE.
+            GOTO 100
+ 7       CONTINUE  ! .CUBIC
+            NRMCRD = .TRUE.
+            ANALZ1 = .TRUE.
+            NMORDR = MAX(NMORDR,3-NAORDR)
+            NUMVIB = .TRUE.
+            GOTO 100 
+CRFend
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
       ELSE
@@ -229,7 +257,8 @@ C
       DIMENSION DERIV(NDERIV), SYMCOR(NCOOR,NCOOR), FREQ(NCOOR),
      &          RNNORM(NCOOR), CSTART(NCOOR      ), WORK(LWORK)
 C
-      IF (NUMVIB) THEN
+CRF   Skip if only properties has been  calculated
+      IF (NUMVIB .AND. (.NOT. PRPONL) ) THEN
          KTDRS = 1
          KEVEC = KTDRS + NCOOR**3
          KLAST = KEVEC + NCOOR**2
@@ -890,6 +919,9 @@ C
       DIMENSION DERIV(NDERIV), SPSPDR(NCOOR,NCOOR,6,NPPDER),
      &          FREQ(NCOOR), SPSPFV(NCOOR,NCOOR,6), RNNORM(NCOOR),
      &          SYMCOR(NCOOR,NCOOR),WORK(LWORK)
+
+
+
 C
 C     *** Opening property file. ***
 C
@@ -1302,26 +1334,49 @@ C  /* Deck sttder */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
+CRF   added file routine -- appears that we must include inftap.h
+#include "inftap.h"
       PARAMETER (D1=1.0D0)
 #include "trkoor.h"
 #include "numder.h"
 #include "cbinum.h"
+      INTEGER   NDCOOT
       DIMENSION DERIV(NDERIV), TDER(NDCOOR,NDCOOR,NDCOOR), RNNORM(NCOOR)
-C
-      DFAC = D1
-      IDERIV = 0
-      DO 100 ICOOR3 = 1, NDCOOR
-      DO 100 ICOOR2 = 1, ICOOR3
-      DO 100 ICOOR1 = 1, ICOOR2
-         IF (NRMCRD) DFAC = RNNORM(ICOOR1)*RNNORM(ICOOR2)*RNNORM(ICOOR3)
-         IDERIV = IDERIV + 1
-         TDER(ICOOR1,ICOOR2,ICOOR3) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR1,ICOOR3,ICOOR2) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR2,ICOOR1,ICOOR3) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR2,ICOOR3,ICOOR1) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR3,ICOOR1,ICOOR2) = DERIV(IDERIV)*DFAC
-         TDER(ICOOR3,ICOOR2,ICOOR1) = DERIV(IDERIV)*DFAC
- 100  CONTINUE
+C     
+CRF   The work done here has already been done in ahrmvb 
+CRF   If this was a calculation of properties seperate from the calculation
+CRF   of the forcefield, we need to read it from there (and perhaps anyway)?
+
+      IF (PRPONL) THEN
+        CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',
+     &              IDUMMY, .FALSE.)
+        REWIND (LUWLK)
+        READ (LUWLK)
+        READ (LUWLK)
+        READ (LUWLK)
+        READ (LUWLK)
+        READ (LUWLK) NDCOOT , TDER
+        CALL GPCLOSE(LUWLK,'KEEP')
+        IF ( NDCOOT .NE. NDCOOR ) WRITE (LUPRI, '(A,A,A)') 
+     &                            'Check that force field in file',
+     &                             ABAWLK, 'matches current geometry'
+      ELSE
+        DFAC = D1
+        IDERIV = 0
+        DO 100 ICOOR3 = 1, NDCOOR
+        DO 100 ICOOR2 = 1, ICOOR3
+        DO 100 ICOOR1 = 1, ICOOR2
+           IF (NRMCRD) DFAC =
+     &                  RNNORM(ICOOR1)*RNNORM(ICOOR2)*RNNORM(ICOOR3)
+           IDERIV = IDERIV + 1
+           TDER(ICOOR1,ICOOR2,ICOOR3) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR1,ICOOR3,ICOOR2) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR2,ICOOR1,ICOOR3) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR2,ICOOR3,ICOOR1) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR3,ICOOR1,ICOOR2) = DERIV(IDERIV)*DFAC
+           TDER(ICOOR3,ICOOR2,ICOOR1) = DERIV(IDERIV)*DFAC
+ 100    CONTINUE
+      END IF 
 C
       IF (IPRINT.GE.20) THEN
          CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
