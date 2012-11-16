@@ -25,8 +25,6 @@
 C
 C FILE: sirius/sirgrad.F
 C
-C FILE: sirius/sirgrad.F
-C
 #ifdef REVISION_LOG
 ===========================================================================
 Revision 1.2  2001/01/17 10:41:33  vebjornb
