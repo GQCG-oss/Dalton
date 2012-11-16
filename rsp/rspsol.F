@@ -347,7 +347,8 @@ C
             jdao = kdao + (i-1)*nnbasx
             call deq27(cmo, wrk(jubv), udv, wrk(kudcao), wrk(kudvao),
      &                 wrk(kfree), lfree)
-            if (nasht > 0) call daxpy(n2basx, 1.0d0, wrk(kudvao), 1,
+            ! factor 1/2 probably related to factor 2 above?
+            if (nasht > 0) call daxpy(n2basx, 0.5d0, wrk(kudvao), 1,
      &                                wrk(kudcao), 1)
             call dgefsp(nbast, wrk(kudcao), wrk(jdao))
         end do

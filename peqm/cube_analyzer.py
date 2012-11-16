@@ -5,8 +5,8 @@ import sys
 import argparse as ap
 import math
 import numpy as np
-#import matplotlib as mpl
-#import matplotlib.pyplot as plt
+import time
+import multiprocessing as mp
 
 parser = ap.ArgumentParser(description='Cube analyzer 0.1',
                            epilog='Have a nice day :-)',
@@ -37,9 +37,6 @@ parser.add_argument('-sub', dest='sublist', nargs='+', default=[], type=int,
                     help='''Specify which cubes to subtract. The cubes are
                             numbered according to the input order starting
                             from 0''')
-parser.add_argument('-pln', dest='plnpts', nargs=9, default=[], type=float,
-                    metavar=('X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2', 'X3', 'Y3', 'Z3'),
-                    help='''Define plane cartesian coordinates''')
 parser.add_argument('-mae', dest='mae', action='store_true', default=False,
                     help='''Calculate MAE with REFCUBE as the reference.''')
 parser.add_argument('-vdw', dest='vdw', nargs=3, default=[], type=float,
@@ -95,7 +92,7 @@ class Cube(object):
             line = fcube.readline().split()
             self.charges.append(float(line[1]))
             self.coords.append([float(coord) for coord in line[2:5]])
-        self.grid = np.empty((self.xpoints, self.ypoints, self.zpoints))
+        self.grid = np.zeros((self.xpoints, self.ypoints, self.zpoints))
         fcube.close()
 
     def copyheader(self, cube):
@@ -109,7 +106,7 @@ class Cube(object):
         self.zstep = cube.zstep
         self.charges = cube.charges
         self.coords = cube.coords
-        self.grid = np.empty((self.xpoints, self.ypoints, self.zpoints))
+        self.grid = np.zeros((self.xpoints, self.ypoints, self.zpoints))
 
     def readgrid(self):
         fcube = open(self.filename, 'r')
@@ -143,7 +140,7 @@ class Cube(object):
         header += '{0:5d}'.format(self.xpoints)
         header += '{0:12.6f}{1:12.6f}{1:12.6f}\n'.format(self.xstep, 0.0)
         header += '{0:5d}'.format(self.ypoints)
-        header += '{1:12.6f}{0:12.6f}{1:12.6f}\n'.format(self.zstep, 0.0)
+        header += '{1:12.6f}{0:12.6f}{1:12.6f}\n'.format(self.ystep, 0.0)
         header += '{0:5d}'.format(self.zpoints)
         header += '{1:12.6f}{1:12.6f}{0:12.6f}\n'.format(self.zstep, 0.0)
         for charge, coord in zip(self.charges, self.coords):
@@ -161,52 +158,11 @@ class Cube(object):
                     if i == 6:
                         grid += '\n'
                         i = 0
-                grid += '\n'
+                if grid[-1] != '\n':
+                    grid += '\n'
             fcube.write(grid)
             grid = ''
         fcube.close()
-
-def plane_analysis(cube, pt1, pt2, pt3):
-    fpln = open('test.dat', 'w')
-    plnlog = ''
-    plnfmt = '{0[0]:12.6f}{0[1]:12.6f}{1:12.6f}\n'
-    plane = []
-    a = (pt1[1] * (pt2[2] - pt3[2]) + 
-         pt2[1] * (pt3[2] - pt1[2]) + 
-         pt3[1] * (pt1[2] - pt2[2]))
-    b = (pt1[2] * (pt2[0] - pt3[0]) + 
-         pt2[2] * (pt3[0] - pt1[0]) + 
-         pt3[2] * (pt1[0] - pt2[0]))
-    c = (pt1[0] * (pt2[1] - pt3[1]) + 
-         pt2[0] * (pt3[1] - pt1[1]) + 
-         pt3[0] * (pt1[1] - pt2[1]))
-    d = - (pt1[0] * (pt2[1] * pt3[2] - pt3[1] * pt2[2]) +
-           pt2[0] * (pt3[1] * pt1[2] - pt1[1] * pt3[2]) +
-           pt3[0] * (pt1[1] * pt2[2] - pt2[1] * pt1[2]))
-    newz = np.array([a, b, c])
-    newx = np.array([pt2[0] - pt1[0], pt2[1] - pt1[1], pt2[2] - pt1[2]])
-    newy = np.cross(newz, newx)
-    newx = newx / np.linalg.norm(newx)
-    newy = newy / np.linalg.norm(newy)
-    newz = newz / np.linalg.norm(newz)
-    rotmat = np.array([newx, newy, newz])
-    point = np.array([0.0, 0.0, 0.0])
-    for x in xrange(cube.xpoints):
-        for y in xrange(cube.ypoints):
-            for z in xrange(cube.zpoints):
-                point[0] = cube.origo[0] + x * cube.xstep
-                point[1] = cube.origo[1] + y * cube.ystep
-                point[2] = cube.origo[2] + z * cube.zstep
-                s = a * point[0] + b * point[1] + c * point[2] + d
-                if s < 0.1 and s > -0.1:
-                    point = np.dot(point, rotmat)
-                    plane.append([point, cube.grid[x][y][z]])
-                    plnlog += plnfmt.format(point, cube.grid[x][y][z])
-        if plnlog:
-            plnlog += '\n'
-            fpln.write(plnlog)
-            plnlog = ''
-    fpln.close()
 
 def vdw_analysis(cubelist, refcub, mini, maxi, step):
     if maxi < mini:
@@ -225,35 +181,35 @@ def vdw_analysis(cubelist, refcub, mini, maxi, step):
         shells.append([round(inner, 4), round(outer, 4)])
         inner += step
         outer += step
+    points = []
     point = [0.0, 0.0, 0.0]
     for x in xrange(refcub.xpoints):
+        point[0] = refcub.origo[0] + x * refcub.xstep
         for y in xrange(refcub.ypoints):
+            point[1] = refcub.origo[1] + y * refcub.ystep
             for z in xrange(refcub.zpoints):
-                point[0] = refcub.origo[0] + x * refcub.xstep
-                point[1] = refcub.origo[1] + y * refcub.ystep
                 point[2] = refcub.origo[2] + z * refcub.zstep
-                for ish, shell in enumerate(shells):
-                    inner = shell[0]
-                    outer = shell[1]
-                    include = False
-                    for center, charge in zip(refcub.coords, refcub.charges):
-                        radius = charge2radius[charge] * aa2au
-                        r2 = ((point[0] - center[0])**2 +
-                              (point[1] - center[1])**2 +
-                              (point[2] - center[2])**2)
-                        if (r2 < (outer * radius)**2 and 
-                            r2 >= (inner * radius)**2 and not
-                            overlap(point, refcub.coords, refcub.charges, inner)):
-                            include = True
-                            break
-                        else:
-                            continue
-                    if include:
-                        for ic, cube in enumerate(cubelist):
-                            rmsds[ic][ish] += (cube.grid[x][y][z] -
-                                               refcub.grid[x][y][z])**2
-                        grdpts[ish] += 1
-                        break
+                points.append([list(point), x, y, z])
+    out_queue = mp.Queue()
+    nprocs = mp.cpu_count()
+    chunksize = int(math.ceil(len(points) / float(nprocs)))
+    procs = []
+    for i in xrange(nprocs):
+        proc = mp.Process(target=worker,
+                          args=(points[chunksize * i:chunksize * (i + 1)],
+                                shells, rmsds, grdpts, refcub, cubelist, out_queue))
+        procs.append(proc)
+        proc.start()
+    results = []
+    for i in xrange(nprocs):
+        results.append(out_queue.get())
+    for proc in procs:
+        proc.join()
+    for rmsd, pts in results:
+        for i in xrange(len(shells)):
+            grdpts[i] += pts[i]
+            for j in xrange(len(cubelist)):
+                rmsds[j][i] += rmsd[j][i]
     for ic, cube in enumerate(cubelist):
         fvdw = open('{}.log'.format(cube.filename[:-5]), 'w')
         vdw = 'Reference: {}\n'.format(refcub.filename)
@@ -269,21 +225,37 @@ def vdw_analysis(cubelist, refcub, mini, maxi, step):
         fvdw.write(vdw)
         fvdw.close()
 
-def overlap(point, coords, charges, vdwfac):
-    """"Return True if point is inside other vdw sphere"""
-    for coord, charge in zip(coords, charges):
-        if inside(point, coord, vdwfac * charge2radius[charge] * aa2au):
+def worker(points, shells, rmsds, grdpts, refcub, cubelist, out_queue):
+    for point, x, y, z in points:
+        for ish, shell in enumerate(shells):
+            include = inorout(point, shell, refcub.coords, refcub.charges)
+            if include:
+                for ic, cube in enumerate(cubelist):
+                    rmsds[ic][ish] += (cube.grid[x][y][z] -
+                                       refcub.grid[x][y][z])**2
+                grdpts[ish] += 1
+                break
+    out_queue.put((rmsds, grdpts))
+ 
+def inorout(point, shell, coords, charges):
+    radii = [charge2radius[charge] * aa2au for charge in charges]
+    for center, radius in zip(coords, radii):
+        r2 = ((point[0] - center[0])**2 +
+              (point[1] - center[1])**2 +
+              (point[2] - center[2])**2)
+        if r2 < (shell[1] * radius)**2 and r2 >= (shell[0] * radius)**2:
+            for coord, rad in zip(coords, radii):
+                r2 = ((point[0] - coord[0])**2 +
+                      (point[1] - coord[1])**2 +
+                      (point[2] - coord[2])**2)
+                if r2 > (shell[0] * rad)**2:
+                    continue
+                else:
+                    return False
             return True
         else:
             continue
     return False
-
-def inside(point, center, radius):
-    """Return True if point is inside sphere"""
-    r2 = ((point[0] - center[0])**2 +
-          (point[1] - center[1])**2 +
-          (point[2] - center[2])**2)
-    return r2 < radius**2
 
 def mae_analysis(cube, refcub):
     mae = 0.0
@@ -331,9 +303,6 @@ if __name__ == "__main__":
                 continue
             cubana.append(cube)
         vdw_analysis(cubana, refcub, *args.vdw)
-
-    if args.plnpts:
-        plane_analysis(newcube, args.plnpts[0:3], args.plnpts[3:6], args.plnpts[6:9])
 
     if args.outputfile:
         newcube.writecube(args.outputfile)
