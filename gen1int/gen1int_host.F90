@@ -766,6 +766,9 @@
         call MatView(A=ao_dens(1), io_viewer=io_viewer)
       end if
       ! creates the operator of overlap integrals
+      print *, 'error: the call to gen1int_host_prop_create cannot be right'
+      print *, '       does not match the routine signature'
+      stop 1
       call gen1int_host_prop_create(NON_LAO, INT_OVERLAP, 0,   &
                                     0, 0, 0,                   &
                                     0, 0, 0,                   &

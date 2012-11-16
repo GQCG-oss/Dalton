@@ -8,16 +8,17 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 project(DALTON Fortran C)
 
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
-option(ENABLE_PROFILING      "Enable profiling"              OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
-option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
-option(ENABLE_UTILITIES      "Enable utilities"              OFF)
-option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"          OFF)
+option(ENABLE_PROFILING      "Enable profiling"                OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"             OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"            OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"      OFF)
+option(ENABLE_OMP            "Enable OpenMP parallelization"   OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU acceleration"    OFF)
+option(ENABLE_UTILITIES      "Enable utilities"                OFF)
+option(ENABLE_LOCAL_DISKS    "Enable local disks"              OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
+option(ENABLE_GEN1INT        "Enable Gen1Int library"          ON)
 option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
 option(ENABLE_SRDFT          "Enable srdft module"           ON)
@@ -64,7 +65,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 # set definitions
 
-add_definitions(-DBUILD_GEN1INT)
+if(ENABLE_GEN1INT)
+    add_definitions(-DBUILD_GEN1INT)
+endif()
 add_definitions(-DVAR_MFDS)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 add_definitions(-DIMPLICIT_NONE)
@@ -132,7 +135,9 @@ if(ENABLE_SRDFT)
         ${srdft_SOURCES})
 endif()
 
-add_subdirectory(gen1int)
+if(ENABLE_GEN1INT)
+    add_subdirectory(gen1int)
+endif()
 
 configure_script(
     ${CMAKE_SOURCE_DIR}/dalton.in
@@ -146,7 +151,14 @@ add_library(
     ${FIXED_FORTRAN_SOURCES}
     )
 
-add_dependencies(dalton gen1int_interface)
+if(ENABLE_GEN1INT)
+    add_dependencies(dalton gen1int_interface)
+    set(LIBS
+        gen1int_interface
+        ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
+        ${LIBS}
+        )
+endif()
 
 add_executable(
     dalton.x
@@ -156,8 +168,6 @@ add_executable(
 target_link_libraries(
     dalton.x
     dalton
-    gen1int_interface
-    ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
     ${LIBS}
     )
 
