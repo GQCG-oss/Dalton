@@ -82,6 +82,7 @@ C
       CONV   = .FALSE.
       USOLVD = .FALSE.
       REWIND (LU)
+      READ(LU) ! skip rec. no. 1 = wave function info record used when opening
 C
   100 READ(LU,END=200,ERR=200)
      &      LABX1,LABX2,FREQX1,FREQX2,ISYMX1,ISYMX2,ANTSYM,
@@ -89,12 +90,12 @@ C
       IF (LABX1 .EQ. 'EOFLABEL') GOTO 200
 C
       IF ((NRBX .NE. NORBT) .OR. (NBSX .NE. NBAST)) THEN
-         WRITE (LUPRI,'(/A,2(/A,I5,2X,I5))')
+         WRITE (LUPRI,'(/A,2(/A,2I8))')
      &        ' INFO: Orbital data found on response'//
      &        ' vector file does not match current orbital data',
-     &        ' Number of basis functions/orbitals on file      : ',
+     &        ' Number of basis functions/orbitals on file      :',
      &        NBSX,NRBX,
-     &        ' Number of basis functions/orbitals in this calc.: ',
+     &        ' Number of basis functions/orbitals in this calc.:',
      &        NBAST,NORBT
          WRITE (LUPRI,'(/A)') ' INFO: RSPVEC is reset to empty file'
          REWIND (LU)
@@ -143,11 +144,11 @@ Chj         from a different calculation /hjaaj-Mar2006
             GO TO 100
          END IF
       ELSE
-         IF (((ABS(FREQ1-FREQX1).LE.THR)
+         IF ((      (ABS(FREQ1-FREQX1).LE.THR)
      &        .AND. (ABS(FREQ2-FREQX2).LE.THR)
      &        .AND. LAB1.EQ.LABX1 .AND. LAB2.EQ.LABX2 .AND.
      &        ISYM1.EQ.ISYMX1 .AND. ISYM2.EQ.ISYMX2) .OR.
-     &        ((ABS(FREQ1-FREQX2).LE.THR)
+     &        (     (ABS(FREQ1-FREQX2).LE.THR)
      &        .AND. (ABS(FREQ2-FREQX1).LE.THR)
      &        .AND. LAB1.EQ.LABX2 .AND. LAB2.EQ.LABX1 .AND.
      &        ISYM1.EQ.ISYMX2 .AND. ISYM2.EQ.ISYMX1)) THEN 

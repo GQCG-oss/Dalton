@@ -519,7 +519,7 @@ C
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' PROMPT "',WORD,
-     *            '" NOT RECOGNIZED IN RSPINP.'
+     *            '" NOT RECOGNIZED IN HSOINP.'
                CALL QUIT(' ILLEGAL PROMPT IN HSOINP ')
             END IF
          GO TO 100

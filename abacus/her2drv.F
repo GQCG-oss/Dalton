@@ -2316,9 +2316,9 @@ C              a) no contribution to direct Fock matrix construction
 C
 C              Screening: pretty thorough, taking care also of
 C                         non-symmetric density matrices
-                  IF(DIRFCK.OR.SOFOCK) THEN
-                    DINTSKP(1,1) = DINTSKP(1,1) + NCCINT
-                    IF(DOSCRN) THEN
+               IF (DIRFCK.OR.SOFOCK) THEN
+                  DINTSKP(1,1) = DINTSKP(1,1) + NCCINT
+                  IF(DOSCRN) THEN
                       ULINT = GABRAO(ISYBLA,ISYBLB)*
      &                        GABRAO(ISYBLC,ISYBLD)
                       DNSMAX   = D0
@@ -2359,30 +2359,30 @@ C Largest exchange contribution
      &        ISHELD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
      &        SPDCAR(NHKTSH(ISHELD)-1),')'
 #if defined (VAR_MPI)
-          IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND.
-     &        DIRFCK .AND. HFXMU .EQ. D0) THEN
-             I_SHL = I_SHL + 1
-             IF (I_SHL .GT. MXTSK) THEN
-                write(lupri,*) 'Received quit because '//
-     &               'I_SHL exceeds MXTSK',I_SHL,MXTSK
-                CALL QUIT('AOSAVE: I_SHL exceeds MXTSK.')
-             END IF
+                      IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND.
+     &                   DIRFCK .AND. HFXMU .EQ. D0) THEN
+                         I_SHL = I_SHL + 1
+                         IF (I_SHL .GT. MXTSK) THEN
+                            write(lupri,*) 'Received quit because '//
+     &                     'I_SHL exceeds MXTSK',I_SHL,MXTSK
+                         CALL QUIT('AOSAVE: I_SHL exceeds MXTSK.')
+                      END IF
 #else
-                  IF (AOSAVE .AND. INDX_SHL1 .GE. ISHELA .AND.
-     &                 INDX_SHL2 .GE. ISHELB .AND.
-     &                 INDX_SHL3 .GE. ISHELC .AND.
-     &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1
-     &                 .AND. HFXMU .EQ. D0) THEN
-                     NINTYP = 1
-                     I_SHL = I_SHL + NINTYP*NCCINT
-                     IF (I_SHL .GT. MMCORE) THEN
-                        write(lupri,*) 'Received quit because '//
+                      IF (AOSAVE .AND. INDX_SHL1 .GE. ISHELA .AND.
+     &                                 INDX_SHL2 .GE. ISHELB .AND.
+     &                                 INDX_SHL3 .GE. ISHELC .AND.
+     &                                 INDX_SHL4 .GE. ISHELD .AND.
+     &                    IPREVA .EQ. -1 .AND. HFXMU .EQ. D0) THEN
+                         NINTYP = 1
+                         I_SHL = I_SHL + NINTYP*NCCINT
+                         IF (I_SHL .GT. MMCORE) THEN
+                            write(lupri,*) 'Received quit because '//
      &                       'I_SHL exceeds MMCORE',I_SHL,MMCORE
-                        CALL QUIT('I_SHL exceeds MMCORE.')
-                     END IF
+                            CALL QUIT('AOSAVE: I_SHL exceeds MMCORE.')
+                         END IF
 #endif
-                     LINTMP = .TRUE.
-                  END IF
+                         LINTMP = .TRUE.
+                      END IF
                         GOTO 300
                       ENDIF
                     ENDIF
