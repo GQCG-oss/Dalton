@@ -2,14 +2,6 @@
 
 import os
 import sys
-try:
-    from mpl_toolkits.mplot3d import Axes3D
-except ImportError:
-    print('Import from matplotlib failed! Plotting will fail.')
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    print('Import from matplotlib failed! Plotting will fail.')
 import numpy as np
 
 au2aa = 0.5291772108
@@ -33,7 +25,7 @@ charge2elem = { 0:  'X',  1:  'H',  2: 'He',  3: 'Li',  4: 'Be',  5:  'B',
 elem2vdw = { 'H': 1.20, 'He': 1.40, 'Li': 2.20, 'Be': 1.90,  'B': 1.80,
              'C': 1.70,  'N': 1.60,  'O': 1.55,  'F': 1.50, 'Ne': 1.54,
             'Na': 2.40, 'Mg': 2.20, 'Al': 2.10, 'Si': 2.10,  'P': 1.95,
-             'S': 1.80, 'Cl': 1.80, 'Ar': 1.88, 'Br': 1.90,  'X': 1.00}
+             'S': 1.80, 'Cl': 1.80, 'Ar': 1.88, 'Br': 1.90,  'X': 1.50}
 
 class Sphere(object):
 
@@ -141,11 +133,6 @@ class Sphere(object):
 
 class MolecularSurface(object):
 
-    elem2vdw = { 'H': 1.20, 'He': 1.40, 'Li': 2.20, 'Be': 1.90,  'B': 1.80,
-                 'C': 1.70,  'N': 1.60,  'O': 1.55,  'F': 1.50, 'Ne': 1.54,
-                'Na': 2.40, 'Mg': 2.20, 'Al': 2.10, 'Si': 2.10,  'P': 1.95,
-                 'S': 1.80, 'Cl': 1.80, 'Ar': 1.88, 'Br': 1.90,  'X': 1.00}
-
     def __init__(self, elems=['X'], coords=[[0.0, 0.0, 0.0]], allcoords=[[0.0, 0.0, 0.0]],
                  detail=2, vdwfactor=1.0, vdwadd=1.0):
         self.elems = elems
@@ -156,18 +143,35 @@ class MolecularSurface(object):
         self.vdwadd = vdwadd
         vdws = []
         for elem in elems:
-            vdws.append(self.vdwfactor * self.elem2vdw[elem])
+            vdws.append(self.vdwfactor * elem2vdw[elem])
         self.vdws = vdws
+        self.add_midbonds()
         self.create_surface()
 
-    def plot(self):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        x = [centroid[0] for centroid in self.centroids]
-        y = [centroid[1] for centroid in self.centroids]
-        z = [centroid[2] for centroid in self.centroids]
-        ax.scatter(x, y, z, s=1, color='red')
-        plt.show()
+    def add_midbonds(self):
+        midbonds = []
+        elems = []
+        vdws = []
+        for i, (coord1, elem1) in enumerate(zip(self.coords, self.elems)):
+            for j, (coord2, elem2) in enumerate(zip(self.coords, self.elems)):
+                if j <= i:
+                    continue
+                elif self.bonded(coord1, elem1, coord2, elem2):
+                    midbonds.append(self.midpoint(coord1, coord2))
+                    elems.extend('X')
+                    vdws.append((elem2vdw[elem1] + elem2vdw[elem2]) / 2.0)
+        self.coords.extend(midbonds)
+        self.elems.extend(elems)
+        self.vdws.extend(vdws)
+
+    def bonded(self, coord1, elem1, coord2, elem2):
+        dist = np.linalg.norm(np.array(coord2) - np.array(coord1))
+        if dist <= elem2vdw[elem1] + elem2vdw[elem2]:
+            return True
+        return False
+
+    def midpoint(self, coord1, coord2):
+        return [(comp1 + comp2) / 2.0 for comp1, comp2 in zip(coord1, coord2)]
 
     def create_surface(self):
         spheres = []
@@ -199,7 +203,7 @@ class MolecularSurface(object):
     def remove_overlap(self):
         """Remove vertices from spheres that are overlapping with other
         spheres"""
-        for sphere, innersphere in zip(self.spheres, self.innerspheres):
+        for sphere, insphere in zip(self.spheres, self.innerspheres):
             for other in self.spheres:
                 if other.center == sphere.center:
                     continue
@@ -207,16 +211,20 @@ class MolecularSurface(object):
                     continue
                 areas = []
                 centroids = []
-                innercentroids = []
-                for area, innercentroid, centroid in zip(innersphere.areas, innersphere.centroids, sphere.centroids):
+                inareas = []
+                incentroids = []
+                for inarea, incentroid, area, centroid in zip(insphere.areas, insphere.centroids,
+                                                              sphere.areas, sphere.centroids):
                     if self.inside(centroid, other.center, other.radius):
                         continue
                     areas.append(area)
                     centroids.append(centroid)
-                    innercentroids.append(innercentroid)
+                    inareas.append(inarea)
+                    incentroids.append(incentroid)
+                insphere.centroids = incentroids
+                insphere.areas = inareas
                 sphere.centroids = centroids
-                innersphere.areas = areas
-                innersphere.centroids = innercentroids
+                sphere.areas = areas
             for center in self.allcoords:
                 if center in self.coords:
                     continue
@@ -224,33 +232,34 @@ class MolecularSurface(object):
                     continue
                 areas = []
                 centroids = []
-                innercentroids = []
-                for area, innercentroid, centroid in zip(innersphere.areas, innersphere.centroids, sphere.centroids):
-                    if self.inside(centroid, center, 1.0):
+                inareas = []
+                incentroids = []
+                for inarea, incentroid, area, centroid in zip(insphere.areas, insphere.centroids,
+                                                              sphere.areas, sphere.centroids):
+                    if self.inside(centroid, center, 2.0):
                         continue
                     areas.append(area)
                     centroids.append(centroid)
-                    innercentroids.append(innercentroid)
-                innersphere.areas = areas
+                    inareas.append(inarea)
+                    incentroids.append(incentroid)
+                insphere.centroids = incentroids
+                insphere.areas = inareas
                 sphere.centroids = centroids
-                innersphere.centroids = innercentroids
-            print 'areas ' + str(len(sphere.areas))
-            print 'centroids ' + str(len(sphere.centroids))
+                sphere.areas = areas
 
     def write_surface(self):
         """Write input files for PE module."""
-        self.areas = np.array(self.areas)/au2aa**2
-        self.centroids = np.array(self.centroids)/au2aa
         fout = open('surface.dat', 'w')
         fout.write('NPOINTS\n')
         fout.write('{}\n'.format(len(self.areas)))
         output = ''
         fout.write('coordinates\n')
         for area, centroid in zip(self.areas, self.centroids):
-            output += ('{0[0]:12.6f} {0[1]:12.6f} {0[2]:12.6f}'.format(centroid) +
-                       '{0:12.6f}\n'.format(area))
+            output += ('{0[0]:12.6f}, {0[1]:12.6f}, {0[2]:12.6f}, '.format([float(comp)/au2aa for comp in centroid]) +
+                       '{0:12.6f}\n'.format(float(area)/au2aa**2))
         fout.write(output)
         fout.close()
+
 
 if __name__ == "__main__":
 
@@ -264,8 +273,9 @@ if __name__ == "__main__":
     allcoords = [[float(coord) * au2aa for coord in line.split()] for line in fall]
 
     fsurf.close()
+    felems.close()
     fall.close()
 
-    mol = MolecularSurface(elems=elems, coords=surfcoords, allcoords=allcoords, detail=level, vdwfactor=1.0, vdwadd=1.0)
+    mol = MolecularSurface(elems=elems, coords=surfcoords, allcoords=allcoords, detail=level, vdwfactor=1.2, vdwadd=1.4)
     mol.write_surface()
-#    mol.plot()
+
