@@ -44,15 +44,16 @@ def area(a, b, c):
     f = np.linalg.det(f)**2
     return 0.5 * np.sqrt(d + e + f)
 
-def write_surface(centroids):
+def write_surface(centroids, areas):
     """Write surface file for PE module."""
     fout = open('surface.dat', 'w')
-#    fout.write('NPOINTS\n')
-#    fout.write('{}\n'.format(len(centroids)))
+    fout.write('NPOINTS\n')
+    fout.write('{}\n'.format(len(areas)))
     output = ''
-#    fout.write('coordinates\n')
-    for centroid in centroids:
-        output += ('{0[0]:12.6f}, {0[1]:12.6f}, {0[2]:12.6f}\n'.format(centroid))
+    fout.write('coordinates\n')
+    for area, centroid in zip(areas, centroids):
+        output += ('{0[0]:12.6f}, {0[1]:12.6f}, {0[2]:12.6f}, '.format(centroid) +
+                   '{0:12.6f}\n'.format(area))
     fout.write(output)
     fout.close()
 
@@ -89,4 +90,10 @@ if __name__ == "__main__":
         c = verts[face[2]]
         centroids.append(centroid(a, b, c))
 
-    write_surface(centroids)
+    areas = []
+    for face in faces:
+        a = verts[face[0]]
+        b = verts[face[1]]
+        c = verts[face[2]]
+        areas.append(area(a, b, c))
+    write_surface(centroids, areas)

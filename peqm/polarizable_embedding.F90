@@ -1384,41 +1384,41 @@ subroutine pe_read_potential(coords, charges)
     end if
 !   Do a PE-COSMO calculation   
     if (pe_sol) then
-         allocate(all_coords(3,qmnucs+nsites(0)))
-         allocate(all_charges(1,qmnucs+nsites(0)))
-         all_coords(:,1:qmnucs) = Rm
-         all_coords(:,qmnucs+1:) = Rs
-         all_charges(:,1:qmnucs) = Zm
-         all_charges(:,qmnucs+1:) = Zs
-         natoms = qmnucs + nsites(0)
-         allocate( surf_atoms(3,natoms) )
-         surf_atoms = 0.0d0
-         allocate(all_coords_new(3,natoms)) ! cartesian coordinates in the new basis
+!         allocate(all_coords(3,qmnucs+nsites(0)))
+!         allocate(all_charges(1,qmnucs+nsites(0)))
+!         all_coords(:,1:qmnucs) = Rm
+!         all_coords(:,qmnucs+1:) = Rs
+!         all_charges(:,1:qmnucs) = Zm
+!         all_charges(:,qmnucs+1:) = Zs
+!         natoms = qmnucs + nsites(0)
+!         allocate( surf_atoms(3,natoms) )
+!         surf_atoms = 0.0d0
+!         allocate(all_coords_new(3,natoms)) ! cartesian coordinates in the new basis
 ! get surface stores the surface coordinates and area to surface.dat
-         call openfile( 'all_atoms.dat',atoms,'new','formatted')
-         write(luout,*) 'All coords before get_surface'
-         do i = 1, natoms
-            write(atoms,*) all_coords(:,i)
-            write(luout,*) all_coords(:,i)
-         end do
-         close( atoms ) 
-         allocate( kk(natoms) )
-         call get_surface(natoms,all_coords,all_charges,surf_atoms,all_coords_new,kk)
-         call openfile( 'surface_atoms.dat',surf,'new','formatted')
-         call openfile( 'surface_atom_charges.dat',surf_charges,'new','formatted')
-         write(luout,*) 'Surface atoms before surface.py'
-         do i = 1, natoms
-            write(luout,*) all_coords(:,i)
-         end do
-         do i = 1, size(surf_atoms,dim=2)
-            write(surf,*) all_coords(:,kk(i))
-            write(surf_charges,*) int(all_charges(:,kk(i)))
-            write(luout,*) all_coords(:,kk(i)), int(all_charges(:,kk(i))), kk(i)
-         end do
-         close( surf ) 
-         close( surf_charges ) 
-! surface.py must read in the list of all atoms and the list of surface atoms
-         call system( "./surface.py surface_atoms.dat surface_atom_charges.dat all_atoms.dat 3" )
+!         call openfile( 'all_atoms.dat',atoms,'new','formatted')
+!         write(luout,*) 'All coords before get_surface'
+!         do i = 1, natoms
+!            write(atoms,*) all_coords(:,i)
+!            write(luout,*) all_coords(:,i)
+!         end do
+!         close( atoms ) 
+!         allocate( kk(natoms) )
+!         call get_surface(natoms,all_coords,all_charges,surf_atoms,all_coords_new,kk)
+!         call openfile( 'surface_atoms.dat',surf,'new','formatted')
+!         call openfile( 'surface_atom_charges.dat',surf_charges,'new','formatted')
+!         write(luout,*) 'Surface atoms before surface.py'
+!         do i = 1, natoms
+!            write(luout,*) all_coords(:,i)
+!         end do
+!         do i = 1, size(surf_atoms,dim=2)
+!            write(surf,*) all_coords(:,kk(i))
+!            write(surf_charges,*) int(all_charges(:,kk(i)))
+!            write(luout,*) all_coords(:,kk(i)), int(all_charges(:,kk(i))), kk(i)
+!         end do
+!         close( surf ) 
+!         close( surf_charges ) 
+!! surface.py must read in the list of all atoms and the list of surface atoms
+!         call system( "./surface.py surface_atoms.dat surface_atom_charges.dat all_atoms.dat 3" )
 ! surface.py must create surface.dat which contains all tesselation points.
          call pe_read_tesselation()
     end if
@@ -1476,18 +1476,18 @@ subroutine pe_read_tesselation()
           write (luout,*) i, A(i)
        end do
     end if
-!    A = aa2au2*A
-!    Sp = aa2au*Sp
-!    if (print_lvl .gt. 100) then
-!       write(luout,*) 'Sp in pe_read_tesselation in AU'
-!       do i=1,nsurp
-!              write (luout,*) Sp(:,i)
-!       end do
-!       write(luout,*) 'A in pe_read_tesselation in AU'
-!       do i=1,nsurp
-!          write (luout,*) A(i)
-!       end do
-!    end if
+    A = aa2au2*A
+    Sp = aa2au*Sp
+    if (print_lvl .gt. 100) then
+       write(luout,*) 'Sp in pe_read_tesselation in AU'
+       do i=1,nsurp
+              write (luout,*) Sp(:,i)
+       end do
+       write(luout,*) 'A in pe_read_tesselation in AU'
+       do i=1,nsurp
+          write (luout,*) A(i)
+       end do
+    end if
     
 end subroutine pe_read_tesselation
 
@@ -4814,7 +4814,7 @@ subroutine multipole_potentials(Vmuls)
             k = 1
             do j = 1, nsites(ncores-1)
                 Rji = Sp(:,i) - Rs(:,j)
-                if (norm2(Rji) < 7.0d0 ) then
+                if (norm2(Rji) < 1.2d0 ) then
                     write(luout,*) 'Rji', norm2(Rji)
                 end if
                 if (lmul(0)) then
