@@ -139,7 +139,7 @@ fi
 #
 # Test of energy
 #
-CRIT1=`$GREP "QM/MM calculation converged" $log | wc -l`
+CRIT1=`$GREP 'QM/MM "QM3" calculation converged' $log | wc -l`
 CRIT2=`$GREP "Electrostatic energy: * ( \-|\-0)\.00781037" $log | wc -l`
 CRIT3=`$GREP "Polarization energy:  * ( \-|\-0)\.00051700" $log | wc -l`
 CRIT4=`$GREP "Total QM/MM energy:   * ( \-|\-0)\.00832737" $log | wc -l`
