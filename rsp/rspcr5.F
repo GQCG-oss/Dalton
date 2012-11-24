@@ -77,12 +77,37 @@ C
       LOGICAL FOUND, CONV, USOLVD
       CHARACTER*8 LABX1,LABX2,LAB1,LAB2,BLANK
       PARAMETER(THR = 1.0D-8, BLANK='        ', D0 = 0.0D0)
+      CHARACTER*20 FILE_NAME
+      INTEGER INFORB_TEST(33)
 C
       FOUND  = .FALSE.
       CONV   = .FALSE.
       USOLVD = .FALSE.
       REWIND (LU)
-      READ(LU) ! skip rec. no. 1 = wave function info record used when opening
+      ! rec. no. 1 = wave function info record used when opening
+      READ (LU,END=200,ERR=200) INFORB_TEST
+      INFORB_TEST( 1: 8) = INFORB_TEST( 1: 8) - NISH(:)
+      INFORB_TEST( 9:16) = INFORB_TEST( 9:16) - NASH(:)
+      INFORB_TEST(17:24) = INFORB_TEST(17:24) - NORB(:)
+      INFORB_TEST(25:32) = INFORB_TEST(25:32) - NBAS(:)
+      INFORB_TEST(33)    = INFORB_TEST(33)    - NSYM
+      NERR = 0
+      DO I = 1,33
+         IF (INFORB_TEST(I) .NE. 0) NERR = NERR + 1
+      END DO
+
+      IF (NERR .NE. 0) THEN
+         REWIND (LU)
+         READ (LU) INFORB_TEST
+         WRITE (LUPRI,'(/A/A/,(10X,8I5))')
+     &      ' INFO: Orbital data found on response'//
+     &      ' vector file does not match current orbital data',
+     &      ' Number of inactive, active, orbitals, basis functions'//
+     &      ' and number of symmetries:',
+     &      INFORB_TEST(1:33)
+         GOTO 198
+      END IF
+
 C
   100 READ(LU,END=200,ERR=200)
      &      LABX1,LABX2,FREQX1,FREQX2,ISYMX1,ISYMX2,ANTSYM,
@@ -97,13 +122,19 @@ C
      &        NBSX,NRBX,
      &        ' Number of basis functions/orbitals in this calc.:',
      &        NBAST,NORBT
-         WRITE (LUPRI,'(/A)') ' INFO: RSPVEC is reset to empty file'
-         REWIND (LU)
-         WRITE (LU) 'EOFLABEL'
-         GOTO 200
+         WRITE (LUPRI,'(/A/A,T31,A,T51,A/A,T21,2F20.5/A,T21,2I20
+     &    /A,2F10.2,I10/A,F30.12/A,2I20)')
+     &   'Dump of info in this record:',
+     &   ' Labels',LABX1,LABX2,
+     &   ' Frequencies',FREQX1,FREQX2,
+     &   ' Symmetries',ISYMX1,ISYMX2,
+     &   ' Antsym, residual, record length',ANTSYM,RSDX,LEN,
+     &   ' Energy',EMCX,
+     &   ' Nr. of basis functions and orbitals',NBSX,NRSX
+         GOTO 198
       ELSE
          IF (ABS((EMCX - EMCSCF)/EMCSCF) .GT. 100D0*THRZER) THEN
-Chj         IF ((OPTNEW .AND. ITRNMR .GT. 0) .OR. 
+Chj         IF ((OPTNEW .AND. ITRNMR .GT. 0) .OR.
 Chj  &          (OPTWLK .AND. ITERNR .GT. 0)) THEN
 Chj         Try to use as initial guess /hjaaj-Mar2006
                USOLVD = .TRUE.
@@ -116,17 +147,14 @@ Chj         from a different calculation /hjaaj-Mar2006
      &              ' vector file does not match current energy',
      &              ' Energy on file            : ',EMCX,
      &              ' Energy in this calculation: ',EMCSCF
-               WRITE (LUPRI,'(/A)') ' RSPVEC is reset to empty file'
-               REWIND (LU)
-               WRITE (LU) 'EOFLABEL'
-               GOTO 200
+               GOTO 198
             END IF
          END IF
       END IF
       IF (LAB2 .EQ. '        ') THEN
          IF (((ABS(ABS(FREQ1)-FREQX1)).LE.THR)
      &        .AND. (LAB1.EQ.LABX1) .AND. (LAB2.EQ.LABX2) .AND.
-     &        (ISYM1.EQ.ISYMX1)) THEN 
+     &        (ISYM1.EQ.ISYMX1)) THEN
             FOUND = .TRUE.
             IF ((RSDX-RSD) .LT. D0) THEN
                CONV = .TRUE.
@@ -135,7 +163,7 @@ Chj         from a different calculation /hjaaj-Mar2006
      &         ' WARNING: Solution vector on RSPVEC converged to',RSDX,
      &         ' WARNING: which is less than desired convergence',RSD
 
-               write(lupri,*) 'RSPVEC: record length is',LEN
+               !Write(lupri,*) 'RSPVEC: record length is',LEN
             END IF
             IF (LEN .GT. 0) CALL READT(LU,LEN,VEC)
             GOTO 199
@@ -151,7 +179,7 @@ Chj         from a different calculation /hjaaj-Mar2006
      &        (     (ABS(FREQ1-FREQX2).LE.THR)
      &        .AND. (ABS(FREQ2-FREQX1).LE.THR)
      &        .AND. LAB1.EQ.LABX2 .AND. LAB2.EQ.LABX1 .AND.
-     &        ISYM1.EQ.ISYMX2 .AND. ISYM2.EQ.ISYMX1)) THEN 
+     &        ISYM1.EQ.ISYMX2 .AND. ISYM2.EQ.ISYMX1)) THEN
             FOUND = .TRUE.
             IF ((RSDX-RSD) .LT. D0) THEN
                CONV = .TRUE.
@@ -160,7 +188,7 @@ Chj         from a different calculation /hjaaj-Mar2006
      &         ' WARNING: Solution vector on RSPVEC converged to',RSDX,
      &         ' WARNING: which is less than desired convergence',RSD
 
-               write(lupri,*) 'RSPVEC: record length is',LEN
+               !write(lupri,*) 'RSPVEC: record length is',LEN
             END IF
             IF (LEN .GT. 0) CALL READT(LU,LEN,VEC)
             GOTO 199
@@ -170,12 +198,25 @@ Chj         from a different calculation /hjaaj-Mar2006
          END IF
       END IF
 C
+ 198  CONTINUE
+         INQUIRE(UNIT=LU,NAME=FILE_NAME)
+         LFN = LNBLNK(FILE_NAME)
+         WRITE (LUPRI,'(/3A)')
+     &      ' INFO: ',FILE_NAME(1:LFN),' is reset to empty file'
+         REWIND (LU)
+         WRITE (LU) NISH,NASH,NORB,NBAS,NSYM
+         WRITE (LU) 'EOFLABEL'
+      GO TO 200
+C
  199  CONTINUE
       IF (USOLVD) THEN
          CONV = .FALSE.
-         WRITE (LUPRI,'(/A,/2A)') ' Converged vectors from'//
+         WRITE (LUPRI,'(/A/10X,A,3X,A)')
+     &      ' INFO: Converged vectors from'//
      &      ' previous calculation are used as starting '//
      &      'vectors for property',LABX1, LABX2
       END IF
+C
  200  RETURN
       END
+! -- end of rspcr5.F --

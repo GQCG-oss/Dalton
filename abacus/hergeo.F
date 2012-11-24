@@ -355,10 +355,10 @@ C
      &       ADIST_MAX,' Angstrom (',ADIST_MAX/XTANG,' Bohr)',
      &      '  between atoms',IADIST_MAX,' and',JADIST_MAX,
      &      ', "',NAMDEP(IADIST_MAX),'" and "',NAMDEP(JADIST_MAX),'".'
-            WRITE(LUPRI,'(/A,2(F10.4,A))')
+            IF (ABSDISTHX_MIN .LT. 1.D10) WRITE(LUPRI,'(/A,2(F10.4,A))')
      &      '  Min HX interatomic separation is',
      &       ABSDISTHX_MIN,' Angstrom (',ABSDISTHX_MIN/XTANG,' Bohr)'
-            WRITE(LUPRI,'(/A,2(F10.4,A))')
+            IF (ABSDISTYX_MIN .LT. 1.D10) WRITE(LUPRI,'(/A,2(F10.4,A))')
      &      '  Min YX interatomic separation is',
      &       ABSDISTYX_MIN,' Angstrom (',ABSDISTYX_MIN/XTANG,' Bohr)'
 

@@ -989,7 +989,7 @@ C              .PROP2Average
      *      ' Default : Using Fock type decoupling of the two-electron',
      *      ' density matrix :',
      *      '    Add DV*(FC+FV) instead of DV*FC to E[2] approximate',
-     *      ' obtial diagonnal'
+     *      ' orbital diagonal'
          ELSE
             WRITE(LUPRI,'(/A)')
      *      ' .NOAVDIA : Using exact E[2] orbital diagonal. '

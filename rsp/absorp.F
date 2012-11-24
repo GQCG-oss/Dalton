@@ -1806,6 +1806,7 @@ C
       END DO
 C
       REWIND(LU)
+      READ(LU)
  100  READ(LU,END=900,ERR=900) LAB1,LAB2,FREQ1,FREQ2,ISYM1,ISYM2,
      &     ANTSYM,RSD,LEN,EMCSCF,NBAS,NORB
 C
@@ -1837,6 +1838,7 @@ C
 #include "wrkrsp.h"
 #include "absorp.h"
 #include "inftap.h"
+#include "inforb.h"
 #include "ibndxdef.h"
 C
       CHARACTER*8 LABEL
@@ -1872,7 +1874,9 @@ C
      &     0,.FALSE.)
       CALL GPOPEN(LUSTMP,'RSPSTMP','NEW','SEQUENTIAL','UNFORMATTED',
      &     0,.FALSE.)
+      WRITE(LUBTMP) NISH,NASH,NORB,NBAS,NSYM
       WRITE(LUBTMP) 'EOFLABEL'
+      WRITE(LUSTMP) NISH,NASH,NORB,NBAS,NSYM
       WRITE(LUSTMP) 'EOFLABEL'
       CALL ABSWRT(LURSP3,LUBTMP,LABEL,IOPER,NFREQ_ABS,FREQ_ABS,
      &     IBTYP,REDVEC,WRK(KFREE),LFREE)
