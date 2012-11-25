@@ -849,7 +849,7 @@
 {$params = {
   name   => "qm3convergence",
   type   => 4,
-  string => "QM/MM calculation converged",
+  string => 'QM/MM "QM3" calculation converged',
   maxout => -1,
   post   => 0,
   rembeg => 0,

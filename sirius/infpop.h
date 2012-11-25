@@ -12,6 +12,6 @@ C hjaaj sep 2005: make POPNAB etc. dynamic -- maybe remove completely infpop.h ?
      &                POPNUC(MXCENT),POPTYP(MAXTYP,MXCENT),
      &                POPTY(MAXTYP,MXCENT),
      &                IFXYZ(3),JFXYZ(3),IPOPTYP
-      CHARACTER*14 POPANA_TYPE
+      CHARACTER*12 POPANA_TYPE
       COMMON /INFPOPC/ POPANA_TYPE
 C --- end of sirius/infpop.h ---

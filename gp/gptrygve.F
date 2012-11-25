@@ -24,6 +24,8 @@
 C
 C FILE    : gptrygve.F
 C
+C General Purpose utility routines (originally) introduced in Dalton by Trygve Helgaker
+C
 ! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
 #ifdef INT_STAR8
 #define VAR_INT64
@@ -31,32 +33,6 @@ C
 !
 #include "single.h"
 C
-#ifdef REV_LOG
-c===========================================================================
-cRevision 1.5-1.9  2000/05/02  hjj
-c(1) changed QUIT so that it calls TSTAMP, prints total cpu and elapsed time,
-c    and stops with STOP 100
-c(2) removed obsolete subroutine TIMDAT
-c(3) allow unit 6 in GPOPEN;
-c    do not test for unit 6 in GPCLOSE (and do not close unit 6)
-c
-crevision 1.4 2000/04/14 07:40:36 hjj
-cGPIOIN: initialize priunit.h, new defaults:  /hjaaj apr 2000
-c   LUPRI = 6 (to use stdout on unix)
-c   LUW4  = 6 (same as LUPRI by default)
-c   NINFO = 0, NWARN = 0 (zero counters moved to here)
-c   LUERR = -8xxx (let GPOPEN assign this one, could be = stderr on unix)
-c   IPRSTAT = 0 (no statistics print on LUSTAT)
-c----------------------------
-crevision 1.3 2000/04/10 10:52:18 hjj
-c changed test for "no more available file numbers" in GPOPEN and DAINTF
-c the old test would use IUNTAB(100) and the dimension is only 99. /HJAaJ
-c----------------------------
-crevision 1.2 2000/04/10 hjj
-c changed initialization to -9xxx from 0, because unit 0 is stderr on
-c many systems.
-c===========================================================================
-#endif
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
