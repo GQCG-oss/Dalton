@@ -99,7 +99,7 @@ fi
 # General and Energy Tests 
 #
 CRIT1=`$GREP "Anisotropic polarization" $log | wc -l`
-CRIT2=`$GREP 'QM/MM "QM3" calculation converged' $log | wc -l`
+CRIT2=`$GREP 'QM/MM "QMMM" calculation converged' $log | wc -l`
 CRIT3=`$GREP "Final DFT energy: * \-114\.470427" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[1]=3

@@ -100,7 +100,7 @@ fi
 # General and Energy Tests 
 #
 CRIT1=`$GREP "Anisotropic polarization" $log | wc -l`
-CRIT2=`$GREP 'QM/MM "QM3" calculation converged' $log | wc -l`
+CRIT2=`$GREP 'QM/MM "QMMM" calculation converged' $log | wc -l`
 CRIT3=`$GREP "Charge contribution: * ( \-|\-0)\.014924" $log | wc -l`
 CRIT4=`$GREP "Dipole contribution: * ( |0)\.005065" $log | wc -l`
 CRIT5=`$GREP "Quadrupole contribution: * ( \-|\-0)\.007670" $log | wc -l`
