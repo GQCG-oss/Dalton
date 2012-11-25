@@ -239,6 +239,7 @@ C     set up bond vectors in Angstrom in VEC
 C     NUCIND is number of QM atoms
 C     NCTOT .ge. NUCIND is number of QM atoms + number of MM atoms
 C
+      N_QMATOMS = 0
       IATOMA = 0
       DO 100 ICENTA = 1, NCTOT
          DO 110 IA = 0, MAXOPR
@@ -291,8 +292,8 @@ C
 
       N_SHORT_HX = 0
       N_SHORT_YX = 0
-      ABSDISTHX_MIN= 1.D200
-      ABSDISTYX_MIN= 1.D200
+      ADISTHX_MIN= 1.D200
+      ADISTYX_MIN= 1.D200
 
       IJ = 0
       DO 400 I = 1,NUCDEP
@@ -303,12 +304,12 @@ C
             DISTAN = SQRT(DISTAN)
             IF (DIF) THEN
                DISTAN = DISTAN - DIST(IJ)
-            ELSE IF (I.NE.J) THEN
+            ELSE IF (I .LE. N_QMATOMS .AND. I.NE.J) THEN
                IF (ICHARG(I) .NE. 1 .AND. ICHARG(J) .NE. 1) THEN
-                  ABSDISTYX_MIN = MIN(ABSDISTYX_MIN,DISTAN)
-                  IF (DISTAN .LE. 1.0D0) N_SHORT_YX = N_SHORT_YX + 1 ! R(Y-X) .lt. 1 Angstrom is usually an error
+                  ADISTYX_MIN = MIN(ADISTYX_MIN,DISTAN)
+                  IF (DISTAN .LE. 1.0D0) N_SHORT_YX = N_SHORT_YX + 1 ! R(Y-X) .lt. 1.0 Angstrom is usually an error
                ELSE
-                  ABSDISTHX_MIN = MIN(ABSDISTHX_MIN,DISTAN)
+                  ADISTHX_MIN = MIN(ADISTHX_MIN,DISTAN)
                   IF (DISTAN .LE. 0.7D0) N_SHORT_HX = N_SHORT_HX + 1 ! R(H-X) .lt. 0.7 Angstrom is usually an error
                END IF
             END IF
@@ -355,12 +356,12 @@ C
      &       ADIST_MAX,' Angstrom (',ADIST_MAX/XTANG,' Bohr)',
      &      '  between atoms',IADIST_MAX,' and',JADIST_MAX,
      &      ', "',NAMDEP(IADIST_MAX),'" and "',NAMDEP(JADIST_MAX),'".'
-            IF (ABSDISTHX_MIN .LT. 1.D10) WRITE(LUPRI,'(/A,2(F10.4,A))')
+            IF (ADISTHX_MIN .LT. 1.D10) WRITE(LUPRI,'(/A,2(F10.4,A))')
      &      '  Min HX interatomic separation is',
-     &       ABSDISTHX_MIN,' Angstrom (',ABSDISTHX_MIN/XTANG,' Bohr)'
-            IF (ABSDISTYX_MIN .LT. 1.D10) WRITE(LUPRI,'(/A,2(F10.4,A))')
+     &       ADISTHX_MIN,' Angstrom (',ADISTHX_MIN/XTANG,' Bohr)'
+            IF (ADISTYX_MIN .LT. 1.D10) WRITE(LUPRI,'(/A,2(F10.4,A))')
      &      '  Min YX interatomic separation is',
-     &       ABSDISTYX_MIN,' Angstrom (',ABSDISTYX_MIN/XTANG,' Bohr)'
+     &       ADISTYX_MIN,' Angstrom (',ADISTYX_MIN/XTANG,' Bohr)'
 
             IF (N_SHORT_YX .GT. 0 .OR. N_SHORT_HX .GT. 0) THEN
               WRITE(LUPRI,'(/A,2I5/A/A)')
