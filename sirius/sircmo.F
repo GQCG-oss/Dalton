@@ -1562,7 +1562,7 @@ C
          NORBI=NORB(ISYM)
       IF (NORBI.EQ.0) GO TO 700
          NBASI=NBAS(ISYM)
-         DO 705 NI=1,NORBI
+         DO NI=1,NORBI
             IST=IEND+1
             IEND=IEND+NBASI
             IMOMXV = IDAMAX(NBASI,CMO(IST),1)
@@ -1580,14 +1580,13 @@ C
             ELSE
                WRITE (LUPNCH,7050) (CMO(NP),NP=IST,IEND)
             END IF
-  705    CONTINUE
+         END DO
          NDELI = NBASI-NORBI
       IF (NDELI.EQ.0) GO TO 700
-         DO 706 NI=1,NDELI
+         DO NI=1,NDELI
             WRITE (LUPNCH,7000) (D0,NP=1,NBASI)
-  706    CONTINUE
+         END DO
   700 CONTINUE
-      CALL GPCLOSE(LUPNCH,'KEEP')
 C
       IF (IPCTL.EQ.1) THEN
          WRITE (LUPNCH,'(A,A8,2X,A8,A)')
@@ -1595,6 +1594,7 @@ C
          WRITE(LUPNCH,7000) (OCC(NP),NP=1,NORBT)
       END IF
 C
+      CALL GPCLOSE(LUPNCH,'KEEP')
       CALL QEXIT('PUNMO')
       RETURN
 C
