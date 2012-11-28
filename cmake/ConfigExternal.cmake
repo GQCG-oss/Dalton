@@ -11,11 +11,7 @@ include(ExternalProject)
 
 macro(add_external _project)
 
-    if(ENABLE_GIT_SUBMODULES)
-        set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
-    else()
-        set(UPDATE_COMMAND echo)
-    endif()
+    set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
 
     ExternalProject_Add(${_project}
         DOWNLOAD_COMMAND ${UPDATE_COMMAND}
@@ -32,9 +28,7 @@ macro(add_external _project)
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}/external/lib)
-    if(ENABLE_GIT_SUBMODULES)
-        add_dependencies(${_project} git_update)
-    endif()
+    add_dependencies(${_project} git_update)
 
   # # remove stamps for external builds so that they are rebuilt every time
   # add_custom_command(
