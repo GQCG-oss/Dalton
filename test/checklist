@@ -857,6 +857,18 @@
 }
 ## qm3convergence end  #######################################################
 
+## qmmmconvergence start #######################################################
+{$params = {
+  name   => "qmmmconvergence",
+  type   => 4,
+  string => 'QM/MM "QMMM" calculation converged',
+  maxout => -1,
+  post   => 0,
+  rembeg => 0,
+  remend => 0};
+}
+## qmmmconvergence end  #######################################################
+
 
 ## qmmmaniso start #######################################################
 {$params = {
