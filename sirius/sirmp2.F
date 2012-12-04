@@ -256,6 +256,8 @@ C
 #include "infind.h"
 #include "inftra.h"
 #include "dftcom.h"
+!
+#include "dfterg.h" ! Manu: needed for RSDHf
 C
       CALL QENTER('MP2CTL')
       CALL GETTIM(CPUMP2,WALMP2)
@@ -514,6 +516,30 @@ C
      &         ' from sr-sr+sr-lr integrals :',EMP2_SRLR
                WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
      &          ' from        full integrals :',EMP2
+!     
+! Manu 04-12-2012: print the second-order correction to the energy in the RSDHf scheme: 
+!                  EMP2(full-range) - EMP2(short-range)) 
+
+               write(lupri,*) ''
+               write(lupri,*) '********************************'
+               write(lupri,*) 'Calculation of the RSDHf energy'
+               write(lupri,*) '********************************'
+               write(lupri,*) ''
+               write(lupri,*) 'EsrXC_dft = ', ESRDFT
+               WRITE (LUPRI,'(//A,F25.10)') 'second-order '//
+     &               'long-range MP contribution           : ',
+     &               EMP2_LR
+               WRITE (LUPRI,'(//A,F25.10)') '+ second-order '//
+     &               'long-range/short-range MP coupling : ',
+     &               EMP2 - EMP2_SR - EMP2_LR
+               WRITE (LUPRI,'(//A,F25.10)') '= second-order '//
+     &               'contribution to the RSDHf energy   : ',
+     &               EMP2-EMP2_SR
+               write(lupri,*) ''
+               write(lupri,*) '********************************'
+!!!!!!!!!!!!!!!
+!
+     
             ELSE
                call quit('MP2CTL: You should never see this output!')
             END IF
@@ -699,7 +725,16 @@ C
 C           now reset name of 2-electron integral file
             AO2INTFILE_LABEL = AO2INTFILE_LABEL_SAVE
             FTRCTL = .TRUE.
-            GO TO 10
+!
+! Manu 04-12-2012: no 'quit' anymore when asking for the computation of
+! the lr-sr MP2 coupling term ...
+!
+!           GO TO 10 ! old code
+            
+            IF (ISRINTS_LOOP .LE. 2) THEN 
+               GO TO 10
+            END IF 
+
 C           ... and go back and calculate the MP2 contributions from
 C               next class of range-separated integrals /hjaaj Oct 09
          ELSE IF (ADDSRI) THEN
@@ -799,7 +834,16 @@ C
 C         now reset name of 2-electron integral file
          AO2INTFILE_LABEL = AO2INTFILE_LABEL_SAVE
          FTRCTL = .TRUE.
-         GO TO 10
+!         
+! Manu 04-12-2012: no 'quit' anymore when asking for the computation of
+!                  the lr-sr MP2 coupling term ...
+!
+!           GO TO 10 ! old code
+            
+            IF (ISRINTS_LOOP .LE. 2) THEN 
+               GO TO 10
+            END IF 
+!            
 C        ... and go back and calculate the MP2 contributions from
 C            long-range integrals /hjaaj Oct 09
       END IF
