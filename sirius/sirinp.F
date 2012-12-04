@@ -600,8 +600,9 @@ C
 C (initialize energy values to zero, so they are defined
 C  for non-DFT calcualtions, i.e. standard HF or MCSCF)
 C
-      EDFTY = D0
+      EDFTY   = D0
       ESRDFTY = D0
+      ESRDFT  = D0
 C
 C
 C********** Default values section ORBINP *****
