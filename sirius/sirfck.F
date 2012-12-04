@@ -876,10 +876,10 @@ C           ... spin DMAT: DS is expected in JDAO + 2
                 CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
                 DFT_SPINDNS_SAVE = DFT_SPINDNS
                 DFT_SPINDNS = DO_SPINDNS 
-                CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),EDFT,
+                CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),ESRDFT,
      &                     DOERG,.FALSE.,DOATR,WRK(KLAST),
      &                     LWRK,IPRSRDFT)
-C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+C         SRDFT(NDMAT,EXCMAT,DMAT,ESRDFT,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
                 DFT_SPINDNS = DFT_SPINDNS_SAVE
 C         IF (DOATR)
 C    &      ESRLTR = ESRLTR + DDOT(N2BASX,WRK(KSRAO),1,DMAT(1,JDAO),1)
@@ -908,9 +908,10 @@ C        ... restore DC = DTOT - DV
             ELSE
                EVSR = D0
             END IF
-            ESRDFTY = EDFT + ECSR + EVSR + EJKVSR + EKSR_S
+            ESRDFTY  = ESRDFT + ECSR + EVSR + EJKVSR + EKSR_S
+!
 C
-C           EDFT   = Exsr + Ecsr
+C           ESRDFT = Exsr + Ecsr
 C           EKSR_S =  0.5*Tr( Ksr Dspin ) * HFXFAC
 C           ECSR   = -0.5*Tr( Vxcsr Dc )
 C           EVSR   =     -Tr( Vxcsr Dv )
@@ -924,7 +925,8 @@ C           EKSR   =  0.5*Tr( Ksr Dtot ) * HFXFAC
 C
 !           IF (iprsrdft .GT. 0) then
                WRITE (LUPRI,'(/A,F20.10)')
-     &         '   Ex-sr + Ec-sr                  ',EDFT
+     &         '   Ex-sr + Ec-sr                  ',ESRDFT
+!
                IF (DO_SPINDNS .and. HFXFAC .ne. D0)
      &         WRITE (LUPRI,'(A,F20.10)')
      &         '   EK-sr spin density             ',EKSR_S
