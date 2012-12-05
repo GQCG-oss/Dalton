@@ -52,7 +52,7 @@ C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007-Nov 2009, Hans Joergen Aa. Jensen
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 11)
+      PARAMETER (NTABLE = 12)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
@@ -68,7 +68,7 @@ C
 C
       DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','.SC_SRM',
      &            '.SRINTS','.SCSMP2','.SOSMP2','.MP2 SC','.LEVELS',
-     &            '.DCPT2'/
+     &            '.DCPT2', '.RSDHF'/
 CMAERKE 900918: MP2SAV not implemented, should it be?
 C
 C     ***** PROCESS INPUT FOR MP2INP *****
@@ -83,7 +83,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                   111),II
+     &                   111,112),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -170,6 +170,22 @@ C *** Option 10 >LEVELSHIFT< Level-shift of  MP2 denominator
       GO TO 100
 C FH  Option 11 DCPT2 for MP2 calculation
   111 DCPT2 = .TRUE.
+      GO TO 100
+C *** Option 12 >RSDHF< compute the RSDHf energy
+#ifdef MOD_SRDFT
+  112 SRMP2_SRINTS = .TRUE.   ! .RSDHF activates .SRINTS
+      IPRMP2 = MAX(IPRMP2,1)
+      LAMSR = 0.0D0           ! initialization
+      READ(LUCMD,*) LAMSR     ! read the fraction lambda of srHFX and
+!                               lr-sr MP2 coupling  
+      write(lupri,*)''
+      write(lupri,*)'just after reading, lamsr =', LAMSR
+      write(lupri,*)''
+#else
+  112 CONTINUE
+      call quit(
+     &   '.RSDHF option not included in this non-srdft version')
+#endif
       GO TO 100
 C ==========================================================================
  2000 CONTINUE
@@ -526,6 +542,8 @@ C
                write(lupri,*) '********************************'
                write(lupri,*) ''
                write(lupri,*) 'EsrXC_dft = ', ESRDFT
+               write(lupri,*) ''
+               write(lupri,*) 'LAMSR = ', LAMSR
                WRITE (LUPRI,'(//A,F25.10)') 'second-order '//
      &               'long-range MP contribution           : ',
      &               EMP2_LR
