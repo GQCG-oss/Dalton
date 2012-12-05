@@ -15,14 +15,15 @@ C     MP2_TDA       = .FALSE. ! save info for SOPPA(TDA)
 C     MP2_NO_OCCVIR = .FALSE. ! ignore occ-vir block of MP2 density matrix
 C     SRMP2_SELFCONSISTENT = .FALSE. ! self-consistent iterations on occ-vir block of srMP2 density matrix
 C     SRMP2_SRINTS  = .FALSE. ! calculate both sr-sr and lr-lr MP2 energies - advanced option for study of MP2 energy contributions
+C     LAMSR                   ! fraction of srHFX and lr-sr MP2 coupling in the RSDHf energy 
 C
       PARAMETER (MAXVIR = MXCORB)
-      DOUBLE PRECISION MP2_SCALEFAC, MP2_LSHIFT
+      DOUBLE PRECISION MP2_SCALEFAC, MP2_LSHIFT, LAMSR
       LOGICAL MP2FRO, MP2_SOS, MP2_SCS, MP2_TDA, MP2_NO_OCCVIR,
      &        MP2_SCALED, SRMP2_SELFCONSISTENT, SRMP2_SRINTS,
      &        DCPT2
 C FH   added logical option DCPT2
-      COMMON /INFMP2/ MP2_SCALEFAC(2), MP2_LSHIFT,
+      COMMON /INFMP2/ MP2_SCALEFAC(2), MP2_LSHIFT, LAMSR,
      &        IPRMP2, NFRMP2(8), NPHSYM(8), NPHMAX, NP, NH,
      &        IPHORD(MXCORB), INDXPH(MXCORB), IFRMP2(MXCORB), NPHTOT(8),
      &        MP2FRO, MP2_SOS, MP2_SCS, MP2_TDA, MP2_NO_OCCVIR,
