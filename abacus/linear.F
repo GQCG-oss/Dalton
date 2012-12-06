@@ -34,7 +34,7 @@ C
 c    ---------------------------------------
 c    ---------------------------------------
 C
-      SUBROUTINE LINEARS(KEY,WORK,LWORK)
+      SUBROUTINE LINEAR(KEY,WORK,LWORK)
 C  
 C...
 C...  This subroutine was written by Juan Ignacio Melo using

@@ -260,15 +260,15 @@ C
       IF (SIGMAP1S)  THEN
          WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : PsoKin'
          WRITE (LUPRI,'(A)')'           NOT FOR NOW, some bugs inside'
-c         CALL LINEARS('PSOK',WORK,LWORK) ! NOOOO ANDA
+c         CALL LINEAR('PSOK',WORK,LWORK) ! NOOOO ANDA
          WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : Lkin'
-         CALL LINEARS('LKIN',WORK,LWORK) ! ANDA
+         CALL LINEAR('LKIN',WORK,LWORK) ! ANDA
       END IF
 
       IF (SIGMAD1S) THEN
          WRITE (LUPRI,'(A)')'  Calling to SIGMA1S for : Diamagnetic'// 
      &         ' Singlet First Order Shielding corrections'
-         CALL LINEARS('D1S ',WORK,LWORK) ! ANDA
+         CALL LINEAR('D1S ',WORK,LWORK) ! ANDA
       END IF
 C 
 C First Order TRIPLET
@@ -276,10 +276,10 @@ C
       IF (SIGMAP1T) THEN
          WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
      &         ' Triplet First Order Shielding corrections'
-         CALL LINEART('FCZK',WORK,LWORK) !ANDA
-         CALL LINEART('SDZK',WORK,LWORK) !ANDA
-         CALL LINEART('FCBS',WORK,LWORK) !ANDA 
-         CALL LINEART('SDBS',WORK,LWORK) !ANDA
+         CALL LINEAR('FCZK',WORK,LWORK) !ANDA
+         CALL LINEAR('SDZK',WORK,LWORK) !ANDA
+         CALL LINEAR('FCBS',WORK,LWORK) !ANDA 
+         CALL LINEAR('SDBS',WORK,LWORK) !ANDA
       END IF
 C 
 C Third Order SINLGET 
