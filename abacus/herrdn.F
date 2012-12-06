@@ -6483,6 +6483,9 @@ C
       LOGICAL NEXTMB
 
       N = 0
+      K = 0 !radovan: this is workaround for gfortran 4.7.2
+            !         which optimizies the following code to wrong K
+            !         the resulting basis set name is then empty
       NEXTMB = .FALSE.
       DO I=1,80
        IF (INPUT_LINE(I:I) .NE. ' ' .AND. .NOT. NEXTMB) THEN
