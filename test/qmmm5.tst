@@ -7,7 +7,7 @@ END DESCRIPTION
 START CHECKLIST
 enedft
 qmmmaniso
-qm3convergence
+qmmmconvergence
 qm3energy
 qmmmq
 qmmmdip
@@ -643,7 +643,7 @@ Point group: C1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     QM/MM calculation converged :
+     QM/MM "QMMM" calculation converged :
 
      Charge contribution:         -0.014924453274
      Dipole contribution:          0.005065816441
