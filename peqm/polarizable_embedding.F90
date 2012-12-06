@@ -396,7 +396,6 @@ subroutine pe_dalton_input(word, luinp, lupri)
         else if (trim(option(2:)) == 'PESOL') then
             pe_sol = .true.
             pe_polar = .true.
-! Not yet....
         else if (trim(option(2:)) == 'QMCOS') then
             pe_sol = .true.
             pe_polar = .true.
@@ -1059,6 +1058,11 @@ subroutine pe_read_potential(coords, charges)
         Rs = Rs * aa2au
     end if
 
+!   Do a PE-COSMO calculation   
+    if (pe_sol) then
+         call pe_read_tesselation()
+    end if
+
 101 write(luout,'(//2x,a)') 'Polarizable Embedding potential'
     write(luout,'(2x,a)')   '-------------------------------'
     if (nsites(0) > 0) then
@@ -1115,7 +1119,6 @@ subroutine pe_read_potential(coords, charges)
     end if
     if (pe_sol) then
         write(luout,'(/4x,a,i4)') 'Number of tesselation points:', nsurp
-!        write(luout,'(/4x,a,f8.4)') 'Dielectric constant:', diel
     end if
 
    ! default exclusion list (everything polarizes everything)
@@ -1382,46 +1385,6 @@ subroutine pe_read_potential(coords, charges)
             end if
         end do
     end if
-!   Do a PE-COSMO calculation   
-    if (pe_sol) then
-!         allocate(all_coords(3,qmnucs+nsites(0)))
-!         allocate(all_charges(1,qmnucs+nsites(0)))
-!         all_coords(:,1:qmnucs) = Rm
-!         all_coords(:,qmnucs+1:) = Rs
-!         all_charges(:,1:qmnucs) = Zm
-!         all_charges(:,qmnucs+1:) = Zs
-!         natoms = qmnucs + nsites(0)
-!         allocate( surf_atoms(3,natoms) )
-!         surf_atoms = 0.0d0
-!         allocate(all_coords_new(3,natoms)) ! cartesian coordinates in the new basis
-! get surface stores the surface coordinates and area to surface.dat
-!         call openfile( 'all_atoms.dat',atoms,'new','formatted')
-!         write(luout,*) 'All coords before get_surface'
-!         do i = 1, natoms
-!            write(atoms,*) all_coords(:,i)
-!            write(luout,*) all_coords(:,i)
-!         end do
-!         close( atoms ) 
-!         allocate( kk(natoms) )
-!         call get_surface(natoms,all_coords,all_charges,surf_atoms,all_coords_new,kk)
-!         call openfile( 'surface_atoms.dat',surf,'new','formatted')
-!         call openfile( 'surface_atom_charges.dat',surf_charges,'new','formatted')
-!         write(luout,*) 'Surface atoms before surface.py'
-!         do i = 1, natoms
-!            write(luout,*) all_coords(:,i)
-!         end do
-!         do i = 1, size(surf_atoms,dim=2)
-!            write(surf,*) all_coords(:,kk(i))
-!            write(surf_charges,*) int(all_charges(:,kk(i)))
-!            write(luout,*) all_coords(:,kk(i)), int(all_charges(:,kk(i))), kk(i)
-!         end do
-!         close( surf ) 
-!         close( surf_charges ) 
-!! surface.py must read in the list of all atoms and the list of surface atoms
-!         call system( "./surface.py surface_atoms.dat surface_atom_charges.dat all_atoms.dat 3" )
-! surface.py must create surface.dat which contains all tesselation points.
-         call pe_read_tesselation()
-    end if
 end subroutine pe_read_potential
 
 !------------------------------------------------------------------------------
@@ -1434,7 +1397,8 @@ subroutine pe_read_tesselation()
     real(dp), dimension(3) :: Sp_old, Sp_new
     real(dp), dimension(:,:), allocatable :: Sp_pre
     real(dp), dimension(:), allocatable :: A_pre
-    real(dp) :: x,y,z
+    real(dp) :: x,y,z,fac
+    real(dp), dimension(3) :: Rji
     integer :: np
     
     inquire(file='surface.dat', exist=lexist)
@@ -1478,6 +1442,16 @@ subroutine pe_read_tesselation()
     end if
     A = aa2au2*A
     Sp = aa2au*Sp
+    do i = 1, nsurp
+       do j = 1, nsites(ncores-1)
+          Rji = Sp(:,i) - Rs(:,j)
+          if (norm2(Rji) < 1.2d0 ) then
+              write(luout,*) 'WARNING: Cavity to close to MM points, this is scaled for now!!', norm2(Rji)
+              write(luout,*) 'Tess p.', Sp(:,i)
+              write(luout,*) 'MM site', Rs(:,j)
+          end if
+       end do
+    end do
     if (print_lvl .gt. 100) then
        write(luout,*) 'Sp in pe_read_tesselation in AU'
        do i=1,nsurp
@@ -3128,7 +3102,6 @@ subroutine pe_polarization(denmats, fckmats)
     end if
    mk_sum = 0.0d0
    do i = 1, ndens
-       write(luout,*) 'i, Mkinds'
        if (pe_sol) then 
            lenmk = 3*npols + nsurp
        else
@@ -4582,110 +4555,112 @@ subroutine response_matrix_full(B)
     real(dp) :: R, R3, R5, R_sol, R3_sol, diel_fac, R_tes
     real(dp), dimension(3) :: Rij, Rij_sol, Rij_tes, Tk
     real(dp), dimension(6) :: P1inv
-    write(luout,*) 'Am I Here??' 
     if (pe_sol) then
         allocate(B_full(3*npols+nsurp,3*npols+nsurp))
     else
         allocate(B_full(3*npols,3*npols))
         pe_sol =.false.
     end if
+    if ( qmcos ) then
+       pe_sol = .false.
+    end if
     B_full = 0.0d0
     B = 0.0d0
     ipcm_off = 3*npols
     diel_fac = diel/(diel-1.0d0)
     write (luout,*) 'diel, diel_fac, nsites,npols', diel, diel_fac, nsites(ncores-1),npols
-    do i = 1, nsites(ncores-1) ! loop over blocks of 3 columns per site
-    write (luout,*) 'i',i
-        if (zeroalphas(i)) cycle
-        icol_off = (i-1)*3
-        P1inv = P1s(:,i)
-        call pptrf(P1inv, 'L', info)
-        if (info /= 0) then
-            P1inv = P1s(:,i)
-            call sptrf(P1inv, 'L', ipiv, info)
-            if (info /= 0) then
-                stop 'ERROR: could not factorize polarizability.'
-            else if (chol) then
-                chol = .false.
-            end if
-            call sptri(P1inv, ipiv, 'L')
-        else
-            call pptri(P1inv, 'L')
-        end if
-!       put alpha(inv) into B:
-        B_full(icol_off+1,icol_off+1) = P1inv(1) ! xx
-        B_full(icol_off+2,icol_off+1) = P1inv(2) ! yx
-        B_full(icol_off+3,icol_off+1) = P1inv(3) ! zx
-        B_full(icol_off+1,icol_off+2) = P1inv(2) ! xy
-        B_full(icol_off+2,icol_off+2) = P1inv(4) ! yy
-        B_full(icol_off+3,icol_off+2) = P1inv(5) ! zy
-        B_full(icol_off+1,icol_off+3) = P1inv(3) ! xz
-        B_full(icol_off+2,icol_off+3) = P1inv(5) ! yz
-        B_full(icol_off+3,icol_off+3) = P1inv(6) ! zz
-
-        do j = i+1, nsites(ncores-1) ! loop over blocks of 3 rows per site
-            jrow_off = (j-1)*3
-            exclude = .false.
-            do k = 1, lexlst
-                if (exclists(k,i) == exclists(1,j)) then
-                    exclude = .true.
-                    exit
-                end if
-            end do
-            if (exclude) then
-                cycle
-            end if
-           
-            Rij = Rs(:,j) - Rs(:,i)
-            R = nrm2(Rij)
-            R3 = R**3
-            R5 = R**5
-            B_full(jrow_off+1,icol_off+1) = - (3.0d0 * Rij(1) * Rij(1) * ft / R5 - fe / R3)
-            B_full(jrow_off+2,icol_off+1) = - (3.0d0 * Rij(1) * Rij(2) * ft / R5)
-            B_full(jrow_off+3,icol_off+1) = - (3.0d0 * Rij(1) * Rij(3) * ft / R5)
-            B_full(jrow_off+1,icol_off+2) = - (3.0d0 * Rij(2) * Rij(1) * ft / R5)
-            B_full(jrow_off+2,icol_off+2) = - (3.0d0 * Rij(2) * Rij(2) * ft / R5 - fe / R3)
-            B_full(jrow_off+3,icol_off+2) = - (3.0d0 * Rij(2) * Rij(3) * ft / R5)
-            B_full(jrow_off+1,icol_off+3) = - (3.0d0 * Rij(3) * Rij(1) * ft / R5)
-            B_full(jrow_off+2,icol_off+3) = - (3.0d0 * Rij(3) * Rij(2) * ft / R5)
-            B_full(jrow_off+3,icol_off+3) = - (3.0d0 * Rij(3) * Rij(3) * ft / R5 - fe / R3)
-            B_full(icol_off+1,jrow_off+1) = B_full(jrow_off+1,icol_off+1) 
-            B_full(icol_off+1,jrow_off+2) = B_full(jrow_off+2,icol_off+1) 
-            B_full(icol_off+1,jrow_off+3) = B_full(jrow_off+3,icol_off+1) 
-            B_full(icol_off+2,jrow_off+1) = B_full(jrow_off+1,icol_off+2) 
-            B_full(icol_off+2,jrow_off+2) = B_full(jrow_off+2,icol_off+2) 
-            B_full(icol_off+2,jrow_off+3) = B_full(jrow_off+3,icol_off+2) 
-            B_full(icol_off+3,jrow_off+1) = B_full(jrow_off+1,icol_off+3) 
-            B_full(icol_off+3,jrow_off+2) = B_full(jrow_off+2,icol_off+3) 
-            B_full(icol_off+3,jrow_off+3) = B_full(jrow_off+3,icol_off+3) 
-        end do ! j = i+1, nsites(ncores-1)
-
-        if (pe_sol) then
-            do j = 1, nsurp
-                 Rij_sol = (Sp(:,j) - Rs(:,i))
-                 R_sol = nrm2(Rij)
-                 R3_sol = R_sol**3
-! Setting this block zero prevents coupling between PE and COSMO region
-!                 B_full(ipcm_off+j,icol_off+1) = 0.0d0
-!                 B_full(ipcm_off+j,icol_off+2) = 0.0d0
-!                 B_full(ipcm_off+j,icol_off+3) = 0.0d0
-!
-!                 B_full(icol_off+1,ipcm_off+j) = 0.0d0
-!                 B_full(icol_off+2,ipcm_off+j) = 0.0d0 
-!                 B_full(icol_off+3,ipcm_off+j) = 0.0d0 
-!                 call Tk_tensor(Tk, Rij_sol)
-
-                 B_full(ipcm_off+j,icol_off+1) = Rij_sol(1)/R3_sol
-                 B_full(ipcm_off+j,icol_off+2) = Rij_sol(2)/R3_sol 
-                 B_full(ipcm_off+j,icol_off+3) = Rij_sol(3)/R3_sol 
-
-                 B_full(icol_off+1,ipcm_off+j) = - B_full(ipcm_off+j,icol_off+1) 
-                 B_full(icol_off+2,ipcm_off+j) = - B_full(ipcm_off+j,icol_off+2) 
-                 B_full(icol_off+3,ipcm_off+j) = - B_full(ipcm_off+j,icol_off+3)
-            end do ! j = 1, nsurp
-        end if  
-    end do !i = 1, nsites(ncores-1)
     if (pe_sol) then
+      do i = 1, nsites(ncores-1) ! loop over blocks of 3 columns per site
+      write (luout,*) 'i',i
+          if (zeroalphas(i)) cycle
+          icol_off = (i-1)*3
+          P1inv = P1s(:,i)
+          call pptrf(P1inv, 'L', info)
+          if (info /= 0) then
+              P1inv = P1s(:,i)
+              call sptrf(P1inv, 'L', ipiv, info)
+              if (info /= 0) then
+                  stop 'ERROR: could not factorize polarizability.'
+              else if (chol) then
+                  chol = .false.
+              end if
+              call sptri(P1inv, ipiv, 'L')
+          else
+              call pptri(P1inv, 'L')
+          end if
+!         put alpha(inv) into B:
+          B_full(icol_off+1,icol_off+1) = P1inv(1) ! xx
+          B_full(icol_off+2,icol_off+1) = P1inv(2) ! yx
+          B_full(icol_off+3,icol_off+1) = P1inv(3) ! zx
+          B_full(icol_off+1,icol_off+2) = P1inv(2) ! xy
+          B_full(icol_off+2,icol_off+2) = P1inv(4) ! yy
+          B_full(icol_off+3,icol_off+2) = P1inv(5) ! zy
+          B_full(icol_off+1,icol_off+3) = P1inv(3) ! xz
+          B_full(icol_off+2,icol_off+3) = P1inv(5) ! yz
+          B_full(icol_off+3,icol_off+3) = P1inv(6) ! zz
+
+          do j = i+1, nsites(ncores-1) ! loop over blocks of 3 rows per site
+              jrow_off = (j-1)*3
+              exclude = .false.
+              do k = 1, lexlst
+                  if (exclists(k,i) == exclists(1,j)) then
+                      exclude = .true.
+                      exit
+                  end if
+              end do
+              if (exclude) then
+                  cycle
+              end if
+             
+              Rij = Rs(:,j) - Rs(:,i)
+              R = nrm2(Rij)
+              R3 = R**3
+              R5 = R**5
+              B_full(jrow_off+1,icol_off+1) = - (3.0d0 * Rij(1) * Rij(1) * ft / R5 - fe / R3)
+              B_full(jrow_off+2,icol_off+1) = - (3.0d0 * Rij(1) * Rij(2) * ft / R5)
+              B_full(jrow_off+3,icol_off+1) = - (3.0d0 * Rij(1) * Rij(3) * ft / R5)
+              B_full(jrow_off+1,icol_off+2) = - (3.0d0 * Rij(2) * Rij(1) * ft / R5)
+              B_full(jrow_off+2,icol_off+2) = - (3.0d0 * Rij(2) * Rij(2) * ft / R5 - fe / R3)
+              B_full(jrow_off+3,icol_off+2) = - (3.0d0 * Rij(2) * Rij(3) * ft / R5)
+              B_full(jrow_off+1,icol_off+3) = - (3.0d0 * Rij(3) * Rij(1) * ft / R5)
+              B_full(jrow_off+2,icol_off+3) = - (3.0d0 * Rij(3) * Rij(2) * ft / R5)
+              B_full(jrow_off+3,icol_off+3) = - (3.0d0 * Rij(3) * Rij(3) * ft / R5 - fe / R3)
+              B_full(icol_off+1,jrow_off+1) = B_full(jrow_off+1,icol_off+1) 
+              B_full(icol_off+1,jrow_off+2) = B_full(jrow_off+2,icol_off+1) 
+              B_full(icol_off+1,jrow_off+3) = B_full(jrow_off+3,icol_off+1) 
+              B_full(icol_off+2,jrow_off+1) = B_full(jrow_off+1,icol_off+2) 
+              B_full(icol_off+2,jrow_off+2) = B_full(jrow_off+2,icol_off+2) 
+              B_full(icol_off+2,jrow_off+3) = B_full(jrow_off+3,icol_off+2) 
+              B_full(icol_off+3,jrow_off+1) = B_full(jrow_off+1,icol_off+3) 
+              B_full(icol_off+3,jrow_off+2) = B_full(jrow_off+2,icol_off+3) 
+              B_full(icol_off+3,jrow_off+3) = B_full(jrow_off+3,icol_off+3) 
+          end do ! j = i+1, nsites(ncores-1)
+
+              do j = 1, nsurp
+                   Rij_sol = (Sp(:,j) - Rs(:,i))
+                   R_sol = nrm2(Rij)
+                   R3_sol = R_sol**3
+! S   tting this block zero prevents coupling between PE and COSMO region
+!                   B_full(ipcm_off+j,icol_off+1) = 0.0d0
+!                   B_full(ipcm_off+j,icol_off+2) = 0.0d0
+!                   B_full(ipcm_off+j,icol_off+3) = 0.0d0
+!
+!                   B_full(icol_off+1,ipcm_off+j) = 0.0d0
+!                   B_full(icol_off+2,ipcm_off+j) = 0.0d0 
+!                   B_full(icol_off+3,ipcm_off+j) = 0.0d0 
+!                   call Tk_tensor(Tk, Rij_sol)
+
+                   B_full(ipcm_off+j,icol_off+1) = Rij_sol(1)/R3_sol
+                   B_full(ipcm_off+j,icol_off+2) = Rij_sol(2)/R3_sol 
+                   B_full(ipcm_off+j,icol_off+3) = Rij_sol(3)/R3_sol 
+
+                   B_full(icol_off+1,ipcm_off+j) = - B_full(ipcm_off+j,icol_off+1) 
+                   B_full(icol_off+2,ipcm_off+j) = - B_full(ipcm_off+j,icol_off+2) 
+                   B_full(icol_off+3,ipcm_off+j) = - B_full(ipcm_off+j,icol_off+3)
+              end do ! j = 1, nsurp
+      end do !i = 1, nsites(ncores-1)
+    end if  
+!    if (pe_sol) then
         do i = 1, nsurp ! loop over PCM column points
             B_full(ipcm_off+i,ipcm_off+i) = cfac * diel_fac * sqrt((4.0d0*pi)/A(i))
             do j = i+1, nsurp
@@ -4695,10 +4670,10 @@ subroutine response_matrix_full(B)
                 B_full(ipcm_off+i,ipcm_off+j) = B_full(ipcm_off+j,ipcm_off+i)
             end do
        end do !i = 1, nsurp
-    end if
+!    end if
 !     Pack B_full to lower triangular form in B
     koff = 1
-    if (pe_sol) then 
+    if (pe_sol .or. qmcos) then 
         leng = 3*npols + nsurp
     else
         leng = 3*npols
@@ -4714,7 +4689,9 @@ subroutine response_matrix_full(B)
             write (luout,*) 'Response matrix(i)',i, B(i)
         end do
     end if
-    write(luout,*) 'Rij_sol', Rij_sol
+    if ( qmcos ) then
+       pe_sol = .true.
+    end if
 end subroutine response_matrix_full
 
 !------------------------------------------------------------------------------
@@ -4780,7 +4757,7 @@ subroutine nuclear_potentials(Vnucs)
         do site = 1, nsurp 
             do j = 1, qmnucs
                 Rmsp = Sp(:,site) - Rm(:,j)
-                if (norm2(Rmsp) < 7.0d0) then
+                if (norm2(Rmsp) < 1.2d0) then
                     write(luout,*) 'Rmsp', norm2(Rmsp)
                 end if
                 call Tk_tensor(Tmsp, Rmsp)
