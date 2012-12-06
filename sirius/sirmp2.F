@@ -54,6 +54,7 @@ C
 #include "implicit.h"
       PARAMETER (NTABLE = 12)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
+      CHARACTER SR_FUNCS*80 ! needed for RSDHf calculations 
       LOGICAL ALLOPT
 C
 C Used from common:
@@ -173,14 +174,23 @@ C FH  Option 11 DCPT2 for MP2 calculation
       GO TO 100
 C *** Option 12 >RSDHF< compute the RSDHf energy
 #ifdef MOD_SRDFT
-  112 SRMP2_SRINTS = .TRUE.   ! .RSDHF activates .SRINTS
+  112 DO_RSDHF = .TRUE.
+      SRMP2_SRINTS = .TRUE.   ! .RSDHF activates .SRINTS
       IPRMP2 = MAX(IPRMP2,1)
-      LAMSR = 0.0D0           ! initialization
-      READ(LUCMD,*) LAMSR     ! read the fraction lambda of srHFX and
+      LAMSR = 1.0D0           ! original RSDHf model 
+!     READ(LUCMD,*) LAMSR     ! read the fraction lambda of srHFX and
 !                               lr-sr MP2 coupling  
       write(lupri,*)''
       write(lupri,*)'just after reading, lamsr =', LAMSR
       write(lupri,*)''
+!
+! Manu: Caution ! what follows cannot be used as such otherwise HF-srDFT
+! is performed with this sr functional ...
+!
+!     SR_FUNCS = 'NULL SRCMDLDA' ! no sr exchange, only (complementary "md") sr correlation
+!                                        functional
+!     CALL SRFUN_INPUT(SR_FUNCS)
+!
 #else
   112 CONTINUE
       call quit(
@@ -243,7 +253,8 @@ C
 C
       LOGICAL FCKFRO, MP2FRZ
       CHARACTER AO2INTFILE_LABEL_SAVE*8
-      PARAMETER ( D0 = 0.0D0 )
+      CHARACTER SR_FUNCS*80                 ! for RSDHf calculation
+      PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0 )
 C
 C Used from common blocks:
 C     GNRINF: DOSRIN,SRINTS,CHIVAL
@@ -317,6 +328,7 @@ C     Disable "MP2FRO" if result not to be printed
          WRITE(LUPRI,'(5(10I2,2X))') IFRMP2(1:NORBT)
       END IF
       CALL FLSHFO(LUPRI)
+      CHIVAL_SAVE = CHIVAL
       IF (SRMP2_SRINTS) THEN
          IPRMP2 = MAX(0,IPRMP2)
 C        ... make sure MP2 energy with short-range integrals is printed!
@@ -519,11 +531,44 @@ C
                WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
      &          ' from short-range integrals :',EMP2
                EMP2_SR = EMP2
+#ifdef Manu_debug               
+! *****************************************               
+! Manu: just to try ... beg               
+! Allocate memory for the HF-srDFT density matrix in the MO and AO bases ... 
+                  CALL MEMGET('REAL',KDHFMO,N2ORBX,WRK,KFREE,LFREE)
+                  CALL MEMGET('REAL',KDHFAO,N2BASX,WRK,KFREE,LFREE)
+! ... and compute it                  
+                  CALL GETDHFAO(WRK(KDHFAO),WRK(KDHFMO),WRK(KCMO),
+     &                          WRK(KFREE)) 
+                  CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE)
+                  CALL DZERO(WRK(KVSRAO),N2BASX)
+                  ESRHFX = D0
+
+                  ISYMDM = 1  ! DAO of symmetry 1 
+                  IFCTYP = 12 ! Calculate exchange term only 
+                  NDAO  = 1   ! only one density matrix
+!
+                  CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KVSRAO),
+     &                         WRK(KDAO),NDAO,ISYMDM,IFCTYP,
+     &                         WRK(KFREE),LFREE)
+
+                  ESRHFX   = DP5*DDOT(N2BASX,WRK(KDHFAO),
+     &                                1,WRK(KVSRAO),1) ! Ksr
+
+                  write(lupri,*) ' loop 1: E_srHFX = ', ESRHFX 
+!                   
+                  CALL MEMREL('Releasing memory',
+     &                          WRK,KFRSAV,KDHFMO,KFREE,LFREE)  
+!     
+! Manu: just to try ... end               
+! *****************************************               
+#endif
             ELSE IF (ISRINTS_LOOP .EQ. 2) THEN
                WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
      &          ' from  long-range integrals :',EMP2
                EMP2_LR = EMP2
             ELSE IF (ISRINTS_LOOP .EQ. 3) THEN
+               CHIVAL = CHIVAL_SAVE
                EMP2_SRLR = EMP2 - EMP2_SR - EMP2_LR
                WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
      &         ' from       sr-lr integrals :',EMP2_SRLR
@@ -533,28 +578,116 @@ C
                WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
      &          ' from        full integrals :',EMP2
 !     
+! Manu 06-12-2012: If RSDHf calculation then ... 
+               IF (DO_RSDHF) THEN 
+! set up for computing the src "md" DFT correlation energy       
+!                 SR_FUNCS = 'SRXLDA SRCLDA' ! just for debugging 
+
+                  SR_FUNCS = 'NULL SRCMDLDA' ! no sr exchange,
+!                                              only (complementary "md") 
+!                                              sr correlation functional
+
+                  CALL SRFUN_INPUT(SR_FUNCS)
+! Allocate memory for the HF-srDFT density matrix in the MO and AO bases ... 
+                  CALL MEMGET('REAL',KDHFMO,N2ORBX,WRK,KFREE,LFREE)
+                  CALL MEMGET('REAL',KDHFAO,N2BASX,WRK,KFREE,LFREE)
+! ... and compute it                  
+                  CALL GETDHFAO(WRK(KDHFAO),WRK(KDHFMO),WRK(KCMO),
+     &                          WRK(KFREE)) 
+!
+! Manu debug
+!                 write(lupri,*) 'checking the HF-srDFT DM' //
+!    &                            ' in the AO basis'
+
+!                 CALL OUTPUT(WRK(KDHFAO),1,NBAST,1,NBAST,NBAST,
+!    &                        NBAST,1,LUPRI)
+!
+!  *** Calculate the src "md" DFT contribution ***     
+!
+! memory must be allocated for the potential though it is not used here
+! ...
+                  CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE)
+!                  
+                  CALL DZERO(WRK(KVSRAO),N2BASX)
+
+                  ESRDFTCMD = D0
+                  IPRMANU = IPRFCK
+                  CALL SRDFT(1,WRK(KVSRAO),WRK(KDHFAO),ESRDFTCMD,
+     &                       .TRUE.,.FALSE.,.FALSE.,WRK(KFREE),
+     &                       LFREE,IPRMANU)
+C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,
+!                            DOGRD,DOATR,WORK,LWORK,IPRINT)
+                   write(lupri,*) 'Esrcmd_dft = ', ESRDFTCMD 
+!
+! *** Compute the srHFX term ***
+                  ESRHFX = D0
+                  CALL DZERO(WRK(KVSRAO),N2BASX) ! reset to zero so that
+!                                                  it can be used for
+!                                                  the srHFX potential 
+
+                  CALL MEMGET('REAL',KDAO,     ! allocate memory for
+     &                        N2BASX,WRK,KFREE,  ! copying KDHFAO in DAO
+     &                        LFREE)
+                  CALL DCOPY(N2BASX,WRK(KDHFAO),1,WRK(KDAO),1)
+
+                  DOSRIN = .TRUE. ! set up
+                  SRINTS = .TRUE. ! set up
+
+!  using HERFCK ...                  
+C                 IPRHER = IPRFCK/100
+C                 CALL HERFCK(WRK(KVSRAO),WRK(KDAO),1,
+C    &                        1,12,IPRHER,WRK(KFREE),LFREE)
+!                 NB! WRK(KDAO) may be destroyed inside HERFCK, do not use below!
+C                 DOSRIN = .FALSE. 
+C                 SRINTS = .FALSE.
+!  ... or SIRFCK2 ...
+                  
+                  ISYMDM = 1  ! DAO of symmetry 1 
+                  IFCTYP = 12 ! Calculate exchange term only 
+                  NDAO  = 1   ! only one density matrix
+                  write(lupri,*) 'print DAO before calling sirfck2'
+                  CALL OUTPUT(WRK(KDAO),1,NBAST,1,NBAST,NBAST,
+     &                        NBAST,1,LUPRI)
+!
+                  CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KVSRAO),
+     &                         WRK(KDAO),NDAO,ISYMDM,IFCTYP,
+     &                         WRK(KFREE),LFREE)
+                  write(lupri,*) 'after calling sirfck2: USRHFX pot ='
+                  CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,
+     &                        NBAST,1,LUPRI)
+
+                  ESRHFX   = DP5*DDOT(N2BASX,WRK(KDHFAO),
+     &                                1,WRK(KVSRAO),1) ! Ksr
+
+                  write(lupri,*) 'E_srHFX = ', ESRHFX 
+!                   
+                  CALL MEMREL('Releasing memory',
+     &                          WRK,KFRSAV,KDHFMO,KFREE,LFREE)  
+!     
 ! Manu 04-12-2012: print the second-order correction to the energy in the RSDHf scheme: 
 !                  EMP2(full-range) - EMP2(short-range)) 
 
-               write(lupri,*) ''
-               write(lupri,*) '********************************'
-               write(lupri,*) 'Calculation of the RSDHf energy'
-               write(lupri,*) '********************************'
-               write(lupri,*) ''
-               write(lupri,*) 'EsrXC_dft = ', ESRDFT
-               write(lupri,*) ''
-               write(lupri,*) 'LAMSR = ', LAMSR
-               WRITE (LUPRI,'(//A,F25.10)') 'second-order '//
-     &               'long-range MP contribution           : ',
-     &               EMP2_LR
-               WRITE (LUPRI,'(//A,F25.10)') '+ second-order '//
-     &               'long-range/short-range MP coupling : ',
-     &               EMP2 - EMP2_SR - EMP2_LR
-               WRITE (LUPRI,'(//A,F25.10)') '= second-order '//
-     &               'contribution to the RSDHf energy   : ',
-     &               EMP2-EMP2_SR
-               write(lupri,*) ''
-               write(lupri,*) '********************************'
+                   write(lupri,*) ''
+                   write(lupri,*) '********************************'
+                   write(lupri,*) 'Calculation of the RSDHf energy'
+                   write(lupri,*) '********************************'
+                   write(lupri,*) ''
+                   write(lupri,*) 'EsrXC_dft = ', ESRDFT
+                   write(lupri,*) ''
+                   write(lupri,*) 'LAMSR = ', LAMSR
+                   WRITE (LUPRI,'(//A,F25.10)') 'second-order '//
+     &                   'long-range MP contribution           : ',
+     &                   EMP2_LR
+                   WRITE (LUPRI,'(//A,F25.10)') '+ second-order '//
+     &                   'long-range/short-range MP coupling : ',
+     &                   EMP2 - EMP2_SR - EMP2_LR
+                   WRITE (LUPRI,'(//A,F25.10)') '= second-order '//
+     &                   'contribution to the RSDHf energy   : ',
+     &                   EMP2-EMP2_SR
+                   write(lupri,*) ''
+                   write(lupri,*) '********************************'
+               
+               END IF   
 !!!!!!!!!!!!!!!
 !
      
@@ -744,6 +877,7 @@ C           now reset name of 2-electron integral file
             AO2INTFILE_LABEL = AO2INTFILE_LABEL_SAVE
             FTRCTL = .TRUE.
 !
+            CHIVAL = CHIVAL_SAVE
 ! Manu 04-12-2012: no 'quit' anymore when asking for the computation of
 ! the lr-sr MP2 coupling term ...
 !
