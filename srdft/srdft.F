@@ -48,7 +48,7 @@ C     variables for SRCPBERI
       double precision mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
-      PARAMETER  (NXTABLE = 16, NCTABLE = 21) 
+      PARAMETER  (NXTABLE = 16, NCTABLE = 22) 
       CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
@@ -64,7 +64,7 @@ C
      >             'SRCWI4    ','SRCPBETCS ','SRCPBETCSJ','SRCPBERI  ',
      >             'SRCPBELO  ','SRCPBEWI  ','SRCPBEGWS ','SRCLDA_S  ',
      >             'SRCMULO_B ','SRCMULO_C ','SRCMULO_D ','SRCMULO_E ',
-     >             'NULL_S    '/
+     >             'NULL_S    ','SRCMDLDA  '/
       DATA SETXFUN,SETCFUN /2*.FALSE./
       CALL QENTER('SRFUN_INPUT')
       IXWINT = 0
@@ -196,7 +196,7 @@ C
       DO 200 II = 1, NCTABLE
         IF (CTABLE(II) .EQ. SRCFUN) THEN
           GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
-     &           214,215,216,217,218,219,220,221),II
+     &           214,215,216,217,218,219,220,221,222),II
         END IF
  200  CONTINUE
       SETCFUN = .FALSE.
@@ -297,6 +297,15 @@ C
 
 C 'NULL_S   ' Spin density with no correlation functional
  221  DFT_SPINDNS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C
+C Short-range correlation LDA function with multideterminant reference (for OEP) (JT 26-08-11)
+C ... or for RSDHf calculations (Manu 06-12-2012) 
+ 222  DOSRC_MD_LDA = .TRUE.
+!     IF(DOSRX_OEP) THEN
+!      DOSRXC_NOLRSYS=.TRUE.
+!     END IF
       ISJT    = .TRUE.
       GO TO 20
 
@@ -449,6 +458,7 @@ C     =============================
       IF (KWRK .GT. LWORK) CALL ERRWRK('SRDFT',-KWRK,LWORK)
 #ifdef SRDFT_DEBUG
       write(lupri,*) 'Entered SRDFT, SDRDT_DEBUG defined'
+      write(lupri,*) 'NDER =',NDER
       WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Total EXCMAT on entry >>>'
       CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Total density matrix >>>'
@@ -542,8 +552,9 @@ C
 C
 #ifdef SRDFT_DEBUG
       write(lupri,*) 'Entered SRDFT1, SRDFT_DEBUG defined'
-      WRITE(LUPRI,*) 'SRDFT1: ND_SIM=',ND_SIM
-      WRITE(LUPRI,*) 'SRDFT1: DOGGA =',DOGGA
+      WRITE(LUPRI,*) 'SRDFT1: CHIVAL =',CHIVAL
+      WRITE(LUPRI,*) 'SRDFT1: ND_SIM =',ND_SIM
+      WRITE(LUPRI,*) 'SRDFT1: DOGGA  =',DOGGA
       WRITE(LUPRI,*) 'SRDFT1: ERFEXP(0:2)=',ERFEXP(0:2)
 #endif
 
@@ -571,9 +582,10 @@ C
       QUADNAME='                '
 #ifdef SRDFT_DEBUG
 !     debug print of quadrature points between IPNTstart and IPNTend
-      IPNTstart = 8168
+      !IPNTstart = 8168
+      IPNTstart = 0
 c     IPNTend   = 10210
-      IPNTend   = 0
+      IPNTend   = 100
 #endif
 C     =============================
 C     Calculate grid
@@ -798,11 +810,12 @@ c              IF (RTEST) THEN
                      VXBT  = WGHT*VXB
                   ENDIF
                ENDIF
-#ifdef debug
+#ifdef SRDFT_DEBUG
 C               if (mod(IPNT,kpoint) .eq. 0) then
                if (IPNT.GE.IPNTSTART.AND.IPNT.LE.IPNTEND) then
                   write (lupri,*) 'IPNT,ex,ec,vx,vc',IPNT,ex,ec,vx,vc
-                  write (lupri,*) 'wght,xksr,zksr',wght,xksr(1),zksr(1)
+                  write (lupri,*)
+     &            'wght,xksr,zksr',wght,xksr(1,1),zksr(1,1)
                   write (lupri,*)
      &            'rhotot,rhot13,rhotgrd,rhotlap,rhotghg : ',
      &            rhotot,rhot13,rhotgrd,rhotlap,rhotghg
