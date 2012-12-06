@@ -451,6 +451,8 @@ C     functionals
 C     spin functionals
       external ESRX_LDAERFSPIN, ESRC_LDAERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA   
+C     sr mdc func 
+      external ESRC_MD_LDAERF
        
      
 c  Exchange  ------------------------------------------------------------
@@ -647,6 +649,18 @@ C     Initialisations
      >             d1Ecdrhot,d1Ecdrhos,
      >             d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos)
       ENDIF
+
+!     short-range spin-dependent correlation LDA with multideterminant reference (for OEP) ! JT 26-08-11
+!     ... or for RSDHf calculations (Manu 06-12-2012)  
+      IF(DOSRC_MD_LDA) THEN
+!CASS        Write(LUPRI,*)'La nouvelle fonctionnelle'
+        call ESRC_MD_LDAERF(rho(1),rho(2),CHIVAL,DFT_SPINDNS,Ec)
+        call DESRSPIN(ESRC_MD_LDAERF,rho(1),rho(2),
+     >             CHIVAL,DFT_SPINDNS,NORDER,
+     >             d1Ecdrhot,d1Ecdrhos,
+     >             d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos)
+      ENDIF
+!CASS      Write(LUPRI,*)'EC=',Ec
 
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
       IF(DOSRC_MULOC_GGA) THEN
