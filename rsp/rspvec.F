@@ -23,18 +23,10 @@
 !
 #include "single.h"
 C
-#ifdef REVLOG
-===========================================================================
-Revision 1.3  2000/05/24 19:13:28  hjj
-Inserted @ in output of final results
-Polish
-
-960301-hjaaj: modify MULSP for ISPINA=ISPINB=ISPINC=1
-930705-hjaaj: lowered IPRRSP from 5 to 2 in QRVEC for print of lr sym.
-910411-hjaaj: RSPPRC and RSPPRO use wrong symmetries in QRSMO,
-QRHYP, and QREXM (it uses the last KSYMOP from QRLRVE). TODO
-===========================================================================
-#endif
+C FILE: rspvec.F
+C
+C Contains: routines primarily related to Quadratic Response calculations
+C
 C  /* Deck qrcalc */
       SUBROUTINE QRCALC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                  XINDX,WRK,LWRK)
@@ -262,7 +254,13 @@ C
      *         ' QRVEC EXCITATIONS: NO VARIABLES IN SYMMETRY',KSYMOP
             GO TO 100
          END IF
-         IF (QRREST) GO TO 100
+         IF (QRREST) THEN
+            ! GO TO 100   ! hjaaj aug 2012: does not work, stop instead
+            WRITE(LUPRI,'(//A)')
+     &      'FATAL ERROR: .QRREST is not possible for quadratic '//
+     &      'properties involving residues (i.e. excitation energies)'
+            CALL QUIT('.QRREST not possible for QR excitation energies')
+         END IF
 C
 C        ... FIND EXCITATION ENERGIES AND TRANSITION MOMENTS
 C
@@ -678,9 +676,9 @@ C
      &                     FOUND,CONV,ANTSYM)
                IF (FOUND .AND. CONV) THEN
                   WRITE(LUPRI,'(/A,/A12,A10,/A42)')
-     *                 ' Converged solution vector already on file',
-     *                 QRLBL(IOPVEC),'freq',
-     *                 ' -----------------------------------------'
+     *              ' Converged solution vector already on file RSPVEC',
+     *              QRLBL(IOPVEC),'freq',
+     *              ' -----------------------------------------'
                   WRITE(LUPRI,'(F22.6)') QRFREQ(IOPVEC)
                ELSE
                   DO IJ = 0, NFREQ
@@ -883,7 +881,7 @@ CTODO        END IF
             WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
             CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
           END IF
-          !sonia: I dump the solution vector on file LURSP
+          !sonia: I dump the solution vector on file RSPVEC
           CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
      &                  BLANK,WRK(KEIVAL-1+JFREQ),D0,KSYMOP,0,
      &                  WRK(KRESID - 1 + JFREQ),ANTSYM)
@@ -2761,7 +2759,7 @@ C
      *                     ' E3+A2B+A2C CONTRIBUTION TO XMOM', VAL,XMOM
                         END IF
                         WRITE(LUPRI,'(//A/A,5X,A,2I5,2(/A,5X,I8,2I5))')
-     *   '@Transition moment <B | A | C> in a.u. for',
+     *   '@Transition moment <B | A - <A> | C> in a.u. for',
      *   '@A operator label,    symmetry, spin: ',
      *      LBLPP(MSYMA,IAOP),MSYMA,ISPINA,
      *   '@B excited state no., symmetry, spin: ',IB,MSYMBX,ISPINB,
@@ -2972,9 +2970,9 @@ C
             DO 560 JFREQ = IFREQ,IFREQ-1+NBX
                IF (IPRRSP.GE.3) THEN
                   WRITE(LUPRI,'(/A,3X,A,3X,A,1P,D14.6,/A,I5)')
-     *            '@QRTRVE: TRIPLET SOLUTION   LABEL',LRLAB(ILRLAB),
-     *            ' FREQUENCY ',WRK(KEIVAL-1+JFREQ),
-     *            ' SYMMETRY',KSYMOP
+     *            '@QRTRVE: TRIPLET solution.  Label',LRLAB(ILRLAB),
+     *            ' Frequency ',WRK(KEIVAL-1+JFREQ),
+     *            ' Symmetry',KSYMOP
                   JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
                   VAL = DDOT(KZYRED,WRK(KREDGP),1,WRK(JEIVEC),1)
                   WRITE(LUPRI,'(/A,1P,G20.12)')
@@ -3075,7 +3073,7 @@ C
                      IF (DIPLEN) THEN
                         WRITE(LUPRI,'(2(A,F9.6),2(A,6(A1)))')
      &              '@ B-freq =',FREQB,'  C-freq =',FREQC,
-     &                   '     beta(',ALAB(1:1),';',BLAB(1:1),',',
+     &              '     beta(',ALAB(1:1),';',BLAB(1:1),',',
      &                        CLAB(1:1),')',' = beta(',
      &                       LAB(I,1)(1:1),',',LAB(I,2)(1:1),',',
      &                       LAB(I,3)(1:1),')'
@@ -3908,3 +3906,4 @@ C
 C
       RETURN
       END
+C -- end of rspvec.F --

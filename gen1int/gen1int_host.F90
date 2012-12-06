@@ -766,12 +766,12 @@
         call MatView(A=ao_dens(1), io_viewer=io_viewer)
       end if
       ! creates the operator of overlap integrals
-      call gen1int_host_prop_create(NON_LAO, INT_OVERLAP, 0,   &
+      call gen1int_host_prop_create(NON_LAO, INT_OVERLAP,      &
+                                    0, 0,                      &
                                     0, 0, 0,                   &
                                     0, 0, 0,                   &
                                     0, 0,                      &
-                                    0, 0,                      &
-                                    0, (/0/),                  &
+                                    0, 0, 0, (/0/),            &
                                     .false., .false., .false., &
                                     io_viewer, level_print,    &
                                     1, (/1, 1/),               &   !hardcoded for Dalton

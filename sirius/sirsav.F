@@ -637,11 +637,7 @@ C        write startvec with new vectors
             JCVECS = KCVECS + (I-1)*NCONF
             CALL WRITT(LUIT1,NC4,WRK(JCVECS))
  9022    CONTINUE
-C        write the natural orbitals to LUIT1 label NEWORB
-         CALL GETDAT(LAB123(2),LAB123(3))
-         LAB123(3) = '(CNOORB)'
-         WRITE (LUIT1) LAB123,TABLE(6)
-         CALL WRITT(LUIT1,NCMOT4,CMO)
+C        write nat. orb. occupation numbers, when available
          IF (NASHT.EQ.1 .OR.
      &      (CNOLBL.NE.'ONLYFD' .AND. NASHT.GT.0)) THEN
             IF (NASHT.EQ.1) WRK(KAOCC) = NACTEL
@@ -649,6 +645,11 @@ C        write the natural orbitals to LUIT1 label NEWORB
             NAT4 = MAX(NASHT,4)
             CALL WRITT(LUIT1,NAT4,WRK(KAOCC))
          END IF
+C        write the natural orbitals to LUIT1 label NEWORB
+         CALL GETDAT(LAB123(2),LAB123(3))
+         LAB123(3) = '(CNOORB)'
+         WRITE (LUIT1) LAB123,TABLE(6)
+         CALL WRITT(LUIT1,NCMOT4,CMO)
          IF (.NOT.FLAG(34)) FLAG(14) = .FALSE.
 C        if (int.transf. needed in optimization) then new transf. needed
       END IF

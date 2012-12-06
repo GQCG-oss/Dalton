@@ -968,7 +968,7 @@ C
       RETURN
       END
 C  /* Deck rspnex */
-      SUBROUTINE RSPNEX(LINEQ,LMAXIT,NSIM,IBTYP,EIVAL,TEST,EIVEC,GD,
+      SUBROUTINE RSPNEX(LINEQ,LMAXIT,NSIM,IBTYP,EIVAL,RESID,EIVEC,GD,
      *                  CMO,UDV,PVX,FC,FV,FCAC,H2AC,XINDX,
      *                  BVECS,LWRK)
 C
@@ -994,9 +994,7 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "dummy.h"
-      PARAMETER ( MAXVEC = 120 )
-      DIMENSION THCORP(MAXVEC),EOVAL(MAXVEC)
-      DIMENSION IBTYP(*),EIVAL(*),EIVEC(KZYRED,*)
+      DIMENSION IBTYP(*),EIVAL(*),RESID(*),EIVEC(KZYRED,*)
       DIMENSION GD(*),BVECS(*)
       DIMENSION CMO(*),UDV(*),PVX(*),FC(*),FV(*),FCAC(*)
       DIMENSION XINDX(*),H2AC(*)
@@ -1020,21 +1018,26 @@ C
 #include "thrldp.h"
 C
       LOGICAL LINEQ,OLSEN1,LMAXIT
-      DIMENSION KEX(MAXVEC), TEST(*)
+      real(8), allocatable :: THCORP(:),EOVAL(:)
+      integer, allocatable :: KEX(:)
 C
-      IF (KEXSIM .GT. MAXVEC) THEN
-         WRITE (LUPRI,*) 'ERROR in RSPNEX: KEXSIM .gt. MAXVEC'
+      IF (KEXSIM .LE. 0) THEN
+         WRITE (LUPRI,*) 'ERROR in RSPNEX: KEXSIM .le. 0'
          WRITE (LUPRI,*) 'KEXSIM =',KEXSIM
-         WRITE (LUPRI,*) 'MAXVEC =',MAXVEC
-         WRITE (LUPRI,*) 'Reduce problem size or recompile RSPNEX '//
-     *                  'with larger MAXVEC parameter'
-         CALL QUIT('RSPNEX error: KEXSIM .gt. MAXVEC parameter')
+         CALL QUIT('RSPNEX error: KEXSIM .le. 0')
       END IF
+
+      allocate(KEX(KEXSIM))
+      if (OPTORB) then
+         allocate(EOVAL(NSIM))
+         allocate(THCORP(NSIM))
+      end if
+
 C
 C     KEX(*) is used for defining which trial vectors are
 C     configuration type (=1) and which are orbital type (=0).
 C     920904-hjaaj: KEX(i) = -1 means this root is converged.
-C     TEST(*) is used for saving residuals for final print.
+C     RESID(*) is used for saving residuals for final print.
 C
       NTEST = 0
       IBOFF = 0
@@ -1369,9 +1372,7 @@ C               930910-hjaaj: NO, gives problems with number of digits
 C               when e.g. BNORM = 1.0D6 for a FC term (remember E[2]
 C               is asymmetric of the order of the mcscf gradient).
             QBTEST = QNORM/BNORM
-            IF (JROOTJ.LE.MAXVEC) THEN
-               TEST(JROOTJ) = QBTEST
-            END IF
+            RESID(JROOTJ) = QBTEST
             IF (QBTEST .LE. THCRSP) THEN
 C           ... this root is converged
                KEX(JR) = -1
@@ -1584,10 +1585,6 @@ C ---
 C
 C Output:
 C
-      IF (KEXSIM.GT.MAXVEC ) WRITE (LUPRI,95) KEXSIM,MAXVEC
- 95   FORMAT(/,'  ** RSPNEX ** WARNING, NUMBER OF SIMULTANEOUS TRIAL',
-     * ' VECTORS',I5,/,' EXCEEDS THE PRINT MAXIMUM ',I5)
-C
       IF (NTCONV.EQ.0) THEN
 C
 C        EIGENVECTORS CONVERGED
@@ -1630,7 +1627,7 @@ C
      &        ' SOLUTION VECTORS NOT CONVERGED')
       IF (LMAXIT .OR. KCONV .LT. 0 .OR. IPRRSP .GE. 11
      &    .OR. (IPRRSP .GE. 2 .AND. KCONV .EQ. 1) ) THEN
-         WRITE (LUPRI,96) THCRSP,KZYRED,(I,TEST(I),I=1,KEXCNV)
+         WRITE (LUPRI,96) THCRSP,KZYRED,(I,RESID(I),I=1,KEXCNV)
    96    FORMAT(/' Convergence of RSP solution vectors,',
      &           ' threshold =',1P,D9.2,
      *          /' ------------------------------------',
@@ -1643,16 +1640,21 @@ C
 C     Transfer information about the convergence back to ABACUS
 C
       IF (KCONV .NE. 1) THEN
-         FINRES = TEST(1)
+         FINRES = RESID(1)
          NOCONV = .TRUE.
       ELSE
-         FINRES = TEST(1)
+         FINRES = RESID(1)
          NOCONV = .FALSE.
       END IF
-      RETURN
 C
 C     END OF RSPNEX.
 C
+      deallocate(KEX)
+      if (OPTORB) then
+         deallocate(EOVAL)
+         deallocate(THCORP)
+      end if
+      RETURN
       END
 C  /* Deck rspord */
       SUBROUTINE RSPORD(SRED,EIVEC,ALFAR,ALFAI,BETA,WRK1,WRK2,ISNDX)
@@ -1925,17 +1927,11 @@ C
 C
 C     Local arrays:
 C
-      PARAMETER (MAXVEC = 120)
-      DIMENSION JLDP(MAXVEC)
+      integer, allocatable :: JLDP(:)
 C
-      IF (NBNEW .GT. MAXVEC) THEN
-         WRITE (LUPRI,*) 'ERROR in RSPORT: NBNEW .gt. MAXVEC'
-         WRITE (LUPRI,*) 'NBNEW  =',NBNEW
-         WRITE (LUPRI,*) 'MAXVEC =',MAXVEC
-         WRITE (LUPRI,*) 'Reduce problem size or recompile RSPORT '//
-     *                  'with larger MAXVEC parameter'
-         CALL QUIT('RSPORT error: NBNEW .gt. MAXVEC parameter')
-      END IF
+      IF (NBNEW .LE. 0) RETURN
+
+      allocate( JLDP(NBNEW) )
 C
 C *** Average new trial vectors for supersymmetry
 C
@@ -2251,6 +2247,8 @@ C
       END IF
       NBNEW = IBPREV - NBPREV
 C
+      deallocate( JLDP )
+
       RETURN
 C
 C     ERROR : Illegal IBTYP found:
@@ -2691,7 +2689,6 @@ C  bcvec ( in second part) dimension 3*kzyred**2+2*kzyred
      *          UDV(*),BOVEC(*),BCVEC(*),EVECS(KZYVAR,*)
       DIMENSION EIVEC(KZYRED,*),EIVAL(*),XINDX(*),WRK(*)
 C
-#include "infrsp.h"
 #include "ibndxdef.h"
 C
       PARAMETER (D0 = 0.0D0 , D1 = 1.0D0 , DRTEST = 1.0D-5)
@@ -2706,6 +2703,7 @@ C
 #include "maxash.h"
 #include "priunit.h"
 #include "inftap.h"
+#include "infrsp.h"
 #include "wrkrsp.h"
 #include "infind.h"
 #include "infpri.h"
@@ -2973,7 +2971,7 @@ C *********************************************************
 C Section 2: find eigenvalues and -vectors of reduced L-matrix
 C
  1000 CONTINUE
-      IF (IPRRSP .GE. 15) THEN
+      IF (IPRRSP .GE. 10) THEN
          WRITE (LUPRI,'(/A)') ' RSPRED: REDUCED HESSIAN MATRIX:'
          CALL OUTPAK(REDE,KZYRED,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' RSPRED: REDUCED METRIC MATRIX:'
@@ -2996,7 +2994,7 @@ C
    70       CONTINUE
             CALL DCOPY(KZYRED,REDGD((IGD-1)*KZYRED+1),1,
      *                  EIVEC(1,IGD),1)
-         IF (IPRRSP.GE.14) THEN
+         IF (IPRRSP.GE.9) THEN
             WRITE(LUPRI,*)' AFREQ,KZYRED,IGD',AFREQ,KZYRED,IGD
          ENDIF
          IF (IPRRSP.GT.20) THEN
@@ -3026,10 +3024,11 @@ C
             INEG     = ISNDX(2)
             ISNDX(2) = ISNDX(3)
             ISNDX(3) = INEG
-            IF (ISNDX(3).GT.0 .AND. .NOT.ABSORP) 
-     *           WRITE(LUPRI,'(/A)')
-     *         ' *** INFO, negative eigenvalues in reduced matrix.'
-            IF (IPRRSP.GE.4 .OR. (.NOT.ABSORP .AND. ISNDX(3).GT.0)) THEN
+            IF (INEG.GT.0 .AND. .NOT.ABSORP) 
+     *           WRITE(LUPRI,'(/2A,I3,A,L8)')
+     *         ' *** INFO, negative eigenvalues in reduced matrix.',
+     &         ' Symmetry',KSYMOP,',  triplet',TRPLET
+            IF (IPRRSP.GE.4 .OR. (.NOT.ABSORP .AND. INEG.GT.0)) THEN
                POL=DDOT(KZYRED,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+1),1)
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET
             END IF
@@ -3039,7 +3038,7 @@ C
      *             /' Determinant of reduced matrix is',F6.2,
      *              ' * 10 **',F5.1)
 C
-            IF (IPRRSP .GE. 14) THEN
+            IF (IPRRSP .GE. 9) THEN
                WRITE (LUPRI,'(/A)')
      *            ' REDUCED PROPERTY VECTOR AND REDUCED SOLUTION:'
                WRITE (LUPRI,'(1P,/I5,2D15.6/I5,2D15.6)')
@@ -3554,7 +3553,7 @@ C   DENB(R,Y) = SUM(X)  UDV(X,Y) * ZYMAT(X,R)
 C
 C   DENA(R,Y) = SUM(X)  UDV(Y,X) * ZYMAT(R,X)
 C
-C   THE MATRIX DENB IS STORED WITHOUT USING SYMMETRI
+C   THE MATRIX DENB IS STORED WITHOUT USING SYMMETRY
 C
 #include "implicit.h"
 #include "priunit.h"
