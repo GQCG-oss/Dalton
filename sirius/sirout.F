@@ -63,7 +63,7 @@ C            Documentation of MOTECC-90.
 C
       use polarizable_embedding, only: peqm, pe_pd, pe_repuls,
      &                                 Ees, Epol, Epd,
-     &                                 lmul, lpol
+     &                                 lmul, lpol, pe_sol
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -380,6 +380,15 @@ csonia 04/10/95
      &                                     'Nuclear         ', Epol(2,1)
             if (lmuls) write(lupri,'(9x,a16,5x,f20.12)')
      &                                     'Multipole       ', Epol(3,1)
+        end if
+        if (pe_sol) then
+            write(lupri,'(/7x,a)') 'Continuum contributions:'
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                     'Electronic pot. ', Epol(4,1)
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                     'Nuclear pot.    ', Epol(5,1)
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                     'Multipole pot.  ', Epol(6,1)
         end if
         if (pe_pd) then
             write(lupri,'(/7x,a)') 'Density contributions:'
