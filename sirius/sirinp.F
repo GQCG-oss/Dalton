@@ -477,6 +477,7 @@ C
       MP2_LSHIFT      = D0
       MP2_SCALEFAC(1) =  D2 ! scale factor on (ij|ab)
       MP2_SCALEFAC(2) = -D1 ! scale factor on <ij|ab> = (ia|jb)
+      LAMSR           = D0
       MP2_SCALED   = .FALSE.
       MP2_SCS      = .FALSE.
       MP2_SOS      = .FALSE.
@@ -485,6 +486,7 @@ C
       SRMP2_SELFCONSISTENT = .FALSE.
       SRMP2_SRINTS = .FALSE.
       DCPT2        = .FALSE.
+      DO_RSDHF     = .FALSE.
 C
 C
 C********** Default values section OPTINP *****
