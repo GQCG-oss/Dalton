@@ -259,7 +259,8 @@ C              (renamed from .AUXBAS) /hjaaj
          IF (ONLYOV) WRITE (LUPRI,'(A)')
      &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
-            WRITE (LUPRI,'(A,G9.2)') ' Symmetry threshold: ',TOL_SYMADD
+            WRITE (LUPRI,'(A,1P,G9.2)')
+     &      ' Symmetry detection threshold: ',TOL_SYMADD
          END IF
          IF (UNCONT) THEN
             WRITE (LUPRI,'(/A)')

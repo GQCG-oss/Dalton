@@ -808,7 +808,7 @@ K-S energy, electrons, error :    -11.870754391096  16.0000013145    1.31e-06
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     QM/MM calculation converged :
+     QM/MM "QM3" calculation converged :
 
         Electrostatic energy:      -0.007810375438
         Polarization energy:       -0.000517001203

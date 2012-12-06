@@ -336,13 +336,13 @@ csonia 04/10/95
          END IF
 
       ELSE IF (QM3) THEN
-        WRITE(LUPRI,'(/5X,A/)') 'QM/MM calculation converged :'
+        WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
         WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
       ELSE IF (QMMM) THEN
-        WRITE(LUPRI,'(/5X,A/)') 'QM/MM calculation converged :'
+        WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QMMM" calculation converged :'
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Charge contribution:    ',ECHART
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ',EDIPT 
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Quadrupole contribution:',EQUADT
@@ -449,30 +449,30 @@ C        ... DIIS-DFT or QC-DFT optimization
         CALL MM_PROPS(WRK(KFREE),LFREE,IPQMMM)
       ENDIF 
 
- 5000 FORMAT(/T4,'@ Spin multiplicity:',T31,I5,
-     *       /T4,'@ Spatial symmetry:',T31,I5,
-     *       /T4,'@ Total charge of molecule:',T31,I5)
- 5010 FORMAT(/T4,'@ This was a CI-NO calculation.')
- 5012 FORMAT(/T4,'@ This was a CI calculation.')
- 5020 FORMAT( T4,'@ State number:',T31,I5,
-     *      //T4,'@ Final MCSCF energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5021 FORMAT(/T4,'@ Final HF energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5022 FORMAT(/T4,'@ Final DFT energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5023 FORMAT(/T4,'@ Final HF-SRDFT energy:',T31,F20.12,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5024 FORMAT( T4,'@ State number:',T31,I5,
-     *      //T4,'@ Final MC-SRDFT energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5025 FORMAT( T4,'@ Solvation  energy:',T31,F20.12)
- 5030 FORMAT(/T4,'@ Final gradient norm:',T31,F20.12)
+ 5000 FORMAT(/'@    Spin multiplicity:',T31,I5,
+     *       /'@    Spatial symmetry:',T31,I5,
+     *       /'@    Total charge of molecule:',T31,I5)
+ 5010 FORMAT(/'@    This was a CI-NO calculation.')
+ 5012 FORMAT(/'@    This was a CI calculation.')
+ 5020 FORMAT( '@    State number:',T31,I5,
+     *      //'@    Final MCSCF energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5021 FORMAT(/'@    Final HF energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5022 FORMAT(/'@    Final DFT energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5023 FORMAT(/'@    Final HF-SRDFT energy:',T31,F20.12,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5024 FORMAT( '@    State number:',T31,I5,
+     *      //'@    Final MC-SRDFT energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5025 FORMAT( '@    Solvation  energy:',T31,F20.12)
+ 5030 FORMAT(/'@    Final gradient norm:',T31,F20.12)
 C
 C       stamp date, time, and hostname to LUPRI
         CALL TSTAMP(' ',LUPRI)
