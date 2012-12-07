@@ -180,7 +180,8 @@ C
          IF (NUMVIB) THEN
             WRITE (LUPRI,'(/5X,A)') 'A vibrational analysis is done.'
             WRITE (LUPRI,'(5X,A)')  'Which/how is specified in ' //
-     &           '*VIBANA (and **PROPERTIES).'
+CRF  &           '*VIBANA (and **PROPERTIES).'
+     &           '*VIBANA (and **EACH STEP).'
          ELSE
             WRITE (LUPRI,'(/5X,A,I4/5X,A,I4,A)')
      &         'Numerical derivatives calculated to order', NMORDR,
@@ -444,6 +445,7 @@ C     /NUMDER/
       MANUAL = .FALSE.
 CRF added
       PRPONL = .FALSE.
+      PRPBAS = .FALSE.
 C
 C     /FCSYM/
       FCLASS = 'C1             '
@@ -517,7 +519,7 @@ C        if user has asked for higher print level, no change
       IPRUSR = IPRUSR_reduced
       IPREAD = IPREAD_reduced
 C
-C 100  CONTINUE
+ 100  CONTINUE
 C
       MOLECU = .TRUE.
       NCOOR  = 3*NUCDEP
@@ -537,21 +539,13 @@ C
 C     NDERIV -> number derivatives to save space 
 C               for in WORK
       DO 300 IORDR = 3, NMORDR+NAORDR
-CRF   if we need to allocate DERIV anyway, but shouldn't be required
-C       IF ( PRPONL ) then
-C         IMAXOR = 3
-C       ELSE
-C         IMAXOR = NMORDR + NAORDR
-C       END IF
-C       DO 300 IORDR = 3, IMAXOR
-CRFend
          IKDRV = 1
          DO 400 IIORDR =1, IORDR
             IKDRV = IKDRV*(NCOOR+IIORDR-1)/IIORDR
  400     CONTINUE
          NDERIV = NDERIV + IKDRV
  300  CONTINUE
-      if (nderiv .le. 0) then
+      if (nderiv .le. 0 .AND. .NOT. PRPONL ) then
          write(lupri,*) 'hjaaj: nderiv .le. 0',nderiv
          write(lupri,*) 'hjaaj: nmordr,naordr,ncoor',nmordr,naordr,ncoor
       end if
@@ -615,7 +609,8 @@ C
       IF (NMORDR .GE. 3) THEN
          LDPMTX = LDPMTX + (NCOOR*(NCOOR+1)*(NCOOR+2))/6
       END IF
-      NSTRDR = NMORDR + 1
+CRF   Trying to enable calculations with NMRDRP .ge. NMORDR
+      NSTRDR = MAX( NMORDR, NMRDRP) + 1
 C     ... hjaaj Dec 07: used for allocation, and NMORDR+1 is sometimes referenced
       IF (NMORDR .GE. 2) THEN
          IFRSTD = 2**NMORDR
@@ -701,8 +696,38 @@ c         END IF
 c      END IF
 c#endif
 C
-C     *** No more numerical derivative. ***
+C 
 C
+CRF 6/12 12  Attempt to rerun NUMDR1 with new basis set, to get properties 
+CRF          with a different basis set
+      IF ( PRPBAS .AND. .NOT. PRPONL ) THEN
+C        Resetting variables for property derivatives
+         REUHES = .FALSE.
+         NUMVIB = .FALSE.
+         NPRPDR = .TRUE.
+         PREHES = .TRUE.
+         PRPVIB = .TRUE.
+         FRSTNM = .TRUE.
+         NMRDRP = 2
+         NARDRP = 0
+         NMORDR = 2 !Still need to keep this
+         NAORDR = 0
+         PRPONL = .TRUE.
+         
+C        Setting basis set line in .mol file to property basis
+         MLINE(2) = PRPBTX 
+
+C        Better tell people, what we are doing 
+         WRITE (LUPRI,'(A)') '                                   ' 
+         CALL TITLER('Calculating property derivatives.','*',124)  
+         CALL TITLER( 'Basis set changed to '//PRPBTX,'*',103)  
+
+C        Rerun NUMDR1 + Preceeding memory allocations
+         GOTO 100
+      END IF
+CRFend      
+C
+C     *** No more numerical derivative. ***
       NMWALK = .FALSE.
       IPRUSR = IPRUSR_orig
       IPREAD = IPREAD_orig
@@ -1208,9 +1233,14 @@ C
             KLAST  = KFTMPD + NCOOR**4
             LWRK   = LWORK - KLAST + 1
 C
-            CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
-     &           CSTART,WORK(KTTMPD),WORK(KFTMPD),RNNORM,WORK(KLAST),
-     &           ICRIRP,LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
+CRF      If we calculate only properties in this run,
+CRF      the derivatives will be from a previous run, and thus shouldn't be printed
+            IF (.NOT. PRPONL)
+     &       CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
+     &            CSTART,WORK(KTTMPD),WORK(KFTMPD),RNNORM,WORK(KLAST),
+     &            ICRIRP,LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
+            
+
 C
 C           *** Isotope analysis. ***
 C
@@ -1380,7 +1410,7 @@ C
 C
 C     *** Order for derivatives ***
 C
-      DO 100 IORDR  = 1, NMORDR
+      DO 100 IORDR  = 1,  NMORDR
          IHORDR = INT((IORDR+1)/2)
 C
 C        *** IHORDR -> The maximum order in one direction for this ***
@@ -1610,8 +1640,8 @@ C
 C        ********************************************
 C        *** Preliminary constants to derivatives ***
 C        ********************************************
-C
-         MXCOEF = INT(NMORDR/2) + 1
+CRF  To posibly allow NMRDRP .le. NMORDR     
+         MXCOEF = INT(MAX(NMORDR,NMRDRP)/2) + 1
 C
 C        ****************************************************
 C        *** Calculating force field. Property derivative ***
@@ -1624,22 +1654,27 @@ C
 C        ***********************************
 C        *** Calculating the derivatives ***
 C        ***********************************
-C
-         NFINNR = 1
-         KCOEF  = 1
-         KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
-         KIMIN  = KIMAX  +               NMORDR
-         KICNT  = KIMIN  +               NMORDR
-         KNCVAL = KICNT  +               NTYPE
-         KIDDCP = KNCVAL +               NCOOR
-         KLAST  = KIDDCP +               NCOOR
-         LWRK1  = LWORK - KLAST
-         IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in NMNDER')
-         CALL NMNDER(DERIV,WORK(KCOEF),FUVAL,GRIREP,WORK(KLAST),IADRSS,
-     &        KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,WORK(KIMAX),
-     &        WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),WORK(KIDDCP),MXCOEF,
-     &        NMORDR,NDIME,NTYPE,NDERIV,NINTIN,LDPMTX,IFRSTD,NLDPMX,
-     &        LWRK1,.TRUE.)
+C        
+CRF 16/11 We skip calculating new geometrical derivatives
+CRF       if only property derivatives are calculated this run
+         IF ( .NOT. PRPONL) THEN
+           NFINNR = 1
+           KCOEF  = 1
+           KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
+           KIMIN  = KIMAX  +               NMORDR
+           KICNT  = KIMIN  +               NMORDR
+           KNCVAL = KICNT  +               NTYPE
+           KIDDCP = KNCVAL +               NCOOR
+           KLAST  = KIDDCP +               NCOOR
+           LWRK1  = LWORK - KLAST 
+           IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in NMNDER')
+           CALL NMNDER(DERIV,WORK(KCOEF),FUVAL,GRIREP,WORK(KLAST),
+     &          IADRSS,KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,WORK(KIMAX),
+     &          WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),WORK(KIDDCP),
+     &          MXCOEF,NMORDR,NDIME,NTYPE,NDERIV,NINTIN,LDPMTX,IFRSTD,
+     &          NLDPMX,LWRK1,.TRUE.)
+         END IF
+CRFend
 C
 C        **************************************
 C        *** Resetting property derivative. ***
@@ -1669,7 +1704,11 @@ C
             CALL STPPVR
 C
             KCOEF  = 1
-            KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
+CRF      Is this an error, second dimension of argument 3 COEFF is
+C        0:NMRDRP in PRPDER, not 0:NMORDR as this surgests
+C           KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
+            KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMRDRP+1)
+CRFend
             KIMIN  = KIMAX  +               NMRDRP
             KICNT  = KIMIN  +               NMRDRP
             KNCVAL = KICNT  +               NTYPE
@@ -1814,6 +1853,13 @@ C
          ELSE
             CNMPRP = .FALSE.
          END IF
+      END IF
+CRF   A crude way of avoiding redudant calculations
+CRF   Hopefully the code can be made to work properly
+CRF   when NMRDRP .GT. NMORDR and this can then be skipped
+      IF (PRPONL .AND. .NOT. CNMPRP) THEN
+         CALL QEXIT('GTNPNT') 
+         RETURN
       END IF
 C
 C     *** Making the appropriate step, if any. ***
@@ -2506,7 +2552,7 @@ C
       CALL DZERO(TCOEFF,KDIM2)
       COEFF(0,0) = D1
 C
-C     *** Temporary coeffesients used to generate coefficients ***
+C     *** Temporary coefficients used to generate coefficients ***
 C     ***            for even-numbered derivatives.            ***
 C
       IF (NMNMDR .GT. 1) THEN
@@ -4491,6 +4537,8 @@ C
                      WRITE (LUHES,'(A)') '                            '
  800              CONTINUE
                END IF
+CRF        Shouldn't this file be closed?
+               CALL GPCLOSE(LUHES,'KEEP')
             ELSE
                WRITE (LUPRI,'(//A/A//)')
      &            'Hessian file "DALTON.HES" already exists.' //
@@ -5974,7 +6022,7 @@ C
       NTCOL = NDIM1/3 + 1
       IF (MOD(NDIM1,3).EQ.0) NTCOL = NDIM1/3
 C
-C     *** Printing the cntributions. ***
+C     *** Printing the contributions. ***
 C
       DO IDIM3 = 1, 6
          KDIM = 0
