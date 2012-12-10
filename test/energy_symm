@@ -142,7 +142,7 @@ CTRL[5]=5
 ERROR[5]="SYMMETRY IS NOT CORRECT"
 
 # SCF energy:
-CRIT1=`$GREP "Hartree-Fock total energy : * \-76\.025681483" $log | wc -l`
+CRIT1=`$GREP "Hartree-Fock total energy *: * \-76\.025681483" $log | wc -l`
 TEST[6]=`expr $CRIT1`
 CTRL[6]=1
 ERROR[6]="SCF ENERGY NOT CORRECT"

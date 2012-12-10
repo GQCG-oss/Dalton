@@ -259,7 +259,8 @@ C              (renamed from .AUXBAS) /hjaaj
          IF (ONLYOV) WRITE (LUPRI,'(A)')
      &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
-            WRITE (LUPRI,'(A,G9.2)') ' Symmetry threshold: ',TOL_SYMADD
+            WRITE (LUPRI,'(A,1P,G9.2)')
+     &      ' Symmetry detection threshold: ',TOL_SYMADD
          END IF
          IF (UNCONT) THEN
             WRITE (LUPRI,'(/A)')
@@ -6474,6 +6475,9 @@ C
       LOGICAL NEXTMB
 
       N = 0
+      K = 0 !radovan: this is workaround for gfortran 4.7.2
+            !         which optimizies the following code to wrong K
+            !         the resulting basis set name is then empty
       NEXTMB = .FALSE.
       DO I=1,80
        IF (INPUT_LINE(I:I) .NE. ' ' .AND. .NOT. NEXTMB) THEN

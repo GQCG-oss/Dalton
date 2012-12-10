@@ -365,8 +365,8 @@ C
      &         ' (Also) using static approximation for'//
      &         ' optical activity G tensor.'
             IF (ABSORP) THEN
-               WRITE(LUPRI,'(A,F9.6,A)') 
-     &              ' Damping parameter equals  :',DAMPING, ' a.u.'
+               WRITE(LUPRI,'(A,F10.6,A)') 
+     &         ' Damping parameter equals  :',DAMPING, ' a.u.'
             END IF
             WRITE (LUPRI,'(A,I4)')
      &         ' Print level                    :',IPRLNR

@@ -2689,7 +2689,6 @@ C  bcvec ( in second part) dimension 3*kzyred**2+2*kzyred
      *          UDV(*),BOVEC(*),BCVEC(*),EVECS(KZYVAR,*)
       DIMENSION EIVEC(KZYRED,*),EIVAL(*),XINDX(*),WRK(*)
 C
-#include "infrsp.h"
 #include "ibndxdef.h"
 C
       PARAMETER (D0 = 0.0D0 , D1 = 1.0D0 , DRTEST = 1.0D-5)
@@ -2704,6 +2703,7 @@ C
 #include "maxash.h"
 #include "priunit.h"
 #include "inftap.h"
+#include "infrsp.h"
 #include "wrkrsp.h"
 #include "infind.h"
 #include "infpri.h"
@@ -2971,7 +2971,7 @@ C *********************************************************
 C Section 2: find eigenvalues and -vectors of reduced L-matrix
 C
  1000 CONTINUE
-      IF (IPRRSP .GE. 15) THEN
+      IF (IPRRSP .GE. 10) THEN
          WRITE (LUPRI,'(/A)') ' RSPRED: REDUCED HESSIAN MATRIX:'
          CALL OUTPAK(REDE,KZYRED,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' RSPRED: REDUCED METRIC MATRIX:'
@@ -2994,7 +2994,7 @@ C
    70       CONTINUE
             CALL DCOPY(KZYRED,REDGD((IGD-1)*KZYRED+1),1,
      *                  EIVEC(1,IGD),1)
-         IF (IPRRSP.GE.14) THEN
+         IF (IPRRSP.GE.9) THEN
             WRITE(LUPRI,*)' AFREQ,KZYRED,IGD',AFREQ,KZYRED,IGD
          ENDIF
          IF (IPRRSP.GT.20) THEN
@@ -3024,10 +3024,11 @@ C
             INEG     = ISNDX(2)
             ISNDX(2) = ISNDX(3)
             ISNDX(3) = INEG
-            IF (ISNDX(3).GT.0 .AND. .NOT.ABSORP) 
-     *           WRITE(LUPRI,'(/A)')
-     *         ' *** INFO, negative eigenvalues in reduced matrix.'
-            IF (IPRRSP.GE.4 .OR. (.NOT.ABSORP .AND. ISNDX(3).GT.0)) THEN
+            IF (INEG.GT.0 .AND. .NOT.ABSORP) 
+     *           WRITE(LUPRI,'(/2A,I3,A,L8)')
+     *         ' *** INFO, negative eigenvalues in reduced matrix.',
+     &         ' Symmetry',KSYMOP,',  triplet',TRPLET
+            IF (IPRRSP.GE.4 .OR. (.NOT.ABSORP .AND. INEG.GT.0)) THEN
                POL=DDOT(KZYRED,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+1),1)
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET
             END IF
@@ -3037,7 +3038,7 @@ C
      *             /' Determinant of reduced matrix is',F6.2,
      *              ' * 10 **',F5.1)
 C
-            IF (IPRRSP .GE. 14) THEN
+            IF (IPRRSP .GE. 9) THEN
                WRITE (LUPRI,'(/A)')
      *            ' REDUCED PROPERTY VECTOR AND REDUCED SOLUTION:'
                WRITE (LUPRI,'(1P,/I5,2D15.6/I5,2D15.6)')
@@ -3552,7 +3553,7 @@ C   DENB(R,Y) = SUM(X)  UDV(X,Y) * ZYMAT(X,R)
 C
 C   DENA(R,Y) = SUM(X)  UDV(Y,X) * ZYMAT(R,X)
 C
-C   THE MATRIX DENB IS STORED WITHOUT USING SYMMETRI
+C   THE MATRIX DENB IS STORED WITHOUT USING SYMMETRY
 C
 #include "implicit.h"
 #include "priunit.h"

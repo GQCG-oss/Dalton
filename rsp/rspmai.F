@@ -212,7 +212,7 @@ C
      &      ' because cubic or quadratic response has been requested.'
          END IF
       END IF
-      DORESP = DORESP .OR. ESRCAL .OR. ABSORP .OR. ABSLRS .OR. GCALC 
+      DORESP = DORESP .OR. ESRCAL .OR. ABSORP .OR. ABSLRS .OR. GCALC
      &                .OR. I.GT.0
       DORESP = DORESP .OR. ESRHFC
       TRPFLG = TRPFLG .OR. ESRHFC
@@ -311,6 +311,7 @@ C
       ENDIF
 C
 C
+      IF (.NOT. NEED_PVX) KPVX = KWRK1
       CALL RSPMC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),WRK(KFC),
      *           WRK(KFV),WRK(KFCAC),WRK(KH2AC),WRK(KINDX),
      *           WRK(KWRK1),LWRK1)
@@ -394,7 +395,7 @@ C
          CALL DUNIT(WRK(KUDV),NASHT)
          CALL DZERO(WRK(KPVX),LPVMAT)
       END IF
-      END IF ! for IF ( NEED_PVX ) 
+      END IF ! for IF ( NEED_PVX )
 C
 C     Calculate expectation value properties (first order)
 C     ====================================================
@@ -414,6 +415,7 @@ C
       IF (.NOT.EX) THEN
          CALL GPOPEN(LURSP,'RSPVEC','NEW',' ','UNFORMATTED',IDUMMY,
      &        .FALSE.)
+         WRITE (LURSP) NISH,NASH,NORB,NBAS,NSYM
          WRITE (LURSP) 'EOFLABEL'
       ELSE
          CALL GPOPEN(LURSP,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
@@ -448,13 +450,13 @@ C
          CALL GDRV(WRK,LWRK)
       END IF
 C
-C     Hyperfine coupling constants driver for RESPONSE 
+C     Hyperfine coupling constants driver for RESPONSE
 C     ====================================================
-C 
+C
       IF (ESRHFC) THEN
          CALL HFCDRV(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),WRK(KFC),
      *               WRK(KFV),WRK(KFCAC),WRK(KH2AC),WRK(KINDX),
-     *               WRK(KWRK1),LWRK1)  
+     *               WRK(KWRK1),LWRK1)
       END IF
 C
 C     Calculate response properties with absorption
@@ -593,7 +595,7 @@ C
 C  CALCULATE THE EXCITED STATE GRADIENT
 C
          IF ( ESG .AND. ISYME.EQ.KSYMOP .AND.
-     $        .NOT. (NMORDR.GT.0 .AND. NARDRP.EQ.0)) THEN 
+     $        .NOT. (NMORDR.GT.0 .AND. NARDRP.EQ.0)) THEN
           ESGTIM_XVECS = TIMPP
           CALL RSPESG(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
      *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
@@ -601,7 +603,7 @@ C
          END IF
   100 CONTINUE
       CALL GPCLOSE(LUSIFC,'KEEP')
-      CALL GPCLOSE(LURSP,'KEEP')
+      CALL GPCLOSE(LURSP ,'KEEP')
       CALL GPCLOSE(LURSP3,'DELETE')
       CALL GPCLOSE(LURSP4,'DELETE')
       CALL GPCLOSE(LURSP5,'DELETE')
@@ -964,53 +966,54 @@ C              .PROP2Average
      *   ' Second Order Polarization Propagator Approximation -- SOPPA'
          ELSE IF (SOPPA .AND. CCPPA) THEN
             WRITE(LUPRI,'(/2A/14X,A/A)')
-     *   ' SOPPA(CCSD) :',
-     *   ' Second Order Polarization Propagator Approximation',
-     *   ' with Coupled Cluster Singles and Doubles Amplitudes',
-     *   ' Reference : S. P. A. Sauer, to be published'
+     &   ' SOPPA(CCSD) :',
+     &   ' Second Order Polarization Propagator Approximation',
+     &   ' with Coupled Cluster Singles and Doubles Amplitudes',
+     &   ' Reference : S. P. A. Sauer, '//
+     &      'J. Phys. B: At. Mol. Opt. Phys. 30, 3773-3780 (1997)'
          END IF
          IF (DIRFCK) THEN
             WRITE(LUPRI,'(/A)')
-     *      ' AO-DIRECT FOCK MATRIX CALCULATIONS.'
+     *      ' AO-direct Fock matrix calculations.'
          ELSE IF (NOITRA) THEN
             WRITE(LUPRI,'(/2A,L1)')
-     *      ' MO INTEGRALS FOR RESPONSE ARE ALREADY AVAILABLE.'
+     *      ' MO integrals for RESPONS are already available.'
      *      ,'  NOITRA = ',NOITRA
          END IF
          IF (TRPFLG) WRITE(LUPRI,'(/2A,L1,A,L1)')
-     *      ' ** CALCULATION OF TRIPLET RESPONSE PROPERTY  **'
+     *      ' ** CALCULATION OF TRIPLET RESPONSE PROPERTIES  **'
      *      ,'  TRPFLG = ',TRPFLG
      *      ,'  TRPLET = ',TRPLET
          IF (AVDIA) THEN
             WRITE(LUPRI,'(/2A/2A/A,L1)')
-     *      ' Default : USING FOCK TYPE DECOUPLING OF THE TWO-ELECTRON',
-     *      ' DENSITY MATRIX :',
-     *      '    ADD DV*(FC+FV) INSTEAD OF DV*FC TO E[2] APPROXIMATE',
-     *      ' ORBITAL DIAGONAL'
+     *      ' Default : Using Fock type decoupling of the two-electron',
+     *      ' density matrix :',
+     *      '    Add DV*(FC+FV) instead of DV*FC to E[2] approximate',
+     *      ' orbital diagonal'
          ELSE
             WRITE(LUPRI,'(/A)')
      *      ' .NOAVDIA : Using exact E[2] orbital diagonal. '
          END IF
          IF (ORBSFT.NE.1.0D-4) WRITE(LUPRI,'(/A,D10.6)')
-     *      ' DIAGONAL ORBITAL E[2] SHIFTED WITH ORBSFT =',ORBSFT
+     *      ' Diagonal orbital E[2] shifted with ORBSFT =',ORBSFT
          IF (ORBSPC) WRITE(LUPRI,'(/A)') ' .ORBSPC:'//
-     *      ' CALCULATION WITH ONLY ORBITAL OPERATORS INCLUDED.'
+     *      ' Calculation with only orbital operators included.'
          IF (.NOT.NOS0MX) WRITE(LUPRI,'(/2A,L1)')
-     *      ' S(0) SUM RULE CALCULATED IN MIXED REPRESENTATION',
+     *      ' S(0) sum rule calculated in mixed representation',
      *      ' NOS0MX = ',NOS0MX
          IF (OPTORB) WRITE(LUPRI,'(/2A,/A,L1)')
-     *      ' .OPTORB: ORBITAL TRIAL VECTORS CALCULATED WITH OPTIMAL',
-     *      ' ORBITAL TRIAL VECTOR ALGORITHM.'
+     *      ' .OPTORB: Orbital trial vectors calculated with optimal',
+     *      ' orbital trial vector algorithm.'
          IF (MAXPHP.NE.100) WRITE(LUPRI,'(/A,I6)')
-     *      ' DIMENSION OF H(0) SUBSPACE. MAXPHP =',MAXPHP
+     *      ' Dimension of H(0) subspace. MAXPHP =',MAXPHP
          IF (PHPRES) WRITE(LUPRI,'(/2A,L1)')
-     *      ' H(0) SUBSPACE SELECTED FROM SIZE OF RESIDUAL ELEMENTS',
+     *      ' H(0) subspace selected from size of residual elements',
      *      ' PHPRES = ',PHPRES
          IF (MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
-     *      ' MAX DIMENSION OF REDUCED SPACE. MAXRM =',MAXRM
+     *      ' Max dimension of reduced space. MAXRM =',MAXRM
          IF (QRREST) WRITE(LUPRI,'(/A/A)')
-     *      ' QUADRATIC RESPONSE CALCULATION RESTARTED',
-     *      '    FROM PREVIOUSLY CALCULATED SOLUTION VECTORS'
+     *      ' Quadratic response calculation restarted',
+     *      '    from previously calculated solution vectors'
          IF (.NOT. DIROIT) WRITE(LUPRI,'(/A/A,L1)')
      *      ' Direct linear transformations NOT used in RESPONSE',
      *      ' calculation, DIROIT=',DIROIT
@@ -1179,7 +1182,7 @@ C  Initializing ESG
       DATA ESG/.FALSE./
       DATA IESG/1/
       DATA ISYME/1/
-C  Initializing ESRHFC 
+C  Initializing ESRHFC
       DATA ESRHFC/.FALSE./
       DATA HFCFC/.FALSE./,HFCSD/.FALSE./,HFCSO/.FALSE./
       DATA UNGAUSS/.TRUE./
@@ -1193,7 +1196,7 @@ C  Initializing ABSLRS
        DATA ABS_MAXRM/200/
        DATA ABS_FREQ_INTERVAL/0.0D0,0.0D0,1.0D0/,ABS_THD_LD/1.0D-8/
        DATA ABS_THCLR/1.0D-3/,ABS_FREQ_ALPHA(1)/0.0D0/
-       DATA LUSB/80/,LUAB/81/,LUSS/82/,LUAS/83/,LUABSVECS/84/     
+       DATA LUSB/80/,LUAB/81/,LUSS/82/,LUAS/83/,LUABSVECS/84/
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)
@@ -1531,7 +1534,7 @@ c              selected excited states
                END IF
                GO TO 100
  51            CONTINUE
-C panor: 
+C panor:
 C     Excited state absorption is calculated from the lowest excited
 C     state of symmetry ESASYM to other excited states specified on
 C     subsequent line.
@@ -1560,7 +1563,7 @@ C .CHANNEL - restrict to excitations from particular orbitals
      &               'increase CHANNEL_MAX and recompile')
                IOFF=0
                DO ISYM=1,NSYM
-                  IF (NUMBER_ORBS(ISYM).GT.0) THEN 
+                  IF (NUMBER_ORBS(ISYM).GT.0) THEN
                      READ(LUCMD,*) (CHANNEL_ORB(I+IOFF),
      &                  I=1,NUMBER_ORBS(ISYM))
                      DO I=1,NUMBER_ORBS(ISYM)
@@ -1570,7 +1573,7 @@ C .CHANNEL - restrict to excitations from particular orbitals
                      IOFF = IOFF + NUMBER_ORBS(ISYM)
                   ELSE
                      READ(LUCMD,*)
-                  END IF 
+                  END IF
                END DO
                GOTO 100
 C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
@@ -1586,7 +1589,7 @@ C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
                CALL QUIT(' ILLEGAL PROMPT IN PPINP ')
             END IF
       END IF   ! for IF (NEWDEF)
-C ------------------ 
+C ------------------
   300 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
          ICHANG = ICHANG + 1
@@ -1655,11 +1658,11 @@ C
      &         ' Restricted channel RPA,   excitations from orbs:',
      &           (CHANNEL_ORB(I),I=1,CHANNEL_NORB)
          END IF
-         IF (CHANNEL_VCALC) THEN 
+         IF (CHANNEL_VCALC) THEN
           DO I=1,NSYM
              WRITE(LUPRI,'(/A,1I5,/A,1I5)') 'Including only the first',
-     &           CHANNEL_VIRT(I),' virtual orbitals in symmetry',I            
-          ENDDO 
+     &           CHANNEL_VIRT(I),' virtual orbitals in symmetry',I
+          ENDDO
          ENDIF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRPP  ='
@@ -1771,15 +1774,15 @@ C
 !                   21         22         23         24
      &            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
 !                   25         26         27         28
-     &            '.MAX IT', '.THCLR ', '.MAXITO', '.PRINT ', 
+     &            '.MAX IT', '.THCLR ', '.MAXITO', '.PRINT ',
 !                   29         30         31         32
-     &            '.FREQUE', '.ABOCHK', '.ISTOCK', '.MAXOCK', 
+     &            '.FREQUE', '.ABOCHK', '.ISTOCK', '.MAXOCK',
 !                   33         34         35         36
-     &            '.SOPRSY', '.RESTLR', '.DIROIT', '.TRIPLE', 
+     &            '.SOPRSY', '.RESTLR', '.DIROIT', '.TRIPLE',
 !                   37         38         39         40
-     &            '.PV PSO', '.PV SO ', '.PV SO2', '.FERMI ', 
+     &            '.PV PSO', '.PV SO ', '.PV SO2', '.FERMI ',
 !                   41         42         43         44
-     &            '.SPIN-D', '.DIPLF ', '.DIPLFX', '.DIPLFY', 
+     &            '.SPIN-D', '.DIPLF ', '.DIPLFX', '.DIPLFY',
 !                   45         46         47         48
      &            '.DIPLFZ', '.CHANNE', '.VIRTUA', '.xxxxxx'/
 C
@@ -2076,11 +2079,11 @@ C .CHANNEL
      &     )
                IOFF=0
                DO ISYM=1,NSYM
-                  IF (NUMBER_ORBS(ISYM).GT.0) THEN 
-                     READ(LUCMD,*) 
+                  IF (NUMBER_ORBS(ISYM).GT.0) THEN
+                     READ(LUCMD,*)
      &                    (CHANNEL_ORB(I+IOFF), I=1,NUMBER_ORBS(ISYM))
                      DO I=1,NUMBER_ORBS(ISYM)
-                        CHANNEL_ORB(I+IOFF) = 
+                        CHANNEL_ORB(I+IOFF) =
      &                       CHANNEL_ORB(I+IOFF) + IORB(ISYM)
                      END DO
                      IOFF = IOFF + NUMBER_ORBS(ISYM)
@@ -2170,7 +2173,7 @@ C
 
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-         ENDIF 
+         ENDIF
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -2180,7 +2183,7 @@ C
          IF (CHANNEL_VCALC) THEN
             DO I=1,NSYM
               WRITE(LUPRI,'(/A,1I5,/A,1I5)') 'Including only the first',
-     &              CHANNEL_VIRT(I),' virtual orbitals in symmetry',I            
+     &              CHANNEL_VIRT(I),' virtual orbitals in symmetry',I
          ENDDO
       ENDIF
          WRITE(LUPRI,'(A,I4)')
@@ -3004,7 +3007,7 @@ C
             IF (LWRK1.LT.0) CALL ERRWRK('RSPSYM',KLAST,LWRK)
 C
 C     If you are doing a PCM calculation with symmetry, you may risk
-C     that a symmetry-breaking tesserae geometry is left over in the 
+C     that a symmetry-breaking tesserae geometry is left over in the
 C     DIPORG array. Reset it to a symmetry-conserving number
 C
             DO I = 1, 3
@@ -3735,7 +3738,7 @@ C
          NWOPH  = NWOPT ! do not include redundant act-act rotations
                         ! in response, even when we call SIRIUS routines
                         ! /hjaaj June 2010
-         IF (CHANNEL_CALC) CALL CHANNEL_VAR()         
+         IF (CHANNEL_CALC ) CALL CHANNEL_VAR()
          IF (CHANNEL_VCALC) CALL CHANNEL_VIR()
       END IF
 C
@@ -4723,11 +4726,11 @@ C
       ELSE
          CALL HEADER(' Excited State Gradient calculation',0)
 
-         WRITE(LUPRI,'(A,I5)') 
+         WRITE(LUPRI,'(A,I5)')
      *        'Number of roots calculated in response   : ', NPPTOT
-         WRITE(LUPRI,'(A,I5)') 
+         WRITE(LUPRI,'(A,I5)')
      *        'Root selected for excited state gradient : ', IESG
-         WRITE(LUPRI,'(A,I5,/)') 
+         WRITE(LUPRI,'(A,I5,/)')
      *        'Symmetry of selected root                : ', ISYME
 
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
