@@ -656,10 +656,13 @@ C     Modified july-97, kr
 C     FMAT still empty, and we use this array to store DMAT in AO-basis 
 C     temporarily
 C
-      DO 200 IMAT = 1,NDMAT
-         CALL DSOTAO(DMAT(1,IMAT),FMAT(1,1),NBAST,ISYMDM(IMAT),IPRINT)
-         CALL DCOPY(N2BASX,FMAT(1,1),1,DMAT(1,IMAT),1)
-  200 CONTINUE
+      IF (MAXREP .GT. 0) THEN
+         DO IMAT = 1,NDMAT
+            CALL DSOTAO(DMAT(1,IMAT),FMAT(1,1),
+     &         NBAST,ISYMDM(IMAT),IPRINT)
+            CALL DCOPY(N2BASX,FMAT(1,1),1,DMAT(1,IMAT),1)
+         END DO
+      END IF
       CALL DZERO(FMAT(1,1),NDMAT*N2BASX)
 C
 C     Prepare for screening
