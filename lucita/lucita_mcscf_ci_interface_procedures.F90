@@ -446,9 +446,6 @@ contains
 !*******************************************************************************
 ! lucita
   use lucita_cfg
-#ifdef MOD_SRDFT
-  use lucita_mcscf_srdftci_cfg
-#endif
 ! sirius
 ! nothing
 #include "priunit.h"
@@ -757,6 +754,9 @@ contains
 !*******************************************************************************
 ! lucita
   use lucita_cfg
+#ifdef MOD_SRDFT
+  use lucita_mcscf_srdftci_cfg
+#endif
 ! sirius
 ! nothing
 #include "priunit.h"
@@ -769,31 +769,34 @@ contains
       
 !     write(lupri,*) ' post xpdens: restore_cref, switch ==>', restore_cref, restore_cref_vector_switch
  
-      if(restore_cref_vector_switch == 1)then
+      if(srdft_ci_1pdens_cref_restore)then
+        restore_cref = .false.
+        if(restore_cref_vector_switch == 1)then
 
-        vector_exchange_type1                      = 2
-        vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
+          vector_exchange_type1                      = 2
+          vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
 
-!       write(lupri,*) ' restore lhs activated',vector_exchange_type1
+!         write(lupri,*) ' restore lhs activated',vector_exchange_type1
 
-!       lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
-        call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,              &
-                                    io2io_vector_exchange_mc2lu_lu2mc,                                                 &
-                                    vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),      &
-                                    .true.,hc_or_cl)
+!         lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+          call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,              &
+                                      io2io_vector_exchange_mc2lu_lu2mc,                                                 &
+                                      vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),      &
+                                      .true.,hc_or_cl)
 
-      else if(restore_cref_vector_switch == 2)then
+        else if(restore_cref_vector_switch == 2)then
 
-        vector_exchange_type1                      = 2
-        vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
+          vector_exchange_type1                      = 2
+          vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
 
-!       write(lupri,*) ' restore rhs activated',vector_exchange_type1
+!         write(lupri,*) ' restore rhs activated',vector_exchange_type1
 
-!       rhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
-        call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                 &
-                                    io2io_vector_exchange_mc2lu_lu2mc,                                                   &
-                                    vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),        &
-                                    .true.,c_or_cr)
+!         rhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+          call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                 &
+                                      io2io_vector_exchange_mc2lu_lu2mc,                                                   &
+                                      vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),        &
+                                      .true.,c_or_cr)
+        end if
       end if
 
       if(print_lvl >= print_lvl_limit)then
