@@ -53,6 +53,7 @@
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       INTEGER*8 IST8NULL
 *
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cicisp.inc"
@@ -112,15 +113,11 @@
      &     NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &     WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
 
-      IF(I12.EQ.2) THEN
+      IDOH2 = 0
+      MXEXC = 1
+      IF(I12.EQ.2)THEN
         IDOH2 = 1
-      ELSE
-        IDOH2 = 0
-      END IF
-      IF(IDOH2.EQ.1) THEN
-        MXEXC  = 2
-      ELSE
-        MXEXC = 1
+        MXEXC = 2
       END IF
 * Info for this internal space
 *. alpha and beta strings with an electron removed
@@ -167,40 +164,22 @@
      &               0,ITTSS_ORD)
                       
 *
-*. Initialize SCALFAC as it should look like after a few iterations ...
-      DO II = 1, NBLOCK
-        LBL = IBLINF(II)
-        IF(LBL.NE.0) THEN 
-          SCALFAC(II) = 1.0D0
-        ELSE
-          SCALFAC(II) = 0.0D0
-        END IF
-      ENDDO
-CSK      IF(LUCI_MYPROC.EQ.LUCI_MASTER) CALL WRTMT_LU(SCALFAC,1,NBLOCK,1,NBLOCK)
 *. start the search for the INTERACT-MATRIX...
-      CALL FIND_INTERACT_MAT(NBLOCK,SCALFAC,ICCTOS,ICWEIGHT,ICWEIGHTF,
+      CALL FIND_INTERACT_MAT(NBLOCK,IBLINF,ICCTOS,ICWEIGHT,ICWEIGHTF,
      &                      IDC,WORK(KSVST),WORK(KCONSPA),WORK(KCONSPB),
      &                      WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
      &                      NOCTPA,NOCTPB,WORK(KLIBT),WORK(KLSIBT),
-     &                      PSSIGN,MXEXC,NSMST)
-      NTEST = 100
-CSK      IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-        IF(NTEST.GE.100)THEN
-           IF(NTEST.GE.500.AND.LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-             WRITE(6,*)'CONNECTION MATRIX BETWEEN C- AND SIGMA-BLOCKS'
-             CALL IWRTMAS(ICCTOS,NBLOCK,NBLOCK,NBLOCK,NBLOCK)
-           END IF
-          CALL PRINT_BATCH_INFO(NCBATCH,WORK(KLLBT),WORK(KLLEBT),
-     &         WORK(KLI1BT),WORK(KLIBT),ICCTOS,ICWEIGHT,NBLOCK,IBTOTW,
-     &         ICWEIGHTF,IABSOLUTE_WEIGHT)
-        END IF
-CSK        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-CSK          WRITE(6,*)'CONNECTION FACTOR MATRIX'
-CSK          CALL IWRTMA(ICWEIGHTF,1,NBLOCK,1,NBLOCK)
-CSK        END IF
-CSK      ENDIF
-*. Set SCALFAC back to default 
-      CALL DZERO(SCALFAC,NBLOCK)
+     &                      PSSIGN,MXEXC,NSMST,IABSOLUTE_WEIGHT)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*)'CONNECTION MATRIX BETWEEN C- AND SIGMA-BLOCKS'
+      CALL IWRTMAS(ICCTOS,NBLOCK,NBLOCK,NBLOCK,NBLOCK)
+      CALL PRINT_BATCH_INFO(NCBATCH,WORK(KLLBT),WORK(KLLEBT),
+     &                      WORK(KLI1BT),WORK(KLIBT),ICCTOS,ICWEIGHT,
+     &                      NBLOCK,IBTOTW,ICWEIGHTF,IABSOLUTE_WEIGHT)
+#undef LUCI_DEBUG
+#endif
+
 *. Eliminate local memory
       IDUM = 0
       CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'IMAT_S')
@@ -212,33 +191,43 @@ CSK      ENDIF
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE FIND_INTERACT_MAT(NBLOCK,SCALFAC,ICCTOS,ICWEIGHT,
-     &           ICWEIGHTF,IDC,ISTRFL,ICONSPA,ICONSPB,NSSOA,NSSOB,
-     &           NOCTPA,NOCTPB,ICBLOCK,ISBLOCK,PS,MXEXC,NSMST)
+      SUBROUTINE FIND_INTERACT_MAT(NBLOCK,active_block,ICCTOS,ICWEIGHT,
+     &                             ICWEIGHTF,IDC,ISTRFL,ICONSPA,ICONSPB,
+     &                             NSSOA,NSSOB,NOCTPA,NOCTPB,ICBLOCK,
+     &                             ISBLOCK,PS,MXEXC,NSMST,
+     &                             IABSOLUTE_WEIGHT)
 *
 * written by S. Knecht  - Feb. 2007
 *
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-      DIMENSION SCALFAC(NBLOCK),ICCTOS(NBLOCK,NBLOCK)
+      DIMENSION ICCTOS(NBLOCK,NBLOCK)
+      integer, intent(in) :: active_block(*)
       DIMENSION ICWEIGHT(NBLOCK),ICWEIGHTF(NBLOCK)
       DIMENSION ICONSPA(NOCTPA,NOCTPA),ICONSPB(NOCTPB,NOCTPB)
       DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
       DIMENSION ICBLOCK(8,*),ISBLOCK(8,*)
       INTEGER NSSOA(NSMST ,*),NSSOB(NSMST ,*)
       INTEGER NTEST
-      NTEST = 0
-      
+      integer(8) :: IABSOLUTE_WEIGHT
+
+      IABSOLUTE_WEIGHT = 0
+      NTEST            = 0
+
       DO JBLOCK = 1, NBLOCK
 C
         INTERACT = 0
         JJJ = 0
 C
-        IF(SCALFAC(JBLOCK).EQ. 1.0D0) THEN
+#ifdef LUCI_DEBUG
+        write(lupri,*) 'active_block(JBLOCK)... ',active_block(JBLOCK)
+#endif
+        IF(active_block(JBLOCK) .gt. 0) THEN
           JATP = ICBLOCK(1,JBLOCK)
           JBTP = ICBLOCK(2,JBLOCK)
           JASM = ICBLOCK(3,JBLOCK)
@@ -246,6 +235,7 @@ C
           JOFF = ICBLOCK(5,JBLOCK)
           CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
      &                LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
+
           DO IPERM = 1, NPERM
             LLASM = LASM(IPERM)
             LLBSM = LBSM(IPERM)
@@ -253,6 +243,9 @@ C
             LLBTP = LBTP(IPERM)
 C           loop over Sigma blocks in batch
             DO JSBLOCK = 1, NBLOCK
+#ifdef LUCI_DEBUG
+        write(lupri,*) 'ISBLOCK(JSBLOCK)... ',ISBLOCK(1,JSBLOCK)
+#endif
               IF(ISBLOCK(1,JSBLOCK).GT.0) THEN
                 INTERACT = 0
                 IATP = ISBLOCK(1,JSBLOCK)
@@ -261,22 +254,34 @@ C           loop over Sigma blocks in batch
                 IBSM = ISBLOCK(4,JSBLOCK)
                 NIA = NSSOA(IASM,IATP)
                 NIB = NSSOB(IBSM,IBTP)
+#ifdef LUCI_DEBUG
+        write(lupri,*) 'NIA, NIB, prod... ',NIA,NIB, NIA*NIB,MXEXC
+#endif
                 IF(NIA*NIB.NE.0) THEN        
+
 C                 are the two blocks connected by allowed excitation?
-                  IF(MXEXC.EQ.2) THEN
+                  IF(MXEXC.EQ.1) THEN
+                    IF((ICONSPA(IATP,LLATP).LE.MXEXC.AND.
+     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM  ) .OR.
+     &                 (ICONSPB(IBTP,LLBTP).LE.MXEXC.AND.
+     &                  IATP.EQ.LLATP.AND.IASM.EQ.LLASM  )     )THEN
+                       INTERACT = 1
+                    END IF
+                  ELSE IF(MXEXC.EQ.2) THEN
                     IF((ICONSPA(IATP,LLATP).LE.1.AND.
-     &                  ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
-     &                 (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
-     &                  IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
-     &                 (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
-     &                  IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
-                           INTERACT = 1
+     &               ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
+     &              (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
+     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
+     &              (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
+     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
+                        INTERACT = 1
                     END IF
                   END IF
+
                   IF(INTERACT.NE.0) THEN
-                   JJJ = JJJ + 1
+                   JJJ                    = JJJ + 1
                    ICCTOS(JSBLOCK,JBLOCK) = 1
-                   ICWEIGHT(JJJ) = JSBLOCK
+                   ICWEIGHT(JJJ)          = JSBLOCK
                   END IF
                 END IF
               END IF
@@ -285,11 +290,16 @@ C           ^ loop over s-blocks
           END DO
 C         ^loop over nperm
         END IF
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.JJJ.GT.0.AND.NTEST.GE.100)THEN
-          WRITE(6,'(A,1X,I5,1X,A,1X,I5,1X,A)') 
+#ifdef LUCI_DEBUG
+        IF(JJJ.GT.0.AND.NTEST.GE.100)THEN
+          WRITE(lupri,'(A,1X,I5,1X,A,1X,I5,1X,A)') 
      & 'C BLOCK',JBLOCK,'IS CONNECTING TO',JJJ,'S-BLOCKS:'
-          CALL IWRTMA(ICWEIGHT,1,JJJ,1,JJJ)
+          CALL IWRTMAMN(ICWEIGHT,1,JJJ,1,JJJ,lupri)
         END IF
+#undef LUCI_DEBUG
+#endif
+        icweightf(JBLOCK) = jjj
+        IABSOLUTE_WEIGHT  = IABSOLUTE_WEIGHT + jjj*active_block(JBLOCK)
       END DO 
 C     ^loop over c-blocks
 C
@@ -302,8 +312,7 @@ C
 ***********************************************************************
       SUBROUTINE GATHER_LOW_PAR(NSUB,NSUBMX,SUBVAL,ISCAT,
      &                          RECVARRAY,TESTARR,
-     &                          IRECVARRAY,ITESTARRAY,IRANKARR,
-     &                          NTESTG)
+     &                          IRECVARRAY,ITESTARRAY,NTESTG)
 *
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "maxorb.h"
@@ -312,18 +321,13 @@ C
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SUBVAL(*),ISCAT(*),RECVARRAY(*),TESTARR(*)
-      DIMENSION IRECVARRAY(*),ITESTARRAY(*),IRANKARR(NSUBMX)
+      DIMENSION IRECVARRAY(*),ITESTARRAY(*)
 *
       NTESTL = 0
-      NTEST = MAX(NTESTG,NTESTL)
-      NTEST = 0
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)'SUBROUTINE GATHER_LOW_PAR entered'
-      END IF        
-      VMAX = 1.0D99
-      VMIN = -1.0D99
-      IF(NTEST.GE.100) 
-     & WRITE(6,*)'SET VMAX TO 1.0D99 and VMIN TO -1.0D99',VMAX,VMIN
+      NTEST  = MAX(NTESTG,NTESTL)
+      NTEST  = 0
+      VMAX   =  1.0D99
+      VMIN   = -1.0D99
       CALL SETVEC(TESTARR,VMAX,NSUBMX*LUCI_NMPROC)
       CALL SETVEC(RECVARRAY,VMAX,NSUBMX*LUCI_NMPROC)
       CALL IZERO(IRECVARRAY,NSUBMX*LUCI_NMPROC)
@@ -333,30 +337,46 @@ C
         CALL SETVEC(SUBVAL,VMAX,NSUBMX)
         CALL IZERO(ISCAT,NSUBMX)
       END IF
-      ICOUNT = 1
-      DO IL = 1, NSUBMX
-        IRANKARR(IL) = ICOUNT
-        ICOUNT = ICOUNT + 1
-      ENDDO
+
+      do j = 1, LUCI_NMPROC
+        ICOUNT = 1
+        DO IL = 1, NSUBMX
+          ITESTARRAY(IL+((j-1)*NSUBMX)) = ICOUNT
+          ICOUNT                        = ICOUNT + 1
+        END DO
+      end do
 *
 *. gather lowest elements from nodes on all nodes - we need no master
+#ifdef sometimes_problematic_with_i8
       CALL MPI_ALLGATHER(SUBVAL,NSUBMX,MPI_REAL8,RECVARRAY,NSUBMX,
-     &                  MPI_REAL8,MPI_COMM_WORLD,IERR)
+     &                   MPI_REAL8,MPI_COMM_WORLD,IERR)
       CALL MPI_ALLGATHER(ISCAT,NSUBMX,my_MPI_INTEGER,IRECVARRAY,NSUBMX,
-     &                  my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
-      CALL MPI_ALLGATHER(IRANKARR,NSUBMX,my_MPI_INTEGER,ITESTARRAY,
-     &                   NSUBMX,my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
+     &                   my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
+#endif
+      CALL MPI_GATHER(SUBVAL,NSUBMX,MPI_REAL8,RECVARRAY,NSUBMX,
+     &                MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_GATHER(ISCAT,NSUBMX,my_MPI_INTEGER,IRECVARRAY,NSUBMX,
+     &                my_MPI_INTEGER,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+
+      CALL MPI_BCAST(RECVARRAY,NSUBMX*LUCI_NMPROC,
+     &               MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IRECVARRAY,NSUBMX*LUCI_NMPROC,
+     &               my_MPI_INTEGER,LUCI_MASTER,MPI_COMM_WORLD,IERR)
 *
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10)THEN
-        WRITE(6,*)'before search: RECVARRAY and IRECVARRAY'
-        CALL WRTMT_LU(RECVARRAY,
-     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC)
-        CALL IWRTMA(IRECVARRAY,
-     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC)
-        WRITE(6,*)'before search: ITESTARRAY'
-        CALL IWRTMA(ITESTARRAY,
-     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC)
-      END IF
+#ifdef LUCI_DEBUG
+      write(luwrt,*) 'NSUBMX are ==> ',NSUBMX
+      WRITE(luwrt,*)'before search: RECVARRAY'
+        CALL WRTMATMN(RECVARRAY,
+     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC,luwrt)
+      WRITE(luwrt,*)'before search: IRECVARRAY'
+        CALL IWRTMAMN(IRECVARRAY,
+     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC,luwrt)
+      WRITE(luwrt,*)'before search: ITESTARRAY'
+        CALL IWRTMAMN(ITESTARRAY,
+     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC,luwrt)
+      WRITE(luwrt,*)'before search: test print done'
+      call flshfo(luwrt)
+#endif
                     
 *. we need the NSUBMX lowest elements from all over the world - sorted
       ISEARCH = 0
@@ -460,20 +480,24 @@ C
       ISEARCH = ISEARCH + 1
 *.    VMINTMP should be the lowest value w.r.t. ISEARCH 
       VMINLAST = VMINTMP
+#ifdef LUCI_DEBUG
 *. test writing
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 
-     & WRITE(6,*)'VMINLAST',VMINLAST
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 
-     & WRITE(6,*)'PLACE FOR VMINLAST',IMINPLACE
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 
-     & WRITE(6,*)'NUMBER',IMINNUMB
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 
-     & WRITE(6,*)'IMINRANK',IMINRANK
+      WRITE(luwrt,*)'VMINLAST',VMINLAST
+      WRITE(luwrt,*)'PLACE FOR VMINLAST',IMINPLACE
+      WRITE(luwrt,*)'NUMBER',IMINNUMB
+      WRITE(luwrt,*)'IMINRANK',IMINRANK
+      WRITE(luwrt,*)'ISEARCH',ISEARCH
+      call flshfo(luwrt)
+      call flshfo(luwrt)
+      call flshfo(luwrt)
+#endif
+
+!     if(LUCI_MYPROC.EQ.LUCI_MASTER+2) call quit('bla bla')
 *. end of test writing
 *. put the result to permanent storage in memory
-      SUBVAL(ISEARCH) = VMINTMP
-      ISCAT(ISEARCH) = IMINPLACE 
-      RECVARRAY(IMINNUMB) = VMAX
+      SUBVAL(ISEARCH)      = VMINTMP
+      ISCAT(ISEARCH)       = IMINPLACE 
+      RECVARRAY(IMINNUMB)  = VMAX
       IRECVARRAY(IMINNUMB) = 0
       ITESTARRAY(IMINNUMB) = -1
 
@@ -487,7 +511,8 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE MICDV6_PAR(VEC1,VEC2,RNRM,EIG,FINEIG,MAXIT,
+      SUBROUTINE MICDV6_PAR(VEC1,VEC2,C2,RNRM,EIG,nfinal_vec,
+     &                      FINEIG,root_converged,root_residual,MAXIT,
      &                      NVAR,NROOT,MAXVEC,NINVEC,APROJ,AVEC,WORK,
      &                      IPRTXX,NPRDIM,H0,IPNTR,
      &                      NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,THRES_E,
@@ -543,7 +568,7 @@ C
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
       INTEGER IERR
 #include "parluci.h"
-      DIMENSION VEC1(*),VEC2(*)
+      DIMENSION VEC1(*),VEC2(*),C2(*)
       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
       DIMENSION APROJ(MAXVEC*(MAXVEC+1)/2),AVEC(*),WORK(*)
       DIMENSION H0(*),IPNTR(1)
@@ -551,6 +576,8 @@ C
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*), LU7LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LU6LIST(*), LUCLIST(*)
       DIMENSION LBATV(*), LEBATV(*), I1BATV(*), IBATV(8,*)
+      real(8)              :: cdummy
+      real(8)              :: sdummy
       real(8), allocatable :: tmp_space0(:)
       real(8), allocatable :: tmp_space1(:)
       real(8), allocatable :: tmp_space2(:)
@@ -565,7 +592,11 @@ C
 *     eigenvectors in iteration n+1 as the approximations
 *     with largest overlap with the previous space
 *
-      DIMENSION FINEIG(NROOT)
+      real(8), intent(out) :: FINEIG(nroot)
+      real(8), intent(out) :: root_residual(nroot)
+      integer, intent(out) :: root_converged(nroot)
+      integer, intent(out) :: nfinal_vec
+
       LOGICAL CONVER
       REAL*8 INPRDD, INPROD 
       DOUBLE PRECISION tottime,endtime,starttime
@@ -579,17 +610,14 @@ C
       DIMENSION IBLOCKL(*),NBLOCKDN(*), IPROCLIST(LUCI_NMPROC)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
       character (len=13)   :: convergence
-      logical, allocatable :: rtcnv(:)
  
 !     allocate scratch space
       allocate(tmp_space0(maxvec*(maxvec+1)/2))
       allocate(tmp_space1(maxvec**2))
       allocate(tmp_space2(maxvec**2))
-      allocate(rtcnv(nroot))
       tmp_space0 = 0
       tmp_space1 = 0
       tmp_space2 = 0
-      rtcnv      = .false.
 *
 C
 C     set check point parameters - after every 6th iteration
@@ -637,8 +665,13 @@ C
       END IF
       KAPROJ = 1
       KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-      TEST   = 1.0D-4
       CONVER = .FALSE.
+!     set convergence thresholds
+!     norm   
+      THRQC  = THRES_E
+!     energy change
+!     THRQE  = THRES_E * 1.0d-08
+      THRQE  = THRES_E * THRES_E
 C
 C     ===================
 C      Initial iteration
@@ -694,7 +727,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,luwrt)
         sigmatime = MPI_WTIME()
 *
 *=======================================================================
-        CALL MV7(VEC1,VEC2,ILUC,ILU2 
+        CALL SIGDEN_CI(VEC1,VEC2,C2,ILUC,ILU2,cdummy,sdummy,1,-1,xxs2dm
 #ifdef VAR_MPI
      &           ,LUCLIST,LU2LIST,IBLOCKL,NBLOCKDN,RCCTOS,IGROUPLIST,
      &           IPROCLIST
@@ -829,7 +862,8 @@ C
 *       calculate residues ...
 *
         CALL P1_B_PAR_RL_LUCI1(VEC1,VEC2,EIGAPR,RNRM,EIGSHF,
-     &                         EIG,TEST,THRES_E,RTCNV,CONVER,ITER,MAXIT,
+     &                         EIG,THRQC,THRQE,root_converged,CONVER,
+     &                         ITER,MAXIT,
      &                         IROOT,LU2LIST,LU1LIST,LU5LIST,NBATV,
      &                         LBATV,LEBATV,I1BATV,IBATV,
      &                         MY_LU2_OFF,MY_LU1_OFF,MY_LU5_OFF,
@@ -843,7 +877,7 @@ C
 *       1.2 : multiply with inverse Hessian approximation
 *             to get new direction
 *
-        IF( .NOT. RTCNV(IROOT) ) THEN
+        IF(root_converged(iroot) .gt. 0) THEN
 *
 *         (D-E)-1 *( HX - EX )
 *
@@ -855,7 +889,7 @@ csk       CSCREEN = .FALSE.
           CALL H0M1TD_REL_PAR(ILU6,IDIA,ILU5,-EIGAPR,VEC1,VEC2,
      &                        LU6LIST,LU5LIST,NBATV,LBATV,LEBATV,
      &                        I1BATV,IBATV,MY_LU6_OFF,MY_DIA_OFF,
-     &                        MY_LU5_OFF,1,THRES_E)
+     &                        MY_LU5_OFF,1,THRQE)
 *              H0M1TD_REL_PAR(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,LISTOUT,
 *    &                        LISTIN,NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
 *    &                        OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV)
@@ -966,7 +1000,7 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
         sigmatime = MPI_WTIME()
 *
 *==================================================================
-        CALL MV7(VEC1,VEC2,ILUC,ILU4
+        CALL SIGDEN_CI(VEC1,VEC2,C2,ILUC,ILU4,cdummy,sdummy,1,-1,xxs2dm
 #ifdef VAR_MPI
      &           ,LUCLIST,LU4LIST,IBLOCKL,NBLOCKDN,RCCTOS,IGROUPLIST,
      &           IPROCLIST
@@ -1340,11 +1374,11 @@ C       reset ITER_CHECKP
 C
 C       copy c-vectors from nodes and master back to the master
         CALL REWINE(61,-1)
-        call copy_vector_mpi_2_sequential_io(ILU1,61,VEC1,
-     &                                       MY_LU1_OFF,LU1LIST,
-     &                                       NBLOCKDN,IBLOCKL,
-     &                                       MPI_COMM_WORLD,
-     &                                       NUM_BLOCKS2,nroot,1)
+        call mcci_cp_vcd_mpi_2_seq_io_interface(VEC1,61,ILU1,
+     &                                          MY_LU1_OFF,lu1list,
+     &                                          NBLOCKDN,IBLOCKL,
+     &                                          MPI_COMM_WORLD,
+     &                                          NUM_BLOCKS2,NROOT,1,2)
         IF(luci_myproc .eq. luci_master) CALL REWINE(61,-1)
       END IF
 C
@@ -1398,18 +1432,19 @@ C
       write(LUWRT,'(1x,a )') '**********************************'//
      &           '******************************'
       DO 1601 IROOT = 1, NROOT
-         FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-         if(rtcnv(iroot)) then 
+         FINEIG(IROOT)        = EIG(ITER,IROOT)+EIGSHF
+         root_residual(IROOT) = rnrm(iter,iroot)
+         if(root_converged(iroot) .eq. 0) then
            convergence = ' converged'
          else
            convergence = 'NOT converged'
          end if
-         WRITE(LUWRT,'(i7,i7,f20.10,4x,1p,E10.3,4x,a)')
-     &         ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
+         WRITE(LUWRTOUT,'(i7,i7,f20.10,4x,1p,E10.3,4x,a)')
+     &         ITER,IROOT,FINEIG(IROOT),root_residual(IROOT),
      &         convergence
  1601 CONTINUE
+      nfinal_vec = nvec
 C
-      deallocate(rtcnv)
       deallocate(tmp_space2)
       deallocate(tmp_space1)
       deallocate(tmp_space0)

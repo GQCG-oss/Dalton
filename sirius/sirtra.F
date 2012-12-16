@@ -604,14 +604,14 @@ C
 C....    FORMAT STATEMENTS
 C
   200 FORMAT(/' FIRST HALF-SORT STATISTICS'
-     1       /'  NUMBER OF PASSES OVER AO FILE',T30,I7
-     2       /'  NUMBER OF BLOCKS PER CHAIN',T27,I10
-     3       /'  TOTAL NUMBER OF CHAINS',T27,I10
-     4       /'  NUMBER OF BUFFERS PER PASS',T27,I10/)
-  201 FORMAT('  NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER',I10)
-  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I8
-     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I8
-     2       /'  PERCENT NON-ZERO AO INTEGRALS',F17.2)
+     1       /'  NUMBER OF PASSES OVER AO FILE',T33,I4
+     2       /'  NUMBER OF BLOCKS PER CHAIN',T30,I7
+     3       /'  TOTAL NUMBER OF CHAINS',T30,I7
+     4       /'  NUMBER OF BUFFERS PER PASS',T30,I7/)
+  201 FORMAT('  NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER ',I4)
+  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I6
+     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I6
+     2       /'  PERCENT NON-ZERO AO INTEGRALS',F15.2)
   203 FORMAT(/'  THRESHOLD FOR DISCARDING INTEGRALS',1P,D10.2)
       END
 C  /* Deck sortb */
@@ -890,14 +890,14 @@ C
 C....    FORMAT STATEMENTS
 C
   200 FORMAT(/,' SECOND HALF-SORT STATISTICS'/
-     1  '  NUMBER OF PASSES OVER FILE',T30,I7/
-     2  '  NUMBER OF BLOCKS PER CHAIN',T27,I10/
-     3  '  TOTAL NUMBER OF CHAINS',T27,I10/
-     4  '  NUMBER OF BUFFERS PER PASS',T27,I10/)
-  201 FORMAT(' NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER',I10)
-  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I8
-     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I8
-     2       /'  PERCENT NON-ZERO INTEGRALS',F20.2)
+     1  '  NUMBER OF PASSES OVER FILE',T33,I4/
+     2  '  NUMBER OF BLOCKS PER CHAIN',T30,I7/
+     3  '  TOTAL NUMBER OF CHAINS',T30,I7/
+     4  '  NUMBER OF BUFFERS PER PASS',T30,I7/)
+  201 FORMAT(' NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER ',I4)
+  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I6
+     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I6
+     2       /'  PERCENT NON-ZERO INTEGRALS',F18.2)
       END
 C  /* Deck tracd */
 #include "vdir.h"
@@ -1750,6 +1750,9 @@ C  KTRLVL, abs(KTRLVL) is transformation level, DELDA = (KTRLVL.lt.0)
 C  CMO,   mo coefficients
 C  WORK,  work array
 C  KWORK, actual length of work array
+!  
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -1810,6 +1813,10 @@ C
      &        WORK(KITSW),WORK(KITSX),WORK(KIT),WORK(KFREE),LFREE)
          CALL MEMREL('TRACTL_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       END IF
+
+!     set flag for new integrals (required for parallel MCSCF/CI with lucita)
+      mcscf_ci_update_ijkl = .true.
+
       RETURN
       END
 C  /* Deck tractl_1 */
@@ -2287,9 +2294,9 @@ C           and subtract from input CMO matrix
                J = J + ABS(MISH_TEST(ISYM)) + ABS(MASH_TEST(ISYM))
             END DO
             IF (ABS(WORK(I)) .LE. THRZER .AND. J .EQ. 0) THEN
-               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/T12,A)')
+               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
      *            ' TRACTL_1: Integral transformation abandoned,',
-     *            'the required MO integrals are already available.'
+     *            ' the required MO integrals are already available.'
                LBINTM = LBINT1
                GO TO 9999
             END IF

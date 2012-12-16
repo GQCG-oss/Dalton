@@ -140,7 +140,13 @@ dft_polar dft_cr_sym dft_open_lr dft_properties_sym dft_properties_nosym \
 dft_camb3lyp_magsus"
 #
 SRDFT="hfsrlda_sym mp2srlda_ener_nosym mcsrlda_sym mcsrpbe_sym \
-hfsrpbe_sym mp2srpbe_ener_nosym rsdhf_he2"
+hfsrpbe_sym mp2srpbe_ener_nosym rsdhf_he2 cisrlda-sirius_n2 cisrpbe-lucita_be"
+#SRDFT="mp2srlda_ener_nosym"
+#SRDFT="hfsrlda_sym"
+#SRDFT="hfsrpbe_sym"
+#SRDFT="mcsrlda_sym"
+#SRDFT="cisrlda-sirius_n2"
+#SRDFT="cisrpbe-lucita_be"
 #
 DPT="dpt_hf dpt_h2s dpt_h2s_finp dpt_hbr_finm dpt_h2s_finm \
 dpt_hbr dpt_hbr_finp dpt_h2s_ff"

@@ -251,6 +251,11 @@ C
       NCLIN  = 0
       NOLIN  = 0
       ITMIC  = 0
+
+#ifdef LUCI_DEBUG
+      write(lupri,*) 'bla bla IPRI6 raised from X to 101',IPRI6
+      IPRI6  = 101
+#endif
 C
   100 ITMIC  = ITMIC + 1
          IF (IPRI6.ge.10) WRITE(LUPRI,'(/A,I5)')
@@ -362,7 +367,7 @@ C           subtract CREF part of sigmavectors:
 C
             ISCVEC = KSVECS
             DO 780 ITSIM = 1,NTSIM
-               TT = DDOT(NCONF,CREF,1,WRK(ISCVEC),1)
+               TT = DDOT_128(NCONF,CREF,1,WRK(ISCVEC),1)
                IF (ABS(TT) .GT. THREPS) THEN
                   IF (P6FLAG(17))
      *               WRITE (LUPRI,7800) ITMIC,(NREDL+ITSIM),TT
@@ -1695,6 +1700,7 @@ C         and for the reduced L-matrix (section 2)
 C         dimension: NVAR and NREDL*(NREDL+1)/2+2*NREDL, rsp.
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "infvar.h"
       DIMENSION BVECS(*),SVECS(NVAR,*), REDL(*),IBNDX(*),G(*)
       DIMENSION EVEC(NREDL,*),EVAL(*)
@@ -1748,7 +1754,8 @@ C
             ISTBO = KBO
             DO 100 L=1,K
                IF (IBNDX(IREDL+L) .EQ. JBCNDX) THEN
-                  REDL(KL+L) = DDOT(NCONF,BVECS(ISTBC),1,SVECS(1,IK),1)
+                  REDL(KL+L) =
+     &               DDOT_128(NCONF,BVECS(ISTBC),1,SVECS(1,IK),1)
                   ISTBC = ISTBC + NCONF
                ELSE
                   REDL(KL+L) =
@@ -1772,7 +1779,7 @@ C
             DO 300 ISIM = 1,NTSIM
                KL = IROW(IREDL+ISIM) + 1
                IF (IBNDX(IREDL+ISIM) .EQ. JBCNDX) THEN
-                  REDL(KL) = DDOT(NCONF,BVECS(ISTBC),1,G,1)
+                  REDL(KL) = DDOT_128(NCONF,BVECS(ISTBC),1,G,1)
                   ISTBC = ISTBC + NCONF
                ELSE
                   REDL(KL) = DDOT(NWOPT,BVECS(ISTBO),1,G(1+NCONF),1)
@@ -1794,7 +1801,7 @@ C
                         IK = IBO
                         IBO = IBO + 1
                      END IF
-                     REDL(KL) = DDOT(NCONF,BVECS,1,SVECS(1,IK),1)
+                     REDL(KL) = DDOT_128(NCONF,BVECS,1,SVECS(1,IK),1)
    25             CONTINUE
                ELSE
                   CALL READT(LUIT3,NWOPT,BVECS)
@@ -1989,6 +1996,10 @@ C
 C           CALL NEXCI(OLSEN,ENER,NCVAR,D,XVEC,
 C       &              RES,DIAG,IPRPHP,WRK,LWRK)
 #endif
+
+!        write(lupri,*) 'neost: bcvec after nexci ==> ',nconf
+!        call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
          END IF
          NCVEC = NCVEC + 1
          ISTBC = ISTBC + NCONF
@@ -2107,9 +2118,17 @@ C
       NDMBC  = MAX(1,NCONF)
       NDMBO  = MAX(1,NWOPT)
       THRLDV = NVAR*THRLDP
+
+!     write(lupri,*) 'neost: bcvec before ortbvc ==> ',nconf
+!     call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
       CALL ORTBVC(NCVEC,NOVEC,NDMBC,NDMBO,NBPREV,IBNDX,LUIT3,
      *            BVECS(KBC),BVECS(KBO),
      *            THRLDV,BVECS(KTT0),BVECS(KBPREV))
+
+!     write(lupri,*) 'neost: bcvec after ortbvc ==> ',nconf
+!     call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
 C     CALL ORTBVC(NBC,NBO,NDMBC,NDMBO,NBPREV,IBNDX,LUBVC,
 C    *            BCVECS,BOVECS,THRLDP,TT0,BPREV)
 C
@@ -2219,6 +2238,7 @@ C
             IF (TT.LT.THRTT) THEN
                CALL DSCAL(NDMBC,(D1/TT),BCVECS(1,I),1)
                TT = DNORM2(NDMBC,BCVECS(1,I),1)
+!              write(lupri,*) 'ortbvc debug, double renorm vector',i
             END IF
             CALL DSCAL(NDMBC,(D1/TT),BCVECS(1,I),1)
          END IF
@@ -2252,7 +2272,7 @@ C        if (CI-type) then
             CALL READT(LUBVC,NDMBC,BPREV)
             DO 1910 J = 1,NBC
                IF (IBNDX(IBC+J).EQ.JBCNDX) THEN
-                  TT = -DDOT(NDMBC,BPREV,1,BCVECS(1,J),1)
+                  TT = -DDOT_128(NDMBC,BPREV,1,BCVECS(1,J),1)
                   CALL DAXPY(NDMBC,TT,BPREV,1,BCVECS(1,J),1)
                END IF
  1910       CONTINUE
@@ -2282,7 +2302,7 @@ C
 C        ... orthogonalize using that prev. vectors are normalized
          DO 2300 J = 1,(I-1)
          IF (IBNDX(IBC+J).EQ.0) GO TO 2300
-            TT = -DDOT(NDMBC,BCVECS(1,J),1,BCVECS(1,I),1)
+            TT = -DDOT_128(NDMBC,BCVECS(1,J),1,BCVECS(1,I),1)
             CALL DAXPY(NDMBC,TT,BCVECS(1,J),1,BCVECS(1,I),1)
  2300    CONTINUE
          TT = DNORM2(NDMBC,BCVECS(1,I),1)
@@ -2702,7 +2722,7 @@ C   asymmetry would indicate probable bug in LINTRN module.
 C
 #include "implicit.h"
       DIMENSION IBNDX(*), WRK(LFREE)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DIFTST = 1.0D-8)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DIFTST = 1.0D-7)
 #include "ibndxdef.h"
 C
 C  Used from common blocks:
@@ -2718,8 +2738,10 @@ C
 C
       LOGICAL CITYPE
 C
+!     start of statement function definition!!!
       REDH(I,J) = WRK((J-1)*NREDH+I)
       REDS(I,J) = WRK((KREDS-1)+(J-1)*NREDL+I)
+!     end of statement function definition!!!
 C
       NREDH  = NREDL - 1
       NCOMAX = MAX(NCONF,NWOPT)
@@ -2804,7 +2826,7 @@ C
          DO 260 J = 1,NREDL
             JSJI = JSJI + 1
             IF (IBNDX(J) .EQ. IBNDX(I)) THEN
-               WRK(JSJI) = DDOT(LBVEC,WRK(JBVECJ),1,WRK(JBVECI),1)
+               WRK(JSJI) = DDOT_128(LBVEC,WRK(JBVECJ),1,WRK(JBVECI),1)
             END IF
             IF (IBNDX(J) .EQ. JBCNDX) THEN
                JBVECJ = JBVECJ + NCONF

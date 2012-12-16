@@ -62,6 +62,7 @@ C Externals:
 C   CISIGC
 C
 C
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION CREF(*),FCAC(*),H2AC(*), INDXCI(*),GCI(*),WRK(*)
       PARAMETER ( D2 = 2.0D0 )
@@ -83,8 +84,10 @@ C
 C *** 1 *** GCI(I) = SUM(J) OF LCI(I,J)*CREF(J)
 C           calculate CI matrix times reference vector
 C
-      DISTYP = 1
-      IADINT = IADH2
+      DISTYP                        = 1
+      IADINT                        = IADH2
+      cref_is_active_bvec_for_sigma = .true.
+
       CALL CISIGC(1,CREF,GCI,NCONF,FCAC,H2AC,INDXCI,WRK,LFREE)
 C     CALL CISIGC(NSIM,BCVECS,SCVECS,LSCVEC,FCAC,H2AC,INDXCI,WRK,LFREE)
 C
@@ -1411,6 +1414,9 @@ C
 C Scratch:
 C   WRK
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg ! needed for storage of EMCMY
+
 #include "implicit.h"
       DIMENSION CREF(*),CMO(*),DV(NNASHX,*),PV(*),FC(*),FV(*),FQ(*)
       DIMENSION FCAC(*),H2AC(*)
@@ -1568,6 +1574,9 @@ C Step 2: calculate inactive and active Fock matrices.
 C
       CALL FCKMAT((NASHT.EQ.0),DV,CMO,EMCMY,FC,FV,WRK(KWRKF),LWRKF)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFREE)
+!     save EMCMY on common variable for LUCITA
+      einact_mc2lu = emcmy
+
       IF (NASHT .EQ. 0) CALL DZERO(FV,NNORBT)
 C     ... ORBGRD and ORBSIG always reference FV
 C
@@ -2533,6 +2542,8 @@ C
 C Scratch:
 C   WRK
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg ! needed for storage of EMCMY
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION CREF(*),CMO(*),DV(*),PV(*), G(*),
@@ -2679,6 +2690,8 @@ C Step 2: calculate inactive and active Fock matrices.
 C
       CALL FCKMAT((NASHT.EQ.0),DV,CMO,EMCMY,FC,FV,WRK(KWRKF),LWRKF)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFREE)
+!     save EMCMY on common variable for LUCITA
+      einact_mc2lu = emcmy
       IF (NASHT .EQ. 0) CALL DZERO(FV,NNORBT)
 C     ... currently ORBGRD and ORBSIG always references FV
 C

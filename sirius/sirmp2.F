@@ -203,9 +203,9 @@ C ==========================================================================
          MP2_SCALEFAC(1) = P_S + P_T
          MP2_SCALEFAC(2) =     - P_T
          IF (MP2_SCS) THEN
-            WRITE(LUPRI,'(/A)') " S. Grimme's SCS MP2 requested."
+            WRITE(LUPRI,'(A)') " S. Grimme's SCS MP2 requested."
          ELSE IF (MP2_SOS) THEN
-            WRITE(LUPRI,'(/A)') " M. Head-Gordon's SOS MP2 requested."
+            WRITE(LUPRI,'(A)') " M. Head-Gordon's SOS MP2 requested."
          ELSE
             WRITE(LUPRI,'(/A)') ' User-scaled MP2 requested.'
             IF (P_T .EQ. 0.0D0) MP2_SOS = .TRUE.
@@ -215,22 +215,10 @@ C           ... SOS-MP2 but not Head-Gordon's original SOS-MP2
      &      ' Scale factors p_S and p_T:',P_S, P_T
       END IF
       IF (MP2_LSHIFT .NE. 0.0D0) WRITE(LUPRI,'(/A,F14.6)')
-     &   ' Level-shift of MP2 denominator: ',MP2_LSHIFT
+     &      ' Level-shift of MP2 denominator: ',MP2_LSHIFT
       IF (MP2_NO_OCCVIR) WRITE(LUPRI,'(/A)')
-     &   ' ".NO OV BLOCK": Occ-virt block of MP2 density matrix ignored'
+     &  ' ".NO OV BLOCK": Occ-virt block of MP2 density matrix ignored'
 C
-      IF (DCPT2) THEN
-         WRITE(LUPRI,'(/A/A)')
-     &   ' WORK-IN-PROGRESS: Degeneracy corrected PT2 requested.',
-     &   ' WORK-IN-PROGRESS: NB! results may not be correct !!!!'
-         IF (MP2_SCALED .OR. (MP2_LSHIFT /= 0.0d0)) THEN
-            WRITE(LUPRI,'(/A)') ' FATAL ERROR: .DCPT2 cannot be'//
-     &      'combined with scaled MP2 and level-shfit in MP2'
-            CALL QUIT(
-     &      'FATAL ERROR: illegal combination of keywords in *MP2')
-         END IF
-      END IF
-
       RETURN
       END
 C  /* Deck mp2ctl */
@@ -907,13 +895,6 @@ C               next class of range-separated integrals /hjaaj Oct 09
      *      ' Hartree-Fock total energy        :',EMY,
      *      ' + Scaled MP2 contribution        :',EMP2FL,
      *      ' = Scaled MP2 second order energy :',EMY+EMP2FL
-            ELSE IF (DCPT2) THEN
-               WRITE (LUPRI,'(/A/,3(/A,F25.10))')
-     *      ' NOTE that the orbitals saved on disk are those obtained'//
-     *      ' with frozen orbitals (see above).',
-     *      ' Hartree-Fock total energy        :',EMY,
-     *      ' + DCPT2 contribution             :',EMP2FL,
-     *      ' = DCPT2 energy                   :',EMY+EMP2FL
             ELSE
               WRITE (LUPRI,'(/A/3(/A,F25.10))')
      *     ' NOTE that the orbitals saved on disk are those obtained'//
@@ -923,7 +904,7 @@ C               next class of range-separated integrals /hjaaj Oct 09
      *     ' = MP2 second order energy :',EMY+EMP2FL
             END IF
          END IF
-
+C
 C        Manu July 07 : we copy (as done previously) CMO1 into CMO2 since we need
 C        the HF-SRDFT orbitals in MP2SRDFTDEN
 C
@@ -1229,29 +1210,6 @@ C    Routine modified to include scaled mp2 calculations
                H2D(INP,IBH) = ( MP2_SCALEFAC(1)*H2M(INP,IBH)
      *                        + MP2_SCALEFAC(2)*H2PHD(IP,IH,IAHMP))
      *                        / ENMANB
-            ELSE IF (DCPT2) THEN
-C Frank Heiden modifying for DCPT2 functionality
-c               H2D(INP,IBH) = 0.5D0*(ENMANB - SQRT(ENMANB**2.0D0 +
-c     *         4.0D0 * (D2*H2M(INP,IBH) -
-c     *         H2PHD(IP,IH,IAHMP))**2.0D0))
-
-!              H2D(INP,IBH) = 0.5D0*(ENMANB - SQRT(ENMANB**2.0D0 +
-!    *         4.0D0 * (D2*H2M(INP,IBH) -
-!    *         H2PHD(IP,IH,IAHMP))**2.0D0))+
-!    *         0.25D0*(ENMAB - SQRT(ENMAB**2.0D0 +
-!    *         4.0D0*(H2M(INP,IBH) - H2PHD(IP,IH,IAHMP))**2.0D0))
-               IF (ABS(H2M(INP,IBH)) .LE. 1.0D-8) THEN
-                  H2D(INP,IBH) = 0.0D0
-               ELSE
-                  H2D(INP,IBH) = -ENMANB/H2M(INP,IBH) *
-     &             ( 0.5D0* (1.0D0 - SQRT(1.0D0 + 4.0D0*
-     &                 (H2M(INP,IBH)/ENMANB)**2))
-     &             + 0.25D0* (1.0D0 - SQRT(1.0D0 + 4.0D0*
-     &                 ((H2M(INP,IBH)-H2PHD(IP,IH,IAHMP))/ENMANB)**2))
-     &             )
-               END IF
-c               WRITE(*,*)
-c     &         " DCPT2 work loop", ENMANB,H2M(INP,IBH),H2D(INP,IBH)
             ELSE
                H2D(INP,IBH) = ( D2*H2M(INP,IBH) - H2PHD(IP,IH,IAHMP))
      *                        / ENMANB
@@ -1269,12 +1227,7 @@ c     &         " DCPT2 work loop", ENMANB,H2M(INP,IBH),H2D(INP,IBH)
 C
 C Accumulate MP2 energy :
 C
-           IF (DCPT2) THEN
-c           EMP2 = EMP2 + H2D(INP,IBH)
-              EMP2 = EMP2 + H2M(INP,IBH) * H2D(INP,IBH)
-           ELSE
-              EMP2 = EMP2 + H2M(INP,IBH) * H2D(INP,IBH)
-           END IF
+            EMP2 = EMP2 + H2M(INP,IBH) * H2D(INP,IBH)
 C
 C PARTICLE HOLE PART OF MULLIKEN DISTRIBUTIONS ARE DIVIDED WITH ORBITAL
 C ENERGY DIFFERENCES TO BE ABLE TO CARRY OUT MATRIX MULTIPLICATIONS.

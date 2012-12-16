@@ -351,6 +351,13 @@ C
             CALL READI(LUSIFC,IRAT*NCONRF,WORK(KCREF))
          END IF
 C
+#ifdef MOD_PARMCSCF_WITH_LUCITA
+         if(ci_program .eq. 'LUCITA   ')then
+           call quit('*** OPGRHS --> call to CIPRP: ci program'//
+     &               ' lucita expects triangular packed 1e-ints ***')
+         end if
+#endif
+
          CALL CIPRP(1,WORK(KCREF),RHSOPG,NVARPT,WORK(KACAC),
      *              WORK(KCINDX),WORK(KWRK),LWRK)
 C        CALL CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,CINDEX,WORK,LFREE)

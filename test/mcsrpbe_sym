@@ -67,7 +67,7 @@ SRXPBEHSE SRCPBERI
 '
 
 test='
-check_scf_energy MC-SRDFT -14.627307555965 5e-9
+check_scfsrdft_energy MC-SRDFT -14.627307555965 5e-9
 '                    
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }

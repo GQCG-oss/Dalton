@@ -58,7 +58,6 @@ C
 #ifdef VAR_MPI
       use par_mcci_io
 #endif
-
 #include "implicit.h"
 
 C
@@ -278,7 +277,7 @@ C.. 1.4 .. (SIRUPD)
 C..
       NCONF4 = MAX(4,NCONF)
 C
-C     Get CI information if active orbitals
+C     Get CI information if active orbitals (and ci_program .eq. SIRIUS-CI)
 C
       IF (.NOT.RHF_CALC)
      &   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
@@ -422,7 +421,7 @@ C        ... flag(34) = (int.transf. not needed in optimization)
 C
 C *** Retrieve CI coefficients:
 C
-      CALL RDCREF(WRK(KCREF))
+      CALL RDCREF(WRK(KCREF),.true.)
 C
 C         --- Normalize CI vector (i.e. CREF)
 C         6-Dec-1984-hjaaj: SIRSAV changed so CREF normally normalized now
@@ -497,15 +496,15 @@ C
       END IF
       IF (.NOT.UPDATE) THEN
          CALL GRAD (WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
-     *              WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFQ),WRK(KFCAC),
-     *              WRK(KH2AC),WRK(KGTOT),EMY,EACTIV,
+     &              WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFQ),WRK(KFCAC),
+     &              WRK(KH2AC),WRK(KGTOT),EMY,EACTIV,
      &              WRK(KWRKG),LWRKG)
 C        CALL GRAD (CREF,CMO,INDXCI,DV,PV,FC,FV,FQ,
 C    *              FCAC,H2AC,G,EMY,EACTIV,WRK,LFREE)
       ELSE
          CALL UPDGRD(0,WRK(KCREF),WRK(KCMO),WRK(KDV),WRK(KPV),
-     *               WRK(KGTOT),EMY,EACTIV,WRK(KFC),WRK(KFV),WRK(KFQ),
-     *               DUMMY,WRK(KCINDX),WRK(KWRKG),LWRKG)
+     &               WRK(KGTOT),EMY,EACTIV,WRK(KFC),WRK(KFV),WRK(KFQ),
+     &               DUMMY,WRK(KCINDX),WRK(KWRKG),LWRKG)
 C        CALL UPDGRD(IGRTYP,REF1,CMO1,DV,PV,GRD,EMY,
 C    *               EACTIV,FC,FV,DIAOR,INDXCI,WRK,LFREE)
       END IF
@@ -1450,6 +1449,7 @@ C
 C     =7 : Start using MC update information ('UPDSAVE' in SIRSAV)
 C end if
 C
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
 C
       DIMENSION INDXCI(*),WRK(LFREE)
@@ -1948,6 +1948,13 @@ C                  NEO calculation, e.g. for double core hole.
                JCVECS = JCVECS + NCONF
  9010       CONTINUE
          END IF
+!        set logical flag for new reference CI vector in WRK(KCREF) - 
+!        in the interface to lucita we use this info to save/broadcast the new
+!        reference vector on lucita internal sequential/parallel MPI-I/O files
+         vector_exchange_type1                      = 1
+         vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+
+     &                             vector_exchange_type1) = .true.
+
          CALL SIRCNO(CNOLBL,NCVECS,ICREF,WRK(KCVECS),
      *               WRK(KCMO),WRK(KAOCC),INDXCI,WRK(KW31),1,LW31)
 C        CALL SIRCNO(KEYCNO,NCVECS,ICREF,CREF,CMO,AOCC,
