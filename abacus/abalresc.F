@@ -204,7 +204,6 @@ C#include <cbiqr.h
 c jim-dbg : sacar esto de abajo
 #include <priunit.h>
 C
-      Write(lupri,*)'  @LRSCINI for LRESC defaults' 
       JIMPRT   = 0
       NATOM    = 1 
       LRGAUG(1) = 0.000

@@ -521,7 +521,6 @@ C
   900 CONTINUE
 C
       WRITE (LUPRI,9020) ITMAC,ITMIC
-      WRITE (LUERR,9020) ITMAC,ITMIC
       GO TO 9000
  9020 FORMAT (/' (SIRNEO) iteration (',I3,',',I3,')',
      *        /' microiterations stopped because of linear dependence')
@@ -531,7 +530,6 @@ C     reached
 C
   910 CONTINUE
       WRITE (LUPRI,9030) ITMAC,ITMIC
-      WRITE (LUERR,9030) ITMAC,ITMIC
       GO TO 9000
  9030 FORMAT (/' (SIRNEO) iteration (',I3,',',I3,')',
      *        /' maximum number of microiterations reached')
@@ -548,7 +546,6 @@ C
   940 CONTINUE
       BETUPD = .FALSE.
       WRITE (LUPRI,9400) ITMAC,ITMIC,MAXRL,NREDL
-      WRITE (LUERR,9400) ITMAC,ITMIC,MAXRL,NREDL
       GO TO 9000
  9400 FORMAT (/' (SIRNEO) iteration (',I3,',',I3,')',
      *        /' Microiterations stopped because maximum dimension',

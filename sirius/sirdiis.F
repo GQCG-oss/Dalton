@@ -719,12 +719,12 @@ C
            allocate(pefock(nnbasx))
            if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
              call pe_master(runtype='fock', denmats=daosav(:,1),
-     &                      fckmats=pefock, nmats=1, Epe=pe_energy,
+     &                      fckmats=pefock, nmats=1, energies=pe_energy,
      &                      dalwrk=wrk(kfree:lfree))
            else
              call pe_master(runtype='fock',
      &                      denmats=(daosav(:,1) + daosav(:,2)),
-     &                      fckmats=pefock, nmats=1, Epe=pe_energy,
+     &                      fckmats=pefock, nmats=1, energies=pe_energy,
      &                      dalwrk=wrk(kfree:lfree))
            end if
            esolt = pe_energy(1)

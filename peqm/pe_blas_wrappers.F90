@@ -1,6 +1,6 @@
-module blas_f90
+module pe_blas_wrappers
 
-    use double_precision
+    use pe_precision
 
     implicit none
 
@@ -172,4 +172,4 @@ end subroutine spmv
 
 !------------------------------------------------------------------------------
 
-end module blas_f90
+end module pe_blas_wrappers

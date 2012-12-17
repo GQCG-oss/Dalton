@@ -164,7 +164,7 @@ C
       DATA BLANK/'        '/
       CALL QENTER('GSET2')
       INQUIRE(FILE='RSPVEC',OPENED=OPENED,NUMBER=LU)
-      write(2,*)'opened with lu',opened,lu
+      !write(2,*)'RSPVEC opened with lu',opened,lu
       IF (.NOT. OPENED) THEN
          LU=-1
          CALL GPOPEN(

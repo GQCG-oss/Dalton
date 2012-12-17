@@ -61,18 +61,13 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-      use polarizable_embedding, only: peqm, pe_pd, pe_repuls,
-     &                                 Ees, Epol, Epd,
-     &                                 lmul, lpol
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
 C
 #include "litinfo.h"
       DIMENSION IINFO(LIINFO,*),DINFO(LDINFO,*),WRK(LWRK)
 #include "iratdef.h"
       PARAMETER (D0 = 0.0D0)
-
-      logical :: lmuls
-
 C
 C Used from common blocks:
 C   INFINP : ISPIN,LSYM,ISTATE, NACTEL,POTNUC, THRPWF, DOCINO, MCTYPE
@@ -336,13 +331,13 @@ csonia 04/10/95
          END IF
 
       ELSE IF (QM3) THEN
-        WRITE(LUPRI,'(/5X,A/)') 'QM/MM calculation converged :'
+        WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
         WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
       ELSE IF (QMMM) THEN
-        WRITE(LUPRI,'(/5X,A/)') 'QM/MM calculation converged :'
+        WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QMMM" calculation converged :'
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Charge contribution:    ',ECHART
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ',EDIPT 
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Quadrupole contribution:',EQUADT
@@ -352,47 +347,7 @@ csonia 04/10/95
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ',ESOLT
       else if (peqm) then
-        write(lupri,'(/5x,a)')
-     &                     'Polarizable Embedding energy contributions:'
-        write(lupri,'(5x,a)')
-     &                     '-------------------------------------------'
-        lmuls = (lmul(0) .or. lmul(1) .or. lmul(2) .or. lmul(3) .or.
-     &           lmul(4) .or. lmul(5))
-        if (lmuls) write(lupri,'(/7x,a)')
-     &                                    'Electrostatic contributions:'
-        if (lmul(0)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Monopoles       ', Ees(0,1)
-        if (lmul(1)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Dipoles         ', Ees(1,1)
-        if (lmul(2)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Quadrupoles     ', Ees(2,1)
-        if (lmul(3)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Octopoles       ', Ees(3,1)
-        if (lmul(4)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Hexadecapoles   ', Ees(4,1)
-        if (lmul(5)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Ditriacontapoles', Ees(5,1)
-        if (lpol(1)) then
-            write(lupri,'(/7x,a)') 'Polarization contributions:'
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Electronic      ', Epol(1,1)
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Nuclear         ', Epol(2,1)
-            if (lmuls) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Multipole       ', Epol(3,1)
-        end if
-        if (pe_pd) then
-            write(lupri,'(/7x,a)') 'Density contributions:'
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Electrostatic   ', Epd(1,1)
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Polarization    ', Epd(2,1)
-            if (pe_repuls) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Repulsion       ', Epd(3,1)
-        end if
-        write(lupri,'(/3x,a18,9x,f20.12)')
-     &          '@ Total PE energy: ',
-     &                    sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
+        continue
       ELSE
         ESOLT = D0
       END IF
@@ -449,30 +404,30 @@ C        ... DIIS-DFT or QC-DFT optimization
         CALL MM_PROPS(WRK(KFREE),LFREE,IPQMMM)
       ENDIF 
 
- 5000 FORMAT(/T4,'@ Spin multiplicity:',T31,I5,
-     *       /T4,'@ Spatial symmetry:',T31,I5,
-     *       /T4,'@ Total charge of molecule:',T31,I5)
- 5010 FORMAT(/T4,'@ This was a CI-NO calculation.')
- 5012 FORMAT(/T4,'@ This was a CI calculation.')
- 5020 FORMAT( T4,'@ State number:',T31,I5,
-     *      //T4,'@ Final MCSCF energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5021 FORMAT(/T4,'@ Final HF energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5022 FORMAT(/T4,'@ Final DFT energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5023 FORMAT(/T4,'@ Final HF-SRDFT energy:',T31,F20.12,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5024 FORMAT( T4,'@ State number:',T31,I5,
-     *      //T4,'@ Final MC-SRDFT energy:',T31,F20.12,A,
-     *       /T4,'@ Nuclear repulsion:',T31,F20.12,
-     *       /T4,'@ Electronic energy:',T31,F20.12)
- 5025 FORMAT( T4,'@ Solvation  energy:',T31,F20.12)
- 5030 FORMAT(/T4,'@ Final gradient norm:',T31,F20.12)
+ 5000 FORMAT(/'@    Spin multiplicity:',T31,I5,
+     *       /'@    Spatial symmetry:',T31,I5,
+     *       /'@    Total charge of molecule:',T31,I5)
+ 5010 FORMAT(/'@    This was a CI-NO calculation.')
+ 5012 FORMAT(/'@    This was a CI calculation.')
+ 5020 FORMAT( '@    State number:',T31,I5,
+     *      //'@    Final MCSCF energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5021 FORMAT(/'@    Final HF energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5022 FORMAT(/'@    Final DFT energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5023 FORMAT(/'@    Final HF-SRDFT energy:',T31,F20.12,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5024 FORMAT( '@    State number:',T31,I5,
+     *      //'@    Final MC-SRDFT energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5025 FORMAT( '@    Solvation  energy:',T31,F20.12)
+ 5030 FORMAT(/'@    Final gradient norm:',T31,F20.12)
 C
 C       stamp date, time, and hostname to LUPRI
         CALL TSTAMP(' ',LUPRI)

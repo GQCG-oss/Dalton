@@ -1061,10 +1061,13 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
             CALL gen1int_worker_init()
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_INT) THEN
+            print *, 'WARNING: calling gen1int_worker_get_int'
             CALL gen1int_worker_get_int(MWORK,WORK(1),LUPRI,IPRINT)
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_EXPT) THEN
+            print *, 'WARNING: calling gen1int_worker_get_expt'
             CALL gen1int_worker_get_expt(MWORK,WORK(1),LUPRI,IPRINT)
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
+            print *, 'WARNING: calling gen1int_worker_get_cube'
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
          ELSE

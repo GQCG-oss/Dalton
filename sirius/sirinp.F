@@ -2657,6 +2657,8 @@ C
 C  /* Deck wavinp */
       SUBROUTINE WAVINP(WORD,INPERR,ALLOPT)
 C
+C Purpose: process *CONFIGURATION input
+C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
@@ -2728,7 +2730,7 @@ C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
          INPERR = INPERR + 1
       END IF
          MCTYPE = 1
-         READ(LUCMD,*) (NAS2(I),I=1,NSYM)
+         READ(LUCMD,*,ERR=8010) (NAS2(I),I=1,NSYM)
          DO 25 ISYM = 1,NSYM
             NAS1(ISYM) = 0
             NAS3(ISYM) = 0
@@ -2737,7 +2739,7 @@ C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
 C
 C *** Option 2 >INACTI<  Inactive orbitals
   102 CONTINUE
-         READ(LUCMD,*) (NISH(I),I=1,NSYM)
+         READ(LUCMD,*,ERR=8010) (NISH(I),I=1,NSYM)
          NRHFT = ISUM(NSYM,NRHF,1)
          IF (NRHFT .EQ. 0) THEN
             NRHF(1:NSYM) = NISH(1:NSYM)
@@ -2793,7 +2795,7 @@ C *** Option 8 >RAS1 S<   RAS1 orbital space
          INPERR = INPERR + 1
       END IF
          MCTYPE = 2
-         READ(LUCMD,*) (NAS1(I),I=1,NSYM)
+         READ(LUCMD,*,ERR=8010) (NAS1(I),I=1,NSYM)
       GO TO 100
 C
 C *** Option 9 >RAS2 S<   RAS2 orbital space
@@ -2803,7 +2805,7 @@ C *** Option 9 >RAS2 S<   RAS2 orbital space
          INPERR = INPERR + 1
       END IF
          MCTYPE = 2
-         READ(LUCMD,*) (NAS2(I),I=1,NSYM)
+         READ(LUCMD,*,ERR=8010) (NAS2(I),I=1,NSYM)
       GO TO 100
 C
 C *** Option 10 >RAS3 S<   RAS3 orbital space
@@ -2813,7 +2815,7 @@ C *** Option 10 >RAS3 S<   RAS3 orbital space
          INPERR = INPERR + 1
       END IF
          MCTYPE = 2
-         READ(LUCMD,*) (NAS3(I),I=1,NSYM)
+         READ(LUCMD,*,ERR=8010) (NAS3(I),I=1,NSYM)
       GO TO 100
 C
 C *** Option 11 >RAS1 E<   RAS1 electrons
@@ -2847,6 +2849,13 @@ C
          NELMX1 = 2*NAS1T - NHL1MN
       END IF
       RETURN
+C ----------------------------------------------
+ 8010 CONTINUE ! NSYM error (probably)
+      WRITE (LUPRI,'(///2A/A,I5/)')
+     &   ' INPUT ERROR in *OPTIMI for keyword ',WORD,
+     &   ' INPUT ERROR is probably wrong number of symmetries, expected'
+     &      ,NSYM
+      CALL QUIT('Input error in *OPTIMI')
       END
 C  /* Deck scfinp */
       SUBROUTINE SCFINP(WORD,INPERR,ALLOPT)
@@ -4334,7 +4343,7 @@ C *** Option 6 >NETALL<  All net population analysis
 C
 C *** Option 7 >NETMO <  Net MO population analysis
   107 FLAG(73) = .FALSE.
-      IPRMUL = MAX(IPRMUL,2)
+      IPRMUL = MAX(IPRMUL,3)
       GO TO 100
 C
 C *** Option 8 >QUADRP<  Quadrupole moments
@@ -5165,11 +5174,11 @@ C
 C
 C Type of calculation:
 C
- 1050 FORMAT(/T6,A/)
- 1051 FORMAT(T16,A)
- 1052 FORMAT(/T6,A,$)
+ 1050 FORMAT(/'@',T6,A/)
+ 1051 FORMAT('@',T16,A)
+ 1052 FORMAT(/'@',T6,A,$)
  1053 FORMAT(A)
- 1054 FORMAT(T16,A,$)
+ 1054 FORMAT('@',T16,A,$)
       IF (IORTO .EQ. 1) THEN
          WRITE (IWUNIT,1050) 'Orthonormalization of molecular orbitals.'
          WRITE (IWUNIT,1100) (I,       I=1,NSYM)
@@ -5413,8 +5422,8 @@ C        ... if HUCKEL use JRDMO = 11 or 12 to get correct output
       END IF
 C
       IF (EMBEDDING) THEN
-         WRITE (IWUNIT,'(/5X,A)')
-     &   'QM part is embedded in an environment :'
+         WRITE (IWUNIT,'(/A)')
+     &   '@    QM part is embedded in an environment :'
        IF (FLAG(16)) THEN
         IF (RSOL(1) .EQ. RSOL(2) .AND. RSOL(1) .EQ. RSOL(3)) THEN
          WRITE (IWUNIT,'(/10X,A,2(/16X,A,F12.6),/16X,A,I12)')
@@ -5441,9 +5450,9 @@ C
      *      ' inertial polarization.',
      *      'static dielectric constant =',EPSTAT
        END IF
-       IF (PCM)  WRITE (IWUNIT,'(/10X,A)') 'SOLVATION MODEL: PCM'
-       IF (QM3)  WRITE (IWUNIT,'(/10X,A)') 'MODEL: QM3'
-       IF (QMMM) WRITE (IWUNIT,'(/10X,A)') 'MODEL: QMMM'
+       IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
+       IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
+       IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
       END IF
 C
 C ***** Wave function specifications
@@ -5582,11 +5591,11 @@ C
      *       /5X,'======================',
      *       /5X,'Abelian symmetry species',T38,'  All |',8I5)
  1110 FORMAT(T38,A5,' |',8A5)
- 1200 FORMAT(5X,'Inactive orbitals',T38,I5,' |',8I5)
- 1300 FORMAT(5X,'Active orbitals',T38,I5,' |',8I5)
- 1320 FORMAT(5X,'Active orbitals in RAS1',T38,I5,' |',8I5)
- 1330 FORMAT(5X,'Active orbitals in RAS2',T38,I5,' |',8I5)
- 1340 FORMAT(5X,'Active orbitals in RAS3',T38,I5,' |',8I5)
+ 1200 FORMAT('@    Inactive orbitals',T38,I5,' |',8I5)
+ 1300 FORMAT('@    Active orbitals',T38,I5,' |',8I5)
+ 1320 FORMAT('@    Active orbitals in RAS1',T38,I5,' |',8I5)
+ 1330 FORMAT('@    Active orbitals in RAS2',T38,I5,' |',8I5)
+ 1340 FORMAT('@    Active orbitals in RAS3',T38,I5,' |',8I5)
  1400 FORMAT(5X,'Secondary orbitals',T38,I5,' |',8I5)
  1450 FORMAT(5X,'Total number of orbitals',T38,I5,' |',8I5)
  1500 FORMAT(5X,'Number of basis functions',T38,I5,' |',8I5)
@@ -5604,19 +5613,18 @@ C
             WRITE (IWUNIT,5000) NCONF,NWOPT,NVAR
          END IF
       END IF
-C*FM  change format nb of determinants and CSFs from I8 to I12
  5000 FORMAT (/,5X,'Optimization information',
      *        /,5X,'========================',
-     *        /,5X,'Number of configurations   ',I15,
-     *        /,5X,'Number of orbital rotations',I15,
-     *        /,5X,'------------------------------------------',
-     *        /,5X,'Total number of variables  ',I15)
- 5010 FORMAT (/,5X,'Optimization information',
-     *        /,5X,'========================',
-     *        /,5X,'Number of determinants     ',I15,
-     *        /,5X,'Number of orbital rotations',I15,
-     *        /,5X,'------------------------------------------',
-     *        /,5X,'Total number of variables  ',I15)
+     *        /'@    Number of configurations   ',I15,
+     *        /'@    Number of orbital rotations',I15,
+     *        /,5X, '------------------------------------------',
+     *        /'@    Total number of variables  ',I15)
+ 5010 FORMAT (/,5X, 'Optimization information',
+     *        /,5X, '========================',
+     *        /'@    Number of determinants     ',I15,
+     *        /'@    Number of orbital rotations',I15,
+     *        /,5X, '------------------------------------------',
+     *        /'@    Total number of variables  ',I15)
 C
 C
 C

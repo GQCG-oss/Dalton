@@ -874,7 +874,7 @@ C  /* Deck twopeqm */
 !
 !   gives the number of nuclei in first fragment
 !
-      use polarizable_embedding, only: pdnucs
+      use polarizable_embedding, only: fdnucs
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -971,7 +971,7 @@ C
       IF(I2TYP.EQ.0) THEN
         do ishel = 1, maxshl
           ncent = ncntsh(ishel)
-          if (ncent <= pdnucs) then
+          if (ncent <= fdnucs) then
             iastrt = ishel + 1
             icsmax = ishel
             idsmax = ishel
@@ -1156,25 +1156,25 @@ C                 Check for basis-set identifier (WK/UniKA/04-11-2002).
                   SHABAB = (ISHELA.EQ.ISHELC) .AND. (ISHELB.EQ.ISHELD)
 
 ! Intermolecular Coulomb and exchange integrals
-!           if ((ncentb.le.pdnucs).and.
-!     &         (ncentc.le.pdnucs).and.
-!     &         (ncentd.le.pdnucs)) cycle
-!           if ((ncentb.gt.pdnucs).and.
-!     &         (ncentc.gt.pdnucs)) cycle
-!           if ((ncentb.gt.pdnucs).and.
-!     &         (ncentd.gt.pdnucs)) cycle
-!           if ((ncentc.gt.pdnucs).and.
-!     &         (ncentd.gt.pdnucs)) cycle
+!           if ((ncentb.le.fdnucs).and.
+!     &         (ncentc.le.fdnucs).and.
+!     &         (ncentd.le.fdnucs)) cycle
+!           if ((ncentb.gt.fdnucs).and.
+!     &         (ncentc.gt.fdnucs)) cycle
+!           if ((ncentb.gt.fdnucs).and.
+!     &         (ncentd.gt.fdnucs)) cycle
+!           if ((ncentc.gt.fdnucs).and.
+!     &         (ncentd.gt.fdnucs)) cycle
 
 ! Intermolecular Coulomb integrals only
-           if ((ncenta.le.pdnucs).or.(ncentb.le.pdnucs)) cycle
-           if ((ncentc.gt.pdnucs).or.(ncentd.gt.pdnucs)) cycle
+           if ((ncenta.le.fdnucs).or.(ncentb.le.fdnucs)) cycle
+           if ((ncentc.gt.fdnucs).or.(ncentd.gt.fdnucs)) cycle
 
 ! Make sure that all integrals are written
 !           if ((ishela.eq.iasmax).and.
 !     &         (ishelb.eq.ibsmax).and.
-!     &         (ncentc.eq.pdnucs).and.
-!     &         (ncentd.eq.pdnucs)) then
+!     &         (ncentc.eq.fdnucs).and.
+!     &         (ncentd.eq.fdnucs)) then
 !             icsmax = ishelc
 !             idsmax = isheld
 !           end if
@@ -2721,9 +2721,9 @@ C              a) no contribution to direct Fock matrix construction
 C
 C              Screening: pretty thorough, taking care also of
 C                         non-symmetric density matrices
-                  IF(DIRFCK.OR.SOFOCK) THEN
-                    DINTSKP(1,1) = DINTSKP(1,1) + NCCINT
-                    IF(DOSCRN) THEN
+               IF (DIRFCK.OR.SOFOCK) THEN
+                  DINTSKP(1,1) = DINTSKP(1,1) + NCCINT
+                  IF(DOSCRN) THEN
                       ULINT = GABRAO(ISYBLA,ISYBLB)*
      &                        GABRAO(ISYBLC,ISYBLD)
                       DNSMAX   = D0
@@ -2764,30 +2764,30 @@ C Largest exchange contribution
      &        ISHELD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
      &        SPDCAR(NHKTSH(ISHELD)-1),')'
 #if defined (VAR_MPI)
-          IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND.
-     &        DIRFCK .AND. HFXMU .EQ. D0) THEN
-             I_SHL = I_SHL + 1
-             IF (I_SHL .GT. MXTSK) THEN
-                write(lupri,*) 'Received quit because '//
-     &               'I_SHL exceeds MXTSK',I_SHL,MXTSK
-                CALL QUIT('AOSAVE: I_SHL exceeds MXTSK.')
-             END IF
+                      IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND.
+     &                   DIRFCK .AND. HFXMU .EQ. D0) THEN
+                         I_SHL = I_SHL + 1
+                         IF (I_SHL .GT. MXTSK) THEN
+                            write(lupri,*) 'Received quit because '//
+     &                     'I_SHL exceeds MXTSK',I_SHL,MXTSK
+                         CALL QUIT('AOSAVE: I_SHL exceeds MXTSK.')
+                      END IF
 #else
-                  IF (AOSAVE .AND. INDX_SHL1 .GE. ISHELA .AND.
-     &                 INDX_SHL2 .GE. ISHELB .AND.
-     &                 INDX_SHL3 .GE. ISHELC .AND.
-     &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1
-     &                 .AND. HFXMU .EQ. D0) THEN
-                     NINTYP = 1
-                     I_SHL = I_SHL + NINTYP*NCCINT
-                     IF (I_SHL .GT. MMCORE) THEN
-                        write(lupri,*) 'Received quit because '//
+                      IF (AOSAVE .AND. INDX_SHL1 .GE. ISHELA .AND.
+     &                                 INDX_SHL2 .GE. ISHELB .AND.
+     &                                 INDX_SHL3 .GE. ISHELC .AND.
+     &                                 INDX_SHL4 .GE. ISHELD .AND.
+     &                    IPREVA .EQ. -1 .AND. HFXMU .EQ. D0) THEN
+                         NINTYP = 1
+                         I_SHL = I_SHL + NINTYP*NCCINT
+                         IF (I_SHL .GT. MMCORE) THEN
+                            write(lupri,*) 'Received quit because '//
      &                       'I_SHL exceeds MMCORE',I_SHL,MMCORE
-                        CALL QUIT('I_SHL exceeds MMCORE.')
-                     END IF
+                            CALL QUIT('AOSAVE: I_SHL exceeds MMCORE.')
+                         END IF
 #endif
-                     LINTMP = .TRUE.
-                  END IF
+                         LINTMP = .TRUE.
+                      END IF
                         GOTO 300
                       ENDIF
                     ENDIF

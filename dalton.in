@@ -278,6 +278,10 @@ ierr=0
      cp $WRKDIR/mep.inp MEP.INP
    fi
 
+   if [ -s $WRKDIR/surface.py ] ; then
+     cp $WRKDIR/surface.py .
+   fi
+
    # put files listed under -put to scratch directory
    if [ "$PUT_FILES" != "" ]; then
       for file in $PUT_FILES; do
@@ -327,18 +331,21 @@ if [ $optn -gt 1 ] ; then
       if [ -s $DALMPI -a -x $DALMPI ]; then
          cp $DALMPI ./dalton_mpi_copy.x
          echo 'Copying dalton executable from master node: ' ${HOSTNAME}
-         cat $PBS_NODEFILE
-         for node in `cat $PBS_NODEFILE`
-         do
-            if [ ${node} == $HOSTNAME ]
-            then
-                continue
-            else
-#               If your cluster setup requires scp, then you must change the following line.
-                rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
-                echo 'Succesfully copied executable to: ' ${node}
-            fi
-         done
+         if [ -n "$PBS_NODEFILE" ] ; then
+             # $PBS_NODEFILE is defined, then do the instructions below
+             cat $PBS_NODEFILE
+             for node in `cat $PBS_NODEFILE`
+             do
+                if [ ${node} == $HOSTNAME ]
+                then
+                    continue
+                else
+#                   If your cluster setup requires scp, then you must change the following line.
+                    rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
+                    echo 'Succesfully copied executable to: ' ${node}
+                fi
+             done
+         fi
          if [ -n "$optlam" ] ; then
             lamboot -v  $WRKDIR/$optlam
             $MPIRUN -wd $SCRATCHDIR -np $optn ./dalton_mpi_copy.x
