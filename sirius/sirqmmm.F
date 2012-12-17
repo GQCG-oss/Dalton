@@ -6040,6 +6040,7 @@ C ******* output: GLMCI(NCONF)  = CI solv. gradient    *******
       IF (NCONF .GT. 1) THEN
          CALL SOLGC(CREF,WRK(KFPEAC),TFPEAC,WRK(KGRDPE),INDXCI, ! NOTE: Output here is GRDPE (solv. CI PE contribution)
      &              WRK(KWRK1),LWRK1)                           ! edh: SOLGC calc. < u | Fg | 0 > + < 0 | Fg | 0 > c_u
+         print *, 'stefan: check me sol-ci-grad!!!'
       END IF
 
       IF (NWOPT .GT. 0) THEN

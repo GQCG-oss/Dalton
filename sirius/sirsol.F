@@ -1919,21 +1919,29 @@ C
          KURXAC = KURYAC + N2ASHX
          KW1    = KURXAC + N2ASHX
          LW1    = LWRK + 1 - KW1
+
          if(ci_program .eq. 'SIRIUS-CI')then
            CALL DSPTSI(NASHT,RYAC,WRK(KURYAC))
 C          ... unpack RYAC using CALL DSPTSI(N,ASP,ASI)
+           my_length = n2ashx
          else if(ci_program .eq. 'LUCITA   ')then
            CALL DCOPY(NNASHX,RYAC,1,WRK(KURYAC),1)
+           my_length = nnashx
          end if
-         CALL DSCAL(N2ASHX,D2,WRK(KURYAC),1)
+         CALL DSCAL(my_length,D2,WRK(KURYAC),1)
+
          DO 18 ICSIM = 1,NCSIM
+
             if(ci_program .eq. 'SIRIUS-CI')then
               CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
 C             ... unpack RXAC(1,ICSIM) using CALL DSPTSI(N,ASP,ASI)
+              my_length = n2ashx
             else if(ci_program .eq. 'LUCITA   ')then
               CALL DCOPY(NNASHX,RXAC(1,ICSIM),1,WRK(KURXAC),1)
+              my_length = nnashx
             end if
-            CALL DSCAL(N2ASHX,D2,WRK(KURXAC),1)
+
+            CALL DSCAL(my_length,D2,WRK(KURXAC),1)
 C           First SVECS(NA) = SVECS(NA) + < NA | 2*RX | CREF >
             IF (IPRSOL.GT.100) THEN
                WRITE(LUPRI,*)ICSIM,' RXAC MATRIX SCALED WITH 2'
@@ -1982,13 +1990,18 @@ C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
          KW1    = KURXAC + N2ASHX
          LW1    = LWRK + 1 - KW1
          DO 22 IOSIM = 1,NOSIM
+
             if(ci_program .eq. 'SIRIUS-CI')then
               CALL DSPTSI(NASHT,RXAC(1,IOSIM),WRK(KURXAC))
 C             ... unpack RXAC(1,IOSIM) using CALL DSPTSI(N,ASP,ASI)
+              my_length = n2ashx
             else if(ci_program .eq. 'LUCITA   ')then
               CALL DCOPY(NNASHX,RXAC(1,IOSIM),1,WRK(KURXAC),1)
+              my_length = nnashx
             end if
-            CALL DSCAL(N2ASHX,D2,WRK(KURXAC),1)
+
+            CALL DSCAL(my_length,D2,WRK(KURXAC),1)
+
 C           now SVECS(NA) = SVECS(NA) + <NA | 2*RXY | CREF >
             IF (IPRSOL.GT.100) THEN
                WRITE(LUPRI,*)' RXAC MATRIX SCALED WITH 2, iosim',IOSIM
