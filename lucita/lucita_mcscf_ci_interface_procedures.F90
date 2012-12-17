@@ -771,6 +771,7 @@ contains
  
       if(srdft_ci_1pdens_cref_restore)then
         restore_cref = .false.
+      end if
         if(restore_cref_vector_switch == 1)then
 
           vector_exchange_type1                      = 2
@@ -797,7 +798,6 @@ contains
                                       vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),        &
                                       .true.,c_or_cr)
         end if
-      end if
 
       if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
