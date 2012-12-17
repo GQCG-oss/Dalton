@@ -711,6 +711,7 @@ C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (Feb 2003: one of **START, **PROPE, or **FINAL)
 C
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -1514,6 +1515,10 @@ C
       END IF
 
       IF (QMMM) WRITE(LUPRI,*) 'QMMM calculation'
+
+      if (peqm) then
+        write(lupri,'(a)') ' PE-QM calculation'
+      end if
 
       CALL HEADER('The following molecular properties will be'//
      *            ' calculated in this run:',0)

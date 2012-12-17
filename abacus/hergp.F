@@ -2024,6 +2024,7 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,GEOM,
      &                  ORIGIN,IPRINT)
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
 C
 C     Sets up masses and calculates total mass for an isotopic
@@ -2077,7 +2078,7 @@ C
         WRITE (LUPRI,'(/A,3F12.6)')
      &     ' Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3)
       END IF
-      IF (QM3. OR. QMMM) THEN
+      IF (QM3. OR. QMMM .or. peqm) THEN
         QMCOM(1) = ORIGIN(1)
         QMCOM(2) = ORIGIN(2)
         QMCOM(3) = ORIGIN(3)

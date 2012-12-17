@@ -125,6 +125,8 @@ dft_parallell_properties parallel_lucita_gasci parallel_spin_local"
 #
 QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
 #
+PEQM="pehf"
+#
 PARQM3="par_hfmm_1 par_dftmm_1 par_dftmm_3 par_dftmm_4 par_dftmm_5 \
 par_dftmm_6 par_dftmm_7 dftmm_8 dftmm_9"
 #
@@ -417,6 +419,9 @@ while [ -n "$1" ]; do
    shift ;;
   "qmmm" )
    testcase="$testcase $QMMM";
+   shift ;;
+  "peqm" )
+   testcase="$testcase $PEQM";
    shift ;;
   "longpar" )
    if [ "$paramlist" = "" ]; then

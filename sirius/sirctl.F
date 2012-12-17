@@ -59,6 +59,7 @@ C
       use lucita_orbital_spaces, only: set_inforb_lucita
       use lucita_setup, only: setup_lucita_mcci_wrkspc_dimensions
       use lucita_mcscf_ci_interface_procedures
+      use polarizable_embedding, only: pe_twoint, pe_twoints
 
 #include "implicit.h"
 C
@@ -123,6 +124,14 @@ C
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
       CALL FLSHFO(LUSTAT)
+! *********************************************************************
+! *** Save intermolecular part of two-electron Fock matrix and quit ***
+! *********************************************************************
+      if (pe_twoint) then
+          call pe_twoints(nbast, nisht, norbt, work)
+          iconv = 1
+          goto 8000
+      end if
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions
@@ -340,8 +349,12 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-            IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
-     &         ' and QC-SCF is not implemented for QMMM')
+            IF (QMMM) THEN
+              WRITE (LUPRI,*)
+              WRITE (LUPRI,*) 'WARNING: entering QC-QMMM solver'
+              CALL FLSHFO(LUPRI)
+              WRITE (LUPRI,*)
+            ENDIF 
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)
             FLAG(15) = RHFCAN

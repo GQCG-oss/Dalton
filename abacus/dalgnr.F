@@ -1093,6 +1093,7 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+      use polarizable_embedding, only: pe_dalton_input
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1122,7 +1123,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 10, NTABLE = 32, D0 = 0.D0)
+      PARAMETER (NDIR = 11, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1134,7 +1135,8 @@ C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-     &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN'/
+     &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
+     &            '*READIN'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
@@ -1571,8 +1573,8 @@ C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
 C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-C              '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN',
-C              '*GEN1IN'
+C              '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
+C              '*READIN', '*GEN1IN'
 C
 C     Initialize for REAINP and READIN (reading of .mol input file)
       IPREAD_ini = IPRUSR + 1
@@ -1586,7 +1588,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1656,9 +1658,15 @@ C     "*QMMM  " input
     9 CONTINUE
         CALL QMMMIN(WORD)
       GO TO 200
+
+!     "*PEQM  " input
+   10 continue
+        call pe_dalton_input(word, lucmd, lupri)
+      goto 200
+
 C
 C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
-   10 CONTINUE
+   11 CONTINUE
         WRITE(LUPRI,'(//A/)')
      &    ' INFO : "*READIN" is deprecated, use instead "*MOLBAS"'
       GO TO 6
