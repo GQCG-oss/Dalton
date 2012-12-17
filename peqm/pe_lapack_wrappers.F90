@@ -42,7 +42,7 @@ subroutine sptrf(ap, uplo, ipiv, info)
         allocate(o_ipiv(n))
     end if
 
-    call dsptrf(o_uplo, n, ap, o_ipiv, o_info)
+!   call dsptrf(o_uplo, n, ap, o_ipiv, o_info)
 
     if (.not. present(ipiv)) then
         deallocate(o_ipiv)
@@ -88,7 +88,7 @@ subroutine sptri(ap, ipiv, uplo, info)
 
     allocate(work(n))
 
-    call dsptri(o_uplo, n, ap, ipiv, work, o_info)
+!   call dsptri(o_uplo, n, ap, ipiv, work, o_info)
 
     deallocate(work)
 
@@ -132,7 +132,7 @@ subroutine sptrs(ap, b, ipiv, uplo, info)
         n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
     end if
 
-    call dsptrs(o_uplo, n, nrhs, ap, ipiv, b, ldb, o_info)
+!   call dsptrs(o_uplo, n, nrhs, ap, ipiv, b, ldb, o_info)
 
     if (present(info)) then
         info = o_info
@@ -170,7 +170,7 @@ subroutine pptrf(ap, uplo, info)
         n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
     end if
 
-    call dpptrf(o_uplo, n, ap, o_info)
+!   call dpptrf(o_uplo, n, ap, o_info)
 
     if (present(info)) then
         info = o_info
@@ -208,7 +208,7 @@ subroutine pptri(ap, uplo, info)
         n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
     end if
 
-    call dpptri(o_uplo, n, ap, o_info)
+!   call dpptri(o_uplo, n, ap, o_info)
 
     if (present(info)) then
         info = o_info
@@ -249,7 +249,7 @@ subroutine pptrs(ap, b, uplo, info)
         n = int((- 1 + sqrt(1.0d0 + 8.0d0 * real(nn, dp))) * 0.5d0)
     end if
 
-    call dpptrs(o_uplo, n, nrhs, ap, b, ldb, o_info)
+!   call dpptrs(o_uplo, n, nrhs, ap, b, ldb, o_info)
 
     if (present(info)) then
         info = o_info
@@ -294,7 +294,7 @@ subroutine spcon(ap, ipiv, anorm, rcond, uplo, info)
     allocate(iwork(n))
     allocate(work(2*n))
 
-    call dspcon(o_uplo, n, ap, ipiv, anorm, rcond, work, iwork, o_info)
+!   call dspcon(o_uplo, n, ap, ipiv, anorm, rcond, work, iwork, o_info)
 
     if (present(info)) then
         info = o_info
@@ -338,7 +338,7 @@ subroutine ppcon(ap, anorm, rcond, uplo, info)
     allocate(iwork(n))
     allocate(work(3*n))
 
-    call dppcon(o_uplo, n, ap, anorm, rcond, work, iwork, o_info)
+!   call dppcon(o_uplo, n, ap, anorm, rcond, work, iwork, o_info)
 
     if (present(info)) then
         info = o_info
@@ -379,7 +379,8 @@ function lansp(norm, ap, uplo)
 
     allocate(work(n))
 
-    lansp = dlansp(norm, o_uplo, n, ap, work)
+!   lansp = dlansp(norm, o_uplo, n, ap, work)
+    lansp = 0.0d0
 
     deallocate(work)
 
