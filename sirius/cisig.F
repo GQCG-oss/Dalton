@@ -1031,6 +1031,7 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "inflin.h"
+#include "priunit.h"
 C
 C
 C *** SCVECS(I) = SUM(J) <I|PRP|J> * CREF(J)
@@ -1042,9 +1043,19 @@ C     Set spin couplings
 C
       ISPIN1 = 0
       ISPIN2 = 0
+!
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .true.
 
 !     set vector exchange type: cref
-      vector_exchange_type1 = 1
+      if(cref_is_active_bvec_for_sigma)then 
+        vector_exchange_type1 = 2
+        cref_is_active_bvec_for_sigma = .false.
+      else
+!       set vector exchange type: bvec trial vector
+        vector_exchange_type1 = 2
+      end if
+      write(lupri,*) 'in ciprp'
 
 C     ... singlet-singlet coupling of 2-electron integrals
       DO 100 ISIM = 1, NSIM
@@ -1056,6 +1067,8 @@ C        CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
 C    &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
   100 CONTINUE
 C
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
 C
 C *** End of subroutine CIPRP
 C

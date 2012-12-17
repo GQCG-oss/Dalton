@@ -2294,6 +2294,9 @@ C
       KFREE  = KFRSAV
       LFREE  = LWORK
 
+      write(lupri,*) 'mcscf_provides_integrals = ',
+     &                mcscf_provides_integrals
+
       if(.not.mcscf_provides_integrals)then
 !       allocate scratch memory and read-in 1/2-electron integrals from dalton-sirius files
         call memget('REAL',kfcac,nnashx   ,tmp_dal_work,kfree,lfree)
