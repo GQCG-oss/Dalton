@@ -1,4 +1,4 @@
-module double_precision
+module pe_precision
 
 !    integer, parameter :: sp = selected_real_kind(6, 37)
 !    integer, parameter :: dp = selected_real_kind(15, 307)
@@ -15,4 +15,4 @@ module double_precision
 !    integer, parameter :: dp = REAL64
 !    integer, parameter :: qp = REAL128
 
-end module double_precision
+end module pe_precision

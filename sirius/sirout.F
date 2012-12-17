@@ -61,18 +61,13 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-      use polarizable_embedding, only: peqm, pe_pd, pe_repuls,
-     &                                 Ees, Epol, Epd,
-     &                                 lmul, lpol, pe_sol
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
 C
 #include "litinfo.h"
       DIMENSION IINFO(LIINFO,*),DINFO(LDINFO,*),WRK(LWRK)
 #include "iratdef.h"
       PARAMETER (D0 = 0.0D0)
-
-      logical :: lmuls
-
 C
 C Used from common blocks:
 C   INFINP : ISPIN,LSYM,ISTATE, NACTEL,POTNUC, THRPWF, DOCINO, MCTYPE
@@ -352,56 +347,7 @@ csonia 04/10/95
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ',ESOLT
       else if (peqm) then
-        write(lupri,'(/5x,a)')
-     &                     'Polarizable Embedding energy contributions:'
-        write(lupri,'(5x,a)')
-     &                     '-------------------------------------------'
-        lmuls = (lmul(0) .or. lmul(1) .or. lmul(2) .or. lmul(3) .or.
-     &           lmul(4) .or. lmul(5))
-        if (lmuls) write(lupri,'(/7x,a)')
-     &                                    'Electrostatic contributions:'
-        if (lmul(0)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Monopoles       ', Ees(0,1)
-        if (lmul(1)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Dipoles         ', Ees(1,1)
-        if (lmul(2)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Quadrupoles     ', Ees(2,1)
-        if (lmul(3)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Octopoles       ', Ees(3,1)
-        if (lmul(4)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Hexadecapoles   ', Ees(4,1)
-        if (lmul(5)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Ditriacontapoles', Ees(5,1)
-        if (lpol(1)) then
-            write(lupri,'(/7x,a)') 'Polarization contributions:'
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Electronic      ', Epol(1,1)
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Nuclear         ', Epol(2,1)
-            if (lmuls) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Multipole       ', Epol(3,1)
-        end if
-        if (pe_sol) then
-            write(lupri,'(/7x,a)') 'Continuum contributions:'
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Electronic pot. ', Epol(4,1)
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Nuclear pot.    ', Epol(5,1)
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                     'Multipole pot.  ', Epol(6,1)
-        end if
-        if (pe_pd) then
-            write(lupri,'(/7x,a)') 'Density contributions:'
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Electrostatic   ', Epd(1,1)
-            write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Polarization    ', Epd(2,1)
-            if (pe_repuls) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                      'Repulsion       ', Epd(3,1)
-        end if
-        write(lupri,'(/3x,a18,9x,f20.12)')
-     &          '@ Total PE energy: ',
-     &                    sum(Ees(:,1)) + sum(Epol(:,1)) + sum(Epd(:,1))
+        continue
       ELSE
         ESOLT = D0
       END IF

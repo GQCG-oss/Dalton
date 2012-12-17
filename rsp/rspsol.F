@@ -338,7 +338,6 @@ C
 
         call rspzym(nosim, bovecs, wrk(kubv))
 
-        ! have no idea why but it works :-)
         call dscal(n2orbx*nosim, -2.0d0, wrk(kubv), 1)
 
         do i = 1, nosim

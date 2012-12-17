@@ -4403,8 +4403,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-      use polarizable_embedding, only: pe_read_potential, peqm,
-     &                                 pe_savden, pe_mep
+      use polarizable_embedding, only: pe_init, peqm, pe_savden, pe_mep
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4580,10 +4579,8 @@ C
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
-      if (peqm .or. pe_mep) then
-        call pe_read_potential(cord(:,1:natoms), charge(1:natoms))
-      else if (pe_savden) then
-        call pe_read_potential()
+      if (peqm .or. pe_mep .or. pe_savden) then
+        call pe_init(cord(:,1:natoms), charge(1:natoms))
       end if
 
       RETURN

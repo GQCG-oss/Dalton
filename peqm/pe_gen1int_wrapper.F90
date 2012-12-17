@@ -1,8 +1,8 @@
-subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
+subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord)
 
     ! Gen1Int API
     use gen1int_api
-    use double_precision
+    use pe_precision
 
     implicit none
 
@@ -11,8 +11,8 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
     integer, intent(in) :: nnbas, ncomps
     real(dp), dimension(3,1), intent(in) :: coord
     real(dp), dimension(nnbas,ncomps), intent(out) :: Tk_ints
-    logical, intent(in) :: gauss
-    real(dp), dimension(1), intent(in) :: gauexp
+!    logical, intent(in) :: gauss
+!    real(dp), dimension(1), intent(in) :: gauexp
 
     integer :: num_ao
     integer :: num_prop
@@ -47,16 +47,16 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
         charge = 1.0d0
     end if
 
-    if (gauss) then
-        call OnePropCreate(prop_name=INT_GAUSSIAN_POT,&
-                           one_prop=prop_operator,    &
-                           info_prop=ierr,            &
-                           idx_gauorg=(/-1/),         &
-                           gaupot_origin=coord,       &
-                           gaupot_charge=charge,      &
-                           gaupot_expt=gauexp,        &
-                           order_geo_pot=k)
-    else
+!    if (gauss) then
+!        call OnePropCreate(prop_name=INT_GAUSSIAN_POT,&
+!                           one_prop=prop_operator,    &
+!                           info_prop=ierr,            &
+!                           idx_gauorg=(/-1/),         &
+!                           gaupot_origin=coord,       &
+!                           gaupot_charge=charge,      &
+!                           gaupot_expt=gauexp,        &
+!                           order_geo_pot=k)
+!    else
         call OnePropCreate(prop_name=INT_POT_ENERGY,&
                            one_prop=prop_operator,  &
                            info_prop=ierr,          &
@@ -64,7 +64,7 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, coord, gauss, gauexp)
                            coord_nuclei=coord,      &
                            charge_nuclei=charge,    &
                            order_geo_pot=k)
-    end if
+!    end if
     if (ierr /= 0) stop 'Failed to create property operator.'
     ! gets the number of property integrals and their symmetry
     call OnePropGetNumProp(one_prop=prop_operator, &
