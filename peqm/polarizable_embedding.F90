@@ -3410,10 +3410,10 @@ subroutine setup_solvent()
 
     integer :: i
     logical :: notfound = .true.
-    character(len=80), dimension(3) :: solvents
+    character(len=6), dimension(3) :: solvents
     real(dp), dimension(3) :: epslist, epsinflist
 
-    solvents = (/ 'H2O', 'CH3OH', 'C2H5OH'/)
+    solvents = (/ 'H2O   ', 'CH3OH ', 'C2H5OH' /)
 
     epslist = (/ 78.39, 32.63, 24.55 /)
 
