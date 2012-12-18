@@ -469,6 +469,7 @@ C
          END IF
          CALL READT(LUIT1,NCMOT,WRK(KCMO))
          CALL DZERO(WRK(KOCCNO),NORBT)
+C
        IF (CICALC .AND. DOCINO) THEN
 C         ... we do not know the orbital occupation for CINO
 C             any more and cannot calculate them again 

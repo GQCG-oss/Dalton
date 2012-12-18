@@ -13,7 +13,7 @@
 !...   In particular, no part of the source code or compiled modules may
 !...   be distributed outside the research group of the licence holder.
 !...   This means also that persons (e.g. post-docs) leaving the research
-
+!...   group of the licence holder may not take any part of Dalton,
 !...   including modified files, with him/her, unless that person has
 !...   obtained his/her own licence.
 !...
@@ -184,7 +184,7 @@ C
       use lucita_mcscf_srdftci_cfg
 #endif
 
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), INDXCI(*), ECI(*), ICROOT(*), WRK(*)
 C
 #include "iratdef.h"
@@ -198,17 +198,17 @@ C   CICB01 : NCIRED,NJCR,JCROOT(*),THRCIT
 C   INFINP : POTNUC,FLAG(*),LSYM,ISTACI
 C   INFVAR : NCONF
 C   INFORB : NNASHX
+C   cbespn.h : ispin1,ispin2
 C   INFDIM : LCINDX,LACIMX,LBCIMX,LPHPMX,MAXPHP
 C   INFTAP : LUIT1,LUIT3,LUIT5
-C   cbespn.h : ispin1,ispin2
 C
 #include "maxorb.h"
 #include "priunit.h"
-#include "cbespn.h"
 #include "cicb01.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "inforb.h"
+#include "cbespn.h"
 #include "infdim.h"
 #include "inftap.h"
 #include "infpri.h"
@@ -562,7 +562,13 @@ C
   820 CONTINUE
 C
       IF (FLAG(67)) THEN
-         IPRNO = MAX(IPRI4,4)
+
+         WRITE (LUW4,'(//T6,A/T6,A/T6,A)')
+     &      '***********************************',
+     &      '*** CI natural orbital analysis ***',
+     &      '***********************************'
+
+         IPRNO = MAX(IPRI4-2,3) ! default: IPRI4 = IPRUSR + 5
          KCVEC = KW2
          KOCCNO= KCVEC + NCONF
          KUNO  = KOCCNO+ NOCCT
@@ -574,8 +580,6 @@ C
       DO 900 JSTATE = 1,NCROOT
          CALL READT(LUIT1,NCONF,WRK(KCVEC))
 C
-         WRITE (LUW4,'(//A)')
-     *      ' >>> SIRCI.CICTL natural orbital analysis <<<'
          IF (JSTATE .EQ. ISTACI) THEN
             WRITE (LUW4,2000) JSTATE
             IF (LUPRI .NE. LUW4) WRITE (LUPRI,2000) JSTATE
@@ -585,10 +589,12 @@ C
             IF (LUPRI .NE. LUW4) WRITE (LUPRI,2001) JSTATE
             NATORB = .FALSE.
          END IF
- 2000    FORMAT(/' CI eigenvector no.',I4,' (= the reference state)',
-     *          /' ------------------------------------------------')
- 2001    FORMAT(/' CI eigenvector no.',I4,
-     *          /' ----------------------')
+ 2000    FORMAT(/' ------------------------------------------------',
+     &          /' CI eigenvector no.',I4,' (= the reference state)',
+     &          /' ------------------------------------------------')
+ 2001    FORMAT(/' ----------------------',
+     &          /' CI eigenvector no.',I4,
+     &          /' ----------------------')
 C
          IF (P6FLAG(32) .OR. NATORB) THEN
 C           NATORB is true if CINO and reference state
@@ -598,7 +604,7 @@ C           NATORB is true if CINO and reference state
 C           CALL PRWF(C,INDXCI,IOUT,THRPWF,WORK,LFREE)
          END IF
 C
-C        MAERKE insert calculation of spin-density matrix here,
+C        TODO MAERKE insert calculation of spin-density matrix here,
 C        if ISPIN .ne. 1
 C
 C        insert option for calculation of two-electron density matrix,
@@ -2109,7 +2115,7 @@ C
       CALL QENTER('CIST  ')
       CALL GETDAT(LAB123(2),LAB123(3))
       LAB123(3) = '( CIST )'
-      WRITE(lupri,*) 'CIST called with ICI1 = ',ICI1
+      IF (IPRSIR .GT. 1) WRITE(lupri,*) 'CIST called with ICI1 = ',ICI1
       KFREE  = 1
       NC4    = MAX(4,NCONF)
       MCSIM  = 0
@@ -2330,11 +2336,9 @@ C        ... we add 3 so we can expand if degeneracy.
       IF (LWRK .LT. NRS+NCONF) CALL ERRWRK('CIST1',(NRS+NCONF),LWRK)
       CALL CIFNMN(NRS,NLIST,HDIAG,NCONF,WRK,LWRK)
 C     CALL CIFNMN(NELMNT,IPLACE,VEC,NVEC,WRK,LWRK)
-      IF (IPRI4 .GT. 1) WRITE (LUW4,1410)
+      IF (IPRI4 .GT. 2) WRITE (LUW4,1410)
      *   NRS,(I,NLIST(I),WRK(I)-EMY,WRK(I),I=1,NRS)
-      IF (LUPRI .NE. LUW4 .AND. IPRI4 .GT. 1) WRITE (LUPRI,1410)
-     *   NRS,(I,NLIST(I),WRK(I)-EMY,WRK(I),I=1,NRS)
-       WRITE (LUPRI,1410)
+      IF (LUPRI .NE. LUW4 .AND. IPRSIR .GT. 0) WRITE (LUPRI,1410)
      *   NRS,(I,NLIST(I),WRK(I)-EMY,WRK(I),I=1,NRS)
  1410 FORMAT(/' (CIST1)',I3,' lowest diagonal elements:',
      *      //' Element no. Config.no.    Active energy',
