@@ -21,6 +21,7 @@ module lucita_mcscf_ci_interface_procedures
 
   integer, public    :: restore_cref_vector_switch = -1
   logical, public    :: restore_cref               = .false.
+  logical, public    :: accumulate_hc              = .false.
   integer, parameter, public :: print_lvl_limit = 1000
 
 contains
@@ -134,7 +135,7 @@ contains
         case('Xp-density m')
           call mcscf_pre_lucita_xpdens(c_or_cr,hc_or_cl,print_lvl)
         case('sigma vec   ')
-          call mcscf_pre_lucita_return_e2b(c_or_cr,print_lvl)
+          call mcscf_pre_lucita_return_e2b(c_or_cr,hc_or_cl,print_lvl)
         case('analyze Cvec')
           call mcscf_pre_lucita_bvec_analyze(c_or_cr,print_lvl)
         case('rotate  Cvec')
@@ -336,7 +337,7 @@ contains
   end subroutine mcscf_pre_lucita_cistart
 !*******************************************************************************
 
-  subroutine mcscf_pre_lucita_return_e2b(c_or_cr,print_lvl)
+  subroutine mcscf_pre_lucita_return_e2b(c_or_cr,hc_or_cl,print_lvl)
 !*******************************************************************************
 !
 !    purpose: pre-LUCITA processing for CI task: sigma vec   
@@ -346,12 +347,16 @@ contains
 ! lucita
   use lucita_cfg
 ! sirius
+#include "ciinfo.h"
 ! nothing
 #include "priunit.h"
       real(8),   intent(inout) :: c_or_cr(*)
+      real(8),   intent(inout) :: hc_or_cl(*)
       integer,   intent(in)    :: print_lvl
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 2
+      real(8)                  :: norm_hc
+      real(8), external        :: ddot
 !-------------------------------------------------------------------------------
       
 !     potentially restore cref after the ci task
@@ -367,6 +372,22 @@ contains
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
                                   vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1),       &
                                   .true.,c_or_cr)
+
+!     check for e2b vector accumulation
+      norm_hc = 0.0d0
+      norm_hc = ddot(ndtasm(lucita_cfg_hcsym),hc_or_cl,1,hc_or_cl,1)
+      if(norm_hc > 0.0d0)then
+        accumulate_hc         = .true.
+        vector_exchange_type1 = 4
+        vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true.
+
+!       (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
+        call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,             &
+                                    io2io_vector_exchange_mc2lu_lu2mc,                                                &
+                                    vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1),     &
+                                    .true.,hc_or_cl)
+
+      end if
 
       if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -667,6 +688,7 @@ contains
 ! lucita
   use lucita_cfg
 ! sirius
+#include "ciinfo.h"
 ! nothing
 #include "priunit.h"
       real(8),   intent(inout) :: hc_or_cl(*)
@@ -684,6 +706,22 @@ contains
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                   &
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),        &
                                   .true.,hc_or_cl)
+
+      if(accumulate_hc)then
+        vector_exchange_type1                    = 4
+        vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
+
+!       lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+        call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,              &
+                                    io2io_vector_exchange_mc2lu_lu2mc,                                                 &
+                                    vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),      &
+                                    .true.,c_or_cr)
+
+!       write(lupri,*) 'ndtasm(lucita_cfg_hcsym) ',ndtasm(lucita_cfg_hcsym)
+        call daxpy(ndtasm(lucita_cfg_hcsym),1.0d0,c_or_cr,1,hc_or_cl,1)
+        accumulate_hc = .false.
+!       write(lupri,*) 'accumulated hc....'
+      end if
 
       if(.not.restore_cref)then ! bvec == ci trial vector: need to restore for reduced matrix calculation
 !       write(lupri,*) ' restore lhs activated',vector_exchange_type1

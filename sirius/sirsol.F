@@ -1906,7 +1906,10 @@ C
 #include "inflin.h"
 #include "infpri.h"
 #include "infinp.h"
-      real(8), allocatable :: btmp(:), stmp(:)
+#ifdef LUCI_DEBUG
+      real(8), allocatable :: btmp(:), stmp(:), h2tmp(:)
+#endif
+      logical, parameter :: noh2 = .true.
 C
       CALL QENTER('SOLSC ')
 C
@@ -1941,54 +1944,53 @@ C          ... unpack RYAC using CALL DSPTSI(N,ASP,ASI)
 
          DO 18 ICSIM = 1,NCSIM
 
-            write(lupri,*) 'blubb ctrial',icsim
             if(ci_program .eq. 'SIRIUS-CI')then
               CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
 C             ... unpack RXAC(1,ICSIM) using CALL DSPTSI(N,ASP,ASI)
               my_length = n2ashx
             else if(ci_program .eq. 'LUCITA   ')then
+              call dzero(WRK(KURXAC),my_length)
               CALL DCOPY(NNASHX,RXAC(1,ICSIM),1,WRK(KURXAC),1)
               my_length = nnashx
             end if
 
             CALL DSCAL(my_length,D2,WRK(KURXAC),1)
+
 C           First SVECS(NA) = SVECS(NA) + < NA | 2*RX | CREF >
-!           IF (IPRSOL.GT.100) THEN
+            IF (IPRSOL.GT.100) THEN
                WRITE(LUPRI,*)ICSIM,' RXAC MATRIX SCALED WITH 2'
                CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
      *                                 NASHT,NASHT,1,LUPRI)
-!           END IF
-            write(lupri,*) 'in cref blubb ctrial',icsim
+            END IF
+
 !           set vector exchange type: cref
             vector_exchange_type1 = 2
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      allocate (btmp(nconst))
-      btmp(1:nconst) = cref(1:nconst)
-      do i = 1, nconst
-        if (abs(cref(i)) .gt. 0.2d0 ) then
-            write(lupri,*) 'big B in ctrial',i, cref(i)
-        end if
-      end do
+            allocate (btmp(nconst))
+            btmp(1:nconst) = cref(1:nconst)
+            do i = 1, nconst
+             if (abs(cref(i)) .gt. 0.0d0 ) then
+              write(lupri,*) 'big B in ctrial',i, cref(i)
+             end if
+            end do
 #endif
+
             CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,CREF,SVECS(1,ICSIM),
      &                  WRK(KURXAC),DUMMY,
-     &                  .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
-            write(lupri,*) 'out cref blubb ctrial',icsim
+     &                  noh2,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+
 #ifdef LUCI_DEBUG
-        btmp(1:nconst) = btmp(1:nconst) - cref(1:nconst)
-        do i = 1, nconst
-           if (abs(btmp(i)) .gt. 1.0D-14) then
-              write(lupri,*) 'B changed ',i, cref(i), btmp(i)
-           end if
-           if (abs(cref(i)) .gt. 0.2d0 ) then
-              write(lupri,*) 'big B ',i, cref(i), svecs(i,icsim)
-           end if
-           if (abs(svecs(i,icsim)) .gt. 0.2d0 ) then
-              write(lupri,*) 'big S ',i, cref(i), svecs(i,icsim)
-           end if
-        end do
-        deallocate(btmp)
+            btmp(1:nconst) = btmp(1:nconst) - cref(1:nconst)
+            do i = 1, nconst
+               if (abs(btmp(i)) .gt. 1.0D-14) then
+                  write(lupri,*) 'B changed ',i, cref(i), btmp(i)
+               end if
+               if (abs(svecs(i,icsim)) .gt. 0.0d0 ) then
+                  write(lupri,*) 'big S ',i, cref(i), svecs(i,icsim)
+               end if
+            end do
+            deallocate(btmp)
 #undef LUCI_DEBUG
 #endif
             IF (IPRSOL.GT.125) THEN
@@ -1996,19 +1998,19 @@ C           First SVECS(NA) = SVECS(NA) + < NA | 2*RX | CREF >
                CALL OUTPUT(SVECS(1,ICSIM),1,NCONST,1,1,NCONST,1,1,LUPRI)
             END IF
 C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
-!           IF (IPRSOL.GT.100) THEN
+            IF (IPRSOL.GT.100) THEN
                WRITE(LUPRI,*)' RYAC MATRIX SCALED WITH 2'
                CALL OUTPUT(WRK(KURYAC),1,NASHT,1,NASHT,
      *                                 NASHT,NASHT,1,LUPRI)
-!           END IF
-            write(lupri,*) 'in trial blubb ctrial',icsim
+            END IF
+
 !           set vector exchange type: bvec trial vector
             vector_exchange_type1 = 2
             CALL CISIGD(LSYMST,LSYMST,NCONST,NCONST,
      &                  BCVECS(1,ICSIM),SVECS(1,ICSIM),
      &                  WRK(KURYAC),DUMMY,
-     &                  .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
-            write(lupri,*) 'out trial blubb ctrial',icsim
+     &                  noh2,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+
             IF (IPRSOL.GT.125) THEN
                WRITE(LUPRI,*)' LINEAR TRANS WITH RYAC ADDED '
                CALL OUTPUT(SVECS(1,ICSIM),1,NCONST,1,1,NCONST,1,1,LUPRI)
@@ -2034,13 +2036,13 @@ C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
 !
 !     set flag for orbital trial vector in MCSCF (needed for LUCITA interface)
       mcscf_orbital_trial_vector = .true.
+
       IF (NOSIM .GT. 0) THEN
          KURXAC = 1
          KW1    = KURXAC + N2ASHX
          LW1    = LWRK + 1 - KW1
          DO 22 IOSIM = 1,NOSIM
 
-            write(lupri,*) 'blubb otrial',iosim
             if(ci_program .eq. 'SIRIUS-CI')then
               CALL DSPTSI(NASHT,RXAC(1,IOSIM),WRK(KURXAC))
 C             ... unpack RXAC(1,IOSIM) using CALL DSPTSI(N,ASP,ASI)
@@ -2058,37 +2060,35 @@ C           now SVECS(NA) = SVECS(NA) + <NA | 2*RXY | CREF >
                CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
      *                                 NASHT,NASHT,1,LUPRI)
             END IF
-            write(lupri,*) 'in blubb otrial',nosim,iosim
+
 !           set vector exchange type: cref
             vector_exchange_type1 = 1
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      allocate (btmp(nconst))
-      btmp(1:nconst) = cref(1:nconst)
-      do i = 1, nconst
-        if (abs(cref(i)) .gt. 0.2d0 ) then
-            write(lupri,*) 'big B in',i, cref(i)
-        end if
-      end do
+            allocate (btmp(nconst))
+            btmp(1:nconst) = cref(1:nconst)
+            do i = 1, nconst
+              if (abs(cref(i)) .gt. 0.2d0 ) then
+                  write(lupri,*) 'big B in',i, cref(i)
+              end if
+            end do
 #endif
+
             CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,CREF,SVECS(1,IOSIM),
      &                  WRK(KURXAC),DUMMY,
-     &                  .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
-            write(lupri,*) 'out blubb otrial',iosim
+     &                  noh2,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+
 #ifdef LUCI_DEBUG
-        btmp(1:nconst) = btmp(1:nconst) - cref(1:nconst)
-        do i = 1, nconst
-           if (abs(btmp(i)) .gt. 1.0D-14) then
-              write(lupri,*) 'B changed ',i, cref(i), btmp(i)
-           end if
-           if (abs(cref(i)) .gt. 0.2d0 ) then
-              write(lupri,*) 'big B ',i, cref(i), svecs(i,iosim)
-           end if
-           if (abs(svecs(i,iosim)) .gt. 0.1d0 ) then
-              write(lupri,*) 'big S ',i, cref(i), svecs(i,iosim)
-           end if
-        end do
-        deallocate(btmp)
+            btmp(1:nconst) = btmp(1:nconst) - cref(1:nconst)
+            do i = 1, nconst
+               if (abs(btmp(i)) .gt. 1.0D-14) then
+                  write(lupri,*) 'B changed ',i, cref(i), btmp(i)
+               end if
+               if (abs(svecs(i,iosim)) .gt. 0.1d0 ) then
+                  write(lupri,*) 'big S ',i, cref(i), svecs(i,iosim)
+               end if
+            end do
+            deallocate(btmp)
 #undef LUCI_DEBUG
 #endif
             IF (IPRSOL.GT.125) THEN

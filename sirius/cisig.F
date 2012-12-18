@@ -1055,7 +1055,6 @@ C
 !       set vector exchange type: bvec trial vector
         vector_exchange_type1 = 2
       end if
-      write(lupri,*) 'in ciprp'
 
 C     ... singlet-singlet coupling of 2-electron integrals
       DO 100 ISIM = 1, NSIM

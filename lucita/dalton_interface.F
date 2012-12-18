@@ -1895,6 +1895,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #include "csm.inc"
 #include "orbinp.inc"
 #include "parluci.h"
+#include "oper.inc"
 *./CINTFO/
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
       character (len=25)   :: file_name
@@ -1939,7 +1940,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 !
           CALL GPOPEN(LUINT_LUCITA,file_name,'UNKNOWN',' ',
      &                'UNFORMATTED',IDUMMY,.FALSE.)
-          is_2e_int_active = 2
+          is_2e_int_active = i12
 
           update_ijkl =
      &    update_ijkl_from_env.or.ci_trial_vector.or.
@@ -2042,14 +2043,16 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
             end if
 !           1e-integrals from MCSCF environment, 2e-integrals from file
             if(ci_trial_vector)then
-              CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
-              READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
-     &                            einact_mc2lu
-              read(LUINT_LUCITA) 
-     &        ((ngsh_lucita_tmp(i,j),i=1,max_number_of_gas_spaces),
-     &                               j=1,max_number_of_ptg_irreps)
-              CALL READT(LUINT_LUCITA, nint1, work(kint2))
-              CALL READT(LUINT_LUCITA, nint2, work(kint2))
+              if(is_2e_int_active .gt. 1)then
+                CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
+                READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
+     &                              einact_mc2lu
+                read(LUINT_LUCITA) 
+     &          ((ngsh_lucita_tmp(i,j),i=1,max_number_of_gas_spaces),
+     &                                 j=1,max_number_of_ptg_irreps)
+                CALL READT(LUINT_LUCITA, nint1, work(kint2))
+                CALL READT(LUINT_LUCITA, nint2, work(kint2))
+              end if
             end if
           else
 !           read 1e- and 2e-integrals from file
@@ -2268,6 +2271,7 @@ C  cgas: ngas
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cgas.inc"
+#include "oper.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
       INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
       COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
@@ -2288,14 +2292,14 @@ C
       mult_ptg = 0
       call set_ptg_multiplication_table(mult_ptg,nsym)
       
-      is2e_active = 2 ! always import 2-electron integrals
+      is2e_active = i12
 
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LWORK
 
-      write(lupri,*) 'mcscf_provides_integrals = ',
-     &                mcscf_provides_integrals
+!     write(lupri,*) 'mcscf_provides_integrals = ',
+!    &                mcscf_provides_integrals
 
       if(.not.mcscf_provides_integrals)then
 !       allocate scratch memory and read-in 1/2-electron integrals from dalton-sirius files
@@ -2343,6 +2347,7 @@ C
      &              kfrsav,kfrsav,kfree,lfree)
 
       else ! mcscf_provides_integrals
+!       write(lupri,*) 'distribute ints from mc environment...'
         call sirint2luint(int1_mcscf,int2_mcscf,
      &                    dummy,x1int,x2int,mult_ptg,adsxa,nasht,nnashx,
      &                    ntoobs,nsym,mxpobs,nint1,nint2,ireost,ireots,
@@ -3157,9 +3162,11 @@ C
 !     final # of 2-el ints
       nr_2int = offset_internal - 1
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       write(lupri,*) '  final 2e- list: # of ints =', nr_2int
       call wrtmatmn(h2_out,1,nr_2int,1,nr_2int,lupri)
+#undef LUCI_DEBUG
 #endif
 
       end
