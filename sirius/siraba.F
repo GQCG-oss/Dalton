@@ -171,11 +171,11 @@ C
             CALL DZERO(GD(1,IGD),NCONST)
 
             if(ci_program .eq. 'SIRIUS-CI')then
-              CALL DCOPY(N2ASHX,WORK(KFDCAC),1,WORK(KFDCACP),1)
+              CALL DCOPY(N2ASHX,WRK(KFDCAC),1,WRK(KFDCACP),1)
             else if(ci_program .eq. 'LUCITA   ')then
               cref_is_active_bvec_for_sigma = .true.
               !... pack matrix in lower triangular form for lucita
-              CALL DSITSP(NASHT,WORK(KFDCAC),WORK(KFDCACP))
+              CALL DSITSP(NASHT,WRK(KFDCAC),WRK(KFDCACP))
             end if
 
             CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,
