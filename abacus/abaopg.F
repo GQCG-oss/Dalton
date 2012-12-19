@@ -283,6 +283,8 @@ C
 C     Calculate right-hand side for response equations for
 C     one-electron properties
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -329,7 +331,8 @@ C        Work space allocation:
 C
          KCREF  = 1
          KACAC  = KCREF  + NCONRF
-         KCINDX = KACAC  + NASHT*NASHT
+         KACACP = KACAC  + NASHT*NASHT
+         KCINDX = KACACP + NASHT*NASHT
          KWRK   = KCINDX + LCINDX
          LWRK   = LWORK  - KWRK + 1
          IF (KWRK .GE. LWORK) CALL STOPIT('OPGRHS','GETCIX',KWRK,LWORK)
@@ -351,14 +354,15 @@ C
             CALL READI(LUSIFC,IRAT*NCONRF,WORK(KCREF))
          END IF
 C
-#ifdef MOD_PARMCSCF_WITH_LUCITA
-         if(ci_program .eq. 'LUCITA   ')then
-           call quit('*** OPGRHS --> call to CIPRP: ci program'//
-     &               ' lucita expects triangular packed 1e-ints ***')
+         if(ci_program .eq. 'SIRIUS-CI')then
+           CALL DCOPY(NASHT**2,WORK(KACAC),1,WORK(KACACP),1)
+         else if(ci_program .eq. 'LUCITA   ')then
+           cref_is_active_bvec_for_sigma = .true.
+           !... pack matrix in lower triangular form for lucita
+           CALL DSITSP(NASHT,WORK(KACAC),WORK(KACACP))
          end if
-#endif
 
-         CALL CIPRP(1,WORK(KCREF),RHSOPG,NVARPT,WORK(KACAC),
+         CALL CIPRP(1,WORK(KCREF),RHSOPG,NVARPT,WORK(KACACP),
      *              WORK(KCINDX),WORK(KWRK),LWRK)
 C        CALL CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,CINDEX,WORK,LFREE)
 C
