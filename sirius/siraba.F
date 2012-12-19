@@ -80,6 +80,8 @@ C
 C Symmetry and number of variational parameters are defined through
 C INFLIN.
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION DV(*), PV(*), FC(*), FV(*), CREF(*), CMO(*)
       DIMENSION FDC(N2ORBX,*),FDV(N2ORBX,*),FDQ(*)
@@ -134,7 +136,8 @@ C
       IF (NASHT .GT. 1 .AND. NCONST .GT. 0) THEN
          KFRCSI = KFREE
          LFRCSI = LFREE
-         CALL MEMGET('REAL',KFDCAC,N2ASHX,WRK,KFRCSI,LFRCSI)
+         CALL MEMGET('REAL',KFDCAC ,N2ASHX,WRK,KFRCSI,LFRCSI)
+         CALL MEMGET('REAL',KFDCACP,N2ASHX,WRK,KFRCSI,LFRCSI)
 C
 C        Set CI control parameters for CISIGD
 C
@@ -161,16 +164,22 @@ C           ... (ij|kl) = (kl|ij) = (ji|kl) = ... 8-fold symmetry
             GDCFAC = D2
          END IF
 C
-         if(ci_program .eq. 'LUCITA   ')then
-           call quit('*** ABARHS --> call to CISIGD: ci program'//
-     &               ' lucita expects triangular packed 1e-ints ***')
-         end if
          DO 200 IGD = 1,NGD
+
             CALL GETAC1(FDC(1,IGD),WRK(KFDCAC))
             IF (LONDON) CALL DSCAL(N2ASHX,DM1,WRK(KFDCAC),1)
             CALL DZERO(GD(1,IGD),NCONST)
+
+            if(ci_program .eq. 'SIRIUS-CI')then
+              CALL DCOPY(N2ASHX,WORK(KFDCAC),1,WORK(KFDCACP),1)
+            else if(ci_program .eq. 'LUCITA   ')then
+              cref_is_active_bvec_for_sigma = .true.
+              !... pack matrix in lower triangular form for lucita
+              CALL DSITSP(NASHT,WORK(KFDCAC),WORK(KFDCACP))
+            end if
+
             CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,
-     &               CREF,GD(1,IGD),WRK(KFDCAC),H2DAC(1,IGD),
+     &               CREF,GD(1,IGD),WRK(KFDCACP),H2DAC(1,IGD),
      &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,
      &               WRK(KFRCSI),LFRCSI)
 C           CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
