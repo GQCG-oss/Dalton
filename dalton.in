@@ -264,8 +264,24 @@ ierr=0
      fi
    fi
 
+   if [ -s $WRKDIR/core.dat ] ; then
+     cp $WRKDIR/core.dat .
+   fi
+
+   if [ -s $WRKDIR/pe_density.bin ] ; then
+     cp $WRKDIR/pe_density.bin .
+   fi
+
+    if [ -s $WRKDIR/pe_fock_1.bin ] ; then
+     cp $WRKDIR/pe_fock_*.bin .
+   fi
+
    if [ -s $WRKDIR/mep.inp ] ; then
      cp $WRKDIR/mep.inp MEP.INP
+   fi
+
+   if [ -s $WRKDIR/surface.py ] ; then
+     cp $WRKDIR/surface.py .
    fi
 
    # put files listed under -put to scratch directory
@@ -383,7 +399,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h"
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h pe_density.bin pe_fock.bin"
 
 if [ -s DALTON.OUT.n001 -a -r DALTON.OUT.n001 ]; then
    tarfilelist="DALTON.OUT.n*"

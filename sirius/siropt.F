@@ -55,6 +55,7 @@ C         .gt.0  MCSCF converged.
 C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
+      use polarizable_embedding, only: peqm
 #ifdef VAR_MPI
       use par_mcci_io
 #endif
@@ -447,7 +448,8 @@ C
  1110 FORMAT(/' Optimization control: FATAL ERROR',
      *        ' - zero norm of reference CI vector')
 C
-      IF (P6FLAG(32) .AND. NCONF.GT.1) THEN
+!     IF (P6FLAG(32) .AND. NCONF.GT.1) THEN
+      thrpwf = 0.0d0
 C        use PRWF here ?? 890925-hjaaj
          WRITE (LUPRI,2010) ITMAC,THRPWF
  2010    FORMAT(/' Reference CI vector in iteration',I3,
@@ -467,7 +469,7 @@ C        use PRWF here ?? 890925-hjaaj
      *          /' -----------------           -----')
  2020    FORMAT(I16,F20.10)
 #endif
-      END IF
+!     END IF
 C
 C *** Calculate gradient for CREF and some matrices/arrays needed later.
 C
@@ -518,9 +520,18 @@ C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
       ELSEIF (PCM) THEN
          CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      %               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
+C 
+      ELSEIF (QMMM) THEN
+ 
+         CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
+     &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
+      else if (peqm) then
+         call pe_gradient(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
+     &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
       ELSE
          ESOLT = D0
       END IF
+
 C----------------
 C CBN+JK 03.01.06
 C----------------
@@ -580,10 +591,12 @@ chj   END IF
       IF (SOLVNT) WRITE (LUW4,1016) ESOLT
       IF (PCM)    WRITE (LUW4,1019) ESOLT
       IF (QM3)    WRITE (LUW4,1017) EQM3
+      IF (QMMM)   WRITE (LUW4,1017) ESOLT
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
          IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
          IF (QM3) WRITE (LUPRI,1017) EQM3
+         IF (QMMM) WRITE (LUPRI,1017) ESOLT
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
@@ -720,6 +733,10 @@ C                    need higher int. transf. level for NEO/NR
      *                  WRK(KERLM),WRK(KWRKG),LWRKG)
                   ELSEIF (PCM) THEN
                      CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
+     *                  WRK(KDV),WRK(KGTOT),ESOLT,
+     *                  WRK(KWRKG),LWRKG)
+                  ELSEIF (QMMM) THEN
+                     CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KWRKG),LWRKG)
                   END IF
@@ -1077,6 +1094,15 @@ C------------------
          LWRKG  = LFREE  - (KWRKG-1)
          CALL QM3FCKMO(WRK(KCMO),WRK(KFCSOL),WRK(KWRKG),
      &                 LWRKG,IPRSOL)
+         CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
+      ELSE IF (QMMM) THEN
+         KFCSOL = KWRKG
+         KWRKG  = KFCSOL + NNORBT
+         LWRKG  = LFREE  - (KWRKG-1)
+Ctest
+         write(lupri,*) 'PEFCMO after convergence'
+         CALL PEFCMO(WRK(KCMO),WRK(KFCSOL),WRK(KDV),
+     &               WRK(KWRKG),LWRKG,IPRINT)     ! NB: only works without symmetry
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
       ELSE
          KFCSOL = KFC
@@ -2514,6 +2540,7 @@ C
 #include "cbgetdis.h"
 #include "cbirea.h"
 #include "r12int.h"
+#include "qmmm.h"
 C----------------
 C CBN+JK 03.01.06 gnrinf.h included
 #include "gnrinf.h"
@@ -2521,12 +2548,12 @@ C----------------
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
-      CHARACTER*8 LAB123(3), TABLE(10), LABEOD, LABCC, LABABA
+      CHARACTER*8 LAB123(3), TABLE(11), LABEOD, LABCC, LABABA
       CHARACTER*8 LABAUX, LABUNI
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
-     *            'PCMINFO ','PCMJXMAT'/
+     *            'PCMINFO ','PCMJXMAT','PETMAT  '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
@@ -2633,7 +2660,6 @@ C
 C
 C
       WRITE (LUSIFC) LAB123,LBSIFC
-C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
      &               ISTATE,ISPIN,NACTEL,LSYM
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
@@ -2796,9 +2822,7 @@ Ckr
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
-C--------------
-C CBN+JK, 03.01.06
-C-------------------
+
 C Write qm3 solvent part of the Fock matrix to interface file
 
       IF (QM3) THEN
@@ -2815,9 +2839,60 @@ C Write qm3 solvent part of the Fock matrix to interface file
          WRITE (LUSIFC) LAB123,TABLE(7)
          CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
       END IF
-C--------------
-C CBN+JK, 03.01.06
-C-------------------
+
+C ****** edh: 24/11/2011 ******
+
+C Write qm/mm solvent part of the Fock matrix to interface file
+
+       IF (QMMM) THEN  
+
+         IF (IPQMMM .GE. 15) THEN 
+          WRITE(LUPRI,*) 'WRITING PE FOCK MAT. TO SIRIUS INTERFACE FILE'
+         ENDIF
+
+         KDCAO  = KWRK1
+         KDVAO  = KDCAO  + N2BASX
+         KDENSF = KDVAO  + N2BASX
+         KMAT   = KDENSF + NNBASX
+         KUCMO  = KMAT   + NNBASX  
+         KMATMO = KUCMO  + NORBT*NBAST
+         KMATMO = KMAT   + NNBASX
+         KWRK2  = KMATMO + NNORBT
+         LWRK2  = LFREE  - KWRK2 + 1
+
+         IF (LWRK2 .LT. 0) CALL ERRWRK('WR_SIRIFC-QMMM',-KWRK2,LFREE)
+
+         CALL DZERO(WRK(KDCAO),N2BASX)
+         CALL DZERO(WRK(KDVAO),N2BASX)
+         CALL DZERO(WRK(KDENSF),NNBASX)
+         CALL DZERO(WRK(KMAT),NNBASX)
+         CALL DZERO(WRK(KUCMO),NORBT*NBAST)
+         CALL DZERO(WRK(KMATMO),NNORBT)
+
+         CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDCAO),WRK(KDVAO),
+     &              CMO,DV,WRK(KWRK2),LWRK2)
+         IF (NASHT .GT. 0) THEN
+           CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)  
+         ENDIF
+
+         CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDENSF))            
+
+         CALL QMMM_FCK_AO(WRK(KMAT),WRK(KDENSF),EQMMM,WRK(KWRK2),LWRK2, 
+     &                       IPQMMM)          
+         CALL UPKCMO(CMO,WRK(KUCMO))
+         CALL UTHU(WRK(KMAT),WRK(KMATMO),WRK(KUCMO),WRK(KWRK2),
+     &               NBAST,NORBT)
+
+         IF (IPQMMM .GE. 15) THEN
+           WRITE (LUPRI,'(/A)') ' PE_ao matrix from WR_SIRIFC:'
+           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+           WRITE (LUPRI,'(/A)') ' PE_mo matrix from WR_SIRIFC'
+           CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
+         ENDIF
+
+         WRITE (LUSIFC) LAB123,TABLE(11)
+         CALL WRITT (LUSIFC,MMORBT,WRK(KMATMO))
+      END IF
 C
 C     Revision 2000/05/24 12:43:25  hjj
 C     Write CREF in determinants here, if NCDETS .gt. NCONF

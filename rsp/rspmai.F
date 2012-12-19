@@ -1214,6 +1214,7 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1635,6 +1636,10 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
+         if (peqm) then
+            write(lupri,'(a)') ' PE-QM response calculation'
+         end if
+
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Equilibrium PCM solvent model requested        : SOLVNT ='
@@ -1737,6 +1742,7 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -2180,6 +2186,10 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+
+         if (peqm) then
+            write(lupri,'(a)') ' PE-QM response calculation'
+         end if
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -3858,6 +3868,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
                NCONF  = NCONSV
                DO 50 I=1,KZCONF
                   WRK(KECDIA-1+I) = WRK(KECDIA-1+I) - EACTIV
+C                  wrk(kecdia-1+i) = 1.0d0
  50            CONTINUE
             ENDIF
 #if defined (VAR_SPLITFILES)
@@ -4239,6 +4250,22 @@ C
         ENDDO
       END IF
 C
+      
+c      WRITE(LUPRI,*) 'NCONRF............................ =' , NCONRF
+c      WRITE(LUPRI,*) 'Configuration variables (KZCONF).. =' , KZCONF
+c      WRITE(LUPRI,*) '# of configurations (NCONF)....... =' , NCONF
+c      write(lupri,*) 'QMMM', QMMM 
+      IF ((NCONRF .GT. 1) .AND. QMMM) THEN     ! edh: Find MCSCF specific variable Note that NCONRF = 1 for HF calc. => NOT APPROPRIATE!! 
+c         write(lupri,*) 'Do correction to Fock matrix from PE'
+c         WRITE(LUPRI,*) 'KZCONF > 0 Found: Expects QMMM MCSCF'
+c         WRITE(LUPRI,*) 'Going to PCM-like implementation'
+         CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI) 
+         CALL READT (LUSIFC,NNORBT,WRK)
+         DO I = 1,NNORBT
+             FC(I) = FC(I) - WRK(I)
+         ENDDO
+      END IF
+
       IF (QM3) THEN
         IF (OLDTG .OR. (.NOT. LOSPC)) THEN
           CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
@@ -4617,6 +4644,8 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
+
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4764,6 +4793,10 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+
+         if (peqm) then
+            write(lupri,'(a)') ' PE-QM response calculation'
+         end if
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='

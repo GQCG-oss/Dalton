@@ -342,7 +342,7 @@ C     Set up initial guess for CI vectors
 C     *****************************************************************
 C
 C
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       thrcix = 1.0d-11
 #undef LUCI_DEBUG

@@ -61,6 +61,7 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -345,6 +346,8 @@ csonia 04/10/95
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ',EDNUC
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ',ESOLT
+      else if (peqm) then
+        continue
       ELSE
         ESOLT = D0
       END IF

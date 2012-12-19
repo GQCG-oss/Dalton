@@ -953,6 +953,7 @@ C  /* Deck nodedriver */
       SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
 C
       use parallel_models
+      use polarizable_embedding, only: pe_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
@@ -1056,6 +1057,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             lucita_models_enabled = .true.
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
+         else if (iprtyp == PE) then
+            call pe_mpi(work(1:mwork), iprint)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN

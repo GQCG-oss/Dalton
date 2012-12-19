@@ -1439,7 +1439,13 @@ C
      *               RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
      *               XNDXCI,WORK,KFREED,LWRKD)
 C
-            CALL DSITSP(NASHT,WORK(KRHO1),RHO1(1,ICSIM,2))
+            if(ci_program .eq. 'SIRIUS-CI')then
+             CALL DSITSP(NASHT,WORK(KRHO1),RHO1(1,ICSIM,2))
+C            ... pack RHO1 as triangular matrix
+           else if(ci_program .eq. 'LUCITA   ')then
+             call dcopy(nnashx,work(krho1),1,rho1(1,ICSIM,2),1)
+           end if
+!#define LUCI_DEBUG
          END DO ! ICSIM = 1,NCSIM
       END IF
 C

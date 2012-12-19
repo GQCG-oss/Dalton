@@ -277,6 +277,8 @@ C
 C DFT modifications T.  Helgaker
 C
 C
+      use polarizable_embedding, only: peqm, pe_mep, pe_master,
+     &                                 pe_savden, pe_save_density
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -284,6 +286,9 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
+
+      real*8, dimension(1) :: pe_energy
+      real*8, dimension(:), allocatable :: pefock
 C
 C Used from common blocks:
 C  INFINP : FLAG(*)
@@ -325,6 +330,7 @@ Cholesky
 #include "choscf.h"
 C
 #include "center.h"
+#include "nuclei.h"
 C
 Cholesky
 C
@@ -373,6 +379,10 @@ C
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
+      else if (peqm) then
+        write(luw4,'(/a)')
+     &      ' Iter      Total energy       PE energy           '//
+     &      'Error norm     Delta(E)'
       ELSE ! no solvation energy
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
@@ -465,6 +475,7 @@ C------------------
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
+     &     .and. .not. peqm    .and. .not. pe_savden
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -704,6 +715,25 @@ C
             ENDIF
          ENDIF
 
+         if (peqm) then
+           allocate(pefock(nnbasx))
+           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+             call pe_master(runtype='fock', denmats=daosav(:,1),
+     &                      fckmats=pefock, nmats=1, energies=pe_energy,
+     &                      dalwrk=wrk(kfree:lfree))
+           else
+             call pe_master(runtype='fock',
+     &                      denmats=(daosav(:,1) + daosav(:,2)),
+     &                      fckmats=pefock, nmats=1, energies=pe_energy,
+     &                      dalwrk=wrk(kfree:lfree))
+           end if
+           esolt = pe_energy(1)
+           call daxpy(nnbasx, 1.0d0, pefock, 1, faosav(1,indevc,1), 1)
+           deallocate(pefock)
+         end if
+
+         
+
          IF (FLAG(16)) THEN
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
             CALL SOLFCK(DAOSAV(1,1),DAOSAV(1,2),
@@ -771,6 +801,9 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
      &                 ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,IOPRHF,
      &                 (NISH(I),I=1,NSYM)
                END IF
+            else if (peqm) then
+               write(luw4,'(i4,1p,g20.12,g20.12,d15.5,d12.2)')
+     &          itdiis, emcscf, esolt, grdnrm, emcdif
             ELSE
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I4,1P,G22.12,D15.5,D12.2,I5)')
@@ -1286,17 +1319,49 @@ C
          CALL UTHUB(DCAO,FCAO,CMO,WRK(KFREE),
      &              NSYM,NBAS,NORB)
        END IF
+
+       ! needed to get specific PE energy contributions for printout
+       ! when converged
+       if (peqm) then
+         if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+           call pe_master(runtype='energy',
+     &                    denmats=daosav(:,1), nmats=1,
+     &                    dalwrk=wrk(kfree:lfree))
+         else
+           call pe_master(runtype='energy',
+     &                    denmats=(daosav(:,1) + daosav(:,2)),
+     &                    nmats=1, dalwrk=wrk(kfree:lfree))
+         end if
+       end if
+       if (pe_mep) then
+        call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
+     &                 dalwrk=wrk(kfree:lfree))
+       end if
+       ! save density matrix 
+       if (pe_savden) then
+        if (nsym > 1) then
+            call quit('PEQM cannot be combined with symmetry.')
+        end if
+        call pe_save_density(daosav(:,1), fcao(1:norbt*(norbt+1)/2),
+     &                       cmo(1:nbast*norbt), nbast, nisht, norbt,
+     &                       cord(:,1:natoms), charge(1:natoms),
+     &                       wrk(kfree:lfree))
+       end if
 C
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
+         if (peqm) write(luw4,'(a)')
+     &    '   (incl. contribution from Polarizable Embedding potential)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
+            if (peqm) write(lupri,'(A)')
+     &    '   (incl. contribution from Polarizable Embedding potential)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
 C-------------------

@@ -600,6 +600,7 @@ sirius/sirpcmder.F
 sirius/sirpop.F
 sirius/sirqm3.F
 sirius/sirqmmm.F
+sirius/sirpe.F
 sirius/sirsav.F
 sirius/sirset.F
 sirius/sirsol.F
@@ -751,9 +752,11 @@ lucita/lucita_ci_task_interface.F90
 lucita/gasci_input_cfg.F90
 lucita/mcscf_or_gasci_2_define_cfg.F90
 lucita/lucita_mcscf_ci_interface_procedures.F90
-#gen1int/gen1int_interface.F90
-#gen1int/gen1int_shell.F90
-#gen1int/gen1int_matrix.F90
+peqm/pe_gen1int_wrapper.F90
+peqm/pe_precision.F90
+peqm/pe_blas_wrappers.F90
+peqm/pe_lapack_wrappers.F90
+peqm/polarizable_embedding.F90
     )
 set(OWN_BLAS_SOURCES
     pdpack/gp_dblas1.F

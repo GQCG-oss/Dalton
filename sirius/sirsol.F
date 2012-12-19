@@ -182,10 +182,12 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "infind.h"
+#include "gnrinf.h"
+#include "priunit.h"
 C
       IF (NASHT .GT. 0) THEN
          TELM = D2*DDOT(NNASHX,DV,1,RLMAC,1)
-         DO 100 I = 1,NASHT
+         DO 100 I = 1,NASHT                 
             TELM = TELM - DV(IROW(I+1))*RLMAC(IROW(I+1))
   100    CONTINUE
       ELSE
@@ -371,6 +373,8 @@ C
 C Scratch:
 C  WRK(LWRK)
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION CREF(*),RLMAC(*),GLMCI(*),INDXCI(*),WRK(LWRK)
 C
@@ -385,26 +389,31 @@ C
 #include "infvar.h"
 #include "infinp.h"
 C
+C ***** Comment edh: The CIPRP subroutine computes CI sigma vectors (SCVECS)                     ******
+C ***** according to SUM(J) <I|PRP|J> * CREF(J):                                                 ******
+C ***** CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE). Here SCVECS = GLMCI and           ******  
+C ***** NSIM = 1 in accordance with CI gradient expression (c.f. K.V. Mikkelsen et al. JCP 1988) ****** 
+
       CALL QENTER('SOLGC ')
       KURAC = 1
       KWRK1 = KURAC + N2ASHX
       LWRK1 = LWRK + 1 - KWRK1
-
       if(ci_program .eq. 'SIRIUS-CI')then
          CALL DSPTSI(NASHT,RLMAC,WRK(KURAC))
 C        ... unpack RLMAC using CALL DSPTSI(N,ASP,ASI)
       else if(ci_program .eq. 'LUCITA   ')then
         CALL DCOPY(NNASHX,RLMAC,1,WRK(KURAC),1)
+        cref_is_active_bvec_for_sigma = .true.
       end if
 
-      CALL CIPRP(1,CREF,GLMCI,NCONF,WRK(KURAC),INDXCI,WRK(KWRK1),LWRK1)
+      CALL CIPRP(1,CREF,GLMCI,NCONF,WRK(KURAC),INDXCI,WRK(KWRK1),LWRK1) !  SUM(J) <I|PRP|J> * CREF(J)  
 C     CALL CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE)
 C
       CALL DSCAL(NCONF,D2,GLMCI,1)
       CALL DAXPY(NCONF,(-D2*TELMAC),CREF,1,GLMCI,1)
 C
       CALL QEXIT('SOLGC ')
-      RETURN
+      RETUrN
       END
 C  /* Deck solgo */
       SUBROUTINE SOLGO(DCVAL,DV,RLM,GOLM)
@@ -1876,6 +1885,8 @@ C  Output:  New CI-part of sigma vector (SVECS)
 C
 C Scratch:  WRK
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION BCVECS(NCONST,*),  SVECS(NVARPT,*)
       DIMENSION CREF(*),  RXAC(NNASHX,*),RYAC(NNASHX)
@@ -1895,6 +1906,10 @@ C
 #include "inflin.h"
 #include "infpri.h"
 #include "infinp.h"
+#ifdef LUCI_DEBUG
+      real(8), allocatable :: btmp(:), stmp(:), h2tmp(:)
+#endif
+      logical, parameter :: noh2 = .true.
 C
       CALL QENTER('SOLSC ')
 C
@@ -1908,35 +1923,76 @@ C
          CALL QUIT('SOLSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0')
       END IF
 C
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .true.
+
       IF (NCSIM .GT. 0) THEN
          KURYAC = 1
          KURXAC = KURYAC + N2ASHX
          KW1    = KURXAC + N2ASHX
          LW1    = LWRK + 1 - KW1
+
          if(ci_program .eq. 'SIRIUS-CI')then
            CALL DSPTSI(NASHT,RYAC,WRK(KURYAC))
 C          ... unpack RYAC using CALL DSPTSI(N,ASP,ASI)
+           my_length = n2ashx
          else if(ci_program .eq. 'LUCITA   ')then
            CALL DCOPY(NNASHX,RYAC,1,WRK(KURYAC),1)
+           my_length = nnashx
          end if
-         CALL DSCAL(N2ASHX,D2,WRK(KURYAC),1)
+         CALL DSCAL(my_length,D2,WRK(KURYAC),1)
+
          DO 18 ICSIM = 1,NCSIM
+
             if(ci_program .eq. 'SIRIUS-CI')then
               CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
 C             ... unpack RXAC(1,ICSIM) using CALL DSPTSI(N,ASP,ASI)
+              my_length = n2ashx
             else if(ci_program .eq. 'LUCITA   ')then
+              call dzero(WRK(KURXAC),my_length)
               CALL DCOPY(NNASHX,RXAC(1,ICSIM),1,WRK(KURXAC),1)
+              my_length = nnashx
             end if
-            CALL DSCAL(N2ASHX,D2,WRK(KURXAC),1)
+
+            CALL DSCAL(my_length,D2,WRK(KURXAC),1)
+
 C           First SVECS(NA) = SVECS(NA) + < NA | 2*RX | CREF >
             IF (IPRSOL.GT.100) THEN
                WRITE(LUPRI,*)ICSIM,' RXAC MATRIX SCALED WITH 2'
                CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
      *                                 NASHT,NASHT,1,LUPRI)
             END IF
+
+!           set vector exchange type: cref
+            vector_exchange_type1 = 2
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            allocate (btmp(nconst))
+            btmp(1:nconst) = cref(1:nconst)
+            do i = 1, nconst
+             if (abs(cref(i)) .gt. 0.0d0 ) then
+              write(lupri,*) 'big B in ctrial',i, cref(i)
+             end if
+            end do
+#endif
+
             CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,CREF,SVECS(1,ICSIM),
      &                  WRK(KURXAC),DUMMY,
-     &                  .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+     &                  noh2,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+
+#ifdef LUCI_DEBUG
+            btmp(1:nconst) = btmp(1:nconst) - cref(1:nconst)
+            do i = 1, nconst
+               if (abs(btmp(i)) .gt. 1.0D-14) then
+                  write(lupri,*) 'B changed ',i, cref(i), btmp(i)
+               end if
+               if (abs(svecs(i,icsim)) .gt. 0.0d0 ) then
+                  write(lupri,*) 'big S ',i, cref(i), svecs(i,icsim)
+               end if
+            end do
+            deallocate(btmp)
+#undef LUCI_DEBUG
+#endif
             IF (IPRSOL.GT.125) THEN
                WRITE(LUPRI,*)' LINEAR TRANS WITH RXAC ADDED '
                CALL OUTPUT(SVECS(1,ICSIM),1,NCONST,1,1,NCONST,1,1,LUPRI)
@@ -1947,10 +2003,14 @@ C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
                CALL OUTPUT(WRK(KURYAC),1,NASHT,1,NASHT,
      *                                 NASHT,NASHT,1,LUPRI)
             END IF
+
+!           set vector exchange type: bvec trial vector
+            vector_exchange_type1 = 2
             CALL CISIGD(LSYMST,LSYMST,NCONST,NCONST,
      &                  BCVECS(1,ICSIM),SVECS(1,ICSIM),
      &                  WRK(KURYAC),DUMMY,
-     &                  .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+     &                  noh2,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+
             IF (IPRSOL.GT.125) THEN
                WRITE(LUPRI,*)' LINEAR TRANS WITH RYAC ADDED '
                CALL OUTPUT(SVECS(1,ICSIM),1,NCONST,1,1,NCONST,1,1,LUPRI)
@@ -1971,27 +2031,66 @@ C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
             END IF
    18    CONTINUE
       END IF
+!     reset flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
+!
+!     set flag for orbital trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_orbital_trial_vector = .true.
+
       IF (NOSIM .GT. 0) THEN
          KURXAC = 1
          KW1    = KURXAC + N2ASHX
          LW1    = LWRK + 1 - KW1
          DO 22 IOSIM = 1,NOSIM
+
             if(ci_program .eq. 'SIRIUS-CI')then
               CALL DSPTSI(NASHT,RXAC(1,IOSIM),WRK(KURXAC))
 C             ... unpack RXAC(1,IOSIM) using CALL DSPTSI(N,ASP,ASI)
+              my_length = n2ashx
             else if(ci_program .eq. 'LUCITA   ')then
               CALL DCOPY(NNASHX,RXAC(1,IOSIM),1,WRK(KURXAC),1)
+              my_length = nnashx
             end if
-            CALL DSCAL(N2ASHX,D2,WRK(KURXAC),1)
+
+            CALL DSCAL(my_length,D2,WRK(KURXAC),1)
+
 C           now SVECS(NA) = SVECS(NA) + <NA | 2*RXY | CREF >
             IF (IPRSOL.GT.100) THEN
                WRITE(LUPRI,*)' RXAC MATRIX SCALED WITH 2, iosim',IOSIM
                CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
      *                                 NASHT,NASHT,1,LUPRI)
             END IF
+
+!           set vector exchange type: cref
+            vector_exchange_type1 = 1
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            allocate (btmp(nconst))
+            btmp(1:nconst) = cref(1:nconst)
+            do i = 1, nconst
+              if (abs(cref(i)) .gt. 0.2d0 ) then
+                  write(lupri,*) 'big B in',i, cref(i)
+              end if
+            end do
+#endif
+
             CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,CREF,SVECS(1,IOSIM),
-     &               WRK(KURXAC),DUMMY,
-     &               .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+     &                  WRK(KURXAC),DUMMY,
+     &                  noh2,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+
+#ifdef LUCI_DEBUG
+            btmp(1:nconst) = btmp(1:nconst) - cref(1:nconst)
+            do i = 1, nconst
+               if (abs(btmp(i)) .gt. 1.0D-14) then
+                  write(lupri,*) 'B changed ',i, cref(i), btmp(i)
+               end if
+               if (abs(svecs(i,iosim)) .gt. 0.1d0 ) then
+                  write(lupri,*) 'big S ',i, cref(i), svecs(i,iosim)
+               end if
+            end do
+            deallocate(btmp)
+#undef LUCI_DEBUG
+#endif
             IF (IPRSOL.GT.125) THEN
                WRITE(LUPRI,*)' LINEAR TRANS WITH RXAC ADDED '
                CALL OUTPUT(SVECS(1,IOSIM),1,NCONST,1,1,NCONST,1,1,LUPRI)
@@ -2011,7 +2110,10 @@ C           not needed because of this projection)
             END IF
    22    CONTINUE
       END IF
+!     reset flag for orbital trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_orbital_trial_vector = .false.
 C
+
 C     CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
 C    &            NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
 C
