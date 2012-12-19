@@ -31,14 +31,14 @@ cat > energy_symm_sirius.info <<'%EOF%'
 cat > energy_symm.mol <<'%EOF%'
 BASIS
 cc-pVDZ
-HBr with small basis set
-
-    2    2  X  Y   a
-        1.    1
-H     0.0000000000            0.0000000000           1.050000
-        2.    1
-He    0.0000000000            0.0000000000           0.000000
-FINISH
+   Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
+   Test Purpose:     Check energy calculation with symmetry
+    2
+        8.    1
+O     0.0 -0.2249058930 0.0
+        1.    2
+H_a   1.45235 0.899623 0.0
+H_b  -1.45235 0.899623 0.0
 %EOF%
 
 #######################################################################
@@ -49,62 +49,28 @@ cat > energy_symm.dal <<'%EOF%'
 .RUN WAVE FUNCTION
 **WAVE FUNCTIONS
 .HF
+.MP2
 .MCSCF
-*SCF INPUT
-.DOUBLY OCCUPIED
- 1 0 0 0
+*MP2 INPUT
+.SOSMP2
 *CONFIGURATION INPUT
 .SYMMETRY
- 2
+ 1
 .SPIN MUL
  1
 .INACTIVE
- 0 0 0 0
-.ELECTRONS
- 2
-.RAS1 SPACE
  1 0 0 0
-.RAS2 SPACE
- 1 1 1 0
-.RAS3 SPACE
- 2 1 1 0
-.RAS1 HOLES
- 0 2
-.RAS3 ELECTRONS
- 0 2
-#.CAS SPACE
-#2 1 1 0
-#.CAS SPACE
-#3 0 0 0
-*CI INP
-.THRESH
-1.0D-07
-*OPTIMIZATION
-.CI PROG
-LUCITA
-.DETERM
-#.NOTRAC
-.MAX MACRO
-100
-.MAX MICRO
-100
-.MAX CI
-100
-#*PRINT LEVELS
-#.PRINTF
-# 9 0
-# 15 19 20 25 21 26 27 23 33
-# p6flag(25) is code for 2el dens
-# p6flag(15) is code for 1el dens
-# p6flag(21) is code for active fock matrix
-# p6flag(26) is code for active 2e-
-# p6flag(23) is code for orbital gradient
+.ELECTRONS
+ 8
+.CAS SPACE
+ 4 2 2 0
+*PRINT LEVELS
+.PRINTF
+ 1 0
+ 51
+# p6flag(51) is code for checking that reduced matrix redH is symmetric
 **END OF DALTON INPUT
 %EOF%
-#######################################################################
-
-
-
 #######################################################################
 
 #######################################################################
