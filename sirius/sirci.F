@@ -2388,6 +2388,7 @@ C        ... some, but not all, requested CI trial vectors available
       MCSIM = MCSIM + 1
       LAST  = IFRST
 #endif
+      CALL DZERO(WRK(NRS+1),NCONF)
 
       IF (PLUSCB) THEN
 C        ... take plus combination of degenerate diagonal elements
@@ -2416,7 +2417,6 @@ C           ... end repeat
             MCSIM = MCSIM + 1
             call dzero(wrk(nrs+1),nconf)
             WRK(NRS + NLIST(I)) = 1.0d0
-            write(lupri,*) 'nrs, nlist(i)',nrs,nlist(i),nc4
             CALL WRITT(LUIT1,NC4,WRK(NRS+1))
             WRK(NRS + NLIST(I)) = D0
   185    CONTINUE
