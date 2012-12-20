@@ -296,7 +296,10 @@ C     Disable "MP2FRO" if result not to be printed
       IF (IPRMP2 .LE. 0) MP2FRO = .FALSE.
       IF (IPRMP2 .GE. 5 .AND. MP2FRZ) THEN
          WRITE(LUPRI,'(/A)') ' Frozen orbitals in MP2 (1: frozen) :'
-         WRITE(LUPRI,'(5(10I2,2X))') IFRMP2(1:NORBT)
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(5(10I2,2X))')
+     &         IFRMP2(IORB(ISYM)+1:IORB(ISYM)+NORB(ISYM))
+         END DO
       END IF
       CALL FLSHFO(LUPRI)
       IF (SRMP2_SRINTS) THEN

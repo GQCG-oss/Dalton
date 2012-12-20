@@ -729,8 +729,8 @@ C     LUW*     Output units for print output (now defined in SIRSET)
       IPRSIG = IPRUSR
       IPRDNS = IPRUSR
       IPRRHF = IPRUSR - 1
-      IPRMP2 = IPRUSR + 5
-      IPRSOL = IPRUSR + 5
+      IPRMP2 = IPRUSR + 4
+      IPRSOL = IPRUSR + 4
       IPRCNO = IPRUSR + 1
       IPRFCK = IPRUSR
 C     set limit for POPPRI in each DIIS/QCHF/MCSCF iter to 30 nuclei
@@ -5143,7 +5143,7 @@ C
          CALL TRAUTH(IWUNIT)
 c        WRITE(IWUNIT,410)
 c410     FORMAT(/,' Questions and correspondence should be directed',
-c    *        ' to H.J.Aa. Jensen',/,T5,'E-mail: hjj@ifk.sdu.dk',
+c    *        ' to H.J.Aa. Jensen',/,T5,'E-mail: hjj@sdu.dk',
 c    *        //,T2,'Standard reference:',
 c    *        /,T5,'H.J.Aa. Jensen, H. Agren, and J. Olsen,',
 c    *        ' Chapter 8 in MOTECC-90')
@@ -5174,7 +5174,7 @@ C
 C
 C Type of calculation:
 C
- 1050 FORMAT(/'@',T6,A/)
+ 1050 FORMAT(/'@',T6,A)
  1051 FORMAT('@',T16,A)
  1052 FORMAT(/'@',T6,A,$)
  1053 FORMAT(A)
