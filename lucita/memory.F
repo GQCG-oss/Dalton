@@ -295,7 +295,7 @@
           WRITE(lupri,*) ' current and required length ',NWORD,KFREES-1
 *
           WRITE(lupri,*) ' Trying to allocate : identifer,length'
-          WRITE(lupri,'(20X,2I15)')IDENT,KADD
+          WRITE(lupri,'(20X,a,I15)')IDENT,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
@@ -336,8 +336,8 @@
 
           WRITE(lupri,*) ' MEMMAN : work array too short '
           WRITE(lupri,*) ' current and required length ',NWORD,KFREEL-1
-          WRITE(lupri,*) ' Trying to allocate : identifer,offset,length'
-          WRITE(lupri,'(24X,3I15)')IDENT,KBASE,KADD
+          WRITE(lupri,*) ' Trying to allocate : identifer,offset, length'
+          WRITE(lupri,'(24X,a,2I15)')IDENT,KBASE,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
