@@ -35,6 +35,6 @@ module vector_xc_file_type
    end type exchange_files
 
 !  exchange_files object
-   type(exchange_files), public :: exchange_f_info
+   type(exchange_files), public, save :: exchange_f_info
 
 end module

@@ -1045,7 +1045,7 @@ C
       implicit none
       real*8 da(*), db(*), ddot
       integer n, inca, incb, i
-      real*16 ddot_value
+      real*8 ddot_value
 
       if (inca .ne. 1 .or. incb .ne. 1) then
          ddot_128 =  ddot(n,da,inca,db,incb)

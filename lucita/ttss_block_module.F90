@@ -44,7 +44,7 @@ module ttss_block_module
   end type ttss_block_structure
 
 ! ttss block type object
-  type(ttss_block_structure), public :: ttss_info
+  type(ttss_block_structure), public , save:: ttss_info
 
 contains 
 

@@ -36,7 +36,7 @@ module parallel_task_distribution_type_module
   end type parallel_task_distribution
 
 ! ttss block type object
-  type(parallel_task_distribution), public :: ptask_distribution
+  type(parallel_task_distribution), public, save :: ptask_distribution
   integer, parameter, private              :: max_symmetry_distributions_active =  8 ! place holder for # symmetry irrep 
 !                                                                                    - if we activate LUCITA for respone this needs to be adapted...
 

@@ -50,7 +50,7 @@ module file_type_module
   end type file_type
 
 ! ttss block type object
-  type(file_type),    public  :: file_info
+  type(file_type),    public, save  :: file_info
   integer, parameter, public  :: mx_nr_files_lucipar    = 10 ! max number of MPI files in lucita (general upper limit)
   integer, parameter, private :: mx_nr_files_lucipar_ci = 10 ! max number of MPI files in lucita/ci
   integer, parameter, private :: mx_nr_files_lucipar_mc =  5 ! max number of MPI files in lucita/mcscf

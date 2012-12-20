@@ -45,7 +45,7 @@ module communicator_type_module
   end type communicator_type
 
 ! ttss block type object
-  type(communicator_type), public :: communicator_info
+  type(communicator_type), public, save :: communicator_info
 
 contains 
 

@@ -89,7 +89,7 @@
 !     restart cross check (experimental; should work with ifort/gfortran >= 4.5)
       if(irestr .eq. 0 .and.  LUCI_MYPROC .eq. LUCI_MASTER )then
         cvec_file_size = 0
-        inquire(unit=luc, size=cvec_file_size)
+!       inquire(unit=luc, size=cvec_file_size)
         if(cvec_file_size .gt. 0) irestr = 1
       end if
 
