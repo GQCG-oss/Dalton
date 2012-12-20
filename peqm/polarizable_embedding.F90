@@ -1001,9 +1001,9 @@ subroutine read_surface(filename)
     do i = 1, nsurp
        do j = 1, nsites
           Rji = Rs(:,j) - Sp(:,i)
-          if (norm2(Rji) < 1.2d0 ) then
+          if (nrm2(Rji) < 1.2d0 ) then
               write(luout,'(a,f12.8)') 'WARNING: Cavity to close to classical&
-                                       & site:', norm2(Rji)
+                                       & site:', nrm2(Rji)
               write(luout,'(a,f12.8)') 'Surface point:', Sp(:,i)
               write(luout,'(a,f12.8)') 'Classical site:', Rs(:,j)
           end if
