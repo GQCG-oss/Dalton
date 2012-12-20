@@ -6361,8 +6361,6 @@ C
 
       IF (IPOLTP .GT. 0) LPOL = .TRUE.
 
-      WRITE(LUPRI,*) 'LPOL =' ,LPOL
-
       XSAVE = DIPORG(1) 
       YSAVE = DIPORG(2) 
       ZSAVE = DIPORG(3) 
@@ -7131,9 +7129,6 @@ C     Construct Fyo(PE) (corresponds to Fg(PE) one-index transformed)
          JFPXAC = KFPXAC + (IOSIM - 1) * NNASHX         ! - active part 
 
          JTEST = KFXO + (IOSIM - 1) * NNORBX            
-
-         WRITE(LUPRI,*) 'JTEST - IOSIM:', IOSIM
-         CALL OUTPAK(WRK(JTEST),NBAST,1,LUPRI) 
 
          CALL DZERO(WRK(KFPXSQ),N2ORBX)
          CALL DZERO(WRK(JFPX),NNORBX)

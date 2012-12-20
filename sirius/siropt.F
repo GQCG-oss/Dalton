@@ -449,8 +449,7 @@ C
  1110 FORMAT(/' Optimization control: FATAL ERROR',
      *        ' - zero norm of reference CI vector')
 C
-!     IF (P6FLAG(32) .AND. NCONF.GT.1) THEN
-      thrpwf = 0.0d0
+      IF (P6FLAG(32) .AND. NCONF.GT.1) THEN
 C        use PRWF here ?? 890925-hjaaj
          WRITE (LUPRI,2010) ITMAC,THRPWF
  2010    FORMAT(/' Reference CI vector in iteration',I3,
@@ -470,7 +469,7 @@ C        use PRWF here ?? 890925-hjaaj
      *          /' -----------------           -----')
  2020    FORMAT(I16,F20.10)
 #endif
-!     END IF
+      END IF
 C
 C *** Calculate gradient for CREF and some matrices/arrays needed later.
 C
@@ -521,18 +520,15 @@ C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
       ELSEIF (PCM) THEN
          CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      %               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
-C 
       ELSEIF (QMMM) THEN
- 
          CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
       else if (peqm) then
-         call pe_gradient(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
-     &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
+         call pe_grad(wrk(kcref), wrk(kcmo), wrk(kcindx), wrk(kdv),
+     &                wrk(kgtot), esolt, wrk(kwrkg), lwrkg)
       ELSE
          ESOLT = D0
       END IF
-
 C----------------
 C CBN+JK 03.01.06
 C----------------
@@ -593,11 +589,13 @@ chj   END IF
       IF (PCM)    WRITE (LUW4,1019) ESOLT
       IF (QM3)    WRITE (LUW4,1017) EQM3
       IF (QMMM)   WRITE (LUW4,1017) ESOLT
+      if (peqm)   write (luw4,1021) esolt
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
          IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
          IF (QM3) WRITE (LUPRI,1017) EQM3
          IF (QMMM) WRITE (LUPRI,1017) ESOLT
+         if (peqm) write(lupri,1021) esolt
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
@@ -611,6 +609,7 @@ chj   END IF
      *       /' - Active energy          :',F30.15)
  1016 FORMAT( ' - Dielec. solvation ener.:',F30.15)
  1017 FORMAT( ' - QM/MM solvation energy :',F30.15)
+ 1021 format( ' - PE energy              :',f30.15)
  1018 FORMAT( ' - srDFT effective energy :',F30.15)
  1019 FORMAT( ' - PCM solvation energy   :',F30.15)
  1020 FORMAT(/' Norm of total gradient   :',F27.12,
@@ -740,6 +739,10 @@ C                    need higher int. transf. level for NEO/NR
                      CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KWRKG),LWRKG)
+                  else if (peqm) then
+                    call pe_grad(wrk(kcref), wrk(kcmo), wrk(kcindx),
+     &                           wrk(kdv), wrk(kgtot), esolt,
+     &                           wrk(kwrkg), lwrkg)
                   END IF
 #endif
                ELSE
@@ -1100,11 +1103,16 @@ C------------------
          KFCSOL = KWRKG
          KWRKG  = KFCSOL + NNORBT
          LWRKG  = LFREE  - (KWRKG-1)
-Ctest
-         write(lupri,*) 'PEFCMO after convergence'
          CALL PEFCMO(WRK(KCMO),WRK(KFCSOL),WRK(KDV),
      &               WRK(KWRKG),LWRKG,IPRINT)     ! NB: only works without symmetry
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
+      else if (peqm) then
+        kfcsol = kwrkg
+        kwrkg = kfcsol + nnorbx
+        lwrkg = lfree - (kwrkg - 1)
+        call pe_fckmo(wrk(kcmo), wrk(kfcsol), wrk(kwrkg), wrk(kdv),
+     &                wrk(kwrkg+1), lwrkg)
+        call daxpy(nnorbx, 1.0d0, wrk(kfc), 1, wrk(kfcsol), 1)
       ELSE
          KFCSOL = KFC
       END IF
@@ -1115,11 +1123,19 @@ C        then remember to add FCSOL and FV to FD for RHFENR call
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (SOLVNT .OR. QM3)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
+         if (peqm) then
+            write(luw4,'(a)')
+     &   '    (incl. contribution from polarizable embedding potential)'
+         end if
          CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (SOLVNT .OR. QM3)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
+         if (peqm) then
+            write(luw4,'(a)') 
+     &   '    (incl. contribution from polarizable embedding potential)'
+         end if
             CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          END IF
 C        CALL RHFENR(IPRINT,LUPRI,FD,SCRA,LSCRA)
@@ -2495,6 +2511,7 @@ C    *) NSYM, NORBT, ...
 C    *) FCDIA, ISMO
 C    *) CMO
 C
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
       DIMENSION ERLM(NLMSOL,2),GORB(*),CREF(*),FCAC(*),H2AC(*),WRK(*)
@@ -2653,6 +2670,7 @@ C
 C
 C
       WRITE (LUSIFC) LAB123,LBSIFC
+C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
      &               ISTATE,ISPIN,NACTEL,LSYM
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,

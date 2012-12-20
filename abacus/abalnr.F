@@ -101,7 +101,7 @@ C
                   SKIP = .TRUE.
                   ICHANG = ICHANG + 1
                GO TO 100
-    2          CONTINUE
+    2          CONTINUE    ! .WAVELE
                   READ(LUCMD,*) NWAVEL
                   IF (NWAVEL .LT. 0) THEN
                      CALL QUIT('# wavelengths negative under *ABALNR')
@@ -121,8 +121,8 @@ C
                   READ(LUCMD,*) (FRVAL(NFRVAL+I),I=1,NWAVEL)
                   DO I = NFRVAL+1,NFRVAL+NWAVEL
                      IF (ABS(FRVAL(I)) .LT. 1.0D-12) THEN
-                        WRITE(LUPRI,*) 'Wavelength too small:',
-     &                                 FRVAL(I)
+                        WRITE(LUPRI,*)
+     &                  I,'th .WAVELE wavelength too small:',FRVAL(I)
                         WRITE(LUPRI,*) 'Use frequency input instead!'
                         CALL QUIT('Wavelength too small under *ABALNR')
                      END IF
@@ -176,22 +176,21 @@ C              .THRESH
 CSPAS:20/3-2011: allowing for perturbations in only one irrep
                   VIBGIR = .TRUE.
                   READ(LUCMD,*) IRVIBG
-CKeinSPASmehr
                GO TO 100
-    9             OOTV   = .TRUE.
+    9          CONTINUE
+                  OOTV   = .TRUE.
                   ICHANG = ICHANG + 1
                GO TO 100
-   10             CONTINUE
+   10          CONTINUE   ! .FREQUE
                   READ(LUCMD,*) NRDFR
                   IF (NRDFR .LT. 0) THEN
                      CALL QUIT('# frequencies negative under *ABALNR')
-                  ELSE IF (NRDFR .EQ. 0) THEN
-                     GO TO 100
                   ELSE
                      IF (.NOT. LOCFIN) THEN
                         NFRVAL = 0
                         LOCFIN = .TRUE.
                      END IF
+                     IF (NRDFR .EQ. 0) GO TO 100
                   END IF
                   NFRVLT = NFRVLT + NRDFR
                   NFTOT  = NRDFR  + NFRVAL
@@ -202,32 +201,32 @@ CKeinSPASmehr
                   NFRVAL = NFRVAL + NRDFR
                   ICHANG = ICHANG + 1
                GO TO 100
-   11             CONTINUE
+   11          CONTINUE
                   READ(LUCMD,*) NFREQ_BATCH
                   IF (NFREQ_BATCH.GT.MXFR) THEN
                      NFREQ_BATCH = MXFR
                   END IF
                GO TO 100
-   12             CONTINUE
+   12          CONTINUE
                   READ (LUCMD,*) IPRLNR
                   ICHANG = ICHANG + 1
                   IF (IPRLNR .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
-   13             CONTINUE
+   13          CONTINUE
                   ABSORP = .TRUE.
                   ICHANG = ICHANG + 1
                   READ (LUCMD,*) DAMPING
                GO TO 100
-   14             CONTINUE
+   14          CONTINUE
                   CUT    = .TRUE.
                   ICHANG = ICHANG + 1
                GO TO 100
- 15            CONTINUE
+   15          CONTINUE
                   ABS_INTERVAL = .TRUE.
                   ABS_REDUCE = .TRUE.
                   READ(LUCMD,*) (FREQ_INTERVAL(I), I=1,3)
                GO TO 100
- 16            CONTINUE
+   16          CONTINUE
                  ABS_REDUCE=.TRUE.
                GO TO 100
  17            CONTINUE
@@ -695,8 +694,6 @@ C
       CALL DZERO(POLVV,2*9*MXFR)
       CALL DZERO(POLDLS,9)
       CALL DZERO(POLDAS,9)
-C
-      IF (NFRVAL.LE.0) GOTO 999
 C
 C     Start the calculations
 C
@@ -1189,7 +1186,7 @@ C-tbp CALL GPCLOSE(LUSOVE,'DELETE')
 C-tbp CALL GPCLOSE(LUGDVE,'DELETE')
 C-tbp CALL GPCLOSE(LUREVE,'DELETE')
 C
-      END IF
+      END IF       ! for  IF (ALFA .OR. ROAA .OR. ROAG) THEN
 C
 C     Start calculation of vibrational g-factors.
 C     ===========================================
@@ -1895,7 +1892,7 @@ C
       IF ((NASHT .EQ. 0).AND.(.NOT.ABASOP)) THEN
          KZCONF = 0
       ELSE IF (NASHT .EQ. 1) THEN
-         KZCONF = 1
+         KZCONF = 0 ! also zero for ROHF
       ELSE
          KZCONF = NCONST
       END IF

@@ -13,8 +13,8 @@
       LOGICAL         OPTORB, INPTES, ANTTES, AVDIA,  TDHF,   RSPCI
       LOGICAL         NOITRA, ORBSPC, ABOCHK, TRPLET, OLSEN,  PHPRES
       LOGICAL         E3TEST, TRPFLG, A2TEST, X2TEST, DIROIT, RSPSUP
-      LOGICAL         SOPPA,  HIRPA,  SOPW4,  CCPPA                      !SPAS : 06/11-2009 AOSOP for AO-SOPPA is in soppinf.h
-      LOGICAL         DFT_SO, RSPECD, RSPOCD
+      LOGICAL         SOPPA,  HIRPA,  SOPW4,  CCPPA, TDA, CISRPA         !SPAS : 06/11-2009 AOSOP for AO-SOPPA is in soppinf.h
+      LOGICAL         DFT_SO, RSPECD, RSPOCD, SOPRPA
       COMMON /INFRSP/ THCRSP, FREQ(MFREQ),    CFREQ(MCFREQ),  ORBSFT,    ! real*8 variables
      *                IREFSY, IPRRSP, MAXIT,  MAXITO,                    ! integer variables
      *                NFREQ,  NCFREQ, NCREF,  ISTOCK, MAXOCK,
@@ -22,6 +22,6 @@
      *                OPTORB, INPTES, ANTTES, AVDIA,  TDHF,   RSPCI,     ! logical variables
      *                NOITRA, ORBSPC, ABOCHK, TRPLET, OLSEN,  PHPRES,
      *                E3TEST, TRPFLG, A2TEST, X2TEST, DIROIT, RSPSUP,
-     *                SOPPA,  HIRPA,  SOPW4,  CCPPA,
-     *                DFT_SO, RSPECD, RSPOCD
+     *                SOPPA,  HIRPA,  SOPW4,  CCPPA, TDA, CISRPA,
+     *                DFT_SO, RSPECD, RSPOCD, SOPRPA
 ! -- end of infrsp.h --

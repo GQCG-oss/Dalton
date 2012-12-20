@@ -112,7 +112,7 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
-      use polarizable_embedding, only: peqm, pe_master
+      use polarizable_embedding, only: peqm
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -141,9 +141,18 @@ C
 C
       CALL QENTER('RSPSLV')
 
-      IF (SOPPA) THEN
+C      IF (SOPPA) THEN
+C         WRITE (LUPRI,*)
+C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
+C         CALL QUIT(
+C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
+C      END IF
+      IF (.NOT. SOPRPA .AND. SOPPA) THEN
          WRITE (LUPRI,*)
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
+         WRITE (LUPRI,*) 'Full solvent model SOPPA not implemented.'
+         WRITE (LUPRI,*) 'Only SOPPA/RPA (JCC, 2012-2022, 33, (2012))'
+         WRITE (LUPRI,*) 'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
          CALL QUIT(
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
       END IF
@@ -324,54 +333,11 @@ C
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               WRK(KDVT),WRK(KDVTTR),
      &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-      else if (peqm .and. .not. (nasht == 0 .and. trplet)) then
-        if (ncsim > 0) then
-           call quit('PE response calc. not implemented for ncsim > 0.')
-        end if
-
-        call memget('REAL', kuev, n2orbx*nosim, wrk, kfree, lfree)
-        call memget('REAL', kev, nnorbx, wrk, kfree, lfree)
-        call memget('REAL', kevao, nnbasx*nosim, wrk, kfree, lfree)
-        call memget('REAL', kdao, nnbasx*nosim, wrk, kfree, lfree)
-        call memget('REAL', kudvao, n2basx, wrk, kfree, lfree)
-        call memget('REAL', kudcao, n2basx, wrk, kfree, lfree)
-        call memget('REAL', kubv, n2orbx*nosim, wrk, kfree, lfree)
-
-        call rspzym(nosim, bovecs, wrk(kubv))
-
-        call dscal(n2orbx*nosim, -2.0d0, wrk(kubv), 1)
-
-        do i = 1, nosim
-            jubv = kubv + (i-1)*n2orbx
-            jdao = kdao + (i-1)*nnbasx
-            call deq27(cmo, wrk(jubv), udv, wrk(kudcao), wrk(kudvao),
-     &                 wrk(kfree), lfree)
-            ! factor 1/2 probably related to factor 2 above?
-            if (nasht > 0) call daxpy(n2basx, 0.5d0, wrk(kudvao), 1,
-     &                                wrk(kudcao), 1)
-            call dgefsp(nbast, wrk(kudcao), wrk(jdao))
-        end do
-
-        call memrel('RSPSLV.pe_master', wrk, 1, kudvao, kfree, lfree)
-
-        call pe_master(runtype='response',
-     &                 denmats=wrk(kdao:kdao+nosim*nnbasx-1),
-     &                 fckmats=wrk(kevao:kevao+nosim*nnbasx-1),
-     &                 nmats=nosim, dalwrk=wrk(kfree:lfree))
-
-        call memrel('RSPSLV.pe_master', wrk, 1, kdao, kfree, lfree)
-
-        do i = 1, nosim
-            juev = kuev + (i-1)*n2orbx
-            jevao = kevao + (i-1)*nnbasx
-            call uthu(wrk(jevao), wrk(kev), cmo, wrk(kfree),
-     &                nbast, norbt)
-            call dsptsi(norbt, wrk(kev), wrk(juev))
-        end do
-
-        call slvsor(.true., .true., nosim, udv, evecs, wrk(kuev))
-
-        call memrel('RSPSLV.pe_master', wrk, 1, kuev, kfree, lfree)
+      else if (peqm) then
+        call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
+     &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
+     &                 wrk(kvdt), wrk(kdvttr), evecs,
+     &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
       ELSE
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'

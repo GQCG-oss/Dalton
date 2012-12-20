@@ -567,7 +567,7 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
-      use polarizable_embedding, only: peqm, pe_polar
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -658,8 +658,7 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
-     &    (peqm .and. pe_polar)) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
@@ -800,18 +799,21 @@ C
                   IF (ONEIND) THEN
                      EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                       + D2 * FCX(L,K,ISIM)
-                     EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
+                     IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                  EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                       - D2 * FCX(K,L,ISIM)
                      IF ( NASHT . GT . 0 ) THEN
                         EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                       + D2 * FVX(L,K,ISIM)
-                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
+                     IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                  EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                       - D2 * FVX(K,L,ISIM)
                      END IF
                   ELSE
                      EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                       + D2 * FVX(L,K,ISIM)
-                     EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
+                     IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                  EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                       - D2 * FVX(K,L,ISIM)
                   END IF
                   IF ( ITYPL.EQ.JTACT ) THEN
@@ -820,11 +822,14 @@ C
                         EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                  - DDOT(NASHL,FCX(IORBL+NISHL+1,K,ISIM),1,
      *                                        UDV(IASHL+1,NWL,1),1)
-                        DO 730 IX = 1,NASHL
-                           EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                     + FCX(K,IORBL+NISHL+IX,ISIM)*
-     *                                        UDV(NWL,IASHL+IX,1)
- 730                    CONTINUE
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA)) THEN
+                           DO 730 IX = 1,NASHL
+                              EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,
+     *                                                   ISIM)
+     *                        + FCX(K,IORBL+NISHL+IX,ISIM)*
+     *                                    UDV(NWL,IASHL+IX,1)
+ 730                       CONTINUE
+                        END IF
                      ELSE
                         TEMP1 = D0
                         TEMP2 = D0
@@ -841,13 +846,15 @@ C
  825                    CONTINUE
                         EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                                          - TEMP1
-                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                                          + TEMP2
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                     EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
+     *                                             + TEMP2
                      END IF
                      EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                     - QAX(K,NWL,ISIM)
-                     EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                     + QBX(K,NWL,ISIM)
+                     IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                  EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
+     *                        + QBX(K,NWL,ISIM)
                   END IF
  2000          CONTINUE
             ELSE
@@ -859,14 +866,19 @@ C
                         EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                  -DDOT(NASHL,FCX(IORBL+NISHL+1,K,ISIM),1,
      *                                        UDV(IASHL+1,NWL,1),1)
-                        DO 740 IX = 1,NASHL
-                           EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                        +FCX(K,IORBL+NISHL+IX,ISIM)*
-     *                                        UDV(NWL,IASHL+IX,1)
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA)) THEN
+                           DO 740 IX = 1,NASHL
+                                EVECS(KYCONF+IG,ISIM) =
+     *                          EVECS(KYCONF+IG,ISIM)
+     *                          +FCX(K,IORBL+NISHL+IX,ISIM)*
+     *                                          UDV(NWL,IASHL+IX,1)
  740                    CONTINUE
-                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                     -DDOT(NASHK,FCX(IORBK+NISHK+1,L,ISIM),1,
-     *                                        UDV(IASHK+1,NWK,1),1)
+                        END IF
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                          EVECS(KYCONF+IG,ISIM) =
+     *                          EVECS(KYCONF+IG,ISIM)
+     *                          -DDOT(NASHK,FCX(IORBK+NISHK+1,L,ISIM),
+     *                                        1,UDV(IASHK+1,NWK,1),1)
                         DO 750 IX = 1,NASHK
                            EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                        +FCX(L,IORBK+NISHK+IX,ISIM)*
@@ -888,8 +900,9 @@ C
  835                    CONTINUE
                         EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                                          + TEMP2
-                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                                          - TEMP1
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                      EVECS(KYCONF+IG,ISIM) =
+     *                             EVECS(KYCONF+IG,ISIM) - TEMP1
                         TEMP1 = D0
                         TEMP2 = D0
                         NX  = NISHK
@@ -905,20 +918,25 @@ C
  845                    CONTINUE
                         EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                                          - TEMP1
-                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                                          + TEMP2
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                      EVECS(KYCONF+IG,ISIM) =
+     *                             EVECS(KYCONF+IG,ISIM) + TEMP2
                      END IF
                      EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                  +QBX(L,NWK,ISIM) -QAX(K,NWL,ISIM)
-                     EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                  +QBX(K,NWL,ISIM) - QAX(L,NWK,ISIM)
+                     IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                  EVECS(KYCONF+IG,ISIM) =
+     *                          EVECS(KYCONF+IG,ISIM)
+     *                          +QBX(K,NWL,ISIM) - QAX(L,NWK,ISIM)
  2020             CONTINUE
                ELSE
                   NWK = ISW(K) - NISHT
                   DO 2030 ISIM=1,NSIM
                      IF (ONEIND) THEN
-                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                     -DDOT(NASHK,FCX(IORBK+NISHK+1,L,ISIM),1,
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                      EVECS(KYCONF+IG,ISIM) =
+     *                         EVECS(KYCONF+IG,ISIM)
+     *                         -DDOT(NASHK,FCX(IORBK+NISHK+1,L,ISIM),1,
      *                                        UDV(IASHK+1,NWK,1),1)
                         DO 760 IX = 1,NASHK
                            EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
@@ -941,11 +959,14 @@ C
  860                    CONTINUE
                         EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                                          + TEMP1
-                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                                          - TEMP2
+                        IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                      EVECS(KYCONF+IG,ISIM) =
+     *                              EVECS(KYCONF+IG,ISIM) - TEMP2
                      END IF
-                     EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
-     *                     -QAX(L,NWK,ISIM)
+                     IF ((.NOT. TDA) .AND. (.NOT. CISRPA))
+     *                  EVECS(KYCONF+IG,ISIM) =
+     *                           EVECS(KYCONF+IG,ISIM)
+     *                           -QAX(L,NWK,ISIM)
                      EVECS(KZCONF+IG,ISIM) = EVECS(KZCONF+IG,ISIM)
      *                     +QBX(L,NWK,ISIM)
  2030             CONTINUE
@@ -1456,14 +1477,18 @@ C
                         ELSE
                            BVECS(KSJR+I) = BVECS(IZ+JROFF) / ZDIA
                         ENDIF
-                        IF (ABS(YDIA).LE.DTEST) THEN
-                           BVECS(KSJR+KZWOPT+I) =
-     *                           BVECS(IZ+KZVAR+JROFF)
-     *                           /SIGN(DTEST,YDIA)
+                        IF (TDA .OR. CISRPA) THEN
+                           BVECS(KSJR+KZWOPT+I) = 0.0D0
                         ELSE
-                           BVECS(KSJR+KZWOPT+I) =
-     *                           BVECS(IZ+KZVAR+JROFF)/ YDIA
-                        ENDIF
+                           IF (ABS(YDIA).LE.DTEST) THEN
+                              BVECS(KSJR+KZWOPT+I) =
+     *                              BVECS(IZ+KZVAR+JROFF)
+     *                              /SIGN(DTEST,YDIA)
+                           ELSE
+                              BVECS(KSJR+KZWOPT+I) =
+     *                              BVECS(IZ+KZVAR+JROFF)/ YDIA
+                           ENDIF
+                        END IF
  1500                CONTINUE
                   ENDIF
                ENDIF

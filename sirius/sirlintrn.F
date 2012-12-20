@@ -90,7 +90,6 @@ C                          else SOVECS(NWOPT,NOSIM),
 C                               starting at WRK(1)
 C
       use polarizable_embedding, only: peqm
-
 #include "implicit.h"
       DIMENSION BCVECS(NCONDI,*), BOVECS(NWOPDI,*)
       DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
@@ -467,9 +466,9 @@ C
          CALL FLSHFO(LUPRI)
          CALL GETTIM(T5,W5)
       else if (peqm) then
-         CALL pe_lin(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
-     &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
-     &              WRK(K3A),L3A)
+         CALL pe_lin(ncsim, nosim, bcvecs, bovecs, cref, cmo, indxci,
+     &               dv, wrk(kdtv), wrk(kscvec), wrk(ksovec), orblin,
+     &               wrk(k3a), l3a)
          CALL FLSHFO(LUPRI)
          CALL GETTIM(T5,W5)
       ELSE

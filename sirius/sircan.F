@@ -816,8 +816,8 @@ C
       CALL QENTER('GETNO ')
       KFREE  = KFRSAV
       LFREE  = LFRSAV
-      IF (IPRINT .GE. 2) THEN
-         WRITE (LUPRI,'(//A//A,I2/)')
+      IF (IPRINT .GE. 4) THEN
+         WRITE (LUPRI,'(//A//A,I2)')
      *      ' <<< output from getno >>>',
      *      ' Symmetry of state vector :',ICSYM
       END IF
@@ -931,7 +931,7 @@ C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
         END IF
       END IF
       IF (IPRINT .GE. 1) THEN
-         WRITE (LUPRI,'(//A/A)')
+         WRITE (LUPRI,'(/A/A)')
      *      ' Occupancies of natural orbitals',
      *      ' -------------------------------'
          IF (SUPSYM .AND. .NOT. NOAVER) WRITE (LUPRI,'(/A)')
@@ -982,7 +982,7 @@ C
      *      ' GETNO: the orbital coefficients are NOT transformed to'//
      *      ' natural orbitals.'
       ELSE
-         IF (IPRINT .GE. 5) WRITE (LUPRI,'(/A)')
+         IF (IPRINT .GE. 3) WRITE (LUPRI,'(/A)')
      *      ' GETNO: the orbital coefficients are transformed to'//
      *      ' natural orbitals.'
          IF (LWRK1 .LT. NCMOT) CALL ERRWRK('GETNO.NATORB',NCMOT,LWRK1)

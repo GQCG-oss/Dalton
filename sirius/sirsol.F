@@ -182,12 +182,10 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "infind.h"
-#include "gnrinf.h"
-#include "priunit.h"
 C
       IF (NASHT .GT. 0) THEN
          TELM = D2*DDOT(NNASHX,DV,1,RLMAC,1)
-         DO 100 I = 1,NASHT                 
+         DO 100 I = 1,NASHT
             TELM = TELM - DV(IROW(I+1))*RLMAC(IROW(I+1))
   100    CONTINUE
       ELSE
@@ -386,24 +384,19 @@ C
 #include "inforb.h"
 #include "infvar.h"
 C
-C ***** Comment edh: The CIPRP subroutine computes CI sigma vectors (SCVECS)                     ******
-C ***** according to SUM(J) <I|PRP|J> * CREF(J):                                                 ******
-C ***** CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE). Here SCVECS = GLMCI and           ******  
-C ***** NSIM = 1 in accordance with CI gradient expression (c.f. K.V. Mikkelsen et al. JCP 1988) ****** 
-
       CALL QENTER('SOLGC ')
       KURAC = 1
       KWRK1 = KURAC + N2ASHX
       LWRK1 = LWRK + 1 - KWRK1
       CALL DSPTSI(NASHT,RLMAC,WRK(KURAC))
-      CALL CIPRP(1,CREF,GLMCI,NCONF,WRK(KURAC),INDXCI,WRK(KWRK1),LWRK1) !  SUM(J) <I|PRP|J> * CREF(J)  
+      CALL CIPRP(1,CREF,GLMCI,NCONF,WRK(KURAC),INDXCI,WRK(KWRK1),LWRK1)
 C     CALL CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE)
 C
       CALL DSCAL(NCONF,D2,GLMCI,1)
       CALL DAXPY(NCONF,(-D2*TELMAC),CREF,1,GLMCI,1)
 C
       CALL QEXIT('SOLGC ')
-      RETUrN
+      RETURN
       END
 C  /* Deck solgo */
       SUBROUTINE SOLGO(DCVAL,DV,RLM,GOLM)

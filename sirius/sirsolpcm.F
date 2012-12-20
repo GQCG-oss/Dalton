@@ -29,7 +29,6 @@ C
 C  /* Deck pcmgrd */
       SUBROUTINE PCMGRD(CREF,CMO,INDXCI,DV,G,ESOLT,WRK,LFREE)
 C
-C     ****** Comment edh: This part is equivalent to SOLGRAD: SUBROUTINE SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE) ******
 C     Written by L. Frediani and K.Ruud based on SOLGRD by hjj.
 C
 C   Purpose:  calculate MCSCF energy and gradient contribution
@@ -43,21 +42,14 @@ C
 #include "priunit.h"
 #include "pi.h"
 C
-C ****** Comment edh: The two include files <priunit.h> and <pi.h> seems be specific for pcm! See what they do!!!! ******
-C 
       DIMENSION CREF(*), CMO(*), INDXCI(*)
       DIMENSION DV(*),   G(*),   WRK(*)
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0,
      &            DCVAL = D2, FPI = 4.0D0 * PI )
-C
-C ****** Comment edh: Above has generally same structrue as SOLGRD. Extra variables compared to SOLGRD: FPI and PI (PI defined in include file pi?)  ******
-C
 #include "thrzer.h"
 #include "dummy.h"
 #include "iratdef.h"
 #include "mxcent.h"
-C
-C ****** Comment edh: Two extra include files: <dummy.h> and <mxcent.h> -not in SOLGRD: Here MXCENT is defined instead through DIMENSION   ******
 C
 C Used from common blocks:
 C   INFVAR: NCONF,  NWOPT,  NVAR,   NVARH
@@ -80,20 +72,13 @@ C
 #include "infinp.h"
 #include "inftap.h"
 #include "infpri.h"
-C
-C ****** Comment edh: Extra include files: <pcmdef.h> <pcm.h> and <pcmlog.h> -not in SOLGRD. So for pe there might have to be some include files here!!!!  ******  
-C
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 C
-C ****** Comment edh: Extra variables defined compared to SOLGRD: DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-
       LOGICAL     FIRST, FNDLAB, EXP1VL, TOFILE, TRIMAT
       CHARACTER*8 STAR8, SOLVDI, EODATA, LABINT(9*MXCENT)
       SAVE        FIRST
       DATA        FIRST/.TRUE./, STAR8/'********'/
       DATA        SOLVDI/'SOLVDIAG'/, EODATA/'EODATA  '/
-C
-C ****** Comment edh: Extra variables defined compared to SOLGRD. LOGICALS: EXP1VL, TOFILE, TRIMAT and CHARACTER*8: LABINT(9*MXCENT) ******
 C
 C     Statement functions;
 C     define automatic arrays (dynamic core allocation)
@@ -145,8 +130,6 @@ C
       LWRK1  = LFREE  - KWRK1
       IF (LWRK1 .LT. 0) CALL ERRWRK('PCMGRD',-KWRK1,LFREE)
 C     
-C     ****** Comment edh: Here PCMGRD should be changed ******
-C
       IF (IPRPCM .GE. 130) THEN
          WRITE (LUPRI,'(/A/A,2I10)')
      *        ' >>> PCMGRD - gtot (input) - non-zero elements',
@@ -232,7 +215,7 @@ C
       CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDENV),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LW21)
       CALL DZERO(QSE,MXTS)
-      CALL V2Q(WRK(KWRK1),WRK(KPOT),QSE,QET,.FALSE.)  ! Transform electronic potential to electronic charges
+      CALL V2Q(WRK(KWRK1),WRK(KPOT),QSE,QET,.FALSE.)
 C      CALL DSCAL(NTS,-1.0D0,QSE,1)
 C     
 C     Read J1 (=ELECTROSTATIC POTENTIAL) in ao basis and transform to mo

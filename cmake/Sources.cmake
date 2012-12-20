@@ -490,6 +490,7 @@ pdpack/jacobi.F
 pdpack/linextra.F
 pdpack/linpack.F
 pdpack/printpkg.F
+peqm/pe_dalton_wrappers.F
 rsp/absorp.F
 rsp/abscomplex.F
 rsp/complexpp.F
@@ -600,7 +601,6 @@ sirius/sirpcmder.F
 sirius/sirpop.F
 sirius/sirqm3.F
 sirius/sirqmmm.F
-sirius/sirpe.F
 sirius/sirsav.F
 sirius/sirset.F
 sirius/sirsol.F

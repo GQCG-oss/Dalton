@@ -130,9 +130,6 @@ C
 
       IF (IPOLTP .GT. 0) LPOL = .TRUE.
 
-c      WRITE(LUPRI,*)' ***** IN QMMMLNC RESPONSE ******'
-c      WRITE(LUPRI,*) 'LPOL =' ,LPOL
-
       XSAVE = DIPORG(1)
       YSAVE = DIPORG(2)
       ZSAVE = DIPORG(3)
@@ -601,8 +598,6 @@ C
       END IF
 
 c     Exit if not MCSCF (with- or without pol.) or HF/DFT without polarization
-
-      WRITE(LUPRI,*) 'EDH: KZCONF QMMMLNO', KZKONF
 
       IF ((NNZAL .EQ. 0) .AND. (KZCONF .EQ. 0)) THEN ! edh: No pol. (and not MCSCF) and nothing to do here
         CALL QEXIT('QMMMLNO')                        ! edh: KZCONF *not* optimal for triplet response
