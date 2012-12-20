@@ -827,13 +827,11 @@ contains
       write(print_unit,*) ' Generalized active space: shell spaces and occupation constraints '
       write(print_unit,*) ' ******************************************************************'
 
-!     write(print_unit,'/(a,8i4,6x,a)') &
-!       '                 Irrep ',(i,i = 1,lucita_cfg_nr_ptg_irreps),'Min. occ    Max. occ '
       select case(lucita_cfg_nr_ptg_irreps)
       case(1)
         write(print_unit,'(/a,1i4,a)')      &
           '                 Irrep ',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
-        write(print_unit,'(a,2x,8a,16x,a)') &
+        write(print_unit,'(a,2x,9a      )') &
           '                 ===== ',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
         do igas = 1, ngas
           write(print_unit,'(a,i2,a,1i4,i13,9x,i3)') &
@@ -843,7 +841,7 @@ contains
       case(2)
         write(print_unit,'(/a,2i4,a)')      &
           '                 Irrep ',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
-        write(print_unit,'(a,2x,8a,16x,a)') &
+        write(print_unit,'(a,2x,9a      )') &
           '                 ===== ',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
         do igas = 1, ngas
           write(print_unit,'(a,i2,a,2i4,i13,9x,i3)') &
@@ -853,7 +851,7 @@ contains
       case(4)
         write(print_unit,'(/a,4i4,a)')      &
           '                 Irrep ',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
-        write(print_unit,'(a,2x,8a,16x,a)') &
+        write(print_unit,'(a,2x,9a      )') &
           '                 ===== ',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
         do igas = 1, ngas
           write(print_unit,'(a,i2,a,4i4,i13,9x,i3)') &
@@ -863,7 +861,7 @@ contains
       case(8)
         write(print_unit,'(/a,8i4,a)')      &
           '                 Irrep ',(i,i = 1,lucita_cfg_nr_ptg_irreps),    '        Min. occ    Max. occ '
-        write(print_unit,'(a,2x,8a,16x,a)') &
+        write(print_unit,'(a,2x,9a)') &
           '                 ===== ',('====',i = 1,lucita_cfg_nr_ptg_irreps), '      ========    ======== '
         do igas = 1, ngas
           write(print_unit,'(a,i2,a,8i4,i13,9x,i3)') &

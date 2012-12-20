@@ -1062,7 +1062,7 @@ C?    CALL MEMCHK
 *
       DO 200 ICI = 1, NCMBSPC
          WRITE(luwrt,*) ' CI space ', ICI
-         WRITE(luwrt,'(1p,4g20.10)') (XISPSM(II,ICI),II=1,NSMCI)
+         WRITE(luwrt,'(4f20.0)') (XISPSM(II,ICI),II=1,NSMCI)
 C        CALL WRTMT_LU(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
   200 CONTINUE
       if(NTEST.ge.1) then
