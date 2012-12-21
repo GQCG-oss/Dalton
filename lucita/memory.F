@@ -336,8 +336,8 @@
 
           WRITE(lupri,*) ' MEMMAN : work array too short '
           WRITE(lupri,*) ' current and required length ',NWORD,KFREEL-1
-          WRITE(lupri,*) ' Trying to allocate : identifer,offset, length'
-          WRITE(lupri,'(24X,a,2I15)')IDENT,KBASE,KADD
+          WRITE(lupri,*) ' Trying to allocate : identifer,offset,length'
+          WRITE(lupri,'(24X,a,2I15)') IDENT,KBASE,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
@@ -515,3 +515,4 @@ C           find local off-set to WORK for print
      & '*** error in MEMMAN: not enough memory available. ***')
 
       END
+! -- end of memory.F --
