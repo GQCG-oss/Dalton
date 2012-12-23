@@ -820,7 +820,7 @@ C
 #include "inforb.h"
 C
       LOGICAL NEWDEF, SET
-      PARAMETER ( NTABLE = 21 )
+      PARAMETER ( NTABLE = 23 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE TABLE, SET
@@ -831,7 +831,8 @@ C
      *            '.OPTORB', '.MAXPHP', '.PHPRES',
      *            '.MAXRM ', '.QRREST', '.PROPAV',
      *            '.HIRPA ', '.SOPW4 ', '.SOPPA(',
-     *            '.NODOIT', '.DFT-SO', '.PROP2A'/
+     *            '.NODOIT', '.DFT-SO', '.PROP2A',
+     *            '.TDA   ', '.CIS   '/
       DATA SET /.FALSE./
 C
       IF (.NOT.SET) THEN
@@ -858,7 +859,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
-     *                      11,12,13,14,15,16,17,18,19,20,21), I
+     *                      11,12,13,14,15,16,17,18,19,20,21,22,23), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -950,6 +951,12 @@ C              .PROP2Average
                   END IF
                   READ(LUCMD,'(A)')LBL2AV(1,N2AVTOT),LBL2AV(2,N2AVTOT)
                GO TO 100
+ 22            CONTINUE
+                  TDA = .TRUE.
+               GO TO 100
+ 23            CONTINUE
+                  CISRPA = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -964,6 +971,12 @@ C              .PROP2Average
          CALL HEADER('CHANGES OF DEFAULTS FOR RSPINP:',0)
          IF (INPTES) WRITE(LUPRI,'(///A//)')
      *      ' ************ INPUT TEST *************'
+         IF (TDA) WRITE(LUPRI,'(/A,L1)')
+     *      ' TAMM-DANCOFF APPROXIMATION (B = 0). TDA=',TDA
+         IF (DODFT .AND. CISRPA)
+     *      CALL QUIT('TDDFT CALC WITH .CIS KEYWORD - USE .TDA INSTEAD')
+         IF (CISRPA) WRITE(LUPRI,'(/A,L1)')
+     *      ' CI SINGLES CALCULATION (RPA/TDA (B = 0)). CIS=',CISRPA
          IF (HIRPA)  THEN
             WRITE(LUPRI,'(/A)')
      *   ' Higher RPA Polarization Propagator Approximation -- HRPA'
@@ -1096,6 +1109,8 @@ C     Initialization of RSPINP
       DATA X2TEST/.FALSE./
       DATA RSPECD/.FALSE./
       DATA RSPOCD/.FALSE./
+      DATA TDA/.FALSE./
+      DATA CISRPA/.FALSE./
 C     Initialization of INFRSP for both PPINP and LRINP
       DATA MAXITO/5/, ANTTES/.FALSE./, IPRRSP/2/
 C     INITIALIZING ELWEAK
@@ -1219,7 +1234,7 @@ C
 #include "mxcent.h"
 #include "pcmdef.h"
       LOGICAL NEWDEF, ISLINR
-      PARAMETER ( NTABLE = 53 )
+      PARAMETER ( NTABLE = 55 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
       INTEGER NUMBER_ORBS(8)
@@ -1254,7 +1269,7 @@ C
      *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC','.ECD   ',
      *            '.X2TEST', '.A2TEST', '.SINGLE', '.DOUBLE','.THCLR ',
      *            '.MAXITL', '.TRIPLE', '.NSIMUL', '.NSTART','.OECD  ',
-     *            '.ESA   ', '.CHANNE', '.VIRTUA'/
+     *            '.ESA   ', '.CHANNE', '.VIRTUA', '.TDA   ','.CIS   '/
       INTEGER IXARR(MAXLPP)
 C
 C READ IN  INPUT
@@ -1282,7 +1297,7 @@ C
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
      *                      28,29,30,31,32,33,34,35,36,37,38,39,
      *                      40,41,42,43,44,45,46,47,48,49,50,51,
-     *                      52,53), I
+     *                      52,53,54,55), I
                   END IF
                END DO
                IF (WORD .EQ. '.OPTION') THEN
@@ -1588,6 +1603,12 @@ C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
                CHANNEL_VCALC = .TRUE.
                READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
                GOTO 100
+ 54            CONTINUE
+               TDA = .TRUE.
+               GO TO 100
+ 55            CONTINUE
+               CISRPA = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1712,6 +1733,12 @@ C
      *      ,ABSYM
          IF (OLSEN) WRITE(LUPRI,'(/A,L1)')
      *      ' CI TRIAL VECTORS WITH OLSEN ALGORITHM. OLSEN=',OLSEN
+         IF (TDA) WRITE(LUPRI,'(/A,L1)')
+     *      ' TAMM-DANCOFF APPROXIMATION (B = 0). TDA=',TDA
+         IF (DODFT .AND. CISRPA)
+     *      CALL QUIT('TDDFT CALC WITH .CIS KEYWORD - USE .TDA INSTEAD')
+         IF (CISRPA) WRITE(LUPRI,'(/A,L1)')
+     *      ' CI SINGLES CALCULATION (RPA/TDA (B = 0)). CIS=',CISRPA
        IF (EXMOM) THEN
          IF (IPREXM.NE.2) WRITE(LUPRI,'(/A,I5)')
      *        '    PRINT LEVEL IN EXM ROUTINES. IPREXM =',IPREXM

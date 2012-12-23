@@ -52,7 +52,8 @@ gen1int_water_spher"
 SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
 energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
 energy_lucita_gasci"
-SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym dft_rspexci_sym dft_rspexci_nosym"
+SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym dft_rspexci_sym dft_rspexci_nosym \
+tddft_tda"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
 geoopt_constrain1b geoopt_delintsad geoopt_exci2 geoopt_numgrd \
 geoopt_preopt geoopt_prop geoopt_prop2 geoopt_redintmin geoopt_vrml"
@@ -69,7 +70,7 @@ rsp_soppa3excinosymm rsp_soppa3excisymm rsp_soppafcnosymm rsp_soppafcsymm \
 rsp_soppapolar rsp_soppapolarnosymm rsp_soppapolarsymm rsp_sreslrso \
 rsp_sresqr rsp_ctocdhyper prop_spinspin5 prop_nolondon_soppacc rsp_soppaccexci \
 rsp_soppaccpolar rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
-rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file"
+rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file tddft_tda rpa_cis"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
 SHORTREST="r12_sym dpt_h2s"
 LOCAL="spin_local"
@@ -139,7 +140,7 @@ dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
 dft_optimize_nosym dft_optimize_sym dft_lb94 dft_qr_sym dft_qr_nosym \
 dft_lda_molhes_nosym dft_b3lyp_molhes_nosym dft_b3lyp_magsus_nosym \
 dft_polar dft_cr_sym dft_open_lr dft_properties_sym dft_properties_nosym \
-dft_camb3lyp_magsus"
+dft_camb3lyp_magsus tddft_tda"
 #
 SRDFT="hfsrlda_sym mp2srlda_ener_nosym mcsrlda_sym mcsrpbe_sym \
 hfsrpbe_sym mp2srpbe_ener_nosym rsdhf_he2 cisrlda-sirius_n2 cisrpbe-lucita_be"
