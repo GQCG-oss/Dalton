@@ -1333,6 +1333,10 @@ C
       IF ( EMBEDDING ) THEN ! read EMY and Fock matrix from SIRFC
          WRITE (LUPRI,'(/A)')
      &   ' MP2 for embedded QM system, reading Fock matrix from SIRIFC'
+         WRITE (LUPRI,'(/A)')
+     &   ' NOTE: The present MP2 model is a PTE-like solvent MP2 model'
+         WRITE (LUPRI,'(/A)')
+     &   ' Please see JCC, 2012-2022, 33, (2012) for reference.'
          KCMO      = 1
          KCMO_diff = KCMO  + NCMOT
          KWRK      = KCMO_diff  + NCMOT
