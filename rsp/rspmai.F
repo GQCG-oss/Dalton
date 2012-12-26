@@ -1659,7 +1659,7 @@ C
                WRITE (LUPRI,*)
      *     'Full solvent model SOPPA not implemented.'
                WRITE (LUPRI,*)
-     *     'Only SOPPA/RPA (JCC, 2012-2022, 33, (2012))'
+     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
                WRITE (LUPRI,*)
      *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
                CALL QUIT(
