@@ -24,6 +24,12 @@ module parallel_communication_models
   implicit none
 #endif
 
+#if defined (VAR_INT64)
+#define my_MPI_INTEGER MPI_INTEGER8
+#else
+#define my_MPI_INTEGER MPI_INTEGER4
+#endif
+
   public communication_type
   public communication_init
   public communication_free
@@ -34,9 +40,16 @@ module parallel_communication_models
   type communication_type
 
     integer ::                   &
+      my_intra_node_id,          &             ! intra-node ID
+      my_inter_node_id,          &             ! inter-node ID
+      my_shmem_ijkl_id,          &             ! shared-memory-node ID
+      intra_node_size,           &             ! size of intra-node group
+      inter_node_size,           &             ! size of inter-node group
+      shmem_ijkl_size,           &             ! size of shared-memory group
+      intra_node_group_id,       &             ! intra-node group ID
       communication_intranode,   &             ! intra-node communication handle
       communication_internode,   &             ! inter-node communication handle
-      communication_sharedijkl,  &             ! shared-memory communication handle: integrals, fock matrices, density matrices, etc
+      communication_sharedijkl                 ! shared-memory communication handle: integrals, fock matrices, density matrices, etc
 
     logical ::                   &
       communication_type_init = .false.        ! status of the communication type
@@ -60,7 +73,7 @@ module parallel_communication_models
 contains 
 
 !*******************************************************************************
-  subroutine communication_init(A, nr_of_process_glb, my_process_id_glb, global_communicator)
+  subroutine communication_init(A, nr_of_process_glb, my_process_id_glb, communicator_glb)
 
 !   ----------------------------------------------------------------------------
 !                - provides: 
@@ -77,7 +90,7 @@ contains
 !   ----------------------------------------------------------------------------
     type(communication_type)   :: A
     integer, intent(in)        :: nr_of_process_glb
-    integer, intent(in)        :: global_communicator
+    integer, intent(in)        :: communicator_glb
     integer, intent(in)        :: my_process_id_glb
 !   ----------------------------------------------------------------------------
 !   ----------------------------------------------------------------------------
@@ -89,6 +102,13 @@ contains
     A%communication_intranode  = -1
     A%communication_internode  = -1
     A%communication_sharedijkl = -1
+    A%my_intra_node_id         = -1
+    A%my_inter_node_id         = -1
+    A%my_shmem_ijkl_id         = -1
+    A%intra_node_size          = -1
+    A%inter_node_size          = -1
+    A%shmem_ijkl_size          = -1
+    A%intra_node_group_id      = -1
 
     allocate(A%total_process_list(nr_of_process_glb))
     allocate(A%shared_mem_group_list(nr_of_process_glb))
@@ -104,7 +124,7 @@ contains
     call set_communication_groups(A%total_process_list,     &
                                   my_process_id_glb,        &
                                   nr_of_process_glb,        &
-                                  global_communicator)
+                                  communicator_glb)
 
 !   2. setup communicators and process-id for the various communication levels
 !      a. intra-node
@@ -116,16 +136,16 @@ contains
                                   nr_of_process_glb,                         &
                                   my_process_id_glb,                         &
                                   communicator_glb,                          &
-                                  my_intra_node_id,                          &
-                                  my_inter_node_id,                          &
-                                  my_shmem_ijkl_id,                          &
-                                  intra_node_size,                           &
-                                  inter_node_size,                           &
-                                  shmem_ijkl_size,                           &
-                                  intra_node_comm,                           &
-                                  inter_node_comm,                           &
-                                  shmem_ijkl_comm,                           &
-                                  intra_node_group_id)                      
+                                  A%my_intra_node_id,                        &
+                                  A%my_inter_node_id,                        &
+                                  A%my_shmem_ijkl_id,                        &
+                                  A%intra_node_size,                         &
+                                  A%inter_node_size,                         &
+                                  A%shmem_ijkl_size,                         &
+                                  A%communication_intranode,                 &
+                                  A%communication_internode,                 &
+                                  A%communication_sharedijkl,                &
+                                  A%intra_node_group_id)                      
 #endif
 
   end subroutine communication_init
@@ -158,6 +178,7 @@ contains
                                       my_process_id_glb,       &
                                       nr_of_process_glb,       &
                                       communicator_glb)
+
 !*******************************************************************************
      integer, intent(out)             :: process_list_glb(nr_of_process_glb)
      integer, intent(in )             :: nr_of_process_glb
@@ -263,17 +284,14 @@ contains
 !*******************************************************************************
 
   subroutine set_communication_levels(group_list,                              &
+                                      shared_mem_list,                         &
                                       process_list_glb,                        &
-                                      process_list_shared_mem_glb,             &
                                       nr_of_process_glb,                       &
                                       my_process_id_glb,                       &
                                       communicator_glb,                        &
                                       my_intra_node_id,                        &
                                       my_inter_node_id,                        &
                                       my_shmem_ijkl_id,                        &
-                                      my_shmem_cvec_id,                        &
-                                      intra_node_master,                       &
-                                      shmem_master_ijkl,                       &
                                       intra_node_size,                         &
                                       inter_node_size,                         &
                                       shmem_ijkl_size,                         &
@@ -292,15 +310,11 @@ contains
      integer, intent(in )   :: communicator_glb
      integer, intent(in )   :: my_process_id_glb
      integer, intent(in )   :: process_list_glb(nr_of_process_glb)
-     integer, intent(in )   :: process_list_shared_mem_glb(nr_of_process_glb)
-     integer, intent(in )   :: shared_memory_lvl_ijkl
-     integer, intent(in )   :: shared_memory_lvl_cvec
      integer, intent(out)   :: group_list(nr_of_process_glb)
+     integer, intent(out)   :: shared_mem_list(nr_of_process_glb)
      integer, intent(out)   :: my_intra_node_id
      integer, intent(out)   :: my_inter_node_id
      integer, intent(out)   :: my_shmem_ijkl_id
-     integer, intent(out)   :: my_shmem_cvec_id
-     integer, intent(out)   :: shmem_master_ijkl
      integer, intent(out)   :: intra_node_size
      integer, intent(out)   :: inter_node_size
      integer, intent(out)   :: shmem_ijkl_size
@@ -308,7 +322,6 @@ contains
      integer, intent(out)   :: inter_node_comm
      integer, intent(out)   :: shmem_ijkl_comm
      integer, intent(out)   :: intra_node_group_id
-     integer, intent(out)   :: intra_node_master
 !-------------------------------------------------------------------------------
      integer                :: key
      integer                :: color
@@ -321,12 +334,12 @@ contains
       key   = my_process_id_glb
       color = process_list_glb(my_process_id_glb+1)
 
-      call build_new_communicator_group(communicator_glb,        &
-                                        intra_node_comm,         &
-                                        intra_node_size,         &
-                                        my_intra_node_id,        &
-                                        color,                   &
-                                        key)
+      call build_new_communication_group(communicator_glb,        &
+                                         intra_node_comm,         &
+                                         intra_node_size,         &
+                                         my_intra_node_id,        &
+                                         color,                   &
+                                         key)
 
 !     setup required information about each intra-node group:
 !       - group id
@@ -346,35 +359,40 @@ contains
       color = 2
       if(my_intra_node_id /= 0) color = 3
  
-      call build_new_communicator_group(communicator_glb,        &
-                                        inter_node_comm,         &
-                                        inter_node_size,         &
-                                        my_inter_node_id,        &
-                                        color,                   &
-                                        key)
+      call build_new_communication_group(communicator_glb,        &
+                                         inter_node_comm,         &
+                                         inter_node_size,         &
+                                         my_inter_node_id,        &
+                                         color,                   &
+                                         key)
 !     c. shared memory communicator
 
       key   = my_process_id_glb
-      color = process_list_shared_mem_glb(my_process_id_glb+1)
-      if(shared_memory_lvl_ijkl == 1) color = 1
+      color = process_list_glb(my_process_id_glb+1)
  
-      call build_new_communicator_group(communicator_glb,        &
-                                        shmem_ijkl_comm,         &
-                                        shmem_ijkl_size,         &
-                                        my_shmem_ijkl_id,        &
-                                        color,                   &
-                                        key)
+      call build_new_communication_group(communicator_glb,        &
+                                         shmem_ijkl_comm,         &
+                                         shmem_ijkl_size,         &
+                                         my_shmem_ijkl_id,        &
+                                         color,                   &
+                                         key)
 
-!     set new sub-group master (might be master of all CPU's)
-      intra_node_master = 0
-      shmem_master_ijkl = 0
+!     setup required information about each shared-memory group:
+!       - group list
+      tmp_group_counter   = 1
+      do current_proc = 1, nr_of_process_glb
+        if(process_list_glb(current_proc) == color)then
+          shared_mem_list(tmp_group_counter) = current_proc      - 1
+          tmp_group_counter                  = tmp_group_counter + 1
+        end if
+      end do
 
   end subroutine set_communication_levels
 
 !*******************************************************************************
 
-  subroutine build_new_communication_group(old_communicator,      &
-                                           new_communicator,      &
+  subroutine build_new_communication_group(old_communication,     &
+                                           new_communication,     &
                                            group_size,            &
                                            my_id_group,           &
                                            color,                 &
