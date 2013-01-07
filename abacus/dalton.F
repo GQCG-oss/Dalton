@@ -32,6 +32,8 @@ C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
 C
+      use parallel_models
+C
 #include "implicit.h"
 #include "dummy.h"
 #include "mtags.h"
@@ -71,6 +73,8 @@ C Start MPI, if parallel, in MPIXINIT; define MYNUM, MASTER, NODTOT
 C If not MPI, MPIXINIT defines: MYNUM  = 0; MASTER = 0; NODTOT = 0
 C
       CALL MPIXINIT
+
+      call parallel_models_initialize()
 
       CALL QENTER('DALTON main')
       PARIO = .FALSE.
@@ -548,6 +552,8 @@ C...  added by Bin Gao, May 13, 2012
 C...  terminates Gen1Int interface
       call gen1int_host_finalize()
 #endif
+
+      call parallel_models_finalize()
 
       CALL MPIXFINALIZE
 C
