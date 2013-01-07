@@ -20,6 +20,9 @@
 
 module parallel_models
 
+  use parallel_communication_models
+! use parallel_file_io_models
+
   implicit none
 
   public parallel_models_initialize
@@ -44,10 +47,21 @@ contains
 !             arrays)
 !
 !*******************************************************************************
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+  use mpi
+#else
+#include "mpif.h"
+#endif
+#else
+      integer :: mpi_comm_world = -1
+#endif
 #include "maxorb.h"
 #include "infpar.h"
-!*******************************************************************************
 !-------------------------------------------------------------------------------
+
+!     initialize parallel communication models
+      call communication_init(communication_info, mynum, nodtot+1, mpi_comm_world)
 
   end subroutine parallel_models_initialize
 !*******************************************************************************
@@ -60,10 +74,10 @@ contains
 !             arrays)
 !
 !*******************************************************************************
-#include "maxorb.h"
-#include "infpar.h"
-!*******************************************************************************
 !-------------------------------------------------------------------------------
+
+!     finalize parallel communication models
+      call communication_free(communication_info)
 
   end subroutine parallel_models_finalize
 !*******************************************************************************
