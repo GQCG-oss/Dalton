@@ -228,6 +228,8 @@ C       and then performing a send each time rather than transferring
 C       all matrices in one batch.
 C
 C
+!       module dependencies
+        use parallel_communication_models
 C
 #include "implicit.h"
 #include "maxorb.h"
