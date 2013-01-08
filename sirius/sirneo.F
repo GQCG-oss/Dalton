@@ -692,6 +692,7 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
       DIMENSION CREF(*), CMO(*), DV(*), PV(*), FC(*), FV(*)
       DIMENSION G(*), EVAL(*), EVEC(NREDL,*), IBNDX(*), WRK(*)
@@ -728,13 +729,7 @@ C
 #include "infdim.h"
 #include "inftap.h"
 #include "infpri.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 #include "gnrinf.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 C
 C     local variables:
 C
@@ -769,7 +764,7 @@ C     ... symmetrize CI vector
 C----------------------
 C CBN+JK 03.01.06
 C----------------------
-      IF (SOLVNT .OR. PCM .OR. QM3) DOPHP = .FALSE.
+      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) DOPHP = .FALSE.
 C-----------------------
 C CBN+JK 03.01.06
 C----------------------

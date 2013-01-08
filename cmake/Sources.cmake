@@ -490,6 +490,7 @@ pdpack/jacobi.F
 pdpack/linextra.F
 pdpack/linpack.F
 pdpack/printpkg.F
+peqm/pe_dalton_wrappers.F
 rsp/absorp.F
 rsp/abscomplex.F
 rsp/complexpp.F

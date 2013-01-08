@@ -33,7 +33,7 @@ module polarizable_embedding
     logical, save :: pe_nored = .false.
     logical, save :: pe_border = .false.
     logical, save :: pe_damp = .false.
-    logical, save :: pe_gspol = .false.
+    logical, public, save :: pe_gspol = .false.
     logical, save :: pe_nomb = .false.
     logical, save :: pe_gauss = .false.
     logical, public, save :: pe_polar = .false.

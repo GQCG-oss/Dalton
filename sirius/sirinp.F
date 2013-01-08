@@ -2312,7 +2312,7 @@ C *** Option 6 >HARTRE<  Restricted Hartree-Fock SCF
 C           ... DOSCF may also be set with .CC
             DOSCF    = .TRUE.
             FLAG(21) = .TRUE.
-            if (peqm) flag(21) = .false.
+!            if (peqm) flag(21) = .false.
 C           ... flag for QCSCF -- quadratically convergent HF or DFT
             NUMRUN = NUMRUN + 1
          END IF
@@ -2426,7 +2426,7 @@ C           ... DOSCF may also be set with .CC
          DODFT    = .TRUE.
          DOSCF    = .TRUE.
          FLAG(21) = .TRUE.
-         if (peqm) flag(21) = .false.
+!         if (peqm) flag(21) = .false.
 C        ... flag for QCSCF -- quadratically convergent HF or DFT
 
 c     dodft should be enough but it is sometimes necessary to have also dftrun set.

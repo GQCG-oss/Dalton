@@ -4285,6 +4285,22 @@ C
         ENDDO
       END IF
 C
+      
+c      WRITE(LUPRI,*) 'NCONRF............................ =' , NCONRF
+c      WRITE(LUPRI,*) 'Configuration variables (KZCONF).. =' , KZCONF
+c      WRITE(LUPRI,*) '# of configurations (NCONF)....... =' , NCONF
+c      write(lupri,*) 'QMMM', QMMM 
+      IF ((NCONRF .GT. 1) .AND. QMMM) THEN     ! edh: Find MCSCF specific variable Note that NCONRF = 1 for HF calc. => NOT APPROPRIATE!! 
+c         write(lupri,*) 'Do correction to Fock matrix from PE'
+c         WRITE(LUPRI,*) 'KZCONF > 0 Found: Expects QMMM MCSCF'
+c         WRITE(LUPRI,*) 'Going to PCM-like implementation'
+         CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI) 
+         CALL READT (LUSIFC,NNORBT,WRK)
+         DO I = 1,NNORBT
+             FC(I) = FC(I) - WRK(I)
+         ENDDO
+      END IF
+
       IF (QM3) THEN
         IF (OLDTG .OR. (.NOT. LOSPC)) THEN
           CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)

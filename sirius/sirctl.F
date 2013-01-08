@@ -342,8 +342,12 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-            IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
-     &         ' and QC-SCF is not implemented for QMMM')
+            IF (QMMM) THEN
+              WRITE (LUPRI,*)
+              WRITE (LUPRI,*) 'WARNING: entering QC-QMMM solver'
+              CALL FLSHFO(LUPRI)
+              WRITE (LUPRI,*)
+            ENDIF 
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)
             FLAG(15) = RHFCAN

@@ -55,6 +55,7 @@ C         .gt.0  MCSCF converged.
 C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
+      use polarizable_embedding, only: peqm
 #ifdef VAR_MPI
       use par_mcci_io
 #endif
@@ -519,6 +520,12 @@ C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
       ELSEIF (PCM) THEN
          CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      %               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
+      ELSEIF (QMMM) THEN
+         CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
+     &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
+      else if (peqm) then
+         call pe_grad(wrk(kcref), wrk(kcmo), wrk(kcindx), wrk(kdv),
+     &                wrk(kgtot), esolt, wrk(kwrkg), lwrkg)
       ELSE
          ESOLT = D0
       END IF
@@ -581,10 +588,14 @@ chj   END IF
       IF (SOLVNT) WRITE (LUW4,1016) ESOLT
       IF (PCM)    WRITE (LUW4,1019) ESOLT
       IF (QM3)    WRITE (LUW4,1017) EQM3
+      IF (QMMM)   WRITE (LUW4,1017) ESOLT
+      if (peqm)   write (luw4,1021) esolt
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
          IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
          IF (QM3) WRITE (LUPRI,1017) EQM3
+         IF (QMMM) WRITE (LUPRI,1017) ESOLT
+         if (peqm) write(lupri,1021) esolt
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
@@ -598,6 +609,7 @@ chj   END IF
      *       /' - Active energy          :',F30.15)
  1016 FORMAT( ' - Dielec. solvation ener.:',F30.15)
  1017 FORMAT( ' - QM/MM solvation energy :',F30.15)
+ 1021 format( ' - PE energy              :',f30.15)
  1018 FORMAT( ' - srDFT effective energy :',F30.15)
  1019 FORMAT( ' - PCM solvation energy   :',F30.15)
  1020 FORMAT(/' Norm of total gradient   :',F27.12,
@@ -723,6 +735,14 @@ C                    need higher int. transf. level for NEO/NR
                      CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KWRKG),LWRKG)
+                  ELSEIF (QMMM) THEN
+                     CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
+     *                  WRK(KDV),WRK(KGTOT),ESOLT,
+     *                  WRK(KWRKG),LWRKG)
+                  else if (peqm) then
+                    call pe_grad(wrk(kcref), wrk(kcmo), wrk(kcindx),
+     &                           wrk(kdv), wrk(kgtot), esolt,
+     &                           wrk(kwrkg), lwrkg)
                   END IF
 #endif
                ELSE
@@ -1079,6 +1099,20 @@ C------------------
          CALL QM3FCKMO(WRK(KCMO),WRK(KFCSOL),WRK(KWRKG),
      &                 LWRKG,IPRSOL)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
+      ELSE IF (QMMM) THEN
+         KFCSOL = KWRKG
+         KWRKG  = KFCSOL + NNORBT
+         LWRKG  = LFREE  - (KWRKG-1)
+         CALL PEFCMO(WRK(KCMO),WRK(KFCSOL),WRK(KDV),
+     &               WRK(KWRKG),LWRKG,IPRINT)     ! NB: only works without symmetry
+         CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
+      else if (peqm) then
+        kfcsol = kwrkg
+        kwrkg = kfcsol + nnorbx
+        lwrkg = lfree - (kwrkg - 1)
+        call pe_fckmo(wrk(kcmo), wrk(kfcsol), wrk(kwrkg), wrk(kdv),
+     &                wrk(kwrkg+1), lwrkg)
+        call daxpy(nnorbx, 1.0d0, wrk(kfc), 1, wrk(kfcsol), 1)
       ELSE
          KFCSOL = KFC
       END IF
@@ -1089,11 +1123,19 @@ C        then remember to add FCSOL and FV to FD for RHFENR call
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (SOLVNT .OR. QM3)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
+         if (peqm) then
+            write(luw4,'(a)')
+     &   '    (incl. contribution from polarizable embedding potential)'
+         end if
          CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (SOLVNT .OR. QM3)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
+         if (peqm) then
+            write(luw4,'(a)') 
+     &   '    (incl. contribution from polarizable embedding potential)'
+         end if
             CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          END IF
 C        CALL RHFENR(IPRINT,LUPRI,FD,SCRA,LSCRA)
@@ -2469,6 +2511,7 @@ C    *) NSYM, NORBT, ...
 C    *) FCDIA, ISMO
 C    *) CMO
 C
+      use polarizable_embedding, only: peqm
 #include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
       DIMENSION ERLM(NLMSOL,2),GORB(*),CREF(*),FCAC(*),H2AC(*),WRK(*)
@@ -2507,6 +2550,7 @@ C
 #include "cbgetdis.h"
 #include "cbirea.h"
 #include "r12int.h"
+#include "qmmm.h"
 C----------------
 C CBN+JK 03.01.06 gnrinf.h included
 #include "gnrinf.h"
@@ -2514,12 +2558,12 @@ C----------------
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
-      CHARACTER*8 LAB123(3), TABLE(10), LABEOD, LABCC, LABABA
+      CHARACTER*8 LAB123(3), TABLE(11), LABEOD, LABCC, LABABA
       CHARACTER*8 LABAUX, LABUNI
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
-     *            'PCMINFO ','PCMJXMAT'/
+     *            'PCMINFO ','PCMJXMAT','PETMAT  '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
@@ -2789,9 +2833,7 @@ Ckr
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
-C--------------
-C CBN+JK, 03.01.06
-C-------------------
+
 C Write qm3 solvent part of the Fock matrix to interface file
 
       IF (QM3) THEN
@@ -2808,9 +2850,60 @@ C Write qm3 solvent part of the Fock matrix to interface file
          WRITE (LUSIFC) LAB123,TABLE(7)
          CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
       END IF
-C--------------
-C CBN+JK, 03.01.06
-C-------------------
+
+C ****** edh: 24/11/2011 ******
+
+C Write qm/mm solvent part of the Fock matrix to interface file
+
+       IF (QMMM) THEN  
+
+         IF (IPQMMM .GE. 15) THEN 
+          WRITE(LUPRI,*) 'WRITING PE FOCK MAT. TO SIRIUS INTERFACE FILE'
+         ENDIF
+
+         KDCAO  = KWRK1
+         KDVAO  = KDCAO  + N2BASX
+         KDENSF = KDVAO  + N2BASX
+         KMAT   = KDENSF + NNBASX
+         KUCMO  = KMAT   + NNBASX  
+         KMATMO = KUCMO  + NORBT*NBAST
+         KMATMO = KMAT   + NNBASX
+         KWRK2  = KMATMO + NNORBT
+         LWRK2  = LFREE  - KWRK2 + 1
+
+         IF (LWRK2 .LT. 0) CALL ERRWRK('WR_SIRIFC-QMMM',-KWRK2,LFREE)
+
+         CALL DZERO(WRK(KDCAO),N2BASX)
+         CALL DZERO(WRK(KDVAO),N2BASX)
+         CALL DZERO(WRK(KDENSF),NNBASX)
+         CALL DZERO(WRK(KMAT),NNBASX)
+         CALL DZERO(WRK(KUCMO),NORBT*NBAST)
+         CALL DZERO(WRK(KMATMO),NNORBT)
+
+         CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDCAO),WRK(KDVAO),
+     &              CMO,DV,WRK(KWRK2),LWRK2)
+         IF (NASHT .GT. 0) THEN
+           CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)  
+         ENDIF
+
+         CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDENSF))            
+
+         CALL QMMM_FCK_AO(WRK(KMAT),WRK(KDENSF),EQMMM,WRK(KWRK2),LWRK2, 
+     &                       IPQMMM)          
+         CALL UPKCMO(CMO,WRK(KUCMO))
+         CALL UTHU(WRK(KMAT),WRK(KMATMO),WRK(KUCMO),WRK(KWRK2),
+     &               NBAST,NORBT)
+
+         IF (IPQMMM .GE. 15) THEN
+           WRITE (LUPRI,'(/A)') ' PE_ao matrix from WR_SIRIFC:'
+           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+           WRITE (LUPRI,'(/A)') ' PE_mo matrix from WR_SIRIFC'
+           CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
+         ENDIF
+
+         WRITE (LUSIFC) LAB123,TABLE(11)
+         CALL WRITT (LUSIFC,MMORBT,WRK(KMATMO))
+      END IF
 C
 C     Revision 2000/05/24 12:43:25  hjj
 C     Write CREF in determinants here, if NCDETS .gt. NCONF

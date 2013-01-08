@@ -1363,7 +1363,7 @@ C
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          if (peqm) write(luw4,'(a)')
-     &    '   (incl. contribution from Polarizable Embedding potential)'
+     &    '   (incl. contribution from polarizable embedding potential)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
@@ -1371,7 +1371,7 @@ C-------------------
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             if (peqm) write(lupri,'(A)')
-     &    '   (incl. contribution from Polarizable Embedding potential)'
+     &    '   (incl. contribution from polarizable embedding potential)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
 C-------------------
