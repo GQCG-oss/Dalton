@@ -29,6 +29,9 @@ module parallel_models
   public parallel_models_finalize
   public check_parallel_models
 
+#include "maxorb.h"
+#include "infpar.h"
+
   private
 
   save
@@ -56,8 +59,6 @@ contains
 #else
       integer :: mpi_comm_world = -1
 #endif
-#include "maxorb.h"
-#include "infpar.h"
 !-------------------------------------------------------------------------------
 
 !     initialize parallel communication models
@@ -96,8 +97,6 @@ contains
   use parallel_setup
   use parallel_task_distribution_type_module
 #endif
-#include "maxorb.h"
-#include "infpar.h"
 #include "priunit.h"
 !*******************************************************************************
     logical :: file_open
