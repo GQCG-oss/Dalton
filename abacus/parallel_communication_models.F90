@@ -73,7 +73,7 @@ module parallel_communication_models
 contains 
 
 !*******************************************************************************
-  subroutine communication_init(A, nr_of_process_glb, my_process_id_glb, communicator_glb)
+  subroutine communication_init(A, my_process_id_glb, nr_of_process_glb, communicator_glb)
 
 !   ----------------------------------------------------------------------------
 !                - provides: 
@@ -275,9 +275,15 @@ contains
 
 !     master reports the count of intra-groups formed by all processes
       if(my_process_id_glb == 0)then
-        write(*,'(/a,i4,1x,a)')                                             &
-        '  *** final output from the group generator:',                     &
-        local_counter_file_groups,' intra-node group(s) (is) are built. ***'
+        write(*,'(/a)')                                                     &
+        ' output from the communication group generator:'
+        if(local_counter_file_groups == 1)then
+          write(*,'(i4,a/)')                                                &
+          local_counter_file_groups,' intra-node group has been built.'
+        else
+          write(*,'(i4,a/)')                                                &
+          local_counter_file_groups,' intra-node groups have been built.'
+        end if
       end if
 
   end subroutine set_communication_groups

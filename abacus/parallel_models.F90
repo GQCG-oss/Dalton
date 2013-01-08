@@ -61,6 +61,7 @@ contains
 !-------------------------------------------------------------------------------
 
 !     initialize parallel communication models
+      print *, 'mynum, nodtot',mynum, nodtot, mpi_comm_world
       call communication_init(communication_info, mynum, nodtot+1, mpi_comm_world)
 
   end subroutine parallel_models_initialize
