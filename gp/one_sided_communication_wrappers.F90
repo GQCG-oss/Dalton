@@ -8,6 +8,10 @@
 ! re-written by sknecht for Dalton - linkoeping jan 2013
 ! original collection in Dirac - sknecht October 2007
 !
+!
+! ideas for window hints: window for get operations in hermit: no_locks == .true.
+!
+!
 module one_sided_communication_wrappers
 
 #ifdef VAR_MPI
@@ -40,6 +44,7 @@ contains
                      jcount_t,      &
                      myid,          &
                      win_lock_mode, &
+                     lock_active,   &
                      my_win)
 !*******************************************************************************
 !
@@ -60,6 +65,7 @@ contains
   integer, intent(in)                        :: itarget
   integer, intent(in)                        :: win_lock_mode
   integer, intent(in)                        :: my_win
+  logical, intent(in)                        :: lock_active
   integer(kind=MPI_ADDRESS_KIND), intent(in) :: idispl
 !-------------------------------------------------------------------------------
   integer                                    :: datatype_out = mpi_real8
@@ -67,13 +73,13 @@ contains
 !-------------------------------------------------------------------------------
 !
 !     lock window (MPI_LOCK_SHARED mode)
-      call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
+      if(.not.lock_active) call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
 !
 !     transfer data     
       call mpi_get(rbuf,jcount,datatype_out,itarget,idispl,jcount_t,datatype_in,my_win,ierr)
 !
 !     unlock
-      call mpi_win_unlock(itarget,my_win,ierr)
+      if(.not.lock_active) call mpi_win_unlock(itarget,my_win,ierr)
 !
   end subroutine mpixget
 !*******************************************************************************
@@ -161,6 +167,8 @@ contains
 !-------------------------------------------------------------------------------
   integer(kind=MPI_ADDRESS_KIND)             :: buf_len
   integer                                    :: size_dp_local
+  integer                                    :: memory_model
+  logical                                    :: flag
 !-------------------------------------------------------------------------------
 !
 !     open memory window on each process shared by IWIN_COMM
@@ -174,8 +182,10 @@ contains
       size_dp_local = size_dp
 !
       call mpi_win_create(rbuf,buf_len,size_dp_local,win_info,win_communicator,my_win,ierr)
+!mpi-3call mpi_win_get_attr(my_win, mpi_win_model, memory_model, flag, ierr)
 !
-!     write(lupri,*) ' window opened: my_win', myid
+      write(lupri,*) ' window opened: my_win', myid
+!mpi-3write(lupri,*) ' window memory model:', memory_model
 !
   end  subroutine mpixwincreate
 !*******************************************************************************

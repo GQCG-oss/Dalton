@@ -133,7 +133,13 @@ C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LWORK
-      CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
+
+      if(.not.rma_model)then
+        CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
+      else
+        CALL MEMGET('REAL',KTMPMT,     0,WORK,KFREE,LFREE)     
+      end if
+
       CALL MEMGET('INTE',KINDEX,3*NINDEX,WORK,KFREE,LFREE)     
       CALL MEMGET('REAL',KTIMES,MTOTTK,WORK,KFREE,LFREE)     
       CALL MEMGET('REAL',KTKCPU,MTOTTK,WORK,KFREE,LFREE)     
@@ -253,7 +259,7 @@ C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
       LOGICAL   FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
-     &          NSTAT(NODTOT), TMPMAT(NTMPMT), INDEX(3,NINDEX),
+     &          NSTAT(NODTOT), TMPMAT(*), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
      &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*)
 CTROND
@@ -301,10 +307,17 @@ C
 C 10.mai         INITX = .TRUE.
       END IF
 Cef end
+C
+!-------------------------------------------------------------------------------
+!     initialize memory windows for rma access within a given shared-memory node
+!-------------------------------------------------------------------------------
+      if(rma_model)then
+!       call set_rma_windows
+      end if
+
 C-----------------------
 C     Start calculation.
 C-----------------------
-C
       CALL DOPAR(INDEX,MTOTTK,NBATCH,NSTAT,IPRINT)
 C
 C--------------------------------------
@@ -441,8 +454,21 @@ C  /* Deck her_sdinit */
      &                      IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,
      &                      FIRST,IPRINT,
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO)
-C
+
+!     module dependencies
+      use parallel_communication_models
+
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+      use mpi
 #include "implicit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#endif
+
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -607,10 +633,21 @@ C  /parint/
       CALL MPIXBCAST(JATOM,NINTI,'INTEGER',MASTER)
       CALL MPIXBCAST(JNODV,NINTL,'LOGICAL',MASTER)
 C
-      CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(DMAT,N2BASX*NDMAT,'DOUBLE',MASTER)
+!     update info about type of fock-matrix construction
       CALL MPIXBCAST(ISYMDM,NFMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NFMAT,'INTEGER',MASTER)
+!     distribute density matrices - that can be huge chunks...
+      CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
+      if(rma_model)then
+!       distribute density matrix(ces) among node masters
+#ifdef VAR_MPI
+        call mpi_bcast(dmat,n2basx*ndmat,mpi_real8,master,
+     &                 communication_info%communication_internode,
+     &                 ierr)
+#endif
+      else
+        CALL MPIXBCAST(DMAT,N2BASX*NDMAT,'DOUBLE',MASTER)
+      end if
 C
       IF(ITYPE.EQ.3) THEN
         N2RED = NSYMBL*NSYMBL
@@ -906,6 +943,9 @@ C    *    This is the node program for the construction of fock-     *
 C    *   matrices, derivated fock-matrices and expectation values.   *
 C    *****************************************************************
 C
+!     module dependencies
+      use parallel_communication_models
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -971,7 +1011,13 @@ C
 C     Initialize matrices
 C     ===================
 C
-      CALL DZERO(WORK(KFMAT),NFMAT*N2BASX)
+      if(rma_model)then
+        if(communication_info%my_shmem_ijkl_id == 0)then
+          call dzero(work(kfmat),nfmat*n2basx)
+        end if
+      else
+        CALL DZERO(WORK(KFMAT),NFMAT*N2BASX)
+      end if
 C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,MXCOOR)
@@ -979,6 +1025,11 @@ C
       ELSE IF (ITYPE .EQ. -5) THEN
          CALL DZERO(SUS2EL,9)
       END IF
+
+!     initialize memory windows for rma access within a given shared-memory node
+      if(rma_model)then
+!       call set_rma_windows
+      end if
 C
 C     ***********************************
 C     ***** Calculate the integrals *****
@@ -1020,7 +1071,20 @@ C  /* Deck her_rvinit */
      &     JORBSH,KORBSH,IPRINT,I2TYP,ICEDIF,IFTHRS,
      &     N2RED,KDMAT,KFMAT,KHESEE,KDMRAO,KGABAO,KDMRSO)
 C
+
+!     module dependencies
+      use parallel_communication_models
+
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+      use mpi
 #include "implicit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#endif
+
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1283,14 +1347,45 @@ C     Set common block BLOCKS
 C
       CALL PAOVEC(JSTRSH,NPRIMS,NCONTS,IORBSH,JORBSH,KORBSH,0,.FALSE.,0)
 C
-#if defined (VAR_MPI)
-      CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
-      CALL MEMGET('REAL',KDMAT,NDMAT*N2BASX,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KFMAT,NFMAT*N2BASX,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
-      CALL MPIXBCAST(WORK(KDMAT),NDMAT*N2BASX,'DOUBLE',MASTER)
+#ifdef VAR_MPI
+
+!     update info about type of fock-matrix construction
       CALL MPIXBCAST(ISYMDM,NFMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NFMAT,'INTEGER',MASTER)
+
+!     receive density matrices - that can be huge chunks...
+      CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
+      if(rma_model)then
+
+        if(communication_info%my_shmem_ijkl_id == 0)then
+!         allocation of density matrix(ces)
+          call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
+!         distribute density matrix(ces) among node masters
+          call mpi_bcast(work(kdmat),n2basx*ndmat,mpi_real8,master,
+     &                   communication_info%communication_internode,
+     &                   ierr)
+        else
+!         allocation of density matrix(ces)
+          call memget('REAL',kdmat,           0,work,kfree,lfree)
+        end if
+
+      else
+        call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
+        call mpixbcast(work(kdmat),n2basx*ndmat,'double',master)
+      end if
+
+!     allocation of fock matrix(ces)
+      if(rma_model)then
+        if(communication_info%my_shmem_ijkl_id == 0)then
+          call memget('REAL',kfmat,nfmat*n2basx,work,kfree,lfree)
+        else
+          call memget('REAL',kfmat,           0,work,kfree,lfree)
+        end if
+      else
+        call memget('REAL',kfmat,nfmat*n2basx,work,kfree,lfree)
+      end if
+
+      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
       IF(ITYPE.EQ.3) THEN
         CALL MPIXBCAST(N2RED,1,'INTEGER',MASTER)
         CALL MEMGET('REAL',KDMRAO,NDMAT*N2RED,WORK,KFREE,LFREE)     
@@ -1986,12 +2081,13 @@ C  /* Deck prlinp */
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
-      PARAMETER (NTABLE = 5)
+      PARAMETER (NTABLE = 6)
       LOGICAL FIRST, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "infpar.h"
       SAVE FIRST
-      DATA TABLE /'.NODES ', '.DEGREE', '.PRINT ', '.ENCODE', '.DEBUG '/
+      DATA TABLE /'.NODES ','.DEGREE','.PRINT ','.ENCODE','.DEBUG ',
+     &            '.RMA-MD'/
       DATA FIRST /.TRUE./
 C
 C-------------------------
@@ -2022,6 +2118,7 @@ C     ... this is the master in a parallel run
       NODTOT = 0
       NCODE  = PVMDATADEFAULT
 #endif
+      rma_model  = .false.
 C
       NEWDEF = (WORD .EQ. '*PARALL')
       ICHANG = 0
@@ -2037,7 +2134,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5), I
+                     GO TO (1,2,3,4,5,6), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -2086,6 +2183,9 @@ C
                GO TO 100
     5          CONTINUE
                   DEBUG = .TRUE.
+               GO TO 100
+    6          CONTINUE
+                  rma_model = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
