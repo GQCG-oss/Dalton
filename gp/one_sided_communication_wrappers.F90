@@ -53,7 +53,7 @@ contains
 !                       accessed at displacement idispl with jcount_t 
 !                       elements.
 !*******************************************************************************
-  real(8), intent(inout)                     :: rbuf
+  real(8), intent(inout)                     :: rbuf(*)
   integer, intent(in)                        :: jcount
   integer, intent(in)                        :: jcount_t
   integer, intent(in)                        :: myid
@@ -99,7 +99,7 @@ contains
 !     allowed OPERATION: mpi_sum
 !
 !*******************************************************************************
-  real(8), intent(in)                        :: rbuf
+  real(8), intent(in)                        :: rbuf(*)
   integer, intent(in)                        :: jcount
   integer, intent(in)                        :: jcount_t
   integer, intent(in)                        :: myid
@@ -152,7 +152,7 @@ contains
 !
 !
 !*******************************************************************************
-  real(8), intent(inout)                     :: rbuf
+  real(8), intent(inout)                     :: rbuf(*)
   integer, intent(in)                        :: myid
   integer, intent(in)                        :: win_communicator
   integer, intent(in)                        :: win_info
@@ -173,7 +173,7 @@ contains
       buf_len       = size_dp * nelement
       size_dp_local = size_dp
 !
-      call mpi_win_create(rbuf,buf_len,isize_dp_local,win_info,win_communicator,my_win,ierr)
+      call mpi_win_create(rbuf,buf_len,size_dp_local,win_info,win_communicator,my_win,ierr)
 !
 !     write(lupri,*) ' window opened: my_win', myid
 !

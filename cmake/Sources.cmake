@@ -736,6 +736,7 @@ peqm/pe_lapack_wrappers.F90
 peqm/polarizable_embedding.F90
 abacus/parallel_models.F90
 abacus/parallel_communication_models.F90
+gp/one_sided_communication_wrappers.F90
     )
 set(OWN_BLAS_SOURCES
     pdpack/gp_dblas1.F
