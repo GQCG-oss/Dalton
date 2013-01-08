@@ -331,11 +331,19 @@ C-----------------------------------------
 C     Sort the integral-calculation times.
 C-----------------------------------------
 C
-      IF (TIMING) CALL PARSRT(MTOTTK,NPOS,TMPMAT,TIMES,IPRINT)
-C
-C     NB! Array TMPMAT is only used as
-C         workspace for array SORTED.
-C
+      if(.not.rma_model)then ! check stupid tmpmat access otherwise
+C       NB! Array TMPMAT is only used as
+C           workspace for array SORTED.
+        IF (TIMING) CALL PARSRT(MTOTTK,NPOS,TMPMAT,TIMES,IPRINT)
+      end if
+
+!------------------------
+!     free memory windows
+!------------------------
+      if(rma_model)then
+!       call free_rma_windows
+      end if
+
       IF (FIRST)  FIRST  = .FALSE.
       IF (NEWGEO) NEWGEO = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
@@ -1053,6 +1061,14 @@ C
      &     WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &     ICEDIF,IFTHRS,WORK(KGABAO),WORK(KDMRAO),
      &     WORK(KDMRSO),DINTSKP,RELCAL)
+
+!------------------------
+!     free memory windows
+!------------------------
+      if(rma_model)then
+!       call free_rma_windows
+      end if
+
       CALL MEMREL('HER_NODSTR',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     Send overall timings if requested.
