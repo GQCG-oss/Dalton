@@ -29,6 +29,7 @@ module one_sided_communication_wrappers
   public mpixwincreate
   public mpixwinfree
 
+  private
 #include "priunit.h"
   integer                        :: ierr
   integer(kind=MPI_ADDRESS_KIND) :: lower_bound

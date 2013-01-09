@@ -137,7 +137,11 @@ C
       if(.not.rma_model)then
         CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
       else
-        CALL MEMGET('REAL',KTMPMT,     0,WORK,KFREE,LFREE)     
+        if(itype == 2)then ! expectation values
+          CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
+        else ! fock matrices in some way
+          CALL MEMGET('REAL',KTMPMT,     0,WORK,KFREE,LFREE)     
+        end if
       end if
 
       CALL MEMGET('INTE',KINDEX,3*NINDEX,WORK,KFREE,LFREE)     
@@ -1455,6 +1459,9 @@ Cef begin
      &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
 C     
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
+
+!     module dependencies
+      use parallel_communication_models
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1487,9 +1494,6 @@ C
 #include "inftap.h"
 #include "inforb.h"
 #include "incore.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 C
 C For MPE event logging
 C      evIDb2 = MPE_Log_get_event_number()
@@ -1955,9 +1959,10 @@ C
          END IF
       END IF
 C
-C     Print Fock matrices
+C     Print Fock matrices (only node masters)
 C
-      IF (DIRFCK .AND. JPRINT.GT.5) THEN
+      IF(DIRFCK .AND. JPRINT.GT.5.and.
+     &  communication_info%my_shmem_ijkl_id == 0)THEN
          CALL HEADER('Fock matrix in PARLOP',-1)
          DO 600 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
