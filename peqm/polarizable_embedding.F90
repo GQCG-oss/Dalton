@@ -1472,7 +1472,7 @@ subroutine pe_fock(denmats, fckmats, energies)
     logical :: es = .false.
     logical :: pol = .false.
 
-    if ((mulorder >= 0) .or. pe_fd .and. .not. response) es = .true.
+    if (((mulorder >= 0) .or. pe_fd) .and. .not. response) es = .true.
     if (pe_polar) pol = .true.
 
     if (fock .or. response) fckmats = 0.0d0
@@ -3498,14 +3498,19 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
 
     work => dalwrk
 
+    site_start = 1
+    site_finish = nsites
+    surp_start = 1
+    surp_finish = nsurp
+
     ndens = 1
     nnbas = nbas * (nbas + 1) / 2
 
     ! fragment density nuclear charges and coordinates
-    qmnucs = size(charges)
-    allocate(Rm(3,qmnucs), Zm(1,qmnucs))
-    Rm = coords
-    Zm(1,:) = charges
+!    qmnucs = size(charges)
+!    allocate(Rm(3,qmnucs), Zm(1,qmnucs))
+!    Rm = coords
+!    Zm(1,:) = charges
 
     ! read in information about qm core
     call openfile('core.dat', lucore, 'old', 'formatted')
@@ -3608,6 +3613,11 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     real(dp), dimension(:,:), allocatable :: cmo
 
     work => dalwrk
+
+    site_start = 1
+    site_finish = nsites
+    surp_start = 1
+    surp_finish = nsurp
 
     call openfile('pe_density.bin', luden, 'old', 'unformatted')
     rewind(luden)
