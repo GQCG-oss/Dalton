@@ -229,6 +229,11 @@ contains
 
       end do
 
+!
+!     IMPORTANT ADVICE from Peter xxx at the NSC Linkoeping - use e.g. hwloc to get the NUMA node master rather than the
+!     intra-node master: NUMA ==> all processes with close memory == highest performance
+!     todo!!! sknecht - jan 2013
+!
  
 !     3. find all processors on the same deck and reorder (if necessary) 
 !     to get the processors as close as possible, starting with the master (id == 0)
