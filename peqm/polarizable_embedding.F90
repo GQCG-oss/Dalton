@@ -243,13 +243,13 @@ contains
 
 !------------------------------------------------------------------------------
 
-subroutine pe_init(coords, charges)
+subroutine pe_init(coords, charges, dalwrk)
 
     ! Initialization routine for the PE module.
 
     real(dp), dimension(:), intent(in), optional :: charges
     real(dp), dimension(:,:), intent(in), optional :: coords
-
+    real(dp), dimension(:), target, intent(inout) :: dalwrk
 
     integer :: i, j, k, l
     integer :: idx, jdx, kdx, nidx
@@ -268,6 +268,8 @@ subroutine pe_init(coords, charges)
     else if (.not. present(coords) .and. present(charges)) then
         stop 'ERROR in pe_init: charges present but coords missing'
     end if
+
+    work => dalwrk
 
     ! setting up grid for MEP calculation
     if (pe_mep) then
@@ -300,6 +302,7 @@ subroutine pe_init(coords, charges)
 
     if (pe_sol) then
         call setup_solvent()
+        call setup_cavity()
         call read_surface(trim(surfile))
     end if
 
@@ -3430,6 +3433,32 @@ subroutine setup_solvent()
     if (notfound) stop 'ERROR: unknown solvent'
 
 end subroutine setup_solvent
+
+!------------------------------------------------------------------------------
+
+subroutine setup_cavity()
+
+     integer :: i, nz
+     real(dp), dimension(:,:), allocatable :: all_coords
+     real(dp), dimension(:), allocatable :: all_charges
+
+     allocate(all_coords(3,qmnucs+nsites))
+     allocate(all_charges(qmnucs+nsites))
+     all_coords(:,1:qmnucs) = Rm
+     all_charges(1:qmnucs) = Zm(1,:)
+     nz = 0
+     do i = 1, nsites
+         if (Zs(1,i) <= zero) then
+            nz = nz + 1
+            cycle
+         end if
+         all_coords(:,qmnucs+i-nz) = Rs(:,i)
+         all_charges(qmnucs+i-nz) = Zs(1,i)
+     end do
+
+    call dalton_cavity(all_coords, all_charges, qmnucs + nsites - nz, work, size(work))
+
+end subroutine setup_cavity
 
 !------------------------------------------------------------------------------
 
