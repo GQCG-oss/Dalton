@@ -1484,7 +1484,7 @@ C
 
       else
         call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
-        call mpixbcast(work(kdmat),n2basx*ndmat,'double',master)
+        call mpixbcast(work(kdmat),n2basx*ndmat,'DOUBLE',master)
       end if
 
 !     allocation of fock matrix(ces)
