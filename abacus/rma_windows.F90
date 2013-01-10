@@ -3,14 +3,36 @@
 !
 !dalton_copyright_end
 
-! RMA windows object (used for MPI-one-sided communication).
+! RMA windows object (used for MPI-one-sided communication) and driver routines to 
+! open and close memory windows.
 !
 ! written by sknecht for Dalton - linkoeping jan 2013
 !
 !
 module rma_windows
 
+#ifdef VAR_MPI
+  use one_sided_communication_wrappers, only: &
+      mpixwincreate,                          &
+      mpixwinfree
+#endif
+
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+  use mpi
   implicit none
+#else
+  implicit none
+#include "mpif.h"
+#endif
+#else
+  implicit none
+#endif
+
+#ifdef VAR_MPI
+  public set_rma_window
+  public free_rma_window
+#endif
 
 ! rma-windows definition
 ! ----------------------------------------------------------------------------
@@ -28,5 +50,99 @@ module rma_windows
 ! rma-windows object
   type(rma_win_dalton), public, save :: rma_win_dalton_info
 ! ----------------------------------------------------------------------------
+
+#ifdef VAR_MPI
+
+contains
+
+  subroutine set_rma_window(rbuf,                &
+                            nelement,            &
+                            myid,                &
+                            win_communicator,    &
+                            my_win,              &
+                            set_win_lock_info,   &
+                            key,                 &
+                            value)
+!*******************************************************************************
+!
+!     open memory window to be used in one-sided MPI communication
+!
+!     INPUT:
+!            array RBUF (should be allocated by mpi_alloc_mem to
+!            assure lock functionality)
+!            number of elements nelement of type real*8
+!
+!
+!     OUTPUT:
+!            new memory window handle my_win shared by all
+!            processes in the communication group win_communicator.
+!            extension of memory window on each process may be
+!            unsymmetric.
+!
+!
+!*******************************************************************************
+  real(8), intent(inout)                     :: rbuf(*)
+  integer, intent(in)                        :: myid
+  integer, intent(in)                        :: win_communicator
+  logical, intent(in)                        :: set_win_lock_info
+  integer, intent(out)                       :: my_win
+  integer(kind=MPI_ADDRESS_KIND), intent(in) :: nelement
+  character*(*), intent(in), optional        :: key
+  character*(*), intent(in), optional        :: value
+!-------------------------------------------------------------------------------
+  integer                                    :: info_object
+  integer                                    :: ierr
+!-------------------------------------------------------------------------------
+!
+!     open memory window on each process shared by win_communicator
+      if(set_win_lock_info)then
+
+        call mpi_info_create(info_object,ierr)
+        call mpi_info_set(info_object,key,value,ierr)
+
+        call  mpixwincreate(rbuf,                &
+                            nelement,            &
+                            myid,                &
+                            win_communicator,    &
+                            info_object,         &
+                            my_win)
+
+        call mpi_info_free(info_object,ierr)
+
+      else
+        call  mpixwincreate(rbuf,                &
+                            nelement,            &
+                            myid,                &
+                            win_communicator,    &
+                            mpi_info_null,       &
+                            my_win)
+      end if
+!
+  end subroutine set_rma_window
+!*******************************************************************************
+
+  subroutine free_rma_window(my_win, myid)
+!*******************************************************************************
+!
+!     close memory window used in one-sided MPI communication
+!
+!     INPUT: 
+!            memory window handle my_win shared by all processes in
+!            a communication group.
+!
+!*******************************************************************************
+  integer, intent(in)    :: myid
+  integer, intent(inout) :: my_win
+!-------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
+!
+!     close memory window on each process within the communication group
+!
+      call mpixwinfree(my_win,myid)
+!
+!
+  end subroutine free_rma_window 
+#endif
+!*******************************************************************************
 
 end module rma_windows

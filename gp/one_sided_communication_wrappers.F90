@@ -172,7 +172,7 @@ contains
   logical                                    :: flag
 !-------------------------------------------------------------------------------
 !
-!     open memory window on each process shared by IWIN_COMM
+!     open memory window on each process shared by win_communicator
 !     isize_dp is scaling unit in memory window
 !     --> scale by REAL*8
 !
@@ -188,10 +188,10 @@ contains
       write(lupri,*) ' window opened: my_win', myid
 !mpi-3write(lupri,*) ' window memory model:', memory_model
 !
-  end  subroutine mpixwincreate
+  end subroutine mpixwincreate
 !*******************************************************************************
 
-      subroutine mpixwinfree(my_win, myid)
+  subroutine mpixwinfree(my_win, myid)
 !*******************************************************************************
 !
 !     close memory window used in one-sided MPI communication
@@ -212,7 +212,7 @@ contains
 !
 !     write(lupri,*) ' window closed', myid
 !
-      END
+  end subroutine mpixwinfree
 #endif
 !*******************************************************************************
 
