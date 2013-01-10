@@ -637,3 +637,97 @@
 !
 !      end subroutine pe_rspqro
 !
+!------------------------------------------------------------------------------
+
+      subroutine dalton_cavity(all_centers, all_charges, ncents,
+     &                         wrk, nwrk)
+
+!        implicit none
+
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "pcmnuclei.h"
+
+        integer :: ncents, nwrk
+        real*8, dimension(ncents) :: all_charges
+        real*8, dimension(3,ncents) :: all_centers
+        real*8, dimension(nwrk) :: wrk
+
+        integer :: i
+        integer :: ntess, lusurf, lucav
+        integer :: bck_nucind, bck_nucdep, bck_natoms
+        real*8, dimension(:), allocatable :: bck_charge
+        real*8, dimension(:,:), allocatable :: bck_cord
+        integer, dimension(:), allocatable :: isphere
+        real*8, dimension(:), allocatable :: areas
+        real*8, dimension(:,:), allocatable :: tess_coords
+
+        allocate(bck_cord(3,natoms))
+        allocate(bck_charge(natoms))
+
+        bck_cord = cord
+        bck_charge = charge
+        bck_nucind = nucind
+        bck_nucdep = nucdep
+        bck_natoms = natoms
+
+        cord = all_centers
+        charge = all_charges
+        nucind = ncents
+        nucdep = ncents
+        natoms = ncents
+
+        call pcmsphgen
+
+        omega = 40.0d0
+        fro = 0.7d0
+        ret = 0.2d0
+        nrwcav = 2
+        areats = 0.4d0
+        oldcen = .false.
+        iprpcm = 0
+        dr = 1.0d-4
+        alpha = 1.2d0
+        rsolv = 1.385d0
+
+        call pedram(wrk, nwrk)
+
+        cord = bck_cord
+        charge = bck_charge
+        nucind = bck_nucind
+        nucdep = bck_nucdep
+        natoms = bck_natoms
+
+        lucav = -999
+        call gpopen(lucav, 'CAVDATA', 'OLD', 'SEQUENTIAL',
+     &              'UNFORMATTED', idummy, .FALSE.)
+        read(lucav) ntess
+        allocate(isphere(ntess))
+        allocate(tess_coords(3,ntess))
+        allocate(areas(ntess))
+        read(lucav) isphere
+        read(lucav) tess_coords(1,:)
+        read(lucav) tess_coords(2,:)
+        read(lucav) tess_coords(3,:)
+        read(lucav) areas
+        call gpclose(lucav, 'KEEP')
+
+        lusurf = -999
+        call gpopen(lusurf, 'SURFACE.INP', 'NEW', 'SEQUENTIAL',
+     &              'FORMATTED', idummy, .FALSE.)
+
+        write(lusurf,'(i6)') ntess
+        write(lusurf,'(a)') 'AA'
+        do i = 1, ntess
+            write(lusurf,'(4f12.6)') tess_coords(:,i), areas(i)
+        end do
+
+        call gpclose(lusurf,'KEEP')
+
+      end subroutine dalton_cavity
