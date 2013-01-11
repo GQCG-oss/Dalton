@@ -343,7 +343,7 @@ subroutine pe_init(coords, charges, dalwrk)
                                    & be used'
             write(luout,'(4x,a,es7.1)') 'with convergence threshold: ', thriter
         else
-            write(luout,'(/4x,a)') 'Direct solver for induced dipoles will be&
+            write(luout,'(/4x,a)') 'Direct solver for induced moments will be&
                                   & used.'
         end if
     end if
@@ -358,7 +358,7 @@ subroutine pe_init(coords, charges, dalwrk)
     if (pe_sol) then
         write(luout,'(/4x,3a)') 'Continuum solvation in ', trim(solvent),&
                                 & ' solvent.'
-        write(luout,'(/4x,a,i4)') 'Number of surface points:', nsurp
+        write(luout,'(/4x,a,i5)') 'Number of surface points:', nsurp
     end if
     if (pe_restart) then
          write(luout,'(/4x,a)') 'Existing files will be used to restart if&
