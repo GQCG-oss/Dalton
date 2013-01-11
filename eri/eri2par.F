@@ -529,6 +529,7 @@ C
 C--------------------------
 C     Make the index array.
 C--------------------------
+      write(lupri,*) 'eri round????'
 C
       CALL HER_INDEKS(TIMING,INDEX,NINDEX,MXCLS2,NODTOT,
      &            NTASK,NBATCH,NPOS,IPRINT)

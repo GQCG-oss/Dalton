@@ -65,7 +65,7 @@ contains
   integer, intent(in)                        :: myid
   integer, intent(in)                        :: itarget
   integer, intent(in)                        :: win_lock_mode
-  integer, intent(in)                        :: my_win
+  integer, intent(inout)                     :: my_win
   logical, intent(in)                        :: lock_active
   integer(kind=MPI_ADDRESS_KIND), intent(in) :: idispl
 !-------------------------------------------------------------------------------
@@ -75,6 +75,10 @@ contains
 !
 !     lock window (MPI_LOCK_SHARED mode)
       if(.not.lock_active) call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
+
+!     print *, 'my_win, itarget, myid, jcount,idispl,jcount_t,datatype_in',&
+!               my_win, itarget, myid, jcount,idispl,jcount_t,datatype_in
+        
 !
 !     transfer data     
       call mpi_get(rbuf,jcount,datatype_out,itarget,idispl,jcount_t,datatype_in,my_win,ierr)
@@ -182,10 +186,11 @@ contains
       buf_len       = size_dp * nelement
       size_dp_local = size_dp
 !
+!     write(*,*) 'opening window: my_win,myid', my_win,myid
       call mpi_win_create(rbuf,buf_len,size_dp_local,win_info,win_communicator,my_win,ierr)
 !mpi-3call mpi_win_get_attr(my_win, mpi_win_model, memory_model, flag, ierr)
 !
-      write(lupri,*) ' window opened: my_win', myid
+!     write(*,*) ' window opened: my_win,myid', my_win,myid
 !mpi-3write(lupri,*) ' window memory model:', memory_model
 !
   end subroutine mpixwincreate
@@ -208,9 +213,10 @@ contains
 !
 !     close memory window on each process within the communication group
 !
+!     write(*,*) ' closing window', my_win,myid
       call mpi_win_free(my_win,ierr)
 !
-!     write(lupri,*) ' window closed', myid
+!     write(*,*) ' window closed', my_win,myid
 !
   end subroutine mpixwinfree
 #endif

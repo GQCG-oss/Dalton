@@ -149,9 +149,10 @@ C
       end if
 
       CALL MEMGET('INTE',KINDEX,3*NINDEX,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KTIMES,MTOTTK,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KTKCPU,MTOTTK,WORK,KFREE,LFREE)     
-      CALL MEMGET('INTE',KWHICH,MTOTTK,WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KTIMES,MTOTTK,  WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KTKCPU,MTOTTK,  WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KTSORT,MTOTTK+2,WORK,KFREE,LFREE)     
+      CALL MEMGET('INTE',KWHICH,MTOTTK,  WORK,KFREE,LFREE)     
 C
       CALL HER_PARDRV_1(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                WORK(KTMPMT),WORK(KINDEX),WORK(KTIMES),
@@ -159,7 +160,8 @@ C
      &                NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
      &                ITYPE,MAXDER,IATOM,NODV,NOPV,
      &                NOCONT,TKTIME,RETUR,IPRINT,
-     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP)
+     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP,
+     &                WORK(KTSORT))
 
 !     restore rma_model in case it had been reset
       rma_model = rma_model_save
@@ -176,7 +178,7 @@ C  /* Deck her_pardr1 */
      &   NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
      &   ITYPE,MAXDIF,IATOM,NODV,NOPV,
      &   NOCONT,TKTIME,RETUR,IPRINT,
-     &   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP)
+     &   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP,SORTING)
 C
 C
 C     **************************************************************
@@ -274,7 +276,7 @@ Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), TMPMAT(*), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
-     &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*)
+     &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*),SORTING(*)
 CTROND
       DIMENSION GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
 CTROND
@@ -339,7 +341,8 @@ C
      &                      master,
      &                      communication_info%communication_sharedijkl,
      &                      rma_win_dalton_info%dmat_win,
-     &                      .true.,
+!    &                      .true.,
+     &                      .false.,
      &                      'no_locks',
      &                      'true')
 
@@ -349,6 +352,8 @@ C
      &                      communication_info%communication_sharedijkl,
      &                      rma_win_dalton_info%fmat_win,
      &                      .false.)
+!       print *, 'fmat_win, dmat_win',rma_win_dalton_info%fmat_win,
+!    &            rma_win_dalton_info%dmat_win,mynum
       end if
 
 C-----------------------
@@ -367,11 +372,9 @@ C-----------------------------------------
 C     Sort the integral-calculation times.
 C-----------------------------------------
 C
-      if(.not.rma_model)then ! check stupid tmpmat access otherwise
 C       NB! Array TMPMAT is only used as
 C           workspace for array SORTED.
-        IF (TIMING) CALL PARSRT(MTOTTK,NPOS,TMPMAT,TIMES,IPRINT)
-      end if
+      IF (TIMING) CALL PARSRT(MTOTTK,NPOS,SORTING,TIMES,IPRINT)
 
 !------------------------
 !     free memory windows
@@ -788,6 +791,7 @@ C
 #include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
+#include "parint.h"
 C
       CALL QENTER('HER_RVRES')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVRES','*',103)
@@ -911,7 +915,7 @@ C
      &                   ierr)
         call mpi_reduce(mpi_in_place,
      &                  fmat,
-     &                  ndmat*n2basx,
+     &                  jnfmat*n2basx,
      &                  mpi_real8,
      &                  mpi_sum,
      &                  master,
@@ -1121,7 +1125,8 @@ C
      &                      communication_info%my_shmem_ijkl_id,
      &                      communication_info%communication_sharedijkl,
      &                      rma_win_dalton_info%dmat_win,
-     &                      .true.,
+!    &                      .true.,
+     &                      .false.,
      &                      'no_locks',
      &                      'true')
 
@@ -1131,6 +1136,8 @@ C
      &                      communication_info%communication_sharedijkl,
      &                      rma_win_dalton_info%fmat_win,
      &                      .false.)
+!       print *, 'fmat_win, dmat_win',rma_win_dalton_info%fmat_win,
+!    &            rma_win_dalton_info%dmat_win,mynum
 
       end if
 
@@ -2054,15 +2061,15 @@ C
 C
 C     Print Fock matrices (only node masters)
 C
-      IF(DIRFCK .AND. JPRINT.GT.5.and.
-     &  communication_info%my_shmem_ijkl_id == 0)THEN
+!     IF(DIRFCK .AND. JPRINT.GT.5.and.
+!    &  communication_info%my_shmem_ijkl_id == 0)THEN
          CALL HEADER('Fock matrix in PARLOP',-1)
          DO 600 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
             WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
             CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   600    CONTINUE
-      END IF
+!     END IF
 C
 C     Send final results to master
 C

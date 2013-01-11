@@ -555,6 +555,9 @@ C...  terminates Gen1Int interface
 
       call parallel_models_finalize()
 
+!     print *, 'lets quit...'
+!     call quit('blubb')
+
       CALL MPIXFINALIZE
 C
 C     All below is not relevant for MPI as all proc. has stopped

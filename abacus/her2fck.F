@@ -112,7 +112,7 @@ Cef end
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,WORK(KIND),NBUF,
-     &                  work(kdmat_tmp),work(kfcmat_tmp))
+     &                  work(kdmat_tmp),work(kfckmat_tmp))
 C
       CALL MEMREL('INTFCK',WORK,KWORK,KWORK,KFREE,LFREE)
  999  CONTINUE
@@ -480,15 +480,22 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
 
 #ifdef VAR_MPI
 !       get density matrix from node/numa master
-        call mpixget(dmat_tmp,
-     &               nbasis**2,
-     &               0, ! node/numa master
-     &               offset_mat,
-     &               nbasis**2,
-     &               communication_info%my_shmem_ijkl_id,
-     &               MPI_LOCK_SHARED,
-     &               .false.,
-     &               rma_win_dalton_info%dmat_win)
+!       print *, 'shmem_id, offset, copy',
+!    &            communication_info%my_shmem_ijkl_id,offset_mat
+        if(communication_info%my_shmem_ijkl_id == 0)then
+          call dcopy(nbasis**2,dmat(1,1,i),1,dmat_tmp,1)
+        else
+          call mpixget(dmat_tmp,
+     &                 nbasis**2,
+     &                 0, ! node/numa master
+     &                 offset_mat,
+     &                 nbasis**2,
+     &                 communication_info%my_shmem_ijkl_id,
+!    &                 MPI_LOCK_EXCLUSIVE,
+     &                 MPI_LOCK_SHARED,
+     &                 .false.,
+     &                 rma_win_dalton_info%dmat_win)
+       end if
 #endif
 
         call fckcon(fmat_tmp,dmat_tmp,i,aoint2,ind,
@@ -496,6 +503,8 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
 
         offset_mat = (i-1)*nbasis**2
 #ifdef VAR_MPI
+!       print *, 'shmem_id, offset accum',
+!    &            communication_info%my_shmem_ijkl_id,offset_mat
 !       accumulate fock matrix on node/numa master
         call mpixaccum(fmat_tmp,
      &                 nbasis**2,
