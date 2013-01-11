@@ -725,7 +725,7 @@ C
       END IF ! .not. slave
 
       IF (LNBLNK(BASDIR) .LT. 1) BASDIR = './:'
-#if defined(VAR_MPI)
+#ifdef VAR_MPI
 
 !     scan input for RMA (remote memory access model parallelization) keyword
 !     reason: we need asynchronous memory allocation as this is our default RMA scheme in:
@@ -733,6 +733,7 @@ C
 !             --> mcscf (soon)
 !             --> lucita/gasci (soon)
       if(mynum == master)then
+        print *, 'mynum scans file...',mynum
 !       print content of input file to output
         inquire(file='DALTON.INP',exist=file_exists,opened=file_open)
         if(file_exists) then
@@ -740,7 +741,7 @@ C
             LUCMD = -1
             CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &                  IDUMMY,.FALSE.)
-         end if
+          end if
             rewind(LUCMD)
          else
             call quit('GETMMBAS: DALTON.INP file not found')
@@ -757,6 +758,7 @@ C
         if (.not. file_open) CALL GPCLOSE(LUCMD,'KEEP')
       end if
 !     end of keyword scan
+      print *, 'passed scan',mynum
 
 !     Transfer LMWORK_NODES and BASDIR to slaves
 !     ------------------------------------------
