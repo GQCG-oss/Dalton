@@ -733,6 +733,7 @@ C
 !             --> mcscf (soon)
 !             --> lucita/gasci (soon)
       if(mynum == master)then
+        print *, 'start with scan',mynum
 !       print content of input file to output
         inquire(file='DALTON.INP',exist=file_exists,opened=file_open)
         if(file_exists) then
@@ -756,6 +757,7 @@ C
  81     continue
         if (.not. file_open) CALL GPCLOSE(LUCMD,'KEEP')
       end if
+      print *, 'ready with scan',mynum
 !     end of keyword scan
 
 !     Transfer LMWORK_NODES and BASDIR to slaves
