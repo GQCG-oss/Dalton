@@ -648,11 +648,9 @@
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "nuclei.h"
 #include "pcmdef.h"
 #include "pcm.h"
 #include "pcmlog.h"
-#include "pcmnuclei.h"
 
         integer :: ncents, nwrk
         real*8, dimension(ncents) :: all_charges
@@ -662,28 +660,56 @@
         integer :: i
         integer :: ntess, lusurf, lucav
         integer :: bck_nucind, bck_nucdep, bck_natoms
-        real*8, dimension(:), allocatable :: bck_charge
-        real*8, dimension(:,:), allocatable :: bck_cord
         integer, dimension(:), allocatable :: isphere
-        real*8, dimension(:), allocatable :: areas
+        real*8, dimension(:), allocatable :: areas, rvdw
         real*8, dimension(:,:), allocatable :: tess_coords
 
-        allocate(bck_cord(3,natoms))
-        allocate(bck_charge(natoms))
+C       van der Waals radii taken from "The Elements", 2nd edition,
+C       John Emsley, Clarendon Press, Oxford, 1991.  Unknown values
+C       are simply set to D0, rather than trying to guess them.
+C
+C       A.Bondi, J.Phys.Chem. 68: 441-451(1964) gives alternate
+C       values, and a few transition metals.
+        allocate(rvdw(99))
+        rvdw = (/ 1.20d0, 1.22d0, 0.00d0, 0.00d0, 2.08d0, 1.85d0,
+     &            1.54d0, 1.40d0, 1.35d0, 1.60d0, 2.31d0, 0.00d0,
+     &            2.05d0, 2.00d0, 1.90d0, 1.85d0, 1.81d0, 1.91d0,
+     &            2.31d0, 13*0.0d0, 2.00d0, 2.00d0, 1.95d0, 1.98d0,
+     &            2.44d0, 13*0.0d0, 2.20d0, 2.20d0, 2.15d0, 0.00d0,
+     &            2.62d0, 27*0.0d0, 2.40d0, 16*0.0d0 /)
+C     override the above table with U. Pisa's experience
+C     as to what works best for singly bonded C,N,O
+        rvdw(6) = 1.70d0
+        rvdw(7) = 1.60d0
+        rvdw(8) = 1.50d0
 
-        bck_cord = cord
-        bck_charge = charge
+        if (ncents > mxsp) then
+            stop 'ERROR: ncents > mxsp'
+        end if
+
+        nesfp = ncents
+        nesf = nesfp
+
+        do i = 1, nesfp
+            xe(i) = all_centers(1,i)
+            ye(i) = all_centers(2,i)
+            ze(i) = all_centers(3,i)
+            if (nint(all_charges(i)) > 99) then
+                stop 'ERROR: charge is too big'
+            end if
+            rin(i) = rvdw(nint(all_charges(i)))
+            if (rin(i) == 0.0d0) then
+                stop 'ERROR: no vdw radius defined'
+            end if
+        end do
+
         bck_nucind = nucind
         bck_nucdep = nucdep
         bck_natoms = natoms
 
-        cord = all_centers
-        charge = all_charges
         nucind = ncents
         nucdep = ncents
         natoms = ncents
-
-        call pcmsphgen
 
         omega = 40.0d0
         fro = 0.7d0
@@ -698,8 +724,6 @@
 
         call pedram(wrk, nwrk)
 
-        cord = bck_cord
-        charge = bck_charge
         nucind = bck_nucind
         nucdep = bck_nucdep
         natoms = bck_natoms

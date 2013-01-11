@@ -587,6 +587,8 @@ subroutine pe_init(coords, charges, dalwrk)
         end do
     end if
 
+    nullify(work)
+
 end subroutine pe_init
 
 !------------------------------------------------------------------------------
@@ -1836,6 +1838,7 @@ subroutine pe_polarization(denmats, fckmats)
     if (lpol(1)) then
         allocate(Fels(3*npols,ndens))
         allocate(Fnucs(3*npols), Fmuls(3*npols), Ffds(3*npols))
+        Ffds = 0.0d0
     end if
     if (pe_sol) then
         allocate(Vels(nsurp,ndens))
@@ -1871,8 +1874,6 @@ subroutine pe_polarization(denmats, fckmats)
             if (pe_fd) then
 ! TODO frozen density potential
                 call fragment_density_field(Ffds)
-            else
-                Ffds = 0.0d0
             end if
             do i = 1, ndens
                 if (lpol(1)) then
