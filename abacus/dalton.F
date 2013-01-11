@@ -625,16 +625,23 @@ C
       END
 
       SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDIR)
+
+!     module dependencies
+      use parallel_communication_models
+
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER*(*) BASDIR
       CHARACTER*20  WRKMEM, NODE_WRKMEM
 #include "maxorb.h"
 #include "infpar.h"
-
+!     this is to scan the input file for asynchronous memory allocation (RMA model parallelization)
+      character(100)     :: line
+      logical            :: file_exists, file_open, rma_allocation
 C     If LMWORK .le. 0 use default value (LWORK_DEF)
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 
+      rma_allocation = .false.
 C
 C     Dynamic memory allocation; check for WRKMEM and NODE_WRKMEM in environment
 C
@@ -719,13 +726,55 @@ C
 
       IF (LNBLNK(BASDIR) .LT. 1) BASDIR = './:'
 #if defined(VAR_MPI)
-C
-C     Transfer LMWORK_NODES and BASDIR to slaves
-C
+
+!     scan input for RMA (remote memory access model parallelization) keyword
+!     reason: we need asynchronous memory allocation as this is our default RMA scheme in:
+!             --> hermit
+!             --> mcscf (soon)
+!             --> lucita/gasci (soon)
+      if(mynum == master)then
+!       print content of input file to output
+        inquire(file='DALTON.INP',exist=file_exists,opened=file_open)
+        if(file_exists) then
+          if(.not. file_open) then
+            LUCMD = -1
+            CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
+     &                  IDUMMY,.FALSE.)
+         end if
+            rewind(LUCMD)
+         else
+            call quit('GETMMBAS: DALTON.INP file not found')
+        end if
+!       scan for .RMA-MD
+        do while (.true.)
+           read(LUCMD, '(a50)', end=81) line
+           if(line(1:7) == '.RMA-MD')then
+             rma_allocation = .true.
+             goto 81
+           end if
+        end do
+ 81     continue
+        if (.not. file_open) CALL GPCLOSE(LUCMD,'KEEP')
+      end if
+!     end of keyword scan
+
+!     Transfer LMWORK_NODES and BASDIR to slaves
+!     ------------------------------------------
+
       CALL MPIXBCAST(LMWORK_NODES,1,'INTEGE',MASTER)
+      CALL MPIXBCAST(LMWORK      ,1,'INTEGE',MASTER)
+      CALL MPIXBCAST(rma_allocation,'LOGICA',MASTER)
       CALL MPIXBCAST(BASDIR,LBASDIR,'STRING',MASTER)
-      IF (SLAVE) THEN
-         LMWORK = LMWORK_NODES
+
+      IF(SLAVE)THEN
+        if(rma_allocation)then
+!         node/NUMA master get the same memory as the master only real slaves get less
+          if(communication_info%my_shmem_ijkl_id /= 0)then 
+            LMWORK = LMWORK_NODES
+          end if
+        else
+          LMWORK = LMWORK_NODES
+        end if
       END IF
 #endif /* defined(VAR_MPI) */
       END

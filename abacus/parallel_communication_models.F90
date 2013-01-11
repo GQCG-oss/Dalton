@@ -173,6 +173,7 @@ contains
 
   end subroutine communication_free
 !*******************************************************************************
+#ifdef VAR_MPI
 
   subroutine set_communication_groups(process_list_glb,        &
                                       my_process_id_glb,       &
@@ -432,5 +433,6 @@ contains
       call mpi_comm_rank(new_communication,my_id_group,ierr)
 
   end subroutine build_new_communication_group
+#endif
 
 end module parallel_communication_models
