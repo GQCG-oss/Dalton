@@ -336,6 +336,7 @@ C
 
         nelement            = n2basx*ndmat
 
+#ifdef VAR_MPI
         call set_rma_window(dmat,
      &                      nelement,
      &                      master,
@@ -352,6 +353,7 @@ C
      &                      communication_info%communication_sharedijkl,
      &                      rma_win_dalton_info%fmat_win,
      &                      .false.)
+#endif
 !       print *, 'fmat_win, dmat_win',rma_win_dalton_info%fmat_win,
 !    &            rma_win_dalton_info%dmat_win,mynum
       end if
@@ -380,8 +382,10 @@ C           workspace for array SORTED.
 !     free memory windows
 !------------------------
       if(rma_model)then
+#ifdef VAR_MPI
         call free_rma_window(rma_win_dalton_info%dmat_win,master)
         call free_rma_window(rma_win_dalton_info%fmat_win,master)
+#endif
       end if
 
       IF (FIRST)  FIRST  = .FALSE.
@@ -1120,6 +1124,7 @@ C
         nelement            = n2basx*ndmat
         if(communication_info%my_shmem_ijkl_id /= 0) nelement = 0
 
+#ifdef VAR_MPI
         call set_rma_window(work(kdmat),
      &                      nelement,
      &                      communication_info%my_shmem_ijkl_id,
@@ -1136,6 +1141,7 @@ C
      &                      communication_info%communication_sharedijkl,
      &                      rma_win_dalton_info%fmat_win,
      &                      .false.)
+#endif
 !       print *, 'fmat_win, dmat_win',rma_win_dalton_info%fmat_win,
 !    &            rma_win_dalton_info%dmat_win,mynum
 
@@ -1169,8 +1175,10 @@ C
 !     free memory windows
 !------------------------
       if(rma_model)then
+#ifdef VAR_MPI
         call free_rma_window(rma_win_dalton_info%dmat_win,master)
         call free_rma_window(rma_win_dalton_info%fmat_win,master)
+#endif
       end if
 
       CALL MEMREL('HER_NODSTR',WORK,KWORK,KWORK,KFREE,LFREE)
