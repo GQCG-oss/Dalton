@@ -45,7 +45,7 @@ Cef begin
 #include "incore.h"
 Cef end
 C
-      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL, rma_model_save
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), WORK(LWORK)
 CTROND
@@ -133,11 +133,26 @@ C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LWORK
-      CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
+
+!     rma model parallelization only for itype == 3, so:
+      rma_model_save = rma_model
+      if(itype /= 3) rma_model = .false.
+
+      if(.not.rma_model)then
+        CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
+      else
+        if(itype == 2)then ! expectation values
+          CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
+        else ! fock matrices in some way
+          CALL MEMGET('REAL',KTMPMT,     0,WORK,KFREE,LFREE)     
+        end if
+      end if
+
       CALL MEMGET('INTE',KINDEX,3*NINDEX,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KTIMES,MTOTTK,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KTKCPU,MTOTTK,WORK,KFREE,LFREE)     
-      CALL MEMGET('INTE',KWHICH,MTOTTK,WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KTIMES,MTOTTK,  WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KTKCPU,MTOTTK,  WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KTSORT,MTOTTK+2,WORK,KFREE,LFREE)     
+      CALL MEMGET('INTE',KWHICH,MTOTTK,  WORK,KFREE,LFREE)     
 C
       CALL HER_PARDRV_1(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                WORK(KTMPMT),WORK(KINDEX),WORK(KTIMES),
@@ -145,7 +160,12 @@ C
      &                NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
      &                ITYPE,MAXDER,IATOM,NODV,NOPV,
      &                NOCONT,TKTIME,RETUR,IPRINT,
-     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP)
+     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP,
+     &                WORK(KTSORT))
+
+!     restore rma_model in case it had been reset
+      rma_model = rma_model_save
+
       CALL MEMREL('HER_PARDRV',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('HER_PARDRV')
@@ -158,7 +178,7 @@ C  /* Deck her_pardr1 */
      &   NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
      &   ITYPE,MAXDIF,IATOM,NODV,NOPV,
      &   NOCONT,TKTIME,RETUR,IPRINT,
-     &   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP)
+     &   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP,SORTING)
 C
 C
 C     **************************************************************
@@ -228,6 +248,9 @@ C       and then performing a send each time rather than transferring
 C       all matrices in one batch.
 C
 C
+!     module dependencies
+      use parallel_communication_models
+      use rma_windows
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -251,12 +274,15 @@ C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
       LOGICAL   FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
-     &          NSTAT(NODTOT), TMPMAT(NTMPMT), INDEX(3,NINDEX),
+     &          NSTAT(NODTOT), TMPMAT(*), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
-     &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*)
+     &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*),SORTING(*)
 CTROND
       DIMENSION GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
 CTROND
+#ifdef VAR_MPI
+      integer(kind=MPI_ADDRESS_KIND) :: nelement
+#endif
 C
 C     NB! NPOS cannot be allocated from WORK due to the SAVEing below.
 C
@@ -299,10 +325,42 @@ C
 C 10.mai         INITX = .TRUE.
       END IF
 Cef end
+C
+!--------------------------------------------------------------------------------------
+!     initialize memory windows for rma access within a given shared-memory / NUMA node
+!--------------------------------------------------------------------------------------
+      if(rma_model)then
+
+        rma_win_dalton_info%dmat_win = -1
+        rma_win_dalton_info%fmat_win = -1
+
+        nelement            = n2basx*ndmat
+
+#ifdef VAR_MPI
+        call set_rma_window(dmat,
+     &                      nelement,
+     &                      master,
+     &                      communication_info%communication_sharedijkl,
+     &                      rma_win_dalton_info%dmat_win,
+!    &                      .true.,
+     &                      .false.,
+     &                      'no_locks',
+     &                      'true')
+
+        call set_rma_window(fmat,
+     &                      nelement,
+     &                      master,
+     &                      communication_info%communication_sharedijkl,
+     &                      rma_win_dalton_info%fmat_win,
+     &                      .false.)
+#endif
+!       print *, 'fmat_win, dmat_win',rma_win_dalton_info%fmat_win,
+!    &            rma_win_dalton_info%dmat_win,mynum
+      end if
+
 C-----------------------
 C     Start calculation.
 C-----------------------
-C
       CALL DOPAR(INDEX,MTOTTK,NBATCH,NSTAT,IPRINT)
 C
 C--------------------------------------
@@ -316,11 +374,20 @@ C-----------------------------------------
 C     Sort the integral-calculation times.
 C-----------------------------------------
 C
-      IF (TIMING) CALL PARSRT(MTOTTK,NPOS,TMPMAT,TIMES,IPRINT)
-C
-C     NB! Array TMPMAT is only used as
-C         workspace for array SORTED.
-C
+C       NB! Array TMPMAT is only used as
+C           workspace for array SORTED.
+      IF (TIMING) CALL PARSRT(MTOTTK,NPOS,SORTING,TIMES,IPRINT)
+
+!------------------------
+!     free memory windows
+!------------------------
+      if(rma_model)then
+#ifdef VAR_MPI
+        call free_rma_window(rma_win_dalton_info%dmat_win,master)
+        call free_rma_window(rma_win_dalton_info%fmat_win,master)
+#endif
+      end if
+
       IF (FIRST)  FIRST  = .FALSE.
       IF (NEWGEO) NEWGEO = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
@@ -439,8 +506,21 @@ C  /* Deck her_sdinit */
      &                      IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,
      &                      FIRST,IPRINT,
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO)
-C
+
+!     module dependencies
+      use parallel_communication_models
+
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+      use mpi
 #include "implicit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#endif
+
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -605,10 +685,21 @@ C  /parint/
       CALL MPIXBCAST(JATOM,NINTI,'INTEGER',MASTER)
       CALL MPIXBCAST(JNODV,NINTL,'LOGICAL',MASTER)
 C
-      CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(DMAT,N2BASX*NDMAT,'DOUBLE',MASTER)
+!     update info about type of fock-matrix construction
       CALL MPIXBCAST(ISYMDM,NFMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NFMAT,'INTEGER',MASTER)
+!     distribute density matrices - that can be huge chunks...
+      CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
+      if(rma_model)then
+!       distribute density matrix(ces) among node masters
+#ifdef VAR_MPI
+        call mpi_bcast(dmat,n2basx*ndmat,mpi_real8,master,
+     &                 communication_info%communication_internode,
+     &                 ierr)
+#endif
+      else
+        CALL MPIXBCAST(DMAT,N2BASX*NDMAT,'DOUBLE',MASTER)
+      end if
 C
       IF(ITYPE.EQ.3) THEN
         N2RED = NSYMBL*NSYMBL
@@ -677,6 +768,9 @@ C  /* Deck her_rvres */
       SUBROUTINE HER_RVRES(FMAT,TMPMAT,HESSEE,TIMES,TSKCPU,IWHICH,
      &                     NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,ITYPE,
      &                     IPRINT,DINTSKP)
+
+!     module dependencies
+      use parallel_communication_models
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -684,7 +778,7 @@ C
 #include "maxorb.h"
 #include "mtags.h"
       PARAMETER (D1 = 1.0D0)
-      DIMENSION FMAT(*), TMPMAT(NTMPMT), TIMES(MTOTTK),
+      DIMENSION FMAT(*), TMPMAT(*), TIMES(MTOTTK),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK),DSKPBF(8),
      &          DINTSKP(8), HESSEE(*)
 C
@@ -701,6 +795,7 @@ C
 #include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
+#include "parint.h"
 C
       CALL QENTER('HER_RVRES')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVRES','*',103)
@@ -713,8 +808,10 @@ C
          CALL DZERO(GRADEE,NUMGRA)
          CALL DZERO(HESSEE,NUMHES)
       ELSE IF (ITYPE .EQ. 3) THEN
-         CALL DZERO(FMAT,NUMFCK)
-         CALL DZERO(DINTSKP,8)
+         if(.not.rma_model)then
+           CALL DZERO(FMAT,NUMFCK)
+           CALL DZERO(DINTSKP,8)
+         end if
 #if defined(_CRAYT3E) && !defined(NO_BINSUM)
          CALL BIN_SUM(NUMFCK, FMAT)
          CALL BIN_SUM(8, DINTSKP)
@@ -748,10 +845,13 @@ C
             CALL DAXPY(NUMHES,D1,TMPMAT(NUMGRA+1),1,HESSEE,1)
 #if !defined(_CRAYT3E) && !defined(NO_BINSUM)
          ELSE IF (ITYPE .EQ. 3) THEN
-            CALL MPIXRECV(TMPMAT,NUMFCK,'DOUBLE',NWHO,MTAG7)
-            CALL MPIXRECV(TMPMAT(1+NUMFCK),8,'DOUBLE',NWHO,MTAG7)
-            CALL DAXPY(NUMFCK,D1,TMPMAT,1,FMAT,1)
-            CALL DAXPY(8,D1,TMPMAT(NUMFCK+1),1,DINTSKP,1)
+
+            if(.not.rma_model)then
+              CALL MPIXRECV(TMPMAT,NUMFCK,'DOUBLE',NWHO,MTAG7)
+              CALL MPIXRECV(TMPMAT(1+NUMFCK),8,'DOUBLE',NWHO,MTAG7)
+              CALL DAXPY(NUMFCK,D1,TMPMAT,1,FMAT,1)
+              CALL DAXPY(8,D1,TMPMAT(NUMFCK+1),1,DINTSKP,1)
+            end if
 #endif
          ELSE IF (ITYPE .EQ. 8) THEN
             CALL MPIXRECV(TMPMAT(1),NTMPMT,'DOUBLE',NWHO,MTAG7)
@@ -812,6 +912,28 @@ C
          ICOUNT = ICOUNT + ITASKS
 #endif
   100 CONTINUE
+
+!     collect data for rma_model (only itask == 3 at present)
+      if(rma_model)then
+        call mpi_barrier(communication_info%communication_sharedijkl,
+     &                   ierr)
+        call mpi_reduce(mpi_in_place,
+     &                  fmat,
+     &                  jnfmat*n2basx,
+     &                  mpi_real8,
+     &                  mpi_sum,
+     &                  master,
+     &                  communication_info%communication_internode,
+     &                  ierr)
+        call mpi_reduce(mpi_in_place,
+     &                  dintskp,
+     &                  8,
+     &                  mpi_real8,
+     &                  mpi_sum,
+     &                  master,
+     &                  communication_info%communication_internode,
+     &                  ierr)
+      end if
 C
       IF (ICOUNT .NE. MTOTTK) THEN
         WRITE(LUPRI,'(/5X,A)') 'Error in parallel calculation!'
@@ -823,8 +945,8 @@ c        CALL QUIT('Inconsistence in HER_RVRES -> MTOTTK .NE. ICOUNT')
       ENDIF
 C
       CALL QEXIT('HER_RVRES')
-      RETURN
       END
+
 C  /* Deck parsrt */
       SUBROUTINE PARSRT(MTOTTK,NPOS,SORTED,TIMES,IPRINT)
 C
@@ -904,6 +1026,10 @@ C    *    This is the node program for the construction of fock-     *
 C    *   matrices, derivated fock-matrices and expectation values.   *
 C    *****************************************************************
 C
+!     module dependencies
+      use parallel_communication_models
+      use rma_windows
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -931,6 +1057,9 @@ C
 #include "infpar.h"
 #include "gnrinf.h"
 C
+#ifdef VAR_MPI
+      integer(kind=MPI_ADDRESS_KIND) :: nelement
+#endif
 #include "memint.h"
 C
       CALL QENTER('HER_NODSTR')
@@ -969,7 +1098,13 @@ C
 C     Initialize matrices
 C     ===================
 C
-      CALL DZERO(WORK(KFMAT),NFMAT*N2BASX)
+      if(rma_model)then
+        if(communication_info%my_shmem_ijkl_id == 0)then
+          call dzero(work(kfmat),nfmat*n2basx)
+        end if
+      else
+        CALL DZERO(WORK(KFMAT),NFMAT*N2BASX)
+      end if
 C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,MXCOOR)
@@ -977,6 +1112,41 @@ C
       ELSE IF (ITYPE .EQ. -5) THEN
          CALL DZERO(SUS2EL,9)
       END IF
+
+!--------------------------------------------------------------------------------------
+!     initialize memory windows for rma access within a given shared-memory / NUMA node
+!--------------------------------------------------------------------------------------
+      if(rma_model)then
+
+        rma_win_dalton_info%dmat_win = -1
+        rma_win_dalton_info%fmat_win = -1
+
+        nelement            = n2basx*ndmat
+        if(communication_info%my_shmem_ijkl_id /= 0) nelement = 0
+
+#ifdef VAR_MPI
+        call set_rma_window(work(kdmat),
+     &                      nelement,
+     &                      communication_info%my_shmem_ijkl_id,
+     &                      communication_info%communication_sharedijkl,
+     &                      rma_win_dalton_info%dmat_win,
+!    &                      .true.,
+     &                      .false.,
+     &                      'no_locks',
+     &                      'true')
+
+        call set_rma_window(work(kfmat),
+     &                      nelement,
+     &                      communication_info%my_shmem_ijkl_id,
+     &                      communication_info%communication_sharedijkl,
+     &                      rma_win_dalton_info%fmat_win,
+     &                      .false.)
+#endif
+!       print *, 'fmat_win, dmat_win',rma_win_dalton_info%fmat_win,
+!    &            rma_win_dalton_info%dmat_win,mynum
+
+      end if
+
 C
 C     ***********************************
 C     ***** Calculate the integrals *****
@@ -1000,6 +1170,17 @@ C
      &     WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &     ICEDIF,IFTHRS,WORK(KGABAO),WORK(KDMRAO),
      &     WORK(KDMRSO),DINTSKP,RELCAL)
+
+!------------------------
+!     free memory windows
+!------------------------
+      if(rma_model)then
+#ifdef VAR_MPI
+        call free_rma_window(rma_win_dalton_info%dmat_win,master)
+        call free_rma_window(rma_win_dalton_info%fmat_win,master)
+#endif
+      end if
+
       CALL MEMREL('HER_NODSTR',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     Send overall timings if requested.
@@ -1018,7 +1199,20 @@ C  /* Deck her_rvinit */
      &     JORBSH,KORBSH,IPRINT,I2TYP,ICEDIF,IFTHRS,
      &     N2RED,KDMAT,KFMAT,KHESEE,KDMRAO,KGABAO,KDMRSO)
 C
+
+!     module dependencies
+      use parallel_communication_models
+
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+      use mpi
 #include "implicit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#endif
+
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1281,14 +1475,45 @@ C     Set common block BLOCKS
 C
       CALL PAOVEC(JSTRSH,NPRIMS,NCONTS,IORBSH,JORBSH,KORBSH,0,.FALSE.,0)
 C
-#if defined (VAR_MPI)
-      CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
-      CALL MEMGET('REAL',KDMAT,NDMAT*N2BASX,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KFMAT,NFMAT*N2BASX,WORK,KFREE,LFREE)     
-      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
-      CALL MPIXBCAST(WORK(KDMAT),NDMAT*N2BASX,'DOUBLE',MASTER)
+#ifdef VAR_MPI
+
+!     update info about type of fock-matrix construction
       CALL MPIXBCAST(ISYMDM,NFMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NFMAT,'INTEGER',MASTER)
+
+!     receive density matrices - that can be huge chunks...
+      CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
+      if(rma_model)then
+
+        if(communication_info%my_shmem_ijkl_id == 0)then
+!         allocation of density matrix(ces)
+          call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
+!         distribute density matrix(ces) among node masters
+          call mpi_bcast(work(kdmat),n2basx*ndmat,mpi_real8,master,
+     &                   communication_info%communication_internode,
+     &                   ierr)
+        else
+!         allocation of density matrix(ces)
+          call memget('REAL',kdmat,           0,work,kfree,lfree)
+        end if
+
+      else
+        call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
+        call mpixbcast(work(kdmat),n2basx*ndmat,'DOUBLE',master)
+      end if
+
+!     allocation of fock matrix(ces)
+      if(rma_model)then
+        if(communication_info%my_shmem_ijkl_id == 0)then
+          call memget('REAL',kfmat,nfmat*n2basx,work,kfree,lfree)
+        else
+          call memget('REAL',kfmat,           0,work,kfree,lfree)
+        end if
+      else
+        call memget('REAL',kfmat,nfmat*n2basx,work,kfree,lfree)
+      end if
+
+      CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
       IF(ITYPE.EQ.3) THEN
         CALL MPIXBCAST(N2RED,1,'INTEGER',MASTER)
         CALL MEMGET('REAL',KDMRAO,NDMAT*N2RED,WORK,KFREE,LFREE)     
@@ -1342,6 +1567,9 @@ Cef begin
      &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
 C     
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
+
+!     module dependencies
+      use parallel_communication_models
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1374,9 +1602,6 @@ C
 #include "inftap.h"
 #include "inforb.h"
 #include "incore.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 C
 C For MPE event logging
 C      evIDb2 = MPE_Log_get_event_number()
@@ -1842,16 +2067,17 @@ C
          END IF
       END IF
 C
-C     Print Fock matrices
+C     Print Fock matrices (only node masters)
 C
-      IF (DIRFCK .AND. JPRINT.GT.5) THEN
+!     IF(DIRFCK .AND. JPRINT.GT.5.and.
+!    &  communication_info%my_shmem_ijkl_id == 0)THEN
          CALL HEADER('Fock matrix in PARLOP',-1)
          DO 600 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
             WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
             CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   600    CONTINUE
-      END IF
+!     END IF
 C
 C     Send final results to master
 C
@@ -1873,12 +2099,15 @@ Cef end
 C  /* Deck her_sdres */
       SUBROUTINE HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,
      &                     ICOUNT,ITYPE,IPRINT)
-C
+
+!     module dependencies
+      use parallel_communication_models
+!
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "mtags.h"
-      DIMENSION FMAT(NFMAT*N2BASX), TSKCPU(ICOUNT), IWHICH(ICOUNT),
+      DIMENSION FMAT(*), TSKCPU(ICOUNT), IWHICH(ICOUNT),
      &          DINTSKP(8), HESSEE(*)
 C
 C Used from common blocks:
@@ -1912,8 +2141,10 @@ C
          CALL BIN_SUM(NDMAT*N2BASX, FMAT)
          CALL BIN_SUM(8, DINTSKP)
 #else
-         CALL MPIXSEND(FMAT,NDMAT*N2BASX,'DOUBLE',MASTER,MTAG7)
-         CALL MPIXSEND(DINTSKP,8,'DOUBLE',MASTER,MTAG7)
+         if(.not.rma_model)then 
+           CALL MPIXSEND(FMAT,NDMAT*N2BASX,'DOUBLE',MASTER,MTAG7)
+           CALL MPIXSEND(DINTSKP,8,'DOUBLE',MASTER,MTAG7)
+         end if
 #endif
       ELSE IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
          CALL MPIXSEND(FMAT,NFMAT*N2BASX,'DOUBLE',MASTER,MTAG7)
@@ -1928,6 +2159,31 @@ C
          CALL MPIXSEND(IWHICH,ICOUNT,'INTEGER',MASTER,MTAG7)
          CALL MPIXSEND(TSKCPU,ICOUNT,'DOUBLE' ,MASTER,MTAG7)
       END IF
+
+!     collect data for rma_model
+      if(rma_model)then
+        call mpi_barrier(communication_info%communication_sharedijkl,
+     &                   ierr)
+        if(communication_info%my_shmem_ijkl_id == 0)then
+          call mpi_reduce(fmat,
+     &                    mpi_in_place,
+     &                    ndmat*n2basx,
+     &                    mpi_real8,
+     &                    mpi_sum,
+     &                    master,
+     &                    communication_info%communication_internode,
+     &                    ierr)
+          call mpi_reduce(dintskp,
+     &                    mpi_in_place,
+     &                    8,
+     &                    mpi_real8,
+     &                    mpi_sum,
+     &                    master,
+     &                    communication_info%communication_internode,
+     &                    ierr)
+        end if
+      end if
+
 #endif
 #if defined (VAR_PVM)
       CALL PVMXINITSEND(NCODE)
@@ -1984,12 +2240,13 @@ C  /* Deck prlinp */
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
-      PARAMETER (NTABLE = 5)
+      PARAMETER (NTABLE = 6)
       LOGICAL FIRST, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "infpar.h"
       SAVE FIRST
-      DATA TABLE /'.NODES ', '.DEGREE', '.PRINT ', '.ENCODE', '.DEBUG '/
+      DATA TABLE /'.NODES ','.DEGREE','.PRINT ','.ENCODE','.DEBUG ',
+     &            '.RMA-MD'/
       DATA FIRST /.TRUE./
 C
 C-------------------------
@@ -2020,6 +2277,7 @@ C     ... this is the master in a parallel run
       NODTOT = 0
       NCODE  = PVMDATADEFAULT
 #endif
+      rma_model  = .false.
 C
       NEWDEF = (WORD .EQ. '*PARALL')
       ICHANG = 0
@@ -2035,7 +2293,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5), I
+                     GO TO (1,2,3,4,5,6), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -2084,6 +2342,9 @@ C
                GO TO 100
     5          CONTINUE
                   DEBUG = .TRUE.
+               GO TO 100
+    6          CONTINUE
+                  rma_model = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
