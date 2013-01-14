@@ -18,10 +18,10 @@
 ! (whoever is doing that one day)            merging could be a pain in the a** but i guess i will do that anyway. (for now i
 !                                            protect everything "old" with NEW_LUCITA)
 
-module parallel_models
+module parallel_models_mpi
 
-  use parallel_communication_models
-! use parallel_file_io_models
+  use parallel_communication_models_mpi
+! use parallel_file_io_models_mpi
 
 #ifdef VAR_MPI
 #ifndef VAR_USE_MPIF
@@ -37,9 +37,9 @@ module parallel_models
 #endif
 
 
-  public parallel_models_initialize
-  public parallel_models_finalize
-  public check_parallel_models
+  public parallel_models_initialize_mpi
+  public parallel_models_finalize_mpi
+  public check_parallel_models_mpi
 
   private
 
@@ -47,7 +47,7 @@ module parallel_models
 
 contains
 
-  subroutine parallel_models_initialize()
+  subroutine parallel_models_initialize_mpi()
 !******************************************************************************
 !
 !    purpose: initialize parallel communication/file-I/O models
@@ -73,15 +73,15 @@ contains
 #endif
 
 !     initialize parallel communication models
-      call communication_init(communication_info,     &
-                              my_process_id_glb,      &
-                              nr_of_process_glb,      &
-                              mpi_comm_world)
+      call communication_init_mpi(communication_info_mpi, &
+                                  my_process_id_glb,      &
+                                  nr_of_process_glb,      &
+                                  mpi_comm_world)
 
-  end subroutine parallel_models_initialize
+  end subroutine parallel_models_initialize_mpi
 !*******************************************************************************
 
-  subroutine parallel_models_finalize()
+  subroutine parallel_models_finalize_mpi()
 !******************************************************************************
 !
 !    purpose: finalize parallel communication/file-I/O models
@@ -92,12 +92,12 @@ contains
 !-------------------------------------------------------------------------------
 
 !     finalize parallel communication models
-      call communication_free(communication_info)
+      call communication_free_mpi(communication_info_mpi)
 
-  end subroutine parallel_models_finalize
+  end subroutine parallel_models_finalize_mpi
 !*******************************************************************************
 
-  subroutine check_parallel_models(models_check)
+  subroutine check_parallel_models_mpi(models_check)
 !******************************************************************************
 !
 !    purpose: check for existing/enabled parallel communication/file-I/O models
@@ -120,7 +120,7 @@ contains
           stop 'parallel model check for all modules not implemented yet'
       end select
 
-  end subroutine check_parallel_models
+  end subroutine check_parallel_models_mpi
 !*******************************************************************************
 
-end module parallel_models
+end module parallel_models_mpi

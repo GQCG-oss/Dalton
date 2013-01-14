@@ -735,8 +735,8 @@ peqm/pe_precision.F90
 peqm/pe_blas_wrappers.F90
 peqm/pe_lapack_wrappers.F90
 peqm/polarizable_embedding.F90
-abacus/parallel_models.F90
-abacus/parallel_communication_models.F90
+abacus/parallel_models_mpi.F90
+abacus/parallel_communication_models_mpi.F90
 gp/one_sided_communication_wrappers.F90
 abacus/rma_windows.F90
     )

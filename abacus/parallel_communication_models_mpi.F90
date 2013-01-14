@@ -10,7 +10,7 @@
 !                                    - mcscf  (after merge with hjaa-srdft)
 !                                    - hermit
 !
-module parallel_communication_models
+module parallel_communication_models_mpi
 
 #ifdef VAR_MPI
 #ifndef VAR_USE_MPIF
@@ -30,14 +30,14 @@ module parallel_communication_models
 #define my_MPI_INTEGER MPI_INTEGER4
 #endif
 
-  public communication_type
-  public communication_init
-  public communication_free
+  public communication_type_mpi
+  public communication_init_mpi
+  public communication_free_mpi
 
 
 ! communication type definition
 ! ----------------------------------------------------------------------------
-  type communication_type
+  type communication_type_mpi
 
     integer ::                   &
       my_intra_node_id,          &             ! intra-node ID
@@ -59,10 +59,10 @@ module parallel_communication_models
       shared_mem_group_list(:),  &             ! list of all processes within a shared-memory group and their process ID
       intra_node_group_list(:)                 ! list of all processes within an intra-node group and their process ID
 
-  end type communication_type
+  end type communication_type_mpi
 
 ! communication type object
-  type(communication_type), public, save :: communication_info
+  type(communication_type_mpi), public, save :: communication_info_mpi
 ! ----------------------------------------------------------------------------
 
   integer, private                       :: ierr
@@ -73,7 +73,10 @@ module parallel_communication_models
 contains 
 
 !*******************************************************************************
-  subroutine communication_init(A, my_process_id_glb, nr_of_process_glb, communicator_glb)
+  subroutine communication_init_mpi(A,                     & 
+                                    my_process_id_glb,     &
+                                    nr_of_process_glb,     &
+                                    communicator_glb)
 
 !   ----------------------------------------------------------------------------
 !                - provides: 
@@ -88,15 +91,15 @@ contains
 !       JCP, 128, 014108 (2008)
 !       JCP, 132, 014108 (2010)
 !   ----------------------------------------------------------------------------
-    type(communication_type)   :: A
-    integer, intent(in)        :: nr_of_process_glb
-    integer, intent(in)        :: communicator_glb
-    integer, intent(in)        :: my_process_id_glb
+    type(communication_type_mpi) :: A
+    integer, intent(in)          :: nr_of_process_glb
+    integer, intent(in)          :: communicator_glb
+    integer, intent(in)          :: my_process_id_glb
 !   ----------------------------------------------------------------------------
 !   ----------------------------------------------------------------------------
 
 !   reset old type information
-    call communication_free(A)
+    call communication_free_mpi(A)
 
     A%communication_type_init  = .true.
     A%communication_intranode  = -1
@@ -149,14 +152,14 @@ contains
                                   A%intra_node_group_id)                      
 #endif
 
-  end subroutine communication_init
+  end subroutine communication_init_mpi
 !*******************************************************************************
 
-  subroutine communication_free(A)
+  subroutine communication_free_mpi(A)
 
 !   ----------------------------------------------------------------------------
-    type(communication_type) :: A
-    integer                 :: ierr
+    type(communication_type_mpi) :: A
+    integer                      :: ierr
 !   ----------------------------------------------------------------------------
 
     if(.not. A%communication_type_init) return
@@ -172,7 +175,7 @@ contains
     call mpi_comm_free(A%communication_shmemnode,  ierr)
 #endif
 
-  end subroutine communication_free
+  end subroutine communication_free_mpi
 !*******************************************************************************
 #ifdef VAR_MPI
 
@@ -436,4 +439,4 @@ contains
   end subroutine build_new_communication_group
 #endif
 
-end module parallel_communication_models
+end module parallel_communication_models_mpi

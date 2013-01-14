@@ -249,7 +249,7 @@ C       all matrices in one batch.
 C
 C
 !     module dependencies
-      use parallel_communication_models
+      use parallel_communication_models_mpi
       use rma_windows
 C
 #include "implicit.h"
@@ -340,7 +340,8 @@ C
         call set_rma_window(dmat,
      &                      nelement,
      &                      master,
-     &                      communication_info%communication_shmemnode,
+     &                      communication_info_mpi%
+     &                      communication_shmemnode,
      &                      rma_win_dalton_info%dmat_win,
 !    &                      .true.,
      &                      .false.,
@@ -350,7 +351,8 @@ C
         call set_rma_window(fmat,
      &                      nelement,
      &                      master,
-     &                      communication_info%communication_shmemnode,
+     &                      communication_info_mpi%
+     &                      communication_shmemnode,
      &                      rma_win_dalton_info%fmat_win,
      &                      .false.)
 #endif
@@ -508,7 +510,7 @@ C  /* Deck her_sdinit */
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO)
 
 !     module dependencies
-      use parallel_communication_models
+      use parallel_communication_models_mpi
 
 #ifdef VAR_MPI
 #ifndef VAR_USE_MPIF
@@ -694,7 +696,7 @@ C
 !       distribute density matrix(ces) among node masters
 #ifdef VAR_MPI
         call mpi_bcast(dmat,n2basx*ndmat,mpi_real8,master,
-     &                 communication_info%communication_internode,
+     &                 communication_info_mpi%communication_internode,
      &                 ierr)
 #endif
       else
@@ -770,7 +772,7 @@ C  /* Deck her_rvres */
      &                     IPRINT,DINTSKP)
 
 !     module dependencies
-      use parallel_communication_models
+      use parallel_communication_models_mpi
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -915,7 +917,7 @@ C
 
 !     collect data for rma_model (only itask == 3 at present)
       if(rma_model)then
-        call mpi_barrier(communication_info%communication_shmemnode,
+        call mpi_barrier(communication_info_mpi%communication_shmemnode,
      &                   ierr)
         call mpi_reduce(mpi_in_place,
      &                  fmat,
@@ -923,7 +925,7 @@ C
      &                  mpi_real8,
      &                  mpi_sum,
      &                  master,
-     &                  communication_info%communication_internode,
+     &                  communication_info_mpi%communication_internode,
      &                  ierr)
         call mpi_reduce(mpi_in_place,
      &                  dintskp,
@@ -931,7 +933,7 @@ C
      &                  mpi_real8,
      &                  mpi_sum,
      &                  master,
-     &                  communication_info%communication_internode,
+     &                  communication_info_mpi%communication_internode,
      &                  ierr)
       end if
 C
@@ -1027,7 +1029,7 @@ C    *   matrices, derivated fock-matrices and expectation values.   *
 C    *****************************************************************
 C
 !     module dependencies
-      use parallel_communication_models
+      use parallel_communication_models_mpi
       use rma_windows
 
 #include "implicit.h"
@@ -1099,7 +1101,7 @@ C     Initialize matrices
 C     ===================
 C
       if(rma_model)then
-        if(communication_info%my_shmem_node_id == 0)then
+        if(communication_info_mpi%my_shmem_node_id == 0)then
           call dzero(work(kfmat),nfmat*n2basx)
         end if
       else
@@ -1122,13 +1124,14 @@ C
         rma_win_dalton_info%fmat_win = -1
 
         nelement            = n2basx*ndmat
-        if(communication_info%my_shmem_node_id /= 0) nelement = 0
+        if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
 #ifdef VAR_MPI
         call set_rma_window(work(kdmat),
      &                      nelement,
-     &                      communication_info%my_shmem_node_id,
-     &                      communication_info%communication_shmemnode,
+     &                      communication_info_mpi%my_shmem_node_id,
+     &                      communication_info_mpi%
+     &                      communication_shmemnode,
      &                      rma_win_dalton_info%dmat_win,
 !    &                      .true.,
      &                      .false.,
@@ -1137,8 +1140,9 @@ C
 
         call set_rma_window(work(kfmat),
      &                      nelement,
-     &                      communication_info%my_shmem_node_id,
-     &                      communication_info%communication_shmemnode,
+     &                      communication_info_mpi%my_shmem_node_id,
+     &                      communication_info_mpi%
+     &                      communication_shmemnode,
      &                      rma_win_dalton_info%fmat_win,
      &                      .false.)
 #endif
@@ -1201,7 +1205,7 @@ C  /* Deck her_rvinit */
 C
 
 !     module dependencies
-      use parallel_communication_models
+      use parallel_communication_models_mpi
 
 #ifdef VAR_MPI
 #ifndef VAR_USE_MPIF
@@ -1485,12 +1489,12 @@ C
       CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
       if(rma_model)then
 
-        if(communication_info%my_shmem_node_id == 0)then
+        if(communication_info_mpi%my_shmem_node_id == 0)then
 !         allocation of density matrix(ces)
           call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
 !         distribute density matrix(ces) among node masters
           call mpi_bcast(work(kdmat),n2basx*ndmat,mpi_real8,master,
-     &                   communication_info%communication_internode,
+     &                   communication_info_mpi%communication_internode,
      &                   ierr)
         else
 !         allocation of density matrix(ces)
@@ -1504,7 +1508,7 @@ C
 
 !     allocation of fock matrix(ces)
       if(rma_model)then
-        if(communication_info%my_shmem_node_id == 0)then
+        if(communication_info_mpi%my_shmem_node_id == 0)then
           call memget('REAL',kfmat,nfmat*n2basx,work,kfree,lfree)
         else
           call memget('REAL',kfmat,           0,work,kfree,lfree)
@@ -1569,7 +1573,7 @@ C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 
 !     module dependencies
-      use parallel_communication_models
+      use parallel_communication_models_mpi
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -2070,7 +2074,7 @@ C
 C     Print Fock matrices (only node masters)
 C
 !     IF(DIRFCK .AND. JPRINT.GT.5.and.
-!    &  communication_info%my_shmem_node_id == 0)THEN
+!    &  communication_info_mpi%my_shmem_node_id == 0)THEN
          CALL HEADER('Fock matrix in PARLOP',-1)
          DO 600 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
@@ -2101,7 +2105,7 @@ C  /* Deck her_sdres */
      &                     ICOUNT,ITYPE,IPRINT)
 
 !     module dependencies
-      use parallel_communication_models
+      use parallel_communication_models_mpi
 !
 #include "implicit.h"
 #include "mxcent.h"
@@ -2162,16 +2166,17 @@ C
 
 !     collect data for rma_model
       if(rma_model)then
-        call mpi_barrier(communication_info%communication_shmemnode,
+        call mpi_barrier(communication_info_mpi%communication_shmemnode,
      &                   ierr)
-        if(communication_info%my_shmem_node_id == 0)then
+        if(communication_info_mpi%my_shmem_node_id == 0)then
           call mpi_reduce(fmat,
      &                    mpi_in_place,
      &                    ndmat*n2basx,
      &                    mpi_real8,
      &                    mpi_sum,
      &                    master,
-     &                    communication_info%communication_internode,
+     &                    communication_info_mpi%
+     &                    communication_internode,
      &                    ierr)
           call mpi_reduce(dintskp,
      &                    mpi_in_place,
@@ -2179,7 +2184,8 @@ C
      &                    mpi_real8,
      &                    mpi_sum,
      &                    master,
-     &                    communication_info%communication_internode,
+     &                    communication_info_mpi%
+     &                    communication_internode,
      &                    ierr)
         end if
       end if

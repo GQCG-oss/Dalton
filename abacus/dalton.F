@@ -32,7 +32,7 @@ C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
 C
-      use parallel_models
+      use parallel_models_mpi
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -74,7 +74,7 @@ C If not MPI, MPIXINIT defines: MYNUM  = 0; MASTER = 0; NODTOT = 0
 C
       CALL MPIXINIT
 
-      call parallel_models_initialize()
+      call parallel_models_initialize_mpi()
 
       CALL QENTER('DALTON main')
       PARIO = .FALSE.
@@ -553,7 +553,7 @@ C...  terminates Gen1Int interface
       call gen1int_host_finalize()
 #endif
 
-      call parallel_models_finalize()
+      call parallel_models_finalize_mpi()
 
 !     print *, 'lets quit...'
 !     call quit('blubb')
@@ -627,7 +627,7 @@ C
       SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDIR)
 
 !     module dependencies
-      use parallel_communication_models
+      use parallel_communication_models_mpi
 
 #include "implicit.h"
 #include "priunit.h"
@@ -769,7 +769,7 @@ C
       IF(SLAVE)THEN
         if(rma_allocation)then
 !         node/NUMA master get the same memory as the master only real slaves get less
-          if(communication_info%my_shmem_node_id /= 0)then 
+          if(communication_info_mpi%my_shmem_node_id /= 0)then 
             LMWORK = LMWORK_NODES
           end if
         else
