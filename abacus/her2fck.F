@@ -481,8 +481,8 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
 #ifdef VAR_MPI
 !       get density matrix from node/numa master
 !       print *, 'shmem_id, offset, copy',
-!    &            communication_info%my_shmem_ijkl_id,offset_mat
-        if(communication_info%my_shmem_ijkl_id == 0)then
+!    &            communication_info%my_shmem_node_id,offset_mat
+        if(communication_info%my_shmem_node_id == 0)then
           call dcopy(nbasis**2,dmat(1,1,i),1,dmat_tmp,1)
         else
           call mpixget(dmat_tmp,
@@ -490,7 +490,7 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
      &                 0, ! node/numa master
      &                 offset_mat,
      &                 nbasis**2,
-     &                 communication_info%my_shmem_ijkl_id,
+     &                 communication_info%my_shmem_node_id,
 !    &                 MPI_LOCK_EXCLUSIVE,
      &                 MPI_LOCK_SHARED,
      &                 .false.,
@@ -504,14 +504,14 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
         offset_mat = (i-1)*nbasis**2
 #ifdef VAR_MPI
 !       print *, 'shmem_id, offset accum',
-!    &            communication_info%my_shmem_ijkl_id,offset_mat
+!    &            communication_info%my_shmem_node_id,offset_mat
 !       accumulate fock matrix on node/numa master
         call mpixaccum(fmat_tmp,
      &                 nbasis**2,
      &                 0, ! node/numa master
      &                 offset_mat,
      &                 nbasis**2,
-     &                 communication_info%my_shmem_ijkl_id,
+     &                 communication_info%my_shmem_node_id,
      &                 MPI_LOCK_SHARED,
      &                 rma_win_dalton_info%fmat_win)
 #endif

@@ -340,7 +340,7 @@ C
         call set_rma_window(dmat,
      &                      nelement,
      &                      master,
-     &                      communication_info%communication_sharedijkl,
+     &                      communication_info%communication_shmemnode,
      &                      rma_win_dalton_info%dmat_win,
 !    &                      .true.,
      &                      .false.,
@@ -350,7 +350,7 @@ C
         call set_rma_window(fmat,
      &                      nelement,
      &                      master,
-     &                      communication_info%communication_sharedijkl,
+     &                      communication_info%communication_shmemnode,
      &                      rma_win_dalton_info%fmat_win,
      &                      .false.)
 #endif
@@ -915,7 +915,7 @@ C
 
 !     collect data for rma_model (only itask == 3 at present)
       if(rma_model)then
-        call mpi_barrier(communication_info%communication_sharedijkl,
+        call mpi_barrier(communication_info%communication_shmemnode,
      &                   ierr)
         call mpi_reduce(mpi_in_place,
      &                  fmat,
@@ -1099,7 +1099,7 @@ C     Initialize matrices
 C     ===================
 C
       if(rma_model)then
-        if(communication_info%my_shmem_ijkl_id == 0)then
+        if(communication_info%my_shmem_node_id == 0)then
           call dzero(work(kfmat),nfmat*n2basx)
         end if
       else
@@ -1122,13 +1122,13 @@ C
         rma_win_dalton_info%fmat_win = -1
 
         nelement            = n2basx*ndmat
-        if(communication_info%my_shmem_ijkl_id /= 0) nelement = 0
+        if(communication_info%my_shmem_node_id /= 0) nelement = 0
 
 #ifdef VAR_MPI
         call set_rma_window(work(kdmat),
      &                      nelement,
-     &                      communication_info%my_shmem_ijkl_id,
-     &                      communication_info%communication_sharedijkl,
+     &                      communication_info%my_shmem_node_id,
+     &                      communication_info%communication_shmemnode,
      &                      rma_win_dalton_info%dmat_win,
 !    &                      .true.,
      &                      .false.,
@@ -1137,8 +1137,8 @@ C
 
         call set_rma_window(work(kfmat),
      &                      nelement,
-     &                      communication_info%my_shmem_ijkl_id,
-     &                      communication_info%communication_sharedijkl,
+     &                      communication_info%my_shmem_node_id,
+     &                      communication_info%communication_shmemnode,
      &                      rma_win_dalton_info%fmat_win,
      &                      .false.)
 #endif
@@ -1485,7 +1485,7 @@ C
       CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
       if(rma_model)then
 
-        if(communication_info%my_shmem_ijkl_id == 0)then
+        if(communication_info%my_shmem_node_id == 0)then
 !         allocation of density matrix(ces)
           call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
 !         distribute density matrix(ces) among node masters
@@ -1504,7 +1504,7 @@ C
 
 !     allocation of fock matrix(ces)
       if(rma_model)then
-        if(communication_info%my_shmem_ijkl_id == 0)then
+        if(communication_info%my_shmem_node_id == 0)then
           call memget('REAL',kfmat,nfmat*n2basx,work,kfree,lfree)
         else
           call memget('REAL',kfmat,           0,work,kfree,lfree)
@@ -2070,7 +2070,7 @@ C
 C     Print Fock matrices (only node masters)
 C
 !     IF(DIRFCK .AND. JPRINT.GT.5.and.
-!    &  communication_info%my_shmem_ijkl_id == 0)THEN
+!    &  communication_info%my_shmem_node_id == 0)THEN
          CALL HEADER('Fock matrix in PARLOP',-1)
          DO 600 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
@@ -2162,9 +2162,9 @@ C
 
 !     collect data for rma_model
       if(rma_model)then
-        call mpi_barrier(communication_info%communication_sharedijkl,
+        call mpi_barrier(communication_info%communication_shmemnode,
      &                   ierr)
-        if(communication_info%my_shmem_ijkl_id == 0)then
+        if(communication_info%my_shmem_node_id == 0)then
           call mpi_reduce(fmat,
      &                    mpi_in_place,
      &                    ndmat*n2basx,

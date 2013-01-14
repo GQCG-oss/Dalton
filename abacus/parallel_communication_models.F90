@@ -4,8 +4,8 @@
 !dalton_copyright_end
 !
 ! stefan jan 2013: this module contains the type definition for the
-!                  MPI communication handles to be potentially used in DALTON.
-!                  currently in use: 
+!                  MPI communication handles to be potentially used in modules.
+!                  currently in use in Dalton: 
 !                                    - lucita (after merge with hjaa-srdft)
 !                                    - mcscf  (after merge with hjaa-srdft)
 !                                    - hermit
@@ -42,14 +42,14 @@ module parallel_communication_models
     integer ::                   &
       my_intra_node_id,          &             ! intra-node ID
       my_inter_node_id,          &             ! inter-node ID
-      my_shmem_ijkl_id,          &             ! shared-memory-node ID
+      my_shmem_node_id,          &             ! shared-memory-node ID
       intra_node_size,           &             ! size of intra-node group
       inter_node_size,           &             ! size of inter-node group
-      shmem_ijkl_size,           &             ! size of shared-memory group
+      shmem_node_size,           &             ! size of shared-memory group
       intra_node_group_id,       &             ! intra-node group ID
       communication_intranode,   &             ! intra-node communication handle
       communication_internode,   &             ! inter-node communication handle
-      communication_sharedijkl                 ! shared-memory communication handle: integrals, fock matrices, density matrices, etc
+      communication_shmemnode                  ! shared-memory communication handle: integrals, fock matrices, density matrices, etc
 
     logical ::                   &
       communication_type_init = .false.        ! status of the communication type
@@ -101,19 +101,20 @@ contains
     A%communication_type_init  = .true.
     A%communication_intranode  = -1
     A%communication_internode  = -1
-    A%communication_sharedijkl = -1
+    A%communication_shmemnode  = -1
     A%my_intra_node_id         = -1
     A%my_inter_node_id         = -1
-    A%my_shmem_ijkl_id         = -1
+    A%my_shmem_node_id         = -1
     A%intra_node_size          = -1
     A%inter_node_size          = -1
-    A%shmem_ijkl_size          = -1
+    A%shmem_node_size          = -1
     A%intra_node_group_id      = -1
 
     allocate(A%total_process_list(nr_of_process_glb))
     allocate(A%shared_mem_group_list(nr_of_process_glb))
     allocate(A%intra_node_group_list(nr_of_process_glb))
     A%total_process_list      = -1
+    A%shared_mem_group_list   = -1
     A%intra_node_group_list   = -1
 
 #ifdef VAR_MPI
@@ -138,13 +139,13 @@ contains
                                   communicator_glb,                          &
                                   A%my_intra_node_id,                        &
                                   A%my_inter_node_id,                        &
-                                  A%my_shmem_ijkl_id,                        &
+                                  A%my_shmem_node_id,                        &
                                   A%intra_node_size,                         &
                                   A%inter_node_size,                         &
-                                  A%shmem_ijkl_size,                         &
+                                  A%shmem_node_size,                         &
                                   A%communication_intranode,                 &
                                   A%communication_internode,                 &
-                                  A%communication_sharedijkl,                &
+                                  A%communication_shmemnode,                 &
                                   A%intra_node_group_id)                      
 #endif
 
@@ -168,7 +169,7 @@ contains
 #ifdef VAR_MPI
     call mpi_comm_free(A%communication_intranode,  ierr)
     call mpi_comm_free(A%communication_internode,  ierr)
-    call mpi_comm_free(A%communication_sharedijkl, ierr)
+    call mpi_comm_free(A%communication_shmemnode,  ierr)
 #endif
 
   end subroutine communication_free
@@ -303,10 +304,10 @@ contains
                                       communicator_glb,                        &
                                       my_intra_node_id,                        &
                                       my_inter_node_id,                        &
-                                      my_shmem_ijkl_id,                        &
+                                      my_shmem_node_id,                        &
                                       intra_node_size,                         &
                                       inter_node_size,                         &
-                                      shmem_ijkl_size,                         &
+                                      shmem_node_size,                         &
                                       intra_node_comm,                         &
                                       inter_node_comm,                         &
                                       shmem_ijkl_comm,                         &
@@ -326,10 +327,10 @@ contains
      integer, intent(out)   :: shared_mem_list(nr_of_process_glb)
      integer, intent(out)   :: my_intra_node_id
      integer, intent(out)   :: my_inter_node_id
-     integer, intent(out)   :: my_shmem_ijkl_id
+     integer, intent(out)   :: my_shmem_node_id
      integer, intent(out)   :: intra_node_size
      integer, intent(out)   :: inter_node_size
-     integer, intent(out)   :: shmem_ijkl_size
+     integer, intent(out)   :: shmem_node_size
      integer, intent(out)   :: intra_node_comm
      integer, intent(out)   :: inter_node_comm
      integer, intent(out)   :: shmem_ijkl_comm
@@ -384,8 +385,8 @@ contains
  
       call build_new_communication_group(communicator_glb,        &
                                          shmem_ijkl_comm,         &
-                                         shmem_ijkl_size,         &
-                                         my_shmem_ijkl_id,        &
+                                         shmem_node_size,         &
+                                         my_shmem_node_id,        &
                                          color,                   &
                                          key)
 

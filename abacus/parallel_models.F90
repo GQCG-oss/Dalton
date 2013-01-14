@@ -4,41 +4,46 @@
 !dalton_copyright_end
 
 ! module for creating, checking and deleting basic parallel communication models beyond MPI_COMM_WORLD 
-! which will be created at the start of a DALTON calculation and could be used throughout the various 
+! which will be created at the start of the host program and could be used throughout the various 
 ! modules (if wanted)
 !
-! so far, we will use it in:
+! so far, we will use it in Dalton:
 ! - lucita (after merge with hjaaj-srdft)
 ! - mcscf with lucita (after merge with hjaaj-srdft)
 ! - hermit
 !
 ! written by sknecht - linkoeping jan 2013
 !
-! note for merge with hjaaj-srdft: routines are modified copies of the existing routines for lucita in this branch. 
-! (whoever is doing that one day)  merging could be a pain in the a** but i guess i will do that anyway. (for now i
-!                                  protect everything "old" with NEW_LUCITA)
+! note for merge with hjaaj-srdft in Dalton: routines are modified copies of the existing routines for lucita in this branch. 
+! (whoever is doing that one day)            merging could be a pain in the a** but i guess i will do that anyway. (for now i
+!                                            protect everything "old" with NEW_LUCITA)
 
 module parallel_models
 
   use parallel_communication_models
 ! use parallel_file_io_models
 
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+  use mpi
   implicit none
+#else
+  implicit none
+#include "mpif.h"
+#endif
+#else
+  implicit none
+  integer, parameter :: mpi_comm_world = -1
+#endif
+
 
   public parallel_models_initialize
   public parallel_models_finalize
   public check_parallel_models
 
-#include "maxorb.h"
-#include "infpar.h"
-
   private
 
   save
-
-#ifdef NEW_LUCITA
-  logical, public :: lucita_models_enabled = .false.
-#endif
 
 contains
 
@@ -50,20 +55,28 @@ contains
 !             arrays)
 !
 !*******************************************************************************
-#ifdef VAR_MPI
-#ifndef VAR_USE_MPIF
-  use mpi
-#else
-#include "mpif.h"
-#endif
-#else
-      integer :: mpi_comm_world = -1
-#endif
+!-------------------------------------------------------------------------------
+  integer :: nr_of_process_glb
+  integer :: my_process_id_glb
+  integer :: ierr
+  logical :: is_init
 !-------------------------------------------------------------------------------
 
+#ifdef VAR_MPI
+      call mpi_initialized(is_init, ierr)
+      if(.not.is_init) stop ' initialization of parallel communication models requires MPI_init to be called first.'
+      call mpi_comm_rank(mpi_comm_world, my_process_id_glb, ierr) 
+      call mpi_comm_size(mpi_comm_world, nr_of_process_glb, ierr) 
+#else
+      my_process_id_glb = 0
+      nr_of_process_glb = 1
+#endif
+
 !     initialize parallel communication models
-      print *, 'mynum, nodtot',mynum, nodtot, mpi_comm_world
-      call communication_init(communication_info, mynum, nodtot+1, mpi_comm_world)
+      call communication_init(communication_info,     &
+                              my_process_id_glb,      &
+                              nr_of_process_glb,      &
+                              mpi_comm_world)
 
   end subroutine parallel_models_initialize
 !*******************************************************************************
@@ -84,7 +97,7 @@ contains
   end subroutine parallel_models_finalize
 !*******************************************************************************
 
-  subroutine check_parallel_models()
+  subroutine check_parallel_models(models_check)
 !******************************************************************************
 !
 !    purpose: check for existing/enabled parallel communication/file-I/O models
@@ -92,32 +105,22 @@ contains
 !             runs to deallocate temporary arrays)
 !
 !*******************************************************************************
-#ifdef NEW_LUCITA
-  use ttss_block_module
-  use parallel_setup
-  use parallel_task_distribution_type_module
-#endif
-#include "priunit.h"
-!*******************************************************************************
-    logical :: file_open
+  character*(*), intent(in) :: models_check
 !-------------------------------------------------------------------------------
-
+!-------------------------------------------------------------------------------
+      select case(models_check)
+        case('all')
+!         call check_all_models
+          stop 'parallel model check for all modules not implemented yet'
 #ifdef NEW_LUCITA
-  if(lucita_models_enabled)then
-!   possibly free ttss-type used in LUCITA/MCSCF-LUCITA
-    call ttss_free(ttss_info)
-!   possibly free communicator + file type used in LUCITA/MCSCF-LUCITA
-    call lucita_close_parallel_model(.true.)
-!   possibly free parallel task list distribution in LUCITA/MCSCF-LUCITA
-    call parallel_task_distribution_free_lucipar(ptask_distribution)
-    if(mytid > 0)then
-      inquire(unit=lupri,opened=file_open)
-      if(file_open) close(lupri,status="keep")
-    end if
-  end if
+        case('lucita')
+          call check_lucita_models()
 #endif
+        case default 
+          stop 'parallel model check for all modules not implemented yet'
+      end select
 
   end subroutine check_parallel_models
-
 !*******************************************************************************
+
 end module parallel_models

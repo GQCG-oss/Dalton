@@ -769,7 +769,7 @@ C
       IF(SLAVE)THEN
         if(rma_allocation)then
 !         node/NUMA master get the same memory as the master only real slaves get less
-          if(communication_info%my_shmem_ijkl_id /= 0)then 
+          if(communication_info%my_shmem_node_id /= 0)then 
             LMWORK = LMWORK_NODES
           end if
         else
