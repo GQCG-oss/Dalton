@@ -125,7 +125,7 @@ C
       CALL MEMGET('REAL',KCMOCG,NBAST*NOCCT,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KSS   ,N2BASX,WRK,KFREE,LFREE)
 C
-C     ***---MULLIK---***
+C     ***---MULLIKEN---***
 C
 C     *)  POP***   matrices for accumulation of contributions
 C                  to various forms of population analysis
@@ -134,13 +134,14 @@ C
       CALL MEMGET('REAL',KPOPABI,NATOMS*NATOMS,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KPOPCG ,NBAST ,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KPOPC  ,NBAST*NOCCT,WRK,KFREE,LFREE)
-!     reuse allocation for "OVLP" for VIRIAL and MULLIK to "POPNET" in MULLIK
+!     reuse allocation for "OVLP" for VIRIAL and MULLIKEN to "POPNET" in MULLIKEN
       KPOPNET = KOVLP
 C
 C     ***** Get the MO coefficients and NO occupation numbers
 C
       REWIND LUIT1
       CALL READMO (WRK(KCMO),9,DUMMY,0)
+      REWIND LUIT1
       CALL MEMGET('REAL',KAOCC ,NASHT ,WRK,KFREE,LFREE)
       IF (NASHT .LE. 1) THEN
          IF (NASHT .EQ. 1) WRK(KAOCC) = NACTEL
@@ -211,9 +212,9 @@ C
 C     *****     Perform Mulliken-type population analysis
 C
       IF (MULLKM) THEN
-         CALL MULLIK (WRK(KOCCUP), WRK(KPOPNAB),WRK(KPOPABI),
-     *                WRK(KPOPCG),WRK(KPOPC),WRK(KCMOCG),WRK(KSS),
-     *                WRK(KPOPNET))
+         CALL MULLIKEN (WRK(KOCCUP), WRK(KPOPNAB),WRK(KPOPABI),
+     *                  WRK(KPOPCG),WRK(KPOPC),WRK(KCMOCG),WRK(KSS),
+     *                  WRK(KPOPNET))
       END IF
 C
 C     *****     Dipole moments
@@ -223,7 +224,7 @@ C
      &     'INFO: dipole moment not implemented in this version'
 c        KDIPM  = KFREE
 c        KWRK3D = KDIPM  + NNBAST*3
-c        CALL DIPMOM (NNBAST,WRK(KCMO),WRK(KOCCUP),WRK(KDIPM))
+c        CALL POP_DIPMOM (NNBAST,WRK(KCMO),WRK(KOCCUP),WRK(KDIPM))
       END IF
 C
 C     *****     Quadrupole moments  *****
@@ -387,21 +388,22 @@ C
      *     '     basic information for POPTRA is missing.'
             RETURN
          END IF
-         POPANA_TYPE = '      MULPOP '
+         POPANA_TYPE = '     MULPOP '
       ELSE IF (IPOPTYP .EQ. 2) THEN
          CALL RDPROP('OVERLAP ',SS,FOUND)
          CALL DSPTGE(NBAST,SS,S)
-         POPANA_TYPE = '    MULPOP   '
+         POPANA_TYPE = '   MULPOP x '
       ELSE IF (IPOPTYP .EQ. 3) THEN
          CALL RDPROP('HJPOPOVL',S,FOUND)
-         POPANA_TYPE = '    HJAAJPOP '
+         POPANA_TYPE = '   HJAAJPOP '
       ELSE
          call quit('POPTRA: unknown IPOPTYP')
       END IF
 C
 
       if (iprmul .ge. 25) then
-         write (lupri,*) 'Population overlap matrix type',ipoptyp
+         write (lupri,*) 'Population overlap matrix type ',
+     &      popana_type, ipoptyp
          call output(S,1,nbast,1,nbast,nbast,nbast,-1,lupri)
       end if
 C
@@ -493,8 +495,8 @@ C
       RETURN
       END
 C  /* Deck mullik */
-      SUBROUTINE MULLIK (OCCUP,
-     &                   POPNAB,POPABI,POPCGT,POPC,CMOCGT,SS,POPNET)
+      SUBROUTINE MULLIKEN (OCCUP,
+     &                     POPNAB,POPABI,POPCGT,POPC,CMOCGT,SS,POPNET)
 C
 C  Purpose:
 C         Given the mo coefficients and overlap integrals in cgto basis,
@@ -555,8 +557,8 @@ C
 C     at this stage
 C
 C         POPNAB will contain the net and overlap populations between
-C                nuclei a and b, summed over all mo's
-C         POPABI will be the same as popnabi, but resolved for each
+C                nuclei A and B, summed over all mo's
+C         POPABI will be the same as popnab, but resolved for each
 C                mo separately (these are written out on tape)
 C         POPC   will be the same as previous, but resolved for each
 C                mo separately. one line of length nbast is reserved
@@ -644,16 +646,20 @@ C
 C
 C     Populations between centers
 C
-      if (iprmul .ge. 3) then
+      if (iprmul .ge. 1) then
       WRITE (LUPRI,1004) POPANA_TYPE
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1004) POPANA_TYPE
- 1004 FORMAT(//6X,'Total net and overlap populations,',
-     &            ' summed over all MOs',/8X,'Type:',A)
+ 1004 FORMAT(//6X,'Total net, overlap, and gross populations,',
+     &            ' summed over all MOs',/6X,'Type:',A)
 C
       IEND = 0
     5    IST  = IEND + 1
          IEND = MIN(NATOMS, IEND + 10)
-         WRITE (LUPRI,1009) (NAMDEP(NUC),NUC=IST,IEND)
+         IF (IEND .EQ. NATOMS) THEN
+            WRITE (LUPRI,1009) (NAMDEP(NUC),NUC=IST,IEND),'Gross '
+         ELSE
+            WRITE (LUPRI,1009) (NAMDEP(NUC),NUC=IST,IEND)
+         END IF
          WRITE (LUPRI,'()')
          IF (LUW4 .NE. LUPRI) THEN
             WRITE (LUW4,1009) (NAMDEP(NUC),NUC=IST,IEND)
@@ -664,8 +670,14 @@ C
             POPNAB_MIN = MINVAL(POPNAB(NUCA,IST:IEND))
          IF (POPNAB_MAX .LT. 1.0D-4 .AND. POPNAB_MIN .GT. -1.0D-4)
      &      GO TO 140
-            WRITE (LUPRI,1012)
+            IF (IEND .EQ. NATOMS) THEN
+               WRITE (LUPRI,1012)
+     &         NAMDEP(NUCA),(POPNAB(NUCA,NUCB),NUCB=IST,IEND),
+     &         POPNUC(NUCA)
+            ELSE
+               WRITE (LUPRI,1012)
      &         NAMDEP(NUCA),(POPNAB(NUCA,NUCB),NUCB=IST,IEND)
+            END IF
             IF (LUW4 .NE. LUPRI) THEN
                WRITE (LUW4,1012)
      &            NAMDEP(NUCA),(POPNAB(NUCA,NUCB),NUCB=IST,IEND)
@@ -676,10 +688,11 @@ C
 C
       IF ( IPRMUL .GE. 5 ) THEN
          WRITE (LUPRI,1001) POPANA_TYPE
- 1001    FORMAT(//6X,'Net and overlap populations, ' 
+ 1001    FORMAT(//6X,'Net, overlap, and gross populations, ' 
      &              ,' contributions from individual MOs'
-     &           /8X,'Type:',A)
+     &           /6X,'Type:',A)
          REWIND LUTEMP
+         ISYM = 1
          DO 130 IP = 1,NOCCT
             WRITE (LUPRI,1002) IP, OCCUP(IP)
  1002       FORMAT (/6X,'Molecular orbital number',I5,
@@ -689,15 +702,25 @@ C
             IEND = 0
     3          IST  = IEND + 1
                IEND = MIN(NATOMS, IEND + 10)
-               WRITE (LUPRI,1009) (NAMDEP(NUC),NUC=IST,IEND)
+               IF (IEND .EQ. NATOMS) THEN
+                  WRITE (LUPRI,1009) (NAMDEP(NUC),NUC=IST,IEND),'Gross '
+               ELSE
+                  WRITE (LUPRI,1009) (NAMDEP(NUC),NUC=IST,IEND)
+               END IF
                WRITE (LUPRI,'()')
                DO NUCA = 1,NATOMS
                   POPABI_MAX = MAXVAL(POPABI(NUCA,IST:IEND))
                   POPABI_MIN = MINVAL(POPABI(NUCA,IST:IEND))
                IF (POPABI_MAX .LT. 1.0D-4 .AND. POPABI_MIN .GT. -1.0D-4)
      &            CYCLE
-                  WRITE (LUPRI,1012)
+                  IF (IEND .EQ. NATOMS) THEN
+                     PAI = DSUM(NATOMS,POPABI(NUCA,1),NATOMS)
+                     WRITE (LUPRI,1012)
+     &               NAMDEP(NUCA),(POPABI(NUCA,NUCB),NUCB=IST,IEND),PAI
+                  ELSE
+                     WRITE (LUPRI,1012)
      &               NAMDEP(NUCA),(POPABI(NUCA,NUCB),NUCB=IST,IEND)
+                  END IF
                END DO
             IF (IEND.LT.NATOMS)   GO TO 3
   130    CONTINUE
@@ -706,12 +729,12 @@ C
 C
 C     Gross populations of cgto's
 C
-      IF (IPRMUL.GE.7) THEN
+      IF (IPRMUL.GE.10) THEN
          WRITE (LUPRI,1005) POPANA_TYPE
          IF (LUW4 .NE. LUPRI) WRITE (LUW4,1005) POPANA_TYPE
  1005    FORMAT (//6X,'Partial orbital gross populations:',
-     &   /8X,'Gross populations of AO basis functions for each MO',
-     &   /8X,'Type:',A)
+     &   /6X,'Gross populations of AO basis functions for each MO',
+     &   /6X,'Type:',A)
          DO 160 IP = 1,NOCCT
             WRITE (LUPRI,1002) IP, OCCUP(IP)
             WRITE (LUPRI,1006) (IA,POPC(IA,IP),IA=1,NBAST)
@@ -723,12 +746,27 @@ C
  1006    FORMAT (10(I4,F8.4))
       END IF
 C
-      POPTOT = DSUM(NBAST,POPCGT,1)
-      if (iprmul .ge. 7) then
-      WRITE (LUPRI,1007) POPANA_TYPE
-      WRITE (LUPRI,1006) (IA,POPCGT(IA),IA = 1,NBAST)
-      WRITE (LUPRI,'(/A,F10.4)')
-     &   ' Sum = total electronic charge:',POPTOT
+      if (iprmul .ge. 4) then
+         WRITE (LUPRI,1007) POPANA_TYPE
+         !old! WRITE (LUPRI,1006) (IA,POPCGT(IA),IA = 1,NBAST)
+         N_ZERO = 0
+         DO IA = 1, NBAST
+            NUC  = IAOINFO(IA,2)
+            ITYP = IAOINFO(IA,3)
+            IF (ABS(POPCGT(IA)) .LT. 1.0D-5) THEN
+               N_ZERO = N_ZERO + 1
+               WRITE(LUPRI,'(I5,2X,A,2X,2A)')
+     &         IA, NAMDEP(NUC), GTOTYP(ITYP),' Less than 1.0e-6'
+            ELSE
+               WRITE(LUPRI,'(I5,2X,A,2X,A,F10.4)')
+     &         IA, NAMDEP(NUC), GTOTYP(ITYP),POPCGT(IA)
+            END IF
+         END DO
+         POPTOT = DSUM(NBAST,POPCGT,1)
+         WRITE (LUPRI,'(/A,F10.4/A,I5,A,I5)')
+     &   ' Sum = total electronic charge  :',POPTOT,
+     &   ' No. of AOs with gross population < 1.0e-5:',N_ZERO,
+     &   ' out of',NBAST
       IF (LUW4 .NE. LUPRI) THEN
          WRITE (LUW4,1007) POPANA_TYPE
          WRITE (LUW4,1006) (IA,POPCGT(IA),IA = 1,NBAST)
@@ -737,7 +775,7 @@ C
       END IF
       end if
  1007 FORMAT(//6X,'Total gross populations of AO basis functions,',
-     &            ' summed over all MOs'/8X,'Type:',A)
+     &            ' summed over all MOs'/6X,'Type:',A)
 C
 C     GROSS POPULATIONS OF ORBITAL TYPES
 C
@@ -746,8 +784,8 @@ C
          IF (LUW4 .NE. LUPRI) WRITE (LUW4,1008) POPANA_TYPE
  1008    FORMAT(//6X,'Partial gross population of AO basis',
      &              ' functions for each MO',
-     &           /8X,'distributed over AO types for each center',
-     &           /8X,'Type:',A)
+     &           /6X,'distributed over AO types for each center',
+     &           /6X,'Type:',A)
          DO 200 IP = 1,NOCCT
             WRITE (LUPRI,1002) IP,OCCUP(IP)
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,1002) IP,OCCUP(IP)
@@ -785,7 +823,7 @@ C
   200    CONTINUE
       END IF
 
- 1009 FORMAT (/11X,A6,(10(4X,A6)))
+ 1009 FORMAT (/11X,A6,(11(4X,A6)))
  1010 FORMAT (3X,A4,10F10.4)
  1012 FORMAT (1X,A6,10F10.4)
 C
@@ -794,8 +832,8 @@ C
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1013) POPANA_TYPE
  1013 FORMAT(/6X,'Total gross population of AO basis',
      &           ' functions, summed over all MOs',
-     &       /8X,'distributed over AO types for each center',
-     &       /8X,'Type:',A)
+     &       /6X,'distributed over AO types for each center',
+     &       /6X,'Type:',A)
 
       IEND = 0
     9 IST  = IEND + 1
@@ -849,7 +887,7 @@ C
         WRITE (LUPRI,1014) POPANA_TYPE
         IF (LUW4 .NE. LUPRI) WRITE (LUW4,1014) POPANA_TYPE
  1014 FORMAT (/6X,'Partial gross population of the centers',
-     *            ' from each MO'/8X,'Type:',A)
+     *            ' from each MO'/6X,'Type:',A)
 C
         DO 240 IP = 1,NOCCT
           POPABI(1:NATOMS,1) = 0.0D0
@@ -871,21 +909,21 @@ c1015     FORMAT (4(1X,A6,F10.4))
 C
       POPTOT_E = DSUM(NATOMS,POPNUC,1)
 C
-C     Add nuclear charges
+C     Add effective nuclear charges (nuclear charge minus ECP charge)$
 C
       NUC = 0
       DO IATOM = 1, NUCIND
-         NQ   = IZATOM(IATOM)
-         NDEG = NUCDEG(IATOM)
-         DO I = 1, NDEG
+         Q_EFF = CHARGE(IATOM)
+         N_DEG = NUCDEG(IATOM)
+         DO I = 1, N_DEG
             NUC = NUC + 1
-            POPNUC(NUC) = NQ - POPNUC(NUC)
+            POPNUC(NUC) = Q_EFF - POPNUC(NUC)
          END DO
       END DO
 
       POPTOT = DSUM(NATOMS,POPNUC,1)
 
- 2015 FORMAT (A14,10(A6,F6.2,'; ')/,(T15,10(A6,F6.2,'; ')))
+ 2015 FORMAT ('@ ',A12,10(A6,F6.2,'; ')/,('@',T15,10(A6,F6.2,'; ')))
       IF (iprmul .lt. 0) then
 C     ... only print max -iprmul populations in each iteration
          mnuc = min(NATOMS,-iprmul)
@@ -912,12 +950,12 @@ C     NET and overlap populations between cgto basis functions - sum
          WRITE (LUPRI,1017) POPANA_TYPE
  1017    FORMAT(//6X,'Total net and overlap populations between the AO',
      &          ' basis functions'
-     &          /8X,'Summed over all MOs'/8X,'Type:',A)
+     &          /6X,'Summed over all MOs'/6X,'Type:',A)
 C
          IEND = 0
    12    IST  = IEND + 1
          IEND = MIN(NBAST, IEND + 10)
-         WRITE (LUPRI,1018) (I,I=IST,IEND)
+         WRITE (LUPRI,1018) (IB,IB=IST,IEND)
  1018    FORMAT (/8X,'AO',10I9)
          WRITE (LUPRI,'(A)') '     AO'
          DO IA=1,NBAST
@@ -934,7 +972,7 @@ C
       RETURN
       END
 C  /* Deck dipmom */
-      SUBROUTINE DIPMOM (MATDIM,CMO,OCCUP,DIPMAT)
+      SUBROUTINE POP_DIPMOM (MATDIM,CMO,OCCUP,DIPMAT)
 C
 C PURPOSE:
 C     Compute the electronic and total dipole moments
@@ -965,7 +1003,7 @@ C
          NINFO = NINFO + 1
          WRITE (LUPRI,'(//A/A/)')
      *     ' *** INFO: Label "DIPOLMOM" not found on AOONEINT,',
-     *     '     basic information for DIPMOM is missing.'
+     *     '     basic information for POP_DIPMOM is missing.'
          RETURN
       END IF
 C

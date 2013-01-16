@@ -1083,14 +1083,15 @@ C
      &                  NEXCR(KSYMOP),THCPP,FOUND,CONV,ANTSYM)
             IF (FOUND .AND. CONV) THEN
                WRITE (LUPRI,'(A,I3,A)') 'We seem to have all '//
-     &              'excitation vectors of symmetry',KSYMOP,' on file'
+     &             'excitation vectors of symmetry',KSYMOP,
+     &             ' on file RSPVEC'
                GOTO 100
             END IF
 C
             IF ( KZVAR.EQ.0 ) THEN
-               NWARN = NWARN + 1
-               WRITE(LUPRI,'(/2A)')' ****WARNING******',
-     *            ' NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO'
+               NINFO = NINFO + 1
+               WRITE(LUPRI,'(/2A,I3,A)')' **** INFO ******',
+     *            ' NUMBER OF VARIABLES IN SYMMETRY',KSYMOP,' IS ZERO'
                GO TO 100
             END IF
 C
@@ -1142,9 +1143,9 @@ C
             IF ( NLRCR(KSYMOP).EQ.0 ) GO TO 200
 C
             IF ( KZVAR.EQ.0 ) THEN
-               NWARN = NWARN + 1
-               WRITE(LUPRI,'(/2A)')' ****WARNING******',
-     *            ' NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO'
+               NINFO = NINFO + 1
+               WRITE(LUPRI,'(/2A,I3,A)')' **** INFO ******',
+     *            ' NUMBER OF VARIABLES IN SYMMETRY',KSYMOP,' IS ZERO'
                GO TO 200
             END IF
             CALL CRLRV1(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,

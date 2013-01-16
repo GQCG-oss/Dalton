@@ -25,7 +25,7 @@ C ============================================================================
 C     newabs.F: Main author Joanna Kauczor
 C     This implementation is published in:
 C
-C        Reference C:
+C     Reference C:
 C        J. Kauczor, P. Jorgensen, and P. Norman, 
 C        "On the efficiency of algorithms for solving Hartree-Fock and Kohn-Sham
 C        response equations",
@@ -38,16 +38,21 @@ C     Purpose:
 C     Read in user settings for imaginary polarizabilities describing
 C     absorption in the optical processes.
 C
+C Used from
+C  codata.h : XTKAYS
+C  gnrinf.h : THR_REDFAC
+C  symmet.h : ISYMAX
+C  infvar.h : NCONF
 #include "implicit.h"
 #include "priunit.h"
-#include "gnrinf.h" !THR_REDFAC
-#include "maxorb.h" !MXCORB for symmet
-#include "maxaqn.h" !MXQN for symmet
-#include "mxcent.h" !MXCENT for symmet
-#include "symmet.h" !ISYMAX
-#include "infvar.h" !NCONF
+#include "codata.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "infvar.h"
 #include "abslrs.h"
-c#include "infrsp.h"
 C
       LOGICAL NEWDEF, ALLCOMP
       PARAMETER ( NTABLE = 14 )
@@ -302,12 +307,15 @@ C PURPOSE:
 C     Driver routine for the computation of response properties including
 C     absorption
 C
+C Used from:
+C   infvar.h : MAXWOP
+C   inforb.h : NSYM
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h" !IRAT
+#include "iratdef.h"
 #include "abslrs.h"
-#include "infvar.h" !MAXWOP
-#include "inforb.h" !NSYM
+#include "infvar.h"
+#include "inforb.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(LWRK)
@@ -381,7 +389,7 @@ C
          IF (ABS_NOPER(ISYM).GT.0) THEN
 C
             CALL ABSINTER(ISYM,UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
-     &                    KZVAR,WRK(KFREE),LFREE)
+     &                    KZVAR,WRK,LWRK)
 C
             KGD   = 1
             KXSOL = KGD + 2*KZVAR
@@ -432,9 +440,13 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
+C
+C Used from:
+C   infvar.h : MAXWOP
+C   inforb.h : NSYM
 #include "abslrs.h"
-#include "infvar.h" !MAXWOP
-#include "inforb.h" !NSYM
+#include "infvar.h"
+#include "inforb.h"
 c
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -478,14 +490,20 @@ C
 C
 C PURPOSE:
 C
+C 
 #include "implicit.h"
 #include "abslrs.h"
-#include "thrzer.h" !THZER
+#include "thrzer.h"
 #include "priunit.h"
-#include "inforb.h" !NORB,NORBT,NASHT,NISHT,N2BASX,NBAST,NBAS,NSYM,MULD2H,ICMO
-#include "maxorb.h" !MXCORB (needed for inforb)
-#include "infinp.h" !DODFT,HSROHF,DIRFCK
-#include "dftcom.h" !DFT
+C
+C Used from:
+C   inforb.h: NORB,NORBT,NASHT,NISHT,N2BASX,NBAST,NBAS,NSYM,MULD2H,ICMO
+C   infinp.h: DODFT,HSROHF,DIRFCK
+C   dftcom.h: DFT
+#include "maxorb.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "dftcom.h"
 #include "pcmlog.h"
 #include "gnrinf.h"
 C
@@ -729,13 +747,16 @@ C PURPOSE:
 C
 #include "implicit.h"
 #include "abslrs.h"
-#include "thrzer.h" !THZER
+#include "thrzer.h"
 #include "priunit.h"
-#include "inforb.h" !NORB,NORBT,NASHT,NISHT,N2BASX,NBAST,NBAS,NSYM,MULD2H,ICMO
-c#include "infvar.h" !MAXWOP
-#include "maxorb.h" !MXCORB (needed for inforb)
-#include "infinp.h" !DODFT,HSROHF,DIRFCK
-#include "dftcom.h" !DFT
+C Used from
+C   inforb.h: NORB,NORBT,NASHT,NISHT,N2BASX,NBAST,NBAS,NSYM,MULD2H,ICMO
+C   infinp.h: DODFT,HSROHF,DIRFCK
+C   dftcom.h: DFT
+#include "inforb.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "dftcom.h"
 c
 C
       INTEGER   NLT,NNMAX,KZVAR
@@ -807,6 +828,7 @@ c
          KINT=1
          KTOT=1
          KNMAX=NNMAX
+         KMOD=KNMAX
        ENDIF
        KNTOT=KNMAX
        CALL MEMGET('REAL',KZYMB,KNMAX*NORBT*NORBT,WRK,KFREE,LFREE)
@@ -868,10 +890,11 @@ C   TMP(*)  temporary matrix
 C
 #include "implicit.h"
 C
+C Used from
+C   infinp.h: NORBT,NASHT,NISHT,NBAST,N2BASX,NSYM,MULD2H,ICMO,NORB,NBAS,NASH,NISH,IORB,IBAS,ICMO,IASH
 #include "priunit.h"
 #include "abslrs.h"
-#include "maxorb.h" !MXCORB (needed for inforb)
-#include "inforb.h" !NORBT,NASHT,NISHT,NBAST,N2BASX,NSYM,MULD2H,ICMO,NORB,NBAS,NASH,NISH,IORB,IBAS,ICMO,IASH
+#include "inforb.h"
       DIMENSION ZYM(NORBT,*),WRK(LWRK)
       DIMENSION CMO(*),DV(NASHT,*),DXCAO(*),DXVAO(*)
       PARAMETER (HALF = 0.5D0, D2 = 2.0D0, D4 = 4.0D0)
@@ -1029,10 +1052,10 @@ C
         CALL DAXPY(N2BASX,-1.0d0,WRK(KDXAO2),1,DXCAO,1)
       ENDIF
 C
-      IF ( IPRRSP.GE.200 ) THEN
+      IF ( IPRABSLRS.GE.200 ) THEN
          WRITE (LUPRI,'(/A)')
      &   'Final result in ABS_ZYTRA'
-         CALL OUTPUT(DXCAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(DXCAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 C 
       CALL QEXIT('ABS_ZYTRA')
@@ -1043,12 +1066,19 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
+C
+C Used from
+C   inforb.h: NSYM
+C   codata.h: XTEV
+C    qrinf.h: MZYVAR (kzyvar=mzyvar(isym))
+C   infvar.h: MAXWOP
+C   infdim.h: NVARMA (when ABS_ANALYZE)
 #include "abslrs.h"
-#include "inforb.h" !NSYM
-#include "codata.h" !XTEV
-#include "qrinf.h" !MZYVAR (kzyvar=mzyvar(isym))
-#include "infvar.h" !MAXWOP
-#include "infdim.h" !NVARMA (when ABS_ANALYZE)
+#include "inforb.h"
+#include "codata.h"
+#include "qrinf.h"
+#include "infvar.h"
+#include "infdim.h"
 C
       LOGICAL FOUND, CONV
 C
@@ -1204,8 +1234,8 @@ C
       SUBROUTINE GET_LRF(LU,LABEL,NFREQ_ABS,FREQ_ABS,
      &     FC,FV,CMO,UDV,PV,XINDX,RESLRF,KZVAR,
      &     WRK,LWRK)
-#include <implicit.h>
-#include <abslrs.h>
+#include "implicit.h"
+#include "abslrs.h"
 C
       CHARACTER*8 LABEL,LABGD
       LOGICAL FOUND,CONV

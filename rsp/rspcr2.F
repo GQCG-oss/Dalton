@@ -153,9 +153,9 @@ C
      &                     FOUND,CONV,ATNSYM)
                IF (FOUND .AND. CONV) THEN
                   WRITE(LUPRI,'(/A,/A12,A10,/A42)')
-     *                 ' Converged solution vector already on file',
-     *                 CRLBL(IOPVEC),'freq',
-     *                 ' -----------------------------------------'
+     *              ' Converged solution vector already on file RSPVEC',
+     *              CRLBL(IOPVEC),'freq',
+     *              ' -----------------------------------------'
                   WRITE(LUPRI,'(F22.6)') AFRQ
                ELSE
                   DO IJ = 0, NFREQ
@@ -368,7 +368,7 @@ C
          IF (FOUND .AND. CONV) THEN
             WRITE(LUPRI,'(/A,/2A12,2F12.6)')
      *           ' Skip XYVEC since converged solution vector'//
-     *           ' already on file',XOPLBL,YOPLBL,FREQX,FREQY
+     *           ' already on file RSPVEC',XOPLBL,YOPLBL,FREQX,FREQY
             GO TO 200
          END IF
 C
@@ -379,13 +379,13 @@ C
          IF (.NOT. (FOUND .AND. CONV)) THEN
             IF (.NOT. FOUND) THEN
                WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' XYVEC: Response '//
-     &              'label ',XOPLBL,' with frequency ',FREQX,
-     &              ' and symmetry',ISYMX,' not found on file LURSP'
+     &            'label ',XOPLBL,' with frequency ',FREQX,
+     &            ' and symmetry',ISYMX,' not found on file RSPVEC'
                CALL QUIT('Response vector not found on file')
             ELSE
                WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' XYVEC: Response '//
-     &              'label ',XOPLBL,' with frequency ',FREQX,
-     &              ' and symmetry',ISYMX,' not converged on file LURSP'
+     &            'label ',XOPLBL,' with frequency ',FREQX,
+     &            ' and symmetry',ISYMX,' not converged on file RSPVEC'
                CALL QUIT('Non-converged response vector on file')
             END IF
          END IF
@@ -399,13 +399,13 @@ C
          IF (.NOT. (FOUND .AND. CONV)) THEN
             IF (.NOT. FOUND) THEN
                WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' XYVEC: Response '//
-     &              'label ',YOPLBL,' with frequency ',FREQY,
-     &              ' and symmetry',ISYMY,' not found on file LURSP'
+     &            'label ',YOPLBL,' with frequency ',FREQY,
+     &            ' and symmetry',ISYMY,' not found on file RSPVEC'
                CALL QUIT('Response vector not found on file')
             ELSE
                WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' XYVEC: Response '//
-     &              'label ',YOPLBL,' with frequency ',FREQY,
-     &              ' and symmetry',ISYMY,' not converged on file LURSP'
+     &            'label ',YOPLBL,' with frequency ',FREQY,
+     &            ' and symmetry',ISYMY,' not converged on file RSPVEC'
                CALL QUIT('Non-converged response vector on file')
             END IF
          END IF

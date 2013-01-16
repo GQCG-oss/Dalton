@@ -296,7 +296,10 @@ C     Disable "MP2FRO" if result not to be printed
       IF (IPRMP2 .LE. 0) MP2FRO = .FALSE.
       IF (IPRMP2 .GE. 5 .AND. MP2FRZ) THEN
          WRITE(LUPRI,'(/A)') ' Frozen orbitals in MP2 (1: frozen) :'
-         WRITE(LUPRI,'(5(10I2,2X))') IFRMP2(1:NORBT)
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(5(10I2,2X))')
+     &         IFRMP2(IORB(ISYM)+1:IORB(ISYM)+NORB(ISYM))
+         END DO
       END IF
       CALL FLSHFO(LUPRI)
       IF (SRMP2_SRINTS) THEN
@@ -479,72 +482,73 @@ C
 C
       IF (IPRMP2 .GE. 0) THEN
          IF (MP2_NO_OCCVIR) WRITE(LUPRI,'(/A)')
-     &      ' * Occ-virt block of MP2 density matrix ignored.'
+     &      '@   * Occ-virt block of MP2 density matrix ignored.'
          IF (MP2FRZ) THEN
             WRITE (LUPRI,'(/A,8I5)')
-     *      ' * MP2 frozen orbitals per symmetry :',(NFRMP2(I),I=1,NSYM)
+     &      '@   * MP2 frozen orbitals per symmetry :',
+     &      (NFRMP2(I),I=1,NSYM)
             WRITE (LUPRI,'(/A)')
      *      " * Total energy and NO's calculated with frozen orbitals."
          END IF
          IF (MP2_SCALED) WRITE (LUPRI,'(/A,2(/A,F14.8))')
-     *      ' * MP2 calculation was scaled using the factors',
-     *      '     p_S :',MP2_SCALEFAC(1)+MP2_SCALEFAC(2),
-     *      '     p_T :',-MP2_SCALEFAC(2)
+     &      '@   * MP2 calculation was scaled using the factors',
+     &      '@       p_S :',MP2_SCALEFAC(1)+MP2_SCALEFAC(2),
+     &      '@       p_T :',-MP2_SCALEFAC(2)
          IF (MP2_LSHIFT .NE. 0.0D0) WRITE (LUPRI,'(/A,F14.8)')
-     *      ' * All 2p-2h orbital energy differences have been '//
-     *      'shifted with : ',MP2SHF
+     &      '@   * All 2p-2h orbital energy differences have been '//
+     &      '@  shifted with : ',MP2SHF
 
          IF (SRMP2_SRINTS) THEN
-            IF (DCPT2) WRITE (LUPRI,'(/A)') ' *** DCPT2 result:'
+            IF (DCPT2) WRITE (LUPRI,'(/A)') '@   *** DCPT2 result:'
             if (isrints_loop .eq. 1) then
-               WRITE (LUPRI,'(//A,F25.10)')
-     *          '   MP2 contribution from short-range integrals :',EMP2
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &          ' from short-range integrals :',EMP2
                EMP2_SR = EMP2
             ELSE IF (ISRINTS_LOOP .EQ. 2) THEN
-               WRITE (LUPRI,'(//A,F25.10)')
-     *          '   MP2 contribution from  long-range integrals :',EMP2
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &          ' from  long-range integrals :',EMP2
                EMP2_LR = EMP2
             ELSE IF (ISRINTS_LOOP .EQ. 3) THEN
                EMP2_SRLR = EMP2 - EMP2_SR - EMP2_LR
-               WRITE (LUPRI,'(//A,F25.10)') '   MP2 contribution from'
-     &           //'       sr-lr integrals :',EMP2_SRLR
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &         ' from       sr-lr integrals :',EMP2_SRLR
                EMP2_SRLR = EMP2_SRLR + EMP2_SR
-               WRITE (LUPRI,'(//A,F25.10)') '   MP2 contribution from'
-     &           //' sr-sr+sr-lr integrals :',EMP2_SRLR
-               WRITE (LUPRI,'(//A,F25.10)')
-     *          '   MP2 contribution from        full integrals :',EMP2
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &         ' from sr-sr+sr-lr integrals :',EMP2_SRLR
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &          ' from        full integrals :',EMP2
             ELSE
-               call quit('You should never see this output!')
+               call quit('MP2CTL: You should never see this output!')
             END IF
          ELSE IF (ADDSRI) THEN
             WRITE (LUPRI,'(/,3(/A,F25.10))')
-     *       ' Short-range Hartree-Fock total energy         :',EMY,
-     *       ' + MP2 contribution from long-range integrals  :',EMP2,
-     *       ' = short-range MP2 second order energy         :',EMY+EMP2
+     &     '@   Short-range Hartree-Fock total energy        :',EMY,
+     &     '@   + MP2 contribution from long-range integrals :',EMP2,
+     &     '@   = short-range MP2 second order energy        :',EMY+EMP2
          ELSE IF (.NOT.DODFT) THEN
             IF (MP2_SCALED) THEN
                WRITE (LUPRI,'(/2(/A,F32.10),(/A,F25.10))')
-     *       ' Hartree-Fock total energy :',EMY,
-     *       ' + Scaled MP2 contribution :',EMP2,
-     *       ' = Scaled MP2 second order energy :',EMY+EMP2
+     &       '@   Hartree-Fock total energy        :',EMY,
+     &       '@   + Scaled MP2 contribution        :',EMP2,
+     &       '@   = Scaled MP2 second order energy :',EMY+EMP2
             ELSE IF (DCPT2) THEN
                WRITE (LUPRI,'(/,3(/A,F25.10))')
-     *       ' Hartree-Fock total energy   :',EMY,
-     *       ' + DCPT2 contribution        :',EMP2,
-     *       ' = DCPT2 energy              :',EMY+EMP2
+     &       '@   Hartree-Fock total energy   :',EMY,
+     &       '@   + DCPT2 contribution        :',EMP2,
+     &       '@   = DCPT2 energy              :',EMY+EMP2
             ELSE
                WRITE (LUPRI,'(/,3(/A,F25.10))')
-     *       ' Hartree-Fock total energy :',EMY,
-     *       ' + MP2 contribution        :',EMP2,
-     *       ' = MP2 second order energy :',EMY+EMP2
+     &       '@   Hartree-Fock total energy :',EMY,
+     &       '@   + MP2 contribution        :',EMP2,
+     &       '@   = MP2 second order energy :',EMY+EMP2
             END IF
          ELSE ! DFT
             WRITE (LUPRI,'(/,(/A,F25.10),(/A,F25.10,A,F8.5,A,F15.10),
-     *        (/A,F25.10))')
-     *       ' Kohn-Sham contribution    :',EMY,
-     *       ' + scaled PT2 contribution :',EMP2,' *',WDFTMP,
-     *       ' = ',EMP2*WDFTMP,
-     *       ' = KS-PT2 energy           :',EMY+WDFTMP*EMP2
+     &        (/A,F25.10))')
+     &       '@   Kohn-Sham contribution    :',EMY,
+     &       '@   + scaled PT2 contribution :',EMP2,' *',WDFTMP,
+     &          ' = ',EMP2*WDFTMP,
+     &       '@   = KS-PT2 energy           :',EMY+WDFTMP*EMP2
             EMCSCF = EMY + WDFTMP*EMP2
          END IF
       END IF
@@ -1329,6 +1333,10 @@ C
       IF ( EMBEDDING ) THEN ! read EMY and Fock matrix from SIRFC
          WRITE (LUPRI,'(/A)')
      &   ' MP2 for embedded QM system, reading Fock matrix from SIRIFC'
+         WRITE (LUPRI,'(/A)')
+     &   ' NOTE: The present MP2 model is a PTE-like solvent MP2 model'
+         WRITE (LUPRI,'(/A)')
+     &   ' Please see JCC, 2012-2022, 33, (2012) for reference.'
          KCMO      = 1
          KCMO_diff = KCMO  + NCMOT
          KWRK      = KCMO_diff  + NCMOT

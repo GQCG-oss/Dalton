@@ -315,18 +315,21 @@ if [ $optn -gt 1 ] ; then
       if [ -s $DALMPI -a -x $DALMPI ]; then
          cp $DALMPI ./dalton_mpi_copy.x
          echo 'Copying dalton executable from master node: ' ${HOSTNAME}
-         cat $PBS_NODEFILE
-         for node in `cat $PBS_NODEFILE`
-         do
-            if [ ${node} == $HOSTNAME ]
-            then
-                continue
-            else
-#               If your cluster setup requires scp, then you must change the following line.
-                rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
-                echo 'Succesfully copied executable to: ' ${node}
-            fi
-         done
+         if [ -n "$PBS_NODEFILE" ] ; then
+             # $PBS_NODEFILE is defined, then do the instructions below
+             cat $PBS_NODEFILE
+             for node in `cat $PBS_NODEFILE`
+             do
+                if [ ${node} == $HOSTNAME ]
+                then
+                    continue
+                else
+#                   If your cluster setup requires scp, then you must change the following line.
+                    rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
+                    echo 'Succesfully copied executable to: ' ${node}
+                fi
+             done
+         fi
          if [ -n "$optlam" ] ; then
             lamboot -v  $WRKDIR/$optlam
             $MPIRUN -wd $SCRATCHDIR -np $optn ./dalton_mpi_copy.x
@@ -375,7 +378,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h"
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off"
 
 if [ -s DALTON.OUT.n001 -a -r DALTON.OUT.n001 ]; then
    tarfilelist="DALTON.OUT.n*"

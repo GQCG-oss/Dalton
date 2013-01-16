@@ -17,59 +17,48 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > prop_or.info <<'%EOF%'
-   prop_or
-   --------
-   Molecule:         Methyloxirane
-   Wave Function:    SCF
-   Test Purpose:     Natural Optical Rotation with Absorption
+cat > rpa_cis.info <<'%EOF%'
+   rpa_cis
+   ---------
+   Molecule:         H2O
+   Wave Function:    Configuration Interaction Singles calculation
+   Test Purpose:     Tamm-Dancoff approximation to Random-Phase Approximation
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > prop_or.mol <<'%EOF%'
-BASIS
-3-21G
-Methyloxirane (B3LYP/6-31G* optimized geometry)
-================================================
-    3    0         A
-        6.    3
-C       -1.045082    0.615240   -0.060290
-C        0.152118   -0.037513    0.489147
-C        1.511521    0.100482   -0.148726
-        8.    1
-O       -0.827106   -0.789457   -0.242703
-        1.    6
-H       -1.875126    0.879897    0.595964
-H       -0.958595    1.221760   -0.963024
-H        0.155847   -0.255258    1.560108
-H        1.416164    0.337467   -1.213207
-H        2.077966   -0.833346   -0.056439
-H        2.089255    0.895882    0.337436
+cat > rpa_cis.mol <<'%EOF%'
+ATOMBASIS
+Energy calculation without symmetry
+Basis set specified with ATOMBASIS
+    2    0
+        8.    1      Basis=cc-pVDZ
+O     0.0 -0.2249058930 0.0
+        1.    2      Basis=cc-pVDZ
+H1    1.45235 0.899623 0.0
+H2   -1.45235 0.899623 0.0
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > prop_or.dal <<'%EOF%'
-**DALTON INPUT
-.RUN PROPERTIES
-**INTEGRALS
-.DIPLEN
-**WAVE FUNCTION
+cat > rpa_cis.dal <<'%EOF%'
+*DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
 .HF
-**PROPERTIES
-.OPTROT
-*ABALNR
-.PRINT
- 5
-.DAMPING
-0.0091133
-.FREQUENCIES
- 1
- 0.07318
-**END OF DALTON INPUT
+*SCF INPUT
+.THRESH
+ 1.0D-06
+**RESPONSE
+.CIS
+*LINEAR
+.SINGLE RESIDUE
+.DIPLEN
+.ROOTS
+ 3
+**END OF INPUT
 %EOF%
 #######################################################################
 
@@ -80,8 +69,8 @@ cat > prop_or.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >prop_or.check
-cat >>prop_or.check <<'%EOF%'
+echo $CHECK_SHELL > rpa_cis.check
+cat >> rpa_cis.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -90,18 +79,19 @@ else
    GREP="egrep"
 fi
 
-# Energy
-CRIT1=`$GREP "Final * HF energy\: * \-190\.825019099" $log | wc -l`
+# SCF Energy
+CRIT1=`$GREP "Final HF energy\: * \-76\.0256814" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
-ERROR[1]="ENERGY NOT CORRECT"
+ERROR[1]="HF ENERGY NOT CORRECT"
 
-# Optical Rotation
-CRIT1=`$GREP "Optical rotation.*-29\.7" $log | wc -l`
-CRIT2=`$GREP "Optical rotation.*-31\.6" $log | wc -l`
-TEST[2]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[2]=2
-ERROR[2]="OPTICAL ROTATION NOT CORRECT"
+# Excitation energies
+CRIT1=`$GREP "Excitation energy \: * 0\.33332" $log | wc -l`
+CRIT2=`$GREP "Excitation energy \: * 0\.39756" $log | wc -l`
+CRIT3=`$GREP "Excitation energy \: * 0\.42942" $log | wc -l`
+TEST[2]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=3
+ERROR[2]="CIS (RPA/TDA) EXCITATION ENERGIES NOT CORRECT"
 
 PASSED=1
 for i in 1 2
