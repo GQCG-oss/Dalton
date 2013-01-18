@@ -351,8 +351,11 @@ subroutine pe_init(coords, charges, dalwrk)
         write(luout,'(/4x,a,i4)') 'Number of fragment densities: ', nfds
         if (pe_repuls) then
             write(luout,'(/4x,a,f5.3)') 'Repulsion operator will be used for&
-                                        & fragment densities using the scaling&
-                                        & factor: ', rep_factor
+                                        & fragment densities'
+            if (rep_factor /= 1.0d0) then
+                write(luout,'(/4x,a,f5.3)') 'Repulsion will be scaled using the&
+                                            & factor: ', rep_factor
+            end if
         end if
     end if
     if (pe_sol) then
@@ -3640,7 +3643,8 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     real(dp), dimension(:,:), allocatable :: full_overlap
     real(dp), dimension(:,:), allocatable :: full_rep
     real(dp), dimension(:), allocatable :: Emo
-    real(dp), dimension(:,:), allocatable :: cmo
+    real(dp), dimension(:,:), allocatable :: cmo, ecmo
+    real(dp), dimension(:,:), allocatable :: ew_denmat
 
     work => dalwrk
 
@@ -3721,17 +3725,18 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
 !             &full_overlap(1:fbas,fbas+1:nbas),&
 !             &intmol_overlap)
 
+    allocate(ew_denmat(fbas,fbas))
+    allocate(ecmo(fbas,focc))
     do i = 1, focc
-        cmo(:,i) = Emo(i) * cmo(:,i)
+        ecmo(:,i) = 0.5d0 * Emo(i) * cmo(:,i)
     end do
+    ew_denmat = 2.0d0 * matmul(cmo, transpose(ecmo))
+    deallocate(Emo, ecmo, cmo)
 
     allocate(full_rep(cbas,cbas))
-    full_rep = 0.0d0
-    full_rep = 2.0d0 * matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), cmo),&
-                             & matmul(transpose(cmo),&
-                                     & full_overlap(1:fbas,fbas+1:nbas)))
-
-    deallocate(full_overlap, cmo)
+    full_rep = - matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), ew_denmat),&
+                       &full_overlap(1:fbas,fbas+1:nbas))
+    deallocate(full_overlap, ew_denmat)
 
     allocate(repmat(cbas*(cbas+1)/2))
     l = 1
@@ -3741,7 +3746,6 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
             l = l + 1
         end do
     end do
-
     deallocate(full_rep)
 
     ! save core Fock matrix
