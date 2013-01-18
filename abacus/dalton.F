@@ -393,10 +393,10 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
                END IF
          END IF
 
-         write(lupri, '(//a/a/)')
-     &     'Compilation information',
-     &     '-----------------------'
-         call print_binary_info()
+c         write(lupri, '(//a/a/)')
+c     &     'Compilation information',
+c     &     '-----------------------'
+c         call print_binary_info()
 
 #if defined (VAR_MPI)
          IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
