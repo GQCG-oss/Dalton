@@ -199,7 +199,7 @@ C
      &         DDOT(KZYVAR,GD,1,XSOL(1,1,J),1)
         RESLRF(2,J,INDEX,INDEX,ITYPE) = 
      &         DDOT(KZYVAR,GD,1,XSOL(1,2,J),1)
-C    
+C     
       ENDDO
 c
 C     Check status
@@ -1026,6 +1026,7 @@ c
 c
 C       perform linear transformations
 C
+Cpanor
 c         IF (ABS_DALINP) THEN
          CALL ABS_LINE2_INTER(KZVAR,WRK(KE2XF),XVEC,XTMP,WRK(KSVEC),
      &        ABS_GRADSYM,NNLT,NNMAX,KNVEC,CMO,FC,FCAC,FV,UDV,XINDX,
@@ -1245,7 +1246,7 @@ c
         ORCHK(I)=CONV(I)
         ORCHK(NBNEW/2+I)=CONV(I)
       ENDDO
-c     
+c      
       DO ITURN=1,2
 C
 C     Orthonormalize trial vectors against the old vectors
@@ -1375,7 +1376,7 @@ c
           ORTHO_QUIT=.FALSE.
 c        ELSE
 c          write(luabspri,*)'vector skipped',I
-       END IF  
+        END IF  
       ENDDO
       NNI=0
       DO I=1,NBNEW/2

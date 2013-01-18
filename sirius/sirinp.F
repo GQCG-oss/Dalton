@@ -2164,7 +2164,6 @@ C  /* Deck sir_geninp */
 C
 C 1-Oct 1987 Hans Agren
 C
-      use polarizable_embedding, only: peqm
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2312,7 +2311,6 @@ C *** Option 6 >HARTRE<  Restricted Hartree-Fock SCF
 C           ... DOSCF may also be set with .CC
             DOSCF    = .TRUE.
             FLAG(21) = .TRUE.
-!            if (peqm) flag(21) = .false.
 C           ... flag for QCSCF -- quadratically convergent HF or DFT
             NUMRUN = NUMRUN + 1
          END IF
@@ -2426,7 +2424,6 @@ C           ... DOSCF may also be set with .CC
          DODFT    = .TRUE.
          DOSCF    = .TRUE.
          FLAG(21) = .TRUE.
-!         if (peqm) flag(21) = .false.
 C        ... flag for QCSCF -- quadratically convergent HF or DFT
 
 c     dodft should be enough but it is sometimes necessary to have also dftrun set.

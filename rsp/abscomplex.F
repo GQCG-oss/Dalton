@@ -264,7 +264,7 @@ C
      &        ' at frequencies:',(ABS_FREQ_ALPHA(I),I=1,ABS_NFREQ_ALPHA)
          END IF
 C
-C         IF (ABS_BETA) THEN
+c         IF (ABS_BETA) THEN
 c            WRITE (LUPRI,'(A,L4)')
 c     &   ' Nonlinear polarizability calculation requested:  ABS_BETA =',
 c     &           ABS_BETA
@@ -472,19 +472,6 @@ C
             KXSOL = KGD + 2*KZVAR
             KFREE = KXSOL + 4*ABS_NFREQ_INTERVAL*KZVAR
             LFREE = LWRK - KFREE 
-c
-            ABS_KLRED(1)=0
-            ABS_KLRED(2)=0
-C
-c      LUSB = 80
-c      LUAB = 81
-c      LUSS = 82
-c      LUAS = 83
-C
-       OPEN(LUSB,file='file_LUSB',status='new',form='unformatted')
-       OPEN(LUAB,file='file_LUAB',status='new',form='unformatted')
-       OPEN(LUSS,file='file_LUSS',status='new',form='unformatted')
-       OPEN(LUAS,file='file_LUAS',status='new',form='unformatted')
 C
             ABS_KLRED(1)=0
             ABS_KLRED(2)=0
@@ -561,9 +548,8 @@ C Used from:
 C   infvar.h : MAXWOP
 C   inforb.h : NSYM
 #include "abslrs.h"
-#include "absorp.h"
-#include "infvar.h" !MAXWOP
-#include "inforb.h" !NSYM
+#include "infvar.h"
+#include "inforb.h"
 c
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -691,7 +677,6 @@ C
       DIMENSION XTMP(2*KZVAR,NNMAX)
       DIMENSION ZYMB(NORBT,NORBT,NNMAX)
       DIMENSION CMO(*),FC(*),FCAC(*),UDV(*),FV(*),WRK(LWRK)
-      DIMENSION XINDX(*)
       DIMENSION ISYMDM(2*NNMAX),IFCTYP(2*NNMAX),KDMAO(NNMAX),
      &          KFMAO(NNMAX),
      &          KFMMO(NNMAX),KDVAO(NNMAX),KFVAO(NNMAX),KFVMO(NNMAX)
@@ -905,7 +890,6 @@ c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE)
      &              XTMP,ZYMB)
       ELSE
         CALL FCKOIN(NNMAX,FC,DUMMY,ZYMB,WRK(KFMMO(1)),DUMMY)
-C
         CALL RSPORB(.TRUE.,NNMAX,FC,WRK(KFMMO(1)),DUMMY,
      &               DUMMY,DUMMY,UDV,XTMP,ZYMB)
 c         CALL ORBEX(ISYMB,ISYMB,KZYVAR,WRK(KFMMO(I)),DUMMY,
@@ -1023,7 +1007,7 @@ c
 C     FLAG(16) MEANS SOLVENT CALCULATION
 C
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
-     &    (peqm .and.  pe_polar)) THEN
+     &    (peqm .and. pe_polar)) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
       ENDIF

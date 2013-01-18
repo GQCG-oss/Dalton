@@ -732,8 +732,6 @@ C
            deallocate(pefock)
          end if
 
-         
-
          IF (FLAG(16)) THEN
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
             CALL SOLFCK(DAOSAV(1,1),DAOSAV(1,2),

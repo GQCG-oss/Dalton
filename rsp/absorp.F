@@ -2235,7 +2235,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
-#include "abslrs.h"
 #include "wrkrsp.h"
 #include "infvar.h"
 #include "maxaqn.h"
