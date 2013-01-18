@@ -154,4 +154,165 @@ C
       END DO
       RETURN
       END
+      SUBROUTINE ABS_REDSPACE_REBUILD(KZVAR,GD,REDE,REDS,REDGD,
+     &          KNVEC,WRK,LWRK)
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+C
+#include "abslrs.h"
+C
+C PURPOSE:
+C 
+C      rebuild reduce space from vectors on disk
+C
+      DIMENSION GD(KZVAR,4),REDE(ABS_MAXRM,ABS_MAXRM,2)
+      DIMENSION REDS(ABS_MAXRM,ABS_MAXRM),REDGD(ABS_MAXRM,2)
+      DIMENSION WRK(LWRK)
+      INTEGER KNVEC(2)
 
+      KBVEC = 1
+      KEVEC = KBVEC + KZVAR
+      KSVEC = KEVEC + KZVAR
+      KFREE = KSVEC + KZVAR
+      LFREE = LWRK - KFREE
+c
+      PR1=0.0d0
+      REWIND(LUSB)
+      DO I=1,ABS_KLRED(1)
+         CALL READ_VEC(LUSB,KZVAR,WRK(KBVEC))
+          REDGD(I,1)= ABS(DDOT(KZVAR,WRK(KBVEC),1,GD(1,1),1))
+          PR1=MAX(PR1,REDGD(I,1))
+      ENDDO
+      REWIND(LUAB)
+      DO I=1,ABS_KLRED(2)
+         CALL READ_VEC(LUAB,KZVAR,WRK(KBVEC))
+         REDGD(I,2)= ABS(DDOT(KZVAR,WRK(KBVEC),1,GD(1,2),1))
+         PR1=MAX(PR1,REDGD(I,2))
+      ENDDO
+      IF (ABS(PR1).LE.(1.0d-8)) THEN
+        REWIND(LUSB)
+        REWIND(LUAB)
+        REWIND(LUSS)
+        REWIND(LUAS)
+        CALL DZERO(REDGD(1,1),ABS_KLRED(1))
+        CALL DZERO(REDGD(1,2),ABS_KLRED(2))
+       ABS_KLRED(1)=0
+        ABS_KLRED(2)=0
+        KNVEC(1)=2*ABS_NFREQ_INTERVAL
+        KNVEC(2)=2*ABS_NFREQ_INTERVAL
+      ELSE
+c
+C        rebuild reduced spaces
+c
+        REWIND(LUSB)
+        DO I=1,ABS_KLRED(1)
+          CALL READ_VEC(LUSB,KZVAR,WRK(KBVEC))
+          REWIND(LUSS)
+          DO J=1,I
+            CALL READ_VEC(LUSS,KZVAR,WRK(KEVEC))
+            REDE(I,J,1)= 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KEVEC),1)
+            IF (I .NE. J) REDE(J,I,1)=REDE(I,J,1)
+          ENDDO
+        REWIND(LUAB)
+          DO J=1,ABS_KLRED(2)
+            CALL READ_VEC(LUAB,KZVAR,WRK(KEVEC))
+            CALL GETSVEC(KZVAR,1,WRK(KEVEC),WRK(KSVEC))
+            REDS(I,J)=2.0d0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KSVEC),1)
+          ENDDO
+        ENDDO
+        REWIND(LUAB)
+        DO I=1,ABS_KLRED(2)
+          CALL READ_VEC(LUAB,KZVAR,WRK(KBVEC))
+          REWIND(LUAS)
+          DO J=1,I
+            CALL READ_VEC(LUAS,KZVAR,WRK(KEVEC))
+            REDE(I,J,2)= 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KEVEC),1)
+            IF (I .NE. J) REDE(J,I,2)=REDE(I,J,2)
+          ENDDO
+        ENDDO
+        KNVEC(1)=0
+        KNVEC(2)=0
+      ENDIF
+c
+      RETURN
+      END
+      SUBROUTINE ABS_READIN_RED(KZVAR,REDE,REDS,GD,
+     &           REDGD,KNVEC,WRK,LWRK)
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+C
+#include "abslrs.h"
+C
+C PURPOSE:
+C 
+C      rebuild reduce space from vectors on disk
+C
+      DIMENSION GD(KZVAR,4),REDE(ABS_MAXRM,ABS_MAXRM,2)
+      DIMENSION REDS(ABS_MAXRM,ABS_MAXRM),REDGD(ABS_MAXRM,2)
+      DIMENSION WRK(LWRK)
+      INTEGER KNVEC(2)
+
+      KBVEC = 1
+      KEVEC = KBVEC + KZVAR
+      KSVEC = KEVEC + KZVAR
+      KFREE = KSVEC + KZVAR
+      LFREE = LWRK - KFREE
+c
+      PR1=0.0d0
+      REWIND(LUSB)
+      DO I=1,ABS_KLRED(1)
+         CALL READ_VEC(LUSB,KZVAR,WRK(KBVEC))
+          REDGD(I,1)= ABS(DDOT(KZVAR,WRK(KBVEC),1,GD(1,1),1))
+          PR1=MAX(PR1,REDGD(I,1))
+      ENDDO
+      REWIND(LUAB)
+      DO I=1,ABS_KLRED(2)
+         CALL READ_VEC(LUAB,KZVAR,WRK(KBVEC))
+         REDGD(I,2)= ABS(DDOT(KZVAR,WRK(KBVEC),1,GD(1,2),1))
+         PR1=MAX(PR1,REDGD(I,2))
+      ENDDO
+      IF (ABS(PR1).LE.(1.0d-8)) THEN
+        REWIND(LUSB)
+        REWIND(LUAB)
+        REWIND(LUSS)
+        REWIND(LUAS)
+        CALL DZERO(REDGD(1,1),ABS_KLRED(1))
+        CALL DZERO(REDGD(1,2),ABS_KLRED(2))
+        ABS_KLRED(1)=0
+        ABS_KLRED(2)=0
+        KNVEC(1)=2*ABS_NFREQ_INTERVAL
+        KNVEC(2)=2*ABS_NFREQ_INTERVAL
+        REWIND(LUE1RED)
+        REWIND(LUE2RED)
+        REWIND(LUSRED)
+        CALL DZERO(REDE(1,1,1),2*ABS_MAXRM*ABS_MAXRM)
+        CALL DZERO(REDS(1,1),ABS_MAXRM*ABS_MAXRM)
+      ELSE
+c
+C        rebuild reduced spaces
+c
+        REWIND(LUE1RED)
+        REWIND(LUE2RED)
+        REWIND(LUSRED)
+        DO I=1,ABS_KLRED(1)
+          CALL READ_VEC(LUE1RED,ABS_KLRED(1),REDE(1,I,1))
+        ENDDO
+        DO I=1,ABS_KLRED(2)
+          CALL READ_VEC(LUE2RED,ABS_KLRED(2),REDE(1,I,2))
+          CALL READ_VEC(LUSRED,ABS_KLRED(1),REDS(1,I))
+        ENDDO
+        KNVEC(1)=0
+        KNVEC(2)=0
+      ENDIF
+c      write(luabspri,*)'E1 mowi czesc',ABS_KLRED(1)
+c      CALL OUTPUT(REDE(1,1,1),1,ABS_KLRED(1),1,ABS_KLRED(1),
+c     &           ABS_MAXRM,ABS_MAXRM,1,LUABSPRI)
+c      write(luabspri,*)'E2 mowi czesc',ABS_KLRED(2)
+c      CALL OUTPUT(REDE(1,1,2),1,ABS_KLRED(2),1,ABS_KLRED(2),
+c     &           ABS_MAXRM,ABS_MAXRM,1,LUABSPRI)
+c      write(luabspri,*)'S mowi czesc'
+c      CALL OUTPUT(REDS(1,1),1,ABS_KLRED(1),1,ABS_KLRED(2),
+c     &           ABS_MAXRM,ABS_MAXRM,1,LUABSPRI)
+c
+      RETURN
+      END

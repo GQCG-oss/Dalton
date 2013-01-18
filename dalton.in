@@ -340,7 +340,8 @@ if [ $optn -gt 1 ] ; then
                 then
                     continue
                 else
-#                   If your cluster setup requires scp, then you must change the following line.
+#                   If your cluster setup requires ssh/scp, then you must change the following line.
+                    rsh ${node} "mkdir -p $SCRATCHDIR"
                     rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
                     echo 'Succesfully copied executable to: ' ${node}
                 fi
@@ -394,7 +395,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h pe_density.bin pe_fock.bin gv.off"
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off pe_density.bin pe_fock.bin"
 
 if [ -s DALTON.OUT.n001 -a -r DALTON.OUT.n001 ]; then
    tarfilelist="DALTON.OUT.n*"

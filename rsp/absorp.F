@@ -2247,6 +2247,7 @@ C
 #include "inforb.h"
 #include "qrinf.h"
 #include "infdim.h"
+#include "abslrs.h"
 C
       PARAMETER ( D0=0.0D0 )
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
@@ -2300,15 +2301,15 @@ C
      &        ' B operator, symmetry, frequency: ',BLAB,ISYMB,FREQB,
      &        ' C operator, symmetry, frequency: ',CLAB,ISYMC,FREQC
 C
-           IF (ABSLRS) THEN
+         IF (ABSLRS) THEN
               CALL ABS_QRRDVE(ISYMA,ISYMB,ISYMC,ALAB,BLAB,CLAB,
      &        FREQA,FREQB,FREQC,KZYVA,KZYVB,KZYVC,WRK(KVECA),WRK(KVECB),
      &        WRK(KVECC))
-           ELSE 
+         ELSE
               CALL QRRDVE(ISYMA,ISYMB,ISYMC,ALAB,BLAB,CLAB,
      &        FREQA,FREQB,FREQC,KZYVA,KZYVB,KZYVC,WRK(KVECA),WRK(KVECB),
      &        WRK(KVECC))
-           ENDIF
+         ENDIF
 C
 C     Calculate Na B[2] Nc type terms (two permutations)
 C

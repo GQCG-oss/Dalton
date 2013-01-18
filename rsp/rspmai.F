@@ -813,6 +813,7 @@ C
 #include "infave.h"
 #include "inftap.h"
 #include "inforb.h"
+#include "abslrs.h"
 C
       LOGICAL NEWDEF, SET
       PARAMETER ( NTABLE = 24 )
@@ -1026,8 +1027,13 @@ C              .PROP2Average
          IF (PHPRES) WRITE(LUPRI,'(/2A,L1)')
      *      ' H(0) subspace selected from size of residual elements',
      *      ' PHPRES = ',PHPRES
-         IF (MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
-     *      ' Max dimension of reduced space. MAXRM =',MAXRM
+         IF (ABSLRS) THEN
+           IF (ABS_MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
+     *        ' MAX DIMENSION OF REDUCED SPACE. ABS_MAXRM =',ABS_MAXRM
+         ELSE
+           IF (MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
+     *        ' Max dimension of reduced space. MAXRM =',MAXRM
+         ENDIF
          IF (QRREST) WRITE(LUPRI,'(/A/A)')
      *      ' Quadratic response calculation restarted',
      *      '    from previously calculated solution vectors'
@@ -1217,6 +1223,7 @@ C  Initializing ABSLRS
        DATA ABS_FREQ_INTERVAL/0.0D0,0.0D0,1.0D0/,ABS_THD_LD/1.0D-8/
        DATA ABS_THCLR/1.0D-3/,ABS_FREQ_ALPHA(1)/0.0D0/
        DATA LUSB/80/,LUAB/81/,LUSS/82/,LUAS/83/,LUABSVECS/84/
+       DATA LUE1RED/85/,LUE2RED/86/,LUSRED/87/
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)

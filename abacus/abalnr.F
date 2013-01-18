@@ -85,7 +85,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), 
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),
      &                      I
                   END IF
   200          CONTINUE
@@ -139,6 +139,7 @@ C
                   ELSE
                      MAXITE = INPVAL
                   END IF
+                  ABS_MAXITER=INPVAL
                GO TO 100
 C              .THRESH
     4          CONTINUE
@@ -158,6 +159,7 @@ C              .THRESH
                   ELSE
                      MXRM = IMXRM
                   END IF
+                  ABS_MAXRM=IMXRM
                GO TO 100
     6          CONTINUE
                   READ (LUCMD,*) IMXPHP
@@ -216,6 +218,7 @@ CSPAS:20/3-2011: allowing for perturbations in only one irrep
                   ABSORP = .TRUE.
                   ICHANG = ICHANG + 1
                   READ (LUCMD,*) DAMPING
+                  ABS_DAMP=DAMPING
                GO TO 100
    14          CONTINUE
                   CUT    = .TRUE.
@@ -229,7 +232,7 @@ CSPAS:20/3-2011: allowing for perturbations in only one irrep
    16          CONTINUE
                  ABS_REDUCE=.TRUE.
                GO TO 100
- 17            CONTINUE
+   17          CONTINUE
                  ABSLRS=.TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -310,7 +313,7 @@ C
          ELSE
             IF (ABSORP) THEN
                IF (ABS_INTERVAL) THEN
-                 IF (FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
+                  IF (FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
      &              (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.
      &              FREQ_INTERVAL(3).OR. FREQ_INTERVAL(3).LE.0.0D0) THEN
                      CALL QUIT('.FREQ_INTERVAL not specify correctly')
@@ -322,16 +325,8 @@ C
                   NFRVAL = NFREQ_INTERVAL
                   DO I=1,NFRVAL
                      FRVAL(I)=FREQ_INTERVAL(1) + (I-1)*FREQ_INTERVAL(3)
-                  END DO          
-                  NFREQ_ALPHA = NFRVAL
-                  NFREQ_INTERVAL = NFRVAL
-                  ABS_NFREQ_ALPHA = NFRVAL
-                  ABS_NFREQ_INTERVAL = NFRVAL
-                  DO I=1,ABS_NFREQ_ALPHA
-                     FREQ_ALPHA(I) = FRVAL(I)
-                     ABS_FREQ_ALPHA(I) = FRVAL(I)
-                  END DO        
-               ELSE
+                  END DO
+               ENDIF
                   NFREQ_ALPHA = NFRVAL
                   NFREQ_INTERVAL = NFRVAL
                   ABS_NFREQ_ALPHA = NFRVAL
@@ -340,10 +335,16 @@ C
                      FREQ_ALPHA(I) = FRVAL(I)
                      ABS_FREQ_ALPHA(I) = FRVAL(I)
                   END DO
-               END IF
+!               END IF
                THCLR_ABSORP = THCLNR
                IPRABS = IPRLNR
                MAX_MACRO  = MAXITE
+c            ELSE IF (ABS_INTERVAL) THEN
+c               ABS_INTERVAL = .FALSE.
+c               WRITE(LUPRI,'(/A,/A)')
+c     & ' Warning: Frequency interval input only available for'//
+c     & '          absorption calculation.',
+c     & '          This input will be ignored. Calculation continues.'
             END IF
             IF (NFRVAL .GT. 0) THEN
                IF (NFRVLT .EQ. 0) NFRVLT = NFRVAL
@@ -755,14 +756,14 @@ c             LUAB = 81
 c             LUSS = 82
 c             LUAS = 83
 C
-               OPEN(LUSB,file='file_LUSB',
-     &              STATUS='NEW',FORM='UNFORMATTED')
-               OPEN(LUAB,file='file_LUAB',
-     &              STATUS='NEW',FORM='UNFORMATTED')
-               OPEN(LUSS,file='file_LUSS',
-     &              STATUS='NEW',FORM='UNFORMATTED')
-               OPEN(LUAS,file='file_LUAS',
-     &              STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUSB,STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUAB,STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUSS,STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUAS,STATUS='NEW',FORM='UNFORMATTED')
+C
+              OPEN(LUE1RED,FILE='E1RED',STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUE2RED,FILE='E2RED',STATUS='NEW',FORM='UNFORMATTED')
+              OPEN(LUSRED,FILE='SRED',STATUS='NEW',FORM='UNFORMATTED')
             ENDIF
 C
             DO IOPER=1,NOPER(KSYMOP)
@@ -886,29 +887,28 @@ C     ===================================
 C     
                      IF (.NOT.ABSORP) REWIND LUSOVE
                      DO 100 IFRVAL = 1,NFRVAL
-                       IF (ABSORP) THEN
-                         IF (ABSLRS) THEN
-                           OPEN(LUABSVECS,FILE='ABSVECS',
+                        IF (ABSORP) THEN
+                          IF (ABSLRS) THEN
+                            OPEN(LUABSVECS,FILE='ABSVECS',
      &                          STATUS='UNKNOWN',
      &                          FORM='UNFORMATTED')
-                                CALL READ_XVEC(LUABSVECS,4*NVARPT,
-     &                               WORK(KSLV),LABEL1,ISYM,
-     &                               FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
-                            CLOSE(LUABSVECS,STATUS='KEEP')
+                             CALL READ_XVEC(LUABSVECS,4*NVARPT,
+     &                            WORK(KSLV),LABEL1,ISYM,
+     &                             FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
+                              CLOSE(LUABSVECS,STATUS='KEEP')
                           ELSE
-                           CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
-     &                          ' ',IDUMMY,.FALSE.)
-                           CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),LABEL1,
-     &                          'COMPLEX ',FRVAL(IFRVAL),0.0D0,
-     &                          ISYM,0,THCLR_ABSORP,FOUND,CONV,ANTSYM)
-                           CALL GPCLOSE(LURSP,'KEEP')
+                            CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
+     &                           ' ',IDUMMY,.FALSE.)
+                            CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),
+     &                           LABEL1,'COMPLEX ',FRVAL(IFRVAL),0.0D0,
+     &                           ISYM,0,THCLR_ABSORP,FOUND,CONV,ANTSYM)
+                            CALL GPCLOSE(LURSP,'KEEP')
                           ENDIF
-                           SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
-     &                          WORK(KGD1),1)
-                           SNDPRP(2)=DDOT(2*NVARPT,
-     &                          WORK(KSLV+2*NVARPT),1,
-     &                          WORK(KGD1),1)
-                        ELSE
+                          SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
+     &                                   WORK(KGD1),1)
+                          SNDPRP(2)=DDOT(2*NVARPT,WORK(KSLV+2*NVARPT),1,
+     &                                   WORK(KGD1),1)
+                        ELSE 
                            CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
                            SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
      &                          WORK(KGD1),1)
@@ -1090,6 +1090,10 @@ C
               CLOSE(LUAB,STATUS='DELETE')
               CLOSE(LUSS,STATUS='DELETE')
               CLOSE(LUAS,STATUS='DELETE')
+C
+              CLOSE(LUE1RED,STATUS='DELETE')
+              CLOSE(LUE2RED,STATUS='DELETE')
+              CLOSE(LUSRED,STATUS='DELETE')
             ENDIF
 C     
 C     End loop over symmetries

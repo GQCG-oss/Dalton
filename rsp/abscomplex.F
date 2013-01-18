@@ -45,16 +45,16 @@ C  symmet.h : ISYMAX
 C  infvar.h : NCONF
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
+#include "codata.h" 
 #include "gnrinf.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "symmet.h"
-#include "infvar.h"
+#include "maxorb.h" !MXCORB for symmet
+#include "maxaqn.h" !MXQN for symmet
+#include "mxcent.h" !MXCENT for symmet
+#include "symmet.h" !ISYMAX
+#include "infvar.h" !NCONF
 #include "abslrs.h"
 #include "absorp.h"
-c#include "infrsp.h"
+#include "inforb.h"
 C
       LOGICAL NEWDEF, ALLCOMP
       PARAMETER ( NTABLE = 17 )
@@ -64,10 +64,10 @@ C
 C
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
       DATA ANGMOM/'XANGMOM','YANGMOM','ZANGMOM'/
-      DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAXIT ','.MAXRM',
-     &            '.PRINT ','.DAMPIN','.ANALYZ','.FREQ I','.MCD  ',
-     &            '.BFREQ ','.BFREQI','.XXCOMP',
-     &            '.YYCOMP','.ZZCOMP','.IMAG F','.NBATCH'/
+      DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAXIT ','.MAXRM ',
+     &            '.PRINT ','.DAMPIN','.ANALYZ','.FREQ I','.MCD   ',
+     &            '.BFREQ ','.BFREQI','.XXCOMP','.YYCOMP','.ZZCOMP',
+     &            '.IMAG F','.NBATCH'/
 C
       NEWDEF = (WORD .EQ. '*ABSLRS')
       ICHANG = 0
@@ -75,7 +75,6 @@ C
       ALLCOMP = .TRUE.
       ICOMP=0
       ABSLRS=.TRUE.
-c      ABSLRS_ALPHA=.TRUE.
       ABSLRS_MCD=.FALSE.
 C
 C     Set default values
@@ -244,13 +243,13 @@ C
                ABS_NOPER(ISYM) = ABS_NOPER(ISYM) + 1
                ABS_LABOP(ABS_NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
                IF (ABSLRS_MCD) THEN
-                  NOPER(ISYM) = NOPER(ISYM) + 1
-                  LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
-                  ISYM = ISYMAX(ILABEL,2)+1
-                  ABS_NOPER(ISYM) = ABS_NOPER(ISYM) + 1
-                  NOPER(ISYM) = NOPER(ISYM) + 1
-                  ABS_LABOP(ABS_NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
-                  LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
+                 NOPER(ISYM) = NOPER(ISYM) + 1
+                 LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+                 ISYM = ISYMAX(ILABEL,2)+1
+                 ABS_NOPER(ISYM) = ABS_NOPER(ISYM) + 1
+                 NOPER(ISYM) = NOPER(ISYM) + 1
+                 ABS_LABOP(ABS_NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
+                 LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
                END IF
             END IF
          END DO
@@ -287,7 +286,7 @@ cC
      &     INT(DSMALL*(ABS_BFREQ_INTERVAL(2)-ABS_BFREQ_INTERVAL(1))/
      &              ABS_BFREQ_INTERVAL(3))
            DO I=1,ABS_NFREQ_BETA_B
-             ABS_FREQ_BETA_B(I)=ABS_BFREQ_INTERVAL(1) + 
+             ABS_FREQ_BETA_B(I)=ABS_BFREQ_INTERVAL(1) +
      &              (I-1)*ABS_BFREQ_INTERVAL(3)
            END DO
          ENDIF
@@ -297,7 +296,7 @@ cC
      &           ABSLRS_MCD
             WRITE(LUPRI,'(A,5(4F12.8))')
      &           ' at frequencies:',(ABS_FREQ_BETA_B(I),
-     &            I=1,ABS_NFREQ_BETA_B)
+     &              I=1,ABS_NFREQ_BETA_B)
          END IF
 cC
          WRITE(LUPRI,'(A,L4)')
@@ -346,7 +345,7 @@ C
      &  /,' If asked for, the .ALPHA keyword should be placed first',
      &  /,' of *ABSORPTION input keys.',
      &  /,' The program will continue.')
-c
+
  1010 FORMAT(/,
      &  ' Keyword:',A8,' ignored since a BETA calc not specified.',
      &  /,' If asked for, the .BETA keyword should be placed first',
@@ -368,6 +367,7 @@ C
 C Used from:
 C   infvar.h : MAXWOP
 C   inforb.h : NSYM
+C   iradef.h : IRAT
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -381,7 +381,7 @@ C
 C
       KFREE = 1
       LFREE = LWRK
-C
+C    
       CALL GPINQ('ABSVECS','EXIST',EX)
       IF (.NOT.EX) THEN
         OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
@@ -389,14 +389,13 @@ C
       ELSE
         OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
       END IF
-c
+C
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
      &     KFREE,LFREE)
 C
       IF (ABSLRS_MCD) THEN
          CALL ABS_BETA_SETUP
       END IF
-
 C
 C     Allocate memory for results of linear absorption calc.
 C
@@ -425,6 +424,7 @@ C
          CALL ABSQRF(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      &               XINDX,WRK(KMJWOP),WRK(KFREE),LFREE)
       END IF
+C
 C     Print-out a summary of results
 C
       CALL ABSLRSRESULT(WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
@@ -462,10 +462,11 @@ C
       DO ISYM=1,NSYM
          IF (ABS_NOPER(ISYM).GT.0) THEN
 C
-            LFREE=LWRK
-            KFREE=1
+             LFREE=LWRK
+             KFREE=1
+C
             CALL ABSINTER(ISYM,UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
-     &                    KZVAR,WRK,LWRK)
+     &                    KZVAR,WRK(KFREE),LFREE)
 C
             KGD   = 1
             KXSOL = KGD + 2*KZVAR
@@ -484,6 +485,23 @@ C
        OPEN(LUAB,file='file_LUAB',status='new',form='unformatted')
        OPEN(LUSS,file='file_LUSS',status='new',form='unformatted')
        OPEN(LUAS,file='file_LUAS',status='new',form='unformatted')
+C
+            ABS_KLRED(1)=0
+            ABS_KLRED(2)=0
+C
+c           LUSB = 80
+c           LUAB = 81
+c           LUSS = 82
+c           LUAS = 83
+C
+            OPEN(LUSB,status='new',form='unformatted')
+            OPEN(LUAB,status='new',form='unformatted')
+            OPEN(LUSS,status='new',form='unformatted')
+            OPEN(LUAS,status='new',form='unformatted')
+C
+            OPEN(LUE1RED,file='E1RED',status='new',form='unformatted')
+            OPEN(LUE2RED,file='E2RED',status='new',form='unformatted')
+            OPEN(LUSRED,file='SRED',status='new',form='unformatted')
 C
             DO IOPER=1,ABS_NOPER(ISYM)
                LABEL=ABS_LABOP(IOPER,ISYM)
@@ -515,12 +533,17 @@ C
      &                     ABS_FREQ_ALPHA,FC,FV,CMO,UDV,PV,XINDX,
      &                     RESLRF,KZVAR,WRK(KFREE),LFREE)
 C
-
             END DO
+C
             CLOSE(LUSB,status='delete')
             CLOSE(LUAB,status='delete')
             CLOSE(LUSS,status='delete')
             CLOSE(LUAS,status='delete')
+c
+            CLOSE(LUE1RED,status='delete')
+            CLOSE(LUE2RED,status='delete')
+            CLOSE(LUSRED,status='delete')
+C
          END IF
       END DO
       IF (IPRABSLRS.GT.0) CALL TIMER('ABSVEC',TIMSTR,TIMEND)
@@ -588,13 +611,17 @@ C
       END
       SUBROUTINE ABS2INTER(MJWOP,ABS_KZVAR)
 C
+C     Used from:
+C       infvar.h: MAXWOP
+C       inforb.h: NSYM
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "abslrs.h"
 #include "absorp.h"
-#include "infvar.h" !MAXWOP
-#include "inforb.h" !NSYM
+#include "infvar.h"
+#include "inforb.h"
 c
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -615,7 +642,7 @@ c
         ABS_NISH(I) = NISH(I)
         ABS_NORB(I) = NORB(I)
         DO J = 1,NSYM
-          ABS_MULD2H(I,J) = MULD2H(I,J) 
+          ABS_MULD2H(I,J) = MULD2H(I,J)
         ENDDO
       ENDDO
       LUABSPRI=LUPRI
@@ -651,6 +678,8 @@ C Used from:
 C   inforb.h: NORB,NORBT,NASHT,NISHT,N2BASX,NBAST,NBAS,NSYM,MULD2H,ICMO
 C   infinp.h: DODFT,HSROHF,DIRFCK
 C   dftcom.h: DFT
+C   thrzer.h: THZER
+C   maxorb.h: MXCORB (needed for inforb)
 #include "maxorb.h"
 #include "inforb.h"
 #include "infinp.h"
@@ -668,7 +697,7 @@ C
      &          KFMMO(NNMAX),KDVAO(NNMAX),KFVAO(NNMAX),KFVMO(NNMAX)
 C
 c      DIMENSION MJWOP(2,MAXWOP,8)
-      DIMENSION MJWOP(*)
+      DIMENSION MJWOP(*),XINDX(*)
       PARAMETER (D2 = 2.0D0)
       PARAMETER (D1 = 1.0D0)
 C     local
@@ -902,6 +931,8 @@ C Used from
 C   inforb.h: NORB,NORBT,NASHT,NISHT,N2BASX,NBAST,NBAS,NSYM,MULD2H,ICMO
 C   infinp.h: DODFT,HSROHF,DIRFCK
 C   dftcom.h: DFT
+C   thrzer.h: THZER
+C   maxorb.h: MXCORB (needed for inforb)
 #include "inforb.h"
 #include "maxorb.h"
 #include "infinp.h"
@@ -966,7 +997,7 @@ c
           CALL DSCAL(KZVAR,F1,XTMP(KZVAR+1,NKD),1)
         ENDDO
       ENDIF
-          CALL DCOPY(2*KZVAR*NNMAX,XTMP,1,XTEMP,1)
+      CALL DCOPY(2*KZVAR*NNMAX,XTMP,1,XTEMP,1)
 c
       IF (ABS_BATCH) THEN
          KINT=INT(NNMAX/ABS_NBATCHMAX)
@@ -980,7 +1011,6 @@ c
          KINT=1
          KTOT=1
          KNMAX=NNMAX
-         KMOD=KNMAX
        ENDIF
        KNTOT=KNMAX
        CALL MEMGET('REAL',KZYMB,KNMAX*NORBT*NORBT,WRK,KFREE,LFREE)
@@ -990,14 +1020,14 @@ c
      &                 ISYMB,KNTOT,CMO,FC,FCAC,FV,
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
        ENDDO
-c     FLAG(16) MEANS SOLVENT CALCULATION
+C     FLAG(16) MEANS SOLVENT CALCULATION
 C
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
      &    (peqm .and.  pe_polar)) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
-     *               XTMP,WRK(KFREE),LFREE)
+     &               XTMP,WRK(KFREE),LFREE)
       ENDIF
-c
+C
       CALL DZERO(VECS,NLT*KZVAR)
       DO I=1,MIN(NNS,NNA)
          CALL DCOPY(KZVAR,XTMP(1,I),1,VECS(1,I),1)
@@ -1050,6 +1080,7 @@ C
 #include "implicit.h"
 C
 C Used from
+C   maxorb.h: MXCORB (needed for inforb)
 C   infinp.h: NORBT,NASHT,NISHT,NBAST,N2BASX,NSYM,MULD2H,ICMO,NORB,NBAS,NASH,NISH,IORB,IBAS,ICMO,IASH
 #include "priunit.h"
 #include "abslrs.h"
@@ -1233,12 +1264,11 @@ C    qrinf.h: MZYVAR (kzyvar=mzyvar(isym))
 C   infvar.h: MAXWOP
 C   infdim.h: NVARMA (when ABS_ANALYZE)
 #include "abslrs.h"
-#include "inforb.h" !NSYM
-#include "codata.h" !XTEV
-#include "qrinf.h" !MZYVAR (kzyvar=mzyvar(isym))
-#include "infvar.h" !MAXWOP
-#include "infdim.h" !NVARMA (when ABS_ANALYZE)
-#include "inftap.h"
+#include "inforb.h"
+#include "codata.h"
+#include "qrinf.h"
+#include "infvar.h"
+#include "infdim.h"
 #include "absorp.h"
 C
       LOGICAL FOUND, CONV
@@ -1707,7 +1737,6 @@ C
       DO I=1,ABS_NFREQ_ALPHA
         ABS_FREQ_ALPHA(I)=FREQ_ALPHA(I)
       ENDDO
-C
       IF (IPRABS.GE.0) THEN
          CALL AROUND('Setup of Hyperpolarizability Calculation')
          WRITE (LUPRI,'(2(/A),I4,A)')
@@ -1718,7 +1747,7 @@ C
      &        ' LR FREQ:',(ABS_FREQ_ALPHA(I),I=1,ABS_NFREQ_ALPHA)
          WRITE (LUPRI,'(/A,I4,A)')
      & ' and the evaluation of',NQRF,' quadratic response functions:'
-         WRITE(LUPRI,'(/2A,/A3,6A12,/2A)') 
+         WRITE(LUPRI,'(/2A,/A3,6A12,/2A)')
      &        '--------------------------------------',
      &        '-------------------------------------',
      &        ' No','A-oper','B-oper','C-oper',
@@ -1729,94 +1758,12 @@ C
             WRITE(LUPRI,'(I3,3A12,3F12.8)') IQRF,
      &           (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3)
          END DO
-         WRITE(LUPRI,'(2A)') 
+         WRITE(LUPRI,'(2A)')
      &        '--------------------------------------',
      &        '-------------------------------------'
       END IF
 C
 C     End of BETA_SETUP
 C
-      RETURN
-      END
-      SUBROUTINE ABS_REDSPACE_REBUILD(KZVAR,GD,REDE,REDS,REDGD,
-     &          KNVEC,WRK,LWRK)
-C
-      IMPLICIT REAL*8 (A-H,O-Z)
-C
-#include "abslrs.h"
-C
-C PURPOSE:
-C 
-C      rebuild reduce space from vectors on disk
-C
-      DIMENSION GD(KZVAR,4),REDE(ABS_MAXRM,ABS_MAXRM,2)
-      DIMENSION REDS(ABS_MAXRM,ABS_MAXRM),REDGD(ABS_MAXRM,2)
-      DIMENSION WRK(LWRK)
-      INTEGER KLRED(2),KNVEC(2)
-
-      KBVEC = 1
-      KEVEC = KBVEC + KZVAR
-      KSVEC = KEVEC + KZVAR
-      KFREE = KSVEC + KZVAR
-      LFREE = LWRK - KFREE
-c
-      PR1=0.0d0
-      REWIND(LUSB)
-      DO I=1,ABS_KLRED(1)
-         CALL READ_VEC(LUSB,KZVAR,WRK(KBVEC))
-          REDGD(I,1)= ABS(DDOT(KZVAR,WRK(KBVEC),1,GD(1,1),1))
-          PR1=MAX(PR1,REDGD(I,1))
-      ENDDO
-      REWIND(LUAB)
-      DO I=1,ABS_KLRED(2)
-         CALL READ_VEC(LUAB,KZVAR,WRK(KBVEC))
-         REDGD(I,2)= ABS(DDOT(KZVAR,WRK(KBVEC),1,GD(1,2),1))
-         PR1=MAX(PR1,REDGD(I,2))
-      ENDDO
-      IF (ABS(PR1).LE.(1.0d-8)) THEN
-        REWIND(LUSB)
-        REWIND(LUAB)
-        REWIND(LUSS)
-        REWIND(LUAS)
-        CALL DZERO(REDGD(1,1),KLRED(1))
-        CALL DZERO(REDGD(1,2),KLRED(2))
-        ABS_KLRED(1)=0
-        ABS_KLRED(2)=0
-        KNVEC(1)=2*ABS_NFREQ_INTERVAL
-        KNVEC(2)=2*ABS_NFREQ_INTERVAL
-      ELSE
-c
-C        rebuild reduced spaces
-c
-        REWIND(LUSB)
-        DO I=1,ABS_KLRED(1)
-          CALL READ_VEC(LUSB,KZVAR,WRK(KBVEC))
-          REWIND(LUSS)
-          DO J=1,I
-            CALL READ_VEC(LUSS,KZVAR,WRK(KEVEC))
-            REDE(I,J,1)= 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KEVEC),1)
-            IF (I .NE. J) REDE(J,I,1)=REDE(I,J,1)
-          ENDDO
-        REWIND(LUAB)
-          DO J=1,ABS_KLRED(2)
-            CALL READ_VEC(LUAB,KZVAR,WRK(KEVEC))
-            CALL GETSVEC(KZVAR,1,WRK(KEVEC),WRK(KSVEC))
-            REDS(I,J)=2.0d0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KSVEC),1)
-          ENDDO
-        ENDDO
-        REWIND(LUAB)
-        DO I=1,ABS_KLRED(2)
-          CALL READ_VEC(LUAB,KZVAR,WRK(KBVEC))
-          REWIND(LUAS)
-          DO J=1,I
-            CALL READ_VEC(LUAS,KZVAR,WRK(KEVEC))
-            REDE(I,J,2)= 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,WRK(KEVEC),1)
-            IF (I .NE. J) REDE(J,I,2)=REDE(I,J,2)
-          ENDDO
-        ENDDO
-        KNVEC(1)=0
-        KNVEC(2)=0
-      ENDIF
-c
       RETURN
       END
