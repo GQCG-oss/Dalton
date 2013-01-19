@@ -30,7 +30,7 @@ module polarizable_embedding
     logical, public, save :: peqm = .false.
     logical, save :: pe_pot = .false.
     logical, save :: pe_iter = .true.
-    logical, save :: pe_nored = .false.
+    logical, save :: pe_nored = .true.
     logical, save :: pe_border = .false.
     logical, save :: pe_damp = .false.
     logical, public, save :: pe_gspol = .false.
@@ -622,10 +622,10 @@ subroutine pe_dalton_input(word, luinp, lupri)
                & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
                 read(luinp,*) potfile
             end if
-        ! direct solver for induced dipoles
+        ! direct solver for induced moments
         else if (trim(option(2:)) == 'DIRECT') then
             pe_iter = .false.
-        ! iterative solver for induced dipoles (default)
+        ! iterative solver for induced moments (default)
         else if (trim(option(2:)) == 'ITERAT') then
             read(luinp,*) option
             backspace(luinp)
@@ -634,9 +634,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) thriter
             end if
             pe_iter = .true.
-        ! iterative solver for induced dipoles (default)
+        ! use reduced threshold in iterative induced moments solver
         else if (trim(option(2:)) == 'NORED') then
-            pe_nored = .true.
+            pe_nored = .false.
         ! handling sites near quantum-classical border
         else if (trim(option(2:)) == 'BORDER') then
             read(luinp,*) option
