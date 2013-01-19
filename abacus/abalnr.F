@@ -751,19 +751,25 @@ CKeinSPASmehr
               ABS_KLRED(1)=0
               ABS_KLRED(2)=0
 C
-c             LUSB = 80
-c             LUAB = 81
-c             LUSS = 82
-c             LUAS = 83
+              LUSB = -1
+              LUAB = -1
+              LUSS = -1
+              LUAS = -1
 C
-              OPEN(LUSB,STATUS='NEW',FORM='UNFORMATTED')
-              OPEN(LUAB,STATUS='NEW',FORM='UNFORMATTED')
-              OPEN(LUSS,STATUS='NEW',FORM='UNFORMATTED')
-              OPEN(LUAS,STATUS='NEW',FORM='UNFORMATTED')
+              CALL GPOPEN(LUSB,'ABS_SB','NEW',' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUAB,'ABS_AB','NEW',' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUSS,'ABS_SS','NEW',' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUAS,'ABS_AS','NEW',' ',' ',IDUMMY,.FALSE.)
 C
-              OPEN(LUE1RED,FILE='E1RED',STATUS='NEW',FORM='UNFORMATTED')
-              OPEN(LUE2RED,FILE='E2RED',STATUS='NEW',FORM='UNFORMATTED')
-              OPEN(LUSRED,FILE='SRED',STATUS='NEW',FORM='UNFORMATTED')
+              LUE1RED = -1
+              LUE2RED = -1
+              LUSRED  = -1
+              CALL GPOPEN(LUE1RED,'ABS_E1RED','NEW',
+     &           ' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUE2RED,'ABS_E2RED','NEW',
+     &           ' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUSRED ,'ABS_SRED' ,'NEW',
+     &           ' ',' ',IDUMMY,.FALSE.)
             ENDIF
 C
             DO IOPER=1,NOPER(KSYMOP)
@@ -783,7 +789,8 @@ C
      &                  (LABEL1(2:7) .EQ. 'LONMAG')) THEN
                   NABATY = -1
                ELSE
-                  WRITE (LUPRI,'(2A)') LABEL1, ' not recognised'
+                  WRITE (LUPRI,'(3A)') 'ERROR Operator label "',LABEL1,
+     &               '" not recognised'
                   CALL QUIT('Unrecognised operator in LNRABA')
                END IF
                IF (IRUN .EQ. 2) THEN
@@ -1086,14 +1093,14 @@ C
             END DO
 C
             IF (ABSLRS) THEN
-              CLOSE(LUSB,STATUS='DELETE')
-              CLOSE(LUAB,STATUS='DELETE')
-              CLOSE(LUSS,STATUS='DELETE')
-              CLOSE(LUAS,STATUS='DELETE')
+              CALL GPCLOSE(LUSB,'DELETE')
+              CALL GPCLOSE(LUAB,'DELETE')
+              CALL GPCLOSE(LUSS,'DELETE')
+              CALL GPCLOSE(LUAS,'DELETE')
 C
-              CLOSE(LUE1RED,STATUS='DELETE')
-              CLOSE(LUE2RED,STATUS='DELETE')
-              CLOSE(LUSRED,STATUS='DELETE')
+              CALL GPCLOSE(LUE1RED,'DELETE')
+              CALL GPCLOSE(LUE2RED,'DELETE')
+              CALL GPCLOSE(LUSRED, 'DELETE')
             ENDIF
 C     
 C     End loop over symmetries
