@@ -381,7 +381,7 @@ C
       END IF
       else if (peqm) then
         write(luw4,'(/a)')
-     &      ' Iter      Total energy       PE energy           '//
+     &      ' Iter      Total energy     Embedding energy      '//
      &      'Error norm     Delta(E)'
       ELSE ! no solvation energy
       IF (.NOT.AUTOCC) THEN

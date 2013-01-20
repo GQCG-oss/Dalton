@@ -481,10 +481,10 @@ c           LUAB = 81
 c           LUSS = 82
 c           LUAS = 83
 C
-            OPEN(LUSB,status='new',form='unformatted')
-            OPEN(LUAB,status='new',form='unformatted')
-            OPEN(LUSS,status='new',form='unformatted')
-            OPEN(LUAS,status='new',form='unformatted')
+            OPEN(LUSB,file='SB',status='new',form='unformatted')
+            OPEN(LUAB,file='AB',status='new',form='unformatted')
+            OPEN(LUSS,file='SS',status='new',form='unformatted')
+            OPEN(LUAS,file='AS',status='new',form='unformatted')
 C
             OPEN(LUE1RED,file='E1RED',status='new',form='unformatted')
             OPEN(LUE2RED,file='E2RED',status='new',form='unformatted')
