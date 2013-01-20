@@ -6,7 +6,7 @@
 ! RMA windows object (used for MPI-one-sided communication) and driver routines to 
 ! open and close memory windows.
 !
-! written by sknecht for Dalton - linkoeping jan 2013
+! written by sknecht - linkoeping jan 2013
 !
 !
 module rma_windows
@@ -36,19 +36,19 @@ module rma_windows
 
 ! rma-windows definition
 ! ----------------------------------------------------------------------------
-  type rma_win_dalton
+  type rma_win
 
     integer ::                   &
-      dmat_win,                  &             ! density matrix window (hermit)
-      fmat_win                                 ! fock matrix window (hermit)
+      dmat_win,                  &             ! density matrix window (2e-integral codes)
+      fmat_win                                 ! fock matrix window (2e-integral codes)
 
     logical ::                   &
-      rma_win_dalton_init = .false.            ! status of the rma_win_dalton type
+      rma_win_init = .false.                   ! status of the rma_win type
 
-  end type rma_win_dalton
+  end type rma_win
 
 ! rma-windows object
-  type(rma_win_dalton), public, save :: rma_win_dalton_info
+  type(rma_win), public, save :: rma_win_info
 ! ----------------------------------------------------------------------------
 
 #ifdef VAR_MPI
@@ -62,7 +62,9 @@ contains
                             my_win,              &
                             set_win_lock_info,   &
                             key,                 &
-                            value)
+                            value,               &
+                            external_info        &
+                           )
 !*******************************************************************************
 !
 !     open memory window to be used in one-sided MPI communication
@@ -89,33 +91,32 @@ contains
   integer(kind=MPI_ADDRESS_KIND), intent(in) :: nelement
   character*(*), intent(in), optional        :: key
   character*(*), intent(in), optional        :: value
+  integer, intent(in),       optional        :: external_info
 !-------------------------------------------------------------------------------
   integer                                    :: info_object
   integer                                    :: ierr
 !-------------------------------------------------------------------------------
 !
 !     open memory window on each process shared by win_communicator
-      if(set_win_lock_info)then
+      info_object = mpi_info_null
 
+      if(set_win_lock_info)then
         call mpi_info_create(info_object,ierr)
         call mpi_info_set(info_object,key,value,ierr)
-
-        call  mpixwincreate(rbuf,                &
-                            nelement,            &
-                            myid,                &
-                            win_communicator,    &
-                            info_object,         &
-                            my_win)
-
-        call mpi_info_free(info_object,ierr)
-
       else
-        call  mpixwincreate(rbuf,                &
-                            nelement,            &
-                            myid,                &
-                            win_communicator,    &
-                            mpi_info_null,       &
-                            my_win)
+        if(present(external_info)) info_object = external_info
+      end if
+
+
+      call  mpixwincreate(rbuf,                &
+                          nelement,            &
+                          myid,                &
+                          win_communicator,    &
+                          info_object,         &
+                          my_win)
+
+      if(set_win_lock_info)then
+        call mpi_info_free(info_object,ierr)
       end if
 !
   end subroutine set_rma_window

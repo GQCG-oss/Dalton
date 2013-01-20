@@ -494,7 +494,7 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
 !    &                 MPI_LOCK_EXCLUSIVE,
      &                 MPI_LOCK_SHARED,
      &                 .false.,
-     &                 rma_win_dalton_info%dmat_win)
+     &                 rma_win_info%dmat_win)
        end if
 #endif
 
@@ -513,7 +513,7 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
      &                 nbasis**2,
      &                 communication_info_mpi%my_shmem_node_id,
      &                 MPI_LOCK_SHARED,
-     &                 rma_win_dalton_info%fmat_win)
+     &                 rma_win_info%fmat_win)
 #endif
       else
 

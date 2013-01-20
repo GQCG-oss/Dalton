@@ -9,7 +9,7 @@
 ! original collection in Dirac - sknecht October 2007
 !
 !
-! ideas for window hints: window for get operations in hermit: no_locks == .true.
+! ideas for window hints: window for get operations in 2e-integral codes: no_locks == .true. (MPI-3)
 !
 !
 module one_sided_communication_wrappers

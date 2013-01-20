@@ -331,8 +331,8 @@ C
 !--------------------------------------------------------------------------------------
       if(rma_model)then
 
-        rma_win_dalton_info%dmat_win = -1
-        rma_win_dalton_info%fmat_win = -1
+        rma_win_info%dmat_win = -1
+        rma_win_info%fmat_win = -1
 
         nelement            = n2basx*ndmat
 
@@ -342,7 +342,7 @@ C
      &                      master,
      &                      communication_info_mpi%
      &                      communication_shmemnode,
-     &                      rma_win_dalton_info%dmat_win,
+     &                      rma_win_info%dmat_win,
 !    &                      .true.,
      &                      .false.,
      &                      'no_locks',
@@ -353,11 +353,11 @@ C
      &                      master,
      &                      communication_info_mpi%
      &                      communication_shmemnode,
-     &                      rma_win_dalton_info%fmat_win,
+     &                      rma_win_info%fmat_win,
      &                      .false.)
 #endif
-!       print *, 'fmat_win, dmat_win',rma_win_dalton_info%fmat_win,
-!    &            rma_win_dalton_info%dmat_win,mynum
+!       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
+!    &            rma_win_info%dmat_win,mynum
       end if
 
 C-----------------------
@@ -385,8 +385,8 @@ C           workspace for array SORTED.
 !------------------------
       if(rma_model)then
 #ifdef VAR_MPI
-        call free_rma_window(rma_win_dalton_info%dmat_win,master)
-        call free_rma_window(rma_win_dalton_info%fmat_win,master)
+        call free_rma_window(rma_win_info%dmat_win,master)
+        call free_rma_window(rma_win_info%fmat_win,master)
 #endif
       end if
 
@@ -1120,8 +1120,8 @@ C
 !--------------------------------------------------------------------------------------
       if(rma_model)then
 
-        rma_win_dalton_info%dmat_win = -1
-        rma_win_dalton_info%fmat_win = -1
+        rma_win_info%dmat_win = -1
+        rma_win_info%fmat_win = -1
 
         nelement            = n2basx*ndmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
@@ -1132,7 +1132,7 @@ C
      &                      communication_info_mpi%my_shmem_node_id,
      &                      communication_info_mpi%
      &                      communication_shmemnode,
-     &                      rma_win_dalton_info%dmat_win,
+     &                      rma_win_info%dmat_win,
 !    &                      .true.,
      &                      .false.,
      &                      'no_locks',
@@ -1143,11 +1143,11 @@ C
      &                      communication_info_mpi%my_shmem_node_id,
      &                      communication_info_mpi%
      &                      communication_shmemnode,
-     &                      rma_win_dalton_info%fmat_win,
+     &                      rma_win_info%fmat_win,
      &                      .false.)
 #endif
-!       print *, 'fmat_win, dmat_win',rma_win_dalton_info%fmat_win,
-!    &            rma_win_dalton_info%dmat_win,mynum
+!       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
+!    &            rma_win_info%dmat_win,mynum
 
       end if
 
@@ -1180,8 +1180,8 @@ C
 !------------------------
       if(rma_model)then
 #ifdef VAR_MPI
-        call free_rma_window(rma_win_dalton_info%dmat_win,master)
-        call free_rma_window(rma_win_dalton_info%fmat_win,master)
+        call free_rma_window(rma_win_info%dmat_win,master)
+        call free_rma_window(rma_win_info%fmat_win,master)
 #endif
       end if
 
