@@ -1208,7 +1208,7 @@ fast_callback(DftGrid* grid, CubeFastData* data)
 #include "infpar.h"
 
 void
-dft_cr_resp_slave(real* work, integer* lwork, const integer* iprint)
+dft_cr_resp_slave(real* work, integer* lwork, integer* iprint)
 {
     real* fi    = calloc(inforb_.n2orbx, sizeof(real));              /* OUT */
     real *cmo = dal_malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /*IN */
@@ -1220,7 +1220,7 @@ dft_cr_resp_slave(real* work, integer* lwork, const integer* iprint)
              kappaB, &symB,
              kappaC, &symC,
              kappaD, &symD,
-             work,   lwork);
+             work,   lwork, iprint);
     free(kappaB);
     free(kappaC);
     free(kappaD);

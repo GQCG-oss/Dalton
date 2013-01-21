@@ -633,7 +633,7 @@ fast_callback(DftGrid* grid, QuadFastData* data)
    the main property evaluator (dftqrcf_ in this case) and call it.
 */
 void
-dft_qr_resp_slave(real* work, integer* lwork, const integer* iprint)
+dft_qr_resp_slave(real* work, integer* lwork, integer* iprint)
 {
     real* fi    = malloc(inforb_.n2basx*sizeof(real));              /* OUT */
     real *cmo   = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
@@ -641,7 +641,7 @@ dft_qr_resp_slave(real* work, integer* lwork, const integer* iprint)
     real *kappaZ= malloc(inforb_.n2orbx*sizeof(real));              /* IN  */
     integer addfock, symY, symZ, spinY, spinZ;                      /* IN  */
     dftqrcf_(fi, cmo, kappaY, &symY, &spinY, kappaZ, &symZ, &spinZ, 
-	     &addfock, work, lwork);
+	     &addfock, work, lwork, iprint);
     free(kappaZ);
     free(kappaY);
     free(cmo);

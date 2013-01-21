@@ -614,9 +614,8 @@ dft_kohn_shamab_slave(real* work, integer* lwork, integer* iprint)
 {
     real* dmat = malloc(2*inforb_.n2basx*sizeof(real));
     real* ksm  = calloc(2*inforb_.n2basx,sizeof(real));
-    integer iprint = 0;
     real edfty;
-    FSYM2(dft_kohn_shamab)(dmat, ksm, &edfty, work, lwork, &iprint);
+    FSYM2(dft_kohn_shamab)(dmat, ksm, &edfty, work, lwork, iprint);
     free(dmat);
     free(ksm);
 }
@@ -800,7 +799,7 @@ dft_lin_respab_slave(real* work, integer* lwork, integer* iprint)
     integer trplet;                         /* IN: will be synced from master */
     integer ksymop;                         /* IN: will be synced from master */
     FSYM2(dft_lin_respab)(fmat, fmat+inforb_.n2orbx, cmo, zymat, &trplet,
-			  &ksymop, work, lwork);
+			  &ksymop, work, lwork, iprint);
     free(fmat);
     free(cmo);
     free(zymat); 
@@ -1680,8 +1679,7 @@ void
 dft_kohn_shamab_b_slave(real* work, integer* lwork, integer* iprint)
 {
   real* dmat = malloc(2*inforb_.n2basx*sizeof(real));
-  integer iprint = 0;
-  FSYM2(dft_kohn_shamab_b)(dmat, NULL, NULL, work, lwork, &iprint);
+  FSYM2(dft_kohn_shamab_b)(dmat, NULL, NULL, work, lwork, iprint);
   free(dmat);
 }
 

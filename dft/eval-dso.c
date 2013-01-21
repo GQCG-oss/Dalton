@@ -88,7 +88,7 @@ numdso_slave(real* work, integer* lwork, integer* iprint)
     integer sz, new_lwork;
     integer dsodim;
     integer nucind;            /* IN: will be synced from master */
-    real *spndso;
+    real    *spndso;
     
     FSYM(getdsosz)(&dsodim); sz = dsodim*dsodim;
     if(*lwork < sz)
@@ -96,7 +96,7 @@ numdso_slave(real* work, integer* lwork, integer* iprint)
 		    *lwork, sz);
     new_lwork = *lwork-sz;
     FSYM(dzero)(work, &sz);
-    FSYM(numdso)(work, &nucind, work+sz, &new_lwork);
+    FSYM(numdso)(work, &nucind, work+sz, &new_lwork, iprint);
 }
 void FSYM(dsosyncslaves)(real *dmat,integer *nucind,real *work,integer *lwork);
 #define numdso_sync_slaves(dmat,nucind,work,lwork) \
