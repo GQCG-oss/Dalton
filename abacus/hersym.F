@@ -1367,7 +1367,7 @@ C ::: We take the XY-component. :::
                V1(2) = ATMARR(2,I)
                V1(3) = 0.0D0
                V1NRM2 = V1(1)*V1(1)+V1(2)*V1(2)
-               TOLLDS = 2.0D0 * TOLLRN * SQRT (V1NRM2)
+               TOLLDS = MAX( 2.0D0 * TOLLRN * SQRT (V1NRM2), TOLLRN_2)
                IORD = 0
                J = I
  350           CONTINUE
@@ -1803,7 +1803,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), DMRARR(6,0:MAXMIR)
          DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
-         DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
+         DIMENSION V1(3), V2(3), V3(3), VSTORE(3), TMPAX(6)
          LOGICAL   MIRMOL, PLNMOL, LINMOL
          DMRARR(1,0) = 0.0D0
          N_ATOMS = NINT(ATMARR(1,0))
@@ -1923,9 +1923,12 @@ C ::: we have found rotational axes. The axis with the highest order is  :::
 C ::: used as reference, and the code is as follows:                     :::
 C ::: Horizontal - 2   Vertical - 1   Other/Undecided - 0                :::
          IF (NINT(AXARR(1,0)) .GT. 0) THEN
-            V1(1) = AXARR(1,1)
-            V1(2) = AXARR(2,1)
-            V1(3) = AXARR(3,1)
+            IFOUND = 0
+            J = 1
+ 275        CONTINUE 
+            V1(1) = AXARR(1,J)
+            V1(2) = AXARR(2,J)
+            V1(3) = AXARR(3,J)
             DO 300 I = 1, NINT(DMRARR(1,0))
                V2(1) = DMRARR(1,I)
                V2(2) = DMRARR(2,I)
@@ -1937,10 +1940,12 @@ C ::: First the horizontal. :::
                IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
      &                                    .LT. TOLLRN_2) THEN
                   DMRARR(4,I) = 2.0D6 + DMRARR(4,I) + 0.1D0
+                  IFOUND = IFOUND + 1
 C ::: Then the vertical. :::
                ELSE IF (ABS(V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3))
      &                                     .LT. TOLLRN) THEN
                   DMRARR(4,I) = 1.0D6 + DMRARR(4,I) + 0.1D0
+                  IFOUND = IFOUND + 1
 C ::: The rest must be diagonal/undecided. :::
                ELSE
                   DMRARR(4,I) =         DMRARR(4,I)
@@ -1949,6 +1954,23 @@ C           (Type is recovered later by MIRTYP = 1.0D-6*DMRARR(4,I)
 C            --  that is 2, 1, or 0 -- the +0.1D0 is to avoid
 C            roundoff errrors when DMRARR(4,I) = 0.0D0)
  300        CONTINUE
+CRF   If we have several rotational axes of the highest order, we might
+CRF   not have tested the real main axis. If we have been unable to classify 
+CRF   any planes thus far, we try the next one.
+            IF ( (IFOUND .EQ. 0 )  .AND. (NINT(AXARR(1,0)) .GT. J ) 
+     &           .AND. (NINT(AXARR(4,J)) .EQ. NINT(AXARR(4,J+1)) )) 
+     &           THEN
+               J = J + 1
+               GOTO 275  
+            END IF
+            IF ( (IFOUND .GE. 1) .AND. ( J .GT. 1 ) ) THEN
+CRF  We have been able to classify som mirror planes, but not using the first axis
+CRF  Swich them around
+               TMPAX = AXARR(:,1)
+               AXARR(:,1) = AXARR(:,J)
+               AXARR(:,J) = TMPAX
+            END IF
+            
             CALL SRTATM(MAXMIR, DMRARR, .FALSE.)
          END IF
          RETURN

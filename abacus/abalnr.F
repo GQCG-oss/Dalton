@@ -47,12 +47,13 @@ C
 #include "dorps.h"
 #include "nuclei.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "codata.h"
 #include "pcmlog.h"
 C
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
       LOGICAL NEWDEF, LOCFIN
       CHARACTER*8 DIPLEN(3),DIPLOC(3), ANGMOM(3), LONMAG(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -64,8 +65,9 @@ C
 C
       DATA TABLE /'.SKIP  ', '.WAVELE','.MAX IT','.THRESH',
      &            '.MAXRED', '.MAXPHP','.STATIC','.VIBGRE',
-     *            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
-     *            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE'/
+     &            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
+     &            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE',
+     &            '.ABSLRS'/
 C
       NEWDEF = (WORD .EQ. '*ABALNR')
       ICHANG = 0
@@ -83,7 +85,8 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),
+     &                      I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -136,6 +139,7 @@ C
                   ELSE
                      MAXITE = INPVAL
                   END IF
+                  ABS_MAXITER=INPVAL
                GO TO 100
 C              .THRESH
     4          CONTINUE
@@ -155,6 +159,7 @@ C              .THRESH
                   ELSE
                      MXRM = IMXRM
                   END IF
+                  ABS_MAXRM=IMXRM
                GO TO 100
     6          CONTINUE
                   READ (LUCMD,*) IMXPHP
@@ -213,6 +218,7 @@ CSPAS:20/3-2011: allowing for perturbations in only one irrep
                   ABSORP = .TRUE.
                   ICHANG = ICHANG + 1
                   READ (LUCMD,*) DAMPING
+                  ABS_DAMP=DAMPING
                GO TO 100
    14          CONTINUE
                   CUT    = .TRUE.
@@ -225,6 +231,9 @@ CSPAS:20/3-2011: allowing for perturbations in only one irrep
                GO TO 100
    16          CONTINUE
                  ABS_REDUCE=.TRUE.
+               GO TO 100
+   17          CONTINUE
+                 ABSLRS=.TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -304,44 +313,38 @@ C
          ELSE
             IF (ABSORP) THEN
                IF (ABS_INTERVAL) THEN
+                  IF (FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
+     &              (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.
+     &              FREQ_INTERVAL(3).OR. FREQ_INTERVAL(3).LE.0.0D0) THEN
+                     CALL QUIT('.FREQ_INTERVAL not specify correctly')
+                  ENDIF
+                  DSMALL=1.0000001
                   NFREQ_INTERVAL = 1 +
-     &                 INT((FREQ_INTERVAL(2)-FREQ_INTERVAL(1))/
+     &                 INT(DSMALL*(FREQ_INTERVAL(2)-FREQ_INTERVAL(1))/
      &                 FREQ_INTERVAL(3))
                   NFRVAL = NFREQ_INTERVAL
                   DO I=1,NFRVAL
                      FRVAL(I)=FREQ_INTERVAL(1) + (I-1)*FREQ_INTERVAL(3)
                   END DO                  
-               ELSE
+               ENDIF
                   NFREQ_ALPHA = NFRVAL
                   NFREQ_INTERVAL = NFRVAL
+                  ABS_NFREQ_ALPHA = NFRVAL
+                  ABS_NFREQ_INTERVAL = NFRVAL
                   DO I=1,NFREQ_ALPHA
                      FREQ_ALPHA(I) = FRVAL(I)
+                     ABS_FREQ_ALPHA(I) = FRVAL(I)
                   END DO
-               END IF
+!               END IF
                THCLR_ABSORP = THCLNR
                IPRABS = IPRLNR
                MAX_MACRO  = MAXITE
-               IF(ABS_INTERVAL .AND.
-     &              (FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
-     &           (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.FREQ_INTERVAL(3)
-     &            .OR. FREQ_INTERVAL(3).LE.0.0D0) ) THEN
-                  WRITE(LUPRI,'(/,A,/,A,/,/,A,/,A,/,/,A)')
-     & ' Warning: Frequency interval for absorption calculation is not',
-     & '          correctly specified according to:',
-     & '                 .FREQ_INTERVAL',
-     & '                 STARTFREQ ENDFREQ STEPSIZE',
-     & '          This input will be ignored. Calculation continues.'
-                  ABS_INTERVAL = .FALSE.
-                  FREQ_INTERVAL(1)=0.0D0
-                  FREQ_INTERVAL(2)=0.0D0
-                  FREQ_INTERVAL(3)=1.0D0
-               END IF
-            ELSE IF (ABS_INTERVAL) THEN
-               ABS_INTERVAL = .FALSE.
-               WRITE(LUPRI,'(/A,/A)')
-     & ' Warning: Frequency interval input only available for'//
-     & '          absorption calculation.',
-     & '          This input will be ignored. Calculation continues.'
+c            ELSE IF (ABS_INTERVAL) THEN
+c               ABS_INTERVAL = .FALSE.
+c               WRITE(LUPRI,'(/A,/A)')
+c     & ' Warning: Frequency interval input only available for'//
+c     & '          absorption calculation.',
+c     & '          This input will be ignored. Calculation continues.'
             END IF
             IF (NFRVAL .GT. 0) THEN
                IF (NFRVLT .EQ. 0) NFRVLT = NFRVAL
@@ -461,6 +464,7 @@ C
 #include "gnrinf.h"
 #include "infsop.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "pcmlog.h"
 C
       IF (SKIP) RETURN
@@ -743,6 +747,31 @@ CSPAS:20/3-2011: allowing for VIB_G perturbations in only one irrep
             IF (VIB_G .AND. VIBGIR .AND. (ISYM .NE. IRVIBG)) CYCLE
 CKeinSPASmehr
             KSYMOP = ISYM
+            IF (ABSLRS) THEN
+              ABS_KLRED(1)=0
+              ABS_KLRED(2)=0
+C
+              LUSB = -1
+              LUAB = -1
+              LUSS = -1
+              LUAS = -1
+C
+              CALL GPOPEN(LUSB,'ABS_SB','NEW',' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUAB,'ABS_AB','NEW',' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUSS,'ABS_SS','NEW',' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUAS,'ABS_AS','NEW',' ',' ',IDUMMY,.FALSE.)
+C
+              LUE1RED = -1
+              LUE2RED = -1
+              LUSRED  = -1
+              CALL GPOPEN(LUE1RED,'ABS_E1RED','NEW',
+     &           ' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUE2RED,'ABS_E2RED','NEW',
+     &           ' ',' ',IDUMMY,.FALSE.)
+              CALL GPOPEN(LUSRED ,'ABS_SRED' ,'NEW',
+     &           ' ',' ',IDUMMY,.FALSE.)
+            ENDIF
+C
             DO IOPER=1,NOPER(KSYMOP)
                KOPER=IOPER
                LABEL1 = LABOP(IOPER,KSYMOP)
@@ -760,7 +789,8 @@ CKeinSPASmehr
      &                  (LABEL1(2:7) .EQ. 'LONMAG')) THEN
                   NABATY = -1
                ELSE
-                  WRITE (LUPRI,'(2A)') LABEL1, ' not recognised'
+                  WRITE (LUPRI,'(3A)') 'ERROR Operator label "',LABEL1,
+     &               '" not recognised'
                   CALL QUIT('Unrecognised operator in LNRABA')
                END IF
                IF (IRUN .EQ. 2) THEN
@@ -865,18 +895,27 @@ C
                      IF (.NOT.ABSORP) REWIND LUSOVE
                      DO 100 IFRVAL = 1,NFRVAL
                         IF (ABSORP) THEN
-                           CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
-     &                          ' ',IDUMMY,.FALSE.)
-                           CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),LABEL1,
-     &                          'COMPLEX ',FRVAL(IFRVAL),0.0D0,
-     &                          ISYM,0,THCLR_ABSORP,FOUND,CONV,ANTSYM)
-                           CALL GPCLOSE(LURSP,'KEEP')
-                           SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
-     &                          WORK(KGD1),1)
-                           SNDPRP(2)=DDOT(2*NVARPT,
-     &                          WORK(KSLV+2*NVARPT),1,
-     &                          WORK(KGD1),1)
-                        ELSE
+                          IF (ABSLRS) THEN
+                            OPEN(LUABSVECS,FILE='ABSVECS',
+     &                          STATUS='UNKNOWN',
+     &                          FORM='UNFORMATTED')
+                             CALL READ_XVEC(LUABSVECS,4*NVARPT,
+     &                            WORK(KSLV),LABEL1,ISYM,
+     &                             FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
+                              CLOSE(LUABSVECS,STATUS='KEEP')
+                          ELSE
+                            CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
+     &                           ' ',IDUMMY,.FALSE.)
+                            CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),
+     &                           LABEL1,'COMPLEX ',FRVAL(IFRVAL),0.0D0,
+     &                           ISYM,0,THCLR_ABSORP,FOUND,CONV,ANTSYM)
+                            CALL GPCLOSE(LURSP,'KEEP')
+                          ENDIF
+                          SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
+     &                                   WORK(KGD1),1)
+                          SNDPRP(2)=DDOT(2*NVARPT,WORK(KSLV+2*NVARPT),1,
+     &                                   WORK(KGD1),1)
+                        ELSE 
                            CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
                            SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
      &                          WORK(KGD1),1)
@@ -1052,6 +1091,17 @@ C
 C     End loop over operator in this symmetry
 C     
             END DO
+C
+            IF (ABSLRS) THEN
+              CALL GPCLOSE(LUSB,'DELETE')
+              CALL GPCLOSE(LUAB,'DELETE')
+              CALL GPCLOSE(LUSS,'DELETE')
+              CALL GPCLOSE(LUAS,'DELETE')
+C
+              CALL GPCLOSE(LUE1RED,'DELETE')
+              CALL GPCLOSE(LUE2RED,'DELETE')
+              CALL GPCLOSE(LUSRED, 'DELETE')
+            ENDIF
 C     
 C     End loop over symmetries
 C     
@@ -2152,6 +2202,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "inforb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -2481,7 +2532,7 @@ cmbh end
          END DO
       ENDIF
 C
-      IF (ABSORP .AND. IPRINT.GE.0) THEN
+      IF (ABSORP .AND. IPRINT.GE.0 .AND. (.NOT. ABSLRS)) THEN
          WRITE(LUPRI,'(/10X,A4,A6,A21,/10X,A)') 
      &        'Sym.','State','Excitation energy',
      &        '---------------------------------------------------'
