@@ -348,7 +348,7 @@ c        identical results.
             WRITE(LUPRI,'(/A)')
      &         "No symmetry -> DSO by numerical integration."
             CALL DZERO(SPNDSO,MXCOOR*MXCOOR)
-            CALL NUMDSO(SPNDSO,NUCIND,WORK(KLAST),LWRK)
+            CALL NUMDSO(SPNDSO,NUCIND,WORK(KLAST),LWRK,MPRINT)
          ENDIF
       END IF
       IF (MDIASU) THEN

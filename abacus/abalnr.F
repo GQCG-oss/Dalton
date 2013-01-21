@@ -584,7 +584,7 @@ C
 C
       NLBTOT = 0
 C
-      IPRINT=IPRLNR
+      IPR1IN=MAX(0,IPRLNR-5)
       IF (ALFA .OR. ROAA .OR. ROAG) THEN
          NCOMP  = 0
          NPATOM = 0
@@ -592,13 +592,13 @@ Clf
          IF(PCM.AND.LOCFLD) THEN
             CALL GET1IN(DUMMY,'DIPLOC ',NCOMP,WORK(KWORK2),LWORK2,
      &           LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRINT)
+     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPR1IN)
             NLAB = 3
             CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          ELSE
             CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
      &           LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRINT)
+     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPR1IN)
             NLAB = 3
             CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          END IF
@@ -615,7 +615,7 @@ Clf
          CALL GET1IN(DUMMY,'THETA  ',NCOMP,WORK(KWORK2),LWORK2,
      &            LABINT,WORK(KIDSYM),WORK(KIDADR),
      &            IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-     &            IPRINT)
+     &            IPR1IN)
          DIPORG(1) = DIPTMX
          DIPORG(2) = DIPTMY
          DIPORG(3) = DIPTMZ
@@ -634,7 +634,7 @@ C
          CALL GET1IN(DUMMY,'ANGMOM ',NCOMP,WORK(KWORK2),LWORK2,
      &            LABINT,WORK(KIDSYM),WORK(KIDADR),
      &            IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-     &            IPRINT)
+     &            IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 C
@@ -644,7 +644,7 @@ C
             CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &                  LABINT,WORK(KIDSYM),WORK(KIDADR),
      &                  IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-     &                  IPRINT)
+     &                  IPR1IN)
             NLAB = 3
             CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          END IF
@@ -659,7 +659,7 @@ C
          CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
      &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-     &               IPRINT)
+     &               IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       END IF
