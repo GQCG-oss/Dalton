@@ -83,7 +83,7 @@ struct dso_data {
 
 void FSYM(getdsosz)(integer *dsodim);
 void
-numdso_slave(real* work, integer* lwork, const integer* iprint)
+numdso_slave(real* work, integer* lwork, integer* iprint)
 {
     integer sz, new_lwork;
     integer dsodim;
@@ -148,7 +148,7 @@ dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
  */
 extern void FSYM2(numdso_finish)(real* spndso);
 void
-FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork)
+FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork, integer* iprint)
 {
     extern void FSYM(dunfld)(const integer* n, const real* dsp, real* dge);
     struct tms starttm, endtm; clock_t utm;
@@ -164,7 +164,7 @@ FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork)
     dso.r3i  = malloc(DFT_BLLEN*(*nucind)*sizeof(real));
     if(!dso.rvec || !dso.r3i) dalton_quit("Not enough memory in numdso.");
     times(&starttm);
-    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, 0,
+    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, iprint, 0,
                                     (DftBlockCallback)dso_cb, &dso);
     numdso_collect_info(spndso, work, *lwork);
 

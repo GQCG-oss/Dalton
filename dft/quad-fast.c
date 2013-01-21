@@ -711,7 +711,7 @@ dft_qr_resp_collect_info(real* fi, real*work, integer lwork)
 void
 dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY, 
          real* kappaZ, integer* symZ, integer* spinZ, integer* addfock, 
-         real* work, integer* lwork)
+         real* work, integer* lwork, integer* iprint)
 {
     static int msg_printed = 0;
     struct tms starttm, endtm; clock_t utm;
@@ -737,7 +737,7 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
     cbdata[0].cb_data  = data;
     times(&starttm);
 
-    electrons = dft_integrate(cmo, work, lwork, cbdata, ELEMENTS(cbdata));
+    electrons = dft_integrate(cmo, work, lwork, iprint, cbdata, ELEMENTS(cbdata));
     
     dft_qr_resp_collect_info(data->dftcontr, work,*lwork); /* NO-OP in serial */
     daxpy_(&inforb_.n2orbx, &ONER, data->dftcontr, &ONEI, fi, &ONEI);

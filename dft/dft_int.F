@@ -23,10 +23,14 @@
 !
       SUBROUTINE DFTINT(DMAT,NDMAT,NGEODRV,DOLND,WORK,LWORK,CB,
      &                  CBDATA,ELECTRONS)
-#include "implicit.h"      
+#include "implicit.h"
+C
+C Used
+C  dftcom.h : IPRDFT, ?
+C
+#include "priunit.h"
 #include "inforb.h"
 #include "dftcom.h"
-#include "priunit.h"
       DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK), CBDATA(*)
       EXTERNAL CB
       LOGICAL DOLND
@@ -42,17 +46,17 @@ C
       CALL MEMGET2('REAL',' DMGAO',KDMGAO,LDMGAO,WORK,KFREE,LFREE)
 C
       CALL DFTINT_1(DMAT,NDMAT,NGEODRV,DOLND,CB,CBDATA,ELECTRONS,
-     &            WORK(KGAO),WORK(KDMGAO),WORK,KFREE,LFREE)
+     &            WORK(KGAO),WORK(KDMGAO),WORK,KFREE,LFREE,IPRDFT)
 C
       CALL QEXIT('DFTINT')
       END
       SUBROUTINE DFTINT_1(DMAT,NDMAT,NGEODRV,DOLND,CB,CBDATA,ELECTRONS,
-     &                  GAO,DMAGAO,WORK,KFREE,LFREE)
+     &                  GAO,DMAGAO,WORK,KFREE,LFREE,IPRINT)
 
 C
 C     P. Salek and T. Helgaker, October 2003
 C
-#include "implicit.h"      
+#include "implicit.h"
 #include "priunit.h"
 C
 #include "maxorb.h"
@@ -75,18 +79,18 @@ C
       DIMENSION COOR(3,NBUFLEN), WEIGHT(NBUFLEN)
       DIMENSION NSHLBLCK(2,KMAX), NBLCNT(8), NBLOCKS(2,NBAST,8)
       DIMENSION RHOA(MXBLLEN), GRADA(3,MXBLLEN)
-      DIMENSION RHOB(MXBLLEN), GRADB(3,MXBLLEN) 
+      DIMENSION RHOB(MXBLLEN), GRADB(3,MXBLLEN)
 C
       LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
       DIMENSION IORIDX(KMAX,2,8)
-C     
+C
       ELECTRONS = 0.D0
       DOGGA = DFT_ISGGA() ! C code
       IGEODRV = NGEODRV
       IF (DOGGA) IGEODRV = IGEODRV + 1
       CALL SETUPSOS(IGEODRV,DOLND,IDUM1,IDUM2)
-      CALL OPNQUA(NBAST,DMAT,WORK(KFREE),LFREE) ! C code
+      CALL OPNQUA(NBAST,DMAT,WORK(KFREE),LFREE,IPRINT) ! C code
       NPOINTS = 0
       CALL CONSTRUCT_IORIDX(IORIDX)
 
@@ -145,18 +149,18 @@ C
             END IF
             IF (NDMAT .EQ. 2) THEN
               DO I = 1, NCURLEN
-                 ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1) 
+                 ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1)
      &                     * (RHOA(I)+RHOB(I))
               END DO
-              CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,RHOB, 
+              CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,RHOB,
      &                GRADA,GRADB,COOR(1,IPT),WEIGHT(IPT),CBDATA)
-            ELSE 
+            ELSE
                DO I = 1, NCURLEN
                   ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1)*RHOA(I)
                END DO
                CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,GRADA,
      &                 COOR(1,IPT),WEIGHT(IPT),CBDATA)
-            END IF 
+            END IF
          END DO
          GO TO 100
  200     CONTINUE
@@ -168,7 +172,7 @@ C
       CALL CLSQUA !C code
 C
 C     Test on the number of electrons
-C   
+C
 C     WRITE(2,*) ' node ', mynum,' knows of ', electrons
       CALL  DFTINTCOLLECT(ELECTRONS)
       IF (MYNUM.EQ.0) THEN
@@ -202,7 +206,7 @@ c
 c     CONSTRUCT_IROIDX construct a list of indices containing
 c     for a given symmetry ranges of basis sets that given shell
 c     contributes to.
-c     if given shell does not contribute to any orbital in given 
+c     if given shell does not contribute to any orbital in given
 c     symmetry, then the corresponding iordix elements are [0,-1]
 c     and the shell should be skipped.
 c
@@ -244,7 +248,7 @@ c     Equivalent of lifesupport from dft-qr: synchronizes all data needed
 c     for evaluation of basis functions.  One probably wants to call it
 c     as early as possible so that slaves can take right decisions
 c     regarding which functionals to run etc.
-c     
+c
 c     NORBT, N2ORBX,NOCCT, NVIRT are needed for....?
 #include "implicit.h"
 #include "priunit.h"
@@ -357,17 +361,17 @@ c     /DFTCOM/
       CALL MPI_Bcast(DFTADD,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
 
 !     sync thresholds
-      call mpi_bcast(dfthr0, 1, mpi_double_precision, 
+      call mpi_bcast(dfthr0, 1, mpi_double_precision,
      &                       0, mpi_comm_world, ie)
-      call mpi_bcast(dfthrl, 1, mpi_double_precision, 
+      call mpi_bcast(dfthrl, 1, mpi_double_precision,
      &                       0, mpi_comm_world, ie)
-      call mpi_bcast(dfthri, 1, mpi_double_precision, 
+      call mpi_bcast(dfthri, 1, mpi_double_precision,
      &                       0, mpi_comm_world, ie)
 
 c     sync functionals, too.
 !     print *, 'calling DFTFUNCSYNC for mytid',mytid, NODTOT
       CALL DFTFUNCSYNC(MYNUM,NODTOT)
-c      
+c
 #endif
       END
 c

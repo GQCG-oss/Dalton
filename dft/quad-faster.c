@@ -687,7 +687,7 @@ void
 FSYM2(dft_qr_respons)(real *fi, real *cmo,
                       real *kappaY, integer *symY, integer *spinY, 
                       real *kappaZ, integer *symZ, integer *spinZ,
-                      integer *addfock, real *work, integer *lwork)
+                      integer *addfock, real *work, integer *lwork, integer *iprint)
 {
     static int msg_printed = 0;
     struct tms starttm, endtm; clock_t utm;
@@ -709,7 +709,7 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
 #endif
         dftqrcf_(fi, cmo, kappaY, symY, spinY, 
                  kappaZ, symZ, spinZ, addfock, 
-                 work, lwork);
+                 work, lwork, iprint);
         return;
     }
     dmat = dal_malloc(inforb_.n2basx*sizeof(real));
@@ -725,7 +725,7 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
 		   dmat, work, lwork);
     cb = (DftBlockCallback)
         (qr_data.is_gga ? qrbl_gga_cb : qrbl_lda_cb );
-    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, 0, 
+    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, iprint, 0, 
                                     cb, &qr_data);
     free(dmat);
     if(DFTQR_DEBUG) {

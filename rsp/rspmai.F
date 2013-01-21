@@ -534,8 +534,8 @@ C
 C        CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
          IF ( KZVAR.EQ.0) THEN
             NWARN = NWARN + 1
-            WRITE(LUPRI,'(/2A)')'@ ****WARNING******',
-     *         ' NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO'
+            WRITE(LUPRI,'(/A,I3)')'@ ****WARNING******'//
+     *         ' No variables in symmetry',KSYMOP
             GO TO 100
          END IF
          CALL FLSHFO(LUPRI)
@@ -1309,10 +1309,10 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') '@KEYWORD "',WORD,
-     *            '" NOT RECOGNIZED IN RSPPP.'
+               WRITE (LUPRI,'(/4A/)') '@ Keyword "',WORD,
+     *            '" is not recognized in RSPPP for section ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT(' ILLEGAL KEYWORD IN RSPPP ')
+               CALL QUIT(' Illegal KEYWORD in RSPPP ')
  1             CONTINUE
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
