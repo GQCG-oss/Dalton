@@ -22,7 +22,7 @@ dipcompy
 dipcompz
 excita
 excita
-OVERRIDE line 8
+OVERRIDE line 9
 END CHECKLIST
 
 ########## DALTON.INP ##############################
@@ -1040,6 +1040,7 @@ Point group: C1
                 Singlet electronic excitation energies
                 --------------------------------------
 
+                =======================================
                  Sym.   Mode   Frequency    Frequency
                 ex. st.  No.      (au)          (eV)
                 =======================================

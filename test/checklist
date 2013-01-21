@@ -608,7 +608,7 @@
   end_string   => "Total CPU  time used in DALTON:",
   start_offset => 0,
   end_offset   => 50,
-  line         => 7,
+  line         => 8,
   pos          => 3,
   thr          => 1.0e-6};
 }
