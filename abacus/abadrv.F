@@ -1517,7 +1517,7 @@ C
       IF (QMMM) WRITE(LUPRI,*) 'QMMM calculation'
 
       if (peqm) then
-        write(lupri,'(a)') ' PE-QM calculation'
+        write(lupri,'(a)') ' Polarizable embedding calculation'
       end if
 
       CALL HEADER('The following molecular properties will be'//
