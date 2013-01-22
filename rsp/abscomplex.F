@@ -462,8 +462,8 @@ C
       DO ISYM=1,NSYM
          IF (ABS_NOPER(ISYM).GT.0) THEN
 C
-             LFREE=LWRK
-             KFREE=1
+            LFREE=LWRK
+            KFREE=1
 C
             CALL ABSINTER(ISYM,UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
      &                    KZVAR,WRK(KFREE),LFREE)
@@ -476,19 +476,26 @@ C
             ABS_KLRED(1)=0
             ABS_KLRED(2)=0
 C
-c           LUSB = 80
-c           LUAB = 81
-c           LUSS = 82
-c           LUAS = 83
 C
-            OPEN(LUSB,file='SB',status='new',form='unformatted')
-            OPEN(LUAB,file='AB',status='new',form='unformatted')
-            OPEN(LUSS,file='SS',status='new',form='unformatted')
-            OPEN(LUAS,file='AS',status='new',form='unformatted')
+            LUSB = -1
+            LUAB = -1
+            LUSS = -1
+            LUAS = -1
 C
-            OPEN(LUE1RED,file='E1RED',status='new',form='unformatted')
-            OPEN(LUE2RED,file='E2RED',status='new',form='unformatted')
-            OPEN(LUSRED,file='SRED',status='new',form='unformatted')
+            CALL GPOPEN(LUSB,'ABS_SB','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUAB,'ABS_AB','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUSS,'ABS_SS','NEW',' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUAS,'ABS_AS','NEW',' ',' ',IDUMMY,.FALSE.)
+C
+            LUE1RED = -1
+            LUE2RED = -1
+            LUSRED  = -1
+            CALL GPOPEN(LUE1RED,'ABS_E1RED','NEW',
+     &         ' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUE2RED,'ABS_E2RED','NEW',
+     &         ' ',' ',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUSRED ,'ABS_SRED' ,'NEW',
+     &         ' ',' ',IDUMMY,.FALSE.)
 C
             DO IOPER=1,ABS_NOPER(ISYM)
                LABEL=ABS_LABOP(IOPER,ISYM)
@@ -522,14 +529,14 @@ C
 C
             END DO
 C
-            CLOSE(LUSB,status='delete')
-            CLOSE(LUAB,status='delete')
-            CLOSE(LUSS,status='delete')
-            CLOSE(LUAS,status='delete')
-c
-            CLOSE(LUE1RED,status='delete')
-            CLOSE(LUE2RED,status='delete')
-            CLOSE(LUSRED,status='delete')
+            CALL GPCLOSE(LUSB,'DELETE')
+            CALL GPCLOSE(LUAB,'DELETE')
+            CALL GPCLOSE(LUSS,'DELETE')
+            CALL GPCLOSE(LUAS,'DELETE')
+C
+            CALL GPCLOSE(LUE1RED,'DELETE')
+            CALL GPCLOSE(LUE2RED,'DELETE')
+            CALL GPCLOSE(LUSRED, 'DELETE')
 C
          END IF
       END DO
@@ -862,7 +869,7 @@ C         Special case of alpha density only (old code)
               call dft_lin_respab(WRK(KFMMO(NKD-NASIM+IOSIM)),
      &                            WRK(KFVMO(NKD-NASIM+IOSIM)),CMO,
      &                            ZYMB(1,1,NKD-NASIM+IOSIM),.FALSE.,
-     &                            ISYMB,WRK(KFREE),LFREE)
+     &                            ISYMB,WRK(KFREE),LFREE,IPRDFT)
             END DO
           ENDIF 
 C         Proceed normal way otherwise 
@@ -870,13 +877,13 @@ C         Proceed normal way otherwise
             call dft_lin_respab_b(NASIM,WRK(KFMMO(NKD-NASIM+1)),
      &                            WRK(KFVMO(NKD-NASIM+1)),CMO,
      &                            ZYMB(1,1,NKD-NASIM+1),.FALSE.,
-     &                            ISYMB,WRK(KFREE),LFREE)
+     &                            ISYMB,WRK(KFREE),LFREE,IPRDFT)
           ELSE
 c         call dft_lin_respf(NNMAX,WRK(KFMMO(1)),CMO,ZYMB,
-c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE)
+c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
             call dft_lin_respf(NASIM,WRK(KFMMO(NKD-NASIM+1)),CMO,
      &                         ZYMB(1,1,NKD-NASIM+1),
-     &                        .FALSE.,ISYMB,WRK(KFREE),LFREE)
+     &                        .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
           END IF
         END IF
       END DO

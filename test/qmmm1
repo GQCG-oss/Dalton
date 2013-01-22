@@ -127,8 +127,8 @@ ERROR[2]="QMMM DIPOLE MOMENT NOT CORRECT"
 #
 # Test of QMMM excitation energies
 #
-CRIT1=`$GREP "1        1  *  ( |0)\.1542" $log | wc -l`
-CRIT2=`$GREP "1        2  *  ( |0)\.3215" $log | wc -l`
+CRIT1=`$GREP " 1  * 1  * 0*\.1542" $log | wc -l`
+CRIT2=`$GREP " 1  * 2  * 0*\.3215" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[3]=4
 ERROR[3]="QMMM EXCITATION ENERGIES NOT CORRECT"

@@ -699,8 +699,8 @@ C
      &           1,LUPRI)
          END IF
 C
-         CALL ZSYSV('L',KZYRED,1,REDZ,KZYRED,WRK(KIPIV),REDZGD,KZYRED,
-     &              WRK(KFREE),LFREE,INFO)
+         CALL ZSYSV('L',KZYRED,1,REDZ,KZYRED,WRK(KIPIV),REDZGD,
+     &              KZYRED,WRK(KFREE),LFREE,INFO)
 C
 C     Store solution of response vector in reduced space in REDVEC. 
 C     Real and imaginary parts of each element in the response vector

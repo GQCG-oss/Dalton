@@ -1871,7 +1871,7 @@ C
       END IF
       NUCSTR = NUCIND + 1
       IF (IPREAD .GT. 3) 
-     &     WRITE(LUPRI,'(3X,A)') 'Symmetry independent centers:'
+     &   WRITE(LUPRI,'(A)') '   Symmetry independent centers:'
       DO 100 N = 1,NONT
         NCTOT = NCTOT + 1
         IF (NCTOT .GT. MXCENT) GOTO 5000

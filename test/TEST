@@ -274,6 +274,7 @@ help=""
 keep="false"
 cmake="false"
 paramlist=""
+par_paramlist="-N 4"
 reftest=""
 benchmark=""
 listing="TESTLOG"
@@ -386,25 +387,29 @@ while [ -n "$1" ]; do
    shift ;;
   "parallel" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 4"
+     paramlist="$par_paramlist"
+     par_paramlist=
    fi
    testcase="$testcase $PARALLEL"; 
    shift ;;
   "parqmmm" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 4"
+     paramlist="$par_paramlist"
+     par_paramlist=
    fi
    testcase="$testcase $QMMM";
    shift ;;
   "parqm3" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 4"
+     paramlist="$par_paramlist"
+     par_paramlist=
    fi
    testcase="$testcase $PARQM3";
    shift ;;
   "debug" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 4"
+     paramlist="$par_paramlist"
+     par_paramlist=
    fi
    testcase="$testcase $DEBUG";
    shift ;;
@@ -416,7 +421,8 @@ while [ -n "$1" ]; do
    shift ;;
   "longpar" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 4"
+     paramlist="$par_paramlist"
+     par_paramlist=
    fi
    testcase="$testcase $LONGPAR";
    shift ;;
@@ -473,12 +479,6 @@ while [ -n "$1" ]; do
    shift ;;
    "qm3" )
    testcase="$testcase $QM3"; 
-   shift ;;
-   *paral* | par* )  # assume parallel test if "paral" in name or name starts with "par"
-   if [ "$paramlist" = "" ]; then
-     paramlist="-N 4"
-   fi
-   testcase="$testcase $1"; 
    shift ;;
    *.tst )
    perl_style_list="$perl_style_list ${1/.tst/}";
@@ -562,9 +562,19 @@ if [ "$cmake" = "true" ]; then
    exit 0
 fi
 
+total_failed=0
+
 for item in ${testcase}
 do
   trouble=0
+  case $item in
+    par* | *parallel* )  # assume parallel test if name contains "parallel" or name starts with "par"
+      paramlist_this_test="$paramlist $par_paramlist"
+      shift ;;
+    * )
+      paramlist_this_test="$paramlist"
+      shift ;;
+  esac
   myprint "###########################################################"
   myprint "`date`"
   myprint "Starting now with test $item:"
@@ -647,11 +657,11 @@ do
           failed=false
           if [ "$step" -eq "1" ]; then
 #             make sure that directory is clear before start
-              $TIMING_OF $DALTON -d $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
+              $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           else
 #             copy $item.tar.gz for multistep jobs (-f option)
-              $TIMING_OF $DALTON -f $item $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
+              $TIMING_OF $DALTON -f $item $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           fi
           grep -v '\*\*\*' $tmpfile | grep -v -i 'WARNING' | grep -v -i 'INFO'| \
@@ -665,7 +675,13 @@ do
           myprint "evaluate output file $logfile:"
           myprint "-----------------------------------------------------------"
 
-          checkout=`$checkfile $logfile | tee -a $listing`
+          if [ -s "$logfile" ]; then
+              checkout=`$checkfile $logfile | tee -a $listing`
+          else
+              checkout="THERE IS A PROBLEM: no output was produced"
+              myprint "$checkout"
+              failed=true
+          fi
 
           # Successful tests report "TEST ENDED PROPERLY" unless
           # the test is meant to return non-zero exit code.  These
@@ -700,13 +716,13 @@ do
           fi
           timelist[$numresult]="$CPU_usage"
       fi
-      echo $checkout
       passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
       if [ -z "$passed" ]; then
         trouble=`expr $trouble \+ 1`
-        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+        passedall="THERE IS A PROBLEM IN SOME TEST CASE(S)"
         if [ "$trouble" -eq 1 ]; then
             problems="$problems $item"
+            total_failed=`expr $total_failed \+ 1`
         fi
         exitcode=1
       elif [ "$keep" = "false" ]; then
@@ -718,6 +734,7 @@ do
         fi
 #     else everything OK and -keep defined
       fi
+      echo "$checkout -- $total_failed tests failed so far"
     step=`expr $step \+ 1`
   done
   if [ "$trouble" -eq 0 ]; then
@@ -731,12 +748,13 @@ done
 #########################################################################
 # PCM test suite
 #########################################################################
+perl_fail=""
+perl_exit=0
 if [ "$perl_style" -gt 0 ]; then
     perl_log="perl_tests.log"
     perl_err="perl_tests.err"
-    perl_fail=""
     myprint ""
-    myprint "Now running perl-style tests..."
+    myprint "Now running perl-style tests...   `date`"
     myprint ""
     cp ../test.pl .    
     cp ../*.tst .
@@ -768,13 +786,13 @@ if [ "$perl_style" -gt 0 ]; then
     if [ $perl_exit -eq 0 ]; then
        myprint "Perl-style tests computed successfully"
     elif [ $perl_exit -eq 1 ]; then
-        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+        passedall="THERE IS A PROBLEM IN SOME TEST CASE(S)"
         perl_fail="`grep -A1 'tests have failed' $perl_log | tail -1`"
-        problems="$problems $perl_fail"
-        myprint "THERE IS A PROBLEM in perl-style tests"
+        # problems="$problems $perl_fail"
+        myprint "THERE IS A PROBLEM in some perl-style tests"
         exitcode=1
     else
-        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+        passedall="THERE IS A PROBLEM IN SOME TEST CASE(S)"
         myprint ""
         myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
         exitcode=1
@@ -815,7 +833,13 @@ if [ "$reftest" = "true" ]; then
 fi
 
 myprint "$passedall"
-myprint "$problems"
+if [ $total_failed -gt 0 ]; then
+   myprint "$total_failed non-perl tests failed"
+   myprint "$problems"
+fi
+if [ $perl_exit -eq 1 ]; then
+   myprint "Failed perl tests: $perl_fail"
+fi
 if [ "$num_reftests_not_found" -gt 0  ]; then
    myprint ""
    myprint "WARNING: $num_reftests_not_found reference outputs were not found."

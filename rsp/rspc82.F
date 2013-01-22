@@ -1721,9 +1721,11 @@ C
             ALFAI(I)=ALFAI(I)/BETA(I)
          ELSE
 C           singularities
-            WRITE(LUPRI,1010)I, ALFAR(I),ALFAI(I),BETA(I)
- 1010       FORMAT(/' *** WARNING SINGULARITY IN REDUCED MCRSP,',
-     +             /' I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
+            WRITE(LUPRI,1010)KSYMOP,KZYRED,I,ALFAR(I),ALFAI(I),BETA(I)
+ 1010       FORMAT(/' *** WARNING Singularity in reduced',
+     +          ' response eq. of symmetry',I3,
+     +         /' *** WARNING KZYRED,I,ALFAR(I),ALFAI(I),BETA(I):',
+     +          2I4,1P,3D15.6)
          END IF
 C        IF(ABS(ALFAR(I)).GT.ZEROT) THEN
 C    +   .OR.(ABS(ALFAR(I)).LE.ZEROT.AND.ABS(ALFAI(I)).GT.ZCRIT)) THEN
@@ -1731,9 +1733,10 @@ C           complex eigenvalues
 C        RATIO= ABS(ALFAI(I)/ALFAR(I))
 C        IF(RATIO.GT.ZCRIT) WRITE(LUPRI,1020) ALFAR(I),ALFAI(I)
          IF(ABS(ALFAI(I)).GT.D0) THEN
-            WRITE(LUPRI,1020) I,ALFAR(I),ALFAI(I)
- 1020       FORMAT(/' *** WARNING COMPLEX EIGENVALUE IN REDUCED MCRSP,',
-     +          ' REAL AND IMAGINARY PART :',I6,1P,2D13.6)
+            WRITE(LUPRI,1020) KSYMOP,KZYRED,I,ALFAR(I),ALFAI(I)
+ 1020       FORMAT(/' *** WARNING Complex eigenvalue in reduced',
+     +          ' response eq. of symmetry',I3,
+     +         /' *** WARNING real and imaginary part :',2I4,1P,2D15.4)
 C
 C SET EIGENVALUE EQUAL TO COMPLX IN ORDER TO BE ABLE TO SKIP
 C CONTRIBUTIONS FROM THIS ROOT WHEN SUMMING UP TERMS

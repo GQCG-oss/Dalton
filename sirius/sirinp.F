@@ -255,6 +255,7 @@ C
 #include "spinfo.h"
 #include "dftcom.h"
 #include "dfterg.h"
+
 C
       INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
       ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
@@ -599,7 +600,7 @@ C
 C (initialize energy values to zero, so they are defined
 C  for non-DFT calcualtions, i.e. standard HF or MCSCF)
 C
-      EDFTY = D0
+      EDFTY   = D0
       ESRDFTY = D0
 C
 C
@@ -961,6 +962,7 @@ C
          IF (IOPRHF .NE. 0) THEN
             LSYM   = IOPRHF
             ISPIN  = 2
+            MS2    = 1
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
@@ -969,13 +971,15 @@ C
             DO ISYM = 2, NSYM
                IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
             END DO
-            NASHT = ISUM(NSYM,NROHF,1)
-            ISPIN = NASHT+1
+            NASHT  = ISUM(NSYM,NROHF,1)
+            ISPIN  = NASHT + 1
+            MS2    = NASHT
             NACTEL = NASHT
             CALL ICOPY(8,NROHF,1,NASH,1)
          ELSE  
             LSYM   = 1
             ISPIN  = 1
+            MS2    = 0
             NASHT  = 0
             NACTEL = 0
          END IF
@@ -1367,6 +1371,13 @@ C        JRDMO positive : abort in READMO if error
       END IF
   200 CONTINUE
 C
+C *** If requested, reorder mo:s, using reorder array in IMOORD(*).
+C
+      IF (LMOORD .AND. INPERR .EQ. 0) THEN
+         K1 = 1 + NCMOT
+         CALL REORD(CMO,CMO(K1),IMOORD)
+      END IF
+C
 C *** AUTOCC : find initial occupation (hjaaj-aug95)
 C              and Huckel start orbitals if DOHUCKEL
 C
@@ -1401,15 +1412,6 @@ C               of initial occupation guess
       IF (NSYM .EQ. 1) AUTOCC = .FALSE.
 C     ... occupation cannot change if only one symmetry
 C
-C *** If requested, reorder mo:s, using reorder array in IMOORD(*).
-C
-      IF (LMOORD .AND. INPERR .EQ. 0) THEN
-         K1 = 1 + NCMOT
-         CALL REORD(CMO,CMO(K1),IMOORD)
-         WRITE (LUPRI,'(/A)')
-     &   ' INFO: Molecular orbitals have been reordered, as requested.'
-      END IF
-C
 C     Check for input errors of initial occupation
 C
       NERROR = 0
@@ -1433,6 +1435,7 @@ C
          IF (IOPRHF .NE. 0) THEN
             LSYM   = IOPRHF
             ISPIN  = 2
+            MS2    = 1
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
@@ -1441,13 +1444,15 @@ C
             DO ISYM = 2, NSYM
                IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
             END DO
-            NASHT = ISUM(NSYM,NROHF,1)
-            ISPIN = NASHT+1
+            NASHT  = ISUM(NSYM,NROHF,1)
+            ISPIN  = NASHT + 1
+            MS2    = NASHT
             NACTEL = NASHT
             CALL ICOPY(8,NROHF,1,NASH,1)
          ELSE 
             LSYM   = 1
             ISPIN  = 1
+            MS2    = 0
             NASHT  = 0
             NACTEL = 0
          END IF
@@ -5544,7 +5549,7 @@ C
                IF (NAS1T .GT. 0)
      &            WRITE(IWUNIT,1320) NAS1T,(NAS1(I),I=1,NSYM)
                IF (NAS2T .GT. 0)
-     &            WRITE(IWUNIT,1330) NAS3T,(NAS2(I),I=1,NSYM)
+     &            WRITE(IWUNIT,1330) NAS2T,(NAS2(I),I=1,NSYM)
                IF (NAS3T .GT. 0)
      &            WRITE(IWUNIT,1340) NAS3T,(NAS3(I),I=1,NSYM)
                WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)
