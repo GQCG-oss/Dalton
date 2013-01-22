@@ -2073,15 +2073,15 @@ C
 C
 C     Print Fock matrices (only node masters)
 C
-!     IF(DIRFCK .AND. JPRINT.GT.5.and.
-!    &  communication_info_mpi%my_shmem_node_id == 0)THEN
+      IF(DIRFCK .AND. JPRINT.GT.5
+     &   .and. communication_info_mpi%my_shmem_node_id == 0) THEN
          CALL HEADER('Fock matrix in PARLOP',-1)
          DO 600 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
             WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
             CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   600    CONTINUE
-!     END IF
+      END IF
 C
 C     Send final results to master
 C
