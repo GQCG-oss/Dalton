@@ -689,9 +689,9 @@ C
      &                         WORK(KWRK2),LWRK)
 C
                     IF (IPREXC.GT.3) THEN
-                       WRITE (LUPRI,'(2A)') 'GP Vector, label: ','d/dR'
-                       CALL OUTPUT(WORK(KWRK2),1,2*NVARPT,1,1,2*NVARPT,
-     &                             1,1,LUPRI)
+                       WRITE (LUPRI,'(A)') 'GP Vector, label: d/dR'
+                       CALL OUTPUT(WORK(KWRK2),1,NVARPT,2,1,NVARPT,2,
+     &                             1,LUPRI)
                     END IF
 C
                     REWIND LUSOVE
@@ -729,8 +729,8 @@ C
      &               WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
                 IF (IPREXC.GT.3) THEN
                   WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL
-                   CALL OUTPUT(WORK(KGD1),1,2*NVARPT,1,1,2*NVARPT,
-     &                         1,1,LUPRI)
+                   CALL OUTPUT(WORK(KGD1),1,NVARPT,2,1,NVARPT,2,
+     &                         1,LUPRI)
                 ENDIF
 C
 C               Form transition moments
