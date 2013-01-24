@@ -17,7 +17,7 @@ dipcompy
 dipcompz
 excita
 excita
-OVERRIDE line 8
+OVERRIDE line 9
 END CHECKLIST
 
 ########## DALTON.INP ##############################
@@ -998,6 +998,7 @@ K-S energy, electrons, error :    -11.870754391096  16.0000013145    1.31e-06
                 Singlet electronic excitation energies
                 --------------------------------------
 
+                =======================================
                  Sym.   Mode   Frequency    Frequency
                 ex. st.  No.      (au)          (eV)
                 =======================================

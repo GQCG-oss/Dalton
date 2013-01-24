@@ -537,8 +537,8 @@ C
 C        CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
          IF ( KZVAR.EQ.0) THEN
             NWARN = NWARN + 1
-            WRITE(LUPRI,'(/2A)')'@ ****WARNING******',
-     *         ' NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO'
+            WRITE(LUPRI,'(/A,I3)')'@ ****WARNING******'//
+     *         ' No variables in symmetry',KSYMOP
             GO TO 100
          END IF
          CALL FLSHFO(LUPRI)
@@ -818,9 +818,10 @@ C
 #include "infave.h"
 #include "inftap.h"
 #include "inforb.h"
+#include "abslrs.h"
 C
       LOGICAL NEWDEF, SET
-      PARAMETER ( NTABLE = 23 )
+      PARAMETER ( NTABLE = 24 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE TABLE, SET
@@ -832,7 +833,7 @@ C
      *            '.MAXRM ', '.QRREST', '.PROPAV',
      *            '.HIRPA ', '.SOPW4 ', '.SOPPA(',
      *            '.NODOIT', '.DFT-SO', '.PROP2A',
-     *            '.TDA   ', '.CIS   '/
+     *            '.TDA   ', '.CIS   ', '.SOPRPA'/
       DATA SET /.FALSE./
 C
       IF (.NOT.SET) THEN
@@ -859,7 +860,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
-     *                      11,12,13,14,15,16,17,18,19,20,21,22,23), I
+     *                    11,12,13,14,15,16,17,18,19,20,21,22,23,24), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -957,6 +958,10 @@ C              .PROP2Average
  23            CONTINUE
                   CISRPA = .TRUE.
                GO TO 100
+ 24            CONTINUE
+                  SOPRPA = .TRUE.
+                  SOPPA = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1028,8 +1033,13 @@ C              .PROP2Average
          IF (PHPRES) WRITE(LUPRI,'(/2A,L1)')
      *      ' H(0) subspace selected from size of residual elements',
      *      ' PHPRES = ',PHPRES
-         IF (MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
-     *      ' Max dimension of reduced space. MAXRM =',MAXRM
+         IF (ABSLRS) THEN
+           IF (ABS_MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
+     *        ' MAX DIMENSION OF REDUCED SPACE. ABS_MAXRM =',ABS_MAXRM
+         ELSE
+           IF (MAXRM.NE.600) WRITE(LUPRI,'(/A,I6)')
+     *        ' Max dimension of reduced space. MAXRM =',MAXRM
+         ENDIF
          IF (QRREST) WRITE(LUPRI,'(/A/A)')
      *      ' Quadratic response calculation restarted',
      *      '    from previously calculated solution vectors'
@@ -1111,6 +1121,7 @@ C     Initialization of RSPINP
       DATA RSPOCD/.FALSE./
       DATA TDA/.FALSE./
       DATA CISRPA/.FALSE./
+      DATA SOPRPA/.FALSE./
 C     Initialization of INFRSP for both PPINP and LRINP
       DATA MAXITO/5/, ANTTES/.FALSE./, IPRRSP/2/
 C     INITIALIZING ELWEAK
@@ -1218,6 +1229,7 @@ C  Initializing ABSLRS
        DATA ABS_FREQ_INTERVAL/0.0D0,0.0D0,1.0D0/,ABS_THD_LD/1.0D-8/
        DATA ABS_THCLR/1.0D-3/,ABS_FREQ_ALPHA(1)/0.0D0/
        DATA LUSB/80/,LUAB/81/,LUSS/82/,LUAS/83/,LUABSVECS/84/
+       DATA LUE1RED/85/,LUE2RED/86/,LUSRED/87/
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)
@@ -1304,10 +1316,10 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') '@KEYWORD "',WORD,
-     *            '" NOT RECOGNIZED IN RSPPP.'
+               WRITE (LUPRI,'(/4A/)') '@ Keyword "',WORD,
+     *            '" is not recognized in RSPPP for section ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT(' ILLEGAL KEYWORD IN RSPPP ')
+               CALL QUIT(' Illegal KEYWORD in RSPPP ')
  1             CONTINUE
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
@@ -1654,7 +1666,19 @@ C
          END IF
 
          IF (QM3 .OR. QMMM) THEN
-           WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+            IF (.NOT. SOPRPA .AND. SOPPA) THEN
+               WRITE (LUPRI,*)
+     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
+               WRITE (LUPRI,*)
+     *     'Full solvent model SOPPA not implemented.'
+               WRITE (LUPRI,*)
+     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
+               WRITE (LUPRI,*)
+     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
+               CALL QUIT(
+     *     'Full solvent-SOPPA is not implemented, see output')
+            END IF
          ENDIF
 
          if (peqm) then

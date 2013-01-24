@@ -161,8 +161,8 @@ ERROR[2]="DFT/MM DIPOLE MOMENT NOT CORRECT"
 #
 # Test of DFT/MM excitation energies
 #
-CRIT1=`$GREP "1        1  *  ( |0)\.15023" $log | wc -l`
-CRIT2=`$GREP "1        2  *  ( |0)\.34927" $log | wc -l`
+CRIT1=`$GREP " 1  * 1  * 0*\.15023" $log | wc -l`
+CRIT2=`$GREP " 1  * 2  * 0*\.34927" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[3]=2
 ERROR[3]="DFT/MM EXCITATION ENERGIES NOT CORRECT"

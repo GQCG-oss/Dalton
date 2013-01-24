@@ -57,9 +57,9 @@ typedef struct DftCallbackData_ DftCallbackData;
 */
 DftGrid* dft_grid_new(int needgrad, int needlap, int needgb);
 void dft_grid_free(DftGrid* res);
-real dft_integrate(real* cmo, real* work, integer* lwork, 
+real dft_integrate(real* cmo, real* work, integer* lwork, integer* iprint,
 		   const DftCallbackData* cbarr, int cbcount);
-real dft_integrate_ao(DftDensity* dens, real* work, integer* lwork, 
+real dft_integrate_ao(DftDensity* dens, real* work, integer* lwork, integer* iprint,
                       int needgrad, int needlap, int needgb,
                       const DftCallbackData* cbarr, int cbcount);
 
@@ -123,7 +123,7 @@ typedef void (*DftBlockCallback)(DftIntegratorBl* grid, real *tmp,
                                  int bllen, int blstart, int blend,
                                  void* cb_data);
 
-real dft_integrate_ao_bl(int ndmat, real *dmat, real* work, integer* lwork,
+real dft_integrate_ao_bl(int ndmat, real *dmat, real* work, integer* lwork, integer* verbose,
                          int needlnd, DftBlockCallback cb, void *cb_data);
 
 #else /* THE FORTRAN VERSION OF THE HEADERS */

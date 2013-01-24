@@ -442,7 +442,7 @@ C
             END IF
          END IF
 C
-C        reads the MP2 or CCSD second order one particle density matrix 
+C        reads the MP2 or CCSD second order one particle density matrix
 C
          CALL READT (LUSIFC,NORBT*NORBT,WORK(KUDV))
 C
@@ -634,7 +634,7 @@ C
       LUSOVE = -9002
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
-CSPAS : 26/02-2008 Keld Bak's VIB-G 
+CSPAS : 26/02-2008 Keld Bak's VIB-G
       NBR = 0
 C
 CKeinSPASmehr
@@ -689,9 +689,9 @@ C
      &                         WORK(KWRK2),LWRK)
 C
                     IF (IPREXC.GT.3) THEN
-                       WRITE (LUPRI,'(2A)') 'GP Vector, label: ','d/dR'
-                       CALL OUTPUT(WORK(KWRK2),1,2*NVARPT,1,1,2*NVARPT,
-     &                             1,1,LUPRI)
+                       WRITE (LUPRI,'(A)') 'GP Vector, label: d/dR'
+                       CALL OUTPUT(WORK(KWRK2),1,NVARPT,2,1,NVARPT,2,
+     &                             1,LUPRI)
                     END IF
 C
                     REWIND LUSOVE
@@ -729,8 +729,8 @@ C
      &               WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
                 IF (IPREXC.GT.3) THEN
                   WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL
-                   CALL OUTPUT(WORK(KGD1),1,2*NVARPT,1,1,2*NVARPT,
-     &                         1,1,LUPRI)
+                   CALL OUTPUT(WORK(KGD1),1,NVARPT,2,1,NVARPT,2,
+     &                         1,LUPRI)
                 ENDIF
 C
 C               Form transition moments
@@ -980,13 +980,15 @@ C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
          ELSE
             CALL HEADER('Singlet electronic excitation energies',15)
          END IF
-         WRITE (LUPRI,'(16X,A/16X,A/16X,A)')
-     &      ' Sym.   Mode   Frequency    Frequency',
-     &      'ex. st.  No.      (au)          (eV)',
-     &      '======================================='
+         WRITE (LUPRI,'(15X,A/15X,A/15X,A)')
+     &     '========================================',
+     &     '  Sym.   Mode   Frequency    Frequency',
+     &     ' ex. st.  No.      (au)         (eV)'
          DO 15 ISYM = 1, NSYM
+         WRITE(LUPRI,'(15X,A)')
+     &     '----------------------------------------'
             DO 14 IEXVAL = 1, NEXCIT(ISYM)
-               WRITE (LUPRI,'(I20,I9,2F12.6)')
+               WRITE (LUPRI,'(I20,I7,2F13.6)')
      &            ISYM,IEXVAL,EXENG(ISYM,IEXVAL),
      &            EXENG(ISYM,IEXVAL)*XTEV
                   LAPRPC = 'Excita  '
@@ -996,9 +998,9 @@ C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
      *                        LAPRPC,LAPRPC,LAPRPC,LAPRPC,
      *                        0.0D0,0.0D0,0.0D0,1,ISYM,ISPINEX,IEXVAL)
  14         CONTINUE
-            WRITE(LUPRI,'(16X,A)')
-     &      '---------------------------------------'
  15      CONTINUE
+         WRITE(LUPRI,'(15X,A)')
+     &     '========================================'
 C-tbp END IF
       IF (DIPSTR .OR. ROTSTR .OR. ROTVEL) THEN
          CALL HEADER('Electric transition dipole moments (in a.u.)',15)
@@ -1028,18 +1030,15 @@ C
 C     Write electric quadrupole transition moments to output:
 C     =======================================================
 C
-CSPAS:23/5-11: second and third moment sum rules
-C     IF (OECD) THEN
-      IF (OECD .OR. SUMRUL) THEN
-CKeinSPASmehr
+      IF (OECD .OR. SUMRUL) THEN ! SPAS:23/5-11: second and third moment sum rules
          CALL HEADER('Diagonal electric quadrupole transition '
      &               //'moments (in a.u.)',15)
-         WRITE (LUPRI,'(A,A,2(/A,A))')
-     &   '  Sym.   Mode    Frequency       Velocity/Frequency  ',
+         WRITE (LUPRI,'(A,2(/A))')
+     &   '  Sym.   Mode    Frequency       Velocity/Frequency  '//
      &   '            Length',
-     &   ' ex. st.  No.      (au)          xx      yy      zz  ',
+     &   ' ex. st.  No.      (au)          xx      yy      zz  '//
      &   '      xx      yy      zz',
-     &   ' ----------------------------------------------------',
+     &   ' ----------------------------------------------------'//
      &   '--------------------------'
          DO ISYM = 1, NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
@@ -1064,14 +1063,14 @@ CKeinSPASmehr
      &                    - 2.0D0*AVEC(2)*TRVEL(2,ISYM,IEXVAL)
                   XNEW(3) = TQVEL(3,3,ISYM,IEXVAL)
      &                    - 2.0D0*AVEC(3)*TRVEL(3,ISYM,IEXVAL)
-                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+                  WRITE(LUPRI,'(I4,I9,F13.6,3X,3F12.6)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            XNEW(1)/EXENG(ISYM,IEXVAL),
      &            XNEW(2)/EXENG(ISYM,IEXVAL),
      &            XNEW(3)/EXENG(ISYM,IEXVAL)
                END DO
             END DO
-            WRITE(LUPRI,'(/,A,3F10.5)')
+            WRITE(LUPRI,'(/A,3F10.5)')
      &      'Length after translation along a = ',(AVEC(I),I=1,3)
             DO ISYM = 1,NSYM
                DO IEXVAL = 1,NEXCIT(ISYM)
@@ -1081,7 +1080,7 @@ CKeinSPASmehr
      &                    - 2.0D0*AVEC(2)*TRLEN(2,ISYM,IEXVAL)
                   XNEW(3) = TQLEN(3,3,ISYM,IEXVAL)
      &                    - 2.0D0*AVEC(3)*TRLEN(3,ISYM,IEXVAL)
-                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+                  WRITE(LUPRI,'(I4,I9,F13.6,3X,3F12.6)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            XNEW(1),XNEW(2),XNEW(3)
                END DO
@@ -1089,16 +1088,16 @@ CKeinSPASmehr
          END IF
          CALL HEADER('Off-diagonal electric quadrupole transition '
      &               //'moments (in a.u.)',15)
-         WRITE (LUPRI,'(1X,A,2(/1X,A))')
-     &   ' Sym.   Mode    Frequency       Velocity/Frequency  '//
+         WRITE (LUPRI,'(A,2(/A))')
+     &   '  Sym.   Mode    Frequency       Velocity/Frequency  '//
      &   '            Length       ',
-     &   'ex. st.  No.      (au)          xy      xz      yz  '//
+     &   ' ex. st.  No.      (au)          xy      xz      yz  '//
      &   '      xy      xz      yz ',
-     &   '=================================================='//
+     &   ' =================================================='//
      &   '============================'
          DO ISYM = 1, NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
-               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
+               WRITE (LUPRI,'(I4,I9,F13.6,3X,3F8.3,2X,3F8.3)')
      &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
      &            TQVEL(1,2,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
      &            TQVEL(1,3,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
@@ -1107,8 +1106,8 @@ CKeinSPASmehr
      &            TQLEN(1,3,ISYM,IEXVAL),
      &            TQLEN(2,3,ISYM,IEXVAL)
             END DO
-            WRITE(LUPRI,'(1X,A)')
-     &   '--------------------------------------------------'//
+            WRITE(LUPRI,'(A)')
+     &   ' --------------------------------------------------'//
      &   '----------------------------'
          END DO
          IF (LOCDBG) THEN
@@ -1125,7 +1124,7 @@ CKeinSPASmehr
                   XNEW(3) = TQVEL(2,3,ISYM,IEXVAL)
      &                    - AVEC(2)*TRVEL(3,ISYM,IEXVAL)
      &                    - AVEC(3)*TRVEL(2,ISYM,IEXVAL)
-                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+                  WRITE(LUPRI,'(I4,I9,F13.6,3X,3F12.6)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            XNEW(1)/EXENG(ISYM,IEXVAL),
      &            XNEW(2)/EXENG(ISYM,IEXVAL),
@@ -1145,25 +1144,24 @@ CKeinSPASmehr
                   XNEW(3) = TQLEN(2,3,ISYM,IEXVAL)
      &                    - AVEC(2)*TRLEN(3,ISYM,IEXVAL)
      &                    - AVEC(3)*TRLEN(2,ISYM,IEXVAL)
-                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+                  WRITE(LUPRI,'(I4,I9,F13.6,3X,3F12.6)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            XNEW(1),XNEW(2),XNEW(3)
                END DO
             END DO
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(/)')
          END IF
       END IF
 CSPAS:23/5-11: second and third moment sum rules
       IF (SUMRUL) THEN
          CALL HEADER('Electric octapole transition '
      &               //'moments (in a.u.)',15)
-         WRITE (LUPRI,'(A,A,2(/A,A))')
-     &   '  Sym.   Mode    Frequency                Length     ',
+         WRITE (LUPRI,'(A,2(/A))')
+     &   '  Sym.   Mode    Frequency                Length     '//
      &   '                  ',
-     &   ' ex. st.  No.      (au)         xxx     xxy     xxz  ',
+     &   ' ex. st.  No.      (au)         xxx     xxy     xxz  '//
      &   '   xyy     xyz     xzz',
-     &   ' ----------------------------------------------------',
+     &   ' ----------------------------------------------------'//
      &   '--------------------------'
          DO ISYM = 1, NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
@@ -1446,7 +1444,7 @@ C
                TSTVEL = TSTVEL/3.0D0
                TSTLEN = TSTLEN/3.0D0
 
-               WRITE(LUPRI,'(2X,I2,3X,I4,2X,A3,6(1X,F9.3))')
+               WRITE(LUPRI,'(I4,I7,2X,A3,6F10.3)')
      &         ISYM,IEXVAL,'Vel',RQVEL(1,1,ISYM,IEXVAL),
      &                           RQVEL(1,2,ISYM,IEXVAL),
      &                           RQVEL(1,3,ISYM,IEXVAL),
@@ -1458,7 +1456,7 @@ C
      &            'WARNING: wrong average: ',TSTVEL
                   LOCWRN = LOCWRN + 1
                END IF
-               WRITE(LUPRI,'(13X,A3,6(1X,F9.3))')
+               WRITE(LUPRI,'(13X,A3,6F10.3)')
      &                     'Len',RQLEN(1,1,ISYM,IEXVAL),
      &                           RQLEN(1,2,ISYM,IEXVAL),
      &                           RQLEN(1,3,ISYM,IEXVAL),
@@ -1504,7 +1502,7 @@ C
                TSTVEL = TSTVEL/3.0D0
                TSTLEN = TSTLEN/3.0D0
 
-               WRITE(LUPRI,'(2X,I2,3X,I4,2X,A3,6(1X,F9.3))')
+               WRITE(LUPRI,'(I4,I7,2X,A3,6F10.3)')
      &         ISYM,IEXVAL,'Vel',RVEL(1,1,ISYM,IEXVAL),
      &                           RVEL(1,2,ISYM,IEXVAL),
      &                           RVEL(1,3,ISYM,IEXVAL),
@@ -1517,7 +1515,7 @@ C
      &            '         expected     : ',SVEL(ISYM,IEXVAL)
                   LOCWRN = LOCWRN + 1
                END IF
-               WRITE(LUPRI,'(13X,A3,6(1X,F9.3))')
+               WRITE(LUPRI,'(13X,A3,6F10.3)')
      &                     'Len',RLEN(1,1,ISYM,IEXVAL),
      &                           RLEN(1,2,ISYM,IEXVAL),
      &                           RLEN(1,3,ISYM,IEXVAL),
@@ -1557,7 +1555,7 @@ C     next line is end of "IF (ROTSTR .OR. ROTVEL) THEN"
      &                  TRVEL(1,ISYM,IEXVAL),1) / EXENG(ISYM,IEXVAL)
                DIPSTL = DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                  TRLEN(1,ISYM,IEXVAL),1) * EXENG(ISYM,IEXVAL)
-               WRITE (LUPRI,'(2X,I2,6X,I3,5X,F12.6,5X,2F9.4)')
+               WRITE (LUPRI,'(I4,I9,F17.6,5X,2F9.4)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            (DTWO/DTHREE)*DIPSTV, (DTWO/DTHREE)*DIPSTL
                   LAPRPC = 'OSCI-VEL'
@@ -1583,12 +1581,12 @@ C
          CALL HEADER
      &   ('Non-adiabatic coupling matrix elements <O|d/dR|f> (in a.u.)',
      &    9)
-         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   ' Coordinate R          Sym.  Mode Ex. energy    WFR-term ',
+         WRITE (LUPRI,'(1X,A)')
+     &   ' Coordinate R          Sym.  Mode Ex. energy    WFR-term '//
      &   ' BSR-term   Total ',
-     &   ' Cartesian no.          st.   No.    (Ev)                ',
+     &   ' Cartesian no.          st.   No.    (Ev)                '//
      &   '                 ',
-     &   '----------------------------------------------------------',
+     &   '----------------------------------------------------------'//
      &   '------------------'
          DO 1100 ISYM = 1, NSYM
             DO 1000 ISCOOR = 1, 3*NATOMS
@@ -1597,10 +1595,10 @@ C
                DO 900 IEXVAL = 1,NEXCIT(ISYM)
                   CALL GENCOR(WORK(KCSTRA),NCOOR,ISCOOR,COORDI,ICORSY)
                   IF (ICORSY .EQ. ISYM) THEN
-                     WRITE (LUPRI,'(1X,A,2X,I2,4X,I2,2X,F10.6,1X,
+                     WRITE (LUPRI,'(1X,A,I4,I6,F12.6,1X,
      &                      2F10.4,F12.6)')
      &               COORDI, ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
-     &               FONAC(ISCOOR,ISYM,IEXVAL), 
+     &               FONAC(ISCOOR,ISYM,IEXVAL),
      &               FONA2(ISCOOR,ISYM,IEXVAL),
      &               FONAC(ISCOOR,ISYM,IEXVAL)+FONA2(ISCOOR,ISYM,IEXVAL)
 C
@@ -1610,9 +1608,8 @@ C
                   END IF
   900          CONTINUE
 C
-               IF (ICOUNT .GT. 0) WRITE(LUPRI,'(/,1X,A,A,22X,1F11.6,/)') 
-     &                                  'Vibrational g-factor: ',COORDI,
-     &                                  FX*DTWO
+               IF (ICOUNT .GT. 0) WRITE(LUPRI,'(/2A,F33.6,/)')
+     &            ' Vibrational g-factor: ',COORDI, FX*DTWO
 C
  1000       CONTINUE
  1100    CONTINUE
@@ -1624,7 +1621,7 @@ C
       IF (SUMRUL) THEN
          CALL DZERO(DSSUML,4*9)
 CSPAS:23/5-11: second and third moment sum rules
-         CALL DZERO(QSSUM,4*9)
+         CALL DZERO(QSSUM ,4*9)
          CALL DZERO(DTSSUM,4*9)
 CKeinSPASmehr
          CALL DZERO(DLSUML,4*9)
@@ -1636,42 +1633,42 @@ CKeinSPASmehr
             DO IEXVAL = 1,NEXCIT(ISYM)
                DO ICOM = 1,3
                   DO K = -6,2
-                     DSSUML(K,ICOM) = DSSUML(K,ICOM) 
+                     DSSUML(K,ICOM) = DSSUML(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
-     &                              * TRLEN(ICOM,ISYM,IEXVAL) 
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
      &                              * TRLEN(ICOM,ISYM,IEXVAL)
 CSPAS:23/5-11: second and third moment sum rules
-                     QSSUM(K,ICOM) = QSSUM(K,ICOM) 
+                     QSSUM(K,ICOM) = QSSUM(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
-     &                              * TQLEN(ICOM,ICOM,ISYM,IEXVAL) 
      &                              * TQLEN(ICOM,ICOM,ISYM,IEXVAL)
-                     DTSSUM(K,ICOM) = DTSSUM(K,ICOM) 
+     &                              * TQLEN(ICOM,ICOM,ISYM,IEXVAL)
+                     DTSSUM(K,ICOM) = DTSSUM(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
-     &                              * TRLEN(ICOM,ISYM,IEXVAL) 
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
      &                              * TTLEN(ICOM,ISYM,IEXVAL)
 CKeinSPASmehr
-                     DLSUML(K,ICOM) = DLSUML(K,ICOM) 
+                     DLSUML(K,ICOM) = DLSUML(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
      &                              * DLOG(EXENG(ISYM,IEXVAL))
-     &                              * TRLEN(ICOM,ISYM,IEXVAL) 
      &                              * TRLEN(ICOM,ISYM,IEXVAL)
-                     DSSUMM(K,ICOM) = DSSUMM(K,ICOM) 
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
+                     DSSUMM(K,ICOM) = DSSUMM(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**K
-     &                              * TRLEN(ICOM,ISYM,IEXVAL) 
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
      &                              * TRVEL(ICOM,ISYM,IEXVAL)
-                     DLSUMM(K,ICOM) = DLSUMM(K,ICOM) 
+                     DLSUMM(K,ICOM) = DLSUMM(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**K
      &                              * DLOG(EXENG(ISYM,IEXVAL))
-     &                              * TRLEN(ICOM,ISYM,IEXVAL) 
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
      &                              * TRVEL(ICOM,ISYM,IEXVAL)
-                     DSSUMV(K,ICOM) = DSSUMV(K,ICOM) 
+                     DSSUMV(K,ICOM) = DSSUMV(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K-1)
-     &                              * TRVEL(ICOM,ISYM,IEXVAL) 
      &                              * TRVEL(ICOM,ISYM,IEXVAL)
-                     DLSUMV(K,ICOM) = DLSUMV(K,ICOM) 
+     &                              * TRVEL(ICOM,ISYM,IEXVAL)
+                     DLSUMV(K,ICOM) = DLSUMV(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K-1)
      &                              * DLOG(EXENG(ISYM,IEXVAL))
-     &                              * TRVEL(ICOM,ISYM,IEXVAL) 
+     &                              * TRVEL(ICOM,ISYM,IEXVAL)
      &                              * TRVEL(ICOM,ISYM,IEXVAL)
                   ENDDO
                ENDDO
@@ -1714,64 +1711,64 @@ C
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'S(K) Sum Rules : Dipole Length Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4G17.6/))')
      &         (K,(DSSUML(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'S(K) Sum Rules : Dipole Mixed Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4G17.6/))')
      &         (K,(DSSUMM(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'S(K) Sum Rules : Dipole Velocity Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
      &         (K,(DSSUMV(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'L(K) Sum Rules : Dipole Length Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
      &         (K,(DLSUML(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'L(K) Sum Rules : Dipole Mixed Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DLSUMM(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'L(K) Sum Rules : Dipole Velocity Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DLSUMV(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'I(K) Sum Rules : Dipole Length Approximation in eV',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
      &         (K,(DISUML(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'I(K) Sum Rules : Dipole Mixed Approximation in eV',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DISUMM(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'I(K) Sum Rules : Dipole Velocity Approximation in eV',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DISUMV(K,J),J=1,4),K=-6,2)
 CSPAS:23/5-11: second and third moment sum rules
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,2X,A,2X,A,5X,A,/)')
      &   'S(K) Sum Rules : Second Moments in a.u.',
      &   'K','xx,xx component','yy,yy component',
      &   'zz,zz component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(QSSUM(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,4X,A,2X,A,2X,A,6X,A,/)')
      &   'S(K) Sum Rules : Mixed First-third moments in a.u.',
      &   'K','x,xxx component','y,yyy component',
      &   'z,zzz component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DTSSUM(K,J),J=1,4),K=-6,2)
 CKeinSPASmehr
       ENDIF
-C     
+C
 C        *** If numerical derivatives are calculated, then ***
 C        *** write properties to file.                     ***
 C

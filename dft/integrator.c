@@ -210,7 +210,7 @@ dft_integrate_collect_info(real *electrons)
    FIXME: adapt to open-shell scheme.
  */
 real
-dft_integrate(real* cmo, real* work, integer* lwork, 
+dft_integrate(real* cmo, real* work, integer* lwork, integer* iprint,
 	      const DftCallbackData* cbarr, int cbcount)
 {
     int npoints, ipnt, cbno;
@@ -227,7 +227,7 @@ dft_integrate(real* cmo, real* work, integer* lwork,
     /* start integration */
     electrons  = 0.0;
 
-    rawgrid = grid_open_cmo(inforb_.nbast, cmo, work, lwork);
+    rawgrid = grid_open_cmo(inforb_.nbast, cmo, work, lwork, *iprint);
     npoints = 0;
     while( (blocksz=grid_getchunk_plain(rawgrid, GRID_BUFF_SZ,
                                         grid->coor, grid->weight)) >=0) {
@@ -310,7 +310,7 @@ dft_integrate(real* cmo, real* work, integer* lwork,
    Returns integrated charge.
  */
 real
-dft_integrate_ao(DftDensity* dens, real* work, integer* lwork,
+dft_integrate_ao(DftDensity* dens, real* work, integer* lwork, integer* iprint,
                  int needgrad, int needlap, int needgb, 
                  const DftCallbackData* cbarr, int cbcount)
 {
@@ -326,7 +326,7 @@ dft_integrate_ao(DftDensity* dens, real* work, integer* lwork,
     /* start integration */
     electrons  = 0.0;
     /*printf("CALLING grid_open from dft_integrate_ao\n");*/
-    rawgrid = grid_open(inforb_.nbast, dens->dmata, work, lwork);
+    rawgrid = grid_open(inforb_.nbast, dens->dmata, work, lwork, *iprint);
     npoints = 0;
     while( (blocksz=grid_getchunk_plain(rawgrid, GRID_BUFF_SZ,
                                         grid->coor, grid->weight)) >=0) {
@@ -456,7 +456,7 @@ FSYM2(getrho_blocked_gga)(real*dmat, const real* atv,
 			  real *rho, real (*grad)[3]);
 
 real
-dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork,
+dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork, integer *iprint,
                     int needlnd, DftBlockCallback cb, void *cb_data)
 {
     int npoints, ipnt, i, j;
@@ -474,7 +474,7 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork,
     /* start integration */
     electrons  = 0.0;
     /*printf("CALLING grid_open from dft_integrate_ao_bl\n");*/
-    rawgrid = grid_open(inforb_.nbast, dmat, work, lwork);
+    rawgrid = grid_open(inforb_.nbast, dmat, work, lwork, *iprint);
     npoints = 0;
     while( (blocksz=grid_getchunk_blocked(rawgrid, GRID_BUFF_SZ,
                                           &grid->shl_bl_cnt, 

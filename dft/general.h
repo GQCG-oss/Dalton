@@ -158,56 +158,57 @@ FSYM2(getexp_blocked_gga)(const integer *idsym, real*dmat, const real* atv,
 
 /* Property evaluators */
 void dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
-                    real* work, integer *lwork, integer* ipr);
+                    real* work, integer *lwork, integer* iprint);
 void dft_lin_resp_(real* fmat, real *cmo, real *zymat, integer *trplet, 
-		   integer *ksymop, real* work, integer* lwork);
+		   integer *ksymop, real* work, integer* lwork, integer* iprint);
 void FSYM2(dft_lin_respf)(integer *nosim, real* fmat, real *cmo, real *zymat,
                           integer *trplet, integer *ksymop, real* work,
-			  integer* lwork);
+			  integer* lwork, integer* iprint);
 void dft_mol_grad_(real* dmat, real* work, integer* lwork, integer* iprint);
 void dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
               real* kappaZ, integer* symZ, integer* spinZ, integer* addfock,
-              real* work, integer* lwork);
+              real* work, integer* lwork, integer* iprint);
 void FSYM2(dft_qr_respons)(real* fi, real* cmo,
                            real* kappaY, integer* symY, integer* spinY,
 			   real* kappaZ, integer* symZ, integer* spinZ,
-                           integer* addfock, real* work, integer* lwork);
+                           integer* addfock, real* work, integer* lwork, integer* iprint);
 void FSYM(dftcrcf)(real* fi, real* cmo,
 		   real* kappaB, integer* symB,
 		   real* kappaC, integer* symC,
 		   real* kappaD, integer* symD,
-		   real* work, integer* lwork);
-void FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork);
+		   real* work,   integer* lwork, integer* iprint);
+void FSYM(numdso) (real* spndso, integer *nucind,
+                   real* work,   integer* lwork, integer* iprint);
 
 
-void FSYM2(dft_kohn_shamab)(real* dmat, real* ksm, real *edfty,
-                            real* work, integer *lwork, integer* iprfck);
-void FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat, 
-                           integer *trplet, integer *ksymop,
-			   real* work, integer* lwork);
-void FSYM(dftmolgradab)(real* work, integer* lwork, integer* iprint);
+void FSYM2(dft_kohn_shamab)  (real* dmat, real* ksm, real *edfty,
+                              real* work, integer *lwork, integer* iprint);
+void FSYM2(dft_lin_respab)   (real* fmatc, real* fmato,  real *cmo, real *zymat, 
+                              integer *trplet, integer *ksymop,
+			      real* work, integer* lwork, integer* iprint);
+void FSYM(dftmolgradab)      (real* work, integer* lwork, integer* iprint);
 void FSYM2(dft_kohn_shamab_b)(real* dmat, real* ksm, real *edfty,
-			      real* work, integer *lwork, integer* iprfck);
-void FSYM2(dft_lin_respab_b)(integer *nosim, real* fmatc, real* fmato, real *cmo,
-			     real *zymat, integer *trplet, integer *ksymop, real* work,
-			     integer* lwork);
+			      real* work, integer *lwork, integer* iprint);
+void FSYM2(dft_lin_respab_b) (integer *nosim, real* fmatc, real* fmato, real *cmo,
+			      real *zymat, integer *trplet, integer *ksymop,
+			      real* work, integer* lwork, integer* iprint);
 
 typedef void (*DFTPropEvalMaster)(void);
-typedef void (*DFTPropEvalSlave)(real* work, integer* lwork, const integer* iprint);
+typedef void (*DFTPropEvalSlave)(real* work, integer* lwork, integer* iprint);
 #if defined(VAR_MPI)
 #include <mpi.h>
-void dft_kohn_sham_slave(real* work, integer* lwork, const integer* iprint);
-void dft_lin_resp_slave (real* work, integer* lwork, const integer* iprint);
-void dft_lin_respf_slave (real* work, integer* lwork, const integer* iprint);
-void dft_kohn_shamab_slave(real* work, integer* lwork, const integer* iprint);
-void dft_lin_respab_slave (real* work, integer* lwork, const integer* iprint);
-void dft_mol_grad_slave (real* work, integer* lwork, const integer* iprint);
-void dft_qr_resp_slave  (real* work, integer* lwork, const integer* iprint);
-void dft_qrbl_slave     (real* work, integer* lwork, const integer* iprint);
-void dft_cr_resp_slave(real* work, integer* lwork, const integer* iprint);
-void numdso_slave(real* work, integer* lwork, const integer* iprint);
-void dft_kohn_shamab_b_slave(real* work, integer* lwork, const integer* iprint);
-void dft_lin_respab_b_slave(real* work, integer* lwork, const integer* iprint);
+void dft_kohn_sham_slave    (real* work, integer* lwork, integer* iprint);
+void dft_lin_resp_slave     (real* work, integer* lwork, integer* iprint);
+void dft_lin_respf_slave    (real* work, integer* lwork, integer* iprint);
+void dft_kohn_shamab_slave  (real* work, integer* lwork, integer* iprint);
+void dft_lin_respab_slave   (real* work, integer* lwork, integer* iprint);
+void dft_mol_grad_slave     (real* work, integer* lwork, integer* iprint);
+void dft_qr_resp_slave      (real* work, integer* lwork, integer* iprint);
+void dft_qrbl_slave         (real* work, integer* lwork, integer* iprint);
+void dft_cr_resp_slave      (real* work, integer* lwork, integer* iprint);
+void numdso_slave           (real* work, integer* lwork, integer* iprint);
+void dft_kohn_shamab_b_slave(real* work, integer* lwork, integer* iprint);
+void dft_lin_respab_b_slave (real* work, integer* lwork, integer* iprint);
 void dft_wake_slaves(DFTPropEvalMaster);
 typedef struct {
     void*        data;

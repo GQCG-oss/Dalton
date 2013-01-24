@@ -227,7 +227,7 @@ c     unpack response vectors.
       CALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
 c     compute dft contribution
       CALL DFTQRC(FI,CMO,ZYMB,ISYMB,ISPINB,ZYMC,ISYMC,ISPINC,
-     &            ADDFOCK,WRK,LFREE)
+     &            ADDFOCK,WRK,LFREE,IPRDFT)
 c     pack stuff back.
       END
 C  /* Deck e3init */

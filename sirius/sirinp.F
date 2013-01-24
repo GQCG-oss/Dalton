@@ -968,6 +968,7 @@ C
          IF (IOPRHF .NE. 0) THEN
             LSYM   = IOPRHF
             ISPIN  = 2
+            MS2    = 1
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
@@ -976,13 +977,15 @@ C
             DO ISYM = 2, NSYM
                IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
             END DO
-            NASHT = ISUM(NSYM,NROHF,1)
-            ISPIN = NASHT+1
+            NASHT  = ISUM(NSYM,NROHF,1)
+            ISPIN  = NASHT + 1
+            MS2    = NASHT
             NACTEL = NASHT
             CALL ICOPY(8,NROHF,1,NASH,1)
          ELSE  
             LSYM   = 1
             ISPIN  = 1
+            MS2    = 0
             NASHT  = 0
             NACTEL = 0
          END IF
@@ -1438,6 +1441,7 @@ C
          IF (IOPRHF .NE. 0) THEN
             LSYM   = IOPRHF
             ISPIN  = 2
+            MS2    = 1
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
@@ -1446,13 +1450,15 @@ C
             DO ISYM = 2, NSYM
                IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
             END DO
-            NASHT = ISUM(NSYM,NROHF,1)
-            ISPIN = NASHT+1
+            NASHT  = ISUM(NSYM,NROHF,1)
+            ISPIN  = NASHT + 1
+            MS2    = NASHT
             NACTEL = NASHT
             CALL ICOPY(8,NROHF,1,NASH,1)
          ELSE 
             LSYM   = 1
             ISPIN  = 1
+            MS2    = 0
             NASHT  = 0
             NACTEL = 0
          END IF

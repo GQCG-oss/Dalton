@@ -1511,18 +1511,21 @@ int
 grid_generate(const char* filename, integer atom_cnt, 
               const GridGenAtom* atom_arr, real threshold,
               GridGeneratingFunc generating_function, void* arg,
-              int minang, int maxang, real* work, integer *lwork)
+              int minang, int maxang, real* work, integer *lwork, integer verbose)
 {
     int res;
     struct tms starttm, endtm; clock_t utm;
     GridGenMolGrid* mgrid =  mgrid_new(atom_cnt, atom_arr);
-    fort_print("        DFT grid generation - Radial Quadrature  : %s", radial_quad->name);
-    fort_print("        DFT grid generation - Partitioning : %s", selected_partitioning->name);
-    fort_print("        DFT grid generation - Radial integration threshold: %g", threshold);
-    fort_print("        DFT grid generation - Angular polynomials in range [%i %i]", minang, maxang);
+    if(verbose) {
+       fort_print("        DFT grid generation - Radial Quadrature  : %s", radial_quad->name);
+       fort_print("        DFT grid generation - Partitioning : %s", selected_partitioning->name);
+       fort_print("        DFT grid generation - Radial integration threshold: %g", threshold);
+       fort_print("        DFT grid generation - Angular polynomials in range [%i %i]", minang, maxang);
+    }
 
     times(&starttm);
-    mgrid->verbose = 1; /* to increase verbosity */
+    mgrid->verbose = 0; 
+    if(verbose>0) mgrid->verbose = verbose-1;
 
     mgrid_set_radial(mgrid, threshold);
 
@@ -1538,7 +1541,8 @@ grid_generate(const char* filename, integer atom_cnt,
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
 
-    fort_print("        DFT grid generation - Number of grid points: %8d; grid generation time:%9.1f s \n", 
+    if(verbose)
+       fort_print("        DFT grid generation - Number of grid points: %8d; grid generation time:%9.1f s \n", 
                res, utm/(double)sysconf(_SC_CLK_TCK));
     return res;
 }
@@ -1768,7 +1772,7 @@ void FSYM2(get_grid_paras)(int *grdone, real *radint, int *angmin, int *angint);
 void FSYM2(set_grid_done)(void);
 
 DftGridReader*
-grid_open(integer nbast, real *dmat, real *work, integer *lwork)
+grid_open(integer nbast, real *dmat, real *work, integer *lwork, integer verbose)
 {
     DftGridReader *res = dal_new(1, DftGridReader);
     int grdone, angmin, angint;
@@ -1793,7 +1797,7 @@ grid_open(integer nbast, real *dmat, real *work, integer *lwork)
             if(mynum == 0) {
                 grid_generate("DALTON.cQUAD", atom_cnt, atoms,
                               radint, NULL, &dt,
-                              angmin, angint, work, lwork);
+                              angmin, angint, work, lwork, verbose);
                 grid_par_shutdown();
             } else 
                 grid_par_slave("DALTON.cQUAD", radint);
@@ -1803,7 +1807,7 @@ grid_open(integer nbast, real *dmat, real *work, integer *lwork)
 #else
             grid_generate("DALTON.cQUAD", atom_cnt, atoms,
                           radint, NULL, &dt,
-                          angmin, angint, work, lwork);
+                          angmin, angint, work, lwork, verbose);
 #endif
             free(atoms);
             FSYM2(set_grid_done)();
@@ -1848,12 +1852,12 @@ grid_open(integer nbast, real *dmat, real *work, integer *lwork)
 
 
 DftGridReader*
-grid_open_cmo(integer nbast, const real *cmo, real *work, integer *lwork)
+grid_open_cmo(integer nbast, const real *cmo, real *work, integer *lwork, integer iprint)
 {
     real *dmat = dal_new(nbast*nbast, real);
     DftGridReader *reader;
     FSYM2(dft_get_ao_dens_mat)(cmo, dmat, work, lwork);
-    reader = grid_open(nbast, dmat, work, lwork);
+    reader = grid_open(nbast, dmat, work, lwork, iprint);
     free(dmat);
     return reader;
 }
@@ -1937,9 +1941,9 @@ grid_close(DftGridReader *rawgrid)
 /* ------------------------------------------------------------------- */
 static DftGridReader *grid = NULL;
 void
-FSYM(opnqua)(const integer *nbast, real *dmat, real *work, integer *lwork)
+FSYM(opnqua)(const integer *nbast, real *dmat, real *work, integer *lwork, const integer *iprint)
 {
-    grid = grid_open(*nbast, dmat, work, lwork);
+    grid = grid_open(*nbast, dmat, work, lwork, *iprint);
 }
 
 void
