@@ -276,8 +276,8 @@ par_paramlist="-N 4"
 reftest=""
 benchmark=""
 listing="TESTLOG"
-perl_log="test.log"
-perl_err="test.err"
+perl_log="perl_test.log"
+perl_err="perl_test.err"
 emptystring="                                "
 answer_yes=
 keep_quiet=
@@ -558,9 +558,11 @@ if [ "$cmake" = "true" ]; then
 fi
 
 total_failed=0
+total_tests=0
 
 for item in ${testcase}
 do
+  total_tests=`expr $total_tests \+ 1`
   trouble=0
   case $item in
     par* | *parallel* )  # assume parallel test if name contains "parallel" or name starts with "par"
@@ -729,7 +731,7 @@ do
         fi
 #     else everything OK and -keep defined
       fi
-      echo "$checkout -- $total_failed tests failed so far"
+      echo "$checkout -- $total_failed tests failed so far out of $total_tests"
     step=`expr $step \+ 1`
   done
   if [ "$trouble" -eq 0 ]; then
