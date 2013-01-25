@@ -448,8 +448,7 @@ C
  1110 FORMAT(/' Optimization control: FATAL ERROR',
      *        ' - zero norm of reference CI vector')
 C
-!     IF (P6FLAG(32) .AND. NCONF.GT.1) THEN
-      thrpwf = 0.0d0
+      IF (P6FLAG(32) .AND. NCONF.GT.1) THEN
 C        use PRWF here ?? 890925-hjaaj
          WRITE (LUPRI,2010) ITMAC,THRPWF
  2010    FORMAT(/' Reference CI vector in iteration',I3,
@@ -469,7 +468,7 @@ C        use PRWF here ?? 890925-hjaaj
      *          /' -----------------           -----')
  2020    FORMAT(I16,F20.10)
 #endif
-!     END IF
+      END IF
 C
 C *** Calculate gradient for CREF and some matrices/arrays needed later.
 C
