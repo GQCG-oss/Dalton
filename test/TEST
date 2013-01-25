@@ -572,13 +572,11 @@ do
       paramlist_this_test="$paramlist"
       shift ;;
   esac
-  myprint "###########################################################"
-  myprint "`date`"
-  myprint "Starting now with test $item:"
-  myprint "-----------------------------------------------------------"
-  errprint "###########################################################"
+  errprint "#####################################################################"
   errprint "`date` -- Starting now with test $item:"
-  errprint "-----------------------------------------------------------"
+  myprint  "#####################################################################"
+  myprint  "`date` -- Starting now with test $item:"
+  myprint  "---------------------------------------------------------------------"
   chmod +x ../$item || exit 1
   ../$item
 # remove any directory path now the files are unpacked
@@ -607,9 +605,9 @@ do
   do
       potfile=
       if [ "$multi" -eq 1 ]; then
-          myprint "-----------------------------------------------------------"
+          myprint "---------------------------------------------------------------------"
           myprint "  Start $item step $step of $numsteps :"
-          myprint "-----------------------------------------------------------"
+          myprint "---------------------------------------------------------------------"
           molfile=$item
           if [ -r $item.pot ]; then potfile=$item ; fi
           cp $item'__'$step'.dal' $item'.dal'
@@ -631,14 +629,12 @@ do
       if [ "$reftest" = "true" ]; then
           myprint ""
           myprint "evaluate reference output file $reffile:"
-          myprint "-----------------------------------------------------------"
           if [ ! -r $reffile ]; then
-              myprint "PROBLEM: reference output $reffile is not available"
-              myprint "-----------------------------------------------------------"
+              myprint "     PROBLEM: reference output $reffile is not available"
               num_reftests_not_found=`expr $num_reftests_not_found \+ 1`
               checkout="TEST ENDED PROPERLY"
           else
-              checkout=`$checkfile $reffile | tee -a $listing`
+              checkout=`$checkfile $reffile`
               if [ "$benchmark" = "true" ]; then
                  if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
                      CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
@@ -647,6 +643,7 @@ do
                  fi
               fi
               if [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
+                 myprint "     $checkout"
                  checkout="TEST ENDED PROPERLY"
               fi
           fi
@@ -670,13 +667,11 @@ do
           fi
           myprint ""
           myprint "evaluate output file $logfile:"
-          myprint "-----------------------------------------------------------"
 
           if [ -s "$logfile" ]; then
-              checkout=`$checkfile $logfile | tee -a $listing`
+              checkout=`$checkfile $logfile`
           else
               checkout="THERE IS A PROBLEM: no output was produced"
-              myprint "$checkout"
               failed=true
           fi
 
@@ -689,7 +684,7 @@ do
           if [ "$checkout" = "TEST ENDED PROPERLY" ]; then
               [ "$failed" = "true" ] && checkout="TEST FAILED ABNORMALLY"
           elif [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
-              echo "checkout=$checkout, failed=$failed"
+              myprint "     checkout=$checkout, failed=$failed"
               if [ "$failed" = "true" ]; then
                   checkout="TEST ENDED PROPERLY"
               else
@@ -731,8 +726,8 @@ do
         fi
 #     else everything OK and -keep defined
       fi
-      echo "$checkout -- $total_failed tests failed so far out of $total_tests"
-    step=`expr $step \+ 1`
+      myprint "     $checkout -- $total_failed tests failed so far out of $total_tests"
+      step=`expr $step \+ 1`
   done
   if [ "$trouble" -eq 0 ]; then
       if [ "$keep" = "false" ]; then
