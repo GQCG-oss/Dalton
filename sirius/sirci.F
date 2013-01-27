@@ -542,8 +542,6 @@ C
 C     Save CI vectors and orbitals on LUIT1
 C
       if(maxitc .gt. 0 .or. ci_program .eq. 'LUCITA   ')then
-        write(lupri,*) 'enter saving ....'
-        call flshfo(lupri)
         CALL CISAVE(KEYWRD,NCROOT,NCIRED,ECI,residual_croot,
      &              WRK(kvec_generic),CMO,INDXCI,WRK(KW2),LW2)
 C       CALL CISAVE(NCROOT,NCIRED,ECI,RESID,EVEC,CMO,INDXCI,WRK,LFREE)
@@ -2700,9 +2698,7 @@ C
         END DO
         CALL READT(LUIT1,NCONF,WRK(KCREF))
       end if
-!     do i = 1, nconf
-!       write(lupri,*) 'wrk(kcref),i',wrk(kcref+i-1),i
-!     end do
+
       CALL MAKDV(WRK(KCREF),DVREF,INDXCI,WRK(KW1),LW1)
       RETURN
       END
@@ -2756,10 +2752,8 @@ C
 C     CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
 C
       EMY = EMY + POTNUC
-!     write(lupri,*) 'passed CIDIAG ==> EMY',EMY
       DO 50 I = 0,NCONF-1
          WRK(KCDIAG+I) = WRK(KCDIAG+I) + EMY
-!        write(lupri,*) 'WRK(KCDIAG+I) ==> ',WRK(KCDIAG+I)
    50 CONTINUE
 
 #if defined (VAR_CIHAMTST)
@@ -2803,7 +2797,6 @@ C    CIST constructs NCROOT start vectors for CI optimization.
 C    The C-vectors are constructed in CIST or from the result of
 C    another run (another geometry).
 C
-!     write(lupri,*) 'call CIST ==> NCROOT',NCROOT
       NCSIM = NCROOT
       CALL CIST(ICICTL,NCSIM,CMO,WRK(KCDIAG),EMY,WRK(KW1),LW1)
       IF (NCSIM .LE. 0) THEN
@@ -2839,9 +2832,7 @@ C        ... Correct EMY and CI diagonal
          EMYDFT = EJCSR + EJVSR + EDSR + EDFT
 C       write(lupri,*) 'just after srfmat'  
 C       write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
-         write(lupri,*) 'eigshf before ',emy
          EMY = EMY + EMYDFT
-         write(lupri,*) 'eigshf after ',emy
 C        ... extract and save SR over active indices
          CALL GETAC(WRK(KFSR),WRK(KSRAC))
            call wrtmatmn(wrk(ksrac),1,nnashx,1,nnashx,lupri)
