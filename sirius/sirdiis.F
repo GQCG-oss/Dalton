@@ -277,7 +277,8 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use polarizable_embedding, only: peqm, pe_mep, pe_master,
+      use polarizable_embedding, only: peqm, pe_mep, pe_master, pe_sol,
+     &                                 pe_noneq,
      &                                 pe_savden, pe_save_density
 #include "implicit.h"
 #include "dummy.h"
@@ -1317,7 +1318,7 @@ C
          IWRIFC = 0
       END IF
 C
-      IF (IPRENR .GT. 0 .OR. IWRIFC .GT. 0) THEN
+       IF (IPRENR .GT. 0 .OR. IWRIFC .GT. 0) THEN
 C
 C        Construct FDAO (FDAO saved in DCAO)
 C        Transform FDAO to FD (FD saved in FCAO).
@@ -1327,34 +1328,6 @@ C
          CALL UTHUB(DCAO,FCAO,CMO,WRK(KFREE),
      &              NSYM,NBAS,NORB)
        END IF
-
-       ! needed to get specific PE energy contributions for printout
-       ! when converged
-       if (peqm) then
-         if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
-           call pe_master(runtype='energy',
-     &                    denmats=daosav(:,1), nmats=1,
-     &                    dalwrk=wrk(kfree:lfree))
-         else
-           call pe_master(runtype='energy',
-     &                    denmats=(daosav(:,1) + daosav(:,2)),
-     &                    nmats=1, dalwrk=wrk(kfree:lfree))
-         end if
-       end if
-       if (pe_mep) then
-        call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
-     &                 dalwrk=wrk(kfree:lfree))
-       end if
-       ! save density matrix 
-       if (pe_savden) then
-        if (nsym > 1) then
-            call quit('PEQM cannot be combined with symmetry.')
-        end if
-        call pe_save_density(daosav(:,1), fcao(1:norbt*(norbt+1)/2),
-     &                       cmo(1:nbast*norbt), nbast, nisht, norbt,
-     &                       cord(:,1:natoms), charge(1:natoms),
-     &                       wrk(kfree:lfree))
-       end if
 C
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
@@ -1374,7 +1347,51 @@ C-------------------
          END IF
 C-------------------
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
-      END IF
+       END IF
+       ! needed to get specific PE energy contributions for printout
+       ! when converged
+       if (peqm) then
+         if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+           call pe_master(runtype='energy',
+     &                    denmats=daosav(:,1), nmats=1,
+     &                    dalwrk=wrk(kfree:lfree))
+         else
+           call pe_master(runtype='energy',
+     &                    denmats=(daosav(:,1) + daosav(:,2)),
+     &                    nmats=1, dalwrk=wrk(kfree:lfree))
+         end if
+         if (pe_sol .and. pe_noneq) then
+         if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+           call pe_master(runtype='noneq',
+     &                    denmats=daosav(:,1),
+     &                    fckmats=wrk(kfree:kfree+nnbasx-1), nmats=1,
+     &                    dalwrk=wrk(kfree+nnbasx:lfree))
+         else
+           call pe_master(runtype='noneq',
+     &                    denmats=(daosav(:,1) + daosav(:,2)),
+     &                    nmats=1, dalwrk=wrk(kfree:lfree))
+         end if
+         call memget('REAL',pefmo,nnorbx,wrk,kfree,lfree)
+         call dzero(pefmo,nnorbx)
+         call uthub(wrk(kfree:kfree+nnorbx-1),pefmo,
+     &              cmo,wrk(kfree),nsym,nbas,norb)
+         faosav(1,indevc,1) = faosav(1,indevc,1) + pefmo 
+         end if
+       end if
+       if (pe_mep) then
+        call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
+     &                 dalwrk=wrk(kfree:lfree))
+       end if
+       ! save density matrix 
+       if (pe_savden) then
+        if (nsym > 1) then
+            call quit('PEQM cannot be combined with symmetry.')
+        end if
+        call pe_save_density(daosav(:,1), fcao(1:norbt*(norbt+1)/2),
+     &                       cmo(1:nbast*norbt), nbast, nisht, norbt,
+     &                       cord(:,1:natoms), charge(1:natoms),
+     &                       wrk(kfree:lfree))
+       end if
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC
 C       FLAG(25) is true for .ABACUS (geometry optimization)

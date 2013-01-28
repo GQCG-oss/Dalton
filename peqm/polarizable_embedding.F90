@@ -44,16 +44,19 @@ module polarizable_embedding
     logical, public, save :: pe_savden = .false.
     logical, public, save :: pe_fd = .false.
     logical, public, save :: pe_sol = .false.
+    logical, public, save :: pe_noneq = .true. 
     logical, save :: pe_infld = .false.
     logical, save :: pe_restart = .false.
     logical, save :: pe_verbose = .false.
     logical, save :: pe_debug = .false.
+    logical, save :: rsp_first = .true.
 
     ! calculation type
     logical, save :: fock = .false.
     logical, save :: energy = .false.
     logical, save :: response = .false.
     logical, save :: mep = .false.
+    logical, save :: noneq = .false.
 
     ! temporary solution for work array thing
     real(dp), dimension(:), pointer :: work
@@ -1066,6 +1069,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         energy = .false.
         response = .false.
         mep = .false.
+        noneq = .false.
         scfcycle = scfcycle + 1
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input'
@@ -1077,12 +1081,14 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         energy = .true.
         response = .false.
         mep = .false.
+        noneq = .false.
     else if (runtype == 'response') then
         if (pe_gspol) return
         fock = .false.
         energy = .false.
         response = .true.
         mep = .false.
+        noneq = .false.
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input'
         end if
@@ -1091,6 +1097,16 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         energy = .false.
         response = .false.
         mep = .true.
+        noneq = .false.
+    else if (runtype == 'noneq') then
+        fock = .false.
+        energy = .false.
+        response = .false.
+        mep = .false.
+        noneq = .true.
+        if (.not. present(fckmats)) then
+            stop 'Output matrices are missing from input'
+        end if
     else
         stop 'Could not determine calculation type.'
     end if
@@ -1195,6 +1211,9 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         endif
     else if (response) then
         call pe_fock(denmats, fckmats)
+    else if (noneq) then
+        call pe_fock(denmats, fckmats)
+! TODO read in fckmats from file and subtrack from new fckmats 
     else if (mep) then
         if (ndens > 1) stop 'Not implemented for more than 1 density matrix'
         call pe_compute_mep(denmats)
@@ -1491,7 +1510,7 @@ subroutine pe_fock(denmats, fckmats, energies)
     else if (energy) then
         if (es) call pe_electrostatic(denmats)
         if (pol) call pe_polarization(denmats)
-    else if (response) then
+    else if (response .or. noneq) then
         if (pol) call pe_polarization(denmats, fckmats)
     end if
 
@@ -1828,6 +1847,7 @@ subroutine pe_polarization(denmats, fckmats)
 
     integer :: site, ndist, nrest
     integer :: i, j, k, l, m
+    integer :: lunoneq
     logical :: skip
     real(dp), dimension(3) :: indtot
     real(dp), dimension(:,:), allocatable :: Vels
@@ -1848,7 +1868,7 @@ subroutine pe_polarization(denmats, fckmats)
         allocate(Vnucs(nsurp), Vmuls(nsurp), Vfds(nsurp))
     end if
 
-    if (response) then
+    if (response .or. noneq) then
         if (lpol(1)) then
             call electron_fields(Fels, denmats)
             do i = 1, ndens
@@ -2013,6 +2033,40 @@ subroutine pe_polarization(denmats, fckmats)
                     m = k * nnbas
                     fckmats(l:m) = fckmats(l:m) + Mkinds(3*npols+i,k) *&
                                  & Vel_ints(:,1)
+                end do
+                if ( pe_noneq .and. fock ) then
+                    call openfile('pe_noneq.bin', lunoneq, 'unknown', 'unformatted')
+                    rewind(lunoneq)
+                    do k = 1, ndens
+                        l = (k - 1) * nnbas + 1
+                        m = k * nnbas
+                        write(lunoneq) Mkinds(3*npols+i,k) * Vel_ints(:,1)
+                    end do
+                    close(lunoneq)
+                end if
+                i = i + 1
+            end do
+            deallocate(Vel_ints)
+        end if
+    else if (noneq) then
+        if (pe_sol) then
+            i = 1
+            allocate(Vel_ints(nnbas,1))
+            do site = surp_start, surp_finish
+                call openfile('pe_noneq.bin', lunoneq, 'old', 'unformatted')
+                rewind(lunoneq)
+                do k = 1, ndens
+                    l = (k - 1) * nnbas + 1
+                    m = k * nnbas
+                    write(lunoneq) fckmats(l:m)
+                end do
+                close(lunoneq)
+                call Tk_integrals(Vel_ints, nnbas, 1, Sp(:,site))
+                do k = 1, ndens
+                    l = (k - 1) * nnbas + 1
+                    m = k * nnbas
+                    fckmats(l:m) = Mkinds(3*npols+i,k) *&
+                                 & Vel_ints(:,1) - fckmats(l:m)
                 end do
                 i = i + 1
             end do
@@ -2322,8 +2376,9 @@ subroutine direct_solver(Mkinds, Fs)
     allocate(B((3*npols+nsurp)*(3*npols+nsurp+1)/2))
 
     inquire(file='pe_response_matrix.bin', exist=lexist)
-    if (lexist) then
-
+    if (lexist .and. .not. noneq .and. .not. (response .and. rsp_first)) then
+       
+        write(luout,*) 'Reading file'
         call openfile('pe_response_matrix.bin', lu, 'old', 'unformatted')
         rewind(lu)
         if (chol) then
@@ -2335,6 +2390,9 @@ subroutine direct_solver(Mkinds, Fs)
         close(lu)
 
     else
+
+        if (response .and. rsp_first) rsp_first = .false.
+        write(luout,*) 'writting file'
 
         call response_matrix(B)
 
@@ -2387,7 +2445,7 @@ subroutine direct_solver(Mkinds, Fs)
             end if
         end if
 
-        call openfile('pe_response_matrix.bin', lu, 'new', 'unformatted')
+        call openfile('pe_response_matrix.bin', lu, 'unknown', 'unformatted')
         rewind(lu)
         if (chol) then
             write(lu) B
@@ -2988,7 +3046,16 @@ subroutine response_matrix(B)
     B = 0.0d0
 
     if (pe_sol) then
-        eps_fac = eps / (eps - 1.0d0)
+        if ( noneq ) then
+            eps_fac = (eps -epsinf ) / ( (eps - epsinf) - 1.0d0 )
+            write(luout,*) eps_fac
+        else if (response) then
+            eps_fac = epsinf / (epsinf - 1.0d0)
+            write(luout,*) eps_fac
+        else if (fock) then
+            eps_fac = eps / (eps - 1.0d0)
+            write(luout,*) eps_fac
+        end if
     end if
 
     m = 0
