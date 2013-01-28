@@ -2378,7 +2378,6 @@ subroutine direct_solver(Mkinds, Fs)
     inquire(file='pe_response_matrix.bin', exist=lexist)
     if (lexist .and. .not. noneq .and. .not. (response .and. rsp_first)) then
        
-        write(luout,*) 'Reading file'
         call openfile('pe_response_matrix.bin', lu, 'old', 'unformatted')
         rewind(lu)
         if (chol) then
@@ -2392,7 +2391,6 @@ subroutine direct_solver(Mkinds, Fs)
     else
 
         if (response .and. rsp_first) rsp_first = .false.
-        write(luout,*) 'writting file'
 
         call response_matrix(B)
 
@@ -3048,13 +3046,10 @@ subroutine response_matrix(B)
     if (pe_sol) then
         if ( noneq ) then
             eps_fac = (eps -epsinf ) / ( (eps - epsinf) - 1.0d0 )
-            write(luout,*) eps_fac
         else if (response) then
             eps_fac = epsinf / (epsinf - 1.0d0)
-            write(luout,*) eps_fac
         else if (fock) then
             eps_fac = eps / (eps - 1.0d0)
-            write(luout,*) eps_fac
         end if
     end if
 
