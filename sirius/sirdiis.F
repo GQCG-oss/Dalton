@@ -287,9 +287,6 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
-
-      real*8, dimension(1) :: pe_energy
-      real*8, dimension(:), allocatable :: pefock
 C
 C Used from common blocks:
 C  INFINP : FLAG(*)
@@ -717,20 +714,25 @@ C
          ENDIF
 
          if (peqm) then
-           allocate(pefock(nnbasx))
+           call memget('REAL', kfpe, nnbasx, wrk, kfree, lfree)
+           call memget('REAL', kepe, 1, wrk, kfree, lfree)
            if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
              call pe_master(runtype='fock', denmats=daosav(:,1),
-     &                      fckmats=pefock, nmats=1, energies=pe_energy,
+     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
+     &                      energies=wrk(kepe:kepe),
      &                      dalwrk=wrk(kfree:lfree))
            else
              call pe_master(runtype='fock',
      &                      denmats=(daosav(:,1) + daosav(:,2)),
-     &                      fckmats=pefock, nmats=1, energies=pe_energy,
+     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
+     &                      energies=wrk(kepe:kepe), 
      &                      dalwrk=wrk(kfree:lfree))
            end if
-           esolt = pe_energy(1)
-           call daxpy(nnbasx, 1.0d0, pefock, 1, faosav(1,indevc,1), 1)
-           deallocate(pefock)
+           esolt = wrk(kepe)
+           faosav(:,indevc,1) = faosav(:,indevc,1)
+     &                          + wrk(kfpe:kfpe+nnbasx-1)
+           call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfpe,
+     &                 kfree, lfree)
          end if
 
          IF (FLAG(16)) THEN
@@ -1361,25 +1363,27 @@ C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
      &                    nmats=1, dalwrk=wrk(kfree:lfree))
         end if
         if (pe_sol .and. pe_noneq) then
-           allocate(pefock(nnbasx))
-           call memget('REAL', kpe, lpe, wrk, kfree, lfree)
+           call memget('REAL', kfpeao, nnbasx, wrk, kfree, lfree)
+           kfpeao_end = kfpeao + nnbasx - 1
            if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
                call pe_master(runtype='noneq',
      &                        denmats=daosav(:,1),
-     &                        fckmats=pefock, nmats=1,
+     &                        fckmats=wrk(kfpeao:kfpeao_end), nmats=1,
      &                        dalwrk=wrk(kfree:lfree))
            else
                call pe_master(runtype='noneq',
      &                        denmats=(daosav(:,1) + daosav(:,2)),
-     &                        fckmats=pefock, nmats=1, 
+     &                        fckmats=wrk(kfpeao:kfpeao_end), nmats=1, 
      &                        dalwrk=wrk(kfree:lfree))
            end if
-           wrk(kfree:kfree+nnorbx-1) = 0.0d0
-           call uthu(pefock,wrk(kfree), cmo, wrk(kfree+nnorbx-1),
+           call memget('REAL', kfpemo, nnorbx, wrk, kfree, lfree)
+           wrk(kfpemo:kfpemo+nnorbx-1) = 0.0d0
+           call uthu(wrk(kfpeao), wrk(kfpemo), cmo, wrk(kfree),
      &               nbas,norb)
            faosav(:,indevc,1) = faosav(:,indevc,1)
-     &                          + wrk(kfree:kfree+nnorbx-1)
-           deallocate(pefock)
+     &                          + wrk(kfpemo:kfpemo+nnorbx-1)
+           call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfpeao,
+     &                 kfree, lfree)
         end if
       end if
       if (pe_mep) then
