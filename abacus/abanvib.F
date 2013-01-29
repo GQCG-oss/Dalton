@@ -92,7 +92,7 @@ C
 CRF 12/11 - 12 Added GOTO that seemed to have been left out
 CRF            Also .HARM-P and .ANHA-P seems to do the same
 CRF            only .HARM-P sets symmetry to C1.
-CRF            This is somewhat counter intuitive and doesn't agree with manual
+CRF            This is somewhat counteri-intuitive and doesn't agree with manual
 CRF            Problem seems to be that there's no branch around the anharmonic
 CRF            averaging, for harmonic only
             GOTO 100
@@ -138,7 +138,7 @@ CRF This only works if basis set library is used
             IF (.NOT. MLINE(1)(1:5) .EQ. 'BASIS') THEN
                WRITE(LUPRI,'(/A,/A)')
      &           '*** ERROR *** ' //
-     &           'Keyword .P-BASI only works  when ' //
+     &           'Keyword .P-BASIS only works  when ' //
      &           'basis set library is used.',
      &           'The calculation can be split manually ' //
      &           'using the .CUBIC and .ONLY-P keywords'
@@ -162,6 +162,16 @@ CRFend
          CALL QUIT('Illegal prompt in NVBINP.')
       END IF
   300 CONTINUE
+CRF We save a few variables in case of PRPBAS
+      IF (PRPBAS) THEN
+         NMRDBK = NMRDRP
+         NARDBK = NARDRP
+         NMRDRP = 0 
+         NARDRP = 0
+         PRPVIB = .FALSE.
+         NPRPDR = .FALSE.
+         FRSTNM = .FALSE. 
+      END IF
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for *PROPAV section:',0)
          IF (.NOT. PRPONL) THEN

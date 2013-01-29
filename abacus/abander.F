@@ -91,6 +91,7 @@ C
             GOTO 100
  2       CONTINUE    ! .SYMMET
             READ (LUCMD,'(A)') GRPTMP
+            FCLASS(1:3) = '   ' ! If FCLASS are initialized to a longer group name. 
             IJ = 0
             DO II = 1, 15
                IF (GRPTMP(II:II).NE.' ') THEN
@@ -188,8 +189,8 @@ CRF  &           '*VIBANA (and **PROPERTIES).'
      &         'using analytical', NAORDR, '. derivatives'
          END IF
 C
-         WRITE (LUPRI,'(5x,A)') 'Group used for force constants ' //
-     &                           GRPTMP
+         WRITE (LUPRI,'(5x,A)') 'Group used for force constants: ' //
+     &                           FCLASS
          WRITE (LUPRI,'(5x,A,F10.4)') 'Step size used: ', DISPLC
          IF (SDRTST) THEN
             WRITE (LUPRI,'(/5X,A)') 'Comparison of numerical Hessian '
@@ -403,6 +404,7 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "numder.h"
+#include "pgroup.h"
 #include "fcsym.h"
 #include "cbinum.h"
 #include "abainf.h"
@@ -448,7 +450,9 @@ CRF added
       PRPBAS = .FALSE.
 C
 C     /FCSYM/
-      FCLASS = 'C1             '
+CRF   We initialize the numdiff symmetry to the computational point group  
+      FCLASS(1:3) = GROUP
+      FCLASS(4:15) = '            '
       MROTAX = .FALSE.
       VPLANE = .FALSE.
       HPLANE = .FALSE.
@@ -708,8 +712,8 @@ C        Resetting variables for property derivatives
          PREHES = .TRUE.
          PRPVIB = .TRUE.
          FRSTNM = .TRUE.
-         NMRDRP = 2
-         NARDRP = 0
+         NMRDRP = NMRDBK
+         NARDRP = NARDBK
          NMORDR = 2 !Still need to keep this
          NAORDR = 0
          PRPONL = .TRUE.
