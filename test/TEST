@@ -60,7 +60,7 @@ geoopt_preopt geoopt_prop geoopt_prop2 geoopt_redintmin geoopt_vrml"
 SHORTPROP="prop_ecd prop_or prop_exci prop_nolondon prop_spinspin prop_spinspin2 \
 prop_spinspin3 prop_spinspin4 prop_vibvcd prop_ctocd prop_soppactocd \
 prop_newtrasoppa prop_newtrasoppacc prop_newtramcscf aba_prop_file \
-prop_vibg1 prop_vibg2"
+prop_vibg1 prop_vibg2 prop_cpp_ecd"
 SHORTRSP="rsp_2ndharm rsp_3rdharm \
 rsp_3rdmom rsp_dresqr rsp_ecp rsp_exci_cmfun rsp_excipolar2 rsp_hyperpolar \
 rsp_lrso rsp_lrso2 rsp_mcdbterm rsp_mnf rsp_phosph rsp_polar rsp_propave \
@@ -70,7 +70,8 @@ rsp_soppa3excinosymm rsp_soppa3excisymm rsp_soppafcnosymm rsp_soppafcsymm \
 rsp_soppapolar rsp_soppapolarnosymm rsp_soppapolarsymm rsp_sreslrso \
 rsp_sresqr rsp_ctocdhyper prop_spinspin5 prop_nolondon_soppacc rsp_soppaccexci \
 rsp_soppaccpolar rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
-rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file tddft_tda rpa_cis"
+rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file tddft_tda rpa_cis \
+rsp_abslrs rsp_cpp_mcd"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
 SHORTREST="r12_sym dpt_h2s"
 LOCAL="spin_local"
