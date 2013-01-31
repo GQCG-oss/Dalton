@@ -133,7 +133,7 @@ CRF 12/11 - 12 Test keywords for splitting force field from property derivatives
             NMORDR = MAX(NMORDR,3-NAORDR)
             NUMVIB = .TRUE. ! Needed in order to print force field
             GOTO 100
- 8       CONTINUE  ! .P-BASI
+ 8       CONTINUE  ! .P-BASIS
 CRF This only works if basis set library is used
             IF (.NOT. MLINE(1)(1:5) .EQ. 'BASIS') THEN
                WRITE(LUPRI,'(/A,/A)')
@@ -1195,9 +1195,17 @@ C
       CALL DZERO(HARMCO,NDIM1*NDIM2*NDIM3)
       CALL DZERO(AHRMCO,NDIM1*NDIM2*NDIM3)
 C
-C     *** Arranging the force constants. ***
-C
-      CALL STTDER(FDERIV,TDER,RNNORM,NDERIV,WORK,LWORK,IPRINT)
+C     *** Read or arrange the force constants. ***
+C    
+      IF (C4FORC .AND. PRPONL) THEN
+         KSORT  = 1
+         KLAST  = KSORT + NDCOOR
+         IF ( KLAST .GT. LWORK ) CALL QUIT ( 'Memory exceeded in '// 
+     &                                'RDC4CU ')
+         CALL RDC4CU(FREQ,TDER,WORK(KSORT), IPRINT)
+      ELSE
+         CALL STTDER(FDERIV,TDER,RNNORM,NDERIV,WORK,LWORK,IPRINT)
+      END IF
 C
 C     *** Analysis of the contributing modes. ***
 C
@@ -1431,7 +1439,7 @@ C     *** Store the force constants in TDER ***
         DO 100 ICOOR3 = 1, NDCOOR
            ILOC = (ICOOR1-1)*NCOOR**2 + (ICOOR2-1)*NCOOR + ICOOR3
            TDER (ICOOR1,ICOOR2,ICOOR3) = WORK( ILOC )
-100     CONTINUE 
+100     CONTINUE
       ELSE
         DFAC = D1
         IDERIV = 0
@@ -1454,7 +1462,7 @@ C
          CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
 C
          ISTRT = 1
-         KCOL  = 6
+         KCOL  = 6 
          LAST  = MIN(NDCOOR,KCOL)
          KCOOR = NDCOOR
          NCOL  = NDCOOR/KCOL
@@ -1604,6 +1612,93 @@ C
 C
       RETURN
       END
+C
+C     /* Deck rdc4cu */
+      SUBROUTINE RDC4CU(FREQ,TDER,SORT,IPRINT)
+C     **********************************************
+C     *** Routine that reads a cubic force field ***
+C     *** from the CFOUR style "cubic" file      ***
+C     **********************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
+#include "mxcent.h"
+#include "inftap.h"
+
+#include "taymol.h"
+#include "trkoor.h"
+#include "numder.h"
+      PARAMETER (IPRTRH = 20 )
+      LOGICAL USED, CUBEXS
+      DIMENSION TDER(NDCOOR,NDCOOR,NDCOOR),
+     &          SORTAR(NCOOR-NDCOOR+1:NCOOR),
+     &          USED(NCOOR), FREQ(NCOOR)
+   
+      LUC4IF = -399 
+
+      INQUIRE (FILE='cubic',EXIST=CUBEXS)
+      IF (.NOT. CUBEXS ) CALL QUIT ('File "cubic" does not exist')      
+
+      CALL GPOPEN(LUC4IF,'cubic','OLD','SEQUENTIAL','FORMATTED',
+     &            IDUMMY, .FALSE.)
+      USED = .FALSE.
+      SORT = 0
+      CALL DZERO(TDER, NDCOOR**3) 
+
+C     *** CFOUR orders normal coordinates by increasing harmonic frequency ***
+C     *** We need to match the CFOUR indecies to the dalton ones.          ***
+
+      DO IDX = NCOOR,NCOOR-NDCOOR+1,-1
+         JTEMP  = 0
+         TMPFRQ = 0
+c     *** Find the index corresponding to the highest frequency not yet used ***
+         DO JDX = 1, NDCOOR
+            IF ( USED(JDX) .OR. (TMPFRQ .GE. FREQ(JDX) ) ) CYCLE
+            JTEMP  = JDX
+            TMPFRQ = FREQ (JDX) 
+         END DO
+         IF ( JTEMP .LE. 0 ) EXIT ! None found
+         SORTAR ( IDX ) = JTEMP 
+         USED (JTEMP)   = .TRUE.
+      END DO
+
+C     *** Read the cubic forcefield and add it to TDER ***       
+      DO 
+         READ (LUC4IF,'(3I5,F25.10)',END=100) IDX , JDX , KDX , TMPFF
+         IF ( (IDX .GT. NCOOR) .OR. (JDX .GT. NCOOR) .OR. 
+     &        (KDX .GT. NCOOR) ) CALL QUIT ('Index out of range in ' //
+     &                                'file "cubic"' )
+         PRINT *, FREQ ( SORTAR( IDX) )
+         TMPFF = - TMPFF *  SQRT( FREQ(SORTAR(IDX)) 
+     &            * FREQ(SORTAR(JDX)) * FREQ(SORTAR(KDX)) ) / XTKAYS 
+         TDER ( SORTAR(IDX), SORTAR(JDX), SORTAR(KDX ) ) = TMPFF
+         TDER ( SORTAR(IDX), SORTAR(KDX), SORTAR(JDX ) ) = TMPFF
+         TDER ( SORTAR(JDX), SORTAR(IDX), SORTAR(KDX ) ) = TMPFF
+         TDER ( SORTAR(JDX), SORTAR(KDX), SORTAR(IDX ) ) = TMPFF
+         TDER ( SORTAR(KDX), SORTAR(IDX), SORTAR(JDX ) ) = TMPFF
+         TDER ( SORTAR(KDX), SORTAR(JDX), SORTAR(IDX ) ) = TMPFF
+      END DO
+
+ 100  CONTINUE
+      CALL GPCLOSE (LUC4IF,'KEEP')
+ 
+C     *** Print the cubic forcefield ***
+      IF ( IPRINT .GE. IPRTHR ) THEN
+         CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
+         DO IDX = 1, NDCOOR
+            DO JDX = 1, NDCOOR, 6          
+               WRITE (LUPRI, '(5X,6F12.6)')  ( TDER(IDX,KDX,KDX),
+     &                KDX = JDX , MIN (NDCOOR , JDX + 5) )
+            END DO
+            WRITE (LUPRI, '(A)') '  ' 
+         END DO
+      END IF
+
+
+      RETURN
+      END !SUBROUTINE RDC4CU
+
+
 C
 C
 #ifdef NOT_USED_IN_THIS_DALTON_VERSION

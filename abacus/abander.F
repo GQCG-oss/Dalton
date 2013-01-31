@@ -30,7 +30,7 @@ C  /* Deck nmdinp */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (NDIR=3,NTABLE = 21)
+      PARAMETER (NDIR=3,NTABLE = 22)
       CHARACTER PROMPT*1, WORD*7, GRPTMP*15, TABLE(NTABLE)*7,
      &          TABDIR(NDIR)*7, WORD1*7
 #include "numder.h"
@@ -47,7 +47,7 @@ C
      *            '.XXXXXX', '.NORMAL', '.PRECAL', '.REUSE ', '.XXXXXX',
      *            '.VIBANA', '.TEST N', '.DISPLA', '.PROPER', '.PRINT ',
      *            '.MANUAL', '.HARMON', '.SPECTR', '.MIDAS ', '.THRMID',
-     *            '.MINOUT'/
+     *            '.MINOUT', '.C4FORC'/
 C
 C     *** Initializing variables for *VIBANA and *HARMON. ***
       CALL NVBINI
@@ -75,7 +75,7 @@ C
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
-     *                20,21),I
+     *                20,21,22),I
             END IF
  200     CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -163,6 +163,9 @@ C
  21      CONTINUE    ! .MINOUT
             MINOUT = .TRUE.
             GOTO 100
+ 22      CONTINUE    ! .C4FORC
+            C4FORC = .TRUE.
+            GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
       ELSE
@@ -201,8 +204,8 @@ C
      &           'conducted as a dry run.'
             WRITE (LUPRI,'(5X,A)') 'No actual derivatives will be' //
      &           'calculated.'
-            WRITE (LUPRI,'(A,I5)') 'Number of redundant coordinates:',
-     &           NMREDU
+            WRITE (LUPRI,'(5X,A,I5)') 'Number of redundant coordinates:'
+     &           , NMREDU
          END IF
 C
          IF (RESTRT) THEN
@@ -232,7 +235,7 @@ C
          END IF
 C
          IF (MANUAL) THEN
-            WRITE (LUPRI,'(/A)')
+            WRITE (LUPRI,'(/5X,A)')
      &         'The mol file will be printed for geometries.'
          END IF
 C
@@ -448,6 +451,7 @@ C     /NUMDER/
 CRF added
       PRPONL = .FALSE.
       PRPBAS = .FALSE.
+      C4FORC = .FALSE.
 C
 C     /FCSYM/
 CRF   We initialize the numdiff symmetry to the computational point group  
@@ -5500,6 +5504,8 @@ C     /* Deck rdfhes */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
+CRF added
+#include "numder.h"
 C
 #include "taymol.h"
 #include "nuclei.h"
@@ -5507,7 +5513,12 @@ C
       LOGICAL SYMADA, HESEXS
       CHARACTER*5 HSMINF
       DIMENSION WORK(LWORK)
-C
+C     
+      IF (C4FORC) THEN ! We should read a CFOUR style Hessian file
+         CALL RDC4HS(WORK,LWORK,IPRINT)
+         GOTO 300
+      END IF
+
       INQUIRE(FILE='DALTON.HES',EXIST=HESEXS)
 C
 C     *** No hessian specified. ***
@@ -5541,7 +5552,8 @@ C
  100  CONTINUE
 C
       CALL GPCLOSE(LUHES,'KEEP')
-C
+C     
+ 300  CONTINUE
       CALL HEADER ('Molecular Hessian read from file.', 0)
       WRITE (LUPRI,'(A)') '                              '
       CALL HEADER ('Molecular Hessian', -1)
@@ -7456,5 +7468,49 @@ C
       CALL GPCLOSE(LMIDAS,'KEEP')
 C
       RETURN
+      END
+C
+C     /* Deck rdc4hs */
+      SUBROUTINE RDC4HS(WORK,LWORK,IPRINT)
+C     ************************************************
+C     *** Routine that reads hessian in the format ***
+C     *** written by the CFOUR program             ***
+C     ************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "trkoor.h"
+      LOGICAL HESEXS
+      DIMENSION WORK(LWORK)
+  
+      INQUIRE (FILE='FCM',EXIST=HESEXS)
+      
+      IF (.NOT. HESEXS ) CALL QUIT('Unable to open file FCM')
+
+      LUC4IF = -1
+      
+C     *** Open FCM file ***
+      CALL GPOPEN(LUC4IF,'FCM','OLD',' ','FORMATTED',IDUMMY,.FALSE.)
+
+C     *** Check that the written dimensions match this calculation ***
+      READ(LUC4IF,*) IDIMEN
+      IF (IDIMEN .NE. NUCDEP) CALL QUIT('Dimensions read in file '//
+     &   'FCM does not match those in the molecule file' )
+
+C     *** We can now read the Hessian ***
+      DO ICOOR1 = 1, NCOOR 
+         DO ICOOR2 = 1, NCOOR, 3 ! Three numbers at each line
+            READ(LUC4IF,*,ERR=901) HESMOL( ICOOR2:ICOOR2+2,ICOOR1)
+         END DO
+      END DO      
+      
+      CALL GPCLOSE (LUC4IF,'KEEP')
+
+      RETURN
+
+ 901  CALL QUIT('An ERROR occured while reading file FCM')
+
       END
 C --- end of abander.F ---
