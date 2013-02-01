@@ -1866,6 +1866,7 @@ subroutine pe_polarization(denmats, fckmats)
     real(dp), dimension(:,:), allocatable :: Fel_ints, Vel_ints
     
     allocate(Mkinds(3*npols+nsurp,ndens), Fktots(3*npols+nsurp,ndens))
+    Mkinds = 0.0d0; Fktots = 0.0d0
     if (lpol(1)) then
         allocate(Fels(3*npols,ndens))
         allocate(Fnucs(3*npols), Fmuls(3*npols), Ffds(3*npols))
@@ -2491,7 +2492,7 @@ subroutine mixed_solver(Mkinds, Fs)
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: T, Rij, Ftmp, M1tmp
 
-    character(len=1) :: tno
+    character(len=2) :: tno
     character(len=99) :: no
     integer, dimension(:), allocatable :: ipiv
     real(dp) :: anorm, rcond
@@ -2527,10 +2528,9 @@ subroutine mixed_solver(Mkinds, Fs)
         end if
     end if
 
-    allocate(T(6), Rij(3), Ftmp(3), M1tmp(3))
-    do n = 1, ndens
-        if (.not.lexist .or. response) then
+    if (.not.lexist .or. response) then
 #if defined(VAR_MPI)
+        do n = 1, ndens
             if (myid == 0 .and. nprocs > 1) then
                 displs(0) = 0
                 do i = 1, nprocs
@@ -2542,43 +2542,34 @@ subroutine mixed_solver(Mkinds, Fs)
                 call mpi_scatterv(0, 0, 0, rmpi, Fs(:,n), 3 * poldists(myid),&
                                  & rmpi, 0, comm, ierr)
             end if
+        end do
 #endif
-
-            if (nprocs < 2) then
-                l = 1
-                do i = site_start, site_finish
-                    if (zeroalphas(i)) cycle
-                    call spmv(P1s(:,i), Fs(l:l+2,n), Mkinds(l:l+2,n), 'L')
-                    l = l + 3
-                end do
-            else
-                write(no,*) myid
-                tno = trim(adjustl(no))
-                bsize = 3 * site_finish - 3 * (site_start - 1)
-                allocate(B(bsize*(bsize+1)/2), ipiv(bsize))
-                inquire(file='pe_response_matrix_block'//tno//'.bin', exist=lexist)
-                if (lexist) then
-                    call openfile('pe_response_matrix_block'//tno//'.bin', lu, 'old', 'unformatted')
-                    rewind(lu)
-                    read(lu) B, ipiv
-                    close(lu)
-                else
-                    call response_matrix_block(B, site_start, site_finish)
-                    call sptrf(B, 'L', ipiv, info)
-                    if (info /= 0) then
-                        stop 'ERROR: cannot create response matrix.'
-                    end if
-                    call openfile('pe_response_matrix_block'//tno//'.bin', lu, 'unknown', 'unformatted')
-                    rewind(lu)
-                    write(lu) B, ipiv
-                    close(lu)
-                end if
-                Mkinds(3*(site_start-1)+1:3*site_finish,n) = Fs(3*(site_start-1)+1:3*site_finish,n)
-                call sptrs(B, Mkinds(3*(site_start-1)+1:3*site_finish,n:n), ipiv, 'L')
-                deallocate(B, ipiv)
+        write(no,*) myid
+        tno = trim(adjustl(no))
+        bsize = 3 * site_finish - 3 * (site_start - 1)
+        allocate(B(bsize*(bsize+1)/2), ipiv(bsize))
+        inquire(file='pe_response_matrix_block'//tno//'.bin', exist=lexist)
+        if (lexist) then
+            call openfile('pe_response_matrix_block'//tno//'.bin', lu, 'old', 'unformatted')
+            rewind(lu)
+            read(lu) B, ipiv
+            close(lu)
+        else
+            call response_matrix_block(B, site_start, site_finish)
+            call sptrf(B, 'L', ipiv, info)
+            if (info /= 0) then
+                stop 'ERROR: cannot create response matrix.'
             end if
-
+            call openfile('pe_response_matrix_block'//tno//'.bin', lu, 'new', 'unformatted')
+            rewind(lu)
+            write(lu) B, ipiv
+            close(lu)
+        end if
+        Mkinds(3*(site_start-1)+1:3*site_finish,:) = Fs(3*(site_start-1)+1:3*site_finish,:)
+        call sptrs(B, Mkinds(3*(site_start-1)+1:3*site_finish,:), ipiv, 'L')
+        deallocate(B, ipiv)
 #if defined(VAR_MPI)
+        do n = 1, ndens
             if (myid == 0 .and. nprocs > 1) then
                 displs(0) = 0
                 do i = 1, nprocs
@@ -2590,18 +2581,13 @@ subroutine mixed_solver(Mkinds, Fs)
                 call mpi_gatherv(Mkinds(:,n), 3 * poldists(myid), rmpi, 0, 0,&
                                 & 0, rmpi, 0, comm, ierr)
             end if
+        end do
 #endif
-        end if
+    end if
 
+    allocate(T(6), Rij(3), Ftmp(3), M1tmp(3))
+    do n = 1, ndens
         if (pe_nomb) cycle
-! TODO (maybe)
-! use only static field first two iterations
-!        if (fock .and. (scfcycle <= 2) .and. .not. pe_restart) then
-!            write(luout,'(a)') 'INFO: using static electric fields only to&
-!                               & converge induced dipole moments.'
-!            cycle
-!        end if
-
 #if defined(VAR_MPI)
         if (myid == 0 .and. nprocs > 1) then
             displs(0) = 0
@@ -4228,7 +4214,7 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     allocate(ew_denmat(fbas,fbas))
     allocate(ecmo(fbas,focc))
     do i = 1, focc
-        ecmo(:,i) = 0.5d0 * Emo(i) * cmo(:,i)
+        ecmo(:,i) = 0.4d0 * Emo(i) * cmo(:,i)
     end do
     ew_denmat = 2.0d0 * matmul(cmo, transpose(ecmo))
     deallocate(Emo, ecmo, cmo)
