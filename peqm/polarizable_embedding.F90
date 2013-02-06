@@ -30,6 +30,7 @@ module polarizable_embedding
     logical, public, save :: peqm = .false.
     logical, save :: pe_pot = .false.
     logical, save :: pe_iter = .true.
+    logical, save :: pe_mmdiis = .false.
     logical, save :: pe_nored = .true.
     logical, save :: pe_border = .false.
     logical, save :: pe_damp = .false.
@@ -341,6 +342,10 @@ subroutine pe_init(coords, charges, dalwrk)
         if (pe_nomb) then
             write(luout,'(/4x,a)') 'Many-body interactions will be neglected.'
         end if
+        if (pe_iter .and. pe_mmdiis) then
+            write(luout,'(/4x,a)') 'Iterative DIIS solver for induced moments will&
+                                   & be used'
+        end if
         if (pe_iter) then
             write(luout,'(/4x,a)') 'Iterative solver for induced moments will&
                                    & be used'
@@ -637,6 +642,15 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) thriter
             end if
             pe_iter = .true.
+        else if (trim(option(2:)) == 'MMDIIS') then
+            read(luinp,*) option
+            backspace(luinp)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.& 
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(luinp,*) thriter
+            end if
+            pe_iter = .true.
+            pe_mmdiis = .true.
         ! use reduced threshold in iterative induced moments solver
         else if (trim(option(2:)) == 'NORED') then
             pe_nored = .false.
@@ -795,7 +809,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
     end do
 
 ! compatibility checks
-    if (pe_iter .and. pe_sol) stop 'Solvation and iterative solver not ready'
+!    if (pe_iter .and. pe_sol) stop 'Solvation and iterative solver not ready'
 !    if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible'
 
 end subroutine pe_dalton_input
@@ -2096,7 +2110,11 @@ subroutine induced_moments(Mkinds, Fs)
     integer :: i, j, k
 
     if (pe_iter) then
-        call iterative_solver(Mkinds, Fs)
+        if (pe_mmdiis) then
+            call pe_diis(Mkinds, Fs)
+        else
+            call iterative_solver(Mkinds, Fs)
+        end if
     else
         if (myid == 0) then
             call direct_solver(Mkinds, Fs)
@@ -2134,7 +2152,7 @@ subroutine iterative_solver(Mkinds, Fs)
     logical :: converged = .false.
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
-    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr
+    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr, eps_fac, eps_inf
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: T, Rij, Ftmp, M1tmp
@@ -2149,6 +2167,17 @@ subroutine iterative_solver(Mkinds, Fs)
             redthr = 1.0d0
         end if
     end if
+
+    if (pe_sol) then
+        if ( noneq ) then
+            eps_fac = (eps -epsinf ) / ( (eps - epsinf) - 1.0d0 )
+        else if (response) then
+            eps_fac = epsinf / (epsinf - 1.0d0)
+        else if (fock) then
+            eps_fac = eps / (eps - 1.0d0)
+        end if
+    end if
+
 
     if (myid == 0) then
         inquire(file='pe_induced_dipoles.bin', exist=lexist)
@@ -2192,6 +2221,11 @@ subroutine iterative_solver(Mkinds, Fs)
                 call spmv(P1s(:,i), Fs(l:l+2,n), Mkinds(l:l+2,n), 'L')
                 l = l + 3
             end do
+            if (pe_sol) then
+                do i = surp_start, surp_finish
+                    Mkinds(3*npols+i,n) = (1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i)))**(-1) * Fs(3*npols + i,n)
+                end do
+            end if
 
 #if defined(VAR_MPI)
             if (myid == 0 .and. nprocs > 1) then
@@ -2284,6 +2318,16 @@ subroutine iterative_solver(Mkinds, Fs)
                     call spmv(T, Mkinds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
                     m = m + 3
                 end do
+                if (pe_sol) then
+                    do j = surp_start, surp_finish
+                        do k = 1, 3 
+                            Rij = Sp(:,j) - Rs(:,i)
+                            R3 = nrm2(Rij)**3
+                            T(k) = -Rij(k)/R3
+                        end do
+                        Ftmp = Ftmp - T * Mkinds(3*npols + j,n)
+                    end do
+                end if
 
 #if defined(VAR_MPI)
                 if (myid == 0 .and. nprocs > 1) then
@@ -2316,14 +2360,45 @@ subroutine iterative_solver(Mkinds, Fs)
 #endif
                 l = l + 3
             end do
+           
+            if (pe_sol) then
+                do i = 1, nsurp
+                    Ftmp = 0.0d0
+                    l = 0
+                    do j = site_start, site_finish
+                        do k = 1, 3
+                            Rij = Rs(:,j) - Sp(:,i)
+                            R3 = nrm2(Rij)**3
+                            T(k) = -Rij(k)/R3
+                        end do
+                        Ftmp(1) = Ftmp(1) - dot(T,Mkinds(j+l:j+l+2,n))
+                        l = l + 3
+                    end do
+                    do j = surp_start, surp_finish
+                        if (i == j) cycle
+                        Rij = Sp(:,j) - Sp(:,i)
+                        R = nrm2(Rij)
+                        T(1) = eps_fac / R
+                        Ftmp(1) = Ftmp(1) - T(1) * Mkinds(3*npols + j,n)
+                    end do
+                    Ftmp(1) = Ftmp(1) + Fs(3*npols + i,n)
+                    M1tmp(1) = Mkinds(3*npols+i,n)
+                    Mkinds(3*npols+i,n) = (1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i)))**(-1) * Ftmp(1)
+                    norm = norm + (Mkinds(3*npols+i,n) - M1tmp(1))**2
+                end do
+            end if
 
             if (myid == 0) then
                 if (norm < redthr * thriter) then
-                    if (pe_verbose) then
+!                    if (pe_verbose) then
                         write (luout,'(4x,a,i2,a)') 'Induced dipole moments&
                                                     & converged in ', iter,&
                                                     & ' iterations.'
-                    end if
+                        do i = 1, 3*npols
+                            write(luout,*) Mkinds(l:l+2,n)
+                            l = l + 3
+                        end do
+!                    end if
                     converged = .true.
                 else if (iter > 50) then
                     write(luout,*) 'ERROR: could not converge induced dipole&
@@ -3169,6 +3244,7 @@ subroutine response_matrix(B)
     if (pe_sol) then
         do i = 1, nsurp
             B(m+1) = 1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i))
+            print *, Sa(i), i
             m = m + 1
             do j = i + 1, nsurp
                 Rij = Sp(:,j) - Sp(:,i)
@@ -5134,6 +5210,210 @@ subroutine pe_compute_mep(denmats)
 end subroutine pe_compute_mep
 
 !------------------------------------------------------------------------------
+
+subroutine pe_diis(Mkinds,Fs)
+
+    real(dp), dimension(:,:), intent(out) :: Mkinds
+    real(dp), dimension(:,:), intent(in) :: Fs
+
+    integer :: lu, itdiis, info, ndiis
+    integer :: i, j, k, l, m, n, o, p, q
+    logical :: exclude, lexist
+    logical :: converged = .false.
+    real(dp) :: fe = 1.0d0
+    real(dp) :: ft = 1.0d0
+    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr, eps_fac, eps_inf, error, chk_sum
+    real(dp), parameter :: d3i = 1.0d0 / 3.0d0
+    real(dp), parameter :: d6i = 1.0d0 / 6.0d0
+    integer, parameter :: mxdiis = 50
+    real(dp), dimension(:), allocatable :: diis_vec
+    integer, dimension(:), allocatable :: ipiv
+    real(dp), dimension(:,:), allocatable :: Mkinds_diis, diis_mat, Mkinds_tmp
+    real(dp), dimension(:), allocatable :: T, Rij, Ftmp, M1tmp,temp1,temp2
+
+    allocate(Mkinds_tmp(3*npols,mxdiis))
+    allocate(Mkinds_diis(3*npols,mxdiis))
+    allocate(T(6), Rij(3), Ftmp(3), M1tmp(3))
+! Start guess is in Mkinds_diis(:,1)
+    do n = 1, ndens
+        l = 1
+        do i = site_start, site_finish
+            if (zeroalphas(i)) cycle
+            call spmv(P1s(:,i), Fs(l:l+2,n), Mkinds_diis(l:l+2,1), 'L')
+            write(luout,*) Mkinds_diis(l:l+2,1), i
+            l = l + 3
+        end do
+        do itdiis = 1, mxdiis
+            if (itdiis == 1) then
+               Mkinds_tmp(:,1) = Mkinds_diis(:,1)
+            else
+               Mkinds_tmp(:,itdiis) = 0.0d0
+               do j = 1, itdiis
+                   Mkinds_tmp(:,itdiis) = Mkinds_tmp(:,itdiis) + diis_vec(j+1) * Mkinds_diis(:,j)
+               end do
+               deallocate(diis_vec)
+            end if
+
+!             Start Jacobi:
+!             Mkinds_diis(:,itdiis+1) = M0*( F - M1* Mkinds_temp)       
+     
+            l = 1
+            do i = 1, nsites
+                if (zeroalphas(i)) cycle
+                if (pe_damp) then
+                    ai = (P1s(1,i) + P1s(4,i) + P1s(6,i)) * d3i
+                end if
+                m = 1
+                Ftmp = 0.0d0
+                do j = site_start, site_finish
+                    if (zeroalphas(j)) cycle
+                    exclude = .false.
+                    do k = 1, lexlst
+                        if (exclists(k,i) == exclists(1,j)) then
+                            exclude = .true.
+                            exit
+                        end if
+                    end do
+                    if (i == j .or. exclude) then
+                        m = m + 3
+                        cycle
+                    end if
+                    Rij = Rs(:,j) - Rs(:,i)
+                    R = nrm2(Rij)
+                    R3 = R**3
+                    R5 = R**5
+                    ! damping parameters
+                    ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
+                    ! a = 2.1304 = damp
+                    ! u = R / (alpha_i * alpha_j)**(1/6)
+                    ! fe = 1-(a²u²/2+au+1)*exp(-au)
+                    ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
+                    if (pe_damp) then
+                        aj = (P1s(1,j) + P1s(4,j) + P1s(6,j)) * d3i
+                        Rd = damp * R / (ai * aj)**d6i
+                        fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
+                        ft = fe - d6i * Rd**3 * exp(-Rd)
+                    end if
+                    q = 1
+                    do o = 1, 3
+                        do p = o, 3
+                            T(q) = 3.0d0 * Rij(o) * Rij(p) * ft / R5
+                            if (o == p) then
+                                T(q) = T(q) - fe / R3
+                            end if
+                            q = q + 1
+                        end do
+                    end do
+                    call spmv(T, Mkinds_tmp(m:m+2,itdiis), Ftmp, 'L', 1.0d0, 1.0d0)
+                    m = m + 3
+                end do
+     
+!    #if defined(VAR_MPI)
+!                if (myid == 0 .and. nprocs > 1) then
+!                    call mpi_reduce(mpi_in_place, Ftmp, 3, rmpi, mpi_sum, 0,&
+!                                   & comm, ierr)
+!                else if (myid /= 0) then
+!                    call mpi_reduce(Ftmp, 0, 3, rmpi, mpi_sum, 0, comm, ierr)
+!                end if
+!    #endif
+     
+                if (myid == 0) then
+                    Ftmp = Ftmp + Fs(l:l+2,n)
+                    call spmv(P1s(:,i), Ftmp, Mkinds_diis(l:l+2,itdiis), 'L')
+                    write(luout,*) 'Mkinds_diis, itdiis, i', Mkinds_diis(l:l+2,itdiis), itdiis, i
+                end if
+     
+!    if defined(VAR_MPI)
+!               if (myid == 0 .and. nprocs > 1) then
+!                   displs(0) = 0
+!                   do j = 1, nprocs
+!                       displs(j) = displs(j-1) + 3 * poldists(j-1)
+!                   end do
+!                   call mpi_scatterv(Mkinds(:,n), 3*poldists, displs, rmpi,&
+!                                    & mpi_in_place, 0, rmpi, 0, comm, ierr)
+!               else if (myid /= 0) then
+!                   call mpi_scatterv(0, 0, 0, rmpi, Mkinds(:,n),&
+!                                    & 3*poldists(myid), rmpi, 0, comm, ierr)
+!               end if
+!    endif
+                    l = l + 3
+            end do ! i = 1, nsites
+               
+!      Check convergance
+            error = sqrt(dot((Mkinds_diis(:,itdiis)-Mkinds_tmp(:,itdiis)),(Mkinds_diis(:,itdiis)-Mkinds_tmp(:,itdiis)))/(3*npols))
+            if (myid == 0) then
+                if (error < thriter) then
+                    if (pe_verbose) then
+                        write (luout,'(4x,a,i2,a)') 'Induced dipole moments&
+                                                    & converged in ', itdiis,&
+                                                    & ' iterations.'
+                    end if
+                    converged = .true.
+                else if (itdiis == mxdiis) then
+                    write(luout,*) 'ERROR: could not converge induced dipole&
+                                   & moments.'
+                    stop 'ERROR: could not converge induced dipole moments.'
+                else
+                ! solve DIIS equations
+                    converged = .false.
+                    ndiis = itdiis + 1
+       
+                    allocate(diis_mat(ndiis,ndiis))
+                    allocate(diis_vec(ndiis))
+                    allocate(temp1(ndiis))
+                    allocate(temp2(ndiis))
+          
+                    diis_mat = 0.0d0
+                    diis_vec = 0.0d0
+                    diis_mat(1,:) = -1.0d0
+                    diis_mat(:,1) = -1.0d0
+                    diis_mat(1,1) = 0.0d0
+                    diis_vec(1) = -1.0d0
+       
+                    do i = 2, ndiis
+                        do j = 2, ndiis 
+                            temp1 = Mkinds_diis(:,i-1) - Mkinds_tmp(:,i-1)
+                            temp2 = Mkinds_diis(:,j-1) - Mkinds_tmp(:,j-1)
+                            diis_mat(i,j) = dot(temp1,temp2)
+                        end do
+                    end do
+                    deallocate(temp1,temp2) 
+                    if (pe_verbose) then
+                        do i = 1, ndiis 
+                            do j = 1, ndiis
+                                write(luout,*) 'diis_mat, i, j',diis_mat(i,j), i, j
+                            end do
+                        end do
+                    end if
+                    allocate(ipiv(ndiis)) 
+                    call dgetrf(ndiis,ndiis,diis_mat,ndiis,ipiv,info)
+                    call dgetrs('N', ndiis, 1, diis_mat, ndiis, ipiv, diis_vec, ndiis, info)
+                    chk_sum = 0.0d0
+                    if (pe_verbose) then
+                        do i = 2, ndiis
+                            chk_sum = chk_sum + diis_vec(i)
+                            write(luout,*) 'diis_vec',diis_vec(i)
+                        end do
+                        write(luout,*) 'Sum of weights in diis_vec', chk_sum
+                    end if
+                    deallocate(diis_mat,ipiv)
+     
+                end if
+            end if
+!     #if defined(VAR_MPI)
+!                 if (nprocs > 1) then
+!                     call mpi_bcast(converged, 1, lmpi, 0, comm, ierr)
+!                 end if
+!     #endif
+            if (converged) then
+                Mkinds(:,n) = Mkinds_diis(:,itdiis)
+                exit
+            end if
+     
+        end do !itdiis 
+    end do ! n= 1, ndens
+
+end subroutine pe_diis
 
 end module polarizable_embedding
 
