@@ -31,7 +31,8 @@ module polarizable_embedding
     logical, save :: pe_pot = .false.
     logical, save :: pe_iter = .true.
     logical, save :: pe_mmdiis = .false.
-    logical, save :: pe_nored = .true.
+    logical, save :: pe_mixed = .false.
+    logical, save :: pe_redthr = .false.
     logical, save :: pe_border = .false.
     logical, save :: pe_damp = .false.
     logical, public, save :: pe_gspol = .false.
@@ -651,9 +652,13 @@ subroutine pe_dalton_input(word, luinp, lupri)
             end if
             pe_iter = .true.
             pe_mmdiis = .true.
+        ! mized solver for induced moments
+        else if (trim(option(2:)) == 'MIXED') then
+            pe_mixed = .true.
+            pe_iter = .true.
         ! use reduced threshold in iterative induced moments solver
-        else if (trim(option(2:)) == 'NORED') then
-            pe_nored = .false.
+        else if (trim(option(2:)) == 'REDTHR') then
+            pe_redthr = .true.
         ! handling sites near quantum-classical border
         else if (trim(option(2:)) == 'BORDER') then
             read(luinp,*) option
@@ -805,6 +810,8 @@ subroutine pe_dalton_input(word, luinp, lupri)
             exit
         else if (option(1:1) == '!' .or. option(1:1) == '#') then
             cycle
+        else
+            write(luout,*) 'Unknown option:', option
         end if
     end do
 
@@ -1418,7 +1425,8 @@ subroutine pe_sync()
             call mpi_bcast(epsinf, 1, rmpi, 0, comm, ierr)
         end if
         call mpi_bcast(pe_iter, 1, lmpi, 0, comm, ierr)
-        if (pe_iter) then
+        call mpi_bcast(pe_mixed, 1, lmpi, 0, comm, ierr)
+        if (pe_iter .or. pe_mixed) then
             if (myid /= 0) allocate(P1s(6,nsites))
             call mpi_bcast(P1s, 6 * nsites, rmpi, 0, comm, ierr)
         end if
@@ -1872,6 +1880,7 @@ subroutine pe_polarization(denmats, fckmats)
     real(dp), dimension(:,:), allocatable :: Fel_ints, Vel_ints
     
     allocate(Mkinds(3*npols+nsurp,ndens), Fktots(3*npols+nsurp,ndens))
+    Mkinds = 0.0d0; Fktots = 0.0d0
     if (lpol(1)) then
         allocate(Fels(3*npols,ndens))
         allocate(Fnucs(3*npols), Fmuls(3*npols), Ffds(3*npols))
@@ -2112,6 +2121,8 @@ subroutine induced_moments(Mkinds, Fs)
     if (pe_iter) then
         if (pe_mmdiis) then
             call pe_diis(Mkinds, Fs)
+        else if (pe_mixed) then
+            call mixed_solver(Mkinds, Fs)
         else
             call iterative_solver(Mkinds, Fs)
         end if
@@ -2159,7 +2170,7 @@ subroutine iterative_solver(Mkinds, Fs)
 
     if (myid == 0) then
         if (fock .and. scfcycle <= - nint(log10(thriter)) .and. .not.&
-           & pe_restart .and. .not. pe_nored) then
+           & pe_restart .and. pe_redthr) then
             redthr = 10**(- log10(thriter) - scfcycle)
             write(luout,'(a)') 'INFO: using reduced threshold to determine&
                                & induced dipole moments.'
@@ -2441,10 +2452,8 @@ subroutine direct_solver(Mkinds, Fs)
     real(dp), dimension(:,:), intent(in) :: Fs
 
     logical :: lexist
-    integer :: lu, info
+    integer :: lu, info, i
     integer, dimension(:), allocatable :: ipiv
-    real(dp) :: fe = 1.0d0
-    real(dp) :: ft = 1.0d0
     real(dp) :: anorm, rcond
     real(dp), dimension(:), allocatable :: B
 
@@ -2539,6 +2548,261 @@ subroutine direct_solver(Mkinds, Fs)
     end if
 
 end subroutine direct_solver
+
+!------------------------------------------------------------------------------
+
+subroutine mixed_solver(Mkinds, Fs)
+
+    real(dp), dimension(:,:), intent(out) :: Mkinds
+    real(dp), dimension(:,:), intent(in) :: Fs
+
+    integer :: lu, iter, info, bsize
+    integer :: i, j, k, l, m, n, o, p, q
+    logical :: exclude, lexist
+    logical :: converged = .false.
+    real(dp) :: fe = 1.0d0
+    real(dp) :: ft = 1.0d0
+    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr
+    real(dp), parameter :: d3i = 1.0d0 / 3.0d0
+    real(dp), parameter :: d6i = 1.0d0 / 6.0d0
+    real(dp), dimension(:), allocatable :: T, Rij, Ftmp, M1tmp
+
+    character(len=2) :: tno
+    character(len=99) :: no
+    integer, dimension(:), allocatable :: ipiv
+    real(dp) :: anorm, rcond
+    real(dp), dimension(:), allocatable :: B
+
+    if (myid == 0) then
+        if (fock .and. scfcycle <= - nint(log10(thriter)) .and. .not.&
+           & pe_restart .and. pe_redthr) then
+            redthr = 10**(- log10(thriter) - scfcycle)
+            write(luout,'(a)') 'INFO: using reduced threshold to determine&
+                               & induced dipole moments.'
+        else
+            redthr = 1.0d0
+        end if
+    end if
+
+    if (myid == 0) then
+        inquire(file='pe_induced_dipoles.bin', exist=lexist)
+    end if
+
+#if defined(VAR_MPI)
+    if (nprocs > 1) then
+        call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
+    end if
+#endif
+
+    if (lexist .and. (fock .or. energy)) then
+        if (myid == 0) then
+            call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
+            rewind(lu)
+            read(lu) Mkinds
+            close(lu)
+        end if
+    end if
+
+    if (.not.lexist .or. response) then
+#if defined(VAR_MPI)
+        do n = 1, ndens
+            if (myid == 0 .and. nprocs > 1) then
+                displs(0) = 0
+                do i = 1, nprocs
+                    displs(i) = displs(i-1) + 3 * poldists(i-1)
+                end do
+                call mpi_scatterv(Fs(:,n), 3 * poldists, displs, rmpi,&
+                                 &mpi_in_place, 0, rmpi, 0, comm, ierr)
+            else if (myid /= 0) then
+                call mpi_scatterv(0, 0, 0, rmpi, Fs(:,n), 3 * poldists(myid),&
+                                 & rmpi, 0, comm, ierr)
+            end if
+        end do
+#endif
+        write(no,*) myid
+        tno = trim(adjustl(no))
+        bsize = 3 * site_finish - 3 * (site_start - 1)
+        allocate(B(bsize*(bsize+1)/2), ipiv(bsize))
+        inquire(file='pe_response_matrix_block'//tno//'.bin', exist=lexist)
+        if (lexist) then
+            call openfile('pe_response_matrix_block'//tno//'.bin', lu, 'old', 'unformatted')
+            rewind(lu)
+            read(lu) B, ipiv
+            close(lu)
+        else
+            call response_matrix_block(B, site_start, site_finish)
+            call sptrf(B, 'L', ipiv, info)
+            if (info /= 0) then
+                stop 'ERROR: cannot create response matrix.'
+            end if
+            call openfile('pe_response_matrix_block'//tno//'.bin', lu, 'new', 'unformatted')
+            rewind(lu)
+            write(lu) B, ipiv
+            close(lu)
+        end if
+        Mkinds(3*(site_start-1)+1:3*site_finish,:) = Fs(3*(site_start-1)+1:3*site_finish,:)
+        call sptrs(B, Mkinds(3*(site_start-1)+1:3*site_finish,:), ipiv, 'L')
+        deallocate(B, ipiv)
+#if defined(VAR_MPI)
+        do n = 1, ndens
+            if (myid == 0 .and. nprocs > 1) then
+                displs(0) = 0
+                do i = 1, nprocs
+                    displs(i) = displs(i-1) + 3 * poldists(i-1)
+                end do
+                call mpi_gatherv(mpi_in_place, 0, rmpi, Mkinds(:,n),&
+                                & 3 * poldists, displs, rmpi, 0, comm, ierr)
+            else if (myid /= 0) then
+                call mpi_gatherv(Mkinds(:,n), 3 * poldists(myid), rmpi, 0, 0,&
+                                & 0, rmpi, 0, comm, ierr)
+            end if
+        end do
+#endif
+    end if
+
+    allocate(T(6), Rij(3), Ftmp(3), M1tmp(3))
+    do n = 1, ndens
+        if (pe_nomb) cycle
+#if defined(VAR_MPI)
+        if (myid == 0 .and. nprocs > 1) then
+            displs(0) = 0
+            do i = 1, nprocs
+                displs(i) = displs(i-1) + 3 * poldists(i-1)
+            end do
+            call mpi_scatterv(Mkinds(:,n), 3 * poldists, displs, rmpi,&
+                             & mpi_in_place, 0, rmpi, 0, comm, ierr)
+        else if (myid /= 0) then
+            call mpi_scatterv(0, 0, 0, rmpi, Mkinds(:,n), 3 * poldists(myid),&
+                             & rmpi, 0, comm, ierr)
+        end if
+#endif
+
+        iter = 1
+        do
+            norm = 0.0d0
+            l = 1
+            do i = 1, nsites
+                if (zeroalphas(i)) cycle
+                if (pe_damp) then
+                    ai = (P1s(1,i) + P1s(4,i) + P1s(6,i)) * d3i
+                end if
+                m = 1
+                Ftmp = 0.0d0
+                do j = site_start, site_finish
+                    if (zeroalphas(j)) cycle
+                    exclude = .false.
+                    do k = 1, lexlst
+                        if (exclists(k,i) == exclists(1,j)) then
+                            exclude = .true.
+                            exit
+                        end if
+                    end do
+                    if (i == j .or. exclude) then
+                        m = m + 3
+                        cycle
+                    end if
+                    Rij = Rs(:,j) - Rs(:,i)
+                    R = nrm2(Rij)
+                    R3 = R**3
+                    R5 = R**5
+                    ! damping parameters
+                    ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
+                    ! a = 2.1304 = damp
+                    ! u = R / (alpha_i * alpha_j)**(1/6)
+                    ! fe = 1-(a²u²/2+au+1)*exp(-au)
+                    ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
+                    if (pe_damp) then
+                        aj = (P1s(1,j) + P1s(4,j) + P1s(6,j)) * d3i
+                        Rd = damp * R / (ai * aj)**d6i
+                        fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
+                        ft = fe - d6i * Rd**3 * exp(-Rd)
+                    end if
+                    q = 1
+                    do o = 1, 3
+                        do p = o, 3
+                            T(q) = 3.0d0 * Rij(o) * Rij(p) * ft / R5
+                            if (o == p) then
+                                T(q) = T(q) - fe / R3
+                            end if
+                            q = q + 1
+                        end do
+                    end do
+                    call spmv(T, Mkinds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
+                    m = m + 3
+                end do
+
+#if defined(VAR_MPI)
+                if (myid == 0 .and. nprocs > 1) then
+                    call mpi_reduce(mpi_in_place, Ftmp, 3, rmpi, mpi_sum, 0,&
+                                   & comm, ierr)
+                else if (myid /= 0) then
+                    call mpi_reduce(Ftmp, 0, 3, rmpi, mpi_sum, 0, comm, ierr)
+                end if
+#endif
+
+                if (myid == 0) then
+                    M1tmp = Mkinds(l:l+2,n)
+                    Ftmp = Ftmp + Fs(l:l+2,n)
+                    call spmv(P1s(:,i), Ftmp, Mkinds(l:l+2,n), 'L')
+                    norm = norm + nrm2(Mkinds(l:l+2,n) - M1tmp)
+                end if
+
+#if defined(VAR_MPI)
+                if (myid == 0 .and. nprocs > 1) then
+                    displs(0) = 0
+                    do j = 1, nprocs
+                        displs(j) = displs(j-1) + 3 * poldists(j-1)
+                    end do
+                    call mpi_scatterv(Mkinds(:,n), 3*poldists, displs, rmpi,&
+                                     & mpi_in_place, 0, rmpi, 0, comm, ierr)
+                else if (myid /= 0) then
+                    call mpi_scatterv(0, 0, 0, rmpi, Mkinds(:,n),&
+                                     & 3*poldists(myid), rmpi, 0, comm, ierr)
+                end if
+#endif
+                l = l + 3
+            end do
+
+            if (myid == 0) then
+                if (norm < redthr * thriter) then
+                    if (pe_verbose) then
+                        write (luout,'(4x,a,i2,a)') 'Induced dipole moments&
+                                                    & converged in ', iter,&
+                                                    & ' iterations.'
+                    end if
+                    converged = .true.
+                else if (iter > 50) then
+                    write(luout,*) 'ERROR: could not converge induced dipole&
+                                   & moments.'
+                    stop 'ERROR: could not converge induced dipole moments.'
+                else
+                    converged = .false.
+                    iter = iter + 1
+                end if
+            end if
+
+#if defined(VAR_MPI)
+            if (nprocs > 1) then
+                call mpi_bcast(converged, 1, lmpi, 0, comm, ierr)
+            end if
+#endif
+            if (converged) exit
+        end do
+    end do
+
+    if (fock) then
+        if (myid == 0) then
+            call openfile('pe_induced_dipoles.bin', lu, 'unknown',&
+                         & 'unformatted')
+            rewind(lu)
+            write(lu) Mkinds
+            close(lu)
+        end if
+    end if
+
+    deallocate(T, Rij, Ftmp, M1tmp)
+
+end subroutine mixed_solver
 
 !------------------------------------------------------------------------------
 
@@ -3119,8 +3383,8 @@ subroutine response_matrix(B)
     B = 0.0d0
 
     if (pe_sol) then
-        if ( noneq ) then
-            eps_fac = (eps -epsinf ) / ( (eps - epsinf) - 1.0d0 )
+        if (noneq) then
+            eps_fac = (eps - epsinf) / ((eps - epsinf) - 1.0d0)
         else if (response) then
             eps_fac = epsinf / (epsinf - 1.0d0)
         else if (fock) then
@@ -3262,6 +3526,166 @@ subroutine response_matrix(B)
 !    end if
 
 end subroutine response_matrix
+
+!------------------------------------------------------------------------------
+
+subroutine response_matrix_block(B, start, finish)
+
+! TODO: Cutoff radius
+
+    integer :: start, finish
+    real(dp), dimension(:), intent(out) :: B
+
+    logical :: exclude
+    integer :: info
+    integer :: i, j, k, l, m, n, o
+    integer, dimension(3) :: ipiv
+    real(dp), parameter :: d3i = 1.0d0 / 3.0d0
+    real(dp), parameter :: d6i = 1.0d0 / 6.0d0
+    real(dp) :: fe = 1.0d0
+    real(dp) :: ft = 1.0d0
+    real(dp) :: Rd, ai, aj
+    real(dp) :: R, R3, R5, T, eps_fac
+    real(dp), dimension(3) :: Rij
+    real(dp), dimension(6) :: P1inv
+
+    B = 0.0d0
+
+!    if (pe_sol) then
+!        if (noneq) then
+!            eps_fac = (eps - epsinf) / ((eps - epsinf) - 1.0d0)
+!        else if (response) then
+!            eps_fac = epsinf / (epsinf - 1.0d0)
+!        else if (fock) then
+!            eps_fac = eps / (eps - 1.0d0)
+!        end if
+!    end if
+
+    m = 0
+    do i = start, finish
+        if (zeroalphas(i)) cycle
+        P1inv = P1s(:,i)
+        call sptrf(P1inv, 'L', ipiv, info)
+        if (info /= 0) then
+            stop 'ERROR: could not factorize polarizability.'
+        end if
+        call sptri(P1inv, ipiv, 'L')
+        if (pe_damp) then
+            ai = (P1s(1,i) + P1s(4,i) + P1s(6,i)) * d3i
+        end if
+        do l = 3, 1, -1
+            do j = i, finish
+                if (zeroalphas(j)) cycle
+                if (j == i) then
+                    if (l == 3) then
+                        do k = 1, l
+                            B(m+k) = P1inv(k)
+                        end do
+                    else if (l == 2) then
+                        do k = 1, l
+                            B(m+k) = P1inv(3+k)
+                        end do
+                    else if (l == 1) then
+                        do k = 1, l
+                            B(m+k) = P1inv(5+k)
+                        end do
+                    end if
+                    m = m + l
+                else
+                    if (pe_nomb) then
+                        m = m + 3
+                        cycle
+                    end if
+                    exclude = .false.
+                    do k = 1, lexlst
+                        if (exclists(k,i) == exclists(1,j)) then
+                            exclude = .true.
+                            exit
+                        end if
+                    end do
+                    if (exclude) then
+                        m = m + 3
+                        cycle
+                    end if
+                    Rij = Rs(:,j) - Rs(:,i)
+                    R = nrm2(Rij)
+                    R3 = R**3
+                    R5 = R**5
+! TODO: cutoff radius
+!                        if (R > cutoff) then
+!                            m = m + 3
+!                            cycle
+!                        end if
+                    ! damping parameters
+                    ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
+                    ! a = 2.1304 = damp
+                    ! u = R / (alpha_i * alpha_j)**(1/6)
+                    ! fe = 1-(a²u²/2+au+1)*exp(-au)
+                    ! ft = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
+                    if (pe_damp) then
+                        aj = (P1s(1,j) + P1s(4,j) + P1s(6,j)) * d3i
+                        Rd = damp * R / (ai * aj)**d6i
+                        fe = 1.0d0 - (0.5d0 * Rd**2 + Rd + 1.0d0) * exp(-Rd)
+                        ft = fe - d6i * Rd**3 * exp(-Rd)
+                    end if
+                    if (l == 3) then
+                        do k = 1, 3
+                            T = 3.0d0 * Rij(1) * Rij(k) * ft / R5
+                            if (k == 1) T = T - fe / R3
+                            B(m+k) = - T
+                        end do
+                    else if (l == 2) then
+                        do k = 1, 3
+                            T = 3.0d0 * Rij(2) * Rij(k) * ft / R5
+                            if (k == 2) T = T - fe / R3
+                            B(m+k) = - T
+                        end do
+                    else if (l == 1) then
+                        do k = 1, 3
+                            T = 3.0d0 * Rij(3) * Rij(k) * ft / R5
+                            if (k == 3) T = T - fe / R3
+                            B(m+k) = - T
+                        end do
+                    end if
+                    m = m + 3
+                end if ! i /= j
+            end do  ! do j = i, nsites
+!            if (pe_sol) then
+!                do j = 1, nsurp
+!                    Rij = Sp(:,j) - Rs(:,i)
+!                    R3 = nrm2(Rij)**3
+!                    if (l == 3) then
+!                        B(m+1) = - Rij(1) / R3
+!                    else if (l == 2) then
+!                        B(m+1) = - Rij(2) / R3
+!                    else if (l == 1) then
+!                        B(m+1) = - Rij(3) / R3
+!                    end if
+!                    m = m + 1
+!                end do ! j = 1, nsurp
+!            end if ! pe_sol
+        end do  ! do l = 3, 1, -1
+    end do  ! do i = 1, nsites
+!    if (pe_sol) then
+!        do i = 1, nsurp
+!            B(m+1) = 1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i))
+!            m = m + 1
+!            do j = i + 1, nsurp
+!                Rij = Sp(:,j) - Sp(:,i)
+!                R = nrm2(Rij)
+!                B(m+1) = eps_fac / R
+!                m = m + 1
+!            end do ! j = i + 1, nsurp
+!        end do ! i = 1, nsurp
+!    end if
+
+!    if (pe_debug) then
+!        do i = 1, 3 * npols + nsurp * (3 * npols + nsurp + 1) / 2
+!            write (luout,*) 'Response matrix(i)',i, B(i)
+!        end do
+!    end if
+
+end subroutine response_matrix_block
 
 !------------------------------------------------------------------------------
 
@@ -3866,7 +4290,7 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     allocate(ew_denmat(fbas,fbas))
     allocate(ecmo(fbas,focc))
     do i = 1, focc
-        ecmo(:,i) = 0.5d0 * Emo(i) * cmo(:,i)
+        ecmo(:,i) = 0.4d0 * Emo(i) * cmo(:,i)
     end do
     ew_denmat = 2.0d0 * matmul(cmo, transpose(ecmo))
     deallocate(Emo, ecmo, cmo)
