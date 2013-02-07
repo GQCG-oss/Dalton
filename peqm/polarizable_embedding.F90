@@ -4013,7 +4013,7 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
     real(dp), dimension(:,:), allocatable :: T0_ints
     real(dp), dimension(:), allocatable :: Ffd
     real(dp), dimension(:,:), allocatable :: Ftmp
-    real(dp), dimension(:), allocatable :: Emo
+    real(dp), dimension(:), allocatable :: mo_energies
 
     work => dalwrk
 
@@ -4085,9 +4085,9 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
     end do
     deallocate(T0_ints)
 
-    allocate(Emo(nocc))
+    allocate(mo_energies(nocc))
     do i = 1, nocc
-        Emo(i) = mofckmat(i*(i+1)/2)
+        mo_energies(i) = mofckmat(i*(i+1)/2)
     end do
 
     ! save density, energy and field for subsequent calculations
@@ -4101,10 +4101,10 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
     write(luden) nbas, nocc
     write(luden) full_denmat
     write(luden) cmo(:,1:nocc)
-    write(luden) Emo
+    write(luden) mo_energies
     close(luden)
 
-    deallocate(full_denmat, Ffd, Emo)
+    deallocate(full_denmat, Ffd, mo_energies)
 
 end subroutine pe_save_density
 
@@ -4127,10 +4127,10 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     real(dp), dimension(:,:), allocatable :: full_fckmat
     real(dp), dimension(:), allocatable :: overlap, repmat
     real(dp), dimension(:,:), allocatable :: full_overlap
-    real(dp), dimension(:,:), allocatable :: full_rep
-    real(dp), dimension(:), allocatable :: Emo
+    real(dp), dimension(:,:), allocatable :: full_repmat
+    real(dp), dimension(:), allocatable :: mo_energies
     real(dp), dimension(:,:), allocatable :: cmo, ecmo
-    real(dp), dimension(:,:), allocatable :: ew_denmat
+    real(dp), dimension(:,:), allocatable :: weighted_denmat
 
     work => dalwrk
 
@@ -4153,8 +4153,8 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     read(luden) frag_denmat
     allocate(cmo(fbas,focc))
     read(luden) cmo
-    allocate(Emo(focc))
-    read(luden) Emo
+    allocate(mo_energies(focc))
+    read(luden) mo_energies
     close(luden)
 
     cbas = nbas - fbas
@@ -4211,28 +4211,30 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
 !             &full_overlap(1:fbas,fbas+1:nbas),&
 !             &intmol_overlap)
 
-    allocate(ew_denmat(fbas,fbas))
+    allocate(weighted_denmat(fbas,fbas))
     allocate(ecmo(fbas,focc))
     do i = 1, focc
-        ecmo(:,i) = 0.4d0 * Emo(i) * cmo(:,i)
+        ecmo(:,i) = mo_energies(i) * cmo(:,i)
     end do
-    ew_denmat = 2.0d0 * matmul(cmo, transpose(ecmo))
-    deallocate(Emo, ecmo, cmo)
+    weighted_denmat = - rep_factor * matmul(cmo, transpose(ecmo))
+    deallocate(mo_energies, ecmo, cmo)
 
-    allocate(full_rep(cbas,cbas))
-    full_rep = - matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), ew_denmat),&
-                       &full_overlap(1:fbas,fbas+1:nbas))
-    deallocate(full_overlap, ew_denmat)
+    allocate(full_repmat(cbas,cbas))
+    full_repmat = matmul(matmul(full_overlap(fbas+1:nbas,1:fbas),&
+                               & weighted_denmat),&
+                        & full_overlap(1:fbas,fbas+1:nbas))
+    full_repmat = full_repmat + full_repmat**2 !+ full_repmat**4 + full_repmat**6 + full_repmat**8
+    deallocate(full_overlap, weighted_denmat)
 
     allocate(repmat(cbas*(cbas+1)/2))
     l = 1
     do j = 1, cbas
         do i = 1, j
-            repmat(l) = full_rep(i,j)
+            repmat(l) = full_repmat(i,j)
             l = l + 1
         end do
     end do
-    deallocate(full_rep)
+    deallocate(full_repmat)
 
     ! save core Fock matrix
     call openfile('pe_fock.bin', lufck, 'new', 'unformatted')
