@@ -4299,7 +4299,7 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     full_repmat = matmul(matmul(full_overlap(fbas+1:nbas,1:fbas),&
                                & weighted_denmat),&
                         & full_overlap(1:fbas,fbas+1:nbas))
-    full_repmat = full_repmat + full_repmat**2 !+ full_repmat**4 + full_repmat**6 + full_repmat**8
+    full_repmat = 1.0d0 * full_repmat + 10.0d0 * full_repmat**2 !+ full_repmat**4 + full_repmat**6 + full_repmat**8
     deallocate(full_overlap, weighted_denmat)
 
     allocate(repmat(cbas*(cbas+1)/2))
