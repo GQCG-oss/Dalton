@@ -1971,7 +1971,9 @@ subroutine iterative_solver(Mkinds, Fs)
     logical :: converged = .false.
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
-    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr, eps_fac, eps_inf
+    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr
+    real(dp) :: prefac, eps_fac
+    real(dp), parameter :: fourpi = 4.0d0 * pi
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: T, Rij, Ftmp, M1tmp
@@ -1988,15 +1990,15 @@ subroutine iterative_solver(Mkinds, Fs)
     end if
 
     if (pe_sol) then
-        if ( noneq ) then
-            eps_fac = (eps -epsinf ) / ( (eps - epsinf) - 1.0d0 )
+        if (noneq) then
+            eps_fac = (eps - epsinf) / ((eps - epsinf) - 1.0d0)
         else if (response) then
             eps_fac = epsinf / (epsinf - 1.0d0)
         else if (fock) then
             eps_fac = eps / (eps - 1.0d0)
         end if
+        prefac = 1.07d0 * eps_fac
     end if
-
 
     if (myid == 0) then
         inquire(file='pe_induced_dipoles.bin', exist=lexist)
@@ -2042,7 +2044,8 @@ subroutine iterative_solver(Mkinds, Fs)
             end do
             if (pe_sol) then
                 do i = surp_start, surp_finish
-                    Mkinds(3*npols+i,n) = (1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i)))**(-1) * Fs(3*npols + i,n)
+                    Mkinds(3*npols+i,n) = (prefac * sqrt(fourpi / Sa(i)))**(-1)&
+                                        & * Fs(3*npols+i,n)
                 end do
             end if
 
@@ -2142,9 +2145,9 @@ subroutine iterative_solver(Mkinds, Fs)
                         do k = 1, 3 
                             Rij = Sp(:,j) - Rs(:,i)
                             R3 = nrm2(Rij)**3
-                            T(k) = -Rij(k)/R3
+                            T(k) = - Rij(k) / R3
                         end do
-                        Ftmp = Ftmp - T * Mkinds(3*npols + j,n)
+                        Ftmp = Ftmp - T * Mkinds(3*npols+j,n)
                     end do
                 end if
 
@@ -2179,7 +2182,7 @@ subroutine iterative_solver(Mkinds, Fs)
 #endif
                 l = l + 3
             end do
-           
+
             if (pe_sol) then
                 do i = 1, nsurp
                     Ftmp = 0.0d0
@@ -2202,22 +2205,19 @@ subroutine iterative_solver(Mkinds, Fs)
                     end do
                     Ftmp(1) = Ftmp(1) + Fs(3*npols + i,n)
                     M1tmp(1) = Mkinds(3*npols+i,n)
-                    Mkinds(3*npols+i,n) = (1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i)))**(-1) * Ftmp(1)
+                    Mkinds(3*npols+i,n) = (prefac * sqrt(fourpi / Sa(i)))**(-1)&
+                                        & * Ftmp(1)
                     norm = norm + (Mkinds(3*npols+i,n) - M1tmp(1))**2
                 end do
             end if
 
             if (myid == 0) then
                 if (norm < redthr * thriter) then
-!                    if (pe_verbose) then
+                    if (pe_verbose) then
                         write (luout,'(4x,a,i2,a)') 'Induced dipole moments&
                                                     & converged in ', iter,&
                                                     & ' iterations.'
-                        do i = 1, 3*npols
-                            write(luout,*) Mkinds(l:l+2,n)
-                            l = l + 3
-                        end do
-!                    end if
+                    end if
                     converged = .true.
                 else if (iter > 50) then
                     write(luout,*) 'ERROR: could not converge induced dipole&
@@ -3179,12 +3179,14 @@ subroutine response_matrix(B)
     integer :: info
     integer :: i, j, k, l, m, n, o
     integer, dimension(3) :: ipiv
+    real(dp), parameter :: fourpi = 4.0d0 * pi
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
     real(dp) :: Rd, ai, aj
-    real(dp) :: R, R3, R5, T, eps_fac
+    real(dp) :: R, R3, R5, T
+    real(dp) :: prefac, eps_fac
     real(dp), dimension(3) :: Rij
     real(dp), dimension(6) :: P1inv
 
@@ -3198,6 +3200,7 @@ subroutine response_matrix(B)
         else if (fock) then
             eps_fac = eps / (eps - 1.0d0)
         end if
+        prefac = 1.07d0 * eps_fac
     end if
 
     m = 0
@@ -3315,7 +3318,7 @@ subroutine response_matrix(B)
     end do  ! do i = 1, nsites
     if (pe_sol) then
         do i = 1, nsurp
-            B(m+1) = 1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i))
+            B(m+1) = prefac * sqrt(fourpi / Sa(i))
             print *, Sa(i), i
             m = m + 1
             do j = i + 1, nsurp
