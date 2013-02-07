@@ -144,7 +144,7 @@ subroutine pe_init(coords, charges, dalwrk)
                 write(luout,'(4x,a)') 'and DIIS accelerator.'
             end if
             if (pe_redthr) then
-                write(luout,'(/4x,a)') 'Using reduced threshold in first 4-5&
+                write(luout,'(/4x,a)') 'Using reduced threshold in first few&
                                        & SCF iterations.'
             end if
         else

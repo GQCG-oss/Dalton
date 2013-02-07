@@ -34,8 +34,8 @@ POTEXT="pot"
 GET_FILES=''
 PUT_FILES=''
 
-SSH=ssh
-SCP=scp
+SSH=rsh
+SCP=rcp
 export OMP_NUM_THREADS=1
 
 #default values for options
@@ -85,7 +85,8 @@ usage (){
         echo ' -get "file1 file2" : get files back from TMPDIR after calculation stops'
         echo ' -put "file1 file2" : put files to TMPDIR before calculation starts'
         echo ' -valgrind  : run with valgrind'
-        echo ' -rcp       : use rsh/rcp instead of ssh/scp'
+        echo ' -rsh       : use rsh/rcp instead of ssh/scp'
+        echo ' -ssh       : use ssh/scp instead of rsh/rcp'
         echo
          }
 #
@@ -126,6 +127,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
       -rsh ) SCP=rcp; SSH=rsh; shift;;
+      -ssh ) SCP=scp; SSH=ssh; shift;;
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
       -lam* ) optlam=$2; shift;;
