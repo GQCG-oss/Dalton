@@ -316,8 +316,8 @@ if [ $optn -gt 1 ] ; then
                 then
                     continue
                 else
-#                   If your cluster setup requires scp, then you must change the following line.
-                    rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
+#                   If your cluster setup requires rcp, then you must change the following line.
+                    scp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
                     echo 'Succesfully copied executable to: ' ${node}
                 fi
              done
