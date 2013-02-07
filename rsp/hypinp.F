@@ -26,7 +26,7 @@ C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
 C
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -577,7 +577,7 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"

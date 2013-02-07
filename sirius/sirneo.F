@@ -692,7 +692,7 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
       DIMENSION CREF(*), CMO(*), DV(*), PV(*), FC(*), FV(*)
       DIMENSION G(*), EVAL(*), EVEC(NREDL,*), IBNDX(*), WRK(*)

@@ -2024,7 +2024,7 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,GEOM,
      &                  ORIGIN,IPRINT)
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 C     Sets up masses and calculates total mass for an isotopic

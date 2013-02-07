@@ -265,7 +265,7 @@ C  /* Deck twocal */
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
      &            RELCAL)
-      use polarizable_embedding, only: pe_twoint
+      use pe_variables, only: pe_twoint
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -874,7 +874,7 @@ C  /* Deck twopeqm */
 !
 !   gives the number of nuclei in first fragment
 !
-      use polarizable_embedding, only: fdnucs
+      use pe_variables, only: fdnucs
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

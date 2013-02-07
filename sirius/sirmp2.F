@@ -1272,7 +1272,7 @@ C Scratch:
 C  FC; the inactive Fock matrix and scratch area for overlap matrix
 C  SCRA; general scratch area
 C
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
       DIMENSION CMO(*),FC(*),ORBEN(*),SCRA(*)
       LOGICAL   FCKFRO, FOUND

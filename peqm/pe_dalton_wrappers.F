@@ -220,7 +220,8 @@
 !    INFLIN : NCONST, NVARPT, NWOPPT
 !
 
-      use polarizable_embedding, only: pe_master, pe_polar
+      use pe_variables, only: pe_polar
+      use polarizable_embedding, only: pe_master
 
       implicit none
 
@@ -322,7 +323,8 @@
 !    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
 !
 
-      use polarizable_embedding, only: pe_master, pe_polar
+      use pe_variables, only: pe_polar
+      use polarizable_embedding, only: pe_master
 
       implicit none
 
@@ -502,7 +504,8 @@
       subroutine pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,
      &                     udvtr, dvtr, sovecs, wrk, nwrk)
 
-        use polarizable_embedding, only: pe_master, pe_polar, pe_gspol
+        use pe_variables, only: pe_polar, pe_gspol
+        use polarizable_embedding, only: pe_master
 
         implicit none
 
