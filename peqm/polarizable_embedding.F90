@@ -30,7 +30,7 @@ module polarizable_embedding
     logical, public, save :: peqm = .false.
     logical, save :: pe_pot = .false.
     logical, save :: pe_iter = .true.
-    logical, save :: pe_mmdiis = .false.
+    logical, save :: pe_diis = .false.
     logical, save :: pe_mixed = .false.
     logical, save :: pe_redthr = .false.
     logical, save :: pe_border = .false.
@@ -329,13 +329,8 @@ subroutine pe_init(coords, charges, dalwrk)
     else if (mulorder == 0) then
         write(luout,'(/4x,a)') 'Multipole moments upto 0th order.'
     end if
-    if (lpol(1)) then
+    if (pe_polar) then
         write(luout,'(/4x,a)') 'Dipole-dipole polarizabilities.'
-        if (pe_damp) then
-            write(luout,'(/4x,a)') 'Interactions between inducible moments&
-                                   & will be damped'
-            write(luout,'(4x,a,f8.4)') 'using damping coefficient:', damp
-        end if
         if (pe_gspol) then
             write(luout,'(/4x,a)') 'Dynamic response from environment will be&
                                    & neglected during response calculation.'
@@ -343,17 +338,25 @@ subroutine pe_init(coords, charges, dalwrk)
         if (pe_nomb) then
             write(luout,'(/4x,a)') 'Many-body interactions will be neglected.'
         end if
-        if (pe_iter .and. pe_mmdiis) then
-            write(luout,'(/4x,a)') 'Iterative DIIS solver for induced moments will&
-                                   & be used'
-        end if
         if (pe_iter) then
             write(luout,'(/4x,a)') 'Iterative solver for induced moments will&
                                    & be used'
             write(luout,'(4x,a,es7.1)') 'with convergence threshold: ', thriter
+            if (pe_diis) then
+                write(luout,'(4x,a)') 'and DIIS accelerator.'
+            end if
+            if (pe_redthr) then
+                write(luout,'(/4x,a)') 'Using reduced threshold in first 4-5&
+                                       & SCF iterations.'
+            end if
         else
             write(luout,'(/4x,a)') 'Direct solver for induced moments will be&
                                   & used.'
+        end if
+        if (pe_damp) then
+            write(luout,'(/4x,a)') 'Interactions between inducible moments&
+                                   & will be damped'
+            write(luout,'(4x,a,f8.4)') 'using damping coefficient:', damp
         end if
     end if
     if (pe_fd) then
@@ -643,7 +646,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) thriter
             end if
             pe_iter = .true.
-        else if (trim(option(2:)) == 'MMDIIS') then
+        else if (trim(option(2:)) == 'DIIS') then
             read(luinp,*) option
             backspace(luinp)
             if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.& 
@@ -651,11 +654,18 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) thriter
             end if
             pe_iter = .true.
-            pe_mmdiis = .true.
-        ! mized solver for induced moments
+            pe_diis = .true.
+        ! mixed solver for induced moments (work in progress)
         else if (trim(option(2:)) == 'MIXED') then
-            pe_mixed = .true.
+            write(luout,*) 'WARNING: mixed solver is work in progress'
+            read(luinp,*) option
+            backspace(luinp)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(luinp,*) thriter
+            end if
             pe_iter = .true.
+            pe_mixed = .true.
         ! use reduced threshold in iterative induced moments solver
         else if (trim(option(2:)) == 'REDTHR') then
             pe_redthr = .true.
@@ -2119,7 +2129,7 @@ subroutine induced_moments(Mkinds, Fs)
     integer :: i, j, k
 
     if (pe_iter) then
-        if (pe_mmdiis) then
+        if (pe_diis) then
             call pe_diis(Mkinds, Fs)
         else if (pe_mixed) then
             call mixed_solver(Mkinds, Fs)
