@@ -11,6 +11,8 @@ gp/binary_info.F90
 dalton.setup
 build*
 Doc/*.aux
+Doc/Master.dvi
+Doc/Master.log
 Doc/Master.bbl
 Doc/Master.blg
 Doc/Master.idx

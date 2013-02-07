@@ -424,7 +424,7 @@ C
            KSYMOX = KSYMOP
            KSYMOP = 1
            CALL DFT_LIN_RESPF(1,WRK(KFXC),CMO,WRK(KUBO),
-     &                        .FALSE.,KSYMOP,WRK(K3A),L3A)
+     &                        .FALSE.,KSYMOP,WRK(K3A),L3A,IPRDFT)
            KSYMOP = KSYMOX
            CALL PKWOP(NWOPT,JWOP,WRK(KUBO),WRK(KFXC))
            IF (IPRLIN.GT.20) THEN

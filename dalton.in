@@ -10,21 +10,11 @@
 #                                                                              #
 ################################################################################
 
-# figure out whether the script is called from "." directory or from outside
-BUILD_DIR="${0%/*}"
-# if the script was started from the base directory with ./script, then the
-# expansion returns a period, if it was started directly with script then the
-# expansion returns the script file name
-if [ "$BUILD_DIR" == "." -o "$BUILD_DIR" == "$0" ]; then
-    BUILD_DIR="$PWD"
-# if the script was not called with an absolute path, then we need to add the
-# current working directory to the relative path of the script
-elif [ "${BUILD_DIR:0:1}" != "/" ]; then
-    BUILD_DIR="$PWD/$BUILD_DIR"
-fi
+BUILD_DIR=@CMAKE_BINARY_DIR@
 
 DALTON=$BUILD_DIR/dalton.x
 DALMPI=$BUILD_DIR/dalton.x
+
 MPIRUN=@MPIEXEC@
 INSTALL_BASDIR=$BUILD_DIR/basis
 [ -z "$TMPDIR" ] && TMPDIR=@SCRATCH_DIR@
@@ -81,7 +71,9 @@ usage (){
         echo ' -nb mb     : set node max usable work memory to mb Megabytes'
         echo ' -nw mem    : set node max usable work memory to mem double precision words'
         echo ' -N num     : use MPI version with num nodes'
-        echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
+        echo ' -hostfile file : use hostfile "file" for start with mpirun'
+        #echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
+        # Jan 2013: lammpi is not an active mpi implementation any more
         echo ' -t dir     : change TMPDIR to dir. Default: ' $TMPDIR
         echo ' -w dir     : change WRKDIR to dir. Default: ' $WRKDIR
         echo ' -noarch    : do not create tar.gz archive'
@@ -311,22 +303,25 @@ if [ $ierr = 1 ]; then
 fi
 
 if [ $optn -gt 1 ] ; then
-   if [ -s $MPIRUN -a -x $MPIRUN ]; then
-      if [ -s $DALMPI -a -x $DALMPI ]; then
+   if [ -s "$MPIRUN" -a -x "$MPIRUN" ]; then
+      if [ -s "$DALMPI" -a -x "$DALMPI" ]; then
          cp $DALMPI ./dalton_mpi_copy.x
          echo 'Copying dalton executable from master node: ' ${HOSTNAME}
-         cat $PBS_NODEFILE
-         for node in `cat $PBS_NODEFILE`
-         do
-            if [ ${node} == $HOSTNAME ]
-            then
-                continue
-            else
-#               If your cluster setup requires scp, then you must change the following line.
-                rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
-                echo 'Succesfully copied executable to: ' ${node}
-            fi
-         done
+         if [ -n "$PBS_NODEFILE" ] ; then
+             # $PBS_NODEFILE is defined, then do the instructions below
+             cat $PBS_NODEFILE
+             for node in `cat $PBS_NODEFILE`
+             do
+                if [ ${node} == $HOSTNAME ]
+                then
+                    continue
+                else
+#                   If your cluster setup requires rcp, then you must change the following line.
+                    scp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
+                    echo 'Succesfully copied executable to: ' ${node}
+                fi
+             done
+         fi
          if [ -n "$optlam" ] ; then
             lamboot -v  $WRKDIR/$optlam
             $MPIRUN -wd $SCRATCHDIR -np $optn ./dalton_mpi_copy.x
@@ -347,7 +342,10 @@ if [ $optn -gt 1 ] ; then
          exit 1
       fi
    else
-      echo "$MPIRUN does not exist or is not executable"
+      echo
+      echo "FATAL ERROR: $optn MPI nodes were requested, however"
+      echo 'FATAL ERROR: mpirun command has not been defined, does not exist or is not executable'
+      echo 'FATAL ERROR: echo $MPIRUN gives this string: "' $MPIRUN '"'
       exit 1
    fi
 else
@@ -375,7 +373,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h"
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off"
 
 if [ -s DALTON.OUT.n001 -a -r DALTON.OUT.n001 ]; then
    tarfilelist="DALTON.OUT.n*"

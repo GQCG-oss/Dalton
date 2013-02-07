@@ -200,8 +200,15 @@ C
       LOGICAL  TDM, NORHO2
 C
       CALL QENTER('RSPTDM')
-      IF (SOPPA) THEN
+C      IF (SOPPA) THEN
+C         WRITE (LUPRI,*) 'RSPTDM FATAL ERROR: called in SOPPA calc.'
+C         CALL QUIT('RSPTDM FATAL ERROR: called in SOPPA calc.')
+C      END IF
+      IF (.NOT. SOPRPA .AND. SOPPA) THEN
          WRITE (LUPRI,*) 'RSPTDM FATAL ERROR: called in SOPPA calc.'
+         WRITE (LUPRI,*) 'Full solvent model SOPPA not implemented.'
+         WRITE (LUPRI,*) 'Only SOPPA/RPA (JCC, 2012-2022, 33, (2012))'
+         WRITE (LUPRI,*) 'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
          CALL QUIT('RSPTDM FATAL ERROR: called in SOPPA calc.')
       END IF
       DO 100 ICSIM = 1,NCSIM

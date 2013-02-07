@@ -417,10 +417,10 @@ Clf               WRITE(LUPRI,*) 'ZERO AREA IN TESSERA', NN + 1
             END IF
  310        CONTINUE
 Clf
- 9100    format('Before Tessera n.',I4)
- 9110    format('XYZ vert n.',I4,3f15.9)
- 9120    format('After Tessera n.',I4)
- 9130    format('XYZ centr n.',I4,3f15.9)
+ 9100    format('Before Tessera n.',I5)
+ 9110    format('XYZ vert n.',I5,3f15.9)
+ 9120    format('After Tessera n. ',I5)
+ 9130    format('XYZ centr n.',I5,3f15.9)
  9140    format('XYZA',4f15.9)
 Clf
  300  CONTINUE
@@ -644,8 +644,8 @@ C
 C
  9000 FORMAT(10X,'-- CENTER OF CHARGE --'/
      *        ' X =',F8.4,' A  Y =',F8.4,' A  Z =',F8.4,' A')
- 9010 FORMAT(/' WARNING: The distance between center of tessera',I4,
-     *         'and',I4,' is ',F8.6,', less than ',F8.6,' A'/)
+ 9010 FORMAT(/' WARNING: The distance between center of tessera',I5,
+     *         'and',I5,' is ',F8.6,', less than ',F8.6,' A'/)
  9020 FORMAT(/' Total number of spheres =',I5/
      *        ' Sphere             Center  (X,Y,Z) (A)            ',
      *           '   Radius (A)      Area (A^2)')

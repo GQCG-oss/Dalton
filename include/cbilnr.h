@@ -5,7 +5,7 @@
 !
       LOGICAL         ALFA, ROAA, ROAG, STATIC
       integer          MXFR,        MAXLN
-      PARAMETER       (MXFR  = 101, MAXLN = 80)
+      PARAMETER       (MXFR  = 300, MAXLN = 80)
       CHARACTER*8     LABALN
       COMMON /LNLBL / LABALN(MAXLN)
       real(8)         THCLNR, FRVAL

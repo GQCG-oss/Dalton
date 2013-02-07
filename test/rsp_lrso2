@@ -138,7 +138,8 @@ ERROR[5]="NOT CORRECT"
 # Linear response
 CRIT1=`$GREP "\@.*Y SPNORB .* Y SPNORB .* 2\.6340........(D|E)\-12" $log | wc -l`
 CRIT2=`$GREP "\@.*X SPNORB .* X SPNORB .* 2\.6340........(D|E)\-12" $log | wc -l`
-CRIT3=`$GREP "\@.*\*\*\*\*WARNING\*\*\*\*\*\* NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO" $log | wc -l`
+CRIT3=`$GREP "\@.*WARNING.*No variables in symmetry  *4" $log | wc -l`
+
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="LINEAR RESPONSE NOT CORRECT"
