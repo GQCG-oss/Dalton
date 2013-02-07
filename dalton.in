@@ -34,6 +34,10 @@ POTEXT="pot"
 GET_FILES=''
 PUT_FILES=''
 
+SSH=ssh
+SCP=scp
+export OMP_NUM_THREADS=1
+
 #default values for options
 optd=0
 optD=1
@@ -80,9 +84,8 @@ usage (){
         echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into TMPDIR before calculation starts'
         echo ' -get "file1 file2" : get files back from TMPDIR after calculation stops'
         echo ' -put "file1 file2" : put files to TMPDIR before calculation starts'
-        echo ' -mmsv file : copy MM relay matrix from TMPDIR to WRKDIR/file'
-        echo ' -mmcp file : copy MM relay matrix from WRKDIR/file to TMPDIR'
         echo ' -valgrind  : run with valgrind'
+        echo ' -rcp       : use rsh/rcp instead of ssh/scp'
         echo
          }
 #
@@ -122,6 +125,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
+      -rsh ) SCP=rcp; SSH=rsh; shift;;
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
       -lam* ) optlam=$2; shift;;
@@ -133,8 +137,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) optt=1; TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
-      -mmcp ) optqmmm=copy; relay=$2; shift;;
-      -mmsv ) optqmmm=save; relay=$2; shift;;
        * ) usage; exit 1;;
    esac
    shift
@@ -282,19 +284,6 @@ ierr=0
       done
    fi
 
-   if [ "$optqmmm" = "copy" -o "$optqmmm" = "both" ]; then
-     if [ -s $WRKDIR/$relay -a -r $WRKDIR/$relay ]; then
-       echo "Copying the relay matrix to scratch directory..."
-       cp $WRKDIR/$relay QMMMIM
-       if [ ! -s QMMMIM -a ! -r QMMMIM ] ; then
-         echo "Relay matrix not present in scratch directory. Continuing anyway..."
-       else
-         echo "Done" 
-       fi
-     else
-       echo "Cannot copy relay matrix because it does not exist or is not readable"
-     fi
-   fi
    if [ "$optf" != "0" ] ; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
          echo "====================="
@@ -325,17 +314,15 @@ if [ $optn -gt 1 ] ; then
          echo 'Copying dalton executable from master node: ' ${HOSTNAME}
          if [ -n "$PBS_NODEFILE" ] ; then
              # $PBS_NODEFILE is defined, then do the instructions below
-             cat $PBS_NODEFILE
              for node in `cat $PBS_NODEFILE`
              do
                 if [ ${node} == $HOSTNAME ]
                 then
                     continue
                 else
-#                   If your cluster setup requires ssh/scp, then you must change the following line.
-                    rsh ${node} "mkdir -p $SCRATCHDIR"
-                    rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
-                    echo 'Succesfully copied executable to: ' ${node}
+                    $SSH ${node} "mkdir -p $SCRATCHDIR"
+                    $SCP dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
+                    echo 'Copying executable to: ' ${node}
                 fi
              done
          fi
@@ -433,15 +420,6 @@ if [ "$GET_FILES" != "" ]; then
        echo copying $file back from scratch directory
        cp $file $WRKDIR/$outnam.$file
    done
-fi
-
-if [ "$optqmmm" = "save" -o "$optqmmm" = "both" ]; then
-  if [ -s QMMMIM -a -r QMMMIM ]; then
-    echo "Saving the relay matrix in $WRKDIR/$relay"
-    cp QMMMIM $WRKDIR/$relay
-  else
-    echo "Could not save the relay matrix because it does not exist or is not readable"
-  fi
 fi
 
 if [ $opto -eq 1 ] ; then
