@@ -238,7 +238,6 @@ contains
 !     IMPORTANT ADVICE from Peter xxx at the NSC Linkoeping - use e.g. hwloc to get the NUMA node master rather than the
 !     intra-node master: NUMA ==> all processes with close memory == highest performance
 !     todo!!! sknecht - jan 2013
-!
  
 !     3. find all processors on the same deck and reorder (if necessary) 
 !     to get the processors as close as possible, starting with the master (id == 0)
@@ -343,6 +342,11 @@ contains
      integer                :: color
      integer                :: tmp_group_counter
      integer                :: current_proc
+     integer                :: numa_procs
+     integer                :: numa_counter
+     integer                :: i
+     integer, allocatable   :: tmp_array(:)
+     character(len=6)       :: numa_procs_env
 !-------------------------------------------------------------------------------
 
 !     a. intra-node communicator
@@ -385,6 +389,36 @@ contains
 
       key   = my_process_id_glb
       color = process_list_glb(my_process_id_glb+1)
+#ifdef NUMA_active
+!     !> NUMA node mode...
+      numa_procs          = 0
+      numa_procs_env(1:6) = '      '
+      call getenv('NUMA_PROCS',numa_procs_env)
+      read(numa_procs_env, '(i6)') numa_procs
+
+      if( numa_procs > 0)then
+        write(*,*) 'numa proc distribution active for shared memory'
+        mycolor      = color
+        numa_counter = 0
+
+        allocate(tmp_array(nr_of_process_glb))
+        tmp_array(1:nr_of_process_glb) = process_list_glb(1:nr_of_process_glb) 
+
+        do i = 1, nr_of_process_glb 
+          if( process_list_glb(i) == color)then
+            numa_counter = numa_counter + 1
+            if(numa_counter > numa_procs) mycolor = color + 100000
+          end if
+        end do
+!       re-assign color value
+        color = mycolor
+        write(*,*) 'pid, color, numa_procs',my_process_id_glb,color, numa_procs
+        deallocate(tmp_array)
+      end if
+!     !> end
+#endif
+
+      
  
       call build_new_communication_group(communicator_glb,        &
                                          shmem_ijkl_comm,         &
