@@ -464,14 +464,14 @@ C       Screening on exchange contributions
 C
 C   FAC is a factor to account for different definiton of
 C   integrals in twoint and eri. Here always 1.0
+      FAC    = +D1
       IF (R12TRA) THEN
 C        Compute exchange operator for auxiliary basis set
 C        in R12 calculations (WK/UniKA/04-11-2002).
          FAC = -D1
-         IY = 2
-      ELSE
-         FAC = D1
+         IY  =   2
       END IF
+
       if(rma_model)then
         call dzero(dmat_tmp,nbasis**2)
         call dzero(fmat_tmp,nbasis**2)
@@ -491,7 +491,6 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
      &                 offset_mat,
      &                 nbasis**2,
      &                 communication_info_mpi%my_shmem_node_id,
-!    &                 MPI_LOCK_EXCLUSIVE,
      &                 MPI_LOCK_SHARED,
      &                 .false.,
      &                 rma_win_info%dmat_win)

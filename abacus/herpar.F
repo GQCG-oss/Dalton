@@ -1492,7 +1492,7 @@ C
         if(communication_info_mpi%my_shmem_node_id == 0)then
 !         allocation of density matrix(ces)
           call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
-!         distribute density matrix(ces) among node masters
+!         distribute density matrix(ces) among NUMA/node masters
           call mpi_bcast(work(kdmat),n2basx*ndmat,mpi_real8,master,
      &                   communication_info_mpi%communication_internode,
      &                   ierr)

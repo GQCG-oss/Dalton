@@ -368,19 +368,7 @@ contains
         end if
       end do
 
-!     b. inter-node communicator
-
-      key   = process_list_glb(my_process_id_glb+1)
-      color = 2
-      if(my_intra_node_id /= 0) color = 3
- 
-      call build_new_communication_group(communicator_glb,        &
-                                         inter_node_comm,         &
-                                         inter_node_size,         &
-                                         my_inter_node_id,        &
-                                         color,                   &
-                                         key)
-!     c. shared memory communicator
+!     b. shared memory communicator
       allocate(tmp_array(nr_of_process_glb))
       tmp_array(1:nr_of_process_glb) = process_list_glb(1:nr_of_process_glb) 
       key                            = my_process_id_glb
@@ -435,6 +423,19 @@ contains
       end do
 
       deallocate(tmp_array)
+
+!     c. inter-node resp. inter-NUMA node communicator
+
+      key   = process_list_glb(my_process_id_glb+1)
+      color = 2
+      if(my_shmem_node_id /= 0) color = 3
+ 
+      call build_new_communication_group(communicator_glb,        &
+                                         inter_node_comm,         &
+                                         inter_node_size,         &
+                                         my_inter_node_id,        &
+                                         color,                   &
+                                         key)
 
   end subroutine set_communication_levels
 
