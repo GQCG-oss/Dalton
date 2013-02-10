@@ -511,6 +511,7 @@ C  /* Deck her_sdinit */
 
 !     module dependencies
       use parallel_communication_models_mpi
+      use rma_windows
 
 #ifdef VAR_MPI
 #ifndef VAR_USE_MPIF
@@ -574,6 +575,8 @@ C
 Cef begin
 #include "incore.h"
 Cef end
+      character(len=6) :: nmat_wo_win_env
+
       CALL QENTER('HER_SDINIT')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDINIT','*',103)
 C
@@ -690,15 +693,35 @@ C
 !     update info about type of fock-matrix construction
       CALL MPIXBCAST(ISYMDM,NFMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NFMAT,'INTEGER',MASTER)
-!     distribute density matrices - that can be huge chunks...
+!     distribute density matrices - that can be huge chunks... # first
       CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
       if(rma_model)then
-!       distribute density matrix(ces) among node masters
+
+        ! set # of fmat/dmat outside the RMA window ==> min = 1 otherwise we introduce some stupid communication 
+        !                                                       overhead in regular SCF calculations...
+        nmat_wo_win_env = ' '
+        call getenv('NO_RMA_MTX',nmat_wo_win_env)
+        read(nmat_wo_win_env,'(i6)') rma_win_info%nmat_max_wo_win
+
+        if(rma_win_info%nmat_max_wo_win <= 0 ) 
+     &     rma_win_info%nmat_max_wo_win =  1
+
+        CALL MPIXBCAST(rma_win_info%nmat_max_wo_win,1,'INTEGER',MASTER)
+
 #ifdef VAR_MPI
+!       distribute density matrix(ces) among node masters
         call mpi_bcast(dmat,n2basx*ndmat,mpi_real8,master,
      &                 communication_info_mpi%communication_internode,
      &                 ierr)
+!       distribute density matrix(ces) among node/NUMA node slaves
+        call mpi_bcast(dmat,
+     &                 n2basx*rma_win_info%nmat_max_wo_win,
+     &                 mpi_real8,
+     &                 0,
+     &                 communication_info_mpi%communication_shmemnode,
+     &                 ierr)
 #endif
+
       else
         CALL MPIXBCAST(DMAT,N2BASX*NDMAT,'DOUBLE',MASTER)
       end if
@@ -1206,6 +1229,7 @@ C
 
 !     module dependencies
       use parallel_communication_models_mpi
+      use rma_windows
 
 #ifdef VAR_MPI
 #ifndef VAR_USE_MPIF
@@ -1485,9 +1509,13 @@ C
       CALL MPIXBCAST(ISYMDM,NFMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NFMAT,'INTEGER',MASTER)
 
-!     receive density matrices - that can be huge chunks...
+!     receive density matrices - that can be huge chunks... # first
       CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
+
       if(rma_model)then
+
+        ! set # of fmat/dmat outside the RMA window: min = 1
+        CALL MPIXBCAST(rma_win_info%nmat_max_wo_win,1,'INTEGER',MASTER)
 
         if(communication_info_mpi%my_shmem_node_id == 0)then
 !         allocation of density matrix(ces)
@@ -1498,8 +1526,22 @@ C
      &                   ierr)
         else
 !         allocation of density matrix(ces)
-          call memget('REAL',kdmat,           0,work,kfree,lfree)
+          call memget('REAL',
+     &                kdmat,
+     &                rma_win_info%nmat_max_wo_win * n2basx,
+     &                work,
+     &                kfree,
+     &                lfree)
         end if
+
+!       distribute density matrix(ces) among node/NUMA node slaves
+        call mpi_bcast(work(kdmat),
+     &                 n2basx*rma_win_info%nmat_max_wo_win,
+     &                 mpi_real8,
+     &                 0,
+     &                 communication_info_mpi%communication_shmemnode,
+     &                 ierr)
+
 
       else
         call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
@@ -1507,15 +1549,17 @@ C
       end if
 
 !     allocation of fock matrix(ces)
-      if(rma_model)then
-        if(communication_info_mpi%my_shmem_node_id == 0)then
-          call memget('REAL',kfmat,nfmat*n2basx,work,kfree,lfree)
-        else
-          call memget('REAL',kfmat,           0,work,kfree,lfree)
-        end if
-      else
-        call memget('REAL',kfmat,nfmat*n2basx,work,kfree,lfree)
-      end if
+      nmat_alloc    =                        nfmat * n2basx
+      if(rma_model .and. 
+     &   communication_info_mpi%my_shmem_node_id /= 0) 
+     &   nmat_alloc = rma_win_info%nmat_max_wo_win * n2basx 
+
+      call memget('REAL',
+     &            kfmat,
+     &            nmat_alloc,
+     &            work,
+     &            kfree,
+     &            lfree)
 
       CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
       IF(ITYPE.EQ.3) THEN

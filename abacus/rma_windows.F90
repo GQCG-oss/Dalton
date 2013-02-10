@@ -42,8 +42,11 @@ module rma_windows
       dmat_win,                  &             ! density matrix window (2e-integral codes)
       fmat_win                                 ! fock matrix window (2e-integral codes)
 
+    integer ::                   &
+      nmat_max_wo_win                          ! max number of matrices "outside" the memory window (no RMA communication needed for those)
+
     logical ::                   &
-      rma_win_init = .false.                   ! status of the rma_win type
+      rma_win_init    = .false.                ! status of the rma_win type
 
   end type rma_win
 
