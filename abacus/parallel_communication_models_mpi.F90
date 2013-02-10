@@ -233,11 +233,6 @@ contains
          end if
 
       end do
-
-!
-!     IMPORTANT ADVICE from Peter xxx at the NSC Linkoeping - use e.g. hwloc to get the NUMA node master rather than the
-!     intra-node master: NUMA ==> all processes with close memory == highest performance
-!     todo!!! sknecht - jan 2013
  
 !     3. find all processors on the same deck and reorder (if necessary) 
 !     to get the processors as close as possible, starting with the master (id == 0)
@@ -386,10 +381,16 @@ contains
                                          color,                   &
                                          key)
 !     c. shared memory communicator
+      allocate(tmp_array(nr_of_process_glb))
+      tmp_array(1:nr_of_process_glb) = process_list_glb(1:nr_of_process_glb) 
+      key                            = my_process_id_glb
+      color                          = tmp_array(my_process_id_glb+1)
 
-      key   = my_process_id_glb
-      color = process_list_glb(my_process_id_glb+1)
-#ifdef NUMA_active
+!
+!     IMPORTANT ADVICE from Peter xxx at the NSC Linkoeping - use e.g. hwloc to get the NUMA node master rather than the
+!     intra-node master: NUMA ==> all processes with close memory == highest performance
+!     todo: automatic scheme w/o required user intervention  -- sknecht feb 2013
+
 !     !> NUMA node mode...
       numa_procs          = 0
       numa_procs_env(1:6) = '      '
@@ -397,29 +398,25 @@ contains
       read(numa_procs_env, '(i6)') numa_procs
 
       if( numa_procs > 0)then
-        write(*,*) 'numa proc distribution active for shared memory'
-        mycolor      = color
+        write(*,*) 'NUMA process distribution active for shared memory'
+        write(*,*) '# processes per NUMA node (user defined) ==>      ',numa_procs
         numa_counter = 0
-
-        allocate(tmp_array(nr_of_process_glb))
-        tmp_array(1:nr_of_process_glb) = process_list_glb(1:nr_of_process_glb) 
-
-        do i = 1, nr_of_process_glb 
-          if( process_list_glb(i) == color)then
-            numa_counter = numa_counter + 1
-            if(numa_counter > numa_procs) mycolor = color + 100000
+        i            = 0
+        do
+          i = i + 1
+          if( i             > nr_of_process_glb )exit
+          if( tmp_array(i) ==             color )then
+            numa_counter    = numa_counter + 1
+            if(numa_counter > numa_procs .and. (i-1) == my_process_id_glb )then
+              color         = color        + 100000 ! offset for 2nd NUMA node color: 100000
+              tmp_array(i)  = color; exit
+            end if
           end if
         end do
-!       re-assign color value
-        color = mycolor
-        write(*,*) 'pid, color, numa_procs',my_process_id_glb,color, numa_procs
-        deallocate(tmp_array)
+        write(*,*) 'pid, color, numa_counter',my_process_id_glb,color, numa_counter
       end if
 !     !> end
-#endif
 
-      
- 
       call build_new_communication_group(communicator_glb,        &
                                          shmem_ijkl_comm,         &
                                          shmem_node_size,         &
@@ -431,11 +428,13 @@ contains
 !       - group list
       tmp_group_counter   = 1
       do current_proc = 1, nr_of_process_glb
-        if(process_list_glb(current_proc) == color)then
+        if(tmp_array(current_proc) == color)then
           shared_mem_list(tmp_group_counter) = current_proc      - 1
           tmp_group_counter                  = tmp_group_counter + 1
         end if
       end do
+
+      deallocate(tmp_array)
 
   end subroutine set_communication_levels
 
