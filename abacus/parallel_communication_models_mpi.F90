@@ -344,6 +344,7 @@ contains
      integer                :: current_proc
      integer                :: numa_procs
      integer                :: numa_counter
+     integer                :: numa_nodes
      integer                :: i
      integer, allocatable   :: tmp_array(:)
      character(len=6)       :: numa_procs_env
@@ -387,15 +388,25 @@ contains
 !     intra-node master: NUMA ==> all processes with close memory == highest performance
 !     todo: automatic scheme w/o required user intervention  -- sknecht feb 2013
 
+
 !     !> NUMA node mode...
       numa_procs          = 0
       numa_procs_env(1:6) = '      '
       call getenv('NUMA_PROCS',numa_procs_env)
       read(numa_procs_env, '(i6)') numa_procs
 
+!     if( numa_procs > 0)then
+!       write(*,*) 'NUMA process distribution active for shared memory'
+!       write(*,*) '# processes per NUMA node (user defined) ==>      ',numa_procs
+!     end if
+
       if( numa_procs > 0)then
-        write(*,*) 'NUMA process distribution active for shared memory'
-        write(*,*) '# processes per NUMA node (user defined) ==>      ',numa_procs
+
+!       OpenMPIs --bysocket --bind-to-socket policy: round-robin fashion between the X sockets (often socket == NUMA node) 
+!       thus, we will follow this strategy here...
+        numa_nodes = intra_node_size/numa_procs
+        if(mod(intra_node_size,numa_procs) /= 0 ) write(*,*) ' ** warning: asymmetric NUMA node allocation'
+
         numa_counter = 0
         i            = 0
         do
@@ -403,13 +414,15 @@ contains
           if( i             > nr_of_process_glb )exit
           if( tmp_array(i) ==             color )then
             numa_counter    = numa_counter + 1
-            if(numa_counter > numa_procs .and. (i-1) == my_process_id_glb )then
-              color         = color        + 100000 ! offset for 2nd NUMA node color: 100000
+            if( (i-1) == my_process_id_glb )then
+              color         = color        + 10000*numa_counter ! offset for next NUMA node color: color + 10000*numa_counter
               tmp_array(i)  = color; exit
             end if
+!           reset 'round-robin' counter
+            if(numa_counter == numa_nodes) numa_counter = 0
           end if
         end do
-        write(*,*) 'pid, color, numa_counter',my_process_id_glb,color, numa_counter
+        write(*,*) 'pid, color, numa_counter, numa_nodes',my_process_id_glb,color, numa_counter, numa_nodes
       end if
 !     !> end
 
@@ -419,16 +432,6 @@ contains
                                          my_shmem_node_id,        &
                                          color,                   &
                                          key)
-
-!     setup required information about each shared-memory group:
-!       - group list
-      tmp_group_counter   = 1
-      do current_proc = 1, nr_of_process_glb
-        if(tmp_array(current_proc) == color)then
-          shared_mem_list(tmp_group_counter) = current_proc      - 1
-          tmp_group_counter                  = tmp_group_counter + 1
-        end if
-      end do
 
       deallocate(tmp_array)
 
@@ -444,6 +447,8 @@ contains
                                          my_inter_node_id,        &
                                          color,                   &
                                          key)
+!     write(*,*) 'pid, # my_inter_node_id,my_shmem_node_id,inter_node_size',my_process_id_glb,&
+!                        my_inter_node_id,my_shmem_node_id,inter_node_size
 
   end subroutine set_communication_levels
 
