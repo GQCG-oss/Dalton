@@ -1153,6 +1153,8 @@ C
       if(rma_model)then
         if(communication_info_mpi%my_shmem_node_id == 0)then
           call dzero(work(kfmat),nfmat*n2basx)
+        else
+          call dzero(work(kfmat),rma_win_info%nmat_max_wo_win*n2basx)
         end if
       else
         CALL DZERO(WORK(KFMAT),NFMAT*N2BASX)
@@ -1173,10 +1175,11 @@ C
         rma_win_info%dmat_win = -1
         rma_win_info%fmat_win = -1
 
+
+#ifdef VAR_MPI
         nelement            = n2basx*ndmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
-#ifdef VAR_MPI
         call set_rma_window(work(kdmat),
      &                      nelement,
      &                      communication_info_mpi%my_shmem_node_id,
@@ -1187,6 +1190,9 @@ C
      &                      .false.,
      &                      'no_locks',
      &                      'true')
+
+        nelement            = n2basx*nfmat
+        if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
         call set_rma_window(work(kfmat),
      &                      nelement,
