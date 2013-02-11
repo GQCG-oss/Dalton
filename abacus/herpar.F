@@ -354,8 +354,8 @@ C
      &                      communication_info_mpi%
      &                      communication_shmemnode,
      &                      rma_win_info%fmat_win,
-     &                      .true.,
-!    &                      .false.,
+!    &                      .true.,
+     &                      .false.,
      &                      'no_locks',
      &                      'true')
 #endif
@@ -1203,8 +1203,8 @@ C
      &                      communication_info_mpi%
      &                      communication_shmemnode,
      &                      rma_win_info%fmat_win,
-     &                      .true.,
-!    &                      .false.,
+!    &                      .true.,
+     &                      .false.,
      &                      'no_locks',
      &                      'true')
 #endif
