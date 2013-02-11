@@ -422,7 +422,7 @@ contains
             if(numa_counter == numa_nodes) numa_counter = 0
           end if
         end do
-        write(*,*) 'pid, color, numa_counter, numa_nodes',my_process_id_glb,color, numa_counter, numa_nodes
+!       write(*,*) 'pid, color, numa_counter, numa_nodes',my_process_id_glb,color, numa_counter, numa_nodes
       end if
 !     !> end
 

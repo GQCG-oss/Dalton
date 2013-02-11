@@ -96,7 +96,8 @@ contains
                        jcount_t,      &
                        myid,          &
                        win_lock_mode, &
-                       my_win)
+                       my_win,        &
+                       lock_enabled)
 !*******************************************************************************
 !
 !     accumulate a scalar/vector/matrix via a remote memory access (RMA) 
@@ -118,13 +119,17 @@ contains
   integer, intent(in)                        :: win_lock_mode
   integer, intent(in)                        :: my_win
   integer(kind=MPI_ADDRESS_KIND), intent(in) :: idispl
+  logical, intent(in), optional              :: lock_enabled
 !-------------------------------------------------------------------------------
   integer                                    :: datatype_out = mpi_real8
   integer                                    :: datatype_in  = mpi_real8
+  logical                                    :: lock
 !-------------------------------------------------------------------------------
+      lock = .true.
+      if(present(lock_enabled)) lock = lock_enabled
 !
 !     lock window (MPI_LOCK_SHARED mode)
-      call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
+      if(lock) call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
 
 !     accumulate data
       call mpi_accumulate(rbuf,        &
@@ -139,7 +144,7 @@ contains
                           ierr)
 
 !     unlock window
-      call mpi_win_unlock(itarget,my_win,ierr)
+      if(lock) call mpi_win_unlock(itarget,my_win,ierr)
 
   end subroutine mpixaccum
 !*******************************************************************************

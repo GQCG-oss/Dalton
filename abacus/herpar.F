@@ -354,7 +354,10 @@ C
      &                      communication_info_mpi%
      &                      communication_shmemnode,
      &                      rma_win_info%fmat_win,
-     &                      .false.)
+     &                      .true.,
+!    &                      .false.,
+     &                      'no_locks',
+     &                      'true')
 #endif
 !       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
 !    &            rma_win_info%dmat_win,mynum
@@ -1200,7 +1203,10 @@ C
      &                      communication_info_mpi%
      &                      communication_shmemnode,
      &                      rma_win_info%fmat_win,
-     &                      .false.)
+     &                      .true.,
+!    &                      .false.,
+     &                      'no_locks',
+     &                      'true')
 #endif
 !       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
 !    &            rma_win_info%dmat_win,mynum
