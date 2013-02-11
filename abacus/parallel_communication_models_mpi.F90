@@ -49,7 +49,8 @@ module parallel_communication_models_mpi
       intra_node_group_id,       &             ! intra-node group ID
       communication_intranode,   &             ! intra-node communication handle
       communication_internode,   &             ! inter-node communication handle
-      communication_shmemnode                  ! shared-memory communication handle: integrals, fock matrices, density matrices, etc
+      communication_shmemnode,   &             ! shared-memory communication handle: integrals, fock matrices, density matrices, etc
+      communication_glb_world                  ! global communicator handle
 
     logical ::                   &
       communication_type_init = .false.        ! status of the communication type
@@ -105,6 +106,7 @@ contains
     A%communication_intranode  = -1
     A%communication_internode  = -1
     A%communication_shmemnode  = -1
+    A%communication_glb_world  = -1
     A%my_intra_node_id         = -1
     A%my_inter_node_id         = -1
     A%my_shmem_node_id         = -1
@@ -149,6 +151,7 @@ contains
                                   A%communication_intranode,                 &
                                   A%communication_internode,                 &
                                   A%communication_shmemnode,                 &
+                                  A%communication_glb_world,                 &
                                   A%intra_node_group_id)                      
 #endif
 
@@ -308,6 +311,7 @@ contains
                                       intra_node_comm,                         &
                                       inter_node_comm,                         &
                                       shmem_ijkl_comm,                         &
+                                      total_area_comm,                         &
                                       intra_node_group_id)                      
 !********************************************************************************
 !     purpose: setup communicators and process-id for the various               
@@ -331,6 +335,7 @@ contains
      integer, intent(out)   :: intra_node_comm
      integer, intent(out)   :: inter_node_comm
      integer, intent(out)   :: shmem_ijkl_comm
+     integer, intent(out)   :: total_area_comm
      integer, intent(out)   :: intra_node_group_id
 !-------------------------------------------------------------------------------
      integer                :: key
@@ -343,6 +348,9 @@ contains
      integer, allocatable   :: tmp_array(:)
      character(len=6)       :: numa_procs_env
 !-------------------------------------------------------------------------------
+
+!     0. global communicator
+      total_area_comm = communicator_glb
 
 !     a. intra-node communicator
  

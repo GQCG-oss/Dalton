@@ -703,8 +703,11 @@ C
         call getenv('NO_RMA_MTX',nmat_wo_win_env)
         read(nmat_wo_win_env,'(i6)') rma_win_info%nmat_max_wo_win
 
+!       sanity checks: minimum == 1; maximum == ndmat
         if(rma_win_info%nmat_max_wo_win <= 0 ) 
-     &     rma_win_info%nmat_max_wo_win =  1
+     &     rma_win_info%nmat_max_wo_win  = 1
+        if(rma_win_info%nmat_max_wo_win  > ndmat) 
+     &     rma_win_info%nmat_max_wo_win  = ndmat
 
         CALL MPIXBCAST(rma_win_info%nmat_max_wo_win,1,'INTEGER',MASTER)
 
@@ -796,6 +799,7 @@ C  /* Deck her_rvres */
 
 !     module dependencies
       use parallel_communication_models_mpi
+      use rma_windows
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -940,24 +944,47 @@ C
 
 !     collect data for rma_model (only itask == 3 at present)
       if(rma_model)then
-        call mpi_barrier(communication_info_mpi%communication_shmemnode,
-     &                   ierr)
-        call mpi_reduce(mpi_in_place,
-     &                  fmat,
-     &                  jnfmat*n2basx,
-     &                  mpi_real8,
-     &                  mpi_sum,
-     &                  master,
-     &                  communication_info_mpi%communication_internode,
-     &                  ierr)
+
         call mpi_reduce(mpi_in_place,
      &                  dintskp,
      &                  8,
      &                  mpi_real8,
      &                  mpi_sum,
      &                  master,
-     &                  communication_info_mpi%communication_internode,
+     &                  communication_info_mpi%
+     &                  communication_glb_world,
      &                  ierr)
+
+!       all fmatS outside the RMA window...
+        call mpi_reduce(
+     &                  mpi_in_place,
+     &                  fmat,
+     &                  rma_win_info%nmat_max_wo_win * n2basx,
+     &                  mpi_real8,
+     &                  mpi_sum,
+     &                  master,
+     &                  communication_info_mpi%
+     &                  communication_glb_world,
+     &                  ierr)
+
+!       now all fmatS inside the RMA window... if any
+        if(rma_win_info%nmat_max_wo_win < jnfmat )then
+          call mpi_barrier(communication_info_mpi%
+     &                     communication_shmemnode,
+     &                     ierr)
+          call mpi_reduce(
+     &                    mpi_in_place,
+     &                    fmat(1 + rma_win_info%
+     &                    nmat_max_wo_win * n2basx),
+     &                    (jnfmat - rma_win_info%
+     &                    nmat_max_wo_win) * n2basx,
+     &                    mpi_real8,
+     &                    mpi_sum,
+     &                    master,
+     &                    communication_info_mpi%
+     &                    communication_internode,
+     &                    ierr)
+        end if
       end if
 C
       IF (ICOUNT .NE. MTOTTK) THEN
@@ -2150,6 +2177,7 @@ C  /* Deck her_sdres */
 
 !     module dependencies
       use parallel_communication_models_mpi
+      use rma_windows
 !
 #include "implicit.h"
 #include "mxcent.h"
@@ -2210,27 +2238,44 @@ C
 
 !     collect data for rma_model
       if(rma_model)then
-        call mpi_barrier(communication_info_mpi%communication_shmemnode,
-     &                   ierr)
-        if(communication_info_mpi%my_shmem_node_id == 0)then
-          call mpi_reduce(fmat,
-     &                    mpi_in_place,
-     &                    ndmat*n2basx,
-     &                    mpi_real8,
-     &                    mpi_sum,
-     &                    master,
-     &                    communication_info_mpi%
-     &                    communication_internode,
-     &                    ierr)
-          call mpi_reduce(dintskp,
-     &                    mpi_in_place,
-     &                    8,
-     &                    mpi_real8,
-     &                    mpi_sum,
-     &                    master,
-     &                    communication_info_mpi%
-     &                    communication_internode,
-     &                    ierr)
+        call mpi_reduce(dintskp,
+     &                  mpi_in_place,
+     &                  8,
+     &                  mpi_real8,
+     &                  mpi_sum,
+     &                  master,
+     &                  communication_info_mpi%
+     &                  communication_glb_world,
+     &                  ierr)
+!       all fmatS outside the RMA window...
+        call mpi_reduce(fmat,
+     &                  mpi_in_place,
+     &                  rma_win_info%nmat_max_wo_win * n2basx,
+     &                  mpi_real8,
+     &                  mpi_sum,
+     &                  master,
+     &                  communication_info_mpi%
+     &                  communication_glb_world,
+     &                  ierr)
+
+!       now all fmatS inside the RMA window... if any
+        if(rma_win_info%nmat_max_wo_win < ndmat)then
+          call mpi_barrier(communication_info_mpi%
+     &                     communication_shmemnode,
+     &                     ierr)
+          if(communication_info_mpi%my_shmem_node_id == 0)then
+            call mpi_reduce(fmat(1 + rma_win_info%
+     &                      nmat_max_wo_win * n2basx),
+     &                      mpi_in_place,
+     &                      (ndmat - rma_win_info%
+     &                      nmat_max_wo_win) * n2basx,
+     &                      mpi_real8,
+     &                      mpi_sum,
+     &                      master,
+     &                      communication_info_mpi%
+     &                      communication_internode,
+     &                      ierr)
+          end if
         end if
       end if
 

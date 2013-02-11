@@ -58,6 +58,9 @@ C  All IFCTYP's added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
+!     module dependencies
+      use rma_windows
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -103,9 +106,12 @@ C
 Cef begin
       CALL MEMGET('REAL',KAOINT,(NCCINT*NINTYP),WORK,KFREE,LFREE)
 Cef end
-      if(rma_model)then
+      if(rma_model .and. rma_win_info%nmat_max_wo_win < ndmat)then
         CALL MEMGET('REAL',kdmat_tmp  ,nbasis**2,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',kfckmat_tmp,nbasis**2,WORK,KFREE,LFREE)
+      else
+        CALL MEMGET('REAL',kdmat_tmp  ,        0,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',kfckmat_tmp,        0,WORK,KFREE,LFREE)
       end if
 
       CALL INTFC1(FMAT,AOINT,WORK(KAOINT),DMAT,NDMAT,NCCINT,NINTYP,
@@ -472,35 +478,32 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
          IY  =   2
       END IF
 
-      if(rma_model)then
+
+
+!     get density matrix from node/numa master
+!     print *, 'shmem_id, offset, copy',
+!    &          communication_info_mpi%my_shmem_node_id,offset_mat
+      if(rma_model .and. i > rma_win_info%nmat_max_wo_win )then
+
+        offset_mat = (i-1)*nbasis**2
         call dzero(dmat_tmp,nbasis**2)
         call dzero(fmat_tmp,nbasis**2)
 
-        offset_mat = (i-1)*nbasis**2
-
 #ifdef VAR_MPI
-!       get density matrix from node/numa master
-!       print *, 'shmem_id, offset, copy',
-!    &            communication_info_mpi%my_shmem_node_id,offset_mat
-        if(communication_info_mpi%my_shmem_node_id == 0)then
-          call dcopy(nbasis**2,dmat(1,1,i),1,dmat_tmp,1)
-        else
-          call mpixget(dmat_tmp,
-     &                 nbasis**2,
-     &                 0, ! node/numa master
-     &                 offset_mat,
-     &                 nbasis**2,
-     &                 communication_info_mpi%my_shmem_node_id,
-     &                 MPI_LOCK_SHARED,
-     &                 .false.,
-     &                 rma_win_info%dmat_win)
-       end if
+        call mpixget(dmat_tmp,
+     &               nbasis**2,
+     &               0, ! node/numa master
+     &               offset_mat,
+     &               nbasis**2,
+     &               communication_info_mpi%my_shmem_node_id,
+     &               MPI_LOCK_SHARED,
+     &               .false.,
+     &               rma_win_info%dmat_win)
 #endif
 
         call fckcon(fmat_tmp,dmat_tmp,i,aoint2,ind,
      &              nccint,nbuf,nbuf,ix,iy,fac)
 
-        offset_mat = (i-1)*nbasis**2
 #ifdef VAR_MPI
 !       print *, 'shmem_id, offset accum',
 !    &            communication_info_mpi%my_shmem_node_id,offset_mat
@@ -514,16 +517,13 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
      &                 MPI_LOCK_SHARED,
      &                 rma_win_info%fmat_win)
 #endif
-      else
 
+      else
         CALL FCKCON(FMAT(1,1,I),DMAT(1,1,I),I,AOINT2,IND,
      &              NCCINT,NBUF,NBUF,IX,IY,FAC)
-
       end if
 C
  400  CONTINUE
-C
-      RETURN
 C
       END
 C  /* Deck dsotao */
