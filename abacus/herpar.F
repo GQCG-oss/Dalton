@@ -1042,9 +1042,9 @@ C
 
 !       now all fmatS inside the RMA window... if any
         if(rma_win_info%nmat_max_wo_win < jnfmat )then
-          call mpi_barrier(communication_info_mpi%
-     &                     communication_shmemnode,
-     &                     ierr)
+!         call mpi_barrier(communication_info_mpi%
+!    &                     communication_shmemnode,
+!    &                     ierr)
 #ifdef rma_memalloc
 !mem alloc test
             offset_mat = rma_win_info%nmat_max_wo_win * n2basx
@@ -1059,7 +1059,7 @@ C
      &                   (jnfmat - rma_win_info%
      &                   nmat_max_wo_win) * n2basx,
      &                   communication_info_mpi%my_shmem_node_id,
-     &                   MPI_LOCK_SHARED,
+     &                   MPI_LOCK_EXCLUSIVE,
      &                   rma_win_info%lock_win,
      &                   rma_win_info%fmat_win)
 ! end mem alloc test
@@ -2438,9 +2438,9 @@ C
 !       now all fmatS inside the RMA window... if any
         if(rma_win_info%nmat_max_wo_win < ndmat)then
           
-          call mpi_barrier(communication_info_mpi%
-     &                     communication_shmemnode,
-     &                     ierr)
+!         call mpi_barrier(communication_info_mpi%
+!    &                     communication_shmemnode,
+!    &                     ierr)
           if(communication_info_mpi%my_shmem_node_id == 0)then
 
 #ifdef rma_memalloc
@@ -2457,7 +2457,7 @@ C
      &                   (ndmat - rma_win_info%
      &                   nmat_max_wo_win) * n2basx,
      &                   communication_info_mpi%my_shmem_node_id,
-     &                   MPI_LOCK_SHARED,
+     &                   MPI_LOCK_EXCLUSIVE,
      &                   rma_win_info%lock_win,
      &                   rma_win_info%fmat_win)
 ! end mem alloc test
