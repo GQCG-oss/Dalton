@@ -497,7 +497,7 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
      &               nbasis**2,
      &               communication_info_mpi%my_shmem_node_id,
      &               MPI_LOCK_SHARED,
-     &               .false.,
+     &               rma_win_info%lock_win,
      &               rma_win_info%dmat_win)
 #endif
 
@@ -516,7 +516,7 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
      &                 communication_info_mpi%my_shmem_node_id,
      &                 MPI_LOCK_SHARED,
      &                 rma_win_info%fmat_win,
-     &                 .true. 
+     &                 rma_win_info%lock_win
      &                )
 #endif
 

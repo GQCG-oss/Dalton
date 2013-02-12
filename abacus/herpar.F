@@ -282,6 +282,7 @@ CTROND
 CTROND
 #ifdef VAR_MPI
       integer(kind=MPI_ADDRESS_KIND) :: nelement
+      integer, allocatable           :: kick_ranks(:)
 #endif
 C
 C     NB! NPOS cannot be allocated from WORK due to the SAVEing below.
@@ -358,6 +359,29 @@ C
      &                      .false.,
      &                      'no_locks',
      &                      'true')
+        
+        call mpi_comm_group(communication_info_mpi%
+     &                      communication_shmemnode, mygroup, ierr)
+        
+        allocate(kick_ranks((communication_info_mpi%
+     &           shmem_node_size-1)))
+        do i = 1, communication_info_mpi%shmem_node_size-1
+          kick_ranks(i) = i
+        end do
+        call mpi_group_excl(mygroup,communication_info_mpi%
+     &                      shmem_node_size-1, kick_ranks, 
+     &                      mygroup2, ierr)
+        deallocate(kick_ranks)
+
+        call mpi_win_post(mygroup, MPI_MODE_NOCHECK + MPI_MODE_NOPUT, 
+     &                    rma_win_info%dmat_win, ierr) 
+        call mpi_win_post(mygroup, MPI_MODE_NOCHECK                 ,
+     &                    rma_win_info%fmat_win, ierr) 
+        call mpi_win_start(mygroup2,  MPI_MODE_NOCHECK, 
+     &                     rma_win_info%dmat_win, ierr) 
+        call mpi_win_start(mygroup2, MPI_MODE_NOCHECK, 
+     &                     rma_win_info%fmat_win, ierr) 
+        rma_win_info%lock_win = .false.
 #endif
 !       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
 !    &            rma_win_info%dmat_win,mynum
@@ -390,6 +414,7 @@ C           workspace for array SORTED.
 #ifdef VAR_MPI
         call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
+        call mpi_group_free(mygroup, ierr)
 #endif
       end if
 
@@ -948,6 +973,12 @@ C
 !     collect data for rma_model (only itask == 3 at present)
       if(rma_model)then
 
+#ifdef VAR_MPI
+        call mpi_win_complete(rma_win_info%dmat_win,ierr)
+        call mpi_win_complete(rma_win_info%fmat_win,ierr)
+        call mpi_win_wait(rma_win_info%dmat_win,ierr)
+        call mpi_win_wait(rma_win_info%fmat_win,ierr)
+
         call mpi_reduce(mpi_in_place,
      &                  dintskp,
      &                  8,
@@ -988,6 +1019,7 @@ C
      &                    communication_internode,
      &                    ierr)
         end if
+#endif
       end if
 C
       IF (ICOUNT .NE. MTOTTK) THEN
@@ -1114,6 +1146,7 @@ C
 C
 #ifdef VAR_MPI
       integer(kind=MPI_ADDRESS_KIND) :: nelement
+      integer, allocatable           :: kick_ranks(:)
 #endif
 #include "memint.h"
 C
@@ -1207,6 +1240,29 @@ C
      &                      .false.,
      &                      'no_locks',
      &                      'true')
+        call mpi_comm_group(communication_info_mpi%
+     &                      communication_shmemnode, mygroup, ierr)
+        allocate(kick_ranks((communication_info_mpi%
+     &           shmem_node_size-1)))
+        do i = 1, communication_info_mpi%shmem_node_size-1
+          kick_ranks(i) = i
+        end do
+        call mpi_group_excl(mygroup,communication_info_mpi%
+     &                      shmem_node_size-1, kick_ranks, 
+     &                      mygroup2, ierr)
+        deallocate(kick_ranks)
+
+        if(communication_info_mpi%my_shmem_node_id == 0)then
+          call mpi_win_post(mygroup, MPI_MODE_NOCHECK + MPI_MODE_NOPUT, 
+     &                      rma_win_info%dmat_win, ierr) 
+          call mpi_win_post(mygroup, MPI_MODE_NOCHECK                 ,
+     &                      rma_win_info%fmat_win, ierr) 
+        end if
+        call mpi_win_start(mygroup2,  MPI_MODE_NOCHECK, 
+     &                     rma_win_info%dmat_win, ierr) 
+        call mpi_win_start(mygroup2, MPI_MODE_NOCHECK, 
+     &                     rma_win_info%fmat_win, ierr) 
+        rma_win_info%lock_win = .false.
 #endif
 !       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
 !    &            rma_win_info%dmat_win,mynum
@@ -1244,6 +1300,8 @@ C
 #ifdef VAR_MPI
         call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
+        call mpi_group_free(mygroup , ierr)
+        call mpi_group_free(mygroup2, ierr)
 #endif
       end if
 
@@ -2250,6 +2308,15 @@ C
 
 !     collect data for rma_model
       if(rma_model)then
+        if(communication_info_mpi%my_shmem_node_id == 0)then
+          call mpi_win_complete(rma_win_info%dmat_win,ierr)
+          call mpi_win_complete(rma_win_info%fmat_win,ierr)
+          call mpi_win_wait(rma_win_info%dmat_win,ierr)
+          call mpi_win_wait(rma_win_info%fmat_win,ierr)
+        else
+          call mpi_win_complete(rma_win_info%dmat_win,ierr)
+          call mpi_win_complete(rma_win_info%fmat_win,ierr)
+        end if
         call mpi_reduce(dintskp,
      &                  mpi_in_place,
      &                  8,
@@ -2272,6 +2339,7 @@ C
 
 !       now all fmatS inside the RMA window... if any
         if(rma_win_info%nmat_max_wo_win < ndmat)then
+          
           call mpi_barrier(communication_info_mpi%
      &                     communication_shmemnode,
      &                     ierr)

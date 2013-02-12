@@ -47,6 +47,8 @@ module rma_windows
 
     logical ::                   &
       rma_win_init    = .false.                ! status of the rma_win type
+    logical ::                   &
+      lock_win        = .true.                 ! lock windows for communication calls
 
   end type rma_win
 

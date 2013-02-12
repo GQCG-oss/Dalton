@@ -74,7 +74,7 @@ contains
 !-------------------------------------------------------------------------------
 !
 !     lock window (MPI_LOCK_SHARED mode)
-      if(.not.lock_active) call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
+      if(lock_active) call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
 
 !     print *, 'my_win, itarget, myid, jcount,idispl,jcount_t,datatype_in',&
 !               my_win, itarget, myid, jcount,idispl,jcount_t,datatype_in
@@ -84,7 +84,7 @@ contains
       call mpi_get(rbuf,jcount,datatype_out,itarget,idispl,jcount_t,datatype_in,my_win,ierr)
 !
 !     unlock
-      if(.not.lock_active) call mpi_win_unlock(itarget,my_win,ierr)
+      if(lock_active) call mpi_win_unlock(itarget,my_win,ierr)
 !
   end subroutine mpixget
 !*******************************************************************************
@@ -97,7 +97,7 @@ contains
                        myid,          &
                        win_lock_mode, &
                        my_win,        &
-                       lock_enabled)
+                       lock_active)
 !*******************************************************************************
 !
 !     accumulate a scalar/vector/matrix via a remote memory access (RMA) 
@@ -119,14 +119,14 @@ contains
   integer, intent(in)                        :: win_lock_mode
   integer, intent(in)                        :: my_win
   integer(kind=MPI_ADDRESS_KIND), intent(in) :: idispl
-  logical, intent(in), optional              :: lock_enabled
+  logical, intent(in), optional              :: lock_active
 !-------------------------------------------------------------------------------
   integer                                    :: datatype_out = mpi_real8
   integer                                    :: datatype_in  = mpi_real8
   logical                                    :: lock
 !-------------------------------------------------------------------------------
       lock = .true.
-      if(present(lock_enabled)) lock = lock_enabled
+      if(present(lock_active)) lock = lock_active
 !
 !     lock window (MPI_LOCK_SHARED mode)
       if(lock) call mpi_win_lock(win_lock_mode,itarget,mpi_mode_nocheck,my_win,ierr)
