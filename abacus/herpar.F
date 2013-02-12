@@ -363,6 +363,7 @@ C
      &                      'true')
 
         call memallocmpi(nelement*8,fmat_p)
+        call dzero(fmat_buff,nelement)
 
         call set_rma_window(
      &                      fmat_buff,
@@ -1288,6 +1289,7 @@ C
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
         call memallocmpi(nelement*8,fmat_p)
+        call dzero(fmat_buff,nelement)
 
         call set_rma_window(
      &                      fmat_buff,
