@@ -285,11 +285,13 @@ CTROND
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement
       integer, allocatable           :: kick_ranks(:)
+#ifdef rma_memalloc
       integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
       real(8)                        :: dmat_buff(dummy_buff)
       real(8)                        :: fmat_buff(dummy_buff)
       pointer                        (dmat_p, dmat_buff)
       pointer                        (fmat_p, fmat_buff)
+#endif
 #endif
 C
 C     NB! NPOS cannot be allocated from WORK due to the SAVEing below.
@@ -344,14 +346,19 @@ C
 
         nelement            = n2basx*ndmat
 
+#ifdef rma_memalloc
         call memallocmpi(nelement*8,dmat_p)
 
         call dcopy(nelement,dmat,1,dmat_buff,1)
+#endif
 
 #ifdef VAR_MPI
         call set_rma_window(
+#ifdef rma_memalloc
      &                      dmat_buff,
-!    &                      dmat,
+#else
+     &                      dmat,
+#endif
      &                      nelement,
      &                      master,
      &                      communication_info_mpi%
@@ -362,12 +369,17 @@ C
      &                      'no_locks',
      &                      'true')
 
+#ifdef rma_memalloc
         call memallocmpi(nelement*8,fmat_p)
         call dzero(fmat_buff,nelement)
+#endif
 
         call set_rma_window(
+#ifdef rma_memalloc
      &                      fmat_buff,
-!    &                      fmat,
+#else
+     &                      fmat,
+#endif
      &                      nelement,
      &                      master,
      &                      communication_info_mpi%
@@ -434,8 +446,10 @@ C           workspace for array SORTED.
         call free_rma_window(rma_win_info%fmat_win,master)
 !       call mpi_group_free(mygroup, ierr)
 !       call mpi_group_free(mygroup2, ierr)
+#ifdef rma_memalloc
         call memfreempi(fmat_buff)
         call memfreempi(dmat_buff)
+#endif
 #endif
       end if
 
@@ -1031,7 +1045,7 @@ C
           call mpi_barrier(communication_info_mpi%
      &                     communication_shmemnode,
      &                     ierr)
-
+#ifdef rma_memalloc
 !mem alloc test
             offset_mat = rma_win_info%nmat_max_wo_win * n2basx
 
@@ -1049,6 +1063,7 @@ C
      &                   rma_win_info%lock_win,
      &                   rma_win_info%fmat_win)
 ! end mem alloc test
+#endif
 
           call mpi_reduce(
      &                    mpi_in_place,
@@ -1193,11 +1208,13 @@ C
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement
       integer, allocatable           :: kick_ranks(:)
+#ifdef rma_memalloc
       integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
       real(8)                        :: dmat_buff(dummy_buff)
       real(8)                        :: fmat_buff(dummy_buff)
       pointer                        (dmat_p, dmat_buff)
       pointer                        (fmat_p, fmat_buff)
+#endif
 
 #endif
 #include "memint.h"
@@ -1268,13 +1285,18 @@ C
         nelement            = n2basx*ndmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
+#ifdef rma_memalloc
         call memallocmpi(nelement*8,dmat_p)
 
         call dcopy(nelement,work(kdmat),1,dmat_buff,1)
+#endif
 
         call set_rma_window(
+#ifdef rma_memalloc
      &                      dmat_buff,
-!    &                      work(kdmat),
+#else
+     &                      work(kdmat),
+#endif
      &                      nelement,
      &                      communication_info_mpi%my_shmem_node_id,
      &                      communication_info_mpi%
@@ -1288,12 +1310,17 @@ C
         nelement            = n2basx*nfmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
+#ifdef rma_memalloc
         call memallocmpi(nelement*8,fmat_p)
         call dzero(fmat_buff,nelement)
+#endif
 
         call set_rma_window(
+#ifdef rma_memalloc
      &                      fmat_buff,
-!    &                      work(kfmat),
+#else
+     &                      work(kfmat),
+#endif
      &                      nelement,
      &                      communication_info_mpi%my_shmem_node_id,
      &                      communication_info_mpi%
@@ -1365,8 +1392,10 @@ C
         call free_rma_window(rma_win_info%fmat_win,master)
 !       call mpi_group_free(mygroup , ierr)
 !       call mpi_group_free(mygroup2, ierr)
+#ifdef rma_memalloc
         call memfreempi(fmat_buff)
         call memfreempi(dmat_buff)
+#endif
 #endif
       end if
 
@@ -2414,6 +2443,7 @@ C
      &                     ierr)
           if(communication_info_mpi%my_shmem_node_id == 0)then
 
+#ifdef rma_memalloc
 !mem alloc test
             offset_mat = rma_win_info%nmat_max_wo_win * n2basx
 
@@ -2431,6 +2461,7 @@ C
      &                   rma_win_info%lock_win,
      &                   rma_win_info%fmat_win)
 ! end mem alloc test
+#endif
             call mpi_reduce(fmat(1 + rma_win_info%
      &                      nmat_max_wo_win * n2basx),
      &                      mpi_in_place,
