@@ -34,6 +34,10 @@ module rma_windows
   public free_rma_window
 #endif
 
+  private
+
+  save
+
 ! rma-windows definition
 ! ----------------------------------------------------------------------------
   type rma_win

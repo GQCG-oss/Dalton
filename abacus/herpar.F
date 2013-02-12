@@ -249,6 +249,7 @@ C       all matrices in one batch.
 C
 C
 !     module dependencies
+      use memory_parallel
       use parallel_communication_models_mpi
       use rma_windows
 C
@@ -281,8 +282,14 @@ CTROND
       DIMENSION GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
 CTROND
 #ifdef VAR_MPI
+      integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement
       integer, allocatable           :: kick_ranks(:)
+      integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
+      real(8)                        :: dmat_buff(dummy_buff)
+      real(8)                        :: fmat_buff(dummy_buff)
+      pointer                        (dmat_p, dmat_buff)
+      pointer                        (fmat_p, fmat_buff)
 #endif
 C
 C     NB! NPOS cannot be allocated from WORK due to the SAVEing below.
@@ -337,8 +344,14 @@ C
 
         nelement            = n2basx*ndmat
 
+        call memallocmpi(nelement*8,dmat_p)
+
+        call dcopy(nelement,dmat,1,dmat_buff,1)
+
 #ifdef VAR_MPI
-        call set_rma_window(dmat,
+        call set_rma_window(
+     &                      dmat_buff,
+!    &                      dmat,
      &                      nelement,
      &                      master,
      &                      communication_info_mpi%
@@ -349,7 +362,11 @@ C
      &                      'no_locks',
      &                      'true')
 
-        call set_rma_window(fmat,
+        call memallocmpi(nelement*8,fmat_p)
+
+        call set_rma_window(
+     &                      fmat_buff,
+!    &                      fmat,
      &                      nelement,
      &                      master,
      &                      communication_info_mpi%
@@ -416,6 +433,8 @@ C           workspace for array SORTED.
         call free_rma_window(rma_win_info%fmat_win,master)
 !       call mpi_group_free(mygroup, ierr)
 !       call mpi_group_free(mygroup2, ierr)
+        call memfreempi(fmat_buff)
+        call memfreempi(dmat_buff)
 #endif
       end if
 
@@ -828,6 +847,7 @@ C  /* Deck her_rvres */
 
 !     module dependencies
       use parallel_communication_models_mpi
+      use one_sided_communication_wrappers
       use rma_windows
 C
 #include "implicit.h"
@@ -854,6 +874,9 @@ C
 #include "inforb.h"
 #include "infpar.h"
 #include "parint.h"
+#ifdef VAR_MPI
+       integer (kind=mpi_offset_kind) :: offset_mat
+#endif
 C
       CALL QENTER('HER_RVRES')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVRES','*',103)
@@ -1007,6 +1030,25 @@ C
           call mpi_barrier(communication_info_mpi%
      &                     communication_shmemnode,
      &                     ierr)
+
+!mem alloc test
+            offset_mat = rma_win_info%nmat_max_wo_win * n2basx
+
+            call mpixget(
+     &                   fmat(1 + rma_win_info%
+     &                   nmat_max_wo_win * n2basx),
+     &                   (jnfmat - rma_win_info%
+     &                   nmat_max_wo_win) * n2basx,
+     &                   0, ! node/numa master
+     &                   offset_mat,
+     &                   (jnfmat - rma_win_info%
+     &                   nmat_max_wo_win) * n2basx,
+     &                   communication_info_mpi%my_shmem_node_id,
+     &                   MPI_LOCK_SHARED,
+     &                   rma_win_info%lock_win,
+     &                   rma_win_info%fmat_win)
+! end mem alloc test
+
           call mpi_reduce(
      &                    mpi_in_place,
      &                    fmat(1 + rma_win_info%
@@ -1115,6 +1157,7 @@ C    *   matrices, derivated fock-matrices and expectation values.   *
 C    *****************************************************************
 C
 !     module dependencies
+      use memory_parallel
       use parallel_communication_models_mpi
       use rma_windows
 
@@ -1146,8 +1189,15 @@ C
 #include "gnrinf.h"
 C
 #ifdef VAR_MPI
+      integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement
       integer, allocatable           :: kick_ranks(:)
+      integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
+      real(8)                        :: dmat_buff(dummy_buff)
+      real(8)                        :: fmat_buff(dummy_buff)
+      pointer                        (dmat_p, dmat_buff)
+      pointer                        (fmat_p, fmat_buff)
+
 #endif
 #include "memint.h"
 C
@@ -1217,7 +1267,13 @@ C
         nelement            = n2basx*ndmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
-        call set_rma_window(work(kdmat),
+        call memallocmpi(nelement*8,dmat_p)
+
+        call dcopy(nelement,work(kdmat),1,dmat_buff,1)
+
+        call set_rma_window(
+     &                      dmat_buff,
+!    &                      work(kdmat),
      &                      nelement,
      &                      communication_info_mpi%my_shmem_node_id,
      &                      communication_info_mpi%
@@ -1231,7 +1287,11 @@ C
         nelement            = n2basx*nfmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
-        call set_rma_window(work(kfmat),
+        call memallocmpi(nelement*8,fmat_p)
+
+        call set_rma_window(
+     &                      fmat_buff,
+!    &                      work(kfmat),
      &                      nelement,
      &                      communication_info_mpi%my_shmem_node_id,
      &                      communication_info_mpi%
@@ -1303,6 +1363,8 @@ C
         call free_rma_window(rma_win_info%fmat_win,master)
 !       call mpi_group_free(mygroup , ierr)
 !       call mpi_group_free(mygroup2, ierr)
+        call memfreempi(fmat_buff)
+        call memfreempi(dmat_buff)
 #endif
       end if
 
@@ -2248,6 +2310,7 @@ C  /* Deck her_sdres */
 
 !     module dependencies
       use parallel_communication_models_mpi
+      use one_sided_communication_wrappers
       use rma_windows
 !
 #include "implicit.h"
@@ -2270,6 +2333,9 @@ C
 #include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
+#ifdef VAR_MPI
+       integer (kind=mpi_offset_kind) :: offset_mat
+#endif
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDRES','*',103)
 C
@@ -2345,6 +2411,24 @@ C
      &                     communication_shmemnode,
      &                     ierr)
           if(communication_info_mpi%my_shmem_node_id == 0)then
+
+!mem alloc test
+            offset_mat = rma_win_info%nmat_max_wo_win * n2basx
+
+            call mpixget(
+     &                   fmat(1 + rma_win_info%
+     &                   nmat_max_wo_win * n2basx),
+     &                   (ndmat - rma_win_info%
+     &                   nmat_max_wo_win) * n2basx,
+     &                   0, ! node/numa master
+     &                   offset_mat,
+     &                   (ndmat - rma_win_info%
+     &                   nmat_max_wo_win) * n2basx,
+     &                   communication_info_mpi%my_shmem_node_id,
+     &                   MPI_LOCK_SHARED,
+     &                   rma_win_info%lock_win,
+     &                   rma_win_info%fmat_win)
+! end mem alloc test
             call mpi_reduce(fmat(1 + rma_win_info%
      &                      nmat_max_wo_win * n2basx),
      &                      mpi_in_place,

@@ -738,6 +738,7 @@ peqm/polarizable_embedding.F90
 abacus/parallel_models_mpi.F90
 abacus/parallel_communication_models_mpi.F90
 gp/one_sided_communication_wrappers.F90
+gp/memory_parallel.F90
 abacus/rma_windows.F90
     )
 set(OWN_BLAS_SOURCES
