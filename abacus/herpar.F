@@ -399,7 +399,7 @@ C
           nelement4 = nelement
           call mpi_file_write(
      &                        rma_win_info%dmat_fh,
-     &                        work(kdmat),         
+     &                        dmat,         
      &                        nelement4,            
      &                        mpi_real8,            
      &                        istat,                
