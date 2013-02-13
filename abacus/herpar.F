@@ -1,3 +1,4 @@
+#define rma_memalloc
 !
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -284,7 +285,6 @@ CTROND
 #ifdef VAR_MPI
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
-      integer, allocatable           :: kick_ranks(:)
 #ifdef rma_memalloc
       integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
       real(8)                        :: dmat_buff(dummy_buff)
@@ -399,7 +399,7 @@ C
           nelement4 = nelement
           call mpi_file_write(
      &                        rma_win_info%dmat_fh,
-     &                        dmat,         
+     &                        dmat,                
      &                        nelement4,            
      &                        mpi_real8,            
      &                        istat,                
@@ -432,28 +432,6 @@ C
      &                      'no_locks',
      &                      'true')
         
-!       call mpi_comm_group(communication_info_mpi%
-!    &                      communication_shmemnode, mygroup, ierr)
-!       
-!       allocate(kick_ranks((communication_info_mpi%
-!    &           shmem_node_size-1)))
-!       do i = 1, communication_info_mpi%shmem_node_size-1
-!         kick_ranks(i) = i
-!       end do
-!       call mpi_group_excl(mygroup,communication_info_mpi%
-!    &                      shmem_node_size-1, kick_ranks, 
-!    &                      mygroup2, ierr)
-!       deallocate(kick_ranks)
-
-!       call mpi_win_post(mygroup, MPI_MODE_NOCHECK + MPI_MODE_NOPUT, 
-!    &                    rma_win_info%dmat_win, ierr) 
-!       call mpi_win_post(mygroup, MPI_MODE_NOCHECK                 ,
-!    &                    rma_win_info%fmat_win, ierr) 
-!       call mpi_win_start(mygroup2,  MPI_MODE_NOCHECK, 
-!    &                     rma_win_info%dmat_win, ierr) 
-!       call mpi_win_start(mygroup2, MPI_MODE_NOCHECK, 
-!    &                     rma_win_info%fmat_win, ierr) 
-!       rma_win_info%lock_win = .false.
 #endif
 !       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
 !    &            rma_win_info%dmat_win,mynum
@@ -486,9 +464,30 @@ C           workspace for array SORTED.
 #ifdef VAR_MPI
         call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
-!       call mpi_group_free(mygroup, ierr)
-!       call mpi_group_free(mygroup2, ierr)
 #ifdef rma_memalloc
+        call mpi_reduce(
+     &                  mpi_in_place,
+     &                  fmat_buff(1 + rma_win_info%
+     &                  nmat_max_wo_win * n2basx),
+     &                  (ndmat - rma_win_info%
+     &                  nmat_max_wo_win) * n2basx,
+     &                  mpi_real8,
+     &                  mpi_sum,
+     &                  0,
+     &                  communication_info_mpi%
+     &                  communication_internode,
+     &                  ierr)
+        call daxpy((ndmat - rma_win_info%
+     &             nmat_max_wo_win) * n2basx,
+     &             1.0d0,
+     &             fmat_buff(1 + rma_win_info%
+     &             nmat_max_wo_win * n2basx),
+     &             1,
+     &             fmat(1 + rma_win_info%
+     &             nmat_max_wo_win * n2basx),
+     &             1
+     &             )
+
         call memfreempi(fmat_buff)
         call memfreempi(dmat_buff)
 #endif
@@ -1058,11 +1057,6 @@ C
       if(rma_model)then
 
 #ifdef VAR_MPI
-!       call mpi_win_complete(rma_win_info%dmat_win,ierr)
-!       call mpi_win_complete(rma_win_info%fmat_win,ierr)
-!       call mpi_win_wait(rma_win_info%dmat_win,ierr)
-!       call mpi_win_wait(rma_win_info%fmat_win,ierr)
-
         call mpi_reduce(mpi_in_place,
      &                  dintskp,
      &                  8,
@@ -1090,26 +1084,6 @@ C
           call mpi_barrier(communication_info_mpi%
      &                     communication_shmemnode,
      &                     ierr)
-#ifdef rma_memalloc
-!mem alloc test
-            offset_mat = rma_win_info%nmat_max_wo_win * n2basx
-
-            call mpixget(
-     &                   fmat(1 + rma_win_info%
-     &                   nmat_max_wo_win * n2basx),
-     &                   (jnfmat - rma_win_info%
-     &                   nmat_max_wo_win) * n2basx,
-     &                   0, ! node/numa master
-     &                   offset_mat,
-     &                   (jnfmat - rma_win_info%
-     &                   nmat_max_wo_win) * n2basx,
-     &                   communication_info_mpi%my_shmem_node_id,
-     &                   MPI_LOCK_SHARED,
-     &                   rma_win_info%lock_win,
-     &                   rma_win_info%fmat_win)
-! end mem alloc test
-#endif
-
           call mpi_reduce(
      &                    mpi_in_place,
      &                    fmat(1 + rma_win_info%
@@ -1252,7 +1226,6 @@ C
 #ifdef VAR_MPI
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
-      integer, allocatable           :: kick_ranks(:)
 #ifdef rma_memalloc
       integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
       real(8)                        :: dmat_buff(dummy_buff)
@@ -1415,29 +1388,6 @@ C
      &                      .false.,
      &                      'no_locks',
      &                      'true')
-!       call mpi_comm_group(communication_info_mpi%
-!    &                      communication_shmemnode, mygroup, ierr)
-!       allocate(kick_ranks((communication_info_mpi%
-!    &           shmem_node_size-1)))
-!       do i = 1, communication_info_mpi%shmem_node_size-1
-!         kick_ranks(i) = i
-!       end do
-!       call mpi_group_excl(mygroup,communication_info_mpi%
-!    &                      shmem_node_size-1, kick_ranks, 
-!    &                      mygroup2, ierr)
-!       deallocate(kick_ranks)
-
-!       if(communication_info_mpi%my_shmem_node_id == 0)then
-!         call mpi_win_post(mygroup, MPI_MODE_NOCHECK + MPI_MODE_NOPUT, 
-!    &                      rma_win_info%dmat_win, ierr) 
-!         call mpi_win_post(mygroup, MPI_MODE_NOCHECK                 ,
-!    &                      rma_win_info%fmat_win, ierr) 
-!       end if
-!       call mpi_win_start(mygroup2,  MPI_MODE_NOCHECK, 
-!    &                     rma_win_info%dmat_win, ierr) 
-!       call mpi_win_start(mygroup2, MPI_MODE_NOCHECK, 
-!    &                     rma_win_info%fmat_win, ierr) 
-!       rma_win_info%lock_win = .false.
 #endif
 !       print *, 'fmat_win, dmat_win',rma_win_info%fmat_win,
 !    &            rma_win_info%dmat_win,mynum
@@ -1475,9 +1425,21 @@ C
 #ifdef VAR_MPI
         call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
-!       call mpi_group_free(mygroup , ierr)
-!       call mpi_group_free(mygroup2, ierr)
 #ifdef rma_memalloc
+        if(communication_info_mpi%my_shmem_node_id == 0)then
+          call mpi_reduce(
+     &                    fmat_buff(1 + rma_win_info%
+     &                    nmat_max_wo_win * n2basx),
+     &                    mpi_in_place,
+     &                    (ndmat - rma_win_info%
+     &                    nmat_max_wo_win) * n2basx,
+     &                    mpi_real8,
+     &                    mpi_sum,
+     &                    0,
+     &                    communication_info_mpi%
+     &                    communication_internode,
+     &                    ierr)
+        end if
         call memfreempi(fmat_buff)
         call memfreempi(dmat_buff)
 #endif
@@ -2494,15 +2456,6 @@ C
 
 !     collect data for rma_model
       if(rma_model)then
-!       if(communication_info_mpi%my_shmem_node_id == 0)then
-!         call mpi_win_complete(rma_win_info%dmat_win,ierr)
-!         call mpi_win_complete(rma_win_info%fmat_win,ierr)
-!         call mpi_win_wait(rma_win_info%dmat_win,ierr)
-!         call mpi_win_wait(rma_win_info%fmat_win,ierr)
-!       else
-!         call mpi_win_complete(rma_win_info%dmat_win,ierr)
-!         call mpi_win_complete(rma_win_info%fmat_win,ierr)
-!       end if
         call mpi_reduce(dintskp,
      &                  mpi_in_place,
      &                  8,
@@ -2531,25 +2484,6 @@ C
      &                     ierr)
           if(communication_info_mpi%my_shmem_node_id == 0)then
 
-#ifdef rma_memalloc
-!mem alloc test
-            offset_mat = rma_win_info%nmat_max_wo_win * n2basx
-
-            call mpixget(
-     &                   fmat(1 + rma_win_info%
-     &                   nmat_max_wo_win * n2basx),
-     &                   (ndmat - rma_win_info%
-     &                   nmat_max_wo_win) * n2basx,
-     &                   0, ! node/numa master
-     &                   offset_mat,
-     &                   (ndmat - rma_win_info%
-     &                   nmat_max_wo_win) * n2basx,
-     &                   communication_info_mpi%my_shmem_node_id,
-     &                   MPI_LOCK_SHARED,
-     &                   rma_win_info%lock_win,
-     &                   rma_win_info%fmat_win)
-! end mem alloc test
-#endif
             call mpi_reduce(fmat(1 + rma_win_info%
      &                      nmat_max_wo_win * n2basx),
      &                      mpi_in_place,
