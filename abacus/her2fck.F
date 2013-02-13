@@ -183,6 +183,7 @@ C*****************************************************************************
        real(8), intent(inout)         :: fmat_tmp(nbasis**2)
 #ifdef VAR_MPI
        integer (kind=mpi_offset_kind) :: offset_mat
+       integer                        :: status_read(mpi_status_size)
 #endif
 #include "twocom.h"
 #include "expcom.h"
@@ -490,15 +491,24 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
         call dzero(fmat_tmp,nbasis**2)
 
 #ifdef VAR_MPI
-        call mpixget(dmat_tmp,
-     &               nbasis**2,
-     &               0, ! node/numa master
-     &               offset_mat,
-     &               nbasis**2,
-     &               communication_info_mpi%my_shmem_node_id,
-     &               MPI_LOCK_SHARED,
-     &               rma_win_info%lock_win,
-     &               rma_win_info%dmat_win)
+!       call mpixget(dmat_tmp,
+!    &               nbasis**2,
+!    &               0, ! node/numa master
+!    &               offset_mat,
+!    &               nbasis**2,
+!    &               communication_info_mpi%my_shmem_node_id,
+!    &               MPI_LOCK_SHARED,
+!    &               rma_win_info%lock_win,
+!    &               rma_win_info%dmat_win)
+        call mpi_file_read_at(
+     &                        rma_win_info%dmat_fh,
+     &                        offset_mat,
+     &                        dmat_tmp,
+     &                        nbasis**2,
+     &                        mpi_real8,
+     &                        status_read,    
+     &                        ierr
+     &                       )
 #endif
 
         call fckcon(fmat_tmp,dmat_tmp,i,aoint2,ind,

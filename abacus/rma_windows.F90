@@ -47,7 +47,8 @@ module rma_windows
       fmat_win                                 ! fock matrix window (2e-integral codes)
 
     integer ::                   &
-      nmat_max_wo_win                          ! max number of matrices "outside" the memory window (no RMA communication needed for those)
+      nmat_max_wo_win,           &             ! max number of matrices "outside" the memory window (no RMA communication needed for those)
+      dmat_fh                                  ! local dmat shared file handle
 
     logical ::                   &
       rma_win_init    = .false.                ! status of the rma_win type

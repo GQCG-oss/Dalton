@@ -283,7 +283,7 @@ CTROND
 CTROND
 #ifdef VAR_MPI
       integer, parameter             :: dummy_buff = 2
-      integer(kind=MPI_ADDRESS_KIND) :: nelement
+      integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
       integer, allocatable           :: kick_ranks(:)
 #ifdef rma_memalloc
       integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
@@ -292,6 +292,8 @@ CTROND
       pointer                        (dmat_p, dmat_buff)
       pointer                        (fmat_p, fmat_buff)
 #endif
+      character(len=16)              :: shared_dmat_file
+      integer                        :: istat(mpi_status_size)
 #endif
 C
 C     NB! NPOS cannot be allocated from WORK due to the SAVEing below.
@@ -368,6 +370,46 @@ C
      &                      .false.,
      &                      'no_locks',
      &                      'true')
+
+!       test dmat on shared file
+        write(shared_dmat_file,'(a12,i4)') 
+     &  'dmat_shared.',communication_info_mpi%intra_node_group_id
+        call mpi_file_open(
+     &                     communication_info_mpi%
+     &                     communication_intranode,
+     &                     shared_dmat_file,
+     &                     mpi_mode_CREATE +
+     &                     mpi_mode_RDWR   +
+     &                     mpi_mode_DELETE_ON_CLOSE,
+     &                     mpi_info_null,
+     &                     rma_win_info%dmat_fh,
+     &                     ierr   
+     &                    )
+        displacement = 0
+        call mpi_file_set_view(
+     &                         rma_win_info%dmat_fh,
+     &                         displacement,
+     &                         mpi_real8,
+     &                         mpi_real8,
+     &                         'native',   
+     &                         mpi_info_null,
+     &                         ierr   
+     &                        )
+        if(communication_info_mpi%my_intra_node_id == 0)then
+          nelement4 = nelement
+          call mpi_file_write(
+     &                        rma_win_info%dmat_fh,
+     &                        work(kdmat),         
+     &                        nelement4,            
+     &                        mpi_real8,            
+     &                        istat,                
+     &                        ierr
+     &                       )
+        end if
+        call mpi_barrier(communication_info_mpi%
+     &                   communication_intranode,ierr)
+!       end test dmat on shared file
+
 
 #ifdef rma_memalloc
         call memallocmpi(nelement*8,fmat_p)
@@ -450,6 +492,9 @@ C           workspace for array SORTED.
         call memfreempi(fmat_buff)
         call memfreempi(dmat_buff)
 #endif
+!       test dmat on shared file
+        call mpi_file_close(rma_win_info%dmat_fh,ierr)
+!       end test dmat on shared file
 #endif
       end if
 
@@ -1206,7 +1251,7 @@ C
 C
 #ifdef VAR_MPI
       integer, parameter             :: dummy_buff = 2
-      integer(kind=MPI_ADDRESS_KIND) :: nelement
+      integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
       integer, allocatable           :: kick_ranks(:)
 #ifdef rma_memalloc
       integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
@@ -1215,7 +1260,8 @@ C
       pointer                        (dmat_p, dmat_buff)
       pointer                        (fmat_p, fmat_buff)
 #endif
-
+      character(len=16)              :: shared_dmat_file
+      integer                        :: istat(mpi_status_size)
 #endif
 #include "memint.h"
 C
@@ -1307,6 +1353,45 @@ C
      &                      'no_locks',
      &                      'true')
 
+!       test dmat on shared file
+        write(shared_dmat_file,'(a12,i4)') 
+     &  'dmat_shared.',communication_info_mpi%intra_node_group_id
+        call mpi_file_open(
+     &                     communication_info_mpi%
+     &                     communication_intranode,
+     &                     shared_dmat_file,
+     &                     mpi_mode_CREATE +
+     &                     mpi_mode_RDWR   +
+     &                     mpi_mode_DELETE_ON_CLOSE,
+     &                     mpi_info_null,
+     &                     rma_win_info%dmat_fh,
+     &                     ierr   
+     &                    )
+        displacement = 0
+        call mpi_file_set_view(
+     &                         rma_win_info%dmat_fh,
+     &                         displacement,
+     &                         mpi_real8,
+     &                         mpi_real8,
+     &                         'native',   
+     &                         mpi_info_null,
+     &                         ierr   
+     &                        )
+        if(communication_info_mpi%my_intra_node_id == 0)then
+          nelement4 = nelement
+          call mpi_file_write(
+     &                        rma_win_info%dmat_fh,
+     &                        work(kdmat),         
+     &                        nelement4,            
+     &                        mpi_real8,            
+     &                        istat,                
+     &                        ierr
+     &                       )
+        end if
+        call mpi_barrier(communication_info_mpi%
+     &                   communication_intranode,ierr)
+!       end test dmat on shared file
+
         nelement            = n2basx*nfmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
@@ -1396,6 +1481,9 @@ C
         call memfreempi(fmat_buff)
         call memfreempi(dmat_buff)
 #endif
+!       test dmat on shared file
+        call mpi_file_close(rma_win_info%dmat_fh,ierr)
+!       end test dmat on shared file
 #endif
       end if
 
