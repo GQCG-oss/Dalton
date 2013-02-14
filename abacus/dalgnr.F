@@ -595,11 +595,11 @@ C
       RETURN
       END
 C  /* Deck dalton_exedrv */
-      SUBROUTINE DALTON_EXEDRV(WORK, LMWORK, WRKDLM)
+      SUBROUTINE DALTON_EXEDRV(LMWORK, WRKDLM)
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
-C     variables and allocating WORK memory.
+C     variables.
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -644,12 +644,26 @@ C
 !   major modules in Dalton, the WRKDLM is checked with BNDCHK (which is
 !   in this file). /HJAaJ, Jan. 2011
 !
-      DIMENSION WORK(0:LMWORK), CORBKP(3*MXCENT)
+      DIMENSION CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
+      real(8), allocatable :: work(:)
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
 C
+!     allocate memory using f90 utilities
+      allocate(work(lmwork+2),stat=i)
+!     Set memory traps
+      work(0)        = wrkdlm
+      work(1+lmwork) = wrkdlm
+
+      if(i /= 0)then
+         write (luerr,*) mynum,': ALLOCATE command failed to allocate'//
+     &        ' the requested memory. Error code:',I
+         write (luerr,*) 'Reduce the memory demands and be welcome back'
+         call quit('Failed to allocate memory')
+      end if
+
       IPRINT = IPRUSR
 C
       WLKREJ = .FALSE.
@@ -1083,6 +1097,9 @@ C
 C     Stamp date and time and hostname to output
 C
       CALL TSTAMP(' ',LUPRI)
+
+!     release dynamically allocated memory
+      deallocate(work)
 C
       CALL QEXIT('DALTON')
       RETURN

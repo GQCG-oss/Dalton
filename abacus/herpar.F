@@ -1184,7 +1184,7 @@ C
       RETURN
       END
 C  /* Deck her_nodstr */
-      SUBROUTINE HER_NODSTR(WORK,LWORK,IPRINT)
+      SUBROUTINE HER_NODSTR(LWORK_save,wrkdlm,IPRINT)
 C
 C    *****************************************************************
 C    *    This is the node program for the construction of fock-     *
@@ -1205,8 +1205,11 @@ C
 C
       PARAMETER (MXDMAT = 2*MXCOOR)
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME
-      DIMENSION WORK(LWORK), ISYMDM(MXDMAT), IFCTYP(MXDMAT),
+      DIMENSION ISYMDM(MXDMAT), IFCTYP(MXDMAT),
      &          DINTSKP(2,4)
+      real(8), allocatable :: work(:)
+      integer, intent(in)  :: lwork_save
+      integer              :: lwork
 C
 C Used from common blocks
 C
@@ -1236,7 +1239,7 @@ C
       character(len=16)              :: shared_dmat_file
       integer                        :: istat(mpi_status_size)
 #endif
-#include "memint.h"
+      
 C
       CALL QENTER('HER_NODSTR')
 C
@@ -1252,6 +1255,31 @@ C
 C
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_NODSTR','*',103)
+! stefan - fixme: check initialization of slaves with basic information (n2basx, etc) that does not require WORK...
+
+      lwork = lwork_save
+!#ifdef rma_memalloc
+!     call memallocmpi(nelement*8,dmat_p)
+!     call memallocmpi(nelement*8,fmat_p)
+!     lwork = lwork - 2 * nelement * 8
+!#endif
+
+!     allocate memory using f90 utilities
+      allocate(work(lwork+2),stat=i)
+!     Set memory traps
+      work(0)       = wrkdlm
+      work(1+lwork) = wrkdlm
+
+      if(i /= 0)then
+        write (luerr,*) mynum,
+     &      ': ALLOCATE command failed to allocate'//
+     &      ' the requested memory. Error code:',i
+        write (luerr,*) 
+     &      'Reduce the memory demands and be welcome back'
+        call quit('Failed to allocate memory')
+      end if
+#include "memint.h"
+
 C
 C     Receive initialization from master
 C     ==================================
@@ -1306,7 +1334,6 @@ C
 
 #ifdef rma_memalloc
         call memallocmpi(nelement*8,dmat_p)
-
         call dcopy(nelement,work(kdmat),1,dmat_buff,1)
 #endif
 
