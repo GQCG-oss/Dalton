@@ -1482,6 +1482,7 @@ C     Send overall timings if requested.
 C
       IF (IPRPAR .GT. 0) CALL SDTIM(CPU1,WALL1,IPRINT)
 C
+      deallocate(work)
 C
       CALL QEXIT('HER_NODSTR')
       RETURN
