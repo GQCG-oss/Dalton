@@ -1,4 +1,4 @@
-#define rma_memalloc
+!#define rma_memalloc
 !
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
 !...   All Rights Reserved.
