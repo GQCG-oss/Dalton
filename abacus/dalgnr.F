@@ -640,7 +640,7 @@ C
 !   WRKDLM (set in main program). This is a simple (not fool-proof) test
 !   that Dalton has not been out of bounds. Thus all subroutines called
 !   here needs to be called with WORK(1) (and not just WORK), __except__
-!   the subroutines EXE*. In these driver routines for some of the
+!   the subroutines EXE* (here: work(0)). In these driver routines for some of the
 !   major modules in Dalton, the WRKDLM is checked with BNDCHK (which is
 !   in this file). /HJAaJ, Jan. 2011
 !
@@ -702,7 +702,7 @@ C        ---------------------------------------
             WRITE (LUPRI,'(//5X,A,I5,A//)')
      &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
      &       ' <<<<<<<<<<'
-            CALL EXEHER(WORK,LMWORK,WRKDLM)
+            CALL EXEHER(WORK(0),LMWORK,WRKDLM)
             IPREAD = IPREAD_reduced
 C           ... reduce output from READIN in following geometries
             WLKREJ = .FALSE.
@@ -726,8 +726,8 @@ Cef begin
 C     CALL CLEAR_INCOREMEM()
             END IF
 Cef end
-            CALL EXESIR(WORK,LMWORK,WRKDLM)
-            IF (DOCCSD) CALL EXECC(WORK,LMWORK,WRKDLM)
+            CALL EXESIR(WORK(0),LMWORK,WRKDLM)
+            IF (DOCCSD) CALL EXECC(WORK(0),LMWORK,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
 C     Add cavity center if solvent model (921014-kvm/hjaaj)
@@ -875,7 +875,7 @@ C     We may have more DOSYM under **START than under **PROPE
                   CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        WORK(1),LMWORK)
                ELSE
-                  CALL EXEABA(WORK,LMWORK,WRKDLM)
+                  CALL EXEABA(WORK(0),LMWORK,WRKDLM)
                END IF
                IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3) 
      &              .OR. (IWKTYP .EQ. 6))) THEN
@@ -925,8 +925,8 @@ C
             ELSE IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
-               CALL EXEHER(WORK,LMWORK,WRKDLM)
-               CALL EXESIR(WORK,LMWORK,WRKDLM)
+               CALL EXEHER(WORK(0),LMWORK,WRKDLM)
+               CALL EXESIR(WORK(0),LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
               IF (SOLVNT) THEN
                NEWGEO = .TRUE.
@@ -958,7 +958,7 @@ C
               END IF
             END IF
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
-            CALL EXEABA(WORK,LMWORK,WRKDLM)
+            CALL EXEABA(WORK(0),LMWORK,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
 C     
@@ -996,18 +996,18 @@ C
 C     ... not OPTWLK and not OPTNEW, i.e. not geometry optimization
          NEWGEO = .TRUE.
 Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
-         CALL EXEHER(WORK,LMWORK,WRKDLM)
+         CALL EXEHER(WORK(0),LMWORK,WRKDLM)
 Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
 Cholesky
-         IF (CHOINT) CALL EXECHO(WORK,LMWORK,WRKDLM)
+         IF (CHOINT) CALL EXECHO(WORK(0),LMWORK,WRKDLM)
 Cholesky
-         IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
+         IF (RNSIRI) CALL EXESIR(WORK(0),LMWORK,WRKDLM)
 Cact
-         IF (ACTIVE) CALL EXEACT(WORK,LMWORK,WRKDLM)
+         IF (ACTIVE) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
 Cact
-         IF (DOCCSD) CALL EXECC (WORK,LMWORK,WRKDLM)
+         IF (DOCCSD) CALL EXECC (WORK(0),LMWORK,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
 C     Add cavity center if solvent model (921014-kvm/hjaaj)
@@ -1071,7 +1071,7 @@ C
                CALL WLKINP(WORD)
                CALL GPCLOSE(LUCMD,'KEEP')
             END IF
-            CALL EXEABA(WORK,LMWORK,WRKDLM)
+            CALL EXEABA(WORK(0),LMWORK,WRKDLM)
          END IF
       END IF
  87   CONTINUE
