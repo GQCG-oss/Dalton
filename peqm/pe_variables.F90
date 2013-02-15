@@ -83,7 +83,7 @@ module pe_variables
     real(dp), save :: thriter = 1.0d-5
     real(dp), save :: damp = 2.1304
     real(dp), save :: gauss_factor = 1.0
-    real(dp), save :: rep_factor = 1.0
+    real(dp), dimension(3), save :: repfacs = 1.0
     real(dp), save :: Rmin = 2.2
     character(len=6), save :: border_type = 'REDIST'
     ! use Cholesky factorization of classical response matrix

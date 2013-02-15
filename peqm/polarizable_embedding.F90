@@ -162,10 +162,6 @@ subroutine pe_init(coords, charges, dalwrk)
         if (pe_repuls) then
             write(luout,'(/4x,a,f5.3)') 'Repulsion operator will be used for&
                                         & fragment densities'
-            if (rep_factor /= 1.0d0) then
-                write(luout,'(/4x,a,f5.3)') 'Repulsion will be scaled using the&
-                                            & factor: ', rep_factor
-            end if
         end if
     end if
     if (pe_sol) then
@@ -513,18 +509,21 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! calculate intermolecular two-electron integrals
         else if (trim(option(2:)) == 'TWOINT') then
             read(luinp,*) fdnucs
+            read(luinp,*) option
+            backspace(luinp)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(luinp,*) repfacs
+            else
+                repfacs(1) = 1.0d0
+                repfacs(2) = 0.0d0
+                repfacs(3) = 0.0d0
             pe_twoint = .true.
         ! save density matrix
         else if (trim(option(2:)) == 'SAVDEN') then
             pe_savden = .true.
         ! get fock matrix for repulsion potential
         else if (trim(option(2:)) == 'REPULS') then
-            read(luinp,*) option
-            backspace(luinp)
-            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.& 
-               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
-                read(luinp,*) rep_factor
-            end if
             pe_repuls = .true.
         ! electrostatics from fragment densities
         else if (trim(option(2:)) == 'FD') then
@@ -1566,8 +1565,8 @@ subroutine es_fragment_densities(denmats, Eel, Enuc, fckmats)
             if (fock) fckmats(l:m) = fckmats(l:m) + fd_fckmat
             Eee(j) = dot(denmats(l:m), fd_fckmat)
             if (pe_repuls) then
-                if (fock) fckmats(l:m) = fckmats(l:m) + rep_factor * fd_repmat
-                Efd(3,j) = Efd(3,j) + dot(denmats(l:m), rep_factor * fd_repmat)
+                if (fock) fckmats(l:m) = fckmats(l:m) + fd_repmat
+                Efd(3,j) = Efd(3,j) + dot(denmats(l:m), fd_repmat)
             end if
         end do
 
@@ -3950,7 +3949,7 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
     ! get electric field from fragment density at polarizable sites
     ! TODO: better solution for neglecting polarization
     ! TODO: potential from fragment density at surface points
-    if (lpol(1)) then
+    if (pe_polar) then
         allocate(Ftmp(3*npols,1), Ffd(3*npols)); Ftmp = 0.0d0
         call electron_fields(Ftmp, denmat)
         Ffd = Ftmp(:,1)
@@ -4103,14 +4102,14 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     do i = 1, focc
         ecmo(:,i) = mo_energies(i) * cmo(:,i)
     end do
-    weighted_denmat = - rep_factor * matmul(cmo, transpose(ecmo))
+    weighted_denmat = - matmul(cmo, transpose(ecmo))
     deallocate(mo_energies, ecmo, cmo)
 
     allocate(full_repmat(cbas,cbas))
-    full_repmat = matmul(matmul(full_overlap(fbas+1:nbas,1:fbas),&
-                               & weighted_denmat),&
+    full_repmat = matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), weighted_denmat),&
                         & full_overlap(1:fbas,fbas+1:nbas))
-    full_repmat = 1.0d0 * full_repmat + 10.0d0 * full_repmat**2 !+ full_repmat**4 + full_repmat**6 + full_repmat**8
+    full_repmat = repfacs(1) * full_repmat + repfacs(2) * full_repmat**2&
+                & + repfacs(3) * full_repmat**4
     deallocate(full_overlap, weighted_denmat)
 
     allocate(repmat(cbas*(cbas+1)/2))
