@@ -34,6 +34,10 @@ module rma_windows
   public free_rma_window
 #endif
 
+  private
+
+  save
+
 ! rma-windows definition
 ! ----------------------------------------------------------------------------
   type rma_win
@@ -42,8 +46,14 @@ module rma_windows
       dmat_win,                  &             ! density matrix window (2e-integral codes)
       fmat_win                                 ! fock matrix window (2e-integral codes)
 
+    integer ::                   &
+      nmat_max_wo_win,           &             ! max number of matrices "outside" the memory window (no RMA communication needed for those)
+      dmat_fh                                  ! local dmat shared file handle
+
     logical ::                   &
-      rma_win_init = .false.                   ! status of the rma_win type
+      rma_win_init    = .false.                ! status of the rma_win type
+    logical ::                   &
+      lock_win        = .true.                 ! lock windows for communication calls
 
   end type rma_win
 

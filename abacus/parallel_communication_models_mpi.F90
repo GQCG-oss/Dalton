@@ -49,7 +49,8 @@ module parallel_communication_models_mpi
       intra_node_group_id,       &             ! intra-node group ID
       communication_intranode,   &             ! intra-node communication handle
       communication_internode,   &             ! inter-node communication handle
-      communication_shmemnode                  ! shared-memory communication handle: integrals, fock matrices, density matrices, etc
+      communication_shmemnode,   &             ! shared-memory communication handle: integrals, fock matrices, density matrices, etc
+      communication_glb_world                  ! global communicator handle
 
     logical ::                   &
       communication_type_init = .false.        ! status of the communication type
@@ -105,6 +106,7 @@ contains
     A%communication_intranode  = -1
     A%communication_internode  = -1
     A%communication_shmemnode  = -1
+    A%communication_glb_world  = -1
     A%my_intra_node_id         = -1
     A%my_inter_node_id         = -1
     A%my_shmem_node_id         = -1
@@ -149,6 +151,7 @@ contains
                                   A%communication_intranode,                 &
                                   A%communication_internode,                 &
                                   A%communication_shmemnode,                 &
+                                  A%communication_glb_world,                 &
                                   A%intra_node_group_id)                      
 #endif
 
@@ -233,12 +236,6 @@ contains
          end if
 
       end do
-
-!
-!     IMPORTANT ADVICE from Peter xxx at the NSC Linkoeping - use e.g. hwloc to get the NUMA node master rather than the
-!     intra-node master: NUMA ==> all processes with close memory == highest performance
-!     todo!!! sknecht - jan 2013
-!
  
 !     3. find all processors on the same deck and reorder (if necessary) 
 !     to get the processors as close as possible, starting with the master (id == 0)
@@ -314,6 +311,7 @@ contains
                                       intra_node_comm,                         &
                                       inter_node_comm,                         &
                                       shmem_ijkl_comm,                         &
+                                      total_area_comm,                         &
                                       intra_node_group_id)                      
 !********************************************************************************
 !     purpose: setup communicators and process-id for the various               
@@ -337,13 +335,23 @@ contains
      integer, intent(out)   :: intra_node_comm
      integer, intent(out)   :: inter_node_comm
      integer, intent(out)   :: shmem_ijkl_comm
+     integer, intent(out)   :: total_area_comm
      integer, intent(out)   :: intra_node_group_id
 !-------------------------------------------------------------------------------
      integer                :: key
      integer                :: color
      integer                :: tmp_group_counter
      integer                :: current_proc
+     integer                :: numa_procs
+     integer                :: numa_counter
+     integer                :: numa_nodes
+     integer                :: i
+     integer, allocatable   :: tmp_array(:)
+     character(len=6)       :: numa_procs_env
 !-------------------------------------------------------------------------------
+
+!     0. global communicator
+      total_area_comm = communicator_glb
 
 !     a. intra-node communicator
  
@@ -369,23 +377,55 @@ contains
         end if
       end do
 
-!     b. inter-node communicator
+!     b. shared memory communicator
+      allocate(tmp_array(nr_of_process_glb))
+      tmp_array(1:nr_of_process_glb) = process_list_glb(1:nr_of_process_glb) 
+      key                            = my_process_id_glb
+      color                          = tmp_array(my_process_id_glb+1)
 
-      key   = process_list_glb(my_process_id_glb+1)
-      color = 2
-      if(my_intra_node_id /= 0) color = 3
- 
-      call build_new_communication_group(communicator_glb,        &
-                                         inter_node_comm,         &
-                                         inter_node_size,         &
-                                         my_inter_node_id,        &
-                                         color,                   &
-                                         key)
-!     c. shared memory communicator
+!
+!     IMPORTANT ADVICE from Peter xxx at the NSC Linkoeping - use e.g. hwloc to get the NUMA node master rather than the
+!     intra-node master: NUMA ==> all processes with close memory == highest performance
+!     todo: automatic scheme w/o required user intervention  -- sknecht feb 2013
 
-      key   = my_process_id_glb
-      color = process_list_glb(my_process_id_glb+1)
- 
+
+!     !> NUMA node mode...
+      numa_procs          = 0
+      numa_procs_env(1:6) = '      '
+      call getenv('NUMA_PROCS',numa_procs_env)
+      read(numa_procs_env, '(i6)') numa_procs
+
+!     if( numa_procs > 0)then
+!       write(*,*) 'NUMA process distribution active for shared memory'
+!       write(*,*) '# processes per NUMA node (user defined) ==>      ',numa_procs
+!     end if
+
+      if( numa_procs > 0)then
+
+!       OpenMPIs --bysocket --bind-to-socket policy: round-robin fashion between the X sockets (often socket == NUMA node) 
+!       thus, we will follow this strategy here...
+        numa_nodes = intra_node_size/numa_procs
+        if(mod(intra_node_size,numa_procs) /= 0 ) write(*,*) ' ** warning: asymmetric NUMA node allocation'
+
+        numa_counter = 0
+        i            = 0
+        do
+          i = i + 1
+          if( i             > nr_of_process_glb )exit
+          if( tmp_array(i) ==             color )then
+            numa_counter    = numa_counter + 1
+            if( (i-1) == my_process_id_glb )then
+              color         = color        + 10000*numa_counter ! offset for next NUMA node color: color + 10000*numa_counter
+              tmp_array(i)  = color; exit
+            end if
+!           reset 'round-robin' counter
+            if(numa_counter == numa_nodes) numa_counter = 0
+          end if
+        end do
+!       write(*,*) 'pid, color, numa_counter, numa_nodes',my_process_id_glb,color, numa_counter, numa_nodes
+      end if
+!     !> end
+
       call build_new_communication_group(communicator_glb,        &
                                          shmem_ijkl_comm,         &
                                          shmem_node_size,         &
@@ -393,15 +433,22 @@ contains
                                          color,                   &
                                          key)
 
-!     setup required information about each shared-memory group:
-!       - group list
-      tmp_group_counter   = 1
-      do current_proc = 1, nr_of_process_glb
-        if(process_list_glb(current_proc) == color)then
-          shared_mem_list(tmp_group_counter) = current_proc      - 1
-          tmp_group_counter                  = tmp_group_counter + 1
-        end if
-      end do
+      deallocate(tmp_array)
+
+!     c. inter-node resp. inter-NUMA node communicator
+
+      key   = process_list_glb(my_process_id_glb+1)
+      color = 2
+      if(my_shmem_node_id /= 0) color = 3
+ 
+      call build_new_communication_group(communicator_glb,        &
+                                         inter_node_comm,         &
+                                         inter_node_size,         &
+                                         my_inter_node_id,        &
+                                         color,                   &
+                                         key)
+!     write(*,*) 'pid, # my_inter_node_id,my_shmem_node_id,inter_node_size',my_process_id_glb,&
+!                        my_inter_node_id,my_shmem_node_id,inter_node_size
 
   end subroutine set_communication_levels
 

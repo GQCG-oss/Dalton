@@ -62,10 +62,7 @@ C defined parallel calculation types
       character(100)     :: line
       logical            :: file_exists, file_open
 
-!     this is the "static" work array
-      real(8), allocatable :: WORK(:)
-
-!     memory-id tags for field 1 and 2+LMWORK
+!     memory-id tags for field 1 and 2+LMWORK in work (allocated in main driver routines)
       DATA WRKDLM/12345678D0/
 C
 C
@@ -120,16 +117,6 @@ C
          END IF
       END IF
  
-!     allocate memory using f90 utilities
-      allocate(work(lmwork+2),stat=i)
-
-      IF (I .NE. 0) THEN
-         WRITE (LUERR,*) MYNUM,': ALLOCATE command failed to allocate'//
-     &        ' the requested memory. Error code:',I
-         WRITE (LUERR,*) 'Reduce the memory demands and be welcome back'
-         CALL QUIT('Failed to allocate memory')
-      END IF
-
 Cef begin
 C If AOSAVE .eq. .TRUE. then run the incore-version of dalton where integrals
 C are stored in memory on each slave for reuse. Take a look at the header
@@ -168,11 +155,6 @@ Cef end
      &      MYNUM,': Directories for basis set searches:',
      &      BASDIR(1:LEN_BASDIR)
       END IF
-C
-C     Set memory traps and initialize unit numbers
-C
-      WORK(1)        = WRKDLM
-      WORK(2+LMWORK) = WRKDLM
 C
 C     Allowing now for parallelization over different molecular geometries,
 C     we must first check if this calculation indeed is of that kind.
@@ -468,7 +450,7 @@ C
          CALL RECVNAMES
 !
 !        call main driver routine
-         call dalton_exedrv(work,lmwork,wrkdlm)
+         call dalton_exedrv(lmwork,wrkdlm)
 
          CALL FLSHFO(LUPRI)
 
@@ -513,7 +495,7 @@ C     ... I am a "slave" ... (MYNUM .ne. MASTER)
             CALL DALTON_GNRLINP
 
 !           call main driver routine (co-workers do it as well if PARIO == .true.)
-            call dalton_exedrv(work,lmwork,wrkdlm)
+            call dalton_exedrv(lmwork,wrkdlm)
 
             LABEL1 = 'ALL_DONE'
             STHELP = 'THE_END   '
@@ -540,12 +522,9 @@ C
             CALL SENDNAME(MASTER,MYNUM)
 
 !           call main co-workers driver routine
-            call nodedriver(work,lmwork,wrkdlm)
+            call nodedriver(lmwork,wrkdlm)
          END IF
       END IF
-
-!     release dynamically allocated memory
-      deallocate(work)
 
 #if defined(BUILD_GEN1INT)
 C...  added by Bin Gao, May 13, 2012
@@ -573,16 +552,9 @@ C
       END IF
 #endif
 #if !defined (VAR_MPI)
-!     allocate memory using f90 utilities
-      allocate(work(lmwork+2),stat=i)
-      work(1)        = wrkdlm
-      work(2+lmwork) = wrkdlm
 
 !     call main co-workers driver routine
-      call dalton_exedrv(work,lmwork,wrkdlm)
-
-!     release dynamically allocated memory
-      deallocate(work)
+      call dalton_exedrv(lmwork,wrkdlm)
 
       LABEL1 = 'ALL_DONE'
       STHELP = 'THE_END   '

@@ -518,6 +518,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 repfacs(1) = 1.0d0
                 repfacs(2) = 0.0d0
                 repfacs(3) = 0.0d0
+            end if
             pe_twoint = .true.
         ! save density matrix
         else if (trim(option(2:)) == 'SAVDEN') then
