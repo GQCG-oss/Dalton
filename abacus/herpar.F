@@ -501,6 +501,7 @@ C           workspace for array SORTED.
       IF (NEWGEO) NEWGEO = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
+
       CALL QEXIT('HER_PARDRV_1')
       RETURN
       END
@@ -1265,7 +1266,8 @@ C
 !#endif
 
 !     allocate memory using f90 utilities
-      allocate(work(lwork+2),stat=i)
+      print *, 'in her_nod... allocate',mynum
+      allocate(work(0:lwork+1),stat=i)
 !     Set memory traps
       work(0)       = wrkdlm
       work(1+lwork) = wrkdlm
@@ -1482,7 +1484,10 @@ C     Send overall timings if requested.
 C
       IF (IPRPAR .GT. 0) CALL SDTIM(CPU1,WALL1,IPRINT)
 C
-      deallocate(work)
+      if(allocated(work))then
+        deallocate(work)
+        print *, 'deallocate work in her_nod...',mynum
+      end if
 C
       CALL QEXIT('HER_NODSTR')
       RETURN
