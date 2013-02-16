@@ -1266,7 +1266,6 @@ C
 !#endif
 
 !     allocate memory using f90 utilities
-      print *, 'in her_nod... allocate',mynum
       allocate(work(0:lwork+1),stat=i)
 !     Set memory traps
       work(0)       = wrkdlm
@@ -1486,7 +1485,6 @@ C
 C
       if(allocated(work))then
         deallocate(work)
-        print *, 'deallocate work in her_nod...',mynum
       end if
 C
       CALL QEXIT('HER_NODSTR')

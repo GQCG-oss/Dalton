@@ -978,7 +978,6 @@ C
 !              which is severely hampered by a "static" WORK for everything.
 !              sknecht - feb 2013.
          if(iprtyp /= her_work .and. .not.(allocated(work)))then
-           print *, 'allocate work', myid
 !          allocate memory using f90 utilities
            allocate(work(0:mwork+1),stat=i)
 !          Set memory traps
