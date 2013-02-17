@@ -838,6 +838,7 @@ C
 
 !       write(lupri,*) 'master dmat',nbast
 !       call output(dMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!       call flshfo(lupri)
         CALL MPIXBCAST(DMAT,N2BASX*NDMAT,'DOUBLE',MASTER)
       end if
 C
@@ -882,6 +883,9 @@ C  /parint/
 C
 C     Pack the density matrices, their symmetries and the Fock matrix types.
 C
+      call quit('pvm version of Dalton SCF not working - '//
+     &          'ask s. knecht at stefan.knecht@phys.chem.ethz.ch '//
+     &          'for help.')
       CALL PVMXPACK(NDMAT,1,'INTEGER')
       CALL PVMXPACK(DMAT,N2BASX*NDMAT,'DOUBLE')
       CALL PVMXPACK(ISYMDM,NFMAT,'INTEGER')
@@ -1234,13 +1238,12 @@ C
 #ifdef VAR_MPI
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
-#ifdef rma_memalloc
+      integer(kind=MPI_ADDRESS_KIND) :: nelement_d, nelement_f
       integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
       real(8)                        :: dmat_buff(dummy_buff)
       real(8)                        :: fmat_buff(dummy_buff)
       pointer                        (dmat_p, dmat_buff)
       pointer                        (fmat_p, fmat_buff)
-#endif
       character(len=16)              :: shared_dmat_file
       integer                        :: istat(mpi_status_size)
 #endif
@@ -1272,14 +1275,8 @@ C     This is a slave in a parallel run; check for programming error
       allocate(JORBS(NPAO  ))
       allocate(KORBS(NPAO  ))
 
-!#ifdef rma_memalloc
-!     call memallocmpi(nelement*8,dmat_p)
-!     call memallocmpi(nelement*8,fmat_p)
-!     lwork = lwork - 2 * nelement * 8
-!#endif
-
 !     set local work memory size
-      lwork = lwork_save - ( 9 * NPAO / (8/sizeof(int)))
+      lwork = lwork_save - ( 9 * npao / (8/sizeof(int)))
 
       allocate(work(0:lwork+1),stat=i)
 !     Set memory traps
@@ -1308,15 +1305,29 @@ C     This is a slave in a parallel run; check for programming error
      &                JSTRS,NPRIM,NCONT,
      &                IORBS,JORBS,KORBS,IPRINT,
      &                I2TYP,ICEDIF,IFTHRS,
-     &                N2RED,KDMAT,KFMAT,KHESEE,KDMRAO,KGABAO,KDMRSO,
-     &                .true.)
+     &                N2RED,dmat_buff,fmat_buff,KHESEE,KDMRAO,
+     &                KGABAO,KDMRSO,.true.)
       deallocate(work)
 
 !     Receive initialization from master - 2 - data on allocated matrices
 !     ===================================================================
 !
+      nelement_d     = n2basx*ndmat
+      nelement_f     = n2basx*nfmat
+      if(rma_model .and. 
+     &   communication_info_mpi%my_shmem_node_id /= 0)then
+          nelement_d = n2basx*rma_win_info%nmat_max_wo_win
+          nelement_f = n2basx*rma_win_info%nmat_max_wo_win
+      end if
+#ifdef VAR_MPI
+      call memallocmpi(nelement_d*8,dmat_p)
+      call memallocmpi(nelement_f*8,fmat_p)
+#endif
+      call dzero(fmat_buff,nelement_f)
+
 !     set local work memory size
-      lwork = lwork_save - ( 9 * NPAO / (8/sizeof(int)))
+      lwork = lwork_save - ( 9 * npao / (8/sizeof(int))) - 
+     &        nelement_d - nelement_f
 
       allocate(work(0:lwork+1),stat=i)
 !     Set memory traps
@@ -1333,22 +1344,11 @@ C     This is a slave in a parallel run; check for programming error
      &                JSTRS,NPRIM,NCONT,
      &                IORBS,JORBS,KORBS,IPRINT,
      &                I2TYP,ICEDIF,IFTHRS,
-     &                N2RED,KDMAT,KFMAT,KHESEE,KDMRAO,KGABAO,KDMRSO,
-     &                .false.)
+     &                N2RED,dmat_buff,fmat_buff,KHESEE,KDMRAO,
+     &                KGABAO,KDMRSO,.false.)
 C
 C     Initialize matrices
 C     ===================
-C
-      if(rma_model)then
-        if(communication_info_mpi%my_shmem_node_id == 0)then
-          call dzero(work(kfmat),nfmat*n2basx)
-        else
-          call dzero(work(kfmat),rma_win_info%nmat_max_wo_win*n2basx)
-        end if
-      else
-        CALL DZERO(WORK(KFMAT),NFMAT*N2BASX)
-      end if
-C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,MXCOOR)
          CALL DZERO(WORK(KHESEE),MXCOOR*MXCOOR)
@@ -1369,17 +1369,8 @@ C
         nelement            = n2basx*ndmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
-#ifdef rma_memalloc
-        call memallocmpi(nelement*8,dmat_p)
-        call dcopy(nelement,work(kdmat),1,dmat_buff,1)
-#endif
-
         call set_rma_window(
-#ifdef rma_memalloc
      &                      dmat_buff,
-#else
-     &                      work(kdmat),
-#endif
      &                      nelement,
      &                      communication_info_mpi%my_shmem_node_id,
      &                      communication_info_mpi%
@@ -1418,7 +1409,7 @@ C
           nelement4 = nelement
           call mpi_file_write(
      &                        rma_win_info%dmat_fh,
-     &                        work(kdmat),         
+     &                        dmat_buff,
      &                        nelement4,            
      &                        mpi_real8,            
      &                        istat,                
@@ -1432,17 +1423,8 @@ C
         nelement            = n2basx*nfmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
-#ifdef rma_memalloc
-        call memallocmpi(nelement*8,fmat_p)
-        call dzero(fmat_buff,nelement)
-#endif
-
         call set_rma_window(
-#ifdef rma_memalloc
      &                      fmat_buff,
-#else
-     &                      work(kfmat),
-#endif
      &                      nelement,
      &                      communication_info_mpi%my_shmem_node_id,
      &                      communication_info_mpi%
@@ -1474,7 +1456,7 @@ C
       ISHLA  = 0
 C
       CALL TWOINT(WORK(KFREE),LFREE,
-     &     WORK(KHESEE),WORK(KFMAT),WORK(KDMAT),NDMAT,
+     &     WORK(KHESEE),FMAT_buff,DMAT_buff,NDMAT,
      &     ISYMDM,IFCTYP,GMAT,INDXAB,NUMDIS,MAXDIS,ITYPE,
      &     MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,IPRINT,
      &     IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,
@@ -1504,8 +1486,6 @@ C
      &                    communication_internode,
      &                    ierr)
         end if
-        call memfreempi(fmat_buff)
-        call memfreempi(dmat_buff)
 #endif
 !       test dmat on shared file
         call mpi_file_close(rma_win_info%dmat_fh,ierr)
@@ -1520,6 +1500,11 @@ C
       IF (IPRPAR .GT. 0) CALL SDTIM(CPU1,WALL1,IPRINT)
 C
       deallocate(work)
+
+#ifdef VAR_MPI
+      call memfreempi(fmat_buff)
+      call memfreempi(dmat_buff)
+#endif
 
       deallocate(JSTRS)
       deallocate(NPRIM)
@@ -1537,8 +1522,8 @@ C  /* Deck her_rvinit */
      &     IATOM,MAXDIF,NODV,NOPV,NOCONT,
      &     RETUR,TKTIME,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &     JORBSH,KORBSH,IPRINT,I2TYP,ICEDIF,IFTHRS,
-     &     N2RED,KDMAT,KFMAT,KHESEE,KDMRAO,KGABAO,KDMRSO,
-     &     set_cb_blocks)
+     &     N2RED,dmat_buff,fmat_buff,KHESEE,KDMRAO,
+     &     KGABAO,KDMRSO,set_cb_blocks)
 C
 
 !     module dependencies
@@ -1567,8 +1552,8 @@ C
 C
       DIMENSION WORK(*), ISYMDM(*), IFCTYP(*), JSTRSH(*), NPRIMS(*),
      &          NCONTS(*), IORBSH(*), JORBSH(*), KORBSH(*)
-C
 
+      real(8), intent(inout)    :: fmat_buff(*), dmat_buff(*)
       logical, intent(in)       :: set_cb_blocks
 
       LOGICAL FIRST_TIME_CALLED
@@ -1850,24 +1835,14 @@ C
       if(rma_model)then
 
         if(communication_info_mpi%my_shmem_node_id == 0)then
-!         allocation of density matrix(ces)
-          call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
 !         distribute density matrix(ces) among NUMA/node masters
-          call mpi_bcast(work(kdmat),n2basx*ndmat,mpi_real8,master,
+          call mpi_bcast(dmat_buff,n2basx*ndmat,mpi_real8,master,
      &                   communication_info_mpi%communication_internode,
      &                   ierr)
-        else
-!         allocation of density matrix(ces)
-          call memget('REAL',
-     &                kdmat,
-     &                rma_win_info%nmat_max_wo_win * n2basx,
-     &                work,
-     &                kfree,
-     &                lfree)
         end if
 
 !       distribute density matrix(ces) among node/NUMA node slaves
-        call mpi_bcast(work(kdmat),
+        call mpi_bcast(dmat_buff,
      &                 n2basx*rma_win_info%nmat_max_wo_win,
      &                 mpi_real8,
      &                 0,
@@ -1876,25 +1851,12 @@ C
 
 
       else
-        call memget('REAL',kdmat,ndmat*n2basx,work,kfree,lfree)
-        call mpixbcast(work(kdmat),n2basx*ndmat,'DOUBLE',master)
 !       write(lupri,*) 'slave dmat',nbast,n2basx,ndmat,kdmat
-!       call output(work(kdmat),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+!       call flshfo(lupri)
+        call mpixbcast(dmat_buff,n2basx*ndmat,'DOUBLE',master)
+!       call output(dmat_buff,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 !       call flshfo(lupri)
       end if
-
-!     allocation of fock matrix(ces)
-      nmat_alloc    =                        nfmat * n2basx
-      if(rma_model .and. 
-     &   communication_info_mpi%my_shmem_node_id /= 0) 
-     &   nmat_alloc = rma_win_info%nmat_max_wo_win * n2basx 
-
-      call memget('REAL',
-     &            kfmat,
-     &            nmat_alloc,
-     &            work,
-     &            kfree,
-     &            lfree)
 
       CALL MEMGET('REAL',KHESEE,MXCOOR*MXCOOR,WORK,KFREE,LFREE)     
       
@@ -1911,6 +1873,9 @@ C
       KDMRSO = KFREE
 #endif
 #if defined (VAR_PVM)
+      call quit('pvm version of Dalton SCF not working - '//
+     &          'ask s. knecht at stefan.knecht@phys.chem.ethz.ch '//
+     &          'for help.')
 C     Unpack density matrices.
 C
       CALL PVMXUNPACK(NDMAT,1,'INTEGER')
