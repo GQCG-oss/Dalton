@@ -924,7 +924,7 @@ C
          ISYM2 = ABS_MULD2H(ISYM1,ABS_GRADSYM)
          NVRT2 = ABS_NORB(ISYM2)-ABS_NISH(ISYM2)-ABS_NASH(ISYM2)
 c         write(luabspri,*)'isym1,isym2,na1,na2,ni1,ni2,nvrt2',isym1,isym2,
-c     &                  nash1,nash2,nish1,nish(isym2),norb(isym1),
+cc     &                  nash1,nash2,nish1,nish(isym2),norb(isym1),
 c     &                  norb(isym2),nvrt2
           NEL=ABS_NISH(ISYM1)*ABS_NASH(ISYM2)
           IF (NEL.GT.0) THEN
