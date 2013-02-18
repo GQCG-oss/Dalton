@@ -346,30 +346,37 @@ C
         rma_win_info%dmat_win = -1
         rma_win_info%fmat_win = -1
 
-        nelement            = n2basx*ndmat
+        nelement            = n2basx*ndmat ! for itype == 3: ndmat == nfmat
 
-#ifdef rma_memalloc
-        call memallocmpi(nelement*8,dmat_p)
 
-        call dcopy(nelement,dmat,1,dmat_buff,1)
-#endif
+!       sknecht: idea for RMA window on master: assign shmem-MASTER to some other member of the master group (via key-value in comm_split) 
+!                                               and introduce an integer list which keeps track of which FMAT(i) 
+!                                               was assigned to which process thus introducing a memory split within the numa-node(s) which could be advantageous. 
+!                                               caution: not making MASTER to shmem-master may hold some pitfalls...
+
+
+!#ifdef rma_memalloc
+!        call memallocmpi(nelement*8,dmat_p)
+!
+!        call dcopy(nelement,dmat,1,dmat_buff,1)
+!#endif
 
 #ifdef VAR_MPI
-        call set_rma_window(
-#ifdef rma_memalloc
-     &                      dmat_buff,
-#else
-     &                      dmat,
-#endif
-     &                      nelement,
-     &                      master,
-     &                      communication_info_mpi%
-     &                      communication_shmemnode,
-     &                      rma_win_info%dmat_win,
-!    &                      .true.,
-     &                      .false.,
-     &                      'no_locks',
-     &                      'true')
+!       call set_rma_window(
+!#ifdef rma_memalloc
+!    &                      dmat_buff,
+!#else
+!    &                      dmat,
+!#endif
+!    &                      nelement,
+!    &                      master,
+!    &                      communication_info_mpi%
+!    &                      communication_shmemnode,
+!    &                      rma_win_info%dmat_win,
+!!   &                      .true.,
+!    &                      .false.,
+!    &                      'no_locks',
+!    &                      'true')
 
 !       test dmat on shared file
         write(shared_dmat_file,'(a12,i4)') 
@@ -462,7 +469,7 @@ C           workspace for array SORTED.
 !------------------------
       if(rma_model)then
 #ifdef VAR_MPI
-        call free_rma_window(rma_win_info%dmat_win,master)
+!       call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
 #ifdef rma_memalloc
         call mpi_reduce(
@@ -489,7 +496,7 @@ C           workspace for array SORTED.
      &             )
 
         call memfreempi(fmat_buff)
-        call memfreempi(dmat_buff)
+!        call memfreempi(dmat_buff)
 #endif
 !       test dmat on shared file
         call mpi_file_close(rma_win_info%dmat_fh,ierr)
@@ -1369,17 +1376,17 @@ C     ===================
         nelement            = n2basx*ndmat
         if(communication_info_mpi%my_shmem_node_id /= 0) nelement = 0
 
-        call set_rma_window(
-     &                      dmat_buff,
-     &                      nelement,
-     &                      communication_info_mpi%my_shmem_node_id,
-     &                      communication_info_mpi%
-     &                      communication_shmemnode,
-     &                      rma_win_info%dmat_win,
-!    &                      .true.,
-     &                      .false.,
-     &                      'no_locks',
-     &                      'true')
+!       call set_rma_window(
+!    &                      dmat_buff,
+!    &                      nelement,
+!    &                      communication_info_mpi%my_shmem_node_id,
+!    &                      communication_info_mpi%
+!    &                      communication_shmemnode,
+!    &                      rma_win_info%dmat_win,
+!!   &                      .true.,
+!    &                      .false.,
+!    &                      'no_locks',
+!    &                      'true')
 
 !       test dmat on shared file
         write(shared_dmat_file,'(a12,i4)') 
@@ -1469,7 +1476,7 @@ C
 !------------------------
       if(rma_model)then
 #ifdef VAR_MPI
-        call free_rma_window(rma_win_info%dmat_win,master)
+!       call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
 #ifdef rma_memalloc
         if(communication_info_mpi%my_shmem_node_id == 0)then
