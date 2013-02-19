@@ -979,7 +979,7 @@ C
 !              sknecht - feb 2013.
          if(iprtyp /= her_work .and. .not.(allocated(work)))then
 !          allocate memory using f90 utilities
-           allocate(work(mwork+2),stat=i)
+           allocate(work(0:mwork+1),stat=i)
 !          Set memory traps
            work(0)       = wrkdlm
            work(1+mwork) = wrkdlm

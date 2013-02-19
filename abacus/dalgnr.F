@@ -652,7 +652,7 @@ C
       CALL GETTIM(CSTR,WSTR)
 C
 !     allocate memory using f90 utilities
-      allocate(work(lmwork+2),stat=i)
+      allocate(work(0:lmwork+1),stat=i)
 !     Set memory traps
       work(0)        = wrkdlm
       work(1+lmwork) = wrkdlm
