@@ -90,14 +90,16 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Feb  8 14:11:05 2013
+     Date and time (Linux)  : Tue Feb 19 21:25:46 2013
      Host name              : fe8                                     
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/magnus/Projects/dalton_devel/dalton/test/2013-02-08T14_10-testjob-pid-83375
+   1) /people/disk2/magnus/Projects/dalton_devel/dalton/test/2013-02-19T21_25-testjob-pid-109350
    2) /people/disk2/magnus/Projects/dalton_devel/dalton/build/basis
+
+ * Parallel with MPI: Using    8 CPUs.
 
 
    Content of the .dal input file
@@ -155,6 +157,8 @@ H              2.675323   -2.516779   -0.000673
    Overall default print level:    0
    Print level for DALTON.STAT:    1
 
+    Parallel calculation using MPI
+    AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
     Wave function sections will be executed (SIRIUS module)
@@ -363,7 +367,7 @@ Point group: C1
     Iterative solver for induced moments will be used
     with convergence threshold: 1.0E-08
 
-    Using reduced threshold in first 4-5 SCF iterations.
+    Using reduced threshold in first few SCF iterations.
 
 
                      .---------------------------------------.
@@ -382,14 +386,8 @@ Point group: C1
      ************************** Output from HERINT **************************
      ************************************************************************
 
-
- Threshold for neglecting two-electron integrals:  1.00D-12
- Number of two-electron integrals written:     5029409 ( 95.8% )
- Megabytes written:                             57.593
-
- >>>  Time used in TWOINT     is   0.78 seconds
- >>>> Total CPU  time used in HERMIT:   0.85 seconds
- >>>> Total wall time used in HERMIT:   0.97 seconds
+ >>>> Total CPU  time used in HERMIT:   0.09 seconds
+ >>>> Total wall time used in HERMIT:   0.14 seconds
 
 
                         .----------------------------------.
@@ -425,7 +423,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Feb  8 14:11:07 2013
+     Date and time (Linux)  : Tue Feb 19 21:25:47 2013
      Host name              : fe8                                     
 
  Title lines from ".mol" input file:
@@ -436,6 +434,7 @@ Point group: C1
  Print level on unit LUW4  =   2 is   5
 
 @    Restricted, closed shell Polarizable Embedding Hartree-Fock calculation.
+ Fock matrices are calculated directly and in parallel without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option
@@ -479,89 +478,104 @@ Point group: C1
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
-      Threshold for discarding integrals :  1.00D-12 )
- >>>  Time used in FORMSUP    is   0.31 seconds
+   1  Screening settings (-IFTHRS, DIFDEN)   -7    F
 INFO: using reduced threshold to determine induced dipole moments.
-   1  -189.972437529     -4.808618487670E-02    3.53454D+00   -1.90D+02
+   1  -189.972437986     -4.808618487670E-02    3.53454D+00   -1.90D+02
       Virial theorem: -V/T =      2.005529
 @      MULPOP C       0.90; C       0.05; C       0.19; O      -1.10; H      -0.04; H      -0.00; H       0.00; H      -0.00; 
  -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)   -8    F
 INFO: using reduced threshold to determine induced dipole moments.
-   2  -190.450707140     -7.189224009769E-03    2.52204D+00   -4.78D-01
+   2  -190.450707073     -7.189249051519E-03    2.52204D+00   -4.78D-01
       Virial theorem: -V/T =      2.002759
 @      MULPOP C      -0.46; C      -0.29; C      -0.65; O       0.09; H       0.29; H       0.38; H       0.31; H       0.32; 
  -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)   -8    F
 INFO: using reduced threshold to determine induced dipole moments.
-   3  -190.781229268     -3.605741191250E-02    5.43457D-01   -3.31D-01
+   3  -190.781229222     -3.605742265378E-02    5.43457D-01   -3.31D-01
       Virial theorem: -V/T =      1.998979
 @      MULPOP C       0.25; C      -0.11; C      -0.43; O      -0.70; H       0.23; H       0.29; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)   -9    F
 INFO: using reduced threshold to determine induced dipole moments.
-   4  -190.796213959     -3.443581957394E-02    1.13958D-01   -1.50D-02
+   4  -190.796213960     -3.443582501211E-02    1.13958D-01   -1.50D-02
       Virial theorem: -V/T =      2.003238
 @      MULPOP C       0.19; C      -0.11; C      -0.40; O      -0.64; H       0.22; H       0.30; H       0.22; H       0.23; 
  -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)   -9    F
 INFO: using reduced threshold to determine induced dipole moments.
-   5  -190.797461360     -3.555556652766E-02    3.06135D-02   -1.25D-03
+   5  -190.797461360     -3.555556916463E-02    3.06135D-02   -1.25D-03
       Virial theorem: -V/T =      2.002160
 @      MULPOP C       0.21; C      -0.14; C      -0.41; O      -0.66; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -10    F
 INFO: using reduced threshold to determine induced dipole moments.
-   6  -190.797606873     -3.599346997658E-02    1.16715D-02   -1.46D-04
+   6  -190.797606873     -3.599347038221E-02    1.16715D-02   -1.46D-04
       Virial theorem: -V/T =      2.002184
 @      MULPOP C       0.22; C      -0.14; C      -0.41; O      -0.67; H       0.23; H       0.31; H       0.22; H       0.24; 
  -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -10    F
 INFO: using reduced threshold to determine induced dipole moments.
-   7  -190.797634278     -3.623500864856E-02    4.72874D-03   -2.74D-05
+   7  -190.797634278     -3.623500878328E-02    4.72873D-03   -2.74D-05
       Virial theorem: -V/T =      2.002187
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -11    F
 INFO: using reduced threshold to determine induced dipole moments.
-   8  -190.797637847     -3.631056279836E-02    1.48171D-03   -3.57D-06
+   8  -190.797637847     -3.631056276525E-02    1.48171D-03   -3.57D-06
       Virial theorem: -V/T =      2.002194
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-   9  -190.797638264     -3.633281958074E-02    4.98672D-04   -4.18D-07
+   9  Screening settings (-IFTHRS, DIFDEN)  -11    F
+   9  -190.797638264     -3.633281959044E-02    4.98671D-04   -4.18D-07
       Virial theorem: -V/T =      2.002196
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-  10  -190.797638298     -3.633537001374E-02    1.42653D-04   -3.38D-08
+  10  Screening settings (-IFTHRS, DIFDEN)  -12    F
+  10  -190.797638298     -3.633537001867E-02    1.42653D-04   -3.38D-08
       Virial theorem: -V/T =      2.002196
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-  11  -190.797638304     -3.633681316286E-02    5.57443D-05   -5.36D-09
+  11  Screening settings (-IFTHRS, DIFDEN)  -12    F
+  11  -190.797638304     -3.633681316667E-02    5.57440D-05   -5.37D-09
       Virial theorem: -V/T =      2.002196
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-  12  -190.797638304     -3.633704330611E-02    1.32466D-05   -5.52D-10
+  12  Screening settings (-IFTHRS, DIFDEN)  -13    F
+  12  -190.797638304     -3.633704330372E-02    1.32467D-05   -5.53D-10
       Virial theorem: -V/T =      2.002196
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-  13  -190.797638304     -3.633711153244E-02    3.10200D-06   -3.49D-11
+  13  Screening settings (-IFTHRS, DIFDEN)  -13    F
+  13  -190.797638304     -3.633711153245E-02    3.10202D-06   -3.52D-11
       Virial theorem: -V/T =      2.002196
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-  14  -190.797638304     -3.633712181952E-02    7.05357D-07   -1.59D-12
+  14  Screening settings (-IFTHRS, DIFDEN)  -14    F
+  14  -190.797638304     -3.633712181922E-02    7.05374D-07   -1.59D-12
       Virial theorem: -V/T =      2.002196
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-  15  -190.797638304     -3.633712774867E-02    2.16528D-07   -5.12D-13
+  15  Screening settings (-IFTHRS, DIFDEN)  -14    F
+  15  -190.797638304     -3.633712774873E-02    2.16538D-07   -3.98D-13
       Virial theorem: -V/T =      2.002196
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-  16  -190.797638304     -3.633712682768E-02    6.56497D-08    1.17D-12
+  16  Screening settings (-IFTHRS, DIFDEN)  -14    F
+  16  -190.797638304     -3.633712682769E-02    6.56431D-08    6.54D-13
       Virial theorem: -V/T =      2.002196
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-  17  -190.797638304     -3.633712707999E-02    1.46156D-08   -1.28D-12
+  17  Screening settings (-IFTHRS, DIFDEN)  -14    F
+  17  -190.797638304     -3.633712707996E-02    1.46109D-08   -8.24D-13
       Virial theorem: -V/T =      2.002196
 @      MULPOP C       0.22; C      -0.15; C      -0.41; O      -0.68; H       0.23; H       0.31; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-  18  -190.797638304     -3.633712684685E-02    4.99908D-09    7.39D-13
+  18  Screening settings (-IFTHRS, DIFDEN)  -14    F
+  18  -190.797638304     -3.633712684683E-02    4.99437D-09    5.40D-13
 
  *** DIIS converged in  18 iterations !
-@    Converged SCF energy, gradient:   -190.797638304112    5.00D-09
+@    Converged SCF energy, gradient:   -190.797638304113    4.99D-09
    - total time used in SIRFCK :              0.00 seconds
 
 
@@ -595,15 +609,15 @@ INFO: using reduced threshold to determine induced dipole moments.
          Octopoles                 -0.002683833427
 
        Polarization contributions:
-         Electronic                -0.087358557060
-         Nuclear                    0.084104908380
+         Electronic                -0.087358557059
+         Nuclear                    0.084104908379
          Multipole                  0.000258051742
 
     Total PE energy:               -0.036337126847
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :       3.034       3.186
+ >>>> CPU and wall time for SCF :       2.693       2.734
 
 
                        .-----------------------------------.
@@ -615,14 +629,14 @@ INFO: using reduced threshold to determine induced dipole moments.
 @    Spatial symmetry:            1
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -190.797638304112                 
+@    Final HF energy:            -190.797638304113                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -293.426148037780
+@    Electronic energy:          -293.426148037781
 
-@    Final gradient norm:           0.000000004999
+@    Final gradient norm:           0.000000004994
 
  
-     Date and time (Linux)  : Fri Feb  8 14:11:10 2013
+     Date and time (Linux)  : Tue Feb 19 21:25:49 2013
      Host name              : fe8                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -708,11 +722,11 @@ INFO: using reduced threshold to determine induced dipole moments.
 
 
 
- >>>> Total CPU  time used in SIRIUS :      3.08 seconds
- >>>> Total wall time used in SIRIUS :      3.44 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.74 seconds
+ >>>> Total wall time used in SIRIUS :      2.79 seconds
 
  
-     Date and time (Linux)  : Fri Feb  8 14:11:10 2013
+     Date and time (Linux)  : Tue Feb 19 21:25:49 2013
      Host name              : fe8                                     
 
 
@@ -735,6 +749,8 @@ INFO: using reduced threshold to determine induced dipole moments.
  Default print level:        0
 
       Electronic excitation energies 
+      Direct calculation - no two-electron integrals written or read.
+      Two-electron integrals will be calculated in parallel
       Natural orbital connection is used
       for perturbation dependent basis sets.
 
@@ -762,11 +778,9 @@ INFO: using reduced threshold to determine induced dipole moments.
 
 
  
-     Date and time (Linux)  : Fri Feb  8 14:11:10 2013
+     Date and time (Linux)  : Tue Feb 19 21:25:49 2013
      Host name              : fe8                                     
-
- Integral transformation: Total CPU and WALL times (sec)       2.030       2.275
- >>>  Time used in EXCITA     is   4.31 seconds
+ >>>  Time used in EXCITA     is   2.89 seconds
 
 
    ***************************************************************************
@@ -775,7 +789,7 @@ INFO: using reduced threshold to determine induced dipole moments.
 
 
  
-     Date and time (Linux)  : Fri Feb  8 14:11:14 2013
+     Date and time (Linux)  : Tue Feb 19 21:25:52 2013
      Host name              : fe8                                     
 
 
@@ -944,22 +958,22 @@ INFO: using reduced threshold to determine induced dipole moments.
  CPU time statistics for ABACUS
  ------------------------------
 
- EXCITA     00:00:04      99 %
+ EXCITA     00:00:03      99 %
 
- TOTAL      00:00:04     100 %
+ TOTAL      00:00:03     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   4.35 seconds
- >>>> Total wall time used in ABACUS:   4.74 seconds
+ >>>> Total CPU  time used in ABACUS:   2.93 seconds
+ >>>> Total wall time used in ABACUS:   3.03 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   8.31 seconds
- >>>> Total wall time used in DALTON:   9.41 seconds
+ >>>> Total CPU  time used in DALTON:   5.78 seconds
+ >>>> Total wall time used in DALTON:   6.00 seconds
 
  
-     Date and time (Linux)  : Fri Feb  8 14:11:15 2013
+     Date and time (Linux)  : Tue Feb 19 21:25:53 2013
      Host name              : fe8                                     
