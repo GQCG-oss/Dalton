@@ -1827,11 +1827,13 @@ C
           CALL MPIXBCAST(rma_win_info%nmat_max_wo_win,1,'INTEGER',
      &                   MASTER)
         end if
+#endif
         call qexit('HER_RVINIT - 1 -')
         return
 
       end if ! set_cb_blocks
 
+#ifdef VAR_MPI
 !     part - 2 - receive data on allocated matrices
 !     ---------------------------------------------
       call qenter('HER_RVINIT - 2 -')
