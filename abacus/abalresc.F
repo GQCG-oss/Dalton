@@ -89,15 +89,22 @@ cv                    write(lupri,*)' ..aca leo gaugeo ', WORD
                GOTO 100
 C   SET PRINT LEVEL 
  2             CONTINUE
-cv                  write(lupri,*)' ..aca leo print level '
                   READ (LUCMD,*) JIMPRT
+c                  write(lupri,*)' ..aca leo print level :', JIMPRT
                   ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  3             CONTINUE
-cv                  write(lupri,*)' ..aca leo SELECT LRATOM '
-                  READ (LUCMD,*) LRATOM
-                  ICHANG = ICHANG + 1
+                 READ (LUCMD,*) LRATOM
+                 ICHANG = ICHANG + 1
+                 write(lupri,*)'Your selection is atom #:',LRATOM,
+     $            'named : ', NAMN(LRATOM), 'on Molecule.mol file'
+                 IF (LRATOM.GT.NATOMS)THEN 
+                   write(lupri,*) 'Input Error on LRSCINP' 
+                   write(lupri,*) 'Your selection exceeds total ', 
+     $                            'number of atoms on input file'
+                   CALL QUIT('LRATOM grater than NATOMS, LRSCINP')
+                  END IF
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  4             CONTINUE
@@ -203,7 +210,7 @@ C
 c jim-dbg : sacar esto de abajo
 #include <priunit.h>
 C
-      JIMPRT   = 0
+      JIMPRT    = 0
       LRATOM    = 1 
       LRGAUG(1) = 0.000
       LRGAUG(2) = 0.000
@@ -257,18 +264,20 @@ cv      END IF
 C 
 C First Order SINLGET 
 C
+      WRITE(LUPRI,*)
       IF (SIGMAP1S)  THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : PsoKin'
+         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : PsoKin'
          WRITE (LUPRI,'(A)')'           NOT FOR NOW, some bugs inside'
-c         CALL LINEAR('PSOK',WORK,LWORK) ! NOOOO ANDA
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA1S for : Lkin'
-         CALL LINEAR('LKIN',WORK,LWORK) ! ANDA
+         CALL LINEARLR('PSOK',WORK,LWORK) ! NOOOO ANDA
+         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : Lkin'
+         CALL LINEARLR('LKIN',WORK,LWORK) ! ANDA
       END IF
 
       IF (SIGMAD1S) THEN
          WRITE (LUPRI,'(A)')'  Calling to SIGMA1S for : Diamagnetic'// 
      &         ' Singlet First Order Shielding corrections'
-         CALL LINEAR('D1S ',WORK,LWORK) ! ANDA
+         CALL LINEARLR('DIAM',WORK,LWORK) ! ANDA
+         CALL LINEARLR('DIAD',WORK,LWORK) ! ANDA
       END IF
 C 
 C First Order TRIPLET
@@ -276,10 +285,10 @@ C
       IF (SIGMAP1T) THEN
          WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
      &         ' Triplet First Order Shielding corrections'
-         CALL LINEAR('FCZK',WORK,LWORK) !ANDA
-         CALL LINEAR('SDZK',WORK,LWORK) !ANDA
-         CALL LINEAR('FCBS',WORK,LWORK) !ANDA 
-         CALL LINEAR('SDBS',WORK,LWORK) !ANDA
+         CALL LINEARLR('FCZK',WORK,LWORK) !ANDA
+         CALL LINEARLR('SDZK',WORK,LWORK) !ANDA
+         CALL LINEARLR('FCBS',WORK,LWORK) !ANDA 
+         CALL LINEARLR('SDBS',WORK,LWORK) !ANDA
       END IF
 C 
 C Third Order SINLGET 

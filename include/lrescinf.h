@@ -13,5 +13,4 @@ cx jim-gesc : RNLRSC login included in abainf.h, jimprt for debugging prints
       COMMON /LRESCINF/ SIGMAP1S, SIGMAP1T, SIGMAD1S, SIGMAD0S,
      &        GAUCHANG, SIGMAP3S, SIGMAP3T, JIMPRT, LRATOM, LRGAUG,
      &        LRESCALL
-
-! -- end of abainf.h --
+! -- end of lrescinf.h --
