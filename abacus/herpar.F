@@ -811,6 +811,7 @@ C
 !     distribute density matrices - that can be huge chunks... # first
       CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
       
+        write(lupri,*) 'master rma_model, itype',rma_model, itype
       if(rma_model)then
 
         ! set # of fmat/dmat outside the RMA window ==> min = 1 otherwise we introduce some stupid communication 
@@ -843,9 +844,9 @@ C
 
       else
 
-!       write(lupri,*) 'master dmat',nbast
+        write(lupri,*) 'master dmat',nbast
 !       call output(dMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
-!       call flshfo(lupri)
+        call flshfo(lupri)
         CALL MPIXBCAST(DMAT,N2BASX*NDMAT,'DOUBLE',MASTER)
       end if
 C
@@ -1321,6 +1322,7 @@ C     This is a slave in a parallel run; check for programming error
 !
       nelement_d     = n2basx*ndmat
       nelement_f     = n2basx*nfmat
+      write(lupri,*) 'rma_model...',rma_model
       if(rma_model .and. 
      &   communication_info_mpi%my_shmem_node_id /= 0)then
           nelement_d = n2basx*rma_win_info%nmat_max_wo_win
@@ -1822,11 +1824,17 @@ C
 !       receive density matrices - that can be huge chunks... # first
         CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
 
+!       set rma_model according to jtype
+        if(jtype /= 3) rma_model = .false.
+        write(lupri,*) 'jtype rma_model',jtype,rma_model
+        call flshfo(lupri)
+
         if(rma_model)then
           ! set # of fmat/dmat outside the RMA window: min = 1
           CALL MPIXBCAST(rma_win_info%nmat_max_wo_win,1,'INTEGER',
      &                   MASTER)
         end if
+#endif
         call qexit('HER_RVINIT - 1 -')
         return
 
@@ -1838,7 +1846,10 @@ C
 
 !     set local information from PARINT
       itype  = jtype
+        write(lupri,*) 'again ... jtype rma_model',jtype,rma_model
+        call flshfo(lupri)
 
+#ifdef VAR_MPI
       if(rma_model)then
 
         if(communication_info_mpi%my_shmem_node_id == 0)then
@@ -1858,8 +1869,8 @@ C
 
 
       else
-!       write(lupri,*) 'slave dmat',nbast,n2basx,ndmat,kdmat
-!       call flshfo(lupri)
+        write(lupri,*) 'slave dmat',nbast,n2basx,ndmat
+        call flshfo(lupri)
         call mpixbcast(dmat_buff,n2basx*ndmat,'DOUBLE',master)
 !       call output(dmat_buff,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 !       call flshfo(lupri)
