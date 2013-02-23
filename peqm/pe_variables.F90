@@ -31,6 +31,7 @@ module pe_variables
     logical, save :: pe_repuls = .false.
     logical, save :: pe_savden = .false.
     logical, save :: pe_fd = .false.
+    logical, save :: pe_fdes = .true.
     logical, save :: pe_sol = .false.
     logical, save :: pe_noneq = .true.
     logical, save :: pe_infld = .false.

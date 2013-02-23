@@ -531,6 +531,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
             ! number of fragment densities
             read(luinp,*) nfds
             pe_fd = .true.
+        ! skip electrostatics from fragment densities
+        else if (trim(option(2:)) == 'NOFDES') then
+            pe_fdes = .false.
         ! skip QM calculations, i.e. go directly into PE module
         else if (trim(option(2:)) == 'SKIPQM') then
             pe_skipqm = .true.
@@ -1563,39 +1566,45 @@ subroutine es_fragment_densities(denmats, Eel, Enuc, fckmats)
         do j = 1, ndens
             l = (j - 1) * nnbas + 1
             m = j * nnbas
-            if (fock) fckmats(l:m) = fckmats(l:m) + fd_fckmat
-            Eee(j) = dot(denmats(l:m), fd_fckmat)
+            if (pe_fdes) then
+                if (fock) fckmats(l:m) = fckmats(l:m) + fd_fckmat
+                Eee(j) = dot(denmats(l:m), fd_fckmat)
+            end if
             if (pe_repuls) then
                 if (fock) fckmats(l:m) = fckmats(l:m) + fd_repmat
                 Efd(3,j) = Efd(3,j) + dot(denmats(l:m), fd_repmat)
             end if
         end do
 
-        do j = 1, fdnucs
-!            gauss = (8.0d0  * gauss_factor) /&
-!                    ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
-            do k = 1, qmnucs
-                Rfm = Rm(:,k) - Rfd(:,j)
-                call Tk_tensor(Tfm, Rfm)
-                Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
+        if (pe_fdes) then
+            do j = 1, fdnucs
+    !            gauss = (8.0d0  * gauss_factor) /&
+    !                    ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
+                do k = 1, qmnucs
+                    Rfm = Rm(:,k) - Rfd(:,j)
+                    call Tk_tensor(Tfm, Rfm)
+                    Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
+                end do
+    !            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j)) 
+    !            Zfd_ints = Zfd(1,j) * Zfd_ints
+                call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
+                do m = 1, ndens
+                    n = (m - 1) * nnbas + 1
+                    o = m * nnbas
+                    Een(m) = Een(m) + dot(denmats(n:o), Zfd_ints(:,1))
+                    if (fock) fckmats(n:o) = fckmats(n:o) + Zfd_ints(:,1)
+                end do
             end do
-!            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j)) 
-!            Zfd_ints = Zfd(1,j) * Zfd_ints
-            call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
-            do m = 1, ndens
-                n = (m - 1) * nnbas + 1
-                o = m * nnbas
-                Een(m) = Een(m) + dot(denmats(n:o), Zfd_ints(:,1))
-                if (fock) fckmats(n:o) = fckmats(n:o) + Zfd_ints(:,1)
-            end do
-        end do
+        end if
 
         deallocate(Rfd, Zfd)
 
-        Enuc = Enuc + Ene + Enn
-        do j = 1, ndens
-            Eel(j) = Eel(j) + Een(j) + Eee(j)
-        end do
+        if (pe_fdes) then
+            Enuc = Enuc + Ene + Enn
+            do j = 1, ndens
+                Eel(j) = Eel(j) + Een(j) + Eee(j)
+            end do
+        end if
     end do
 
 end subroutine es_fragment_densities
