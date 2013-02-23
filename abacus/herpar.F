@@ -1842,7 +1842,6 @@ C
 
       end if ! set_cb_blocks
 
-#ifdef VAR_MPI
 !     part - 2 - receive data on allocated matrices
 !     ---------------------------------------------
       call qenter('HER_RVINIT - 2 -')
