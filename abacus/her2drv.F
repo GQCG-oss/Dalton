@@ -525,6 +525,12 @@ C
       DOSCRN = .FALSE.
       IF(DIRFCK.OR.SOFOCK)  THEN
         CALL DZERO(DINTSKP,8)
+        IF(IFTHRS.LT.4) THEN
+           WRITE(LUPRI,'(/A,I4)')
+     &       'WARNING, density screening of 10^(',-IFTHRS,
+     &       ') does not make sense. Screening reset to 10^-14.'
+           IFTHRS = 14
+        END IF
         IF(IFTHRS.LT.16) THEN
           DOSCRN = .TRUE.
           FCKTHR = (10.0D0)**DBLE(-IFTHRS)
