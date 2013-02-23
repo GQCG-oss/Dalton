@@ -804,6 +804,9 @@ C
 C  /parint/
       CALL MPIXBCAST(JATOM,NINTI,'INTEGER',MASTER)
       CALL MPIXBCAST(JNODV,NINTL,'LOGICAL',MASTER)
+
+!     rma_model
+      CALL MPIXBCAST(rma_model,1,'LOGICAL',MASTER)
 C
 !     update info about type of fock-matrix construction
       CALL MPIXBCAST(ISYMDM,NFMAT,'INTEGER',MASTER)
@@ -1626,15 +1629,15 @@ C
         END IF
 C
 #if defined (VAR_MPI)
-        CALL MPIXBCAST(FIRST ,1,'LOGICAL',MASTER)
-        CALL MPIXBCAST(NEWBAS,1,'LOGICAL',MASTER)
-        CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)
-        CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER)
-        CALL MPIXBCAST(HFXMU, 1,'DOUBLE',MASTER)
-        CALL MPIXBCAST(DOSRIN,1,'LOGICAL',MASTER)
-        CALL MPIXBCAST(SRINTS,1,'LOGICAL',MASTER)
-        CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)
-        CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
+        CALL MPIXBCAST(FIRST ,   1,'LOGICAL',MASTER)
+        CALL MPIXBCAST(NEWBAS,   1,'LOGICAL',MASTER)
+        CALL MPIXBCAST(NEWGEO,   1,'LOGICAL',MASTER)
+        CALL MPIXBCAST(HFXFAC,   1,'DOUBLE' ,MASTER)
+        CALL MPIXBCAST(HFXMU,    1,'DOUBLE' ,MASTER)
+        CALL MPIXBCAST(DOSRIN,   1,'LOGICAL',MASTER)
+        CALL MPIXBCAST(SRINTS,   1,'LOGICAL',MASTER)
+        CALL MPIXBCAST(ERFEXP,   1,'LOGICAL',MASTER)
+        CALL MPIXBCAST(CHIVAL,   1,'DOUBLE' ,MASTER)
 C
 C       IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                               ELSE calculate g_lr(R12)
@@ -1693,6 +1696,9 @@ C  /comr12/
 C  /parint/
         CALL MPIXBCAST(JATOM,NINTI,'INTEGER',MASTER)
         CALL MPIXBCAST(JNODV,NINTL,'LOGICAL',MASTER)
+
+!       rma_model
+        CALL MPIXBCAST(rma_model,1,'LOGICAL',MASTER)
 #endif
 #if defined (VAR_PVM)
         CALL PVMXRECV(MASTER,MTAG3)
@@ -1822,6 +1828,9 @@ C
 !       receive density matrices - that can be huge chunks... # first
         CALL MPIXBCAST(NDMAT,1,'INTEGER',MASTER)
 
+!       set rma_model according to jtype
+        if(jtype /= 3) rma_model = .false.
+
         if(rma_model)then
           ! set # of fmat/dmat outside the RMA window: min = 1
           CALL MPIXBCAST(rma_win_info%nmat_max_wo_win,1,'INTEGER',
@@ -1840,7 +1849,10 @@ C
 
 !     set local information from PARINT
       itype  = jtype
+!     write(lupri,*) 'again ... jtype rma_model',jtype,rma_model
+!     call flshfo(lupri)
 
+#ifdef VAR_MPI
       if(rma_model)then
 
         if(communication_info_mpi%my_shmem_node_id == 0)then
@@ -1860,7 +1872,7 @@ C
 
 
       else
-!       write(lupri,*) 'slave dmat',nbast,n2basx,ndmat,kdmat
+!       write(lupri,*) 'slave dmat',nbast,n2basx,ndmat
 !       call flshfo(lupri)
         call mpixbcast(dmat_buff,n2basx*ndmat,'DOUBLE',master)
 !       call output(dmat_buff,1,nbast,1,nbast,nbast,nbast,-1,lupri)
