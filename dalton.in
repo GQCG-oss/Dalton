@@ -326,15 +326,15 @@ if [ $optn -gt 1 ] ; then
          echo 'Copying dalton executable from master node: ' ${HOSTNAME}
          if [ -n "$PBS_NODEFILE" ] ; then
              # $PBS_NODEFILE is defined, then do the instructions below
-             cat $PBS_NODEFILE
-             for node in `cat $PBS_NODEFILE`
+             cat $PBS_NODEFILE | sort | uniq
+             for node in `cat $PBS_NODEFILE | sort | uniq`
              do
                 if [ ${node} == $HOSTNAME ]
                 then
                     continue
                 else
-#                   If your cluster setup requires scp, then you must change the following line.
-                    rcp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
+#                   If your cluster setup requires rcp, then you must change the following line.
+                    scp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
                     echo 'Succesfully copied executable to: ' ${node}
                 fi
              done
