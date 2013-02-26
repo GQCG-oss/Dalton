@@ -100,9 +100,9 @@ c        write(luabspri,*) 'ABS_KLRED >0, restart'
           WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
           WRK(KGD+KZVAR-1+I)=0.5d0*(GD(I)-GD(KZVAR+I))
         END DO
-        CALL GPINQ('E1RED','EXIST',EX1)
-        CALL GPINQ('E2RED','EXIST',EX2)
-        CALL GPINQ('SRED','EXIST',EX3)
+        CALL GPINQ('ABS_E1RED','EXIST',EX1)
+        CALL GPINQ('ABS_E2RED','EXIST',EX2)
+        CALL GPINQ('ABS_SRED','EXIST',EX3)
         IF (EX1.AND.EX2.AND.EX3) THEN
           write(luabspri,*)
      &          'Use ABS_READIN_RED ',ABS_KLRED(1),ABS_KLRED(2)
@@ -239,9 +239,9 @@ C
       ABS_KLRED(1)=KLRED(1)
       ABS_KLRED(2)=KLRED(2)
 C
-      CALL GPINQ('E1RED','EXIST',EX1)
-      CALL GPINQ('E2RED','EXIST',EX2)
-      CALL GPINQ('SRED','EXIST',EX3)
+      CALL GPINQ('ABS_E1RED','EXIST',EX1)
+      CALL GPINQ('ABS_E2RED','EXIST',EX2)
+      CALL GPINQ('ABS_SRED','EXIST',EX3)
 c
       IF (EX1.AND.EX2.AND.EX3) THEN
         REWIND(LUE1RED)
