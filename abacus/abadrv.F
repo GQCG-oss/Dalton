@@ -711,7 +711,7 @@ C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (Feb 2003: one of **START, **PROPE, or **FINAL)
 C
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"

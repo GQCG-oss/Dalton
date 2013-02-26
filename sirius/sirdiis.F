@@ -277,9 +277,8 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use polarizable_embedding, only: peqm, pe_mep, pe_master, pe_sol,
-     &                                 pe_noneq,
-     &                                 pe_savden, pe_save_density
+      use pe_variables, only: peqm, pe_mep, pe_sol, pe_noneq, pe_savden
+      use polarizable_embedding, only: pe_master, pe_save_density
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)

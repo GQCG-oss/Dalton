@@ -265,7 +265,7 @@ C  /* Deck twocal */
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
      &            RELCAL)
-      use polarizable_embedding, only: pe_twoint
+      use pe_variables, only: pe_twoint
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -525,6 +525,12 @@ C
       DOSCRN = .FALSE.
       IF(DIRFCK.OR.SOFOCK)  THEN
         CALL DZERO(DINTSKP,8)
+        IF(IFTHRS.LT.4) THEN
+           WRITE(LUPRI,'(/A,I4)')
+     &       'WARNING, density screening of 10^(',-IFTHRS,
+     &       ') does not make sense. Screening reset to 10^-14.'
+           IFTHRS = 14
+        END IF
         IF(IFTHRS.LT.16) THEN
           DOSCRN = .TRUE.
           FCKTHR = (10.0D0)**DBLE(-IFTHRS)
@@ -874,7 +880,7 @@ C  /* Deck twopeqm */
 !
 !   gives the number of nuclei in first fragment
 !
-      use polarizable_embedding, only: fdnucs
+      use pe_variables, only: fdnucs
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

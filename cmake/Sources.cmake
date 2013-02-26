@@ -734,6 +734,7 @@ peqm/pe_gen1int_wrapper.F90
 peqm/pe_precision.F90
 peqm/pe_blas_wrappers.F90
 peqm/pe_lapack_wrappers.F90
+peqm/pe_variables.F90
 peqm/polarizable_embedding.F90
 abacus/parallel_models_mpi.F90
 abacus/parallel_communication_models_mpi.F90

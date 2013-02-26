@@ -34,8 +34,8 @@ POTEXT="pot"
 GET_FILES=''
 PUT_FILES=''
 
-SSH=ssh
-SCP=scp
+SSH=rsh
+SCP=rcp
 export OMP_NUM_THREADS=1
 
 #default values for options
@@ -74,7 +74,8 @@ usage (){
         echo ' -mw mem    : set dalton max usable work memory to mem double precision words'
         echo ' -nb mb     : set node max usable work memory to mb Megabytes'
         echo ' -nw mem    : set node max usable work memory to mem double precision words'
-        echo ' -N num     : use MPI version with num nodes'
+        echo ' -N num     : use MPI version with num nodes (default: 1)'
+        echo ' -omp num   : set the number of OpenMP threads (default: 1)'
         echo ' -hostfile file : use hostfile "file" for start with mpirun'
         #echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
         # Jan 2013: lammpi is not an active mpi implementation any more
@@ -85,7 +86,8 @@ usage (){
         echo ' -get "file1 file2" : get files back from TMPDIR after calculation stops'
         echo ' -put "file1 file2" : put files to TMPDIR before calculation starts'
         echo ' -valgrind  : run with valgrind'
-        echo ' -rcp       : use rsh/rcp instead of ssh/scp'
+        echo ' -rsh       : use rsh/rcp instead of ssh/scp'
+        echo ' -ssh       : use ssh/scp instead of rsh/rcp'
         echo
          }
 #
@@ -126,8 +128,10 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
       -rsh ) SCP=rcp; SSH=rsh; shift;;
+      -ssh ) SCP=scp; SSH=ssh; shift;;
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
+      -omp ) export OMP_NUM_THREADS=$2; shift;;
       -lam* ) optlam=$2; shift;;
       -m|-mw ) WRKMEM=$2; export WRKMEM; shift;;
       -M|-mb ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
@@ -314,7 +318,7 @@ if [ $optn -gt 1 ] ; then
          echo 'Copying dalton executable from master node: ' ${HOSTNAME}
          if [ -n "$PBS_NODEFILE" ] ; then
              # $PBS_NODEFILE is defined, then do the instructions below
-             for node in `cat $PBS_NODEFILE`
+             for node in `cat $PBS_NODEFILE | sort | uniq`
              do
                 if [ ${node} == $HOSTNAME ]
                 then

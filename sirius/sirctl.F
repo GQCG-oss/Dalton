@@ -53,7 +53,8 @@ C
 C
 
       use lucita_orbital_spaces
-      use polarizable_embedding, only: pe_twoint, pe_twoints
+      use pe_variables, only: pe_twoint
+      use polarizable_embedding, only: pe_twoints
 
 #include "implicit.h"
 C

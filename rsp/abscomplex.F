@@ -913,7 +913,7 @@ c
 C
 C PURPOSE:
 C
-      use polarizable_embedding, only: peqm, pe_polar
+      use pe_variables, only: peqm, pe_polar
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h"

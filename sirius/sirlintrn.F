@@ -89,7 +89,7 @@ C                               starting at WRK(1+NCSIM*NVAR)
 C                          else SOVECS(NWOPT,NOSIM),
 C                               starting at WRK(1)
 C
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
       DIMENSION BCVECS(NCONDI,*), BOVECS(NWOPDI,*)
       DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)

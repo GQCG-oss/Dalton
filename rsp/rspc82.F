@@ -567,7 +567,7 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)

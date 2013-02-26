@@ -1235,7 +1235,7 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1787,7 +1787,7 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -4687,7 +4687,7 @@ C
 
       SUBROUTINE ESGGRINP(WORD)
 
-      use polarizable_embedding, only: peqm
+      use pe_variables, only: peqm
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )

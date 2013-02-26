@@ -3,6 +3,7 @@ module polarizable_embedding
     use pe_precision
     use pe_blas_wrappers
     use pe_lapack_wrappers
+    use pe_variables
 
 #if defined(VAR_MPI)
 #if defined(VAR_USE_MPIF)
@@ -20,217 +21,14 @@ module polarizable_embedding
 
     intrinsic :: allocated, present, min, minval, max, maxval, size, cpu_time
 
+    ! public subroutines/functions
     public :: pe_init, pe_master, pe_dalton_input
     public :: pe_save_density, pe_twoints
 #if defined(VAR_MPI)
     public :: pe_mpi
 #endif
 
-    ! options
-    logical, public, save :: peqm = .false.
-    logical, save :: pe_pot = .false.
-    logical, save :: pe_iter = .true.
-    logical, save :: pe_mmdiis = .false.
-    logical, save :: pe_mixed = .false.
-    logical, save :: pe_redthr = .false.
-    logical, save :: pe_border = .false.
-    logical, save :: pe_damp = .false.
-    logical, public, save :: pe_gspol = .false.
-    logical, save :: pe_nomb = .false.
-    logical, save :: pe_gauss = .false.
-    logical, public, save :: pe_polar = .false.
-    logical, public, save :: pe_mep = .false.
-    logical, public, save :: pe_skipqm = .false.
-    logical, public, save :: pe_twoint = .false.
-    logical, public, save :: pe_repuls = .false.
-    logical, public, save :: pe_savden = .false.
-    logical, public, save :: pe_fd = .false.
-    logical, public, save :: pe_sol = .false.
-    logical, public, save :: pe_noneq = .true. 
-    logical, save :: pe_infld = .false.
-    logical, save :: pe_restart = .false.
-    logical, save :: pe_verbose = .false.
-    logical, save :: pe_debug = .false.
-    logical, save :: rsp_first = .true.
-
-    ! calculation type
-    logical, save :: fock = .false.
-    logical, save :: energy = .false.
-    logical, save :: response = .false.
-    logical, save :: mep = .false.
-    logical, save :: noneq = .false.
-
-    ! temporary solution for work array thing
-    real(dp), dimension(:), pointer :: work
-
-    ! filenames
-    character(len=80) :: potfile = 'POTENTIAL.INP'
-    character(len=80) :: surfile = 'SURFACE.INP'
-
-    ! MPI stuff
-#if defined(VAR_MPI)
-    integer, parameter :: comm = MPI_COMM_WORLD
-    integer, parameter :: impi = MPI_INTEGER
-    integer, parameter :: rmpi = MPI_REAL8
-    integer, parameter :: lmpi = MPI_LOGICAL
-#endif
-    integer, save :: myid, nprocs, ierr
-    integer, save :: site_start, site_finish
-    integer, save :: surp_start, surp_finish
-    integer, save :: mep_start, mep_finish
-    logical, save :: synced = .false.
-    integer, dimension(:), save, allocatable :: siteloops, surploops, meploops
-    integer, dimension(:), save, allocatable :: poldists, sitedists, surpdists
-    integer, dimension(:), save, allocatable :: mepdists
-    integer, dimension(:), save, allocatable :: displs
-
-    ! logical unit for output file
-    integer, save :: luout = 6
-
-    ! constants, thresholds and stuff
-    ! 1 bohr = 0.5291772109217 Aa (codata 2010)
-    real(dp), parameter :: aa2au = 1.0 / 0.5291772109217
-    real(dp), parameter :: aa2au2 = aa2au * aa2au
-    real(dp), parameter :: pi = 3.141592653589793
-    real(dp), parameter :: zero = 1.0d-8
-    integer, save :: scfcycle = 0
-    real(dp), save :: thriter = 1.0d-5
-    real(dp), save :: damp = 2.1304
-    real(dp), save :: gauss_factor = 1.0
-    real(dp), save :: rep_factor = 1.0
-    real(dp), save :: Rmin = 2.2
-    character(len=6), save :: border_type = 'REDIST'
-    ! use Cholesky factorization of classical response matrix
-    logical, save :: chol = .true.
-    ! solvent and dielectric constant (defaults to water)
-    character(len=80) :: solvent
-    real(dp), save :: eps = 0.0
-    real(dp), save :: epsinf = 0.0
-
-
-    ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
-    ! C^(n)_ij coefficients for calculating T(k) tensor elements
-    integer, dimension(:,:,:), allocatable, save :: Cnij
-
-    ! polarizable embedding potential info
-    ! ------------------------------------
-    ! total number of classical sites
-    integer, save :: nsites = 0
-    ! number of polarizable sites
-    integer, save :: npols = 0
-    ! number of surface points
-    integer, save :: nsurp = 0
-    ! number fragment densities
-    integer, save :: nfds = 0
-    ! number of nuclei in fragment density
-    integer, public, save :: fdnucs = 0
-    ! exclusion list length
-    integer, save :: lexlst = 0
-    ! number of density matrices
-    integer :: ndens = 0
-    ! number of basis functions in core fragment
-    integer, save :: nbas
-    ! size of packed matrices
-    integer, save :: nnbas
-    ! number of nuclei in core region
-    integer, save :: qmnucs = 0
-
-    ! specifies what type of parameters are present
-    ! lmul(0): monopoles, lmul(1): dipoles etc.
-    logical, dimension(0:5), save :: lmul = .false.
-    ! lpol(1): (an)isotropic dipole-dipole polarizabilities
-    logical, dimension(1), save :: lpol = .false.
-    ! lhypol(1): dipole-dipole-dipole polarizabilities/1st hyperpolarizability
-!    logical, dimension(1), save :: lhypol
-
-    ! charges, areas, coordinates, elements and exclusion lists
-    ! site nuclear charges
-    real(dp), dimension(:,:), allocatable, save :: Zs
-    ! fragment density nuclear charges
-    real(dp), dimension(:,:), allocatable, save :: Zfd
-    ! core fragment nuclear charges
-    real(dp), dimension(:,:), allocatable, save :: Zm
-    ! surface point areas
-    real(dp), dimension(:), allocatable, save :: Sa
-    ! site coordinates
-    real(dp), dimension(:,:), allocatable, save :: Rs
-    ! fragment density nuclear coordinates
-    real(dp), dimension(:,:), allocatable, save :: Rfd
-    ! core fragment nuclear coordinates
-    real(dp), dimension(:,:), allocatable, save :: Rm
-    ! surface point coordinates
-    real(dp), dimension(:,:), allocatable, save :: Sp
-    ! site elements
-    character(len=2), dimension(:), allocatable, save :: elems
-    ! exclusion list
-    integer, dimension(:,:), allocatable, save :: exclists
-
-    ! energy contributions
-    ! total
-    real(dp), dimension(:), allocatable, save :: Epe
-    ! electrostatic
-    real(dp), dimension(:,:), allocatable, save :: Ees
-    ! polarization
-    real(dp), dimension(:,:), allocatable, save :: Epol
-    ! continuum solvation
-    real(dp), dimension(:,:), allocatable, save :: Esol
-    ! fragment density
-    real(dp), dimension(:,:), allocatable, save :: Efd
-
-    ! multipole moments
-    ! order of the highest order multipole moment
-    integer, save :: mulorder = -1
-    ! monopoles, dipoles, quadrupoles, octopoles, etc.
-    real(dp), dimension(:,:), allocatable, save :: M0s, M1s, M2s, M3s, M4s, M5s
-    ! (hyper)polarizabilities
-    ! order of highest order polarizability
-    integer, save :: polorder = -1
-    ! dipole-dipole polarizabilities
-    real(dp), dimension(:,:), allocatable, save :: P1s
-    ! .true. if P1 > 0 else .false.
-    logical, dimension(:), allocatable, save :: zeroalphas
-
-
-    ! MEP stuff
-    ! ---------
-    ! create QM cubes
-    logical, save :: mep_qmcube = .true.
-    ! create multipole cubes
-    logical, save :: mep_mulcube = .true.
-    ! external electric field
-    logical, save :: mep_extfld = .true.
-    real(dp), dimension(3), save :: extfld = 0.0d0
-    ! calculate electric field
-    logical, save :: mep_field = .false.
-    logical, save :: mep_fldnrm = .false.
-    ! number of grid points
-    integer, save :: npoints
-    ! grid points
-    real(dp), dimension(:,:), allocatable, save :: mepgrid
-    ! CUBE file origin and step sizes
-    real(dp), dimension(3), save :: origin, step
-    ! grid density in x, y and z direction
-    integer, save :: xgrid = 20
-    integer, save :: ygrid = 20
-    integer, save :: zgrid = 20
-    ! numberof steps in x, y and z direction
-    integer, save :: xsteps
-    integer, save :: ysteps
-    integer, save :: zsteps
-    ! box size relative to molecule size
-    real(dp), save :: xsize = 5.0
-    real(dp), save :: ysize = 5.0
-    real(dp), save :: zsize = 5.0
-
-    ! Internal field stuff
-    ! --------------------
-    ! Coordinates on which potential and field are calculated
-    real(dp), dimension(:,:), allocatable, save :: crds
-    ! Number of coordinates (length of crds)/3
-    integer, save :: ncrds
-
 ! TODO:
-! verbose output
 ! handle interface better, e.g. scale or remove higher order moments and pols
 ! damping of electric field from QM system?
 ! insert quit if symmetry or QM3, QMMM etc.
@@ -329,13 +127,8 @@ subroutine pe_init(coords, charges, dalwrk)
     else if (mulorder == 0) then
         write(luout,'(/4x,a)') 'Multipole moments upto 0th order.'
     end if
-    if (lpol(1)) then
+    if (pe_polar) then
         write(luout,'(/4x,a)') 'Dipole-dipole polarizabilities.'
-        if (pe_damp) then
-            write(luout,'(/4x,a)') 'Interactions between inducible moments&
-                                   & will be damped'
-            write(luout,'(4x,a,f8.4)') 'using damping coefficient:', damp
-        end if
         if (pe_gspol) then
             write(luout,'(/4x,a)') 'Dynamic response from environment will be&
                                    & neglected during response calculation.'
@@ -343,17 +136,25 @@ subroutine pe_init(coords, charges, dalwrk)
         if (pe_nomb) then
             write(luout,'(/4x,a)') 'Many-body interactions will be neglected.'
         end if
-        if (pe_iter .and. pe_mmdiis) then
-            write(luout,'(/4x,a)') 'Iterative DIIS solver for induced moments will&
-                                   & be used'
-        end if
         if (pe_iter) then
             write(luout,'(/4x,a)') 'Iterative solver for induced moments will&
                                    & be used'
             write(luout,'(4x,a,es7.1)') 'with convergence threshold: ', thriter
+            if (pe_diis) then
+                write(luout,'(4x,a)') 'and DIIS accelerator.'
+            end if
+            if (pe_redthr) then
+                write(luout,'(/4x,a)') 'Using reduced threshold in first few&
+                                       & SCF iterations.'
+            end if
         else
             write(luout,'(/4x,a)') 'Direct solver for induced moments will be&
                                   & used.'
+        end if
+        if (pe_damp) then
+            write(luout,'(/4x,a)') 'Interactions between inducible moments&
+                                   & will be damped'
+            write(luout,'(4x,a,f8.4)') 'using damping coefficient:', damp
         end if
     end if
     if (pe_fd) then
@@ -361,10 +162,6 @@ subroutine pe_init(coords, charges, dalwrk)
         if (pe_repuls) then
             write(luout,'(/4x,a,f5.3)') 'Repulsion operator will be used for&
                                         & fragment densities'
-            if (rep_factor /= 1.0d0) then
-                write(luout,'(/4x,a,f5.3)') 'Repulsion will be scaled using the&
-                                            & factor: ', rep_factor
-            end if
         end if
     end if
     if (pe_sol) then
@@ -643,7 +440,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) thriter
             end if
             pe_iter = .true.
-        else if (trim(option(2:)) == 'MMDIIS') then
+        else if (trim(option(2:)) == 'DIIS') then
             read(luinp,*) option
             backspace(luinp)
             if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.& 
@@ -651,11 +448,18 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) thriter
             end if
             pe_iter = .true.
-            pe_mmdiis = .true.
-        ! mized solver for induced moments
+            pe_diis = .true.
+        ! mixed solver for induced moments (work in progress)
         else if (trim(option(2:)) == 'MIXED') then
-            pe_mixed = .true.
+            write(luout,*) 'WARNING: mixed solver is work in progress'
+            read(luinp,*) option
+            backspace(luinp)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(luinp,*) thriter
+            end if
             pe_iter = .true.
+            pe_mixed = .true.
         ! use reduced threshold in iterative induced moments solver
         else if (trim(option(2:)) == 'REDTHR') then
             pe_redthr = .true.
@@ -705,24 +509,31 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! calculate intermolecular two-electron integrals
         else if (trim(option(2:)) == 'TWOINT') then
             read(luinp,*) fdnucs
+            read(luinp,*) option
+            backspace(luinp)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(luinp,*) repfacs
+            else
+                repfacs(1) = 1.0d0
+                repfacs(2) = 0.0d0
+                repfacs(3) = 0.0d0
+            end if
             pe_twoint = .true.
         ! save density matrix
         else if (trim(option(2:)) == 'SAVDEN') then
             pe_savden = .true.
         ! get fock matrix for repulsion potential
         else if (trim(option(2:)) == 'REPULS') then
-            read(luinp,*) option
-            backspace(luinp)
-            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.& 
-               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
-                read(luinp,*) rep_factor
-            end if
             pe_repuls = .true.
         ! electrostatics from fragment densities
         else if (trim(option(2:)) == 'FD') then
             ! number of fragment densities
             read(luinp,*) nfds
             pe_fd = .true.
+        ! skip electrostatics from fragment densities
+        else if (trim(option(2:)) == 'NOFDES') then
+            pe_fdes = .false.
         ! skip QM calculations, i.e. go directly into PE module
         else if (trim(option(2:)) == 'SKIPQM') then
             pe_skipqm = .true.
@@ -1755,39 +1566,45 @@ subroutine es_fragment_densities(denmats, Eel, Enuc, fckmats)
         do j = 1, ndens
             l = (j - 1) * nnbas + 1
             m = j * nnbas
-            if (fock) fckmats(l:m) = fckmats(l:m) + fd_fckmat
-            Eee(j) = dot(denmats(l:m), fd_fckmat)
+            if (pe_fdes) then
+                if (fock) fckmats(l:m) = fckmats(l:m) + fd_fckmat
+                Eee(j) = dot(denmats(l:m), fd_fckmat)
+            end if
             if (pe_repuls) then
-                if (fock) fckmats(l:m) = fckmats(l:m) + rep_factor * fd_repmat
-                Efd(3,j) = Efd(3,j) + dot(denmats(l:m), rep_factor * fd_repmat)
+                if (fock) fckmats(l:m) = fckmats(l:m) + fd_repmat
+                Efd(3,j) = Efd(3,j) + dot(denmats(l:m), fd_repmat)
             end if
         end do
 
-        do j = 1, fdnucs
-!            gauss = (8.0d0  * gauss_factor) /&
-!                    ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
-            do k = 1, qmnucs
-                Rfm = Rm(:,k) - Rfd(:,j)
-                call Tk_tensor(Tfm, Rfm)
-                Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
+        if (pe_fdes) then
+            do j = 1, fdnucs
+    !            gauss = (8.0d0  * gauss_factor) /&
+    !                    ((P1s(1,j) + P1s(4,j) + P1s(6,j)) / 3.0d0)**(2.0d0/3.0d0)
+                do k = 1, qmnucs
+                    Rfm = Rm(:,k) - Rfd(:,j)
+                    call Tk_tensor(Tfm, Rfm)
+                    Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
+                end do
+    !            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j)) 
+    !            Zfd_ints = Zfd(1,j) * Zfd_ints
+                call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
+                do m = 1, ndens
+                    n = (m - 1) * nnbas + 1
+                    o = m * nnbas
+                    Een(m) = Een(m) + dot(denmats(n:o), Zfd_ints(:,1))
+                    if (fock) fckmats(n:o) = fckmats(n:o) + Zfd_ints(:,1)
+                end do
             end do
-!            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j)) 
-!            Zfd_ints = Zfd(1,j) * Zfd_ints
-            call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
-            do m = 1, ndens
-                n = (m - 1) * nnbas + 1
-                o = m * nnbas
-                Een(m) = Een(m) + dot(denmats(n:o), Zfd_ints(:,1))
-                if (fock) fckmats(n:o) = fckmats(n:o) + Zfd_ints(:,1)
-            end do
-        end do
+        end if
 
         deallocate(Rfd, Zfd)
 
-        Enuc = Enuc + Ene + Enn
-        do j = 1, ndens
-            Eel(j) = Eel(j) + Een(j) + Eee(j)
-        end do
+        if (pe_fdes) then
+            Enuc = Enuc + Ene + Enn
+            do j = 1, ndens
+                Eel(j) = Eel(j) + Een(j) + Eee(j)
+            end do
+        end if
     end do
 
 end subroutine es_fragment_densities
@@ -2119,8 +1936,8 @@ subroutine induced_moments(Mkinds, Fs)
     integer :: i, j, k
 
     if (pe_iter) then
-        if (pe_mmdiis) then
-            call pe_diis(Mkinds, Fs)
+        if (pe_diis) then
+            call pe_diis_solver(Mkinds, Fs)
         else if (pe_mixed) then
             call mixed_solver(Mkinds, Fs)
         else
@@ -2163,7 +1980,9 @@ subroutine iterative_solver(Mkinds, Fs)
     logical :: converged = .false.
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
-    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr, eps_fac, eps_inf
+    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr
+    real(dp) :: prefac, eps_fac
+    real(dp), parameter :: fourpi = 4.0d0 * pi
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: T, Rij, Ftmp, M1tmp
@@ -2180,15 +1999,15 @@ subroutine iterative_solver(Mkinds, Fs)
     end if
 
     if (pe_sol) then
-        if ( noneq ) then
-            eps_fac = (eps -epsinf ) / ( (eps - epsinf) - 1.0d0 )
+        if (noneq) then
+            eps_fac = (eps - epsinf) / ((eps - epsinf) - 1.0d0)
         else if (response) then
             eps_fac = epsinf / (epsinf - 1.0d0)
         else if (fock) then
             eps_fac = eps / (eps - 1.0d0)
         end if
+        prefac = 1.07d0 * eps_fac
     end if
-
 
     if (myid == 0) then
         inquire(file='pe_induced_dipoles.bin', exist=lexist)
@@ -2234,7 +2053,8 @@ subroutine iterative_solver(Mkinds, Fs)
             end do
             if (pe_sol) then
                 do i = surp_start, surp_finish
-                    Mkinds(3*npols+i,n) = (1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i)))**(-1) * Fs(3*npols + i,n)
+                    Mkinds(3*npols+i,n) = (prefac * sqrt(fourpi / Sa(i)))**(-1)&
+                                        & * Fs(3*npols+i,n)
                 end do
             end if
 
@@ -2334,9 +2154,9 @@ subroutine iterative_solver(Mkinds, Fs)
                         do k = 1, 3 
                             Rij = Sp(:,j) - Rs(:,i)
                             R3 = nrm2(Rij)**3
-                            T(k) = -Rij(k)/R3
+                            T(k) = - Rij(k) / R3
                         end do
-                        Ftmp = Ftmp - T * Mkinds(3*npols + j,n)
+                        Ftmp = Ftmp - T * Mkinds(3*npols+j,n)
                     end do
                 end if
 
@@ -2371,7 +2191,7 @@ subroutine iterative_solver(Mkinds, Fs)
 #endif
                 l = l + 3
             end do
-           
+
             if (pe_sol) then
                 do i = 1, nsurp
                     Ftmp = 0.0d0
@@ -2394,22 +2214,19 @@ subroutine iterative_solver(Mkinds, Fs)
                     end do
                     Ftmp(1) = Ftmp(1) + Fs(3*npols + i,n)
                     M1tmp(1) = Mkinds(3*npols+i,n)
-                    Mkinds(3*npols+i,n) = (1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i)))**(-1) * Ftmp(1)
+                    Mkinds(3*npols+i,n) = (prefac * sqrt(fourpi / Sa(i)))**(-1)&
+                                        & * Ftmp(1)
                     norm = norm + (Mkinds(3*npols+i,n) - M1tmp(1))**2
                 end do
             end if
 
             if (myid == 0) then
                 if (norm < redthr * thriter) then
-!                    if (pe_verbose) then
+                    if (pe_verbose) then
                         write (luout,'(4x,a,i2,a)') 'Induced dipole moments&
                                                     & converged in ', iter,&
                                                     & ' iterations.'
-                        do i = 1, 3*npols
-                            write(luout,*) Mkinds(l:l+2,n)
-                            l = l + 3
-                        end do
-!                    end if
+                    end if
                     converged = .true.
                 else if (iter > 50) then
                     write(luout,*) 'ERROR: could not converge induced dipole&
@@ -3371,12 +3188,14 @@ subroutine response_matrix(B)
     integer :: info
     integer :: i, j, k, l, m, n, o
     integer, dimension(3) :: ipiv
+    real(dp), parameter :: fourpi = 4.0d0 * pi
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
     real(dp) :: Rd, ai, aj
-    real(dp) :: R, R3, R5, T, eps_fac
+    real(dp) :: R, R3, R5, T
+    real(dp) :: prefac, eps_fac
     real(dp), dimension(3) :: Rij
     real(dp), dimension(6) :: P1inv
 
@@ -3390,6 +3209,7 @@ subroutine response_matrix(B)
         else if (fock) then
             eps_fac = eps / (eps - 1.0d0)
         end if
+        prefac = 1.07d0 * eps_fac
     end if
 
     m = 0
@@ -3507,7 +3327,7 @@ subroutine response_matrix(B)
     end do  ! do i = 1, nsites
     if (pe_sol) then
         do i = 1, nsurp
-            B(m+1) = 1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i))
+            B(m+1) = prefac * sqrt(fourpi / Sa(i))
             print *, Sa(i), i
             m = m + 1
             do j = i + 1, nsurp
@@ -4139,7 +3959,7 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
     ! get electric field from fragment density at polarizable sites
     ! TODO: better solution for neglecting polarization
     ! TODO: potential from fragment density at surface points
-    if (lpol(1)) then
+    if (pe_polar) then
         allocate(Ftmp(3*npols,1), Ffd(3*npols)); Ftmp = 0.0d0
         call electron_fields(Ftmp, denmat)
         Ffd = Ftmp(:,1)
@@ -4292,14 +4112,14 @@ subroutine pe_twoints(nbas, nocc, norb, dalwrk)
     do i = 1, focc
         ecmo(:,i) = mo_energies(i) * cmo(:,i)
     end do
-    weighted_denmat = - rep_factor * matmul(cmo, transpose(ecmo))
+    weighted_denmat = - matmul(cmo, transpose(ecmo))
     deallocate(mo_energies, ecmo, cmo)
 
     allocate(full_repmat(cbas,cbas))
-    full_repmat = matmul(matmul(full_overlap(fbas+1:nbas,1:fbas),&
-                               & weighted_denmat),&
+    full_repmat = matmul(matmul(full_overlap(fbas+1:nbas,1:fbas), weighted_denmat),&
                         & full_overlap(1:fbas,fbas+1:nbas))
-    full_repmat = full_repmat + full_repmat**2 !+ full_repmat**4 + full_repmat**6 + full_repmat**8
+    full_repmat = repfacs(1) * full_repmat + repfacs(2) * full_repmat**2&
+                & + repfacs(3) * full_repmat**4
     deallocate(full_overlap, weighted_denmat)
 
     allocate(repmat(cbas*(cbas+1)/2))
@@ -5637,7 +5457,7 @@ end subroutine pe_compute_mep
 
 !------------------------------------------------------------------------------
 
-subroutine pe_diis(Mkinds,Fs)
+subroutine pe_diis_solver(Mkinds,Fs)
 
     real(dp), dimension(:,:), intent(out) :: Mkinds
     real(dp), dimension(:,:), intent(in) :: Fs
@@ -5839,7 +5659,7 @@ subroutine pe_diis(Mkinds,Fs)
         end do !itdiis 
     end do ! n= 1, ndens
 
-end subroutine pe_diis
+end subroutine pe_diis_solver
 
 end module polarizable_embedding
 
