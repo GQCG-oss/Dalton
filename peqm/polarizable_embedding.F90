@@ -107,9 +107,8 @@ subroutine pe_init(coords, charges, dalwrk)
            write(luout,*) 'I AM HERE....'
            call setup_solvent()
            call setup_cavity()
-!           call read_surface(trim(surfile))
            if (.not. fixpva) call read_surface(trim(surfile))
-!           STOP 'DONE GENRATING CAVITY'
+           STOP 'DONE GENRATING CAVITY'
     end if
 
     write(luout,'(//2x,a)') 'Polarizable Embedding potential'
@@ -3866,18 +3865,10 @@ subroutine setup_cavity()
          all_charges(qmnucs+i-nz) = Zs(1,i)
      end do
 
-    write(luout,*) 'FIXPVA2', FIXPVA
     if (fixpva) then
-       write(luout,*) 'Entering FIXTES'
-!       do i = 1, nsites + qmnucs
-!           write(luout,*) all_coords(:,i), i
-!       end do
        call fixtes(all_coords, all_charges)
-       write(luout,*) 'I AM HERER1'
-       write(luout,*) 'LEAVING FIXTES'
     else
        call dalton_cavity(all_coords, all_charges, qmnucs + nsites - nz, work, size(work)) 
-!       write(luout,*) 'I AM HERER1'
     end if
 
 end subroutine setup_cavity
@@ -5730,18 +5721,14 @@ subroutine fixtes(all_centers, all_z)
     integer, dimension(:,:), allocatable :: IDDAI
     real(dp), dimension(:,:), allocatable :: TMPTS
     integer :: II, I, J, INUC, NFFTS, mxtemp, IFFAT
-    integer :: KFFTS, ITS, JJJ, FIXA, IFFTS, surf
-    real(dp) :: TH, FI, CTH, STH, FIR
+    integer :: KFFTS, ITS, JJJ, IFFTS, surf
+    real(dp) :: TH, FI, CTH, STH, FIR, FIXA
     real(dp) :: GOLD, ONEGOLD, SQRT13
     PARAMETER (GOLD=1.618033988749895D+00, ONEGOLD=1.0D+00/GOLD, SQRT13=0.577350269189626D+00)
     
     EQUIVALENCE (IDUM(1),JVT1(1,1))
     MXTEMP = qmnucs + nsites
     IF(MXFFTS .eq. 1) MXFFTS=MXTEMP*NTSATM/4
-    print *, nsites, qmnucs
-    do i = 1, qmnucs + nsites 
-       write(luout,*) all_centers(:,i) , i, nsites+qmnucs
-    end do
     allocate(XTS(mxffts))
     allocate(YTS(mxffts))
     allocate(ZTS(mxffts))
@@ -6093,7 +6080,8 @@ subroutine fixtes(all_centers, all_z)
 !      end do
       FIXA = FIXA*TOANGS**2
 !
-      write(luout,*) 'Surface area FIXA', FIXA
+      write(luout,*) 'Surface area FIXA', FIXA, '/A**2'
+      write(luout,*) 'Number of surface charges', NFFTS
 !     call openfile(surfile, surf, 'new', 'formatted')
 !     rewind(lu)
 !     write(surf,'(i6)') nffts
@@ -6111,7 +6099,6 @@ subroutine fixtes(all_centers, all_z)
          Sp(3,i) = ZTS(i) 
          write(luout,*) Sp(:,i), Sa(i)
       end do
-      write(luout,*) 'I AM HERE0'
  
 !     close(lu)
 !      RETURN
@@ -6515,7 +6502,11 @@ subroutine FIXPVASWF(IFFAT,CORD,CDTST,ITS,AREA,RFIX,TMP,IDTMPTS)
    real(dp), dimension(3,960) :: CDTST
    real(dp), dimension(mxffts) :: RFIX
    integer, dimension(41) :: IDTMPTS
-   real(dp) :: ZERO=0.0d0, ONE=1.0d0, TWO=2.0d0, PT5=0.5d0, TEN=10.0d0
+   real(dp) :: ZERO=0.0d0
+   real(dp) :: ONE=1.0d0
+   real(dp) :: TWO=2.0d0
+   real(dp) :: PT5=0.5d0
+   real(dp) :: TEN=10.0d0
    real(dp) :: DISM0, ONEDISM0, DISN1, DISN2, RA, RB
    real(dp) :: X1, Y1, Z1, X2, Y2, Z2, X3, Y3, Z3, X5, Y5, Z5
    real(dp) :: DISC2, ONEDISC2, DISC, ONEDISC, DISC3, DIS132, DIS13, DUM
