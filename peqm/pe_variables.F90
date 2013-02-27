@@ -39,6 +39,7 @@ module pe_variables
     logical, save :: pe_verbose = .false.
     logical, save :: pe_debug = .false.
     logical, save :: rsp_first = .true.
+    logical, save :: fixpva = .false.
 
     ! calculation type
     logical, save :: fock = .false.
@@ -215,5 +216,16 @@ module pe_variables
     real(dp), dimension(:,:), allocatable, save :: crds
     ! Number of coordinates (length of crds)/3
     integer, save :: ncrds
+
+    ! FIXPVA2 stuff       
+    ! Maximum number of tessera
+    integer, save :: MXFFTS = 1
+    ! Number of tessera per atom
+    integer, save :: NTSATM = 60 
+    ! Number of tessera
+    integer, save :: NFFTS = 1
+    !
+    real(dp), save :: TOANGS = 0.52917724924D+00
+    ! --------------------
 
 end module pe_variables
