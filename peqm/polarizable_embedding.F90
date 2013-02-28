@@ -104,7 +104,6 @@ subroutine pe_init(coords, charges, dalwrk)
     call read_potential(trim(potfile))
 
     if (pe_sol) then
-           write(luout,*) 'I AM HERE....'
            call setup_solvent()
            call setup_cavity()
            if (.not. fixpva) call read_surface(trim(surfile))
@@ -3356,8 +3355,18 @@ subroutine response_matrix(B)
             do j = i + 1, nsurp
                 Rij = Sp(:,j) - Sp(:,i)
                 R = nrm2(Rij)
-                B(m+1) = eps_fac / R
-                m = m + 1
+                if (fixpva) then
+                   if ( R .le. 0.4d0 ) then
+                      B(m+1) = eps_fac*0.5d0*(3.0d0/0.4d0 - R**2/0.4**3) 
+                      print *, 'FIXSOL'
+                   else
+                      B(m+1) = eps_fac / R
+                   end if
+                   m = m + 1
+                else
+                    B(m+1) = eps_fac / R
+                    m = m + 1
+                end if
             end do ! j = i + 1, nsurp
         end do ! i = 1, nsurp
     end if
@@ -6068,7 +6077,9 @@ subroutine fixtes(all_centers, all_z)
             DAI(3,JJJ,KFFTS) = DAI(3,JJJ,ITS)
          END DO
       end do
+      print *, 'Local nffts', nffts
       NFFTS = KFFTS   ! NFFTS IS GLOBAL
+      print *, 'Glocal nffts', nffts
 !
       FIXA = 0.0D+00
       DO IFFTS=1,NFFTS
