@@ -343,6 +343,16 @@ cb       write(lupri,*)
 C===============================================================================
 C  SINGLET CALCULATIONS : D1S and P1S 
 C ==============================================================================
+      IF(KEY.EQ."FCAV") THEN 
+C        Look for LABELS : NSCO  
+C        -----------------------
+         LABEL1 = 'FC X  01'
+         write(lupri,*) ' FCAV will be done' 
+      ENDIF
+
+C===============================================================================
+C  SINGLET CALCULATIONS : D1S and P1S 
+C ==============================================================================
       IF((KEY.EQ."DIAM").OR.(KEY.EQ."DIAD")) THEN 
 C        Look for LABELS : NSCO  
 C        -----------------------
@@ -583,10 +593,7 @@ C
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-
-C jim-dbg : put here index to selected atom nidx = 3.LRATOM-2 , the first one
-c      nidx = 1 
-c      nidy = nidx+NLAB1
+      
       DO 300 IDIP = 1,NLAB1
          LABEL1 = LISTA1(IDIP)
 C
@@ -601,7 +608,7 @@ c        set variables for response module
          CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK2),LWORK2)
 C
 cm         IF (NFRVAL.GT.0) THEN
-cb           write(lupri,*)' # of freq val, NFRVAL:',NFRVAL 
+           write(lupri,*)' # of freq val, NFRVAL:',NFRVAL 
 C
 C           3. Work Allocations:
 C
@@ -661,9 +668,6 @@ C
 C              Find label and symmetry of the left side operator
 C
                LABEL2 = LISTA2(IPL)
-cb               write(lupri,*)'      LABAPP IPL           ' , LABEL2
-cb               write(lupri,*) '     KSYM   = LABSYM(IPL) ', KSYM 
-c              IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
                KSYM   = 1
 cb               write(lupri,*) '     else KSYM   = 1      ', KSYM 
 C
@@ -673,61 +677,54 @@ C              ================================================
 C              (otherwise 2. order property SNDPRP is zero)
 C
 cx               IF (KSYM.EQ.ISYM) THEN
-                  KSYMOP = ISYM
-                  TRPLET = .FALSE.
+               KSYMOP = ISYM
+               TRPLET = .FALSE.
 C
 C                 Find right hand side for left operator
 C                 ========================================
 C
-                  CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
-     &                       WORK(KPVX),WORK(KXINDX),ANTSYM,
-     &                       WORK(KWRKG1),LWRKG1)
+               CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
+     &             WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
 C
-                  IF (IPRLNR.GT.5) THEN
-                     WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
-                     CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,
-     &                           LUPRI)
-                  ENDIF
+               IF (IPRLNR.GT.5) THEN
+                  WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
+                  CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
+               ENDIF
 C
 C                 Form second order properties SNDPRP
 C                 ===================================
 C
-                  REWIND LUSOVE
-                  CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+               REWIND LUSOVE
+               CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
 C
-cd                  IF (IPRLNR.GT.-1) THEN
-cd                     WRITE (LUPRI,'(2A)') 'Solution Vector, label: ',
-cd     &                                    LABEL1
-cd                     CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,1,
-cd     &                           LUPRI)
-cd                  ENDIF
+               IF (IPRLNR.GT.-1) THEN
+                 WRITE (LUPRI,'(2A)') 'Solution Vector, label: ',LABEL1
+                 CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
+               ENDIF
 C
-                  SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
+               SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
 C
-cx                  IF (IPRLNR.GT.3) THEN
-                     WRITE (LUPRI,'(5A,F20.12)')
-     &               ' Second order property for <<',LABEL2,',',LABEL1,
-     &               '>> = ',SNDPRP
-cx                  ENDIF
-cx                    IF(KEY.EQ.'SDZK')THEN 
-cx                    write(lupri,*)'label:',LABEL2(7:8),' : ',LABEL1(7:8)
-cx                    ENDIF
+               IF (IPRLNR.GT.3) THEN
+                  WRITE (LUPRI,'(5A,F20.12)')
+     &            ' Second order property for <<',LABEL2,',',LABEL1,
+     &            '>> = ',SNDPRP
+               ENDIF
 C
-C                 Write properties into the various property matrices
-C                 ===================================================
+C              Write properties into the various property matrices
+C              ===================================================
 C
-C                 Nuclear Shieldings
-C                 ------------------
-                    IF (KEY.EQ.'D1S ') THEN
-                      IF (LABEL2.EQ.'MASSVELO') THEN 
-                         SIGMAMV(IDIP)=SNDPRP
-                         write(lupri,*)'massvelo' , IDIP
-                      ENDIF
-                      IF (LABEL2.EQ.'DARWIN  ') THEN 
-                         SIGMADW(IDIP)=SNDPRP
-                         write(lupri,*)'darwin'  , IDIP
-                      ENDIF
-                    END IF      
+C              Nuclear Shieldings
+C              ------------------
+               IF (KEY.EQ.'D1S ') THEN
+                  IF (LABEL2.EQ.'MASSVELO') THEN 
+                      SIGMAMV(IDIP)=SNDPRP
+                      write(lupri,*)'massvelo' , IDIP
+                  ENDIF
+                  IF (LABEL2.EQ.'DARWIN  ') THEN 
+                     SIGMADW(IDIP)=SNDPRP
+                     write(lupri,*)'darwin'  , IDIP
+                  ENDIF
+               END IF      
 cx                  IF (LABEL1.EQ.'XDIPVEL') THEN
 cx                     IF (LABEL2(8:8).EQ.'Y') THEN
 cx                        SIGMADZ(IPTAX(3,2),INUCLEO)=
@@ -748,19 +745,9 @@ cx                  ENDIF
   200 CONTINUE
 cm         END IF  NFRVAL
   300 CONTINUE
-       Write(lupri,*)
-       Write(lupri,*) 'Results from LinearLR with key :',KEY
-       Write(lupri,*) 'Aca armo LA matriz '
-       IF(KEY.EQ.'D1S ') THEN
-         DO I=1, 9
-            Write(LUPRI,*) SIGMAMV(I)
-         ENDDO
-         DO I=1,9
-            Write(LUPRI,*) SIGMADW(I)
-         ENDDO
-       ENDIF
-       IF(KEY.EQ.'FCZK') THEN
-       ENDIF
+
+
+
 
       CALL GPCLOSE(LUSOVE,'DELETE')
       CALL GPCLOSE(LUGDVE,'DELETE')

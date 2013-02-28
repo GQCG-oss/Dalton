@@ -51,6 +51,7 @@ C
       DIMENSION IPOINT(MXCENT)
 C#include <dorps.h>
 #include <spnout.h>
+c#include <lrescinf.h>
 C jim  aca van las opctiones para LRESC , aun no las defino todas
       DATA TABLE /'.GAUGEO','.PRINT ','.SELECT','.xXXXXx','.xXXXXx',
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
@@ -62,7 +63,7 @@ C
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
-cv            write(lupri,*) ' @LRSCINP : reading : ' , WORD
+            write(lupri,*) ' @LRSCINP : reading : ' , WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
@@ -82,29 +83,38 @@ cv            write(lupri,*) ' @LRSCINP : reading : ' , WORD
                CALL QUIT('Input keywords in LRESC Input, LRSCINP')
 C   READ GAUGEO : DEFINIR ALGUNA VAR PARA GAUGEO
  1             CONTINUE
-cv                    write(lupri,*)' ..aca leo gaugeo ', WORD
-                    READ (LUCMD,*) (LRGAUG(IS), IS = 1, 3)
-                    GAUCHANG =.TRUE.
-                    ICHANG = ICHANG + 1
+cv     write(lupri,*)' ..aca leo gaugeo ', WORD
+               READ (LUCMD,*) (LRGAUG(IS), IS = 1, 3)
+               DO ICENT = 1, NUCIND
+c                  NAME =  NAMEX(3*ICENT)(1:4)
+                  WRITE (LUPRI,'(2X,A,3X," : ",3(A1,2X,A,F15.10))')
+     &            NAMEX(3*ICENT)(1:4), '1' , 'x' , CORD(1,ICENT),
+     &                  '2' , 'y' , CORD(2,ICENT),
+     &                  '3' , 'z' , CORD(3,ICENT)
+               ENDDO
+               GAUCHANG =.TRUE.
+               ICHANG = ICHANG + 1
                GOTO 100
 C   SET PRINT LEVEL 
  2             CONTINUE
-                  READ (LUCMD,*) JIMPRT
-c                  write(lupri,*)' ..aca leo print level :', JIMPRT
-                  ICHANG = ICHANG + 1
+               READ (LUCMD,*) JIMPRT
+c              write(lupri,*)' ..aca leo print level :', JIMPRT
+               ICHANG = ICHANG + 1
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  3             CONTINUE
-                 READ (LUCMD,*) LRATOM
-                 ICHANG = ICHANG + 1
-                 write(lupri,*)'Your selection is atom #:',LRATOM,
-     $            'named : ', NAMN(LRATOM), 'on Molecule.mol file'
-                 IF (LRATOM.GT.NATOMS)THEN 
-                   write(lupri,*) 'Input Error on LRSCINP' 
-                   write(lupri,*) 'Your selection exceeds total ', 
-     $                            'number of atoms on input file'
-                   CALL QUIT('LRATOM grater than NATOMS, LRSCINP')
-                  END IF
+cx             write(lupri,*)'@LRINP  antes de leer' 
+               READ (LUCMD,*) LRATOM
+               ICHANG = ICHANG + 1
+cx             write(lupri,*)'LRINP  despues de leer', LRATOM  
+cx             write(lupri,*)'Your selection is atom #:',LRATOM,
+cx     $         'named : ', NAMN(LRATOM), 'on Molecule.mol file'
+               IF (LRATOM.GT.NATOMS)THEN 
+                  write(lupri,*) 'Input Error on LRSCINP' 
+                  write(lupri,*) 'Your selection exceeds total ', 
+     $                          'number of atoms on input file'
+                  CALL QUIT('LRATOM grater than NATOMS, LRSCINP')
+               END IF
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  4             CONTINUE
@@ -308,6 +318,10 @@ cv         CALL CUADRAS('LFCO')
 
       IF (SIGMAD0S) THEN
          WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : '
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : FC'
+         CALL AVELRSC('FCAV',WORK,LWORK) ! avFC   testing !
+cv         CALL AVERAGE('DIAK',WORK,LWORK) ! DIAK   testing !
+cv         CALL AVERAGE('ANGP',WORK,LWORK) ! ANGP   testing !
       END IF
 
 

@@ -34,7 +34,7 @@ C
 c    ---------------------------------------
 c    ---------------------------------------
 C
-      SUBROUTINE LINEAR(KEY,WORK,LWORK)
+      SUBROUTINE AVELRSC(KEY,WORK,LWORK)
 C  
 C...
 C...  This subroutine was written by Juan Ignacio Melo using
@@ -54,7 +54,10 @@ c#include <suscpt.h>
       LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL1,LABEL2,LISTA1(4*MXCOOR+9),LISTA2(4*MXCOOR+9)
+      CHARACTER*6 LABEL22
       CHARACTER*4 KEY
+      CHARACTER*3 char
+      DIMENSION SIGMAMV(9),SIGMADW(9)
       PARAMETER (D05=0.5D0,D025=0.25)
       LOGICAL TODOINT
 C
@@ -81,6 +84,7 @@ C
 #include "orgcom.h"
 C
 cxu  sacar lo de abajo
+cc      IPRLNR = 5
       IPRLNR = JIMPRT
 cxu
 C
@@ -91,19 +95,18 @@ C         'PSOK'  PARAMAGNETIC
 C         'LKIN'  PARAMAGNETIC
 C
 C
-      CALL QENTER('LRSCLIN')
+      CALL QENTER('AVELRESC')
       CALL TIMER('START ',TIMEIN,TIMOUT)
-      IF (IPRLNR .GT. 0) THEN
+      WRITE(LUPRI,*)
+      IF (JIMPRT .GT. 5) THEN
          WRITE (LUPRI,'(A,/)') ' <<<<<<<<<< Output from LRESC-'//
-     &       'LINEAR-S >>>>>>>>>> '
-         WRITE (LUPRI,'(A,/)') ' <<<<<< Por Ahora solo PRIMER atomo '//
-     &       'LINEAR-S >>>>>>>>>> '
+     &       'AVERAGE >>>>>>>>>> '
          WRITE(LUPRI,*)
-         WRITE(LUPRI,'(2A)') '@LINEARS to do ', KEY
-         WRITE(LUPRI,*) 'ATOM set to ', LRATOM
+         WRITE(LUPRI,'(2A)') '@AVERAGE to do ', KEY
       END IF
 C
-      IPRRSP = IPRLNR
+cb       IPRRSP = JIMPRT
+         IPRRSP = -1
 C
 C     Get reference state
 C     ===================
@@ -114,7 +117,7 @@ C
       LPVX   = 0
       KFREE  = 1
       LFREE  = LWORK
-      IF (JIMPRT.GT.5) Then 
+      IF (JIMPRT.GT.2) Then 
           write(lupri,'(A,3F12.8)') ' orgcom.h : GAGORG :', GAGORG
           write(lupri,'(A,3F12.8)') '            ORIGIN :', ORIGIN
           write(lupri,'(A,3F12.8)') '            CMXYZ  :', CMXYZ
@@ -159,7 +162,7 @@ C
 
       CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
 C          RD_SIRIFC( KEY ,FOUND,   AMAT   ,  WRK      ,LWRK)
-      IF (.NOT.FOUND) CALL QUIT('LRSCLIN error: CMO not on SIRIFC')
+      IF (.NOT.FOUND) CALL QUIT('AVELRESC error: CMO not on SIRIFC')
 Cjim      write(lupri,*)' CMOS :  dan bien !!!' 
 Cjim      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
       write(lupri,*) '   '     
@@ -186,14 +189,9 @@ C
       CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
 C
 c tirar esto
-      IPRCIX = 10
+      IPRCIX = -1
 c
-cd      write(lupri,*) '   ' 
-cd      write(lupri,*) ' output of getcix            ' 
       CALL GETCIX(WORK(KXINDX),IREFSY,IREFSY,WORK(KWORK1),LWORK1,0)
-cd      write(lupri,*) ' ----------------------------'
-cd      write(lupri,*) ' INDXCI(*)  :  ' , WORK(KXINDX)
-cd      write(lupri,*)  '  '
 C
 C     SOPPA :
 C
@@ -317,7 +315,6 @@ c       LISTA2
 c       LABSYM 
 c       LABAPP es un common q se usa en rsp ??
 
-C  nidx = 3.LRATOM-2, 3.LRATOM-1, 3.LRATOM 
 
 C ==============================================================================
 C
@@ -325,212 +322,34 @@ C  Staritng Labels stuff
 C
 C ==============================================================================
 
+       write(lupri,*)
+cb       write(lupri,*)' selected atom is :', LRATOM
+cb       write(lupri,*)' LRATOM / 100' , LRATOM / 100
+cb       write(lupri,*)' LRATOM / 10' , LRATOM / 10
+ 
+       npos1 = 3*LRATOM-2
+       aa = LRATOM / 100
+       bb = LRATOM /10
+cb       write(lupri,*)
+cb       IF (aa.GE.1) THEN
+cb               write(lupri,*)'LRATOM tiene 3 digits'
+cb          ELSE IF (bb.GE.1) THEN
+cb               write(lupri,*)'LRATOM tiene 2 digitos'
+cb          ELSE IF (bb.LT.1) THEN
+cb               write(lupri,*)'LRATOM tiene 1 digito'
+cb       ENDIF
+cb       write(lupri,*)
 
 C===============================================================================
 C  SINGLET CALCULATIONS : D1S and P1S 
 C ==============================================================================
-      IF(KEY.EQ."D1S ") THEN 
+      IF(KEY.EQ."FCAV") THEN 
 C        Look for LABELS : NSCO  
 C        -----------------------
-         write(lupri,*)
-         LABEL1='NSCO'
-         write(lupri,*) '@Linear setting  LABEL1 : NSCO '
-         IJ = 1
-         DO I=1,NCOOR
-           DO J=1,3
-             LISTA1(IJ)= CHRNOS(I/10)//CHRNOS(I/10)//CHRNOS(MOD(I,10))//
-     &       'NSCO'//CHRXYZ(J)
-             LABSYM(IJ)=1
-             write(lupri,*) '   LABEL1 : ', LISTA1(IJ), LABSYM(IJ)
-             IJ = IJ + 1
-           END DO
-         END DO
-         NLAB1 = 3*NCOOR
-C        Look for LABELS : DARWIN, MASSVELO
-C        -----------------------------------
-         write(lupri,*)
-         LISTA2(1) ='DARWIN  '
-         LISTA2(2) ='MASSVELO'
-         NLAB2 = 2
-         write(lupri,*) '@Linear setting  LABEL2 :'
-         write(lupri,*) '   LABEL2 : ', LISTA2(1)
-         write(lupri,*) '   LABEL2 : ', LISTA2(2)
-C --------------------------------------------------------------
-      ELSE IF (KEY.EQ."LKIN") THEN
-C        Look for LABELS : PSO 
-C        ----------------------       
-         write(lupri,*)
-         LABEL1='PSO'
-         write(lupri,*) '@Linear setting  LABEL1 : PSO '
-         IJ = 1
-         DO I=1, NUCDEP
-           DO J=1,3
-             LISTA1(IJ)= 'PSO '//CHRNOS(J/10)//CHRNOS(J/10)//
-     &                    CHRNOS(MOD(IJ,10))
-             LABSYM(IJ)=1
-             write(lupri,*) '   LABEL1 : ', LISTA1(IJ), LABSYM(IJ)
-             IJ = IJ + 1
-           END DO
-         END DO
-         NLAB1 = 3*NUCDEP
-C        Look for LABELS : OZ-KE
-C        ------------------------       
-         write(lupri,*)
-         LABEL2='OZKE   '
-         write(lupri,*) '@Linear setting  LABEL1 : OZ-KE '
-         DO J=1,3
-           LISTA2(J)= CHRXYZ(J)//'OZKE   '
-           LABSYM(J)=1 
-           write(lupri,*) '   LABEL2 : ', LISTA2(J), LABSYM(J)
-         END DO 
-         NLAB2 = 3
-C -----------------------------------------------------------------
-      ELSE IF (KEY.EQ."PSOK") THEN
-C        Look for LABELS : ANGMOM
-C        -------------------------       
-         write(lupri,*)
-         LABEL1='ANGMOM'
-         write(lupri,*) '@Linear setting  LABEL1 : ANGMOM '
-         DO J=1,3
-           LISTA1(J)= CHRXYZ(J)//'ANGMOM '
-           LABSYM(J)=1
-           write(lupri,*) '   LABEL1 : ', LISTA1(J), LABSYM(J)
-         END DO
-         NLAB1 = 3
-C        Look for LABELS : PSO-KE
-C        -------------------------       
-         write(lupri,*)
-         LABEL2='PSOKE'
-         write(lupri,*) '@Linear setting  LABEL2 : PSO-KE '
-         IJ = 1
-         DO I=1,NUCDEP
-           DO J=1,3
-             LISTA2(IJ)= 'PSOKE'//CHRNOS(J/10)//CHRNOS(J/10)//
-     &                    CHRNOS(MOD(IJ,10))
-             LABSYM(IJ)=1
-             write(lupri,*) '   LABEL2 : ', LISTA2(IJ), LABSYM(IJ)
-             IJ = IJ + 1
-           END DO
-         END DO
-         NLAB2 = 3*NUCDEP
-      END IF
-C===============================================================================
-C  TRIPLET CALCULATIONS : xxxxx
-C ==============================================================================
-C -----------------------------------------------------------------
-       IF((KEY.EQ."FCZK").OR.(KEY.EQ."FCBS")) THEN
-C
-C        Look for LABELS : FERMI  
-C        ------------------------
-         write(lupri,*)
-c jim-dbg LABEL2 should be a string to atom name
-         LABEL2='FC'
-         write(lupri,*) '@Linear setting  LABEL2 : FC'
-         write(lupri,*) '   LABEL 2 : Por AHORA solo |FC X 01| '
-cx       DO I=1,NCOOR
-           LISTA2(1)= 'FC X  01'
-           LABSYM(1)=1
-cx         write(lupri,*) '   LABEL2 : ', LISTA2(I), LABSYM(I)
-cx       END DO
-cx       NLAB1 = 3*NCOOR
-         NLAB2 = 1
-C         
-         IF(KEY.EQ."FCZK") THEN
-C
-C        Look for LABELS : KINENERG
-C        -----------------------------------
-            write(lupri,*)
-            LISTA1(1) ='KINENERG'
-            NLAB1 = 1
-            write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
-C
-C        Look for LABELS : BSO
-C        -----------------------------------
-         ELSE IF(KEY.EQ."FCBS") THEN
-            write(lupri,*)
-            LISTA1(1) ='SOMF  XX'
-            LISTA1(2) ='SOMF  YX'
-            LISTA1(3) ='SOMF  ZX'
-            LISTA1(4) ='SOMF  XY'
-            LISTA1(5) ='SOMF  YY'
-            LISTA1(6) ='SOMF  ZY'
-            LISTA1(7) ='SOMF  XZ'
-            LISTA1(8) ='SOMF  YZ'
-            LISTA1(9) ='SOMF  ZZ'
-            NLAB1 = 9
-            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
-            write(lupri,*) '   LABEL1 : ', LISTA1(1)
-            write(lupri,*) '   LABEL1 : ', LISTA1(2)
-            write(lupri,*) '   LABEL1 : ', LISTA1(3)
-            write(lupri,*) '   LABEL1 : ', LISTA1(4)
-            write(lupri,*) '   LABEL1 : ', LISTA1(5)
-            write(lupri,*) '   LABEL1 : ', LISTA1(6)
-            write(lupri,*) '   LABEL1 : ', LISTA1(7)
-            write(lupri,*) '   LABEL1 : ', LISTA1(8)
-            write(lupri,*) '   LABEL1 : ', LISTA1(9)
-         ENDIF
+         LABEL1 = 'FC X  01'
+         write(lupri,*) ' FCAV will be done' 
       ENDIF
-C --------------------------------------------------------------
-      IF((KEY.EQ."SDZK").OR.(KEY.EQ."SDBS")) THEN
 C
-C        Look for LABELS : SD
-C        ------------------------
-         write(lupri,*)
-         LABEL2='SD'
-         write(lupri,*) '@Linear setting  LABEL2 : ', LABEL2
-         IJ = 1
-         DO I=1, 3*NUCDEP
-           DO J=1,3
-             LISTA2(IJ)= 'SD '//CHRNOS(J/10)//CHRNOS(J/10)//
-     &                    CHRNOS(MOD(I,10))//' '//CHRXYZ(-J)
-             LABSYM(IJ)=1
-             write(lupri,*) '   LABEL2 : ', LISTA2(IJ), LABSYM(IJ)
-             IJ = IJ + 1
-           END DO
-         END DO
-         NLAB2 = 9   ! jim-dbg: NLAB2 = 9*NUCDEP
-C
-C        Look for LABELS : dd/didj
-C        -----------------------------------
-         IF(KEY.EQ."SDZK") THEN
-            write(lupri,*)
-            LISTA1(1) ='dd/dxdx'
-            LISTA1(2) ='dd/dxdy'
-            LISTA1(3) ='dd/dxdz'
-            LISTA1(4) ='dd/dxdy'
-            LISTA1(5) ='dd/dydy'
-            LISTA1(6) ='dd/dydz'
-            LISTA1(7) ='dd/dxdz'
-            LISTA1(8) ='dd/dydz'
-            LISTA1(9) ='dd/dzdz'
-            NLAB1 = 9
-            write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
-         ELSE IF(KEY.EQ."SDBS") THEN
-C        Look for LABELS : BSO
-C        -----------------------------------
-            write(lupri,*)
-            LISTA1(1) ='SOMF  XX'
-            LISTA1(2) ='SOMF  YX'
-            LISTA1(3) ='SOMF  ZX'
-            LISTA1(4) ='SOMF  XY'
-            LISTA1(5) ='SOMF  YY'
-            LISTA1(6) ='SOMF  ZY'
-            LISTA1(7) ='SOMF  XZ'
-            LISTA1(8) ='SOMF  YZ'
-            LISTA1(9) ='SOMF  ZZ'
-            NLAB1 = 9
-            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
-            write(lupri,*) '   LABEL1 : ', LISTA1(1)
-            write(lupri,*) '   LABEL1 : ', LISTA1(2)
-            write(lupri,*) '   LABEL1 : ', LISTA1(3)
-            write(lupri,*) '   LABEL1 : ', LISTA1(4)
-            write(lupri,*) '   LABEL1 : ', LISTA1(5)
-            write(lupri,*) '   LABEL1 : ', LISTA1(6)
-            write(lupri,*) '   LABEL1 : ', LISTA1(7)
-            write(lupri,*) '   LABEL1 : ', LISTA1(8)
-            write(lupri,*) '   LABEL1 : ', LISTA1(9)
-         ENDIF
-      ENDIF
 C ---------------------------------------------------------------------
 C
 C ---------------------------------------------------------------------
@@ -541,13 +360,16 @@ C
       HFCLC  = NASHT .LE. 1 ! .T. RHF-closed shell or 1e in one active orbital
       TRIPLE = .FALSE.      ! .T. for triplet perturbation operators
       EXECLC = .FALSE.      ! false for linear response equations
-      IF(KEY.EQ."D1S ") THEN 
+      IF(KEY.EQ."DIAM".OR.KEY.EQ."DIAD") THEN 
          NABATY = 1         ! = 1 for real operators .. -1 for imm. op.
          ELSE IF(KEY.EQ."LKIN") THEN 
            NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
          ELSE IF (KEY.EQ."PSOK") THEN 
            NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
            write(lupri,*) ' NO SE QUE PONERLE NABATY A PSOKIN' 
+         ELSE IF((KEY.EQ."FCZK").OR.(KEY.EQ."SDZK")) THEN 
+           NABATY = 1      ! = 1 for real operators .. -1 for imm. op. 
+cx           write(lupri,*) ' NABATY for FcKin -1 ' 
       END IF
 c juan arregla esto 
 C      IF   TRIPLET THEN NABATY = 1 !!!!!!!!!!!!!!!!!!
@@ -567,24 +389,23 @@ C
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-
-C jim-dbg : put here index to selected atom nidx = 3.LRATOM-2 , the first one
-c      nidx = 1 
-c      nidy = nidx+NLAB1
-      DO 300 IDIP = 1,NLAB1
-         LABEL1 = LISTA1(IDIP)
-C
-         ISYM=ISYMAX(IDIP,1)+1
-         write(lupri,*)' isimax :', ISYM   ! ISYM =1  deberia ser 1        
-C     
-c        set variables for response module
-         write(lupri,*) ' about to call LNRVAR' 
-         write(lupri,*) ' ----------------------------'
-         CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK2),LWORK2)
-C
-cm         IF (NFRVAL.GT.0) THEN
-           write(lupri,*)' # of freq val, NFRVAL:',NFRVAL 
-C
+      
+cxz      DO 300 IDIP = 1,NLAB1
+cxz         LABEL1 = LISTA1(IDIP)
+cxzC
+cxz        ISYM=ISYMAX(IDIP,1)+1
+cxzcb         write(lupri,*)' isimax :', ISYM   ! ISYM =1  deberia ser 1        
+cxzC     
+cxzc        set variables for response module
+cxz         IF(JIMPRT.GT.3) THEN 
+cxz            write(lupri,*) ' about to call LNRVAR' 
+cxz            write(lupri,*) ' ----------------------------'
+cxz         ENDIF
+cxz         CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK2),LWORK2)
+cxzC
+cxzcm         IF (NFRVAL.GT.0) THEN
+cxz           write(lupri,*)' # of freq val, NFRVAL:',NFRVAL 
+cxzC
 C           3. Work Allocations:
 C
             KGD1   = KWORK1
@@ -594,136 +415,139 @@ C
             KLAST  = KSLV + 2*NVARPT
             write(lupri,*) ' KLAST ',KLAST
             write(lupri,*) ' LWORK ',LWORK
-            write(lupri,*) ' KLAST GT LWORK ! error '
-            IF (KLAST.GT.LWORK) CALL STOPIT('LINEARjim',' ',KLAST,LWORK)
+            write(lupri,*) ' IF KLAST GT LWORK you will get an error '
+            IF (KLAST.GT.LWORK) CALL STOPIT('KLAST GT LWORK on LINEARLR
+     $           ',' ',KLAST,LWORK)
             KWRK = KLAST
             LWRK = LWORK - KLAST + 1
-            write(lupri,*)' NVARPT :', NVARPT 
+cb            write(lupri,*)' NVARPT :', NVARPT 
 
 C
 C           Find right hand side for right operator and write to file
 C           =========================================================
 C
-            KSYMOP = ISYM
-            TRPLET = .FALSE.
-            IPRSP = -2 
-C  juan ANTSYM =-1 IF TRIPLET !!!!!!!
-            ANTSYM = 0
-c            IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
-C   
-            write(lupri,*) ' about to call GETPV'  
-C jim sym to be read on luprop
-C ANTSYM : matrix symmetry of PRPMO matrix
-C          (1: symmetric, -1: antisymmetric, 0: unknown)
+cxz            KSYMOP = ISYM
+cxz            TRPLET = .FALSE.
+cxz            IPRSP = -2 
+cxzC  juan ANTSYM =-1 IF TRIPLET !!!!!!!
+cxz            ANTSYM = 0
+cxzc            IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
+cxzcjim            IF(KEY.EQ."FCZK") ANTSYM=-1
+cxzC   
+cxzcb            write(lupri,*) ' about to call GETPV, ANTSYM : ', ANTSYM  
+cxzC jim sym to be read on luprop
+cxzC ANTSYM : matrix symmetry of PRPMO matrix
+cxzC          (1: symmetric, -1: antisymmetric, 0: unknown)
 
-            CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
-     &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
-            REWIND LUGDVE
-            CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
-            IF (IPRLNR.GT.5) THEN
-               WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL1
-               CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
-            ENDIF
-C
-C           Calculate eigenvector and write to file
-C           =======================================
-C
-            CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,
-     &            FRVAL,NFRVAL,NABATY,NABAOP,LABEL1,LUGDVE,LUSOVE,
-     &            LUREVE,THCLNR,MAXITE,IPRRSP,MXRM,MXPHP,
-     &            WORK(KWRK),LWRK)
-C
-C           Loop over the left side  property operators
-C           ===========================================
-C 
-            DO 200 IPL = 1, NLAB2
-C
-C              Find label and symmetry of the left side operator
-C
-               LABEL2 = LISTA2(IPL)
-               write(lupri,*)'      LABAPP IPL           ' , LABEL2
-               write(lupri,*) '     KSYM   = LABSYM(IPL) ', KSYM 
-c              IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
-               KSYM   = 1
-               write(lupri,*) '     else KSYM   = 1      ', KSYM 
-C
-C              If symmetry of right operator equals symmetry of
-C              the left operator, that is if ISYM = KSYM, then
-C              ================================================
-C              (otherwise 2. order property SNDPRP is zero)
-C
-cx               IF (KSYM.EQ.ISYM) THEN
-                  KSYMOP = ISYM
-                  TRPLET = .FALSE.
-C
-C                 Find right hand side for left operator
-C                 ========================================
-C
-                  CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
-     &                       WORK(KPVX),WORK(KXINDX),ANTSYM,
-     &                       WORK(KWRKG1),LWRKG1)
-C
-                  IF (IPRLNR.GT.5) THEN
-                     WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
-                     CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,
-     &                           LUPRI)
-                  ENDIF
-C
-C                 Form second order properties SNDPRP
-C                 ===================================
-C
-                  REWIND LUSOVE
-                  CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
-C
-cd                  IF (IPRLNR.GT.-1) THEN
-cd                     WRITE (LUPRI,'(2A)') 'Solution Vector, label: ',
-cd     &                                    LABEL1
-cd                     CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,1,
-cd     &                           LUPRI)
-cd                  ENDIF
-C
-                  SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
-C
-                  IF (IPRLNR.GT.3) THEN
-                     WRITE (LUPRI,'(5A,F20.12)')
-     &               ' Second order property for ',LABEL2,' , ',LABEL1,
-     &               ' = ',SNDPRP
-                  ENDIF
-C
-C                 Write properties into the various property matrices
-C                 ===================================================
-C
-C                 Nuclear Shieldings
-C                 ------------------
-cx                  IF ((IPRLBL.GE.NLBSHIS).AND.
-cx     &               (IPRLBL.LE.NLBSHIE))  THEN
-cx                     INUCLEO = (IPRLBL-NLBSHIS)/3+1
-cx                     IF (LABEL1.EQ.'XDIPVEL') THEN
-cx                        IF (LABEL2(8:8).EQ.'Y') THEN
-cx                           SIGMADZ(IPTAX(3,2),INUCLEO)=
-cx     &                        SIGMADZ(IPTAX(3,2),INUCLEO)+SNDPRP
-cx                        ELSE IF (LABEL2(8:8).EQ.'Z') THEN
-cx                           SIGMADZ(IPTAX(2,2),INUCLEO)=
-cx     &                        SIGMADZ(IPTAX(2,2),INUCLEO)-SNDPRP
-cx                        ENDIF
-cx                     ELSE IF (LABEL1.EQ.'ZDIPVEL') THEN
-cx                        IF (LABEL2(8:8).EQ.'X') THEN
-cx                           SIGMADZ(IPTAX(2,2),INUCLEO)=
-cx     &                        SIGMADZ(IPTAX(2,2),INUCLEO)+SNDPRP
-cx                        ELSE IF (LABEL2(8:8).EQ.'Y') THEN
-cx                           SIGMADZ(IPTAX(1,2),INUCLEO)=
-cx     &                        SIGMADZ(IPTAX(1,2),INUCLEO)-SNDPRP
-cx                        ENDIF
+cxz            CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
+cxz     &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
+cxz            REWIND LUGDVE
+cxz            CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
+cxz            IF (IPRLNR.GT.5) THEN
+cxz               WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL1
+cxz               CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
+cxz            ENDIF
+cxzC
+cxzC           Calculate eigenvector and write to file
+cxzC           =======================================
+cxzC
+cxz            CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,
+cxz     &            FRVAL,NFRVAL,NABATY,NABAOP,LABEL1,LUGDVE,LUSOVE,
+cxz     &            LUREVE,THCLNR,MAXITE,IPRRSP,MXRM,MXPHP,
+cxz     &            WORK(KWRK),LWRK)
+cxzC
+cxzC           Loop over the left side  property operators
+cxzC           ===========================================
+cxzC 
+cxz            DO 200 IPL = 1, NLAB2
+cxzcxzC
+cxzC              Find label and symmetry of the left side operator
+cxzC
+cxz               LABEL2 = LISTA2(IPL)
+cxz               KSYM   = 1
+cxzcb               write(lupri,*) '     else KSYM   = 1      ', KSYM 
+cxzC
+cxzC              If symmetry of right operator equals symmetry of
+cxzC              the left operator, that is if ISYM = KSYM, then
+cxzC              ================================================
+cxzC              (otherwise 2. order property SNDPRP is zero)
+cxzC
+cxzcx               IF (KSYM.EQ.ISYM) THEN
+cxz               KSYMOP = ISYM
+cxz               TRPLET = .FALSE.
+cxzC
+cxzC                 Find right hand side for left operator
+cxzC                 ========================================
+cxzC
+cxz               CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
+cxz     &             WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
+cxzC
+cxz               IF (IPRLNR.GT.5) THEN
+cxz                  WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
+cxz                  CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
+cxz               ENDIF
+cxzC
+cxzC                 Form second order properties SNDPRP
+cxzC                 ===================================
+cxzC
+cxz               REWIND LUSOVE
+cxz               CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+cxzC
+cxz               IF (IPRLNR.GT.-1) THEN
+cxz                 WRITE (LUPRI,'(2A)') 'Solution Vector, label: ',LABEL1
+cxz                 CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
+cxz               ENDIF
+cxzC
+cxz               SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
+cxzC
+cxz               IF (IPRLNR.GT.3) THEN
+cxz                  WRITE (LUPRI,'(5A,F20.12)')
+cxz     &            ' Second order property for <<',LABEL2,',',LABEL1,
+cxz     &            '>> = ',SNDPRP
+cxz               ENDIF
+cxzC
+cxzC              Write properties into the various property matrices
+cxzC              ===================================================
+cxzC
+cxzC              Nuclear Shieldings
+cxzC              ------------------
+cxz               IF (KEY.EQ.'D1S ') THEN
+cxz                  IF (LABEL2.EQ.'MASSVELO') THEN 
+cxz                      SIGMAMV(IDIP)=SNDPRP
+cxz                      write(lupri,*)'massvelo' , IDIP
+cxz                  ENDIF
+cxz                  IF (LABEL2.EQ.'DARWIN  ') THEN 
+cxz                     SIGMADW(IDIP)=SNDPRP
+cxz                     write(lupri,*)'darwin'  , IDIP
+cxz                  ENDIF
+cxz               END IF      
+cx                  IF (LABEL1.EQ.'XDIPVEL') THEN
+cx                     IF (LABEL2(8:8).EQ.'Y') THEN
+cx                        SIGMADZ(IPTAX(3,2),INUCLEO)=
+cx     &                     SIGMADZ(IPTAX(3,2),INUCLEO)+SNDPRP
+cx                     ELSE IF (LABEL2(8:8).EQ.'Z') THEN
+cx                        SIGMADZ(IPTAX(2,2),INUCLEO)=
+cx     &                     SIGMADZ(IPTAX(2,2),INUCLEO)-SNDPRP
+cx                     ENDIF
+cx                  ELSE IF (LABEL1.EQ.'ZDIPVEL') THEN
+cx                     IF (LABEL2(8:8).EQ.'X') THEN
+cx                        SIGMADZ(IPTAX(2,2),INUCLEO)=
+cx     &                     SIGMADZ(IPTAX(2,2),INUCLEO)+SNDPRP
+cx                     ELSE IF (LABEL2(8:8).EQ.'Y') THEN
+cx                        SIGMADZ(IPTAX(1,2),INUCLEO)=
+cx     &                     SIGMADZ(IPTAX(1,2),INUCLEO)-SNDPRP
 cx                     ENDIF
 cx                  ENDIF
-C
-cx               ENDIF
-  200 CONTINUE
+cxz  200 CONTINUE
 cm         END IF  NFRVAL
-  300 CONTINUE
-      CALL GPCLOSE(LUSOVE,'DELETE')
-      CALL GPCLOSE(LUGDVE,'DELETE')
-      CALL GPCLOSE(LUREVE,'DELETE')
+cxz  300 CONTINUE
+
+
+
+
+cxz      CALL GPCLOSE(LUSOVE,'DELETE')
+cxz      CALL GPCLOSE(LUGDVE,'DELETE')
+cxz      CALL GPCLOSE(LUREVE,'DELETE')
 C   
 C     for magnetizability conversion factor -0.25
 C   
@@ -747,9 +571,10 @@ cb          ENDDO
 cb        ENDDO
       ENDIF
 C
-      CALL TIMER ('LRSCLIN',TIMEIN,TIMOUT)
+      WRITE(LUPRI,*)
+      CALL TIMER ('AVELRESC',TIMEIN,TIMOUT)
 C
-      CALL QEXIT('LRSCLIN')
+      CALL QEXIT('AVELRESC')
       RETURN
       END
 C...
