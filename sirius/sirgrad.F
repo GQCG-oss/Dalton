@@ -589,22 +589,6 @@ C         (ESRDFTY is in common block and is calculated inside FCK2AO)
      &   WRITE (LUPRI,'(A,F25.12)')
      &   ' srDFT energy correction      :',ESRDFTY
 C
-C     If this is a direct run, DCAO is returned in SO basis (to save
-C     memory). Thus, we need to recreate it. K.Ruud, March-98
-C
-! hjaaj obsolete for srDFT, because DCAO is now never destroyed in SIRFCK
-! when srDFT (instead a copy is made which is destroyed) /hjaaj Feb 2010
-! NB! DV cannot be removed, needed for HSROHF and for direct MCSCF
-      IF (DIRFCK .AND. .NOT.(DOHFSRDFT .OR. DOMCSRDFT)) THEN
-         NOFV  = ( (NASHT .EQ. 0) .OR. ONLYFC )
-         CALL FCKDEN((NISHT.GT.0),.NOT.NOFV,
-     &               DCAO,DVAO,CMO,DV,WRK(KFREE),LFREE)
-      END IF
-      IF (HSROHF .AND. .NOT.NOFV) THEN
-         CALL DAXPY(N2BASX,D1,DVAO,1,DCAO,1)
-         CALL DSCAL(N2BASX,-D1,DVAO,1)
-      END IF
-C
 C ***** one-electron part in WRK(KH1AO)
 C
       CALL MEMGET('REAL',KH1AO,N2BASX,WRK,KFREE,LFREE)
@@ -777,6 +761,10 @@ C     ... note: NDMAT = # of FCAO matrices; NFMAT = # of non-zero FCAO matrices
      &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE
+         IF (DIRFCK) THEN ! density matrice may be destroyed in SIRFCK
+            CALL MEMGET('REAL',KDMAT_SAVE,N2BASX*NDMAT,WRK,KFREE,LFREE)
+            CALL DCOPY(NDMAT*N2BASX,DCAO(IOFFAO),1,WRK(KDMAT_SAVE),1)
+         END IF
          CALL SIRFCK(FCAO(IOFFAO),DCAO(IOFFAO),NFMAT,ISYMDM,IFCTYP,
      *               DIRFCK,WRK(KFREE),LFREE)
 C        ... if (DIRFCK) construct Fock matrix directly
@@ -784,6 +772,11 @@ C            else construct Fock matrix from LUINTA
 C            ISYMDM(1:NFMAT) = 1 : symmetry of density matrix (DUNP)
 C            IFCTYP(1:NFMAT) = 13 : singlet, symmetric Fock matrix
 C            NFMAT is max = 2 here
+         IF (DIRFCK) THEN ! restore density matrices
+            CALL DCOPY(NDMAT*N2BASX,WRK(KDMAT_SAVE),1,DCAO(IOFFAO),1)
+            CALL MEMREL('SIRFCK.DIRECT',WRK,KDMAT_SAVE,KDMAT_SAVE,
+     &         KFREE,LFREE)
+         END IF
 C
       END IF
       END IF

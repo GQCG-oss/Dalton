@@ -345,31 +345,32 @@ C           this is e.g. PREHF, i.e. standard HF
 C
        IF (CHIVAL .ne. D0) THEN
 C        ... No long-range integrals if CHIVAL .eq. 0
+
+         LU_DMAT = -1
          IF (NSYM.GT.1 .AND. (DODFT.OR.DOHFSRDFT.OR.DOMCSRDFT)) THEN
 C           HERFCK destroys DMAT when called with symmetry
-            KDMAT = 1
-            KLAST = KDMAT + NDCandDV*N2BASX
-            LWRK  = LWORK - KLAST + 1
-            IF (KLAST.GT.LWORK) CALL STOPIT('SIRFCK','DMAT',KLAST,LWORK)
-            CALL DCOPY(NDCandDV*N2BASX,DMAT,1,WRK(KDMAT),1)
-            if (atomdf .AND. CHIVAL .LT. D0) then
-C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
-              call dens_fit(fmat,wrk(kdmat),NDCandDV,ISYMDM,
-     &                    IFCTYP_local,IPRHER,WRK(KLAST),LWRK)
-            else
-              CALL HERFCK(FMAT,WRK(KDMAT),NDCandDV,ISYMDM,IFCTYP_local,
-     &                    IPRHER,WRK(KLAST),LWRK)
-            end if
-         ELSE
-            if (atomdf .AND. CHIVAL .LT. D0) then
-C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
-              call dens_fit(fmat,dmat,NDCandDV,ISYMDM,
-     &                      IFCTYP_local,IPRHER,wrk,lwork)
-            else
-              CALL HERFCK(FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP_local,
-     &                    IPRHER,WRK,LWORK)
-            end if
+C           and DMAT needed below for short-range and DFT contributions
+            CALL GPOPEN(LU_DMAT,' ','UNKNOWN',' ','UNFORMATTED',
+     &         IDUMMY,.FALSE.)
+            REWIND (LU_DMAT)
+            CALL WRITT(LU_DMAT,NDCandDV*N2BASX,DMAT)
+            REWIND (LU_DMAT)
          END IF
+
+         if (atomdf .AND. CHIVAL .LT. D0) then
+C          hjaaj mar 2006: dens_fit not for short range integrals (yet)
+           call dens_fit(FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP_local,
+     &                   IPRHER,WRK,LWORK)
+         else
+           CALL HERFCK  (FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP_local,
+     &                   IPRHER,WRK,LWORK)
+         end if
+
+         IF (LU_DMAT .NE. -1) THEN
+            CALL READT(LU_DMAT,NDCandDV*N2BASX,DMAT)
+            CALL GPCLOSE(LU_DMAT,'DELETE')
+         END IF
+
        END IF ! (CHIVAL .ne. D0)
 #ifdef SIRFCK_DEBUG
        do i = 1,nfmat
