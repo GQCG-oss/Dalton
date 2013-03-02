@@ -1,4 +1,3 @@
-!#define rma_memalloc
 !
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -285,13 +284,6 @@ CTROND
 #ifdef VAR_MPI
       integer, parameter             :: dummy_buff = 2
       integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
-#ifdef rma_memalloc
-      integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
-      real(8)                        :: dmat_buff(dummy_buff)
-      real(8)                        :: fmat_buff(dummy_buff)
-      pointer                        (dmat_p, dmat_buff)
-      pointer                        (fmat_p, fmat_buff)
-#endif
       character(len=16)              :: shared_dmat_file
       integer                        :: istat(mpi_status_size)
 #endif
@@ -355,29 +347,7 @@ C
 !                                               caution: not making MASTER to shmem-master may hold some pitfalls...
 
 
-!#ifdef rma_memalloc
-!        call memallocmpi(nelement*8,dmat_p)
-!
-!        call dcopy(nelement,dmat,1,dmat_buff,1)
-!#endif
-
 #ifdef VAR_MPI
-!       call set_rma_window(
-!#ifdef rma_memalloc
-!    &                      dmat_buff,
-!#else
-!    &                      dmat,
-!#endif
-!    &                      nelement,
-!    &                      master,
-!    &                      communication_info_mpi%
-!    &                      communication_shmemnode,
-!    &                      rma_win_info%dmat_win,
-!!   &                      .true.,
-!    &                      .false.,
-!    &                      'no_locks',
-!    &                      'true')
-
 !       test dmat on shared file
         write(shared_dmat_file,'(a12,i4)') 
      &  'dmat_shared.',communication_info_mpi%intra_node_group_id
@@ -418,17 +388,8 @@ C
 !       end test dmat on shared file
 
 
-#ifdef rma_memalloc
-        call memallocmpi(nelement*8,fmat_p)
-        call dzero(fmat_buff,nelement)
-#endif
-
         call set_rma_window(
-#ifdef rma_memalloc
-     &                      fmat_buff,
-#else
      &                      fmat,
-#endif
      &                      nelement,
      &                      master,
      &                      communication_info_mpi%
@@ -471,33 +432,6 @@ C           workspace for array SORTED.
 #ifdef VAR_MPI
 !       call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
-#ifdef rma_memalloc
-        call mpi_reduce(
-     &                  mpi_in_place,
-     &                  fmat_buff(1 + rma_win_info%
-     &                  nmat_max_wo_win * n2basx),
-     &                  (ndmat - rma_win_info%
-     &                  nmat_max_wo_win) * n2basx,
-     &                  mpi_real8,
-     &                  mpi_sum,
-     &                  0,
-     &                  communication_info_mpi%
-     &                  communication_internode,
-     &                  ierr)
-        call daxpy((ndmat - rma_win_info%
-     &             nmat_max_wo_win) * n2basx,
-     &             1.0d0,
-     &             fmat_buff(1 + rma_win_info%
-     &             nmat_max_wo_win * n2basx),
-     &             1,
-     &             fmat(1 + rma_win_info%
-     &             nmat_max_wo_win * n2basx),
-     &             1
-     &             )
-
-        call memfreempi(fmat_buff)
-!        call memfreempi(dmat_buff)
-#endif
 !       test dmat on shared file
         call mpi_file_close(rma_win_info%dmat_fh,ierr)
 !       end test dmat on shared file
@@ -1481,22 +1415,6 @@ C
 #ifdef VAR_MPI
 !       call free_rma_window(rma_win_info%dmat_win,master)
         call free_rma_window(rma_win_info%fmat_win,master)
-#ifdef rma_memalloc
-        if(communication_info_mpi%my_shmem_node_id == 0)then
-          call mpi_reduce(
-     &                    fmat_buff(1 + rma_win_info%
-     &                    nmat_max_wo_win * n2basx),
-     &                    mpi_in_place,
-     &                    (ndmat - rma_win_info%
-     &                    nmat_max_wo_win) * n2basx,
-     &                    mpi_real8,
-     &                    mpi_sum,
-     &                    0,
-     &                    communication_info_mpi%
-     &                    communication_internode,
-     &                    ierr)
-        end if
-#endif
 !       test dmat on shared file
         call mpi_file_close(rma_win_info%dmat_fh,ierr)
 !       end test dmat on shared file
