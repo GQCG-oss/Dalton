@@ -511,6 +511,13 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
            WRITE(LUPRI,805) 'LR total CI  energy           :',ELRCI
            WRITE(LUPRI,806) 'Total CI-DFT energy           :',ECI(IST)
            ECIAUX = ELRCI+EMYDFTAUX+ESRDV-POTNUC 
+           write(lupri,*) '' 
+           write(lupri,*) 
+     &    'decomposition of the auxiliary CI-srDFT energy'
+           WRITE(LUPRI,805) 'ELRCI        :',ELRCI
+           WRITE(LUPRI,805) 'EMYDFTAUX    :',EMYDFTAUX
+           WRITE(LUPRI,805) 'ESRDV        :',ESRDV
+           WRITE(LUPRI,805) 'POTNUC       :',POTNUC
            WRITE(LUPRI,806) 'Auxiliary CI-srDFT energy     :',ECIAUX
         END DO
   805   FORMAT( 1X,A,F25.12)
