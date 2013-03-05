@@ -713,7 +713,6 @@ C
          ENDIF
 
          if (peqm) then
-           print *, 'I know enter PE'
            call memget('REAL', kfpe, nnbasx, wrk, kfree, lfree)
            call memget('REAL', kepe, 1, wrk, kfree, lfree)
            if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then

@@ -107,7 +107,6 @@ subroutine pe_init(coords, charges, dalwrk)
            call setup_solvent()
            call setup_cavity()
            if (.not. fixpva) call read_surface(trim(surfile))
-           STOP 'DONE GENRATING CAVITY'
     end if
 
     write(luout,'(//2x,a)') 'Polarizable Embedding potential'
@@ -1711,6 +1710,7 @@ subroutine pe_polarization(denmats, fckmats)
     integer :: i, j, k, l, m
     integer :: lunoneq
     logical :: skip
+    real(dp) :: eps_fac
     real(dp), dimension(3) :: indtot
     real(dp), dimension(:,:), allocatable :: Vels
     real(dp), dimension(:), allocatable :: Vnucs, Vmuls, Vfds
@@ -1729,6 +1729,15 @@ subroutine pe_polarization(denmats, fckmats)
     if (pe_sol) then
         allocate(Vels(nsurp,ndens))
         allocate(Vnucs(nsurp), Vmuls(nsurp), Vfds(nsurp))
+        if (noneq) then
+!            eps_fac = (eps - epsinf) / ((eps - epsinf) - 1.0d0)
+            eps_fac = ((eps - epsinf) - 1.0d0) / (eps - epsinf)
+        else if (response) then
+!            eps_fac = epsinf / (epsinf - 1.0d0)
+            eps_fac = (epsinf - 1.0d0) / epsinf
+        else if (fock) then
+            eps_fac = (eps - 1.0d0) / eps
+        end if
     end if
 
     if (response .or. noneq) then
@@ -1766,7 +1775,7 @@ subroutine pe_polarization(denmats, fckmats)
                     Fktots(:3*npols,i) = Fels(:,i) + Fnucs + Fmuls + Ffds
                 end if
                 if (pe_sol) then
-                    Fktots(3*npols+1:,i) =  - Vels(:,i) - Vnucs - Vmuls 
+                    Fktots(3*npols+1:,i) = - eps_fac * ( Vels(:,i) + Vnucs + Vmuls )
                 end if
             end do
         end if
@@ -2294,7 +2303,7 @@ subroutine direct_solver(Mkinds, Fs)
     logical :: lexist
     integer :: lu, info, i
     integer, dimension(:), allocatable :: ipiv
-    real(dp) :: anorm, rcond
+    real(dp) :: anorm, rcond, prefac, eps_fac
     real(dp), dimension(:), allocatable :: B
 
     allocate(B((3*npols+nsurp)*(3*npols+nsurp+1)/2))
@@ -2689,11 +2698,11 @@ subroutine electron_potentials(Vels, denmats)
     end if
 #endif
 
-!    if (pe_debug) then
-!         do i = 1, nsurp 
-!             write (luout,*) 'i, Vels(i)' , i, Vels(i,:)
-!         end do
-!    end if
+    if (pe_debug) then
+         do i = 1, nsurp 
+             write (luout,*) 'i, Vels(i)' , i, Vels(i,:)
+         end do
+    end if
 
 end subroutine electron_potentials
 
@@ -2818,11 +2827,11 @@ subroutine nuclear_potentials(Vnucs)
         end if
     end if
 
-!    if (pe_debug) then
-!        do i=1, nsurp 
-!            write (luout,*) 'Vnucs(i)' ,i, Vnucs(i)
-!        end do
-!    end if
+    if (pe_debug) then
+        do i=1, nsurp 
+            write (luout,*) 'Vnucs(i)' ,i, Vnucs(i)
+        end do
+    end if
 
 end subroutine nuclear_potentials
 
@@ -3214,6 +3223,7 @@ subroutine response_matrix(B)
     real(dp), parameter :: fourpi = 4.0d0 * pi
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
+    real(dp), parameter :: dism0 = 0.4d0 * aa2au
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
     real(dp) :: Rd, ai, aj
@@ -3224,16 +3234,16 @@ subroutine response_matrix(B)
 
     B = 0.0d0
 
-    if (pe_sol) then
-        if (noneq) then
-            eps_fac = (eps - epsinf) / ((eps - epsinf) - 1.0d0)
-        else if (response) then
-            eps_fac = epsinf / (epsinf - 1.0d0)
-        else if (fock) then
-            eps_fac = eps / (eps - 1.0d0)
-        end if
-        prefac = 1.07d0 * eps_fac
-    end if
+!   if (pe_sol) then
+!       if (noneq) then
+!           eps_fac = (eps - epsinf) / ((eps - epsinf) - 1.0d0)
+!       else if (response) then
+!           eps_fac = epsinf / (epsinf - 1.0d0)
+!       else if (fock) then
+!           eps_fac = eps / (eps - 1.0d0)
+!       end if
+!       prefac = 1.07d0 * eps_fac
+!   end if
 
     m = 0
     do i = 1, nsites
@@ -3350,32 +3360,31 @@ subroutine response_matrix(B)
     end do  ! do i = 1, nsites
     if (pe_sol) then
         do i = 1, nsurp
-            B(m+1) = prefac * sqrt(fourpi / Sa(i))
+            B(m+1) = 1.07d0 * sqrt(fourpi / Sa(i))
             m = m + 1
             do j = i + 1, nsurp
                 Rij = Sp(:,j) - Sp(:,i)
                 R = nrm2(Rij)
                 if (fixpva) then
-                   if ( R .le. 0.4d0 ) then
-                      B(m+1) = eps_fac*0.5d0*(3.0d0/0.4d0 - R**2/0.4**3) 
-                      print *, 'FIXSOL'
+                   if ( R .le. dism0 ) then
+                      B(m+1) = 0.5d0*(3.0d0/dism0 - R**2/dism0**3) 
                    else
-                      B(m+1) = eps_fac / R
+                      B(m+1) = 1.0d0 / R
                    end if
                    m = m + 1
                 else
-                    B(m+1) = eps_fac / R
+                    B(m+1) = 1.0d0 / R
                     m = m + 1
                 end if
             end do ! j = i + 1, nsurp
         end do ! i = 1, nsurp
     end if
 
-!    if (pe_debug) then
-!        do i = 1, 3 * npols + nsurp * (3 * npols + nsurp + 1) / 2
-!            write (luout,*) 'Response matrix(i)',i, B(i)
-!        end do
-!    end if
+    if (pe_debug) then
+        do i = 1, (3 * npols + nsurp) * (3 * npols + nsurp + 1) / 2
+            write (luout,*) 'Response matrix(i)',i, B(i)
+        end do
+    end if
 
 end subroutine response_matrix
 
@@ -6105,10 +6114,9 @@ subroutine fixtes(all_centers, all_z)
       nsurp = nffts
       do i = 1, nffts
          Sa(i) = AFIX(i)
-         Sp(1,i) = XTS(i) 
-         Sp(2,i) = YTS(i) 
-         Sp(3,i) = ZTS(i) 
-         write(luout,*) Sp(:,i), Sa(i)
+         Sp(1,i) = XTS(i)
+         Sp(2,i) = YTS(i)
+         Sp(3,i) = ZTS(i)
       end do
  
 !     close(lu)
