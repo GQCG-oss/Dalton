@@ -163,8 +163,11 @@ C
       CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
 C          RD_SIRIFC( KEY ,FOUND,   AMAT   ,  WRK      ,LWRK)
       IF (.NOT.FOUND) CALL QUIT('LRSCLIN error: CMO not on SIRIFC')
-Cjim      write(lupri,*)' CMOS :  dan bien !!!' 
-Cjim      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
+      write(lupri,*)' CMOS :  dan bien !!!' 
+      Do i =1, NORBT*NORBT
+      write(LUPRI,*) ' orb ', I,WORK(KCMO+I)
+      enddo 
+      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
       write(lupri,*) '   '     
 
 cx ACA es para alguna capa activa
@@ -322,7 +325,6 @@ C  Staritng Labels stuff
 C
 C ==============================================================================
 
-       write(lupri,*)
 cb       write(lupri,*)' selected atom is :', LRATOM
 cb       write(lupri,*)' LRATOM / 100' , LRATOM / 100
 cb       write(lupri,*)' LRATOM / 10' , LRATOM / 10
@@ -339,33 +341,20 @@ cb          ELSE IF (bb.LT.1) THEN
 cb               write(lupri,*)'LRATOM tiene 1 digito'
 cb       ENDIF
 cb       write(lupri,*)
-
-C===============================================================================
-C  SINGLET CALCULATIONS : D1S and P1S 
-C ==============================================================================
-      IF(KEY.EQ."FCAV") THEN 
-C        Look for LABELS : NSCO  
-C        -----------------------
-         LABEL1 = 'FC X  01'
-         write(lupri,*) ' FCAV will be done' 
-      ENDIF
-
+C
 C===============================================================================
 C  SINGLET CALCULATIONS : D1S and P1S 
 C ==============================================================================
       IF((KEY.EQ."DIAM").OR.(KEY.EQ."DIAD")) THEN 
 C        Look for LABELS : NSCO  
 C        -----------------------
-         write(lupri,*)
          LABEL1='NSCO'
-         write(lupri,*) '@Linear setting  LABEL1 : NSCO '
          IJ = 1
          DO I=npos1,npos1+2
            DO J=1,3
              LISTA1(IJ)= CHRNOS(I/100)//CHRNOS(I/10)//CHRNOS(MOD(I,10))
      &       //'NSCO'//CHRXYZ(J)
              LABSYM(IJ)=1
-             write(lupri,*) '  LABEL1 : ', LISTA1(IJ), LABSYM(IJ)
              IJ = IJ + 1
            END DO
          END DO
@@ -373,67 +362,54 @@ C        -----------------------
 cx         NLAB1 = 3*NCOOR
 C        Look for LABELS : DARWIN, MASSVELO
 C        -----------------------------------
-         write(lupri,*)
          IF (KEY.EQ."DIAD") LISTA2(1) ='DARWIN  '
          IF (KEY.EQ."DIAM") LISTA2(1) ='MASSVELO'
          NLAB2 = 1
-         write(lupri,*) '@Linear setting  LABEL2 :',LISTA2(1),LABSYM(1)
-         write(lupri,*)
 C --------------------------------------------------------------
       ELSE IF (KEY.EQ."LKIN") THEN
 C        Look for LABELS : PSO 
 C        ----------------------       
-         write(lupri,*)
          LABEL1='PSO'
-         write(lupri,*) '@Linear setting  LABEL1 : PSO '
          IJ = 1
          DO I=npos1,npos1+2
              LISTA1(IJ)= 'PSO '//CHRNOS(I/100)//CHRNOS(I/10)//
      &                    CHRNOS(MOD(I,10))
              LABSYM(IJ)=1
-             write(lupri,*) '   LABEL1 : ', LISTA1(IJ), LABSYM(IJ)
              IJ = IJ + 1
          END DO
          NLAB1 = 3
 C        Look for LABELS : OZ-KE
 C        ------------------------       
-         write(lupri,*)
          LABEL2='OZKE   '
-         write(lupri,*) '@Linear setting  LABEL1 : OZ-KE '
          DO J=1,3
            LISTA2(J)= CHRXYZ(J)//'OZKE   '
            LABSYM(J)=1 
-           write(lupri,*) '   LABEL2 : ', LISTA2(J), LABSYM(J)
          END DO 
          NLAB2 = 3
 C -----------------------------------------------------------------
       ELSE IF (KEY.EQ."PSOK") THEN
 C        Look for LABELS : ANGMOM
 C        -------------------------       
-         write(lupri,*)
          LABEL1='ANGMOM'
-         write(lupri,*) '@Linear setting  LABEL1 : ANGMOM '
          DO J=1,3
            LISTA1(J)= CHRXYZ(J)//'ANGMOM '
            LABSYM(J)=1
-           write(lupri,*) '   LABEL1 : ', LISTA1(J), LABSYM(J)
          END DO
          NLAB1 = 3
 C        Look for LABELS : PSO-KE
 C        -------------------------       
-         write(lupri,*)
          LABEL2='PSOKE'
-         write(lupri,*) '@Linear setting  LABEL2 : PSO-KE '
          IJ = 1
          DO I=npos1,npos1+2
              LISTA2(IJ)= 'PSOKE'//CHRNOS(I/100)//CHRNOS(I/10)//
      &                    CHRNOS(MOD(IJ,10))
              LABSYM(IJ)=1
-             write(lupri,*) '   LABEL2 : ', LISTA2(IJ), LABSYM(IJ)
              IJ = IJ + 1
          END DO
          NLAB2 = 3
       END IF
+
+
 C===============================================================================
 C  TRIPLET CALCULATIONS : xxxxx
 C ==============================================================================
@@ -442,26 +418,20 @@ C -----------------------------------------------------------------
 C
 C        Look for LABELS : FERMI  
 C        ------------------------
-         write(lupri,*)
          LABEL22='FC '//NAMN(LRATOM)(1:3)
 C jim : just in case integral label changes to 3 digits on atom list 
 c         IF (aa.GE.1) THEN
 c             write(char,'(i3)') LRATOM
 c             LISTA2(1)= LABEL22//char
-c             write(lupri,*)' label2 for FC :',LISTA2(1) 
 c          ELSE IF (bb.GE.1) 
           IF (bb.GE.1) THEN
              write(char,'(i2)') LRATOM
              LISTA2(1)= LABEL22//char
-cx             write(lupri,*)' label2 for FC :',LISTA2(1) 
           ELSE IF (bb.LT.1) THEN
              write(char,'(i1)') LRATOM
              LISTA2(1)= LABEL22//'0'//char
-cx             write(lupri,*)' label2 for FC :',LISTA2(1) 
          ENDIF
-
          LABSYM(1)=1
-         write(lupri,*) '@Linear setting  LABEL2 :',LISTA2(1),LABSYM(1)
          NLAB2 = 1
 C         
          IF(KEY.EQ."FCZK") THEN
@@ -470,12 +440,10 @@ C        Look for LABELS : KINENERG
 C        -----------------------------------
             LISTA1(1) ='KINENERG'
             NLAB1 = 1
-            write(lupri,*) '@Linear setting  LABEL1 : ', LISTA1(1)
 C
 C        Look for LABELS : BSO
 C        -----------------------------------
          ELSE IF(KEY.EQ."FCBS") THEN
-            write(lupri,*)
             LISTA1(1) ='SOMF  XX'
             LISTA1(2) ='SOMF  YX'
             LISTA1(3) ='SOMF  ZX'
@@ -486,11 +454,6 @@ C        -----------------------------------
             LISTA1(8) ='SOMF  YZ'
             LISTA1(9) ='SOMF  ZZ'
             NLAB1 = 9
-            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
-            DO J=1,9
-              write(lupri,*) '   LABEL1 :x', LISTA1(J)
-            ENDDO
-            write(lupri,*)
          ENDIF
       ENDIF
 C --------------------------------------------------------------
@@ -498,16 +461,13 @@ C --------------------------------------------------------------
 C
 C        Look for LABELS : SD
 C        ------------------------
-         write(lupri,*)
          LABEL2='SD'
-         write(lupri,*) '@Linear setting  LABEL2 : ', LABEL2
          IJ = 1
          DO I=npos1,npos1+2
            DO J=1,3
              LISTA2(IJ)= 'SD '//CHRNOS(J/100)//CHRNOS(J/10)//
      &                    CHRNOS(MOD(I,10))//' '//CHRXYZ(-J)
              LABSYM(IJ)=1
-             write(lupri,*) '   LABEL2 : ', LISTA2(IJ), LABSYM(IJ)
              IJ = IJ + 1
            END DO
          END DO
@@ -516,7 +476,6 @@ C
 C        Look for LABELS : dd/didj
 C        -----------------------------------
          IF(KEY.EQ."SDZK") THEN
-            write(lupri,*)
             LISTA1(1) ='dd/dxdx'
             LISTA1(2) ='dd/dxdy'
             LISTA1(3) ='dd/dxdz'
@@ -527,16 +486,10 @@ C        -----------------------------------
             LISTA1(8) ='dd/dydz'
             LISTA1(9) ='dd/dzdz'
             NLAB1 = 9
-            write(lupri,*) '@Linear setting  LABEL1 : dd'
-            DO J=1,9
-               write(lupri,*) '   LABEL1 : ', LISTA1(J), LABSYM(J)
-            ENDDO
-            write(lupri,*)
             
          ELSE IF(KEY.EQ."SDBS") THEN
 C        Look for LABELS : BSO
 C        -----------------------------------
-            write(lupri,*)
             LISTA1(1) ='SOMF  XX'
             LISTA1(2) ='SOMF  YX'
             LISTA1(3) ='SOMF  ZX'
@@ -547,14 +500,25 @@ C        -----------------------------------
             LISTA1(8) ='SOMF  YZ'
             LISTA1(9) ='SOMF  ZZ'
             NLAB1 = 9
-            write(lupri,*) '@Linear setting  LABEL1 : SOMF'
-            DO J=1,9
-              write(lupri,*) '   LABEL1 : ', LISTA1(J)
-            ENDDO
-            write(lupri,*)
          ENDIF
       ENDIF
 C ---------------------------------------------------------------------
+C
+C Print SEction for LABELS on LISTAS 
+C  ----------------------------------------------
+        
+        WRITE(LUPRI,*)' @Linear setting  LABEL1 :'
+        DO i =1, nlab1
+           WRITE(LUPRI,*)'   LABEL1 :', LISTA1(I)
+        ENDDO
+        WRITE(LUPRI,*)
+ 
+        WRITE(LUPRI,*)' @Linear setting  LABEL2 :'
+        DO i =1, nlab2
+           WRITE(LUPRI,*)'   LABEL2 :', LISTA2(I)
+        ENDDO
+        WRITE(LUPRI,*)' ---------------------------------- '
+
 C
 C ---------------------------------------------------------------------
 C
@@ -608,7 +572,8 @@ c        set variables for response module
          CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK2),LWORK2)
 C
 cm         IF (NFRVAL.GT.0) THEN
-           write(lupri,*)' # of freq val, NFRVAL:',NFRVAL 
+cm           write(lupri,*)' # of freq val, NFRVAL:',NFRVAL 
+
 C
 C           3. Work Allocations:
 C
@@ -697,14 +662,14 @@ C
                REWIND LUSOVE
                CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
 C
-               IF (IPRLNR.GT.-1) THEN
+               IF (IPRLNR.GT.5) THEN
                  WRITE (LUPRI,'(2A)') 'Solution Vector, label: ',LABEL1
                  CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
                ENDIF
 C
                SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
 C
-               IF (IPRLNR.GT.3) THEN
+               IF (IPRLNR.GT.2) THEN
                   WRITE (LUPRI,'(5A,F20.12)')
      &            ' Second order property for <<',LABEL2,',',LABEL1,
      &            '>> = ',SNDPRP

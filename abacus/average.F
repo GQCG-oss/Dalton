@@ -51,15 +51,14 @@ c#include <sigma.h>
 #include <cbilnr.h>
 c#include <suscpt.h>
 #include <infpri.h>
-      LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND
+      LOGICAL FOUND
       DIMENSION WORK(LWORK)
-      CHARACTER*8 LABEL1,LABEL2,LISTA1(4*MXCOOR+9),LISTA2(4*MXCOOR+9)
-      CHARACTER*6 LABEL22
+      CHARACTER*8 LABEL1,LISTA1(10)
+      CHARACTER*6 LABEL2
       CHARACTER*4 KEY
       CHARACTER*3 char
       DIMENSION SIGMAMV(9),SIGMADW(9)
       PARAMETER (D05=0.5D0,D025=0.25)
-      LOGICAL TODOINT
 C
 #include <cbiexc.h>
 #include <inflin.h>
@@ -83,30 +82,27 @@ C
 #include "chrnos.h"
 #include "orgcom.h"
 C
-cxu  sacar lo de abajo
-cc      IPRLNR = 5
       IPRLNR = JIMPRT
 cxu
 C
 C
 C  LINEAR LRESC SINGLET ROUTINE
-C   KEY = 'D1S '  DIAMAGNETIC <<DIA,MV>> + <<DIA,DW>> 
-C         'PSOK'  PARAMAGNETIC 
-C         'LKIN'  PARAMAGNETIC
+C   KEY = 'FCAV'  <Fc>
+C         'DIAK'  <Dia.Kin>
+C         'ANGP'  <L.Pso>
 C
 C
-      CALL QENTER('AVELRESC')
+      CALL QENTER('AVELRSC')
       CALL TIMER('START ',TIMEIN,TIMOUT)
       WRITE(LUPRI,*)
-      IF (JIMPRT .GT. 5) THEN
+c      IF (JIMPRT .GT. 5) THEN
          WRITE (LUPRI,'(A,/)') ' <<<<<<<<<< Output from LRESC-'//
      &       'AVERAGE >>>>>>>>>> '
          WRITE(LUPRI,*)
          WRITE(LUPRI,'(2A)') '@AVERAGE to do ', KEY
-      END IF
+c      END IF
 C
-cb       IPRRSP = JIMPRT
-         IPRRSP = -1
+      IPRRSP = JIMPRT
 C
 C     Get reference state
 C     ===================
@@ -117,7 +113,7 @@ C
       LPVX   = 0
       KFREE  = 1
       LFREE  = LWORK
-      IF (JIMPRT.GT.2) Then 
+      IF (JIMPRT.GT.5) Then 
           write(lupri,'(A,3F12.8)') ' orgcom.h : GAGORG :', GAGORG
           write(lupri,'(A,3F12.8)') '            ORIGIN :', ORIGIN
           write(lupri,'(A,3F12.8)') '            CMXYZ  :', CMXYZ
@@ -146,7 +142,7 @@ c                  TYPE, KBASE, LENGTH, WORK, KFREE, LFREE
 c            dimensiona work(KCMO, KCMO+NCMOT)
 C
       KWORK1 = KFREE
-      WORK1 = LFREE
+      WORK1  = LFREE
       IF (JIMPRT.GT.5) Then 
           write(lupri,*) '   '     
           write(lupri,*) ' AFTER MEMGET  '
@@ -162,11 +158,13 @@ C
 
       CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
 C          RD_SIRIFC( KEY ,FOUND,   AMAT   ,  WRK      ,LWRK)
-      IF (.NOT.FOUND) CALL QUIT('AVELRESC error: CMO not on SIRIFC')
-Cjim      write(lupri,*)' CMOS :  dan bien !!!' 
-Cjim      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
-      write(lupri,*) '   '     
-
+ 
+      IF (.NOT.FOUND) CALL QUIT('AVELRSC error: CMO not on SIRIFC')
+      IF (JIMPRT.GT.5) THEN 
+         write(lupri,*)' CMOS :  dan bien !!! aunq no parezca.' 
+         CALL OUTPUT(WORK(KCMO),1,NORBT,1,5,NORBT,NORBT,1,LUPRI)
+         write(lupri,*) '   '     
+      ENDIF
 cx ACA es para alguna capa activa
 cx      IF (NASHT .GT. 0) THEN
 cx         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
@@ -186,11 +184,10 @@ C
           write(lupri,*) '    WORK1=LFREE   : ', WORK1
           write(lupri,*) '   '     
       ENDIF
-      CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
+C not needed for mean value
+C      CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
 C
-c tirar esto
-      IPRCIX = -1
-c
+C     we keep this just in case
       CALL GETCIX(WORK(KXINDX),IREFSY,IREFSY,WORK(KWORK1),LWORK1,0)
 C
 C     SOPPA :
@@ -271,65 +268,29 @@ C
           write(lupri,*) ' LWORK2 = LWORK - KWORK2   : ' , LWORK2
       ENDIF
 C
-cxz       NLBTOT = 0
-cxz       NLBSHIS = 4
 C
-cxz       NCOMP  = 0
-cxz       NPATOM = 0
-cLig  <> added the TODOINT to see if the property was already in the file
-cxz       IF (TODOINT('DIPVEL  ',LUPROP)) THEN
-cxz         CALL GETLAB('DIPVEL',6,LABINT,WORK(KIDSYM),LUPROP)
-cxz       ELSE
-cxz         CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
-cxz      &              LABINT,WORK(KIDSYM),WORK(KIDADR),
-cxz      &              IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-cxz      &              IPR1IN)
-cxz       ENDIF
-cxz       NLAB = 3
-
-cxz       CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
-cxz                        LAB1   ISYM1 -->   LAB2  ISYM2
-cxz     NLAB   = local  numero de labels?
-cxz     NLBTOT = local  
-cxz     LABINT = LABINT(4*MXCOOR+9) LISTA1Y2 character *8
-cxz     WORK
-cxz     LABAPP = common cbiexe, cbiqr, LABAPP(MAXPP) character *8
-cxz              MAXAPP = parameter = 80
-cxz     LABSYM =  common cbiexe, cbiqr,   LABSYM(MAXPP)
-
-cxz       IF (MAGSUS) THEN
-cxz          NCOMP  = 0
-cxz          CALL GET1IN(DUMMY,'RANGMO ',NCOMP,WORK(KWORK2),LWORK2,
-cxz      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-cxz      &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-cxz      &               IPR1IN)
-cxz          NLAB = 9
-cxz          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
-cxz          NLBSHIS = 13
-cxz       ENDIF
 C  blanquear todas las labels antes 
-       NLAB1 = 0
-       NLAB2 = 0 
-c       LISTA1
-c       LISTA2
-c       LABSYM 
-c       LABAPP es un common q se usa en rsp ??
-
-
-C ==============================================================================
 C
-C  Staritng Labels stuff
+      NLAB1 = 0
+      NLAB2 = 0 
+      DO I = 1, 10
+       LISTA1(I)='        '
+      ENDDO
 C
 C ==============================================================================
+C
+C  Starting Labels stuff
+C
+C ==============================================================================
 
-       write(lupri,*)
-cb       write(lupri,*)' selected atom is :', LRATOM
-cb       write(lupri,*)' LRATOM / 100' , LRATOM / 100
-cb       write(lupri,*)' LRATOM / 10' , LRATOM / 10
+c       write(lupri,*)
+cb      write(lupri,*)' selected atom is :', LRATOM
+cb      write(lupri,*)' LRATOM / 100' , LRATOM / 100
+cb      write(lupri,*)' LRATOM / 10' , LRATOM / 10
  
-       npos1 = 3*LRATOM-2
-       aa = LRATOM / 100
-       bb = LRATOM /10
+      npos1 = 3*LRATOM-2
+      aa = LRATOM / 100
+      bb = LRATOM /10
 cb       write(lupri,*)
 cb       IF (aa.GE.1) THEN
 cb               write(lupri,*)'LRATOM tiene 3 digits'
@@ -339,41 +300,97 @@ cb          ELSE IF (bb.LT.1) THEN
 cb               write(lupri,*)'LRATOM tiene 1 digito'
 cb       ENDIF
 cb       write(lupri,*)
-
+cb
 C===============================================================================
 C  SINGLET CALCULATIONS : D1S and P1S 
 C ==============================================================================
+C
+C      Look for LABELS : FERMI  
+C     ---------------------------
       IF(KEY.EQ."FCAV") THEN 
-C        Look for LABELS : NSCO  
-C        -----------------------
-         LABEL1 = 'FC X  01'
-         write(lupri,*) ' FCAV will be done' 
+        nlab=1
+        LABEL2='FC '//NAMN(LRATOM)(1:3)
+cx        IF (aa.GE.1) THEN
+cx          write(char,'(i3)') LRATOM
+cx          LISTA1(1) = LABEL2//char
+cx        write(lupri,*)' label2 for FC :',LISTA1(1) 
+cx          ELSE IF (bb.GE.1) 
+        IF (bb.GE.1) THEN
+           write(char,'(i2)') LRATOM
+           LISTA1(1) = LABEL2//char
+        ELSE IF (bb.LT.1) THEN
+           write(char,'(i1)') LRATOM
+           LISTA1(1) = LABEL2//'0'//char
+        ENDIF
       ENDIF
 C
 C ---------------------------------------------------------------------
 C
+C      Look for LABELS : DIAKIN
+C     ---------------------------
+      IF(KEY.EQ."DIAK") THEN
+        nlab=3 
+        LABEL2='NSKE'
+        IJ = 1
+        DO I=npos1,npos1+2
+           LISTA1(IJ)= CHRNOS(I/100)//CHRNOS(I/10)//
+     &                    CHRNOS(MOD(I,10))//'NSKE'//CHRXYZ(IJ)
+          IJ = IJ + 1
+        END DO
+      ENDIF
+C
+C
 C ---------------------------------------------------------------------
 C
-C     Set variables for ABARSP and logicals
+C   AngPso is done with a unity matrix inside : AngPso = ANGMOM.1.PSO
 C
-      CICLC  = .FALSE.      ! TRUE for CI calculations
-      HFCLC  = NASHT .LE. 1 ! .T. RHF-closed shell or 1e in one active orbital
-      TRIPLE = .FALSE.      ! .T. for triplet perturbation operators
-      EXECLC = .FALSE.      ! false for linear response equations
-      IF(KEY.EQ."DIAM".OR.KEY.EQ."DIAD") THEN 
-         NABATY = 1         ! = 1 for real operators .. -1 for imm. op.
-         ELSE IF(KEY.EQ."LKIN") THEN 
-           NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
-         ELSE IF (KEY.EQ."PSOK") THEN 
-           NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
-           write(lupri,*) ' NO SE QUE PONERLE NABATY A PSOKIN' 
-         ELSE IF((KEY.EQ."FCZK").OR.(KEY.EQ."SDZK")) THEN 
-           NABATY = 1      ! = 1 for real operators .. -1 for imm. op. 
-cx           write(lupri,*) ' NABATY for FcKin -1 ' 
-      END IF
-c juan arregla esto 
-C      IF   TRIPLET THEN NABATY = 1 !!!!!!!!!!!!!!!!!!
-      NABAOP = 1            ! number of right hand sides. dejarlo asi . solo 1
+      IF(KEY.EQ."ANGP") THEN
+        nlab = 6
+C      Look for LABELS : ANGPSO
+C     ---------------------------
+        LISTA1(1)='XANGMOM'
+        LISTA1(2)='YANGMOM'
+        LISTA1(3)='ZANGMOM'
+C
+C      Look for LABELS : PSO 
+C     ----------------------       
+        LABEL1='PSO'
+        IJ = 4
+        DO I=npos1,npos1+2
+           LISTA1(IJ)= 'PSO '//CHRNOS(I/100)//CHRNOS(I/10)//
+     &            CHRNOS(MOD(I,10))
+           IJ = IJ + 1
+        END DO
+C
+C ---------------------------------------------------------------------
+
+        write(lupri,*)' NAOS  ' , NAOS(1)
+        write(lupri,*)' NASHT ' , NASHT
+        write(lupri,*)' NCMOT ' , NCMOT
+        write(lupri,*)'   KCMO  ', KCMO
+        write(lupri,*)'   NORBT ', NORBT
+        write(lupri,*)'   NORB  ', NORB(1)
+
+        write(lupri,*)'NISHT,NSSHT,NOCCT,NBAST,NRHFT,NVIRT :' ,
+     &                 NISHT,NSSHT,NOCCT,NBAST,NRHFT,NVIRT
+        DO j = 1 , NORBT
+           write(lupri,*) ' ',j ,  WORK(KCMO+j)
+        ENDDO
+        write(lupri,*)' about to call angpso' 
+        CALL ANGPSO(LISTA1, WORK(KCMO))
+C     This is to avoid the next loop to call PRP1AVE
+      NLAB=0
+      ENDIF
+
+C  Print LABELS
+C -----------------------------------
+      write(lupri,*) '@Average setting  LABEL1 :'
+      DO i =1, nlab
+         WRITE(LUPRI,*)'   LABEL :', LISTA1(I) 
+      ENDDO
+      WRITE(LUPRI,*)' ---------------------------------- '
+C
+C ---------------------------------------------------------------------
 C
 C     Zero the property tensors
 cdx      IF (MAGSUS) CALL DZERO(SUSDZD,9)
@@ -383,132 +400,39 @@ C        Loop over the right operators which are the
 C        the dipole velocity operators 
 C        ===========================================
 C   
-      LUSOVE = 456
-      LUGDVE = 457
-      LUREVE = 458
-      CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      
-cxz      DO 300 IDIP = 1,NLAB1
-cxz         LABEL1 = LISTA1(IDIP)
-cxzC
-cxz        ISYM=ISYMAX(IDIP,1)+1
-cxzcb         write(lupri,*)' isimax :', ISYM   ! ISYM =1  deberia ser 1        
-cxzC     
-cxzc        set variables for response module
-cxz         IF(JIMPRT.GT.3) THEN 
-cxz            write(lupri,*) ' about to call LNRVAR' 
-cxz            write(lupri,*) ' ----------------------------'
-cxz         ENDIF
-cxz         CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK2),LWORK2)
-cxzC
-cxzcm         IF (NFRVAL.GT.0) THEN
-cxz           write(lupri,*)' # of freq val, NFRVAL:',NFRVAL 
-cxzC
+C     
+      IDIP = 0 
+      DO 300 IDIP = 1,NLAB
+         LABEL1 = LISTA1(IDIP)
+C
 C           3. Work Allocations:
 C
-            KGD1   = KWORK1
-            KWRKG1 = KGD1
-            LWRKG1 = LWORK - KWRKG1
-            KSLV   = KGD1 + 2*NVARPT
-            KLAST  = KSLV + 2*NVARPT
-            write(lupri,*) ' KLAST ',KLAST
-            write(lupri,*) ' LWORK ',LWORK
-            write(lupri,*) ' IF KLAST GT LWORK you will get an error '
-            IF (KLAST.GT.LWORK) CALL STOPIT('KLAST GT LWORK on LINEARLR
-     $           ',' ',KLAST,LWORK)
-            KWRK = KLAST
-            LWRK = LWORK - KLAST + 1
-cb            write(lupri,*)' NVARPT :', NVARPT 
-
+         KGD1   = KWORK1
+         KWRKG1 = KGD1
+         LWRKG1 = LWORK - KWRKG1
+         KSLV   = KGD1 + 2*NVARPT
+         KLAST  = KSLV + 2*NVARPT
+cb         write(lupri,*) ' KLAST ',KLAST
+cb         write(lupri,*) ' LWORK ',LWORK
+cb         write(lupri,*) ' IF KLAST GT LWORK you will get an error '
+         IF (KLAST.GT.LWORK) CALL STOPIT('KLAST GT LWORK on AVELRESC
+     $        ',' ',KLAST,LWORK)
+         KWRK = KLAST
+         LWRK = LWORK - KLAST + 1
+         write(lupri,*)' NVARPT :', NVARPT 
+         CALL PRP1AVE(LABEL1,SNDPRP,WORK(KCMO),WORK(KUDV),
+     $        WORK(KWRKG1),LWRKG1,JIMPRT)
+c        CALL PRP1AVE(LBL1AV(IOP),AVEVAL,CMO,UDV,WRK,LWRK,IPRRSP)
+cxz      WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
 C
-C           Find right hand side for right operator and write to file
-C           =========================================================
+        IF (JIMPRT.GE.1) THEN
+            WRITE (LUPRI,'(3A,F20.12)')
+     &     ' Expectation Value for Operator : < ',LABEL1,
+     &     ' > = ',SNDPRP
+        ENDIF
 C
-cxz            KSYMOP = ISYM
-cxz            TRPLET = .FALSE.
-cxz            IPRSP = -2 
-cxzC  juan ANTSYM =-1 IF TRIPLET !!!!!!!
-cxz            ANTSYM = 0
-cxzc            IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
-cxzcjim            IF(KEY.EQ."FCZK") ANTSYM=-1
-cxzC   
-cxzcb            write(lupri,*) ' about to call GETPV, ANTSYM : ', ANTSYM  
-cxzC jim sym to be read on luprop
-cxzC ANTSYM : matrix symmetry of PRPMO matrix
-cxzC          (1: symmetric, -1: antisymmetric, 0: unknown)
-
-cxz            CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
-cxz     &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
-cxz            REWIND LUGDVE
-cxz            CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
-cxz            IF (IPRLNR.GT.5) THEN
-cxz               WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL1
-cxz               CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
-cxz            ENDIF
-cxzC
-cxzC           Calculate eigenvector and write to file
-cxzC           =======================================
-cxzC
-cxz            CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,
-cxz     &            FRVAL,NFRVAL,NABATY,NABAOP,LABEL1,LUGDVE,LUSOVE,
-cxz     &            LUREVE,THCLNR,MAXITE,IPRRSP,MXRM,MXPHP,
-cxz     &            WORK(KWRK),LWRK)
-cxzC
-cxzC           Loop over the left side  property operators
-cxzC           ===========================================
-cxzC 
-cxz            DO 200 IPL = 1, NLAB2
-cxzcxzC
-cxzC              Find label and symmetry of the left side operator
-cxzC
-cxz               LABEL2 = LISTA2(IPL)
-cxz               KSYM   = 1
-cxzcb               write(lupri,*) '     else KSYM   = 1      ', KSYM 
-cxzC
-cxzC              If symmetry of right operator equals symmetry of
-cxzC              the left operator, that is if ISYM = KSYM, then
-cxzC              ================================================
-cxzC              (otherwise 2. order property SNDPRP is zero)
-cxzC
-cxzcx               IF (KSYM.EQ.ISYM) THEN
-cxz               KSYMOP = ISYM
-cxz               TRPLET = .FALSE.
-cxzC
-cxzC                 Find right hand side for left operator
-cxzC                 ========================================
-cxzC
-cxz               CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
-cxz     &             WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
-cxzC
-cxz               IF (IPRLNR.GT.5) THEN
-cxz                  WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
-cxz                  CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
-cxz               ENDIF
-cxzC
-cxzC                 Form second order properties SNDPRP
-cxzC                 ===================================
-cxzC
-cxz               REWIND LUSOVE
-cxz               CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
-cxzC
-cxz               IF (IPRLNR.GT.-1) THEN
-cxz                 WRITE (LUPRI,'(2A)') 'Solution Vector, label: ',LABEL1
-cxz                 CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
-cxz               ENDIF
-cxzC
-cxz               SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
-cxzC
-cxz               IF (IPRLNR.GT.3) THEN
-cxz                  WRITE (LUPRI,'(5A,F20.12)')
-cxz     &            ' Second order property for <<',LABEL2,',',LABEL1,
-cxz     &            '>> = ',SNDPRP
-cxz               ENDIF
-cxzC
-cxzC              Write properties into the various property matrices
-cxzC              ===================================================
-cxzC
+C       =========================================================
+C
 cxzC              Nuclear Shieldings
 cxzC              ------------------
 cxz               IF (KEY.EQ.'D1S ') THEN
@@ -540,25 +464,22 @@ cx                     ENDIF
 cx                  ENDIF
 cxz  200 CONTINUE
 cm         END IF  NFRVAL
-cxz  300 CONTINUE
+  300 CONTINUE
+      write(lupri,*)' aca llegue despues de angpso' 
 
 
-
-
-cxz      CALL GPCLOSE(LUSOVE,'DELETE')
-cxz      CALL GPCLOSE(LUGDVE,'DELETE')
 cxz      CALL GPCLOSE(LUREVE,'DELETE')
 C   
 C     for magnetizability conversion factor -0.25
 C   
-      IF (MAGSUS) THEN
+cb      IF (MAGSUS) THEN
 cb        Do I=1,3
 cb          Do J=1,3
 cb            SUSDZD(I,J)=-D025*SUSDZD(I,J)
 cb          ENDDO
 cb        ENDDO
-      ENDIF
-      IF (SHIELD) THEN
+cb      ENDIF
+cb      IF (SHIELD) THEN
 C   
 C     for shieldings conversion factor -0.5
 C   
@@ -569,12 +490,12 @@ cb            SIGMASFTP(J,I)=D05*SIGMASFTP(J,I)
 cb            SIGMASFTM(J,I)=D05*SIGMASFTM(J,I)
 cb          ENDDO
 cb        ENDDO
-      ENDIF
+cb      ENDIF
 C
-      WRITE(LUPRI,*)
-      CALL TIMER ('AVELRESC',TIMEIN,TIMOUT)
+c      WRITE(LUPRI,*) ' llegue al final de AVERAGE.' 
+      CALL TIMER ('AVELRSC',TIMEIN,TIMOUT)
 C
-      CALL QEXIT('AVELRESC')
+      CALL QEXIT('AVELRSC')
       RETURN
       END
 C...
@@ -582,60 +503,3 @@ Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-
-
-c    ---------------------------------------
-c    ---------------------------------------
-C  /* Deck todoint */
-cx      LOGICAL FUNCTION TODOINT(LABEL,IFILE)
-C     07-06-2000 ALig
-C
-C     is a non generic function to check if some property (LABEL) are 
-C     already stored in file (IFILE).
-C     ... it search always in the AOPROPER file
-C
-C     It could be necessary to correct the PSO part for molecules with 
-C     more then 33 atoms
-C
-cx#include <implicit.h>
-cx#include <mxcent.h>
-cx#include <trkoor.h>
-cx#include <chrnos.h>
-cLig DEBUG <>
-cx#include <priunit.h>
-cx      CHARACTER*8 LABEL,LABEL1
-cx      LOGICAL FNDLAB
-C
-cx     TODOINT = .FALSE. 
-cx      NOINT = 0
-cx      CALL GPOPEN(IFILE,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
-cx     &            .FALSE.)
-cx      REWIND IFILE
-cx      IF (LABEL.EQ.'DIPLEN  ') THEN
-cx         IF (FNDLAB('XDIPLEN ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('YDIPLEN ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('ZDIPLEN ',IFILE)) NOINT=NOINT+1
-cx         IF (NOINT.EQ.3) TODOINT=.TRUE.
-cx      ELSE IF (LABEL.EQ.'DIPVEL  ') THEN
-cx         IF (FNDLAB('XDIPVEL ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('YDIPVEL ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('ZDIPVEL ',IFILE)) NOINT=NOINT+1
-cx         IF (NOINT.EQ.3) TODOINT=.TRUE.
-cx      ELSE IF (LABEL.EQ.'ANGMOM  ') THEN
-cx         IF (FNDLAB('XANGMOM ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('YANGMOM ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('ZANGMOM ',IFILE)) NOINT=NOINT+1
-cx         IF (NOINT.EQ.3) TODOINT=.TRUE.
-cx      ELSE IF (LABEL.EQ.'RPSO    ') THEN
-cx         IF (FNDLAB('01RPSO X',IFILE))  TODOINT = .TRUE.
-cx      ELSE IF (LABEL.EQ.'PSO     ') THEN
-cx         DO I=1,NCOOR
-cx            LABEL1='PSO '//CHRNOS(I/10)//CHRNOS(MOD(I,10))//'  '
-cx            IF (FNDLAB(LABEL1,IFILE)) NOINT=NOINT+1
-cx         END DO  
-cx         IF (NOINT.EQ.NCOOR) TODOINT=.TRUE.
-cx      ENDIF   
-cx      CALL GPCLOSE(IFILE,'KEEP')
-cx      RETURN  
-cx      END     

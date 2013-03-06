@@ -158,6 +158,7 @@ abacus/huckel.F
 abacus/abalresc.F
 abacus/linearlr.F
 abacus/average.F
+abacus/angpso.F
 amfi/amfi.F
 amfi/symtra.F
 cc/asqr.F

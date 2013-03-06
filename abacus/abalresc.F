@@ -278,7 +278,7 @@ C
       IF (SIGMAP1S)  THEN
          WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : PsoKin'
          WRITE (LUPRI,'(A)')'           NOT FOR NOW, some bugs inside'
-         CALL LINEARLR('PSOK',WORK,LWORK) ! NOOOO ANDA
+c         CALL LINEARLR('PSOK',WORK,LWORK) ! NOOOO ANDA
          WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : Lkin'
          CALL LINEARLR('LKIN',WORK,LWORK) ! ANDA
       END IF
@@ -317,11 +317,11 @@ cv         CALL CUADRAS('LFCO')
       END IF
 
       IF (SIGMAD0S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : '
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : FC'
-         CALL AVELRSC('FCAV',WORK,LWORK) ! avFC   testing !
-cv         CALL AVERAGE('DIAK',WORK,LWORK) ! DIAK   testing !
-cv         CALL AVERAGE('ANGP',WORK,LWORK) ! ANGP   testing !
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : Diamagnetic '//
+     &         ' ZerothORder Shielding corrections ' 
+c         CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
+c         CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
+          CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing !
       END IF
 
 
