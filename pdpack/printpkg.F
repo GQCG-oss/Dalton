@@ -489,7 +489,7 @@ C
 C
       AMAX = ZERO
       N_NAN = 0
-      DO I=1,J
+      DO I=1,MATDIM
          IF ( IS_NAN(AMATRX(I),AMATRX(I)) ) THEN
             N_NAN = N_NAN + 1
          ELSE
