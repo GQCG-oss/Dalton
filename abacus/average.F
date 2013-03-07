@@ -377,7 +377,7 @@ C ---------------------------------------------------------------------
            write(lupri,*) ' ',j ,  WORK(KCMO+j)
         ENDDO
         write(lupri,*)' about to call angpso' 
-        CALL ANGPSO(LISTA1, WORK(KCMO))
+        CALL ANGPSO(LISTA1,WORK(KCMO))
 C     This is to avoid the next loop to call PRP1AVE
       NLAB=0
       ENDIF
