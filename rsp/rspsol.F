@@ -140,9 +140,18 @@ C
 C
       CALL QENTER('RSPSLV')
 
-      IF (SOPPA) THEN
+C      IF (SOPPA) THEN
+C         WRITE (LUPRI,*)
+C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
+C         CALL QUIT(
+C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
+C      END IF
+      IF (.NOT. SOPRPA .AND. SOPPA) THEN
          WRITE (LUPRI,*)
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
+         WRITE (LUPRI,*) 'Full solvent model SOPPA not implemented.'
+         WRITE (LUPRI,*) 'Only SOPPA/RPA (JCC, 2012-2022, 33, (2012))'
+         WRITE (LUPRI,*) 'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
          CALL QUIT(
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
       END IF

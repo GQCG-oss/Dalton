@@ -1039,7 +1039,7 @@ C
 c        TODO         DFTIMG = .FALSE.
          ksymop = jwopsy
          call dft_lin_respf(1,fxc(1,1),cmo,ubo(1,1),.FALSE.,
-     &                      jwopsy,wrk(kfree),lfree)
+     &                      jwopsy,wrk(kfree),lfree,iprdft)
 c         CALL DFTATR(FXC(1,1),CMO,UBO(1,1),.false.,
 c                     JWOPSY,WRK(KFREE),LFREE)
       END IF      

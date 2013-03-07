@@ -255,6 +255,7 @@ C
 #include "spinfo.h"
 #include "dftcom.h"
 #include "dfterg.h"
+
 C
       INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
       ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
@@ -599,7 +600,7 @@ C
 C (initialize energy values to zero, so they are defined
 C  for non-DFT calcualtions, i.e. standard HF or MCSCF)
 C
-      EDFTY = D0
+      EDFTY   = D0
       ESRDFTY = D0
 C
 C
@@ -729,8 +730,8 @@ C     LUW*     Output units for print output (now defined in SIRSET)
       IPRSIG = IPRUSR
       IPRDNS = IPRUSR
       IPRRHF = IPRUSR - 1
-      IPRMP2 = IPRUSR + 5
-      IPRSOL = IPRUSR + 5
+      IPRMP2 = IPRUSR + 4
+      IPRSOL = IPRUSR + 4
       IPRCNO = IPRUSR + 1
       IPRFCK = IPRUSR
 C     set limit for POPPRI in each DIIS/QCHF/MCSCF iter to 30 nuclei
@@ -961,6 +962,7 @@ C
          IF (IOPRHF .NE. 0) THEN
             LSYM   = IOPRHF
             ISPIN  = 2
+            MS2    = 1
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
@@ -969,13 +971,15 @@ C
             DO ISYM = 2, NSYM
                IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
             END DO
-            NASHT = ISUM(NSYM,NROHF,1)
-            ISPIN = NASHT+1
+            NASHT  = ISUM(NSYM,NROHF,1)
+            ISPIN  = NASHT + 1
+            MS2    = NASHT
             NACTEL = NASHT
             CALL ICOPY(8,NROHF,1,NASH,1)
          ELSE  
             LSYM   = 1
             ISPIN  = 1
+            MS2    = 0
             NASHT  = 0
             NACTEL = 0
          END IF
@@ -1150,7 +1154,7 @@ C        ... read old orbitals from file
          NERROR = 0
          NDELT = 0
          IF (IRDMO .EQ. 7 .OR. IRDMO .EQ. 9) THEN
-C           ... read initial MO's from LUIT1
+C           ... read initial MO's from SIRIUS.RST
 C               Find out if any orbitals deleted
             CALL GPOPEN(LUIT1,'SIRIUS.RST','OLD',' ','UNFORMATTED',
      &                  IDUMMY,.FALSE.)
@@ -1158,13 +1162,26 @@ C               Find out if any orbitals deleted
             IF (FNDLAB('BASINFO ',LUIT1)) THEN
 C           ... 921202: old LUIT1 files do not have BASINFO
 C
-               IF (INIOCC .EQ. 0 .OR. IREST .GT. 0) THEN
-C              ... 081205 hjaaj: not for INIOCC .lt. 0, because we
-C                  may restart with old orbitals, but new charge.
+               IF (INIOCC .LE. 0 .OR. IREST .GT. 0) THEN
                   READ (LUIT1) NSYM_i4,NBAS_i4,NORB_i4,NRHF_i4,IOPRHF_i4
-                  INIOCC  = 2
-                  NRHF(:) = NRHF_i4(:)
-                  IOPRHF  = IOPRHF_i4
+                  IF (INIOCC .LT. 0) THEN
+C                 ... 081205 hjaaj: for INIOCC .lt. 0, we
+C                     may restart with old orbitals, but new charge.
+                     NRHFEL_test = 0
+                     DO I = 1, NSYM_i4
+                        NRHFEL_test = NRHFEL_test + NRHF_i4(I)
+                     END DO
+                     IF (IOPRHF_i4 .GT. 0) NRHFEL_test = NRHFEL_test + 1
+                     IF (NRHFEL_test .eq. NRHFEL) THEN
+                        INIOCC  = 2
+                        NRHF(:) = NRHF_i4(:)
+                        IOPRHF  = IOPRHF_i4
+                     END IF
+                  ELSE
+                     INIOCC  = 2
+                     NRHF(:) = NRHF_i4(:)
+                     IOPRHF  = IOPRHF_i4
+                  END IF
                ELSE
                   READ (LUIT1) NSYM_i4,NBAS_i4,NORB_i4
                END IF
@@ -1367,6 +1384,13 @@ C        JRDMO positive : abort in READMO if error
       END IF
   200 CONTINUE
 C
+C *** If requested, reorder mo:s, using reorder array in IMOORD(*).
+C
+      IF (LMOORD .AND. INPERR .EQ. 0) THEN
+         K1 = 1 + NCMOT
+         CALL REORD(CMO,CMO(K1),IMOORD)
+      END IF
+C
 C *** AUTOCC : find initial occupation (hjaaj-aug95)
 C              and Huckel start orbitals if DOHUCKEL
 C
@@ -1401,15 +1425,6 @@ C               of initial occupation guess
       IF (NSYM .EQ. 1) AUTOCC = .FALSE.
 C     ... occupation cannot change if only one symmetry
 C
-C *** If requested, reorder mo:s, using reorder array in IMOORD(*).
-C
-      IF (LMOORD .AND. INPERR .EQ. 0) THEN
-         K1 = 1 + NCMOT
-         CALL REORD(CMO,CMO(K1),IMOORD)
-         WRITE (LUPRI,'(/A)')
-     &   ' INFO: Molecular orbitals have been reordered, as requested.'
-      END IF
-C
 C     Check for input errors of initial occupation
 C
       NERROR = 0
@@ -1433,6 +1448,7 @@ C
          IF (IOPRHF .NE. 0) THEN
             LSYM   = IOPRHF
             ISPIN  = 2
+            MS2    = 1
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
@@ -1441,13 +1457,15 @@ C
             DO ISYM = 2, NSYM
                IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
             END DO
-            NASHT = ISUM(NSYM,NROHF,1)
-            ISPIN = NASHT+1
+            NASHT  = ISUM(NSYM,NROHF,1)
+            ISPIN  = NASHT + 1
+            MS2    = NASHT
             NACTEL = NASHT
             CALL ICOPY(8,NROHF,1,NASH,1)
          ELSE 
             LSYM   = 1
             ISPIN  = 1
+            MS2    = 0
             NASHT  = 0
             NACTEL = 0
          END IF
@@ -5139,7 +5157,7 @@ C
          CALL TRAUTH(IWUNIT)
 c        WRITE(IWUNIT,410)
 c410     FORMAT(/,' Questions and correspondence should be directed',
-c    *        ' to H.J.Aa. Jensen',/,T5,'E-mail: hjj@ifk.sdu.dk',
+c    *        ' to H.J.Aa. Jensen',/,T5,'E-mail: hjj@sdu.dk',
 c    *        //,T2,'Standard reference:',
 c    *        /,T5,'H.J.Aa. Jensen, H. Agren, and J. Olsen,',
 c    *        ' Chapter 8 in MOTECC-90')
@@ -5170,7 +5188,7 @@ C
 C
 C Type of calculation:
 C
- 1050 FORMAT(/'@',T6,A/)
+ 1050 FORMAT(/'@',T6,A)
  1051 FORMAT('@',T16,A)
  1052 FORMAT(/'@',T6,A,$)
  1053 FORMAT(A)
@@ -5520,7 +5538,7 @@ C
                IF (NAS1T .GT. 0)
      &            WRITE(IWUNIT,1320) NAS1T,(NAS1(I),I=1,NSYM)
                IF (NAS2T .GT. 0)
-     &            WRITE(IWUNIT,1330) NAS3T,(NAS2(I),I=1,NSYM)
+     &            WRITE(IWUNIT,1330) NAS2T,(NAS2(I),I=1,NSYM)
                IF (NAS3T .GT. 0)
      &            WRITE(IWUNIT,1340) NAS3T,(NAS3(I),I=1,NSYM)
                WRITE(IWUNIT,1300) NASHT,(NASH(I),I=1,NSYM)

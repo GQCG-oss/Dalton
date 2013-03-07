@@ -489,7 +489,7 @@ C
 C
       AMAX = ZERO
       N_NAN = 0
-      DO I=1,J
+      DO I=1,MATDIM
          IF ( IS_NAN(AMATRX(I),AMATRX(I)) ) THEN
             N_NAN = N_NAN + 1
          ELSE
@@ -1002,7 +1002,7 @@ C
       COMPLEX   C4_test           ! hjaaj: for testing elements for print
       REAL*4    R4_test,R4_thrpri !        because no double complex absolute value :-(
       CHARACTER*1 ASA(3), BLANK, CTL
-      CHARACTER   PFMT*20, COLUMN*8
+      CHARACTER   PFMT*30, COLUMN*8
       DOUBLE PRECISION ZERO, FFMIN, FFMAX
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
@@ -1023,11 +1023,11 @@ C
       END IF
       IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
 C        use F output format
-         PFMT = '(A1,I7,2X,4(F17.8,F13.8))'
+         PFMT = '(A1,I7,2X,6(F17.8,F13.8))'
          thrpri = 0.5D-6
       ELSE
 C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,4(D17.6,D13.6))'
+         PFMT = '(A1,I7,2X,1P,6(D17.6,D13.6))'
          thrpri = 1.0D-6*AMAX
       END IF
 C
@@ -1059,7 +1059,7 @@ C
     2 LAST = MIN(LAST+KCOL,COLHI)
     3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
- 1000 FORMAT (/10X,4('    real <- ',A6,I4,' <- imag'))
+ 1000 FORMAT (/10X,6('      real < ',A6,I4,' > imag'))
       END
 C === Deck is_nan ===============
       LOGICAL FUNCTION IS_NAN(XA,XB)
