@@ -1367,6 +1367,7 @@ C ::: We take the XY-component. :::
                V1(2) = ATMARR(2,I)
                V1(3) = 0.0D0
                V1NRM2 = V1(1)*V1(1)+V1(2)*V1(2)
+               TOLLDS = MAX( 2.0D0 * TOLLRN * SQRT (V1NRM2), TOLLRN_2)
                IORD = 0
                J = I
  350           CONTINUE
@@ -1383,7 +1384,7 @@ C                    Z_I -> +Z_J ?
 C                    Z_I -> -Z_J ?
                      V2(3) = ATMARR(3,J) + ATMARR(3,I)
                   END IF
-                  IF (V1NRM2 .GT. TOLROT) THEN
+                  IF (V1NRM2 .GT. TOLLRN_2) THEN
 C                    ... atom I is not on z-axis
                      DEG = VECANG(V1, V2)
                      DEG = DEG - ANINT(DEG/CON2PO)*CON2PO
@@ -1393,13 +1394,13 @@ C                    ... atom I is not on z-axis
 C ::: Program checks if the two atoms got the same Z-coordinate,   :::
 C ::: that the vectors have the same length, and finally that the  :::
 C ::: angle between them is correct based on the rotational order. :::
-               V2NRM2 = V2(1)*V2(1)+V2(2)*V2(2)
-                  IF ((ABS(V2(3)) .LT. TOLROT) .AND.
-     &      (ABS(V1NRM2-(V2(1)*V2(1)+V2(2)*V2(2))).LT.TOLROT)
-     &               .AND. (ABS(DEG) .LT. TOLLRN)) THEN
+                  V2NRM2 = V2(1)*V2(1)+V2(2)*V2(2)
+                  IF ((ABS(V2(3)) .LT. TOLLRN) .AND.
+     &               (ABS(V1NRM2-V2NRM2) .LT. TOLLDS )  ! | r^2 - (r+d)^2 | = | 2*d*r + d^2 |
+     &               .AND. (ABS(DEG) .LT. TOLROT)) THEN
                      IUSED(I) = 1
                      IUSED(J) = 1
-                     IF (V1NRM2 .GT. TOLROT) THEN
+                     IF (V1NRM2 .GT. TOLLRN_2) THEN
                         IORD = IORD + 1
                      ELSE
 C                       hjaaj: any order is OK for atoms on z-axis
@@ -1464,45 +1465,41 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          I = 1
  100     CONTINUE
          IF (I .LE. N_ATOMS) THEN
-            J = I
-C ::: We have to make sure we get all the equivalent atoms. :::
- 105        CONTINUE
-            IF ((J .GT. 1) .AND.
-     &           (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J - 1))) .AND.
-     &           (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J - 1)))) THEN
-               J = J - 1
-               GOTO 105
-            END IF
-            IORD = 0
+C ::: "I" will be the lowest index in a set of equivalent atoms. :::
+C ::: We need to find the rest
+            J = I+1
+            IORD = 1
             V1(1) = ATMARR(1,I)
             V1(2) = ATMARR(2,I)
             V1(3) = ATMARR(3,I)
+            V1NRM2 = V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)
+            TOLLDS = 2.0D0*TOLLRN*SQRT (V1NRM2)
 C ::: The number of equivalent atoms are counted. :::
  110        CONTINUE
-            V2(1) = ATMARR(1,J)
-            V2(2) = ATMARR(2,J)
-            V2(3) = ATMARR(3,J)
-            IF ((J .LE. N_ATOMS) .AND.
-     &        (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND.
-     &        (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) .AND.
-     &        (((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)) -
-     &          (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))) .LT.
-     &                                      TOLLRN_2)) THEN
-               IORD = IORD + 1
-               J = J + 1
-               GOTO 110
+            IF (J .LE. N_ATOMS) THEN
+               V2(1) = ATMARR(1,J)
+               V2(2) = ATMARR(2,J)
+               V2(3) = ATMARR(3,J)
+               V2NRM2 = V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3)
+               IF ((NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND.
+     &             (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) .AND.
+     &             (ABS( V1NRM2 - V2NRM2 ) .LT. TOLLDS )) THEN  
+                 IORD = IORD + 1
+                 J = J + 1
+                 GOTO 110
+               END IF
             END IF
 C ::: Order must be two or higher to be of interest. :::
             IF (IORD .GT. 1) THEN
 C ::: We "add" all equivalent atoms to yield a vector. If this vector is :::
 C ::: different from the zero vector, it is the only possible rotational :::
 C ::: axis. If it adds up to the zero vector, the atoms defines a        :::
-C ::: linear, planar or highly symmetrical structur (it has to be        :::
+C ::: linear, planar or highly symmetrical structure (it has to be       :::
 C ::: symmetrical around origo).                                         :::
                V1(1) = 0.0D0
                V1(2) = 0.0D0
                V1(3) = 0.0D0
-               DO 120 K=J-IORD,J-1
+               DO 120 K=I,I+IORD-1
                   V1(1) = V1(1) + ATMARR(1,K)
                   V1(2) = V1(2) + ATMARR(2,K)
                   V1(3) = V1(3) + ATMARR(3,K)
@@ -1511,51 +1508,54 @@ C ::: symmetrical around origo).                                         :::
                IF (V1NRM2 .LT. TOLLRN_2) THEN
 C ::: All but the linear case has order higher than two. :::
                   IF (IORD .GT. 2) THEN
-                     V1(1) = ATMARR(1,I)
-                     V1(2) = ATMARR(2,I)
-                     V1(3) = ATMARR(3,I)
+                     DO 133 J=I,I+IORD-1
+                       V1(1) = ATMARR(1,J)
+                       V1(2) = ATMARR(2,J)
+                       V1(3) = ATMARR(3,J)
 C ::: We let each possible pair of atoms define a plane, and examine :::
 C ::: the normal vector of this plane as a possible rotational axis. :::
-                     DO 130 K=J-IORD, J-1
-                        V2(1)= ATMARR(1,K)
-                        V2(2)= ATMARR(2,K)
-                        V2(3)= ATMARR(3,K)
-                        V3(1) =  V1(2)*V2(3) - V2(2)*V1(3)
-                        V3(2) = -V1(1)*V2(3) + V2(1)*V1(3)
-                        V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
-                        IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
+                       DO 130 K=J,I+IORD-1 ! only check each pair once
+                         V2(1)= ATMARR(1,K)
+                         V2(2)= ATMARR(2,K)
+                         V2(3)= ATMARR(3,K)
+                         V3(1) =  V1(2)*V2(3) - V2(2)*V1(3)
+                         V3(2) = -V1(1)*V2(3) + V2(1)*V1(3)
+                         V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
+                         IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
      &                                       .GT. TOLLRN_2) THEN
-                          DO L=IORD,MINORD,-1
-                           IF (ROTAXS(MXM,ATMARR,TMPARR,L,V3,PROPER))
-     &                        THEN
-                              CALL ADD2AR(MAXAXS, DRTAXS, L, V3)
-                              CALL DLDPAX(MAXAXS, DRTAXS)
-                           END IF
-                          END DO
-                        END IF
- 130                 CONTINUE
+                           DO L=IORD,MINORD,-1
+                             IF (ROTAXS(MXM,ATMARR,TMPARR,L,V3,PROPER))
+     &                         THEN
+                               CALL ADD2AR(MAXAXS, DRTAXS, L, V3)
+                               CALL DLDPAX(MAXAXS, DRTAXS)
+                             END IF
+                           END DO
+                         END IF
+ 130                   CONTINUE
 C ::: We also examine all axes defined by ONE atom. :::
 C     hjaaj: at most of order IORD-1, as one atom is on the axis
 C            meaning we have max IORD-1 equivalent atoms
 C            not on the axis.
-                     IF ( (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))
-     &                       .GT. TOLLRN) THEN
-                       DO L = IORD - 1, MINORD, -1
-                        IF (ROTAXS(MXM,ATMARR,TMPARR,L,V1,PROPER)) THEN
-                           CALL ADD2AR(MAXAXS, DRTAXS, L, V1)
-                           CALL DLDPAX(MAXAXS, DRTAXS)
-                        END IF
-                       END DO
-                     END IF
-C ::: If the order is even, and the symmetry high, we might've missed axes :::
-C ::: lying between the atoms. We therefore test all possibilities.        :::
+                       IF ( (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))
+     &                       .GT. TOLLRN_2) THEN
+                         DO L = IORD - 1, MINORD, -1
+                           IF (ROTAXS(MXM,ATMARR,TMPARR,L,V1,PROPER))
+     &                                    THEN
+                             CALL ADD2AR(MAXAXS, DRTAXS, L, V1)
+                             CALL DLDPAX(MAXAXS, DRTAXS)
+                           END IF
+                         END DO
+                       END IF
+ 133                 CONTINUE
+C ::: If the order is even, and the symmetry high, we might have missed    :::
+C ::: axes lying between the atoms. We therefore test all possibilities.   :::
 C ::: These tests are so thorough, they only have to be performed once.    :::
                      IF ((MOD(IORD,2).EQ.0).AND.(IUSED(I).EQ.0)) THEN
                         V1(1) = ATMARR(1,I)
                         V1(2) = ATMARR(2,I)
                         V1(3) = ATMARR(3,I)
-C ::: We're going to add from 2 to 3 vectors. The matrix ICnt keeps :::
-C ::: track of indexes, so that all combinations are tried.        :::
+C ::: We are going to add from 2 to 3 vectors. The matrix ICnt keeps :::
+C ::: track of indexes, so that all combinations are tried.          :::
                         DO 160 K = 1, MIN(IORD/2-1,2)
                            ICNT(1) = 1
                            ICNT(2) = 1
@@ -1566,7 +1566,7 @@ C                          DO WHILE (ICNT(K) .LE. IORD)
                               V2(2) = V1(2)
                               V2(3) = V1(3)
                               DO L = 1, K
-                                 M = J-IORD-1+ICNT(L)
+                                 M = I-1+ICNT(L)
                                  V2(1) = V2(1) + ATMARR(1,M)
                                  V2(2) = V2(2) + ATMARR(2,M)
                                  V2(3) = V2(3) + ATMARR(3,M)
@@ -1603,7 +1603,7 @@ C ::: products between themselves.                                      :::
                            V3(1) = 0.0D0
                            V3(2) = 0.0D0
                            V3(3) = 0.0D0
-                           DO L = J-IORD, J-1
+                           DO L = I, I+IORD-1
                               V2(1) = ATMARR(1,L)
                               V2(2) = ATMARR(2,L)
                               V2(3) = ATMARR(3,L)
@@ -1679,7 +1679,7 @@ C ::: as well. Maximum order is the highest order among the axes.      :::
                          END IF
                         END IF
 C ::: Finally the atoms are marked as used. :::
-                        DO 180 M = J-IORD, J-1
+                        DO 180 M = I, I+IORD-1
                            IUSED(M) = 1
  180                    CONTINUE
                      END IF
@@ -1735,7 +1735,8 @@ C ::: The easiest case is when the atoms define the only possible axis. :::
                   END IF
                END IF
             END IF
-            I = I + 1
+CRf   Set I to first atom not in this equivalent set and repeat                           
+            I = I + IORD
             GOTO 100
          END IF
          CALL DLDPAX(MAXAXS, DRTAXS)
@@ -1802,7 +1803,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), DMRARR(6,0:MAXMIR)
          DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
-         DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
+         DIMENSION V1(3), V2(3), V3(3), VSTORE(3), TMPAX(6)
          LOGICAL   MIRMOL, PLNMOL, LINMOL
          DMRARR(1,0) = 0.0D0
          N_ATOMS = NINT(ATMARR(1,0))
@@ -1922,9 +1923,12 @@ C ::: we have found rotational axes. The axis with the highest order is  :::
 C ::: used as reference, and the code is as follows:                     :::
 C ::: Horizontal - 2   Vertical - 1   Other/Undecided - 0                :::
          IF (NINT(AXARR(1,0)) .GT. 0) THEN
-            V1(1) = AXARR(1,1)
-            V1(2) = AXARR(2,1)
-            V1(3) = AXARR(3,1)
+            IFOUND = 0
+            J = 1
+ 275        CONTINUE 
+            V1(1) = AXARR(1,J)
+            V1(2) = AXARR(2,J)
+            V1(3) = AXARR(3,J)
             DO 300 I = 1, NINT(DMRARR(1,0))
                V2(1) = DMRARR(1,I)
                V2(2) = DMRARR(2,I)
@@ -1936,10 +1940,12 @@ C ::: First the horizontal. :::
                IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
      &                                    .LT. TOLLRN_2) THEN
                   DMRARR(4,I) = 2.0D6 + DMRARR(4,I) + 0.1D0
+                  IFOUND = IFOUND + 1
 C ::: Then the vertical. :::
                ELSE IF (ABS(V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3))
      &                                     .LT. TOLLRN) THEN
                   DMRARR(4,I) = 1.0D6 + DMRARR(4,I) + 0.1D0
+                  IFOUND = IFOUND + 1
 C ::: The rest must be diagonal/undecided. :::
                ELSE
                   DMRARR(4,I) =         DMRARR(4,I)
@@ -1948,6 +1954,23 @@ C           (Type is recovered later by MIRTYP = 1.0D-6*DMRARR(4,I)
 C            --  that is 2, 1, or 0 -- the +0.1D0 is to avoid
 C            roundoff errrors when DMRARR(4,I) = 0.0D0)
  300        CONTINUE
+CRF   If we have several rotational axes of the highest order, we might
+CRF   not have tested the real main axis. If we have been unable to classify 
+CRF   any planes thus far, we try the next one.
+            IF ( (IFOUND .EQ. 0 )  .AND. (NINT(AXARR(1,0)) .GT. J ) 
+     &           .AND. (NINT(AXARR(4,J)) .EQ. NINT(AXARR(4,J+1)) )) 
+     &           THEN
+               J = J + 1
+               GOTO 275  
+            END IF
+            IF ( (IFOUND .GE. 1) .AND. ( J .GT. 1 ) ) THEN
+CRF  We have been able to classify som mirror planes, but not using the first axis
+CRF  Swich them around
+               TMPAX = AXARR(:,1)
+               AXARR(:,1) = AXARR(:,J)
+               AXARR(:,J) = TMPAX
+            END IF
+            
             CALL SRTATM(MAXMIR, DMRARR, .FALSE.)
          END IF
          RETURN

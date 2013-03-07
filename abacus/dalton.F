@@ -106,11 +106,11 @@ C
       
       IF (MYNUM .LE. 1) THEN
          IF (GBYTES .GE. 1.D0) THEN
-            WRITE(LUERR,'(/A,I12,A,F7.3,A,I4)')
+            WRITE(*,'(/A,I12,A,F7.3,A,I4)')
      &        ' Work memory size (LMWORK+2):',
      &        LMWORK+2,' =',GBYTES,' gigabytes; node',MYNUM
          ELSE
-            WRITE(LUERR,'(/A,I12,A,F8.2,A,I4)')
+            WRITE(*,'(/A,I12,A,F8.2,A,I4)')
      &        ' Work memory size (LMWORK+2):',
      &        LMWORK+2,' =',XMBYTES,' megabytes; node',MYNUM
          END IF
@@ -160,7 +160,7 @@ Cef end
 
       LEN_BASDIR = MAX(1,LNBLNK(BASDIR))
       IF (MYNUM .LE. 1) THEN
-         WRITE(LUERR,'(/I4,A/5X,A)')
+         WRITE(*,'(/I4,A/5X,A)')
      &      MYNUM,': Directories for basis set searches:',
      &      BASDIR(1:LEN_BASDIR)
       END IF
@@ -393,10 +393,10 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
                END IF
          END IF
 
-         write(lupri, '(//a/a/)')
-     &     'Compilation information',
-     &     '-----------------------'
-         call print_binary_info()
+c         write(lupri, '(//a/a/)')
+c     &     'Compilation information',
+c     &     '-----------------------'
+c         call print_binary_info()
 
 #if defined (VAR_MPI)
          IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
@@ -663,14 +663,14 @@ C       Either default memory size,
 C
         IF (LMWORK .LE. 0) THEN
           LMWORK = LWORK_DEF
-          WRITE (LUERR,'(/A,I20)')
+          WRITE (*,'(/A,I20)')
      &      ' DALTON: default work memory size used.',LMWORK
         ELSE
 C
 C       ... or user specified memory size.
 C
           LWMEM = MAX(1,LNBLNK(WRKMEM))
-          WRITE(LUERR,'(/A/3A)')
+          WRITE(*,'(/A/3A)')
      &    ' DALTON: user specified work memory size used,',
      &    '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
         END IF
@@ -691,7 +691,7 @@ C       Either default memory size,
 C
         IF (LMWORK_NODES .LE. 0) THEN
           LMWORK_NODES = LMWORK
-          WRITE (LUERR,'(/A,I20)')
+          WRITE (*,'(/A,I20)')
      &    ' DALTON: master work memory size also used for slaves.',
      &    LMWORK_NODES
         ELSE
@@ -699,7 +699,7 @@ C
 C       ... or user specified memory size.
 C
           LWMEM = MAX(1,LNBLNK(NODE_WRKMEM))
-          WRITE(LUERR,'(/A/3A)')
+          WRITE(*,'(/A/3A)')
      &    ' DALTON: user specified work memory size used,',
      &    '         environment variable NODE_WRKMEM = "',
      &    NODE_WRKMEM(1:LWMEM),'"'

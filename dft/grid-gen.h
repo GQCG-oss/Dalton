@@ -52,9 +52,9 @@ void grid_gen_set_part_scheme(GridGenPartScheme scheme);
 
 typedef struct DftGridReader_ DftGridReader;
 
-DftGridReader* grid_open(integer nbast, real *dmat, real *work, integer *lwork);
+DftGridReader* grid_open(integer nbast, real *dmat, real *work, integer *lwork, integer iprint);
 DftGridReader* grid_open_cmo(integer nbast, const real *cmo, 
-                             real *work, integer *lwork);
+                             real *work, integer *lwork, integer iprint);
 
 int
 grid_getchunk_blocked(DftGridReader* rawgrid, integer maxlen,

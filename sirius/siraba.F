@@ -1248,12 +1248,10 @@ C
       CALL DZERO(WRK(KFXCAO),LDFAO)
 C
       IF (LONDON) THEN
-CTROND         IFCSET = 2
 C     Scale anti-symmetric density to "get things right..."
          IFCSET = 22
          CALL DSCAL(LDFAO,DM1,WRK(KDXCAO),1)
       ELSE
-CTROND         IFCSET = 1
          IFCSET = 13
       END IF
       DO 100 I = 1,NXMAT
@@ -1265,25 +1263,6 @@ CTROND         IFCSET = 1
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NXMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
       DFTADD = DFTADX
-#if defined (VAR_OLDCODE)
-C
-CHJAAJ: this is from FCKDIR; change it !
-C------------------------------------------------------
-C     Write out densities and associated fock matrices.
-C------------------------------------------------------
-C
-      IF (IPRINT.GT.2) THEN
-         CALL HEADER('AO density and Fock matrices in TR1LFK',-1)
-         DO 300 I = 1, NXMAT
-            JDXAO = ?
-            JFXAO = ?
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-            CALL OUTPUT(WRK(JDXAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-            CALL OUTPUT(WRK(JFXAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-  300    CONTINUE
-      END IF
-#endif
 C
 C     Transform Fock matrices to MO basis
 C     FC(J,I) = FC(J,I) + sum(a,b) CMO(a,J) FCAO(a,b) CMO(b,I)

@@ -824,6 +824,6 @@ c     compute dft contribution
      &             ZYMB,ISYMB,
      &             ZYMC,ISYMC,
      &             ZYMD,ISYMD,
-     &             WRK,LFREE)
+     &             WRK,LFREE,IPRDFT)
 c     pack stuff back.
       END
