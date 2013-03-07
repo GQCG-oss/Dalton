@@ -649,7 +649,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
     end do
 
 ! compatibility checks
-!    if (pe_iter .and. pe_sol) stop 'Solvation and iterative solver not ready'
+    if (pe_sol .and. ndens .gt. 1) stop 'Solvation model only implemented for ndens = 1'
 !    if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible'
 
 end subroutine pe_dalton_input
@@ -1707,7 +1707,7 @@ subroutine pe_polarization(denmats, fckmats)
     real(dp), dimension(:), intent(inout), optional :: fckmats
 
     integer :: site, ndist, nrest
-    integer :: i, j, k, l, m
+    integer :: i, j, k, l, m, n
     integer :: lunoneq
     logical :: skip
     real(dp) :: eps_fac
@@ -1775,7 +1775,12 @@ subroutine pe_polarization(denmats, fckmats)
                     Fktots(:3*npols,i) = Fels(:,i) + Fnucs + Fmuls + Ffds
                 end if
                 if (pe_sol) then
-                    Fktots(3*npols+1:,i) = - eps_fac * ( Vels(:,i) + Vnucs + Vmuls )
+                    if (pe_iter) then
+                       ! minus and eps_fac are included in the iterativ solver routine
+                       Fktots(3*npols+1:,i) =  Vels(:,i) + Vnucs + Vmuls
+                    else
+                       Fktots(3*npols+1:,i) = - eps_fac * ( Vels(:,i) + Vnucs + Vmuls )
+                    end if
                 end if
             end do
         end if
@@ -1969,7 +1974,8 @@ subroutine induced_moments(Mkinds, Fs)
 
     if (pe_iter) then
         if (pe_diis) then
-            call pe_diis_solver(Mkinds, Fs)
+!            call pe_diis_solver(Mkinds, Fs)
+            call pe_diis_solver_charges(Mkinds,Fs)
         else if (pe_mixed) then
             call mixed_solver(Mkinds, Fs)
         else
@@ -5681,6 +5687,7 @@ subroutine pe_diis_solver(Mkinds,Fs)
                     call dgetrs('N', ndiis, 1, diis_mat, ndiis, ipiv, diis_vec, ndiis, info)
                     chk_sum = 0.0d0
                     if (pe_verbose) then
+                        write(luout,*) 'diis_vec',diis_vec(1)
                         do i = 2, ndiis
                             chk_sum = chk_sum + diis_vec(i)
                             write(luout,*) 'diis_vec',diis_vec(i)
@@ -5707,6 +5714,139 @@ subroutine pe_diis_solver(Mkinds,Fs)
 end subroutine pe_diis_solver
 
 !------------------------------------------------------------------------------
+
+subroutine pe_diis_solver_charges(Mkinds,Fs)
+
+    real(dp), dimension(:,:), intent(out) :: Mkinds
+    real(dp), dimension(:,:), intent(in) :: Fs
+
+    integer :: lu, itdiis, info, ndiis
+    integer :: i, j, k, l, m, n, o, p, q
+    logical :: exclude, lexist
+    logical :: converged = .false.
+    integer, parameter :: mxdiis = 100
+    real(dp) :: FACTOR, DSCALE, ONESCALE
+    real(dp) :: error, X, Y, Z, R2, DISM0, DUM, temp, bla, R
+    real(dp), dimension(3*npols+nsurp) :: QFIX, QNEW, VFIX2
+    real(dp), dimension(:,:), allocatable :: tmpmat, dimat
+    real(dp), dimension(:), allocatable :: tmp, ipvt
+    real(dp), dimension(:,:,:), allocatable :: qrep
+
+    allocate(tmpmat(mxdiis+1,mxdiis+1))
+    allocate(dimat(mxdiis+1,mxdiis+1))
+    allocate(tmp(mxdiis+1))
+    allocate(qrep(nsurp,mxdiis,2))
+    allocate(ipvt(mxdiis+1)) 
+
+    if (myid == 0) then
+        inquire(file='pe_induced_charges.bin', exist=lexist)
+    end if
+
+#if defined(VAR_MPI)
+    if (nprocs > 1) then
+        call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
+    end if
+#endif
+
+    if (lexist .and. (fock .or. energy)) then
+        if (myid == 0) then
+            call openfile('pe_induced_charges.bin', lu, 'old', 'unformatted')
+            rewind(lu)
+            read(lu) QFIX 
+            close(lu)
+        end if
+    else
+        QFIX = 0.0d0
+    end if
+    IF(NTSATM.EQ. 60) DISM0 = 0.4000D+00*aa2au 
+    IF(NTSATM.EQ.240) DISM0 = 0.2000D+00*aa2au 
+    IF(NTSATM.EQ.960) DISM0 = 0.1000D+00*aa2au 
+    FACTOR  = 1.0d0/SQRT(4.0d0*pi)/1.07D+00
+    DSCALE   = (eps - 1.0d0)/eps 
+    
+    do n = 1, ndens
+      
+        do itdiis = 1, mxdiis
+
+!             Start Jacobi:
+!             Mkinds_diis(:,itdiis+1) = M0*( F - M1* Mkinds_temp)       
+!     -- VFIX2: POTENTIAL AT NFFTS DUE TO SURFACE CHARGES --
+           vfix2 = 0.0d0
+           do i = 1, nsurp
+              if(Sa(i) ==  0.0d0) cycle   
+              do j = i+1, nsurp
+                 if(Sa(j) ==  0.0d0) cycle   
+                 X   = Sp(1,i) - Sp(1,j)
+                 Y   = Sp(2,i) - Sp(2,j)
+                 Z   = Sp(3,i) - Sp(3,j)
+                 R2  = X*X+Y*Y+Z*Z
+                 R   = SQRT(R2)
+                 IF(R.GT.DISM0) THEN
+                    VFIX2(I)=VFIX2(I) + QFIX(J)/R
+                    VFIX2(J)=VFIX2(J) + QFIX(I)/R
+                 ELSE
+                    DUM = 1.5D+00/DISM0 - 0.5d0*R2/DISM0**3
+                    VFIX2(I)=VFIX2(I) + QFIX(J)*DUM
+                    VFIX2(J)=VFIX2(J) + QFIX(I)*DUM
+                 END IF
+              end do   
+           end do   
+
+           do i = 1, nsurp 
+              QNEW(i) = -FACTOR*SQRT(Sa(i))*(Fs(i,n) + VFIX2(I))
+           end do
+
+!      Check convergance
+            error = 0.0d0
+            do i = 1, nsurp
+                error = error + abs(QFIX(i) - QNEW(i))
+            end do 
+            if (myid == 0) then
+                if (error < nsurp*fixtol) then
+                    if (pe_verbose) then
+                        write (luout,'(4x,a,i2,a)') 'Induced surface charges&
+                                                    & converged in ', itdiis,&
+                                                    & ' iterations.'
+                    end if
+                    converged = .true.
+                else if (itdiis == mxdiis) then
+                    write(luout,*) 'ERROR: could not converge induced surface&
+                                   & charges.'
+                    stop 'ERROR: could not converge induced surface charges.'
+                else
+                ! solve DIIS equations
+                    converged = .false.
+                    call fixdiis(nsurp,itdiis,mxdiis,QNEW,QFIX,DIMAT&
+                               &,QREP,TMP,TMPMAT,IPVT,nsurp) 
+                    CALL DCOPY(NFFTS,QNEW,1,QFIX,1)
+                end if
+            end if
+!     #if defined(VAR_MPI)
+!                 if (nprocs > 1) then
+!                     call mpi_bcast(converged, 1, lmpi, 0, comm, ierr)
+!                 end if
+!     #endif
+            if (converged) then
+                 write(luout,*) 'AM I HERE?'
+                CALL DSCAL(nsurp,DSCALE,QFIX,1)
+                CALL DCOPY(nsurp,QFIX,1,Mkinds,1)
+                exit
+            end if
+     
+        end do !itdiis 
+    end do ! n= 1, ndens
+
+    if (fock) then
+        if (myid == 0) then
+            call openfile('pe_induced_charges.bin', lu, 'unknown',&
+                         & 'unformatted')
+            rewind(lu)
+            write(lu) Mkinds
+            close(lu)
+        end if
+    end if
+
+end subroutine pe_diis_solver_charges
 
 
 !------------------------------------------------------------------------------
@@ -6086,9 +6226,7 @@ subroutine fixtes(all_centers, all_z)
             DAI(3,JJJ,KFFTS) = DAI(3,JJJ,ITS)
          END DO
       end do
-      print *, 'Local nffts', nffts
       NFFTS = KFFTS   ! NFFTS IS GLOBAL
-      print *, 'Glocal nffts', nffts
 !
       FIXA = 0.0D+00
       DO IFFTS=1,NFFTS
@@ -6785,5 +6923,108 @@ subroutine FIXPVASWF(IFFAT,CORD,CDTST,ITS,AREA,RFIX,TMP,IDTMPTS)
 !
       RETURN
 end subroutine FIXPVASWF
+
+!-----------------------------------------------------------------------------
+
+subroutine FIXDIIS(NFFPAR, NIT, MXDIIS, QOUT, QIN, DIMAT,&
+                 & QREP, TMP, TMPMAT, IPVT, NSIZE)
+
+    real(dp), dimension(:) :: qin, qout
+    real(dp), dimension(:,:) :: DIMAT, tmpmat
+    real(dp), dimension(:,:,:) :: qrep
+    real(dp), dimension(:) :: ipvt, tmp
+    real(dp), dimension(:), allocatable :: bla, bla2
+    integer :: nitmax, nit0, I0, nffme, info
+! ME used for parallelisation in GAMES
+    integer :: ME, NIT, i, j, nffpar, NSIZE, MXDIIS, IMAX, IMIN
+
+      nitmax = min(nit, mxdiis)
+      nit0 = mod(nit-1,mxdiis) + 1
+
+      ME = 0
+      IMIN=ME*NFFPAR+1
+      IMAX=MIN((ME+1)*NFFPAR,NSIZE)
+      NFFME=IMAX-IMIN+1
+!
+!     -- STORE THE CHARGES
+!        QREP(,,1)=QOUT
+!        QREP(,,2)=QOUT-QIN
+!
+      CALL DCOPY(NFFME,QOUT(IMIN),1,QREP(1,NIT0,1),1)
+      CALL DCOPY(NFFME,QOUT(IMIN),1,QREP(1,NIT0,2),1)
+      CALL DAXPY(NFFME,-1.0d0,QIN(IMIN),1,QREP(1,NIT0,2),1)
+!
+!     -- UPGRADE THE INTERPOLATION MATRIX
+!
+      IF(NIT.GT.MXDIIS) THEN
+         DO I=1,MXDIIS-1
+            DO J=1,MXDIIS-1
+               DIMAT(I+1,J+1)=DIMAT(I+2,J+2)
+            ENDDO
+         ENDDO
+      END IF
+!
+      I0=NIT0
+      allocate(bla(nffme))
+      allocate(bla2(nffme))
+      bla = qrep(:,nit0,2)
+      DO I=NITMAX,1,-1
+         bla2 = qrep(:,i0,2)
+         TMP(I)=DOT(bla,bla2)
+         I0=I0-1
+         IF(I0.EQ.0) I0=I0+MXDIIS
+      ENDDO
+      deallocate(bla,bla2)
+!
+      DIMAT(NITMAX+1,1)=-1.0D+00
+      DIMAT(1,NITMAX+1)=-1.0D+00
+      DO I=NITMAX,1,-1
+         DIMAT(NITMAX+1,I+1)=TMP(I)
+         DIMAT(I+1,NITMAX+1)=TMP(I)
+      ENDDO
+!
+!     -- AT THE FIRST ITERATION ONLY MATRIX INITIALIZATION
+!
+      IF (NIT.EQ.1) THEN
+         DIMAT(1,1)=0.0D+00
+         RETURN
+      END IF
+!
+!     -- VECTOR INITIALIZATION
+!
+      tmp = 0.0d0
+      TMP(1)=-1.0D+00
+!
+!     -- COPY THE MATRIX (SHOULD BE DESTROYED)
+!
+      DO I=1,NITMAX+1
+         DO J=1,NITMAX+1
+            TMPMAT(I,J)=DIMAT(I,J)
+         ENDDO
+      ENDDO
+!
+!     -- SOLVE THE LINEAR SYSTEM
+!
+!      call dgetrf(mxdiis+1,mxdiis+1,TMPMAT,mxdiis+1,ipvt,info)
+      CALL DGEFA(TMPMAT,MXDIIS+1,NITMAX+1,IPVT,INFO)
+      IF (INFO.NE.0) THEN
+         WRITE(*,*) 'ERROR: SINGULAR MATRIX IN FIXDIIS.'
+         STOP      
+      END IF
+!      call dgetrs('N', mxdiis+1, 1, TMPMAT, mxdiis+1, ipvt, TMP, mxdiis+1, info)
+      CALL DGESL(TMPMAT,MXDIIS+1,NITMAX+1,IPVT,TMP,0)
+!
+!     -- INTERPOLATE
+!
+      qout = 0.0d0
+      I0=NIT0
+      DO I=NITMAX,1,-1
+         CALL DAXPY(NFFME,TMP(I+1),QREP(1,I0,1),1,QOUT(IMIN),1)
+         I0=I0-1
+         IF(I0.EQ.0) I0=I0+MXDIIS
+      ENDDO
+      RETURN
+!
+end subroutine fixdiis
 
 end module polarizable_embedding

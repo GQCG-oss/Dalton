@@ -226,6 +226,8 @@ module pe_variables
     integer, save :: NFFTS = 1
     !
     real(dp), save :: TOANGS = 0.52917724924D+00
+    !
+    real(dp), save :: fixtol = 1.0d-10
     ! --------------------
 
 end module pe_variables
