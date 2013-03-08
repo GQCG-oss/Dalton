@@ -95,12 +95,12 @@ C
       CALL QENTER('AVELRSC')
       CALL TIMER('START ',TIMEIN,TIMOUT)
       WRITE(LUPRI,*)
-c      IF (JIMPRT .GT. 5) THEN
+      IF (JIMPRT .GT. 3) THEN
          WRITE (LUPRI,'(A,/)') ' <<<<<<<<<< Output from LRESC-'//
      &       'AVERAGE >>>>>>>>>> '
          WRITE(LUPRI,*)
          WRITE(LUPRI,'(2A)') '@AVERAGE to do ', KEY
-c      END IF
+      END IF
 C
       IPRRSP = JIMPRT
 C
@@ -113,7 +113,7 @@ C
       LPVX   = 0
       KFREE  = 1
       LFREE  = LWORK
-      IF (JIMPRT.GT.5) Then 
+      IF (JIMPRT.GT.3) Then 
           write(lupri,'(A,3F12.8)') ' orgcom.h : GAGORG :', GAGORG
           write(lupri,'(A,3F12.8)') '            ORIGIN :', ORIGIN
           write(lupri,'(A,3F12.8)') '            CMXYZ  :', CMXYZ
@@ -143,7 +143,7 @@ c            dimensiona work(KCMO, KCMO+NCMOT)
 C
       KWORK1 = KFREE
       WORK1  = LFREE
-      IF (JIMPRT.GT.5) Then 
+      IF (JIMPRT.GT.3) Then 
           write(lupri,*) '   '     
           write(lupri,*) ' AFTER MEMGET  '
           write(lupri,*) ' ----------------------------'
@@ -175,7 +175,7 @@ cx         CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
 cx      END IF
 C
       ISYM = 1
-      IF (JIMPRT.GT.5) Then 
+      IF (JIMPRT.GT.3) Then 
           write(lupri,*) '   ' 
           write(lupri,*) ' about to call LNRVAR' 
           write(lupri,*) ' ----------------------------'
@@ -258,7 +258,7 @@ C
       KIDADR = KIDSYM + 9*MXCENT
       KWORK2 = KIDADR + 9*MXCENT
       LWORK2 = LWORK  - KWORK2
-      IF (JIMPRT.GT.5) Then 
+      IF (JIMPRT.GT.3) Then 
           write(lupri,*) '        '
           write(lupri,*) ' sigo alocando : '
           write(lupri,*) ' ----------------------------'
@@ -345,15 +345,16 @@ C
 C   AngPso is done with a unity matrix inside : AngPso = ANGMOM.1.PSO
 C
       IF(KEY.EQ."ANGP") THEN
-        nlab = 6
-C      Look for LABELS : ANGPSO
-C     ---------------------------
+        nlab = 3   ! this is to control loop ahead when calling angpso
+C
+C        Look for LABELS : ANGPSO
+C       ---------------------------
         LISTA1(1)='XANGMOM'
         LISTA1(2)='YANGMOM'
         LISTA1(3)='ZANGMOM'
 C
-C      Look for LABELS : PSO 
-C     ----------------------       
+C        Look for LABELS : PSO 
+C       ----------------------       
         LABEL1='PSO'
         IJ = 4
         DO I=npos1,npos1+2
@@ -361,34 +362,32 @@ C     ----------------------
      &            CHRNOS(MOD(I,10))
            IJ = IJ + 1
         END DO
+      ENDIF
 C
 C ---------------------------------------------------------------------
 
-        write(lupri,*)' NAOS  ' , NAOS(1)
-        write(lupri,*)' NASHT ' , NASHT
-        write(lupri,*)' NCMOT ' , NCMOT
-        write(lupri,*)'   KCMO  ', KCMO
-        write(lupri,*)'   NORBT ', NORBT
-        write(lupri,*)'   NORB  ', NORB(1)
-
-        write(lupri,*)'NISHT,NSSHT,NOCCT,NBAST,NRHFT,NVIRT :' ,
-     &                 NISHT,NSSHT,NOCCT,NBAST,NRHFT,NVIRT
-        DO j = 1 , NORBT
-           write(lupri,*) ' ',j ,  WORK(KCMO+j)
-        ENDDO
-        write(lupri,*)' about to call angpso' 
-        CALL ANGPSO(LISTA1,WORK(KCMO))
-C     This is to avoid the next loop to call PRP1AVE
-      NLAB=0
-      ENDIF
+c        write(lupri,*)' NAOS  ' , NAOS(1)
+c        write(lupri,*)' NASHT ' , NASHT
+c        write(lupri,*)' NCMOT ' , NCMOT
+c        write(lupri,*)'   KCMO  ', KCMO
+c        write(lupri,*)'   NORBT ', NORBT
+c        write(lupri,*)'   NORB  ', NORB(1)
+c        write(lupri,*)'   N2BASX  ', N2BASX 
+c        write(lupri,*)'   NNBASX  ', NNBASX 
+c        write(lupri,*)'NISHT,NSSHT,NOCCT,NBAST,NRHFT,NVIRT :' ,
+c     &                 NISHT,NSSHT,NOCCT,NBAST,NRHFT,NVIRT
+c  idea pasarle n2basx a ver si lee bien aoproper.
+c        DO j = 1 , NORBT
+c           write(lupri,*) j ,  WORK(KCMO+j)
+c        ENDDO
 
 C  Print LABELS
 C -----------------------------------
-      write(lupri,*) '@Average setting  LABEL1 :'
-      DO i =1, nlab
-         WRITE(LUPRI,*)'   LABEL :', LISTA1(I) 
-      ENDDO
-      WRITE(LUPRI,*)' ---------------------------------- '
+cdbg      write(lupri,*) '@Average setting  LABEL1 :'
+cdbg      DO i =1, nlab
+cdbg         WRITE(LUPRI,*)'   LABEL :', LISTA1(I) 
+cdbg      ENDDO
+cdbg      WRITE(LUPRI,*)' ---------------------------------- '
 C
 C ---------------------------------------------------------------------
 C
@@ -403,7 +402,6 @@ C
 C     
       IDIP = 0 
       DO 300 IDIP = 1,NLAB
-         LABEL1 = LISTA1(IDIP)
 C
 C           3. Work Allocations:
 C
@@ -412,24 +410,31 @@ C
          LWRKG1 = LWORK - KWRKG1
          KSLV   = KGD1 + 2*NVARPT
          KLAST  = KSLV + 2*NVARPT
-cb         write(lupri,*) ' KLAST ',KLAST
-cb         write(lupri,*) ' LWORK ',LWORK
-cb         write(lupri,*) ' IF KLAST GT LWORK you will get an error '
+c         write(lupri,*)' NVARPT :', NVARPT 
          IF (KLAST.GT.LWORK) CALL STOPIT('KLAST GT LWORK on AVELRESC
      $        ',' ',KLAST,LWORK)
          KWRK = KLAST
          LWRK = LWORK - KLAST + 1
-         write(lupri,*)' NVARPT :', NVARPT 
-         CALL PRP1AVE(LABEL1,SNDPRP,WORK(KCMO),WORK(KUDV),
-     $        WORK(KWRKG1),LWRKG1,JIMPRT)
-c        CALL PRP1AVE(LBL1AV(IOP),AVEVAL,CMO,UDV,WRK,LWRK,IPRRSP)
-cxz      WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
 C
-        IF (JIMPRT.GE.1) THEN
-            WRITE (LUPRI,'(3A,F20.12)')
-     &     ' Expectation Value for Operator : < ',LABEL1,
-     &     ' > = ',SNDPRP
-        ENDIF
+C        Starting Calculations depending on angpso or not
+C         
+         IF (KEY.EQ.'ANGP') THEN 
+            CALL ANGPSO(WORK(KCMO),LWORK,JIMPRT,LISTA1(IDIP),
+     $                 LISTA1(IDIP+3),SNDPRP)
+            IF (JIMPRT.GE.1) THEN
+               WRITE (LUPRI,'(5A,F20.12)')
+     &         ' Expectation Value for Operator : < ',LISTA1(IDIP),
+     &         '.',LISTA1(IDIP+3),' > = ',SNDPRP
+            ENDIF
+         ELSE 
+            CALL PRP1AVE(LISTA1(IDIP),SNDPRP,WORK(KCMO),WORK(KUDV),
+     $                   WORK(KWRKG1),LWRKG1,JIMPRT)
+            IF (JIMPRT.GE.1) THEN
+               WRITE (LUPRI,'(3A,F20.12)')
+     &         ' Expectation Value for Operator : < ',LISTA1(IDIP),
+     &         ' > = ',SNDPRP
+            ENDIF
+         ENDIF
 C
 C       =========================================================
 C
@@ -465,7 +470,6 @@ cx                  ENDIF
 cxz  200 CONTINUE
 cm         END IF  NFRVAL
   300 CONTINUE
-      write(lupri,*)' aca llegue despues de angpso' 
 
 
 cxz      CALL GPCLOSE(LUREVE,'DELETE')

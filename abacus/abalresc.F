@@ -203,6 +203,9 @@ c jim-dbg ICHANG < 0 no cambios
      &           'nuclei with all the others will be calculated'
        WRITE(LUPRI,*)' ' 
       END IF
+      IF (LRESCALL) WRITE (LUPRI,'(A)')
+     &      ' LRESC Corrections for Shielding on Atom LRATOM. '
+
       RETURN
       END
 C -----------------------------------------------------------------------
@@ -267,10 +270,12 @@ C
 C
 
 cv      write(lupri,*)'@ LRSCDRV : '
-
-cv      IF (.NOT. LRESCALL) THEN
-cv         WRITE (LUPRI,'(A)')  '   LRESC ALL set : NOT '
-cv      END IF
+      IF (LRESCALL) THEN
+        SIGMAD0S = .TRUE.
+        SIGMAD1S = .TRUE.
+        SIGMAP1S = .TRUE.
+        SIGMAP1T = .TRUE.
+      ENDIF
 C 
 C First Order SINLGET 
 C

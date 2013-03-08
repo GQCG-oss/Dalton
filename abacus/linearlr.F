@@ -163,12 +163,12 @@ C
       CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
 C          RD_SIRIFC( KEY ,FOUND,   AMAT   ,  WRK      ,LWRK)
       IF (.NOT.FOUND) CALL QUIT('LRSCLIN error: CMO not on SIRIFC')
-      write(lupri,*)' CMOS :  dan bien !!!' 
-      Do i =1, NORBT*NORBT
-      write(LUPRI,*) ' orb ', I,WORK(KCMO+I)
-      enddo 
-      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
-      write(lupri,*) '   '     
+cx      write(lupri,*)' CMOS :  dan bien !!!' 
+cx      Do i =1, NORBT*NORBT
+cx      write(LUPRI,*) ' orb ', I,WORK(KCMO+I)
+cx      enddo 
+cx      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
+cx      write(lupri,*) '   '     
 
 cx ACA es para alguna capa activa
 cx      IF (NASHT .GT. 0) THEN
