@@ -93,7 +93,7 @@ for line in fin:
 fin.close()
 
 if unit == 'AU':
-    coords = au2aa * coords
+    coords = [[comp * au2aa for comp in coord] for coord in coords]
 
 ndec = len(str(nsites)) + 1
 
