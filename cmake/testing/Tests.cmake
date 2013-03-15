@@ -182,6 +182,7 @@ add_test(pehf_small_iter ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DI
 add_test(pehf_large_gspol ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null pehf_large_gspol)
 add_test(pehf_small_direct ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null pehf_small_direct)
 add_test(pehf_small_redthr ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null pehf_small_redthr)
+add_test(pehf_small_fixsol_direct ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null pehf_small_fixsol_direct)
 add_test(energy_corehole ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_corehole)
 add_test(energy_solv ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_solv)
 add_test(geoopt_cartmin ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null geoopt_cartmin)

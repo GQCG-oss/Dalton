@@ -957,6 +957,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         energy = .false.
         response = .false.
         mep = .false.
+!        noneq = .false.
         noneq = .true.
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input'
@@ -1735,7 +1736,7 @@ subroutine pe_polarization(denmats, fckmats)
         else if (response) then
 !            eps_fac = epsinf / (epsinf - 1.0d0)
             eps_fac = (epsinf - 1.0d0) / epsinf
-        else if (fock) then
+        else if (fock .or. energy) then
             eps_fac = (eps - 1.0d0) / eps
         end if
     end if
@@ -5721,11 +5722,11 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
     real(dp), dimension(:,:), intent(in) :: Fs
 
     integer :: lu, itdiis, info, ndiis
-    integer :: i, j, k, l, m, n, o, p, q
+    integer :: i, j, n
     logical :: exclude, lexist
     logical :: converged = .false.
     integer, parameter :: mxdiis = 100
-    real(dp) :: FACTOR, DSCALE, ONESCALE
+    real(dp) :: FACTOR, DSCALE
     real(dp) :: error, X, Y, Z, R2, DISM0, DUM, temp, bla, R
     real(dp), dimension(3*npols+nsurp) :: QFIX, QNEW, VFIX2
     real(dp), dimension(:,:), allocatable :: tmpmat, dimat
@@ -6935,7 +6936,7 @@ subroutine FIXDIIS(NFFPAR, NIT, MXDIIS, QOUT, QIN, DIMAT,&
     real(dp), dimension(:) :: ipvt, tmp
     real(dp), dimension(:), allocatable :: bla, bla2
     integer :: nitmax, nit0, I0, nffme, info
-! ME used for parallelisation in GAMES
+! ME used for parallelisation in GAMES here we just set it to zero
     integer :: ME, NIT, i, j, nffpar, NSIZE, MXDIIS, IMAX, IMIN
 
       nitmax = min(nit, mxdiis)
