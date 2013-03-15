@@ -442,6 +442,13 @@ C
 
          call rewine(lu1,-1)
 
+! Manu+Odile march 2013: testing a simple two-state ensemble CI-srDFT with w=0
+
+         weights(1) = 1.0d0
+         write(luwrt,*) 'weights(1)',weights(1)
+         write(luwrt,*) 'weights(2)',weights(2)
+
+
 !        calculate ensemble density matrix
 !        ---------------------------------
          do i = 1, nrootsl
