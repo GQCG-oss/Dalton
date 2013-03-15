@@ -59,7 +59,7 @@ C ------------------------------------------------------
        naos = NBAST 
        nmos= naos
        nelec=10
-c       write(*,*) 'nelec = NOCCT ?. elec. cpa closed:', NOCCT, nelec
+       write(*,*) 'nelec = NOCCT ?. elec. cpa closed:', NOCCT, nelec
  
 c      write(lupri,*)
 c      write(lupri,'(/72A1/)')('*',I=1,72)
@@ -339,8 +339,8 @@ C ***********************************************************************
 C
       SUBROUTINE cuenta(ORBC,A1,A2,C,noc,naos,nmos)
 C
-C Linux version, Melo, azua, giribet, alejandrito, aucar, romero, homero,
-C  bart y lisa
+C     Melo, azua, giribet, alejandrito, aucar, romero, homero,
+C  bart and lisa
 C
 C ***********************************************************************
 C   PARAMETROS  

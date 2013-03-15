@@ -57,7 +57,7 @@ c#include <suscpt.h>
       CHARACTER*6 LABEL22
       CHARACTER*4 KEY
       CHARACTER*3 char
-      DIMENSION SIGMAMV(9),SIGMADW(9)
+c      DIMENSION SIGMAMV(9),SIGMADW(9)
       PARAMETER (D05=0.5D0,D025=0.25)
       LOGICAL TODOINT
 C
@@ -90,10 +90,13 @@ cxu
 C
 C
 C  LINEAR LRESC SINGLET ROUTINE
-C   KEY = 'D1S '  DIAMAGNETIC <<DIA,MV>> + <<DIA,DW>> 
-C         'PSOK'  PARAMAGNETIC 
+C   KEY = 'DIAM'  DIAMAGNETIC <<DIA,MV>>  
+C         'DIAD'  DIAMAGNETIC <<DIA,DW>> 
+C         'PSOK'  PARAMAGNETIC with built-in integrals
+C         'PSKI'  PARAMAGNETIC with angkin routine <<PSO.1.Kinenerg;PSO>>
 C         'LKIN'  PARAMAGNETIC
-C
+C         'FCBS' 'SDBS'
+C         'FCZK' 'FCZK'    
 C
       CALL QENTER('LRSCLIN')
       CALL TIMER('START ',TIMEIN,TIMOUT)
@@ -102,11 +105,11 @@ C
          WRITE (LUPRI,'(A,/)') ' <<<<<<<<<< Output from LRESC-'//
      &       'LINEAR-S >>>>>>>>>> '
          WRITE(LUPRI,*)
-         WRITE(LUPRI,'(2A)') '@LINEARS to do ', KEY
+         WRITE(LUPRI,'(2A)') '@LINEARLR to do ', KEY
       END IF
 C
-cb       IPRRSP = JIMPRT
-         IPRRSP = -1
+       IPRRSP = JIMPRT
+
 C
 C     Get reference state
 C     ===================
@@ -146,7 +149,7 @@ c                  TYPE, KBASE, LENGTH, WORK, KFREE, LFREE
 c            dimensiona work(KCMO, KCMO+NCMOT)
 C
       KWORK1 = KFREE
-      WORK1 = LFREE
+      LWORK1 = LFREE
       IF (JIMPRT.GT.5) Then 
           write(lupri,*) '   '     
           write(lupri,*) ' AFTER MEMGET  '
@@ -263,7 +266,7 @@ C
       KIDSYM = KWORK1
       KIDADR = KIDSYM + 9*MXCENT
       KWORK2 = KIDADR + 9*MXCENT
-      LWORK2 = LWORK  - KWORK2
+      LWORK2 = LWORK1  - KWORK2
       IF (JIMPRT.GT.5) Then 
           write(lupri,*) '        '
           write(lupri,*) ' sigo alocando : '
@@ -387,31 +390,61 @@ C        ------------------------
          END DO 
          NLAB2 = 3
 C -----------------------------------------------------------------
-      ELSE IF (KEY.EQ."PSOK") THEN
-C        Look for LABELS : ANGMOM
-C        -------------------------       
-         LABEL1='ANGMOM'
-         DO J=1,3
-           LISTA1(J)= CHRXYZ(J)//'ANGMOM '
-           LABSYM(J)=1
-         END DO
-         NLAB1 = 3
-C        Look for LABELS : PSO-KE
-C        -------------------------       
-         LABEL2='PSOKE'
+      ELSE IF (KEY.EQ."PSKI") THEN  !We use jmelo integrals. 
+
+
+C AngKin makes L-PsoKin integrals from PSO and ANgMOM
+c additionally also makes Lkin for free
+C
+           CALL ANGKIN(WORK(KCMO),WORK,LWORK2)
+C
+c        we repeat the labeling here, for simplicity.
+C        Look for LABELS : PSO-KE : jmelo way
+C        -------------------------------------       
+         LABEL1='PSOKI'
          IJ = 1
          DO I=npos1,npos1+2
-             LISTA2(IJ)= 'PSOKE'//CHRNOS(I/100)//CHRNOS(I/10)//
-     &                    CHRNOS(MOD(IJ,10))
+             LISTA1(IJ)= 'PSOKI'//CHRNOS(I/100)//CHRNOS(I/10)//
+     &                    CHRNOS(MOD(I,10))
              LABSYM(IJ)=1
              IJ = IJ + 1
+         END DO
+         NLAB1 = 3
+C        Look for LABELS : ANGMOM
+C        -------------------------       
+         LABEL2='ANGMOM'
+         DO J=1,3
+           LISTA2(J)= CHRXYZ(J)//'ANGMOM '
+           LABSYM(J)=1
+         END DO
+         NLAB2 = 3
+C
+C -----------------------------------------------------------------
+      ELSE IF (KEY.EQ."PSOK") THEN  ! we will use dalton built in integrals
+C
+C        Look for LABELS : PSO-KE : jmelo way
+C        -------------------------------------       
+         LABEL1='PSOKE '
+         IJ = 1
+         DO I=npos1,npos1+2
+             LISTA1(IJ)= 'PSOKE'//CHRNOS(I/100)//CHRNOS(I/10)//
+     &                    CHRNOS(MOD(I,10))
+             LABSYM(IJ)=1
+             IJ = IJ + 1
+         END DO
+         NLAB1 = 3
+C        Look for LABELS : ANGMOM
+C        -------------------------       
+         LABEL2='ANGMOM'
+         DO J=1,3
+           LISTA2(J)= CHRXYZ(J)//'ANGMOM '
+           LABSYM(J)=1
          END DO
          NLAB2 = 3
       END IF
 
-
 C===============================================================================
-C  TRIPLET CALCULATIONS : xxxxx
+C  TRIPLET CALCULATIONS : FcKin, SdKin and FcBso, SdBso
 C ==============================================================================
 C -----------------------------------------------------------------
        IF((KEY.EQ."FCZK").OR.(KEY.EQ."FCBS")) THEN
@@ -447,13 +480,10 @@ C        -----------------------------------
             LISTA1(1) ='SOMF  XX'
             LISTA1(2) ='SOMF  YX'
             LISTA1(3) ='SOMF  ZX'
-            LISTA1(4) ='SOMF  XY'
-            LISTA1(5) ='SOMF  YY'
-            LISTA1(6) ='SOMF  ZY'
-            LISTA1(7) ='SOMF  XZ'
-            LISTA1(8) ='SOMF  YZ'
-            LISTA1(9) ='SOMF  ZZ'
-            NLAB1 = 9
+            LISTA1(4) ='SOMF  YY'
+            LISTA1(5) ='SOMF  ZY'
+            LISTA1(6) ='SOMF  ZZ'
+            NLAB1 = 6
          ENDIF
       ENDIF
 C --------------------------------------------------------------
@@ -479,13 +509,10 @@ C        -----------------------------------
             LISTA1(1) ='dd/dxdx'
             LISTA1(2) ='dd/dxdy'
             LISTA1(3) ='dd/dxdz'
-            LISTA1(4) ='dd/dxdy'
-            LISTA1(5) ='dd/dydy'
-            LISTA1(6) ='dd/dydz'
-            LISTA1(7) ='dd/dxdz'
-            LISTA1(8) ='dd/dydz'
-            LISTA1(9) ='dd/dzdz'
-            NLAB1 = 9
+            LISTA1(4) ='dd/dydy'
+            LISTA1(5) ='dd/dydz'
+            LISTA1(6) ='dd/dzdz'
+            NLAB1 = 6
             
          ELSE IF(KEY.EQ."SDBS") THEN
 C        Look for LABELS : BSO
@@ -493,29 +520,26 @@ C        -----------------------------------
             LISTA1(1) ='SOMF  XX'
             LISTA1(2) ='SOMF  YX'
             LISTA1(3) ='SOMF  ZX'
-            LISTA1(4) ='SOMF  XY'
-            LISTA1(5) ='SOMF  YY'
-            LISTA1(6) ='SOMF  ZY'
-            LISTA1(7) ='SOMF  XZ'
-            LISTA1(8) ='SOMF  YZ'
-            LISTA1(9) ='SOMF  ZZ'
-            NLAB1 = 9
+            LISTA1(4) ='SOMF  YY'
+            LISTA1(5) ='SOMF  ZY'
+            LISTA1(6) ='SOMF  ZZ'
+            NLAB1 = 6
          ENDIF
       ENDIF
 C ---------------------------------------------------------------------
 C
-C Print SEction for LABELS on LISTAS 
+C Print Section for LABELS on LISTAS 
 C  ----------------------------------------------
         
         WRITE(LUPRI,*)' @Linear setting  LABEL1 :'
         DO i =1, nlab1
-           WRITE(LUPRI,*)'   LABEL1 :', LISTA1(I)
+          WRITE(LUPRI,*)'   LABEL1 :', LISTA1(I)
         ENDDO
         WRITE(LUPRI,*)
  
         WRITE(LUPRI,*)' @Linear setting  LABEL2 :'
         DO i =1, nlab2
-           WRITE(LUPRI,*)'   LABEL2 :', LISTA2(I)
+          WRITE(LUPRI,*)'   LABEL2 :', LISTA2(I)
         ENDDO
         WRITE(LUPRI,*)' ---------------------------------- '
 
@@ -529,19 +553,18 @@ C
       TRIPLE = .FALSE.      ! .T. for triplet perturbation operators
       EXECLC = .FALSE.      ! false for linear response equations
       IF(KEY.EQ."DIAM".OR.KEY.EQ."DIAD") THEN 
-         NABATY = 1         ! = 1 for real operators .. -1 for imm. op.
+         NABATY = 1      ! = 1 for real operators .. -1 for imm. op.
          ELSE IF(KEY.EQ."LKIN") THEN 
-           NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
-         ELSE IF (KEY.EQ."PSOK") THEN 
-           NABATY = -1      ! = 1 for real operators .. -1 for imm. op. 
-           write(lupri,*) ' NO SE QUE PONERLE NABATY A PSOKIN' 
+         NABATY = -1     ! = 1 for real operators .. -1 for imm. op. 
+         ELSE IF ((KEY.EQ."PSOK").OR.(KEY.EQ."PSKI")) THEN 
+         NABATY =  -1    ! = 1 for real operators .. -1 for imm. op. 
          ELSE IF((KEY.EQ."FCZK").OR.(KEY.EQ."SDZK")) THEN 
-           NABATY = 1      ! = 1 for real operators .. -1 for imm. op. 
-cx           write(lupri,*) ' NABATY for FcKin -1 ' 
+         NABATY = 1      ! = 1 for real operators .. -1 for imm. op. 
+         ELSE IF((KEY.EQ."FCBS").OR.(KEY.EQ."SDBS")) THEN 
+         NABATY = 1      ! = 1 for real operators .. -1 for imm. op. 
       END IF
-c juan arregla esto 
-C      IF   TRIPLET THEN NABATY = 1 !!!!!!!!!!!!!!!!!!
-      NABAOP = 1            ! number of right hand sides. dejarlo asi . solo 1
+C     IF   TRIPLET THEN NABATY = 1 !!!!!!!!!!!!!!!!!!
+         NABAOP = 1      ! number of right hand sides. dejarlo asi . solo 1
 C
 C     Zero the property tensors
 cdx      IF (MAGSUS) CALL DZERO(SUSDZD,9)
@@ -557,13 +580,11 @@ C
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      
+      KJ = 0
       DO 300 IDIP = 1,NLAB1
          LABEL1 = LISTA1(IDIP)
-C
-         ISYM=ISYMAX(IDIP,1)+1
-cb         write(lupri,*)' isimax :', ISYM   ! ISYM =1  deberia ser 1        
-C     
+         ISYM = 1   ! ISYM deberia ser 1 ... 
+c         ISYM=ISYMAX(IDIP,1)+1
 c        set variables for response module
          IF(JIMPRT.GT.3) THEN 
             write(lupri,*) ' about to call LNRVAR' 
@@ -582,14 +603,13 @@ C
             LWRKG1 = LWORK - KWRKG1
             KSLV   = KGD1 + 2*NVARPT
             KLAST  = KSLV + 2*NVARPT
-cx            write(lupri,*) ' KLAST ',KLAST
-cx            write(lupri,*) ' LWORK ',LWORK
-cx            write(lupri,*) ' IF KLAST GT LWORK you will get an error '
             IF (KLAST.GT.LWORK) CALL STOPIT('KLAST GT LWORK on LINEARLR
      $           ',' ',KLAST,LWORK)
             KWRK = KLAST
             LWRK = LWORK - KLAST + 1
-cb            write(lupri,*)' NVARPT :', NVARPT 
+cx            write(lupri,*) ' KLAST ',KLAST
+cx            write(lupri,*) ' LWORK ',LWORK
+cx            write(lupri,*) ' IF KLAST GT LWORK you will get an error '
 
 C
 C           Find right hand side for right operator and write to file
@@ -597,22 +617,17 @@ C           =========================================================
 C
             KSYMOP = ISYM
             TRPLET = .FALSE.
-            IPRSP = -2 
-C  juan ANTSYM =-1 IF TRIPLET !!!!!!!
-            ANTSYM = 0
-c            IF(KEY.EQ."LKIN") ANTSYM=-1 ! indistinto para lkin
-cjim            IF(KEY.EQ."FCZK") ANTSYM=-1
-C   
-cb            write(lupri,*) ' about to call GETPV, ANTSYM : ', ANTSYM  
-C jim sym to be read on luprop
-C ANTSYM : matrix symmetry of PRPMO matrix
+            ANTSYM = 0                   !juan ANTSYM = -1 if triplet !!
+c            IF(KEY.EQ.'SDBS') ANTSYM=-1
+            IF((KEY.EQ."PSOK").OR.(KEY.EQ."PSKI")) ANTSYM=1  ! indistinto para lkin
+C           ANTSYM : matrix symmetry of PRPMO matrix
 C          (1: symmetric, -1: antisymmetric, 0: unknown)
 
             CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
      &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
             REWIND LUGDVE
             CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
-            IF (IPRLNR.GT.5) THEN
+            IF (IPRLNR.GT.1) THEN
                WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL1
                CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
             ENDIF
@@ -634,6 +649,7 @@ C              Find label and symmetry of the left side operator
 C
                LABEL2 = LISTA2(IPL)
                KSYM   = 1
+               KJ = KJ +1 
 cb               write(lupri,*) '     else KSYM   = 1      ', KSYM 
 C
 C              If symmetry of right operator equals symmetry of
@@ -669,77 +685,106 @@ C
 C
                SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
 C
-               IF (IPRLNR.GT.2) THEN
-                  WRITE (LUPRI,'(5A,F20.12)')
-     &            ' Second order property for <<',LABEL2,',',LABEL1,
+cv               IF (IPRLNR.GT.2) THEN
+                  WRITE (LUPRI,'(1A,I2,5A,F20.12)')
+     &         '#',KJ,' Second order property for <<',LABEL2,';',LABEL1,
      &            '>> = ',SNDPRP
-               ENDIF
+cv               ENDIF
 C
 C              Write properties into the various property matrices
 C              ===================================================
 C
-C              Nuclear Shieldings
-C              ------------------
-               IF (KEY.EQ.'D1S ') THEN
-                  IF (LABEL2.EQ.'MASSVELO') THEN 
-                      SIGMAMV(IDIP)=SNDPRP
-                      write(lupri,*)'massvelo' , IDIP
+C         <<Fc,Kin>>
+C       ------------------
+               IF (KEY.EQ.'FCZK') THEN
+                    LRFCZK(1,1)= SNDPRP
+                    LRFCZK(2,2)= SNDPRP
+                    LRFCZK(3,3)= SNDPRP
+               ENDIF
+C         <<Sd,Kin>> : (Good luck to find non diag elements)
+C       ------------------
+c          xx = (001x;xx)+(001y;xy)+(001z;xz) :  1 + 11 + 21 . ok
+c          yy = (002x;xy)+(002y;yy)+(002z;zy) : 13 + 32 + 42 . ok
+c          xx = (003x;xz)+(003y;zy)+(003z;zz) : 24 + 44 + 54 . ok
+               IF (KEY.EQ.'SDZK') THEN
+                  IF ((KJ.EQ.1).OR.(KJ.EQ.11).OR.(KJ.EQ.21)) THEN
+                     LRSDZK(1,1)=LRSDZK(1,1)+SNDPRP
                   ENDIF
-                  IF (LABEL2.EQ.'DARWIN  ') THEN 
-                     SIGMADW(IDIP)=SNDPRP
-                     write(lupri,*)'darwin'  , IDIP
+                  IF ((KJ.EQ.13).OR.(KJ.EQ.32).OR.(KJ.EQ.42)) THEN
+                     LRSDZK(2,2)=LRSDZK(2,2)+SNDPRP
                   ENDIF
-               END IF      
-cx                  IF (LABEL1.EQ.'XDIPVEL') THEN
-cx                     IF (LABEL2(8:8).EQ.'Y') THEN
-cx                        SIGMADZ(IPTAX(3,2),INUCLEO)=
-cx     &                     SIGMADZ(IPTAX(3,2),INUCLEO)+SNDPRP
-cx                     ELSE IF (LABEL2(8:8).EQ.'Z') THEN
-cx                        SIGMADZ(IPTAX(2,2),INUCLEO)=
-cx     &                     SIGMADZ(IPTAX(2,2),INUCLEO)-SNDPRP
-cx                     ENDIF
-cx                  ELSE IF (LABEL1.EQ.'ZDIPVEL') THEN
-cx                     IF (LABEL2(8:8).EQ.'X') THEN
-cx                        SIGMADZ(IPTAX(2,2),INUCLEO)=
-cx     &                     SIGMADZ(IPTAX(2,2),INUCLEO)+SNDPRP
-cx                     ELSE IF (LABEL2(8:8).EQ.'Y') THEN
-cx                        SIGMADZ(IPTAX(1,2),INUCLEO)=
-cx     &                     SIGMADZ(IPTAX(1,2),INUCLEO)-SNDPRP
-cx                     ENDIF
-cx                  ENDIF
+                  IF ((KJ.EQ.24).OR.(KJ.EQ.44).OR.(KJ.EQ.54)) THEN
+                     LRSDZK(3,3)=LRSDZK(3,3)+SNDPRP
+                  ENDIF
+               ENDIF
+C         <<Fc,Bso>>
+C       ------------------
+               IF(KEY.EQ.'FCBS') THEN
+                 IF (KJ.EQ.1) LRFCBS(1,1)=SNDPRP
+                 IF (KJ.EQ.5) LRFCBS(2,2)=SNDPRP
+                 IF (KJ.EQ.9) LRFCBS(3,3)=SNDPRP
+               ENDIF
+C         <<Sd,Bso>> : (Good luck to find non diag elements)
+C       ------------------
+c          xx = (001x;xx)+(001y;xy)+(001z;xz) :  1 + 11 + 21 . ok
+c          yy = (002x;xy)+(002y;yy)+(002z;zy) : 13 + 32 + 42 . ok
+c          xx = (003x;xz)+(003y;zy)+(003z;zz) : 24 + 44 + 54 . ok
+               IF (KEY.EQ.'SDBS') THEN
+                  IF ((KJ.EQ.1).OR.(KJ.EQ.11).OR.(KJ.EQ.21)) THEN
+                     LRSDBS(1,1)=LRSDBS(1,1)+SNDPRP
+                  ENDIF
+                  IF ((KJ.EQ.13).OR.(KJ.EQ.32).OR.(KJ.EQ.42)) THEN
+                     LRSDBS(2,2)=LRSDBS(2,2)+SNDPRP
+                  ENDIF
+                  IF ((KJ.EQ.24).OR.(KJ.EQ.44).OR.(KJ.EQ.54)) THEN
+                     LRSDBS(3,3)=LRSDBS(3,3)+SNDPRP
+                  ENDIF
+               ENDIF
+C         <<L,Lkin>>
+C       ------------------
+               IF(KEY.EQ.'LKIN') THEN
+                 IF (KJ.EQ.1) LRLKIN(1,1)=SNDPRP
+                 IF (KJ.EQ.5) LRLKIN(2,2)=SNDPRP
+                 IF (KJ.EQ.9) LRLKIN(3,3)=SNDPRP
+               ENDIF
+C         <<L,Psokin>>
+C       ------------------
+               IF(KEY.EQ.'PSOK') THEN
+                 IF (KJ.EQ.1) LRPSOK(1,1)=SNDPRP
+                 IF (KJ.EQ.5) LRPSOK(2,2)=SNDPRP
+                 IF (KJ.EQ.9) LRPSOK(3,3)=SNDPRP
+               ENDIF
+C         <<L,Psokin>>  ! this is for debuigging !!!
+C       ------------------
+               IF(KEY.EQ.'PSKI') THEN
+                 IF (KJ.EQ.1) LRPSKI(1,1)=SNDPRP
+                 IF (KJ.EQ.5) LRPSKI(2,2)=SNDPRP
+                 IF (KJ.EQ.9) LRPSKI(3,3)=SNDPRP
+               ENDIF
+C         <<Dia,Dw>>  
+C       ------------------
+               IF(KEY.EQ."DIAD") THEN
+                 IF (KJ.EQ.1) LRDIAD(1,1)=SNDPRP
+                 IF (KJ.EQ.5) LRDIAD(2,2)=SNDPRP
+                 IF (KJ.EQ.9) LRDIAD(3,3)=SNDPRP
+               ENDIF
+C         <<Dia,Mv>>  
+C       ------------------
+               IF(KEY.EQ."DIAM") THEN
+                 IF (KJ.EQ.1) LRDIAM(1,1)=SNDPRP
+                 IF (KJ.EQ.5) LRDIAM(2,2)=SNDPRP
+                 IF (KJ.EQ.9) LRDIAM(3,3)=SNDPRP
+               ENDIF
   200 CONTINUE
 cm         END IF  NFRVAL
   300 CONTINUE
 
-
-
-
       CALL GPCLOSE(LUSOVE,'DELETE')
       CALL GPCLOSE(LUGDVE,'DELETE')
       CALL GPCLOSE(LUREVE,'DELETE')
-C   
-C     for magnetizability conversion factor -0.25
-C   
-      IF (MAGSUS) THEN
-cb        Do I=1,3
-cb          Do J=1,3
-cb            SUSDZD(I,J)=-D025*SUSDZD(I,J)
-cb          ENDDO
-cb        ENDDO
-      ENDIF
-      IF (SHIELD) THEN
-C   
-C     for shieldings conversion factor -0.5
-C   
-cb        DO J=1,3
-cb          Do I=1,NCOOR
-cb            SIGMADZ(J,I)=-D05*SIGMADZ(J,I)
-cb            SIGMASFTP(J,I)=D05*SIGMASFTP(J,I)
-cb            SIGMASFTM(J,I)=D05*SIGMASFTM(J,I)
-cb          ENDDO
-cb        ENDDO
-      ENDIF
 C
+C
+      write(lupri,*) 
       WRITE(LUPRI,*)
       CALL TIMER ('LRSCLIN',TIMEIN,TIMOUT)
 C
@@ -754,57 +799,3 @@ Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 
 
-c    ---------------------------------------
-c    ---------------------------------------
-C  /* Deck todoint */
-cx      LOGICAL FUNCTION TODOINT(LABEL,IFILE)
-C     07-06-2000 ALig
-C
-C     is a non generic function to check if some property (LABEL) are 
-C     already stored in file (IFILE).
-C     ... it search always in the AOPROPER file
-C
-C     It could be necessary to correct the PSO part for molecules with 
-C     more then 33 atoms
-C
-cx#include <implicit.h>
-cx#include <mxcent.h>
-cx#include <trkoor.h>
-cx#include <chrnos.h>
-cLig DEBUG <>
-cx#include <priunit.h>
-cx      CHARACTER*8 LABEL,LABEL1
-cx      LOGICAL FNDLAB
-C
-cx     TODOINT = .FALSE. 
-cx      NOINT = 0
-cx      CALL GPOPEN(IFILE,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
-cx     &            .FALSE.)
-cx      REWIND IFILE
-cx      IF (LABEL.EQ.'DIPLEN  ') THEN
-cx         IF (FNDLAB('XDIPLEN ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('YDIPLEN ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('ZDIPLEN ',IFILE)) NOINT=NOINT+1
-cx         IF (NOINT.EQ.3) TODOINT=.TRUE.
-cx      ELSE IF (LABEL.EQ.'DIPVEL  ') THEN
-cx         IF (FNDLAB('XDIPVEL ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('YDIPVEL ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('ZDIPVEL ',IFILE)) NOINT=NOINT+1
-cx         IF (NOINT.EQ.3) TODOINT=.TRUE.
-cx      ELSE IF (LABEL.EQ.'ANGMOM  ') THEN
-cx         IF (FNDLAB('XANGMOM ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('YANGMOM ',IFILE)) NOINT=NOINT+1
-cx         IF (FNDLAB('ZANGMOM ',IFILE)) NOINT=NOINT+1
-cx         IF (NOINT.EQ.3) TODOINT=.TRUE.
-cx      ELSE IF (LABEL.EQ.'RPSO    ') THEN
-cx         IF (FNDLAB('01RPSO X',IFILE))  TODOINT = .TRUE.
-cx      ELSE IF (LABEL.EQ.'PSO     ') THEN
-cx         DO I=1,NCOOR
-cx            LABEL1='PSO '//CHRNOS(I/10)//CHRNOS(MOD(I,10))//'  '
-cx            IF (FNDLAB(LABEL1,IFILE)) NOINT=NOINT+1
-cx         END DO  
-cx         IF (NOINT.EQ.NCOOR) TODOINT=.TRUE.
-cx      ENDIF   
-cx      CALL GPCLOSE(IFILE,'KEEP')
-cx      RETURN  
-cx      END     

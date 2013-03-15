@@ -63,7 +63,7 @@ C
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
-            write(lupri,*) ' @LRSCINP : reading : ' , WORD
+c            write(lupri,*) ' @LRSCINP : reading : ' , WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
@@ -255,6 +255,27 @@ cs    LABAPP = 0 ?????????
       CALL DZERO (QBFREQ,NFMAX)
       CALL DZERO (QCFREQ,NFMAX) 
 C
+C  Init Result Matrices 
+C
+      Do I=1,3 
+      DO J =1, 3
+       LRFCAV(I,J)=0.0
+       LRDIAK(I,J)=0.0
+       LRANGP(I,J)=0.0
+C
+       LRDIAM(I,J)=0.0
+       LRDIAD(I,J)=0.0
+C
+       LRLKIN(I,J)=0.0
+       LRPSOK(I,J)=0.0
+       LRPSKI(I,J)=0.0  ! this is just for debugging
+       LRFCZK(I,J)=0.0
+       LRSDZK(I,J)=0.0
+       LRFCBS(I,J)=0.0
+       LRSDBS(I,J)=0.0
+      ENDDO
+      ENDDO
+C
       RETURN
       END
 c    ---------------------------------------
@@ -266,7 +287,8 @@ C
 #include <mxcent.h>
 #include <priunit.h>
 #include <wrkrsp.h>
-#include <lrescinf.h>
+#include "lrescinf.h"
+#include <inforb.h>
 C
 
 cv      write(lupri,*)'@ LRSCDRV : '
@@ -282,9 +304,24 @@ C
       WRITE(LUPRI,*)
       IF (SIGMAP1S)  THEN
          WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : PsoKin'
-         WRITE (LUPRI,'(A)')'           NOT FOR NOW, some bugs inside'
-c         CALL LINEARLR('PSOK',WORK,LWORK) ! NOOOO ANDA
+         WRITE (LUPRI,'(A)')'   in 2 steps, A.B and using inside integs'
+c         write(*,*) 'nbas1' , nbas(1)
+c         write(*,*) 'nbas' , nbas
+c               nnaos = nbas(1)
+c               nmber = nnaos*(nnaos+1)/2
+c         CALL angkin(nmber,nnaos)   ! this is with ORIGINAL angkin routine
+         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : PSOK  '//
+     &        'using dalton integrals' ! con dalton integrales
+         write(LUPRI,'(/721A1/)')('*',I=1,72)
+         CALL LINEARLR('PSOK',WORK,LWORK) 
+C
+         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : PSKI  '//
+     &        'using A.1.B routine'  ! con mis integrales
+         write(LUPRI,'(/721A1/)')('*',I=1,72)
+         CALL LINEARLR('PSKI',WORK,LWORK)
+
          WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : Lkin'
+         write(LUPRI,'(/721A1/)')('*',I=1,72)
          CALL LINEARLR('LKIN',WORK,LWORK) ! ANDA
       END IF
 
@@ -300,9 +337,9 @@ C
       IF (SIGMAP1T) THEN
          WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
      &         ' Triplet First Order Shielding corrections'
-         CALL LINEARLR('FCZK',WORK,LWORK) !ANDA
-         CALL LINEARLR('SDZK',WORK,LWORK) !ANDA
-         CALL LINEARLR('FCBS',WORK,LWORK) !ANDA 
+c         CALL LINEARLR('FCZK',WORK,LWORK) !ANDA
+C         CALL LINEARLR('SDZK',WORK,LWORK) !ANDA
+c         CALL LINEARLR('FCBS',WORK,LWORK) !ANDA 
          CALL LINEARLR('SDBS',WORK,LWORK) !ANDA
       END IF
 C 
@@ -320,17 +357,117 @@ C
          WRITE (LUPRI,'(A)')'   Calling to SIGMA3T for : '
 cv         CALL CUADRAS('LFCO')
       END IF
-
+C
       IF (SIGMAD0S) THEN
          WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : Diamagnetic '//
      &         ' ZerothORder Shielding corrections ' 
-c         CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
-c         CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
-          CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing !
+         CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
+         CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
+         CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
+      END IF
+
+C
+C -================---------------======================
+C                  Print Section
+C -================---------------======================
+C
+C 
+      relall = 0.0
+      SGP1T = 0.0  ! sigma 1order triplet PARAM : FcKin, SdKin, SdBso, FcBso
+      SGP1S = 0.0  ! sigma 1order singlet PARAM : Lkin, Psokin
+      SGD0S = 0.0  ! sigma 0rder singlet DIAM : Fc, AngPso, DiaKin
+      SGD1S = 0.0  ! sigma 1order singlet DIAM : DiaMv, DiaDw
+      DO i=1, 3
+          SGP1T = SG1T + LRFCZK(i,i)+LRSDZK(i,i)+LRFCBS(i,i)+LRSDBS(i,i)
+          SGP1S = SG1S  + LRLKIN(i,i)+LRPSOK(i,i) 
+          SGD0S = SGD0S + LRFCAV(i,i)+LRDIAK(i,i)+LRANGP(i,i)
+          SGD1S = SGD1S + LRDIAD(i,i)+LRDIAM(i,i)
+          relall = relall + SGD0S+SGD1S+SGP1S+SGP1T
+          write(lupri,*)' lrdiad' , LRDIAD(i,i)
+          write(lupri,*)' lrdiaM' , LRDIAM(i,i)
+      ENDDO
+
+      CALL HEADER('Relativistic corrections to Nuclear Shielding',-1)
+      WRITE(LUPRI,*)' Paramagnetic Corrections:' 
+      IF (SIGMAP1S) THEN 
+         WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
+     &   'First Order Singlets    ', SGP1S,' arb.units'
+         WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
+     &   'First Order Triplets    ', SGP1T,' arb.units'
+      ENDIF
+      WRITE(LUPRI,*)' Diamagnetic Corrections:' 
+      IF ((SIGMAD0S).OR.(SIGMAD1S)) THEN 
+         WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
+     &   'Zeroth Order             ', SGD0S,' arb.units'
+         WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
+     &   'First Order Singlets     ', SGD1S,'arb.units'
+      ENDIF
+      IF (LRESCALL) THEN
+         WRITE (LUPRI,'(/5X,A,F17.10,A,F6.4,A)') 
+     &           'Total relativistic correction:         ', relall
+c    &           ' au (', D100*RELTOT/EMCSCF,'%)'
+c            WRITE (LUPRI,'(5X,A,F17.10,A//)')
+c    &           'Non-relativistic + relativistic energy:',
+c    &           EMCSCF + RELTOT,' au'
       END IF
 
 
-      RETURN
+
+c       Paramagnetic Corrections
+c            First Order Triplets                    bla bla ppm
+c            First Order Singlets                    ble ble ppm
+c 
+c       Diamagnetic Corrections
+c           Zeroth Order                             bli bli ppm
+c           First  Order Singlet                     blo blo ppm
+c 
+c       Total LRESC 0th and 1st Order Corrections    suma ppm
+c 
+      WRITE(LUPRI,*) 
+      write(LUPRI,*)'Note : For 3rd order paramagnetic corrections ' //
+     &     'run response module.'
+      write(LUPRI,*)'       Can use this as template, it is set for' //
+     &     ' the selected atom on INPUT FILE'
+      WRITE(LUPRI,*)'          Spin Orbit :' 
+      WRITE(LUPRI,*)'                  **RESPONSE'
+      WRITE(LUPRI,*)'                  *QUADRATIC'
+      WRITE(LUPRI,*)'                  .ISPABC'
+      WRITE(LUPRI,*)'                  0    1    1'
+      WRITE(LUPRI,*)'                  .APROP'
+      WRITE(LUPRI,*)'                  XANGMOM'
+      WRITE(LUPRI,*)'                  .APROP'
+      WRITE(LUPRI,*)'                  YANGMOM'
+      WRITE(LUPRI,*)'                  .APROP'
+      WRITE(LUPRI,*)'                  ZANGMOM'
+      WRITE(LUPRI,*)'                  .BPROP'
+      WRITE(LUPRI,*)'                  FC X  01'
+      WRITE(LUPRI,*)'                  .CPROP'
+      WRITE(LUPRI,*)'                  X1SPNORB'
+      WRITE(LUPRI,*)'                  .CPROP'
+      WRITE(LUPRI,*)'                  Y1SPNORB'
+      WRITE(LUPRI,*)'                  .CPROP'
+      WRITE(LUPRI,*)'                  Z1SPNORB'
+      WRITE(LUPRI,*)' ----------------------'
+      WRITE(LUPRI,*)'           Massvelo or Darwin :'
+      WRITE(LUPRI,*)'                  **RESPONSE'
+      WRITE(LUPRI,*)'                  *QUADRATIC'
+      WRITE(LUPRI,*)'                  .ISPABC'
+      WRITE(LUPRI,*)'                  0    0    0'
+      WRITE(LUPRI,*)'                  .APROP'
+      WRITE(LUPRI,*)'                  XANGMOM'
+      WRITE(LUPRI,*)'                  .APROP'
+      WRITE(LUPRI,*)'                  YANGMOM'
+      WRITE(LUPRI,*)'                  .APROP'
+      WRITE(LUPRI,*)'                  ZANGMOM'
+      WRITE(LUPRI,*)'              .    BPROP'
+      WRITE(LUPRI,*)'                  PSO 001'
+      WRITE(LUPRI,*)'                  .BPROP'
+      WRITE(LUPRI,*)'                  PSO 002'
+      WRITE(LUPRI,*)'                  .BPROP'
+      WRITE(LUPRI,*)'                  PSO 003'
+      WRITE(LUPRI,*)'                  .CPROP'
+      WRITE(LUPRI,*)'                  MASSVELO   !(or DARWIN)'
+       RETURN
       END
 C...
 c    ---------------------------------------

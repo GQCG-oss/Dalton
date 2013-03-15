@@ -2770,8 +2770,6 @@ C
       END IF
       PRPLBL(NPRLBL) = NEWLBL
       INDPRP = NPRLBL
-      write(lupri,*)' at TINE jim : NEWLBL' , PRPLBL(NPRLBL)
-      write(lupri,*)'             : NPRLBL' , NPRLBL
       RETURN
       END
 C  /* Deck rspsym */
