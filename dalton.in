@@ -309,8 +309,8 @@ if [ $optn -gt 1 ] ; then
          echo 'Copying dalton executable from master node: ' ${HOSTNAME}
          if [ -n "$PBS_NODEFILE" ] ; then
              # $PBS_NODEFILE is defined, then do the instructions below
-             cat $PBS_NODEFILE
-             for node in `cat $PBS_NODEFILE`
+             cat $PBS_NODEFILE | sort | uniq
+             for node in `cat $PBS_NODEFILE | sort | uniq`
              do
                 if [ ${node} == $HOSTNAME ]
                 then
