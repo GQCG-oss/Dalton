@@ -491,15 +491,6 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
         call dzero(fmat_tmp,nbasis**2)
 
 #ifdef VAR_MPI
-!       call mpixget(dmat_tmp,
-!    &               nbasis**2,
-!    &               0, ! node/numa master
-!    &               offset_mat,
-!    &               nbasis**2,
-!    &               communication_info_mpi%my_shmem_node_id,
-!    &               MPI_LOCK_SHARED,
-!    &               rma_win_info%lock_win,
-!    &               rma_win_info%dmat_win)
         call mpi_file_read_at(
      &                        rma_win_info%dmat_fh,
      &                        offset_mat,
