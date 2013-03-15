@@ -1,122 +1,149 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Henrik Koch,              University of Trondheim,      Norway     
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Mar  3 20:08:56 2005
-     Host name              : pi.biotech.kth.se                       
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
 
 
- Default print level:        0
+     Date and time (Linux)  : Wed Mar 16 17:45:05 2011 
+     Host name              : fe6                                     
 
-    Integral sections will be executed
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
-    Wave function sections will be executed
-    Dynamic molecular property section will be executed
-
-Starting in Integral Section -
-
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
 
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Calculation of third order transition moments                           
+ 2:                                                                         
+    ------------------------------------------------------------------------
 
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/4-31G"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   3.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   3 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/4-31G"
 
 
-
-  Title Cards
-  -----------
-
-  Calculation of third order transition moments                           
-                                                                          
-
-
-  Symmetry Operations
-  -------------------
-
-  Symmetry operations: 2
-
-
-
-                      SYMGRP:Point group information
-                      ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: C2v
 
@@ -129,9 +156,9 @@ Point group: C2v
 
         |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
     Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
@@ -147,14 +174,14 @@ Point group: C2v
 
         | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
     A2  | A2   B2   B1   A1 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            H           1.007825
                            Li          7.016005
@@ -162,65 +189,59 @@ Point group: C2v
                        Total mass:     8.023830 amu
                        Natural abundance:  92.486 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000   -0.608359
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.608359
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    2
 
   Basis set used is "4-31G" from the basis set library.
 
-  label    atoms   charge   prim    cont     basis
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  H           1       1       4       2      [4s|2s]                                      
-  Li          1       3      17       9      [8s3p|3s2p]                                  
+  H           1    1.0000     4     2      [4s|2s]                                            
+  Li          1    3.0000    17     9      [8s3p|3s2p]                                        
   ----------------------------------------------------------------------
-  total:      2       4      21      11
+  total:      2    4.0000    21    11
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.10E-11
+  Threshold for integrals:  1.10D-11
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates:  6
-
-   1   H        x      0.0000000000
-   2            y      0.0000000000
-   3            z      2.0969699107
-
-   4   Li       x      0.0000000000
-   5            y      0.0000000000
-   6            z     -0.9969699107
+  Total number of coordinates:    6
+  H       :     1  x   0.0000000000    2  y   0.0000000000    3  z   2.0969699107
+  Li      :     4  x   0.0000000000    5  y   0.0000000000    6  z  -0.9969699107
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   2  2  2  0
+  Number of coordinates in each symmetry:     2    2    2    0
 
   Symmetry  A1  ( 1)
 
-   1   H     z    3
-   2   Li    z    6
+    1   H     z    3
+    2   Li    z    6
 
   Symmetry  B1  ( 2)
 
-   3   H     x    1
-   4   Li    x    4
+    3   H     x    1
+    4   Li    x    4
 
   Symmetry  B2  ( 3)
 
-   5   H     y    2
-   6   Li    y    5
+    5   H     y    2
+    6   Li    y    5
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             H           Li    
             ------      ------
@@ -228,12 +249,12 @@ Point group: C2v
  Li    :    1.637242    0.000000
 
 
-  Max interatomic separation is    1.6372 Angstroms
-  between atoms "Li    " and "H     ".
+  Max interatomic separation is    1.6372 Angstrom (    3.0939 Bohr)
+  between atoms    2 and    1, "Li    " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -245,9 +266,9 @@ Point group: C2v
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    0.000000          0.000000    0.000000    1.000000
-   IB    2.362214          0.000000    1.000000    0.000000
-   IC    2.362214          1.000000    0.000000    0.000000
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB       2.362214          0.000000    1.000000    0.000000
+   IC       2.362214          1.000000    0.000000    0.000000
 
 
  Rotational constants
@@ -255,16 +276,16 @@ Point group: C2v
 
  The molecule is linear.
 
-               B =       213942.92 MHz     (    7.136368 cm-1)
+               B =       213942.91 MHz     (    7.136367 cm-1)
 
 
-  Nuclear repulsion energy :    0.969637476220
+@  Nuclear repulsion energy :    0.969637476220
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:               7   2   2   0
+  Number of orbitals in each symmetry:           7    2    2    0
 
 
   Symmetry  A1 ( 1)
@@ -297,54 +318,70 @@ Point group: C2v
   Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in HUCKEL is   0.00 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in ONEDRV is   0.00 seconds
 
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ Threshold for neglecting two-electron integrals:  1.10D-11
 
  Number of two-electron integrals written:         677 ( 30.6% )
  Megabytes written:                              0.014
 
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
 
  *** Output from Huckel module :
 
      Using EWMO model:          T
      Using EHT  model:          F
-     Number of Huckel orbitals each symmetry:    3    0    0    0
+     Number of Huckel orbitals each symmetry:    4    1    1    0
 
  EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
- which normally is better than Extended Huckel Theory.
- Reference: Linderberg and Ohrm, Propagators in Quantum Chemistry (Wiley, 1973)
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
 
  Huckel EWMO eigenvalues for symmetry :  1
-           -2.486652      -0.547201      -0.141506
+           -2.482706      -0.579861      -0.170222      -0.071212
+
+ Huckel EWMO eigenvalues for symmetry :  2
+           -0.130000
+
+ Huckel EWMO eigenvalues for symmetry :  3
+           -0.130000
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Mar  3 20:08:56 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:45:05 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      Calculation of third order transition moments                           
                                                                              
 
@@ -360,8 +397,8 @@ Starting in Wave Function Section -
 
      This is a combination run starting with
 
-               a RHF calculation
-               an MP2 calculation 
+               a restricted, closed shell Hartree-Fock calculation
+               an MP2 calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -369,12 +406,10 @@ Starting in Wave Function Section -
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons          2
      Number of electrons in active shells      2
      Total charge of the molecule              0
-
-     Number of active orbitals                 2
-     Total number of orbitals                 11
 
      Spin multiplicity                         1
      Total number of symmetries                4
@@ -382,26 +417,28 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2   3   4
-                                       --  --  --  --
-     Inactive orbitals                  1   0   0   0
-     Active orbitals                    2   0   0   0
-     Secondary orbitals                 4   2   2   0
-     Total number of orbitals           7   2   2   0
-     Number of basis functions          7   2   2   0
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Inactive orbitals                   1 |    1    0    0    0
+     Active orbitals                     2 |    2    0    0    0
+     Secondary orbitals                  8 |    4    2    2    0
+     Total number of orbitals           11 |    7    2    2    0
+     Number of basis functions          11 |    7    2    2    0
 
-     Occupied SCF orbitals              2   0   0   0
+      -- Initial occupation of symmetries is determined from user input.                      
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               2 |    2    0    0    0
 
      Optimization information
      ========================
-     Number of configurations              3
-     Number of orbital rotations          14
-     ---------------------------------------
-     Total number of variables            17
+     Number of configurations                 3
+     Number of orbital rotations             14
+     ------------------------------------------
+     Total number of variables               17
 
-     Maximum number of macro iterations      15
-     Maximum number of micro iterations     360
-     Threshold for gradient            1.00E-05
+     Maximum number of macro iterations      25
+     Maximum number of micro iterations     600
+     Threshold for gradient            1.00D-05
      Number of initial trial vectors          1
      Number of initial CI iterations          3
      Number of simultaneous trial vectors     1
@@ -417,94 +454,106 @@ Starting in Wave Function Section -
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.10D-11 )
+   1    -7.92585683519        6.75335D-01   -7.93D+00    1
+      Virial theorem: -V/T =      1.960277
+      MULPOP  H      -0.60; Li      0.60; 
+ -----------------------------------------------------------------------------
+   2    -7.97650066943        6.69663D-02   -5.06D-02    2
+      Virial theorem: -V/T =      1.997450
+      MULPOP  H      -0.30; Li      0.30; 
+ -----------------------------------------------------------------------------
+   3    -7.97731201305        1.09818D-02   -8.11D-04    3
+      Virial theorem: -V/T =      1.998930
+      MULPOP  H      -0.27; Li      0.27; 
+ -----------------------------------------------------------------------------
+   4    -7.97734917569        7.78801D-04   -3.72D-05    4
+      Virial theorem: -V/T =      1.998683
+      MULPOP  H      -0.26; Li      0.26; 
+ -----------------------------------------------------------------------------
+   5    -7.97734936902        9.67916D-05   -1.93D-07    5
+      Virial theorem: -V/T =      1.998653
+      MULPOP  H      -0.26; Li      0.26; 
+ -----------------------------------------------------------------------------
+   6    -7.97734937078        7.81039D-06   -1.76D-09    6
+      Virial theorem: -V/T =      1.998655
+      MULPOP  H      -0.26; Li      0.26; 
+ -----------------------------------------------------------------------------
+   7    -7.97734937080        1.74972D-06   -2.28D-11    7
+      Virial theorem: -V/T =      1.998655
+      MULPOP  H      -0.26; Li      0.26; 
+ -----------------------------------------------------------------------------
+   8    -7.97734937081        3.22805D-07   -1.91D-12    8
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.10E-11
+ *** DIIS converged in   8 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
- >>> Time used in FRMSUP is   0.00 seconds
-
-    1       -7.906233966951    7.79320E-01   -7.91E+00    1
-    2       -7.975159071177    8.49324E-02   -6.89E-02    2
-    3       -7.977032005965    2.32870E-02   -1.87E-03    3
-    4       -7.977333904543    4.84913E-03   -3.02E-04    4
-    5       -7.977349251586    5.90770E-04   -1.53E-05    5
-    6       -7.977349366767    5.53224E-05   -1.15E-07    6
-    7       -7.977349367741    5.18702E-06   -9.74E-10    7
-    8       -7.977349367750    4.17074E-07   -9.01E-12    8
- DIIS converged in   8 iterations !
+ >>> Writing SIRIFC interface file <<<
 
 
  >>>>> Output from SIRIUS MP2 module <<<<<
 
- Reference: H.J.Aa.Jensen, P. Jorgensen, H. Agren, and J. Olsen,
+ Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,
             J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
-
-
 
  Check that orbitals are canonical HARTREE-FOCK orbitals
 
- Number of electrons :    4
- Orbital occupations :    2    0    0    0
+    Number of electrons :    4
+    Orbital occupations :    2    0    0    0
 
+ Hartree-Fock electronic energy:          -8.946986847027
+ Hartree-Fock total      energy:          -7.977349370806
 
- Hartree-Fock electronic energy:          -8.946986843970
+Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  7.83D-08
 
- Hartree-Fock total      energy:          -7.977349367750
+Symmetry  2 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+00
 
- Hartree-Fock orbital energies, symmetry 1
+Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+00
 
-        -2.45291973    -0.29767357     0.01313317     0.16283009     0.25338141
-         0.38379112     1.31667114
+ Hartree-Fock orbital energies, symmetry 1, number of occupied SCF orbitals is    2
 
- Hartree-Fock orbital energies, symmetry 2
+        -2.45291982    -0.29767363     0.01313317     0.16283007     0.25338142
+         0.38379109     1.31667102
 
-         0.06583938     0.24949522
+ Hartree-Fock orbital energies, symmetry 2, number of occupied SCF orbitals is    0
 
- Hartree-Fock orbital energies, symmetry 3
+         0.06583937     0.24949523
 
-         0.06583938     0.24949522
+ Hartree-Fock orbital energies, symmetry 3, number of occupied SCF orbitals is    0
 
-    E(LUMO) :     0.01313317
-  - E(HOMO) :    -0.29767357
+         0.06583937     0.24949523
+
+    E(LUMO) :     0.01313317   (in symmetry 1)
+  - E(HOMO) :    -0.29767363   (in symmetry 1)
   --------------------------
-    gap     :     0.31080674
-
- ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :  6.35E-07
+    gap     :     0.31080680
 
  MP2 move   0.017338 electrons to unoccupied HF orbitals
 
 
- Hartree-Fock total energy :            -7.9773493677
- + MP2 contribution        :            -0.0128433469
- = MP2 second order energy :            -7.9901927147
+ Hartree-Fock total energy :            -7.9773493708
+ + MP2 contribution        :            -0.0128433573
+ = MP2 second order energy :            -7.9901927281
 
  Natural orbital occupation numbers, symmetry 1
+ Sum =     3.99765310; RHF =     4.00000000; Difference =    -0.00234690
 
-         1.99990165     1.98310546     0.01299480     0.00132079     0.00034188
+         1.99990165     1.98310543     0.01299482     0.00132079     0.00034188
          0.00002243    -0.00003391
 
- Sum     3.99765310
- RHF     4.00000000
- Diff.  -0.00234690
-
  Natural orbital occupation numbers, symmetry 2
+ Sum =     0.00117345; RHF =     0.00000000; Difference =     0.00117345
 
          0.00114884     0.00002461
-
- Sum     0.00117345
- RHF     0.00000000
- Diff.   0.00117345
 
  Natural orbital occupation numbers, symmetry 3
+ Sum =     0.00117345; RHF =     0.00000000; Difference =     0.00117345
 
          0.00114884     0.00002461
 
- Sum     0.00117345
- RHF     0.00000000
- Diff.   0.00117345
-
- Time used for MP2 natural orbitals :       0.009 CPU seconds.
+ Time used for MP2 natural orbitals :       0.003 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -521,9 +570,9 @@ Starting in Wave Function Section -
 
  Element no. Config.no.    Active energy      Total energy
 
-         1 :          1     -1.0688707589     -7.9772177127
-         2 :          3     -0.6235791170     -7.5319260709
-         3 :          2     -0.1372359964     -7.0455829503
+         1 :          1     -1.0688707593     -7.9772177113
+         2 :          3     -0.6235796405     -7.5319265924
+         3 :          2     -0.1372370623     -7.0455840143
 
 
  Convergence threshold for CI optimization :     0.00000500
@@ -537,7 +586,10 @@ Starting in Wave Function Section -
 
 
  CI energies and residuals:
-    1       -7.993704623766249       4.87E-17
+    1       -7.993704636456084       3.31D-15
+
+
+ Final CI energy:       -7.993704636456084
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -546,21 +598,27 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.965798774   0.034201226
+   1.965798708   0.034201292
 
 
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.993704623766249       (MACRO    1)
+ Total MCSCF energy       :    -7.99370463645608           (MACRO    1)
 
- Norm of total gradient   :        0.028391784657
+ - Nuclear repulsion      :    0.969637476220371    
+ - Inactive energy        :    -7.87798442818330    
+ - Active energy          :    -1.08535768449315    
+
+ Norm of total gradient   :        0.028391664554
  -    of CI gradient      :        0.000000000000
- -    of orbital gradient :        0.028391784657
+ -    of orbital gradient :        0.028391664554
+      Virial theorem: -V/T =      1.997155
+      MULPOP  H      -0.24; Li      0.24; 
 
  Residual norm when dim(red L) =   5
  NEO root     CSF        orbital          total
-    1     0.00447343     0.00264569     0.00519723 converged
+    1     0.00445679     0.00314979     0.00545749 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -571,21 +629,27 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.954667841   0.045332159
+   1.954667595   0.045332405
 
 
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994068404563463       (MACRO    2)
+ Total MCSCF energy       :    -7.99406809869439           (MACRO    2)
 
- Norm of total gradient   :        0.012800467871
- -    of CI gradient      :        0.005989490805
- -    of orbital gradient :        0.011312735197
+ - Nuclear repulsion      :    0.969637476220371    
+ - Inactive energy        :    -7.87924672004552    
+ - Active energy          :    -1.08445885486924    
+
+ Norm of total gradient   :        0.012923001198
+ -    of CI gradient      :        0.005980050151
+ -    of orbital gradient :        0.011456131989
+      Virial theorem: -V/T =      1.996253
+      MULPOP  H      -0.19; Li      0.19; 
 
  Residual norm when dim(red L) =   6
  NEO root     CSF        orbital          total
-    1     0.00000000     0.00083785     0.00083785 converged
+    1     0.00000000     0.00090364     0.00090364 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -596,21 +660,27 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.957592806   0.042407194
+   1.957586550   0.042413450
 
 
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994129906639638       (MACRO    3)
+ Total MCSCF energy       :    -7.99412988709244           (MACRO    3)
 
- Norm of total gradient   :        0.000818493298
- -    of CI gradient      :        0.000221344426
- -    of orbital gradient :        0.000787996145
+ - Nuclear repulsion      :    0.969637476220371    
+ - Inactive energy        :    -7.87920437597993    
+ - Active energy          :    -1.08456298733288    
+
+ Norm of total gradient   :        0.000878463454
+ -    of CI gradient      :        0.000224253669
+ -    of orbital gradient :        0.000849357600
+      Virial theorem: -V/T =      1.996702
+      MULPOP  H      -0.20; Li      0.20; 
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
-    1     0.00000000     0.00000347     0.00000347 converged
+    1     0.00000000     0.00000553     0.00000553 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -621,21 +691,27 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.957943455   0.042056545
+   1.957943462   0.042056538
 
 
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994130529597812       (MACRO    4)
+ Total MCSCF energy       :    -7.99413053267353           (MACRO    4)
 
- Norm of total gradient   :        0.000010896753
- -    of CI gradient      :        0.000004956862
- -    of orbital gradient :        0.000009704058
+ - Nuclear repulsion      :    0.969637476220371    
+ - Inactive energy        :    -7.87919013031194    
+ - Active energy          :    -1.08457787858195    
+
+ Norm of total gradient   :        0.000013256343
+ -    of CI gradient      :        0.000005356702
+ -    of orbital gradient :        0.000012125856
+      Virial theorem: -V/T =      1.996707
+      MULPOP  H      -0.20; Li      0.20; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
-    1     0.00000000     0.00000189     0.00000189 converged
+    1     0.00000000     0.00000230     0.00000230 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -646,202 +722,228 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.957944304   0.042055696
+   1.957944307   0.042055693
 
 
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994130529632497       (MACRO    5)
+ Total MCSCF energy       :    -7.99413053271369           (MACRO    5)
 
- Norm of total gradient   :        0.000001888705
- -    of CI gradient      :        0.000000000172
- -    of orbital gradient :        0.000001888705
+ - Nuclear repulsion      :    0.969637476220371    
+ - Inactive energy        :    -7.87918999658914    
+ - Active energy          :    -1.08457801234492    
+
+ Norm of total gradient   :        0.000002298171
+ -    of CI gradient      :        0.000000000200
+ -    of orbital gradient :        0.000002298171
+      Virial theorem: -V/T =      1.996708
+      MULPOP  H      -0.20; Li      0.20; 
+
+ (SIRSTP) Close to convergence, ratio set to one.
+ Energy difference; actual and predicted:   -4.01599D-11   -4.01556D-11
+
+ (SIRSTP) Close to convergence, ratio set to one.
+ Energy difference; actual and predicted:    1.00011D+00
+ Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           17
-     Total number of CPU seconds used         0.04
+     Total number of CPU seconds used         0.02
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Thu Mar  3 20:08:56 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:45:05 2011 
+     Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    4     -7.993704623766   0.0283917847  0.000000   0.1364194102
-    2    4     -7.994068404563   0.0128004679  0.740301   0.0298560589
-    3    7     -7.994129906640   0.0008184933  1.032293   0.0044323308
-    4    2     -7.994130529598   0.0000108968  1.002573   0.0000218909
-    5    0     -7.994130529632   0.0000018887  1.000000   0.0000000000
+    1    4     -7.993704636456   0.0283916646  0.000000   0.1365634819
+    2    4     -7.994068098694   0.0129230012  0.740014   0.0299004445
+    3    7     -7.994129887092   0.0008784635  1.032047   0.0046463880
+    4    2     -7.994130532674   0.0000132563  1.002577   0.0000222813
+    5    0     -7.994130532714   0.0000022982  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1      1    0.000000    0.000000     10    0.026946    0.028392    0.028392
-    2      3   -0.005692    0.005989     10   -0.009925    0.011313    0.012800
-    3      2   -0.000182    0.000221      2   -0.000515    0.000788    0.000818
-    4      3   -0.000005    0.000005     10   -0.000008    0.000010    0.000011
-    5      2    0.000000    0.000000     10    0.000001    0.000002    0.000002
+    1      3   -0.000000    0.000000     10   -0.026946    0.028392    0.028392
+    2      3    0.005685    0.005980     10    0.009902    0.011456    0.012923
+    3      2   -0.000185    0.000224      2    0.000579    0.000849    0.000878
+    4      3    0.000005    0.000005     10    0.000010    0.000012    0.000013
+    5      2   -0.000000    0.000000     10   -0.000002    0.000002    0.000002
 
 
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     4     1     3      0.01      0.00      0.00      0.00      0.00
-    2     4     2     3      0.01      0.00      0.00      0.00      0.00
-    3     7     2     5      0.01      0.00      0.00      0.00      0.00
-    4     2     2     1      0.01      0.00      0.00      0.00      0.00
+    1     4     1     3      0.00      0.00      0.00      0.00      0.00
+    2     4     2     3      0.00      0.00      0.00      0.00      0.00
+    3     7     2     5      0.00      0.00      0.00      0.00      0.00
+    4     2     2     1      0.00      0.00      0.00      0.00      0.00
     5     0     0     0      0.00      0.00      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1     -7.877984430110     -1.085357669877     -7.993704623766
-    2     -7.879245128561     -1.084460752223     -7.994068404563
-    3     -7.879204822359     -1.084562560501     -7.994129906640
-    4     -7.879190065452     -1.084577940366     -7.994130529598
-    5     -7.879190006123     -1.084577999730     -7.994130529632
+    1     -7.877984428183     -1.085357684493     -7.993704636456
+    2     -7.879246720046     -1.084458854869     -7.994068098694
+    3     -7.879204375980     -1.084562987333     -7.994129887092
+    4     -7.879190130312     -1.084577878582     -7.994130532674
+    5     -7.879189996589     -1.084578012345     -7.994130532714
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000491396028     -0.000363780797      0.740300647121
-    3     -0.000059578118     -0.000061502076      1.032293040471
-    4     -0.000000621360     -0.000000622958      1.002572679840
-    5     -0.000000000035     -0.000000000035      1.000000000000
+    2     -0.000491155982     -0.000363462238      0.740013868457
+    3     -0.000059869730     -0.000061788398      1.032047381511
+    4     -0.000000643922     -0.000000645581      1.002576767138
+    5     -0.000000000040     -0.000000000040      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.136419410230      0.700000000000
-    2      0.20000000  1.00000000      0.029856058888      0.700000000000
-    3      0.20000000  1.00000000      0.004432330828      0.700000000000
-    4      0.20000000  1.00000000      0.000021890891      0.700000000000
+    1      0.20000000  1.00000000      0.136563481862      0.700000000000
+    2      0.20000000  1.00000000      0.029900444538      0.700000000000
+    3      0.20000000  1.00000000      0.004646387998      0.700000000000
+    4      0.20000000  1.00000000      0.000022281347      0.700000000000
     5      0.00000000  0.00000000      0.000000000000      0.700000000000
 
 
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000039282440    0.999628002566   -0.024403244030   -0.006086977690
-    2   -0.000004766079    0.999982172792   -0.000517790308   -0.005785602031
-    3   -0.000000049709    0.999999607089   -0.000799304178   -0.000187889740
-    4   -0.000000000003    0.999999999990    0.000000032642   -0.000004367212
+    1   -0.000039263189    0.999627216863   -0.024440594136   -0.006084633391
+    2   -0.000004789407    0.999982119748   -0.000523073773   -0.005817219211
+    3   -0.000000051514    0.999999568222   -0.000867607386   -0.000241607053
+    4   -0.000000000003    0.999999999990   -0.000000060932   -0.000004442159
     5    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
      State number:                1
 
-     Final MCSCF energy:           -7.994130529632
+     Final MCSCF energy:           -7.994130532714                 
      Nuclear repulsion:             0.969637476220
-     Electronic energy:            -8.963768005853
+     Electronic energy:            -8.963768008934
 
-     Final gradient norm:           0.000001888705
+     Final gradient norm:           0.000002298171
 
  
-     Date and time (Linux)  : Thu Mar  3 20:08:56 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:45:05 2011 
+     Host name              : fe6                                     
 
 
  Occupancies of natural orbitals
  -------------------------------
 
- Symmetry  1
+ Symmetry  1 -- Total occupation in this symmetry is   4.000000000
 
-   2.000000000   1.957944304   0.042055696
+   2.000000000   1.957944307   0.042055693
 
- Sum =           4.000000000
+ Symmetry  2 -- No occupied orbitals
 
- Symmetry  2
+ Symmetry  3 -- No occupied orbitals
 
-   No occupied orbitals
+ Symmetry  4 -- No occupied orbitals
 
- Symmetry  3
+ (Only coefficients >0.0100 are printed.)
 
-   No occupied orbitals
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
 
- Symmetry  4
+    Orbital         1        2        3        4        5
+   1 H   :1s    -0.0022  -0.3003  -0.7048  -0.0393  -0.0008
+   2 H   :1s    -0.0013  -0.4029  -0.4595  -0.4282  -0.4534
+   3 Li  :1s    -0.9986   0.1361  -0.1091   0.1027  -0.0150
+   4 Li  :1s    -0.0294  -0.1818   0.4545   0.1796  -1.2666
+   5 Li  :1s     0.0155  -0.2332   0.5481  -0.3457   1.3206
+   6 Li  :2pz    0.0087  -0.1997   0.3928   0.1040   1.5745
+   7 Li  :2pz   -0.0053  -0.0225   0.1351   1.0214  -1.0566
 
-   No occupied orbitals
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   1
+    Orbital         1        2
+   1 Li  :2px    0.0101  -1.7072
+   2 Li  :2px    0.9918   1.3896
 
- Orbital          1        2        3
-   1  H   1s     0.0022   0.3003  -0.7048
-   2  H   1s     0.0013   0.4029  -0.4595
-   3  Li  1s     0.9986  -0.1361  -0.1091
-   4  Li  1s     0.0294   0.1818   0.4545
-   5  Li  1s    -0.0155   0.2332   0.5481
-   6  Li  2pz   -0.0087   0.1997   0.3928
-   7  Li  2pz    0.0053   0.0225   0.1351
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
 
+    Orbital         1        2
+   1 Li  :2py    0.0101  -1.7072
+   2 Li  :2py    0.9918   1.3896
 
- Printout of CI-coefficients larger than 0.05000 for root  1
+ Printout of CI-coefficients abs greater than 0.05000 for root  1
+ *** NOTE: this root is the reference state ***
 
- (this is the reference state)
+ Printout of coefficients in interval  3.1623E-01 to  1.0000E+00
+ ===============================================================
 
+  Coefficient of CSF no.         1 is      0.98943022    9.89430217E-01
+  Orbital          1
+  Spin coupling    2
 
+ Printout of coefficients in interval  1.0000E-01 to  3.1623E-01
+ ===============================================================
 
-  Printout of coefficients in interval  0.3162     to  1.000    
-  =============================================================
+  Coefficient of CSF no.         2 is     -0.14500982   -1.45009816E-01
+  Orbital          2
+  Spin coupling    2
 
- Coefficient of CSF no.         1 is  0.98943022    
- Occupation and spin coupling 
-        1
-        2
-
-
-  Printout of coefficients in interval  0.1000     to 0.3162    
-  =============================================================
-
- Coefficient of CSF no.         2 is -0.14500982    
- Occupation and spin coupling 
-        2
-        2
-
-
-  Printout of coefficients in interval  5.0000E-02 to 0.1000    
-  =============================================================
+ Printout of coefficients in interval  5.0000E-02 to  1.0000E-01
+ ===============================================================
    ( no coefficients )
 
+ Norm of printed CI vector ..      1.00000000
 
-  Norm of printed CI vector ..      1.00000000
+ Magnitude of CI coefficients
+ ============================
+ ( Ranges are relative to norm of vector :  1.00E+00 )
 
-   Magnitude of CI coefficients 
-  ==============================
-
-   ( Ranges are relative to norm of vector :  1.00E+00 )
-
-  10- 1 to 10- 0         2    0.10000000E+01    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is  1
+  10- 1 to 10- 0         2    0.10000000E+01      1.0000000000
+  Number of coefficients less than 10^-11 times norm is            1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.07 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:08:56 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:45:05 2011 
+     Host name              : fe6                                     
 
 
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
 
-  This is output from RESPONSE  -  an MCSCF and SOPPA response property program
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
  ------------------------------------------------------------------------------
-
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
 
 
  <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
@@ -854,14 +956,14 @@ Starting in Wave Function Section -
 
  Third moments calculated : TOMOM=T
 
-  1 B-frequencies  3.000000E-02
-  1 C-frequencies  3.000000E-02
+  1 B-frequencies  3.000000D-02
+  1 C-frequencies  3.000000D-02
 
  Print level                                    : IPRTMO =    2
  Maximum number of exc.en. iterations           : MAXITP =   60
- Threshold for exc.en. convergence              : THCPP  = 1.000E-03
+ Threshold for exc.en. convergence              : THCPP  = 1.000D-03
  Maximum number of lin.resp. iterations         : MAXITL =   60
- Threshold for lin.resp. convergence            : THCLR  = 1.000E-03
+ Threshold for lin.resp. convergence            : THCLR  = 1.000D-03
  Maximum iterations in optimal orbital algorithm: MAXITO =    5
 
     1 A OPERATORS OF SYMMETRY NO:    1 AND LABELS:
@@ -903,10 +1005,16 @@ Starting in Wave Function Section -
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :       -7.994130529632497
- -- inactive part     :       -7.879190006123133
- --   active part     :       -1.084577999729735
+ MCSCF energy         :       -7.994130532713686
+ -- inactive part     :       -7.879189996589140
+ --   active part     :       -1.084578012344916
  -- nuclear repulsion :        0.969637476220371
+
+
+                        **********************************
+                        *** MCSCF response calculation ***
+                        **********************************
+
 
 
  <<<<< Solving eigenvalue equations for cubic response >>>>>
@@ -928,11 +1036,11 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   22)
- RSP solution vector no.    1; norm of residual   9.36E-05
- RSP solution vector no.    2; norm of residual   5.79E-04
+ RSP solution vector no.    1; norm of residual   9.36D-05
+ RSP solution vector no.    2; norm of residual   5.79D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -941,125 +1049,111 @@ Starting in Wave Function Section -
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-           7         2(1)   4(1)        0.5533183515        0.0022727495
-           8         2(1)   5(1)       -0.1641040621       -0.0003456109
-          10         2(1)   7(1)       -0.1291841383       -0.0059759710
-          11         3(1)   4(1)        1.2573612207       -0.0397985914
-          12         3(1)   5(1)       -0.4090837843        0.0124196951
-          13         3(1)   6(1)        0.2784232498       -0.0031401720
-          14         3(1)   7(1)       -0.4230751056        0.1008603184
+           7         2(1)   4(1)       -0.5533189809       -0.0022730145
+           8         2(1)   5(1)       -0.1641036415       -0.0003456128
+          10         2(1)   7(1)       -0.1291836432       -0.0059760108
+          11         3(1)   4(1)        1.2573640617       -0.0397982204
+          12         3(1)   5(1)        0.4090823899       -0.0124185930
+          13         3(1)   6(1)       -0.2784251485        0.0031428292
+          14         3(1)   7(1)        0.4230733503       -0.1008607145
 
-        7 elements with absolute value less than 1.26E-01 not printed.
+        7 elements with absolute value less than 1.26D-01 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           2                           -0.1795955555        0.0094562796
-           3                            0.4207810752       -0.0003590477
+           2                            0.1795949631       -0.0094568570
+           3                            0.4207799124       -0.0003584330
 
-        1 elements with absolute value less than 4.21E-02 not printed.
+        1 elements with absolute value less than 4.21D-02 not printed.
 
  The numbers in parenthesis give the configuration symmetry.
 
+ Printout of coefficients in interval  1.4491E-01 to  4.5826E-01
+ ===============================================================
 
-  Printout of coefficients in interval  0.1449     to 0.4583    
-  =============================================================
+  Coefficient of CSF no.         2 is      0.17959496    1.79594963E-01
+  Orbital          2
+  Spin coupling    2
 
- Coefficient of CSF no.         2 is -0.17959556    
- Occupation and spin coupling 
-        2
-        2
+  Coefficient of CSF no.         3 is      0.42077991    4.20779912E-01
+  Orbital          1   2
+  Spin coupling    1  -1
 
- Coefficient of CSF no.         3 is  0.42078108    
- Occupation and spin coupling 
-        1    2
-        1   -1
-
-
-  Printout of coefficients in interval  4.5826E-02 to 0.1449    
-  =============================================================
+ Printout of coefficients in interval  4.5826E-02 to  1.4491E-01
+ ===============================================================
    ( no coefficients )
 
-
-  Printout of coefficients in interval  4.2078E-02 to 4.5826E-02
-  =============================================================
+ Printout of coefficients in interval  4.2078E-02 to  4.5826E-02
+ ===============================================================
    ( no coefficients )
 
+ Norm of printed CI vector ..      0.20931009
 
-  Norm of printed CI vector ..      0.20931128
+ Magnitude of CI coefficients
+ ============================
+ ( Ranges are relative to norm of vector :  4.58E-01 )
 
-   Magnitude of CI coefficients 
-  ==============================
-
-   ( Ranges are relative to norm of vector :  4.58E-01 )
-
-  10- 1 to 10- 0         2    0.20931128E+00    0.20931128E+00
-  10- 2 to 10- 1         1    0.69281241E-03    0.21000409E+00
-  Number of coefficients less than 10^-11 times norm is  0
+  10- 1 to 10- 0         2    0.20931009E+00      0.2093100854
+  10- 2 to 10- 1         1    0.69280780E-03      0.2100028932
+  Number of coefficients less than 10^-11 times norm is            0
 
      Orbital operator symmetry = 1
      (only elements abs greater than   10.00 % of max abs value)
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-           7         2(1)   4(1)        0.3793320970        0.0020975299
-           8         2(1)   5(1)        0.1996280645        0.0019466734
-           9         2(1)   6(1)       -0.3493510392       -0.0094746529
-          10         2(1)   7(1)        0.1668835466        0.0003820182
-          11         3(1)   4(1)        0.6699432070       -0.0046391717
-          12         3(1)   5(1)        0.4785817983       -0.0276961625
-          13         3(1)   6(1)       -0.8300442302        0.1148288891
-          14         3(1)   7(1)        0.5386890406       -0.0403296120
+           7         2(1)   4(1)       -0.3793310549       -0.0020973771
+           8         2(1)   5(1)        0.1996268779        0.0019466013
+           9         2(1)   6(1)       -0.3493528834       -0.0094746856
+          10         2(1)   7(1)        0.1668832617        0.0003819137
+          11         3(1)   4(1)        0.6699392613       -0.0046398532
+          12         3(1)   5(1)       -0.4785788214        0.0276951579
+          13         3(1)   6(1)        0.8300487911       -0.1148306686
+          14         3(1)   7(1)       -0.5386878956        0.0403298106
 
-        6 elements with absolute value less than 8.30E-02 not printed.
+        6 elements with absolute value less than 8.30D-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           2                            0.1745777885       -0.0057534886
-           3                           -0.4967801833        0.0005980568
+           2                           -0.1745779079        0.0057533434
+           3                           -0.4967803718        0.0005984898
 
-        1 elements with absolute value less than 4.97E-02 not printed.
+        1 elements with absolute value less than 4.97D-02 not printed.
 
  The numbers in parenthesis give the configuration symmetry.
 
+ Printout of coefficients in interval  1.6671E-01 to  5.2718E-01
+ ===============================================================
 
-  Printout of coefficients in interval  0.1667     to 0.5272    
-  =============================================================
+  Coefficient of CSF no.         2 is     -0.17457791   -1.74577908E-01
+  Orbital          2
+  Spin coupling    2
 
- Coefficient of CSF no.         2 is  0.17457779    
- Occupation and spin coupling 
-        2
-        2
+  Coefficient of CSF no.         3 is     -0.49678037   -4.96780372E-01
+  Orbital          1   2
+  Spin coupling    1  -1
 
- Coefficient of CSF no.         3 is -0.49678018    
- Occupation and spin coupling 
-        1    2
-        1   -1
-
-
-  Printout of coefficients in interval  5.2718E-02 to 0.1667    
-  =============================================================
+ Printout of coefficients in interval  5.2718E-02 to  1.6671E-01
+ ===============================================================
    ( no coefficients )
 
-
-  Printout of coefficients in interval  4.9678E-02 to 5.2718E-02
-  =============================================================
+ Printout of coefficients in interval  4.9678E-02 to  5.2718E-02
+ ===============================================================
    ( no coefficients )
 
+ Norm of printed CI vector ..      0.27726818
 
-  Norm of printed CI vector ..      0.27726795
+ Magnitude of CI coefficients
+ ============================
+ ( Ranges are relative to norm of vector :  5.27E-01 )
 
-   Magnitude of CI coefficients 
-  ==============================
-
-   ( Ranges are relative to norm of vector :  5.27E-01 )
-
-  10- 1 to 10- 0         2    0.27726795E+00    0.27726795E+00
-  10- 2 to 10- 1         1    0.65463989E-03    0.27792259E+00
-  Number of coefficients less than 10^-11 times norm is  0
+  10- 1 to 10- 0         2    0.27726818E+00      0.2772681838
+  10- 2 to 10- 1         1    0.65464074E-03      0.2779228245
+  Number of coefficients less than 10^-11 times norm is            0
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1077,10 +1171,10 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   6.11E-04
+ RSP solution vector no.    1; norm of residual   6.11D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1089,12 +1183,12 @@ Starting in Wave Function Section -
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-           3         2(1)   8(2)       -0.6590048689       -0.0103994282
-           4         2(1)   9(2)       -0.1546941456       -0.0080104291
-           5         3(1)   8(2)       -1.5101700719        0.1291500853
-           6         3(1)   9(2)       -0.4484715803        0.1117575175
+           3         2(1)   8(2)       -0.6590048464       -0.0103994358
+           4         2(1)   9(2)        0.1546942628        0.0080104243
+           5         3(1)   8(2)        1.5101699355       -0.1291501720
+           6         3(1)   9(2)       -0.4484717728        0.1117575148
 
-        2 elements with absolute value less than 1.51E-01 not printed.
+        2 elements with absolute value less than 1.51D-01 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -1137,49 +1231,47 @@ Starting in Wave Function Section -
 
  Operator symmetry =  1; triplet =   F
 
+RSPORT:    2 out of    8 new trial vectors linear dependent
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.21219 AU
- AFTER    6 LINEAR TRANSFORMATIONS IS     -3.19752830
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   11    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.04 * 10 ** -5.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.21219 a.u.
+ after    6 linear transformations is     -3.19761291
+ INERTIA (POS,ZER,NEG) of reduced matrix is   11    0    1
+ Determinant of reduced matrix is -1.04 * 10 ** -5.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   11    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.21219 AU
- AFTER   10 LINEAR TRANSFORMATIONS IS      1.91133135
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   19    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.62 * 10 **-11.0
+ GP * SOLUTION vector at frequency     0.21219 a.u.
+ after   10 linear transformations is      1.91128196
+ INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
+ Determinant of reduced matrix is -1.62 * 10 **-11.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   19    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.21219 AU
- AFTER   14 LINEAR TRANSFORMATIONS IS      2.00862584
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   27    0    1
- DETERMINANT OF REDUCED MATRIX IS -3.00 * 10 **-12.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   27    0    1
+ GP * SOLUTION vector at frequency     0.21219 a.u.
+ after   14 linear transformations is      2.00857709
+ INERTIA (POS,ZER,NEG) of reduced matrix is   27    0    1
+ Determinant of reduced matrix is -3.00 * 10 **-12.0
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   28)
- RSP solution vector no.    1; norm of residual   2.25E-04
- RSP solution vector no.    2; norm of residual   1.77E-04
- RSP solution vector no.    3; norm of residual   5.95E-04
- RSP solution vector no.    4; norm of residual   2.06E-04
+ RSP solution vector no.    1; norm of residual   2.25D-04
+ RSP solution vector no.    2; norm of residual   1.77D-04
+ RSP solution vector no.    3; norm of residual   5.95D-04
+ RSP solution vector no.    4; norm of residual   2.06D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
     ZDIPLEN       freq            LR value
  -----------------------------------------
-              0.030000         28.52015033
-              0.059589         33.67084632
-              0.212189          2.00862584
-              0.097765         66.17540580
+              0.030000         28.52018976
+              0.059589         33.67090482
+              0.212189          2.00857709
+              0.097765         66.17548664
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1200,40 +1292,39 @@ Starting in Wave Function Section -
  Operator symmetry =  2; triplet =   F
 
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.21219 AU
- AFTER    4 LINEAR TRANSFORMATIONS IS    -41.31455429
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    7    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.10 * 10 ** -4.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.21219 a.u.
+ after    4 linear transformations is    -41.31453353
+ INERTIA (POS,ZER,NEG) of reduced matrix is    7    0    1
+ Determinant of reduced matrix is -1.10 * 10 ** -4.0
+RSPORT:    2 out of    4 new trial vectors linear dependent
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    7    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.21219 AU
- AFTER    6 LINEAR TRANSFORMATIONS IS    -39.28187323
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   11    0    1
- DETERMINANT OF REDUCED MATRIX IS -7.01 * 10 ** -6.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   11    0    1
+ GP * SOLUTION vector at frequency     0.21219 a.u.
+ after    6 linear transformations is    -39.28190218
+ INERTIA (POS,ZER,NEG) of reduced matrix is   11    0    1
+ Determinant of reduced matrix is -7.01 * 10 ** -6.0
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   8.87E-08
- RSP solution vector no.    2; norm of residual   8.95E-08
- RSP solution vector no.    3; norm of residual   8.88E-08
- RSP solution vector no.    4; norm of residual   8.87E-08
+ RSP solution vector no.    1; norm of residual   9.35D-08
+ RSP solution vector no.    2; norm of residual   9.59D-08
+ RSP solution vector no.    3; norm of residual   9.42D-08
+ RSP solution vector no.    4; norm of residual   9.30D-08
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
     XDIPLEN       freq            LR value
  -----------------------------------------
-              0.059589         37.32313659
-              0.212189        -39.28187323
-              0.097765         51.89706458
-              0.030000         33.21286392
+              0.059589         37.32313232
+              0.212189        -39.28190218
+              0.097765         51.89704727
+              0.030000         33.21285422
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -1254,40 +1345,39 @@ Starting in Wave Function Section -
  Operator symmetry =  3; triplet =   F
 
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.21219 AU
- AFTER    4 LINEAR TRANSFORMATIONS IS    -41.31455425
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    7    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.10 * 10 ** -4.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.21219 a.u.
+ after    4 linear transformations is    -41.31453346
+ INERTIA (POS,ZER,NEG) of reduced matrix is    7    0    1
+ Determinant of reduced matrix is -1.10 * 10 ** -4.0
+RSPORT:    2 out of    4 new trial vectors linear dependent
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    7    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.21219 AU
- AFTER    6 LINEAR TRANSFORMATIONS IS    -39.28187319
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   11    0    1
- DETERMINANT OF REDUCED MATRIX IS -7.01 * 10 ** -6.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   11    0    1
+ GP * SOLUTION vector at frequency     0.21219 a.u.
+ after    6 linear transformations is    -39.28190213
+ INERTIA (POS,ZER,NEG) of reduced matrix is   11    0    1
+ Determinant of reduced matrix is -7.01 * 10 ** -6.0
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   8.95E-08
- RSP solution vector no.    2; norm of residual   8.87E-08
- RSP solution vector no.    3; norm of residual   8.88E-08
- RSP solution vector no.    4; norm of residual   8.88E-08
+ RSP solution vector no.    1; norm of residual   9.59D-08
+ RSP solution vector no.    2; norm of residual   9.30D-08
+ RSP solution vector no.    3; norm of residual   9.35D-08
+ RSP solution vector no.    4; norm of residual   9.42D-08
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
     YDIPLEN       freq            LR value
  -----------------------------------------
-              0.212189        -39.28187319
-              0.030000         33.21286394
-              0.059589         37.32313662
-              0.097765         51.89706463
+              0.212189        -39.28190213
+              0.030000         33.21285426
+              0.059589         37.32313237
+              0.097765         51.89704736
 
 
  Perturbation symmetry.     KSYMOP:       4
@@ -1296,9 +1386,6 @@ Starting in Wave Function Section -
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       0
 
- >>> Time used in CRVEC1 is   0.03 seconds
-
-
 
  Perturbation symmetry.     KSYMOP:       1
  Perturbation spin symmetry.TRPLET:       F
@@ -1310,8 +1397,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: ZDIPLEN 
  CRLRV2 -- operator label2: ZDIPLEN 
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :  -3.000000E-02
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :  -3.000000D-02
 
 
 
@@ -1322,15 +1409,15 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   9.55E-04
+ RSP solution vector no.    1; norm of residual   9.55D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     ZDIPLEN     ZDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000 -0.030000       2425.08287295
+                         -0.030000 -0.030000       2425.08412269
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -1343,8 +1430,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: ZDIPLEN 
  CRLRV2 -- operator label2: EXCITLAB
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :   1.195892E-01
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :   1.195892D-01
 
 
 
@@ -1355,15 +1442,15 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   2.17E-04
+ RSP solution vector no.    1; norm of residual   2.17D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     ZDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000  0.119589        218.38528718
+                         -0.030000  0.119589        218.38536958
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -1376,8 +1463,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: ZDIPLEN 
  CRLRV2 -- operator label2: EXCITLAB
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :   2.721887E-01
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :   2.721887D-01
 
 
 
@@ -1386,73 +1473,66 @@ Starting in Wave Function Section -
  Operator symmetry =  1; triplet =   F
 
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    3 LINEAR TRANSFORMATIONS IS     30.49914156
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    5    0    1
- DETERMINANT OF REDUCED MATRIX IS -6.47 * 10 ** -5.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    3 linear transformations is     30.49914709
+ INERTIA (POS,ZER,NEG) of reduced matrix is    5    0    1
+ Determinant of reduced matrix is -6.47 * 10 ** -5.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    5    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    4 LINEAR TRANSFORMATIONS IS     52.46652807
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    7    0    1
- DETERMINANT OF REDUCED MATRIX IS -2.93 * 10 ** -7.0
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    4 linear transformations is     52.46660582
+ INERTIA (POS,ZER,NEG) of reduced matrix is    7    0    1
+ Determinant of reduced matrix is -2.93 * 10 ** -7.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    7    0    1
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    5 linear transformations is     55.00258929
+ INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
+ Determinant of reduced matrix is -5.71 * 10 ** -8.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    5 LINEAR TRANSFORMATIONS IS     55.00252773
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    9    0    1
- DETERMINANT OF REDUCED MATRIX IS -5.71 * 10 ** -8.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    6 linear transformations is     56.45072122
+ INERTIA (POS,ZER,NEG) of reduced matrix is   11    0    1
+ Determinant of reduced matrix is -1.04 * 10 **-10.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    9    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    6 LINEAR TRANSFORMATIONS IS     56.45066928
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   11    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.04 * 10 **-10.0
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    7 linear transformations is     57.07126029
+ INERTIA (POS,ZER,NEG) of reduced matrix is   13    0    1
+ Determinant of reduced matrix is -7.88 * 10 **-12.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   11    0    1
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    8 linear transformations is     57.35350594
+ INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
+ Determinant of reduced matrix is -3.89 * 10 **-12.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    7 LINEAR TRANSFORMATIONS IS     57.07120516
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   13    0    1
- DETERMINANT OF REDUCED MATRIX IS -7.88 * 10 **-12.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   13    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    8 LINEAR TRANSFORMATIONS IS     57.35345441
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   15    0    1
- DETERMINANT OF REDUCED MATRIX IS -3.89 * 10 **-12.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   15    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    9 LINEAR TRANSFORMATIONS IS     57.36516951
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   17    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.62 * 10 **-13.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   17    0    1
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    9 linear transformations is     57.36522101
+ INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
+ Determinant of reduced matrix is -1.62 * 10 **-13.0
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   18)
- RSP solution vector no.    1; norm of residual   9.78E-04
+ RSP solution vector no.    1; norm of residual   9.78D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     ZDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000  0.272189         38.52028532
+                         -0.030000  0.272189         38.52021811
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1465,8 +1545,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  2
  CRLRV2 -- operator label1: XDIPLEN 
  CRLRV2 -- operator label2: ZDIPLEN 
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :  -3.000000E-02
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :  -3.000000D-02
 
 
 
@@ -1477,15 +1557,15 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   3.06E-05
+ RSP solution vector no.    1; norm of residual   3.06D-05
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     ZDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000 -0.030000        775.62023889
+                         -0.030000 -0.030000        775.62002322
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1498,8 +1578,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  2
  CRLRV2 -- operator label1: XDIPLEN 
  CRLRV2 -- operator label2: EXCITLAB
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :   1.195892E-01
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :   1.195892D-01
 
 
 
@@ -1510,15 +1590,15 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   1.65E-04
+ RSP solution vector no.    1; norm of residual   1.65D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000  0.119589         32.50380603
+                         -0.030000  0.119589         32.50384823
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1531,8 +1611,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  2
  CRLRV2 -- operator label1: XDIPLEN 
  CRLRV2 -- operator label2: EXCITLAB
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :   2.721887E-01
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :   2.721887D-01
 
 
 
@@ -1541,49 +1621,45 @@ Starting in Wave Function Section -
  Operator symmetry =  2; triplet =   F
 
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    1 LINEAR TRANSFORMATIONS IS    -55.68708447
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    1    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.17 * 10 ** -2.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    1 linear transformations is    -55.68712552
+ INERTIA (POS,ZER,NEG) of reduced matrix is    1    0    1
+ Determinant of reduced matrix is -1.17 * 10 ** -2.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    1    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    2 LINEAR TRANSFORMATIONS IS    -33.68851412
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    3    0    1
- DETERMINANT OF REDUCED MATRIX IS -9.16 * 10 ** -4.0
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    2 linear transformations is    -33.68851928
+ INERTIA (POS,ZER,NEG) of reduced matrix is    3    0    1
+ Determinant of reduced matrix is -9.16 * 10 ** -4.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    3    0    1
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    3 linear transformations is    -21.33276713
+ INERTIA (POS,ZER,NEG) of reduced matrix is    5    0    1
+ Determinant of reduced matrix is -1.59 * 10 ** -6.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    3 LINEAR TRANSFORMATIONS IS    -21.33277558
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    5    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.59 * 10 ** -6.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    5    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    4 LINEAR TRANSFORMATIONS IS    -20.95210984
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    7    0    1
- DETERMINANT OF REDUCED MATRIX IS -2.02 * 10 ** -8.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    7    0    1
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    4 linear transformations is    -20.95209805
+ INERTIA (POS,ZER,NEG) of reduced matrix is    7    0    1
+ Determinant of reduced matrix is -2.02 * 10 ** -8.0
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   9.93E-04
+ RSP solution vector no.    1; norm of residual   9.93D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000  0.272189         34.87391173
+                         -0.030000  0.272189         34.87389927
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -1596,8 +1672,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  3
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: ZDIPLEN 
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :  -3.000000E-02
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :  -3.000000D-02
 
 
 
@@ -1608,15 +1684,15 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   3.06E-05
+ RSP solution vector no.    1; norm of residual   3.06D-05
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     ZDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000 -0.030000        775.62023877
+                         -0.030000 -0.030000        775.62002312
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -1629,8 +1705,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  3
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: EXCITLAB
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :   1.195892E-01
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :   1.195892D-01
 
 
 
@@ -1641,15 +1717,15 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   1.65E-04
+ RSP solution vector no.    1; norm of residual   1.65D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000  0.119589         32.50380602
+                         -0.030000  0.119589         32.50384821
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -1662,8 +1738,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  3
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: EXCITLAB
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :   2.721887E-01
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :   2.721887D-01
 
 
 
@@ -1672,49 +1748,45 @@ Starting in Wave Function Section -
  Operator symmetry =  3; triplet =   F
 
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    1 LINEAR TRANSFORMATIONS IS    -55.68708448
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    1    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.17 * 10 ** -2.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    1 linear transformations is    -55.68712545
+ INERTIA (POS,ZER,NEG) of reduced matrix is    1    0    1
+ Determinant of reduced matrix is -1.17 * 10 ** -2.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    1    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    2 LINEAR TRANSFORMATIONS IS    -33.68851414
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    3    0    1
- DETERMINANT OF REDUCED MATRIX IS -9.16 * 10 ** -4.0
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    2 linear transformations is    -33.68851929
+ INERTIA (POS,ZER,NEG) of reduced matrix is    3    0    1
+ Determinant of reduced matrix is -9.16 * 10 ** -4.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    3    0    1
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    3 linear transformations is    -21.33276716
+ INERTIA (POS,ZER,NEG) of reduced matrix is    5    0    1
+ Determinant of reduced matrix is -1.59 * 10 ** -6.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    3 LINEAR TRANSFORMATIONS IS    -21.33277560
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    5    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.59 * 10 ** -6.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    5    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.24219 AU
- AFTER    4 LINEAR TRANSFORMATIONS IS    -20.95210986
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    7    0    1
- DETERMINANT OF REDUCED MATRIX IS -2.02 * 10 ** -8.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    7    0    1
+ GP * SOLUTION vector at frequency     0.24219 a.u.
+ after    4 linear transformations is    -20.95209808
+ INERTIA (POS,ZER,NEG) of reduced matrix is    7    0    1
+ Determinant of reduced matrix is -2.02 * 10 ** -8.0
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   9.93E-04
+ RSP solution vector no.    1; norm of residual   9.93D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000  0.272189         34.87391174
+                         -0.030000  0.272189         34.87389927
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -1727,8 +1799,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: XDIPLEN 
  CRLRV2 -- operator label2: XDIPLEN 
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :  -3.000000E-02
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :  -3.000000D-02
 
 
 
@@ -1739,15 +1811,15 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   16)
- RSP solution vector no.    1; norm of residual   3.35E-04
+ RSP solution vector no.    1; norm of residual   3.35D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     XDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000 -0.030000       1277.10251801
+                         -0.030000 -0.030000       1277.10275297
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -1760,8 +1832,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: YDIPLEN 
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :  -3.000000E-02
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :  -3.000000D-02
 
 
 
@@ -1772,15 +1844,15 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   16)
- RSP solution vector no.    1; norm of residual   3.35E-04
+ RSP solution vector no.    1; norm of residual   3.35D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     YDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000 -0.030000       1277.10251876
+                         -0.030000 -0.030000       1277.10275421
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1793,8 +1865,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  2
  CRLRV2 -- operator label1: ZDIPLEN 
  CRLRV2 -- operator label2: EXCITLAB
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :   1.577654E-01
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :   1.577655D-01
 
 
 
@@ -1805,15 +1877,15 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   1.03E-04
+ RSP solution vector no.    1; norm of residual   1.03D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     ZDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000  0.157765        128.55401974
+                         -0.030000  0.157765        128.55390079
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -1826,8 +1898,8 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: XDIPLEN 
  CRLRV2 -- operator label2: EXCITLAB
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :   1.577654E-01
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :   1.577655D-01
 
 
 
@@ -1836,65 +1908,59 @@ Starting in Wave Function Section -
  Operator symmetry =  1; triplet =   F
 
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.12777 AU
- AFTER    4 LINEAR TRANSFORMATIONS IS  -6132.41725791
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    7    0    1
- DETERMINANT OF REDUCED MATRIX IS -3.44 * 10 ** -9.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.12777 a.u.
+ after    4 linear transformations is  -6132.95393503
+ INERTIA (POS,ZER,NEG) of reduced matrix is    7    0    1
+ Determinant of reduced matrix is -3.44 * 10 ** -9.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    7    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.12777 AU
- AFTER    5 LINEAR TRANSFORMATIONS IS   -180.92373763
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    9    0    1
- DETERMINANT OF REDUCED MATRIX IS -5.92 * 10 **-10.0
+ GP * SOLUTION vector at frequency     0.12777 a.u.
+ after    5 linear transformations is   -180.92500299
+ INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
+ Determinant of reduced matrix is -5.92 * 10 **-10.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is    9    0    1
+ GP * SOLUTION vector at frequency     0.12777 a.u.
+ after    6 linear transformations is   -158.88672363
+ INERTIA (POS,ZER,NEG) of reduced matrix is   11    0    1
+ Determinant of reduced matrix is -8.83 * 10 **-12.0
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.12777 AU
- AFTER    6 LINEAR TRANSFORMATIONS IS   -158.88580340
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   11    0    1
- DETERMINANT OF REDUCED MATRIX IS -8.83 * 10 **-12.0
+ *** INFO, negative eigenvalues in reduced matrix.
 
+ GP * SOLUTION vector at frequency     0.12777 a.u.
+ after    7 linear transformations is   -148.07863821
+ INERTIA (POS,ZER,NEG) of reduced matrix is   13    0    1
+ Determinant of reduced matrix is -4.90 * 10 **-12.0
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   11    0    1
+ *** INFO, negative eigenvalues in reduced matrix.
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.12777 AU
- AFTER    7 LINEAR TRANSFORMATIONS IS   -148.07786624
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   13    0    1
- DETERMINANT OF REDUCED MATRIX IS -4.90 * 10 **-12.0
+ GP * SOLUTION vector at frequency     0.12777 a.u.
+ after    8 linear transformations is   -146.84458957
+ INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
+ Determinant of reduced matrix is -5.33 * 10 **-13.0
 
+ *** INFO, negative eigenvalues in reduced matrix.
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   13    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.12777 AU
- AFTER    8 LINEAR TRANSFORMATIONS IS   -146.84385263
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   15    0    1
- DETERMINANT OF REDUCED MATRIX IS -5.33 * 10 **-13.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   15    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.12777 AU
- AFTER    9 LINEAR TRANSFORMATIONS IS   -146.78314301
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   17    0    1
- DETERMINANT OF REDUCED MATRIX IS -7.91 * 10 **-14.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   17    0    1
+ GP * SOLUTION vector at frequency     0.12777 a.u.
+ after    9 linear transformations is   -146.78388252
+ INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
+ Determinant of reduced matrix is -7.91 * 10 **-14.0
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   18)
- RSP solution vector no.    1; norm of residual   2.09E-04
+ RSP solution vector no.    1; norm of residual   2.09D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.030000  0.157765        298.56427944
+                         -0.030000  0.157765        298.56535142
 
 
  Perturbation symmetry.     KSYMOP:       4
@@ -1907,10 +1973,10 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  4
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: XDIPLEN 
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :  -3.000000E-02
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :  -3.000000D-02
   >>> RSPCTL skipped because norm of
-      property vector is only  0.
+      property vector is only   0.0000000000000000     
 
 
  Perturbation symmetry.     KSYMOP:       4
@@ -1923,13 +1989,10 @@ Starting in Wave Function Section -
  CRLRV2 -- linear response calc for sym:  4
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: EXCITLAB
- CRLRV2 -- freqr1 :  -3.000000E-02
- CRLRV2 -- freqr2 :   1.577654E-01
+ CRLRV2 -- freqr1 :  -3.000000D-02
+ CRLRV2 -- freqr2 :   1.577655D-01
   >>> RSPCTL skipped because norm of
-      property vector is only  0.
-
- >>> Time used in CRVEC2 is   0.14 seconds
-
+      property vector is only   0.0000000000000000     
 
 
  <<<<< CALCULATING CONTRIBUTIONS TO THIRD ORDER TRANSITION MOMENT >>>>>
@@ -1937,12 +2000,12 @@ Starting in Wave Function Section -
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     6216.51768268       6216.51768268
- Na T[3] Nx Nyz      -9929.46222316      -3712.94454048
- Na X[3] Ny Nz        -852.53376503      -4565.47830551
- Nx A[3] Ny Nz        -282.61177404      -4848.09007955
- Na X[2] Nyz        -16351.45247959     -21199.54255914
- Nx A[2] Nyz        -16577.92879235     -37777.47135149
+ Na T[4] Nb Nc Nd    -6216.50603210      -6216.50603210
+ Na T[3] Nx Nyz       9929.50889241       3713.00286031
+ Na X[3] Ny Nz         852.54155294       4565.54441325
+ Nx A[3] Ny Nz         282.61507305       4848.15948630
+ Na X[2] Nyz         16351.40796557      21199.56745187
+ Nx A[2] Nyz         16577.87635389      37777.44380577
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1  0.059589
@@ -1951,18 +2014,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   1  0.119589
 
-@ < 0 | ABC | f >  =      -37777.47135149
+@ < 0 | ABC | f >  =       37777.44380577
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd      730.74186041        730.74186041
- Na T[3] Nx Nyz      -1907.70837812      -1176.96651770
- Na X[3] Ny Nz         173.59542430      -1003.37109340
- Nx A[3] Ny Nz         332.06646944       -671.30462396
- Na X[2] Nyz           296.38092272       -374.92370124
- Nx A[2] Nyz         -1587.38022770      -1962.30392893
+ Na T[4] Nb Nc Nd     -730.74666729       -730.74666729
+ Na T[3] Nx Nyz       1907.71740185       1176.97073456
+ Na X[3] Ny Nz        -173.59831040       1003.37242416
+ Nx A[3] Ny Nz        -332.06502790        671.30739626
+ Na X[2] Nyz          -296.38283128        374.92456498
+ Nx A[2] Nyz          1587.37840991       1962.30297489
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1  0.212189
@@ -1971,18 +2034,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   2   1  0.272189
 
-@ < 0 | ABC | f >  =       -1962.30392893
+@ < 0 | ABC | f >  =        1962.30297489
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     1578.74372314       1578.74372314
- Na T[3] Nx Nyz       1185.55453231       2764.29825546
- Na X[3] Ny Nz         144.34961503       2908.64787048
- Nx A[3] Ny Nz         182.29569697       3090.94356746
- Na X[2] Nyz         -5066.79773355      -1975.85416609
- Nx A[2] Nyz         -5480.09803739      -7455.95220348
+ Na T[4] Nb Nc Nd    -1578.74108273      -1578.74108273
+ Na T[3] Nx Nyz      -1185.54148517      -2764.28256790
+ Na X[3] Ny Nz        -144.34801101      -2908.63057891
+ Nx A[3] Ny Nz        -182.29542703      -3090.92600594
+ Na X[2] Nyz          5066.78381125       1975.85780531
+ Nx A[2] Nyz          5480.08386195       7455.94166725
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2  0.059589
@@ -1991,18 +2054,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   1  0.119589
 
-@ < 0 | ABC | f >  =       -7455.95220348
+@ < 0 | ABC | f >  =        7455.94166725
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd      715.72738685        715.72738685
- Na T[3] Nx Nyz       -204.32014898        511.40723788
- Na X[3] Ny Nz       -1122.48520982       -611.07797195
- Nx A[3] Ny Nz         425.29270660       -185.78526535
- Na X[2] Nyz          1171.02518702        985.23992166
- Nx A[2] Nyz            67.90777128       1053.14769294
+ Na T[4] Nb Nc Nd     -715.72801011       -715.72801011
+ Na T[3] Nx Nyz        204.32296966       -511.40504045
+ Na X[3] Ny Nz        1122.48388921        611.07884876
+ Nx A[3] Ny Nz        -425.29266820        185.78618055
+ Na X[2] Nyz         -1171.02604569       -985.23986513
+ Nx A[2] Nyz           -67.90870049      -1053.14856562
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2  0.212189
@@ -2011,18 +2074,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   2   1  0.272189
 
-@ < 0 | ABC | f >  =        1053.14769294
+@ < 0 | ABC | f >  =       -1053.14856562
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     1578.74372636       1578.74372636
- Na T[3] Nx Nyz       1185.55453385       2764.29826021
- Na X[3] Ny Nz         144.34961515       2908.64787537
- Nx A[3] Ny Nz         182.29569706       3090.94357243
- Na X[2] Nyz         -5066.79773849      -1975.85416607
- Nx A[2] Nyz         -5480.09804057      -7455.95220664
+ Na T[4] Nb Nc Nd    -1578.74108648      -1578.74108648
+ Na T[3] Nx Nyz      -1185.54148759      -2764.28257408
+ Na X[3] Ny Nz        -144.34801134      -2908.63058542
+ Nx A[3] Ny Nz        -182.29542724      -3090.92601266
+ Na X[2] Nyz          5066.78381842       1975.85780576
+ Nx A[2] Nyz          5480.08386650       7455.94167226
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3  0.059589
@@ -2031,18 +2094,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   1  0.119589
 
-@ < 0 | ABC | f >  =       -7455.95220664
+@ < 0 | ABC | f >  =        7455.94167226
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd      715.72738697        715.72738697
- Na T[3] Nx Nyz       -204.32014904        511.40723792
- Na X[3] Ny Nz       -1122.48520966       -611.07797173
- Nx A[3] Ny Nz         425.29270698       -185.78526476
- Na X[2] Nyz          1171.02518646        985.23992170
- Nx A[2] Nyz            67.90777080       1053.14769250
+ Na T[4] Nb Nc Nd     -715.72800992       -715.72800992
+ Na T[3] Nx Nyz        204.32296999       -511.40503993
+ Na X[3] Ny Nz        1122.48388854        611.07884861
+ Nx A[3] Ny Nz        -425.29266878        185.78617983
+ Na X[2] Nyz         -1171.02604510       -985.23986526
+ Nx A[2] Nyz           -67.90869960      -1053.14856486
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3  0.212189
@@ -2051,7 +2114,7 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   2   1  0.272189
 
-@ < 0 | ABC | f >  =        1053.14769250
+@ < 0 | ABC | f >  =       -1053.14856486
 
 
 
@@ -2087,12 +2150,12 @@ Starting in Wave Function Section -
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     1518.41646719       1518.41646719
- Na T[3] Nx Nyz      -2846.06240522      -1327.64593803
- Na X[3] Ny Nz         866.73234151       -460.91359653
- Nx A[3] Ny Nz          86.34726283       -374.56633369
- Na X[2] Nyz         -1389.71787280      -1764.28420650
- Nx A[2] Nyz         -2707.98354249      -4472.26774898
+ Na T[4] Nb Nc Nd    -1518.41655943      -1518.41655943
+ Na T[3] Nx Nyz       2846.06895913       1327.65239971
+ Na X[3] Ny Nz        -866.73412351        460.91827620
+ Nx A[3] Ny Nz         -86.34672565        374.57155054
+ Na X[2] Nyz          1389.71918934       1764.29073988
+ Nx A[2] Nyz          2707.96892986       4472.25966974
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1  0.059589
@@ -2101,18 +2164,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   1  0.119589
 
-@ < 0 | ABC | f >  =       -4472.26774898
+@ < 0 | ABC | f >  =        4472.25966974
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd       38.81140787         38.81140787
- Na T[3] Nx Nyz       -502.47362367       -463.66221580
- Na X[3] Ny Nz          78.30281863       -385.35939717
- Nx A[3] Ny Nz         404.79528324         19.43588607
- Na X[2] Nyz           375.04872523        394.48461129
- Nx A[2] Nyz         -1471.56634795      -1077.08173666
+ Na T[4] Nb Nc Nd      -38.81429700        -38.81429700
+ Na T[3] Nx Nyz        502.47417024        463.65987324
+ Na X[3] Ny Nz         -78.30323238        385.35664086
+ Nx A[3] Ny Nz        -404.79359157        -19.43695071
+ Na X[2] Nyz          -375.04946403       -394.48641474
+ Nx A[2] Nyz          1471.56549772       1077.07908298
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1  0.212189
@@ -2121,7 +2184,7 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   2   1  0.272189
 
-@ < 0 | ABC | f >  =       -1077.08173666
+@ < 0 | ABC | f >  =        1077.07908298
 
 
 
@@ -2157,12 +2220,12 @@ Starting in Wave Function Section -
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     1518.41647014       1518.41647014
- Na T[3] Nx Nyz      -2846.06240946      -1327.64593932
- Na X[3] Ny Nz         866.73234206       -460.91359726
- Nx A[3] Ny Nz          86.34726297       -374.56633429
- Na X[2] Nyz         -1389.71787170      -1764.28420599
- Nx A[2] Nyz         -2707.98354406      -4472.26775005
+ Na T[4] Nb Nc Nd    -1518.41656272      -1518.41656272
+ Na T[3] Nx Nyz       2846.06896422       1327.65240150
+ Na X[3] Ny Nz        -866.73412445        460.91827704
+ Nx A[3] Ny Nz         -86.34672583        374.57155121
+ Na X[2] Nyz          1389.71918783       1764.29073904
+ Nx A[2] Nyz          2707.96893231       4472.25967135
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1  0.059589
@@ -2171,18 +2234,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   1  0.119589
 
-@ < 0 | ABC | f >  =       -4472.26775005
+@ < 0 | ABC | f >  =        4472.25967135
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd       38.81140801         38.81140801
- Na T[3] Nx Nyz       -502.47362459       -463.66221658
- Na X[3] Ny Nz          78.30281866       -385.35939791
- Nx A[3] Ny Nz         404.79528393         19.43588602
- Na X[2] Nyz           375.04872563        394.48461165
- Nx A[2] Nyz         -1471.56634904      -1077.08173739
+ Na T[4] Nb Nc Nd      -38.81429703        -38.81429703
+ Na T[3] Nx Nyz        502.47417107        463.65987404
+ Na X[3] Ny Nz         -78.30323231        385.35664173
+ Nx A[3] Ny Nz        -404.79359254        -19.43695081
+ Na X[2] Nyz          -375.04946475       -394.48641556
+ Nx A[2] Nyz          1471.56549979       1077.07908423
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1  0.212189
@@ -2191,18 +2254,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   2   1  0.272189
 
-@ < 0 | ABC | f >  =       -1077.08173739
+@ < 0 | ABC | f >  =        1077.07908423
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     2034.71676847       2034.71676847
- Na T[3] Nx Nyz      -6330.78818715      -4296.07141868
- Na X[3] Ny Nz         737.93456571      -3558.13685297
- Nx A[3] Ny Nz          20.21199968      -3537.92485329
- Na X[2] Nyz         -2931.57948723      -6469.50434052
- Nx A[2] Nyz         -7118.07283874     -13587.57717926
+ Na T[4] Nb Nc Nd    -2034.71471498      -2034.71471498
+ Na T[3] Nx Nyz       6330.78904334       4296.07432835
+ Na X[3] Ny Nz        -737.93309017       3558.14123818
+ Nx A[3] Ny Nz         -20.21086145       3537.93037673
+ Na X[2] Nyz          2931.56061913       6469.49099587
+ Nx A[2] Nyz          7118.05995380      13587.55094967
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2  0.097765
@@ -2211,18 +2274,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   2  0.157765
 
-@ < 0 | ABC | f >  =      -13587.57717926
+@ < 0 | ABC | f >  =       13587.55094967
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     3572.51587078       3572.51587078
- Na T[3] Nx Nyz       4744.50917024       8317.02504102
- Na X[3] Ny Nz          39.52467425       8356.54971527
- Nx A[3] Ny Nz         126.07397289       8482.62368815
- Na X[2] Nyz         22737.20329444      31219.82698259
- Nx A[2] Nyz          6672.83072071      37892.65770330
+ Na T[4] Nb Nc Nd    -3572.50231840      -3572.50231840
+ Na T[3] Nx Nyz      -4744.60748644      -8317.10980484
+ Na X[3] Ny Nz         -39.51883823      -8356.62864307
+ Nx A[3] Ny Nz        -126.07306292      -8482.70170600
+ Na X[2] Nyz        -22737.22428415     -31219.92599015
+ Nx A[2] Nyz         -6672.84752124     -37892.77351138
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1  0.097765
@@ -2231,7 +2294,7 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   2  0.157765
 
-@ < 0 | ABC | f >  =       37892.65770330
+@ < 0 | ABC | f >  =      -37892.77351138
 
 
 
@@ -2252,12 +2315,12 @@ Starting in Wave Function Section -
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     5256.23967687       5256.23967687
- Na T[3] Nx Nyz     -13390.70019108      -8134.46051421
- Na X[3] Ny Nz        6824.40792178      -1310.05259243
- Nx A[3] Ny Nz        1948.55955217        638.50695974
- Na X[2] Nyz         14992.72556759      15631.23252733
- Nx A[2] Nyz          6285.68322376      21916.91575108
+ Na T[4] Nb Nc Nd    -5256.22760946      -5256.22760946
+ Na T[3] Nx Nyz      13390.66350187       8134.43589241
+ Na X[3] Ny Nz       -6824.39140075       1310.04449166
+ Nx A[3] Ny Nz       -1948.55478610       -638.51029444
+ Na X[2] Nyz        -14992.74912150     -15631.25941594
+ Nx A[2] Nyz         -6285.69707998     -21916.95649592
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2  0.097765
@@ -2266,18 +2329,18 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   2  0.157765
 
-@ < 0 | ABC | f >  =       21916.91575108
+@ < 0 | ABC | f >  =      -21916.95649592
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     1606.53758998       1606.53758998
- Na T[3] Nx Nyz      -4715.48125004      -3108.94366006
- Na X[3] Ny Nz        1813.27034546      -1295.67331460
- Nx A[3] Ny Nz         688.56066098       -607.11265362
- Na X[2] Nyz          7496.36279338       6889.25013976
- Nx A[2] Nyz          4281.09143868      11170.34157844
+ Na T[4] Nb Nc Nd    -1606.53360319      -1606.53360319
+ Na T[3] Nx Nyz       4715.46679375       3108.93319056
+ Na X[3] Ny Nz       -1813.26513103       1295.66805953
+ Nx A[3] Ny Nz        -688.55899758        607.10906195
+ Na X[2] Nyz         -7496.37457564      -6889.26551369
+ Nx A[2] Nyz         -4281.09574812     -11170.36126181
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3  0.097765
@@ -2286,7 +2349,7 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   2  0.157765
 
-@ < 0 | ABC | f >  =       11170.34157844
+@ < 0 | ABC | f >  =      -11170.36126181
 
 
 
@@ -2307,12 +2370,12 @@ Starting in Wave Function Section -
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd     2043.16450881       2043.16450881
- Na T[3] Nx Nyz      -3959.73771778      -1916.57320896
- Na X[3] Ny Nz        3197.86723973       1281.29403077
- Nx A[3] Ny Nz         571.43823229       1852.73226305
- Na X[2] Nyz             0.00000000       1852.73226305
- Nx A[2] Nyz         -2276.49964802       -423.76738497
+ Na T[4] Nb Nc Nd    -2043.16041680      -2043.16041680
+ Na T[3] Nx Nyz       3959.72994923       1916.56953243
+ Na X[3] Ny Nz       -3197.86115160      -1281.29161917
+ Nx A[3] Ny Nz        -571.43679392      -1852.72841309
+ Na X[2] Nyz            -0.00000000      -1852.72841309
+ Nx A[2] Nyz          2276.49440804        423.76599495
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2  0.097765
@@ -2321,14 +2384,20 @@ Starting in Wave Function Section -
 
 @ State no., symmetry, excitation energy:   1   2  0.157765
 
-@ < 0 | ABC | f >  =        -423.76738497
+@ < 0 | ABC | f >  =         423.76599495
 
 
- >>>> Total CPU  time used in RESPONSE:   0.74 seconds
- >>>> Total wall time used in RESPONSE:   0.00 seconds
- >>>> Total CPU  time used in DALTON:   0.82 seconds
- >>>> Total wall time used in DALTON:   0.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.31 seconds
+ >>>> Total wall time used in RESPONSE:   3.00 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   0.36 seconds
+ >>>> Total wall time used in DALTON:   3.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:08:56 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:45:08 2011 
+     Host name              : fe6                                     

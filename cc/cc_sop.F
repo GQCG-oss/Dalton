@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c /* deck CC_SOP */
 *=====================================================================*
@@ -53,19 +43,33 @@ c /* deck CC_SOP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclrinf.h>
-#include <ccr1rsp.h>
-#include <ccrc1rsp.h>
-#include <ccroper.h>
-#include <cclists.h>
-#include <second.h>
-#include <dummy.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclrinf.h"
+#include "ccr1rsp.h"
+#include "ccrc1rsp.h"
+#include "ccroper.h"
+#include "cclists.h"
+#include "second.h"
+#include "dummy.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
+C     
+CTOCD
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ctocdcc.h"
+#include "sigma.h"
+#include "suscpt.h"
+CTOCD
 
 * local parameters:
       CHARACTER*(17) MSGDBG
@@ -102,7 +106,6 @@ c /* deck CC_SOP */
       INTEGER KEND1, LWRK1, LRESULT
 
 * external functions:
-      INTEGER IR1TAMP
       INTEGER IL1ZETA
 
 *---------------------------------------------------------------------*
@@ -124,10 +127,28 @@ c /* deck CC_SOP */
      & '************************************',
      &                               '*******************************' 
 
+Cholesky
+      IF (CHOINT) THEN
+         WRITE(LUPRI,'(4X,A,/)')
+     &   '         (Calculation using Cholesky decomposed integrals)'
+      ELSE
+         WRITE(LUPRI,'(A)') ' '
+      ENDIF
+Cholesky
+
 *---------------------------------------------------------------------*
       IF (.NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
          CALL QUIT('CC_SOP called for unknown Coupled Cluster.')
       END IF
+
+Cholesky
+      IF (CHOINT .AND. (.NOT. CC2)) THEN
+         WRITE(LUPRI,'(A,A)')
+     &   ' CC_SOP: Cholesky decomposed integrals not implemented',
+     &   ' for requested model.'
+         CALL QUIT('Model not implemented in CC_SOP')
+      ENDIF
+Cholesky
 
 * print some debug/info output
       IF (IPRINT .GT. 10) WRITE(LUPRI,*) 'CC_SOP Workspace:',LWORK
@@ -254,8 +275,17 @@ c /* deck CC_SOP */
 *---------------------------------------------------------------------*
       TIM1 = SECOND()
 
-      CALL CCXIMCON(WORK(KXITRAN),NXITRAN,'R1 ',WORK(KXIDOTS),
-     &              WORK(KXICONS),MXVEC,WORK(KEND0),LEND0)
+Cholesky
+      IF (CHOINT .AND. CC2) THEN
+         IF (NXITRAN .GT. 0) THEN
+            WRITE(LUPRI,'(/,A,A)')
+     &      '***WARNING: ',
+     &      'No relaxation contributions available for Cholesky CC2!'
+         ENDIF
+      ELSE
+         CALL CCXIMCON(WORK(KXITRAN),NXITRAN,'R1 ',WORK(KXIDOTS),
+     &                 WORK(KXICONS),MXVEC,WORK(KEND0),LEND0)
+      END IF    ! Cholesky
 
       TIMXI = SECOND() - TIM1
       IF (NXITRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
@@ -267,8 +297,17 @@ c /* deck CC_SOP */
 *---------------------------------------------------------------------*
       TIM1 = SECOND()
 
-      CALL CCREO2CON(WORK(KRTRAN),NRTRAN,WORK(KRDOTS),
-     &               WORK(KRCONS),MXVEC,WORK(KEND0),LEND0)
+Cholesky
+      IF (CHOINT .AND. CC2) THEN
+         IF (NRTRAN .GT. 0) THEN
+            WRITE(LUPRI,'(/,A,A)')
+     &      '***WARNING: ',
+     &      'No 2nd order relax. contrbs. available for Cholesky CC2!'
+         ENDIF
+      ELSE
+         CALL CCREO2CON(WORK(KRTRAN),NRTRAN,WORK(KRDOTS),
+     &                  WORK(KRCONS),MXVEC,WORK(KEND0),LEND0)
+      END IF     ! Cholesky
 
       TIMR = SECOND() - TIM1
       IF (NRTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
@@ -305,6 +344,42 @@ c /* deck CC_SOP */
       CALL  CCSOPPRT(WORK(KRESULT),WORK(KEND1),LWRK1)
 
       CALL FLSHFO(LUPRI)
+
+
+CTOCD
+*---------------------------------------------------------------------*
+* print ctocd results
+*---------------------------------------------------------------------*
+      IF (CTOMAG) THEN
+
+         ALCCS  = CCS
+         ALCC2  = CC2
+         ALCC3  = CC3
+         ALCCSD = CCSD
+
+c        IF (CCS) THEN
+c           CALL AROUND('CCS/CTOCD-DZ Magnetic properties')
+c        ELSE IF (CC2) THEN
+c           CALL AROUND('CC2/CTOCD-DZ Magnetic properties')
+c        ELSE IF (CC3) THEN
+c           CALL AROUND('CC3/CTOCD-DZ Magnetic properties')
+c        ELSE IF (CCSD) THEN
+c           CALL AROUND('CCSD/CTOCD-DZ Magnetic properties')
+c        ELSE
+c           CALL QUIT('CC_SOP called for unknown Coupled Cluster.')
+c        END IF
+
+         IF (CTOSUS) CALL SUSRES(IPRINT)
+
+         IF (CTOSHI) THEN
+            DONS = .TRUE.
+            CALL SHIRES(WORK(KEND1),LWRK1,IPRINT)
+            DONS = .FALSE.
+            CALL SHIRES(WORK(KEND1),LWRK1,IPRINT)
+         END IF
+
+      END IF
+CTOCD
 
 *---------------------------------------------------------------------*
 * print dipole gradients and APT (Cioslowski) population analysis
@@ -356,11 +431,11 @@ c /* deck ccsopprt */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cclrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cclrinf.h"
+#include "ccroper.h"
 
 
       CHARACTER*5  BLANKS
@@ -369,7 +444,7 @@ c /* deck ccsopprt */
       CHARACTER*80 STRING
       INTEGER LWORK
       INTEGER ISYMA, ISYMB, ISYMAB, ISAMA, ISAMB, ISAPROP, IRELAX, M
-      INTEGER IFREQ, IOPER, ICMP, ITURN, MXTURN, ITST, ITST2, IPAR
+      INTEGER IFREQ, IOPER, ICMP, ITURN, MXTURN, ITST, ITST2, IPAR2
       INTEGER IFRZER, IBLRFR
 
 
@@ -392,6 +467,29 @@ c /* deck ccsopprt */
 #endif
       PARAMETER (ZERO = 0.0d0, HALF = 0.5d0, ONE = 1.0d0)
       PARAMETER (DPOLAUTSI =  1.648778D-41)
+
+CTOCD
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "sigma.h" 
+#include "suscpt.h"
+#include "symmet.h"
+#include "ctocdcc.h"
+#include "nuclei.h"
+#include "suscc.h"
+C           
+      LOGICAL JUMP
+      INTEGER IY, IDUM, LU29
+#if defined (SYS_CRAY)
+      REAL FACTOR, PRP2
+      REAL SOPRP(MXLROP)
+#else
+      DOUBLE PRECISION FACTOR, PRP2 
+      DOUBLE PRECISION SOPRP2(MXLROP)
+#endif
+CTOCD
+
 
 *---------------------------------------------------------------------*
 * print header for second-order properties: 
@@ -419,6 +517,10 @@ c /* deck ccsopprt */
          CALL QUIT('CCSOPPRT called for an unknown Coupled '//
      &             'Cluster model.')
       END IF
+
+CTOCD
+      IF (CTOMAG) GOTO 2345
+CTOCD
 
       IF (IPRSOP.GT.5) THEN
        WRITE(LUPRI,'(/1X,2(1X,A," operator",17X),4X,A,6X,A,/,100("-"))')
@@ -488,6 +590,9 @@ CCN              WRITE(LUPRI,'(/1X,2(A8,A10,F7.4,3X),F24.20)')
      &        LBLOPR(IBLROP(IOPER)),RLXB,'   -.-  ',
      &        '---'
            END IF
+cmbh: print a zero in midasifc.prop
+           PROP=0.0d0
+cmbh end
          END IF
          ISYMAB = MULD2H(ISYMA,ISYMB)
          CALL WRIPRO(PROP,MOPRPC,2,
@@ -528,7 +633,7 @@ C
        WRITE(LUPRI,'(72("-"),/,/)')
       END IF
 
-
+ 2345 CONTINUE
 
       IF (ALPHA_ISO .OR. ALPHA_ANI) THEN
 
@@ -641,7 +746,7 @@ C
          TENS(3,2) = TENS(2,3)
 
          CALL TNSRAN(TENS,PVALUES,PAXIS,ALFSQ,BETSQ,ITST,ITST2,
-     &               APAR,APEN,XKAPPA,IPAR)
+     &               APAR,APEN,XKAPPA,IPAR2)
 
          ANI   = DSQRT(BETSQ)
          ANISI = ANI * DPOLAUTSI
@@ -714,6 +819,332 @@ C
         END DO
          
       END IF
+
+
+CTOCD
+C
+C====================================================================
+C                Magnetic properties using CTOCD.
+C     Print again the response functions and construct needed tensors
+C====================================================================
+C
+C
+      IF (CTOMAG) THEN
+C
+C-----------------------------------
+C        Initialize matrices to zero
+C-----------------------------------
+C
+         IF (CTOSUS) THEN
+            CALL DZERO(SUSDZD,9)
+            CALL DZERO(SUSREL,9)
+         END IF
+C
+         IF (CTOSHI) THEN
+            CALL DZERO(SIGMADZ,9*NUCDEP)
+            CALL DZERO(SIGMASFTP,9*NUCDEP)
+            CALL DZERO(SIGMASFTM,9*NUCDEP)
+            CALL DZERO(SIGMAR,9*MXCOOR)
+         END IF
+C
+         WRITE(LUPRI,'(//,20x,A,/,20x,32("="),/)')
+     &        'Respose fucntions used for CTOCD'
+C
+         CALL GPINQ('EXT_LR','EXIST',EXTSOP)
+         IF (EXTSOP) THEN
+            LU29 = -1
+            CALL GPOPEN(LU29,'EXT_LR','OLD','SEQUENTIAL','FORMATTED',
+     &                  IDUM,.FALSE.)
+            REWIND(LU29)
+            DO IOPER = 1,NLROP
+               READ(LU29,*) SOPRP2(IOPER)
+            END DO
+            CALL GPCLOSE(LU29,'KEEP')
+         ELSE
+            CALL DZERO(SOPRP2,NLROP)
+         END IF
+C
+         IF (.NOT. EXTSOP) THEN
+            WRITE(LUPRI,'(4X,A4,2(3X,A10),2(8X,A5,7X),/,4x,67("-"))')
+     &           'Sym.','Operator A','Operator B','Value','Error'
+         ELSE
+            WRITE(LUPRI,'(4X,A4,2(3X,A10),2(8X,A5,7X),/,4x,67("-"))')
+     &           'Sym.','Operator A','Operator B','Value','Read'
+         END IF
+C
+         DO IOPER = 1,NLROP
+C
+C-----------------------------
+C           Identify and print
+C-----------------------------
+C
+            LABA  = LBLOPR(IALROP(IOPER))
+            LABB  = LBLOPR(IBLROP(IOPER))
+            ISYMA = ISYOPR(IALROP(IOPER))
+            ISYMB = ISYOPR(IBLROP(IOPER))
+C
+            JUMP = (ISYMA .NE. ISYMB) .OR. 
+     &             ((LABA(2:7) .NE. 'DIPVEL') .AND. 
+     &              (LABA(2:7) .NE. 'ANGMOM') .AND. 
+     &              (LABA(1:3) .NE. 'PSO'))
+            IF (JUMP) GOTO 1234
+C
+            PRP2  =  SOPRP2(IOPER)
+            PROP  = -HALF*(SOPROP(1,IOPER,1) + SOPROP(1,IOPER,2))
+            ERROR = -HALF*(SOPROP(1,IOPER,1) - SOPROP(1,IOPER,2))
+     
+C
+            IF (.NOT. EXTSOP) THEN
+               WRITE(LUPRI,'(4X,I2,2(5X,A8),3X,2F18.10)')
+     &               ISYMA,LABA,LABB,PROP,ERROR
+            ELSE
+               IF (ABS(ERROR) .LE. 1.0D-8) THEN
+                  WRITE(LUPRI,'(4X,I2,2(5X,A8),3X,2F18.10)')
+     &                  ISYMA,LABA,LABB,PROP,PRP2
+                ELSE
+                  WRITE(LUPRI,'(4X,I2,2(5X,A8),3X,2F18.10,A,D12.3)')
+     &                  ISYMA,LABA,LABB,PROP,PRP2,' Error: ',ERROR
+                END IF
+            END IF
+C
+            IF (EXTSOP) PROP = PRP2
+C
+C------------------------
+C           Build tensors
+C------------------------
+C
+C           1) Paramagnetic susceptibility
+C
+            IF (LABA(2:7) .EQ. 'ANGMOM') THEN
+               IF (CTOSUS .AND. (LABB(2:7) .EQ. 'ANGMOM')) THEN
+C
+                  IF (LABA(1:1) .EQ. 'X') THEN
+                     IF (LABB(1:1) .EQ. 'X') THEN
+                        SUSREL(KXYZ(1),KXYZ(1)) = PROP
+                     ELSE IF (LABB(1:1) .EQ. 'Y') THEN
+                        SUSREL(KXYZ(1),KXYZ(2)) = PROP
+                     ELSE IF (LABB(1:1) .EQ. 'Z') THEN
+                        SUSREL(KXYZ(1),KXYZ(3)) = PROP
+                     END IF
+C
+                  ELSE IF (LABA(1:1) .EQ. 'Y') THEN
+                     IF (LABB(1:1) .EQ. 'X') THEN
+                        SUSREL(KXYZ(2),KXYZ(1)) = PROP
+                     ELSE IF (LABB(1:1) .EQ. 'Y') THEN
+                        SUSREL(KXYZ(2),KXYZ(2)) = PROP
+                     ELSE IF (LABB(1:1) .EQ. 'Z') THEN
+                        SUSREL(KXYZ(2),KXYZ(3)) = PROP
+                     END IF
+C
+                  ELSE IF (LABA(1:1) .EQ. 'Z') THEN
+                     IF (LABB(1:1) .EQ. 'X') THEN
+                        SUSREL(KXYZ(3),KXYZ(1)) = PROP
+                     ELSE IF (LABB(1:1) .EQ. 'Y') THEN
+                        SUSREL(KXYZ(3),KXYZ(2)) = PROP
+                     ELSE IF (LABB(1:1) .EQ. 'Z') THEN
+                        SUSREL(KXYZ(3),KXYZ(3)) = PROP
+                     END IF
+                  END IF
+C
+               END IF
+C
+C           2) Paramagnetic shielding
+C
+            ELSE IF (LABA(1:3) .EQ. 'PSO') THEN
+               IF (CTOSHI .AND. (LABB(2:7) .EQ. 'ANGMOM')) THEN
+C
+                  READ(LABA(5:7),'(I3)') IY
+C
+                  IF (LABB(1:1) .EQ. 'X') THEN
+                     SIGMAR(IPTAX(1,2),IY) = PROP
+                  ELSE IF (LABB(1:1) .EQ. 'Y') THEN
+                     SIGMAR(IPTAX(2,2),IY) = PROP
+                  ELSE IF (LABB(1:1) .EQ. 'Z') THEN
+                     SIGMAR(IPTAX(3,2),IY) = PROP
+                  END IF
+C
+               END IF
+C
+C           3) The rest of properties
+C
+            ELSE IF (LABA(2:7) .EQ. 'DIPVEL') THEN
+C
+C              3a) Diamagnetic susceptibility
+C
+               IF (CTOSUS .AND. (LABB(3:6) .EQ. 'RANG')) THEN
+C
+                  IF (LABB(1:2) .EQ. 'XX') THEN  
+C
+                     IF (LABA(1:1) .EQ. 'Z') THEN  
+                        SUSDZD(IPTAX(1,2),IPTAX(2,2)) 
+     &                  = SUSDZD(IPTAX(1,2),IPTAX(2,2)) + PROP
+                     ELSE IF (LABA(1:1) .EQ. 'Y') THEN 
+                        SUSDZD(IPTAX(1,2),IPTAX(3,2)) 
+     &                  = SUSDZD(IPTAX(1,2),IPTAX(3,2)) - PROP
+                     END IF
+C
+                  ELSE IF (LABB(1:2) .EQ. 'XY') THEN
+                     IF (LABA(1:1) .EQ. 'Z') THEN
+                        SUSDZD(IPTAX(2,2),IPTAX(2,2))
+     &                  = SUSDZD(IPTAX(2,2),IPTAX(2,2)) + PROP
+                     ELSE IF (LABA(1:1) .EQ. 'Y') THEN
+                         SUSDZD(IPTAX(2,2),IPTAX(3,2))
+     &                   = SUSDZD(IPTAX(2,2),IPTAX(3,2)) - PROP
+                     END IF
+C
+                  ELSE IF (LABB(1:2) .EQ. 'XZ') THEN
+                     IF (LABA(1:1) .EQ. 'Z') THEN
+                        SUSDZD(IPTAX(3,2),IPTAX(2,2))
+     &                  = SUSDZD(IPTAX(3,2),IPTAX(2,2)) + PROP
+                     ELSE IF (LABA(1:1) .EQ. 'Y') THEN
+                        SUSDZD(IPTAX(3,2),IPTAX(3,2))
+     &                  = SUSDZD(IPTAX(3,2),IPTAX(3,2)) - PROP
+                     END IF
+C
+                  ELSE IF (LABB(1:2) .EQ. 'YX') THEN
+                     IF (LABA(1:1) .EQ. 'X') THEN
+                        SUSDZD(IPTAX(1,2),IPTAX(3,2))
+     &                  = SUSDZD(IPTAX(1,2),IPTAX(3,2)) + PROP
+                     ELSE IF (LABA(1:1) .EQ. 'Z') THEN
+                        SUSDZD(IPTAX(1,2),IPTAX(1,2))
+     &                  = SUSDZD(IPTAX(1,2),IPTAX(1,2)) - PROP
+                     END IF
+C
+                  ELSE IF (LABB(1:2) .EQ. 'YY') THEN
+                     IF (LABA(1:1) .EQ. 'X') THEN
+                        SUSDZD(IPTAX(2,2),IPTAX(3,2))
+     &                  = SUSDZD(IPTAX(2,2),IPTAX(3,2))+ PROP
+                     ELSE IF (LABA(1:1) .EQ. 'Z') THEN
+                        SUSDZD(IPTAX(2,2),IPTAX(1,2))
+     &                  = SUSDZD(IPTAX(2,2),IPTAX(1,2)) - PROP
+                     END IF
+C
+                  ELSE IF (LABB(1:2) .EQ. 'YZ') THEN
+                     IF (LABA(1:1) .EQ. 'X') THEN
+                        SUSDZD(IPTAX(3,2),IPTAX(3,2))
+     &                  = SUSDZD(IPTAX(3,2),IPTAX(3,2)) + PROP
+                     ELSE IF (LABA(1:1) .EQ. 'Z') THEN
+                        SUSDZD(IPTAX(3,2),IPTAX(1,2))
+     &                  = SUSDZD(IPTAX(3,2),IPTAX(1,2)) - PROP
+                     END IF
+C
+                  ELSE IF (LABB(1:2) .EQ. 'ZX') THEN
+                     IF (LABA(1:1) .EQ. 'Y') THEN
+                        SUSDZD(IPTAX(1,2),IPTAX(1,2))
+     &                  = SUSDZD(IPTAX(1,2),IPTAX(1,2)) + PROP
+                     ELSE IF (LABA(1:1) .EQ. 'X') THEN
+                        SUSDZD(IPTAX(1,2),IPTAX(2,2))
+     &                  = SUSDZD(IPTAX(1,2),IPTAX(2,2)) - PROP
+                     END IF
+C
+                  ELSE IF (LABB(1:2) .EQ. 'ZY') THEN
+                     IF (LABA(1:1) .EQ. 'Y') THEN
+                        SUSDZD(IPTAX(2,2),IPTAX(1,2))
+     &                  = SUSDZD(IPTAX(2,2),IPTAX(1,2)) + PROP
+                     ELSE IF (LABA(1:1) .EQ. 'X') THEN
+                        SUSDZD(IPTAX(2,2),IPTAX(2,2))
+     &                  = SUSDZD(IPTAX(2,2),IPTAX(2,2)) - PROP
+                     END IF
+C
+                  ELSE IF (LABB(1:2) .EQ. 'ZZ') THEN
+                     IF (LABA(1:1) .EQ. 'Y') THEN
+                        SUSDZD(IPTAX(3,2),IPTAX(1,2))
+     &                  = SUSDZD(IPTAX(3,2),IPTAX(1,2)) + PROP
+                     ELSE IF (LABA(1:1) .EQ. 'X') THEN
+                        SUSDZD(IPTAX(3,2),IPTAX(2,2))
+     &                  = SUSDZD(IPTAX(3,2),IPTAX(2,2)) - PROP
+                     END IF
+C
+                  END IF            ! End if for diamagnetic magnetizabilities
+C
+C              3b) Diamagnetic shielding
+C
+               ELSE IF (CTOSHI .AND. (LABB(4:7) .EQ. 'RPSO')) THEN
+C
+                  READ(LABB(1:3),'(I3)') IY
+C
+                  IF (LABA(1:1) .EQ. 'X') THEN
+                     IF (LABB(8:8) .EQ. 'Y') THEN 
+                        SIGMADZ(IPTAX(3,2),IY)
+     &                  = SIGMADZ(IPTAX(3,2),IY) + PROP
+                     ELSE IF (LABB(8:8) .EQ. 'Z') THEN
+                        SIGMADZ(IPTAX(2,2),IY)
+     &                  = SIGMADZ(IPTAX(2,2),IY) - PROP
+                     END IF
+C
+                  ELSE IF (LABA(1:1) .EQ. 'Y') THEN
+                     IF (LABB(8:8) .EQ. 'Z') THEN
+                        SIGMADZ(IPTAX(1,2),IY)
+     &                  = SIGMADZ(IPTAX(1,2),IY) + PROP
+                     ELSE IF (LABB(8:8) .EQ. 'X') THEN
+                        SIGMADZ(IPTAX(3,2),IY)
+     &                  = SIGMADZ(IPTAX(3,2),IY) - PROP
+                     END IF
+C
+                  ELSE IF (LABA(1:1) .EQ. 'Z') THEN
+                     IF (LABB(8:8) .EQ. 'X') THEN 
+                        SIGMADZ(IPTAX(2,2),IY)
+     &                  = SIGMADZ(IPTAX(2,2),IY) + PROP
+                     ELSE IF (LABB(8:8) .EQ. 'Y') THEN
+                        SIGMADZ(IPTAX(1,2),IY)
+     &                  = SIGMADZ(IPTAX(1,2),IY) - PROP
+                     END IF
+C
+                  END IF           ! End if for diamagnetic shieldings
+C
+C              3c) Shifts to shielding
+C
+               ELSE IF (CTOSHI .AND. (LABB(1:3) .EQ. 'PSO')) THEN
+C
+                  READ(LABB(5:7),'(I3)') IY
+C
+                  IF (LABA(1:1) .EQ.'X') THEN
+                     SIGMASFTP(IPTAX(3,2),IY)
+     &               = SIGMASFTP(IPTAX(3,2),IY) + PROP
+                     SIGMASFTM(IPTAX(2,2),IY)
+     &               = SIGMASFTM(IPTAX(2,2),IY) + PROP
+C
+                  ELSE IF (LABA(1:1) .EQ.'Y') THEN
+                     SIGMASFTP(IPTAX(1,2),IY)
+     &               = SIGMASFTP(IPTAX(1,2),IY) + PROP
+                     SIGMASFTM(IPTAX(3,2),IY)
+     &               = SIGMASFTM(IPTAX(3,2),IY) + PROP
+C
+                  ELSE IF (LABA(1:1) .EQ.'Z') THEN
+                     SIGMASFTP(IPTAX(2,2),IY)
+     &               = SIGMASFTP(IPTAX(2,2),IY) + PROP
+                     SIGMASFTM(IPTAX(1,2),IY)
+     &               = SIGMASFTM(IPTAX(1,2),IY) + PROP
+C
+                  END  IF           ! End if for corrections to shielding
+C
+               END IF               ! End if for second operator
+C
+            END IF                  ! End if for first operator
+ 1234       CONTINUE
+         END DO                     ! End loop over operators
+C
+C        4) Scale
+C
+         IF (CTOSUS) THEN
+            FACTOR = HALF * HALF
+            CALL DSCAL(9,FACTOR,SUSDZD,1)
+            CALL DSCAL(9,FACTOR,SUSREL,1)
+         END IF
+C
+         IF (CTOSHI) THEN
+            FACTOR = -HALF
+            CALL DSCAL(9*NUCDEP,-FACTOR,SIGMADZ,1)
+            CALL DSCAL(9*NUCDEP,FACTOR,SIGMASFTP,1)
+            CALL DSCAL(9*NUCDEP,FACTOR,SIGMASFTM,1)
+            CALL DSCAL(9*NUCDEP,FACTOR,SIGMAR,1)
+         END IF
+C
+      END IF                        ! End if ctomag
+C
+CTOCD
+C
+
 
 C     Optical rotation:
 C     Set up diagonal elements of G' tensor and call print routine.
@@ -1008,18 +1439,18 @@ C     Thomas Bondo Pedersen, April 2003.
 C
 C     Purpose: Origin-dependence of length gauge OR.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION GLEN(3,*), DELTA(3,*)
       CHARACTER*10 MODEL
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cclrinf.h>
-#include <cbiher.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cclrinf.h"
+#include "cbiher.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_ORGIN')
@@ -1037,7 +1468,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '        oo     ')
       PARAMETER (UNDEF  = '      undefined')
-#include <ibtfun.h>
+#include "ibtfun.h"
 
 C     Print title.
 C     ------------
@@ -1109,18 +1540,18 @@ C     Thomas Bondo Pedersen, April 2003.
 C
 C     Purpose: Origin-dependence of length gauge OR.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DELTA(3,*)
       CHARACTER*10 MODEL
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cclrinf.h>
-#include <cbiher.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cclrinf.h"
+#include "cbiher.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_ORANL')
@@ -1138,7 +1569,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '         oo    ')
       PARAMETER (UNDEF  = '      undefined')
-#include <ibtfun.h>
+#include "ibtfun.h"
 
 C     Print title.
 C     ------------
@@ -1213,18 +1644,18 @@ C     - based on ABACUS routine lnrout.
 C
 C     Purpose: Optical activity print, length and/or velocity gauge.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION GLEN(3,*), GVEL(3,*), GTST(3,*), WORK(LWORK)
       CHARACTER*10 MODEL
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cclrinf.h>
-#include <cbiher.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cclrinf.h"
+#include "cbiher.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_OROUT')
@@ -1243,7 +1674,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '        oo     ')
       PARAMETER (UNDEF  = '      undefined')
-#include <ibtfun.h>
+#include "ibtfun.h"
 
 C     Print title.
 C     ------------
@@ -1469,15 +1900,15 @@ C     ------------------------
 C  /* Deck ccdipgrapr */
       SUBROUTINE CCDIPGRAPR(SOPROP,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <abainf.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <cbisol.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "abainf.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "cbisol.h"
 
       DIMENSION SOPROP(NBLRFR,NLROP,2)
       DIMENSION WORK(LWORK)
@@ -1563,7 +1994,7 @@ C     --------------
 C  /* Deck cctrsp12 */
       SUBROUTINE CCTRSP12(XMAT,N1,N2,N3,SCR,LSCR)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XMAT(N1*N2*N3)
       DIMENSION SCR(LSCR)
 
@@ -1591,17 +2022,17 @@ C
 C  /* Deck cc_getdgr */
       SUBROUTINE CC_GETDGR(SOPROP,PROP)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <chrxyz.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "nuclei.h"
 
       DIMENSION SOPROP(NBLRFR,NLROP,2)
       DIMENSION PROP(3*NUCDEP,3,NBLRFR)

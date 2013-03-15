@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       subroutine ccsdt_t32_noddy(tab3am,listab,idlstab,freqab,
      &                           xint1s0,xint2s0,
      &                           xlamdp0,xlamdh0,fock0,fockd,
@@ -49,17 +39,17 @@ C
 *    Written by Christof Haettig, Mai 2003, based on ccsdt_t31_noddy.
 *---------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cco2rsp.h>
-#include <ccr2rsp.h>
-#include <ccer1rsp.h>
-#include <ccexci.h>
-#include <ccfield.h> 
-#include <dummy.h> 
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cco2rsp.h"
+#include "ccr2rsp.h"
+#include "ccer1rsp.h"
+#include "ccexci.h"
+#include "ccfield.h" 
+#include "dummy.h" 
 
 
       logical locdbg, print_t3
@@ -158,7 +148,7 @@ C
         idlstb = ister1(idlstab)
 
       else
-        call quit('Unkown LISTAB in CCSDT_T32_NODDY.')
+        call quit('Unknown LISTAB in CCSDT_T32_NODDY.')
       end if
 
       isymab = ilstsym(listab,idlstab)
@@ -170,11 +160,11 @@ C
       end if
 
       if (listb(1:3).ne.'R1 ' .and. listb(1:3).NE.'RE ') then
-        call quit('Unkown LISTB in CCSDT_T32_NODDY.')
+        call quit('Unknown LISTB in CCSDT_T32_NODDY.')
       end if
 
       if (lista(1:3).ne.'R1 ' .and. lista(1:3).NE.'RE ') then
-        call quit('Unkown LISTA in CCSDT_T32_NODDY.')
+        call quit('Unknown LISTA in CCSDT_T32_NODDY.')
       end if
 
       call dzero(tab3am,nt1amx*nt1amx*nt1amx)
@@ -329,7 +319,7 @@ C
      &                         work(kend1),lwrk1)
           call dscal(nt1amx*nt1amx*nt1amx,-1.0d0,work(kta3am),1)
         else
-          call quit('Unkown LISTA in CCSDT_T32_NODDY.')
+          call quit('Unknown LISTA in CCSDT_T32_NODDY.')
         end if
 
 c     write(lupri,*) 'norm^2(tab3arm) before cont. of t^B_3:',
@@ -388,7 +378,7 @@ c    &   ddot(nt1amx**3,tab3am,1,tab3am,1)
      &                         work(kend1),lwrk1)
           call dscal(nt1amx*nt1amx*nt1amx,-1.0d0,work(ktb3am),1)
         else
-          call quit('Unkown LISTB in CCSDT_T32_NODDY.')
+          call quit('Unknown LISTB in CCSDT_T32_NODDY.')
         end if
 
         call ccsdt_xksi3_2(tab3am,work(kfocka),work(ktb3am))

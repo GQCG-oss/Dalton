@@ -1,0 +1,144 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > energy_localize_selected.info <<'%EOF%'
+   energy_localize_selected
+   -------------
+   Molecule:         C6H6
+   Wave Functions:   SCF
+   Test Purpose:     Check Boys localization of selected orbitals
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > energy_localize_selected.mol <<'%EOF%'
+BASIS
+STO-3G
+Test1 i test-suite: Geometrioptimering med symmetri, med beregning av
+egenskaper i foerste og siste punkt. Generelt kontraherte basissett
+    2    0
+        6.    6
+C1     2.62337000000000    -0.00000000000000     0.00000000000000
+C2     1.31168500000000     2.27190506352598     0.00000000000000
+C3    -1.31168500000000     2.27190506352598     0.00000000000000
+C4    -2.62337000000000     0.00000000000000     0.00000000000000
+C5    -1.31168500000000    -2.27190506352598     0.00000000000000
+C6     1.31168500000000    -2.27190506352598     0.00000000000000
+        1.    6
+H1     4.65135000000000    -0.00000000000000     0.00000000000000
+H2     2.32567500000000     4.02818726189275     0.00000000000000
+H3    -2.32567500000000     4.02818726189275     0.00000000000000
+H4    -4.65135000000000     0.00000000000000     0.00000000000000
+H5    -2.32567500000000    -4.02818726189275     0.00000000000000
+H6     2.32567500000000    -4.02818726189275     0.00000000000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > energy_localize_selected.dal <<'%EOF%'
+**DALTON
+.RUN WAVE
+**INTEGRALS
+.NOSUP
+.DIPLEN
+**WAVE FUNCTION
+.HF
+*ORBITAL
+.LOCALIZE
+SELECT
+ 6
+ 1 2 3 4 5 6
+.NOSUPSYM
+**END OF INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >energy_localize_selected.check
+cat >>energy_localize_selected.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -i -a"
+else
+   GREP="egrep -i"
+fi
+
+
+# Nuclear repulsion energy:
+CRIT1=`$GREP "Nuclear repulsion energy : *204.624364126512" $log | wc -l`
+TEST[1]=`expr $CRIT1`
+CTRL[1]=1
+ERROR[1]="NUCLEAR REPULSION ENERGY NOT CORRECT"
+
+# Wave function:
+CRIT1=`$GREP "Number of closed shell electrons * 42" $log | wc -l`
+CRIT2=`$GREP "Number of electrons in active shells * 0" $log | wc -l`
+CRIT3=`$GREP "Occupied SCF orbitals .* 21" $log | wc -l`
+CRIT4=`$GREP "Total number of orbitals .* 36" $log | wc -l`
+CRIT5=`$GREP "Spin multiplicity .* 1" $log | wc -l`
+CRIT6=`$GREP "Total number of symmetries * 1" $log | wc -l`
+CRIT7=`$GREP "Reference state symmetry * 1" $log | wc -l`
+TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
+              $CRIT6  \+ $CRIT7`
+CTRL[2]=7
+ERROR[2]="INCORRECT WAVE FUNCTION"
+
+# SCF energy:
+CRIT1=`$GREP "Final HF energy: * \-227\.89086864" $log | wc -l`
+TEST[3]=`expr $CRIT1`
+CTRL[3]=1
+ERROR[3]="SCF ENERGY NOT CORRECT"
+
+# Localization:
+CRIT1=`$GREP "Boys orbital localization" $log | wc -l `
+#CRIT2=`$GREP "C.*1s.*0.9921" $log | wc -l`
+CRIT2=`$GREP "0.9921" $log | wc -l`
+TEST[4]=`expr $CRIT1 + $CRIT2`
+CTRL[4]=7
+ERROR[4]="LOCALIZED CORE NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 
+do
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

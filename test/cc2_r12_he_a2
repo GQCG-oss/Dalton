@@ -47,7 +47,7 @@ cat > cc2_r12_he_a2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -82,7 +82,7 @@ cat > cc2_r12_he_a2.dal <<'%EOF%'
 #.NO 1
 .CC2
  2B
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

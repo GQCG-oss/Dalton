@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  FILE: sirius/sirmp2.F
 C  ORIGINAL AUTHORS: Hans Joergen Aa. Jensen and Poul Joergensen (1987).
@@ -61,8 +51,8 @@ C  /* Deck mp2inp */
 C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007-Nov 2009, Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
-      PARAMETER (NTABLE = 10)
+#include "implicit.h"
+      PARAMETER (NTABLE = 11)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
@@ -71,13 +61,14 @@ C
 C INFORB : NSYM
 C INFMP2 : IPRMP2, NFRMP2(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       DATA TABLE /'.MP2 FR','.PRINT ','.NO OV ','.TDASOP','.SC_SRM',
-     &            '.SRINTS','.SCSMP2','.SOSMP2','.MP2 SC','.LEVELS'/
+     &            '.SRINTS','.SCSMP2','.SOSMP2','.MP2 SC','.LEVELS',
+     &            '.DCPT2'/
 CMAERKE 900918: MP2SAV not implemented, should it be?
 C
 C     ***** PROCESS INPUT FOR MP2INP *****
@@ -91,7 +82,8 @@ C
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
-                  GO TO (101,102,103,104,105,106,107,108,109,110), II
+                  GO TO (101,102,103,104,105,106,107,108,109,110,
+     &                   111),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -137,7 +129,7 @@ C *** Option 5 >SC_SRM<  self-consistent short-range contributions included
   105 CONTINUE
       call quit(
      &   '.SC_SRMP2 option not included in this non-srdft version')
-#endif 
+#endif
       GO TO 100
 C *** Option 6 >SRINTS<  calculate MP2 energy from AOSR2INT integrals
 #ifdef MOD_SRDFT
@@ -147,7 +139,7 @@ C *** Option 6 >SRINTS<  calculate MP2 energy from AOSR2INT integrals
   106 CONTINUE
       call quit(
      &   '.SRINTS  option not included in this non-srdft version')
-#endif 
+#endif
       GO TO 100
 C *** Option 7 >SCSMP2< Grimme's spin-component scaled MP2
 C                       p_S = 1.2, p_T = 1/3
@@ -176,28 +168,43 @@ C *** Option 9 >MP2 SCALED< Scaled MP2 calculation
 C *** Option 10 >LEVELSHIFT< Level-shift of  MP2 denominator
   110 READ(LUCMD,*) MP2_LSHIFT
       GO TO 100
+C FH  Option 11 DCPT2 for MP2 calculation
+  111 DCPT2 = .TRUE.
+      GO TO 100
 C ==========================================================================
  2000 CONTINUE
       IF (MP2_SCALED) THEN
          MP2_SCALEFAC(1) = P_S + P_T
          MP2_SCALEFAC(2) =     - P_T
          IF (MP2_SCS) THEN
-            WRITE(LUPRI,'(A)') " S. Grimme's SCS MP2 requested."
+            WRITE(LUPRI,'(/A)') " S. Grimme's SCS MP2 requested."
          ELSE IF (MP2_SOS) THEN
-            WRITE(LUPRI,'(A)') " M. Head-Gordon's SOS MP2 requested."
+            WRITE(LUPRI,'(/A)') " M. Head-Gordon's SOS MP2 requested."
          ELSE
-            WRITE(LUPRI,'(A,/A,2F14.6)') " User-scaled MP2 requested."
-            IF (P_T .EQ. D0) MP2_SOS = .TRUE.
+            WRITE(LUPRI,'(/A)') ' User-scaled MP2 requested.'
+            IF (P_T .EQ. 0.0D0) MP2_SOS = .TRUE.
 C           ... SOS-MP2 but not Head-Gordon's original SOS-MP2
          END IF
          WRITE(LUPRI,'(A,2F14.6)')
      &      ' Scale factors p_S and p_T:',P_S, P_T
       END IF
       IF (MP2_LSHIFT .NE. 0.0D0) WRITE(LUPRI,'(/A,F14.6)')
-     &      ' Level-shift of MP2 denominator: ',MP2_LSHIFT
+     &   ' Level-shift of MP2 denominator: ',MP2_LSHIFT
       IF (MP2_NO_OCCVIR) WRITE(LUPRI,'(/A)')
-     &  ' ".NO OV BLOCK": Occ-virt block of MP2 density matrix ignored'
+     &   ' ".NO OV BLOCK": Occ-virt block of MP2 density matrix ignored'
 C
+      IF (DCPT2) THEN
+         WRITE(LUPRI,'(/A/A)')
+     &   ' WORK-IN-PROGRESS: Degeneracy corrected PT2 requested.',
+     &   ' WORK-IN-PROGRESS: NB! results may not be correct !!!!'
+         IF (MP2_SCALED .OR. (MP2_LSHIFT /= 0.0d0)) THEN
+            WRITE(LUPRI,'(/A)') ' FATAL ERROR: .DCPT2 cannot be'//
+     &      'combined with scaled MP2 and level-shfit in MP2'
+            CALL QUIT(
+     &      'FATAL ERROR: illegal combination of keywords in *MP2')
+         END IF
+      END IF
+
       RETURN
       END
 C  /* Deck mp2ctl */
@@ -214,7 +221,7 @@ C  1A) CALCULATE SECOND ORDER ENERGY
 C  2)  DETERMINE THE NATURAL ORBITALS
 C  3)  SAVE INFORMATION FOR SOPPA
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION WRK(LFRSAV)
 C
@@ -228,28 +235,30 @@ C     EXEINF: FTRCTL
 C     INFORB: NORBT,NRHF,?
 C     SCBRHF: NFRRHF()
 C     INFMP2: NPHSYM, MP2FRO
-C     INFINP: FLAG(25)
+C     INFINP: FLAG(25),DIRFCK
 C     INFIND: ISX, ISMO
-C     INFTRA: USEDRC, AO2INTFILE_LABEL
+C     INFTRA: NEWTRA, AO2INTFILE_LABEL
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <exeinf.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infmp2.h>
-#include <scbrhf.h>
-#include <infinp.h>
-#include <infind.h>
-#include <inftra.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "dummy.h"
+#include "priunit.h"
+
+#include "gnrinf.h"
+#include "exeinf.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infmp2.h"
+#include "scbrhf.h"
+#include "infinp.h"
+#include "infind.h"
+#include "inftra.h"
+#include "dftcom.h"
 C
       CALL QENTER('MP2CTL')
-      CALL GETTIM(TIMMP2,DUMMY)
+      CALL GETTIM(CPUMP2,WALMP2)
       IF (IPRMP2 .GE. 0) WRITE (LUPRI,'(//A//A/A)')
      * ' >>>>> Output from SIRIUS MP2 module <<<<<'
      *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
@@ -285,17 +294,30 @@ C
       MP2FRZ = MP2FRO
 C     Disable "MP2FRO" if result not to be printed
       IF (IPRMP2 .LE. 0) MP2FRO = .FALSE.
+      IF (IPRMP2 .GE. 5 .AND. MP2FRZ) THEN
+         WRITE(LUPRI,'(/A)') ' Frozen orbitals in MP2 (1: frozen) :'
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(5(10I2,2X))')
+     &         IFRMP2(IORB(ISYM)+1:IORB(ISYM)+NORB(ISYM))
+         END DO
+      END IF
       CALL FLSHFO(LUPRI)
       IF (SRMP2_SRINTS) THEN
          IPRMP2 = MAX(0,IPRMP2)
 C        ... make sure MP2 energy with short-range integrals is printed!
       END IF
 C
-C     if SRMP2_SRINTS 
+C     if SRMP2_SRINTS
 C     1)  calculate "EMP2" from AO2SRINT integrals (i.e. short-range integrals),
-C     2)  set SRMP2_SRINTS false, go back to label 10, and redo the 
+C     2)  set SRMP2_SRINTS false, go back to label 10, and redo the
 C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integrals)
-      ISRINTS_LOOP = 0
+      IF (SRMP2_SRINTS) THEN
+         ISRINTS_LOOP = 0
+         EMP2_SR   = DUMMY
+         EMP2_LR   = DUMMY
+         EMP2FL_SR = DUMMY
+         EMP2FL_LR = DUMMY
+      END IF
    10 CONTINUE
       IF (SRMP2_SRINTS) THEN
          ISRINTS_LOOP = ISRINTS_LOOP + 1
@@ -325,7 +347,7 @@ C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integra
      &      ' Finished .SRINTS MP2 calculations for srDFT, goodbye!'
             CALL QUIT('No error, finished .SRINTS MP2 calculations')
          END IF
-         
+
          FTRCTL = .TRUE.
 C        ... force new sort of AO integrals
       END IF
@@ -334,25 +356,25 @@ cmjp If response calculation then make space for the correlation coefficients.
       IF (FLAG(25) .AND. .NOT.SRMP2_SRINTS) THEN
          CALL MEMGET('REAL',KKAPPA,NPHTOT(1),WRK,KFREE,LFREE)
          CALL DZERO(WRK(KKAPPA),NPHTOT(1))
-         JTRLVL = -10
-         USEDRC = .TRUE.
       ELSE
          CALL MEMGET('REAL',KKAPPA,0,WRK,KFREE,LFREE)
-         IF (MP2_NO_OCCVIR .OR. SRMP2_SRINTS) THEN
-C           2. order integral transformation (ir/js)
-            JTRLVL = 4
-         ELSE
-C           3. order integral transformation (ir/st)
-C           (needed for occ-virt block of density matrix)
-            JTRLVL = 5
-         END IF
-      ENDIF
+      END IF
+
+      IF (.NOT.NEWTRA .AND. (MP2_NO_OCCVIR .OR. SRMP2_SRINTS) ) THEN
+C        2. order integral transformation (ir/js)
+C        (but not for NEWTRA which uses Dirac format and that is
+C         not implemented in sirmp2.F module)
+         JTRLVL = 4
+      ELSE
+C        3. order integral transformation (ir/st)
+C        (needed for occ-virt block of density matrix)
+         JTRLVL = 5
+      END IF
 C
 C
 C     PERFORM INTEGRAL TRANSFORMATION
 C     JTRLVL =  4 : code for 2. order transformation for MP2 with MP2_NO_OCCVIR.
 C     JTRLVL =  5 : code for 3. order transformation for MP2 density matrix.
-C     JTRLVL = 10 : code for full transformation if SOPPA response follows.
 C     JTRLVL negative: delete AO integral file after transformation.
 C
       CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KFREE),LFREE)
@@ -362,12 +384,12 @@ C
       IF (MP2FRO) THEN
          CALL MEMGET('REAL',KDONEF,N2ORBX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KCMO1 ,NCMOT ,WRK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIFRHF,NORBT ,WRK,KFREE,LFREE)
-         CALL FCKIFR(WRK(KIFRHF))
+         CALL MEMGET('INTE',KIFRRHF,NORBT ,WRK,KFREE,LFREE)
+         CALL FCKIFR(WRK(KIFRRHF))
       ELSE
          CALL MEMGET('REAL',KDONEF,0,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KCMO1 ,0,WRK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIFRHF,0,WRK,KFREE,LFREE)
+         CALL MEMGET('INTE',KIFRRHF,0,WRK,KFREE,LFREE)
       END IF
       CALL MEMGET('REAL',KH2M  ,N2ORBX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2D  ,N2ORBX,WRK,KFREE,LFREE)
@@ -434,7 +456,7 @@ C        density matrix
 C
          CALL MP2MUL(IPLOW,IPHIGH, WRK(KDONE),WRK(KKAPPA),WRK(KDONEF),
      *               WRK(KORBEN),WRK(KH2PHD),WRK(KH2M),WRK(KH2D),
-     *               WRK(KIFRHF),EMP2,EMP2FL,WRK(KIADR1),WRK,
+     *               WRK(KIFRRHF),EMP2,EMP2FL,WRK(KIADR1),WRK,
      *               KFREE,LFREE)
 C        CALL MP2MUL(IPLOW,IPHIGH,DONE,COEMP2,DONEFL,ORBEN,H2PHD,
 C    *               H2M,H2D,IFRRHF,EMP2,EMP2FL,IADR1,WRK,KFRSAV,LFRSAV)
@@ -460,66 +482,73 @@ C
 C
       IF (IPRMP2 .GE. 0) THEN
          IF (MP2_NO_OCCVIR) WRITE(LUPRI,'(/A)')
-     &      ' * Occ-virt block of MP2 density matrix ignored.'
+     &      '@   * Occ-virt block of MP2 density matrix ignored.'
          IF (MP2FRZ) THEN
             WRITE (LUPRI,'(/A,8I5)')
-     *      ' * MP2 frozen orbitals per symmetry :',(NFRMP2(I),I=1,NSYM)
+     &      '@   * MP2 frozen orbitals per symmetry :',
+     &      (NFRMP2(I),I=1,NSYM)
             WRITE (LUPRI,'(/A)')
      *      " * Total energy and NO's calculated with frozen orbitals."
          END IF
          IF (MP2_SCALED) WRITE (LUPRI,'(/A,2(/A,F14.8))')
-     *      ' * MP2 calculation was scaled using the factors',
-     *      '     p_S :',MP2_SCALEFAC(1)+MP2_SCALEFAC(2),
-     *      '     p_T :',-MP2_SCALEFAC(2)
+     &      '@   * MP2 calculation was scaled using the factors',
+     &      '@       p_S :',MP2_SCALEFAC(1)+MP2_SCALEFAC(2),
+     &      '@       p_T :',-MP2_SCALEFAC(2)
          IF (MP2_LSHIFT .NE. 0.0D0) WRITE (LUPRI,'(/A,F14.8)')
-     *      ' * All 2p-2h orbital energy differences have been '//
-     *      'shifted with : ',MP2SHF
+     &      '@   * All 2p-2h orbital energy differences have been '//
+     &      '@  shifted with : ',MP2SHF
 
          IF (SRMP2_SRINTS) THEN
-            IF (ISRINTS_LOOP .EQ. 1) THEN
-               WRITE (LUPRI,'(//A,F25.10)')
-     *          '   MP2 contribution from short-range integrals :',EMP2
+            IF (DCPT2) WRITE (LUPRI,'(/A)') '@   *** DCPT2 result:'
+            if (isrints_loop .eq. 1) then
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &          ' from short-range integrals :',EMP2
                EMP2_SR = EMP2
             ELSE IF (ISRINTS_LOOP .EQ. 2) THEN
-               WRITE (LUPRI,'(//A,F25.10)')
-     *          '   MP2 contribution from  long-range integrals :',EMP2
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &          ' from  long-range integrals :',EMP2
                EMP2_LR = EMP2
             ELSE IF (ISRINTS_LOOP .EQ. 3) THEN
                EMP2_SRLR = EMP2 - EMP2_SR - EMP2_LR
-               WRITE (LUPRI,'(//A,F25.10)') '   MP2 contribution from'
-     &           //'       sr-lr integrals :',EMP2_SRLR
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &         ' from       sr-lr integrals :',EMP2_SRLR
                EMP2_SRLR = EMP2_SRLR + EMP2_SR
-               WRITE (LUPRI,'(//A,F25.10)') '   MP2 contribution from'
-     &           //' sr-sr+sr-lr integrals :',EMP2_SRLR
-               WRITE (LUPRI,'(//A,F25.10)')
-     *          '   MP2 contribution from        full integrals :',EMP2
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &         ' from sr-sr+sr-lr integrals :',EMP2_SRLR
+               WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
+     &          ' from        full integrals :',EMP2
             ELSE
-               call quit('You should never see this output!')
+               call quit('MP2CTL: You should never see this output!')
             END IF
          ELSE IF (ADDSRI) THEN
             WRITE (LUPRI,'(/,3(/A,F25.10))')
-     *       ' Short-range Hartree-Fock total energy         :',EMY,
-     *       ' + MP2 contribution from long-range integrals  :',EMP2,
-     *       ' = short-range MP2 second order energy         :',EMY+EMP2
+     &     '@   Short-range Hartree-Fock total energy        :',EMY,
+     &     '@   + MP2 contribution from long-range integrals :',EMP2,
+     &     '@   = short-range MP2 second order energy        :',EMY+EMP2
          ELSE IF (.NOT.DODFT) THEN
             IF (MP2_SCALED) THEN
                WRITE (LUPRI,'(/2(/A,F32.10),(/A,F25.10))')
-     *       ' Hartree-Fock total energy :',EMY,
-     *       ' + Scaled MP2 contribution :',EMP2,
-     *       ' = Scaled MP2 second order energy :',EMY+EMP2
+     &       '@   Hartree-Fock total energy        :',EMY,
+     &       '@   + Scaled MP2 contribution        :',EMP2,
+     &       '@   = Scaled MP2 second order energy :',EMY+EMP2
+            ELSE IF (DCPT2) THEN
+               WRITE (LUPRI,'(/,3(/A,F25.10))')
+     &       '@   Hartree-Fock total energy   :',EMY,
+     &       '@   + DCPT2 contribution        :',EMP2,
+     &       '@   = DCPT2 energy              :',EMY+EMP2
             ELSE
                WRITE (LUPRI,'(/,3(/A,F25.10))')
-     *       ' Hartree-Fock total energy :',EMY,
-     *       ' + MP2 contribution        :',EMP2,
-     *       ' = MP2 second order energy :',EMY+EMP2
+     &       '@   Hartree-Fock total energy :',EMY,
+     &       '@   + MP2 contribution        :',EMP2,
+     &       '@   = MP2 second order energy :',EMY+EMP2
             END IF
          ELSE ! DFT
             WRITE (LUPRI,'(/,(/A,F25.10),(/A,F25.10,A,F8.5,A,F15.10),
-     *        (/A,F25.10))')
-     *       ' Kohn-Sham contribution    :',EMY,
-     *       ' + scaled PT2 contribution :',EMP2,' *',WDFTMP,
-     *       ' = ',EMP2*WDFTMP,
-     *       ' = KS-PT2 energy           :',EMY+WDFTMP*EMP2
+     &        (/A,F25.10))')
+     &       '@   Kohn-Sham contribution    :',EMY,
+     &       '@   + scaled PT2 contribution :',EMP2,' *',WDFTMP,
+     &          ' = ',EMP2*WDFTMP,
+     &       '@   = KS-PT2 energy           :',EMY+WDFTMP*EMP2
             EMCSCF = EMY + WDFTMP*EMP2
          END IF
       END IF
@@ -558,12 +587,12 @@ C
      &    ,' MP2-SRDFT natural orbitals: Short-range self-consistent'
      &    ,' contributions are NOT taken into account.'
      &    ,' *******************************************************'
-C     
+C
       CALL NATORB(IPRMP2,WRK(KDONE),WRK(KCMO),WRK(KFREE),LFREE)
 C
 #ifdef MOD_SRDFT
 C     ======================================================
-C     Manu June 07 : If MP2SRDFT calculation ... 
+C     Manu June 07 : If MP2SRDFT calculation ...
 C
       IF (DOHFSRDFT .AND. SRMP2_SELFCONSISTENT) THEN
         WRITE(LUPRI,'(4(/A))')
@@ -574,17 +603,17 @@ C
 C
 C        Manu July 07 : we do not want to keep the "long-range MP2 " natural
 C        orbitals. Thus CMO is reset to its original value (MO coeffs of
-C        the HF-SRDFT orbitals)   
+C        the HF-SRDFT orbitals)
 C
          CALL DCOPY(NCMOT,WRK(KCMO2),1,WRK(KCMO),1)
          CALL MEMREL('Releasing mem. used for CMO2',
-     &             WRK,KFRSAV,KCMO2,KFREE,LFREE)  
-         
+     &             WRK,KFRSAV,KCMO2,KFREE,LFREE)
+
 C
 C        Substract the zeroth order contribution to the density matrix
 C
-         CALL ADDZEROTH(WRK(KDONE),.FALSE.) 
-C             ADDZEROTH(DONE,DOADD) 
+         CALL ADDZEROTH(WRK(KDONE),.FALSE.)
+C             ADDZEROTH(DONE,DOADD)
 C
 C        Calculate the second order SRDFT contributions to the density
 C        matrix
@@ -595,7 +624,7 @@ C             MP2SRDFTDEN(NFROZ,DONE,CMO,ORBEN,WRK,LFRSAV)
 C
 C        Add the zeroth order contribution to the density matrix
 C
-         CALL ADDZEROTH(WRK(KDONE),.TRUE.) 
+         CALL ADDZEROTH(WRK(KDONE),.TRUE.)
 C
 C        Get the SRMP2_SELFCONSISTENT natural orbitals and occ. numbers
 C
@@ -631,8 +660,9 @@ C     If iprmp2 .le. 0 then mp2fro will be false
          END IF
 C
          IF (FCKFRO) THEN
-            WRITE (LUPRI,'(/A,8I5//A)')
-     &      ' RHF frozen orbitals per symmetry :',(NFRRHF(I),I=1,NSYM),
+            WRITE (LUPRI,'(/A,8I5)')
+     &      ' RHF frozen orbitals per symmetry :',(NFRRHF(I),I=1,NSYM)
+            WRITE (LUPRI,'(/A)')
      &      ' Total MP2 energy and NO occupations calculated with'//
      &      ' frozen orbitals from RHF.'
          ELSE
@@ -682,7 +712,7 @@ C               next class of range-separated integrals /hjaaj Oct 09
      *     ' Short-range Hartree-Fock total energy         :',EMY,
      *     ' + MP2 contribution from long-range integrals  :',EMP2FL,
      *     ' = short-range MP2 second order energy         :',EMY+EMP2FL
-         ELSE 
+         ELSE
             IF (MP2_SCALED) THEN
                WRITE (LUPRI,'(/A/,3(/A,F25.10))')
      *      ' NOTE that the orbitals saved on disk are those obtained'//
@@ -690,6 +720,13 @@ C               next class of range-separated integrals /hjaaj Oct 09
      *      ' Hartree-Fock total energy        :',EMY,
      *      ' + Scaled MP2 contribution        :',EMP2FL,
      *      ' = Scaled MP2 second order energy :',EMY+EMP2FL
+            ELSE IF (DCPT2) THEN
+               WRITE (LUPRI,'(/A/,3(/A,F25.10))')
+     *      ' NOTE that the orbitals saved on disk are those obtained'//
+     *      ' with frozen orbitals (see above).',
+     *      ' Hartree-Fock total energy        :',EMY,
+     *      ' + DCPT2 contribution             :',EMP2FL,
+     *      ' = DCPT2 energy                   :',EMY+EMP2FL
             ELSE
               WRITE (LUPRI,'(/A/3(/A,F25.10))')
      *     ' NOTE that the orbitals saved on disk are those obtained'//
@@ -699,7 +736,7 @@ C               next class of range-separated integrals /hjaaj Oct 09
      *     ' = MP2 second order energy :',EMY+EMP2FL
             END IF
          END IF
-C
+
 C        Manu July 07 : we copy (as done previously) CMO1 into CMO2 since we need
 C        the HF-SRDFT orbitals in MP2SRDFTDEN
 C
@@ -713,10 +750,10 @@ C
      &    ,' MP2-SRDFT natural orbitals: Short-range self-consistent'
      &    ,' contributions are NOT taken into account.'
      &    ,' *******************************************************'
-C     
+C
          CALL NATORB(IPRMP2,WRK(KDONEF),WRK(KCMO1),WRK(KFREE),LFREE)
 C
-C        Manu June 07 : If MP2SRDFT calculation ... 
+C        Manu June 07 : If MP2SRDFT calculation ...
 C
          IF (DOHFSRDFT .AND. SRMP2_SELFCONSISTENT) THEN
 #ifndef MOD_SRDFT
@@ -730,15 +767,15 @@ C
 C
 C           Manu July 07 : we do not want to keep the "long-range MP2 " natural
 C           orbitals with frozen orbitals. Thus CMO1 is reset to its original value
-C           (MO coeffs of the HF-SRDFT orbitals)   
+C           (MO coeffs of the HF-SRDFT orbitals)
 C
             CALL DCOPY(NCMOT,WRK(KCMO2),1,WRK(KCMO1),1)
             CALL MEMREL('Releasing mem. used for CMO2',
-     &                  WRK,KFRSAV,KCMO2,KFREE,LFREE)  
+     &                  WRK,KFRSAV,KCMO2,KFREE,LFREE)
 C
 C           Substract the zeroth order contribution to the density matrix
 C
-            CALL ADDZEROTH(WRK(KDONEF),.FALSE.) 
+            CALL ADDZEROTH(WRK(KDONEF),.FALSE.)
 C
 C           Calculate the second order SRDFT contributions to the density
 C           matrix
@@ -748,7 +785,7 @@ C
 C
 C           Add the zeroth order contribution to the density matrix
 C
-            CALL ADDZEROTH(WRK(KDONEF),.TRUE.) 
+            CALL ADDZEROTH(WRK(KDONEF),.TRUE.)
 C
 C           Get the natural orbitals and occ. numbers
 C
@@ -771,14 +808,15 @@ C            long-range integrals /hjaaj Oct 09
       END IF
 C     END IF (MP2FRO .AND. .NOT.FCKFRO)
 C
-      CALL GETTIM(TIMEND,DUMMY)
-      TIMMP2 = TIMEND - TIMMP2
-      WRITE (LUERR,1860) TIMMP2
-      IF (IPRMP2 .GE. 2) WRITE (LUPRI,1860) TIMMP2
+      CALL GETTIM(CPUEND,WALEND)
+      CPUMP2 = CPUEND - CPUMP2
+      WALMP2 = WALEND - WALMP2
+      WRITE (LUSTAT,1860) CPUMP2, WALMP2
+      IF (IPRMP2 .GE. 1) WRITE (LUPRI,1860) CPUMP2, WALMP2
  1860 FORMAT (/' Time used for MP2 natural orbitals :',F12.3,
-     *        ' CPU seconds.')
+     *        ' CPU seconds,',F12.3,' wall seconds.')
       CALL MEMREL('MP2CTL',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
-      CALL FLSHFO(LUERR)
+      CALL FLSHFO(LUSTAT)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('MP2CTL')
       RETURN
@@ -791,7 +829,7 @@ C
 C INPUT  : DONE IS ONE ELECTRON DENSITY MATRIX
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DONE(NORBT,NORBT),CMO(*),WRK(*)
 C
       PARAMETER ( D0 = 0.0D0 )
@@ -800,14 +838,14 @@ C Used from common blocks:
 C
 C INFIND : ISSMO
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL QENTER('NATORB')
       KFRSAV = 1
@@ -833,16 +871,16 @@ C
          IORBI = IORB(ISYM)
       IF (NORBI.EQ.0) GO TO 200
          NBASI = NBAS(ISYM)
-         ISSYM = IIORB(ISYM)
+         IIORBI = IIORB(ISYM)
          ICSYM = ICMO(ISYM)
 C
-         CALL JACO(WRK(KORBNO+ISSYM),CMO(1+ICSYM),NORBI,NORBI,
+         CALL JACO(WRK(KORBNO+IIORBI),CMO(1+ICSYM),NORBI,NORBI,
      *             NBASI,WRK(KWRK1),WRK(KWRK1+NORBI))
 C        CALL JACO(F,VEC,NB,NMAX,NROWV,BIG,JBIG)
 C
          OCCSUM = D0
          DO 175 I=1,NORBI
-            II = ISSYM + (I*I+I)/2
+            II = IIORBI + (I*I+I)/2
             WRK(KORBEN-1+IORBI+I)=WRK(KORBNO-1+II)
             OCCSUM = OCCSUM + WRK(KORBEN-1+IORBI + I)
   175    CONTINUE
@@ -855,7 +893,7 @@ C          Done, Aug. 2004 /hjaaj
      &               ISSMO(1+IORBI),NORBI,NBASI)
 #endif
          IF (IPRNO .GE. 1) THEN
-            OCCRHF = 2 * NRHF(ISYM)
+            OCCRHF = 2 * NRHF(ISYM) + NASH(ISYM)
             WRITE (LUPRI,1840) ISYM,OCCSUM,OCCRHF,OCCSUM-OCCRHF
 #if !defined (VAR_MP2SUPSYM)
             WRITE (LUPRI,1850) (WRK(KORBEN-1+IORBI+I),I=1,NORBI)
@@ -887,7 +925,7 @@ C
 C     ... end of NATORB
       END
 C  /* Deck mp2den */
-      SUBROUTINE MP2DEN(NFROZ,IFROZ,IAH,IMP,IAHMP,ISYMAM,H2PHD,DONE,
+      SUBROUTINE MP2DEN(NFROZ,IFROZ,JAH,JMP,IAHMP,ISYMAM,H2PHD,DONE,
      *                  COEMP2,IADR1,ORBEN,H2M,H2D,EMP2,KFRO)
 C
 C 18-Oct-1989 PJ
@@ -927,7 +965,7 @@ C
 C OUTPUT:
 C  SECOND ORDER CONTRIBUTION ADDED IN DONE(*,*)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION NFROZ(8),IFROZ(NORBT),H2PHD(NP,NH,*)
       DIMENSION DONE(NORBT,*),ORBEN(*),H2M(NORBT,*),H2D(NORBT,*)
@@ -938,13 +976,13 @@ C
 C Used from common blocks :
 C    INFINP : FLAG(25)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infinp.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infinp.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
 C
       SAVE    TVALUE
@@ -952,12 +990,20 @@ C
 C
       CALL QENTER('MP2DEN')
 C
-C CONSTRUCT   (2*(MA,BN)-(MB,AN))/(E(A)+E(B)-E(M)-E(N)) =
+C Construct   (2*(MA,BN)-(MB,AN))/(E(A)+E(B)-E(M)-E(N)) =
 C             (2*(MA,BN)-<MA,BN>)/(E(A)+E(B)-E(M)-E(N))
+C in H2D(,)
 C
-      JMP  = IPHORD(NH+IMP)
-      JAH  = IPHORD(IAH)
-      ENMA = MP2_LSHIFT - ORBEN(JMP) + ORBEN(JAH)
+      CALL DZERO(N2ORBX,H2D)
+      DO I = 1,NORBT
+         IF ( IFROZ(I) .NE. 0 ) THEN
+            H2M(1:NORBT,I) = 0.0D0
+            H2M(I,1:NORBT) = 0.0D0
+         END IF
+      END DO
+      IMP  = IPHORD(NH+JMP)
+      IAH  = IPHORD(JAH)
+      ENMA = MP2_LSHIFT - ORBEN(IMP) + ORBEN(IAH)
       IF (IPRMP2 .GE. 30) THEN
          WRITE (LUPRI,'(//A/,2(/A,2I5))')
      *      ' >>> TEST OUTPUT FROM MP2DEN',
@@ -966,8 +1012,11 @@ C
          IF (IPRMP2 .GE. 40) WRITE (LUPRI,'(A,2I5,3(/A,1P,D11.4))')
      *      ' IAHMP index, symmetry(A M)    : ',IAHMP,ISYMAM,
      *      ' EMP2 before this distribution :', EMP2,
-     *      ' Orbital energy of MP orbital  :', ORBEN(JMP),
-     *      ' Orbital energy of AH orbital  :', ORBEN(JAH)
+     *      ' Orbital energy of MP orbital  :', ORBEN(IMP),
+     *      ' Orbital energy of AH orbital  :', ORBEN(IAH)
+
+         write(lupri,*) 'DONE MP2MUL start:'
+         call output(done,1,4,1,4,norbt, norbt,1,lupri)
       END IF
       EMP2BF = EMP2
       DO 100 IH = 1,NH
@@ -984,6 +1033,29 @@ C    Routine modified to include scaled mp2 calculations
                H2D(INP,IBH) = ( MP2_SCALEFAC(1)*H2M(INP,IBH)
      *                        + MP2_SCALEFAC(2)*H2PHD(IP,IH,IAHMP))
      *                        / ENMANB
+            ELSE IF (DCPT2) THEN
+C Frank Heiden modifying for DCPT2 functionality
+c               H2D(INP,IBH) = 0.5D0*(ENMANB - SQRT(ENMANB**2.0D0 +
+c     *         4.0D0 * (D2*H2M(INP,IBH) -
+c     *         H2PHD(IP,IH,IAHMP))**2.0D0))
+
+!              H2D(INP,IBH) = 0.5D0*(ENMANB - SQRT(ENMANB**2.0D0 +
+!    *         4.0D0 * (D2*H2M(INP,IBH) -
+!    *         H2PHD(IP,IH,IAHMP))**2.0D0))+
+!    *         0.25D0*(ENMAB - SQRT(ENMAB**2.0D0 +
+!    *         4.0D0*(H2M(INP,IBH) - H2PHD(IP,IH,IAHMP))**2.0D0))
+               IF (ABS(H2M(INP,IBH)) .LE. 1.0D-8) THEN
+                  H2D(INP,IBH) = 0.0D0
+               ELSE
+                  H2D(INP,IBH) = -ENMANB/H2M(INP,IBH) *
+     &             ( 0.5D0* (1.0D0 - SQRT(1.0D0 + 4.0D0*
+     &                 (H2M(INP,IBH)/ENMANB)**2))
+     &             + 0.25D0* (1.0D0 - SQRT(1.0D0 + 4.0D0*
+     &                 ((H2M(INP,IBH)-H2PHD(IP,IH,IAHMP))/ENMANB)**2))
+     &             )
+               END IF
+c               WRITE(*,*)
+c     &         " DCPT2 work loop", ENMANB,H2M(INP,IBH),H2D(INP,IBH)
             ELSE
                H2D(INP,IBH) = ( D2*H2M(INP,IBH) - H2PHD(IP,IH,IAHMP))
      *                        / ENMANB
@@ -1001,7 +1073,12 @@ C    Routine modified to include scaled mp2 calculations
 C
 C Accumulate MP2 energy :
 C
-            EMP2 = EMP2 + H2M(INP,IBH) * H2D(INP,IBH)
+           IF (DCPT2) THEN
+c           EMP2 = EMP2 + H2D(INP,IBH)
+              EMP2 = EMP2 + H2M(INP,IBH) * H2D(INP,IBH)
+           ELSE
+              EMP2 = EMP2 + H2M(INP,IBH) * H2D(INP,IBH)
+           END IF
 C
 C PARTICLE HOLE PART OF MULLIKEN DISTRIBUTIONS ARE DIVIDED WITH ORBITAL
 C ENERGY DIFFERENCES TO BE ABLE TO CARRY OUT MATRIX MULTIPLICATIONS.
@@ -1014,7 +1091,7 @@ C
  100  CONTINUE
 cmjp Pack the correlation coefficients into COEMP2 if SOPPA follow
       IF (FLAG(25) .AND. KFRO .GE. 0) THEN
-         CALL PHPACK(H2D,COEMP2(IADR1(IMP,IAH)+1),ISYMAM,1,-1)
+         CALL PHPACK(H2D,COEMP2(IADR1(JMP,JAH)+1),ISYMAM,1,-1)
       ENDIF
 C
 C
@@ -1028,23 +1105,23 @@ C   DONE(M,N) = (N,D)*[M,D]
 C
 C TODO: if (MP2_NO_OCCVIR) then occ-virt in DONE not needed in DGEMM calls below /hjaaj Apr09
 C
-      DO 1000 ISSYM = 1,NSYM
+      DO 1000 ISYM = 1,NSYM
 
-         NORBI = NORB(ISSYM)
+         NORBI = NORB(ISYM)
       IF (NORBI .EQ. 0) GOTO 1000
-         IOFFI = IORB(ISSYM) + 1
-         NFRMPI= NFROZ(ISSYM)
-         NRHFI = MAX(NRHF(ISSYM), NFRMPI)
+         IOFFI = IORB(ISYM) + 1
+         NFRMPI= NFROZ(ISYM)
+         NRHFI = MAX(NRHF(ISYM)+NASH(ISYM), NFRMPI)
 C        ... This special code makes it possible to exclude low-lying
 C            virtual MO's in the MP2 energy /hjaaj Oct 09
          NVIRI = NORBI - NRHFI
 
-         JSYM  = MULD2H(ISYMAM,ISSYM)
+         JSYM  = MULD2H(ISYMAM,ISYM)
          NORBJ = NORB(JSYM)
       IF (NORBJ .EQ. 0) GOTO 1000
          IOFFJ = IORB(JSYM) + 1
          NFRMPJ= NFROZ(JSYM)
-         NRHFJ = MAX(NRHF(JSYM),NFRMPJ)
+         NRHFJ = MAX(NRHF(JSYM)+NASH(JSYM),NFRMPJ)
 C        ... See comment above for NRHFI
          NVIRJ = NORBJ - NRHFJ
 C
@@ -1059,7 +1136,7 @@ C
      &              DONE(IOFFI+NFRMPI,IOFFI+NFRMPI),NORBT)
 C
 C   DONE(A,M) = (A,D)*[M,D]
-C   DONE(M,N) = (N,D)*[M,D]
+C   DONE(N,M) = (N,D)*[M,D]
 C        I,I     I,J   I,J
 C
          IF (NRHFJ .GT. NFRMPJ)
@@ -1072,8 +1149,10 @@ C
          WRITE (LUPRI,'(1P,2(/A,2D11.4))')
      *   ' del(EMP2), EMP2 after this distribution :',EMP2-EMP2BF,EMP2,
      *   ' T = sum (a(MA,NB)**2) after this distr. :',TVALUE
+         write(lupri,*) 'DONE MP2MUL end:'
+         call output(done,1,4,1,4,norbt, norbt,1,lupri)
       END IF
-      CALL QEXIT('MP2DEN')
+ 8000 CALL QEXIT('MP2DEN')
       RETURN
 C     ... return from MP2DEN
       END
@@ -1083,16 +1162,16 @@ C
 C Modify DONE to obtain correct one electron density matrix
 C ( Factors are defined in MP2DEN )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DONE(NORBT,*),ORBEN(*)
 C
       PARAMETER (D0 = 0.0D0 , D2 = 2.0D0 ,TOLELE = 1.0D-4 )
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       CALL QENTER('MP2FAC')
 C
@@ -1101,21 +1180,23 @@ C
       CALL DSCAL(N2ORBX,D2,DONE,1)
       ELERMV = D0
       ELERCV = D0
-      DO 1500 ISYM = 1,NSYM
+      DO  ISYM = 1,NSYM
          IORBI = IORB(ISYM)
          NRHFI = NRHF(ISYM)
+         NASHI = NASH(ISYM)
+         NOCCI = NRHFI + NASHI
          NORBI = NORB(ISYM)
-         DO 1600 I = (IORBI+1),(IORBI+NRHFI)
+         DO  I = (IORBI+1),(IORBI+NRHFI)
             DO J = (IORBI+1),(IORBI+NRHFI)
                DONE(J,I) = -DONE(J,I)
             END DO
             IF (MP2_NO_OCCVIR) THEN
-               DO J = (IORBI+1+NRHFI),(IORBI+NORBI)
+               DO J = (IORBI+1+NOCCI),(IORBI+NORBI)
                   DONE(J,I) = D0
                   DONE(I,J) = D0
                END DO
             ELSE
-               DO J = (IORBI+1+NRHFI),(IORBI+NORBI)
+               DO J = (IORBI+1+NOCCI),(IORBI+NORBI)
                   DONE(J,I) = (DONE(J,I)-DONE(I,J))/(ORBEN(I)-ORBEN(J))
                   DONE(I,J) = DONE(J,I)
                END DO
@@ -1125,18 +1206,21 @@ C
 C           Add zero'th order contribution
 C
             DONE(I,I) = D2 + DONE(I,I)
- 1600    CONTINUE
-         DO 1900 IUNOCC = (IORBI+1+NRHFI),(IORBI+NORBI)
-            ELERCV = ELERCV + DONE(IUNOCC,IUNOCC)
- 1900    CONTINUE
- 1500 CONTINUE
+         END DO
+         DO  I = (IORBI+1+NRHFI),(IORBI+NOCCI)
+            DONE(I,I) = 1.0D0 - DONE(I,I)        ! singly occupied HSROHF orbitals
+         END DO
+         DO  I = (IORBI+1+NOCCI),(IORBI+NORBI)
+            ELERCV = ELERCV + DONE(I,I)
+         END DO
+      END DO   ! ISYM = 1,NSYM
 C
       IF ( ABS(-ELERMV+ELERCV).GT.TOLELE ) THEN
          NWARN = NWARN + 1
-         WRITE(LUPRI,'(/A/A,F12.6,A)') ' *******WARNING*********'//
-     *   ' MP2 CALCULATION CARRIED OUT INCORRECTLY ',
-     *   ' TRACE OF ONE ELECTRON DENSITY MATRIX GIVE ',
-     *   (-ELERMV+ELERCV),' ELECTRONS IN ADDITION TO SPECIFIED NUMBER'
+         WRITE(LUPRI,'(/A/A,F12.6,A)')
+     &   ' WARNING : MP2 CALCULATION CARRIED OUT INCORRECTLY ',
+     &   ' WARNING : TRACE OF ONE ELECTRON DENSITY MATRIX GIVE ',
+     &   (-ELERMV+ELERCV),' ELECTRONS IN ADDITION TO SPECIFIED NUMBER'
          I = 1
       ELSE
          I = 0
@@ -1144,7 +1228,7 @@ C
       IF (ELERMV .LT. 0 .OR. ELERMV .GT. 2*NRHFT) THEN
          NWARN = NWARN + 1
          WRITE(LUPRI,'(/A/A,I5/A,F12.6/A/A)')
-     &   ' *******WARNING from MP2*********',
+     &   ' ****** WARNING from MP2 ********',
      &   ' Number of electrons in Hartree-Fock orbitals :',2*NRHFT,
      &   ' Number of electrons removed from HF orbitals :',ELERMV,
      &   ' Probable error: this molecule is not suitable for MP2',
@@ -1155,12 +1239,12 @@ C
       END IF
       IF (IPRMP2 .GE. 2 .OR. I .EQ. 1) THEN
          WRITE(LUPRI,'(/A,F11.6,A)')
-     *      ' MP2 move',ELERCV,' electrons to unoccupied HF orbitals'
+     &      ' MP2 move',ELERCV,' electrons to unoccupied HF orbitals'
          IF (IPRMP2 .GE. 6 .OR. I .EQ. 1)
      &      WRITE(LUPRI,'(/A,F11.6,A/A,1P,D10.2,A)')
-     *      ' MP2 move',ELERMV,' electrons from occupied HF orbitals',
-     *      ' MP2 change in trace of one electron density matrix :',
-     *      -ELERMV+ELERCV,' electrons.'
+     &      ' MP2 move',ELERMV,' electrons from occupied HF orbitals',
+     &      ' MP2 change in trace of one electron density matrix :',
+     &      -ELERMV+ELERCV,' electrons.'
       END IF
 C
       CALL QEXIT('MP2FAC')
@@ -1188,60 +1272,138 @@ C Scratch:
 C  FC; the inactive Fock matrix and scratch area for overlap matrix
 C  SCRA; general scratch area
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),FC(*),ORBEN(*),SCRA(*)
-      LOGICAL   FCKFRO
+      LOGICAL   FCKFRO, FOUND
 C
 C
       PARAMETER (VALCON_MAX = 1.D-4, VALCON_WARN = 1.D-5,
      &           D0 = 0.0D0, DBIG = 1.D+12, GAPMIN = 0.1D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C  Used from common blocks:
-C     INFINP : POTNUC
+C     GNRINF : EMBEDDING
+C     INFINP : POTNUC, HSROHF
 C     INFORB : NRHF(*), NRHFT, ...
 C     SCBRHF : IOPRHF,NFRRHF(*)
 C     INFMP2 : NFRMP2(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infmp2.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infmp2.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       IJ_FOCK(I,J) = (J-1)*NORBI + I
 C
       CALL QENTER('MP2FCK')
 
       IF (IOPRHF .GT. 0 .OR. NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(//A)')
-     *   ' FATAL ERROR in MP2 module: MP2 is not implemented for'//
-     *   ' open-shell Hartree-Fock'
-         CALL QUIT('ERROR: MP2 is not implemented for open-shell RHF')
+         WRITE (LUPRI,'(//A)') ' INFO:'//
+     &   ' all open shell orbitals are frozen in the MP2 calculation.'
+!        WRITE (LUPRI,'(//A)')
+!    &   ' FATAL ERROR in MP2 module: MP2 is not implemented for'//
+!    &   ' open-shell Hartree-Fock'
+!        CALL QUIT('ERROR: MP2 is not implemented for open-shell RHF')
       END IF
 C
-      IF (IPRMP2 .GE. 3) WRITE (LUPRI,'(/A//A,I5/A,8I5)')
-     *   ' Check that orbitals are canonical HARTREE-FOCK orbitals',
-     *   '    Number of electrons :',2*NRHFT,
-     *   '    Orbital occupations :',(NRHF(I),I=1,NSYM)
+      IF (IPRMP2 .GE. 3) THEN
+         WRITE (LUPRI,'(/A//A,I5/A,8I5)')
+     &   ' Checking that the closed shell orbitals are'//
+     &     ' canonical HARTREE-FOCK orbitals',
+     &   '    Number of electrons  :',2*NRHFT+NASHT,
+     &   '    Closed shell orbitals:',(NRHF(I),I=1,NSYM)
+         IF (NASHT .GT. 0) WRITE (LUPRI,'(A,8I5)')
+     &   '    Open   shell orbitals:',(NASH(I),I=1,NSYM)
+      END IF
 C
       IF (LSCRA .LT. N2BASX) CALL ERRWRK('MP2FCK',-N2BASX,LSCRA)
 C
       CALL READMO(CMO,9,SCRA,LSCRA)
+
 C
-C     Step 1 : Construct inactive Fock matrix
+C     Step 1 : Construct or read the inactive Fock matrix
 C
-      EMY    = D0
-      CALL FCKMAT(.TRUE.,DUMMY,CMO,EMY,FC,DUMMY,SCRA,LSCRA)
-C     CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
+      IF ( EMBEDDING ) THEN ! read EMY and Fock matrix from SIRFC
+         WRITE (LUPRI,'(/A)')
+     &   ' MP2 for embedded QM system, reading Fock matrix from SIRIFC'
+         WRITE (LUPRI,'(/A)')
+     &   ' NOTE: The present MP2 model is a PTE-like solvent MP2 model'
+         WRITE (LUPRI,'(/A)')
+     &   ' Please see JCC, 2012-2022, 33, (2012) for reference.'
+         KCMO      = 1
+         KCMO_diff = KCMO  + NCMOT
+         KWRK      = KCMO_diff  + NCMOT
+         LWRK      = LSCRA - KWRK
+         CALL RD_SIRIFC('CMO',FOUND,SCRA(KCMO),SCRA(KWRK),LWRK)
+         CALL DCOPY(NCMOT,CMO,1,SCRA(KCMO_diff),1)
+         CALL DAXPY(NCMOT,-1.0D0,CMO,1,SCRA(KCMO_diff),1)
+         KCMO_diff_MAX = KCMO_diff - 1 + IDAMAX(NCMOT,SCRA(KCMO_diff),1)
+         IF ( abs(SCRA(KCMO_diff_MAX)) .GT. 1.0D-8) THEN
+            WRITE(LUPRI,'(//A/A)')
+     &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
+     &     ,'             The difference matrix is :'
+            !CALL PRORB(SCRA(KCMO_diff),.FALSE.,LUPRI)
+            ! problem: PRORB only prints coefficients .gt. 0.0001, thus
+            ! call output instead
+            DO ISYM = 1,NSYM
+               WRITE(LUPRI,'(/A,I5)')
+     &         ' CMO(SIRIFC) - CMO(SIRIUS.RST), symmetry',ISYM
+               JCMO_diff = KCMO_diff + ICMO(ISYM)
+               CALL OUTPUT(SCRA(JCMO_diff),1,NBAS(ISYM),1,NORB(ISYM),
+     &            NBAS(ISYM),NORB(ISYM),-1,LUPRI)
+            END DO
+            WRITE(LUPRI,'(//A/A)')
+     &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
+     &     ,'             CMO matrix from SIRIFC :'
+            CALL PRORB(SCRA(KCMO),.FALSE.,LUPRI)
+            WRITE(LUPRI,'(//A/A)')
+     &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
+     &     ,'             CMO matrix from SIRIUS.RST :'
+            CALL PRORB(CMO       ,.FALSE.,LUPRI)
+            CALL QUIT('CMO on SIRIFC not same as CMO from SIRIUS.RST')
+         END IF
+         CALL RD_SIRIFC('FC for MP2',FOUND,FC,SCRA,LSCRA)
+         IF (.NOT. FOUND) THEN
+            CALL QUIT('Info for "FC for MP2" not found on SIRIFC')
+         END IF
+      ELSE IF (NASHT .GT. 0) THEN
+         WRITE (LUPRI,'(/A)') ' Generating Fock matrix FC+FV'
+         EMY = D0
+         KDV = 1
+         KFV = KDV + NNASHX
+         KWRK= KFV + NNORBT
+         LWRK= LSCRA - KWRK
+         CALL DZERO(SCRA(KDV),NNASHX+NNORBT)
+         JDV_II = KDV - 1
+         DO I = 1,NASHT
+            JDV_II = JDV_II + I
+            SCRA(JDV_II) = 1.0D0
+         END DO
+         CALL FCKMAT(.FALSE.,SCRA(KDV),CMO,EMY,FC,SCRA(KFV),
+     &      SCRA(KWRK),LWRK)
+         IF (.NOT.HSROHF)  ! if HSROHF then FC already contains FC+FV
+     &   CALL DAXPY(NNORBT,1.0D0,SCRA(KFV),1,FC,1)
+      ELSE ! construct Fock matrix
+         WRITE (LUPRI,'(/A)') ' Generating Fock matrix'
+         EMY = D0
+         CALL FCKMAT(.TRUE.,DUMMY,CMO,EMY,FC,DUMMY,SCRA,LSCRA)
+C        CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
+      END IF
+
       IF (IPRMP2 .GE. 3) WRITE (LUPRI,1730) EMY
       EMY = EMY + POTNUC
-      IF (IPRMP2 .GE. 3) WRITE (LUPRI,1732) EMY
+      IF (IPRMP2 .GE. 3) THEN
+         WRITE (LUPRI,1732) EMY
+         IF (NASHT .GT. 0) WRITE (LUPRI,'(A)') ' Note:'//
+     &      ' the energy of the open shell electrons is not included'
+      END IF
 C
 C     Step 2 : Check if converged (using that gradient is
 C              proportional to occ-unocc Fock matrix elements).
@@ -1258,8 +1420,8 @@ C
             WRITE (LUPRI,'(3(/A,I5))')
      +      ' ***** WARNING from MP2FCK for symmetry',ISYM,
      +      ' Number of frozen MP2 orbitals this symmetry',NFRMP2(ISYM),
-     +      ' is reset to number of frozen RHF orbitals  ',NFRRHF_I 
-            NFRMP2(ISYM) = NFRRHF_I 
+     +      ' is reset to number of frozen RHF orbitals  ',NFRRHF_I
+            NFRMP2(ISYM) = NFRRHF_I
          ELSE IF (NFRMP2(ISYM) .GT. NRHF(ISYM)) THEN
             WRITE (LUPRI,'(3(/A,I5),/A/A)')
      +      ' INFO from MP2FCK for symmetry',ISYM,
@@ -1268,19 +1430,20 @@ C
      +      ' INFO The thus frozen virtual orbitals are excluded.',
      +      ' INFO We hope you know what you are doing!!!'
          END IF
-         NRHFI = NRHF(ISYM)
-         IORBI = IORB(ISYM)
-         ISSYM = IIORB(ISYM)
-         CALL DSPTGE(NORBI,FC(ISSYM+1),SCRA)
+         NRHFI  = NRHF(ISYM)
+         IORBI  = IORB(ISYM)
+         IIORBI = IIORB(ISYM)
+         CALL DSPTGE(NORBI,FC(IIORBI+1),SCRA)
          VALCON  = D0
          IVALCON = 0
-         DO I = NFRRHF_I+1,NRHFI
+         NOCCI = NRHFI + NASH(ISYM)
+         DO  I = NFRRHF_I+1,NRHFI
 C
 C           To check if this occupied orbital is converged we find
 C           the 2-norm of the coupling to the unoccupied orbitals
-            I1 = IJ_FOCK(NRHFI+1,I)
-            NORBI_MP2 = NORBI - NRHFI
-            VALCONI = DNRM2(NORBI_MP2,SCRA(I1),1)
+            I1 = IJ_FOCK(NOCCI+1,I)
+            NVIRI_MP2 = NORBI - NOCCI
+            VALCONI = DNRM2(NVIRI_MP2,SCRA(I1),1)
             IF (VALCONI .GT. VALCON) THEN
                VALCON  = VALCONI
                IVALCON = I
@@ -1304,9 +1467,9 @@ C        ... VALCON now max euclidean 2-norm of off-diagonal elements for any ro
      +  ' This Fock matrix row is:'
             CALL OUTPUT(SCRA(IJ_FOCK(IVALCON,1)), 1,1, NRHFI+1,NORBI,
      +                  NORBI,NORBI, 1,LUPRI)
-         ELSE IF (IPRMP2 .GE. 4) THEN
-            WRITE(LUPRI,'(/A,I3,A,1P,D10.2)') 'Symmetry',ISYM,
-     +  ' MAX 2-norm of a row of off-diagonal Fock matrix elements is',
+         ELSE IF (IPRMP2 .GE. 6) THEN
+            WRITE(LUPRI,'(A,I3,A,1P,D10.2)') 'Symmetry',ISYM,
+     +  ': MAX 2-norm of a row of off-diagonal Fock matrix elements is',
      +      VALCON
          END IF
   299 CONTINUE
@@ -1342,19 +1505,26 @@ C           zero off-diagonal frozen-frozen elements
             END DO
          END IF
          IF (NRHFI .GT. 0) THEN
-C           zero inactive-secondary block
+C           zero inactive-secondary block (and inactive-active block)
 C           Note that any frozen orbitals are also "inactive".
             CALL DSPZERO(NORBI,FC(JFC),1,NRHFI,NRHFI+1,NORBI)
 C           call dspzero(n,asp, nrsta,nrend, ncsta,ncend)
          END IF
-C
+         IF (NASH(ISYM) .GT. 0) THEN
+C           zero active-secondary block
+            NOCCI = NRHFI + NASH(ISYM)
+            CALL DSPZERO(NORBI,FC(JFC),NRHFI+1,NOCCI,NOCCI+1,NORBI)
+         END IF
+
 C        generate canonical orbitals
+
          KBIG  = 1
          KJBIG = KBIG + NORBI
          CALL JACO(FC(JFC),CMO(JCMO),NORBI,NORBI,NBASI,
      *             SCRA(KBIG),SCRA(KJBIG))
 C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
 C
+         NOCCI = NRHFI + NASH(ISYM)
          DO I = 1,NORBI
             ORBEN_I = FC(JFC-1 + IROW(I+1))
             ORBEN(IORBI + I) = ORBEN_I
@@ -1363,7 +1533,7 @@ C
                   EHOMO = ORBEN_I
                   ISYM_HOMO = ISYM
                END IF
-            ELSE
+            ELSE IF (I .GT. NOCCI) THEN
                IF (ELUMO .GT. ORBEN_I) THEN
                   ELUMO = ORBEN_I
                   ISYM_LUMO = ISYM
@@ -1383,9 +1553,9 @@ C
       IF (ELUMO-EHOMO .LT. GAPMIN) THEN
          NWARN = NWARN + 1
          WRITE(LUPRI,'(/A/A)')
-     &   ' *******WARNING from MP2*********'//
+     &   ' ****** WARNING from MP2 ********'//
      &   ' This molecule is probably not suitable for MP2',
-     &   ' *******WARNING from MP2*********'//
+     &   ' ****** WARNING from MP2 ********'//
      &   ' because E(LUMO) - E(HOMO) small or negative.'
          I = 1
       ELSE
@@ -1397,6 +1567,9 @@ C
      &      '  - E(HOMO) :',EHOMO,'   (in symmetry',ISYM_HOMO,')',
      &      '  --------------------------',
      &      '    gap     :',ELUMO-EHOMO
+         IF (NASHT .GT. 0) WRITE (LUPRI,'(/A/A)')
+     &      ' Note that HOMO here is highest doubly occupied MO,',
+     &      '      the singly occupied MOs are frozen.'
       END IF
       CALL QEXIT('MP2FCK')
       RETURN
@@ -1419,19 +1592,19 @@ C the correlation coefficients and the second order one-density
 C matrix on the end of the LUSIFC file.
 C    MJP 181093
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
         DIMENSION DONE(*), COEMP2(*)
 C Used from common blocks:
 C    INFORB: N2ORBT, NRHFT, NVIRT
 C    INFMP2: NPHMAX
 C    INFTAP: LUSIFC
 C
-#include <maxorb.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <infmp2.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "infmp2.h"
+#include "inftap.h"
       CHARACTER*8 LAB123(3), LABEOD, LABELN, LMP2INFO
       DATA LAB123/'********','********','********'/
       DATA LABEOD /'EODATA  '/
@@ -1474,7 +1647,7 @@ C
 C Scratch:
 C     WRK(kfrsav:kfrsav-1+lfrsav)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DONEFL(NORBT,NORBT),DONE(NORBT,NORBT),ORBEN(NORBT)
       DIMENSION H2PHD(NP,NH,*),H2M(NORBT,NORBT),H2D(NORBT,NORBT)
@@ -1489,25 +1662,27 @@ C   INFORB : N2ORBX, ...
 C   SCBRHF : NFRRHF(*)
 C   INFMP2 : IPHORD, NP, NH, IFRMP2, MP2FRO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <infmp2.h>
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
-C     
+C
       LOGICAL CHOLE,DHOLE, L_MP2_TDA
-#include <line.h>
-      DIMENSION NEEDTP(6)
-      DATA NEEDTP /0,1,1,1,1,0/
-C     ... only particle-hole distributions needed
-C         assumed: NRHF(isym) .ge. NISH(isym)
-C              and NVIR(isym) .le. NSSH(isym)
-#include <line.h>
+
+      DIMENSION NEEDTP(-4:6)
 C
       CALL QENTER('MP2MUL')
+
+      NEEDTP(-4:6) = 0 ! negative: frozen orbital in distribution
+      NEEDTP(2:5)  = 1 !  ... only particle-hole distributions needed
+                       !      assumed: NRHF(isym) .ge. NISH(isym)
+                       !           and NVIR(isym) .le. NSSH(isym)
+
       KFREE = KFRSAV
       LFREE = LFRSAV
       IF (MP2FRO) THEN
@@ -1531,7 +1706,7 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDTP(6)
+C     Loop over Mulliken distributions allowed in NEEDTP(*)
 C
       IDIST = 0
   100 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
@@ -1586,8 +1761,11 @@ C        H2M is modified in MP2DEN and it will be needed below if
 C        MP2FRO true.
 C
          IF (MP2FRO) CALL DCOPY(N2ORBX,H2M,1,WRK(KH2M1),1)
-         IF ( IFRMP2(IC).EQ.0 ) THEN
-C        If ( IC not frozen   ) then
+         IF (IPRMP2 .GE. 10) THEN
+            WRITE(LUPRI,*) 'MP2MUL IC, ID =',IC,ID
+         END IF
+         IF ( IFRMP2(IC).EQ.0 .AND. IFRMP2(ID).EQ.0 ) THEN
+C        If ( IC and ID not frozen   ) then
             CALL MP2DEN(NFRMP2,IFRMP2,ICHO,IDPA,ICHDP,ISYMCD,H2PHD,DONE,
      *                  COEMP2,IADR1,ORBEN,H2M,H2D,EMP2,0)
 C           CALL MP2DEN(NFROZ,IFROZ,ICHO,IDPA,ICHDP,ISYMCD,H2PHD,DONE,
@@ -1603,7 +1781,7 @@ Cmjp  in MP2DEN assuming no frozen orbitals. If the argument is
 Cmjp  >= 0 then we take account of any frozen orbitals.
 C
          IF ( MP2FRO ) THEN
-         IF ( IFRRHF(IC) .EQ. 0 ) THEN
+         IF ( IFRRHF(IC) .EQ. 0 .AND. IFRRHF(ID) .EQ. 0 ) THEN
             CALL MP2DEN(NFRRHF,IFRRHF,ICHO,IDPA,ICHDP,ISYMCD,H2PHD,
      *                  DONEFL,COEMP2,IADR1,ORBEN,WRK(KH2M1),H2D,
      *                  EMP2FL,-1)
@@ -1635,28 +1813,36 @@ C  /* Deck fckifr */
       SUBROUTINE FCKIFR(IFRRHF)
 C
 C  941005-hjaaj
-C  Set IFRRHF(NORBT) to 1 if orbital is frozen in RHF
+C  Set IFRRHF(I) to 1 if orbital no. I is frozen in RHF
+C  or open shell orbital ("active orbital")
 C  otherwise to 0
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IFRRHF(NORBT)
 C
 C Used from common blocks:
-C   INFORB : NSYM, NORBT, IORB(8)
-C   SCBRHF : NFRRHF(8)
+C   INFORB : NSYM, NORBT, IORB(8), NASH(8)
+C   SCBRHF : NFRRHF(8), NRHF(8)
 C
-#include <inforb.h>
-#include <scbrhf.h>
+#include "inforb.h"
+#include "scbrhf.h"
 C
       CALL IZERO(IFRRHF,NORBT)
-      DO 100 ISYM = 1,NSYM
+      DO  ISYM = 1,NSYM
          IF (NFRRHF(ISYM) .GT. 0) THEN
-            IORBI = IORB(ISYM)
-            DO 200 I = IORBI+1,IORBI+NFRRHF(ISYM)
+            IOFFI = IORB(ISYM)
+            DO  I = IOFFI+1,IOFFI+NFRRHF(ISYM)
                IFRRHF(I) = 1
-  200       CONTINUE
+            END DO
          END IF
-  100 CONTINUE
+         NASHI = NASH(ISYM)
+         IF (NASHI .GT. 0) THEN
+            IOFFI = IORB(ISYM) + NRHF(ISYM)
+            DO  I = IOFFI+1,IOFFI+NASHI
+               IFRRHF(I) = 1
+            END DO
+         END IF
+      END DO
       RETURN
       END
 C  /* Deck mp2phd */
@@ -1678,7 +1864,7 @@ C Scratch:
 C   WRK(kfrsav:kfrsav-1+lfrsav)
 C   H2CD(NORBT,NORBT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2PHD(NP,NH,*), H2CD(NORBT,NORBT)
       DIMENSION WRK(*)
 C
@@ -1688,23 +1874,23 @@ C   INFIND : ISMO(*),?
 C   INFMP2 : NP,NH,?
 C   INFPRI : ?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infmp2.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infmp2.h"
+#include "infpri.h"
 C
       LOGICAL AHOLE, BHOLE, CHOLE, DHOLE
-#include <line.h>
-      DIMENSION NEEDTP(6)
-      DATA NEEDTP /0,1,1,1,1,0/
-C     ... only particle-hole distributions needed
-C         assumed: NRHF(isym) .ge. NISH(isym)
-C              and NVIR(isym) .le. NSSH(isym)
-#include <line.h>
+
+      DIMENSION NEEDTP(-4:6)
 C
       CALL QENTER('MP2PHD')
+
+      NEEDTP(-4:6) = 0 ! negative: frozen orbital in distribution
+      NEEDTP( 2:5) = 1 !  ... only particle-hole distributions needed
+                       !      assumed: NRHF(isym) .ge. NISH(isym)
+                       !           and NVIR(isym) .le. NSSH(isym)
 C
 C     >>> zero H2PHD
 C
@@ -1713,7 +1899,7 @@ C
 C
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDTP(6)
+C     Loop over Mulliken distributions allowed in NEEDTP(*)
 C
       KFREE = KFRSAV
       LFREE = LFRSAV
@@ -1722,8 +1908,6 @@ C
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
-         ICSYM = ISMO(IC)
-         IDSYM = ISMO(ID)
          CHOLE = ( INDXPH(IC) .GT. 0 )
          DHOLE = ( INDXPH(ID) .GT. 0 )
 C
@@ -1744,6 +1928,8 @@ C            Do we want this distribution this time ?
 C     ... No, we don't
          ICHO   = INDXPH(IC)
          IDPOFF = (IDPA - IPLOW) * NH
+         ICSYM = ISMO(IC)
+         IDSYM = ISMO(ID)
          ICDSYM = MULD2H(ICSYM,IDSYM)
 C
 C        loop over ( A B / C D ) of ( p h / h p ) type
@@ -1756,7 +1942,7 @@ C
                IAH   =   INDXPH(IA)
                IASYM = ISMO(IA)
                IBSYM = MULD2H(IASYM, ICDSYM)
-               IBST  = IORB(IBSYM) + NRHF(IBSYM) + 1
+               IBST  = IORB(IBSYM) + NRHF(IBSYM) + NASH(IBSYM) + 1
                IBEND = IORB(IBSYM) + NORB(IBSYM)
                DO 200 IB = IBST,IBEND
                   IBP = - INDXPH(IB)
@@ -1794,55 +1980,64 @@ C           IPHORD(NORBT), GIVE SYMMETRY ORDERED INDEX FOR PARTICLE OR
 C                          HOLE INDEX
 C           IFRMP2(NORBT), .EQ.1 FOR FROZEN MP2 ORBITAL ELSE .EQ.0
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NSYM, NRHF(NSYM), NVIR(NSYM), NFRMP2(NSYM), ...
 C  INFMP2 : IPHORD, MP2FRO, INDXPH, IFRMP2,NP,NH
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infmp2.h"
       DIMENSION IADR1(MAXVIR,MAXOCC)
-#include <infind.h>
+#include "infind.h"
 C
       CALL QENTER('MP2SET')
 C
-      NH = NRHFT
-      NP = NORBT - NRHFT
+      NH = NRHFT + NASHT
+      NP = NORBT - NH
 C
       IPH = 0
       IH  = 0
       IP  = 0
-      IORBT = 0
       CALL IZERO(IFRMP2,NORBT)
       IMP2 = 0
       DO 300 ISYM = 1,NSYM
          NRHFI = NRHF(ISYM)
-         NVIRI = NVIR(ISYM)
+         NASHI = NASH(ISYM)
+         NOCCI = NRHFI + NASHI
+         NVIRI = NORB(ISYM) - NOCCI
          NFRMPI= NFRMP2(ISYM)
-         DO 100 I = 1,NRHFI
+         DO  I = 1,NRHFI
             IPH = IPH + 1
             IH  = IH  + 1
             IPHORD(IH)  = IPH
             INDXPH(IPH) = IH
             IF (I .LE. NFRMPI) THEN
-               IMP2        = IMP2 + 1
                IFRMP2(IPH) = 1
+               IMP2        = IMP2 + 1
             END IF
-  100    CONTINUE
-         DO 200 I = 1,NVIRI
+         END DO
+         DO  I = 1,NASHI
+            IPH = IPH + 1
+            IH  = IH  + 1
+            IPHORD(IH)  = IPH
+            INDXPH(IPH) = IH
+            IFRMP2(IPH) = 1   ! open shell orbitals are always frozen
+!           IMP2        = IMP2 + 1
+         END DO
+         DO  I = 1,NVIRI
             IPH = IPH + 1
             IP  = IP  + 1
             IPHORD(NH+IP) = IPH
             INDXPH(IPH)   = -IP
-            IF (NRHFI+I .LE. NFRMPI) THEN
+            IF (NOCCI+I .LE. NFRMPI) THEN
 C           ... code for freezing low-lying virtuals /hjaaj Oct 09
-               IMP2        = IMP2 + 1
                IFRMP2(IPH) = 1
+               IMP2        = IMP2 + 1
             END IF
-  200    CONTINUE
+         END DO
   300 CONTINUE
 C
 C     Any frozen orbital in MP2?
@@ -1855,13 +2050,13 @@ C
          CALL IZERO(NPHSYM,NSYM)
          DO I = 1,NH
             II = IPHORD(I)
-            IF (IFRMP2(II).EQ.1) GOTO 500
+         IF (IFRMP2(II).EQ.1) CYCLE
             DO J = 1,NP
                JA = IPHORD(NH+J)
+            IF (IFRMP2(JA).EQ.1) CYCLE
                KSYM = MULD2H(ISMO(II),ISMO(JA))
                NPHSYM(KSYM) = NPHSYM(KSYM) + 1
             ENDDO
- 500     CONTINUE
          ENDDO
          NPHMAX = NPHSYM(1)
          DO I = 2,NSYM
@@ -1870,7 +2065,7 @@ C
 C
 C Determine ph offset array IADR1(VIRT,OCC) for symmetry 1
 C
-         CALL IZERO(NPHTOT,NSYM)
+         NPHTOT(1:8) = 0
          CALL PHADR1(IADR1,1)
 C
       CALL QEXIT('MP2SET')
@@ -1882,20 +2077,20 @@ C
 C Pack or unpack ph-array for MP2/SOPPA.
 C
 C If IWAY.LT.0 then unpack the linear array XKP into XK. Else pack the
-C   the array XK into XKP. 
+C   the array XK into XKP.
 C If IPHLAB>0, pack XK(OCC,VIRT); IPHLAB<0 C pack XK(VIRT,OCC),
 C   and IPHLAB=0, pack both (XK(OCC,VIRT) and XK(VIRT,OCC))
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XK(NORBT,NORBT), XKP(*)
 C
 C Used from common blocks:
 C   INFORB: NSYM,NORBT,MULD2H, N2ORBX , NOCC(), ...
 C   INFMP2: NFRMP2(*)
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       IF (IWAY .LT. 0) CALL DZERO(XK,N2ORBX)
 C
@@ -1956,38 +2151,41 @@ C  /* Deck phadr1 */
 C
 C Written by Martin Packer 090394.
 C
-C IADR1(A,I) is an address C array giving the offsets to
+C The address of the MP2 first order 2p2h coefficients
+C   kappa(ia,jb) er IADR1(B,J) + IADR2(A,I)
+C
+C IADR1(A,I) is an address array giving the offsets to
 C   the set of ph excitations associated with A,I.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
-      INTEGER A, AA
+      INTEGER   A, AA
       DIMENSION IADR1(MAXVIR,MAXOCC)
 C
 C
-      CALL ISETVC(IADR1,-100 000 000,MXCORB*MAXOCC)
+      CALL ISETVC(IADR1,-100 000 000,MAXVIR*MAXOCC)
 C     call isetvc(ivector,ivalue,ndim)
       IAB = 0
       NPHTOT(KSYMOP) = 0
       DO II = 1,NH
         I = IPHORD(II)
-        IF (IFRMP2(I) .EQ. 0) THEN
-           DO AA = 1,NP
-              A = IPHORD(NH+AA)
-              IASYM = MULD2H(ISMO(I),ISMO(A))
-              JBSYM = MULD2H(IASYM,KSYMOP)
-              NPHTOT(KSYMOP) = NPHTOT(KSYMOP) + NPHSYM(JBSYM)
-              IADR1(AA,II) = IAB
-              IAB = IAB + NPHSYM(JBSYM)
-           ENDDO
-         END IF
+      IF (IFRMP2(I) .EQ. 1) CYCLE
+         DO AA = 1,NP
+            A = IPHORD(NH+AA)
+         IF (IFRMP2(A) .EQ. 1) CYCLE
+            IASYM = MULD2H(ISMO(I),ISMO(A))
+            JBSYM = MULD2H(IASYM,KSYMOP)
+            NPHTOT(KSYMOP) = NPHTOT(KSYMOP) + NPHSYM(JBSYM)
+            IADR1(AA,II) = IAB
+            IAB = IAB + NPHSYM(JBSYM)
+         ENDDO
       ENDDO
       RETURN
       END
@@ -2001,14 +2199,14 @@ C   kappa(ia,jb) er IADR1(B,J) + IADR2(A,I)
 C
 C Based on code written by Erik Kragh Dalskov fall 1994.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IADR2(NCOL,NROW)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infmp2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infmp2.h"
 C
       INTEGER A,AA,ASYM,A1OFF,AST
 C

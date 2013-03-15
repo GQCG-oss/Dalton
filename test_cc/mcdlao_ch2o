@@ -30,7 +30,7 @@ H     1.7657146600000000  0.0000000000000000  2.2348856500000000       *
 #  DALTON INPUT 1: Gauge origin in (0,0,0)
 #######################################################################
 cat > mcdlao_ch2o__1.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .THETA
@@ -46,7 +46,7 @@ XYZ-ALL
 .CC
 *ORBITAL
 .NOSUPSYM
-*HF INPUT
+*SCF INPUT
 .THRESH
  1.0d-10
 *CC INPUT
@@ -90,13 +90,13 @@ XDIPLEN dh/dBZ  YDIPLEN
 YDIPLEN dh/dBX  ZDIPLEN
 ZDIPLEN dh/dBY  XDIPLEN
 .USEPL1
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 #  DALTON INPUT 2: Gauge origin in (0,0,25)
 #######################################################################
 cat > mcdlao_ch2o__2.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .THETA
@@ -112,7 +112,7 @@ XYZ-ALL
 .CC
 *ORBITAL
 .NOSUPSYM
-*HF INPUT
+*SCF INPUT
 .THRESH
  1.0d-10
 *CC INPUT
@@ -156,7 +156,7 @@ XDIPLEN dh/dBZ  YDIPLEN
 YDIPLEN dh/dBX  ZDIPLEN
 ZDIPLEN dh/dBY  XDIPLEN
 .USEPL1
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
@@ -303,7 +303,7 @@ PASSED=1
 for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

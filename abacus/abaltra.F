@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  FILE: abacus/abaltra.F
 C  PRINCIPAL AUTHOR: Hans Joergen Aa. Jensen 1992, 1995
@@ -67,9 +57,9 @@ C  FQL(NORBT,NASHT) : FQ matrix for London integrals
 C Scratch:
 C  WRK(LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
       DIMENSION H2LAC(*), FQL(*), CMO(*), PVSQ(N2ASHX,NASHT,NASHT)
       DIMENSION WRK(LWRK)
 C
@@ -78,10 +68,10 @@ C  INFORB : NASHT,NBAST,N2BASX,N2ASHX
 C  INFIND : NSM()
 C  INFTRL : NDAC(),MXNDAO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
 C
       CALL QENTER('LONTRA')
@@ -221,9 +211,9 @@ C Written 2.Oct.1992 hjaaj
 C
 C Driver for transformation of two-electron London integrals (H2L)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
       DIMENSION H2LAC(*),FQAOAC(NBAST,NASHT),CMO(NCMOT),PVF(*)
       DIMENSION H2LBUF(MXNDAO,*),INDDIS(NBAST,NBAST),WRK(*)
       DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
@@ -233,11 +223,11 @@ C   INFORB : NCMOT,NBAST,NASHT,...
 C   INFIND : ISAO(*)
 C   INFTRL : MXNDAO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infind.h"
 #include "inftrl.h"
 C
       PARAMETER (LBINT = 600)
@@ -454,15 +444,15 @@ C
 C IH1XX(IBSYM,IABSYM) is off-set for block (IASYM,IBSYM) in H1XX
 C                     of symmetry IABSYM (IASYM = MULD2H(IBSYM,IABSYM))
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
 C
 C Used from common blocks
 C   INFORB: NSYM, NASH(8), NBAS(8), MULD2H(8,8)
 C   INFTRL: IH1AO(8,8),IH1AC(8,8),NDAO(8), NDAC(8)
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "inftrl.h"
 C
       MXNDAO = 0
@@ -543,7 +533,7 @@ C
 C Input : H2LBUF(pq,indrs) = (pq / rs)
 C Output: H2LBUF(uv,indrs) = (uv / rs)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION H2LBUF(MXNDAO,*), CMO(NCMOT)
       DIMENSION INDDIS(NBAST,NBAST), H2LWRK(*)
@@ -553,11 +543,11 @@ C   INFORB : NBAST, NCMOT
 C   INFIND : ISAO(*)
 C   INFTRL : MXNDAO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
 C
       DO 800 KR = 1,NBAST
@@ -609,14 +599,14 @@ C         IABSYM = symmetry of H2CDAO, H2CDAC matrices
 C Output: H2CDAC(u,v) = (u v | c d) =
 C         sum(b) [ sum(a) [ CMO(a,u) H2CDAO(a,b) ] CMO(b,v) ]
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(NCMOT), H2CDAO(*), H2CDAC(*), WRK(*)
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NASH(*), NBAS(*), NISH(*), ICMO(*)
 C  INFTRL : IH1AO(8,8), IH1AC(8,8)
 C
-#include <inforb.h>
+#include "inforb.h"
 #include "inftrl.h"
 C
       DO 100 IBSYM = 1,NSYM
@@ -656,10 +646,10 @@ C IBXYZ : =1,2,3 for Bx,By,Bz respectively.
 C IBUF  : Points to start element in label buffer.
 C H2LAO : H2LAO(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION H2LAO(MXNDAO,*), IBUF(4,600), WRK(600*(IRAT + 1) + 1)
       DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
 C
@@ -668,11 +658,11 @@ C   INFORB : IBAS(8)
 C   INFIND : IROW(*),ISAO(*)
 C   INFTRL : MXNDAO
 C
-#include <nuclei.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "nuclei.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
 C
 C     Local variables:
@@ -680,7 +670,7 @@ C
       CHARACTER*8 KEY
       LOGICAL DOCOOR, FIRST
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       CALL REWSPL(LULONA)
       KEY = 'AO2MGINT'
@@ -693,6 +683,7 @@ C
          NIBUF = 1
          NBITS = 8
       ELSE
+         call quit('TRLRAO only implemented for < 256 basis functions')
          NIBUF = 2
          NBITS = 16
       END IF
@@ -761,7 +752,7 @@ C 5-Oct-1992 Hans Joergen Aagaard Jensen
 C 'AH2' for Add to H2LAC
 C Add (uv / rs) contribution to (uv / xy) (x .ge. y)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMOR(NBASR,NASHR), CMOS(NBASS,NASHS)
       DIMENSION INDDIS(NBAST,NBAST)
       DIMENSION H2UVRS(MXNDAO,*), H2LAC(N2ASHX,NASHT,NASHT)
@@ -772,8 +763,8 @@ C Used from common blocks:
 C   INFORB : ??
 C   INFTRL : NDAC(8),MXNDAO,NXNDAC
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "inftrl.h"
 C
       IF (IPRINT .GT. 25) THEN
@@ -841,13 +832,13 @@ C 8-Oct-1992 hjaaj
 C   NBLK(8) will typically be NASH(8)
 C   INDBLK(8,8) will typically be IH1AC(8,8)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2UVRY(*), H2VUYR(*), NBLK(8), INDBLK(8,8)
 C
 C Used from common blocks:
 C   INFORB : NSYM, MULD2H()
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DO 700 IBSYM = 1,NSYM
          IASYM = MULD2H(IBSYM,IABSYM)
@@ -865,7 +856,7 @@ C  /* Deck trlh2u */
 C
 C 6-Oct-1992 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2LAC(N2ASHX,NASHT,NASHT)
       DIMENSION INDAC(NASHT,NASHT), WRK(*)
 C
@@ -873,10 +864,10 @@ C Used from common blocks:
 C  INFORB : NASHT,NASH(),IASH()
 C  INFIND : NSM()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       PARAMETER (IWAY = -1, DM1 = -1.0D0)
 C     ... IWAY=-1 to unpack
@@ -913,7 +904,7 @@ C
 C PVXS(uv,1) =  sum(y) PVF(uv,x,y) * CMO(s,y) =  [uv|xs]
 C PVXS(uv,2) = -sum(y) PVF(uv,y,x) * CMO(s,y) = -[uv|sx] = -[vu|xs]
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMOS(NBASS,NASHS), PVF(N2ASHX,NASHT,NASHT)
       DIMENSION PVXS(MXNDAC,2)
 C
@@ -923,7 +914,7 @@ C Used from common blocks:
 C  INFORB : NASHT
 C  INFTRL : NDAC(8), IH1AC(8,8)
 C
-#include <inforb.h>
+#include "inforb.h"
 #include "inftrl.h"
 C
       NDACUV = NDAC(KUVSYM)
@@ -947,13 +938,13 @@ C 7-Oct-1992 hjaaj
 C
 C FQL(a,x) = sum(r) FQAOAC(r,x) * CMO(r,a)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FQL(NORBT,NASHT), FQAOAC(NBAST,NASHT), CMO(NCMOT)
 C
 C Used from common blocks:
 C  INFORB : NORBT,NASHT,NBAST,NCMOT,NSYM
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DO 800 KSYM = 1,NSYM
          NASHK  = NASH(KSYM)
@@ -983,13 +974,13 @@ C
 C IWAY .ge. 0 : Pack H1SQ in H1PK
 C      else   : Unpack H1PK in H1SQ
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H1SQ(NBLKT,NBLKT), H1PK(*), NBLK(8), IBLK(8)
 C
 C Used from common blocks:
 C   INFORB : NSYM,MULD2H
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       N2BLKX = NBLKT*NBLKT
       IF (IWAY .LT. 0) CALL DZERO(H1SQ,N2BLKX)

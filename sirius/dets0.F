@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck setdis */
       SUBROUTINE SETDIS(SYMPRO,DISSYM,ORBSYM,NORB,MAXSYM,
@@ -77,7 +67,7 @@ c
       DIMENSION NEXFST(NSTRIN)
       PARAMETER (MXEXCI = 5000)
       DIMENSION I1(MXEXCI),I2(MXEXCI)
-#include <priunit.h>
+#include "priunit.h"
 c
       DO 1000 ISTRIN = 1, NSTRIN
         IBASE = 1
@@ -150,7 +140,7 @@ C
 C FIND LARGEST SYMMETRY OCCURING IN ORBSYM OR PRODUCTS OF ORBSYM
 C
       INTEGER ORBSYM(NORB)
-#include <priunit.h>
+#include "priunit.h"
 C
       MAXSYM = 1
       DO 100 IORB = 1,NORB
@@ -184,9 +174,9 @@ C
       DIMENSION NEWORD(NSTRIN),NSTASM(MAXSYM),ISTBAS(MAXSYM)
       DIMENSION NEWORH(MAXSTR)
       DIMENSION NSTASO(NOCCTP,MAXSYM),ISTASO(NOCCTP,MAXSYM)
-#include <priunit.h>
+#include "priunit.h"
 C
-#include <ciinfo.h>
+#include "ciinfo.h"
 C
 C OUTPUT : NSTASO(IOCC,ISYM) : NUMBER OF STRINGS OF SYMMETRY ISYM
 C                              AND OCCUPATION IOCC
@@ -286,7 +276,7 @@ C ADRESS OF STRING IOCC
 C
       INTEGER   IOCC(NEL),NEWORD(*)
       INTEGER   Z(MXCORB,MAXEL)
-#include <priunit.h>
+#include "priunit.h"
 C
       IZ = 1
       DO 100 I = 1,NEL
@@ -313,19 +303,19 @@ C CALCULATE AND STORE INFORMATION ABOUT SINGLE EXCITATIONS OBTAINED FROM
 C STRINGS
 C
 c October 90 : Excitations packed in a onedimensional array
-#include <implicit.h>
+#include "implicit.h"
 c. Input
       INTEGER   STRING(NEL,NSTRIN),Z(MXCORB,MAXEL)
 c. Output
       INTEGER   TIJ(MAXTL),TTO(MAXTL),NEWORD(NSTRIN),NEXFST(*)
 C
-#include <priunit.h>
+#include "priunit.h"
 C
 #if defined (VAR_STACKMEM)
       INTEGER   OCC(NORB),UNOCC(NORB),ISIGN(NORB)
       INTEGER   IEXP(NORB),STRIN2(NORB)
 #else
-#include <maxash.h>
+#include "maxash.h"
       INTEGER   OCC(MAXASH),UNOCC(MAXASH),ISIGN(MAXASH)
       INTEGER   IEXP(MAXASH),STRIN2(MAXASH)
 #endif
@@ -508,7 +498,7 @@ C
       INTEGER   SYMPRO(8,8),ORBSYM(NORB)
       INTEGER   NEWORD(NSTRIN),NSTASM(MAXSYM),ISTBAS(MAXSYM)
       INTEGER   NEWORH(MAXSTR)
-#include <priunit.h>
+#include "priunit.h"
 C
 C OUTPUT : NSTASM(J) : NUMBER OF STRINGS OF SYMMETRY J
 C          ISTBAS(J) : OFFSET FOR STRING OF SYMMETRY J
@@ -628,7 +618,7 @@ C
       DIMENSION IOFF(NOCTPA,MAXSYM)
       DIMENSION IOOS(NOCTPB,NOCTPA,MAXSYM), NDTAS(MAXSYM)
       INTEGER   SYMPRO(8,8)
-#include <priunit.h>
+#include "priunit.h"
 C
       IOFF(1,1) = 1
       DO 100 IASYM = 1,MAXSYM
@@ -681,7 +671,7 @@ C
       PARAMETER (MXEXCI = 5000)
       DIMENSION I1(MXEXCI),I2(MXEXCI)
       DIMENSION NXFST(NSTRIN)
-#include <priunit.h>
+#include "priunit.h"
 C
       CALL ISETVC(TSYM,0,(NSTRIN*(MAXSYM+1)))
       IOFF = 1
@@ -760,22 +750,22 @@ C            described in Chapter 8 Setions D.1 and D.2 of MOTECC-90
 C            "RAS-CI Expansions in a CSF basis" and "Slater
 C            Determinants and Strings"
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER   SYMPRO
       DIMENSION SYMPRO(8,8), NRAS1(8), NRAS2(8), NRAS3(8)
       DIMENSION XNDXCI(*), WORK(LFREE)
       LOGICAL   REFSPC
-#include <priunit.h>
-#include <iratdef.h>
+#include "priunit.h"
+#include "iratdef.h"
 C
-#include <mxpdim.h>
-#include <maxash.h>
-#include <detbas.h>
-#include <ciinfo.h>
-#include <strnum.h>
-#include <mxblk.h>
-#include <spinfo.h>
-#include <csfbas.h>
+#include "mxpdim.h"
+#include "maxash.h"
+#include "detbas.h"
+#include "ciinfo.h"
+#include "strnum.h"
+#include "mxblk.h"
+#include "spinfo.h"
+#include "csfbas.h"
 C
 C
       IF ( NTEST .GT. 0 ) THEN

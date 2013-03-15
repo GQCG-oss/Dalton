@@ -116,19 +116,19 @@ CTRL[1]=2
 ERROR[1]="SYMMETRY NOT CORRECT"
 
 # SCF energy
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-224\.29003482[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-224\.29003482" $log | wc -l`
 TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
 ERROR[2]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy
-CRIT1=`$GREP "\= MP2 second order energy \: * \-224\.9639936(1|2)[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\= MP2 second order energy \: * \-224\.963993" $log | wc -l`
 TEST[3]=`expr	$CRIT1`
 CTRL[3]=1
 ERROR[3]="MP2 ENERGY NOT CORRECT"
 
 # MCSCF energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-224\.5107512463[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-224\.5107512463" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="MCSCF ENERGY NOT CORRECT"

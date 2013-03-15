@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c  /* Deck cc_drv */
       SUBROUTINE CC_DRV(WORK,LWORK)
@@ -81,6 +71,8 @@ C              CC_TMCAL    calculation of third order moments
 C
 C              CC_MCDCAL   calculation of B terms in MCD
 C
+C              CC_LANCZOS_DRV tridiagonal matrix build and LR Lanczos
+C
 C     Loop over all models specified. The order is supposed
 C     to be the optimal one from a computational point of view.
 C     Energy calculations are restarted from the preceding
@@ -99,43 +91,44 @@ C            CC(3),CCSDR(3), CC3,CC1A,CC1B
 C            (see list below for name of logical flags.)
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <ccgr.h>
-#include <cclrinf.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccexci.h>
-#include <prpc.h>
-#include <ccfop.h>
-#include <ccfro.h>
-#include <eribuf.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <grdccpt.h>
-#include <ccfield.h>
-#include <qm3.h>
-
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "ccgr.h"
+#include "cclrinf.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccexci.h"
+#include "prpc.h"
+#include "ccfop.h"
+#include "ccfro.h"
+#include "eribuf.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "grdccpt.h"
+#include "ccfield.h"
+#include "qm3.h"
+C
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
+C
       PARAMETER(NMODEL = 18)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
       LOGICAL   CC3RSP, CCR12RSP, CCR12LIM
-#if defined CC_AARHUS
       PARAMETER (CC3RSP = .TRUE.)
-#else
-      PARAMETER (CC3RSP = .FALSE.)
-#endif
       DIMENSION WORK(LWORK)
       CHARACTER FILPQIM*(6), FILXYM*(6)
       PARAMETER (FILPQIM = 'CCPQ00', FILXYM = 'CC_XYM')
@@ -150,6 +143,7 @@ C
       INTEGER ISYEXC2(MAXEXCI),IMULTE2(MAXEXCI)
 C
       CALL QENTER('CC_DRV')
+      CALL GETTIM(TSTART,WSTART)
 C
       IF (.NOT. (ONLYMO)) THEN
       CALL CCTAPINI
@@ -332,10 +326,12 @@ C
 C
 C-----------------------------------------------------------------
 C     flag for ground state zeroth-order Lagrange multiplier:
+C     Lanczos added. Sonia
 C-----------------------------------------------------------------
       LTBAR0 = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
      &          CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCTM.OR.
      &          CCMCD.OR.CCEXLR.OR.MOLGRD.OR.CCSLV.OR.CCDERI.OR.
+     &          CCLRLCZ.OR.
      &          CCOPA.OR.CCTPA.OR.CCXOPA)
 
 C-----------------------------------------------------------------
@@ -368,9 +364,11 @@ C-----------------------------------------------------------------
 
 C-----------------------------------------------------------------
 C     flag for response calculation (-> execute CCRSPSYM routine):
+C     Lanczos added. Sonia
 C-----------------------------------------------------------------
       LRSPSYM = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
      &           CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCTM.OR.
+     &           CCLRLCZ.OR.
      &           CCMCD.OR.CCEXLR.OR.CCOPA.OR.CCTPA.OR.CCXOPA)
 
       RSPIM   = RSPIM .OR. LRSPSYM .OR. LTBAR0
@@ -383,7 +381,7 @@ C-----------------------------------------------------------------
      &           .NOT. R12PRP
       IF (CCR12RSP.AND.(IANCC2.NE.1)) THEN
         WRITE(LUPRI,*) 'CCR12RSP = ',CCR12RSP
-        WRITE(LUPRI,*) 'IANR12 = ',IANCC2
+        WRITE(LUPRI,*) 'IANR12   = ',IANCC2
         CALL QUIT('Sorry, only Ansatz 1 implemented '//
      &            'for CC response')
       END IF
@@ -413,7 +411,7 @@ C------------------------------------------
 C     Sort AO-integrals into distributions.
 C------------------------------------------
 C
-      IF (.NOT. DIRECT) THEN
+      IF ((.NOT. CHOINT) .AND. (.NOT. DIRECT)) THEN
          CALL CCSD_SORTAO(WORK,LWORK)
       ENDIF
 C
@@ -421,7 +419,7 @@ C-----------------------------------------------------------
 C     Calculate the ( ia | jb ) integrals and write to disk.
 C-----------------------------------------------------------
 C
-      IF (.NOT.LISKIP) THEN
+      IF ((.NOT. CHOINT) .AND. (.NOT.LISKIP)) THEN
          IF (LMULBS.AND.MMOD.LE.1.AND.MP2.AND.(.NOT.NATVIR).AND.
      *       (.NOT.R12PRP)) THEN
            ! if only MP2-R12 the (IA|JB) integrals are not needed
@@ -573,10 +571,6 @@ C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C
          NSLV = MAX(1,NCCSLV)
 C
-C     Dummy assignment to avoid weird bug on SUN.
-C     This should only be a temporary solution - VB
-C
-C         NN = NSLV + NCCSLV
          DO 9999 ISLV = 1, NSLV
 C
           LMAXCU = LMAXCC(ISLV)
@@ -610,6 +604,12 @@ C
            INTTR = .FALSE.
 C
            IF (CCP2) CCS = .TRUE.
+C KS: For CCSDR(3)/MM model we use vacuum triples amplitudes, i.e. we skip the
+C call to CC_FOP by a dirty goto
+           IF (CCR3 .AND. CCSLV) THEN
+             LSTBTR=.TRUE.
+             GOTO 32
+           ENDIF
 C
 C--------------------------------------
 C          ****************************
@@ -618,12 +618,14 @@ C          ****************************
 C--------------------------------------
 C
 
-           IF ((CCFOP.OR.LTBAR0).AND.(.NOT. 
-     *       (CCR3.OR.CCR1A.OR.CCR1B.OR.CCRT.OR.CCR3))) THEN
+           IF ( (CCFOP.OR.LTBAR0) .AND. 
+     &          (.NOT. (CCR3.OR.CCR1A.OR.CCR1B.OR.CCRT.OR.CCR3))) THEN
 C
              IF (CCR12.AND.MP2.AND..NOT.R12PRP) THEN
-                 WRITE(LUPRI,*) 'Please specify R12PRP in your input...'
-                 WRITE(LUPRI,*) 'CCFOP will be ignored...'
+                 NWARN = NWARN + 1
+                 WRITE(LUPRI,'(//A/A)')
+     &              'WARNING: Please specify R12PRP in your input...',
+     &              'WARNING: CCFOP will be ignored...'
              ELSEIF (.NOT. (CCSDT .AND. (.NOT. CC3))) THEN
                  !...................................
                  !SONIA: I am not sure but let us try
@@ -660,6 +662,7 @@ C
             ENDIF
          ENDIF
 C
+  32     CONTINUE
          IF (CCSLV .AND. DISCEX) THEN
 C           IF (CCEXCI .OR. CCEXGR .OR. LRSPSYM .OR. CCLRSD .OR.
 C     *         CCQR2R .OR. CCSM .OR. CCLR .OR. CCQR ) THEN
@@ -785,7 +788,9 @@ C        ***** Solve CC-response equations.*****
 C        ***************************************
 C-----------------------------------------------
 C
-         IF (LRSPSYM) THEN
+         !IF (LRSPSYM) THEN
+         !Do not enter if Lanczos calculation. Sonia
+         IF ((LRSPSYM).and.(.NOT.CCLRLCZ)) THEN
            CALL CC_SOLRSP(WORK,LWORK,APROXR12)
          END IF
 C
@@ -829,12 +834,8 @@ C
          END IF
 
          IF (CCOPA) THEN 
-#if defined CC_AARHUS
            IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) 
      &          .and. (.not. CCR12)) THEN
-#else
-           IF ((CCS .or. CC2 .or. CCSD) .and. (.not. CCR12)) THEN
-#endif
             CALL CC_OPA(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'One-photon absorption strengths'//
@@ -844,7 +845,7 @@ C
 C
 C--------------------------------------------------------
 C        ************************************************
-C        ***** CC quadratic reponse second residues *****
+C        **** CC quadratic response second residues *****
 C        ************************************************
 C--------------------------------------------------------
 C
@@ -857,7 +858,6 @@ C
            END IF
          END IF
 
-#if defined CC_AARHUS
          IF (CCXOPA) THEN
            IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP))
      &          .and. (.not. CCR12)) THEN
@@ -867,7 +867,6 @@ C
      &         ' are not implemented for the requested model.'
            END IF
          END IF
-#endif
 C
 C-------------------------------------------------------
 C        ***********************************************
@@ -1039,6 +1038,34 @@ C
             ENDIF
 C
          ENDIF
+C---------------------------------------------------------
+C        *************************************************
+C        ***** CC LANCZOS: damped response via Lanczos ***
+C        *************************************************
+C---------------------------------------------------------
+         IF (CCLRLCZ) THEN
+           IF ((.not. CCR12).AND. (.NOT. CCSLV)) THEN
+            write(lupri,*)'CCLRLANCZOS: building the'//
+     &                    'Lanczos Chain'
+            !if (.false.) then
+               !IF (REDMEML) then
+               !  if (Debug_Sym) then
+                  CALL CC_LANCZOS_DRV(WORK,LWORK,APROXR12)
+               !  else
+               !   CALL CC_LANCZOS_drv2(WORK,LWORK,APROXR12)
+               !  end if
+               !ELSE
+               !   CALL CC_LANCZOS_drv(WORK,LWORK)
+               !END IF
+            !else
+            !   WRITE(LUPRI,*) 'Lanczos Using ATRR'
+            !   call cc_lanczos_drv3(work,lwork)
+            !end if
+           ELSE
+            WRITE(LUPRI,*) 'Lanczos Damped CC response theory'//
+     &         ' is not implemented for the requested model.'
+           END IF
+         ENDIF
 C
 C--------------------------------------------------
 C        ******************************************
@@ -1113,8 +1140,8 @@ C
       CALL GPCLOSE(LURES,'KEEP')
       CALL GPCLOSE(LUPRPC,'KEEP')
       CALL GPCLOSE(LUIAJB,'KEEP')
-      IF (LUAORC(0) .GT. 0) CALL GPCLOSE(LUAORC,'DELETE')
-      IF (LUINTR.GT.0) CALL GPCLOSE(LUINTR,'DELETE')
+      IF (LUAORC(0).GT.0) CALL GPCLOSE(LUAORC(0),'DELETE')
+      IF (LUINTR.GT.0)    CALL GPCLOSE(LUINTR,'DELETE')
       IF (LUINTA.GT.0) THEN
         IF (MOLGRD.AND.(.NOT.DIRECT)) THEN
           CALL GPCLOSE(LUINTA,'DELETE')
@@ -1154,6 +1181,19 @@ C
          IMULTE(IEX) = IMULTE2(IEX)
       ENDDO
 C
+      CALL GETTIM(TEND,WEND)
+      TUSED = TEND - TSTART
+      WUSED = WEND - WSTART
+      IF (IPRSTAT .GT. 0) THEN
+         WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for CC :',TUSED,WUSED
+         CALL FLSHFO(LUSTAT)
+      END IF
+      WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for CC :',TUSED,WUSED
+      CALL TSTAMP(' ',LUPRI)
+      CALL FLSHFO(LUPRI)
+C
       CALL QEXIT('CC_DRV')
 C
       END
@@ -1167,27 +1207,27 @@ C              cluster routines: ground state energies, excitation energies etc.
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "dummy.h"
       DIMENSION WORK(LWORK)
       CHARACTER*80  STR
       CHARACTER STHELP*10
       CHARACTER LABEL*10, LABEL1*8
       
-#include <codata.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cclr.h>
-#include <prpc.h>
-#include <ccpack.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <numder.h>
+#include "codata.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cclr.h"
+#include "prpc.h"
+#include "ccpack.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "numder.h"
 C
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
@@ -1260,11 +1300,11 @@ C
          NPRPCO = NPRPC
          DO I = 1, NPRPC
             READ(LUPRPC,
-     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *         IPRPC,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             WRITE(LUPRPCO,
-     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *         IPRPC,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             NPRPINSYM(ISYMIN) = NPRPINSYM(ISYMIN) + 1
@@ -1289,7 +1329,7 @@ C
 
             DO I = 1, NPRPC
                READ(LUPRPC,
-     *          '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *          '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *          IPRPC,ISYMIN,NORD,LABEL,WORK(KPRPC+I-1),
      *          LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             ENDDO
@@ -1358,9 +1398,9 @@ C     Ove Christiansen 14-11-1995
 C
 C     Purpose: set all model flags to false.
 C
-#include <implicit.h>
-#include <ccsdinp.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "ccsdinp.h"
+#include "cclr.h"
 C
       CALL QENTER('CC_FALSE')
 C
@@ -1395,12 +1435,12 @@ C     Ove Christiansen 13-2-1997
 C
 C     Purpose: Set energy for finite difference gradient calculation.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccgr.h>
-#include <ccfdgeo.h>
-#include <infopt.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccgr.h"
+#include "ccfdgeo.h"
+#include "infopt.h"
 C
       CALL QENTER('CC_FDGD')
 C
@@ -1442,9 +1482,9 @@ C
 *    Purpose: read flags from /ABAINF/ common block used in CC
 *
 *=====================================================================*
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
 
       LOGICAL MOLGRDCC
 
@@ -1467,8 +1507,8 @@ C
 *     Purpose: Initialize coupled cluster unit numbers and file names
 *
 *=====================================================================*
-#include <implicit.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "ccinftap.h"
 C
       CALL QENTER('CCTAPINI')
 C
@@ -1488,10 +1528,10 @@ C     Ove Christiansen Nov. 1999
 C
 C     Purpose: Write out operators.
 C
-#include <implicit.h>
-#include <ccsdinp.h>
-#include <ccroper.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "ccsdinp.h"
+#include "ccroper.h"
+#include "dummy.h"
 C
       CALL QENTER('CC_WPRPC  ')
 C
@@ -1517,10 +1557,10 @@ C
 C     Purpose: Reorder PRPC list to fit old PRPC2 lists.
 C              Property list for numerical differentiation.
 C
-#include <implicit.h>
-#include <prpc.h>
-#include <priunit.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "prpc.h"
+#include "priunit.h"
+#include "ccinftap.h"
       CHARACTER LABELI*10, LABXI*8, LABYI*8, LABZI*8, LABUI*8
       CHARACTER LABELJ*10, LABXJ*8, LABYJ*8, LABZJ*8, LABUJ*8
 C
@@ -1549,12 +1589,12 @@ C
       REWIND(LUPRPC)
        DO I = 1, NPRPC
          READ(LUPRPC,
-     *     '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *     '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *     IPRPCI,ISYMINI,NORDI,LABELI,PROPI,
      *     LABXI,LABYI,LABZI,LABUI,FRQYI,FRQZI,FRQUI,
      *     ISYEXI,ISPEXI,IEXI
          WRITE(LUPRPCTMP,
-     *     '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *     '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *     IPRPCI,ISYMINI,NORDI,LABELI,PROPI,
      *     LABXI,LABYI,LABZI,LABUI,FRQYI,FRQZI,FRQUI,
      *     ISYEXI,ISPEXI,IEXI
@@ -1577,7 +1617,7 @@ C
       REWIND(LUPRPCO)
       DO 300 I = 1, NPRPC
        READ(LUPRPCO,
-     *    '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *    '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *    IPRPCI,ISYMINI,NORDI,LABELI,PROPI,
      *    LABXI,LABYI,LABZI,LABUI,FRQYI,FRQZI,FRQUI,
      *    ISYEXI,ISPEXI,IEXI
@@ -1588,7 +1628,7 @@ C
        REWIND(LUPRPCTMP)
        DO 400 J = 1, NPRPC
         READ(LUPRPCTMP,
-     *     '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *     '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *     IPRPCJ,ISYMINJ,NORDJ,LABELJ,PROPJ,
      *     LABXJ,LABYJ,LABZJ,LABUJ,FRQYJ,FRQZJ,FRQUJ,
      *     ISYEXJ,ISPEXJ,IEXJ
@@ -1609,7 +1649,7 @@ C Take care with excitation energies !!!!
      *           (ABS(FRQZJ-FRQZI).LT.TOLE).AND.
      *           (ABS(FRQUJ-FRQUI).LT.TOLE)))) THEN
               WRITE(LUPRPC,
-     *          '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *          '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *          IPRPCI,ISYMINJ,NORDJ,LABELJ,PROPJ,
      *          LABXJ,LABYJ,LABZJ,LABUJ,FRQYJ,FRQZJ,FRQUJ,
      *          ISYEXJ,ISPEXJ,IEXJ
@@ -1637,9 +1677,9 @@ C     IF IOPT = 1 the properties on file is output.
 C     IF IOPT = 2 the properties in vector propin is output with
 C                 labels etc. comming from the prpc list.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <prpc.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "prpc.h"
       CHARACTER STHELP*10
       CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
       DIMENSION PROPIN(*)
@@ -1656,7 +1696,7 @@ C
       REWIND(LU)
       DO I = 1, NUOFPR
        READ(LU,
-     *      '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *      '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *      IPRPC,ISYMIN,NORD,LABEL,PROP,
      *      LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
        IF (LABEL .EQ. 'THE_END   ') THEN

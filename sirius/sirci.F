@@ -1,47 +1,37 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cimain */
       SUBROUTINE CIMAIN(WORK,LWORK,ICONV)
 C
 C 28-Jun-1985 hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION WORK(LWORK)
-#include <dummy.h>
+#include "dummy.h"
 C
       PARAMETER (MXCIDFT = 20)
 C
@@ -49,13 +39,14 @@ C Used from common blocks:
 C   INFINP: ICI0,NROOCI,MXCIMA,THRCI,LSYM
 C   INFORB: NCMOT,NASHT
 C   INFDIM: LCINDX
+C   dftcom: DFTADD
 C
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "dftcom.h"
 C
       LOGICAL ADDSRI_SAVE
 C
@@ -185,13 +176,13 @@ C  ICONV      number of CI states converged
 C             (NCROOT-ICONV states are not converged)
 C  ICROOT(*)  index of CI states not converged
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), INDXCI(*), ECI(*), ICROOT(*), WRK(*)
 C
-#include <iratdef.h>
-#include <thrldp.h>
+#include "iratdef.h"
+#include "thrldp.h"
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0, D1 = 1.0D0 )
-#include <dummy.h>
+#include "dummy.h"
       LOGICAL CINMEM
 C
 C Used from common blocks:
@@ -202,15 +193,15 @@ C   INFORB : NNASHX
 C   INFDIM : LCINDX,LACIMX,LBCIMX,LPHPMX,MAXPHP
 C   INFTAP : LUIT1,LUIT3,LUIT5
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <cicb01.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "cicb01.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C     Local variables
 C
@@ -312,7 +303,7 @@ C           ... try put H2AC on disk :
          LNEED = KW2 + LA + LB
          CALL ERRWRK('CICTL.CILIN',-LNEED,LWRK )
       END IF
-      IF (IPRERR .GT. 1) WRITE (LUERR,'(/A,I8/A,4I12/)')
+      IF (IPRSTAT .GT. 1) WRITE (LUSTAT,'(/A,I8/A,4I12/)')
      &   ' CICTL :  MAXSIM =',MAXSIM,
      &   ' KW1, KW2, LWRK  =',KW1,KW2,LWRK
 C
@@ -324,7 +315,7 @@ C
       MW3    = MAX(KW3 + 2 * MAXRC, KSVECS + MAXRC*MAXRC)
       IF (MW3 .GT. LWRK ) THEN
          MAXSIM = MAXSIM - 1 - (MW3 - LWRK ) / (2*NCONF)
-         WRITE (LUERR,'(/A,I8/)')
+         WRITE (LUSTAT,'(/A,I8/)')
      &      ' CICTL: MAXSIM REDUCED TO',MAXSIM
          IF (MAXSIM .GT. 0) GO TO 11
          CALL ERRWRK('CICTL.CIRED',MW3,LWRK )
@@ -340,6 +331,7 @@ C     *****************************************************************
 C
 C
       NCIRED = 0
+!     thrcix = 1.0d-11
       THRCIT = THRCIX
       NJCR   = NCROOT
       JCONV  = NCROOT
@@ -355,11 +347,17 @@ C        CALL TRACTL(ITRLVL,CMO,WRK,LWRK)
       END IF
       TIMITR = SECOND() - TIMITR
 C
-C     construct diagonal of CI matrix
+C     *** Obtain FCAC and H2AC integral matrices
 C
-      CALL CIINTS(DISKH2,CMO,INDXCI,WRK(KCDIAG),
+      CALL CIINTS(DISKH2,CMO,
      *            EMY,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
-C     CALL CIINTS(DISKH2,CMO,INDXCI,DIAG,EMY,FCAC,H2AC,WRK,LFREE)
+C     CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
+C
+C     *** Calculate the diagonal of the CI matrix.
+C
+      CALL CIDIAG(LSYM,.FALSE.,WRK(KFCAC),WRK(KH2AC),INDXCI,
+     &            WRK(KCDIAG),WRK(KW1),LW1)
+C     CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
 C
       EMY = EMY + POTNUC
       DO 50 I = 0,NCONF-1
@@ -669,7 +667,13 @@ C
   820 CONTINUE
 C
       IF (FLAG(67)) THEN
-         IPRNO = MAX(IPRI4,4)
+
+         WRITE (LUW4,'(//T6,A/T6,A/T6,A)')
+     &      '***********************************',
+     &      '*** CI natural orbital analysis ***',
+     &      '***********************************'
+
+         IPRNO = MAX(IPRI4-2,3) ! default: IPRI4 = IPRUSR + 5
          KCVEC = KW2
          KOCCNO= KCVEC + NCONF
          KUNO  = KOCCNO+ NOCCT
@@ -681,8 +685,6 @@ C
       DO 900 JSTATE = 1,NCROOT
          CALL READT(LUIT1,NCONF,WRK(KCVEC))
 C
-         WRITE (LUW4,'(//A)')
-     *      ' >>> SIRCI.CICTL natural orbital analysis <<<'
          IF (JSTATE .EQ. ISTACI) THEN
             WRITE (LUW4,2000) JSTATE
             IF (LUPRI .NE. LUW4) WRITE (LUPRI,2000) JSTATE
@@ -692,10 +694,12 @@ C
             IF (LUPRI .NE. LUW4) WRITE (LUPRI,2001) JSTATE
             NATORB = .FALSE.
          END IF
- 2000    FORMAT(/' CI eigenvector no.',I4,' (= the reference state)',
-     *          /' ------------------------------------------------')
- 2001    FORMAT(/' CI eigenvector no.',I4,
-     *          /' ----------------------')
+ 2000    FORMAT(/' ------------------------------------------------',
+     &          /' CI eigenvector no.',I4,' (= the reference state)',
+     &          /' ------------------------------------------------')
+ 2001    FORMAT(/' ----------------------',
+     &          /' CI eigenvector no.',I4,
+     &          /' ----------------------')
 C
          IF (P6FLAG(32) .OR. NATORB) THEN
 C           NATORB is true if CINO and reference state
@@ -705,7 +709,7 @@ C           NATORB is true if CINO and reference state
 C           CALL PRWF(C,INDXCI,IOUT,THRPWF)
          END IF
 C
-C        MAERKE insert calculation of spin-density matrix here,
+C        TODO MAERKE insert calculation of spin-density matrix here,
 C        if ISPIN .ne. 1
 C
 C        insert option for calculation of two-electron density matrix,
@@ -760,8 +764,19 @@ C                  transformation in CISAVE
                CALL TRACTL(0,CMO,WRK,LWRK)
 C              CALL TRACTL(ITRLVL,CMO,WRK,LWRK)
                FLAG(14) = .TRUE.
-               CALL CIINTS(DISKH2,CMO,INDXCI,
-     *            WRK(KCDIAG),EMY,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
+C
+C              *** Obtain FCAC and H2AC integral matrices
+C
+               CALL CIINTS(DISKH2,CMO,
+     *                     EMY,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
+C              CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
+C
+C              *** Calculate the diagonal of the CI matrix.
+C
+               CALL CIDIAG(LSYM,.FALSE.,WRK(KFCAC),WRK(KH2AC),INDXCI,
+     &                     WRK(KCDIAG),WRK(KW1),LW1)
+C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
+C
                EMY = EMY + POTNUC
             ELSE
 C              subtract EMY from diagonal again, as expected in CIRSPS
@@ -819,29 +834,32 @@ C     *****************************************************************
 C
       END
 C  /* Deck ciints */
-      SUBROUTINE CIINTS(DISKH2,CMO,INDXCI,DIAG,EMY,FCAC,H2AC,WRK,LFREE)
+      SUBROUTINE CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
 C
 C Written by Hans Joergen Jensen 13-Dec-1984
-C No revisions.
+C Revision for LUCITA Dec 2010 /HJAaJ (moved CALL CIDIAG outside)
 C
 C Purpose:
 C  CIIN*: Calculate integrals needed for CI. EMY, FCAC and H2AC
 C         are needed by calling program.
 C
-#include <implicit.h>
-      DIMENSION INDXCI(*), CMO(*),DIAG(*),FCAC(*),H2AC(*),WRK(*)
+#include "implicit.h"
+
+      DIMENSION CMO(*), FCAC(*),H2AC(*),WRK(*)
       LOGICAL   DISKH2
-#include <iratdef.h>
-#include <dummy.h>
+
+#include "priunit.h"
+#include "dummy.h"
 C
 C Used from common blocks:
-C   INFINP : LSYM
 C   INFORB : NNASHX,NNBAST,NNORBT
+C   INFINP : SRHYBR
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infinp.h"
+
+      LOGICAL SRHYBR_SAVE
 C
       CALL QENTER('CIINTS')
 C
@@ -849,10 +867,12 @@ C *** Section 0 ***
 C
 C work space allocation:
 C
+      NF = 1
+      SRHYBR_SAVE = SRHYBR
       IF (SRHYBR) THEN
-         NF = 3
-      ELSE
-         NF = 1
+         SRHYBR = .FALSE.
+         WRITE(LUPRI,'(//A)') ' INFO: .SRHYBR ignored in CIINTS'
+!        NF = 3
       END IF
       KFC   = 1
       KW0   = KFC   + NF*NNORBT
@@ -879,22 +899,9 @@ C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFREE)
          CALL CIIN2A(H2AC,WRK(KW1),LW1)
       END IF
 C
-C     *** Make integral matrices as required by CI routines
-C
-      CALL GETFCI(FCAC,H2AC,WRK(KW1),LW1)
-C     CALL GETFCI(FCAC,H2AC,WRK,LFREE)
-C
-C
-C *** Section 2 ***
-C
-C  Calculate the diagonal of the CI matrix.
-C
-      CALL CIDIAG(LSYM,.FALSE.,FCAC,H2AC,INDXCI,DIAG,WRK(KW1),LW1)
-C     CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
-C
 C *** End of subroutine CIINTS
 C
-C
+      SRHYBR = SRHYBR_SAVE
       CALL QEXIT('CIINTS')
       RETURN
       END
@@ -908,7 +915,7 @@ C Revisions:
 C  Purpose : To obtain the necessary two-electron
 C            integrals to perform a CI calculation.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION H2AC(NNASHX,NNASHX),WRK(LWRK)
 C
@@ -917,19 +924,15 @@ C   INFORB : NNASHX,NNBAST,?
 C   INFIND : ISMO,?
 C CBGETDIS : IADH2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <cbgetdis.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "cbgetdis.h"
 C
-#include <line.h>
-      DIMENSION NEEDMU(6)
-      DATA NEEDMU /0,0,1,0,0,0/
-C     ... only active-active distributions needed (type 3)
-#include <line.h>
+      DIMENSION NEEDMU(-4:6)
       CALL QENTER('CIIN2A')
 C
 C    get array of 2-electron integrals with active indices
@@ -951,6 +954,8 @@ C
 C
 C ****************************************************************
 C     Loop over active-active distributions
+      NEEDMU(-4:6) = 0
+      NEEDMU(3) = 1 ! only active-active distributions needed (type 3)
 C
       IDIST = 0
   100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
@@ -1031,9 +1036,9 @@ C Scratch: H2ACCD (active 2-el integrals)
 C          WRK
 C
 C ****************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2ACCD(NNASHX), WRK(LWRK)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C
 C Used from common blocks:
@@ -1043,20 +1048,18 @@ C   INFTAP : LUH2AC
 C   INFPRI : P6FLAG
 C CBGETDIS : IADH2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
       LOGICAL OLDDX
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <cbgetdis.h>
-#include <line.h>
-      DIMENSION NEEDMU(6)
-      DATA NEEDMU /0,0,1,0,0,0/
-C     ... only active-active distributions needed (type 3)
-#include <line.h>
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "cbgetdis.h"
+
+      DIMENSION NEEDMU(-4:6)
+
       CALL QENTER('CIIN2B')
       IF (NASHT .LE. 1) THEN
          CALL QTRACE(LUPRI)
@@ -1084,8 +1087,11 @@ C
       CALL MEMGET('REAL',KH2CD,N2ORBX,WRK,KFREE,LFREE)
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDMU(6)
+C     Loop over Mulliken distributions allowed in NEEDMU(*)
 C
+      NEEDMU(-4:6) = 0
+      NEEDMU(3) = 1 ! only active-active distributions needed (type 3)
+
       IDIST = 0
   100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
@@ -1149,8 +1155,8 @@ C
 C Output:
 C  SCVECS; will start at WRK(1) on output; followed by
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION BCVECS(NCONF,*), FCAC(*), H2AC(*)
       DIMENSION INDXCI(*),WRK(LFREE)
 C
@@ -1162,8 +1168,8 @@ C Used from common blocks:
 C   INFVAR : NCONF
 C CBGETDIS : DISTYP,IADINT,IADH2
 C
-#include <maxorb.h>
-#include <cbgetdis.h>
+#include "maxorb.h"
+#include "cbgetdis.h"
 C
       CALL QENTER('CILIN ')
 C
@@ -1222,7 +1228,7 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVAL(*), EVEC(NCIRED,*), CDIAG(*), RESID(*), WRK(*)
 C
 C     ********** Define parameters, common blocks, and local variables.
@@ -1232,7 +1238,7 @@ C
       PARAMETER ( THKC   = 0.10D0, THKO   = 0.001D0 )
       PARAMETER ( THLIU1 = 0.01D0, THLIU2 = 0.0D0 )
       PARAMETER ( THRSIM = 1.D-6 , DTEST  = 0.01D0 )
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER ( D0=0.0D0, D1 = 1.0D0, DHALF=0.5D0 )
 C
 C Common blocks:
@@ -1243,15 +1249,16 @@ C   CICB01 : NJCR,NKCR,JCROOT(*),KCROOT(*),NCIRED,THRCIT
 C   INFINP : FLAG(*),JOLSEN,RESPHP,ISTACI
 C   INFVAR : NCONF
 C   INFTAP : LUIT3,LUIT5
-C   INFPRI : P4FLAG(*),IPRERR
+C   INFPRI : P4FLAG(*)
+C   PRIUNIT: IPRSTAT
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <cicb01.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "cicb01.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C     local variables:
 C
@@ -1329,11 +1336,11 @@ C        solution vector plus residual vector
 C        only residual vector
       END IF
       MAXRCV = MIN(NCSIM, (LFREE-MWRK0) / MWRK1)
-      IF (IPRERR .GE. 5) THEN
-         WRITE (LUERR,'(/,(A,I10))')
+      IF (IPRSTAT .GE. 5) THEN
+         WRITE (LUSTAT,'(/,(A,I10))')
      *      ' (CINEX) number of residual vectors',NCSIM,
      *      '         number of residuals/batch ',MAXRCV
-         WRITE (LUERR,'(/A,I4,A/,(10I5))') '         Index of',NJCR,
+         WRITE (LUSTAT,'(/A,I4,A/,(10I5))') '         Index of',NJCR,
      *      ' non-conv. vectors from last iteration:',
      *      (KCROOT(I),I=1,NJCR)
       END IF
@@ -1368,14 +1375,14 @@ C           here ought to be a symmetry test of IJCR vs. IJCR + 1
             GO TO 3
          END IF
       END IF
-      IF (IPRERR .GT. 0 .AND. MJCR .GT. NJCR) THEN
-         WRITE (LUERR,'(//A,2(/A,I4),//A)')
+      IF (IPRSTAT .GT. 0 .AND. MJCR .GT. NJCR) THEN
+         WRITE (LUSTAT,'(//A,2(/A,I4),//A)')
      *      ' -- CINEX, number of trial vectors increased --',
      *      ' Number of CI roots                   :',NJCR,
      *      ' Number of simultaneous trial vectors :',MJCR,
      *      ' Lowest eigenvalues of reduced CI matrix:'
          I = MIN(NCIRED, MJCR+2)
-         WRITE (LUERR,'(5X,5F12.8)') (EVAL(J), J = 1,I)
+         WRITE (LUSTAT,'(5X,5F12.8)') (EVAL(J), J = 1,I)
       END IF
 C
 C     **********
@@ -1742,8 +1749,8 @@ C
 C Scratch:
 C  CPREV(*),    scratch array for old vectors on LUCVEC
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION KCROOT(*), CVEC(NCONF,*), CPREV(*)
 C
       PARAMETER ( THRRND=1.D-2, THRTT=1.D-4, D1=1.0D0 )
@@ -1751,9 +1758,9 @@ C
 C Used from common blocks:
 C   INFVAR : NCONF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('CIORT ')
@@ -1876,7 +1883,7 @@ C   Calculate full reduced CI-matrix for symmetry check in
 C   CI calculation;
 C   asymmetry would indicate probable bug in CILIN module.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WRK(LFREE)
       PARAMETER ( D1 = 1.0D0, DIFTST = 1.0D-8 )
 C
@@ -1885,11 +1892,11 @@ C   INFVAR : NCONF
 C   CICB01 : NCIRED
 C   INFTAP : LUIT3, LUIT5
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <cicb01.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "cicb01.h"
+#include "inftap.h"
 C
 C
       REDH(I,J) = WRK((J-1)*NCIRED+I)
@@ -2016,8 +2023,8 @@ C         and for the reduced CI matrix (section 2)
 C         dimension: NCONF and NREDCI*(NREDCI+1)/2, rsp.
 C  WRK, real scratch array for BIG and JBIG in JACO, dim: 2*NREDCI
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION CVECS(*), SVECS(NCONF,*)
       DIMENSION REDCI(*), EVEC(NREDCI,*),EVAL(*), WRK(LWRK)
 C
@@ -2025,12 +2032,12 @@ C Used from common blocks:
 C   INFVAR : NCONF
 C   INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('CIRED ')
@@ -2113,22 +2120,21 @@ C
 C revised 870627-hjaaj, write ci energies to LUIT1 for OCE program
 C         890925-hjaaj, write ci residuals to LUIT1 also
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ECI(*), RESID(*), EVEC(*), CMO(*), INDXCI(*), WRK(*)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks :
 C   INFINP : NROOTS
 C   INFOPT : NREDL
 C   INFTAP : LUIT1
-C   INFPRI : LUERR
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CHARACTER*8 LABENR(4), LABEOD(4)
       DATA LABENR/'********','********','********','ENERGIES'/
@@ -2183,7 +2189,7 @@ C ICI1=2 : Start CI-vector(s) are already on LUIT1 (this is checked).
 C
 C ICI1=4 : Same as ICI1=2, for compatibility with MCSCF CISTRT
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*),HDIAG(*),WRK(*)
 C
@@ -2197,16 +2203,16 @@ C   INFIND : ?
 C   INFDIM : ?
 C   INFTAP : LUIT1,?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C *** Externals:
 C
@@ -2394,7 +2400,7 @@ C
 C  Block of old CIST, purpose: find start vectors corresponding
 C  to lowest diagonal elements and write these to LUIT1.
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL PLUSCB
       DIMENSION HDIAG(*), WRK(*)
       PARAMETER (MXNLIS = 220)
@@ -2407,9 +2413,9 @@ C Used from common blocks:
 C   INFTAP : LUIT1
 C   INFPRI : LUW*, IPRI*
 C
-#include <infpri.h>
-#include <inftap.h>
-#include <priunit.h>
+#include "infpri.h"
+#include "inftap.h"
+#include "priunit.h"
 C
 C *** Local variables:
 C
@@ -2446,9 +2452,9 @@ C        ... we add 3 so we can expand if degeneracy.
       IF (LWRK .LT. NRS+NCONF) CALL ERRWRK('CIST1',(NRS+NCONF),LWRK)
       CALL CIFNMN(NRS,NLIST,HDIAG,NCONF,WRK,LWRK)
 C     CALL CIFNMN(NELMNT,IPLACE,VEC,NVEC,WRK,LWRK)
-      IF (IPRI4 .GT. 1) WRITE (LUW4,1410)
+      IF (IPRI4 .GT. 2) WRITE (LUW4,1410)
      *   NRS,(I,NLIST(I),WRK(I)-EMY,WRK(I),I=1,NRS)
-      IF (LUPRI .NE. LUW4 .AND. IPRI4 .GT. 1) WRITE (LUPRI,1410)
+      IF (LUPRI .NE. LUW4 .AND. IPRI4 .GT. 2) WRITE (LUPRI,1410)
      *   NRS,(I,NLIST(I),WRK(I)-EMY,WRK(I),I=1,NRS)
  1410 FORMAT(/' (CIST1)',I3,' lowest diagonal elements:',
      *      //' Element no. Config.no.    Active energy',
@@ -2586,7 +2592,7 @@ C
 C Purpose:
 C   Return in IPLACE addresses on lowest NELMNT elements in VEC.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(NVEC), IPLACE(NELMNT), WRK(LWRK)
 C
       IF (LWRK .LT. NELMNT) THEN
@@ -2661,11 +2667,11 @@ C    9) HDIAG (diagonal of CI matrix)
 C   10) label "SIRFLAGS"
 C   11) FLAG(1:NFLAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CMO(*), FCAC(*), H2AC(*), HDIAG(*), INDXCI(*), WRK(*)
-#include <iratdef.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "dummy.h"
 C
 C Used from common blocks:
 C
@@ -2673,16 +2679,15 @@ C   INFINP : ISTACI,ISPIN,NACTEL,FLAG(1:NFLAG)
 C   INFORB : NSYM,NISHT,NASHT,NNASHX,NNASHY,NOCCT,NNOCCX,NCMOT,...
 C   INFVAR : NCONF
 C   INFTAP : LUIT1, LUSIFC
-C   INFPRI : LUERR
 C   CBGETD : IADH2
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <cbgetdis.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "cbgetdis.h"
 C
       CHARACTER*8 LAB123(3), TABLE(5)
       DATA LAB123/'********','********','********'/
@@ -2759,7 +2764,7 @@ C
       IF (NCDETS .GT. NCONF) THEN
          IF (FLAG(27)) THEN
             WRITE (LUPRI,*)
-     &      'WRSIFC ERROR, .DETERMINANTS but NCDETS.gt.NCONF:',
+     &      'WR_SIRIFC ERROR, .DETERMINANTS but NCDETS.gt.NCONF:',
      &      NCDETS, NCONF
             CALL QUIT('CIRSPS: NCDETS .gt. NCONF for .DETERMINANTS')
          END IF
@@ -2800,7 +2805,7 @@ C
 C
 C Used from common blocks:
 C  infvar: NCONF
-C  inftap: LUIT1,LUERR
+C  inftap: LUIT1
 C
 #include "infvar.h"
 #include "inftap.h"

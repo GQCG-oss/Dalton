@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -74,20 +64,20 @@ C
 C     Called from nuclear Hessian calculation.
 C
 C
-#include <implicit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION CMO(*),PV(*),FQD(*),H2DAC(*),WORK(KWORK)
       LOGICAL OPNSTA
-#include <iratdef.h>
+#include "iratdef.h"
 C
-#include <priunit.h>
-#include <nodint.h>
-#include <cbdtra.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <infind.h>
+#include "priunit.h"
+#include "nodint.h"
+#include "cbdtra.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CHARACTER*1 OPRTYP(3)
       PARAMETER (LBINT = 600)
@@ -196,22 +186,22 @@ C  FQD(NORBT,NASHT) FQ matrix for derivative integrals
 C Scratch:
 C  WRK(LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-      DIMENSION H2DAC(*), FQD(*), CMO(*), PV(NNASHX,NNASHX)
-      DIMENSION WRK(LWRK)
-C
+#include "implicit.h"
+#include "iratdef.h"
 C Used from common blocks:
 C  INFORB : NASHT,NBAST,N2BASX,N2ASHX,NNASHX
 C  INFIND : NSM(),IROW()
 C  INFTRL : NDAC(),MXNDAO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
+C
+      DIMENSION H2DAC(*), FQD(*), CMO(*), PV(NNASHX,NNASHX)
+      DIMENSION WRK(LWRK)
 C
       CALL QENTER('TRDNEW')
       if (iprint .gt. 6) then
@@ -383,25 +373,25 @@ C  /* Deck trddrv */
 C
 C 2.Oct.1992 hjaaj
 C
-#include <implicit.h>
-#include <iratdef.h>
-      DIMENSION H2DAC(*),FQAOAC(NBAST,NASHT),CMO(NCMOT),PVF(*)
-      DIMENSION H2DBUF(MXNDAO,*),INDDIS(NBAST,NBAST),WRK(*)
-      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
+#include "implicit.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFORB : NCMOT,NBAST,NASHT,...
 C   INFIND : ISAO(*)
 C   INFTRL : MXNDAO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infind.h"
 #include "inftrl.h"
 C
+      DIMENSION H2DAC(*),FQAOAC(NBAST,NASHT),CMO(NCMOT),PVF(*)
+      DIMENSION H2DBUF(MXNDAO,*),INDDIS(NBAST,NBAST),WRK(*)
+      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
 C-B-HJTEMP-MAERKE
       PARAMETER (LBINT = 600)
 C-E-HJTEMP-MAERKE
@@ -612,18 +602,19 @@ C
 C IH1XX(IBSYM,IABSYM) is off-set for block (IASYM,IBSYM) in H1XX
 C                     of symmetry IABSYM (IASYM = MULD2H(IBSYM,IABSYM))
 C
-#include <implicit.h>
-      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
+#include "implicit.h"
 C
 C Used from common blocks
 C   INFORB: NSYM, NASH(8), NBAS(8), MULD2H(8,8)
 C   INFTRL: IH1AO(8,8),IH1AC(8,8),NDAO(8), NDAC(8)
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "inftrl.h"
 C
-      PARAMETER (IMEMERR = -999 999 999)
+      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
+C
+      PARAMETER (IMEMERR = -999999999)
 C
       MXNDAO = 0
       MXNDAC = 0
@@ -736,22 +727,22 @@ C
 C Input : H2DBUF(pq,indrs) = (pq / rs)
 C Output: H2DBUF(uv,indrs) = (uv / rs)
 C
-#include <implicit.h>
-C
-      DIMENSION H2DBUF(MXNDAO,*), CMO(NCMOT)
-      DIMENSION INDDIS(NBAST,NBAST), H2DWRK(*)
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB : NBAST, NCMOT
 C   INFIND : ISAO(*)
 C   INFTRL : MXNDAO
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
+C
+      DIMENSION H2DBUF(MXNDAO,*), CMO(NCMOT)
+      DIMENSION INDDIS(NBAST,NBAST), H2DWRK(*)
 C
       DO 800 KR = 1,NBAST
          KRSYM = ISAO(KR)
@@ -803,15 +794,16 @@ C         IABSYM = symmetry of H2CDAO, H2CDAC matrices
 C Output: H2CDAC(u.v) = (u v | c d) =
 C         sum(b) [ sum(a) [ CMO(a,u) H2CDAO(a.b) ] CMO(b,v) ]
 C
-#include <implicit.h>
-      DIMENSION CMO(NCMOT), H2CDAO(*), H2CDAC(*), WRK(*)
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NASH(*), NBAS(*), NISH(*), ICMO(*)
 C  INFTRL : IH1AO(8,8), IH1AC(8,8)
 C
-#include <inforb.h>
+#include "inforb.h"
 #include "inftrl.h"
+C
+      DIMENSION CMO(NCMOT), H2CDAO(*), H2CDAC(*), WRK(*)
 C
 C     Allocation for IABSYM .eq. 1
       KAC = 1
@@ -867,31 +859,32 @@ C BUF   : Points to start element in integral buffer.
 C IBUF  : Points to start element in label buffer.
 C H2DAO : H2DAO(rs,pq), pq=(mpqoff+1:mpqoff+npq); dim (mxndao,npq)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-      DIMENSION H2DAO(MXNDAO,*), IBUF(4,600), WRK(600*(IRAT + 1) + 1)
-      DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
 C Used from common blocsk:
 C   INFORB : IBAS(8)
 C   INFIND : IROW(*),ISAO(*)
 C   INFTRL : MXNDAO
 C
-#include <nuclei.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "nuclei.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
+C
+      DIMENSION H2DAO(MXNDAO,*), IBUF(4,600), WRK(600*(IRAT + 1) + 1)
+      DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
 C
 C     Local variables:
 C
       CHARACTER*8 KEY
       LOGICAL DOCOOR
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       CALL REWSPL(LUDERA)
 C     KEY = 'AO2DRINT'
@@ -906,13 +899,14 @@ C     CALL MOLLAB(KEY,LUDERA,LUPRI)
       ELSE
          NIBUF = 2
          NBITS = 16
+         call quit('TRDRAO only implement for .le. 255 basis functions')
       END IF
 #endif
       LBUF = 600
       JBUF = 256
 C
       LENINT = IRAT*LBUF + LBUF + 1
-      KINT = 1
+      KINT  = 1
       KIINT = KINT + LBUF
 C
       DOCOOR = .FALSE.
@@ -967,13 +961,14 @@ C   INDRS = 0      for desired symmetry distributions
 C         = 654321 for sym.dist. not needed
 C   ICASE .le. 0: new round
 C
-#include <implicit.h>
-      DIMENSION INDRS(8,8), INDDIS(NBAST,NBAST)
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB : NBAST, N2BASX
 C
-#include <inforb.h>
+#include "inforb.h"
+C
+      DIMENSION INDRS(8,8), INDDIS(NBAST,NBAST)
 C
       IF (ICASE .LE. 0) THEN
 C     ... if (first)
@@ -1073,7 +1068,16 @@ C 5-Oct-1992 Hans Joergen Aagaard Jensen
 C 'AH2' for Add to H2DAC
 C Add (uv / rs) contribution to (uv / xy) (x .ge. y)
 C
-#include <implicit.h>
+#include "implicit.h"
+C
+C Used from common blocks:
+C   INFORB : ??
+C   INFTRL : NDAC(8),MXNDAO,NXNDAC
+C
+#include "priunit.h"
+#include "inforb.h"
+#include "inftrl.h"
+C
       DIMENSION CMOR(NBASR,NASHR), CMOS(NBASS,NASHS)
       DIMENSION INDDIS(NBAST,NBAST)
 #if defined (VAR_H2DPACK)
@@ -1083,14 +1087,6 @@ C
 #endif
       DIMENSION H2UVRY(MXNDAC)
       PARAMETER ( DP5 = 0.5D0, D0 = 0.0D0 )
-C
-C Used from common blocks:
-C   INFORB : ??
-C   INFTRL : NDAC(8),MXNDAO,NXNDAC
-C
-#include <priunit.h>
-#include <inforb.h>
-#include "inftrl.h"
 C
 #if defined (VAR_H2DPACK)
       IROW(I) = (I*(I-1))/2
@@ -1159,24 +1155,25 @@ C  /* Deck trdh2u */
 C
 C 6-Oct-1992 hjaaj
 C
-#include <implicit.h>
-#if defined (VAR_H2DPACK)
-      DIMENSION H2DAC(NNASHX,NNASHX)
-#else
-      DIMENSION H2DAC(N2ASHX,NASHT,NASHT)
-#endif
-      DIMENSION INDAC(NASHT,NASHT), WRK(*)
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NASHT,NASH(),IASH()
 C  INFIND : NSM()
 C  INFTRL : NDAC()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 #include "inftrl.h"
+C
+#if defined (VAR_H2DPACK)
+      DIMENSION H2DAC(NNASHX,NNASHX)
+#else
+      DIMENSION H2DAC(N2ASHX,NASHT,NASHT)
+#endif
+      DIMENSION INDAC(NASHT,NASHT), WRK(*)
 C
       PARAMETER (IWAY = -1, D2 = 2.0D0)
 C     ... IWAY=-1 to unpack
@@ -1226,17 +1223,17 @@ C Copyright 6-Oct-1992 Hans Joergen Aa. Jensen
 C
 C PVXS(uv) =  sum(y) PVF(uv,x,y) * CMO(s,y) =  [uv|xs]
 C
-#include <implicit.h>
-      DIMENSION CMOS(NBASS,NASHS), PVF(NNASHX,NNASHX)
-      DIMENSION PVXS(MXNDAC)
-C
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NASHT
 C  INFTRL : NDAC(8)
 C
-#include <inforb.h>
+#include "inforb.h"
 #include "inftrl.h"
+C
+      DIMENSION CMOS(NBASS,NASHS), PVF(NNASHX,NNASHX)
+      DIMENSION PVXS(MXNDAC)
 C
       NDACUV = NDAC(KUVSYM)
       CALL DZERO(PVXS,MXNDAC)
@@ -1262,13 +1259,14 @@ C 7-Oct-1992 hjaaj
 C
 C FQD(a,x) = sum(r) FQAOAC(r,x) * CMO(r,a)
 C
-#include <implicit.h>
-      DIMENSION FQD(NORBT,NASHT), FQAOAC(NBAST,NASHT), CMO(NCMOT)
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NORBT,NASHT,NBAST,NCMOT,NSYM
 C
-#include <inforb.h>
+#include "inforb.h"
+C
+      DIMENSION FQD(NORBT,NASHT), FQAOAC(NBAST,NASHT), CMO(NCMOT)
 C
       DO 800 KSYM = 1,NSYM
          NASHK  = NASH(KSYM)
@@ -1298,13 +1296,14 @@ C
 C IWAY .ge. 0 : Pack H1SP in H1PK
 C      else   : Unpack H1PK in H1SP
 C
-#include <implicit.h>
-      DIMENSION H1SP(*), H1PK(*), NBLK(8), IBLK(8)
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB : NSYM,MULD2H
 C
-#include <inforb.h>
+#include "inforb.h"
+C
+      DIMENSION H1SP(*), H1PK(*), NBLK(8), IBLK(8)
 C
       IF (IH1SYM .EQ. 1) THEN
          CALL PKSYM1(H1SP,H1PK,NBLK,NSYM,IWAY)

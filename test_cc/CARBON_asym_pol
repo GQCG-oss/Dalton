@@ -31,17 +31,15 @@ C     0.0     0.0      0.0
 #  DALTON INPUT
 #######################################################################
 cat > CARBON_asym_pol.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
-.NOSUP
 .DIPLEN
 .THETA
 .QUADRU
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-12
 .NODIIS
@@ -66,7 +64,7 @@ XYQUADRUXYQUADRU
 .FREQUE
  2
 0.00 0.50
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -107,7 +105,7 @@ PASSED=1
 for i in 1 2
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

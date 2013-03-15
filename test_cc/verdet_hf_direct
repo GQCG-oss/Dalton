@@ -30,7 +30,7 @@ F     0.0000000000000000  0.000000000000000   -.08727570600000        *
 #  DALTON INPUT
 #######################################################################
 cat > verdet_hf_direct.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
@@ -46,7 +46,7 @@ XYZ-ALL
 .CC
 *ORBITAL
 .NOSUPSYM
-*HF INPUT
+*SCF INPUT
 .THRESH
   1.0d-10
 *CC INPUT
@@ -81,8 +81,7 @@ YDIPLEN ZDIPLEN dh/dBX
 1
 0.11391
 0.0
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 
 #######################################################################
@@ -135,7 +134,7 @@ PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

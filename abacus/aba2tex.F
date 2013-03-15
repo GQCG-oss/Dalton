@@ -1,51 +1,41 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck twoinp */
       SUBROUTINE TWOINP(WORD)
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 20)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbitwo.h>
+#include "abainf.h"
+#include "cbitwo.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.DIRTST', '.FIRST ', '.SECOND',
      *            '.PTRSKI', '.SORSKI', '.INTSKI',
      *            '.PTRPRI', '.SORPRI', '.INTPRI',
@@ -216,10 +206,10 @@ C  /* Deck twoini */
 C
 C     Initialize /CBITWO/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbitwo.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbitwo.h"
 C
       CALL QENTER('TWOINI')
       SKIP   = .FALSE.
@@ -260,39 +250,41 @@ C  /* Deck twoexp */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
       LOGICAL PASS, ANTI, PANTI, ANTIDM, DIA2SO, DOERI
       DIMENSION WORK(LWORK)
-#include <abainf.h>
-#include <exeinf.h>
-#include <cbieri.h>
-#include <cbitwo.h>
-#include <cbisol.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <infinp.h>
-#include <taymol.h>
-#include <taysol.h>
-#include <energy.h>
-#include <expopt.h>
-#include <dftcom.h>
-#include <rspprp.h>
-#include <esg.h>
+#include "abainf.h"
+#include "exeinf.h"
+#include "cbieri.h"
+#include "cbitwo.h"
+#include "cbisol.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "infinp.h"
+#include "taymol.h"
+#include "taysol.h"
+#include "energy.h"
+#include "expopt.h"
+#include "dftcom.h"
+#include "rspprp.h"
+#include "esg.h"
+C defined parallel calculation types 
+#include "iprtyp.h"
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL DDFOCK, NOBLK, ZFS2EL
+      LOGICAL DDFOCK, NOBLK, ZFS2EL, PARCAL_IS_OK, PARCAL_SAVE
       INTEGER IFCTYP(MXDMAT), ISYMDM(MXDMAT)
 C
 C     Control routine for calculation of expectation values
@@ -320,18 +312,19 @@ C
       I2TYP = 0
       IF (IPRALL .GE. 1) THEN
          CALL TIMER('START ',TIMEIN,TIMOUT)
-         WRITE (LUPRI,'(A,/)')
-     *     '1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> '
+         WRITE (LUPRI,'(/A/)')
+     *     '  <<<<<<<<<< Output from TWOEXP >>>>>>>>>> '
       END IF
 C
 C     No active orbitals
 C
-      IF (NASHT .EQ. 0) NODV = .TRUE.
-      IF (NASHT .LT. 2 .OR. HSROHF) THEN
+      IF (NACTEL .EQ. 0) NODV = .TRUE.
+      IF (NACTEL .LE. 1 .OR. HSROHF) THEN
          NOPV   = .TRUE.
          IF (HSROHF .AND. (DIPDER .OR. MOLHES)) THEN
-            WRITE(LUPRI,'(/A)') ' Dipole gradients and molecular '//
-     &           'not implmented for high-spin restricted open-shell HF'
+            WRITE(LUPRI,'(/A)')
+     &          ' ERROR: Dipole gradients and molecular '//
+     &          'not implemented for high-spin restricted open-shell HF'
             CALL QUIT('Option not available for HSROHF in TWOEXP')
          END IF 
       END IF
@@ -477,9 +470,14 @@ C           dimension ISYMDM(MXDMAT), IFCTYP(MXDMAT)
             END DO
          END IF
 C
+C        Is it OK to do parallel calculation here ??
+         PARCAL_IS_OK = PARCAL ! has user wanted PARCAL ?
+         IF ((NASHT .GT. 0) .AND. (.NOT.(HSROHF.OR.DFTADD)))
+     &      PARCAL_IS_OK = .FALSE. ! parallel TWOEXP only for SCF 
+C
 C        ERI can only be used for Hartree-Fock gradients
 C
-         DOERI = RUNERI .AND. .NOT.PARCAL .AND. NODV .AND. NOPV
+         DOERI = RUNERI .AND. .NOT. PARCAL_IS_OK .AND. NODV .AND. NOPV
      &                  .AND. ITYPE.EQ.2 .AND. MAXDIF .LT. 2
 C
          CALL GETDMT(WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,NODC,NODV,
@@ -492,7 +490,7 @@ C
      &               LWRK)
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
-         IF (PARCAL) THEN
+         IF (PARCAL_IS_OK) THEN
             IF ((NASHT .GT. 0) .AND. (.NOT.(HSROHF.OR.DFTADD)))
      &         CALL QUIT(' ERROR in TWOEXP: PARCAL only'// 
      &                   ' implemented for SCF')
@@ -504,7 +502,7 @@ C
             LWRK = LWRK - KLAST
 C
             IATOM = 0
-            IPRTYP = 1
+            IPRTYP = HER_WORK
             HFXM0 = HFXMU
             HFXMU = D0
             CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
@@ -538,6 +536,8 @@ C
                HFXFAC = HFXFC0
             END IF
          ELSE
+            PARCAL_SAVE = PARCAL
+            PARCAL = .FALSE.
 #endif
             IF (DOERI) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
@@ -580,6 +580,7 @@ C
      &         CALL TIMER('TWOEXP/TWOINT',TIMSTR,TIMEND)
             END IF
 #if defined (VAR_MPI) || defined (VAR_PVM)
+            PARCAL = PARCAL_SAVE
          END IF
 #endif
 CTROND
@@ -657,13 +658,16 @@ C
       END
 C  /* Deck getdmt */
       SUBROUTINE GETDMT(DMAT,NDMAT,WORK,LWORK,NODC,NODV,SYMUNQ,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+
+#include "abainf.h"
+#include "inforb.h"
+
       LOGICAL NODC, NODV, SYMUNQ
       DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK)
-#include <abainf.h>
-#include <inforb.h>
+
       CALL QENTER('GETDMT')
       IF (IPRINT .GT. 5) CALL TITLER('Output from GETDMT','*',103)
 C
@@ -697,27 +701,27 @@ C     density matrices in SO basis (contravariant).  Input is
 C     one-electron active density matrix.
 C                                         880420  PRT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER R, S, U, V, UV, UR, US, VR, VS
       LOGICAL NODC, NODV, FOUND
       DIMENSION CMO(*), DV(*), DTSO(NBAST,NBAST), DASO(NBAST,NBAST)
 C
-#include <abainf.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "abainf.h"
+#include "inforb.h"
+#include "inftap.h"
 C
 C     Read CMO and DV from SIRIFC
 C
       CALL QENTER('ONEDSF')
-      CALL RDSIFC('CMO',FOUND,CMO,DTSO,N2BASX)
+      CALL RD_SIRIFC('CMO',FOUND,CMO,DTSO,N2BASX)
       IF (.NOT.FOUND) CALL QUIT('ONEDSF ERROR: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
-         CALL RDSIFC('DV',FOUND,DV,DTSO,N2BASX)
+         CALL RD_SIRIFC('DV',FOUND,DV,DTSO,N2BASX)
          IF (.NOT.FOUND)
      &      CALL QUIT('ONEDSF ERROR: DV not found on SIRIFC')
       END IF
@@ -725,7 +729,7 @@ C
 C     Print Section
 C
       IF (IPRINT .GT. 03) THEN
-         WRITE (LUPRI, '(//,A,/)') ' <<<<< Subroutine ONEDSF >>>>>'
+         WRITE (LUPRI, '(//A/)') ' <<<<< Subroutine ONEDSF >>>>>'
          WRITE (LUPRI, '(A,8I5)') ' NISH ', (NISH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NASH ', (NASH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NOCC ', (NOCC(I),I = 1,NSYM)
@@ -821,3 +825,4 @@ C
       CALL QEXIT('ONEDSF')
       RETURN
       END
+! --- end of aba2tex.F ---

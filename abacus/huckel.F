@@ -1,50 +1,40 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C   /* Deck hucdrv */
       SUBROUTINE HUCDRV(CMO,WORK,LWORK)
 C
 C     K.Ruud, July-96
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
       DIMENSION WORK(LWORK), CMO(NCMOT)
-#include <infdim.h>
-#include <inforb.h>
-#include <huckel.h>
+#include "infdim.h"
+#include "inforb.h"
+#include "huckel.h"
 C
       CALL QENTER('HUCDRV')
       NROW = NBAST + NHUCBA
@@ -90,9 +80,9 @@ C     projecting the eigenvectors onto the complete basis set
 C     
 C     K.Ruud, July-96
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
       LOGICAL ANTSYM, FNDLB2
       CHARACTER*8 RTNLBL(2)
       DIMENSION WORK(LWORK)
@@ -100,13 +90,13 @@ C
      &          EIGVEC(NHUCMX*NHUCMX), CMO(NCMOT),
      &          EIGVAL(NHUCBA), EIGVLS(NHUCBA), OVERLP(NBASMA*NBASMA)
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <huckel.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "huckel.h"
 C
       IF (P6FLAG(6) .OR. IPRI6.GE.0 .OR. IPRRHF.GE.0 .OR. EWMO)
      &   WRITE (LUPRI,'(/A/2(/5X,A,L10)/5X,A,8I5)')
@@ -427,19 +417,16 @@ C     Determine Hartree-Fock occupation if requested
 C
       IF (AUTOCC) THEN
          CALL ORDER (EIGVLS,EIGVAL,NHUCT,1)
-         CALL IZERO(NISH,8)
+         CALL IZERO(NRHF,8)
          MOCC = NRHFEL/2
          DO 98 IK = 1, MOCC
             ISYM = NINT(EIGVLS(IK))
-            NISH(ISYM) = NISH(ISYM) + 1
+            NRHF(ISYM) = NRHF(ISYM) + 1
  98      CONTINUE
-         CALL ICOPY(8,NISH,1,NOCC,1)
-         CALL ICOPY(8,NISH,1,NRHF,1)
+         CALL ICOPY(8,NRHF,1,NOCC,1)
          IF (2*MOCC .NE. NRHFEL) THEN
             IOPRHF = NINT(EIGVLS(MOCC + 1))
             LSYM   = IOPRHF
-            CALL IZERO(NASH,8)
-            NASH(IOPRHF) = 1
             NOCC(IOPRHF) = NOCC(IOPRHF) + 1
          END IF
       END IF
@@ -487,10 +474,10 @@ C
 C     Output:
 C     HUCTER = orbital energy
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <huckel.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "huckel.h"
 C
 C
 C     Ionization energies for shells:
@@ -913,7 +900,7 @@ C     Calculate offset for this l quantum number for ECP,
 C     where the lowest orbitals are excluded.
 C     If not ECP, i.e. IQCORE .eq. 0, then ILOFF will be zero.
 C
-      CALL ECPLCORE(IQCORE,IQM,ILOFF)
+      CALL ECP_LCORE(IQCORE,IQM,ILOFF)
       ISHL = ISHL1 + ILOFF
       IF (NQ .LE. 86) THEN
          HUCTER = -ENERGY(IOFF(IQM)+ISHL,NQ)
@@ -939,16 +926,16 @@ C     Version written on the basis of the ORTHO and NORM subroutines
 C     of hjj
 C     Revised by hjaaj May 2000 to handle round-off errors
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       PARAMETER (THNORM = 1.0D-6, D1 = 1.0D0, D0 = 0.0D0, THRRND=0.9D0)
       DIMENSION CMO(*), CMO1(*), S(*), WORK(LWORK)
 C
-#include <priunit.h>
-#include <huckel.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "huckel.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       CALL QENTER('HUCORT')
 C

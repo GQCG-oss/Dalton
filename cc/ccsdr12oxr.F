@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 *======================================================================*
       subroutine ccsdr12oxr(omegpk,ombjpk,isymom,work,lwork)
 *----------------------------------------------------------------------*
@@ -9,22 +32,18 @@
 * C. Haettig, spring 2006
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <dummy.h>     
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "dummy.h"     
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical test, locdbg
       parameter ( test = .false. )
       parameter ( locdbg = .false. )
 
-#if defined (SYS_CRAY)
-      real zero,half,one,two
-#else
-      double precision zero,half,one,two
-#endif
+      real*8  zero,half,one,two
       parameter ( zero=0.0d0, half=0.5d0, one=1.0d0, two=2.0d0 )
       character*8 framnp
       parameter(framnp='R12RMNAP')
@@ -32,11 +51,7 @@
 
 * input:
       integer lwork, isymom
-#if defined (SYS_CRAY)
-      real omegpk(*), ombjpk(*), work(*)
-#else
-      double precision omegpk(*), ombjpk(*), work(*)
-#endif
+      real*8  omegpk(*), ombjpk(*), work(*)
 
 * local:
       logical ldum, lproj
@@ -46,11 +61,7 @@
      &        kbjpk, koffr, kmnjk, isym, isym1, isym2, iramn(8,8),
      &        nramn(8), iramnq(8,8), nramnq(8), isymbj, isymjk
       integer isymm,isymn,isymmj,isymnk,idxmj,idxnk,idxmn,kmnj,idxmjnk
-#if defined (SYS_CRAY)
-      real fac, ddot
-#else
-      double precision fac, ddot
-#endif
+      real*8  fac, ddot
 
       integer index
       index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j

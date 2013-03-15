@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck sym2 */
       SUBROUTINE SYM2(SO,AO,IPNTAO,IPNTOP,ISYMR,ISYMT,ISYMTS,FACTOR,
@@ -45,17 +35,17 @@ C
 C     Modified for triangular looping in components tuh
 C     Loop over operator irreps outside loop over components 880928 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
      &          IPNTOP(3,*)
-#include <twocom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from SYM2','*',103)
         IF (IPRINT .GT. 10) THEN
@@ -119,22 +109,22 @@ C
 C     This superb piece of software is a joint effort by
 C     TUH and PRT, 880429
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*), WORK(LWORK),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
-#include <twocom.h>
-#include <twosta.h>
-#include <dirprt.h>
-#include <expcom.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <doxyz.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "twosta.h"
+#include "dirprt.h"
+#include "expcom.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "doxyz.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM2',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -206,20 +196,20 @@ C
 C     Driver routine for symmetrization of spin-orbit integrals
 C     TUH and OV, 891111
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       INTEGER X
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
-#include <twocom.h>
-#include <dirprt.h>
-#include <expcom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "dirprt.h"
+#include "expcom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SPOSYM',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -247,21 +237,21 @@ C  /* Deck mgsym2 */
 C
 C     tuh Sep 7 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.5D0)
       INTEGER X, Y, Z
       LOGICAL SOP000
       DIMENSION AOINT(NCCINT,3,*), SOINT(*), WORK(NCCINT,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
       DIMENSION DIFAB(3), DIFCD(3)
-#include <twocom.h>
-#include <twosta.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "twosta.h"
+#include "symmet.h"
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))

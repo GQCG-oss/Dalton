@@ -50,7 +50,7 @@ H      1.276731000000000   1.276731000000000   1.276731000000000       *
 cat > cc2_r12_aux_ch4_sym_lr_nondir.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -84,7 +84,7 @@ XXSECMOMXXSECMOM
 *R12 INPUT
 .CC2
  1A
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

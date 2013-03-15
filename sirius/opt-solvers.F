@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE DIISWEIGHTS(METHOD,ENERG,H1AO,SAOUNP,FAOS,DAOS,INDEVC,
      &                       NEVC,GVEC,BMAT,CVEC,MXERRV,KFREE,LFREE,WRK)
 c
@@ -55,11 +45,11 @@ c     part, depending on the formulation of the problem) in the case of
 c     EDIIS.
 c
 c     nitpicking: function pointers would be ideal here...
-#include <implicit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "priunit.h"
+#include "inforb.h"
       CHARACTER*10 METHOD
       DIMENSION H1AO(NNBAST),SAOUNP(NBAST,NBAST)
       DIMENSION FAOS(NNBAST,MXERRV,2),DAOS(NNBAST,MXERRV,2)
@@ -114,8 +104,8 @@ c     DIIS-specific chunk of code
 c     -------------------------------------------------------------------
       SUBROUTINE diis_update_bmat(H1AO,SAOUNP,FAOS,DAOS,BMAT,NEVC,
      &     MXERRV,KFRSAV,LFRSAV,WRK)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION H1AO(*),SAOUNP(*)
       DIMENSION FAOS(NNBAST,MXERRV,2),DAOS(NNBAST,MXERRV,2)
       DIMENSION BMAT(NEVC,NEVC),WRK(*)
@@ -171,11 +161,11 @@ c     conditioning of the bmatrix to get better lagrangian multipliers.
 c     -------------------------------------------------------------------
       SUBROUTINE diis_solve_for_coefs(NEVC,BMAT,CVEC)
 c     find optimal weights for DIIS using precomputed B matrix
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BMAT(NEVC,NEVC),CVEC(NEVC+1)
       DIMENSION CONSTR(NEVC+1,NEVC+1)
       INTEGER PIV(NEVC+1)
-#include <priunit.h>
+#include "priunit.h"
       NPAR = NEVC+1
       DO I = 1,NEVC
          CONSTR(NPAR,I) = 1.D0
@@ -203,7 +193,7 @@ c     -------------------------------------------------------------------
       SUBROUTINE c2diis_solve_for_coefs(NEVC,BMAT,CVEC,
      &       WRK,KFRSAV,LFRSAV)
 c     find optimal weights for C2DIIS using precomputed B matrix
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BMAT(NEVC,NEVC),CVEC(NEVC+1),WRK(*)
       PARAMETER (THREVC = 0.01D0, D1=1.0D0, DP5=0.5D0)
       IROW(I) = I*(I-1)/2
@@ -247,9 +237,9 @@ c     -------------------------------------------------------------------
 c     EDIIS-specific chunk of code
 c     -------------------------------------------------------------------
       SUBROUTINE ediis_update_gvec(NEVC,ENERGTOT,H1AO,DAOS,GVEC,INDEVC)
-#include <implicit.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "priunit.h"
        DIMENSION H1AO(*),DAOS(NNBAST,NEVC,2),GVEC(*)
 #ifdef EDIIS_WITH_DIFFERENCES_FORMULAS
       GVEC(INDEVC) = ENERGTOT
@@ -260,9 +250,9 @@ c     -------------------------------------------------------------------
 c     -------------------------------------------------------------------
       SUBROUTINE ediis_update_bmat(NEVC,H1AO,SAOUNP,FAOS,DAOS,BMAT,
      &                             GVEC,INDEVC)
-#include <implicit.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "priunit.h"
       INTEGER NEVC,I,J
       DIMENSION H1AO(NNBAST),SAOUNP(NBAST,NBAST)
       DIMENSION FAOS(NNBAST,NEVC,2),DAOS(NNBAST,NEVC,2)
@@ -319,9 +309,9 @@ c     -------------------------------------------------------------------
 c     -------------------------------------------------------------------
       SUBROUTINE ediis_solve_for_coefs(NEVC,GVEC,BMAT,WEIGHTVEC,
      &                                 INDEVC,FEASIBLE)
-#include <implicit.h>
-#include <inforb.h>      
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"      
+#include "priunit.h"
 
       INTEGER NEVC
       DIMENSION GVEC(*),BMAT(NEVC,NEVC),WEIGHTVEC(*)
@@ -393,9 +383,9 @@ C
       END
       SUBROUTINE ediis_scan_whole_space(
      &           NEVC,GVEC,BMAT,WEIGHTVEC,INDEVC,FEASIBLE)
-#include <implicit.h>
-#include <inforb.h>      
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"      
+#include "priunit.h"
 
       INTEGER NEVC
       DIMENSION GVEC(*),BMAT(NEVC,NEVC),WEIGHTVEC(*)

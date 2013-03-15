@@ -113,9 +113,9 @@ CRIT10=`$GREP "Property anisotropy invariant: * 16\.18709. a\.u\." $log | wc -l`
 CRIT11=`$GREP "1 * ( |0)\.5742711. * ( |0)\.0000000. * ( |0)\.0000000" $log | wc -l`
 CRIT12=`$GREP "2 * ( |0)\.0000000. * ( |0)\.5742711. * ( |0)\.0000000" $log | wc -l`
 CRIT13=`$GREP "3 * ( |0)\.0000000. * ( |0)\.0000000. * -1\.1485423" $log | wc -l`
-CRIT14=`$GREP "N    1 14    Vx =       ( |0)\.57427.     2\.75804.     ( |0)\.98527" $log | wc -l`
-CRIT15=`$GREP "N    1 14    Vy =       ( |0)\.57427.     2\.75804.     ( |0)\.98527" $log | wc -l`
-CRIT16=`$GREP "N    1 14    Vz =      -1\.14854.    -5\.51608.    -1\.97055" $log | wc -l`
+CRIT14=`$GREP "N   _1 14    Vx =       ( |0)\.57427.     2\.75804.     ( |0)\.98527" $log | wc -l`
+CRIT15=`$GREP "N   _1 14    Vy =       ( |0)\.57427.     2\.75804.     ( |0)\.98527" $log | wc -l`
+CRIT16=`$GREP "N   _1 14    Vz =      -1\.14854.    -5\.51608.    -1\.97055" $log | wc -l`
 CRIT17=`$GREP "1-elec\. Darwin term: *( |0)\.23063641" $log | wc -l`
 CRIT18=`$GREP "Mass-Velocity term: *( -|-0)\.28863568" $log | wc -l`
 CRIT19=`$GREP "Mass-Velocity \+ 1-elec\. Darwin terms: *( -|-0)\.05799926" $log | wc -l`
@@ -143,9 +143,9 @@ CRIT10=`$GREP "Property anisotropy invariant: * 16\.45156. a\.u\." $log | wc -l`
 CRIT11=`$GREP "1 * ( |0)\.4518694. * ( |0)\.0000000. * ( |0)\.0000000" $log | wc -l`
 CRIT12=`$GREP "2 * ( |0)\.0000000. * ( |0)\.4518694. * ( |0)\.0000000" $log | wc -l`
 CRIT13=`$GREP "3 * ( |0)\.0000000. * ( |0)\.0000000. * ( -|-0)\.9037388" $log | wc -l`
-CRIT14=`$GREP "N    1 14    Vx =       ( |0)\.45186.     2\.17018.     ( |0)\.77527" $log | wc -l`
-CRIT15=`$GREP "N    1 14    Vy =       ( |0)\.45186.     2\.17018.     ( |0)\.77527" $log | wc -l`
-CRIT16=`$GREP "N    1 14    Vz =      ( -|-0)\.90373.    -4\.34036.    -1\.55054" $log | wc -l`
+CRIT14=`$GREP "N   _1 14    Vx =       ( |0)\.45186.     2\.17018.     ( |0)\.77527" $log | wc -l`
+CRIT15=`$GREP "N   _1 14    Vy =       ( |0)\.45186.     2\.17018.     ( |0)\.77527" $log | wc -l`
+CRIT16=`$GREP "N   _1 14    Vz =      ( -|-0)\.90373.    -4\.34036.    -1\.55054" $log | wc -l`
 CRIT17=`$GREP "   1-elec\. Darwin term: *( |0)\.23056651" $log | wc -l`
 CRIT18=`$GREP "   Mass-Velocity term: *( -|-0)\.28868401" $log | wc -l`
 CRIT19=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms: *( -|-0)\.05811749" $log | wc -l`

@@ -14,12 +14,13 @@ Chjaaj mar 2005: make LENID .gt. standard size for extra debugging
       REAL*8        WLREAL, WLZERO
       INTEGER*8      LREAL,  LZERO
       EQUIVALENCE  (WLREAL, LREAL), (WLZERO, LZERO)
-      CHARACTER*8   IDENT8
 
       REAL*8        WMEMID, WMEMCK
       INTEGER*8      MEMID,  MEMCK
       EQUIVALENCE  (WMEMID, MEMID), (WMEMCK, MEMCK)
 
-      SAVE          LZERO,    MEMID
-      DATA          LZERO/0/, MEMID /1234567890/
+      CHARACTER*8   IDENT8
+
+      SAVE          LZERO,       MEMID
+      DATA          LZERO/-123/, MEMID /1234567890/
 C -- end of memcb1.h

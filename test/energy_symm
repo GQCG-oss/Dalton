@@ -31,14 +31,14 @@ cat > energy_symm.info <<'%EOF%'
 cat > energy_symm.mol <<'%EOF%'
 BASIS
 cc-pVDZ
-Energy calculation with symmetry
-
+   Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
+   Test Purpose:     Check energy calculation with symmetry
     2
         8.    1
 O     0.0 -0.2249058930 0.0
         1.    2
-H     1.45235 0.899623 0.0
-H    -1.45235 0.899623 0.0
+H_a   1.45235 0.899623 0.0
+H_b  -1.45235 0.899623 0.0
 %EOF%
 
 #######################################################################
@@ -51,9 +51,6 @@ cat > energy_symm.dal <<'%EOF%'
 .HF
 .MP2
 .MCSCF
-*SCF INPUT
-.DOUBLY OCCUPIED
- 3 1 1 0
 *MP2 INPUT
 .SOSMP2
 *CONFIGURATION INPUT
@@ -72,7 +69,7 @@ cat > energy_symm.dal <<'%EOF%'
  1 0
  51
 # p6flag(51) is code for checking that reduced matrix redH is symmetric
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -126,7 +123,7 @@ CRIT1=`$GREP "Number of closed shell electrons * 2" $log | wc -l`
 CRIT2=`$GREP "Number of electrons in active shells * 8" $log | wc -l`
 CRIT3=`$GREP " active orbitals * 8" $log | wc -l`
 CRIT4=`$GREP "Total number of orbitals * 24" $log | wc -l`
-CRIT5=`$GREP "Spin multiplicity * 1" $log | wc -l`
+CRIT5=`$GREP "Spin multiplicity .* 1" $log | wc -l`
 CRIT6=`$GREP "Total number of symmetries * 4" $log | wc -l`
 CRIT7=`$GREP "Reference state symmetry * 1" $log | wc -l`
 TEST[4]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
@@ -145,7 +142,7 @@ CTRL[5]=5
 ERROR[5]="SYMMETRY IS NOT CORRECT"
 
 # SCF energy:
-CRIT1=`$GREP "Hartree-Fock total energy : * \-76\.025681483" $log | wc -l`
+CRIT1=`$GREP "Hartree-Fock total energy *: * \-76\.025681483" $log | wc -l`
 TEST[6]=`expr $CRIT1`
 CTRL[6]=1
 ERROR[6]="SCF ENERGY NOT CORRECT"
@@ -173,6 +170,13 @@ CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[9]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[9]=6  # 1 + 2 + 2 + 1
 ERROR[9]="NATORB OCCUPANCY NOT CORRECT"
+
+# Check for WARNING for .mol line longer than 80 char
+#  WARNING -- line in ".mol" file truncated, line     5
+#CRIT1=`$GREP "WARNING .* file truncated, line * 5" $log | wc -l`
+#TEST[10]=`expr $CRIT1`
+#CTRL[10]=1
+#ERROR[10]="WARNING FOR LONG .MOL LINE NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9

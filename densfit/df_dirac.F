@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE DENS_FIT (FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                     WORK,LWORK)
 C*****************************************************************************
@@ -60,7 +50,7 @@ C*****************************************************************************
       LOGICAL FIRST_CALL
       SAVE FIRST_CALL
       DATA FIRST_CALL /.TRUE./
-#include <memint.h> 
+#include "memint.h" 
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
@@ -237,20 +227,20 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <veclen.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <infpar.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "veclen.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "infpar.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
       DIMENSION  WORK(*), CCFBT(*), INDXBT(*)
       DIMENSION KOD(12)
-#include <memint.h> 
+#include "memint.h" 
 C
 C     Initialization of ERI (if we are the master)
 C
@@ -338,16 +328,16 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <veclen.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <infpar.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "veclen.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "infpar.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK), WKOD(*),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*),
@@ -504,7 +494,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-#include <denfit.h> 
+#include "denfit.h" 
       DIMENSION FMAT(*),DMAT(*), WMAT(*), WVEC(*), WORK(LWORK), WKOD(*),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*),
      &          FCKTMP(*), CFIT(*)
@@ -512,7 +502,7 @@ C*****************************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include <memint.h> 
+#include "memint.h" 
 C
 C     Read the 2-index integrals from file
 C
@@ -578,7 +568,7 @@ C*****************************************************************************
 C
       DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
 C
-#include <memint.h> 
+#include "memint.h" 
 C
 C     We take as first index the fit set functions on either center A or B,
 C     and as second index the null function. The remaining two are ordinary
@@ -719,15 +709,15 @@ C     - NCENTS :   the number of active centers for a given index (maximally 2)
 C     - ICENTS :   the corresponding center indices 
 C     - ICLASSES : the active class (can only be one at a time).
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <shells.h>
-#include <erisel.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "shells.h"
+#include "erisel.h"
+#include "aobtch.h"
       DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
 C
       DO I = 1, NAOBCH
@@ -786,15 +776,15 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <shells.h>
-#include <erisel.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "shells.h"
+#include "erisel.h"
+#include "aobtch.h"
 C
       DIMENSION INDEX(*)
 C
@@ -825,8 +815,8 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FULL_MAT(N_FULL,*),RED_MAT(N_RED,*)
       DIMENSION INDA(*),INDB(*)
 C
@@ -865,10 +855,10 @@ C  /* Deck read_fit2int */
 C
 C     Wrapper routine for read of the full set of 2-index fit integrals
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <inforb.h>
-#include <cbieri.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "inforb.h"
+#include "cbieri.h"
       DIMENSION WMAT(*),WORK(LWORK)
       LBUF = LBFINP
       KIBUF = 1
@@ -884,18 +874,18 @@ C
 C     Read the full set of 2-index fit integrals to memory.
 C     The indices are shifted so that the first fit function is placed at position 1
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
 #include "mxcent.h"
-#include <nuclei.h>
-#include <inforb.h>
+#include "nuclei.h"
+#include "inforb.h"
       INTEGER A, B, C, D
       DIMENSION WMAT(NBASISAUX,NBASISAUX),
      &          IBUF(4,LBUF), MBAS(8), WRK(LWORK)
       DIMENSION ICLASSES(4)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       KFREE = 1
       LFREE = LWORK
@@ -915,7 +905,7 @@ C
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
       READ (LUINTA) MSYM, (MBAS(I),I=1,8), KBUF, NIBUF, NBITS
-      JBUF = 0
+      IF (KBUF .NE. LBUF) CALL QUIT('READ_FIT2INT_2: KBUF .ne. LBUF')
 C
       LENINT = IRAT*LBUF + NIBUF*LBUF + 1
       KFREE = 1
@@ -974,16 +964,16 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <shells.h>
-#include <nuclei.h>
-#include <erisel.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "shells.h"
+#include "nuclei.h"
+#include "erisel.h"
+#include "aobtch.h"
 C
       DIMENSION IBIN(LBIN,NIND),IBUF(NIND,LBUF),IND_SHIFT(NIND)
       DIMENSION ICLASSES(NIND)
@@ -1036,7 +1026,7 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION IBIN(LBIN,2)
 C
@@ -1049,16 +1039,14 @@ C
 C
       RETURN
       END
-C  /* Deck dfiinp */
-      SUBROUTINE DFIINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <denfit.h>
-      PARAMETER ( NTABLE = 13 )
+C  /* Deck densfit_inp */
+      SUBROUTINE DENSFIT_INP(WORD)
+#include "implicit.h"
+#include "priunit.h"
+#include "denfit.h"
+      PARAMETER ( NTABLE = 5 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      DATA TABLE /'.DIATOM','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA TABLE /'.DIATOM','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       WORD1 = WORD
 C
@@ -1072,13 +1060,14 @@ C
             ELSE IF (PROMPT .EQ. '.') THEN
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
+                     GO TO (1,2,3,4,5), I
                   END IF
  200          CONTINUE
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in FCK3INP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in FCK3INP.')
+
  1    CONTINUE
         !.DIATOM - fit density for pairs of atoms
         DIATOM     = .TRUE.
@@ -1089,31 +1078,15 @@ C
       GO TO 100
  4    CONTINUE
       GO TO 100
- 5    CONTINUE 
+ 5    CONTINUE
       GO TO 100
- 6    CONTINUE
-      GO TO 100
- 7    CONTINUE
-      GO TO 100
- 8    CONTINUE
-      GO TO 100
- 9    CONTINUE
-      GO TO 100  
- 10   CONTINUE
-      GO TO 100  
- 11   CONTINUE
-      GO TO 100  
- 12   CONTINUE
-      GO TO 100  
- 13   CONTINUE
-      GO TO 100  
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in DFIINP.'
+     *            '" not recognized for *DENFIT.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 CALL QUIT('Illegal keyword in DFIINP.')
+                 CALL QUIT('Illegal keyword for *DENFIT.')
             END IF
  300  CONTINUE
 
@@ -1136,10 +1109,10 @@ C
 
       RETURN
       END
-C  /* Deck dfiini */
-      SUBROUTINE DFIINI
-#include <implicit.h>
-#include <denfit.h>
+C  /* Deck densfit_ini */
+      SUBROUTINE DENSFIT_INI
+#include "implicit.h"
+#include "denfit.h"
 
       !.DIATOM - fit density for pairs of atoms (default is the global fit)
       DIATOM  = .FALSE.

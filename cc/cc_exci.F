@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c*DECK CC_EXCI
        SUBROUTINE CC_EXCI(WORK,LWORK,LIST,APROXR12)
@@ -68,25 +58,25 @@ C
 C
 C-----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <pgroup.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <codata.h>
-#include <ccsections.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccexci.h> 
-#include <ccexgr.h>
-#include <ccfdgeo.h>
-#include <ccgr.h>
-#include <ccfro.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "pgroup.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "codata.h"
+#include "ccsections.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccexci.h" 
+#include "ccexgr.h"
+#include "ccfdgeo.h"
+#include "ccgr.h"
+#include "ccfro.h"
+#include "ccinftap.h"
 C
       LOGICAL LOCDBG
       PARAMETER(LOCDBG=.FALSE.)
@@ -109,7 +99,7 @@ C
       PARAMETER (THRDEGEN = 1.0D-8)
       CHARACTER*8 LABEL,LABEL1
 C
-#include <leinf.h>
+#include "leinf.h"
 C
       CALL QENTER('CC_EXCI')
 C
@@ -1541,13 +1531,17 @@ C
 C     Written by Ove Christiansen November 1994
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "leinf.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
 C
       LOGICAL TRIPLET
 C
@@ -1564,10 +1558,24 @@ C
       THRLE  = THREXC
       MAXLE  = MAXITE
       IPRLE  = IPRINT
-      LETYPA = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-      IF (  TRIPLET  ) LETYPA = LETYPA + NT2AMA(ISYMTR)
-      IF (   CCR12   ) LETYPA = LETYPA + NTR12AM(ISYMTR)
-      IF (CCS.OR.CCP2) LETYPA = NT1AM(ISYMTR)
+C
+Cholesky
+C
+      IF (CHOINT) THEN
+         IF (TRIPLET)
+     &   CALL QUIT('CCLR_LEINFI: Triplet Cholesky not implemented')
+         IF (CC2) THEN
+            LETYPA = NT1AM(ISYMTR)
+         ELSE
+            CALL QUIT('CCLR_LEINFI: Only Cholesky CC2 implemented')
+         ENDIF
+      ELSE
+         LETYPA = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+         IF (  TRIPLET  ) LETYPA = LETYPA + NT2AMA(ISYMTR)
+         IF (   CCR12   ) LETYPA = LETYPA + NTR12AM(ISYMTR)
+         IF (CCS.OR.CCP2) LETYPA = NT1AM(ISYMTR)
+      END IF
+C
       LETYPB = 0
       LETOT  = LETYPA + LETYPB
       NBASIS = 1
@@ -1600,6 +1608,13 @@ C
       LLEWA = LLEWA + 2*NT2MAO(1,1)
 C
       IF (CCSDT) LLEWA = LLEWA  +  NT2SQ(1)
+C
+Cholesky
+      IF (CHOINT .AND. CC2) THEN
+         NRHO2 = 0
+         LLEWA = 0
+      END IF
+Cholesky
 C
 C---------------------------------------------------------------
 C     t2tcor is taken care of in routine, that is; it is forced
@@ -1665,16 +1680,16 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
 C
       PARAMETER(NTRIP = 4,MXISPT = 3)
 C
@@ -1690,7 +1705,7 @@ C
       PARAMETER (FC1AM='CCR_C1AM',FC2AM='CCR_C2AM')
       PARAMETER (FRHO1='CCR_RHO1',FRHO2='CCR_RHO2')
 C
-#include <leinf.h>
+#include "leinf.h"
 C
       CALL QENTER('CC_PCEXCI')
 C
@@ -1725,12 +1740,12 @@ C
       IMULT   = 1
 C
       MODEL = 'CCSD      '
-      IF (CCS) MODEL = 'CC2       '
-      IF (CCP2) MODEL = 'CC(2)     '
+      IF (CCS)   MODEL = 'CC2       '
+      IF (CCP2)  MODEL = 'CC(2)     '
       IF (CCR1A) MODEL = 'CCSDR(1A) '
       IF (CCR1B) MODEL = 'CCSDR(1B) '
-      IF (CCRT) MODEL = 'CCSDR(T) '
-      IF (CCR3) MODEL = 'CCSDR(3) '
+      IF (CCRT)  MODEL = 'CCSDR(T) '
+      IF (CCR3)  MODEL = 'CCSDR(3) '
 C
       IF ( CCR3.OR.CCRT.OR.CCR1A.OR.CCR1B ) THEN
          CC3SAV = CCSDT
@@ -2047,16 +2062,20 @@ C              Used for calculating pert. corr. amplitudes in
 C              CCSDR(3)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION OMEGA1(*),OMEGA2(*),WORK(LWORK)
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2127,7 +2146,10 @@ C
    20    CONTINUE
    10 CONTINUE
 C
-      IF (.NOT. CCS) THEN
+C
+C     Skip doubles part if CCS or Cholesky CC2
+C
+      IF (.NOT. (CCS .OR. (CHOINT .AND. CC2))) THEN
         DO 100 ISYMBJ = 1,NSYM
 C
          ISYMAI = MULD2H(ISYMBJ,ISYMTR)
@@ -2191,8 +2213,14 @@ C
       ENDIF
 C
       IF (IPRINT .GT. 80) THEN
-         CALL AROUND('CC_VSCAL - end - : RHO1,RHO2 ')
-         CALL CC_PRP(OMEGA1,OMEGA2,ISYMTR,1,1)
+         IF (CCS .OR. (CHOINT.AND.CC2)) THEN
+            I = 0
+            CALL AROUND('CC_VSCAL - end - : RHO1')
+         ELSE
+            I = 1
+            CALL AROUND('CC_VSCAL - end - : RHO1,RHO2')
+         ENDIF
+         CALL CC_PRP(OMEGA1,OMEGA2,ISYMTR,1,I)
       ENDIF
 C
       CALL QEXIT('CC_VSCAL')
@@ -2210,16 +2238,16 @@ C              in this case OME is different
 C              from zero.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       DIMENSION OMEGA2(*),WORK(LWORK)
 C
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2373,16 +2401,16 @@ C
 C     removed problem with CCS left transformation, C.H., October 1997
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "r12int.h"
 C
       LOGICAL LCONT,LOCDBG
       CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FR2SD,FRHO12,FC12AM,FS12AM,
@@ -2407,7 +2435,7 @@ C
 C     IF (CCS .OR. CC2 .OR. CCSD) THEN
 C       ECURR = 0.0D0
 C     ELSE
-C       CALL QUIT('Entered for unkown model CC_ATRR')
+C       CALL QUIT('Entered for unknown model CC_ATRR')
 C     END IF
 C
       NSIMTR = 1
@@ -2740,18 +2768,18 @@ C     Written by Ove Christiansen 230899
 C
 C-----------------------------------------------------------------------------
 
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccsections.h> 
-#include <ccexci.h> 
-#include <ccexgr.h>
-#include <ccfdgeo.h>
-#include <ccgr.h>
-#include <cclres.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccsections.h" 
+#include "ccexci.h" 
+#include "ccexgr.h"
+#include "ccfdgeo.h"
+#include "ccgr.h"
+#include "cclres.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -2904,8 +2932,8 @@ C
 *     Written by Christof Haettig, Februar 2003, Aarhus
 *---------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "cclr.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -2953,9 +2981,9 @@ C
 *=====================================================================*
       SUBROUTINE CC_EXCIT_CONT(ISTATE,ISYM,TRIPLET,MODEL,CONT,SCONT)
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "r12int.h"
 
       CHARACTER*(*) MODEL
       CHARACTER*(8) MULTIPLICITY

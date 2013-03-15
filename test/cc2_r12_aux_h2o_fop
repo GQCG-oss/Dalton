@@ -53,7 +53,7 @@ cat > cc2_r12_aux_h2o_fop.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -92,7 +92,7 @@ ZDIPLEN
  1A
 .BASSCL 
  0.5 8.0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

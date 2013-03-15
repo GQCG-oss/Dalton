@@ -308,6 +308,7 @@ typedef void (*FourthOrderFun)(FunFourthFuncDrv *ds, real factor,
 struct Functional_ {
     const char* name; /* descriptive functional name (usually 5 characters) */
     IsGGAFunc       is_gga;
+    int             highest_tested_resp_order;
     ReadInputFunc   read;
     ReportFunc      report;
    /* Only unrestricted implementations are needed. A benchmark for

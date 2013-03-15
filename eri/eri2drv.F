@@ -1,54 +1,44 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck er2inp */
       SUBROUTINE ER2INP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (NTABLE = 35)
 C
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <cbiher.h>
-#include <cbieri.h>
-#include <erisel.h>
-#include <eribuf.h>
-#include <gnrinf.h>
+#include "cbiher.h"
+#include "cbieri.h"
+#include "erisel.h"
+#include "eribuf.h"
+#include "gnrinf.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.TIME  ', '.RETURN', '.AOBTCH',
      &            '.NOPSAB', '.NOPSCD', '.NOPS12', '.OFFCNT', '.NO12GS',
      &            '.NEWCR1', '.NONCAN', '.WRITEA', '.NOWRIT', '.GABAB ',
@@ -313,16 +303,16 @@ C
       END
 C  /* Deck er2ini */
       SUBROUTINE ER2INI
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <cbiher.h>
-#include <cbieri.h>
-#include <erisel.h>
-#include <eribuf.h>
-#include <ericom.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "cbiher.h"
+#include "cbieri.h"
+#include "erisel.h"
+#include "eribuf.h"
+#include "ericom.h"
+#include "gnrinf.h"
 C
 C     Initialize /CBIERI/
 C
@@ -371,25 +361,25 @@ C
       END
 C  /* Deck er2int */
       SUBROUTINE ER2INT(CCFBT,INDXBT,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "dummy.h"
       DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK), CSMAT(NBAST,NBAST)
       LOGICAL WRTINT_SAVE
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <inforb.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "inforb.h"
 C
       CALL QENTER('ER2INT')
 C
@@ -507,12 +497,12 @@ C  /* Deck odcdrv */
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
      &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
      &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
      &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
@@ -520,18 +510,18 @@ C  /* Deck odcdrv */
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
      &          CCFBT(*), INDXBT(*), WORK(LWORK)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ccom.h>
-#include <ericom.h>
-#include <eridst.h>
-#include <r12int.h>
-#include <hertop.h>
-#include <eribuf.h>
-#include <nuclei.h>
-#include <aobtch.h>
-#include <iratdef.h>
-#include <infpar.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ccom.h"
+#include "ericom.h"
+#include "eridst.h"
+#include "r12int.h"
+#include "hertop.h"
+#include "eribuf.h"
+#include "nuclei.h"
+#include "aobtch.h"
+#include "iratdef.h"
+#include "infpar.h"
 C
       MAXDER = 0
       IF (GDER) MAXDER = 1
@@ -668,28 +658,28 @@ C  /* Deck odcdr1 */
      &                  LMNPWR,LMNSYM,IPNTUV,
      &                  BUF,IBUF,CCFBT,INDXBT,NCOUNT,
      &                  CSQ,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <eribuf.h>
-#include <dummy.h>
-#include <cbieri.h>
-#include <erithr.h>
-#include <odclss.h>
-#include <ccom.h>
-#include <aobtch.h>
-#include <doxyz.h>
-#include <ericom.h>
-#include <erimem.h>
-#include <erista.h>
-#include <hertop.h>
-#include <symmet.h>
-#include <r12int.h>
-#include <denfit.h> 
-#include <iratdef.h> 
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eribuf.h"
+#include "dummy.h"
+#include "cbieri.h"
+#include "erithr.h"
+#include "odclss.h"
+#include "ccom.h"
+#include "aobtch.h"
+#include "doxyz.h"
+#include "ericom.h"
+#include "erimem.h"
+#include "erista.h"
+#include "hertop.h"
+#include "symmet.h"
+#include "r12int.h"
+#include "denfit.h" 
+#include "iratdef.h" 
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
      &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
@@ -705,7 +695,7 @@ C  /* Deck odcdr1 */
      &          BUF(*), IBUF(*),
      &          CCFBT(*), INDXBT(*), NCOUNT(*),
      &          CSQ(NCSQ1,NCSQ2), WORK(LWORK)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Information in arrays:
 C
@@ -1258,12 +1248,12 @@ C  /* Deck odcpar */
      &                  IPNTCR,IPNTPP,
      &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,BUF,IBUF,
      &                  CCFBT,INDXBT,NCOUNT,CSQ,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       LOGICAL LSTBCH
       DIMENSION IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
      &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
@@ -1277,15 +1267,15 @@ C  /* Deck odcpar */
      &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
      &          BUF(*), IBUF(*),
      &          CCFBT(*), INDXBT(*), NCOUNT(*), CSQ(*), WORK(LWORK)
-#include <aobtch.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erimem.h>
-#include <erithr.h>
-#include <eribuf.h>
-#include <odclss.h>
-#include <erista.h>
-#include <hertop.h>
+#include "aobtch.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erimem.h"
+#include "erithr.h"
+#include "eribuf.h"
+#include "odclss.h"
+#include "erista.h"
+#include "hertop.h"
 C
 C
 C     Collect OD batches in passes
@@ -1387,12 +1377,12 @@ C  /* Deck odcpa2 */
      &                  IPNTUV,WORK,LWORK,FMAT,DMAT,NDMT,IFCTYP,
      &                  D2MAT,ID2MAT,
      &                  BUF,IBUF,CSQ,CCFBT,INDXBT,NCOUNT,IPASS,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       LOGICAL LSTBCH
       DIMENSION IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
@@ -1404,15 +1394,15 @@ C  /* Deck odcpa2 */
      &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
      &          BUF(*), IBUF(*),
      &          CCFBT(*), CSQ(*), INDXBT(*), NCOUNT(*), WORK(LWORK)
-#include <aobtch.h>
-#include <ericom.h>
-#include <erimem.h>
-#include <erithr.h>
-#include <eribuf.h>
-#include <odclss.h>
-#include <erista.h>
-#include <hertop.h>
-#include <iratdef.h>
+#include "aobtch.h"
+#include "ericom.h"
+#include "erimem.h"
+#include "erithr.h"
+#include "eribuf.h"
+#include "odclss.h"
+#include "erista.h"
+#include "hertop.h"
+#include "iratdef.h"
 C
       IPASS = IPASS + 1
       NTPAS = NTPAS + 1
@@ -1528,12 +1518,12 @@ C  /* Deck odcpas */
      &                  ROD1,ROD2,NCENTR,FMAT,DMAT,NDMT,IFCTYP,D2MAT,
      &                  ID2MAT,BUF,IBUF,CSQ,CCFBT,INDXBT,NCOUNT,
      &                  WORK,LWORK,IPASS,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       DIMENSION IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          ROD1(NPQBCS,NPRFAB,3),
@@ -1555,13 +1545,13 @@ C  /* Deck odcpas */
      &          ALPHA(NPPX), FACPQ(NPPS), HEXPP(NPPX), HEXPQ(NPPX),
      &          COORPQ(NPPX,3), CSQ(*), CCFBT(*), INDXBT(*), NCOUNT(*),
      &          WORK(LWORK)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <eriao.h>
-#include <eribuf.h>
-#include <hertop.h>
-#include <aobtch.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "eriao.h"
+#include "eribuf.h"
+#include "hertop.h"
+#include "aobtch.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ODCPAS','*',103)
@@ -1629,13 +1619,13 @@ C  /* Deck erint0 */
      &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,CSQ,BUF,IBUF,
      &                  CCFBT,INDXBT,NCOUNT,
      &                  WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
       DIMENSION FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*), 
      &          CSQ(*), BUF(*), IBUF(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
@@ -1655,16 +1645,16 @@ C  /* Deck erint0 */
      &          ALPHA(NPPX), FACPQ(NPPS), HEXPP(NPPX), HEXPQ(NPPX),
      &          COORPQ(NPPX,3), CCFBT(*), INDXBT(*), 
      &          NCOUNT(*), WORK(LWORK)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <eriao.h>
-#include <eribuf.h>
-#include <hertop.h>
-#include <nuclei.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <r12int.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "eriao.h"
+#include "eribuf.h"
+#include "hertop.h"
+#include "nuclei.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "r12int.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERINT0','*',103)
@@ -2005,12 +1995,12 @@ C  /* Deck erints */
      &                  HPRE3,RO000,HRIN1,HRIN2,HRIN3,
      &                  HEXPP,HEXPQ,LWKGAM,LWKHER,LWKCR1,LWKCR2,
      &                  NDIMD,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
 C     Arrays for Gaussian-damped R12 integrals (WK/UniKA/04-11-2002).
       DIMENSION HARGE(*), HARGF(*), HALPH(*), HBETA(*), HPRE1(*), 
@@ -2035,16 +2025,16 @@ C     Arrays for Gaussian-damped R12 integrals (WK/UniKA/04-11-2002).
      &          CSQ(*), NCENTR(NPQBCS,MLTPZ,4)
 c     C. Villani Uni-KA, Feb 2005
       LOGICAL   MIOTST
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <eriao.h>
-#include <erisop.h>
-#include <eribuf.h>
-#include <hertop.h>
-#include <r12int.h>
-#include <aobtch.h>
-#include <clsfmm.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "eriao.h"
+#include "erisop.h"
+#include "eribuf.h"
+#include "hertop.h"
+#include "r12int.h"
+#include "aobtch.h"
+#include "clsfmm.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERINTS','*',103)
@@ -2392,16 +2382,16 @@ C
       END
 C  /* Deck pntuv */
       SUBROUTINE PNTUV(IPNTUV,LMNPWR,INDHER,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION IPNTUV(KC2MAX,0:NRDER,2,2), LMNPWR(KCKMAX,NHKMAX,3),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP)
-#include <ccom.h>
-#include <ericom.h>
-#include <sphtrm.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ccom.h"
+#include "ericom.h"
+#include "sphtrm.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
       ICMPAB = 0
       MAXB = KCKTB
@@ -2513,9 +2503,9 @@ C
       END
 C  /* Deck setcao */
       SUBROUTINE SETCAO(IPRINT)
-#include <implicit.h>
-#include <ericom.h>
-#include <eriao.h>
+#include "implicit.h"
+#include "ericom.h"
+#include "eriao.h"
 C
       IF (IPATH .EQ. 1) THEN
 C
@@ -2728,15 +2718,15 @@ C
       END
 C  /* Deck lmnprp */
       SUBROUTINE LMNPRP(LMNPWR,LMNSYM,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7)
-#include <ericom.h>
-#include <eriao.h>
-#include <ccom.h>
-#include <sphtrm.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "ccom.h"
+#include "sphtrm.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from LMNPRP','*',103)
 C
@@ -2808,7 +2798,7 @@ C  /* Deck npairs */
       END
 C  /* Deck kcdim */
       INTEGER FUNCTION KCDIM(JMAX1,JMAX2)
-#include <implicit.h>
+#include "implicit.h"
       ITRI1(I) = (I + 1)*(I + 2)/2
       ITRI2(I) = (I + 1)*(I + 2)*(I + 3)/6
 C
@@ -2825,19 +2815,19 @@ C
       END
 C  /* Deck mempqb */
       SUBROUTINE MEMPQB(MEMORY,NALLOI,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       LOGICAL DOREC, FRSTAO
-#include <cbieri.h>
-#include <ericom.h>
-#include <eridst.h>
-#include <eribuf.h>
-#include <symmet.h>
-#include <r12int.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eridst.h"
+#include "eribuf.h"
+#include "symmet.h"
+#include "r12int.h"
 C
       MEMI(I) = I
       MEMR(I) = IRAT*I
@@ -3125,8 +3115,8 @@ C  /* Deck memcr1 */
      &        JMAX12,JMAX1,JMAX2,
      &        SPHR12,SPHR1,SPHR2, NPRF34,NTUV34,NPRFPQ)
 C
-#include <implicit.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "r12int.h"
 C
       LOGICAL SPHR12, SPHR1, SPHR2
 C
@@ -3170,7 +3160,7 @@ C  /* Deck memcr2 */
      &                 JMAX34,JMAX3,JMAX4,
      &                 SPHR34,SPHR3,SPHR4, NCTF12,NPRF34,NCTFPQ)
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL SPHR34,SPHR3,SPHR4
 C
       IF (KHKT34 .GT. 1) THEN
@@ -3208,9 +3198,9 @@ C
       END
 
       subroutine miaprt(aoint,iof,iprint,iu)
-#include <implicit.h>
-#include <ericom.h>
-#include <eriao.h>
+#include "implicit.h"
+#include "ericom.h"
+#include "eriao.h"
       integer iprint
       dimension aoint(ncct,khktab,khktcd,*)
 

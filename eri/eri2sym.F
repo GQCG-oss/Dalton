@@ -1,44 +1,34 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck erisym */
       SUBROUTINE ERISYM(AO,SO,IATOM,ICRB,IREPE,IODDCC,IPNTUV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER R, S, T
       DIMENSION AO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
@@ -46,12 +36,12 @@ C  /* Deck erisym */
      &          RMAT(64,0:7), SMAT(64,0:7), TMAT(64,0:7),
      &          IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
       DIMENSION TMP(NCCS,MLTPR,MLTPS,MLTPT)
-#include <ericom.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Output from ERISYM',-1)
@@ -141,38 +131,6 @@ C
      &                    D0,SO(1,1,S,T,ICMPAB,ICMPCD),NCCS)
   500       CONTINUE
 C
-C#if defined (SYS_CRAY)
-C            CALL SGEMM('T','N',MLTPS*MLTPT*NCCS,MLTPR,MLTPR,
-C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPR,
-C     &                 RMAT(1,IPARB),MLTPR,
-C     &                 D0,SO(1,ICMPAB,ICMPCD),MLTPS*MLTPT*NCCS)
-C            CALL SGEMM('T','N',MLTPT*NCCS*MLTPR,MLTPS,MLTPS,
-C     &                 D1,SO(1,ICMPAB,ICMPCD),MLTPS,
-C     &                 SMAT(1,IPARD),MLTPS,
-C     &                 D0,AO(1,ICMPAB,ICMPCD),MLTPT*NCCS*MLTPR)
-C            CALL SGEMM('T','N',NCCS*MLTPR*MLTPS,MLTPT,MLTPT,
-C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPT,
-C     &                 TMAT(1,IBTXOR(IPARC,IPARD)),MLTPT,
-C     &                 D0,SO(1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS)
-C#endif
-C#if defined (SYS_DEC)
-C            CALL QUIT('This will require ESSL (eri2sym)')
-C#endif
-C#if !defined (SYS_CRAY) && !defined (SYS_DEC)
-C            CALL DGEMM('T','N',MLTPS*MLTPT*NCCS,MLTPR,MLTPR,
-C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPR,
-C     &                 RMAT(1,IPARB),MLTPR,
-C     &                 D0,SO(1,ICMPAB,ICMPCD),MLTPS*MLTPT*NCCS)
-C            CALL DGEMM('T','N',MLTPT*NCCS*MLTPR,MLTPS,MLTPS,
-C     &                 D1,SO(1,ICMPAB,ICMPCD),MLTPS,
-C     &                 SMAT(1,IPARD),MLTPS,
-C     &                 D0,AO(1,ICMPAB,ICMPCD),MLTPT*NCCS*MLTPR)
-C            CALL DGEMM('T','N',NCCS*MLTPR*MLTPS,MLTPT,MLTPT,
-C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPT,
-C     &                 TMAT(1,IBTXOR(IPARC,IPARD)),MLTPT,
-C     &                 D0,SO(1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS)
-C#endif
-C
 C           Print
 C           =====
 C
@@ -191,14 +149,14 @@ C
       END
 C  /* Deck eritra */
       SUBROUTINE ERITRA(RMAT,MLTPX,ISTBLX)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION RMAT(64,0:7)
-#include <maxorb.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "maxorb.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IRED = 0
       DO 100 I = 0, MAXOPR

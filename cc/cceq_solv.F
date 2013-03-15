@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cceq_sol */
       SUBROUTINE CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
@@ -134,13 +124,19 @@ C JK&OC 080802:
 C Dirty hack to allow small number of iterations for CCSLV/MM calc.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cclr.h>
-#include <leinf.h>
-#include <ccslvinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cclr.h"
+#include "leinf.h"
+#include "ccslvinf.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+C
+      PARAMETER (TOL = 1.0D-14)
+Cholesky
       PARAMETER (D0 = 0.0D0 )
 C
       CHARACTER*(*) FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM,FS2AM
@@ -174,11 +170,52 @@ C
       TIMNEX = D0
       ITLE   = 0
 C
+Cholesky
+C
+C     Check that this is N-R for Cholesky CC2: Eigenvalue equations
+C     are non-linear and cannot be determined here...
+C
+      IF ((CHOINT .AND. CC2) .AND. (.NOT. LINQCC)) THEN
+         WRITE(LUPRI,'(//,A)')
+     &   'CCEQ_SOL: Cholesky CC2 eigenvalues not available:'
+         WRITE(LUPRI,'(A,A,/,A,/)')
+     &  'The eigenvalue equations for Cholesky CC2 are ',
+     &  'non-linear and thus outside the scope of CCEQ_SOL'
+        CALL QUIT('CCEQ_SOL: no eigenvalues for Cholesky CC2')
+      ENDIF
+C
+C     Check that all frequencies in EIVAL are identical for Cholesky CC2.
+C
+      IF (CHOINT .AND. CC2.AND. (NVEC.GT.0)) THEN
+         ICOUN = 0
+         REFRQ = EIVAL(1)
+         DO I = 2,NVEC
+            DIFF = DABS(EIVAL(I) - REFRQ)
+            IF (DIFF .GT.  TOL) ICOUN = ICOUN + 1
+         ENDDO
+         IF (ICOUN .GT. 0) THEN
+            WRITE(LUPRI,'(//,A)')
+     &      'CCEQ_SOL: frequencies MUST be identical for all',
+     &      ' perturbations for Cholesky CCC2.'
+            WRITE(LUPRI,'(A)')
+     &      'Frequencies passed to CCEQ_SOL in EIVAL array:'
+            WRITE(LUPRI,'(4D20.12)') (EIVAL(I), I = 1,NVEC)
+            CALL QUIT('CCEQ_SOL: frequency error for Cholesky CC2')
+         ENDIF
+      ENDIF
+C
+Cholesky
+C
 C     print banner for solver:
 C
       IF (IPRLE.GT.0) THEN
          WRITE (LUPRI,'(///A/)') 
      &        ' >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<'
+Chol
+         IF (CHOINT .AND. CC2.AND. (NVEC.GT.0))
+     &       WRITE(LUPRI,'(A,F12.5,/)')
+     &            ' Frequnecy :',EIVAL(1)
+Chol
          WRITE (LUPRI,'(3X,A)')
      &        ' Iter  #Vectors  time (min)   residual'
          WRITE (LUPRI,'(3X,A)')
@@ -208,10 +245,13 @@ C
      *      TRIPLET, ECURR
          ENDIF                      
 C
+Cholesky     Pass EIVAL (before it was DUMMY) to CC_TRDRV
+Cholesky     to be used by CC_CHOATR
+C
          IST = NREDH - NUPVEC + 1
          CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                       FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                 TRIPLET,.FALSE.,IDUMMY,DUMMY,FS12AM,LUFS12,
+     *                 TRIPLET,.FALSE.,IDUMMY,EIVAL,FS12AM,LUFS12,
      *                 FS2AM,LUFS2,
      *                 ISIDE,IST,NUPVEC,WRK,LWRK,APROXR12)
 C
@@ -432,21 +472,21 @@ C Included projection, Sonia Coriani 1997
 C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 ,
      *            THRLDP = 1.0D-20 , THRDIA = 1.0D-6 )
-#include <priunit.h>
-#include <ibndxdef.h>
-#include <ccorb.h>
-#include <cclr.h>
-#include <ccinf.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <leinf.h>
-#include <ccinf.h>
-#include <ccexci.h>
-#include <dummy.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ibndxdef.h"
+#include "ccorb.h"
+#include "cclr.h"
+#include "ccinf.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "leinf.h"
+#include "ccinf.h"
+#include "ccexci.h"
+#include "dummy.h"
+#include "r12int.h"
 C
       LOGICAL LOCDBG, LNOREAD
       PARAMETER (LOCDBG = .FALSE.) 
@@ -568,7 +608,8 @@ C        ----------------------------------------------
                WRITE(LUPRI,'(A,I3,A,I3,A)') ' Vector nr.',ILSTNR,
      &         ' of symmetry',ISYM,' found on file - RESTART SUCCESS'
                WRITE(LUPRI,'(4A)') ' Start vector is a ',
-     &         MODEL,LIST(1:LEN_LIST),' vector'
+     &         MODEL,LIST(1:3),' vector'
+Casm &         MODEL,LIST(1:LEN_LIST),' vector'
             ENDIF
          ENDIF
 C
@@ -727,10 +768,10 @@ C PURPOSE:
 C  Calculate converged solutions to the LED sets of linear
 C  equations in RD starting with equation number LEDST
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "leinf.h"
 C
       CHARACTER*(*) C1FIL,C2FIL,C12FIL
       LOGICAL TRIPLET,CCR12
@@ -776,15 +817,19 @@ C                                   trial vectors.
 C
 C RMXNORM : maximum norm of residuals
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <leinf.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "leinf.h"
+#include "r12int.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
       LOGICAL LOCDBG,LNOREAD
       PARAMETER ( LOCDBG = .FALSE. )
       PARAMETER ( THRLDP = 1.D-20 )
@@ -1004,32 +1049,42 @@ C        --------------------------------------------
 C        Use generalized conjugate gradient algorithm
 C        to form new trial vectors
 C        --------------------------------------------
-C        KDIA   = KWRK1
-C        KWRK2  = KDIA  + NCCVAR
-C        LWRK2  = LWRK  - KWRK2 
-C        IF (LWRK2 .LT. 0 ) THEN 
-C           CALL QUIT('Too little work in CCNEX')
-C        END IF
-C        CALL CCLR_DIA(WRK(KDIA),ISYMTR,TRIPLET,WRK(KWRK2),LWRK2)
-C        CALL LEDIAG(NCCVAR,WRK(KDIA),DTEST)
+Cholesky
 C
-C        DO JR = 1,NFIN
-C           IOFF = (JR-1)*NCCVAR
-C           DO I=1,NCCVAR
-C              WRK(IOFF+I) = WRK(IOFF+I)*WRK(KDIA-1+I)
-C           END DO
-C        END DO
+C    Cholesky CC2 did not converge using precond, so
+C    uncomment next lines and go back to old safe method
 C
+       IF (CHOINT) THEN
+          KDIA   = KWRK1
+          KWRK2  = KDIA  + NCCVAR
+          LWRK2  = LWRK  - KWRK2
+          IF (LWRK2 .LT. 0 ) THEN
+             CALL QUIT('Too little work in CCNEX')
+          END IF
+          CALL CCLR_DIA(WRK(KDIA),ISYMTR,TRIPLET,WRK(KWRK2),LWRK2)
+          CALL LEDIAG(NCCVAR,WRK(KDIA),DTEST)
+C
+          DO JR = 1,NFIN
+             IOFF = (JR-1)*NCCVAR
+             DO I=1,NCCVAR
+                WRK(IOFF+I) = WRK(IOFF+I)*WRK(KDIA-1+I)
+             END DO
+          END DO
+C
+       ELSE
 CCH
-C           WRITE(LUPRI,'(/I4,1X,A)') NFIN,
+C         WRITE(LUPRI,'(/I4,1X,A)') NFIN,
 C     *         'new trial vectors before PRECOND:'
-C           WRITE (LUPRI,*) 'NORM: ',DDOT(NCCVAR*NFIN,WRK(KRES),1,
+C         WRITE (LUPRI,*) 'NORM: ',DDOT(NCCVAR*NFIN,WRK(KRES),1,
 C     *                                   WRK(KRES),1)
-C           CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,1,LUPRI)
+C         CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,1,LUPRI)
 CCH
          CALL CC_PRECOND(WRK(KRES),NFIN,NCCVAR,ISYMTR,TRIPLET,
      &                   WRK(KWRK1),LWRK1)
-
+       END IF
+C
+Cholesky
+C
          IF ((IPRLE.GT.105 .OR. LOCDBG).AND. NFIN .GT. 0) THEN
            WRITE(LUPRI,'(/I4,1X,A)') NFIN,
      *         'new trial vectors before CCORT/PRJDRV:'
@@ -1226,14 +1281,14 @@ C    vectors
 C 2. determine NVEC solution vectors, returned in SOLEQ for eigenvalue 
 C    equation the reduced eigenvalues are returned in EIVAL
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <leinf.h>
-#include <ccrc1rsp.h>
-#include <r12int.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "leinf.h"
+#include "ccrc1rsp.h"
+#include "r12int.h"
+#include "ccsdsym.h"
 C
       PARAMETER (D1 = 1.0D0 , D0 = 0.0D0, THRZER = 1.0D-99 )
 C
@@ -1706,7 +1761,7 @@ C  Reorder and normalize eigenpairs from RG.
 C
 C  LSORT = .FALSE. --> ascending order
 C  LSORT = .TRUE.  --> descending order
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL LSORT
       DIMENSION WR(N), WI(N), Z(NM,N)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
@@ -1779,11 +1834,11 @@ C
 C Scratch:
 C  require WRK of length NCCVAR
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
       CHARACTER C1FIL*(*),C2FIL*(*),C12FIL*(*),S2FIL*(*),S12FIL*(*)
       DIMENSION BVECS(NCCVAR,*),WRK(NCCVAR)
@@ -1924,7 +1979,7 @@ C             put S * b into WRK(KSPRE)
                 CALL CC_GETVEC(LUFC1,C1FIL,LUFS2,S2FIL,LUFS12,S12FIL,
      *                      TRIPLET,K,WRK(KSPRE))
               ELSE 
-                CALL QUIT('Unkown IANR12 in CCORT')
+                CALL QUIT('Unknown IANR12 in CCORT')
               END IF
             END IF
             DO J = 1, NBADD
@@ -2118,7 +2173,7 @@ C
                 CALL CC_GETVEC(LUFC1,C1FIL,LUFS2,S2FIL,LUFS12,S12FIL,
      *                         TRIPLET,I,WRK(RVEC))
               ELSE
-                CALL QUIT('Unkown IANR12 in CCORT')
+                CALL QUIT('Unknown IANR12 in CCORT')
               END IF 
             END IF
             LVEC = LVEC + NCCVAR
@@ -2153,7 +2208,7 @@ C 22-Aug-1989 Hans Joergen Aa. Jensen
 C
 C Print overlap matrix between the NVECS input vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECS(LVEC,NVECS), OVLP(*), SVECS(LVEC,NVECS)
 C
       IJ = 0
@@ -2175,8 +2230,8 @@ C
 C Calculate inverse diagonal,
 C for generalized conjugate gradient algorithm.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DIAG(NDIAG)
       PARAMETER ( D1 = 1.0D0 )
 C
@@ -2195,13 +2250,17 @@ C
 C     Ove Christiansen 14-11-1996
 C     Write vec to file based on list and list number.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <leinf.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "leinf.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
 C
       CHARACTER*(*) LIST
       CHARACTER*14  MODEL, LABR12
@@ -2232,6 +2291,9 @@ C
       KT2   = 1 + NT1AM(ISYM)
 C
       IOPT   = 3
+Cholesky
+      IF (CHOINT .AND. CC2) IOPT = 1
+Cholesky
       CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,VEC(KT1),
      *              VEC(KT2),WORK,LWORK)
       IF (CCR12 .AND. (.NOT.(CCS.OR.CIS))) THEN
@@ -2255,13 +2317,13 @@ C
 *
 *     Sonia Coriani sept 1997. Revised march 2000
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <leinf.h>
-#include <ccexci.h>
-#include <ccsdsym.h>
-#include <cbirea.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "leinf.h"
+#include "ccexci.h"
+#include "ccsdsym.h"
+#include "cbirea.h"
 *
       DIMENSION VECT(*), WORK(*)
       CHARACTER*10 MODFIL
@@ -2369,9 +2431,9 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
 * CVECT = left/right vector  for the constant
 * SVECT = right/left vector to be subtracted
 *================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
 *
       DIMENSION VECT(NDIMVPR),CVECT(NDIMVPR),SVECT(NDIMVPR)
       LOGICAL LOCDBG
@@ -2399,12 +2461,12 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
       SUBROUTINE CC_PRECOND(VECTORS,NVEC,NCCVAR,ISYMTR,TRIPLET,
      &                      WORK,LWORK)
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <dummy.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+#include "r12int.h"
 
       LOGICAL TRIPLET, LCCEQ
       INTEGER NVEC, NCCVAR, ISYMTR, LWORK

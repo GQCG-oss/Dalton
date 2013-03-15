@@ -1143,7 +1143,7 @@ add_dft_contribution(DftGrid* grid, CubeFastData* d)
     pref +=  RZZ*4*d->rox[x]*(d->sB*d->roCD + d->sC*d->roBD +
                d->sD*d->roBC)*drvs.fRZZ;
     pref +=  RZZ*4*(d->roBx[x]*(d->roC*d->sD + d->roD*d->sC) + 
-               d->roCx[x]*(d->roD*d->sB + d->roB*d->sC) +
+               d->roCx[x]*(d->roD*d->sB + d->roB*d->sD) +
                d->roDx[x]*(d->roC*d->sB + d->roB*d->sC))*drvs.fRZZ;
     pref +=  RRZ*2*(d->roBx[x]*d->roC*d->roD + d->roCx[x]*d->roB*d->roD +
                d->roDx[x]*d->roB*d->roC)*drvs.fRRZ;
@@ -1204,22 +1204,23 @@ fast_callback(DftGrid* grid, CubeFastData* data)
 
 #ifdef VAR_MPI
 #include <mpi.h>
+#include <our_extra_mpi.h>
 #include "infpar.h"
 
 void
-dft_cr_resp_slave(real* work, int* lwork, const int* iprint)
+dft_cr_resp_slave(real* work, integer* lwork, integer* iprint)
 {
     real* fi    = calloc(inforb_.n2orbx, sizeof(real));              /* OUT */
     real *cmo = dal_malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /*IN */
     real *kappaB= dal_malloc(inforb_.n2orbx*sizeof(real));            /*IN */
     real *kappaC= dal_malloc(inforb_.n2orbx*sizeof(real));            /*IN */
     real *kappaD= dal_malloc(inforb_.n2orbx*sizeof(real));            /*IN */
-    int  symB, symC, symD;                                            /*IN */
-    dftcrcf_(fi,     cmo,
+    integer  symB, symC, symD;                                        /*IN */
+    FSYM(dftcrcf)(fi,     cmo,
              kappaB, &symB,
              kappaC, &symC,
              kappaD, &symD,
-             work,   lwork);
+             work,   lwork, iprint);
     free(kappaB);
     free(kappaC);
     free(kappaD);
@@ -1230,13 +1231,13 @@ dft_cr_resp_slave(real* work, int* lwork, const int* iprint)
 
 static void
 dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
-                        int* symB, int* symC, int* symD)
+                        integer* symB, integer* symC, integer* symD)
 {
     static const SyncData sync_data[] = {
-        { inforb_.nocc,   8, MPI_INT },
-        { inforb_.nvir,   8, MPI_INT },
-        { &inforb_.nocct, 1, MPI_INT },
-        { &inforb_.nvirt, 1, MPI_INT },
+        { inforb_.nocc,   8, fortran_MPI_INT },
+        { inforb_.nvir,   8, fortran_MPI_INT },
+        { &inforb_.nocct, 1, fortran_MPI_INT },
+        { &inforb_.nvirt, 1, fortran_MPI_INT },
     };
 #ifdef C99_COMPILER
     const SyncData data2[] = {
@@ -1244,16 +1245,16 @@ dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
         { kappaB,  inforb_.n2orbx,             MPI_DOUBLE },
         { kappaC,  inforb_.n2orbx,             MPI_DOUBLE },
         { kappaD,  inforb_.n2orbx,             MPI_DOUBLE },
-        { symB,    1,                          MPI_INT    },
-        { symC,    1,                          MPI_INT    },
-        { symD,    1,                          MPI_INT    },
+        { symB,    1,                          fortran_MPI_INT    },
+        { symC,    1,                          fortran_MPI_INT    },
+        { symD,    1,                          fortran_MPI_INT    },
     };
 #else /* C99_COMPILER */
     /* this is more error-prone but some compilers (HP/UX)... */
     static SyncData data2[] =
     { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE},
       {NULL, 0, MPI_DOUBLE},
-      {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   }};
+      {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   }};
     data2[0].data = cmo;     data2[0].count = inforb_.norbt*inforb_.nbast;
     data2[1].data = kappaB;  data2[1].count = inforb_.n2orbx;
     data2[2].data = kappaC;  data2[2].count = inforb_.n2orbx;
@@ -1292,7 +1293,7 @@ FSYM(dftcrcf)(real* fi, real* cmo,
 	      real* kappaB, integer* symB,
 	      real* kappaC, integer* symC,
 	      real* kappaD, integer* symD, 
-	      real* work, integer* lwork)
+	      real* work,   integer* lwork, integer* iprint)
 {
     static int msg_printed = 0;
     integer norbt2 = inforb_.norbt*inforb_.norbt;
@@ -1322,7 +1323,7 @@ FSYM(dftcrcf)(real* fi, real* cmo,
     cbdata[0].callback = (DftCallback)fast_callback;
     cbdata[0].cb_data = data;
 
-    dft_integrate(cmo, work, lwork, cbdata, ELEMENTS(cbdata));
+    dft_integrate(cmo, work, lwork, iprint, cbdata, ELEMENTS(cbdata));
 
     dft_cr_resp_collect_info(data->dftcontr,work,*lwork); /* NO-OP in serial */
     daxpy_(&norbt2, &ONER, data->dftcontr, &ONEI, fi, &ONEI);

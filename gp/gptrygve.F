@@ -1,77 +1,38 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C 
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C
 C FILE    : gptrygve.F
 C
+C General Purpose utility routines (originally) introduced in Dalton by Trygve Helgaker
+C
 ! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
-! If one set then set the other:
 #ifdef INT_STAR8
 #define VAR_INT64
-#else
-#ifdef VAR_INT64
-*define INT_STAR8
-#endif
 #endif
 !
-#include <single.h>
+#include "single.h"
 C
-#ifdef REV_LOG
-c===========================================================================
-cRevision 1.5-1.9  2000/05/02  hjj
-c(1) changed QUIT so that it calls TSTAMP, prints total cpu and elapsed time,
-c    and stops with STOP 100
-c(2) removed obsolete subroutine TIMDAT
-c(3) allow unit 6 in GPOPEN;
-c    do not test for unit 6 in GPCLOSE (and do not close unit 6)
-c
-crevision 1.4 2000/04/14 07:40:36 hjj
-cGPIOIN: initialize priunit.h, new defaults:  /hjaaj apr 2000
-c   LUPRI = 6 (to use stdout on unix)
-c   LUW4  = 6 (same as LUPRI by default)
-c   NINFO = 0, NWARN = 0 (zero counters moved to here)
-c   LUERR = -8xxx (let GPOPEN assign this one, could be = stderr on unix)
-c   IPRERR = 0 (no debug print on LUERR)
-c----------------------------
-crevision 1.3 2000/04/10 10:52:18 hjj
-c changed test for "no more available file numbers" in GPOPEN and DAINTF
-c the old test would use IUNTAB(100) and the dimension is only 99. /HJAaJ
-c----------------------------
-crevision 1.2 2000/04/10 hjj
-c changed initialization to -9xxx from 0, because unit 0 is stderr on
-c many systems.
-c===========================================================================
-#endif
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
@@ -92,23 +53,28 @@ C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER TEXT*(*), OUT_TEXT*50
+      CHARACTER TEXT*(*), OUT_TEXT*51, BLANK*10
+      PARAMETER ( BLANK = '          ')
 C
-      IF (TEXT(1:6) .EQ. 'START ') THEN
+      IF (TEXT(1:5) .EQ. 'START') THEN
          CALL GETTIM(TIMSTR,DUMMY)
       ELSE
          CALL GETTIM(TIMEND,DUMMY)
-#if defined (SYS_T3D)
-         TIMEND = TIMEND + 1.0D0
-#endif
          TIME   = TIMEND - TIMSTR
          TIMSTR = TIMEND
          IF (TIME .GT. 0.1D0) THEN
 C        Jun 06 hjaaj: do not print times less than 0.1 seconds
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
-            OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
-            LOUT = 17 + LTEXT + 3
+            IF (LTEXT .GE. 10) THEN
+               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//' is'
+               LOUT = 18 + LTEXT + 3
+            ELSE
+               LBLANK = 10 - LTEXT
+               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//
+     &                    BLANK(1:LBLANK)//' is'
+               LOUT = 18 + 10 + 3
+            END IF
             CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
             CALL FLSHFO(LUPRI)
          END IF
@@ -229,9 +195,10 @@ C  /* Deck quit */
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
-#include <priunit.h>
+#include "priunit.h"
+#include "maxorb.h"
 C INFPAR: MYNUM
-#include <infpar.h>
+#include "infpar.h"
       CHARACTER TEXT*(*)
 C
 C     Stamp date and time and hostname to output
@@ -247,8 +214,17 @@ C
       CALL TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',
      &   LUPRIN)
 #if defined (VAR_MPI)
-      WRITE (LUPRIN,'(/A,I6/2A/)')
-     &   ' MPI node no.:',MYNUM, ' Reason: ',TEXT
+      IF (MYNUM .GT. 0) THEN
+         WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   '@ MPI SLAVE, node no.:',MYNUM, '@ Reason: ',TEXT
+         WRITE (0,'(/A,I6/2A/)')
+     &   ' MPI SLAVE, node no.:',MYNUM, ' Reason: ',TEXT
+      ELSE
+         WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   '@ MPI MASTER, node no.:',MYNUM, '@ Reason: ',TEXT
+         WRITE (0,'(/A,I6/2A/)')
+     &   ' MPI MASTER, node no.:',MYNUM, ' Reason: ',TEXT
+      END IF
 #else
       WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
 #endif
@@ -276,8 +252,8 @@ C     ... define exit code to the environment for MPI_ABORT
       CALL PVMXHALT
 #endif
 C
-      CALL TRACE
-#if defined(VAR_G77)||defined(VAR_IFC)||defined(SYS_IRIX)||defined(SYS_AIX)
+      CALL our_own_traceback
+#if defined(VAR_IFORT)||defined(SYS_IRIX)||defined(SYS_AIX)
       CALL EXIT(100)
 #else
       STOP 100
@@ -308,7 +284,7 @@ C
 C
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
-#include <priunit.h>
+#include "priunit.h"
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
 C
 C     CRAY has 8 byte integers.
@@ -371,7 +347,7 @@ C     Assume same for DEC    -- 21-May-1992 hjaaj
 C     Assume same for IRIX   --  3-Feb-1994 hjaaj; except recl in *4 words
 C     Assume same for PARAGON-- 13-Oct-1994 hjaaj
 C
-#if (defined (SYS_IRIX) && defined(NO_F90)) || defined (SYS_NEC)
+#if (defined (SYS_IRIX) || defined (SYS_NEC))
       LRECL  = NELEM
 #else
 #ifdef VAR_INT64
@@ -639,10 +615,16 @@ C
 C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
 C
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION IINDPK(*), IINDX4(4,*)
 #include "ibtdef.h"
 C
       N = IINDPK(NIBUF*NMAX+1)
+      IF (N .GT. NMAX) THEN
+         WRITE(LUPRI,*) 'AOLAB4 error, N .gt. NMAX',N,NMAX
+         CALL QENTER('AOLAB4')
+         CALL QUIT('buffer length greater than max length')
+      END IF
 C
       IF (NIBUF .EQ. 1) THEN
         IF (NBITS .EQ. 8) THEN
@@ -654,7 +636,7 @@ C
             IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
           END DO
         ELSE IF (NBITS .EQ. 16) THEN
-#ifdef INT_STAR8
+#ifdef VAR_INT64
           DO I = 1,N
             LABEL = IINDPK(I)
             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
@@ -721,9 +703,9 @@ C Direct access-specific output:
 C  OLDDX    logical, true if old LUDX file was opened
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "chrnos.h"
       CHARACTER*80 STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
       integer max_filename_length
@@ -734,8 +716,9 @@ C
       INTEGER FILELN, STATLN, ACCELN, FORMLN
       LOGICAL OLDDX, FEXST, FIRST
       COMMON /UNITAR/ IUNTAB(1:99)
-#include <gnrinf.h>
-#include <infpar.h>
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "infpar.h"
       DATA FIRST /.TRUE./
       SAVE FIRST
 C
@@ -881,7 +864,7 @@ c44         CONTINUE
       END IF
       END IF
 C
-C     We've got a file number now, get rid of the direct access case
+C     We have got a file number now, get rid of the direct access case
 C
       IF (ACCESF(1:6) .EQ. 'DIRECT') THEN
          IF (FILELN .LE. 1) THEN
@@ -907,7 +890,7 @@ C
              END IF
             END IF
          END IF
-         IF (IPRERR.GT.1) WRITE (LUERR,*) 'GPOPEN calling OPENDX ',
+         IF (IPRSTAT.GT.1) WRITE (LUSTAT,*) 'GPOPEN calling OPENDX ',
      &      LUNIT,' ',FILENM(1:FILELN),NELEM,' ',STATUF(1:STATLN)
          CALL OPENDX(LUNIT,FILENM(1:FILELN),NELEM,STATUF(1:STATLN),
      &               OLDDX)
@@ -934,7 +917,7 @@ C
 C
             INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
             IF (.NOT. FEXST) GOTO 9007
-            IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq OLD ',LUNIT,
+            IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPOPEN seq OLD ',LUNIT,
      &         ' ',FILENM(1:FILELN),' ',FORMF(1:FORMLN)
             OPEN(UNIT=LUNIT,FILE=FILENM(1:FILELN),STATUS='OLD',
      &           ACCESS='SEQUENTIAL',FORM=FORMF(1:FORMLN),ERR=9004,
@@ -966,13 +949,13 @@ C
                END IF
             END IF
             IF (STATUF(1:7) .EQ. 'SCRATCH') THEN
-               IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq scratch ',
+               IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPOPEN seq scratch ',
      &            LUNIT,' ',FORMF(1:FORMLN)
                OPEN(UNIT=LUNIT,STATUS='SCRATCH',
      &              ACCESS='SEQUENTIAL',FORM=FORMF(1:FORMLN),
      &              ERR=9004,IOSTAT=IOS)
             ELSE
-               IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq ',
+               IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPOPEN seq ',
      &            STATUF(1:STATLN),LUNIT,' ',FILENM(1:FILELN),
      &            ' ',FORMF(1:FORMLN)
                IF(STATUF(1:STATLN) .EQ. 'NEW') THEN
@@ -982,7 +965,7 @@ C                  This will often be the case if we restart a
 C                  calculation.
                   INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
                   IF (FEXST) THEN
-                     IF (IPRERR.gt.1) write (LUERR,*)
+                     IF (IPRSTAT.gt.1) write (LUSTAT,*)
      &                  'GPOPEN INFO: file ',FILENM(1:FILELN),
      &                  ' already exists and is deleted first.'
                      OPEN(UNIT=LUNIT,FILE=FILENM(1:FILELN),
@@ -1138,14 +1121,14 @@ C  STATUS   Indicate whether the file should be removed or kept
 C           ('KEEP' or 'DELETE'). Note that the default is that the file
 C           is to be deleted
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) DISP
       CHARACTER*80 FNNAME, FNNM2
       CHARACTER*3 IODIR
       LOGICAL FEXIST, OPND, OLDDX
       COMMON /UNITAR/ IUNTAB(1:99)
-#include <chrnos.h>
+#include "chrnos.h"
 C
 C     We first deal with the unit number
 C
@@ -1167,7 +1150,7 @@ C
          CALL FLSHFO(LUPRI)
       END IF
       IF (DISP .EQ. 'KEEP') THEN
-         IF (IPRERR.gt.1) write (LUERR,*) 'GPCLOSE keep',LUNIT
+         IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE keep',LUNIT
          CLOSE (LUNIT,STATUS='KEEP',ERR=9003)
          IUNTAB(LUNIT) = 0
          LUNIT = -30000-LUNIT
@@ -1199,7 +1182,7 @@ C
                OPEN (UNIT=LUNIT,FILE=FNNAME(1:LN),STATUS='OLD')
             END IF
          END IF
-         IF (IPRERR.gt.1) write (LUERR,*) 'GPCLOSE delete',LUNIT
+         IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE delete',LUNIT
          CLOSE (LUNIT,STATUS='DELETE',ERR=20)
          IUNIT = 0
  16      CONTINUE
@@ -1287,11 +1270,11 @@ C  /* Deck lmnval */
 C
 C     tuh March 87
 C
-#include <implicit.h>
-#include <maxmom.h>
-#include <xyzpow.h>
+#include "implicit.h"
+#include "maxmom.h"
+#include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA
@@ -1312,13 +1295,14 @@ C     The routine is only needed when searching on a filename
 C
 C     K.Ruud, San Diego Aug 2000
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) FILENM, TASK
       CHARACTER FILTMP*80
       INTEGER FILELN
       LOGICAL VALUE
-#include <chrnos.h>
-#include <infpar.h>
+#include "chrnos.h"
+#include "maxorb.h"
+#include "infpar.h"
 C
       FILELN = LNBLNK(FILENM)
       IF (MYNUM .GT. 0) THEN
@@ -1335,7 +1319,7 @@ C
       ELSE IF (TASK(1:5) .EQ. 'OPENE') THEN
          INQUIRE(FILE=FILTMP(1:FILELN),OPENED=VALUE)
       ELSE
-         CALL QUIT('Unknown inquire status requested')
+         CALL QUIT('Unknown inquire status requested: '//TASK)
       END IF
       RETURN
       END

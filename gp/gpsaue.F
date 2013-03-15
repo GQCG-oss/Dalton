@@ -1,46 +1,35 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
-C
-#if defined (PRG_DIRAC)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       BLOCK DATA BDQALGEBRA
 C
 C Initialize /QALGEBRA/
 C
-#include <implicit.h>
-#include <qalgebra.h>
+#include "implicit.h"
+#include "qalgebra.h"
 C
       DATA IQMULT / 1, 2, 3, 4, 2, 1, 4, 3, 3, 4, 1, 2, 4, 3, 2, 1,
      &              2, 1, 4, 3, 1, 2, 3, 4, 4, 3, 2, 1, 3, 4, 1, 2,
@@ -57,9 +46,10 @@ C
       DATA QUNIT  / '1','i','j','k'/
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#if defined (PRG_DIRAC)
 C  /* Deck prqmat */
       SUBROUTINE PRQMAT(QMAT,NROW,NCOL,LRQ,LCQ,NZ,IQP,IUNIT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION QMAT(LRQ,LCQ,NZ),IQP(*)
       CHARACTER M(4)*2
       M(1) = 'AR'
@@ -85,8 +75,8 @@ C     Written by T.Saue - June 27 1996
 C     Last revision: June 27 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <qalgebra.h>
+#include "implicit.h"
+#include "qalgebra.h"
 C
       LOGICAL LBUF(4)
       DIMENSION IQPA(NZA),IQPB(NZB),IQPC(*)
@@ -158,9 +148,9 @@ C
 C     Written by T.Saue, University of Oslo, Nov. 1994
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <qalgebra.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qalgebra.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 C     Global variables
@@ -335,11 +325,11 @@ C       Written by T.Saue November 1994 - Odense
 C       Last revision : Nov 15 1994 - tsaue
 C*****************************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(DM1 = -1.0D0)
       DIMENSION A(LRA,LCA,NZ),EIG(N),VEC(LRV,LCV,NZ),WORK(LWORK)
       CALL QENTER('QDIAG')
-#include <memint.h>
+#include "memint.h"
       IF((NZ.EQ.1.OR.NZ.EQ.2).AND.(LRA.NE.LRV)) THEN
         CALL QUIT('QDIAG: LRA.ne.LRV')
       ENDIF
@@ -424,7 +414,7 @@ C
 C     Written by T.Saue November 1994
 C     Last revision: Nov 15 1994
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AIN(NRW1,NCL1,NZ),AOUT(NRW2,NCL2,NZ)
       DIMENSION IROW(*),ICOL(*)
 C
@@ -443,7 +433,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qhtrid */
       SUBROUTINE QHTRID(A,N,LRA,LCA,D,E,E2,TAU)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
       DIMENSION A(LRA,LCA,4),D(N),E(N),E2(N),TAU(4,N)
 C*****************************************************************************
@@ -704,7 +694,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qhtrbk */
       SUBROUTINE QHTRBK(A,N,LRA,LCA,TAU,Z,M,LRZ,LCZ)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
       DIMENSION A(LRA,LCA,4),TAU(4,N),Z(LRZ,LCZ,4)
 C*****************************************************************************
@@ -822,9 +812,9 @@ C     Written by T.Saue July 1996
 C     Last revision: July 14 196 - tsaue
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <qalgebra.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qalgebra.h"
       PARAMETER(D1 = 1.0D0)
 C
       CHARACTER FA*1, TA*1
@@ -873,7 +863,7 @@ C
 #endif
 C  /* Deck ran1 */
       FUNCTION RAN1(IDUM)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (IA=16807,IM=2147483647,AM=1.0D0/IM,
      +           IQ=127773,IR=2386,NTAB=32,NDIV=1+(IM-1)/NTAB,
      +           EPS=1.0D-7,RNMX=1.0D0-EPS)
@@ -932,7 +922,7 @@ C
 C     Pick a random number in the range <RMIN,RMAX>.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
+#include "implicit.h"
       R = RAN1(IDUM)
       RANELM = RMIN + (RMAX-RMIN)*R
       RETURN
@@ -950,7 +940,7 @@ C	  TYP = G	General matrix
 C	On initialization of random number generation IDUM should
 C	be a negative number
 C**********************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0 = 0.0D0)
       CHARACTER TYP*1
       DIMENSION A(LDA,N)
@@ -984,8 +974,8 @@ C**********************************************************************
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fulmat */
       SUBROUTINE FULMAT(MATTYP,LDA,NDIM,A)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.D0)
       CHARACTER MATTYP*1
       DIMENSION A(LDA,NDIM)
@@ -1020,7 +1010,7 @@ C
 C	Checks the absolute value of off-diagonal elements
 C	of a matrix
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
       DIMENSION A(N,N,IZ)
       DIA = D0
@@ -1050,7 +1040,7 @@ C	Find the format that gives optimum precision for real
 C	variable X
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
       CHARACTER MXFORM*6
@@ -1108,8 +1098,8 @@ C	Based on OPENDX
 C	T.Saue, University of Tromsoe, Norway, Feb.-94
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) NAME,STATUS,SUB
       IF (STATUS .EQ. 'NEW') GO TO 10
       IF (STATUS .NE. 'OLD' .AND. STATUS .NE. 'UNKNOWN') GO TO 100
@@ -1156,8 +1146,8 @@ C	B    	- square matrix
 C	NM	- leading dimension of B
 C	N	- order of matrix B
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ATRI(N*(N+1)/2),B(NM,N)
 C
       DO 10 I = 1,N
@@ -1180,8 +1170,8 @@ C	NM	- leading dimension of B
 C	NROW	- number of rows in B
 C	NCOL    - number of columns in B
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ASQR(NROW*NCOL),B(NM,NCOL)
 C
       DO 10 J = 1,NCOL
@@ -1210,8 +1200,8 @@ C	This subroutines assumes on input that only the lower triangle of blocks
 C	A and B are given, abd will on output give the full blocks A and B.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AR(NDIM,NDIM/2),AI(NDIM,NDIM/2)
       IF(MOD(NDIM,2).EQ.1) THEN
         WRITE(LUPRI,'(A,I10,A)') 'Error in UNFOLD: NDIM = ',NDIM,
@@ -1230,8 +1220,8 @@ C** Unfold imaginary part:
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck unfldr */
       SUBROUTINE UNFLDR(MATTYP,LDA,NDIM,A)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
       CHARACTER*4 MATTYP
       DIMENSION A(LDA,NDIM)
@@ -1267,7 +1257,7 @@ C     Given time in seconds this function return a character string
 C     with time in suitable units
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*12 SECTID
 C
       ITID = TID
@@ -1320,8 +1310,8 @@ C*****************************************************************************
 C     This routine will initialize a logical array
 C     Written by T.Saue , January 1995
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL LVAL,LVEC(*)
       DO 10 I = 1,N
         LVEC(I) = LVAL
@@ -1332,15 +1322,15 @@ C  /* Deck lbit */
 C##############lbit##############################################
       LOGICAL FUNCTION LBIT(I,N)
 C	Based on an analogous DISCO routine(Jan Almloef)
-#include <implicit.h>
-#include <ibtfun.h>
+#include "implicit.h"
+#include "ibtfun.h"
       LBIT = .FALSE.
       IF (IBTAND(IBTSHR(I,N-1),1).EQ.1) LBIT = .TRUE.
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lset */
       SUBROUTINE LSET(N,LVAL,LVEC)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL LVEC(N),LVAL
       DO 10 I = 1,N
         LVEC(I) = LVAL
@@ -1353,7 +1343,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DOUBLE PRECISION
 #endif
      &FUNCTION GAMMP(A,X)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C****************************************************************C
 C     SUBFUNCTION TO EVALUATE THE NORMALIZED INCOMPLETE GAMMA    C
@@ -1385,7 +1375,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GSER(GAMSER,A,X,GLN)
-#include <implicit.h>
+#include "implicit.h"
 C******************************************************************C
 C     SERIES EXPANSION REPRESENTATION                              C
 C******************************************************************C
@@ -1407,7 +1397,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GCF(GAMMCF,A,X,GLN)
-#include <implicit.h>
+#include "implicit.h"
 C*******************************************************************C
 C     CONTINUED FRACTION REPRESENTATION                             C
 C*******************************************************************C
@@ -1441,7 +1431,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION GAMMLN(XX)
-#include <implicit.h>
+#include "implicit.h"
 C***********************************************************************C
 C                                                                       C
 C     GAMMALN RETURNS THE NATURAL LOGARITHM OF THE GAMMA FUNCTION       C
@@ -1466,7 +1456,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFACTR
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D1 = 1.0D0)
 C***************************************************************C
 C     DFACTR INITIALIZES A VECTOR OF DOUBLE-FACTORIAL FUNCTIONS C
@@ -1519,13 +1509,13 @@ C     Written by T.Saue - Aug 15 1996
 C     Last revision : Aug 15 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AMAT(*),EIG(NDIM),EVEC(LDM,NDIM),
      &          WORK(LWORK)
 C
       CALL QENTER('RSJACO')
-#include <memint.h>
+#include "memint.h"
 C
       CALL MEMGET('REAL',KBUF ,NDIM ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KIBUF,NDIM ,WORK,KFREE,LFREE)            
@@ -1601,10 +1591,10 @@ C     Written by T.Saue - Aug 16 1996
 C     Last revision: Aug 16 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(LDM,N), ATRI(*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -1625,7 +1615,7 @@ C     /VER 2/ 14-Sep-1983 hjaaj
 C     Include leading dimension - T.Saue Aug 16 1996
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
       PARAMETER (D1=1.0D00, D0=0.0D00)
 C
@@ -1668,7 +1658,7 @@ C  20-Jul-1992 hjaaj  Changed C1,C2 to THRZER
 C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
 C                     absolute conv.threshold SD=C1
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION F(*),V(*)
       DIMENSION BIG(*) ,JBIG(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
@@ -1766,7 +1756,7 @@ C
             CX= SQRT(DP5   + T)
             SX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
-#include <ivdep.h>
+#include "ivdep.h"
          DO 275 IR=1,IA
             T        = F(IAA+IR)*SX
             F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SX
@@ -1846,7 +1836,7 @@ Cwas:        JAA=(IA-1)*NROWV
 Cwas:        JBB=(IB-1)*NROWV
          JAA=(IA-1)*LDM
          JBB=(IB-1)*LDM
-#include <ivdep.h>
+#include "ivdep.h"
          DO 400 I=1,NROWV
             T=V(JBB+I)*SX
             V(JBB+I)=-V(JAA+I)*SX + V(JBB+I)*CX
@@ -1873,7 +1863,7 @@ C          Written by T.Saue - Aug 26 1996
 C          Last revision: Aug 26 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(DM1 = -1.0D0)
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1.OR.IJOB.EQ.0) RETURN
@@ -1997,8 +1987,8 @@ C     Written by T.Saue  -  July 23 1994
 C     LAST VERSION: July 23 1994
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DP5 = 0.5D0)
 C
       DIMENSION A(*),B(*),IND(*)
@@ -2027,7 +2017,7 @@ C
 C     Written by T..Saue November 1994
 C     Last revision: Nov 16 1994 - tsaue
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IV1(N1),IV2(N2),IND(*)
       DO 10 I = 1,N
         IV2(I) = IV1(IND(I))
@@ -2045,8 +2035,8 @@ C     Written by T.Saue, November 1994
 C     Last revised: Nov 24 1994 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER NAME*6
       DIMENSION IVEC(NVEC)
       NROW = (NVEC+15)/16
@@ -2068,8 +2058,8 @@ C     This subroutine will pick out symmetric('S') or antisymmetric('A')
 C     component of a quadratic matrix AMAT and place it in CMAT.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DP5 = 0.5D0)
       DIMENSION AMAT(NDIM,NDIM,NZ),CMAT(NDIM,NDIM,NZ)
       CHARACTER COMP*1
@@ -2115,8 +2105,8 @@ C     Written by T.Saue, August 23 1995
 C     Last revision: tsaue - aug23-95
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION AMAT(LRA,LCA,NZ),FAC(4)
 C
@@ -2151,7 +2141,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrtdac */
       SUBROUTINE WRTDAC (IT,N,X,IREC)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X(N)
       WRITE (IT, REC=IREC) X
       RETURN
@@ -2159,7 +2149,7 @@ C  /* Deck wrtdac */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readac */
       SUBROUTINE READAC (IT,N,X,IREC)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X(N)
       READ (IT, REC=IREC) X
       RETURN
@@ -2194,7 +2184,7 @@ C PRMUTC is set up to handle 6 columns/page with a 6F20.14 format
 C for the columns.  If a different number of columns is required, change
 C formats 1000 and 2000, and initialize kcol with the new number of
 C columns.
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(*)
       INTEGER BEGIN
       CHARACTER*1 ASA(3),BLANK,CTL,FX,FPRI
@@ -2292,7 +2282,7 @@ C
 C Written by T.Saue Sept 1 1995
 C Based on TSTAMP by Hans Joergen Aa. Jensen 9-Jul-1990
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER TEXT*(*)
 C
 #if defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_HAL) || defined (SYS_AIX)
@@ -2320,8 +2310,8 @@ C
 C     Written by T.Saue Oct 11 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER SYMB*1,FMT*9
       FMT = '         '
       IF(IX.EQ.0) THEN
@@ -2343,15 +2333,15 @@ C     Written by T.Saue - May 15 1996
 C     Last revision: May 15 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "mxcent.h"
+#include "maxaqn.h"
 C maxorb.h for symmet.h
-#include <maxorb.h>
-#include <symmet.h>
-#include <pgroup.h>
+#include "maxorb.h"
+#include "symmet.h"
+#include "pgroup.h"
 C
       DIMENSION KSOP(0:7),KBUF(0:7)
       DO I = 0,7
@@ -2397,8 +2387,8 @@ C	Written by T.Saue, June 1994
 C	Last revision: October 9 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION A(LDA,N),B(NIND,NIND),IND(N)
 C

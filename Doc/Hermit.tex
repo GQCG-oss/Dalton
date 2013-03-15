@@ -48,13 +48,12 @@ a supermatrix as defined in for instance Ref.~\cite{pemsjaahborjcp74}.
 the integral evaluation.  They are organized according to the program
 section names in which they can appear.
 
-\subsection{End of input: \Sec{END OF}}
+%\subsection{End of input: \Sec{END OF}}
+%
+%The last directive of the \Sec{*INTEGRALS} input may be \Sec{END OF}.
 
-The last directive of the \Sec{*INTEGRALS} input may be \Sec{END OF}.
 
 \subsection{General: \Sec{*INTEGRALS}}
-
-
 
 General-purpose directives are given in the \Sec{*INTEGRALS}
 section. This mainly includes requests for different atomic integrals,
@@ -1051,10 +1050,12 @@ of the symmetry-adapted nuclear magnetic moment coordinate, and
 \verb|d| refers to the x, y, or z component of the spin--orbit operator.
 \end{list}
 
-\item[\Key{SORT I}]\index{integral sort} Requests that the
-two-electron integrals should be
-sorted for later use in \sir . See also keywords \Key{PRESORT} in the
-\Sec{*DALTON} and \Sec{TRANSFORMATION} input sections.
+\item[\Key{SORT I}]\label{key:SORT_I}\index{integral sort} Requests that the
+two-electron integrals should be sorted for later use in the "new"
+integral transformation. This option is deprecated, since
+2011 the default is not to presort the integrals, but rather to
+obtain them directly from the AOTWOINT file. This saves a lot of disk
+space for big basis sets.
 
 \item[\Key{SOTEST}] Test the calculation of spin-orbit integrals as
 requested by the keyword \Key{SPIN-O}.
@@ -1170,9 +1171,9 @@ Weinberg angle factor will if this keyword is used be set to
 \item Property labels: \verb|ALF abcd|, where $a$ is ????.
 \end{list}
 
-
-
 \end{description}
+
+% ==========================================================================================
 
 \subsection{One-electron integrals: \Sec{ONEINT}}
 \label{sec:oneinp}
@@ -1225,88 +1226,7 @@ number for the multipole integrals\index{multipole integral} used for
 the reaction field.
 \end{description}
 
-\subsection{Integral sorting: \Sec{SORINT}}
-
-Affects the sorting of the two-electron
-integrals\index{integral sort}. Note that in order for \sir\ to use
-the sorted integrals
-generated with the keyword \Key{SORT I}, the keyword
-\Key{PRESORT} has to used in the \Sec{TRANSFORMATION} input
-module of the \Sec{*WAVE FUNCTIONS} input section. For standard
-calculation you will in general not need to change any of the
-default settings.
-
-\begin{description}
-
-\item[\Key{DELAO}]
-
-Delete AOTWOINT file from Hermit after the integrals have been sorted.
-
-\item[\Key{INTSYM}]\verb| |\newline
-\verb|READ (LUCMD, *) ISNTSYM|
-
-Symmetry of the two-electron integrals that are to be sorted.
-Default is totally-symmetric two-electron integrals
-(\verb|ISNTSYM| = 1).
-
-\item[\Key{IO PRI}]\verb| |\newline
-\verb|READ (LUCMD, *) ISPRFIO|
-
-Set the print level in the fast-I/O routines. Default is a print level of 0.
-
-\item[\Key{KEEP}]\verb| |\newline
-\verb|READ (LUCMD, *) (ISKEEP(I),I=1,8)|\newline
-Allowed values: 0 and 1.
-A value of "1" indicates that the basis functions of this symmetry will
-not be used and the integrals with these basis functions are omitted.
-
-
-\item[\Key{PRINT}]\verb| |\newline
-\verb|READ (LUCMD, *) ISPRINT|
-
-Print level in the integral sorting routines.
-
-\item[\Key{THRQ}]\verb| |\newline
-\verb|READ (LUCMD, *) THRQ2|
-
-Threshold for setting an integral to zero. By default this threshold
-is 1.0D-15.
-
-\end{description}
-
-\subsection{Construction of the supermatrix file:
-\Sec{SUPINT}}\label{sec:supint}
-
-Directives affecting the construction of the
-supermatrix\index{supermatrix} file is given
-in the \Sec{SUPINT} section.
-
-\begin{description}
-\item[\Key{NOSYMM}] No advantage is taken of integral symmetry in the
-construction of the supermatrix file. This may increase the disc space
-requirements as well as  CPU time. Since \aba\ do not use the
-supermatrix file (which it in the current version does not), this
-keyword is mainly for debugging purposes.
-
-\item[\Key{PRINT}]\verb| |\newline
-\verb|READ (LUCMD,*) IPRSUP|
-
-Set the print level during the construction of the supermatrix file.
-Read one more line containing the print level. Default is the
-value of \verb|IPRDEF| in the \Sec{*INTEGRALS} input module.
-
-\item[\Key{SKIP}] Skip the construction of the supermatrix file.
-An alternative keyword is \Key{NOSUP} in the \Sec{*INTEGRALS} input
-module.
-
-\item[\Key{THRESH}]\verb| |\newline
-\verb|READ (LUCMD,*) THRSUP|
-
-Threshold for the supermatrix integrals. Read one more line containing
-the threshold. Default is the same as the threshold for
-discarding the two-electron integrals (see the chapter describing the
-\mol\ input format, Ch.~\ref{ch:molinp}).
-\end{description}
+% ==========================================================================================
 
 \subsection{Two-electron integrals using {\twoint}: \Sec{TWOINT}}
 
@@ -1354,12 +1274,13 @@ input module.
 \item[\Key{SOFOCK}] Construct the Fock matrix in symmetry-orbital
 basis during a direct or parallel calculation. Currently not active.
 
-\item[\Key{THRFAC}] Not used in \siraba .
+\item[\Key{THRFAC}] Not used in \dalton .
 
 \item[\Key{TIME}] Provide detailed timing breakdown for the
 two-electron integral calculation.
 \end{description}
 
+% ==========================================================================================
 
 \subsection{Two-electron integrals using {\eri}: \Sec{ER2INT}}
 \label{ch:eri}
@@ -1501,3 +1422,92 @@ input module.
 
 \end{description}
 
+% ==========================================================================================
+
+\subsection{Integral sorting: \Sec{SORINT}}
+
+Affects the sorting of the two-electron
+integrals\index{integral sort} over AOs for the "new" integral transformation.
+You will in general not need to change any of the default settings below.
+
+Note that this AO integral sorting is not needed any more.
+Since 2011 the default is not to presort the integrals, but rather
+to obtain them directly from the AOTWOINT file.
+This saves a lot of disk space for big basis sets.
+However, if you insist, you can get the
+old behavior with sorted AO integrals with the keyword \Key{SORT I}
+(see p. \ref{key:SORT_I})).
+
+\begin{description}
+
+\item[\Key{DELAO}]
+
+Delete AOTWOINT file from Hermit after the integrals have been sorted.
+
+\item[\Key{INTSYM}]\verb| |\newline
+\verb|READ (LUCMD, *) ISNTSYM|
+
+Symmetry of the two-electron integrals that are to be sorted.
+Default is totally-symmetric two-electron integrals
+(\verb|ISNTSYM| = 1).
+
+\item[\Key{IO PRI}]\verb| |\newline
+\verb|READ (LUCMD, *) ISPRFIO|
+
+Set the print level in the fast-I/O routines. Default is a print level of 0.
+
+\item[\Key{KEEP}]\verb| |\newline
+\verb|READ (LUCMD, *) (ISKEEP(I),I=1,8)|\newline
+Allowed values: 0 and 1.
+A value of "1" indicates that the basis functions of this symmetry will
+not be used and the integrals with these basis functions are omitted.
+
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD, *) ISPRINT|
+
+Print level in the integral sorting routines.
+
+\item[\Key{THRQ}]\verb| |\newline
+\verb|READ (LUCMD, *) THRQ2|
+
+Threshold for setting an integral to zero. By default this threshold
+is 1.0D-15.
+
+\end{description}
+
+% ==========================================================================================
+
+\subsection{Construction of the supermatrix file:
+\Sec{SUPINT}}\label{sec:supint}
+
+Directives affecting the construction of the
+supermatrix\index{supermatrix} file is given
+in the \Sec{SUPINT} section.
+
+\begin{description}
+\item[\Key{NOSYMM}] No advantage is taken of integral symmetry in the
+construction of the supermatrix file. This may increase the disc space
+requirements as well as  CPU time. Since \aba\ do not use the
+supermatrix file (which it in the current version does not), this
+keyword is mainly for debugging purposes.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRSUP|
+
+Set the print level during the construction of the supermatrix file.
+Read one more line containing the print level. Default is the
+value of \verb|IPRDEF| in the \Sec{*INTEGRALS} input module.
+
+\item[\Key{SKIP}] Skip the construction of the supermatrix file.
+An alternative keyword is \Key{NOSUP} in the \Sec{*INTEGRALS} input
+module.
+
+\item[\Key{THRESH}]\verb| |\newline
+\verb|READ (LUCMD,*) THRSUP|
+
+Threshold for the supermatrix integrals. Read one more line containing
+the threshold. Default is the same as the threshold for
+discarding the two-electron integrals (see the chapter describing the
+\mol\ input format, Ch.~\ref{ch:molinp}).
+\end{description}

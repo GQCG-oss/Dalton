@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef REV_LOG
 C===========================================================================
@@ -45,16 +35,16 @@ C===========================================================================
 C
 C     Layout the core for the calculation of A3 times two vectors
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -105,14 +95,14 @@ C      Outer driver routine for X[3] times two vectors. This subroutine
 C      calls the setup of the operator transformation, constructs a den-
 C      sity matrix if necessary  and calls RSP1GR to compute the gradient.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infrsp.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -169,23 +159,23 @@ C
      *                 IOPSYM,VEC1,VEC2,A3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D3 = 3D0, D6 = 6.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION A3TRS(KZYVR)
       DIMENSION XINDX(*)
@@ -307,23 +297,23 @@ C
      *                 IOPSYM,VEC1,VEC2,A3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D1 = 1.0D0, DMH = -0.5D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION A3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
@@ -403,23 +393,23 @@ C
      *                 IOPSYM,VEC1,VEC2,A3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DMH = -0.5D0 , D1 = 1.0D0, D3 = 3.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION A3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
@@ -505,21 +495,21 @@ C
 C
 C     Layout the core for the calculation of X3 times two vectors
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infcr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infcr.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -569,13 +559,13 @@ C      Outer driver routine for X[3] times two vectors. This subroutine
 C      calls the setup of the operator transformation, constructs a den-
 C      sity matrix if necessary  and calls RSP1GR to compute the gradient.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -621,23 +611,23 @@ C
      *                 IOPSYM,VEC1,VEC2,X3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION X3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
@@ -827,23 +817,23 @@ C
      *                 IOPSYM,VEC1,VEC2,X3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D1 = 1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION X3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
@@ -943,23 +933,23 @@ C
      *                 IOPSYM,VEC1,VEC2,X3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.5D0 , D1 = 1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION X3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)

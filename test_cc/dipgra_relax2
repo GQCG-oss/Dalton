@@ -32,7 +32,7 @@ BASIS
 STO-3G 
 H2O , C2v symmetry
 stretched geometry
-    2    0  X  Y      1.00D-25
+    2    0  X  Y      1.00D-15
         8.0   1    2    2    1
 0     0.0000000000000000  0.0000000000000000  -0.13594222000
         1.0   2    1    1    
@@ -44,7 +44,7 @@ H     0.0000000000000000 -1.4476145000000000   1.07875057000
 #  DALTON INPUT
 #######################################################################  
 cat > dipgra_relax2.dal <<%EOF%
-**GENERAL
+**DALTON
 !.DIRECT
 .RUN WAVE FUNCTIONS
 **INTEGRAL
@@ -104,8 +104,7 @@ ZDIPLEN 1DHAM006
 ZDIPLEN 1DHAM007
 ZDIPLEN 1DHAM008
 ZDIPLEN 1DHAM009
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 
 ############################################################
@@ -129,9 +128,9 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Total SCF   energy:                   -74.96565699" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy:                   -75.00556505" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy:                   -75.02150754" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy:  * -74.96565699" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy:  * -75.00556505" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy:  * -75.02150754" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
@@ -171,7 +170,7 @@ PASSED=1
 for i in 1 2 3
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

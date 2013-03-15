@@ -89,7 +89,7 @@ X1SPNORB
 Y1SPNORB 
 .PROPRT
 Z1SPNORB 
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -110,44 +110,43 @@ else
    GREP="egrep"
 fi
 
-# Energy                              -76.383052152897
-CRIT1=`$GREP "Final DFT energy\: * \-76\.38305215...." $log | wc -l`
-CRIT2=`$GREP "Nuclear repulsion\: * 9\.218170507464" $log | wc -l`
-CRIT3=`$GREP "Electronic energy\: * \-85\.60122266...." $log | wc -l`
+CRIT1=`$GREP "Final DFT energy\:  * \-76\.38305" $log | wc -l`
+CRIT3=`$GREP "Electronic energy\: * \-85\.60122" $log | wc -l`
+CRIT2=`$GREP "Nuclear repulsion\: *    9\.218170507464" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=3
 ERROR[1]="DFT/B3LYP ENERGY NOT CORRECT"
 
 # Response/spin orbit/p-viola
-CRIT1=`$GREP "\@.*PVIOLA X .* PVIOLA X .* 1\.9716981.....(D|E)\+05" $log | wc -l`
-CRIT2=`$GREP "\@.*PVIOLA X .* Y1SPNORB .* 4\.8640240.....(D|E)\-02" $log | wc -l`
-CRIT3=`$GREP "\@.*PVIOLA Y .* PVIOLA Y .* 1\.4954268.....(D|E)\+05" $log | wc -l`
-CRIT4=`$GREP "\@.*PVIOLA Y .* X1SPNORB .* 5\.0585658.....(D|E)\-02" $log | wc -l`
-CRIT5=`$GREP "\@.*PVIOLA Z .* PVIOLA Z .* 1\.8703311.....(D|E)\+05" $log | wc -l`
-CRIT6=`$GREP "\@.*X1SPNORB .* X1SPNORB .* 2\.2983845.....(D|E)\-06" $log | wc -l`
-CRIT7=`$GREP "\@.*Y1SPNORB .* Y1SPNORB .* 2\.0058478.....(D|E)\-06" $log | wc -l`
-CRIT8=`$GREP "\@.*Z1SPNORB .* Z1SPNORB .* 2\.3922484.....(D|E)\-06" $log | wc -l`
+CRIT1=`$GREP "\@.*PVIOLA X .* PVIOLA X .* 1\.9716.*(D|E)\+05" $log | wc -l`
+CRIT2=`$GREP "\@.*PVIOLA X .* Y1SPNORB .* 4\.8640.*(D|E)\-02" $log | wc -l`
+CRIT3=`$GREP "\@.*PVIOLA Y .* PVIOLA Y .* 1\.4954.*(D|E)\+05" $log | wc -l`
+CRIT4=`$GREP "\@.*PVIOLA Y .* X1SPNORB .* 5\.0585.*(D|E)\-02" $log | wc -l`
+CRIT5=`$GREP "\@.*PVIOLA Z .* PVIOLA Z .* 1\.8703.*(D|E)\+05" $log | wc -l`
+CRIT6=`$GREP "\@.*X1SPNORB .* X1SPNORB .* 2\.2983.*(D|E)\-06" $log | wc -l`
+CRIT7=`$GREP "\@.*Y1SPNORB .* Y1SPNORB .* 2\.0058.*(D|E)\-06" $log | wc -l`
+CRIT8=`$GREP "\@.*Z1SPNORB .* Z1SPNORB .* 2\.3922.*(D|E)\-06" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[2]=8
 ERROR[2]="RESPONSE/SPIN ORBIT/PVIOLA NOT CORRECT"
 
 # Relativistic prop.
-CRIT1=`$GREP "Darwin correction\: * (0| )\.1987572448 au" $log | wc -l`
-CRIT2=`$GREP "Mass\-velocity correction\: * (\-0| \-)\.2502969178 au" $log | wc -l`
+CRIT1=`$GREP "Darwin correction\:         *    0*\.1987572" $log | wc -l`
+CRIT2=`$GREP "Mass\-velocity correction\: * \-*0*\.2502969" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[3]=2
-ERROR[3]="RELATIVISTIC PROPERTIES NOT CORRECT"
+ERROR[3]="RELATIVISTIC ENERGY CORRECTIONS NOT CORRECT"
 
 # Dipole moment
-CRIT1=`$GREP "(0| )\.748785 * 1\.903222" $log | wc -l`
+CRIT1=`$GREP "(0| )\.748785 * 1\.90322" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="DIPOLE MOMENT NOT CORRECT"
 
 # Excitation energies
-CRIT1=`$GREP "1 * 1 * (0| )\.280133 * 7\.622796" $log | wc -l`
-CRIT2=`$GREP "1 * 2 * (0| )\.348607 * 9\.486075" $log | wc -l`
+CRIT1=`$GREP "1 * 1 * (0| )\.28013. * 7\.6227" $log | wc -l`
+CRIT2=`$GREP "1 * 2 * (0| )\.34860. * 9\.4860" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[5]=2
 ERROR[5]="EXCITATION ENERGIES NOT CORRECT"
@@ -168,8 +167,8 @@ CTRL[6]=15
 ERROR[6]="SHIELDINGS NOT CORRECT"
 
 # H-H spin-spin coupling
-CRIT1=`$GREP "Isotropic coupling * \: * \-2\.5081 Hz" $log | wc -l`
-CRIT2=`$GREP "Anisotropic coupling * \: * \-36\.6354 Hz" $log | wc -l`
+CRIT1=`$GREP "Isotropic coupling * \: * \-2\.6215 Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-36\.7740 Hz" $log | wc -l`
 CRIT3=`$GREP "Asymmetry * \: * (\-0| \-)\.0891" $log | wc -l`
 CRIT4=`$GREP "S parameter * \: * 36\.8226 Hz" $log | wc -l`
 CRIT5=`$GREP "A parameter * \: * 6\.2015 Hz" $log | wc -l`

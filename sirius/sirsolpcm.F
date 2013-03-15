@@ -1,40 +1,30 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C File: sirius/sirsolpcm.F
 C       (sirsol.F modified for pcm)
 C
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck pcmgrd */
       SUBROUTINE PCMGRD(CREF,CMO,INDXCI,DV,G,ESOLT,WRK,LFREE)
@@ -48,40 +38,40 @@ C   Output:
 C    G          MCSCF gradient with solvation contribution added
 C    ESOLT      total solvation energy
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
 C
       DIMENSION CREF(*), CMO(*), INDXCI(*)
       DIMENSION DV(*),   G(*),   WRK(*)
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0,
      &            DCVAL = D2, FPI = 4.0D0 * PI )
-#include <thrzer.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "thrzer.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "mxcent.h"
 C
 C Used from common blocks:
 C   INFVAR: NCONF,  NWOPT,  NVAR,   NVARH
 C   INFORB: NNASHX, NNBASX, NNORBX, etc.
 C   INFIND: IROW(*)
 C   INFTAP: LUSOL,  LUIT2
-C   INFPRI: LUERR,  LUPRI,   IPRSOL
+C   INFPRI: IPRSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <orgcom.h>
-#include <pcmnuclei.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "orgcom.h"
+#include "pcmnuclei.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infpri.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 C
       LOGICAL     FIRST, FNDLAB, EXP1VL, TOFILE, TRIMAT
@@ -473,38 +463,38 @@ C
 C   Output:
 C    FSOL  : generalized Fock matrix  with solvation contribution added
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
-#include <thrzer.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <codata.h>
+#include "thrzer.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "codata.h"
 C
 C Used from common blocks:
 C   INFORB: NNASHX, NNBASX, NNORBX, etc.
 C   INFPRI: LUERR,  LUPRI
 C
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <qm3.h>
-#include <gnrinf.h>
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "qm3.h"
+#include "gnrinf.h"
 C
-#include <orgcom.h>
-#include <dftcom.h>
+#include "orgcom.h"
+#include "dftcom.h"
 C
       PARAMETER (ANTOAU=1.0D+00/XTANG)
 C
@@ -518,7 +508,6 @@ C
       LOGICAL     FIRST
       SAVE        FIRST
       DATA        FIRST/.TRUE./
-#include <sdpre.h>
 C
 C     Statement functions;
 C     define automatic arrays (dynamic core allocation)
@@ -715,37 +704,21 @@ C
       PCMEM = D0
       PCMNN = D0
 
-      PRINT *,'NSYM',NSYM
-      PRINT *,'QSE',QSE(1),QSE(2),QSE(3)
-      PRINT *,'potcav',WRK(KPTQMN),WRK(KPTQMN+1),WRK(KPTQMN+2)
       DO ITS = 1, NTSIRR
-Clf         VCHECK = ZERO 
-Clf         DO JATOM = 1, NUCDEP
-Clf            R2 = (PCMCORD(1,JATOM)-XTSCOR(ITS))**2 + (PCMCORD(2,JATOM)-
-Clf     *           YTSCOR(ITS))**2 + (PCMCORD(3,JATOM)-ZTSCOR(ITS))**2
-Clf            R3 = DSQRT(R2)
-Clf            VCHECK = VCHECK + PCMCHG(JATOM) / R
-Clf         ENDDO
-Clf         print *, VCHECK, WRK(KPTQMN+ITS-1), WRK(KPOTMM+ITS-1)
          PCMMM = PCMMM + NSYM * QSMM(ITS) * WRK(KPOTMM + ITS -1)
          PCMNN = PCMNN + QSN(ITS)  * POTCAVNUC(ITS)
-C         PCMNN = PCMNN + NSYM * QSN(ITS)  * POTCAVNUC(ITS)
          PCMEE = PCMEE + QSE(ITS)  * POTCAVELE(ITS)
 
          PCMEN = PCMEN + QSN(ITS) * POTCAVELE(ITS)
          PCMNE = PCMNE + QSE(ITS) * POTCAVNUC(ITS)
-C         PCMNE = PCMNE + NSYM * QSE(ITS) * POTCAVNUC(ITS)
 
          PCMEM = PCMEM + NSYM * QSMM(ITS) * POTCAVELE(ITS)
          PCMME = PCMME + NSYM * QSE(ITS)  * WRK(KPOTMM + ITS -1)
 
          PCMMN = PCMMN + QSMM(ITS) * POTCAVNUC(ITS)
-C         PCMMN = PCMMN + NSYM * QSMM(ITS) * POTCAVNUC(ITS)
          PCMNM = PCMNM + NSYM * QSN(ITS)  * WRK(KPOTMM + ITS -1)
-
       ENDDO
       IF (.NOT. MOBAS) THEN
-Clf         PCMEE = DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1) - PCMEN
          PCMEE_op = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KXAO),1)
 C
 C     Electrostatic contribution:
@@ -760,10 +733,9 @@ C     PCMMM =     interaction mm chg - polarization mm chg
 C
 C        Nuclear energy divided by two for backward compatibility /lf
 C     
-         PCMNN = PCMNN / 2.0D0 
+         PCMNN = PCMNN * 0.5D0
 C
-C         IF (IPRINT .GT. 2) THEN 
-         IF (.true.) THEN 
+         IF (IPRINT .GT. 1) THEN 
             WRITE(LUPRI,'(A)')
      *           'PCMFCK: PCM solvation energy contributions'
             WRITE(LUPRI,*) 'PCMEE_op', PCMEE_op
@@ -828,7 +800,7 @@ C
 C Copyright 25-Apr-1990 Hans Joergen Aa. Jensen
 C Common driver for PCMLNC and PCMLNO
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       DIMENSION VTEX(*)
@@ -837,13 +809,13 @@ C
 C Used from common blocks:
 C   INFLIN : NWOPPT,NVARPT
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <priunit.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <pcm.h>
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "priunit.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "pcm.h"
 C
       CALL QENTER('PCMLIN')
 C
@@ -894,37 +866,36 @@ C  Purpose:  Calculate MCSCF Hessian contribution from a
 C            surrounding medium to a csf trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
       DIMENSION BCVEC(*),  CREF(*), CMO(*) 
       DIMENSION INDXCI(*), DV(*),   DTV(NNASHX,*)
       DIMENSION SVEC(NVARPT,*),     WRK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 )
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C
 C  Used from common blocks:
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : NWOPH
 C    INFLIN : NCONST, NVARPT, NWOPPT
-C    INFPRI : LUERR
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <pcmdef.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "pcm.h"
+#include "pcmlog.h"
       DIMENSION VTEX(NTS,NCSIM)
 C
       CALL QENTER('PCMLNC')
@@ -1106,41 +1077,41 @@ C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
 C  NSVEC     may be NVAR or NWOPT, dependent on LINTRN
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       DIMENSION BOVECS(NWOPPT,*), CREF(*), CMO(*)
       DIMENSION INDXCI(*),        DV(*)
       DIMENSION SVEC(NSVEC,*),    WRK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, DP5 = 0.5D0 )
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C
 C  Used from common blocks:
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : JWOP
 C    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
-C    INFPRI : LUERR,  IPRSOL
+C    INFPRI : IPRSOL
 C
-#include <pcmdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "pcmdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
       CHARACTER*8 LABINT(9*MXCENT)
       DIMENSION VTEX(NTS,NOSIM), QTEX(NTS,NOSIM), INTREP(9*MXCENT),
      &          INTADR(9*MXCENT)
-#include <infinp.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "infinp.h"
+#include "pcm.h"
+#include "pcmlog.h"
 #include "orgcom.h"
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL FULHES, TOFILE, TRIMAT, EXP1VL
 C
@@ -1414,16 +1385,16 @@ C     ... end of pcmlno.
 
 C  /* Deck NEQENR */
       SUBROUTINE NEQENR(ESOLT,POTMAT,QSEGR,POTGR,POT,WORK,LWRK)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <pi.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "pi.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0,
      &            DCVAL = D2, FPI = 4.0D0 * PI )
       DIMENSION POTMAT(NTS,*),QSEGR(*),POTGR(*),
@@ -1481,24 +1452,24 @@ C
          UELOR   = UELOR   + QSEGR(ITS) * SSN
       END DO
 C
-C  SYMMETRY NORMALIZATION OF UELOR E UEOLOR0
+C  SYMMETRY NORMALIZATION OF UELOR AND UEOLOR0
 C
       UELOR  = UELOR  * (MAXREP + 1)
       UELOR0 = UELOR0 * (MAXREP + 1)
 
 
 C     
-      PORT =(VTOT0QS+UELOR0)*DP5*FACSLO
-      QSSLW = (UELOR+VTOTQS)*DP5*FACSLO
+      PORT  = (VTOT0QS+UELOR0)*DP5*FACSLO
+      QSSLW = (UELOR+VTOTQS)  *DP5*FACSLO
 c     lf         IF (IPRPCM .GE. 6) THEN
-      WRITE(LUPRI,*)'GS(EL+N)-QS',VTOT0QS*FACSLO
+      WRITE(LUPRI,*)'GS(EL+N)-QS ',VTOT0QS*FACSLO
       WRITE(LUPRI,*)'EXC(EL+N)-QS',VTOTQS*FACSLO
       WRITE(LUPRI,*)'QF(GS)-QS   = UELOR0 ',UELOR0*FACSLO
-      WRITE(LUPRI,*)'QF(EXC)-QS = UELOR ',UELOR*FACSLO
-      WRITE(LUPRI,*)'PORT =',PORT,' QSSLW = ',QSSLW
-      WRITE(LUPRI,*)'PCMNE=', PCMNE, '  PCMNN=', PCMNN
+      WRITE(LUPRI,*)'QF(EXC)-QS  = UELOR  ',UELOR*FACSLO
+      WRITE(LUPRI,*)'PORT =', PORT, ' QSSLW = ',QSSLW
+      WRITE(LUPRI,*)'PCMNE=', PCMNE,' PCMNN =', PCMNN
       WRITE(LUPRI,*)
-      WRITE(LUPRI,*)'ESOLT', ESOLT
+      WRITE(LUPRI,*)'ESOLT =', ESOLT
       WRITE(LUPRI,*)'CORRECTION TO ESOLT', QSSLW-PORT
 c     lf         END IF
 C
@@ -1520,8 +1491,8 @@ C
 C     Interface routine to read PCM potential integrals of a given symmetry
 C     K.Ruud, nov.2001
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*8 LABNAM, WHERE
       LOGICAL FOUND, FNDLAB
       DIMENSION ARRAY(LENGTH)

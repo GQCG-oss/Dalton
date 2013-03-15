@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C------------------------------------------------------------------------
 C||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -47,13 +37,13 @@ C-------------------------------------------------------------------------
 C
 C INPUT FROM ABACUS TO QM3 CALCULATIONS 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxsymm.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxsymm.h"
+#include "qm3.h"
 !#include <qmmm.h>
 C
       PARAMETER ( NTABLE = 20, D1 = 1.0D0)
@@ -61,8 +51,8 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
       CHARACTER*80 INLINE
-#include <cbirea.h>
-#include <ccom.h>
+#include "cbirea.h"
+#include "ccom.h"
 C
       DATA TABLE /'.QM3   ', '.THRDIP', '.MAXDIP', '.FIXMOM',
      *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
@@ -385,11 +375,11 @@ C     April 2009, hjaaj
 C
 C     Moved setup of MM info to this new subroutine.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "qm3.h"
 C
 C     ***************************************************************
 C     Calculating the classical interaction terms from the given
@@ -421,13 +411,13 @@ C------------------------------------------------------------------------
 C
 C <<< General Input for MM potentials>>>
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <inftap.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "inftap.h"
+#include "qm3.h"
 C
       PARAMETER (NTABLE = 24,NTAB1 = 16)
       PARAMETER (DHALF = 0.5D0, D0 = 0.0D0)
@@ -1361,13 +1351,13 @@ C----------------------------------------------------------------
 C  /* Deck qm3mas */
 C----------------------------------------------------------------
       SUBROUTINE QM3MAS(NONT,NONTYP)
-#include <implicit.h>
+#include "implicit.h"
 C
 C JK+AO nov. 2002
-#include <priunit.h>
-#include <mxcent.h>
-#include <inftap.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "inftap.h"
+#include "qm3.h"
 C
       PARAMETER  (D0 = 0.0D0)
       INTEGER    NUALTS, KUTEST
@@ -1375,9 +1365,9 @@ C
       LOGICAL    ANGQM3
       DIMENSION  NONT(*)
 C
-#include <nuclei.h>
-#include <chrnos.h>
-#include <codata.h>
+#include "nuclei.h"
+#include "chrnos.h"
+#include "codata.h"
 C
       TOTMAS = D0
       LTEMP1 = 0
@@ -1713,12 +1703,12 @@ C     This routine calculates the electric fields from the
 C     different contributers at given positions in the MM medium.
 C     ******************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  ENUC(3,MXQM3), ESITE(3,MXQM3)
       DIMENSION  EQMCLF(3,MXQM3), EELEC(3,MXQM3)
@@ -2075,14 +2065,14 @@ C
 C
           IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
             DIPCON = .TRUE.
-            WRITE(LUPRI,'(/A,I4,A/A,F20.15)')
-     *      ' QM3 induced dipole vector converged in',LM,' iterations.',
-     *      ' Final norm2 of QM3 induced dipole moment vector: ',XDIP2
+            WRITE(LUPRI,'(T7,A,I4,A/T7,A,F20.15)')
+     *      'QM3 induced dipole vector converged in',LM,' iterations.',
+     *      'Final norm2 of QM3 induced dipole moment vector: ',XDIP2
             GOTO 1000
           ELSE
             XDIP1 = XDIP2
-            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(A,F20.15)')
-     *      ' Norm2 of QM3 induced dipole moment vector:       ',XDIP2
+            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(T9,A,F20.15)')
+     *      'Norm2 of QM3 induced dipole moment vector:       ',XDIP2
           END IF
 C
   999   CONTINUE
@@ -2091,8 +2081,8 @@ C
 C
         IF (LOEC3L) THEN
           LOMIND = .TRUE.
-          WRITE(LUPRI,'(/A/)')
-     *    ' QM3 Epol is calculated according to scheme C3'
+          WRITE(LUPRI,'(/T7,A/)')
+     *    'QM3 Epol is calculated according to scheme C3'
           GOTO 116
         END IF
  
@@ -2104,8 +2094,8 @@ C
 
       END IF
 C
-      IF (.NOT. DIPCON) WRITE(LUPRI,'(/A)')
-     *   ' QM3 induced dipole moment not converged self-consistently'
+      IF (.NOT. DIPCON) WRITE(LUPRI,'(/T7,A)')
+     *   'QM3 induced dipole moment not converged self-consistently'
 C
  117  CONTINUE
 C
@@ -2339,12 +2329,12 @@ C
 C     Calculates the induced dipole moments by an iterative
 C     procedure or by direct matrix inversion.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       LOGICAL    DIPCON, LOINDM 
       DIMENSION  MYIND(3,MXQM3), EIND1(3,MXQM3)
@@ -2586,14 +2576,14 @@ C
 C
           IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
             DIPCON = .TRUE.
-            WRITE(LUPRI,'(/A,I3,A/A,F20.15)')
-     *     ' QM3 induced Dipole vector converged in ',LM,' iterations.',
-     *     ' Final norm2 of QM3 induced dipole moment vector: ',XDIP2
+            WRITE(LUPRI,'(T7,A,I3,A/T7,A,F20.15)')
+     *     'QM3 induced Dipole vector converged in ',LM,' iterations.',
+     *     'Final norm2 of QM3 induced dipole moment vector: ',XDIP2
             GOTO 1000
           ELSE
             XDIP1 = XDIP2
-            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(A,F20.15)')
-     *       ' Norm2 of QM3 induced dipole moment vector:       ',XDIP2
+            IF (IQM3PR .GT. 1) WRITE(LUPRI,'(T7,A,F20.15)')
+     *       'Norm2 of QM3 induced dipole moment vector:       ',XDIP2
           END IF
 C
   999 CONTINUE
@@ -2601,8 +2591,8 @@ C
 
       END IF
 C
-      IF (.NOT. DIPCON) WRITE(LUPRI,'(A/)')
-     *   ' QM3 induced dipole moment not converged self-consistently'
+      IF (.NOT. DIPCON) WRITE(LUPRI,'(T7,A/)')
+     *   'QM3 induced dipole moment not converged self-consistently'
 C
 C     **********************************************************
 C     Print section. Printing if PRINT .GT. 1.
@@ -2782,11 +2772,11 @@ C     "QM"/MM interaction, the van der Waal interaction
 C     and the total classical "QM"/MM interaction.
 C*******************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -2952,12 +2942,12 @@ C  /* Deck qm3_put3*/
       SUBROUTINE QM3_PUT3(NMBU,FLNAME,PUTNU,NULOOP)
 C*******************************************************
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "inftap.h"
 C
       CHARACTER FLNAME*8
       INTEGER   NMBU,NULOOP
@@ -2981,12 +2971,12 @@ C  /* Deck qm3_get3*/
       SUBROUTINE QM3_GET3(NMBU,FLNAME,PUTNU,NULOOP)
 C*******************************************************
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "inftap.h"
 C
       CHARACTER FLNAME*8
       INTEGER   NMBU,NULOOP
@@ -3025,12 +3015,12 @@ C     wave-function. o-bar and E^ns_a are written to
 C     files.
 C
 C*******************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
       DIMENSION  ENUC(3,MXQM3)
@@ -3120,12 +3110,12 @@ C     Calculates the o-tilde contribution to the
 C     QM/MM interaction energy. 
 C***************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
       DIMENSION  ENUC(3,MXQM3),RHS(3,MXQM3),EFPCM(3,MXQM3)
@@ -3206,13 +3196,13 @@ C     on file LUQM3P.
 C     14.05.03 JK. Modified also to include overlap inegrals.
 C**************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "qm3.h"
 C
       DIMENSION AINT(*)
 
@@ -3246,12 +3236,12 @@ C  /* Deck qm3_emmmm */
       SUBROUTINE QM3_EMMMM(DEMMMM,TEMPOL,FFJ)
 C*************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DIMENSION  PIND(3,MXQM3),MYIND(3,MXQM3)
       DIMENSION  ESITE(3,MXQM3),FFJ(*),EFPCM(3,MXQM3)
@@ -3326,11 +3316,11 @@ C     Waal interaction between the MM systems when LBEGIN = 1.
 C
 C**************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -3473,11 +3463,11 @@ C                                  (Sig(ij)/R(ij))**6 ]]
 C
 C**************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -3558,10 +3548,10 @@ C     given in the MOLECULE.INP file.
 C
 C*************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -3754,12 +3744,12 @@ C
 C     Nuclear contribution to electric field gradients 
 C     from the MM system. 1. contribution from the partial charges.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "qm3.h"
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
-#include <nuclei.h>
-#include <nqcc.h>
+#include "nuclei.h"
+#include "nqcc.h"
 C
       IF (OLDTG)  THEN
         DO 873 I= 1, ISYTP
@@ -3836,11 +3826,11 @@ C
 C     Nuclear contribution to electric field gradients
 C     from the MM system. 2. Contribution from the induced dipoles.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
-#include <nqcc.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
+#include "nqcc.h"
 C
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
       DIMENSION  MYIND(3,MXQM3)
@@ -3963,11 +3953,11 @@ C     is omitted.
 C
 C*******************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER  (D0 = 0.0D0)
 C
@@ -4007,14 +3997,14 @@ C  /* Deck rdqm3 */
       SUBROUTINE RDQM3(AINT,LOFRST,INTTYP)
 C**************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <gnrinf.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "gnrinf.h"
+#include "qm3.h"
 C
       DIMENSION AINT(*)
       LOGICAL LOFRST
@@ -4044,12 +4034,12 @@ C  /* Deck mumatinv */
       SUBROUTINE MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,EFPCM,MYIND,
      &                    EIND,DIPCON)
 C**************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
+#include "inftap.h"
 
 #if defined (SYS_CRAY)
       REAL              DIST
@@ -4240,11 +4230,11 @@ C*********************************************************************
 C
 C     Calculate the reaction field (RF) at the QM nuclei 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "nuclei.h"
 C
       PARAMETER (D0 = 0.0D0, D3 = 3.0D0)
       DIMENSION  MYIND(3,MXQM3)
@@ -4616,41 +4606,39 @@ C-------------------------------------------------------------------------
 C
 C INPUT FROM ABACUS TO QMMM CALCULATIONS 
 C
-C Oct. 2009: AHS and JMO
-C   Added a restart option (.MMREST) which requires the relay matrix to be
-C   present in the file QMMMIM. Currently the restart option only supports
-C   the calculation of the relay matrix.
+#include "implicit.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxsymm.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "codata.h"
 C
-C Nov. 2009: JMO
-C   Added an option (.RELMAT) for constructing the relay matrix, saving it
-C   in the file QMMMIM and quit. Intended for use in subsequent restarted
-C   calculations.
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxsymm.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <codata.h>
-C
-      PARAMETER ( NTABLE = 20, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 27, D1 = 1.0D0)
       LOGICAL NEWDEF,RCUT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
       CHARACTER*80 INLINE
       CHARACTER*2 UNITS
-#include <cbirea.h>
-#include <ccom.h>
+#include "cbirea.h"
+#include "ccom.h"
 C
+!                  1          2          3          4
       DATA TABLE /'.QMMM  ', '.SPLDIP', '.FIXDIP', '.MMDAMP',
+!                  5          6          7          8
      *            '.MMPROP', '.SPLNMR', '.SELPOL', '.QMDAMP',
+!                  9          10         11         12
      *            '.LGSPOL', '.MMMAT ', '.MMITER', '.ITERIN',
+!                  13         14         15         16
      *            '.MMDIIS', '.LCLOSE', '.RCUTMM', '.FDSTEP',
-     *            '.ZEROOC', '.PRINT ', '.MMREST', '.RELMAT'/
-
+!                  17         18         19         20
+     *            '.ISOPOL', '.PRINT ', '.MMREST', '.RELMAT',
+!                  21         22         23         24
+     *            '.ZERODI', '.ZEROQU', '.ZEROOC', '.NOPOL ',
+!                  25         26         27
+     *            '.NOMB  ', '.MMTIME', '.NEWEXC'/
  
       CALL QENTER('QMMMIN')
  
@@ -4681,10 +4669,17 @@ C      SELPOL   = .FALSE.   ! Skip selected systems response related to the elec
       RCUTMM   = 1000.0D0  ! Cut-off for QM-MM and MM-MM interactions
       RCUT     = .FALSE.   ! No cut-off
       DELFLD   = 0.01      ! Keywd FDSTEP: FD step in calculation of electric field Hessian integrals
+      ZERODI   = .FALSE.   ! Zero the dipole moments
+      ZEROQU   = .FALSE.   ! Zero the quadrupole moments
       ZEROOC   = .FALSE.   ! Zero the octupole moments
+      ISOPOL   = .FALSE.   ! Make anisotropic polarizabilities isotropic
+      NOPOL    = .FALSE.   ! Zero the static polarizabilities
       IPQMMM   = 1         ! QMMM print level
       MMREST   = .FALSE.   ! Restart QM/MM calculation (only useful for reusing relay matrix atm.)
       RELMAT   = .FALSE.   ! Construct relay matrix, save to QMMMIM and quit
+      NOMB     = .FALSE.   ! Remove many-body effects, i.e. no induced dipole - induced dipole interactions
+      MMTIME   = .FALSE.   ! Print wall times used in different parts of the QMMM module
+      NEWEXC   = .FALSE.   ! Use new type of exclusion list
 
       NEWDEF = (WORD .EQ. '*QMMM  ')
       ICHANG = 0
@@ -4705,7 +4700,7 @@ C
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-     &               19,20), I
+     &               19,20,21,22,23,24,25,26,27), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -4722,6 +4717,7 @@ C
             QMMM = .TRUE.
             NYQMMM = .TRUE.
             LGFILE = .FALSE. !sne assignment. 
+            LHFFIL = .FALSE.
           GO TO 100
 C
     2     CONTINUE
@@ -4823,7 +4819,7 @@ C           See if further input is provided for this option
           GO TO 100
 
    17     CONTINUE
-            ZEROOC = .TRUE.
+            ISOPOL = .TRUE.
           GO TO 100
 
    18     CONTINUE
@@ -4859,6 +4855,37 @@ C           See if further input is provided for this option
             WRITE(LUPRI,*) 'in QMMMIM.'
             WRITE(LUPRI,*)
             WRITE(LUPRI,*) 'Skipping everything else!'
+          GO TO 100
+
+   21     CONTINUE
+            ZERODI = .TRUE.
+            ZEROQU = .TRUE.
+            ZEROOC = .TRUE.
+          GO TO 100
+
+   22     CONTINUE
+            ZEROQU = .TRUE.
+            ZEROOC = .TRUE.
+          GO TO 100
+
+   23     CONTINUE
+            ZEROOC = .TRUE.
+          GO TO 100
+
+   24     CONTINUE
+            NOPOL = .TRUE.
+          GO TO 100
+
+   25     CONTINUE
+            NOMB = .TRUE.
+          GO TO 100
+
+   26     CONTINUE
+            MMTIME = .TRUE.
+          GO TO 100
+
+   27     CONTINUE
+            NEWEXC = .TRUE.
           GO TO 100
 
         ELSE IF (PROMPT .EQ. '*') THEN
@@ -4912,6 +4939,10 @@ C
      *         '| ','RCUT',' | ',RCUT,' |'
         IF (MMREST) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ','MMREST',' | ',MMREST,' |'
+        IF (NOMB) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','NOMB',' | ',NOMB,' |'
+        IF (MMTIME) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','MMTIME',' | ',MMTIME,' |'
   400   WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
         WRITE(LUPRI,*)
       END IF
@@ -4920,7 +4951,7 @@ C
         WRITE(LUPRI,*)
         WRITE(LUPRI,*) 'Induced MM dipoles are solved iteratively'
         WRITE(LUPRI,*) 'Max. number of iterations: ',MXMMIT
-        WRITE(LUPRI,*) 'Thresshold: ',THMMIT
+        WRITE(LUPRI,*) 'Threshold: ',THMMIT
         IF (MMDIIS) THEN
           WRITE(LUPRI,*) 'DIIS is invoked for induced dipoles'
           WRITE(LUPRI,*) 'Maximum number of DIIS vectors: ',MXMMDI
@@ -4945,9 +4976,29 @@ C
         WRITE(LUPRI,*) DELFLD
       ENDIF
 
+      IF (ZERODI) THEN
+        WRITE(LUPRI,*) 'Dipoles are reset to zero'
+      ENDIF 
+
+      IF (ZEROQU) THEN
+        WRITE(LUPRI,*) 'Quadrupoles are reset to zero'
+      ENDIF 
+
       IF (ZEROOC) THEN
         WRITE(LUPRI,*) 'Octupoles are reset to zero'
       ENDIF 
+
+      IF (ISOPOL) THEN
+        WRITE(LUPRI,*) 'Anisotropic polarizabilites are made isotropic'
+      ENDIF 
+
+      IF (NOPOL) THEN
+        WRITE(LUPRI,*) 'Static polarizabilites are reset to zero'
+      ENDIF
+
+      IF (NOMB) THEN
+        WRITE(LUPRI,*) 'No induced dipole - induced dipole interactions'
+      ENDIF
 
       CALL QEXIT('QMMMIN')
       RETURN
@@ -4959,15 +5010,15 @@ C------------------------------------------------------------------------
 C
 C <<< General Input for QMMM electrostatic potentials>>>
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <qmmm.h>
-#include <codata.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "qmmm.h"
+#include "codata.h"
 C
       CHARACTER*180 KWord
       CHARACTER*2 UNITS
@@ -5058,6 +5109,7 @@ C     - length of excluded list = 0
       IF (NEXLST .EQ. -2) NEXLST = 0
       IF (NELEME .EQ. -2) NELEME = 0
 
+      IF (NOPOL) IPOLTP = 0
       IF (IPOLTP .EQ. 0) POLWRD = ' No polarization         '
       IF (IPOLTP .EQ. 1) POLWRD = ' Isotropic polarization  '
       IF (IPOLTP .EQ. 2) POLWRD = ' Anisotropic polarization'
@@ -5474,12 +5526,40 @@ C     Charges + dipoles + quadrupoles + octupoles + isotropic polarizabiblities
         CALL QUIT('No read option for this potential')
       ENDIF
 
-      IF (ZEROOC) THEN
-        DO 320 J = 1,MMCENT
-          DO 321 I=1,10
-            MUL3MM(I,J) = 0.0D0
- 321      CONTINUE
- 320    CONTINUE 
+C     Remove octupoles
+      IF ( (ZEROOC) .AND. (NMULT .GE. 3) ) THEN
+         DO 324 J = 1,MMCENT
+            DO 325 I=1,10
+               MUL3MM(I,J) = 0.0D0
+ 325        CONTINUE
+ 324     CONTINUE 
+         NMULT = 2
+      ENDIF
+C     Remove quadrupoles
+      IF ( (ZEROQU) .AND. (NMULT .GE. 2) ) THEN
+         DO 322 J = 1,MMCENT
+            DO 323 I=1,6
+               MUL2MM(I,J) = 0.0D0
+ 323        CONTINUE
+ 322     CONTINUE 
+         NMULT = 1
+      ENDIF
+C     Remove dipoles
+      IF ( (ZERODI) .AND. (NMULT .GE. 1) ) THEN
+         DO 320 J = 1,MMCENT
+            DO 321 I=1,3
+               MUL1MM(I,J) = 0.0D0
+ 321        CONTINUE
+ 320     CONTINUE 
+         NMULT = 0
+      ENDIF
+C     Make anisotropic polarizabilities isotropic
+      IF (ISOPOL .AND. (IPOLTP .EQ. 2)) THEN
+         DO 326 J = 1,MMCENT
+            POLIMM(J) = POLMM(1,J)+POLMM(4,J)+POLMM(6,J)
+            POLIMM(J) = POLIMM(J)/3.0D0
+ 326     CONTINUE 
+         IPOLTP = 1
       ENDIF
 
       IOPTMM = 1 
@@ -5901,15 +5981,15 @@ C------------------------------------------------------------------------
 C     IF IOPT = 1 all information is printed
 C     otherwise only the sites changed are printed
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <qmmm.h>
-#include <codata.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "qmmm.h"
+#include "codata.h"
 C
       INTEGER IOPT
 
@@ -6042,11 +6122,11 @@ C     Output information
   205   CONTINUE
       ENDIF
 
-3999    FORMAT(I4,I4,3(2X,F12.6))
-4000    FORMAT(I4,3(2X,F12.6))
-4001    FORMAT(I4,2X,F12.6)
-4002    FORMAT(I4,6(2X,F12.6))
-4003    FORMAT(I4,10(2X,F12.6))
+3999    FORMAT(I6,I4,3(2X,F12.6))
+4000    FORMAT(I6,3(2X,F12.6))
+4001    FORMAT(I6,2X,F12.6)
+4002    FORMAT(I6,6(2X,F12.6))
+4003    FORMAT(I6,10(2X,F12.6))
 4004    FORMAT(A80)
 
       CALL QEXIT('OUTMM')

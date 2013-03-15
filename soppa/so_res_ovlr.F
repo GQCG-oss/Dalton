@@ -14,8 +14,8 @@ C              (-identity for deexcitation part) and the RPA
 C              contributions are therefore given by the
 C              trial vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ONE = 1.0D0)
 C

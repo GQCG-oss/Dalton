@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_FIND_SO_OP(LABELA,LABELB,LABSOP,ISYSOP,ISIGN,INUM,
@@ -62,11 +52,11 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
-#include <ccropr2.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
+#include "ccropr2.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -77,11 +67,7 @@ C
       INTEGER KEND1, LWRK1, ISIGN
       INTEGER ISYMA, ISYMB, INUMA, INUMB, INUMAB
 
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK)
-#else
-      DOUBLE PRECISION WORK(LWORK)
-#endif
+      REAL*8   WORK(LWORK)
 
 * external functions:
       INTEGER IROPER2
@@ -230,13 +216,13 @@ C
 *---------------------------------------------------------------------*
       ELSEIF(LABELA(1:5).EQ.'dh/dB'.AND.LABELB(1:4).EQ.'PSO ') THEN
 
-        WRITE(LABSOP,'(A2,A5,A1)') LABELB(5:6),' NST ',LABELA(6:6)
+        WRITE(LABSOP,'(A3,A4,A1)') LABELB(5:7),' NST',LABELA(6:6)
         FOUND = .TRUE.
         ISIGN = +1
 
       ELSEIF(LABELB(1:5).EQ.'dh/dB'.AND.LABELA(1:4).EQ.'PSO ') THEN
 
-        WRITE(LABSOP,'(A2,A5,A1)') LABELA(5:6),' NST ',LABELB(6:6)
+        WRITE(LABSOP,'(A3,A4,A1)') LABELA(5:7),' NST',LABELB(6:6)
         FOUND = .TRUE.
         ISIGN = +1
 

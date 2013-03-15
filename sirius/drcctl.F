@@ -1,41 +1,32 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C FILE: sirius/drcctl.F
 C
-#include <single.h>
-C
-#ifdef UNDEF
+#ifdef old_log
 ===========================================================================
-/* Comdeck changes */
 900108-hjaaj
   LBINTD = optimal buffer length .le. 1024 (instead of N2ORBT)
   new LUINTD label DRCINFO, after which LBINTD,LVLDRC may be read
@@ -57,61 +48,42 @@ C
 C Last revision Dec 89, Oct 2003 (CMO check) hjaaj
 C
 C PURPOSE:
-C  SET UP DRCINT CONTAINING DIRAC INTEGTRAL DISTRIBUTIONS
+C  SET UP MODRCINT CONTAINING DIRAC INTEGTRAL DISTRIBUTIONS
 C  <**/CD> C.ge.D
 C
 C If (LVLDRC .eq. 0)      then C,D both active
 C else if (LVLDRC .eq. 1) then C,D both occupied
 C else                    C,D general
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION CMO(*), WRK(LWRK)
       LOGICAL FNDLAB, DRCOLD
 C
-#include <iratdef.h>
-#include <lbmxsq.h>
-#include <thrzer.h>
+#include "iratdef.h"
+#include "lbmxsq.h"
 C
 C Used from common blocks:
 C   INFORB : N2ORBT, N2ORBX, ...
 C   INFTAP : LUINTD, LBINTD
 C   INFTRA : IPRTRA
-C   INFPRI : LUERR
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <inftra.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "inftra.h"
+#include "infpri.h"
 C
       CALL QENTER('DRCCTL')
 C
-C     Open DRCINT and check if integrals already there ...
+C     Open MODRCINT and check if integrals already there ...
 C
       LUINTD = -1
-      CALL GPOPEN(LUINTD,'DRCINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+      CALL GPOPEN(LUINTD,'MODRCINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       IF (FNDLAB('DRCINFO',LUINTD)) THEN
          IF (DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK)) GO TO 9999
       END IF
-C
-C     IF (FNDLAB('DRCINFO',LUINTD)) THEN
-C        READ  (LUINTD) LBINTD, LVLOLD
-C        IF (LVLOLD .GE. LVLDRC) THEN
-C           read CMO matrix from LUINTD
-C           and subtract from input CMO matrix
-C           READ  (LUINTD) (WRK(I),I=1,NCMOT)
-C           CALL DAXPY(NCMOT,-1.0D0,CMO,1,WRK,1)
-C           I = IDAMAX(NCMOT,WRK,1)
-C           IF (ABS(WRK(I)) .LE. THRZER) THEN
-C              IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
-C    *' DRCCTL abandoned: the required MO integrals in Dirac format',
-C    *' are already available on the DRCINT file.'
-C              GO TO 9999
-C           END IF
-C        END IF
-C     END IF
 C
 C Set LBINTD to optimal buffer length .le. LBMXSQ for LUINTD
 C ( N2ORBT is the maximum number of non-zero elements in
@@ -173,6 +145,7 @@ C
      *               LVLDRC,WRK(KWRK1),LWRK1)
 C
 C WRITE these DIRAC DISTRIBUTIONS OUT ON LUINTD
+C
          CALL DRCWRT(WRK(KH2ACD),ICMIN,IDMIN,ILOWDI,IHGHDI,NTOTDI,
      *               LVLDRC,LABCD,WRK(KOUTB),WRK(KOUTB),LUINTD,CMO)
 C        CALL DRCWRT(H2ACD,ICMIN,IDMIN,ILOWDI,IHGHDI,NTOTDI,
@@ -186,8 +159,8 @@ C
       IF (IPRTRA.GT.0) WRITE(LUPRI,1000) LABCD,NLOAD
       CALL GPCLOSE(LUINTD,'KEEP')
  1000 FORMAT(/' DRCCTL: Number of Dirac integrals written on file'//
-     *        ' "DRCINT" is',I10,
-     *       /'         Number of passes over Mulliken file',I5)
+     *    ' "MODRCINT" is',I12,
+     *   /'         Number of passes over Mulliken file MOTWOINT',I5)
 C
  9999 CALL QEXIT('DRCCTL')
       RETURN
@@ -208,35 +181,33 @@ C
 C    MULLIKEN INTEGRALS (CD,AB) = (XP,YQ)
 C    TO DIRAC INTEGRALS <CA,DB> = <XY,PQ>
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2ACD(NORBT,NORBT,*),H2(NORBT,NORBT),WRK(LWRK)
 C
 C Used from common blocks:
 C   INFORB : NSYM,NORB(*),IORB(*),?
 C   INFIND : ISMO(*),?
-C   INFTRA : IPRTRA
+C   INFTRA : IPRTRA, THRP
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftra.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftra.h"
 C
-      DIMENSION NEEDMU(6)
-#include <ibtdef.h>
+      DIMENSION NEEDMU(-4:6)
+#include "ibtdef.h"
 C
       CALL QENTER('DRCACD')
       IF ( IPRTRA.GT.20 ) THEN
          WRITE(LUPRI,'(/4(A,I7))')'  ICLOW :',ICLOW, '  ICHGH :',ICHGH,
      *                            '  ILOWDI:',ILOWDI,'  IHGHDI:',IHGHDI
       ENDIF
-      NEEDMU(1) = 0
+      NEEDMU(-4:6) = 0
       NEEDMU(2) = 1
       NEEDMU(3) = 1
-      NEEDMU(4) = 0
       NEEDMU(5) = 1
-      NEEDMU(6) = 0
       IF (LVLDRC .GE. 1) THEN
          NEEDMU(1) = 1
          NEEDMU(4) = 1
@@ -274,7 +245,7 @@ C
          END IF
 C
 C        See if we need this distribution:
-C         ICDTYP = 0 we don't need this distribution
+C         ICDTYP = 0 we do not need this distribution
 C                    DISTRIBUTION HAS NO INDICES WITHIN
 C                    DESIRED DISTRIBUTION RANGE
 C         ICDTYP = 1 DISTRIBUTION WITH ONE INDEX WITHIN
@@ -285,7 +256,7 @@ C
          ICDTYP = 0
          IF ( NCW .GE. ICLOW .AND. NCW .LE. ICHGH ) ICDTYP = 1
          IF ( NDW .GE. ICLOW .AND. NDW .LE. ICHGH .AND.
-     *        NDW .NE. NCW  ) THEN
+     &        NDW .NE. NCW  ) THEN
             IF (ICDTYP .EQ. 1) THEN
                ICDTYP = 2
                IDOFF  = IROW(NDW) - ILOWOF
@@ -299,9 +270,11 @@ C
                ID     = ISWAP
             END IF
          END IF
-         IF (ICDTYP .GT. 0) ICOFF  = IROW(NCW) - ILOWOF
-C
+
          IF (ICDTYP.EQ.0)     GO TO 200
+
+         ICOFF  = IROW(NCW) - ILOWOF
+C
 C
 C      ... C IS ACTIVE AND WITHIN DESIRED RANGE
 C      ... D IS ACTIVE AND WITHIN DESIRED RANGE IF ICDTYP = 2
@@ -313,6 +286,7 @@ C
             IBEND = MIN(IA,IORB(IBSYM)+NORB(IBSYM))
             DO 290 IB = IBST,IBEND
                H2AB = H2(IB,IA)
+            IF (ABS(H2AB) .LE. THRP) GO TO 290
                NAW  = ISW(IA)
                NBW  = ISW(IB)
                IF (LVLDRC .EQ. 0) THEN
@@ -347,6 +321,7 @@ C
                END IF
   290       CONTINUE
   280    CONTINUE
+
       GO TO 200
 C
 C ***
@@ -378,26 +353,26 @@ C
 C
 C NOTE: EQUIVALENCE (OUTB,IOUTB) in call of DRCWRT
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION H2ACD(NORBT,NORBT,*),OUTB(*),IOUTB(*),CMO(NCMOT)
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER ( D0 = 0.0D0 )
 C
 C Used from common blocks:
 C   INFTRA : IPRTRA,THRP
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <inftra.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "inftra.h"
 C
       CHARACTER*8 LAB123(3), LABELD(2)
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       DATA LAB123/'********','********','********'/
       DATA LABELD/'DRCINFO ','DRCTWOEL'/
@@ -436,7 +411,7 @@ C
          CALL QTRACE(LUPRI)
          CALL QUIT(' DRCWRT: INCORRECT DISTRIBUTION INTERVAL')
       END IF
-      IF ( IPRTRA.GT.80 ) THEN
+      IF ( IPRTRA.GT.20 ) THEN
          WRITE(LUPRI,'(/A,/A,2I8)')' ****DRCWRT*****',
      *   ' ICMIN,IDMIN',ICMIN,IDMIN
       END IF
@@ -508,7 +483,7 @@ C     ***** WRITE LAST BUFFER *****
 C
       IF ( ICDDIS.GT.NTOTDI) THEN
          IOUTB(LOUT21)=-1
-         IF ( IPRTRA.GT.80 ) THEN
+         IF ( IPRTRA.GT.20 ) THEN
             WRITE(LUPRI,'(/A,I10)')
      *      ' -1 WRITTEN OUT ON LAST(EMPTY) RECORD, ICDDIS;',ICDDIS
          END IF
@@ -526,20 +501,20 @@ C  /* Deck drcctl */
       FUNCTION DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK)
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION CMO(*), WRK(LWRK)
       LOGICAL FNDLAB
 C
-#include <iratdef.h>
-#include <lbmxsq.h>
-#include <thrzer.h>
+#include "iratdef.h"
+#include "lbmxsq.h"
+#include "thrzer.h"
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <inftra.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "inftra.h"
+#include "infpri.h"
 C
       LOGICAL DRCOLD
 C
@@ -555,7 +530,8 @@ C        and subtract from input CMO matrix
          DRCOLD = ABS(WRK(I)) .LE. THRZER
       END IF
       IF (DRCOLD .AND. IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
-     *' DRCCTL abandoned: the required MO integrals in Dirac format',
-     *' are already available on the DRCINT file.'
+     &' DRCCTL abandoned: the required MO integrals in Dirac format',
+     &' are already available on the MODRCINT file.'
       RETURN
       END
+C --- end of drcctl.F ---

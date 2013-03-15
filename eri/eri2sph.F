@@ -1,44 +1,34 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cr1sph */
       SUBROUTINE CR1SPH(HCCONT,HCINT,FCINT,HCSINT,FCSINT,CSQ1,CSQ2,
      &                  IODDHC,IPNTUV,IODDKC,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER TUV
       LOGICAL   FCSINT(NTUV34,KHKT2),
@@ -51,9 +41,9 @@ C  /* Deck cr1sph */
      &          IODDHC(NRTOP),
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IODDKC(KC2MAX)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1SPH','*',103)
 C
@@ -209,8 +199,8 @@ C  /* Deck cr2sph */
      &                  CSQ3,CSQ4,CSA3,CSA4,CSV3,CSV4,BDER3,BDER4,
      &                  NCENTR,IODDCC,IPNTUV,IODDKC,INDX,IODX,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL   FCSINT(KHKT12,KHKT4),
      &          FAOINT(KHKT12,KHKT34),
      &          FLEVEL, BDER3, BDER4
@@ -223,10 +213,10 @@ C
      &          IODDCC(NRTOP), NCENTR(NPQBCX,2),
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IODDKC(KC2MAX)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
       IF (BDER3.OR.BDER4) THEN
          CALL CR2SVC(CSQ3,CSA3,CSV3,NCENTR(1,1),NCENTR(1,2),
@@ -243,15 +233,15 @@ C
       END
 C  /* Deck cr2svc */
       SUBROUTINE CR2SVC(CSQ,CSA,CSV,NCNT1,NCNT2,KHKTX,KCKTX)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION CSQ(NCSQ1,NCSQ2), CSA(KHKTX,KCKTX), 
      &          CSV(NCTFPQ,NPQBCX,KHKTX,KCKTX), 
      &          NCNT1(NPQBCX), NCNT2(NPQBCX)
-#include <ericom.h>
-#include <nuclei.h>
+#include "ericom.h"
+#include "nuclei.h"
       IADR = 1
       DO ICMP = 1, KCKTX
       DO IKMP = 1, KHKTX
@@ -274,8 +264,8 @@ C  /* Deck cr2sph */
      &                  CSQ3,CSQ4,CSV3,CSV4,BDER3,BDER4,
      &                  IODDCC,IPNTUV,IODDKC,INDX,IODX,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL   FCSINT(KHKT12,KHKT4),
      &          FAOINT(KHKT12,KHKT34),
@@ -288,10 +278,10 @@ C
      &          IODDCC(NRTOP),
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IODDKC(KC2MAX)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
       PATH1 = IPATH .EQ. 1
 C
@@ -549,19 +539,19 @@ C  /* Deck eribun */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.5D0)
       DIMENSION AOINT(NCCT,KHKTAB,KHKTCD,6), AOINT0(NCCT,KHKTAB,KHKTCD), 
      &          COORAO(NPQBCX,3,4),
      &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2)
 
-#include <ericom.h>
-#include <orgcom.h>
-#include <eriao.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "orgcom.h"
+#include "eriao.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ERIBUN','*',103)
 C

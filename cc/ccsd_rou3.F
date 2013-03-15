@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 !  /* Deck cc_bf3 */
       SUBROUTINE CC_BF3(XINT,OMEGA2,XLAMD1,ISYML1,XLAMD2,
@@ -154,9 +144,9 @@ C
 !
       PARAMETER(ZERO= 0.0D00, HALF= 0.5D00, ONE= 1.0D00, TWO= 2.0D00)
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       CALL QENTER('CC_BF3')
 !
@@ -280,11 +270,11 @@ C  /* Deck cc_bf3_1 */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 !
       INTEGER LWORK, INDEX, ISYDIS, ISYMD, ISYRES, ISYMGD, ISYCH
       INTEGER ISYML2, ISYML1, ISYMIJ, ISYMAB, ISYMG, IDEL, KSCRAB
@@ -700,10 +690,10 @@ C  /* Deck ccrhs_d3 */
       PARAMETER (ONE = 1.0D00, TWO = 2.0D00)
       CHARACTER DFIL*(*)
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 !
       CALL QENTER('CCRHS_D3')
 !
@@ -799,12 +789,12 @@ C
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
 !
       INTEGER LWORK, ICON, ISYMK, ISYMAG, ISYMDL, KSCR10, KEND1
       INTEGER LWRK1, KOFF1, ISYML, ISYMD, ISYMA, ISYMG
@@ -1537,10 +1527,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 !
       INTEGER LWORK, INDEX, ISYAIBJ, ISYMTR, ISYMIM, ISYMAI, ISYMCJ
       INTEGER ISYMBJ, NAI, ISYMJ, ISYMC, ISYMB, NVIRB, NVIRC
@@ -1797,13 +1787,13 @@ C
 C     Purpose: Calculate C-term.
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
 !
       INTEGER LWORK, ISYDIS, ISYMD, ISYAIK, ISYMPC, KSCR1, KSCR2
       INTEGER KSCR3, ICON, KEND1, LWRK1, ISYMT2, ISYMHC, IDEL, LUC
@@ -1941,12 +1931,12 @@ C         icon=3,fact=1.0, NB - not implemented several vectors yet.
 C     Purpose: Calculate C-term intermediate.
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
 !
       INTEGER LWORK, ISYMHC, INDEX, ISYAIK, ISYDIS, ISYMPC, ISAIK2
       INTEGER ISYMT2, ICON, ISYML, ISYMAG, KSCR10, KEND1, LWRK1
@@ -2514,9 +2504,9 @@ C             Calculate only minus the exchange term.
 C             The amplitudes are assumed to be a square matrix.
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       INTEGER LWORK, ISYMJ, ISYMB, ISYMBJ, ISYMAI, ISYM, NBJ, ISYMI
       INTEGER ISYMA, ISYMAJ, ISYMBI, KSCR1, KSCR2, KEND1, LWRK1
@@ -2679,11 +2669,11 @@ C  /* Deck ccrhs_cio */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 !
       INTEGER LWORK, INDEX, ISAIBJ, ISYVEC, ISYCIM, ISYMAI, ISYMBJ
       INTEGER ISYMCK, ISYMDK, NT1AI, LENAI, LENMIN, NDISAI, NBATAI
@@ -2941,11 +2931,11 @@ C  /* Deck ccrhs_cio */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 !
       INTEGER INDEX, ISYMAI, ISYMBJ, ISYMB, NBJ, ISYMJ, KOFF9, NAI
       INTEGER IFSTAI, NAIBJ, ISYMAJ, ISYMBI, NBI, NAJBI, ISYMI, NAJ
@@ -3252,11 +3242,11 @@ C     PURPOSE:
 C             Calculate the D-term making I/O
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 !
       INTEGER LWORK, INDEX, ISYVEC, ISAIBJ, ISYMAI, ISYMBJ, ISYMCK
       INTEGER ISYMDK, NT1AI, LENAI, LENMIN, NDISAI, NBATAI
@@ -3517,11 +3507,11 @@ C
 !                            ANTISYM and FACD.
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 !
       INTEGER INDEX, ISYMAI, ISYMBJ, NBJ, KOFF9, NAI, IFSTAI, NAIBJ
 !
@@ -3648,9 +3638,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       INTEGER LWORK, ISYDIS, ISYDEL, ISYMTR
 !
@@ -3690,9 +3680,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       INTEGER LWORK, INDEX, ISYAKL, ISYMTR, ISYDEL, ISYML, ISYMGB
       INTEGER ISYMAK, ISYMKI, KSCR1, KEND1, LWRK1, KOFF1, ISYMI
@@ -3826,9 +3816,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       INTEGER LWORK, ISYINT, ISYMH1, ISYALI, KSCR1, KEND1
       INTEGER LWRK1, ISYMTR, ISYMP1, ISYDIS, ISYDEL
@@ -3889,9 +3879,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       INTEGER LWORK, INDEX, ISYINT, ISYMH1, ISYALI, ISYMTR, ISYMAI
       INTEGER ISYMP1, ISYDEL, ISYCIK, ISYMK, ISYDIS, ISYMAG
@@ -4103,9 +4093,9 @@ C
 #endif
       PARAMETER(ONETHD = 1.0D00/3.0D00,TWOTHD = 2.0D00/3.0D00)
       PARAMETER(ONEMINUS = -1.0D00)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCRHS3_T2BT')
 C
@@ -4233,11 +4223,11 @@ C  /* Deck ccrhs3_cd */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdio.h"
 !
       INTEGER LWORK,LUC,LUCD,LUD,IDEL,ISYMTR,ISYMD, ISYMPC
       INTEGER IERRCD, IERRC, IERRD, KSCR1, KSCR2, KEND1, LWRK1
@@ -4307,11 +4297,11 @@ C  /* Deck ccrhs3_prcd */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdio.h"
 !
       INTEGER LWORK, LUD, IOFF, KSCR1, KEND1, LWRK1, ISYMPC
       INTEGER ISYMD, ISYDIS, ISYAIK, IDEL, IERRD
@@ -4399,9 +4389,9 @@ C
 #endif
 !
       PARAMETER (ONE = 1.0D00, TWO = 2.0D00)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       CALL QENTER('CCRHS3_EI')
 !
@@ -4449,9 +4439,9 @@ C     Purpose: Calculate E-intermediates.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       INTEGER LWORK, IDEL, ISYMD, ISYDIS, ISYMTR, KBM
       INTEGER ISYMJ, ISYMDJ, ISYMEM, ISYMGM, ISYME, NVIRE
@@ -4654,8 +4644,8 @@ C
       INTEGER ISYDIS, ISYMD, ISYMG, ISYMAB, NDISTG, NBATCH
       INTEGER IBATCH, NUMG, IG1, IG2, KOFF2, IG, KOFF1, ISYMA
       INTEGER ISYDEN, ISYMB, KAD, IDEL, KGB, NTOTA, NTOTG, LWORK
-#include <priunit.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "maxorb.h"
 #if defined (SYS_CRAY)
       REAL ZERO, ONE, TWO
       REAL XINT(*), DENSIT(*), FOCK(*), WORK(LWORK)
@@ -4664,9 +4654,9 @@ C
       DOUBLE PRECISION XINT(*), DENSIT(*), FOCK(*), WORK(LWORK)
 #endif
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_AOFOCK3')
 C
@@ -4755,17 +4745,17 @@ C
 C     N.B. This routine assumes AO-symmetric integrals, and can therefor
 C          not be used directly for calculations with London-orbitals!!!
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER(ZERO = 0.0D0,ONE = 1.0D0,XMONE=-1.0D0,TWO = 2.0D0)
       DIMENSION XINT(*),OMEGA2(*)
       DIMENSION XLAMPC(*),XLAMHC(*),XLAMDH(*),XLAMDP(*)
       DIMENSION WORK(LWORK)
       LOGICAL ANTISYM
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -4995,14 +4985,14 @@ C     Purpose: Writes out vector:
 C              %T1 and %T2 and ||T1||/||T2||
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (TWO = 2.0D0, THPRT = 1.0D-9)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
 C
       LOGICAL LGRS
@@ -5259,13 +5249,13 @@ C  /* Deck ccrhs3_ij */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "ccsdio.h"
 !
       INTEGER LWORK, LWRK1, KEND1, KSCR1, ISYMJ, ISYMI, ISYMA
       INTEGER ISYMB, ISYMAI, ISYMAJ, ISYMBI, ISYMBJ
@@ -5427,13 +5417,13 @@ C  /* Deck ccrhs3_r2ij */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "ccsdio.h"
 !
       INTEGER LWORK, LWRK1, KEND1, KSCR1, ISYMJ, ISYMI, ISYMA
       INTEGER ISYMB, ISYMAI, ISYMAJ, ISYMBI, ISYMBJ, ISYVEC
@@ -5599,9 +5589,9 @@ C
 C     Purpose: Calculate A-term.
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       INTEGER LWORK, ISYGAM, ISYVEC, IOPT
       INTEGER ISAIBJ, ISYMLJ, ISYMKI, KSCR1, KEND1, LWRK1
@@ -5812,9 +5802,9 @@ C  /* Deck cc_t2sq3 */
 #endif
       INTEGER ISYM, KOFF1, KOFF2, ISYMBJ, KOFF, ISYMAI, NAMP, NAI
       INTEGER NBJ
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       CALL QENTER('CC_T2SQ3')
 !
@@ -5876,7 +5866,7 @@ C  /* Deck cc_t2sq3 */
 !---------------------------------------------------------------
 !
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
 !
       INTEGER LDA, LDB, M, N, I
 #if defined (SYS_CRAY)
@@ -5915,7 +5905,7 @@ C  /* Deck sqmatr3 */
 !-----------------------------------------------------
 !
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
       INTEGER I, J, NDIM, IJ
 #if defined (SYS_CRAY)
       REAL PKMAT(*), SQMAT(NDIM,NDIM)
@@ -6005,12 +5995,12 @@ C
 C     NOTE: Linear response options only valid and debugged for OMEGOR!
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
+#include "cclr.h"
 !
       INTEGER INDEX, ISYMBF, ISYMPC, ISYMO1, ISYMO2, ISYMC2, ICON
       INTEGER ISYMJ, ISYMI, ISYMIJ, ISALBE, ISYMAB, ISYBE, ISYAL
@@ -6572,7 +6562,7 @@ C  /* Deck hescompa */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
+#include "priunit.h"
 !
       INTEGER NREDH, NCOMPO, I, J, K, L, KOFF1, KOFF2
 !

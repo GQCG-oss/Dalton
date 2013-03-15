@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c/* Deck cc_wrrsp */
       SUBROUTINE CC_WRRSP(LIST,IDXLST,ISYM,IOPT,MODFIL,
@@ -65,6 +55,7 @@ C          'CR2': right second-order Cauchy vectors
 C          'RE' : right eigenvectors
 C          'ER1': first-order response of right eigenvectors
 C          'ER2': second-order response of right eigenvectors
+!          'QL' : Lanczos-chain Q vectors (columns of Q matrix)
 C
 C          'L0' : left zeroth-order lamdba vectors (IDXLST ignored)
 C          'L1' : left first-order lambda vectors
@@ -85,7 +76,10 @@ C          'F4' : F-transformed right fourth-order response vectors.
 C          'FC' : F-transformed right first-order Cauchy vectors.
 C          'CF2': F-transformed right second-order Cauchy vectors.
 C          'FR' : F-transformed right eigenvectors.
+!          'FQ' : F transformed Lanczos-chain Q vectors
 C
+C          'XF1': F-transformed right first-order response vectors,
+C                 F12*R2 contribution for Cholesky CC2.
 C
 C          'O1 ': rhs for first-order amplitude equations
 C          'O1e': effective 'O1' vector for triples models
@@ -95,6 +89,9 @@ C          'O4' : rhs for fourth-order amplitude equations
 C          'CO2': rhs for second-order right Cauchy equations
 C          'EO1': rhs for first-order response of right eigenvectors
 C          'EO2': rhs for second-order response of right eigenvectors
+C
+C          'eO1': effective rhs for first-order amplitude equations for
+C                 Cholesky CC2
 C
 C          'X1 ': first-order chi/eta vectors
 C          'X1e': effective 'X1' vector for triples models
@@ -125,43 +122,51 @@ C  Christof Haettig, october 1996, restructered in november 1998
 C  PL1 vectors introduced in March 2000 by Sonia Coriani
 C  CC3 effective vectors introduced 2002 by Christof Haettig
 C  R12 vectors introduced Jun 2003 by Christof Haettig
+C  QL/FQ Lanczos vectors introduced Aug 2010 by Sonia & Kristian
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfro.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccl1rsp.h>
-#include <cco1rsp.h>
-#include <ccx1rsp.h>
-#include <ccr2rsp.h>
-#include <ccl2rsp.h>
-#include <cco2rsp.h>
-#include <ccx2rsp.h>
-#include <ccr3rsp.h>
-#include <ccl3rsp.h>
-#include <cco3rsp.h>
-#include <ccx3rsp.h>
-#include <ccr4rsp.h>
-#include <ccl4rsp.h>
-#include <cco4rsp.h>
-#include <ccx4rsp.h>
-#include <ccn2rsp.h>
-#include <cclrmrsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccl2rsp.h>
-#include <cccx2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfro.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccl1rsp.h"
+#include "cco1rsp.h"
+#include "ccx1rsp.h"
+#include "ccr2rsp.h"
+#include "ccl2rsp.h"
+#include "cco2rsp.h"
+#include "ccx2rsp.h"
+#include "ccr3rsp.h"
+#include "ccl3rsp.h"
+#include "cco3rsp.h"
+#include "ccx3rsp.h"
+#include "ccr4rsp.h"
+#include "ccl4rsp.h"
+#include "cco4rsp.h"
+#include "ccx4rsp.h"
+#include "ccn2rsp.h"
+#include "cclrmrsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccl2rsp.h"
+#include "cccx2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
+#include "dummy.h"
+!Lanczos
+#include <ccqlrlcz.h>
+Cholesky
+#include "maxorb.h"
+#include "cclr.h"
+#include "ccdeco.h"
+Cholesky
  
       CHARACTER SUBRNAME*(8)
       INTEGER LUSAVE
@@ -207,6 +212,15 @@ C---------------------------------------------------------------------*
       IF (MODFIL(1:3).EQ.'SCF') THEN
         IOPT   = IAND(IOPT,4) 
         NWRITE = 1
+C
+Cholesky 
+C
+      ELSE IF (MODFIL(1:3).EQ.'CC2' .AND. CHOINT) THEN
+        IOPT   = IAND(IOPT,5)
+        NWRITE = 2
+C     
+Cholesky
+C 
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
      *    (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
         IOPT   = IAND(IOPT,1+4) 
@@ -229,7 +243,7 @@ C---------------------------------------------------------------------*
         IOPT   = IAND(IOPT,1+2+4+8+16+IBIT32)
         NWRITE = 6
       ELSE 
-        WRITE (LUPRI,*) 'unkown model in CC_WRRSP:',MODFIL
+        WRITE (LUPRI,*) 'Unknown model in CC_WRRSP: ',MODFIL
         CALL QUIT('MODEL not yet implemented in CC_WRRSP.')
       END IF
 
@@ -446,6 +460,18 @@ C
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
      &    LISTI(1:3), LRTLBL(IDXVEC), ISYLRT(IDXVEC), FRQLRT(IDXVEC),
      &    LORXLRT(IDXVEC)
+
+*.....................................................................*
+* 'XF1' - F transformed first-order response t amplitudes,
+*         F12*R2 contribution for Cholesky CC2: 
+* 'eO1' - eff. rhs for first-order response t amplitudes for
+*         Cholesky CC2:
+*.....................................................................*
+
+      ELSE IF ( LIST(1:3) .EQ. 'XF1' .OR. LIST(1:3) .EQ. 'eO1') THEN
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
+     &    LIST(1:3), LRTLBL(IDXLST), ISYLRT(IDXLST), FRQLRT(IDXLST),
+     &    LORXLRT(IDXLST)
 
 *.....................................................................*
 * 'R2' - second-order response t amplitudes:
@@ -722,6 +748,19 @@ C
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
      &    LISTI(1:3), LBLPL1(IDXVEC), ISYPL1(IDXVEC), FRQPL1(IDXVEC),
      &    LORXPL1(IDXVEC)
+
+*.....................................................................*
+* 'QL' - Lanczos chain Q vectors
+* 'FQ' - F transformed Lanczos chain Q vectors
+*  Sonia: need to decide better what should be on the header/list
+*  FIXME: IDXQL???
+*.....................................................................*
+
+      ELSE IF ( LISTI(1:2) .EQ. 'QL' .OR. LISTI(1:2) .EQ. 'FQ' ) THEN
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
+     &    LISTI(1:3), LBLQL(IDXVEC), ISYQL(IDXVEC), FRQQL(IDXVEC),
+     &    LORXQL(IDXVEC), IDXQL(IDXVEC)
+
 *.....................................................................*
 * unknown list:
 *.....................................................................*
@@ -780,10 +819,10 @@ C   Purpose:  Write a vector with symmetry ISYM to unit LUSAVE
 C             for an explanation of IOPT see CC_WRRSP
 C
 C---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       INTEGER LUSAVE
 C
@@ -947,11 +986,11 @@ C  Christof Haettig, April 1997
 C
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccexci.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

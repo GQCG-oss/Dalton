@@ -30,7 +30,7 @@ HL    -1.000000           0.899623572        0.000000
 #  DALTON INPUT
 #######################################################################
 cat > mcd_lao_direct.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
@@ -46,7 +46,7 @@ XYZ-ALL
 .CC
 *ORBITAL
 .NOSUPSYM
-*HF INPUT
+*SCF INPUT
 .THRESH
   1.0d-12
 *CC INPUT
@@ -75,7 +75,7 @@ YDIPLEN ZANGMOM XDIPLEN
 (UNREL) (RELAX) (UNREL)
 YDIPLEN dh/dBZ  XDIPLEN
 .USEPL1
-*END OF
+**END OF DALTON
 %EOF%
 
 #######################################################################
@@ -120,7 +120,7 @@ CTRL[4]=4
 ERROR[4]="LAO+RELAXED CCSD B TERM COMPONENTS NOT CORRECT"
 
 # Dummy check that it was a direct calculation
-CRIT1=`$GREP "Direct calculation" $log | wc -l`
+CRIT1=`$GREP "AO-direct calculation" $log | wc -l`
 TEST[5]=`expr $CRIT1`
 CTRL[5]=1
 ERROR[5]="DIRECT MCD_LAO WAS NOT RUN DIRECT"
@@ -130,7 +130,7 @@ PASSED=1
 for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

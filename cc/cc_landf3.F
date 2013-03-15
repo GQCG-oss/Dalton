@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cc_gam */
       SUBROUTINE CC_GAM(DSRHF,GAMMA,XLAMDP,XLAMDH,
@@ -46,13 +36,13 @@ C
 C     Ove Christiansen 18-9-1996:
 C              General symmetry for F-matrix construction.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DSRHF(*),GAMMA(*),SCRM(*)
       DIMENSION WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMDH(*),XLAMPC(*),XLAMHC(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------------
 C     Dynamic allocation.
@@ -135,14 +125,14 @@ C               (They should be the same)
 C
 C     Purpose: Calculate the gamma intermediate.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION DSRHF(*),GAMMA(*),SCRM(*),XLAM(*),XLAMC(*)
       DIMENSION SCR1(*),SCR2(*),SCR3(*),SCR4(*),SCR5(*),WORK(*)
       DIMENSION XLAMDP(*),XLAMDH(*),XLAMPC(*),XLAMHC(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -323,13 +313,13 @@ C
 C     Ove Christiansen 1-10-1996:
 C              general symmetry of ctr2 (isymc2)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ZINT(*), CTR2(*), TINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
 C-----------------------------
 C     Initialize result array.
@@ -399,14 +389,14 @@ C
 C     Ove Christiansen 30-9-1996: Generalised symmetry of T2AM: ISYMT2
 C              Still it is assumed that XLAMDH is total symmetric.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       INTEGER ISYTIN, ISYMT2, ISYMLH, IDEL, ISYMD
       DIMENSION TINT(*), T2AM(*), XLAMDH(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -538,14 +528,14 @@ C     Ove Christiansen 1-10-1996:
 C              Generalization to general symmetry YMAT and YDEN
 C              for F-matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*), DSRHF(*), YMAT(*), YDEN(*), XLAMDH(*),
      *          XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       ISYRES = MULD2H(ISYMYD,ISYMOP)
       IF (MULD2H(ISYMY,ISYMLP).NE.ISYRES) THEN
@@ -731,13 +721,13 @@ C              XLAMDP (ISYMLP)
 C              XLAMDH is assumed to have the symmetry ISYMOP
 C              (it is a hole-virtuel index.)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION YMAT(*), YDEN(*), XLAMDH(*), XLAMDP(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       ISYMYD = MULD2H(ISYMLP,ISYMY)
 C
@@ -797,14 +787,14 @@ C              as well as general symmetry of integrals.
 C              ISYVWZ is symmetry of V,W, and Z intermediates.
 C              ISYINT is symmetry of integrals.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*), VINT(*), WINT(*), ZINT(*), X3OINT(*),
      &          WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       ISYJLI = MULD2H(ISYINT,ISYMD)
       ISYRES = MULD2H(ISYJLI,ISYVWZ)
@@ -912,14 +902,14 @@ C        General symmetries for F-matrix
 C        isyint is symmetry of integrals.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION RHO1(*), XMINT(*), XLAMDH(*), WORK(LWORK)
       CHARACTER O3FIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       ISYRES = MULD2H(ISYMM,ISYINT)
 C

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #if defined (SYS_CRAY)
       SUBROUTINE CCSD_DIIS(S,T,NDIM,NITER)
@@ -41,7 +31,7 @@ C.... USES S AS PARAMETER VECTOR AND S-T AS ERROR VECTOR
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 C
-#include <priunit.h>
+#include "priunit.h"
       PARAMETER (MAXVEC=8)
       COMMON/DICED/IPOSP(MAXVEC+1),IPOSE(MAXVEC+1),A(MAXVEC+1,MAXVEC+1)
       DIMENSION B(MAXVEC+1),C(MAXVEC+1),WK1(MAXVEC+1),WK2(MAXVEC+1),
@@ -84,8 +74,8 @@ CRDA      ERR=SUMVEC(T,S,LEN)
       A(IVEC,I)=ERR
       A(I,NLOOP+1)=-1D0
       A(NLOOP+1,I)=-1D0
-2     B(I)=0D0
-      A(NLOOP+1,NLOOP+1)=0D0
+2     B(I)=0.D0
+      A(NLOOP+1,NLOOP+1)=0.D0
       B(NLOOP+1)=-1D0
       NSIZ=NLOOP+1
 C
@@ -94,7 +84,7 @@ C
       IF(IFAIL.NE.0)WRITE(LUPRI,*)  'IFAIL ',IFAIL
 C
 C
-      SUM=0D0
+      SUM=0.D0
       DO 22 I=1,NLOOP
 22    SUM=SUM+C(I)
 C
@@ -134,7 +124,7 @@ C
 C
       SUBROUTINE LUS(A,LDA,N,IPVT,X,B)
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION A(LDA,1),X(1),B(1),IPVT(1)
 C
 C     SIMULTANEOUS EQUATION AX=B GIVEN PRIOR LU
@@ -150,14 +140,14 @@ C
 20    X(K)=XK
       DO 40 K=1,N
       XK=X(K)*A(K,K)
-      IF(XK.NE.0.0)THEN
+      IF(XK.NE.0.0D0)THEN
       DO 30 I=K+1,N
 30    X(I)=X(I)-A(I,K)*XK
       ENDIF
 40    X(K)=XK
       DO 60 K=N,1,-1
       XK=X(K)
-      IF(XK.NE.0.0)THEN
+      IF(XK.NE.0.0D0)THEN
       DO 50 I=1,K-1
 50    X(I)=X(I)+A(I,K)*XK
       ENDIF
@@ -274,9 +264,9 @@ C     The S vector contain the perturbation estimate and T the previous
 C     amplitudes. On exit the T contain the diis estimate of the new
 C     amplitudes.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       PARAMETER (MAXVEC=80)
       PARAMETER (ZERO=0.0D0,ONE=1.0D0)
@@ -293,7 +283,7 @@ C
 cKeld      DIMENSION B(MAXVEC+1),C(MAXVEC+1),WK1(MAXVEC+1),WK2(MAXVEC+1),
 cKeld     +          A(MAXVEC+1,MAXVEC+1),AA(MAXVEC+1,MAXVEC+1)
 C
-#include <ccsdinp.h>
+#include "ccsdinp.h"
 C
       SAVE FIRST
       DATA FIRST /.TRUE./
@@ -381,7 +371,7 @@ C
       RETURN
       END
       SUBROUTINE LUS(A,LDA,N,IPVT,X,B)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(LDA,1),X(1),B(1),IPVT(1)
 C
 C     SIMULTANEOUS EQUATION AX=B GIVEN PRIOR LU
@@ -397,14 +387,14 @@ C
 20    X(K)=XK
       DO 40 K=1,N
       XK=X(K)*A(K,K)
-      IF(XK.NE.0.0)THEN
+      IF(XK.NE.0.D00)THEN
       DO 30 I=K+1,N
 30    X(I)=X(I)-A(I,K)*XK
       ENDIF
 40    X(K)=XK
       DO 60 K=N,1,-1
       XK=X(K)
-      IF(XK.NE.0.0)THEN
+      IF(XK.NE.0.D00)THEN
       DO 50 I=1,K-1
 50    X(I)=X(I)+A(I,K)*XK
       ENDIF
@@ -412,8 +402,8 @@ C
       RETURN
       END
       SUBROUTINE LU(A,LDA,N,IPVT,INFO)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(LDA,*),IPVT(*)
 C
 C     LU DECOMPOSITION OF A
@@ -459,7 +449,7 @@ C
       RETURN
       END
       SUBROUTINE SMXPY(N1,Y,N2,LDA,X,A)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION Y(*),X(*),A(LDA,*)
 C
 C     Y = Y +A X
@@ -484,7 +474,7 @@ C
       RETURN
       END
       SUBROUTINE SXMPY(N1,LDY,Y,N2,LDX,X,LDA,A)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION Y(LDY,*),X(LDX,*),A(LDA,*)
 C
 C
@@ -508,7 +498,7 @@ C
       RETURN
       END
       SUBROUTINE F04ATF(A,IA,B,N,C,AA,IAA,WKS1,IPVT,IFAIL)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(IA,N),B(N),C(N),AA(IAA,N),WKS1(N),IPVT(N)
 C
 C     THIS IS NOT THE NAG ROUTINE F04ATF, THOUGH THE

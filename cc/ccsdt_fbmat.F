@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C    /* Deck cc3_xi */ 
       SUBROUTINE CCSDT_FBMAT(IBTRAN,IDOTS,DOTPROD,NBTRAN,MXVEC,
@@ -58,17 +48,17 @@ C
 **************************************************************************
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
-#include <ccrc1rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
+#include "ccrc1rsp.h"
 C
       LOGICAL LCAUCHY
 C
@@ -326,7 +316,7 @@ cfp
             LCAUCHY = .TRUE.
          ELSE 
             WRITE(LUPRI,*)'LISTB = ',LISTB
-            CALL QUIT('Unkown list for LISTB in CCSDT_FBMAT.')
+            CALL QUIT('Unknown list for LISTB in CCSDT_FBMAT.')
          END IF
 C
          IF ( (LISTC(1:3).EQ.'R1 ') .OR. (LISTC(1:3).EQ.'R2 ') ) THEN
@@ -354,7 +344,7 @@ cfp
 *           NCAU   = ILRCAU(IDLSTC)
          ELSE
             WRITE(LUPRI,*)'LISTC = ',LISTC
-            CALL QUIT('Unkown list for LISTC in CCSDT_FBMAT.')
+            CALL QUIT('Unknown list for LISTC in CCSDT_FBMAT.')
          END IF
 C
          ISYMW   = MULD2H(ISYMT3,ISYMRB)
@@ -710,8 +700,8 @@ C
 C
             CALL CC3_TROCC(WORK(KINTOC),WORK(KOFF1),WORK(KLAMDP),
      *                     WORK(KEND2),LWRK2,ISINTR2)
-            !Close and delete the file for T1B-transformed occupied integrals
-            CALL WCLOSE2(LUCKJDR,FNCKJDR,'DELETE')
+            !Close and keep the file for T1B-transformed occupied integrals
+            CALL WCLOSE2(LUCKJDR,FNCKJDR,'KEEP') !it was deleted before, but apparently it is needed (filip)
 C
          END DO !MCAU
 C
@@ -1041,14 +1031,18 @@ C
                         !Close and keep the file for C1-transformed virt int
                         !...or delte it if you don't need it anymore
 
-                        IF (      (ISYMD.EQ.NSYM) .AND. (ISYMB.EQ.NSYM)
-     *                      .AND. (D.EQ.NVIR(ISYMD))
-     *                      .AND. (B.EQ.NVIR(ISYMB))) THEN
-C
-                               CALL WCLOSE2(LUDKBCR,FNDKBCR,'DELETE')
-                        ELSE
-                               CALL WCLOSE2(LUDKBCR,FNDKBCR,'KEEP')
-                        END IF
+*                       IF (      (ISYMD.EQ.NSYM) .AND. (ISYMB.EQ.NSYM)
+*    *                      .AND. (D.EQ.NVIR(ISYMD))
+*    *                      .AND. (B.EQ.NVIR(ISYMB))) THEN
+*
+*                              CALL WCLOSE2(LUDKBCR,FNDKBCR,'DELETE')
+*                       ELSE
+*                              CALL WCLOSE2(LUDKBCR,FNDKBCR,'KEEP')
+*                       END IF
+
+                        !It actually seems thath the file for C1-transformed virt int
+                        !is needed all the way through (filip)
+                        CALL WCLOSE2(LUDKBCR,FNDKBCR,'KEEP')
 C
                      END DO !MCAU
 C
@@ -1384,9 +1378,9 @@ C     files have not been deleted up there. Do it now!
 C---------------------------------------------------------------------
 C     
       IF (LCAUCHY) THEN
-         CALL DELETE_FILE('CC3_CAUINT_V*')
+         CALL DELETE_FILES('CC3_CAUINT_V*')
       ELSE              
-         CALL DELETE_FILE('CCSDT_____FBMAT4')
+         CALL DELETE_FILES('CCSDT_____FBMAT4')
       END IF
 C
 C-------------

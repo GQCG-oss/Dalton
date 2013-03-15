@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck eriher */
       SUBROUTINE ABEQ52(Q,R,W,A,PQX,PQY,PQZ,INDHER,JMAX,
@@ -40,8 +30,8 @@ C  /* Deck eriher */
 C
 C     Written by Wim Klopper (University of Karlsruhe, 14 November 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DM2 = -2.0D0)
       DIMENSION Q(*), R(*), W(*), A(*), EXP12(NUC12), EXP34(NUC34),
      &          IODDHR(*), INDHER(*), PQX(*), PQY(*), PQZ(*)
@@ -64,9 +54,9 @@ C  /* Deck r00G */
      &               NUC4,NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,
      &               SIGNT,FACINT,HEXPP,HEXPQ)
 C     Copy of R0001 for use with R12EIN (WK/UniKA/20-11-2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <subdir.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "subdir.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, DP25 = 0.25D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX),
@@ -101,40 +91,24 @@ C     Copy of R0001 for use with R12EIN (WK/UniKA/20-11-2002).
             SGN34Z = SIGNT(3)
          END IF
 C
-C	It turns out 64-bits IRIX compiler misinterprets this statement with
-C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
-#if defined (SYS_IRIX)
          IODS  = 1
          NODS  = 1
-#else
-         IODS  = 0
-         NODS  = 0
-#endif
          DO 300 IOD12 = 1, NUC12
             PX     = SGN12X*COOR12(IOD12,1)
             PY     = SGN12Y*COOR12(IOD12,2)
             PZ     = SGN12Z*COOR12(IOD12,3)
             DO 310 IOD34 = 1, NUC34
-#if !defined (SYS_IRIX)
-               IODS = IODS + 1
-               NODS = NODS + 1
-#endif
                PQXI = PX - SGN34X*COOR34(IOD34,1)
                PQYI = PY - SGN34Y*COOR34(IOD34,2)
                PQZI = PZ - SGN34Z*COOR34(IOD34,3)
                PQX(IODS) = PQXI
                PQY(IODS) = PQYI
                PQZ(IODS) = PQZI
-#if defined (SYS_IRIX)
                IODS = IODS + 1
                NODS = NODS + 1
-#endif
   310       CONTINUE
   300    CONTINUE
-#if defined (SYS_IRIX)
-         IODS = IODS - 1
-         NODS = NODS - 1
-#endif
+
          IPQ0X = 1
          IPQ0Y = 1
          IPQ0Z = 1
@@ -149,37 +123,36 @@ C
          DO IOD34 = 1, NUC34
             IJ = IJ + 1
             FACINT(IJ) = FAC * FAC34(IOD34)
-            HEXPP(IJ) = EXP12(IOD12)
-            HEXPQ(IJ) = EXP34(IOD34)
+            HEXPP(IJ)  = EXP12(IOD12)
+            HEXPQ(IJ)  = EXP34(IOD34)
          END DO
       END DO
       RETURN
       END
 C  /* Deck r12wrt */
       SUBROUTINE R12WRT(BUF,LBUF,ICOUNT,ITYPE,INDA,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "ibtpar.h"
       DIMENSION BUF(LBUF,5)
-#include <twosta.h>
-#include <r12int.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "twosta.h"
+#include "r12int.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
       INTEGER JBUF(5), MBUF
       SAVE JBUF, MBUF
 #if defined (VAR_SPLITFILES)
-#include <2gbdef.h>
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
+#include "chrnos.h"
 #endif
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
 C
        IF (ITYPE .EQ. -1) THEN
          IDUM = 0
@@ -276,26 +249,26 @@ C  /* Deck rn2out */
 C
 C     Version of UN2OUT for R12 integrals (WK/26-11-2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "r12int.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
      &        GTTHRS
       DIMENSION SO(NSOINT,*), BUF(LBUF,5), IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
-#include <nuclei.h>
-#include <twocom.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "symmet.h"
       SAVE BUF, XBUF, ICOUNT
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine RN2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -400,7 +373,7 @@ C
                      DO IOPP = 1, NOPP12
                         BUF(ICOUNT,IOPP+1) = SO(ISOFF+INT,IOPP)
                      END DO
-                     IF (ICOUNT. EQ. LBUF) THEN
+                     IF (ICOUNT .EQ. LBUF) THEN
                         CALL R12WRT(BUF,LBUF,ICOUNT,0,0,IPRINT)
                         NBUFCL = NBUFCL + 1
                      END IF
@@ -425,13 +398,13 @@ C  /* Deck us2out */
      &                  IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
      &                  THRESH,NINDAB,NINDCD,IORBSH,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL FIRST, LAST, IPNTLG(*)
       DIMENSION SO(N,*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
      &          NINDCD(*), IORBSH(*) 
-#include <disbuf.h>
+#include "disbuf.h"
 C
 C---------------------------------
 C     Call sort and write routine.
@@ -453,15 +426,15 @@ C  /* Deck us2ou1 */
 C
 C     Write out blocks of symmetry integrals, eliminating duplicates
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <eribuf.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "eribuf.h"
+#include "nuclei.h"
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(NSOINT,*), BUF(LBUF,NDIST), CUF(LBUF,NDIST), 
@@ -469,18 +442,18 @@ C
      &          IPNTNO(4,*), IPNTRP(3,*), NCOUNT(NDIST),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IDSORB(NDIST), IORBDS(NBASIS), IORBSH(*)
-#include <twocom.h>
-#include <symmet.h>
-#include <drw2el.h>
-#include <r12int.h>
+#include "twocom.h"
+#include "symmet.h"
+#include "drw2el.h"
+#include "r12int.h"
 C
-#include <ibtfun.h>
-#include <sdpre.h>
+      INTEGER*8 NWRIT
+C
+#include "ibtfun.h"
 C
       IF (LBUF .NE. LDSBUF) THEN
-        WRITE (LUPRI,*) 'LBUF  :',LBUF
-        WRITE (LUPRI,*) 'LDSBUF:',LDSBUF
-        CALL QUIT('Error in US2OU1')
+        WRITE (LUPRI,*) 'LBUF .ne. LDSBUF :',LBUF,LDSBUF
+        CALL QUIT('Error in US2OU1, LBUF .ne. LDSBUF')
       END IF
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine US2OUT',-1)
@@ -646,7 +619,7 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                   END IF
                   SOINT1 = SO(ISOFF+INT,1)
                   SOINT2 = SO(ISOFF+INT,2)
-                  IF (ABS(SOINT1) .GT. THRESH. OR.
+                  IF (ABS(SOINT1) .GT. THRESH .OR.
      &                ABS(SOINT2) .GT. THRESH) THEN
                      IF (NIBUF .EQ. 1) THEN
                        NCOUNT(IDIST) = NCOUNT(IDIST) + 1
@@ -710,8 +683,11 @@ C
             CALL UN2WRU(BUF(1,IDIST),CUF(1,IDIST),IBUF(1,1,IDIST),
      &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
   400    CONTINUE
-         NALL = NDIST*(NBASIS + 1)*(NBASIS**2)/2
-         PERCNT = SDPRE(100*NWRIT) / SDPRE(NALL)
+         FNALL  = (NBASIS*(NBASIS + 1))/2
+         FNALL  = FNALL*NBASIS
+         FNALL  = FNALL*NDIST
+         PERCNT = NWRIT
+         PERCNT = 100.D0*PERCNT / FNALL
          IF (IPRINT.GT.0) WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A)')
      &         'Number of two-electron integrals written:',NWRIT,
      &         ' (',PERCNT,'%)'
@@ -721,23 +697,22 @@ C
       END
 C  /* Deck un2wru */
       SUBROUTINE UN2WRU(BUF,CUF,IBUF,ICOUNT,ITYPE,INDA,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <ibtpar.h>
-#include <eribuf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "ibtpar.h"
+#include "eribuf.h"
       DIMENSION BUF(LBUF), CUF(LBUF), IBUF(LBUF,NIBUF)
-#include <drw2el.h>
-#include <r12int.h>
-#include <twosta.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "drw2el.h"
+#include "r12int.h"
+#include "twosta.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       NBUFX(0) = NBUFX(0) + 1
 C

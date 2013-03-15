@@ -13,30 +13,56 @@
 #       he/she ran 'configure', the you should modify the
 #       DALTON definition to pint to that place.
 
+
+# radovan: this is to figure out whether TEST is called from test directory
+#          or from outside
+SCRIPT_DIR="${0%/*}"
+# if the script was started from the base directory with ./TEST, then the
+# expansion returns a period, if it was started directly with TEST then the
+# expansion returns the script file name
+if [ "$SCRIPT_DIR" == "." -o "$SCRIPT_DIR" == "$0" ]; then
+  SCRIPT_DIR="$PWD"
+# if the script was not called with an absolute path, then we need to add the
+# current working directory to the relative path of the script
+elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
+  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+fi
+cd $SCRIPT_DIR
+
 if [ -x '/usr/bin/time' ]; then
  TIMING_OF="/usr/bin/time" #hjaaj sep07: gnu time gives more info than built-in time
 else
- TIMING_OF="time"
+ TIMING_OF=" "
 fi
-DALTON="`pwd`/../bin/dalton"
+if [ -x '../bin/dalton' ]; then
+  DALTON="`pwd`/../bin/dalton"
+elif [ -x '../build/dalton' ]; then
+  DALTON="`pwd`/../build/dalton"
+else
+  DALTON=NON_DEFAULT
+fi
 
 #########################################################################
 # define all the different test suites
 #########################################################################
 ESSENTIAL=""
 #
-SHORTENRGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
-energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc"
-SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe"
+GEN1INT="gen1int_fluorobenzene_cart gen1int_water_cart gen1int_fluorobenzene_spher \
+gen1int_water_spher"
+SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
+energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
+energy_lucita_gasci"
+SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym dft_rspexci_sym dft_rspexci_nosym \
+tddft_tda"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
 geoopt_constrain1b geoopt_delintsad geoopt_exci2 geoopt_numgrd \
 geoopt_preopt geoopt_prop geoopt_prop2 geoopt_redintmin geoopt_vrml"
 SHORTPROP="prop_ecd prop_or prop_exci prop_nolondon prop_spinspin prop_spinspin2 \
 prop_spinspin3 prop_spinspin4 prop_vibvcd prop_ctocd prop_soppactocd \
 prop_newtrasoppa prop_newtrasoppacc prop_newtramcscf aba_prop_file \
-prop_vibg1 prop_vibg2"
+prop_vibg1 prop_vibg2 prop_cpp_ecd"
 SHORTRSP="rsp_2ndharm rsp_3rdharm \
-rsp_3rdmom rsp_dresqr rsp_ecp rsp_exci rsp_excipolar2 rsp_hyperpolar \
+rsp_3rdmom rsp_dresqr rsp_ecp rsp_exci_cmfun rsp_excipolar2 rsp_hyperpolar \
 rsp_lrso rsp_lrso2 rsp_mcdbterm rsp_mnf rsp_phosph rsp_polar rsp_propave \
 rsp_socorr rsp_socorr2 rsp_socorr3 rsp_socorr_dir rsp_socorr2_dir \
 rsp_socorr3_dir rsp_solvhyper rsp_soppa1excinosymm rsp_soppa1excisymm \
@@ -44,12 +70,13 @@ rsp_soppa3excinosymm rsp_soppa3excisymm rsp_soppafcnosymm rsp_soppafcsymm \
 rsp_soppapolar rsp_soppapolarnosymm rsp_soppapolarsymm rsp_sreslrso \
 rsp_sresqr rsp_ctocdhyper prop_spinspin5 prop_nolondon_soppacc rsp_soppaccexci \
 rsp_soppaccpolar rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
-rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file"
+rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file tddft_tda rpa_cis \
+rsp_abslrs rsp_cpp_mcd"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
-SHORTREST="r12_sym dpt_h2s dft_qr_sym"
-AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa \
-prop_exci_aosoppcc"
-SHORTNOCC="$SHORTENRGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA"
+SHORTREST="r12_sym dpt_h2s"
+LOCAL="spin_local"
+AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa prop_exci_aosoppcc"
+SHORTNOCC="$SHORT_ENERGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA $LOCAL"
 SHORTQM3="hfmm_1 cc2mm_spc_fop \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
 qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8 hfmmpcm_1"
@@ -64,41 +91,55 @@ cc_rsp_twophot cc_rsp_twophot2 cc_rsp_gamma3 \
 cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2 cc_fop_cc3 cc_rsp_ctocd \
 cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o cc_prop_file"
 #
-SHORT="$SHORTNOCC $SHORTCC $SHORTQM3"
+SHORT_CHOLESKY="choles_b3lyp_polar choles_cc2_fop \
+choles_hf_magnet choles_kt3_ctocd choles_lda_prop"
+#
+SHORT="$GEN1INT $SHORTNOCC $SHORTCC $SHORT_CHOLESKY $SHORTQM3"
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
 geoopt_symbrk prop_expgrad prop_nucquad prop_roa rsp_dckerr rsp_esr \
-rsp_esr2 rsp_mnfphosph rsp_solvesr walk_polar2"
+rsp_esr2 rsp_mnfphosph rsp_ecphosph rsp_solvesr walk_polar2"
 #
 MEDIUMCC="cc_rsp_alpha cc_rsp_gamma2 cc_rsp_gammadirect cc_rsp_oddisp \
 cc_energy_triplet cc_rsp_twophotdirect cc_grad2 cc_grad3 cc_geoopt \
 cc_rsp_solv cc_energy_triplet3 cc2dc_energy cc2dc_resp cc2dc_exci cc2dc_resp_newlr \
 cc_beta_solv" 
 #
+MEDIUM_CHOLESKY="choles_cc2_polar"
+#
 MEDIUMQM3="ccsdmm_spc_fop ccsdmm_oldtg ccsdmm_ec1_fop \
 ccsdmm_ec3_fop ccsdmm_e01_fop ccsdmm_modelmix cc2mm_exci \
 cc2mm_atmvdw ccsdmm_twopar_vdw cc2mm_lr_qr cc2mm_spc_exci ccmm_beta"
 #
-MEDIUM="$MEDIUM $MEDIUMCC $MEDIUMQM3"
+MEDIUM="$MEDIUM $MEDIUMCC $MEDIUM_CHOLESKY $MEDIUMQM3"
 #
-LONG="geoopt_prop3 prop_vibana rsp_excipolar rsp_twophot walk_solvmag"
+LONG="geoopt_prop3 geoopt_prop3_ex prop_vibana rsp_excipolar rsp_twophot walk_solvmag"
 #
 LONGCC="cc_geoopt2"
 #
-LONG="$LONG $LONGCC"
+LONG_CHOLESKY="choles_ccsdpt_energy"
 #
-PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel dft_parallell_properties"
+LONG="$LONG $LONGCC $LONG_CHOLESKY"
 #
-PARQMMM="parqmmm1 parqmmm2 parqmmm3 parqmmm4 parqmmm5 parqmmm6 parqmmm7 parqmmm8"
+PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel \
+dft_parallell_properties parallel_lucita_gasci parallel_spin_local"
+#
+QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
+#
+PARQM3="par_hfmm_1 par_dftmm_1 par_dftmm_3 par_dftmm_4 par_dftmm_5 \
+par_dftmm_6 par_dftmm_7 dftmm_8 dftmm_9"
 #
 DEBUG="qmmm_debug1 qmmm_debug2"
+#
+LONGPAR="$PARALLEL $QMMM $PARQM3 $DEBUG"
 #
 DFT="dft_b3lyp_cart dft_b3lyp_nosym dft_b3lyp_sym dft_blyp_nosym \
 dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
 dft_optimize_nosym dft_optimize_sym dft_lb94 dft_qr_sym dft_qr_nosym \
 dft_lda_molhes_nosym dft_b3lyp_molhes_nosym dft_b3lyp_magsus_nosym \
-dft_polar dft_cr_sym"
+dft_polar dft_cr_sym dft_open_lr dft_properties_sym dft_properties_nosym \
+dft_camb3lyp_magsus tddft_tda"
 #
 DPT="dpt_hf dpt_h2s dpt_h2s_finp dpt_hbr_finm dpt_h2s_finm \
 dpt_hbr dpt_hbr_finp dpt_h2s_ff"
@@ -134,6 +175,7 @@ LONGCCR12="cc2_r12_aux_ch4_a2 cc2_r12_aux_ch4_sym_a2 \
 cc2_r12_aux_ch4_sym_a3 cc2_r12_aux_benzene_sym_fop cc3r12_n2_sym_exc \
 cc3r12_n2_sym_exc_lhtr cc2_r12_aux_ch4_cbs2a"
 #
+CHOLESKY="$SHORT_CHOLESKY $MEDIUM_CHOLESKY $LONG_CHOLESKY"
 #
 CCR12="$SHORTCCR12 $LONGCCR12"
 #
@@ -161,45 +203,45 @@ run_new=0;
 # function usage(): print usage information 
 #########################################################################
 usage() {
- cat <<'%EOF%'
-usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
+# hjaaj: removed essential from usage because essential p.t. is empty
+#         essential            -- run a minimal set of essential testcases
+ cat <<%EOF%
+Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
             [-param "option list"] [-dalton script] [-log logfile] testcase
 
        -h | -help | --help  : show this help description
        -keep                : keep *.mol, *.dal, *.check and *.log files
-       -reftest             : test reference file(s); do not run any
-                              calculations
-       -bell                : sound bell each time a test fails
-       -benchmark           : print CPU time for each testcase as part of
-                              the summary
+       -reftest             : test reference file(s); do not run any calculations
+       -benchmark           : print CPU time for each testcase as part of the summary
        -param "option list" : pass "option list" to dalton-script
        -dalton script       : use script instead of the default
                               dalton-script "`pwd`/../dalton" (absolute path) 
-       -log logfile         : write output into logfile instead of the
-                              default "TESTLOG"
+       -log logfile         : write output into logfile instead of to "TESTLOG"
+       -cmake               : create cmake/Tests.cmake and exit (except perl tests!)
 
        and where testcase might be one of the following:
-          essential            -- run a minimal set of essential testcases
-          parallel             -- run all parallel testcases
-          allcc                -- run all coupled-cluster testcases
           short                -- run all short testcases
           medium               -- run all medium length testcases
           long                 -- run all long testcases
+          all                  -- run all non-parallel testcases
+                                  (= short + medium + long)
+          parallel             -- run all parallel testcases
+          benchmark            -- run all BENCHMARK testcases
+          perl                 -- run all perl-style testcases 
           dft                  -- run all DFT testcases
+          allcc                -- run all coupled-cluster testcases
           r12                  -- run all R12 testcases
           ccr12                -- run all CC-R12 testcases
           mp2r12               -- run all MP2-R12 testcases
           shortccr12           -- run all short CC-R12 testcases
           longccr12            -- run all long CC-R12 testcases
-          benchmark            -- run all BENCHMARK testcases
+          aosoppa              -- run all AOSOPPA testcases
+          local                -- run all LOCAL testcases
+          cholesky             -- run all Cholesky testcases
           dpt                  -- run all DPT testcases
-          numder               -- run all numerical derivatives testcases
           geoopt               -- run all OPTIMIZE testcases
-	  aosoppa              -- run all AOSOPPA testcases
+          numder               -- run all numerical derivatives testcases
           pcm                  -- run all pcm testcases
-          perl                 -- run all perl-style testcases 
-          all                  -- run all non-parallel testcases
-                                  (= short + medium + long)
           <case1 [case2] ...>  -- run only the specified testcase(s)
 %EOF%
 exit 1
@@ -211,6 +253,10 @@ exit 1
 myprint(){
  echo "$1";
  echo "$1" >> $listing;
+}
+
+errprint(){
+ echo "$1" >> /dev/stderr;
 }
 
 #########################################################################
@@ -225,13 +271,14 @@ myprint(){
 TESTparams="$0 $*"
 help=""
 keep="false"
+cmake="false"
 paramlist=""
+par_paramlist="-N 4"
 reftest=""
-bell=""
 benchmark=""
 listing="TESTLOG"
-perl_log="test.log"
-perl_err="test.err"
+perl_log="perl_test.log"
+perl_err="perl_test.err"
 emptystring="                                "
 answer_yes=
 keep_quiet=
@@ -252,9 +299,9 @@ while echo $1 | egrep -q '^-'; do
      "-dalton" )  shift; DALTON=$1; shift;;
      "-log" ) shift; listing=$1; shift;;
      "-keep" ) keep="true"; shift;;
+     "-cmake" ) cmake="true"; shift;;
      -param* ) shift; paramlist="$1"; shift;;
      "-reftest" ) reftest="true"; shift;;
-     "-bell" ) bell="true"; shift;;
      "-y") answer_yes=true; shift;;
      "-q") keep_quiet=true; shift;;
      "-benchmark" ) benchmark="true"; shift;;
@@ -266,18 +313,29 @@ if [ $help ]; then
 fi
 
 if [ ! -x $DALTON ]; then
-   echo ' '
-   echo '----> ERROR, the "dalton" job script '
-   echo    '"'$DALTON'"'
-   echo '  does not exist or is not executable.'
-   echo 'The person who installed dalton has probably selected'
-   echo '  another place for the "dalton" job script.'
-   echo 'Please modify the DALTON variable in this script (i.e. '$0')'
-   echo '  to point to that place.    Alternatively, you may'
-   echo '  specify where the dalton script is with the -dalton option'
-   echo ' '
-#  usage
-   exit 1
+  echo 'Fatal error: could not find dalton script'
+  exit 1 
+fi
+
+if [ "${DALTON:0:1}" != "/" ]; then
+  DALTON="$PWD/$DALTON"   # we need absolute path, not relative path
+fi
+
+if [ "$cmake" = "false" ]; then
+    if [ ! -x $DALTON ]; then
+       echo ' '
+       echo '----> ERROR, the "dalton" job script '
+       echo    '"'$DALTON'"'
+       echo '  does not exist or is not executable.'
+       echo 'The person who installed dalton has probably selected'
+       echo '  another place for the "dalton" job script.'
+       echo 'Please modify the DALTON variable in this script (i.e. '$0')'
+       echo '  to point to that place.    Alternatively, you may'
+       echo '  specify where the dalton script is with the -dalton option'
+       echo ' '
+    #  usage
+       exit 1
+    fi
 fi
 
 #########################################################################
@@ -292,6 +350,7 @@ if   [ "$testcase" = "" ]; then
 fi
 testcase=""
 perl_style_kwd=""
+perl_style_list=""
 perl_style=0
 all_perl_style=0
 while [ -n "$1" ]; do
@@ -301,7 +360,7 @@ while [ -n "$1" ]; do
    perl_style_kwd="$perl_style_kwd $1";
    shift ;;
   "energy" )
-   testcase="$testcase $SHORTENRGY"; 
+   testcase="$testcase $SHORT_ENERGY"; 
    perl_style_kwd="$perl_style_kwd $1";
    shift ;;
   "pcm" )
@@ -327,21 +386,41 @@ while [ -n "$1" ]; do
    shift ;;
   "parallel" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="$par_paramlist"
+     par_paramlist=
    fi
    testcase="$testcase $PARALLEL"; 
    shift ;;
   "parqmmm" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="$par_paramlist"
+     par_paramlist=
    fi
-   testcase="$testcase $PARQMMM";
+   testcase="$testcase $QMMM";
+   shift ;;
+  "parqm3" )
+   if [ "$paramlist" = "" ]; then
+     paramlist="$par_paramlist"
+     par_paramlist=
+   fi
+   testcase="$testcase $PARQM3";
    shift ;;
   "debug" )
    if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
+     paramlist="$par_paramlist"
+     par_paramlist=
    fi
    testcase="$testcase $DEBUG";
+   shift ;;
+  "qmmm" )
+   testcase="$testcase $QMMM";
+   shift ;;
+  "longpar" )
+   if [ "$paramlist" = "" ]; then
+     paramlist="$par_paramlist"
+     par_paramlist=
+   fi
+   testcase="$testcase $LONGPAR";
    shift ;;
   "all" )
    all_perl_style=1;
@@ -388,14 +467,17 @@ while [ -n "$1" ]; do
    "aosoppa" )
    testcase="$testcase $AOSOPPA"; 
    shift ;;
+   "local" )
+   testcase="$testcase $LOCAL"; 
+   shift ;;
+   "cholesky" )
+   testcase="$testcase $CHOLESKY"; 
+   shift ;;
    "qm3" )
    testcase="$testcase $QM3"; 
    shift ;;
-   *paral* )  # assume parallel test if "paral" in name
-   if [ "$paramlist" = "" ]; then
-     paramlist="-N 3"
-   fi
-   testcase="$testcase $1"; 
+   *.tst )
+   perl_style_list="$perl_style_list ${1/.tst/}";
    shift ;;
    * )
    testcase="$testcase $1"; 
@@ -403,7 +485,7 @@ while [ -n "$1" ]; do
    esac
 done
 
-if [ -n "$perl_style_kwd" -o  "$all_perl_style" -eq 1 ]; then
+if [ -n "$perl_style_list" -o -n "$perl_style_kwd" -o  "$all_perl_style" -eq 1 ]; then
     perl_style=1
 fi
 
@@ -418,7 +500,6 @@ done
 mkdir $testdir 
 cp functions $testdir
 cd $testdir || exit 1
-
 
 #########################################################################
 # check files for test listing:
@@ -461,14 +542,42 @@ myprint "test cases            : $testcase"
 #########################################################################
 passedall="ALL TESTS ENDED PROPERLY!"
 problems=""
+exitcode=0
 numresult=0
+num_reftests_not_found=0
+
+# create cmake/Tests.cmake
+if [ "$cmake" = "true" ]; then
+   for item in ${testcase}; do
+       echo "add_test($item \${CMAKE_SOURCE_DIR}/test/TEST -dalton \${CMAKE_BINARY_DIR}/dalton -log /dev/null $item)"
+   done
+   cd $SCRIPT_DIR
+   for item in *.tst; do
+       echo "add_test($item \${CMAKE_SOURCE_DIR}/test/TEST -dalton \${CMAKE_BINARY_DIR}/dalton -log /dev/null $item)"
+   done
+   exit 0
+fi
+
+total_failed=0
+total_tests=0
+
 for item in ${testcase}
 do
+  total_tests=`expr $total_tests \+ 1`
   trouble=0
-  myprint "###########################################################"
-  myprint "`date`"
-  myprint "Starting now with test $item:"
-  myprint "-----------------------------------------------------------"
+  case $item in
+    par* | *parallel* )  # assume parallel test if name contains "parallel" or name starts with "par"
+      paramlist_this_test="$paramlist $par_paramlist"
+      shift ;;
+    * )
+      paramlist_this_test="$paramlist"
+      shift ;;
+  esac
+  errprint "#####################################################################"
+  errprint "`date` -- Starting now with test $item:"
+  myprint  "#####################################################################"
+  myprint  "`date` -- Starting now with test $item:"
+  myprint  "---------------------------------------------------------------------"
   chmod +x ../$item || exit 1
   ../$item
 # remove any directory path now the files are unpacked
@@ -497,16 +606,16 @@ do
   do
       potfile=
       if [ "$multi" -eq 1 ]; then
-          myprint "-----------------------------------------------------------"
+          myprint "---------------------------------------------------------------------"
           myprint "  Start $item step $step of $numsteps :"
-          myprint "-----------------------------------------------------------"
+          myprint "---------------------------------------------------------------------"
           molfile=$item
           if [ -r $item.pot ]; then potfile=$item ; fi
-	  cp $item'__'$step'.dal' $item'.dal'
+          cp $item'__'$step'.dal' $item'.dal'
           dalfile=$item
           logfile=./$item'__'$step'_'$item.log
           checkfile=./$item'__'$step.check
-          reffile=./$item'__'$step.ref
+          reffile=../trueresult/$item'__'$step'_'$item.*ref
           moldenfile=./$item'__'$step'_'$item.molden
       else
           molfile=$item
@@ -514,37 +623,40 @@ do
           dalfile=$item
           logfile=./$item.log
           checkfile=./$item.check
-          reffile=./$item.ref
+          reffile=../trueresult/$item.*ref
           moldenfile=./$item.molden
       fi
 # If it's a reftest, no calculation is performed
       if [ "$reftest" = "true" ]; then
           myprint ""
           myprint "evaluate reference output file $reffile:"
-          myprint "-----------------------------------------------------------"
           if [ ! -r $reffile ]; then
-	      cp ../trueresult/$reffile .
-          fi
-          checkout=`$checkfile $reffile | tee -a $listing`
-          if [ "$benchmark" = "true" ]; then
-              if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
-                  CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
-              else
-                  CPU_usage="N/A"
-              fi
-          fi
-          if [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
+              myprint "     PROBLEM: reference output $reffile is not available"
+              num_reftests_not_found=`expr $num_reftests_not_found \+ 1`
               checkout="TEST ENDED PROPERLY"
+          else
+              checkout=`$checkfile $reffile`
+              if [ "$benchmark" = "true" ]; then
+                 if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
+                     CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+                 else
+                     CPU_usage="N/A"
+                 fi
+              fi
+              if [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
+                 myprint "     $checkout"
+                 checkout="TEST ENDED PROPERLY"
+              fi
           fi
       else
           failed=false
           if [ "$step" -eq "1" ]; then
 #             make sure that directory is clear before start
-              $TIMING_OF $DALTON -d $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
+              $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           else
 #             copy $item.tar.gz for multistep jobs (-f option)
-              $TIMING_OF $DALTON -f $item $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
+              $TIMING_OF $DALTON -f $item $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           fi
           grep -v '\*\*\*' $tmpfile | grep -v -i 'WARNING' | grep -v -i 'INFO'| \
@@ -552,13 +664,17 @@ do
           grep -v '^$' | tee -a $listing
 
           if [ "$multi" -eq 1 ]; then
-	      cp $molfile'.log' $logfile
+             cp $molfile'.log' $logfile
           fi
           myprint ""
           myprint "evaluate output file $logfile:"
-          myprint "-----------------------------------------------------------"
 
-          checkout=`$checkfile $logfile | tee -a $listing`
+          if [ -s "$logfile" ]; then
+              checkout=`$checkfile $logfile`
+          else
+              checkout="THERE IS A PROBLEM: no output was produced"
+              failed=true
+          fi
 
           # Successful tests report "TEST ENDED PROPERLY" unless
           # the test is meant to return non-zero exit code.  These
@@ -569,7 +685,7 @@ do
           if [ "$checkout" = "TEST ENDED PROPERLY" ]; then
               [ "$failed" = "true" ] && checkout="TEST FAILED ABNORMALLY"
           elif [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
-              echo "checkout=$checkout, failed=$failed"
+              myprint "     checkout=$checkout, failed=$failed"
               if [ "$failed" = "true" ]; then
                   checkout="TEST ENDED PROPERLY"
               else
@@ -593,26 +709,26 @@ do
           fi
           timelist[$numresult]="$CPU_usage"
       fi
-      echo $checkout
       passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
       if [ -z "$passed" ]; then
         trouble=`expr $trouble \+ 1`
-        if [ "$bell" = "true" ]; then
-          echo "\a"
-        fi
-        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+        passedall="THERE IS A PROBLEM IN SOME TEST CASE(S)"
         if [ "$trouble" -eq 1 ]; then
             problems="$problems $item"
+            total_failed=`expr $total_failed \+ 1`
         fi
+        exitcode=1
       elif [ "$keep" = "false" ]; then
-          rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info
-          if [ "$step" -eq "$numsteps" ]; then
-#         only delete restart files in last step of multistep test !!!
-             rm -f $dalfile.tar.gz
-          fi
+        #rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info
+        rm -f $dalfile.dal $dalfile.BAS $checkfile $item.info # keep $logfile, can be interesting to look closer at
+        if [ "$step" -eq "$numsteps" ]; then
+#       only delete restart files in last step of multistep test !!!
+           rm -f $dalfile.tar.gz
+        fi
 #     else everything OK and -keep defined
       fi
-    step=`expr $step \+ 1`
+      myprint "     $checkout -- $total_failed tests failed so far out of $total_tests"
+      step=`expr $step \+ 1`
   done
   if [ "$trouble" -eq 0 ]; then
       if [ "$keep" = "false" ]; then
@@ -625,31 +741,35 @@ done
 #########################################################################
 # PCM test suite
 #########################################################################
+perl_fail=""
+perl_exit=0
 if [ "$perl_style" -gt 0 ]; then
     perl_log="perl_tests.log"
     perl_err="perl_tests.err"
-    perl_fail=""
     myprint ""
-    myprint "Now running perl-style tests..."
+    myprint "Now running perl-style tests...   `date`"
     myprint ""
     cp ../test.pl .    
     cp ../*.tst .
     cp ../checklist .
-    options=""
     parameters="--dalton=$DALTON --log=$perl_log --err=$perl_err"
     if [ "$keep" = "true" ]; then
-	parameters="$parameters --keep"
+       parameters="$parameters --keep"
     fi
     if [ "$reftest" = "true" ]; then
-	parameters="$parameters --checkref"
+       parameters="$parameters --checkref"
     fi
-    if [ -n "$perl_style_kwd" ]; then
-	parameters="$parameters --keyword $perl_style_kwd"
-    else
-	parameters="$parameters --all"
+    if [ "$all_perl_style" -eq 1 ]; then
+       parameters="$parameters --all"
+    elif [ -n "$perl_style_kwd" ]; then
+       parameters="$parameters --keyword $perl_style_kwd"
     fi
+    if [ -n "$perl_style_list" ]; then
+       parameters="$parameters --list $perl_style_list "
+    fi
+    options=""
     if [ "$paramlist" != "" ]; then
-	options="--options=$paramlist"
+       options="--options=$paramlist"
     fi
     perl_fail=""
     myprint "Perl-style testsuite invoked with the following parameters"
@@ -657,16 +777,18 @@ if [ "$perl_style" -gt 0 ]; then
     ./test.pl $parameters "$options"
     perl_exit=$?
     if [ $perl_exit -eq 0 ]; then
-	myprint "Perl-style tests computed successfully"
+       myprint "Perl-style tests computed successfully"
     elif [ $perl_exit -eq 1 ]; then
-        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+        passedall="THERE IS A PROBLEM IN SOME TEST CASE(S)"
         perl_fail="`grep -A1 'tests have failed' $perl_log | tail -1`"
-	problems="$problems $perl_fail"
-        myprint "THERE IS A PROBLEM in perl-style tests"
+        # problems="$problems $perl_fail"
+        myprint "THERE IS A PROBLEM in some perl-style tests"
+        exitcode=1
     else
-        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
-	myprint ""
-	myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
+        passedall="THERE IS A PROBLEM IN SOME TEST CASE(S)"
+        myprint ""
+        myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
+        exitcode=1
     fi
     myprint ""
     myprint "Perl-style tests finished!"
@@ -694,13 +816,29 @@ if [ "$benchmark" = "true" ]; then
         awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null >> $listing
         ind=`expr $ind \+ 1`
       done
-      echo
+      myprint ""
     fi
 fi
 
+if [ "$reftest" = "true" ]; then
+   myprint " >>>>> THIS IS A TEST OF THE REFERENCE OUTPUTS >>>>>"
+   myprint ""
+fi
+
 myprint "$passedall"
-myprint "$problems"
+if [ $total_failed -gt 0 ]; then
+   myprint "$total_failed non-perl tests failed"
+   myprint "$problems"
+fi
+if [ $perl_exit -eq 1 ]; then
+   myprint "Failed perl tests: $perl_fail"
+fi
+if [ "$num_reftests_not_found" -gt 0  ]; then
+   myprint ""
+   myprint "WARNING: $num_reftests_not_found reference outputs were not found."
+   myprint ""
+fi
 rm "$tmpfile"
 myprint "date and time         : `date`"
 
-exit 0
+exit $exitcode

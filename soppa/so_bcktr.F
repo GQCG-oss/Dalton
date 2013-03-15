@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_bcktr */
       SUBROUTINE SO_BCKTR(TR1E,LTR1E,TR1D,LTR1D,BTR1E,LBTR1E,BTR1D,
@@ -12,8 +12,8 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Calculate one-index backtransformed trial-vectors
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -21,9 +21,9 @@ C
       DIMENSION BTR1E(LBTR1E), BTR1D(LBTR1D), BTJ1E(LBTJ1E)
       DIMENSION BTJ1D(LBTJ1D), CMO(LCMO)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Add to trace.

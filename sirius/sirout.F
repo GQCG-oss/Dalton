@@ -1,52 +1,42 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck sirout */
       SUBROUTINE SIROUT(ICONV,WRK,LWRK)
 C
 C  4-June-1991 hjaaj: driver routine for core allocation
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WRK(LWRK)
-#include <litinfo.h>
-#include <iratdef.h>
+#include "litinfo.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C  INFINP : MAXMAC
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
 C
       KIINFO = 1
       KDINFO = 1 + MAXMAC*((LIINFO-1)/IRAT + 1)
@@ -71,11 +61,11 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <litinfo.h>
+#include "litinfo.h"
       DIMENSION IINFO(LIINFO,*),DINFO(LDINFO,*),WRK(LWRK)
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER (D0 = 0.0D0)
 C
 C Used from common blocks:
@@ -84,25 +74,25 @@ C   INFVAR : NCONF,NWOPT
 C   INFORB : NCMOT,NORBT,NNASHX,NISHT,?
 C   INFDIM : LCINDX
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <priunit.h>
-#include <molde.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <gnrinf.h>
-#include <qm3.h>
-#include <qmmm.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "priunit.h"
+#include "molde.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "gnrinf.h"
+#include "qm3.h"
+#include "qmmm.h"
 C
 C
 C EXTERNAL FUNCTIONS
@@ -162,11 +152,11 @@ C  DINFO(21-30):   EVAL(1-10)    eigenvalues of red. L
 C  DINFO(31-40):   EVEC(1,1-10)  CREF-coef. of eigenvectors
 C  DINFO(41-50):   EVEC(2,1-10)  CI gradient-coef. of eigenvectors
 C  DINFO(51-60):   EVEC(3,1-10)  orb gradient-coef. of eigenvectors
-C                  (all four have NEVAL entries, starting w. IEVAL1)
+C                  (all four have NEVAL entries, starting w. /IEVAL1)
 C
-        WRITE(LUW4,1000)
-C       stamp date, time, and hostname to LUW4
-        CALL TSTAMP(' ',LUW4)
+        CALL TITLER('>>> SIRIUS OPTIMIZATION STATISTICS <<<',' ',200)
+C       stamp date, time, and hostname to LUPRI
+        CALL TSTAMP(' ',LUPRI)
 C
         REWIND LUINF
         ITM = 0
@@ -176,61 +166,61 @@ C
      *          (DINFO(I,ITM),I=1,LDINFO), (IINFO(I,ITM),I=1,LIINFO)
         GO TO 1910
  1915   CONTINUE
-        WRITE(LUW4,'(//A,I5)') ' I/O error reading info file record',ITM
+        WRITE(LUPRI,'(//A,I5)')' I/O error reading info file record',ITM
  1920   REWIND LUINF
         ITM = ITM - 1
         IF (ITM .EQ. 0) THEN
-           WRITE (LUW4,'(//A/)') ' No statistics found on info file.'
+           WRITE (LUPRI,'(//A/)') ' No statistics found on info file.'
            GO TO 2000
         END IF
 C
         EMCSCF = DINFO(3,ITM)
         GRDNRM = DINFO(13,ITM)
 C
-        WRITE(LUW4,1100) (IINFO(1,I),IINFO(2,I),DINFO(3,I),DINFO(13,I),
-     *                    DINFO(6,I),DINFO(8,I),I=1,ITM)
+        WRITE(LUPRI,1100) (IINFO(1,I),IINFO(2,I),DINFO(3,I),
+     *       DINFO(13,I),DINFO(6,I),DINFO(8,I),I=1,ITM)
 C
-        WRITE(LUW4,1200) (IINFO(1,I),
+        WRITE(LUPRI,1200) (IINFO(1,I),
      *                    IINFO(11,I),DINFO(14,I),DINFO(11,I),
      *                    IINFO(12,I),DINFO(15,I),DINFO(12,I),
      *                    DINFO(13,I),I=1,ITM)
 C
-        WRITE (LUW4,1300)
+        WRITE (LUPRI,1300)
         DO 200 I = 1,ITM
            IF (IINFO(2,I).NE.0) THEN
-              WRITE(LUW4,1310) IINFO(1,I),IINFO(2,I),
+              WRITE(LUPRI,1310) IINFO(1,I),IINFO(2,I),
      *           IINFO(5,I),IINFO(6,I),
      *           DINFO(16,I),DINFO(18,I),DINFO(17,I),DINFO(19,I),
      *           (DINFO(17,I)/IINFO(2,I))
            ELSE
-              WRITE(LUW4,1310) IINFO(1,I),IINFO(2,I),
+              WRITE(LUPRI,1310) IINFO(1,I),IINFO(2,I),
      *           IINFO(5,I),IINFO(6,I),
      *           DINFO(16,I),DINFO(18,I),DINFO(17,I),DINFO(19,I)
            END IF
   200   CONTINUE
-        WRITE(LUW4,2010) (IINFO(1,I),DINFO(1,I),DINFO(2,I),
+        WRITE(LUPRI,2010) (IINFO(1,I),DINFO(1,I),DINFO(2,I),
      *    DINFO(3,I),I=1,ITM)
-        WRITE(LUW4,2040) (IINFO(1,I),DINFO(4,I),DINFO(5,I),
+        WRITE(LUPRI,2040) (IINFO(1,I),DINFO(4,I),DINFO(5,I),
      *    DINFO(6,I),I=1,ITM)
-        WRITE(LUW4,2070) (IINFO(1,I),DINFO(7,I),DINFO(10,I),
+        WRITE(LUPRI,2070) (IINFO(1,I),DINFO(7,I),DINFO(10,I),
      *                    DINFO(8,I),DINFO(9,I),I=1,ITM)
         IST = IINFO(13,1)
         IEND = IST - 1 + IINFO(14,1)
-        IF (IST .LT. 1 .OR. IEND .GT. 10) THEN
-           WRITE (LUERR,'(/A,2I20/2A)')
+        IF (IEND .LT. IST) THEN
+           ! no optimization in this run; initialization: IST=0, IEND=-1
+        ELSE IF (IST .LT. 1 .OR. IEND .GT. 10) THEN
+           WRITE (LUPRI,'(/A,2I20/A)')
      *        ' SIROUT stat info, IST and IEND =',IST,IEND,
-     *        ' IST or IEND out of bounds',
-     *        ' - probably no optimization in this run.'
+     *        ' IST or IEND out of bounds (1:10)'
         ELSE
            DO 300 J = IST,IEND
-             WRITE(LUW4,4100) J,(IINFO(1,I),DINFO(20+J,I),DINFO(30+J,I),
-     *                        DINFO(40+J,I),DINFO(50+J,I), I = 1,ITM)
+             WRITE(LUPRI,4100) J,(IINFO(1,I),DINFO(20+J,I),
+     &           DINFO(30+J,I),DINFO(40+J,I),DINFO(50+J,I), I = 1,ITM)
   300      CONTINUE
         END IF
       END IF
  2000 CONTINUE
 C
- 1000 FORMAT(//T16,'>>> SIRIUS OPTIMIZATION STATISTICS <<<')
  1100 FORMAT(//'  ITER ITMIC',T18,'EMCSCF',T35,'GRDNRM',
      *       T49,'RATIO',T60,'STPLNG',/,1X,69('-'),
      *       /,(2I5,F20.12,F15.10,F10.6,F15.10))
@@ -266,7 +256,7 @@ C
       LFREE = LWRK
       CALL MEMGET('REAL', KCMO,NCMOT, WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KCREF,NCONF, WRK,KFREE,LFREE)
-      CALL MEMGET('REAL', KOCC,NORBT, WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOCCNO,NORBT, WRK,KFREE,LFREE)
       IF (FLAG(3)) THEN
          IF ( FLAG(2) .AND. ICONV.EQ.0 ) THEN
             NWARN = NWARN + 1
@@ -284,7 +274,7 @@ C
          END IF
          IF (FLAG(3)) THEN
             KREL1 = KFREE
-            CALL SIRCAN(IPRI4,WRK(KCREF),WRK(KCMO),WRK(KOCC),
+            CALL SIRCAN(IPRI4,WRK(KCREF),WRK(KCMO),WRK(KOCCNO),
      *                  WRK,KFREE,LFREE)
 C           CALL SIRCAN(IPRCAN,CREF,CMO,OCC,WRK,KFREE,LFREE)
          END IF
@@ -294,9 +284,10 @@ C *** FINAL RESULTS
 C
       CALL MOLCHR(ICHRG)
 C     ... get total molecular charge
-      WRITE (LUW4,5000) ISPIN,LSYM,ICHRG
+      CALL TITLER('>>> Final results from SIRIUS <<<',' ',200)
+      WRITE (LUPRI,5000) ISPIN,LSYM,ICHRG
       IF (NFIELD .GT. 0) THEN
-         WRITE (LUW4,'(/A/A/A)')
+         WRITE (LUPRI,'(/A/A/A)')
      *      ' The molecule is placed in a static field.',
      *      ' Field strength (a.u.)          Field operator',
      *      ' ---------------------          --------------'
@@ -307,59 +298,59 @@ csonia 04/10/95
      &         ' ---------------------          --------------'
 csonia 04/10/95                                                               
          DO 100 IFIELD = 1,NFIELD
-            WRITE (LUW4,'(1P,G18.8,18X,A8)')
+            WRITE (LUPRI,'(1P,G18.8,18X,A8)')
      *         EFIELD(IFIELD),LFIELD(IFIELD)
 csonia 04/10/95
             IF (LUCME.GT.0) WRITE (LUCME,'(1P,G18.8,18X,A8)')
      &         EFIELD(IFIELD), LFIELD(IFIELD)
 csonia 04/10/95                                                            
   100    CONTINUE
-         WRITE (LUW4,'()')
+         WRITE (LUPRI,'()')
       END IF
       IF (FLAG(16)) THEN
-         WRITE (LUW4,'(/5X,A,2(/10X,A,F12.6)/10X,A,3F12.6/10X,A,I12)')
+         WRITE (LUPRI,'(/5X,A,2(/10X,A,F12.6)/10X,A,3F12.6/10X,A,I12)')
      *'SOLVATION MODEL: molecule is in a cavity in a dielectric medium,'
      *  ,'dielectric constant =',EPSOL,
      *   'static diel. const. =',EPSTAT,
      *   'cavity dimensions   =',RSOL,
      *   'max l value         =',LSOLMX
-         IF (INERSF) WRITE (LUW4,'(/5X,A)')
+         IF (INERSF) WRITE (LUPRI,'(/5X,A)')
      *      'This is the final state in a calculation with'//
      *      ' inertial polarization.'
       ELSE IF (PCM .AND. (.NOT.MMPCM)) THEN
          IF (NONEQ) THEN
-            WRITE (LUW4,'(/5X,A,2(/10X,A,F12.6))')
+            WRITE (LUPRI,'(/5X,A,2(/10X,A,F12.6))')
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPSINF,
      *           'static diel. const. =',EPS
          ELSE
-            WRITE (LUW4,'(/5X,A,(/10X,A,F12.6))')
+            WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
 
       ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
-        WRITE(LUW4,'(/5X,A/)') 'QM/MM calculation converged :'
-        WRITE(LUW4,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
-        WRITE(LUW4,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
-        WRITE(LUW4,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
-        WRITE(LUW4,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
+        WRITE(LUPRI,'(/5X,A/)') 'QM/MM calculation converged :'
+        WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
+        WRITE(LUPRI,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
+        WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
+        WRITE(LUPRI,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
       ELSE IF (QMMM) THEN
-        WRITE(LUW4,'(/5X,A/)') 'QM/MM calculation converged :'
-        WRITE(LUW4,'(5X,A24,F20.12)') 'Charge contribution:    ', ECHART
-        WRITE(LUW4,'(5X,A24,F20.12)') 'Dipole contribution:    ', EDIPT 
-        WRITE(LUW4,'(5X,A24,F20.12)') 'Quadrupole contribution:', EQUADT
-        WRITE(LUW4,'(5X,A24,F20.12)') 'Octuple contribution:   ', EOCTUP
-        WRITE(LUW4,'(5X,A24,F20.12)') 'Electronic Pol. energy: ', EDELD 
-        WRITE(LUW4,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ', EDNUC
-        WRITE(LUW4,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ', EDMULT
-        WRITE(LUW4,'(5X,A24,F20.12)') 'Total QM/MM energy:     ', ESOLT
+        WRITE(LUPRI,'(/5X,A/)') 'QM/MM calculation converged :'
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Charge contribution:    ', ECHART
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ', EDIPT 
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Quadrupole contribution:', EQUADT
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Octuple contribution:   ', EOCTUP
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Electronic Pol. energy: ', EDELD 
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ', EDNUC
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ', EDMULT
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ', ESOLT
       ELSE IF (MMPCM) THEN
-         WRITE(LUW4,'(/5X,A/)') 'QM/MM/PCM calculation converged :'
-         WRITE(LUW4,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
-         WRITE(LUW4,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
-         WRITE(LUW4,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
-         WRITE(LUW4,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
+         WRITE(LUPRI,'(/5X,A/)') 'QM/MM/PCM calculation converged :'
+         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
+         WRITE(LUPRI,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
+         WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
+         WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       ELSE
         ESOLT = D0
       END IF
@@ -373,31 +364,31 @@ C
       IF (CICALC) THEN
 C        CI calculation
          IF (DOCINO) THEN
-            WRITE (LUW4,5010)
+            WRITE (LUPRI,5010)
          ELSE
-            WRITE (LUW4,5012)
+            WRITE (LUPRI,5012)
          END IF
       ELSE IF (FLAG(2) .AND. MCTYPE .GT. 0) THEN
 C        MCSCF calculation
          IF (DOMCSRDFT) THEN
-            WRITE (LUW4,5024) ISTATE,EMCSCF,CONV_text,
+            WRITE (LUPRI,5024) ISTATE,EMCSCF,CONV_text,
      &         POTNUC,(EMCSCF-POTNUC-ESOLT)
          ELSE
-            WRITE (LUW4,5020) ISTATE,EMCSCF,CONV_text,
+            WRITE (LUPRI,5020) ISTATE,EMCSCF,CONV_text,
      &         POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
-         IF (FLAG(16) .OR. PCM) WRITE (LUW4,5025) ESOLT
-         WRITE (LUW4,5030) GRDNRM
+         IF (FLAG(16) .OR. PCM) WRITE (LUPRI,5025) ESOLT
+         WRITE (LUPRI,5030) GRDNRM
       ELSE IF (DORHF) THEN
          IF (DOHFSRDFT) THEN
-           WRITE (LUW4,5023) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
+           WRITE (LUPRI,5023) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
          ELSE IF (.NOT.DODFT) THEN
 C        ... DIIS-HF or QC-HF optimization
-             WRITE (LUW4,5021) EMCSCF,CONV_text,
+             WRITE (LUPRI,5021) EMCSCF,CONV_text,
      &          POTNUC,(EMCSCF-POTNUC-ESOLT)
          ELSE
 C        ... DIIS-DFT or QC-DFT optimization
-             WRITE (LUW4,5022) EMCSCF,CONV_text,
+             WRITE (LUPRI,5022) EMCSCF,CONV_text,
      &          POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
          IF (DOCCSD .AND. .NOT.(QM3)) LDUMP = .FALSE.
@@ -408,61 +399,60 @@ C        ... DIIS-DFT or QC-DFT optimization
      *                  LAPRPC,LAPRPC,LAPRPC,LAPRPC,
      *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
-         IF (FLAG(16)) WRITE (LUW4,5025) ESOLT
-         WRITE (LUW4,5030) GRDNRM
+         IF (FLAG(16)) WRITE (LUPRI,5025) ESOLT
+         WRITE (LUPRI,5030) GRDNRM
       END IF
 
       IF (QMMM .AND. MMPROP) THEN
-        WRITE (LUW4,*)  
-        WRITE (LUW4,*)
         CALL MM_PROPS(WRK(KFREE),LFREE,IPQMMM)
       ENDIF 
 
- 5000 FORMAT(//T21,'>>> FINAL RESULTS FROM SIRIUS <<<',
-     *       //T6,'Spin multiplicity:',T31,I5,
-     *        /T6,'Spatial symmetry:',T31,I5,
-     *        /T6,'Total charge of molecule:',T31,I5)
- 5010 FORMAT(/T6,'This was a CI-NO calculation.')
- 5012 FORMAT(/T6,'This was a CI calculation.')
- 5020 FORMAT( T6,'State number:',T31,I5,
-     *      //T6,'Final MCSCF energy:',T31,F20.12,A,
-     *       /T6,'Nuclear repulsion:',T31,F20.12,
-     *       /T6,'Electronic energy:',T31,F20.12)
- 5021 FORMAT(/T6,'Final HF energy:',T31,F20.12,A,
-     *       /T6,'Nuclear repulsion:',T31,F20.12,
-     *       /T6,'Electronic energy:',T31,F20.12)
- 5022 FORMAT(/T6,'Final DFT energy:',T31,F20.12,A,
-     *       /T6,'Nuclear repulsion:',T31,F20.12,
-     *       /T6,'Electronic energy:',T31,F20.12)
- 5023 FORMAT(/T6,'Final HF-SRDFT energy:',T31,F20.12,
-     *       /T6,'Nuclear repulsion:',T31,F20.12,
-     *       /T6,'Electronic energy:',T31,F20.12)
- 5024 FORMAT( T6,'State number:',T31,I5,
-     *      //T6,'Final MC-SRDFT energy:',T31,F20.12,A,
-     *       /T6,'Nuclear repulsion:',T31,F20.12,
-     *       /T6,'Electronic energy:',T31,F20.12)
- 5025 FORMAT( T6,'Solvation  energy:',T31,F20.12)
- 5030 FORMAT(/T6,'Final gradient norm:',T31,F20.12)
+ 5000 FORMAT(/'@    Spin multiplicity:',T31,I5,
+     *       /'@    Spatial symmetry:',T31,I5,
+     *       /'@    Total charge of molecule:',T31,I5)
+ 5010 FORMAT(/'@    This was a CI-NO calculation.')
+ 5012 FORMAT(/'@    This was a CI calculation.')
+ 5020 FORMAT( '@    State number:',T31,I5,
+     *      //'@    Final MCSCF energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5021 FORMAT(/'@    Final HF energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5022 FORMAT(/'@    Final DFT energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5023 FORMAT(/'@    Final HF-SRDFT energy:',T31,F20.12,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5024 FORMAT( '@    State number:',T31,I5,
+     *      //'@    Final MC-SRDFT energy:',T31,F20.12,A,
+     *       /'@    Nuclear repulsion:',T31,F20.12,
+     *       /'@    Electronic energy:',T31,F20.12)
+ 5025 FORMAT( '@    Solvation  energy:',T31,F20.12)
+ 5030 FORMAT(/'@    Final gradient norm:',T31,F20.12)
 C
-C       stamp date, time, and hostname to LUW4
-        CALL TSTAMP(' ',LUW4)
+C       stamp date, time, and hostname to LUPRI
+        CALL TSTAMP(' ',LUPRI)
 C
       IF (MCTYPE .GT. 0 .AND. .NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
-     *    .NOT.(CICALC.AND.DOCINO) ) THEN
+     &    .NOT.(CICALC.AND.DOCINO) ) THEN
 C     if MC/CI and NO's not already printed
          KREL1 = KFREE
          CALL MEMGET('REAL',KUNO,N2ASHX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
          IPRNO = MAX(1,IPRI4-5)
 C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
-         CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-         CALL RDCREF(WRK(KCREF))
-         CALL GETNO(WRK(KCREF),LSYM,WRK(KOCC),WRK(KUNO),WRK(KCMO),
+         IF (NASHT .GT. 1) THEN
+            CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
+            CALL RDCREF(WRK(KCREF))
+         END IF
+         CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
      *              .FALSE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
-     *              WRK,KFREE,LFREE,LUW4,IPRNO)
+     *              WRK,KFREE,LFREE,LUPRI,IPRNO)
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
 C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
-         IF (.NOT. MOISNO) WRITE (LUW4,'(3(/A))')
+         IF (.NOT. MOISNO) WRITE (LUPRI,'(3(/A))')
      *     '  >>> NOTE THAT THE OCCUPATION NUMBERS ARE FOR ANALYSIS'//
      &     ' PURPOSE ONLY',
      *     '  >>> The orbital coefficients have NOT been transformed',
@@ -481,8 +471,9 @@ C
             CALL MOLLAB(TABLE(2),LUIT1,lupri)
          END IF
          CALL READT(LUIT1,NCMOT,WRK(KCMO))
+         CALL DZERO(WRK(KOCCNO),NORBT)
+C
        IF (CICALC .AND. DOCINO) THEN
-          CALL DZERO(WRK(KOCC),NORBT)
 C         ... we do not know the orbital occupation for CINO
 C             any more and cannot calculate them again 
 C             (CREF was not saved on file)
@@ -491,28 +482,34 @@ C             (CREF was not saved on file)
          CALL MEMGET('REAL',KUNO,N2ASHX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
          IPRNO = -1
-         CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-         CALL RDCREF(WRK(KCREF))
-         CALL GETNO(WRK(KCREF),LSYM,WRK(KOCC),WRK(KUNO),WRK(KCMO),
-     *              .TRUE.,.TRUE.,.TRUE.,MOISNO,WRK(KCINDX),
-     *              WRK,KFREE,LFREE,LUW4,IPRNO)
+         IF (NASHT .GT. 1) THEN
+            CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
+            CALL RDCREF(WRK(KCREF))
+            CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
+     &              .TRUE.,.TRUE.,.TRUE.,MOISNO,WRK(KCINDX),
+     &              WRK,KFREE,LFREE,LUPRI,IPRNO)
+         ELSE
+            CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
+     &              .FALSE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
+     &              WRK,KFREE,LFREE,LUPRI,IPRNO)
+         END IF
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
-C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
+C    &              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
          CALL MEMREL('SIROUT.MOLDEN.GETNO',WRK,KFRSAV,KREL1,KFREE,LFREE)
        END IF
 
-       IF (MEP) THEN
-         CALL DOMEP(WRK(KCMO),WRK,KFREE,LFREE)
+       IF (DOMEP) THEN
+         CALL CALC_MEP(WRK(KCMO),WRK,KFREE,LFREE)
        ENDIF
 
        KREL2 = KFREE
-       CALL MEMGET('REAL', KAOSO,  N2BASX,      WRK, KFREE, LFREE)
-       CALL MEMGET('REAL', KUNPAK, NORBT*NBAST, WRK, KFREE, LFREE)
-       CALL MEMGET('REAL', KOVEC,  NBAST,       WRK, KFREE, LFREE)
-       CALL MOMOS(1,WRK(KCMO), WRK(KOCC), WRK(KAOSO),
-     $            WRK(KUNPAK), WRK(KOVEC))
+       CALL MEMGET('REAL', KAOSO, N2BASX,      WRK, KFREE, LFREE)
+       CALL MEMGET('REAL', KUCMO, NORBT*NBAST, WRK, KFREE, LFREE)
+       CALL MEMGET('REAL', KOVEC, NBAST,       WRK, KFREE, LFREE)
+       CALL MOMOS(1,WRK(KCMO), WRK(KOCCNO), WRK(KAOSO),
+     $            WRK(KUCMO), WRK(KOVEC))
        CALL MEMREL('SIROUT.MOMOS',WRK,KREL2,KREL2,KFREE,LFREE)
-      END IF
+      END IF ! (MOLDEN)
 C     
 C ***  Print final MCSCF orbitals ***
 C
@@ -531,19 +528,19 @@ C
             CALL READT(LUIT1,NCMOT,WRK(KCMO))
          ELSE
             IF (NASHT .GT. 1) THEN
-               WRITE(LUW4,'(//A/A/)') ' Natural orbitals :',
+               WRITE(LUPRI,'(//A/A/)') ' Natural orbitals :',
      *                                ' =================='
             ELSE
-               WRITE(LUW4,'(//A/A/)') ' Canonical orbitals :',
+               WRITE(LUPRI,'(//A/A/)') ' Canonical orbitals :',
      *                                ' ===================='
             END IF
          END IF
          IF (IPRI4 .GT. 10) THEN
-            CALL PRORB(WRK(KCMO),.FALSE.,LUW4)
+            CALL PRORB(WRK(KCMO), .FALSE., LUPRI)
          ELSE
-            CALL PRORB(WRK(KCMO),.TRUE.,LUW4)
+            CALL PRORB(WRK(KCMO),  .TRUE., LUPRI)
          END IF
-C        CALL PRORB(CMO,PROCC,IOUT)
+C        CALL PRORB(CMO, PROCC, IOUT [,THRPRI_in])
       END IF
 C
 C *** Print out of wavefunction in MCSCF orbital basis ***
@@ -556,7 +553,7 @@ c--renzo modif
       IF (P4FLAG(4) .AND.((NCONF.eq.1.and.DONEVPT).or.(NCONF.gt.1)).AND.
      $     .NOT.(CICALC .AND. DOCINO)) THEN
          IF (LCINDX .GT. LFREE) THEN
-            WRITE (LUW4,1077) LCINDX-LFREE
+            WRITE (LUPRI,1077) LCINDX-LFREE
             GO TO 110
          END IF
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
@@ -574,28 +571,28 @@ c--renzo modif
             IF (RTNLBL(2) .EQ. 'CISAVE ') THEN
                IF (.NOT. CICALC) THEN
                   NWARN = NWARN + 1
-                  WRITE (LUW4,'(//A/A/)')
+                  WRITE (LUPRI,'(//A/A/)')
      &               ' WARNING, internal error in SIROUT subroutine',
      &               ' CICALC false, but CISAVE label on SIRIUS.RST'
                END IF
                CICALC = .TRUE.
                IF (I .GT. 0 .AND. I .NE. ISTACI) THEN
                   NWARN = NWARN + 1
-                  WRITE (LUW4,'(//,(A,I5/))')
+                  WRITE (LUPRI,'(//,(A,I5/))')
      *         ' WARNING from SIROUT: ISTACI specied in input:',ISTACI,
      *         '                      ISTACI read from LUIT1 :',I
                END IF
             ELSE
                IF (CICALC) THEN
                   NWARN = NWARN + 1
-                  WRITE (LUW4,'(//A/A/)')
+                  WRITE (LUPRI,'(//A/A/)')
      &               ' WARNING, internal error in SIROUT subroutine',
      &               ' CICALC true, but no CISAVE label on SIRIUS.RST'
                   CICALC = .FALSE.
                END IF
                IF (ABS(I) .NE. ISTATE) THEN
                   NWARN = NWARN + 1
-                  WRITE (LUW4,'(//,(A,I5/))')
+                  WRITE (LUPRI,'(//,(A,I5/))')
      *         ' WARNING from SIROUT: ISTATE specied in input:',ISTATE,
      *         '                      ISTATE read from LUIT1 :',ABS(I)
                END IF
@@ -619,11 +616,11 @@ C        else MCSCF with only reference vector saved (NRSAVE)
 C
          CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK2),LWRK2,0)
          DO 105 I = ILOW,IHGH
-            WRITE (LUW4,1050) THRPWF,I
-            IF (I .EQ. ISTATE .AND. .NOT. CICALC) WRITE (LUW4,1051)
-            IF (I .EQ. ISTACI .AND.       CICALC) WRITE (LUW4,1052)
+            WRITE (LUPRI,1050) THRPWF,I
+            IF (I .EQ. ISTATE .AND. .NOT. CICALC) WRITE (LUPRI,1051)
+            IF (I .EQ. ISTACI .AND.       CICALC) WRITE (LUPRI,1052)
             CALL READT(LUIT1,NCONF,WRK(KCREF))
-            CALL PRWF(WRK(KCREF),WRK(KCINDX),LUW4,THRPWF)
+            CALL PRWF(WRK(KCREF),WRK(KCINDX),LUPRI,THRPWF)
 C           CALL PRWF(C,INDXCI,IOUT,THRPWF)
   105    CONTINUE
          CALL MEMREL('SIROUT.PRWF',WRK,KFRSAV,KCINDX,KFREE,LFREE)
@@ -659,9 +656,9 @@ C
             IPCTL = 1
          ELSE
             IPCTL = 0
-            KOCC  = KCMO
+            KOCCNO  = KCMO
          END IF
-         CALL PUNMO(IPCTL,WRK(KCMO),WRK(KOCC))
+         CALL PUNMO(IPCTL,WRK(KCMO),WRK(KOCCNO))
 C        CALL PUNMO(IPCTL,CMO,OCC)
       END IF
 C

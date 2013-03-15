@@ -159,32 +159,32 @@ else
 fi
 
 # QM/MM interaction energy compared:
-CRIT1=`$GREP "\| * (\-|\-0)\.0103420412 \| * ( |0)\.0000000000 \| * ( |0)\.0051109721 \| * (\-|\-0)\.0052310691 \|" $log | wc -l`
-CRIT2=`$GREP "\| * \-76\.2309666537 \| * \-76\.2361977228 \| * ( |0)\.0000000000 \|" $log | wc -l`
+CRIT1=`$GREP "\| * (\-|\-0)\.010342041. \| * ( |0)\.0000000000 \| * ( |0)\.005110972. \| * (\-|\-0)\.00523106[89]. \|" $log | wc -l`
+CRIT2=`$GREP "\| * \-76\.230966653. \| * \-76\.236197722. \| * ( |0)\.0000000000 \|" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2`
 CTRL[1]=2
 ERROR[1]="QM/MM ENERGY NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "x * ( |0)\.07706010 * ( |0)\.19586721" $log | wc -l`
-CRIT2=`$GREP "y * ( |0)\.01157475 * ( |0)\.02942007" $log | wc -l`
-CRIT3=`$GREP "z * ( |0)\.80088272 *  2\.03564060" $log | wc -l` 
+CRIT1=`$GREP "x * ( |0)\.07706010 * ( |0)\.1958672" $log | wc -l`
+CRIT2=`$GREP "y * ( |0)\.01157475 * ( |0)\.0294200" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.80088272 *     2\.0356406" $log | wc -l` 
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=9
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 # Quadrupole moment components compared:
-CRIT1=`$GREP "1 * 1\.55093807 * ( |0)\.00244522 * ( |0)\.12017012" $log | wc -l`
-CRIT2=`$GREP "2 * ( |0)\.00244522 * -1\.67020961 * ( |0)\.00676445" $log | wc -l`
-CRIT3=`$GREP "3 * ( |0)\.12017012 * ( |0)\.00676445 * ( |0)\.11927154" $log | wc -l`
+CRIT1=`$GREP "1 * 1\.5509380. * ( |0)\.0024452. * ( |0)\.1201701." $log | wc -l`
+CRIT2=`$GREP "2 * ( |0)\.0024452. * -1\.6702096. * ( |0)\.0067644." $log | wc -l`
+CRIT3=`$GREP "3 * ( |0)\.1201701. * ( |0)\.0067644. * ( |0)\.1192715." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=9
 ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
 
 # Second order electric moment components compared:
-CRIT1=`$GREP "1 * 7\.21242099 * (\-|\-0)\.00163014 * (\-|\-0)\.08011341" $log | wc -l`
-CRIT2=`$GREP "2 * (\-|\-0)\.00163014 * 5\.26923564 * (\-|\-0)\.00450963" $log | wc -l`
-CRIT3=`$GREP "3 * (\-|\-0)\.08011341 * (\-|\-0)\.00450963 * 6\.52888558" $log | wc -l`
+CRIT1=`$GREP "1 * 7\.2124209. * (\-|\-0)\.0016301. * (\-|\-0)\.0801134" $log | wc -l`
+CRIT2=`$GREP "2 * (\-|\-0)\.0016301. * 5\.2692356. * (\-|\-0)\.0045096" $log | wc -l`
+CRIT3=`$GREP "3 * (\-|\-0)\.0801134. * (\-|\-0)\.0045096. * 6\.5288855" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=9
 ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"

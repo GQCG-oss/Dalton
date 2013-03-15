@@ -139,7 +139,7 @@ cat > ccsdr12_bh.dal <<'%EOF%'
 
 **DALTON INPUT
 .RUN WAVE FUNCTION
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -171,7 +171,7 @@ cat > ccsdr12_bh.dal <<'%EOF%'
 #.NO 2
 .CC2
  1B
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

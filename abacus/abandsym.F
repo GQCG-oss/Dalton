@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C     /*Deck fcsini*/
       SUBROUTINE FCSINI
@@ -39,9 +29,9 @@ C     ************************************************************************
 C     *** This routine initializes the variables needed for a more general ***
 C     ***                          symmetry treatment.                     ***
 C     ************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <fcsym.h>
+#include "fcsym.h"
 C
       IF (FCLASS .EQ. 'C1 ') THEN
 C
@@ -126,13 +116,13 @@ C     /*Deck grpchr*/
       SUBROUTINE GRPCHR(COOR,SYMCOR,GRIREP,CHRCTR,WORK,ICRIRP,LWORK,
      &                  IPRINT)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0)
-#include <nuclei.h>
-#include <trkoor.h>
-#include <fcsym.h>
+#include "nuclei.h"
+#include "trkoor.h"
+#include "fcsym.h"
 C
       DIMENSION COOR(NCOOR), SYMCOR(NCOOR,NCOOR), GRIREP(NGORDR,NGVERT),
      &          CHRCTR(NGORDR,NCVERT), WORK(LWORK), ICRIRP(NCOOR,2)
@@ -176,16 +166,16 @@ C
 C     /*Deck cyclic*/
       SUBROUTINE CYCLIC(SIRREP,GRIREP,CHRCTR,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <pi.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "pi.h"
+#include "priunit.h"
       PARAMETER (NDEG = 2)
       PARAMETER (D1 = 1.0D0)
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 C
       DIMENSION SIRREP(NCORDR,NCORDR), GRIREP(NGORDR,NGVERT),
      &          CHRCTR(NGORDR,NCVERT), WORK(LWORK)
-#include <fcsym.h>
+#include "fcsym.h"
 C
       DO 100 J = 0, NONEDI-1
       DO 100 I = 1, NCORDR
@@ -285,10 +275,10 @@ C
 C
 C     /*Deck chrep*/
       SUBROUTINE CHREP(GRIREP,REDREP,SIRREP,NDEG,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D1 = 1.0D0)
 C
-#include <fcsym.h>
+#include "fcsym.h"
       DIMENSION GRIREP(NGORDR,NGVERT), SIRREP(NCORDR,NCORDR),
      &          REDREP(NDEG,NDEG,NCORDR,NDEGIR)
 C
@@ -323,12 +313,12 @@ C
 C     /*Deck redtra*/
       SUBROUTINE REDTRA(REDREP,SIRREP,NDEG,IPRINT)
 C
-#include <implicit.h>
-#include <pi.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "pi.h"
+#include "priunit.h"
 C
       PARAMETER (D2 = 2.0D0)
-#include <fcsym.h>
+#include "fcsym.h"
       DIMENSION REDREP(NDEG,NDEG,NCORDR,NDEGIR), SIRREP(NCORDR,NCORDR)
 C
       CONST = D2*PI/DBLE(NCORDR)
@@ -368,12 +358,12 @@ C
 C     /*Deck redrst*/
       SUBROUTINE REDRST(REDREP,SIRREP,NDEG,IPRINT)
 C
-#include <implicit.h>
-#include <pi.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "pi.h"
+#include "priunit.h"
 C
       PARAMETER (D2 = 2.0D0, D4 = 4.0D0)
-#include <fcsym.h>
+#include "fcsym.h"
       DIMENSION REDREP(NDEG,NDEG,NCORDR,NDEGIR), SIRREP(NCORDR,NCORDR)
 C
       CONST = D2*PI/DBLE(NCORDR)
@@ -415,9 +405,9 @@ C
 C
       SUBROUTINE GENREP(GRIREP,REDREP,SIRREP,TMPRED,NDEG,IPRINT)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-#include <fcsym.h>
+#include "fcsym.h"
 C
       DIMENSION GRIREP(NGORDR,NGVERT), SIRREP(NCORDR,NCORDR),
      &          REDREP(NDEG,NDEG,NCORDR,NDEGIR),
@@ -517,10 +507,10 @@ C
 C
 C     /*Deck calchr*/
       SUBROUTINE CALCHR(GRIREP,CHRCTR)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <fcsym.h>
+#include "fcsym.h"
 C
       DIMENSION GRIREP(NGORDR,NGVERT), CHRCTR(NGORDR,NCVERT)
 C
@@ -546,15 +536,15 @@ C
 C     /*Deck atmtra*/
       SUBROUTINE TRMTRX(COOR,ATMTRA,CORTRA,IPRINT)
 C
-#include <implicit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (DTHR = 1.0D-6)
-#include <nuclei.h>
-#include <trkoor.h>
-#include <fcsym.h>
+#include "nuclei.h"
+#include "trkoor.h"
+#include "fcsym.h"
 C
       DIMENSION COOR(NCOOR), ATMTRA(NUCDEP,NUCDEP,NMTRX),
      &          CORTRA(3,3,NMTRX), TMPCOR(3)
@@ -753,15 +743,15 @@ C
 C     /*Deck fndatr*/
       SUBROUTINE FNDATR(AMAT,ATMCOR,TRAMAT,TMPCOR,TEXT)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
 C
       PARAMETER (D1 = 1.0D0, DTHR = 1.0D-4)
 C
-#include <nuclei.h>
-#include <trkoor.h>
-#include <fcsym.h>
+#include "nuclei.h"
+#include "trkoor.h"
+#include "fcsym.h"
       CHARACTER*20 TEXT
       LOGICAL FOUND
       DIMENSION AMAT(NUCDEP,NUCDEP), ATMCOR(NCOOR), TRAMAT(3,3),
@@ -812,14 +802,14 @@ C     /*Deck mksymc*/
       SUBROUTINE MKSYMC(COOR,SYMCOR,ATMTRA,CORTRA,TRAMTX,TMPSYM,GRIREP,
      &                  TMPTRA,TMPVEC,WORK,ICRIRP,NSTBCT,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, DTHR = 1.0D-6)
 C
-#include <nuclei.h>
-#include <trkoor.h>
-#include <fcsym.h>
+#include "nuclei.h"
+#include "trkoor.h"
+#include "fcsym.h"
       LOGICAL EXIST
       DIMENSION COOR(NCOOR), SYMCOR(NCOOR,NCOOR),
      &          ATMTRA(NUCDEP,NUCDEP,NMTRX), CORTRA(3,3,NMTRX),
@@ -1143,13 +1133,13 @@ C     /*Deck fndstb*/
       SUBROUTINE FNDSTB(COOR,ATMTRA,TRAMTX,TMPTRA,TMPVEC,NSTBCT,KINDCT,
      &                  IPRINT)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, DTHR = 1.0D-6)
-#include <nuclei.h>
-#include <trkoor.h>
-#include <fcsym.h>
+#include "nuclei.h"
+#include "trkoor.h"
+#include "fcsym.h"
 C
       LOGICAL EXIST
       DIMENSION ATMTRA(NUCDEP,NUCDEP,NMTRX), TMPTRA(NCOOR,NCOOR,2),
@@ -1303,14 +1293,14 @@ C     /*Deck fcscrn*/
      &                  IDDBTP,IRPDEG,IREPST,NPRTNR,LWORK,NLDPMX,LDPMTX,
      &                  IFRSTD,IORDR,IRSRDR,MAXINR,IINNER,NMPRTN,IPRINT,
      &                  CLNRGY,PRTNR,ALRCAL,SCND)
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
 C
-#include <trkoor.h>
-#include <numder.h>
-#include <fcsym.h>
-#include <pvibav.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "fcsym.h"
+#include "pvibav.h"
       LOGICAL CLNRGY, PRTNR, SCND, C2NRGY, DEPFC, FOUND, ALRCAL
       DIMENSION GRIREP(NGORDR,NGVERT), WORK(LWORK),
      &          INDSTP(NTORDR), KDPMTX(LDPMTX,NSTRDR,IFRSTD),
@@ -1566,12 +1556,12 @@ C     /*Deck symmlt*/
       SUBROUTINE SYMMLT(GRIREP,INDSTP,ICRIRP,IREPST,IRPDEG,KIRPDG,
      &                  IDDEGI,IDEGID,NMORDR,NTORDR,IRSRDR,IORDR,IPRINT,
      &                  CLNRGY)
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, DTHR = 1.0D-12)
-#include <trkoor.h>
-#include <fcsym.h>
+#include "trkoor.h"
+#include "fcsym.h"
       LOGICAL CLNRGY
       DIMENSION GRIREP(NGORDR,NGVERT)
       DIMENSION INDSTP(NTORDR), KIRPDG(NMORDR), IRPDEG(NMORDR),
@@ -1704,10 +1694,10 @@ C     *** Function that takes a coordinate as input, and ***
 C     *** returns the starting point of the irrep that   ***
 C     *** span that irrep in GRIREP.                     ***
 C     ******************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <fcsym.h>
+#include "fcsym.h"
       DIMENSION GRIREP(NGORDR,NGVERT)
       DIMENSION ICRIRP(NCOOR,2)
 C
@@ -1740,11 +1730,11 @@ C     *** distortion. Output parameter is RTMPCO, which is***
 C     *** assigned a value according to the symmetry prop.***
 C     *** of the analytical derivative.                   ***
 C     *******************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
-#include <numder.h>
-#include <fcsym.h>
+#include "numder.h"
+#include "fcsym.h"
       LOGICAL SBDELM, SMEIRP
       DIMENSION GRIREP(NGORDR,NGVERT)
       DIMENSION INDSTP(NTORDR), IREPST(NMORDR), ICRIRP(NCOOR,2)
@@ -1779,11 +1769,11 @@ C     *** Subroutine that checks if the coordinate ICOOR is ***
 C     *** totally symmetric in the distorted geometry. The  ***
 C     *** distortions is done along the INDSTP coordinates. ***
 C     *********************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1=1.0D0, DTHRS=1.0D-12)
-#include <fcsym.h>
-#include <numder.h>
+#include "fcsym.h"
+#include "numder.h"
       LOGICAL EXSTEL, TSMEIR
       DIMENSION GRIREP(NGORDR,NGVERT)
       DIMENSION INDSTP(NTORDR), ICRIRP(NCOOR,2), IREPST(NMORDR)
@@ -1820,13 +1810,13 @@ C
 C     /* Deck ffcdep */
       SUBROUTINE FFCDEP(KDPMTX,INDSTP,IDXTMP,NLDPMX,LDPMTX,IFRSTD,
      &                  IRSRDR,IORDR,IEIIN,IPRINT,DEPFC)
-#include <implicit.h>
+#include "implicit.h"
 Chjaaj DEBUG priunit.h
-#include <priunit.h>
-#include <mxcent.h>
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DTHR = 1.0D-12)
-#include <fcsym.h>
-#include <numder.h>
+#include "fcsym.h"
+#include "numder.h"
       LOGICAL DONE, DEPFC
       DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), INDSTP(NTORDR),
      &          IDXTMP(NMORDR)
@@ -1882,11 +1872,11 @@ C
 C     /*Deck ortscp*/
       SUBROUTINE ORTSCP(TRIAL,SYMCOR,ICRIRP,ISYMCO,KIREP,KIPL,IPRINT,
      &                  EXIST)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DTHR = 1.0D-10)
-#include <trkoor.h>
+#include "trkoor.h"
       LOGICAL EXIST
       DIMENSION TRIAL(NCOOR), SYMCOR(NCOOR,NCOOR), ICRIRP(NCOOR,2)
 C
@@ -1964,12 +1954,12 @@ C     ***** before the coordinates that transforms as 2. row of    *****
 C     ***** that irrep.                                            *****
 C     ******************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <fcsym.h>
-#include <trkoor.h>
+#include "fcsym.h"
+#include "trkoor.h"
       DIMENSION SYMCOR(NCOOR,NCOOR), TMPCOR(NCOOR,NCOOR)
       DIMENSION ICRIRP(NCOOR,2), ICTMP(NCOOR,2)
       LOGICAL FND2D
@@ -2050,13 +2040,13 @@ C
 C     /*Deck fsdcst*/
       SUBROUTINE FSDCST(SYMCOR,GRIREP,DCOEFF,WORK,KDPMTX,NMIDPC,ICRIRP,
      &                  LDPMTX,IFRSTD,NLDPMX,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
-#include <numder.h>
-#include <fcsym.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "fcsym.h"
       DIMENSION SYMCOR(NCOOR,NCOOR), GRIREP(NGORDR,NGVERT),
      &          DCOEFF(LDPMTX,IFRSTD), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2), KDPMTX(LDPMTX,NSTRDR,IFRSTD),
@@ -2101,13 +2091,13 @@ C
 C     /* Deck thrdfc*/
       SUBROUTINE THRDFC(DCOEFF,GRIREP,EQUMTX,WORK,KDPMTX,NMIDPC,ICRIRP,
      &                  IDXTST,LDPMTX,IFRSTD,NLDPMX,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0=0.0D0, D1=1.0D0, DMTHR = 1.0D-6)
-#include <trkoor.h>
-#include <numder.h>
-#include <fcsym.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "fcsym.h"
       LOGICAL DPNDCY, EXIST, IEXIST, TRIVIA
       DIMENSION GRIREP(NGORDR,NGVERT), DCOEFF(LDPMTX,IFRSTD),
      &          TCOEFF(8,8), EQUMTX(8,8),WORK(LWORK)
@@ -2411,13 +2401,13 @@ C     **** The independent are put in the second row ****
 C     **** The dependency coeffecients are put in    ****
 C     **** DCOEFF.                                   ****
 C     ***************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
-#include <trkoor.h>
-#include <numder.h>
-#include <fcsym.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "fcsym.h"
       DIMENSION DCOEFF(LDPMTX,IFRSTD), KDPMTX(LDPMTX,NSTRDR,IFRSTD),
      &          ICRIRP(NCOOR,2)
 C
@@ -2468,14 +2458,14 @@ C
 C     /* Deck frthfc*/
       SUBROUTINE FRTHFC(DCOEFF,GRIREP,EQUMTX,WORK,KDPMTX,NMIDPC,ICRIRP,
      &                  IDXTST,LDPMTX,IFRSTD,NLDPMX,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0=0.0D0, D1=1.0D0, DMTHR = 1.0D-6)
       PARAMETER (ITHDDM = 16)
-#include <trkoor.h>
-#include <numder.h>
-#include <fcsym.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "fcsym.h"
       LOGICAL DPNDCY, EXIST, IEXIST, TRIVIA
       DIMENSION GRIREP(NGORDR,NGVERT), DCOEFF(LDPMTX,IFRSTD),
      &          TCOEFF(ITHDDM,ITHDDM), EQUMTX(ITHDDM,ITHDDM),WORK(10000)
@@ -2825,13 +2815,13 @@ C     *******************************************************************
 C     **** This assigns values to the dependent force-constants from ****
 C     **** the independent.                                          ****
 C     *******************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-#include <taymol.h>
-#include <numder.h>
-#include <fcsym.h>
+#include "taymol.h"
+#include "numder.h"
+#include "fcsym.h"
       DIMENSION DERIV(NDERIV), DCOEFF(LDPMTX,IFRSTD)
       DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), NMIDPC(LDPMTX)
 C
@@ -2923,8 +2913,8 @@ C     ***      IDEP  -> First row: Dependendent variables            ***
 C     ***               Scn.  row: Dependend on this variable        ***
 C     ***      COEFF-> Dependence coeffisient.                      ***
 C     ******************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL EXIT
       PARAMETER (D0 = 0.0D0, D1=1.0D0, DMTHR = 1.0D-6)
 C
@@ -3048,8 +3038,8 @@ C     *** Subroutine that removes the rows of a set of homogenous ***
 C     *** linear equations, that does not contribute -> type:      ***
 C     *** a_i*x_i = 0                                              ***
 C     ****************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DMTHR = 1.0D-6)
       DIMENSION RMTRIX(NRDIM,NRDIM)
       DIMENSION IRINDX(NRDIM), IZINDX(NRDIM)
@@ -3129,11 +3119,11 @@ C     *************************************************************************
 C     *** This subroutine checks whether the force constant IDXTST exist in ***
 C     *** KDPMTX. It returns exist = .true. if this is the case.            ***
 C     *************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <numder.h>
-#include <fcsym.h>
+#include "numder.h"
+#include "fcsym.h"
       LOGICAL EXIST
       DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), IDXTST(NMORDR)
 C
@@ -3172,13 +3162,13 @@ C     *** This subroutine checks if the independent component chosen     ***
 C     *** is the component with the least energy calculations. If this   ***
 C     *** is not the case, the components are rearranged such that it is ***
 C     **********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0, DTHR = 1.0D-6)
-#include <trkoor.h>
-#include <numder.h>
-#include <fcsym.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "fcsym.h"
       LOGICAL INCMNT, FOUND
       DIMENSION DCOEFF(LDPMTX,IFRSTD)
       DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), ICRIRP(NCOOR,2),
@@ -3477,8 +3467,8 @@ C     ****************************************************
 C     *** Sorting the components such that they become ***
 C     *** calculated ones (X1 .GE. X2 .GE. X3 ....)    ***
 C     ****************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       LOGICAL FOUND, EXIST
       DIMENSION EQUMTX(NRDIM,NRDIM)
@@ -3610,11 +3600,11 @@ C     /* Deck prtnrp */
       SUBROUTINE PRTNRP(GRIREP,WORK,ICRIRP,INDSTP,NPRTNR,MAXINR,IINNER,
      &                  IORDR,IRSRDR,NMPRTN,IDXTMP,INDTMP,LWORK,CLNRGY,
      &                  PRTNR,ALRCAL)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, DTHRSH = 1.0D-6, MXIDCR=5)
-#include <fcsym.h>
-#include <numder.h>
+#include "fcsym.h"
+#include "numder.h"
       LOGICAL PRTNR, CLNRGY, C2NRGY, TSM, ALRCAL
       DIMENSION GRIREP(NGORDR,NGVERT), WORK(LWORK)
       DIMENSION ICRIRP(NDCOOR,2), INDSTP(NTORDR), NPRTNR(MAXINR),
@@ -3691,11 +3681,11 @@ C     *** Sufficient demand for stepping in 1-2 directions ***
 C     *** is that all possible F_{x_1,x_2,x_3} in taylor   ***
 C     *** expansion is zero.                               ***
 C     ********************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (MXIDCR=5)
-#include <fcsym.h>
-#include <numder.h>
+#include "fcsym.h"
+#include "numder.h"
       LOGICAL PRTNR, C2NRGY
       DIMENSION GRIREP(NGORDR,NGVERT), WORK(LWORK)
       DIMENSION ICRIRP(NDCOOR,2), INDSTP(NTORDR), INDTMP(MXIDCR)

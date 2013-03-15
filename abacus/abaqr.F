@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 cs--------------------------------------------------------------cs
 cs    abaqr.F=insieme di subroutines per la risposta quadratica cs
@@ -40,18 +30,18 @@ cs--------------------------------------------------------------cs
 C  /* Deck aqrinp */
       SUBROUTINE AQRINP(WORD)
 cs
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 12)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <inforb.h>
-#include <cbiqr.h>
+#include "inforb.h"
+#include "cbiqr.h"
 C
-#include <abainf.h>
-#include <dorps.h>
-#include <nuclei.h>
+#include "abainf.h"
+#include "dorps.h"
+#include "nuclei.h"
       DATA TABLE /'.SKIP  ', '.IPRINT','.MAXITE','.THRESH',
      *            '.MAXRED', '.MAXPHP','.XXXXXX',
      *            '.OPTORB', '.PRINT ', '.STOP  ', '.B FREQ',
@@ -211,10 +201,10 @@ C  /* Deck aqrini */
 C
 C     Initialize /QRSRES/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbiqr.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbiqr.h"
+#include "abainf.h"
 C
 cs    iprdef= deve essere il default (applicato per entrambi i print level)
 cs
@@ -243,27 +233,27 @@ cs
 cs    driver vero e proprio della risposta quadratica in abacus
 cs    chiamata quando .MCD, .HYPER e .VERDET = .TRUE.
 cs
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <abainf.h>
-#include <exeinf.h>
-#include <inforb.h>
-#include <cbiqr.h>
-#include <infrsp.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "abainf.h"
+#include "exeinf.h"
+#include "inforb.h"
+#include "cbiqr.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infsmo.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "infhyp.h"
+#include "infsmo.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
       LOGICAL PASS, HFCLC, CICLC, TRIPLE, EXECLC, FOUND
-      CHARACTER*8 LABEL, KDLAB(9*MXCENT)
+      CHARACTER*8 LABEL, DLAB(9*MXCENT)
       DIMENSION WORK(LWORK)
 C
       IF (SKIP) RETURN
@@ -286,10 +276,10 @@ C
       KWORK1 = KXINDX + LCINDX
       LWORK1 = LWORK - KWORK1
 C
-      CALL RDSIFC('CMO',FOUND,WORK(KCMO),WORK(KWORK1),LWORK1)
+      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KWORK1),LWORK1)
       IF (.NOT.FOUND) CALL QUIT('AQRDRV error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
-         CALL RDSIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
+         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
          IF (.NOT.FOUND)
      &      CALL QUIT('AQRDRV error: DV not found on SIRIFC')
          CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
@@ -318,21 +308,21 @@ cs
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
-     &               KDLAB,WORK(KIDSYM),WORK(KIDADR),
+     &               DLAB,WORK(KIDSYM),WORK(KIDADR),
      &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
      &               IPRINT)
          NLAB = 3
-         CALL LABCOP(NLAB,NLBTOT,KDLAB,WORK(KIDSYM),LABAPP,LABSYM)
+         CALL LABCOP(NLAB,NLBTOT,DLAB,WORK(KIDSYM),LABAPP,LABSYM)
 C
 cs
          IF (VERDET .OR. MCD) THEN
             IF (NOLOND) THEN
                CALL GET1IN(DUMMY,'ANGMOM ',NCOMP,WORK(KWORK2),LWORK2,
-     &                     KDLAB,WORK(KIDSYM),WORK(KIDADR),
+     &                     DLAB,WORK(KIDSYM),WORK(KIDADR),
      &                     IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,
      &                     DUMMY,IPRINT)
                NLAB = 3
-               CALL LABCOP(NLAB,NLBTOT,KDLAB,WORK(KIDSYM),
+               CALL LABCOP(NLAB,NLBTOT,DLAB,WORK(KIDSYM),
      &                     LABAPP,LABSYM)
             ELSE
               CALL LABCOP(1,NLBTOT,'XLONMAG ',ISYMAX(1,2),LABAPP,LABSYM)
@@ -344,11 +334,11 @@ C
                NCOMP  = 0
                NPATOM = 0
                CALL GET1IN(DUMMY,'HBDO   ',NCOMP,WORK(KWORK2),LWORK2,
-     &                     KDLAB,WORK(KIDSYM),WORK(KIDADR),
+     &                     DLAB,WORK(KIDSYM),WORK(KIDADR),
      &                     IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,
      &                     DUMMY,IPRINT)
                NLAB = 3
-               CALL LABCOP(NLAB,NLBTOT,KDLAB,WORK(KIDSYM),LABAPP,
+               CALL LABCOP(NLAB,NLBTOT,DLAB,WORK(KIDSYM),LABAPP,
      &                     LABSYM)
             ENDIF
          END IF

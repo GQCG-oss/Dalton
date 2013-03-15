@@ -1,50 +1,40 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C FILE: sirius/sirpcm.F
 C
-#include <single.h>
+#include "single.h"
 C
 C/* Deck pcminp */
       SUBROUTINE PCMINP(WORD,INPERR,ALLOPT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 C
       PARAMETER (D0=0.0D+00)
 C
@@ -55,11 +45,11 @@ C
       CHARACTER*6 SOLWD
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <infinp.h>
-#include <infpri.h>
-#include <inftap.h>
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "inftap.h"
       DATA SOLWD/'PCM   '/
       DATA TABLE/'.SOLVNT','.EPS   ','.EPSINF','.RSOLV ',
      *           '.RET   ','.NESFP ','.ICESPH','.ICOMPC',
@@ -251,7 +241,7 @@ C
          NERR=NERR+1
       END IF
       IF(ICESPH.GT.3) THEN
-         WRITE(LUPRI,9010) 'WRONG VALUE FOR -ICESPH- (>2)'
+         WRITE(LUPRI,9010) 'WRONG VALUE FOR -ICESPH- (>3)'
          NERR=NERR+1
       END IF
       IF(ICOMPCM.GT.3) THEN
@@ -283,23 +273,23 @@ C
 C/* Deck pcmsolvnt */
       SUBROUTINE PCMSOLVNT(WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
 ckr
-#include <aovec.h>
-#include <primit.h>
+#include "aovec.h"
+#include "primit.h"
 ckr
-#include <pcmdef.h>
+#include "pcmdef.h"
 C
       LOGICAL SOME,FNDLAB
 C
-#include <pcm.h>
-#include <pcmlog.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infvar.h>
+#include "pcm.h"
+#include "pcmlog.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infvar.h"
 C
       DIMENSION WORK(*)
 C
@@ -432,20 +422,20 @@ C
 C/* Deck makcav */
       SUBROUTINE MAKCAV(WORD,INPERR,ALLOPT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <infpri.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "infpri.h"
+#include "inftap.h"
 ckr
-#include <aovec.h>
-#include <maxorb.h>
-#include <primit.h>
+#include "aovec.h"
+#include "maxorb.h"
+#include "primit.h"
 ckr
 C
 C LASTAR: LAST ATOMIC RADIUS DEFINED
@@ -482,7 +472,7 @@ Clf            YE(J)=PCMCORD(2,J)*TOANGS
 Clf            ZE(J)=PCMCORD(3,J)*TOANGS
 Clf            NUCZ = INT(PCMCHG(J))
 Clf            RIN(J) = RVDW(NUCZ)
-Clf       	    IAN(J)=1
+Clf       	   IAN(J)=1
 Clf         ENDDO
 Clf      END IF
 C
@@ -592,15 +582,17 @@ C (this second option is active only for calculations without symmetry, i.e. C1)
       ELSE
         IPOLYG=INT(POLYG*1000)
       ENDIF
-      WRITE(LUPRI,*)'POLYG',IPOLYG
+      WRITE(LUPRI,*)'    POLYG',IPOLYG
 C
 
       WRITE(LUPRI,9010)
       NERR = 0
-      DO J=1,NESFP
-         WRITE(LUPRI,9020) J,XE(J),YE(J),ZE(J),RIN(J)
-         IF(RIN(J).LE.0) NERR=NERR+1
-      ENDDO
+      IF(ICESPH .LT. 3) THEN
+         DO J=1,NESFP
+            WRITE(LUPRI,9020) J,XE(J),YE(J),ZE(J),RIN(J)
+            IF(RIN(J).LE.0) NERR=NERR+1
+         ENDDO
+      END IF
       IF(NERR.GT.0) THEN
          WRITE(LUPRI,9030)
          CALL QUIT('Inconsistent input in PCMCAV')
@@ -640,18 +632,18 @@ C9000 FORMAT(' **** ERROR IN $',A8,' INPUT')
 C/* Deck pcmvnn */
       SUBROUTINE PCMVNN
 C
-#include <implicit.h>
-#include <pcmdef.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "pcmdef.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <symmet.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <priunit.h>
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "symmet.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0)
 C
@@ -677,21 +669,21 @@ C
 C/* Deck pcmjmat */
       SUBROUTINE PCMJMAT(VEC2,NUM2,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "inftap.h"
 C
       CHARACTER*8 RTNLBL(2)
       LOGICAL FNDLAB
       DIMENSION VEC2(NUM2), WRK(*)
 C
-#include <pcm.h>
-#include <pcmlog.h>
-#include <qm3.h>
-#include <gnrinf.h>
+#include "pcm.h"
+#include "pcmlog.h"
+#include "qm3.h"
+#include "gnrinf.h"
 C
 C     This routine computes J matrix  (interaction between induced
 C     nuclear charges and electronic potential due to the solute):
@@ -737,9 +729,9 @@ C
 C     /* Deck datsol */
       SUBROUTINE DATSOL(ZSOL,EPS,EPSINF,RSOLV,VMOL,TCE,STEN,DSTEN,CMF)
 C     
-#include <implicit.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infpri.h"
 C
 C To add a new solvent:
 C 1) Update the NSOL parameter
@@ -1033,19 +1025,19 @@ C/* Deck v2q */
 C
 C     Transform electronic potential to electronic charges
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
       PARAMETER (D0 = 0.0D0)
 Clf      DIMENSION CINVMT(NTS*NTS), TJ2(NTS)
       DIMENSION CINVMT(NTSIRR*NTS), TJ2(*), QCREAT(*)
       LOGICAL QCHECK, FNDLAB, NONEQQ
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
 C
       LPCMBK = LUPCMD
       NTNIRR = NTS * NTSIRR
@@ -1102,16 +1094,16 @@ C
 C C-INVMAT: Matrix to compute q = MV for equilibrium calculations
 C C-INVDIN: Matrix to compute q = MV for non-equilibrium response calculations
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
       DIMENSION WORK(*)
 Clf      LUPCMBK = LUPCMD
       LUPCMD = -10009
@@ -1203,11 +1195,11 @@ C 1/10/2002 L. Frediani
 C Calculation and inversion of the matrix FOR local field calculations
 C with PCM
 C
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D0=0.0D0,DP5=0.50D0,FPI=4.0D0*PI)
-#include <priunit.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "inftap.h"
       DIMENSION DPAK(NTSIRR,*),SPAK(NTSIRR,*),WORK(NTSIRR),IPVT(*)
       DIMENSION AS(*)
       NTS = (MAXREP + 1)*NTSIRR
@@ -1265,22 +1257,22 @@ C
 C
 C     DENMAT : if (EXP1VL) then input density matrix; else output matrix
 C     
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <codata.h>
-#include <infpri.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <pcmnuclei.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <orgcom.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "codata.h"
+#include "infpri.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "pcmnuclei.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "orgcom.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
 #include "infpar.h"
 #include "inftap.h"
 #include "krcom.h"
@@ -1292,7 +1284,9 @@ C
       LOGICAL TOFILE, TRIMAT, VCHECK, EXP1VL
 C
 Clf Do not insert other definitions below the following include
-#include <ibtfun.h>
+#include "ibtfun.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       NBASTOLD  = NBAST
       NNBASXOLD = NNBASX
@@ -1301,12 +1295,12 @@ C
       N2BASX = NBAST*NBAST
       IF (INTLAB .EQ. 'PCMBSOL') THEN
          MATDIM = N2BASX
-         IPRTYP = 13
+         IPRTYP = PCMBSOL_WORK
          NCOMP  = 3
          TRIMAT = .FALSE.
       ELSE
          MATDIM = NNBASX
-         IPRTYP = 11
+         IPRTYP = NPETES2_WORK
          NCOMP  = 1
          TRIMAT = .TRUE.
       END IF
@@ -1419,23 +1413,23 @@ C
 C Generation of the initial set of spheres if not defined in input
 C Luca Frediani 15 11 2004
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <codata.h>
-#include <symmet.h>
-#include <qm3.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "codata.h"
+#include "symmet.h"
+#include "qm3.h"
+#include "gnrinf.h"
       PARAMETER (LASTAR=99)
       PARAMETER (D0=0.0D0)
       DIMENSION RVDW(LASTAR)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C       van der Waals radii taken from "The Elements", 2nd edition,
 C       John Emsley, Clarendon Press, Oxford, 1991.  Unknown values
@@ -1487,14 +1481,15 @@ C
      &            + (CORD(2,N)-CORD(2,N)*PT(IBTAND(ISYMAX(2,1),K)))**2
      &            + (CORD(3,N)-CORD(3,N)*PT(IBTAND(ISYMAX(3,1),K)))**2
                DIST = SQRT(DS)
-               IF (DIST.LT.0.1) GOTO 5000
+               IF (DIST.LT.0.1D0) GOTO 5000
                I=I+1
                IF (I.GT.MXCENT) GOTO 5010
                PCMCORD(1,I)=CORD(1,N)*PT(IBTAND(ISYMAX(1,1),K))
                PCMCORD(2,I)=CORD(2,N)*PT(IBTAND(ISYMAX(2,1),K))
                PCMCORD(3,I)=CORD(3,N)*PT(IBTAND(ISYMAX(3,1),K))
                PCMCHG(I)=CHARGE(N)
-               RSPH(I)=RSPH(N)
+               RSPH(I) = RSPH(N)
+               !print *, 'nucdep',i,rsph(i)
             END IF
          END DO
       END DO
@@ -1534,10 +1529,11 @@ Clf  100 CONTINUE
 ClfC
 ClfC GENERATION OF ALL SPHERES FROM COORDINATES
 ClfC 
-ClfC ICESPH = 0 SPHERES ON ALL ATOMS WITH TABULATED RADII                  
-ClfC ICESPH = 1 SPHERES GIVEN FROM INPUT (X,Y,Z,R)                    
-ClfC ICESPH = 2 SPHERES ON SELECTED NUCLEI WITH RADII GIVEN FROM INPUT
-ClfC
+C ICESPH = 0 SPHERES ON ALL ATOMS WITH TABULATED RADII                  
+C ICESPH = 1 SPHERES GIVEN FROM INPUT (X,Y,Z,R)                    
+C ICESPH = 2 SPHERES ON SELECTED NUCLEI WITH RADII GIVEN FROM INPUT
+C ICESPH = 3 Spheres from mol file (Sphere=1,2...)
+
       IF(ICESPH.EQ.0) THEN
          NESFP = I
          DO J=1,NESFP
@@ -1566,6 +1562,7 @@ ClfC
                NESFP = NESFP + 1
                INA(NESFP) = J
                RIN(NESFP) = RSPH(J)
+               ALPHA(NESFP) = 1.0D0
                XE(NESFP)  = PCMCORD(1,J)
                YE(NESFP)  = PCMCORD(2,J)
                ZE(NESFP)  = PCMCORD(3,J)

@@ -27,7 +27,7 @@ dalton='
 **WAVE FUNCTIONS
 .DFT
  BLYP
-*END OF INPUT
+**END OF DALTON INPUT
 '
 
 test='

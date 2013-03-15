@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck sirctl */
       SUBROUTINE SIRCTL(ICONV,WORK,LWORK)
@@ -61,44 +51,48 @@ C   Box 518, S-75120 Uppsala
 C   Sweden
 C
 C
-#include <implicit.h>
+
+      use lucita_orbital_spaces
+
+#include "implicit.h"
 C
       DIMENSION WORK(LWORK)
-#include <iratdef.h>
-#include <dummy.h>
-#include <thrldp.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "thrldp.h"
 C
 C Used from common blocks:
 C   INFINP : DO*, MAXMAC
 C   INFORB : NCMOT,
 C   INFVAR : NCONF,JWOPSY,?
 C   INFTRA : USEDRC
-C   INFPRI : IPRERR, NWARN
+C   PRIUNIT : IPRSTAT, NWARN
 C   SCBRHF : RHFCAN, MXHFMA, MXHFMI, NFRRHF(8), IOPRHF, MAXFCK, MXDIIS, THRRHF
 C   GNRINF : WRINDX
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <inftra.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "inftra.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 ! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
-#include <dftcom.h>
+#include "dftcom.h"
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
-C
-#include <sirbkd.h>
+      real(8), allocatable :: tmp_space(:)
+ 
+#include "sirbkd.h"
 C
 C *** Call setup to define limits and I/O units
 C     and maybe open some files (depending on host)
@@ -115,13 +109,13 @@ C
       CALL GETTIM(TEND,WEND)
       TINP = TEND - TSTART
       WINP = WEND - WSTART
-      IF (IPRERR .GT. 0) THEN
-         WRITE (LUERR,'(//A,2F10.2)')
-     *      ' >>>> CPU and wall time for SIRINP :',TINP,WINP
+      IF (IPRSTAT .GT. 0) THEN
+         WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for SIRINP :',TINP,WINP
       END IF
       CALL FLSHFO(LUW4)
-      IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-      IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+      CALL FLSHFO(LUPRI)
+      CALL FLSHFO(LUSTAT)
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions
@@ -339,6 +333,8 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
+            IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
+     &         ' and QC-SCF is not implemented for QMMM')
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)
             FLAG(15) = RHFCAN
@@ -355,9 +351,9 @@ C
             THRLDG = SQRT(THRLDG)
             IF (THRGRD .LT. THRLDG) THEN
                WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit' 
-     *        ,' SCF convergence threshold:',THRGRD
-     *        ,' linear dependency limit  :',THRLDG
+     &         ' SIRCTL FATAL ERROR: SCF threshold below lin.dep. limit'
+     &        ,' SCF convergence threshold:',THRGRD
+     &        ,' linear dependency limit  :',THRLDG
                CALL QUIT(
      &            'SIRCTL error: SCF threshold below lin.dep. limit')
             END IF
@@ -368,9 +364,9 @@ C              ... orbital super symmetries may have been reordered
                CALL SIRSET(WORK,LWORK,OLDWOP)
                IAVERR = 0
                CALL AVECHK(WORK,LWORK,IAVERR)
-               IF (IAVERR .NE. 0) CALL QUIT(
-     &         'SIRCTL QCHF error: inconsistency in sup.sym. averaging')
-         END IF
+               IF (IAVERR .NE. 0) CALL QUIT('SIRCTL error: '//
+     &         'inconsistency in sup.sym. averaging before QC-SCF call')
+            END IF
 C
             CALL SIROPT(WORK,LWORK,ICONV)
             FLAG(15) = FLAGSV(15)
@@ -381,11 +377,14 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRERR .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
-     *      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
          CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
+
          IPRSIR = MPRSIR
          IPRI6  = MPRI6
          IPRI4  = MPRI4
@@ -409,10 +408,10 @@ C
          NUMRUN = NUMRUN + 1
          IF (DORHF .AND. ICONV .LE. 0) THEN
             WRITE (LUPRI,7020)
-            WRITE (LUERR ,7020)
+            WRITE (LUERR,7020)
             GO TO 8000
          END IF
- 7020    FORMAT(//'ERROR: Sirius MP2 calculation aborted because',
+ 7020    FORMAT(/'ERROR: Sirius MP2 calculation aborted because',
      *      ' preceding Hartree-Fock not converged.')
 C
          FLAG( 9) = .TRUE.
@@ -427,11 +426,13 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRERR .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
-     *      ' >>>> CPU and wall time for MP2CTL :',TUSED,WUSED
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for MP2CTL :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for MP2 :',TUSED,WUSED
          CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
          DFT_SPINDNS = DFT_SPINDNS_SAVE
@@ -559,11 +560,14 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRERR .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
-     *      ' >>>> CPU and wall time for CIMAIN :',TUSED,WUSED
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for CIMAIN :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for CI :',TUSED,WUSED
          CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
+
          IF (DOCINO) THEN
             FLAG(14) = .FALSE.
             FLAGSV(14) = .FALSE.
@@ -639,34 +643,32 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRERR .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
-     *      ' >>>> CPU and wall time for SIROPT :',TUSED,WUSED
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for MCSCF :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for MCSCF :',TUSED,WUSED
          CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
       END IF
 C
-      IF (ICONV .EQ. -1) THEN
-C        *** set ICONV to converged ***
-         ICONV = 1
-      END IF
       IF (ICONV .EQ. 0) THEN
          NWARN = NWARN + 1
          WRITE (LUERR,7070)
          WRITE (LUPRI,7070)
          IF (LUW4.NE.LUPRI) WRITE (LUW4,7070)
       END IF
- 7070 FORMAT(//' WARNING: wave function not converged')
+ 7070 FORMAT(//'@ ******* WARNING: wave function not converged *******')
+C
 C
 C *** Output sections
 C
 C *** ORBITAL OUTPUT
-      IF (LUPROP .GE. 0) CALL GPCLOSE(LUPROP,'KEEP')
       IF (FLAG(5) .AND. NUMRUN .GT. 0) THEN
          CALL SIROUT(ICONV,WORK,LWORK)
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
       IF (LUINF .GT.0) CALL GPCLOSE(LUINF,'DELETE')
 C
@@ -676,7 +678,7 @@ C
       IF (DONEVPT) THEN
        IF (ICONV .EQ. 0) THEN
          WRITE (LUPRI,'(//A)')
-     &      ' WARNING: NEVPT2 skipped because MCSCF not converged.'
+     &      '@ WARNING: NEVPT2 skipped because MCSCF not converged.'
        ELSE
          JRDMO = 9
          KCMO  = 1
@@ -692,7 +694,69 @@ C            transformation  /hjaaj June 09
          ELSE
             CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
          END IF
+
+         CALL GETTIM(TSTART,WSTART)
          CALL KOOPRO4(WORK,LWORK)
+         CALL GETTIM(TEND,WEND)
+         TUSED = TEND - TSTART
+         WUSED = WEND - WSTART
+
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for NEVPT2 :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for NEVPT2 :',TUSED,WUSED
+         CALL FLSHFO(LUW4)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
+
+       END IF
+      END IF
+C
+C ***************************************************
+C     *** LUCITA ***
+C
+      IF (DOLUCITA) THEN
+       IF (ICONV .EQ. 0) THEN
+         WRITE (LUPRI,'(//A)') '@ WARNING: '//
+     &      'LUCITA skipped because requested HF/MCSCF not converged.'
+       ELSE
+         kfirst_lucita = 1
+         JRDMO  = 9
+         KFRSAV = 1
+         KFREE  = KFRSAV
+         LFREE  = LWORK
+         CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+         CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
+
+         CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
+                                          ! orbital occupations for TRACTL
+         JTRALVL = 0 ! only active orbitals for all four indices
+         USEDRC  = .FALSE. ! Dirac format 2-el. integrals not needed
+
+!        integral transformation
+         CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
+
+!        prepare (aa|aa) 1e-/2e- integral file to be read within LUCITA
+         CALL MAKE_LUCITA_INTEGRALS(WORK(KCMO),WORK(KFREE),LFREE)
+
+         CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
+
+!        perform large-scale (GAS)CI calculation with LUCITA
+         CALL GETTIM(TSTART,WSTART)
+         CALL LUCITA(WORK,LFREE)
+         CALL GETTIM(TEND,WEND)
+         TUSED = TEND - TSTART
+         WUSED = WEND - WSTART
+
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for LUCITA CI :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for LUCITA CI :',TUSED,WUSED
+         CALL FLSHFO(LUW4)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
+
+         CALL SET_INFORB_LUCITA('RESET ')
        END IF
       END IF
 C
@@ -705,8 +769,15 @@ C
          CALL SIRPOP('FINAL',WORK(KDV),WORK(KWRK1),LWRK1)
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
+#if defined(BUILD_GEN1INT)
+C... added by Bin Gao, to generate cube files
+      if (DO_CUBE) then
+        call gen1int_host_get_cube(LFREE, WORK(KFREE), LUPRI, IPRSIR)
+        call gen1int_host_cube_finalize()
+      end if
+#endif
 C
  8000 CALL GETTIM(TEND,WEND)
       TIMSIR = TEND - TIMSIR
@@ -717,22 +788,24 @@ C
          WRITE (LUW4,7100)  TIMSIR, WALSIR
          CALL TSTAMP(' ',LUW4)
       END IF
-      IF (IPRERR .GT. 0)  THEN
-         WRITE (LUERR,7100) TIMSIR, WALSIR
-         CALL TSTAMP(' ',LUERR)
+      IF (IPRSTAT .GT. 0)  THEN
+         WRITE (LUSTAT,7100) TIMSIR, WALSIR
+         CALL TSTAMP(' ',LUSTAT)
       END IF
  7100 FORMAT(//
-     *   /' >>>> Total CPU  time used in SIRIUS :',F10.2,' seconds',
-     *   /' >>>> Total wall time used in SIRIUS :',F10.2,' seconds')
+     &   /' >>>> Total CPU  time used in SIRIUS :',F10.2,' seconds',
+     &   /' >>>> Total wall time used in SIRIUS :',F10.2,' seconds')
 C
       IF (NINFO .GT. 0) THEN
          WRITE (LUPRI,7210) NINFO
          IF (LUW4.NE.LUPRI) WRITE (LUW4,7210) NINFO
+         WRITE (LUSTAT,7210) NINFO
          WRITE (LUERR,7210) NINFO
       END IF
       IF (NWARN .GT. 0) THEN
          WRITE (LUPRI,7200) NWARN
          IF (LUW4.NE.LUPRI) WRITE (LUW4,7200) NWARN
+         WRITE (LUSTAT,7200) NWARN
          WRITE (LUERR,7200) NWARN
       END IF
  7200 FORMAT(/' NOTE:',I5,' warnings have been issued.',
@@ -740,12 +813,13 @@ C
  7210 FORMAT(/' NOTE:',I5,' informational messages have been issued.',
      &       /' Check output, result, and error files for "INFO".')
 C
-      IF (FLAG(16)) CALL GPCLOSE(LUSOL,'KEEP')
-      CALL GPCLOSE(LUIT1,'KEEP')
-      IF (LUH2AC .GT. 0) CALL GPCLOSE(LUH2AC,'DELETE')
+      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP') ! AOPROPER   - property integrals
+      IF (LUSOL  .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP') ! AOSOLINT   - multipole integrals for spherical cavity
+      IF (LUPCMD .GT. 0) CALL GPCLOSE(LUPCMD,'KEEP') ! PCMDATA    - PCM data
+      IF (LUIT1  .GT. 0) CALL GPCLOSE(LUIT1,'KEEP')  ! SIRIUS.RST - restart info
       IF (LUW4 .NE. LUPRI) CALL GPCLOSE(LUW4,'KEEP')
+      IF (LUH2AC .GT. 0) CALL GPCLOSE(LUH2AC,'DELETE') ! H2AC on disk for large CI
 C
-      IF (PCM) CALL GPCLOSE(LUPCMD,'KEEP')
       CALL QEXIT('SIRCTL')
       RETURN
 C *** end of SIRCTL.
@@ -754,8 +828,8 @@ C
 C  /* Deck sbdorb */
       BLOCK DATA SBDORB
 C     Initialize MULD2H in common block /INFORB/
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 C
 C     MULTIPLICATION TABLE FOR SYMMETRIES (MULD2H is in /INFORB/)
 C
@@ -773,8 +847,8 @@ C  /* Deck sbdgetd */
 C 900302-hjaaj
 C Define default values for CBGETD
 C To be safe, include EXTERNAL SBDGETD in main program.
-#include <implicit.h>
-#include <cbgetdis.h>
+#include "implicit.h"
+#include "cbgetdis.h"
       DATA DISTYP,IADINT,IADH2,IADH2X,IADH2D /1,4*-1/
       END
 C  /* Deck sbdtra */
@@ -785,8 +859,8 @@ C Initialization moved to here because NEWTRA may be set
 C both in dalton and sirius input modules.
 C To be safe, include EXTERNAL SBDTRA in sirctl
 C
-#include <implicit.h>
-#include <inftra.h>
+#include "implicit.h"
+#include "inftra.h"
       DATA NEWTRA /.FALSE./
       END
 C  /* Deck sbddim */
@@ -794,8 +868,8 @@ C  /* Deck sbddim */
 C 010321 hjaaj
 C Initialize variables in /INFDIM/
 C
-#include <implicit.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "infdim.h"
       DATA MWORK /8 000 000/
 C
 C     Re MWORK:

@@ -193,35 +193,35 @@ fi
 CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * (\-|\-0)\.03404007" $log | wc -l`
 CRIT2=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * (\-|\-0)\.00944547" $log | wc -l`
 CRIT3=`$GREP "Evdw  \= Sum_a\[ A_ma\/\|R_ma\|\^12 \- B_ma\/\|R_ma\|\^6 \] \| * ( |0)\.00000000" $log | wc -l`
-CRIT4=`$GREP "E\(MM\/MM\) \= Eelec \+ Epol \+ Evdw                  \| * (\-|\-0)\.04348553" $log | wc -l`
+CRIT4=`$GREP "E\(MM\/MM\) \= Eelec \+ Epol \+ Evdw                  \| * (\-|\-0)\.0434855[34]" $log | wc -l`
 CRIT5=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * (\-|\-0)\.01098929" $log | wc -l`
 CRIT6=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^\(QMclassic\)_a \]   \| * (\-|\-0).00277913" $log | wc -l`
 CRIT7=`$GREP "E\(\"QM\"\/MM\) \= Eelec \+ Epol \+ Evdw                \| * (\-|\-0)\.01376842" $log | wc -l`
 CRIT8=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * (\-|\-0)\.00931089" $log | wc -l`
 CRIT9=`$GREP "(\-|\-0)\.00908282.. \| * (\-|\-0)\.00186631.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.01094914.." $log | wc -l`
-CRIT10=`$GREP "\-598\.35480142.. \| \-598\.36575057.. \|    ( |0)\.00013457.. \|   ( |0)\.00000000.." $log | wc -l`
+CRIT10=`$GREP "\-598\.3548014... \| \-598\.3657505... \|    ( |0)\.00013457.. \|   ( |0)\.00000000.." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
 CTRL[1]=13
 ERROR[1]="THE CLASSICAL OR QM/MM ENERGY TERMS ARE NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=` $GREP "x * ( |0)\.39849697 * 1\.01287814" $log | wc -l`
-CRIT2=` $GREP "y * (\-|\-0)\.43901603 * \-1\.11586733" $log | wc -l`
-CRIT3=` $GREP "z * ( |0)\.09512696 * ( |0)\.24178860" $log | wc -l`
+CRIT1=` $GREP "x * ( |0)\.39849697 * 1\.0128781." $log | wc -l`
+CRIT2=` $GREP "y * (\-|\-0)\.43901603 * \-1\.1158673." $log | wc -l`
+CRIT3=` $GREP "z * ( |0)\.0951269[56] * ( |0)\.241788.." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
 
 # Static dipole-dipole polarizability compared:
-CRIT1=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 19\.929439" $log | wc -l`
-CRIT2=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.2158392" $log | wc -l`
-CRIT3=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.87462360" $log | wc -l`
-CRIT4=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.2158392" $log | wc -l`
-CRIT5=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 7\.1122762" $log | wc -l`
-CRIT6=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.70640980" $log | wc -l`
-CRIT7=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.87462360" $log | wc -l`
-CRIT8=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.70640980" $log | wc -l`
-CRIT9=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * 5\.5869192" $log | wc -l`
+CRIT1=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 19\.92943.." $log | wc -l`
+CRIT2=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.215839." $log | wc -l`
+CRIT3=` $GREP "XDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * \-0*\.874623." $log | wc -l`
+CRIT4=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.215839." $log | wc -l`
+CRIT5=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 7\.112276." $log | wc -l`
+CRIT6=` $GREP "YDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.706409.." $log | wc -l`
+CRIT7=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.874623.." $log | wc -l`
+CRIT8=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.706409.." $log | wc -l`
+CRIT9=` $GREP "ZDIPLEN  \(unrel.\) * ( |0|\-|\-0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * 5\.586919." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[3]=9
 ERROR[3]="STATIC POLARIZABILITY COMPONENTS ARE NOT CORRECT"

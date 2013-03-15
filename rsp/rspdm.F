@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck rspdm */
       SUBROUTINE RSPDM(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR, RHO1,RHO2,
@@ -52,7 +42,7 @@ C  RHO2(IJKL) =    RHO2[NASHT,NASHT,NASHT,NASHT]
 C
 C  RHO2(IJKL) =    (L/ E(IJ,KL) - DELTA(JK) E(IL) /R )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CL(*), CR(*),RHO1(NASHT,*)
       DIMENSION RHO2(NASHT,NASHT,NASHT,*)
@@ -65,12 +55,12 @@ C   INFINP : LSYM,FLAG(*)
 C   INFORB : NASHT,N2ASHX,NNASHX
 C   INFVAR : ?? not used ?? /920920-hjaaj
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
 C
 C
       INTEGER RHOTYP
@@ -193,25 +183,32 @@ C  RHO2(IJKL) =    RHO2[NASHT,NASHT,NASHT,NASHT]
 C
 C  RHO2(IJKL) =    (CLREF/ E(IJ,KL) - DELTA(JK) E(IL) /-CR )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CLREF(*), CR(KZCONF,*),RHO1(NASHDI,NASHDI,*)
       DIMENSION RHO2(NASHDI*NASHDI,NASHDI*NASHDI,*)
       DIMENSION XINDX(*),WORK(*)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "inforb.h"
 C
       PARAMETER ( DM1 = -1.0D0 )
       LOGICAL  TDM, NORHO2
 C
       CALL QENTER('RSPTDM')
-      IF (SOPPA) THEN
+C      IF (SOPPA) THEN
+C         WRITE (LUPRI,*) 'RSPTDM FATAL ERROR: called in SOPPA calc.'
+C         CALL QUIT('RSPTDM FATAL ERROR: called in SOPPA calc.')
+C      END IF
+      IF (.NOT. SOPRPA .AND. SOPPA) THEN
          WRITE (LUPRI,*) 'RSPTDM FATAL ERROR: called in SOPPA calc.'
+         WRITE (LUPRI,*) 'Full solvent model SOPPA not implemented.'
+         WRITE (LUPRI,*) 'Only SOPPA/RPA (JCC, 2012-2022, 33, (2012))'
+         WRITE (LUPRI,*) 'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
          CALL QUIT('RSPTDM FATAL ERROR: called in SOPPA calc.')
       END IF
       DO 100 ICSIM = 1,NCSIM
@@ -266,21 +263,21 @@ C  RHO2(IJKL) =    RHO2[NASHT,NASHT,NASHT,NASHT]
 C
 C  RHO2(IJKL) =    (CL/ E(IJ,KL) - DELTA(JK) E(IL) /-CR )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CL(KZVARL,*), CR(KZVARR,*)
       DIMENSION RHO1(NASHDI,NASHDI,*)
       DIMENSION RHO2(NASHDI*NASHDI,NASHDI*NASHDI,*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infdim.h>
-#include <qrinf.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infdim.h"
+#include "qrinf.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
       LOGICAL  TDM, NORHO2, LREF
@@ -416,14 +413,14 @@ C
 C     IPVDIS = 4  [**,KL] IN PVDEN[*,*]
 C                 SQARE PACKED DISTRIBUTIONS IN PVX
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION PVDEN(NASHDI,*),PVX(NASHDI,NASHDI,NASHDI,*)
 C
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
       PARAMETER ( D1 = 1.0D0 )
       IF ( IPRRSP.GT.2000 ) THEN

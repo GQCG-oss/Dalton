@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ortrel */
       SUBROUTINE ORTREL(WORK,LWORK,PASS)
@@ -45,9 +35,9 @@ C
 C      This new driver routine calls MCORL or CCORL,
 C      depending on wave function type.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       LOGICAL PASS
       DIMENSION WORK(LWORK)
@@ -55,7 +45,7 @@ C
 C      Used from common blocks:
 C       /ABAINF/: MOLHES,DIPDER
 C
-#include <abainf.h>
+#include "abainf.h"
 C
 C     Return immediately if not (molhes or dipder or qpgrad),
 C        we do not want to open LUSFDA and LUGDR without using them.
@@ -77,11 +67,11 @@ C     Purpose:
 C      Calculate geometry response gradients and
 c      reorthonormalization terms (apart from tr(Sab*F))
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
 C
       LOGICAL RUNORT, OLDRD, OLDDX, PASS, DOREAL, DOIMAG, DOSFD,
      &        DOBRHS, DOPRHS
@@ -94,15 +84,15 @@ C       /INFDIM/: NVARMA
 C       /NUCLEI/: NUCDEP
 C       /INFTAP/: LUGDR,LURDR, LRGDR,LRRDR, NBGDR,NBRDR
 C
-#include <abainf.h>
-#include <dummy.h>
-#include <cbisol.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "abainf.h"
+#include "dummy.h"
+#include "cbisol.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       DOSFD  = ((MOLHES .OR. DIPDER .OR. QPGRAD) .AND. .NOT. HELFEY)
      &         .OR. MAGSUS
@@ -229,14 +219,14 @@ C
       END
 C  /* Deck ortinp */
       SUBROUTINE ORTINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 3)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbiort.h>
+#include "abainf.h"
+#include "cbiort.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*REORT ')
@@ -304,10 +294,10 @@ C  /* Deck ortini */
 C
 C     Initialize /CBIORT/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbiort.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbiort.h"
 C
       IPRINT = IPRDEF
       SKIP   = .NOT.MOLHES
@@ -325,26 +315,26 @@ C      Evaluate reorthonormalization term (apart from tr(Sab F) ) to
 C      HESMOL(a,b) = sum(ij) SKMAT(ij,a) * YXMAT(ij,b)
 C      Contribution to solvent Hessian Gl*Tlma*Tlmb
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
       PARAMETER (D2 = 2.0D0)
       DIMENSION SKMAT(LEN), YXMAT(LEN), GLM(LMTOT),
      &          TLMA(LMTOT), TLMB(LMTOT), HESFS1(MXCOOR,MXCOOR),
      &          HSOLTT(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
       LOGICAL PASS
-#include <taysol.h>
-#include <cbisol.h>
-#include <cbiort.h>
-#include <energy.h>
-#include <taymol.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dorps.h>
+#include "taysol.h"
+#include "cbisol.h"
+#include "cbiort.h"
+#include "energy.h"
+#include "taymol.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dorps.h"
 C
       IF (SKIP) RETURN
       CALL QENTER('REORT')

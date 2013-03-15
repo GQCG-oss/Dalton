@@ -1,46 +1,41 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       subroutine dalcip(nela,nelb,ndet,c,ne,trou,part,nd,nm,
      *           inact,iact,nact,lfermi,nisht,nsym,LUN98,mult)
-#include <implicit.h>
-#include <priunit.h>
-#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)||defined(VAR_GFORTRAN)) && defined (NO_F90)
-      return
-      end
-#else
+#include "implicit.h"
+#include "priunit.h"
+
+! ** Before 2011, the nevpt2 code was not compiled unless PGF90, GFORTRAN or IFORT compiler.
+! ** Now code is compiled for all compilers, if your compiler cannot handle
+! ** the code then do NOT #define GO_ON_COMP in dalcip.F (below) and koopro4.F /Jan. 2011
+
+! #if !(defined(VAR_IFORT)||defined(VAR_PGF90)||defined(VAR_GFORTRAN))
+!       return
+!       end
+! #else
 #define GO_ON_COMP
-#endif      
+! #endif      
 #ifdef GO_ON_COMP
       dimension c(*),ne(*),trou(*),part(*),nd(*)
 c      dimension c(*),ast(nela,*),bst(nelb,*),ne(*),trou(*),part(*),nd(*)
@@ -49,10 +44,6 @@ c      integer*1 ast,bst
       integer astr(1600),bstr(1600),iecci(0:100)
       character*1 zwspin(600),zplus,zmoins
       dimension inact(8),iact(8)
-#ifdef VAR_G77
-      integer*1 occu
-      dimension occu(1),iel(1),npos(1000)
-#endif
 c     integer tri
 c     tri(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
       zplus='+'
@@ -106,16 +97,8 @@ c        elseif (mod((nela-nelb),2).eq.1)then !doublets, quartets,...
          nec=ne(idet)
          if(idet.lt.ndet)nd(idet+1)=nd(idet)+nec
         enddo
-#if !defined(VAR_G77)
       call ascend(nd,ne,trou,part,c,ndet,nm,iecci,nexmax,nocc,norb
      $     ,mult,iorb,ispin)
-#else
-      i_occu=ialloi1(occu,norb*ndet)
-      i_iel=ialloi4(iel,norb)
-c      i_npos=ialloi4(npos,norb)
-      call ascend(nd,ne,trou,part,c,ndet,nm,iecci,nexmax,nocc,norb
-     $     ,mult,iorb,ispin,occu(i_occu),iel(i_iel),npos)
-#endif
 c     if(nela.eq.nelb)then
 c      if(mult.eq.1)then
 c         call orderfe3(nexmax,iecci,ndet,c,nd,ne,trou,part,nm,ina,ast,
@@ -418,7 +401,7 @@ c**************************************************************
       end
 c****************************************************************
       subroutine orderfe(ifirst,ilast,c,ne,nd,trou,part,npos)
-#include <implicit.h>      
+#include "implicit.h"      
       DIMENSION c(*)
       integer*2 ne(*),trou(*),part(*)
       dimension nd(*),npos(*)
@@ -562,26 +545,16 @@ c
        return
        end
 c---------------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine ascend(nd,ne,trou,part,c,ndet,nm,iecci,nexmax,nocc,norb
      $     ,mult,iorb,ispin)
-#include <implicit.h>
-#else
-      subroutine ascend(nd,ne,trou,part,c,ndet,nm,iecci,nexmax,nocc,norb
-     $     ,mult,iorb,ispin,occu,iel,npos)
-#include <implicit.h>
-      integer*1 occu(norb,ndet)
-      dimension iel(*),npos(*)
-#endif
+#include "implicit.h"
       DIMENSION c(*)
       dimension nd(*),ne(*),trou(*),part(*),iorb(*),ispin(*)
       integer*2 ne,trou,part,ibu(100),ipa(100),iorb,ispin
       integer iecci(0:100)
       integer*1 o
-#if !defined(VAR_G77)
       integer*1 occu
       allocatable occu(:,:),iel(:),npos(:)
-#endif
       nexmax=0
       do i=0,100
          iecci(i)=0
@@ -605,12 +578,10 @@ c---------------------------------------------------------------
       rewind lun15
       nd(1)=0
       idet1=1
-#if !defined(VAR_G77)
       allocate(occu(norb,ndet))
       allocate(iel(norb))
 c      allocate(npos(norb))   !wrong should be maximum of a deter space
       allocate(npos(1000))    !covers 12-open shell
-#endif
       do iec=0,nexmax
        do idet=idet1,idet1+iecci(iec)-1
         read(lun15)c(idet),nec,(ibu(i),ipa(i),i=1,nec)

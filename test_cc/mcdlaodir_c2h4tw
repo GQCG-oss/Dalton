@@ -28,7 +28,7 @@ H1     2.29605         1.77708         .155470
 #  DALTON INPUT 
 #######################################################################
 cat > mcdlaodir_c2h4tw.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
@@ -45,7 +45,7 @@ XYZ-ALL
 .CC
 *ORBITAL
 .NOSUPSYM
-*HF INPUT
+*SCF INPUT
 .THRESH
  1.0d-10
 *CC INPUT
@@ -93,7 +93,7 @@ YDIPLEN dh/dBX  ZDIPLEN
 .USEPL1
 .SELSTA
  3 1
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
@@ -162,7 +162,7 @@ PASSED=1
 for i in 1 2 3 4 5 6
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

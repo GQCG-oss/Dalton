@@ -1,36 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+#define OLD_DIAINT
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 #include "single.h"
 C
 C File:  abacus/abarint.F
@@ -3559,6 +3550,7 @@ C
       call output(dident,1,ncrdhs,1,ncrdhs,ncrdhs,ncrdhs,-1,lupri)
       write (lupri,*) 'eval'
       call output(eval,1,1,1,ncrdhs,1,ncrdhs,-1,lupri)
+      write (lupri,*) 'WRK(1:40)',WRK(1:40)
       call flshfo(lupri)
 #endif
       
@@ -4485,6 +4477,7 @@ C
       DIMENSION EVEC(MX2CRD,MX2CRD), BMTINV(MXRCRD,MXCOOR)
       DIMENSION CSTEP(MXCOOR), Q(MXCENT), IQM(MXCENT)
       DIMENSION TMPVEC(IINTCR), TMPMAT(IINTCR*IINTCR)
+      DIMENSION RADIUS_PCM(MXCENT), ALPHA_PCM(MXCENT)
       SAVE INDOLD
       DATA INDOLD /999/
 #include "ibtfun.h"
@@ -4633,8 +4626,9 @@ C
       I = NCLINE(IATOM)-1
       DO 50 J = 1, NONTYP
          IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
-            CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),MXAQN,
-     &                 BASIS,ATOMBA,LMULBS,BSNM,KSPH)
+            CALL LINE5R(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),
+     &                  MXAQN,BASIS,ATOMBA,LMULBS,BSNM,
+     &                  RADIUS_PCM(J), ALPHA_PCM(J))
          ELSE
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
@@ -4642,7 +4636,7 @@ C
          I = NCLINE(IATOM)-1
  50   CONTINUE
 C
-C     We run over all atom types and all symmetry independant centres and
+C     We run over all atom types and all symmetry independent centers and
 C     and expand them to all atoms. The molecule input is modified
 C     according to this.
 C
@@ -4689,7 +4683,8 @@ C
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
          IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
             CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
-     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
+     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,
+     &           RADIUS_PCM(ITYP), ALPHA_PCM(ITYP))
           ELSE
             WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
          END IF

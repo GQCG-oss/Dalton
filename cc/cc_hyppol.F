@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c /* deck cc_hyppol */
 *=====================================================================*
@@ -53,19 +43,19 @@ c /* deck cc_hyppol */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccqrinf.h>
-#include <ccr1rsp.h>
-#include <ccrc1rsp.h>
-#include <ccroper.h>
-#include <cclists.h>
-#include <second.h>
-#include <dummy.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccqrinf.h"
+#include "ccr1rsp.h"
+#include "ccrc1rsp.h"
+#include "ccroper.h"
+#include "cclists.h"
+#include "second.h"
+#include "dummy.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -1068,9 +1058,9 @@ c /* deck ccqrdisp */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1706,11 +1696,11 @@ c /* deck ccqhypprt */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
 
 
       CHARACTER*15  BLANKS
@@ -1756,7 +1746,7 @@ c /* deck ccqhypprt */
       ELSE IF (CC3) THEN
          CALL AROUND120( BLANKS//'FINAL CC3'//STRING(1:45)//BLANKS )
       ELSE
-         CALL QUIT('CCQHYPPRT called for an unkown '//
+         CALL QUIT('CCQHYPPRT called for an unknown '//
      &             'Coupled Cluster model.')
       END IF
 
@@ -1807,6 +1797,9 @@ c /* deck ccqhypprt */
          IF (ISAPROP.EQ.0) SIGN = +ONE
 
          IFREQ = 1
+cmbh
+         PROP=0.0d0
+cmbh end
          IF (MULD2H(ISYMA,ISYMB).EQ.ISYMC) THEN
 
            PROP  = -HALF*(HYPERPOL(IFREQ,IOPER,1) +
@@ -2112,7 +2105,7 @@ C
         ELSE IF (CCSD) THEN
            CALL AROUND120( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
         ELSE
-           CALL QUIT('CCQHYPPRT called for an unkown '//
+           CALL QUIT('CCQHYPPRT called for an unknown '//
      &             'Coupled Cluster model.')
         END IF
 C
@@ -2304,11 +2297,11 @@ c /* deck ccqexpprt */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
 
 
       LOGICAL TSTISA
@@ -2419,11 +2412,11 @@ c /* deck ccqdisprt */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
 
       INTEGER KA, KB, KC, KCP, KD, KDP, KE, KEP
       PARAMETER (KA=1,KB=2,KC=3,KCP=4,KD=5,KDP=6,KE=7,KEP=8)
@@ -2732,7 +2725,7 @@ C
 C  /* Deck around120 */
       SUBROUTINE AROUND120(HEAD)
       CHARACTER HEAD*(*)
-#include <priunit.h>
+#include "priunit.h"
       LNG = LEN(HEAD) + 2
       IND = (120 - LNG)/2 + 1
       WRITE (LUPRI, '(//,120A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'

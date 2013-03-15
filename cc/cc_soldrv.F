@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cc_soldrv */
 C--------------------------------------------------------------------
@@ -78,18 +68,22 @@ C  Sonia Coriani,    Mar 2000, added PL1 to ELn/ERn special batching
 C  Christof Haettig, Apr 2002, small modifications for CC3
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "leinf.h"
+Cholesky
+#include "ccdeco.h"
+Cholesky
+
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.) 
@@ -131,6 +125,12 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*10
       LOGICAL LTAKE, LPROJECT, LREDS
+
+Cholesky
+      PARAMETER (NCHCHK = 2)
+      CHARACTER*3 CHOCHK(NCHCHK)
+      DATA CHOCHK /'L0 ','R1 '/
+Cholesky
 
 C
       CALL QENTER('CC_SOLDRV')
@@ -200,6 +200,42 @@ C
          CALL QUIT('Model not CCS or CC2 or CCSD or CC3 in CC_SOLRSP')
       ENDIF
  
+C     Cholesky Check Section.
+C     =======================
+C-tbp: For Cholesky, most of the equations are not yet implemented,
+C      and CC2 is the only possible model! Triplet? nope...
+
+      IF (CHOINT) THEN
+         IF (.NOT. CC2) THEN
+            WRITE(LUPRI,'(A,A,A)')
+     &      ' CC_SOLDRV: Cholesky decomposed integrals not implemented',
+     &      ' for ',MODEL
+            CALL QUIT('Cholesky '//MODEL
+     &                //' not implemented in CC_SOLDRV')
+         ENDIF
+         IF (TRIPLET) THEN
+            WRITE(LUPRI,'(A,A)')
+     &      ' CC_SOLDRV: Cholesky decomposed integrals not implemented',
+     &      ' for triplets'
+            CALL QUIT('Triplet Cholesky not implemented in CC_SOLDRV')
+         ENDIF
+         LFOUND = 0
+         DO ICHECK = 1,NCHCHK
+            IF (LIST(1:3) .EQ. CHOCHK(ICHECK)) THEN
+               LFOUND = 1
+               GO TO 111
+            ENDIF
+         ENDDO
+  111    CONTINUE
+         IF (LFOUND .EQ. 0) THEN
+            WRITE(LUPRI,'(A,A,A)')
+     &      ' CC_SOLDRV: Cholesky decomposed integrals not implemented',
+     &      ' for ',LIST
+            CALL QUIT('Cholesky '//LIST(1:3)
+     &                //' eqs. not implemented in CC_SOLDRV')
+         ENDIF
+      ENDIF
+
 C---------------------------------------------------------------------
 C        For CC3: switch batching OFF 
 C        (presently we can not solve CC3 equations simultaneously,
@@ -220,7 +256,8 @@ C        Initialize Variables.
 C-----------------------------
  
          ISYMTR = ISYM
-         IF (CCS) THEN
+Chol     IF (CCS) THEN
+         IF (CCS .OR. (CHOINT .AND. CC2)) THEN
            NCCVAR = NT1AM(ISYMTR)
          ELSE
            NCCVAR = NT1AM(ISYMTR) + NT2AM(ISYMTR)
@@ -244,15 +281,22 @@ C-------------------------------------------------------------------
 C---------------------------------------------------------------------
 C        Make batching over nr. of simultaneous vectors to be solved:
 C        all or take the number from input.
+C        For Cholesky CC2 the Jacobian is frequency-dependent. Thus,
+C        we solve the equations each frequency. (I.e., the batch
+C        length must be the number of unique operators in each sym.).
 C---------------------------------------------------------------------
          IF (NEQSYM .EQ. 0 ) THEN
             NSIM = 0
             NBAT = 0
          ELSE
-            IF ( NSIMLE .EQ. 0 ) THEN
-               NSIM  = NEQSYM
+            IF (CHOINT) THEN
+               CALL CC_CHONSIM(LIST,ISYM,NEQSYM,NSIMLE,NSIM)
             ELSE
-               NSIM  = NSIMLE
+               IF ( NSIMLE .EQ. 0 ) THEN
+                  NSIM  = NEQSYM
+               ELSE
+                  NSIM  = NSIMLE
+               END IF
             ENDIF
             NBAT  = (NEQSYM-1)/NSIM + 1
          ENDIF
@@ -564,6 +608,20 @@ C-------------------------------------------------------------------
      &           'Error in batching for ERn/ELn/PL1 equations.')
               END DO
             END IF
+C
+C----------------------------------------------------------------------
+C           For Cholesky CC2 we need to delete files for eff. rhs
+C           for 1st-order amplitudes (if the files should exist from
+C           a previous run).
+C----------------------------------------------------------------------
+C
+            IF ((CHOINT.AND.CC2) .AND. (LIST(1:2).EQ.'R1')) THEN
+               ILSTXI = IRST
+               DO I = 1,NSIMR
+                  CALL CC_RMRSP('eO1',ILSTXI,ISYM)
+                  ILSTXI = ILSTXI + 1
+               ENDDO
+            ENDIF
  
 C--------------------------------
 C           Create start vectors.
@@ -596,6 +654,75 @@ C
 C---------------------------------------------------------
 C           Analysis of solution vectors and save on disk.
 C---------------------------------------------------------
+C
+            IF (CHOINT .AND. CC2) THEN
+
+C              Cholesky section.
+C              -----------------
+
+               NVARPT = NT1AM(ISYM) + 2*NALLAI(ISYM) + 1
+
+               KWRK2 = KWRK1 + NVARPT
+               LWRK2 = LWORK - KWRK2
+
+               IF (LWRK2 .GT. 0) THEN
+                  NSIMUL = MIN(NSIMR,LWRK2/NT1AM(ISYM))
+                  IF (NSIMUL .LE. 0) THEN
+                    CALL QUIT('Insufficient memory in CC_SOLDRV-Chopr2')
+                  ENDIF
+               ELSE
+                  CALL QUIT('Insufficient memory in CC_SOLDRV-Chopr1')
+               ENDIF
+
+               NBATCH = (NSIMR - 1)/NSIMUL + 1
+               IOFF1  = 1
+               ICOUNT = 0
+               ILSTNR = IRST
+
+               DO I = 1,NBATCH
+
+                  IOFF2 = MIN(NSIMUL,NSIMR  - (I-1)*NSIMUL)
+                  CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
+     *                        TRIPLET,CCR12,NREDH,IOFF1,IOFF2,
+     *                        WORK(KSOLEQ),WORK(KWRK2),WORK(KWRK1))
+
+                  DO J = 1,IOFF2
+
+                     ICOUNT = ICOUNT + 1
+
+                     KT1 = KWRK2 + NT1AM(ISYM)*(ICOUNT - 1)
+
+                     IF (IPRINT .GT. 1) THEN
+                        WRITE(LUPRI,'(//1X,A)')
+     *                  'Analysis of CC Response/Cauchy vector:'
+                        WRITE(LUPRI,'(1X,A)')
+     *                  '--------------------------------------'
+                        CALL CC_PRAM(WORK(KT1),PT1,ISYM,.FALSE.)
+                     ENDIF
+                     IF ((IPRINT.GT.10).OR.DEBUG) THEN
+                        RHO1N = DDOT(NT1AM(ISYM),WORK(KT1),1,
+     *                               WORK(KT1),1)
+                        WRITE(LUPRI,'(1X,A35,1X,E20.10)')
+     *                  'Norm of singles part:   ',RHO1N
+                     ENDIF
+
+                     IOPT = 1
+                     CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,
+     &                             WORK(KT1),DUMMY,WORK(KWRK1),NVARPT)
+                     IF (LIST(1:2) .EQ. 'R1') THEN
+                        CALL CC_RMRSP('eO1',ILSTNR,ISYM)
+                     ENDIF
+                     ILSTNR = ILSTNR + 1
+
+                  ENDDO
+
+               ENDDO
+
+               GOTO 1234
+
+            END IF
+C
+C          Conventional section
 C
            NVARPT = LETOT + 2*NALLAI(ISYM)
            KWRK2  = KWRK1 + NVARPT
@@ -688,6 +815,8 @@ C
               IOFF1 = IOFF1 + NSIMUL
            END DO
 C
+ 1234      CONTINUE       ! Cholesky
+C
 C---------------------------------
 C          Close and delete files.
 C---------------------------------
@@ -730,11 +859,15 @@ C            FC12AM (LUC12) R12 doubles part
 C
       IMPLICIT NONE
 C#include <implicit.h>
-#include <priunit.h>
+#include "priunit.h"
 C#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "cclr.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
 
 #if defined (SYS_CRAY)
       REAL VEC(*), DDOT
@@ -745,9 +878,15 @@ C#include <iratdef.h>
       LOGICAL TRIPLET
       CHARACTER FC1AM*(*), FC2AM*(*), FC12AM*(*)
       INTEGER LUC1, LUC2, LUC12, IVEC, NT2VAR, NT12VAR, IADR
+Cholesky
+      LOGICAL CCSEFF
+C
+      CCSEFF = CCS .OR. (CHOINT .AND. CC2)
+Cholesky
 C
       CALL CC_RVEC(LUC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),IVEC,VEC(1))
-      IF (.NOT. CCS) THEN
+Chol  IF (.NOT. CCS) THEN
+      IF (.NOT. CCSEFF) THEN
          IF (TRIPLET) THEN
             NT2VAR = NT2AMT(ISYMTR)
          ELSE
@@ -779,11 +918,15 @@ C            R12 doubles file (name: FC12AM, nr: LUC12)
 C
       IMPLICIT NONE
 C#include <implicit.h>
-#include <priunit.h>
+#include "priunit.h"
 C#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "cclr.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
 
 #if defined (SYS_CRAY)
       REAL VEC(*), DDOT
@@ -795,9 +938,16 @@ C#include <iratdef.h>
       CHARACTER FC1AM*(*),FC2AM*(*),FC12AM*(*)
       INTEGER LUC1, LUC2, LUC12, IVEC, NT2VAR, NT12VAR, IADR
 C
+Cholesky
+      LOGICAL CCSEFF
+C
+      CCSEFF = CCS .OR. (CHOINT .AND. CC2)
+Cholesky
+C
       CALL CC_WVEC(LUC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),
      *             IVEC,VEC(1))
-      IF ( .NOT. CCS) THEN
+Chol  IF ( .NOT. CCS) THEN
+      IF ( .NOT. CCSEFF) THEN
          IF (CCSTST) 
      *     CALL DZERO(VEC(1+NT1AM(ISYMTR)),NCCVAR-NT1AM(ISYMTR))
          IF (TRIPLET) THEN
@@ -828,25 +978,65 @@ C
       IMPLICIT NONE
 C#include <implicit.h>
 C#include <iratdef.h>
-#include <ccsdinp.h>
+#include "ccsdinp.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+      LOGICAL CCSEFF, OLDDX
+      INTEGER MAXT1, ISYM, LRLEN
+C
+      INTEGER MAX
+Cholesky
       INTEGER LUFR1,LUFR2,LUFR12,LUFC1,LUFC2,LUFC12,LUFS12,LUFS2
       CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM,FS2AM
 C
-      CALL WOPEN2(LUFC1,FC1AM,64,0)
-      CALL WOPEN2(LUFR1,FRHO1,64,0)
+      IF (CHOINT) THEN
+
+C        Cholesky (fortran) i/o.
+C        Use max. T1 dimension as record length.
+C        ---------------------------------------
+
+         MAXT1 = NT1AM(1)
+         DO ISYM = 2,NSYM
+            MAXT1 = MAX(MAXT1,NT1AM(ISYM))
+         ENDDO
+         LRLEN = 2*MAXT1
+         LRLEN = MAX(LRLEN,1)
+
+         CALL GPOPEN(LUFC1,FC1AM,'UNKNOWN','DIRECT','UNFORMATTED',
+     &               LRLEN,OLDDX)
+         CALL GPOPEN(LUFR1,FRHO1,'UNKNOWN','DIRECT','UNFORMATTED',
+     &               LRLEN,OLDDX)
+
+      ELSE
+
+C        Standard (cray) i/o.
+C        --------------------
 C
-      IF ( .NOT. CCS ) THEN
-         CALL WOPEN2(LUFC2,FC2AM,64,0)
-         CALL WOPEN2(LUFR2,FRHO2,64,0)
-      ENDIF
+         CCSEFF = CCS .OR. (CHOINT.AND.CC2) ! kept if we should switch later
+
+         CALL WOPEN2(LUFC1,FC1AM,64,0)
+         CALL WOPEN2(LUFR1,FRHO1,64,0)
 C
-      IF ( CCR12 ) THEN
-         CALL WOPEN2(LUFR12,FRHO12,64,0)
-         CALL WOPEN2(LUFC12,FC12AM,64,0)
-         CALL WOPEN2(LUFS12,FS12AM,64,0)
-         CALL WOPEN2(LUFS2,FS2AM,64,0)
+Chol     IF ( .NOT. CCS ) THEN
+         IF ( .NOT. CCSEFF ) THEN
+            CALL WOPEN2(LUFC2,FC2AM,64,0)
+            CALL WOPEN2(LUFR2,FRHO2,64,0)
+         ENDIF
+C
+         IF ( CCR12 ) THEN
+            CALL WOPEN2(LUFR12,FRHO12,64,0)
+            CALL WOPEN2(LUFC12,FC12AM,64,0)
+            CALL WOPEN2(LUFS12,FS12AM,64,0)
+            CALL WOPEN2(LUFS2,FS2AM,64,0)
+         END IF
+C
       END IF
 C
+      RETURN
       END
 C  /* Deck cc_filcl  */
       SUBROUTINE CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
@@ -855,32 +1045,112 @@ C  /* Deck cc_filcl  */
 C
 C     Ove Christiansen 22-1-1996:
 C
+C     tbp: use fortran i/o [notably, gpopen/gpclose] for
+C          Cholesky....
+C
       IMPLICIT NONE
 C#include <implicit.h>
 C#include <iratdef.h>
-#include <ccsdinp.h>
+#include "ccsdinp.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+      LOGICAL CCSEFF
+Cholesky
 C
       INTEGER LUFR1,LUFR2,LUFR12,LUFC1,LUFC2,LUFC12,LUFS12,LUFS2
       CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM,FS2AM
 C
-C-----------------
-C     Close files.
-C-----------------
+      IF (CHOINT) THEN
+
+C        Close files (fortran).
+C        ----------------------
+
+         CALL GPCLOSE(LUFC1,'DELETE')
+         CALL GPCLOSE(LUFR1,'DELETE')
+
+      ELSE
 C
-      CALL WCLOSE2(LUFC1,FC1AM,'DELETE')
-      CALL WCLOSE2(LUFR1,FRHO1,'DELETE')
+C-----------------------------
+C        Close files. (crayio)
+C-----------------------------
 C
-      IF ( .NOT. CCS) THEN
-         IF (LUFC2 .GT. 0) CALL WCLOSE2(LUFC2,FC2AM,'DELETE')
-         IF (LUFR2 .GT. 0) CALL WCLOSE2(LUFR2,FRHO2,'DELETE')
-      ENDIF
+         CCSEFF = CCS .OR. (CHOINT.AND.CC2) ! kept if we should switch later
 C
-      IF ( CCR12 ) THEN
-         CALL WCLOSE2(LUFR12,FRHO12,'DELETE')
-         CALL WCLOSE2(LUFC12,FC12AM,'DELETE')
-         CALL WCLOSE2(LUFS12,FS12AM,'DELETE')
-         CALL WCLOSE2(LUFS2,FS2AM,'DELETE')
+         CALL WCLOSE2(LUFC1,FC1AM,'DELETE')
+         CALL WCLOSE2(LUFR1,FRHO1,'DELETE')
+C
+Chol     IF ( .NOT. CCS) THEN
+         IF ( .NOT. CCSEFF) THEN
+            IF (LUFC2 .GT. 0) CALL WCLOSE2(LUFC2,FC2AM,'DELETE')
+            IF (LUFR2 .GT. 0) CALL WCLOSE2(LUFR2,FRHO2,'DELETE')
+         ENDIF
+C
+         IF ( CCR12 ) THEN
+            CALL WCLOSE2(LUFR12,FRHO12,'DELETE')
+            CALL WCLOSE2(LUFC12,FC12AM,'DELETE')
+            CALL WCLOSE2(LUFS12,FS12AM,'DELETE')
+            CALL WCLOSE2(LUFS2,FS2AM,'DELETE')
+         END IF
+C
       END IF
 C
+      RETURN
       END
 C--------------------------------------------------------------------
+C
+C  /* Deck cc_chonsim */
+      SUBROUTINE CC_CHONSIM(LIST,ISYM,NEQSYM,NSIMLE,NSIM)
+C
+C     Thomas Bondo Pedersen, April 2003.
+C
+C     Purpose: Set the number of equations to be solved simultaneously
+C              for Cholesky CC2.
+C
+#include "implicit.h"
+      CHARACTER*(*) LIST
+#include "cclrcho.h"
+#include "priunit.h"
+
+      CHARACTER*10 SECNAM
+      PARAMETER (SECNAM = 'CC_CHONSIM')
+
+      IF (LIST(1:2) .EQ. 'L0') THEN
+
+         NSIM = 1
+
+      ELSE IF (LIST(1:2) .EQ. 'R1') THEN
+
+         IF (NSIMLE .EQ. 0) THEN
+            NSIM = NCHOPLR(ISYM)
+         ELSE
+            NSIM = NSIMLE
+            IF ((NSIM.NE.1) .AND. (NSIM.NE.NCHOPLR(ISYM))) THEN
+               WRITE(LUPRI,'(/,1X,A,A,/)')
+     &         '*** NOTICE: .NSIMLE input ignored - ',
+     &         'Cholesky R1 equations solved 1 at a time!'
+               NSIM = 1
+            ENDIF
+         ENDIF
+
+      ELSE
+
+         WRITE(LUPRI,'(//,A,A,A,/)')
+     &   LIST(1:3),' not recognized in ',SECNAM
+         CALL QUIT('Unknown list in '//SECNAM)
+
+      ENDIF
+
+      IF ((NSIM.LE.0) .OR. (NSIM.GT.NEQSYM)) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Error in ',SECNAM,':'
+         WRITE(LUPRI,*) 'NSIMLE  = ',NSIMLE
+         WRITE(LUPRI,*) 'NEQSYM  = ',NEQSYM
+         WRITE(LUPRI,*) 'NCHOPLR = ',NCHOPLR(ISYM),' (ISYM = ',ISYM,')'
+         WRITE(LUPRI,*) 'NSIM    = ',NSIM
+         WRITE(LUPRI,*) '(This is a Cholesky-specific problem)'
+         CALL QUIT('NSIM error in '//SECNAM)
+      ENDIF
+
+      RETURN
+      END

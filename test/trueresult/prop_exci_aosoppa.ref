@@ -1,88 +1,102 @@
 
 
-         ****************************************************************
-         *********** DALTON - An electronic structure program ***********
-         ****************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Jacob Kongsted,           Univ. of Southern Denmark,    Denmark    
-    Henrik Koch,              University of Trondheim,      Norway     
-    Andrea Ligabue,           University of Modena,         Italy      
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Anders Osted,             Copenhagen University,        Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Nov 19 16:01:24 2009
-     Host name              : milos                                   
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- * Work memory size             :    50000000 =  381.47 megabytes.
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
+
+
+     Date and time (Linux)  : Wed Mar 16 17:48:59 2011 
+     Host name              : fe6                                     
+
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/groups/kvant/sauer/source/dalton-2.0-cvs/dalton/test/2009-11-19T16_00-testjob-pid-7034
-   2) /people/groups/kvant/sauer/source/dalton-2.0-cvs/dalton/basis/
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
        *******************************************************************
@@ -104,6 +118,7 @@
    *************** Output of molecule and basis set information ***************
    ****************************************************************************
 
+
     The two title cards from your ".mol" input:
     ------------------------------------------------------------------------
  1: Calculation of excitation energies through ABACUS                       
@@ -113,12 +128,14 @@
   Atomic type no.    1
   --------------------
   Nuclear charge:   8.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
 
 
                          SYMGRP: Point group information
@@ -135,9 +152,9 @@ Point group: C2v
 
         |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
     Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
@@ -153,9 +170,9 @@ Point group: C2v
 
         | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
     A2  | A2   B2   B1   A1 
 
 
@@ -163,8 +180,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -175,7 +192,7 @@ Point group: C2v
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    3
 
   label    atoms   charge   prim   cont     basis
@@ -188,57 +205,57 @@ Point group: C2v
   Cartesian basis used.
   (Note that d, f, ... atomic GTOs are not all normalized.)
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
   ----------------------------
 
   Total number of coordinates:    9
-  O       :    1  x   0.0000000000   2  y   0.0000000000   3  z   0.1241444240
-  H   / 1 :    4  x   0.0000000000   5  y   1.4315300000   6  z  -0.9852655760
-  H   / 2 :    7  x   0.0000000000   8  y  -1.4315300000   9  z  -0.9852655760
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.1241444240
+  H   / 1 :     4  x   0.0000000000    5  y   1.4315300000    6  z  -0.9852655760
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4315300000    9  z  -0.9852655760
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:    3   2   3   1
+  Number of coordinates in each symmetry:     3    2    3    1
 
   Symmetry  A1  ( 1)
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
 
   Symmetry  B1  ( 2)
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
 
   Symmetry  B2  ( 3)
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
 
   Symmetry  A2  ( 4)
 
-   9   H     x    [  4  -   7 ]/2
+    9   H     x    [  4  -    7 ]/2
 
 
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -246,8 +263,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -255,7 +272,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -264,7 +281,7 @@ Point group: C2v
  --------------------------------------------------------
 
    IA       0.616959          0.000000    1.000000    0.000000
-   IB       1.156693          0.000000    0.000000    1.000000
+   IB       1.156694          0.000000    0.000000    1.000000
    IC       1.773652          1.000000    0.000000    0.000000
 
 
@@ -275,17 +292,17 @@ Point group: C2v
 
                A                   B                   C
 
-         819145.5197         436916.9613         284936.9173 MHz
-           27.323753           14.573981            9.504473 cm-1
+         819145.5126         436916.9575         284936.9149 MHz
+           27.323753           14.573981            9.504472 cm-1
 
 
-  Nuclear repulsion energy :    9.183706230245
+@  Nuclear repulsion energy :    9.183706230245
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              19   7  11   2
+  Number of orbitals in each symmetry:          19    7   11    2
 
 
   Symmetry  A1 ( 1)
@@ -304,11 +321,11 @@ Point group: C2v
    12     O        dxx       22
    13     O        dyy       25
    14     O        dzz       27
-   15     H        s         28  +  29
-   16     H        s         30  +  31
-   17     H        s         32  +  33
-   18     H        py        36  -  37
-   19     H        pz        38  +  39
+   15     H        s         28 +   29
+   16     H        s         30 +   31
+   17     H        s         32 +   33
+   18     H        py        36 -   37
+   19     H        pz        38 +   39
 
 
   Symmetry  B1 ( 2)
@@ -319,7 +336,7 @@ Point group: C2v
    23     O        px        16
    24     O        px        19
    25     O        dxz       24
-   26     H        px        34  +  35
+   26     H        px        34 +   35
 
 
   Symmetry  B2 ( 3)
@@ -330,17 +347,17 @@ Point group: C2v
    30     O        py        17
    31     O        py        20
    32     O        dyz       26
-   33     H        s         28  -  29
-   34     H        s         30  -  31
-   35     H        s         32  -  33
-   36     H        py        36  +  37
-   37     H        pz        38  -  39
+   33     H        s         28 -   29
+   34     H        s         30 -   31
+   35     H        s         32 -   33
+   36     H        py        36 +   37
+   37     H        pz        38 -   39
 
 
   Symmetry  A2 ( 4)
 
    38     O        dxy       23
-   39     H        px        34  -  35
+   39     H        px        34 -   35
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
@@ -364,23 +381,23 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- Center of mass :      0.000000000000      0.000000000000     -0.000015049426
- Operator center:      0.000000000000      0.000000000000      0.000000000000
- Gauge origin   :      0.000000000000      0.000000000000      0.000000000000
- Dipole origin  :      0.000000000000      0.000000000000      0.000000000000
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.000015049426
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
      ************************************************************************
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00E-15
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:       75206 ( 24.7% )
  Megabytes written:                              0.866
 
- >>> Time used in TWOINT is   0.34 seconds
- >>>> Total CPU  time used in HERMIT:   0.36 seconds
+ >>> Time used in TWOINT is   0.16 seconds
+ >>>> Total CPU  time used in HERMIT:   0.17 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -402,21 +419,21 @@ Point group: C2v
      Number of Huckel orbitals each symmetry:    4    1    2    0
 
  Huckel EHT eigenvalues for symmetry :  1
-          -20.815718      -2.129186      -0.678849       0.279482
+          -20.705520      -1.505990      -0.670643      -0.292535
 
  Huckel EHT eigenvalues for symmetry :  2
            -0.616200
 
  Huckel EHT eigenvalues for symmetry :  3
-           -0.926459       0.107029
+           -0.731199      -0.257813
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Nov 19 16:01:24 2009
-     Host name              : milos                                   
+     Date and time (Linux)  : Wed Mar 16 17:48:59 2011 
+     Host name              : fe6                                     
 
  Title lines from ".mol" input file:
      Calculation of excitation energies through ABACUS                       
@@ -430,15 +447,18 @@ Point group: C2v
 
      This is a combination run starting with
 
-               Restricted, closed shell Hartree-Fock calculation.
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART HUCKEL" input option.
+ ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -455,15 +475,15 @@ Point group: C2v
      Number of basis functions          39 |   19    7   11    2
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.                    
-      -- Initial occupation of symmetries is : --
 
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
      Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
-     Threshold for SCF convergence     1.00E-06
+     Threshold for SCF convergence     1.00D-06
 
 
  Changes of defaults for CC:
@@ -490,28 +510,50 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  -75.7162274664       3.64E+00  -7.57E+01    3  1  1  0
-      MULPOP O     7.21; H     2.79; 
-   2  -76.0443960225       4.83E-01  -3.28E-01    3  1  1  0
-      MULPOP O     7.21; H     2.79; 
-   3  -76.0584817254       2.06E-01  -1.41E-02    3  1  1  0
-      MULPOP O     7.20; H     2.80; 
-   4  -76.0603812295       7.15E-02  -1.90E-03    3  1  1  0
-      MULPOP O     7.21; H     2.79; 
-   5  -76.0607641766       1.35E-02  -3.83E-04    3  1  1  0
-      MULPOP O     7.21; H     2.79; 
-   6  -76.0607828044       2.89E-03  -1.86E-05    3  1  1  0
-      MULPOP O     7.21; H     2.79; 
-   7  -76.0607841848       4.44E-04  -1.38E-06    3  1  1  0
-      MULPOP O     7.21; H     2.79; 
-   8  -76.0607842180       6.88E-05  -3.32E-08    3  1  1  0
-      MULPOP O     7.21; H     2.79; 
-   9  -76.0607842186       1.51E-05  -6.74E-10    3  1  1  0
-      MULPOP O     7.21; H     2.79; 
-  10  -76.0607842187       2.32E-06  -3.84E-11    3  1  1  0
-      MULPOP O     7.21; H     2.79; 
-  11  -76.0607842187       2.92E-07  -8.24E-13    3  1  1  0
- DIIS converged in  11 iterations !
+   1  -75.8289971698       2.45D+00  -7.58D+01    3  1  1  0
+      Virial theorem: -V/T =      1.995901
+      MULPOP  O      -0.57; H   _1  0.28; H   _2  0.28; 
+ -----------------------------------------------------------------------------
+   2  -76.0524427034       3.70D-01  -2.23D-01    3  1  1  0
+      Virial theorem: -V/T =      2.001342
+      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+   3  -76.0600525846       8.30D-02  -7.61D-03    3  1  1  0
+      Virial theorem: -V/T =      2.001274
+      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+   4  -76.0607501246       1.70D-02  -6.98D-04    3  1  1  0
+      Virial theorem: -V/T =      2.000717
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+   5  -76.0607819964       5.18D-03  -3.19D-05    3  1  1  0
+      Virial theorem: -V/T =      2.000873
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+   6  -76.0607838687       1.92D-03  -1.87D-06    3  1  1  0
+      Virial theorem: -V/T =      2.000774
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+   7  -76.0607842024       3.22D-04  -3.34D-07    3  1  1  0
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+   8  -76.0607842185       4.12D-05  -1.61D-08    3  1  1  0
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+   9  -76.0607842187       7.64D-06  -1.83D-10    3  1  1  0
+      Virial theorem: -V/T =      2.000810
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+  10  -76.0607842187       1.38D-06  -8.47D-12    3  1  1  0
+      Virial theorem: -V/T =      2.000810
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+  11  -76.0607842187       2.21D-07  -4.55D-13    3  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.02 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -523,47 +565,50 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.56238097    -1.35070291    -0.58322553     0.13488236     0.46314710
-         0.61795219     0.96390625     1.24752064
+  1    -20.56238099    -1.35070292    -0.58322553     0.13488236     0.46314710
+         0.61795220     0.96390625     1.24752064
 
-  2     -0.50745989     0.47365390     1.30684668     2.03588082     3.06713276
-         6.59507912
+  2     -0.50745990     0.47365390     1.30684668     2.03588081     3.06713277
+         6.59507911
 
   3     -0.71596731     0.19111002     0.50061393     0.67340607     1.74928910
          2.12363466
 
-  4      1.26154317     2.98152148
+  4      1.26154317     2.98152149
 
     E(LUMO) :     0.13488236 au (symmetry 1)
-  - E(HOMO) :    -0.50745989 au (symmetry 2)
+  - E(HOMO) :    -0.50745990 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.64234224 au
+    gap     :     0.64234226 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.060784218682                 
+     Final HF energy:             -76.060784218685                 
      Nuclear repulsion:             9.183706230245
-     Electronic energy:           -85.244490448927
+     Electronic energy:           -85.244490448930
 
-     Final gradient norm:           0.000000292493
+     Final gradient norm:           0.000000220760
 
  
-     Date and time (Linux)  : Thu Nov 19 16:01:24 2009
-     Host name              : milos                                   
+     Date and time (Linux)  : Wed Mar 16 17:48:59 2011 
+     Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
 
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :s      0.3905  -0.0859  -0.0284   0.0258   0.0135
    2 O   :s      0.4237  -0.1378  -0.0459   0.0378   0.0306
    3 O   :s      0.2819  -0.1215  -0.0431   0.0497  -0.0041
@@ -587,7 +632,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :px     0.0819  -0.0403   0.0108
    2 O   :px     0.1941  -0.1683   0.0187
    3 O   :px     0.3396  -0.0020   0.0667
@@ -599,34 +644,34 @@ Point group: C2v
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
-   1 O   :py     0.0653  -0.0306   0.0081
-   2 O   :py     0.1529  -0.0600  -0.0127
-   3 O   :py     0.2746  -0.1667   0.0964
-   4 O   :py     0.2860   0.0539  -0.0558
-   5 O   :py     0.1253  -0.9468   1.9322
-   6 O   :dyz   -0.0554  -0.0253  -0.0628
-   7 H   :s      0.1438   0.0176  -0.0539
-   8 H   :s      0.1473  -0.1648  -1.1763
-   9 H   :s      0.0368   2.0991  -0.4183
-  10 H   :py    -0.0096   0.0204   0.0307
-  11 H   :pz     0.0163  -0.0225  -0.0098
+    Orbital         1        2        3
+   1 O   :py     0.0653   0.0306   0.0081
+   2 O   :py     0.1529   0.0600  -0.0127
+   3 O   :py     0.2746   0.1667   0.0964
+   4 O   :py     0.2860  -0.0539  -0.0558
+   5 O   :py     0.1253   0.9468   1.9322
+   6 O   :dyz   -0.0554   0.0253  -0.0628
+   7 H   :s      0.1438  -0.0176  -0.0539
+   8 H   :s      0.1473   0.1648  -1.1763
+   9 H   :s      0.0368  -2.0991  -0.4183
+  10 H   :py    -0.0096  -0.0204   0.0307
+  11 H   :pz     0.0163   0.0225  -0.0098
 
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :dxy    0.9129   0.7003
    2 H   :px     0.1116  -0.8095
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.04 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Nov 19 16:01:24 2009
-     Host name              : milos                                   
+     Date and time (Linux)  : Wed Mar 16 17:48:59 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -676,7 +721,7 @@ Point group: C2v
           Number of t2 amplitudes                 :      4175
           Total number of amplitudes in ccsd      :      4239
 
- Iter.  1: Coupled cluster MP2   energy :     -76.3109682870916259
+ Iter.  1: Coupled cluster MP2   energy :     -76.3109682847503734
 
 
 
@@ -690,7 +735,7 @@ Point group: C2v
 
             Total SCF   energy:                   -76.0607842187
 
-            Total MP2   energy:                   -76.3109682871
+            Total MP2   energy:                   -76.3109682848
 
 
  requested model not yet implemented
@@ -709,7 +754,7 @@ Point group: C2v
                                                                                 
                                                                                 
             Total SCF   energy:                   -76.0607842187                
-            Total MP2   energy:                   -76.3109682871                
+            Total MP2   energy:                   -76.3109682848                
   
 
  *******************************************************************************
@@ -758,33 +803,33 @@ Point group: C2v
  AO integral driven SOPPA :
     (Ref.: K. L. Bak, H. Koch, J. Oddershede, O. Christiansen and S. P. A. Sauer
      J. Chem. Phys. 112, 4173-4185 (2000))
- The last :     0    0    0    0    0    0    0    0 excitation energies
+ The last :     0    2    1    1    0    0    0    0 excitation energies
     are only converged to :  0.10E-01
 
 
- Changes of defaults for EXCITA:
- -------------------------------
+ Changes of defaults for .EXCITA:
+ --------------------------------
 
  Number of excitation energies:    5    7    6    6    0    0    0    0
- Print level in EXCITA        :    2
- Integral print level in EXCITA        :    2
- Threshold in EXCITA          : 1.00E-04
- Maximum iterations in EXCITA :   60
+ Print level          :    2
+ Integral print level :    2
+ Threshold            : 1.00E-04
+ Maximum iterations   :   60
  Conventional rotational strength
  Dipole strength
 
- WARNING SIROPI, old integral transformation not found as expected, ICASE = 1
- if ICASE = 1: mo integral file LUINTM does not exist
- if ICASE = 2: no mo integrals on LUINTM
- if ICASE = 3: transformation level on LUINTM not sufficient
+ WARNING SIR_INTOPEN, old integral transformation not found as expected, ICASE = 1
+ - ICASE = 1: MO integral file MOTWOINT does not exist
+ - ICASE = 2: no MO integrals on MOTWOINT
+ - ICASE = 3: transformation level on MOTWOINT not sufficient
 
 
                                  Isotopic Masses
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -800,8 +845,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Nov 19 16:01:24 2009
-     Host name              : milos                                   
+     Date and time (Linux)  : Wed Mar 16 17:48:59 2011 
+     Host name              : fe6                                     
 
 
                             **************************
@@ -848,11 +893,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.49964137     6.9393E-01       no
-                 2       0.70110482     5.9027E-01       no
-                 3       0.73690324     6.1230E-01       no
-                 4       0.86849731     7.1160E-01       no
-                 5       0.97008072     8.0281E-01       no
+                 1       0.49964138     6.9393D-01       no
+                 2       0.70110483     5.9027D-01       no
+                 3       0.73690324     6.1230D-01       no
+                 4       0.86849731     7.1160D-01       no
+                 5       0.97008072     8.0281D-01       no
             --------------------------------------------------
 
   ==================================================================
@@ -862,11 +907,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36902858     7.4707E-02       no
-                 2       0.59204804     8.6300E-02       no
-                 3       0.62985626     5.9569E-02       no
-                 4       0.72199670     1.1511E-01       no
-                 5       0.79383576     1.7358E-01       no
+                 1       0.36902860     7.4707D-02       no
+                 2       0.59204804     8.6300D-02       no
+                 3       0.62985626     5.9569D-02       no
+                 4       0.72199670     1.1511D-01       no
+                 5       0.79383577     1.7358D-01       no
             --------------------------------------------------
 
   ==================================================================
@@ -876,11 +921,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36753189     2.7829E-02       no
-                 2       0.58999964     3.1026E-02       no
-                 3       0.62900128     1.9149E-02       no
-                 4       0.71958860     2.7481E-02       no
-                 5       0.78811909     5.3265E-02       no
+                 1       0.36753191     2.7829D-02       no
+                 2       0.58999964     3.1026D-02       no
+                 3       0.62900128     1.9149D-02       no
+                 4       0.71958860     2.7481D-02       no
+                 5       0.78811910     5.3265D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -890,11 +935,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733487     4.5623E-03       no
-                 2       0.58973237     6.1282E-03       no
-                 3       0.62890488     4.7786E-03       no
-                 4       0.71937533     5.8832E-03       no
-                 5       0.78716532     1.5508E-02       no
+                 1       0.36733489     4.5623D-03       no
+                 2       0.58973238     6.1282D-03       no
+                 3       0.62890489     4.7786D-03       no
+                 4       0.71937534     5.8832D-03       no
+                 5       0.78716534     1.5508D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -904,11 +949,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733104     7.5281E-04       no
-                 2       0.58971972     2.1698E-03       no
-                 3       0.62889657     1.8329E-03       no
-                 4       0.71936585     1.7257E-03       no
-                 5       0.78703291     1.1946E-02       no
+                 1       0.36733105     7.5281D-04       no
+                 2       0.58971972     2.1698D-03       no
+                 3       0.62889657     1.8329D-03       no
+                 4       0.71936585     1.7257D-03       no
+                 5       0.78703292     1.1946D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -918,11 +963,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733093     1.3766E-04       no
-                 2       0.58971825     7.4990E-04       no
-                 3       0.62889555     5.7482E-04       no
-                 4       0.71936518     1.0682E-03       no
-                 5       0.78696018     7.2808E-03       no
+                 1       0.36733095     1.3766D-04       no
+                 2       0.58971826     7.4990D-04       no
+                 3       0.62889556     5.7482D-04       no
+                 4       0.71936519     1.0682D-03       no
+                 5       0.78696019     7.2808D-03       no
             --------------------------------------------------
 
   ==================================================================
@@ -932,11 +977,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733093     2.7578E-05      yes
-                 2       0.58971811     2.3017E-04       no
-                 3       0.62889548     1.5296E-04       no
-                 4       0.71936489     2.8595E-04       no
-                 5       0.78694068     3.6602E-03       no
+                 1       0.36733094     2.7578D-05      yes
+                 2       0.58971812     2.3017D-04       no
+                 3       0.62889549     1.5296D-04       no
+                 4       0.71936490     2.8595D-04       no
+                 5       0.78694069     3.6602D-03       no
             --------------------------------------------------
 
   ==================================================================
@@ -946,11 +991,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733093     1.7090E-05      yes
-                 2       0.58971810     5.9800E-05      yes
-                 3       0.62889548     4.3634E-05      yes
-                 4       0.71936488     1.6742E-04       no
-                 5       0.78693652     1.4827E-03       no
+                 1       0.36733094     1.7090D-05      yes
+                 2       0.58971810     5.9800D-05      yes
+                 3       0.62889548     4.3634D-05      yes
+                 4       0.71936488     1.6742D-04       no
+                 5       0.78693653     1.4827D-03       no
             --------------------------------------------------
 
   ==================================================================
@@ -960,11 +1005,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733093     1.6668E-05      yes
-                 2       0.58971810     5.4265E-05      yes
-                 3       0.62889548     3.8787E-05      yes
-                 4       0.71936488     6.3212E-05      yes
-                 5       0.78693597     6.3357E-04       no
+                 1       0.36733094     1.6668D-05      yes
+                 2       0.58971810     5.4265D-05      yes
+                 3       0.62889548     3.8787D-05      yes
+                 4       0.71936488     6.3212D-05      yes
+                 5       0.78693598     6.3357D-04       no
             --------------------------------------------------
 
   ==================================================================
@@ -974,11 +1019,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733093     1.6483E-05      yes
-                 2       0.58971810     5.2790E-05      yes
-                 3       0.62889548     3.7180E-05      yes
-                 4       0.71936488     6.2964E-05      yes
-                 5       0.78693588     2.1879E-04       no
+                 1       0.36733094     1.6483D-05      yes
+                 2       0.58971810     5.2790D-05      yes
+                 3       0.62889548     3.7180D-05      yes
+                 4       0.71936488     6.2964D-05      yes
+                 5       0.78693589     2.1879D-04       no
             --------------------------------------------------
 
   ==================================================================
@@ -988,11 +1033,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733093     1.6372E-05      yes
-                 2       0.58971810     5.1320E-05      yes
-                 3       0.62889548     3.5456E-05      yes
-                 4       0.71936488     6.2967E-05      yes
-                 5       0.78693587     1.2820E-04       no
+                 1       0.36733094     1.6372D-05      yes
+                 2       0.58971810     5.1320D-05      yes
+                 3       0.62889548     3.5456D-05      yes
+                 4       0.71936488     6.2967D-05      yes
+                 5       0.78693588     1.2820D-04       no
             --------------------------------------------------
 
   ==================================================================
@@ -1002,11 +1047,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733093     1.6367E-05      yes
-                 2       0.58971810     5.1963E-05      yes
-                 3       0.62889548     3.6114E-05      yes
-                 4       0.71936488     6.4021E-05      yes
-                 5       0.78693587     1.2516E-04       no
+                 1       0.36733094     1.6367D-05      yes
+                 2       0.58971810     5.1963D-05      yes
+                 3       0.62889548     3.6114D-05      yes
+                 4       0.71936488     6.4021D-05      yes
+                 5       0.78693588     1.2516D-04       no
             --------------------------------------------------
 
   ==================================================================
@@ -1016,11 +1061,11 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.36733093     1.6307E-05      yes
-                 2       0.58971810     5.1881E-05      yes
-                 3       0.62889548     3.6031E-05      yes
-                 4       0.71936488     6.3680E-05      yes
-                 5       0.78693587     9.1870E-05      yes
+                 1       0.36733094     1.6307D-05      yes
+                 2       0.58971810     5.1881D-05      yes
+                 3       0.62889548     3.6031D-05      yes
+                 4       0.71936488     6.3680D-05      yes
+                 5       0.78693588     9.1870D-05      yes
             --------------------------------------------------
 
  -------------------------------------------------------------
@@ -1033,13 +1078,13 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  1
 
- SOPPA excitation energy :  0.36733093     au
-                             9.9955828     eV
-                             80619.820     cm-1
-                             964.42722     kj / mole
+ SOPPA excitation energy :  0.36733094     au
+                             9.9955835     eV
+                             80619.823     cm-1
+                             964.42725     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.92 + -0.09  =  93.83 %
- 2p-2h + 2h-2p excitation weight:   6.17 +  0.00  =   6.17 %
+ 2p-2h + 2h-2p excitation weight:   6.17 + -0.00  =   6.17 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
@@ -1059,48 +1104,48 @@ Point group: C2v
  Excitation symmetry  1, state no.  2
 
  SOPPA excitation energy :  0.58971810     au
-                             16.047045     eV
+                             16.047046     eV
                              129428.16     cm-1
                              1548.3046     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.43 + -0.02  =  95.41 %
- 2p-2h + 2h-2p excitation weight:   4.59 +  0.00  =   4.59 %
+ 2p-2h + 2h-2p excitation weight:   4.59 + -0.00  =   4.59 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 2   2   |   1       1     |    0.609537  |
+ |    exci. | 2   2   |   1       1     |   -0.609537  |
  |    exci. | 3   3   |   1       1     |   -0.762035  |
- |    exci. | 3   3   |   3       1     |   -0.140378  |
+ |    exci. | 3   3   |   3       1     |    0.140378  |
  |-----------------------------------------------------|
- |    exci. | 2 1 2 1 |   1   1   1   2 |   -0.025891  |
- |    exci. | 2 1 2 1 |   1   4   1   2 |    0.023838  |
- |    exci. | 2 1 2 1 |   1   1   1   3 |    0.022741  |
- |    exci. | 2 1 2 1 |   1   2   1   3 |   -0.052414  |
- |    exci. | 2 1 2 1 |   1   3   1   3 |   -0.026800  |
+ |    exci. | 2 1 2 1 |   1   1   1   2 |    0.025891  |
+ |    exci. | 2 1 2 1 |   1   4   1   2 |   -0.023838  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.022741  |
+ |    exci. | 2 1 2 1 |   1   2   1   3 |    0.052414  |
+ |    exci. | 2 1 2 1 |   1   3   1   3 |    0.026800  |
  |    exci. | 3 1 3 1 |   1   1   1   2 |    0.037080  |
  |    exci. | 3 1 3 1 |   1   4   1   2 |   -0.029871  |
  |    exci. | 3 1 3 1 |   1   1   1   3 |   -0.036992  |
  |    exci. | 3 1 3 1 |   1   2   1   3 |    0.063138  |
  |    exci. | 3 1 3 1 |   1   3   1   3 |    0.026772  |
- |    exci. | 2 2 2 2 |   1   1   1   1 |   -0.079639  |
+ |    exci. | 2 2 2 2 |   1   1   1   1 |    0.079639  |
  |    exci. | 3 2 3 2 |   1   1   1   1 |    0.037100  |
- |    exci. | 3 2 3 2 |   3   1   1   1 |   -0.059224  |
- |    exci. | 3 2 3 2 |   5   1   1   1 |    0.027028  |
+ |    exci. | 3 2 3 2 |   3   1   1   1 |    0.059224  |
+ |    exci. | 3 2 3 2 |   5   1   1   1 |   -0.027028  |
  |    exci. | 3 2 3 2 |   1   3   1   1 |    0.034376  |
- |    exci. | 3 3 3 3 |   1   1   1   1 |    0.071578  |
+ |    exci. | 3 3 3 3 |   1   1   1   1 |   -0.071578  |
  |    exci. | 3 3 3 3 |   3   1   1   1 |    0.048956  |
  |    exci. | 3 3 3 3 |   4   1   1   1 |    0.022711  |
- |    exci. | 2 2 1 1 |   2   1   3   2 |    0.021390  |
- |    exci. | 4 2 3 1 |   1   1   1   2 |    0.023737  |
- |    exci. | 1 1 2 2 |   3   1   1   1 |   -0.020131  |
+ |    exci. | 2 2 1 1 |   2   1   3   2 |   -0.021390  |
+ |    exci. | 4 2 3 1 |   1   1   1   2 |   -0.023737  |
+ |    exci. | 1 1 2 2 |   3   1   1   1 |    0.020131  |
  |    exci. | 3 3 1 1 |   2   1   3   2 |   -0.025213  |
  |    exci. | 3 3 1 1 |   3   1   3   2 |    0.021888  |
  |    exci. | 3 3 1 1 |   4   1   3   2 |   -0.024618  |
  |    exci. | 4 3 2 1 |   1   1   1   2 |   -0.036889  |
  |    exci. | 1 3 3 1 |   3   1   1   2 |    0.022553  |
- |    exci. | 1 1 3 3 |   3   1   1   1 |   -0.029162  |
+ |    exci. | 1 1 3 3 |   3   1   1   1 |    0.029162  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1110,20 +1155,20 @@ Point group: C2v
  Excitation symmetry  1, state no.  3
 
  SOPPA excitation energy :  0.62889548     au
-                             17.113116     eV
+                             17.113117     eV
                              138026.60     cm-1
                              1651.1648     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.23 + -0.21  =  95.02 %
- 2p-2h + 2h-2p excitation weight:   4.99 +  0.00  =   4.98 %
+ 2p-2h + 2h-2p excitation weight:   4.99 + -0.00  =   4.98 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   2       3     |   -0.547820  |
- |    exci. | 1   1   |   3       3     |   -0.117514  |
- |    exci. | 2   2   |   1       1     |    0.638556  |
+ |    exci. | 1   1   |   2       3     |    0.547820  |
+ |    exci. | 1   1   |   3       3     |    0.117514  |
+ |    exci. | 2   2   |   1       1     |   -0.638556  |
  |    exci. | 3   3   |   1       1     |    0.493811  |
  |-----------------------------------------------------|
  |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.102652  |
@@ -1136,7 +1181,7 @@ Point group: C2v
  Excitation symmetry  1, state no.  4
 
  SOPPA excitation energy :  0.71936488     au
-                             19.574913     eV
+                             19.574914     eV
                              157882.34     cm-1
                              1888.6922     kj / mole
 
@@ -1150,7 +1195,7 @@ Point group: C2v
  |    exci. | 1   1   |   2       3     |    0.753593  |
  |    exci. | 1   1   |   3       3     |   -0.408854  |
  |    exci. | 2   2   |   1       1     |    0.331984  |
- |    exci. | 3   3   |   1       1     |    0.294273  |
+ |    exci. | 3   3   |   1       1     |   -0.294273  |
  |    exci. | 3   3   |   3       1     |   -0.118166  |
  |-----------------------------------------------------|
  |    exci. | 2 1 2 1 |   1   2   1   3 |   -0.123084  |
@@ -1162,13 +1207,13 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  1, state no.  5
 
- SOPPA excitation energy :  0.78693587     au
-                             21.413614     eV
+ SOPPA excitation energy :  0.78693588     au
+                             21.413615     eV
                              172712.46     cm-1
                              2066.0998     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.81 + -0.51  =  94.30 %
- 2p-2h + 2h-2p excitation weight:   5.71 +  0.00  =   5.70 %
+ 2p-2h + 2h-2p excitation weight:   5.71 + -0.00  =   5.70 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
@@ -1177,7 +1222,7 @@ Point group: C2v
  |    exci. | 1   1   |   2       3     |   -0.259641  |
  |    exci. | 1   1   |   3       3     |   -0.861172  |
  |    exci. | 2   2   |   1       1     |   -0.209810  |
- |    exci. | 3   3   |   1       1     |   -0.220469  |
+ |    exci. | 3   3   |   1       1     |    0.220469  |
  |    exci. | 3   3   |   2       1     |   -0.100823  |
  |    exci. | 3   3   |   3       1     |    0.196850  |
  |-----------------------------------------------------|
@@ -1200,13 +1245,13 @@ Point group: C2v
  |    exci. | 3 1 3 1 |   2   3   1   2 |   -0.025210  |
  |    exci. | 3 1 3 1 |   3   3   1   2 |    0.027236  |
  |    exci. | 3 1 3 1 |   4   3   1   2 |   -0.022780  |
- |    exci. | 3 1 3 1 |   1   2   1   3 |    0.041011  |
- |    exci. | 3 1 3 1 |   1   3   1   3 |    0.071929  |
+ |    exci. | 3 1 3 1 |   1   2   1   3 |   -0.041011  |
+ |    exci. | 3 1 3 1 |   1   3   1   3 |   -0.071929  |
  |    exci. | 3 1 3 1 |   2   3   1   3 |   -0.026277  |
  |    exci. | 3 1 3 1 |   3   3   1   3 |    0.072549  |
  |    exci. | 3 1 3 1 |   5   3   1   3 |   -0.026269  |
  |    exci. | 2 2 2 2 |   1   1   1   1 |    0.034756  |
- |    exci. | 3 2 3 2 |   1   1   1   1 |    0.057476  |
+ |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.057476  |
  |    exci. | 3 3 3 3 |   1   1   1   1 |    0.033386  |
  |    exci. | 1 2 2 1 |   3   2   1   3 |   -0.024447  |
  |    exci. | 3 3 1 1 |   2   2   3   3 |    0.022991  |
@@ -1226,8 +1271,8 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1     0.69784 +    0.03859 +   -0.03251 +   -0.00066 =    0.70327
-   2     0.38398 +    0.01327 +   -0.02001 +   -0.00032 =    0.37692
-   3    -0.34668 +   -0.01582 +    0.02943 +    0.00053 =   -0.33255
+   2    -0.38398 +   -0.01327 +    0.02001 +    0.00032 =   -0.37692
+   3     0.34668 +    0.01582 +   -0.02943 +   -0.00053 =    0.33255
    4     0.02253 +   -0.00593 +    0.03890 +    0.00054 =    0.05604
    5     0.00464 +   -0.00058 +   -0.03900 +   -0.00059 =   -0.03553
  ===================================================================
@@ -1237,8 +1282,8 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1    -0.26152 +   -0.00917 +   -0.01622 +   -0.00027 =   -0.28717
-   2    -0.19475 +   -0.00610 +   -0.02091 +   -0.00011 =   -0.22186
-   3     0.20321 +    0.00683 +    0.01345 +    0.00030 =    0.22379
+   2     0.19475 +    0.00610 +    0.02091 +    0.00011 =    0.22186
+   3    -0.20321 +   -0.00683 +   -0.01345 +   -0.00030 =   -0.22379
    4    -0.05060 +    0.00204 +    0.03016 +    0.00039 =   -0.01800
    5     0.02574 +   -0.00058 +   -0.02048 +   -0.00035 =    0.00434
  ===================================================================
@@ -1254,13 +1299,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.39943623     7.0208E-01       no
-                 2       0.68988824     6.5439E-01       no
-                 3       0.77286395     6.4392E-01       no
-                 4       0.82374962     7.6675E-01       no
-                 5       1.13897254     7.4035E-01       no
-                 6       1.36372261     5.7705E-02       no
-                 7       1.47315568     1.6353E-02       no
+                 1       0.39943624     7.0208D-01       no
+                 2       0.68988825     6.5439D-01       no
+                 3       0.77286395     6.4392D-01       no
+                 4       0.82374963     7.6675D-01       no
+                 5       1.13897254     7.4035D-01       no
+                 6       1.36372263     5.7705D-02       no
+                 7       1.47315570     1.6353D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -1270,13 +1315,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27625682     2.6199E-02       no
-                 2       0.58463505     5.0300E-02       no
-                 3       0.67649742     5.5364E-02       no
-                 4       0.68340859     6.5215E-02       no
-                 5       1.02440225     6.1477E-02       no
-                 6       1.36233609     1.1418E-02       no
-                 7       1.47287259     1.4991E-02       no
+                 1       0.27625683     2.6199D-02       no
+                 2       0.58463505     5.0300D-02       no
+                 3       0.67649742     5.5364D-02       no
+                 4       0.68340860     6.5215D-02       no
+                 5       1.02440225     6.1477D-02       no
+                 6       1.36233611     1.1418D-02       no
+                 7       1.47287261     1.4991D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -1286,13 +1331,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27617034     3.1752E-03       no
-                 2       0.58423697     8.0240E-03       no
-                 3       0.67555526     2.0384E-02       no
-                 4       0.68248206     1.5485E-02       no
-                 5       1.02370686     1.6889E-02       no
-                 6       1.36169885     6.8236E-02       no
-                 7       1.39072388     5.0556E-01       no
+                 1       0.27617035     3.1752D-03       no
+                 2       0.58423697     8.0240D-03       no
+                 3       0.67555526     2.0384D-02       no
+                 4       0.68248207     1.5485D-02       no
+                 5       1.02370686     1.6889D-02       no
+                 6       1.36169887     6.8236D-02       no
+                 7       1.39072387     5.0556D-01       no
             --------------------------------------------------
 
   ==================================================================
@@ -1302,13 +1347,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616887     4.0530E-04       no
-                 2       0.58421822     7.9009E-04       no
-                 3       0.67547939     2.9354E-03       no
-                 4       0.68244190     1.5963E-03       no
-                 5       1.02360166     2.5100E-03       no
-                 6       1.25994176     1.1342E-01       no
-                 7       1.36232493     6.5872E-03       no
+                 1       0.27616888     4.0530D-04       no
+                 2       0.58421823     7.9009D-04       no
+                 3       0.67547940     2.9354D-03       no
+                 4       0.68244191     1.5963D-03       no
+                 5       1.02360167     2.5100D-03       no
+                 6       1.25994177     1.1342D-01       no
+                 7       1.36232495     6.5872D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1318,13 +1363,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     4.0354E-05      yes
-                 2       0.58421812     1.0466E-04       no
-                 3       0.67547837     1.1218E-03       no
-                 4       0.68244153     1.6566E-04       no
-                 5       1.02359965     6.5061E-04       no
-                 6       1.25518031     3.1684E-02       no
-                 7       1.36229378     5.0628E-03       no
+                 1       0.27616886     4.2375D-05      yes
+                 2       0.58421813     1.0521D-04       no
+                 3       0.67547841     1.1806D-03       no
+                 4       0.68244154     1.6455D-04       no
+                 5       1.02359967     7.1810D-04       no
+                 6       1.25529313     3.4781D-02       no
+                 7       1.36231205     6.7787D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1334,13 +1379,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     3.6130E-05      yes
-                 2       0.58421812     2.1485E-05      yes
-                 3       0.67547822     9.2767E-04       no
-                 4       0.68244153     1.9936E-05      yes
-                 5       1.02359959     4.3648E-04       no
-                 6       1.25459261     1.7274E-02       no
-                 7       1.36227918     4.4379E-03       no
+                 1       0.27616886     3.6807D-05      yes
+                 2       0.58421813     1.6679D-05      yes
+                 3       0.67547817     7.0677D-04       no
+                 4       0.68244154     1.9449D-05      yes
+                 5       1.02359959     4.5300D-04       no
+                 6       1.25461681     1.8722D-02       no
+                 7       1.36230017     6.6292D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1350,13 +1395,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     3.2309E-05      yes
-                 2       0.58421812     1.7191E-05      yes
-                 3       0.67547813     5.9449E-04       no
-                 4       0.68244153     1.7365E-05      yes
-                 5       1.02359956     3.1650E-04       no
-                 6       1.25447758     1.2817E-02       no
-                 7       1.36226972     3.8380E-03       no
+                 1       0.27616886     3.1582D-05      yes
+                 2       0.58421813     1.4777D-05      yes
+                 3       0.67547810     3.6569D-04       no
+                 4       0.68244154     1.8284D-05      yes
+                 5       1.02359956     3.1883D-04       no
+                 6       1.25447652     1.3397D-02       no
+                 7       1.36229785     5.2283D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1366,13 +1411,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     3.2719E-05      yes
-                 2       0.58421812     1.7030E-05      yes
-                 3       0.67547812     5.9862E-04       no
-                 4       0.68244153     1.6955E-05      yes
-                 5       1.02359956     2.7793E-04       no
-                 6       1.25444009     5.6268E-03       no
-                 7       1.36226505     2.0664E-03       no
+                 1       0.27616886     3.1435D-05      yes
+                 2       0.58421813     1.4921D-05      yes
+                 3       0.67547809     3.1579D-04       no
+                 4       0.68244154     1.8032D-05      yes
+                 5       1.02359956     2.3860D-04       no
+                 6       1.25443848     4.4447D-03      yes
+                 7       1.36229680     5.1076D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1382,13 +1427,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     3.0601E-05      yes
-                 2       0.58421812     1.5705E-05      yes
-                 3       0.67547810     4.3586E-04       no
-                 4       0.68244153     1.6260E-05      yes
-                 5       1.02359955     2.2527E-04       no
-                 6       1.25443455     2.8148E-03       no
-                 7       1.36226360     9.9030E-04       no
+                 1       0.27616886     2.9550D-05      yes
+                 2       0.58421813     1.4609D-05      yes
+                 3       0.67547808     1.5949D-04       no
+                 4       0.68244154     1.7581D-05      yes
+                 5       1.02359955     2.3223D-04       no
+                 6       1.25443737     4.3469D-03      yes
+                 7       1.36229676     5.0543D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1398,13 +1443,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     3.0636E-05      yes
-                 2       0.58421812     1.5419E-05      yes
-                 3       0.67547809     4.0018E-04       no
-                 4       0.68244153     1.5674E-05      yes
-                 5       1.02359954     1.1733E-04       no
-                 6       1.25443343     1.8306E-03       no
-                 7       1.36226330     3.3061E-04       no
+                 1       0.27616886     2.9771D-05      yes
+                 2       0.58421813     1.4372D-05      yes
+                 3       0.67547808     1.3949D-04       no
+                 4       0.68244154     1.7618D-05      yes
+                 5       1.02359955     1.4441D-04       no
+                 6       1.25443733     4.3224D-03      yes
+                 7       1.36229663     5.0036D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1414,13 +1459,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     3.0027E-05      yes
-                 2       0.58421812     1.4451E-05      yes
-                 3       0.67547809     3.4535E-04       no
-                 4       0.68244153     1.5287E-05      yes
-                 5       1.02359954     1.1132E-04       no
-                 6       1.25443284     5.8976E-04       no
-                 7       1.36226327     1.3802E-04       no
+                 1       0.27616886     2.9791D-05      yes
+                 2       0.58421813     1.4389D-05      yes
+                 3       0.67547807     1.3427D-04       no
+                 4       0.68244154     1.7683D-05      yes
+                 5       1.02359955     1.2483D-04       no
+                 6       1.25443729     4.3112D-03      yes
+                 7       1.36229661     4.9843D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1430,13 +1475,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     2.9890E-05      yes
-                 2       0.58421812     1.3952E-05      yes
-                 3       0.67547809     3.3244E-04       no
-                 4       0.68244153     1.3944E-05      yes
-                 5       1.02359954     1.0724E-04       no
-                 6       1.25443276     1.5988E-04       no
-                 7       1.36226326     8.9577E-05      yes
+                 1       0.27616886     3.0029D-05      yes
+                 2       0.58421813     1.4372D-05      yes
+                 3       0.67547807     1.1418D-04       no
+                 4       0.68244154     1.7773D-05      yes
+                 5       1.02359955     6.4631D-05      yes
+                 6       1.25443722     4.3338D-03      yes
+                 7       1.36229661     4.9819D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1446,13 +1491,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     2.9673E-05      yes
-                 2       0.58421812     1.3810E-05      yes
-                 3       0.67547809     3.1436E-04       no
-                 4       0.68244153     1.3805E-05      yes
-                 5       1.02359954     1.0582E-04       no
-                 6       1.25443275     5.8786E-05      yes
-                 7       1.36226326     8.5730E-05      yes
+                 1       0.27616886     3.0150D-05      yes
+                 2       0.58421813     1.4414D-05      yes
+                 3       0.67547807     1.1067D-04       no
+                 4       0.68244154     1.7732D-05      yes
+                 5       1.02359955     6.4009D-05      yes
+                 6       1.25443720     4.3668D-03      yes
+                 7       1.36229661     4.9963D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1462,77 +1507,13 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.27616885     2.9762E-05      yes
-                 2       0.58421812     1.3847E-05      yes
-                 3       0.67547809     3.1630E-04       no
-                 4       0.68244153     1.3836E-05      yes
-                 5       1.02359954     1.0442E-04       no
-                 6       1.25443275     5.8486E-05      yes
-                 7       1.36226326     8.5734E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               15. SOPPA iteration, Excitation symmetry 2
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.27616885     2.9277E-05      yes
-                 2       0.58421812     1.3245E-05      yes
-                 3       0.67547808     2.5084E-04       no
-                 4       0.68244153     1.3728E-05      yes
-                 5       1.02359954     9.5788E-05      yes
-                 6       1.25443275     5.9307E-05      yes
-                 7       1.36226326     8.5796E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               16. SOPPA iteration, Excitation symmetry 2
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.27616885     2.9147E-05      yes
-                 2       0.58421812     1.3130E-05      yes
-                 3       0.67547808     2.3032E-04       no
-                 4       0.68244153     1.3707E-05      yes
-                 5       1.02359954     9.5790E-05      yes
-                 6       1.25443275     5.9347E-05      yes
-                 7       1.36226326     8.5734E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               17. SOPPA iteration, Excitation symmetry 2
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.27616885     2.8624E-05      yes
-                 2       0.58421812     1.2597E-05      yes
-                 3       0.67547807     1.1806E-04       no
-                 4       0.68244153     1.3665E-05      yes
-                 5       1.02359954     9.5426E-05      yes
-                 6       1.25443275     5.9356E-05      yes
-                 7       1.36226326     8.9139E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               18. SOPPA iteration, Excitation symmetry 2
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.27616885     2.8626E-05      yes
-                 2       0.58421812     1.2569E-05      yes
-                 3       0.67547807     9.1238E-05      yes
-                 4       0.68244153     1.3641E-05      yes
-                 5       1.02359954     9.4589E-05      yes
-                 6       1.25443275     5.7655E-05      yes
-                 7       1.36226326     9.1051E-05      yes
+                 1       0.27616886     3.0107D-05      yes
+                 2       0.58421813     1.4415D-05      yes
+                 3       0.67547807     9.2269D-05      yes
+                 4       0.68244154     1.7689D-05      yes
+                 5       1.02359955     6.2283D-05      yes
+                 6       1.25443719     4.3755D-03      yes
+                 7       1.36229661     4.9996D-03      yes
             --------------------------------------------------
 
  -------------------------------------------------------------
@@ -1545,22 +1526,22 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  1
 
- SOPPA excitation energy :  0.27616885     au
-                             7.5149364     eV
-                             60612.056     cm-1
-                             725.08120     kj / mole
+ SOPPA excitation energy :  0.27616886     au
+                             7.5149369     eV
+                             60612.058     cm-1
+                             725.08122     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.01 + -0.05  =  93.96 %
- 2p-2h + 2h-2p excitation weight:   6.04 +  0.00  =   6.04 %
+ 2p-2h + 2h-2p excitation weight:   6.04 + -0.00  =   6.04 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   1       1     |   -0.969052  |
- |    exci. | 1   2   |   3       1     |    0.119871  |
+ |    exci. | 1   2   |   1       1     |    0.969052  |
+ |    exci. | 1   2   |   3       1     |   -0.119871  |
  |-----------------------------------------------------|
- |    exci. | 2 1 1 1 |   1   2   3   3 |    0.147484  |
+ |    exci. | 2 1 1 1 |   1   2   3   3 |   -0.147484  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1569,22 +1550,22 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  2
 
- SOPPA excitation energy :  0.58421812     au
-                             15.897383     eV
+ SOPPA excitation energy :  0.58421813     au
+                             15.897384     eV
                              128221.06     cm-1
                              1533.8645     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.43 + -0.01  =  95.41 %
- 2p-2h + 2h-2p excitation weight:   4.59 +  0.00  =   4.59 %
+ 2p-2h + 2h-2p excitation weight:   4.59 + -0.00  =   4.59 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   2       1     |   -0.979846  |
+ |    exci. | 1   2   |   2       1     |   -0.979845  |
  |-----------------------------------------------------|
  |    exci. | 2 1 1 1 |   5   4   1   3 |    0.132429  |
- |    exci. | 1 1 2 1 |   8   3   1   3 |    0.103175  |
+ |    exci. | 1 1 2 1 |   8   3   1   3 |    0.103176  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1599,16 +1580,16 @@ Point group: C2v
                              1773.4674     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.73 + -0.01  =  95.71 %
- 2p-2h + 2h-2p excitation weight:   4.29 +  0.00  =   4.29 %
+ 2p-2h + 2h-2p excitation weight:   4.29 + -0.00  =   4.29 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   3       1     |    0.415093  |
+ |    exci. | 1   2   |   3       1     |    0.415094  |
  |    exci. | 2   1   |   1       3     |    0.894278  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |   7   7   1   2 |   -0.104223  |
+ |    exci. | 1 1 2 1 |   7   7   1   2 |   -0.104225  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1617,20 +1598,20 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  4
 
- SOPPA excitation energy :  0.68244153     au
-                             18.570178     eV
+ SOPPA excitation energy :  0.68244154     au
+                             18.570179     eV
                              149778.60     cm-1
                              1791.7500     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.58 + -0.13  =  94.45 %
- 2p-2h + 2h-2p excitation weight:   5.55 +  0.00  =   5.55 %
+ 2p-2h + 2h-2p excitation weight:   5.55 + -0.00  =   5.55 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
  |    exci. | 1   2   |   3       1     |    0.874486  |
- |    exci. | 2   1   |   1       3     |   -0.423008  |
+ |    exci. | 2   1   |   1       3     |   -0.423007  |
  |-----------------------------------------------------|
  |    exci. | 1 1 2 1 |  15   5   1   3 |   -0.102475  |
  |=====================================================|
@@ -1642,20 +1623,20 @@ Point group: C2v
  Excitation symmetry  2, state no.  5
 
  SOPPA excitation energy :   1.0235995     au
-                             27.853560     eV
+                             27.853561     eV
                              224654.13     cm-1
                              2687.4602     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.80 + -0.04  =  94.76 %
- 2p-2h + 2h-2p excitation weight:   5.25 +  0.00  =   5.24 %
+ 2p-2h + 2h-2p excitation weight:   5.25 + -0.00  =   5.24 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   4       1     |    0.978183  |
+ |    exci. | 1   2   |   4       1     |   -0.978183  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.123978  |
+ |    exci. | 1 1 2 1 |   7   7   1   3 |    0.123978  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1664,46 +1645,46 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  6
 
- SOPPA excitation energy :   1.2544328     au
-                             34.134851     eV
-                             275316.17     cm-1
-                             3293.5127     kj / mole
+ SOPPA excitation energy :   1.2544372     au
+                             34.134972     eV
+                             275317.14     cm-1
+                             3293.5243     kj / mole
 
- 1p-1h + 1h-1p excitation weight:  97.14 + -0.03  =  97.11 %
- 2p-2h + 2h-2p excitation weight:   2.89 +  0.00  =   2.89 %
+ 1p-1h + 1h-1p excitation weight:  97.15 + -0.03  =  97.12 %
+ 2p-2h + 2h-2p excitation weight:   2.88 + -0.00  =   2.88 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   5       1     |   -0.983095  |
- |    exci. | 2   1   |   2       3     |    0.104375  |
+ |    exci. | 1   2   |   5       1     |   -0.982942  |
+ |    exci. | 2   1   |   2       3     |    0.105662  |
  |-----------------------------------------------------|
- |    exci. | 2 1 1 1 |   1   2   3   3 |    0.021909  |
- |    exci. | 2 1 1 1 |   5   4   1   3 |   -0.024726  |
- |    exci. | 2 1 1 1 |   5   5   1   3 |   -0.029931  |
- |    exci. | 2 1 1 1 |   2   9   1   3 |    0.042444  |
- |    exci. | 2 1 1 1 |   3   9   1   3 |    0.024033  |
- |    exci. | 2 1 1 1 |   6   9   1   3 |    0.020378  |
- |    exci. | 2 1 1 1 |   1   9   2   3 |   -0.030621  |
- |    exci. | 2 1 1 1 |   5   9   3   3 |    0.081003  |
- |    exci. | 2 1 1 1 |   5  10   3   3 |    0.038582  |
- |    exci. | 1 1 2 1 |   7   8   1   2 |   -0.034021  |
- |    exci. | 1 1 2 1 |  15   1   1   3 |    0.035565  |
- |    exci. | 1 1 2 1 |   8   3   1   3 |   -0.033980  |
- |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.024487  |
- |    exci. | 1 1 2 1 |   3   8   1   3 |    0.029083  |
- |    exci. | 1 1 2 1 |   5   8   1   3 |   -0.031545  |
- |    exci. | 1 1 2 1 |   6   8   1   3 |   -0.025171  |
- |    exci. | 1 1 2 1 |   7   8   1   3 |   -0.029126  |
- |    exci. | 1 1 2 1 |   8   8   1   3 |    0.021955  |
- |    exci. | 1 1 2 1 |   1   9   1   3 |    0.047442  |
- |    exci. | 1 1 2 1 |   5   9   1   3 |    0.036626  |
- |    exci. | 1 1 2 1 |   7   9   1   3 |    0.053086  |
- |    exci. | 1 1 2 1 |   9   9   1   3 |   -0.026885  |
- |    exci. | 2 3 1 3 |   1   8   1   1 |   -0.032538  |
- |    exci. | 3 3 2 1 |   9   7   1   2 |    0.021812  |
- |    exci. | 3 3 2 1 |   7   6   1   3 |    0.020511  |
+ |    exci. | 2 1 1 1 |   1   2   3   3 |    0.022101  |
+ |    exci. | 2 1 1 1 |   5   4   1   3 |   -0.024621  |
+ |    exci. | 2 1 1 1 |   5   5   1   3 |   -0.029896  |
+ |    exci. | 2 1 1 1 |   2   9   1   3 |    0.042338  |
+ |    exci. | 2 1 1 1 |   3   9   1   3 |    0.023985  |
+ |    exci. | 2 1 1 1 |   6   9   1   3 |    0.020345  |
+ |    exci. | 2 1 1 1 |   1   9   2   3 |   -0.030570  |
+ |    exci. | 2 1 1 1 |   5   9   3   3 |    0.080718  |
+ |    exci. | 2 1 1 1 |   5  10   3   3 |    0.038492  |
+ |    exci. | 1 1 2 1 |   7   8   1   2 |   -0.033951  |
+ |    exci. | 1 1 2 1 |  15   1   1   3 |    0.035540  |
+ |    exci. | 1 1 2 1 |   8   3   1   3 |   -0.033899  |
+ |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.024337  |
+ |    exci. | 1 1 2 1 |   3   8   1   3 |    0.029064  |
+ |    exci. | 1 1 2 1 |   5   8   1   3 |   -0.031528  |
+ |    exci. | 1 1 2 1 |   6   8   1   3 |   -0.025158  |
+ |    exci. | 1 1 2 1 |   7   8   1   3 |   -0.029077  |
+ |    exci. | 1 1 2 1 |   8   8   1   3 |    0.021919  |
+ |    exci. | 1 1 2 1 |   1   9   1   3 |    0.047360  |
+ |    exci. | 1 1 2 1 |   5   9   1   3 |   -0.036555  |
+ |    exci. | 1 1 2 1 |   7   9   1   3 |    0.052984  |
+ |    exci. | 1 1 2 1 |   9   9   1   3 |   -0.026826  |
+ |    exci. | 2 3 1 3 |   1   8   1   1 |   -0.032473  |
+ |    exci. | 3 3 2 1 |   9   7   1   2 |    0.021760  |
+ |    exci. | 3 3 2 1 |   7   6   1   3 |    0.020494  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1712,25 +1693,24 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  2, state no.  7
 
- SOPPA excitation energy :   1.3622633     au
-                             37.069068     eV
-                             298982.23     cm-1
-                             3576.6217     kj / mole
+ SOPPA excitation energy :   1.3622966     au
+                             37.069976     eV
+                             298989.54     cm-1
+                             3576.7092     kj / mole
 
- 1p-1h + 1h-1p excitation weight:   0.91 +  0.00  =   0.91 %
- 2p-2h + 2h-2p excitation weight:  99.09 +  0.00  =  99.09 %
+ 1p-1h + 1h-1p excitation weight:   0.41 + -0.00  =   0.41 %
+ 2p-2h + 2h-2p excitation weight:  99.59 + -0.00  =  99.59 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   1       1     |    0.035584  |
- |    exci. | 1   2   |   4       1     |    0.033867  |
- |    exci. | 1   2   |   5       1     |   -0.022551  |
- |    exci. | 2   1   |   1       2     |   -0.066797  |
- |    exci. | 2   1   |   2       3     |   -0.036133  |
+ |    exci. | 1   2   |   1       1     |   -0.035151  |
+ |    exci. | 1   2   |   4       1     |   -0.034031  |
+ |    exci. | 1   2   |   5       1     |    0.024189  |
+ |    exci. | 2   1   |   2       3     |    0.020230  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |  15   1   1   3 |   -1.406293  |
+ |    exci. | 1 1 2 1 |  15   1   1   3 |    1.410090  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.020000
@@ -1742,39 +1722,39 @@ Point group: C2v
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1    -0.48648 +   -0.02864 +   -0.00575 +    0.00015 =   -0.52071
+   1     0.48648 +    0.02864 +    0.00575 +   -0.00015 =    0.52071
    2    -0.07421 +   -0.00152 +   -0.00623 +   -0.00001 =   -0.08197
-   3     0.23958 +    0.01029 +   -0.00960 +   -0.00011 =    0.24016
+   3     0.23960 +    0.01029 +   -0.00961 +   -0.00011 =    0.24017
    4     0.48614 +    0.03104 +   -0.04783 +   -0.00041 =    0.46894
-   5    -0.67336 +   -0.01869 +    0.03143 +    0.00044 =   -0.66018
-   6    -0.32731 +   -0.01047 +    0.02286 +    0.00021 =   -0.31470
-   7    -0.04712 +   -0.01030 +    0.00234 +    0.00003 =   -0.05506
+   5     0.67336 +    0.01869 +   -0.03143 +   -0.00044 =    0.66018
+   6    -0.32615 +   -0.01047 +    0.02278 +    0.00019 =   -0.31365
+   7     0.02392 +    0.01028 +   -0.00217 +   -0.00003 =    0.03200
  ===================================================================
 
  XDIPVEL SOPPA transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.19395 +    0.00561 +   -0.02102 +    0.00003 =    0.17856
-   2     0.01807 +    0.00001 +   -0.01327 +    0.00000 =    0.00480
-   3    -0.16381 +   -0.00413 +   -0.01258 +   -0.00004 =   -0.18056
-   4    -0.19533 +   -0.00695 +   -0.06809 +   -0.00011 =   -0.27048
-   5     0.53076 +    0.00368 +    0.02143 +    0.00011 =    0.55599
-   6     0.29753 +    0.00133 +    0.02685 +    0.00004 =    0.32575
-   7     0.06453 +    0.00315 +    0.00222 +    0.00001 =    0.06991
+   1    -0.19395 +   -0.00561 +    0.02102 +   -0.00003 =   -0.17856
+   2     0.01807 +    0.00001 +   -0.01327 +   -0.00000 =    0.00480
+   3    -0.16383 +   -0.00413 +   -0.01258 +   -0.00004 =   -0.18059
+   4    -0.19533 +   -0.00695 +   -0.06809 +   -0.00011 =   -0.27049
+   5    -0.53076 +   -0.00368 +   -0.02144 +   -0.00011 =   -0.55599
+   6     0.29663 +    0.00134 +    0.02665 +    0.00004 =    0.32466
+   7    -0.03516 +   -0.00280 +   -0.00241 +   -0.00000 =   -0.04037
  ===================================================================
 
  YANGMOM SOPPA transition moments for excitation symmetry  2
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.11845 +    0.00522 +    0.00207 +    0.00004 =    0.12578
-   2     0.02484 +    0.00289 +    0.00038 +    0.00000 =    0.02810
-   3     0.13391 +    0.00410 +   -0.00222 +   -0.00003 =    0.13576
+   1    -0.11845 +   -0.00522 +   -0.00207 +   -0.00004 =   -0.12578
+   2     0.02484 +    0.00289 +    0.00038 +   -0.00000 =    0.02810
+   3     0.13390 +    0.00410 +   -0.00223 +   -0.00003 =    0.13575
    4     0.16248 +    0.00537 +   -0.00202 +   -0.00005 =    0.16579
-   5    -0.03884 +   -0.00127 +    0.00550 +    0.00007 =   -0.03454
-   6    -0.05414 +   -0.00092 +    0.00142 +    0.00003 =   -0.05361
-   7    -0.00550 +    0.00153 +    0.00016 +    0.00000 =   -0.00381
+   5     0.03884 +    0.00127 +   -0.00550 +   -0.00007 =    0.03454
+   6    -0.05433 +   -0.00095 +    0.00144 +    0.00003 =   -0.05380
+   7     0.00659 +   -0.00163 +   -0.00017 +    0.00000 =    0.00479
  ===================================================================
 
   ******************************************************************
@@ -1788,12 +1768,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.56695621     6.7849E-01       no
-                 2       0.62581871     6.1716E-01       no
-                 3       0.83069594     6.9960E-01       no
-                 4       0.92398062     6.0528E-01       no
-                 5       0.96211572     7.1964E-01       no
-                 6       1.34099500     2.0038E-02       no
+                 1       0.56695621     6.7849D-01       no
+                 2       0.62581872     6.1716D-01       no
+                 3       0.83069594     6.9960D-01       no
+                 4       0.92398062     6.0528D-01       no
+                 5       0.96211573     7.1964D-01       no
+                 6       1.34099504     2.0038D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -1803,12 +1783,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44328729     4.6955E-02       no
-                 2       0.51950393     7.5727E-02       no
-                 3       0.70020308     7.7550E-02       no
-                 4       0.83177017     5.8871E-02       no
-                 5       0.83770005     8.9269E-02       no
-                 6       1.28771514     7.5034E-01       no
+                 1       0.44328730     4.6955D-02       no
+                 2       0.51950394     7.5727D-02       no
+                 3       0.70020309     7.7550D-02       no
+                 4       0.83177017     5.8871D-02       no
+                 5       0.83770006     8.9269D-02       no
+                 6       1.28771512     7.5034D-01       no
             --------------------------------------------------
 
   ==================================================================
@@ -1818,12 +1798,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44287219     9.0475E-03       no
-                 2       0.51783768     2.2739E-02       no
-                 3       0.69804700     2.8817E-02       no
-                 4       0.83059851     2.7057E-02       no
-                 5       0.83503603     3.1689E-02       no
-                 6       1.02733182     4.1646E-01       no
+                 1       0.44287220     9.0475D-03       no
+                 2       0.51783769     2.2739D-02       no
+                 3       0.69804701     2.8817D-02       no
+                 4       0.83059851     2.7057D-02       no
+                 5       0.83503603     3.1689D-02       no
+                 6       1.02733173     4.1646D-01       no
             --------------------------------------------------
 
   ==================================================================
@@ -1833,12 +1813,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285286     1.3780E-03       no
-                 2       0.51770693     2.6436E-03       no
-                 3       0.69776982     5.9598E-03       no
-                 4       0.83018661     1.0021E-02       no
-                 5       0.83462473     9.7027E-03       no
-                 6       0.95118596     1.3739E-01       no
+                 1       0.44285287     1.3780D-03       no
+                 2       0.51770694     2.6436D-03       no
+                 3       0.69776983     5.9598D-03       no
+                 4       0.83018661     1.0021D-02       no
+                 5       0.83462474     9.7027D-03       no
+                 6       0.95118595     1.3739D-01       no
             --------------------------------------------------
 
   ==================================================================
@@ -1848,12 +1828,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285236     3.0999E-04       no
-                 2       0.51770522     5.0250E-04       no
-                 3       0.69775942     1.4362E-03       no
-                 4       0.83015849     3.5623E-03       no
-                 5       0.83460208     3.6172E-03       no
-                 6       0.94525195     4.0722E-02       no
+                 1       0.44285237     3.0999D-04       no
+                 2       0.51770523     5.0250D-04       no
+                 3       0.69775943     1.4362D-03       no
+                 4       0.83015849     3.5623D-03       no
+                 5       0.83460209     3.6172D-03       no
+                 6       0.94525195     4.0722D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -1863,12 +1843,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285233     6.3795E-05      yes
-                 2       0.51770516     1.1405E-04       no
-                 3       0.69775874     5.5706E-04       no
-                 4       0.83015517     1.9297E-03       no
-                 5       0.83459913     1.8903E-03       no
-                 6       0.94468991     1.6997E-02       no
+                 1       0.44285235     6.3795D-05      yes
+                 2       0.51770516     1.1405D-04       no
+                 3       0.69775875     5.5706D-04       no
+                 4       0.83015517     1.9297D-03       no
+                 5       0.83459913     1.8903D-03       no
+                 6       0.94468991     1.6997D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -1878,12 +1858,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285233     2.4562E-05      yes
-                 2       0.51770516     1.9230E-05      yes
-                 3       0.69775868     1.2575E-04       no
-                 4       0.83015453     1.1629E-03       no
-                 5       0.83459852     9.3728E-04       no
-                 6       0.94462493     4.2697E-03       no
+                 1       0.44285235     2.4562D-05      yes
+                 2       0.51770516     1.9230D-05      yes
+                 3       0.69775869     1.2575D-04       no
+                 4       0.83015453     1.1629D-03       no
+                 5       0.83459853     9.3728D-04       no
+                 6       0.94462494     4.2697D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1893,12 +1873,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285233     2.1987E-05      yes
-                 2       0.51770516     1.4065E-05      yes
-                 3       0.69775868     3.5552E-05      yes
-                 4       0.83015435     7.0858E-04       no
-                 5       0.83459840     5.3417E-04       no
-                 6       0.94462128     1.4517E-03       no
+                 1       0.44285235     2.2434D-05      yes
+                 2       0.51770516     1.4507D-05      yes
+                 3       0.69775869     3.5865D-05      yes
+                 4       0.83015436     7.2366D-04       no
+                 5       0.83459842     5.4292D-04       no
+                 6       0.94462460     3.8292D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1908,12 +1888,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285233     2.2393E-05      yes
-                 2       0.51770516     1.3490E-05      yes
-                 3       0.69775868     3.5681E-05      yes
-                 4       0.83015432     6.4662E-04       no
-                 5       0.83459838     4.4453E-04       no
-                 6       0.94462083     4.5171E-04       no
+                 1       0.44285235     2.2481D-05      yes
+                 2       0.51770516     1.4428D-05      yes
+                 3       0.69775869     3.4372D-05      yes
+                 4       0.83015432     6.9822D-04       no
+                 5       0.83459838     4.7976D-04       no
+                 6       0.94462433     3.7083D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1923,12 +1903,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285233     2.2208E-05      yes
-                 2       0.51770516     1.2962E-05      yes
-                 3       0.69775868     3.5461E-05      yes
-                 4       0.83015426     5.4543E-04       no
-                 5       0.83459834     3.5549E-04       no
-                 6       0.94462076     1.6336E-04       no
+                 1       0.44285235     2.2604D-05      yes
+                 2       0.51770516     1.4422D-05      yes
+                 3       0.69775869     3.3630D-05      yes
+                 4       0.83015425     4.7983D-04       no
+                 5       0.83459835     3.0246D-04       no
+                 6       0.94462429     3.6112D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1938,12 +1918,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285233     2.2182E-05      yes
-                 2       0.51770516     1.2624E-05      yes
-                 3       0.69775868     3.3176E-05      yes
-                 4       0.83015422     3.3479E-04       no
-                 5       0.83459833     2.0713E-04       no
-                 6       0.94462075     8.8317E-05      yes
+                 1       0.44285235     2.2718D-05      yes
+                 2       0.51770516     1.3802D-05      yes
+                 3       0.69775869     3.2006D-05      yes
+                 4       0.83015421     1.9887D-04       no
+                 5       0.83459833     1.1443D-04       no
+                 6       0.94462429     3.5704D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1953,12 +1933,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285233     2.2234E-05      yes
-                 2       0.51770516     1.2383E-05      yes
-                 3       0.69775868     3.5079E-05      yes
-                 4       0.83015420     2.5074E-04       no
-                 5       0.83459832     1.3905E-04       no
-                 6       0.94462075     8.6685E-05      yes
+                 1       0.44285235     2.2690D-05      yes
+                 2       0.51770516     1.3120D-05      yes
+                 3       0.69775869     3.1116D-05      yes
+                 4       0.83015420     1.3136D-04       no
+                 5       0.83459832     7.0770D-05      yes
+                 6       0.94462425     3.6458D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -1968,27 +1948,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.44285233     2.2224E-05      yes
-                 2       0.51770516     1.1874E-05      yes
-                 3       0.69775868     3.2729E-05      yes
-                 4       0.83015419     1.4343E-04       no
-                 5       0.83459832     7.3300E-05      yes
-                 6       0.94462075     8.9534E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               14. SOPPA iteration, Excitation symmetry 3
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.44285233     2.1944E-05      yes
-                 2       0.51770516     1.1863E-05      yes
-                 3       0.69775868     3.1807E-05      yes
-                 4       0.83015419     8.3426E-05      yes
-                 5       0.83459831     4.1990E-05      yes
-                 6       0.94462075     8.5574E-05      yes
+                 1       0.44285235     2.2706D-05      yes
+                 2       0.51770516     1.2328D-05      yes
+                 3       0.69775869     3.0177D-05      yes
+                 4       0.83015419     9.6561D-05      yes
+                 5       0.83459832     5.0231D-05      yes
+                 6       0.94462411     3.5276D-03      yes
             --------------------------------------------------
 
  -------------------------------------------------------------
@@ -2001,23 +1966,23 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  1
 
- SOPPA excitation energy :  0.44285233     au
+ SOPPA excitation energy :  0.44285235     au
                              12.050625     eV
-                             97194.853     cm-1
-                             1162.7086     kj / mole
+                             97194.855     cm-1
+                             1162.7087     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.01 + -0.07  =  93.94 %
- 2p-2h + 2h-2p excitation weight:   6.06 +  0.00  =   6.06 %
+ 2p-2h + 2h-2p excitation weight:   6.06 + -0.00  =   6.06 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   1   |   1       3     |    0.964464  |
+ |    exci. | 3   1   |   1       3     |   -0.964464  |
  |    exci. | 3   1   |   3       3     |    0.163179  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   8  12   2   2 |   -0.113250  |
- |    exci. | 1 1 3 1 |   1  12   1   2 |   -0.117474  |
+ |    exci. | 3 1 1 1 |   8  12   2   2 |    0.113250  |
+ |    exci. | 1 1 3 1 |   1  12   1   2 |    0.117474  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2027,12 +1992,12 @@ Point group: C2v
  Excitation symmetry  3, state no.  2
 
  SOPPA excitation energy :  0.51770516     au
-                             14.087473     eV
+                             14.087474     eV
                              113623.15     cm-1
                              1359.2347     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.42 + -0.06  =  95.36 %
- 2p-2h + 2h-2p excitation weight:   4.64 +  0.00  =   4.64 %
+ 2p-2h + 2h-2p excitation weight:   4.64 + -0.00  =   4.64 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
@@ -2042,7 +2007,7 @@ Point group: C2v
  |    exci. | 1   3   |   3       1     |   -0.109649  |
  |-----------------------------------------------------|
  |    exci. | 1 1 3 1 |   1  12   1   3 |   -0.101144  |
- |    exci. | 1 1 3 1 |   7  12   1   3 |   -0.109645  |
+ |    exci. | 1 1 3 1 |   7  12   1   3 |    0.109645  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2051,23 +2016,23 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  3
 
- SOPPA excitation energy :  0.69775868     au
-                             18.986979     eV
+ SOPPA excitation energy :  0.69775869     au
+                             18.986980     eV
                              153140.33     cm-1
-                             1831.9651     kj / mole
+                             1831.9652     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.52 + -0.14  =  94.38 %
- 2p-2h + 2h-2p excitation weight:   5.62 +  0.00  =   5.62 %
+ 2p-2h + 2h-2p excitation weight:   5.62 + -0.00  =   5.62 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   3       1     |    0.103394  |
- |    exci. | 3   1   |   2       3     |    0.966216  |
+ |    exci. | 1   3   |   3       1     |   -0.103394  |
+ |    exci. | 3   1   |   2       3     |   -0.966216  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   1  14   1   2 |   -0.111800  |
- |    exci. | 1 1 3 1 |   2  13   1   2 |   -0.125490  |
+ |    exci. | 3 1 1 1 |   1  14   1   2 |    0.111800  |
+ |    exci. | 1 1 3 1 |   2  13   1   2 |    0.125489  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2077,43 +2042,43 @@ Point group: C2v
  Excitation symmetry  3, state no.  4
 
  SOPPA excitation energy :  0.83015419     au
-                             22.589644     eV
+                             22.589645     eV
                              182197.78     cm-1
                              2179.5695     kj / mole
 
  1p-1h + 1h-1p excitation weight:  96.27 + -0.02  =  96.25 %
- 2p-2h + 2h-2p excitation weight:   3.75 +  0.00  =   3.75 %
+ 2p-2h + 2h-2p excitation weight:   3.75 + -0.00  =   3.75 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   2       1     |    0.974416  |
- |    exci. | 1   3   |   3       1     |    0.141665  |
+ |    exci. | 1   3   |   2       1     |   -0.974416  |
+ |    exci. | 1   3   |   3       1     |   -0.141665  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   8  13   2   2 |    0.031611  |
- |    exci. | 3 1 1 1 |   2  16   1   2 |    0.031432  |
- |    exci. | 3 1 1 1 |   8   9   2   3 |    0.044680  |
- |    exci. | 3 1 1 1 |   8  12   2   3 |   -0.021307  |
- |    exci. | 3 1 1 1 |   1  12   3   3 |    0.020686  |
- |    exci. | 3 1 1 1 |   7  13   2   3 |   -0.038755  |
- |    exci. | 3 1 1 1 |  10  13   2   3 |    0.036676  |
- |    exci. | 3 1 1 1 |   1  14   1   3 |   -0.086539  |
- |    exci. | 3 1 1 1 |   2  14   1   3 |   -0.026828  |
- |    exci. | 3 1 1 1 |   3  14   1   3 |   -0.030405  |
- |    exci. | 3 1 1 1 |   7  14   1   3 |   -0.061128  |
- |    exci. | 3 1 1 1 |   8  14   1   3 |   -0.041386  |
- |    exci. | 3 1 1 1 |   9  14   1   3 |   -0.049559  |
- |    exci. | 3 1 1 1 |  10  14   1   3 |   -0.029646  |
- |    exci. | 1 1 3 1 |   2  14   1   2 |   -0.026157  |
- |    exci. | 1 1 3 1 |   1  12   1   3 |   -0.020454  |
- |    exci. | 1 1 3 1 |   8  12   1   3 |   -0.035993  |
- |    exci. | 1 1 3 1 |   2  13   1   3 |   -0.087550  |
- |    exci. | 1 1 3 1 |   5  13   1   3 |    0.029624  |
- |    exci. | 1 1 3 1 |   7  13   1   3 |    0.022085  |
- |    exci. | 1 1 3 1 |   2  14   1   3 |   -0.029772  |
- |    exci. | 3 2 1 2 |   8   1   2   1 |    0.030177  |
- |    exci. | 1 2 3 2 |   2   2   1   1 |    0.023824  |
+ |    exci. | 3 1 1 1 |   8  13   2   2 |   -0.031611  |
+ |    exci. | 3 1 1 1 |   2  16   1   2 |   -0.031432  |
+ |    exci. | 3 1 1 1 |   8   9   2   3 |   -0.044680  |
+ |    exci. | 3 1 1 1 |   8  12   2   3 |    0.021306  |
+ |    exci. | 3 1 1 1 |   1  12   3   3 |   -0.020686  |
+ |    exci. | 3 1 1 1 |   7  13   2   3 |    0.038754  |
+ |    exci. | 3 1 1 1 |  10  13   2   3 |   -0.036676  |
+ |    exci. | 3 1 1 1 |   1  14   1   3 |    0.086537  |
+ |    exci. | 3 1 1 1 |   2  14   1   3 |    0.026828  |
+ |    exci. | 3 1 1 1 |   3  14   1   3 |    0.030406  |
+ |    exci. | 3 1 1 1 |   7  14   1   3 |   -0.061127  |
+ |    exci. | 3 1 1 1 |   8  14   1   3 |    0.041385  |
+ |    exci. | 3 1 1 1 |   9  14   1   3 |    0.049559  |
+ |    exci. | 3 1 1 1 |  10  14   1   3 |    0.029645  |
+ |    exci. | 1 1 3 1 |   2  14   1   2 |    0.026157  |
+ |    exci. | 1 1 3 1 |   1  12   1   3 |    0.020453  |
+ |    exci. | 1 1 3 1 |   8  12   1   3 |    0.035993  |
+ |    exci. | 1 1 3 1 |   2  13   1   3 |    0.087548  |
+ |    exci. | 1 1 3 1 |   5  13   1   3 |   -0.029624  |
+ |    exci. | 1 1 3 1 |   7  13   1   3 |   -0.022086  |
+ |    exci. | 1 1 3 1 |   2  14   1   3 |    0.029772  |
+ |    exci. | 3 2 1 2 |   8   1   2   1 |   -0.030177  |
+ |    exci. | 1 2 3 2 |   2   2   1   1 |   -0.023824  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2122,55 +2087,55 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  5
 
- SOPPA excitation energy :  0.83459831     au
-                             22.710575     eV
+ SOPPA excitation energy :  0.83459832     au
+                             22.710576     eV
                              183173.16     cm-1
                              2191.2376     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.84 + -0.04  =  94.80 %
- 2p-2h + 2h-2p excitation weight:   5.20 +  0.00  =   5.20 %
+ 2p-2h + 2h-2p excitation weight:   5.20 + -0.00  =   5.20 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   2       1     |   -0.103824  |
+ |    exci. | 1   3   |   2       1     |   -0.103823  |
  |    exci. | 1   3   |   3       1     |    0.116901  |
- |    exci. | 3   1   |   1       3     |    0.132484  |
- |    exci. | 3   1   |   3       3     |   -0.952476  |
+ |    exci. | 3   1   |   1       3     |   -0.132486  |
+ |    exci. | 3   1   |   3       3     |   -0.952477  |
  |-----------------------------------------------------|
  |    exci. | 3 1 1 1 |   2   2   1   2 |   -0.036447  |
  |    exci. | 3 1 1 1 |   8   2   1   2 |   -0.022489  |
  |    exci. | 3 1 1 1 |   9   2   1   2 |    0.035039  |
  |    exci. | 3 1 1 1 |  10   2   1   2 |   -0.024567  |
- |    exci. | 3 1 1 1 |   1  12   1   2 |   -0.023393  |
- |    exci. | 3 1 1 1 |   4  12   1   2 |    0.021696  |
- |    exci. | 3 1 1 1 |   7  12   2   2 |    0.026349  |
- |    exci. | 3 1 1 1 |   8  12   2   2 |   -0.070758  |
+ |    exci. | 3 1 1 1 |   1  12   1   2 |    0.023392  |
+ |    exci. | 3 1 1 1 |   4  12   1   2 |   -0.021695  |
+ |    exci. | 3 1 1 1 |   7  12   2   2 |   -0.026347  |
+ |    exci. | 3 1 1 1 |   8  12   2   2 |    0.070755  |
  |    exci. | 3 1 1 1 |   1  14   1   2 |    0.025885  |
  |    exci. | 3 1 1 1 |   8  14   1   2 |    0.020641  |
- |    exci. | 3 1 1 1 |   1  15   1   2 |   -0.052555  |
+ |    exci. | 3 1 1 1 |   1  15   1   2 |   -0.052556  |
  |    exci. | 3 1 1 1 |   2  15   1   2 |    0.063831  |
  |    exci. | 3 1 1 1 |   3  15   1   2 |    0.068290  |
  |    exci. | 3 1 1 1 |   5  15   1   2 |    0.037784  |
- |    exci. | 3 1 1 1 |   7  15   1   2 |   -0.021915  |
+ |    exci. | 3 1 1 1 |   7  15   1   2 |   -0.021914  |
  |    exci. | 3 1 1 1 |   7  15   2   2 |    0.068631  |
  |    exci. | 3 1 1 1 |   8  15   2   2 |   -0.028028  |
  |    exci. | 3 1 1 1 |   9  15   2   2 |    0.023586  |
- |    exci. | 3 1 1 1 |   3  15   3   2 |    0.048218  |
+ |    exci. | 3 1 1 1 |   3  15   3   2 |   -0.048219  |
  |    exci. | 3 1 1 1 |   5  15   3   2 |    0.057894  |
  |    exci. | 3 1 1 1 |   1   2   1   3 |    0.023246  |
  |    exci. | 3 1 1 1 |   9   2   1   3 |    0.021026  |
  |    exci. | 3 1 1 1 |   3  15   1   3 |    0.034415  |
  |    exci. | 3 1 1 1 |   5  15   3   3 |   -0.025999  |
  |    exci. | 1 1 3 1 |   5   1   1   2 |    0.042404  |
- |    exci. | 1 1 3 1 |   1  12   1   2 |   -0.071664  |
- |    exci. | 1 1 3 1 |   3  12   1   2 |   -0.022144  |
- |    exci. | 1 1 3 1 |   7  12   1   2 |   -0.060120  |
- |    exci. | 1 1 3 1 |   9  12   1   2 |   -0.043790  |
- |    exci. | 1 1 3 1 |   1  13   1   2 |    0.022312  |
+ |    exci. | 1 1 3 1 |   1  12   1   2 |    0.071661  |
+ |    exci. | 1 1 3 1 |   3  12   1   2 |    0.022143  |
+ |    exci. | 1 1 3 1 |   7  12   1   2 |   -0.060117  |
+ |    exci. | 1 1 3 1 |   9  12   1   2 |    0.043787  |
+ |    exci. | 1 1 3 1 |   1  13   1   2 |    0.022314  |
  |    exci. | 1 1 3 1 |   2  13   1   2 |    0.040263  |
- |    exci. | 1 1 3 1 |   3  13   1   2 |   -0.023334  |
+ |    exci. | 1 1 3 1 |   3  13   1   2 |   -0.023335  |
  |    exci. | 1 1 3 1 |   4  13   1   2 |   -0.025227  |
  |    exci. | 1 1 3 1 |   1  14   1   2 |    0.024248  |
  |    exci. | 1 1 3 1 |   3  14   1   2 |   -0.021799  |
@@ -2184,24 +2149,24 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  3, state no.  6
 
- SOPPA excitation energy :  0.94462075     au
-                             25.704437     eV
-                             207320.29     cm-1
-                             2480.1014     kj / mole
+ SOPPA excitation energy :  0.94462411     au
+                             25.704530     eV
+                             207321.03     cm-1
+                             2480.1102     kj / mole
 
- 1p-1h + 1h-1p excitation weight:  95.67 + -0.26  =  95.41 %
- 2p-2h + 2h-2p excitation weight:   4.60 +  0.00  =   4.59 %
+ 1p-1h + 1h-1p excitation weight:  95.67 + -0.26  =  95.40 %
+ 2p-2h + 2h-2p excitation weight:   4.60 + -0.00  =   4.60 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   2       1     |    0.127815  |
- |    exci. | 1   3   |   3       1     |   -0.953906  |
- |    exci. | 3   1   |   3       3     |   -0.138105  |
- |    exci. | 4   2   |   1       1     |   -0.114621  |
+ |    exci. | 1   3   |   2       1     |   -0.127820  |
+ |    exci. | 1   3   |   3       1     |    0.953885  |
+ |    exci. | 3   1   |   3       3     |    0.137981  |
+ |    exci. | 4   2   |   1       1     |    0.114071  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   5  15   3   3 |    0.110303  |
+ |    exci. | 3 1 1 1 |   5  15   3   3 |   -0.110378  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2215,22 +2180,22 @@ Point group: C2v
  -------------------------------------------------------------------
    1    -0.49815 +   -0.02543 +    0.04696 +    0.00078 =   -0.47584
    2     0.83820 +    0.03292 +   -0.03740 +   -0.00081 =    0.83291
-   3     0.68662 +    0.03383 +   -0.06878 +   -0.00104 =    0.65064
-   4     0.20850 +    0.01359 +   -0.01611 +   -0.00027 =    0.20571
-   5     0.01866 +   -0.01022 +   -0.02962 +   -0.00041 =   -0.02160
-   6     0.83089 +    0.02454 +   -0.09460 +   -0.00152 =    0.75931
+   3    -0.68662 +   -0.03383 +    0.06878 +    0.00104 =   -0.65063
+   4    -0.20848 +   -0.01360 +    0.01612 +    0.00027 =   -0.20569
+   5     0.01865 +   -0.01022 +   -0.02962 +   -0.00041 =   -0.02161
+   6    -0.83093 +   -0.02452 +    0.09441 +    0.00150 =   -0.75953
  ===================================================================
 
  YDIPVEL SOPPA transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.16739 +    0.00791 +    0.04832 +    0.00025 =    0.22388
+   1     0.16739 +    0.00792 +    0.04832 +    0.00025 =    0.22388
    2    -0.40816 +   -0.01096 +   -0.01952 +   -0.00031 =   -0.43895
-   3    -0.37539 +   -0.01028 +   -0.06900 +   -0.00034 =   -0.45501
-   4    -0.13839 +   -0.00393 +   -0.01043 +   -0.00009 =   -0.15285
-   5     0.06669 +    0.00284 +   -0.03514 +   -0.00012 =    0.03428
-   6    -0.61304 +   -0.01106 +   -0.07976 +   -0.00053 =   -0.70440
+   3     0.37539 +    0.01028 +    0.06900 +    0.00034 =    0.45501
+   4     0.13837 +    0.00394 +    0.01043 +    0.00009 =    0.15283
+   5     0.06670 +    0.00284 +   -0.03514 +   -0.00012 =    0.03429
+   6     0.61305 +    0.01103 +    0.07955 +    0.00053 =    0.70416
  ===================================================================
 
  XANGMOM SOPPA transition moments for excitation symmetry  3
@@ -2239,10 +2204,10 @@ Point group: C2v
  -------------------------------------------------------------------
    1     0.17542 +    0.00521 +   -0.00196 +   -0.00003 =    0.17863
    2     0.13288 +    0.00521 +    0.00087 +    0.00002 =    0.13899
-   3    -0.42537 +   -0.01586 +    0.00681 +    0.00009 =   -0.43432
-   4     0.11332 +    0.00463 +   -0.00031 +   -0.00002 =    0.11763
+   3     0.42537 +    0.01586 +   -0.00681 +   -0.00009 =    0.43432
+   4    -0.11332 +   -0.00463 +    0.00031 +    0.00002 =   -0.11763
    5    -0.17546 +   -0.00286 +    0.00255 +    0.00004 =   -0.17573
-   6     0.23932 +    0.00785 +   -0.00226 +   -0.00001 =    0.24491
+   6    -0.23857 +   -0.00786 +    0.00224 +    0.00001 =   -0.24417
  ===================================================================
 
   ******************************************************************
@@ -2256,12 +2221,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.46653137     6.7580E-01       no
-                 2       0.72056984     7.0763E-01       no
-                 3       0.86401147     6.8914E-01       no
-                 4       0.91373482     5.9031E-01       no
-                 5       1.41687177     1.4246E-02       no
-                 6       1.42164756     5.2910E-02       no
+                 1       0.46653138     6.7580D-01       no
+                 2       0.72056985     7.0763D-01       no
+                 3       0.86401148     6.8914D-01       no
+                 4       0.91373482     5.9031D-01       no
+                 5       1.41687179     1.4246D-02       no
+                 6       1.42164758     5.2910D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -2271,12 +2236,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.34854169     2.7582E-02       no
-                 2       0.59417891     4.6267E-02       no
-                 3       0.74347374     6.4512E-02       no
-                 4       0.83399164     4.2824E-02       no
-                 5       1.41646946     3.8028E-02       no
-                 6       1.41986335     1.5519E-02       no
+                 1       0.34854170     2.7582D-02       no
+                 2       0.59417892     4.6267D-02       no
+                 3       0.74347375     6.4512D-02       no
+                 4       0.83399164     4.2824D-02       no
+                 5       1.41646947     3.8028D-02       no
+                 6       1.41986338     1.5519D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -2286,12 +2251,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.34843918     3.2300E-03       no
-                 2       0.59370914     6.9914E-03       no
-                 3       0.74257865     7.6394E-03       no
-                 4       0.83359667     8.5782E-03       no
-                 5       1.37409994     2.0683E-01       no
-                 6       1.41742445     3.0300E-02       no
+                 1       0.34843919     3.2300D-03       no
+                 2       0.59370914     6.9914D-03       no
+                 3       0.74257865     7.6394D-03       no
+                 4       0.83359667     8.5782D-03       no
+                 5       1.37409997     2.0683D-01       no
+                 6       1.41742447     3.0300D-02       no
             --------------------------------------------------
 
   ==================================================================
@@ -2301,12 +2266,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.34843731     3.1466E-04       no
-                 2       0.59369909     5.2521E-04       no
-                 3       0.74256097     1.1753E-03       no
-                 4       0.83358051     8.2341E-04       no
-                 5       1.35149118     6.0000E-02       no
-                 6       1.41708176     6.6929E-03       no
+                 1       0.34843732     3.1466D-04       no
+                 2       0.59369910     5.2521D-04       no
+                 3       0.74256098     1.1753D-03       no
+                 4       0.83358051     8.2341D-04       no
+                 5       1.35149118     6.0000D-02       no
+                 6       1.41708178     6.6929D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -2316,12 +2281,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.34843729     4.8578E-05      yes
-                 2       0.59369903     7.9682E-05      yes
-                 3       0.74256072     2.0914E-04       no
-                 4       0.83358030     2.3653E-04       no
-                 5       1.35073833     1.0081E-02       no
-                 6       1.41707214     1.4086E-03       no
+                 1       0.34843730     4.8636D-05      yes
+                 2       0.59369904     8.1191D-05      yes
+                 3       0.74256073     2.0917D-04       no
+                 4       0.83358030     2.3719D-04       no
+                 5       1.35073851     9.9862D-03       no
+                 6       1.41707218     1.4965D-03      yes
             --------------------------------------------------
 
   ==================================================================
@@ -2331,12 +2296,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.34843729     3.5933E-05      yes
-                 2       0.59369903     6.6840E-05      yes
-                 3       0.74256072     1.8078E-04       no
-                 4       0.83358029     4.5287E-05      yes
-                 5       1.35070216     2.8229E-03       no
-                 6       1.41707148     7.3750E-04       no
+                 1       0.34843730     3.6972D-05      yes
+                 2       0.59369904     7.2723D-05      yes
+                 3       0.74256072     1.7669D-04       no
+                 4       0.83358029     4.7020D-05      yes
+                 5       1.35070237     2.7572D-03       no
+                 6       1.41707151     8.7535D-04      yes
             --------------------------------------------------
 
   ==================================================================
@@ -2346,12 +2311,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.34843729     2.9815E-05      yes
-                 2       0.59369903     5.9305E-05      yes
-                 3       0.74256072     1.2939E-04       no
-                 4       0.83358029     4.3544E-05      yes
-                 5       1.35069971     1.1513E-03       no
-                 6       1.41707137     6.8053E-04       no
+                 1       0.34843730     2.6320D-05      yes
+                 2       0.59369904     5.7582D-05      yes
+                 3       0.74256072     9.0169D-05      yes
+                 4       0.83358029     4.4291D-05      yes
+                 5       1.35069968     1.2532D-03       no
+                 6       1.41707144     9.0958D-04      yes
             --------------------------------------------------
 
   ==================================================================
@@ -2361,12 +2326,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.34843729     2.7385E-05      yes
-                 2       0.59369903     5.7636E-05      yes
-                 3       0.74256072     1.2138E-04       no
-                 4       0.83358029     4.4404E-05      yes
-                 5       1.35069939     3.0896E-04       no
-                 6       1.41707128     5.4485E-04       no
+                 1       0.34843730     2.6188D-05      yes
+                 2       0.59369904     5.7722D-05      yes
+                 3       0.74256072     8.9642D-05      yes
+                 4       0.83358029     4.4282D-05      yes
+                 5       1.35069940     3.2591D-04       no
+                 6       1.41707141     7.9105D-04      yes
             --------------------------------------------------
 
   ==================================================================
@@ -2376,162 +2341,12 @@ Point group: C2v
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
-                 1       0.34843729     2.4919E-05      yes
-                 2       0.59369903     5.5570E-05      yes
-                 3       0.74256072     1.1852E-04       no
-                 4       0.83358029     4.4204E-05      yes
-                 5       1.35069937     8.3631E-05      yes
-                 6       1.41707123     2.4173E-04       no
-            --------------------------------------------------
-
-  ==================================================================
-               10. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.4699E-05      yes
-                 2       0.59369903     5.5402E-05      yes
-                 3       0.74256072     1.1713E-04       no
-                 4       0.83358029     4.4129E-05      yes
-                 5       1.35069937     8.3555E-05      yes
-                 6       1.41707123     2.2356E-04       no
-            --------------------------------------------------
-
-  ==================================================================
-               11. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.4948E-05      yes
-                 2       0.59369903     5.6892E-05      yes
-                 3       0.74256072     1.1779E-04       no
-                 4       0.83358029     4.3496E-05      yes
-                 5       1.35069937     8.3190E-05      yes
-                 6       1.41707122     1.3815E-04       no
-            --------------------------------------------------
-
-  ==================================================================
-               12. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.3760E-05      yes
-                 2       0.59369903     5.4655E-05      yes
-                 3       0.74256072     1.0766E-04       no
-                 4       0.83358029     4.2129E-05      yes
-                 5       1.35069937     7.5464E-05      yes
-                 6       1.41707122     5.5840E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               13. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.3772E-05      yes
-                 2       0.59369903     5.4918E-05      yes
-                 3       0.74256072     1.0890E-04       no
-                 4       0.83358029     4.2057E-05      yes
-                 5       1.35069937     7.5400E-05      yes
-                 6       1.41707122     5.4909E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               14. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.3397E-05      yes
-                 2       0.59369903     5.4709E-05      yes
-                 3       0.74256072     1.0627E-04       no
-                 4       0.83358029     4.2062E-05      yes
-                 5       1.35069937     7.4951E-05      yes
-                 6       1.41707122     5.4429E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               15. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.3428E-05      yes
-                 2       0.59369903     5.4998E-05      yes
-                 3       0.74256072     1.0745E-04       no
-                 4       0.83358029     4.2030E-05      yes
-                 5       1.35069937     7.4984E-05      yes
-                 6       1.41707122     5.3953E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               16. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.2990E-05      yes
-                 2       0.59369903     5.4738E-05      yes
-                 3       0.74256072     1.0423E-04       no
-                 4       0.83358029     4.2033E-05      yes
-                 5       1.35069937     7.4527E-05      yes
-                 6       1.41707122     5.2660E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               17. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.3041E-05      yes
-                 2       0.59369903     5.4686E-05      yes
-                 3       0.74256072     1.0304E-04       no
-                 4       0.83358029     4.2072E-05      yes
-                 5       1.35069937     7.4345E-05      yes
-                 6       1.41707122     5.2124E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               18. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.2944E-05      yes
-                 2       0.59369903     5.4290E-05      yes
-                 3       0.74256072     1.0085E-04       no
-                 4       0.83358029     4.2074E-05      yes
-                 5       1.35069937     7.4289E-05      yes
-                 6       1.41707122     5.2669E-05      yes
-            --------------------------------------------------
-
-  ==================================================================
-               19. SOPPA iteration, Excitation symmetry 4
-  ==================================================================
-
-            --------------------------------------------------
-            Excitation   Energy (au)     Residual    Converged
-            --------------------------------------------------
-                 1       0.34843729     2.2966E-05      yes
-                 2       0.59369903     5.4249E-05      yes
-                 3       0.74256072     9.9648E-05      yes
-                 4       0.83358029     4.2057E-05      yes
-                 5       1.35069937     7.4220E-05      yes
-                 6       1.41707122     5.2330E-05      yes
+                 1       0.34843730     2.6194D-05      yes
+                 2       0.59369904     5.6372D-05      yes
+                 3       0.74256072     8.9536D-05      yes
+                 4       0.83358029     4.4095D-05      yes
+                 5       1.35069938     8.6417D-05      yes
+                 6       1.41707141     7.9122D-04      yes
             --------------------------------------------------
 
  -------------------------------------------------------------
@@ -2544,23 +2359,23 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  4, state no.  1
 
- SOPPA excitation energy :  0.34843729     au
-                             9.4814607     eV
-                             76473.146     cm-1
-                             914.82197     kj / mole
+ SOPPA excitation energy :  0.34843730     au
+                             9.4814612     eV
+                             76473.147     cm-1
+                             914.82199     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.09 + -0.02  =  94.07 %
- 2p-2h + 2h-2p excitation weight:   5.93 +  0.00  =   5.93 %
+ 2p-2h + 2h-2p excitation weight:   5.93 + -0.00  =   5.93 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
  |    exci. | 3   2   |   1       1     |   -0.957747  |
- |    exci. | 3   2   |   3       1     |   -0.192607  |
+ |    exci. | 3   2   |   3       1     |    0.192607  |
  |-----------------------------------------------------|
- |    exci. | 3 1 2 1 |   9   4   1   2 |    0.141666  |
- |    exci. | 2 1 3 1 |   5   4   1   2 |    0.102809  |
+ |    exci. | 3 1 2 1 |   9   4   1   2 |    0.141665  |
+ |    exci. | 2 1 3 1 |   5   4   1   2 |   -0.102808  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2569,19 +2384,19 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  4, state no.  2
 
- SOPPA excitation energy :  0.59369903     au
-                             16.155372     eV
+ SOPPA excitation energy :  0.59369904     au
+                             16.155373     eV
                              130301.88     cm-1
                              1558.7566     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.45 + -0.01  =  94.44 %
- 2p-2h + 2h-2p excitation weight:   5.56 +  0.00  =   5.56 %
+ 2p-2h + 2h-2p excitation weight:   5.56 + -0.00  =   5.56 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |   -0.109925  |
+ |    exci. | 3   2   |   1       1     |    0.109925  |
  |    exci. | 3   2   |   2       1     |   -0.954469  |
  |    exci. | 3   2   |   3       1     |    0.190022  |
  |-----------------------------------------------------|
@@ -2595,56 +2410,56 @@ Point group: C2v
  Excitation symmetry  4, state no.  3
 
  SOPPA excitation energy :  0.74256072     au
-                             20.206104     eV
+                             20.206105     eV
                              162973.24     cm-1
                              1949.5929     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.70 + -0.01  =  94.68 %
- 2p-2h + 2h-2p excitation weight:   5.32 +  0.00  =   5.32 %
+ 2p-2h + 2h-2p excitation weight:   5.32 + -0.00  =   5.32 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
  |    exci. | 3   2   |   1       1     |   -0.142810  |
- |    exci. | 3   2   |   2       1     |    0.204347  |
- |    exci. | 3   2   |   3       1     |    0.947291  |
+ |    exci. | 3   2   |   2       1     |   -0.204347  |
+ |    exci. | 3   2   |   3       1     |   -0.947290  |
  |-----------------------------------------------------|
- |    exci. | 3 2 1 1 |   4   4   2   2 |    0.032775  |
- |    exci. | 3 2 1 1 |   1   4   3   2 |    0.031517  |
- |    exci. | 3 2 1 1 |   4   4   3   2 |   -0.034653  |
- |    exci. | 3 2 1 1 |   9   5   1   3 |    0.021695  |
- |    exci. | 1 2 3 1 |   3   4   1   2 |    0.031896  |
- |    exci. | 1 1 3 2 |  11   5   1   1 |   -0.022641  |
- |    exci. | 1 1 3 2 |  14   5   1   1 |    0.024860  |
- |    exci. | 1 1 3 2 |  13   8   1   1 |   -0.033398  |
- |    exci. | 4 1 1 1 |   1   3   3   2 |    0.026314  |
- |    exci. | 4 1 1 1 |   1   4   1   2 |    0.025663  |
- |    exci. | 4 1 1 1 |   1   5   1   2 |    0.040895  |
- |    exci. | 4 1 1 1 |   1   9   1   2 |   -0.036547  |
- |    exci. | 4 1 1 1 |   1   9   2   2 |    0.037589  |
- |    exci. | 4 1 1 1 |   2   9   2   2 |    0.023050  |
- |    exci. | 4 1 1 1 |   2   9   3   2 |   -0.020333  |
- |    exci. | 4 1 1 1 |   1  10   1   2 |    0.021740  |
- |    exci. | 3 1 2 1 |   2   3   1   2 |   -0.021699  |
- |    exci. | 3 1 2 1 |   9   4   1   2 |    0.079744  |
- |    exci. | 3 1 2 1 |   7   7   1   2 |   -0.049752  |
- |    exci. | 3 1 2 1 |   5  10   1   2 |   -0.091504  |
- |    exci. | 3 1 2 1 |   7  10   1   2 |   -0.031667  |
- |    exci. | 3 1 2 1 |   1  16   1   2 |   -0.022684  |
+ |    exci. | 3 2 1 1 |   4   4   2   2 |   -0.032775  |
+ |    exci. | 3 2 1 1 |   1   4   3   2 |   -0.031516  |
+ |    exci. | 3 2 1 1 |   4   4   3   2 |    0.034652  |
+ |    exci. | 3 2 1 1 |   9   5   1   3 |   -0.021695  |
+ |    exci. | 1 2 3 1 |   3   4   1   2 |   -0.031896  |
+ |    exci. | 1 1 3 2 |  11   5   1   1 |    0.022639  |
+ |    exci. | 1 1 3 2 |  14   5   1   1 |   -0.024861  |
+ |    exci. | 1 1 3 2 |  13   8   1   1 |    0.033398  |
+ |    exci. | 4 1 1 1 |   1   3   3   2 |    0.026316  |
+ |    exci. | 4 1 1 1 |   1   4   1   2 |    0.025665  |
+ |    exci. | 4 1 1 1 |   1   5   1   2 |    0.040899  |
+ |    exci. | 4 1 1 1 |   1   9   1   2 |    0.036547  |
+ |    exci. | 4 1 1 1 |   1   9   2   2 |   -0.037589  |
+ |    exci. | 4 1 1 1 |   2   9   2   2 |   -0.023050  |
+ |    exci. | 4 1 1 1 |   2   9   3   2 |    0.020332  |
+ |    exci. | 4 1 1 1 |   1  10   1   2 |   -0.021740  |
+ |    exci. | 3 1 2 1 |   2   3   1   2 |   -0.021701  |
+ |    exci. | 3 1 2 1 |   9   4   1   2 |    0.079737  |
+ |    exci. | 3 1 2 1 |   7   7   1   2 |    0.049752  |
+ |    exci. | 3 1 2 1 |   5  10   1   2 |    0.091506  |
+ |    exci. | 3 1 2 1 |   7  10   1   2 |    0.031668  |
+ |    exci. | 3 1 2 1 |   1  16   1   2 |    0.022682  |
  |    exci. | 2 1 3 1 |   5   3   1   2 |   -0.033806  |
  |    exci. | 2 1 3 1 |   6   3   1   2 |    0.058121  |
- |    exci. | 2 1 3 1 |   1   4   1   2 |    0.025617  |
- |    exci. | 2 1 3 1 |   5   4   1   2 |    0.060271  |
- |    exci. | 2 1 3 1 |   4   6   1   2 |   -0.034579  |
- |    exci. | 2 1 3 1 |   3   7   1   2 |   -0.020567  |
- |    exci. | 2 1 3 1 |   4   7   1   2 |   -0.021494  |
- |    exci. | 2 1 3 1 |   1   9   1   2 |    0.035706  |
- |    exci. | 2 1 3 1 |   2   9   1   2 |   -0.058479  |
- |    exci. | 2 1 3 1 |   3   9   1   2 |   -0.042138  |
- |    exci. | 2 1 3 1 |   6   9   1   2 |   -0.021024  |
+ |    exci. | 2 1 3 1 |   1   4   1   2 |    0.025619  |
+ |    exci. | 2 1 3 1 |   5   4   1   2 |   -0.060263  |
+ |    exci. | 2 1 3 1 |   4   6   1   2 |    0.034578  |
+ |    exci. | 2 1 3 1 |   3   7   1   2 |   -0.020568  |
+ |    exci. | 2 1 3 1 |   4   7   1   2 |    0.021494  |
+ |    exci. | 2 1 3 1 |   1   9   1   2 |   -0.035707  |
+ |    exci. | 2 1 3 1 |   2   9   1   2 |    0.058479  |
+ |    exci. | 2 1 3 1 |   3   9   1   2 |    0.042139  |
+ |    exci. | 2 1 3 1 |   6   9   1   2 |    0.021024  |
  |    exci. | 2 1 3 1 |   1  10   1   2 |   -0.052044  |
- |    exci. | 2 1 3 1 |   3  10   1   2 |   -0.071263  |
+ |    exci. | 2 1 3 1 |   3  10   1   2 |    0.071263  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2654,12 +2469,12 @@ Point group: C2v
  Excitation symmetry  4, state no.  4
 
  SOPPA excitation energy :  0.83358029     au
-                             22.682873     eV
+                             22.682874     eV
                              182949.73     cm-1
                              2188.5647     kj / mole
 
  1p-1h + 1h-1p excitation weight:  96.81 + -0.01  =  96.80 %
- 2p-2h + 2h-2p excitation weight:   3.20 +  0.00  =   3.20 %
+ 2p-2h + 2h-2p excitation weight:   3.20 + -0.00  =   3.20 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
@@ -2670,22 +2485,22 @@ Point group: C2v
  |    exci. | 3 2 1 1 |   9   6   2   3 |    0.031797  |
  |    exci. | 4 2 2 1 |   1   5   1   3 |   -0.028089  |
  |    exci. | 1 2 3 1 |  11   4   1   3 |    0.032559  |
- |    exci. | 3 1 1 2 |   1   7   3   1 |   -0.020459  |
+ |    exci. | 3 1 1 2 |   1   7   3   1 |   -0.020458  |
  |    exci. | 3 1 1 2 |   7  10   1   1 |    0.025408  |
  |    exci. | 4 1 2 2 |   1   5   1   1 |    0.045245  |
  |    exci. | 4 1 2 2 |   1   8   1   1 |   -0.034843  |
  |    exci. | 1 1 3 2 |   3   7   1   1 |   -0.026537  |
  |    exci. | 1 1 3 2 |  15   9   1   1 |    0.020908  |
- |    exci. | 1 1 3 2 |  11  10   1   1 |    0.028694  |
- |    exci. | 3 1 2 1 |   1  16   1   3 |   -0.034771  |
+ |    exci. | 1 1 3 2 |  11  10   1   1 |    0.028695  |
+ |    exci. | 3 1 2 1 |   1  16   1   3 |   -0.034770  |
  |    exci. | 3 1 2 1 |   4  16   1   3 |    0.036624  |
  |    exci. | 4 2 1 2 |   1   1   1   1 |    0.021656  |
  |    exci. | 4 2 1 2 |   2   1   1   1 |   -0.067671  |
- |    exci. | 4 2 1 2 |   1   2   1   1 |   -0.064310  |
+ |    exci. | 4 2 1 2 |   1   2   1   1 |    0.064309  |
  |    exci. | 4 2 1 2 |   2   2   1   1 |   -0.031781  |
  |    exci. | 4 2 1 2 |   1   2   2   1 |   -0.049745  |
- |    exci. | 4 2 1 2 |   2   2   2   1 |   -0.022956  |
- |    exci. | 2 2 3 2 |   1   1   1   1 |   -0.093714  |
+ |    exci. | 4 2 1 2 |   2   2   2   1 |   -0.022957  |
+ |    exci. | 2 2 3 2 |   1   1   1   1 |   -0.093713  |
  |    exci. | 2 2 3 2 |   3   1   1   1 |   -0.027439  |
  |    exci. | 3 3 2 3 |   7   1   1   1 |    0.025945  |
  |=====================================================|
@@ -2697,41 +2512,41 @@ Point group: C2v
  Excitation symmetry  4, state no.  5
 
  SOPPA excitation energy :   1.3506994     au
-                             36.754398     eV
+                             36.754400     eV
                              296444.25     cm-1
                              3546.2607     kj / mole
 
  1p-1h + 1h-1p excitation weight:  97.06 + -0.02  =  97.04 %
- 2p-2h + 2h-2p excitation weight:   2.96 +  0.00  =   2.96 %
+ 2p-2h + 2h-2p excitation weight:   2.96 + -0.00  =   2.96 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 4   1   |   1       3     |   -0.994669  |
+ |    exci. | 4   1   |   1       3     |    0.994668  |
  |-----------------------------------------------------|
- |    exci. | 3 2 1 1 |   9   4   2   3 |    0.081765  |
- |    exci. | 3 1 1 2 |   3   7   2   1 |    0.022048  |
- |    exci. | 1 1 3 2 |   6   5   1   1 |   -0.024995  |
- |    exci. | 4 1 1 1 |   2   9   1   1 |   -0.037092  |
- |    exci. | 4 1 1 1 |   1  14   2   1 |   -0.025007  |
- |    exci. | 4 1 1 1 |   2  14   2   1 |    0.060261  |
- |    exci. | 4 1 1 1 |   1  14   3   1 |    0.044377  |
- |    exci. | 4 1 1 1 |   1  15   2   1 |    0.030152  |
- |    exci. | 4 1 1 1 |   1  15   3   1 |    0.043990  |
- |    exci. | 3 1 2 1 |   5   8   1   1 |    0.052454  |
- |    exci. | 3 1 2 1 |   2   9   1   1 |   -0.023842  |
- |    exci. | 3 1 2 1 |   3   9   1   1 |    0.023724  |
- |    exci. | 3 1 2 1 |   4   9   1   1 |   -0.024933  |
- |    exci. | 3 1 2 1 |   6  13   1   1 |   -0.023009  |
- |    exci. | 3 1 2 1 |   7  13   1   1 |    0.027837  |
- |    exci. | 3 1 2 1 |   1  14   1   1 |    0.041068  |
- |    exci. | 3 1 2 1 |   3  14   1   1 |   -0.031373  |
- |    exci. | 3 1 2 1 |   1  15   1   1 |   -0.026716  |
- |    exci. | 2 1 3 1 |   3  14   1   1 |    0.050685  |
- |    exci. | 2 1 3 1 |   4  14   1   1 |   -0.029213  |
- |    exci. | 2 1 3 1 |   5  14   1   1 |    0.034727  |
- |    exci. | 2 1 3 1 |   5   3   1   2 |    0.044229  |
+ |    exci. | 3 2 1 1 |   9   4   2   3 |    0.081767  |
+ |    exci. | 3 1 1 2 |   3   7   2   1 |   -0.022049  |
+ |    exci. | 1 1 3 2 |   6   5   1   1 |    0.024996  |
+ |    exci. | 4 1 1 1 |   2   9   1   1 |    0.037092  |
+ |    exci. | 4 1 1 1 |   1  14   2   1 |    0.025008  |
+ |    exci. | 4 1 1 1 |   2  14   2   1 |   -0.060262  |
+ |    exci. | 4 1 1 1 |   1  14   3   1 |   -0.044378  |
+ |    exci. | 4 1 1 1 |   1  15   2   1 |    0.030153  |
+ |    exci. | 4 1 1 1 |   1  15   3   1 |   -0.043992  |
+ |    exci. | 3 1 2 1 |   5   8   1   1 |   -0.052455  |
+ |    exci. | 3 1 2 1 |   2   9   1   1 |    0.023842  |
+ |    exci. | 3 1 2 1 |   3   9   1   1 |   -0.023726  |
+ |    exci. | 3 1 2 1 |   4   9   1   1 |    0.024934  |
+ |    exci. | 3 1 2 1 |   6  13   1   1 |    0.023010  |
+ |    exci. | 3 1 2 1 |   7  13   1   1 |   -0.027838  |
+ |    exci. | 3 1 2 1 |   1  14   1   1 |   -0.041070  |
+ |    exci. | 3 1 2 1 |   3  14   1   1 |    0.031373  |
+ |    exci. | 3 1 2 1 |   1  15   1   1 |    0.026717  |
+ |    exci. | 2 1 3 1 |   3  14   1   1 |   -0.050686  |
+ |    exci. | 2 1 3 1 |   4  14   1   1 |    0.029215  |
+ |    exci. | 2 1 3 1 |   5  14   1   1 |   -0.034727  |
+ |    exci. | 2 1 3 1 |   5   3   1   2 |    0.044235  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2740,22 +2555,22 @@ Point group: C2v
  --------------------------------------------------------------
  Excitation symmetry  4, state no.  6
 
- SOPPA excitation energy :   1.4170712     au
-                             38.560468     eV
-                             311011.18     cm-1
-                             3720.5199     kj / mole
+ SOPPA excitation energy :   1.4170714     au
+                             38.560475     eV
+                             311011.22     cm-1
+                             3720.5204     kj / mole
 
- 1p-1h + 1h-1p excitation weight:   0.50 +  0.00  =   0.50 %
- 2p-2h + 2h-2p excitation weight:  99.50 +  0.00  =  99.50 %
+ 1p-1h + 1h-1p excitation weight:   0.50 + -0.00  =   0.50 %
+ 2p-2h + 2h-2p excitation weight:  99.50 + -0.00  =  99.50 %
 
  |=====================================================|
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 4   1   |   1       3     |    0.068162  |
+ |    exci. | 4   1   |   1       3     |   -0.068126  |
  |-----------------------------------------------------|
- |    exci. | 3 2 1 1 |   9   4   2   3 |    1.124095  |
- |    exci. | 2 1 3 1 |   5   3   1   2 |    0.344801  |
+ |    exci. | 3 2 1 1 |   9   4   2   3 |    1.123762  |
+ |    exci. | 2 1 3 1 |   5   3   1   2 |    0.343331  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.020000
@@ -2767,12 +2582,12 @@ Point group: C2v
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.14942 +    0.00394 +   -0.00188 +   -0.00001 =    0.15147
+   1    -0.14942 +   -0.00394 +    0.00188 +    0.00001 =   -0.15147
    2    -0.26572 +   -0.01191 +    0.00472 +    0.00004 =   -0.27287
-   3    -0.10801 +   -0.00040 +    0.00139 +    0.00000 =   -0.10703
+   3     0.10801 +    0.00040 +   -0.00139 +   -0.00000 =    0.10702
    4    -0.07594 +   -0.00068 +    0.00102 +    0.00002 =   -0.07558
-   5    -0.26647 +   -0.00515 +    0.00430 +    0.00006 =   -0.26726
-   6     0.02165 +   -0.00359 +   -0.00035 +    0.00000 =    0.01771
+   5     0.26645 +    0.00515 +   -0.00430 +   -0.00006 =    0.26724
+   6    -0.02166 +    0.00359 +    0.00034 +    0.00000 =   -0.01773
  ===================================================================
 
  |=====================================================| 
@@ -2788,25 +2603,7 @@ Point group: C2v
  |  SO_TRIAL1.2                  15054           0.1   |
  |  SO_ORTH_TRN                  27771           0.2   |
  |  SO_ERES.2                    28394           0.2   |
- |  SO_ERES.3                    37615           0.3   |
- |  SO_ERES.4                    37891           0.3   |
- |  SO_T2M1.1                    37908           0.3   |
- |  SO_T2M1.2                    38676           0.3   |
- |  SO_ERES.5                    39130           0.3   |
- |  SO_RES_A.1                   39730           0.3   |
- |  SO_RES_A.2                   39787           0.3   |
- |  SO_RES_A.3                   39986           0.3   |
- |  SO_RES_TCB.3                 40251           0.3   |
- |  SO_RES_TCB.4                 41579           0.3   |
- |  SO_SIGAI.2                49994859         381.4   |
- |  SO_SIGAI.2                49994993         381.4   |
- |  SO_SIGAI.2                49995012         381.4   |
- |  SO_SIGAI.2                49995180         381.4   |
- |  SO_SIGAI.2                49995186         381.4   |
- |  SO_SIGAI.2                49995231         381.4   |
- |  SO_SIGAI.2                49995237         381.4   |
- |  SO_SIGAI.2                49995299         381.4   |
- |  SO_SIGAI.2                49995317         381.4   |
+ |  SO_AODENS                 99995515         762.9   |
  |=====================================================| 
 
  |=====================================================| 
@@ -2814,58 +2611,58 @@ Point group: C2v
  |=====================================================| 
  |   Routine            cpu time   of total        sum |
  |-----------------------------------------------------| 
- |   SO_OPTVEC           0: 0:14     40.8 %     40.8 % |
- |   SO_SIGAI            0: 0: 7     20.8 %     61.5 % |
- |   SO_RES_TCB          0: 0: 3      8.5 %     70.0 % |
- |   SO_SIGDA            0: 0: 2      6.8 %     76.8 % |
- |   SO_ORTH_TRN         0: 0: 2      5.1 %     81.9 % |
- |   SO_RES_A            0: 0: 2      4.5 %     86.4 % |
- |   SO_RES_CB           0: 0: 2      4.2 %     90.7 % |
- |   CC_AOFOCK           0: 0: 1      1.9 %     92.6 % |
- |   SO_T2M1             0: 0: 1      1.7 %     94.3 % |
- |   CCRDAO              0: 0: 1      1.7 %     96.0 % |
- |   CCTRBT              0: 0: 0      1.0 %     97.1 % |
- |   SO_INCRED           0: 0: 0      1.0 %     98.1 % |
- |   SO_TRIAL2           0: 0: 0      0.6 %     98.7 % |
- |   SO_REDEV            0: 0: 0      0.3 %     99.0 % |
- |   SO_ERES             0: 0: 0      0.3 %     99.2 % |
- |   SO_RES_OVL          0: 0: 0      0.2 %     99.5 % |
- |   SO_RES_CD           0: 0: 0      0.1 %     99.6 % |
- |   SO_TRIAL1           0: 0: 0      0.1 %     99.7 % |
- |   SO_ROPT             0: 0: 0      0.1 %     99.8 % |
- |   SO_DENSAI           0: 0: 0      0.1 %     99.8 % |
- |   SO_RES_OVLR         0: 0: 0      0.1 %     99.9 % |
- |   CC_FCKMO            0: 0: 0      0.1 %     99.9 % |
- |   SO_ORDEIG           0: 0: 0      0.0 %    100.0 % |
- |   SO_SRES             0: 0: 0      0.0 %    100.0 % |
- |   SO_RES_C            0: 0: 0      0.0 %    100.0 % |
- |   LAMMAT              0: 0: 0      0.0 %    100.0 % |
- |   SO_INIT             0: 0: 0      0.0 %    100.0 % |
- |   SO_MOENERGY         0: 0: 0      0.0 %    100.0 % |
- |   SO_DENS             0: 0: 0      0.0 %    100.0 % |
- |   SO_T2MP             0: 0: 0      0.0 %    100.0 % |
- |   SO_AODENS           0: 0: 0      0.0 %    100.0 % |
- |   SO_BCKTR            0: 0: 0      0.0 %    100.0 % |
- |   ERIDI1              0: 0: 0      0.0 %    100.0 % |
- |   ERIDI2              0: 0: 0      0.0 %    100.0 % |
- |   SO_RES_B            0: 0: 0      0.0 %    100.0 % |
- |   SO_RES_SYM          0: 0: 0      0.0 %    100.0 % |
- |   SO_RES_FCK          0: 0: 0      0.0 %    100.0 % |
- |   SO_TWOFOCK          0: 0: 0      0.0 %    100.0 % |
- |   SO_ONEFOCK          0: 0: 0      0.0 %    100.0 % |
- |   SO_CHECK            0: 0: 0      0.0 %    100.0 % |
- |   SO_DIAG             0: 0: 0      0.0 %    100.0 % |
- |   ???????????         0: 0: 0      0.0 %    100.0 % |
- |   ?????????           0: 0: 0      0.0 %    100.0 % |
+ |   SO_SIGAI            0: 0: 3     29.3 %     29.3 % |
+ |   SO_OPTVEC           0: 0: 2     27.2 %     56.5 % |
+ |   SO_RES_TCB          0: 0: 1     10.8 %     67.3 % |
+ |   SO_SIGDA            0: 0: 1      8.0 %     75.3 % |
+ |   SO_RES_A            0: 0: 0      5.5 %     80.8 % |
+ |   SO_RES_CB           0: 0: 0      5.2 %     86.0 % |
+ |   SO_ORTH_TRN         0: 0: 0      4.7 %     90.7 % |
+ |   CC_AOFOCK           0: 0: 0      2.7 %     93.3 % |
+ |   SO_T2M1             0: 0: 0      1.4 %     94.8 % |
+ |   CCTRBT              0: 0: 0      1.1 %     95.9 % |
+ |   CCRDAO              0: 0: 0      0.8 %     96.7 % |
+ |   SO_INCRED           0: 0: 0      0.7 %     97.4 % |
+ |   SO_TRIAL2           0: 0: 0      0.6 %     98.0 % |
+ |   SO_ERES             0: 0: 0      0.5 %     98.5 % |
+ |   SO_REDEV            0: 0: 0      0.4 %     98.8 % |
+ |   SO_RES_OVL          0: 0: 0      0.2 %     99.1 % |
+ |   SO_DENSAI           0: 0: 0      0.2 %     99.3 % |
+ |   SO_ROPT             0: 0: 0      0.1 %     99.4 % |
+ |   SO_TRIAL1           0: 0: 0      0.1 %     99.4 % |
+ |   SO_ORDEIG           0: 0: 0      0.0 %     99.5 % |
+ |   LAMMAT              0: 0: 0      0.0 %     99.5 % |
+ |   SO_SRES             0: 0: 0      0.0 %     99.6 % |
+ |   SO_RES_OVLR         0: 0: 0      0.0 %     99.6 % |
+ |   SO_DENS             0: 0: 0      0.0 %     99.7 % |
+ |   SO_RES_B            0: 0: 0      0.0 %     99.7 % |
+ |   CC_FCKMO            0: 0: 0      0.0 %     99.7 % |
+ |   SO_AODENS           0: 0: 0      0.0 %     99.7 % |
+ |   SO_RES_CD           0: 0: 0      0.0 %     99.7 % |
+ |   SO_RES_FCK          0: 0: 0      0.0 %     99.7 % |
+ |   SO_DIAG             0: 0: 0      0.0 %     99.8 % |
+ |   SO_INIT             0: 0: 0      0.0 %     99.8 % |
+ |   SO_MOENERGY         0: 0: 0      0.0 %     99.8 % |
+ |   SO_T2MP             0: 0: 0      0.0 %     99.8 % |
+ |   SO_BCKTR            0: 0: 0      0.0 %     99.8 % |
+ |   ERIDI1              0: 0: 0      0.0 %     99.8 % |
+ |   ERIDI2              0: 0: 0      0.0 %     99.8 % |
+ |   SO_RES_C            0: 0: 0      0.0 %     99.8 % |
+ |   SO_RES_SYM          0: 0: 0      0.0 %     99.8 % |
+ |   SO_TWOFOCK          0: 0: 0      0.0 %     99.8 % |
+ |   SO_ONEFOCK          0: 0: 0      0.0 %     99.8 % |
+ |   SO_CHECK            0: 0: 0      0.0 %     99.8 % |
+ |   ???????????         0: 0: 0      0.0 %     99.8 % |
+ |   ?????????           0: 0: 0      0.0 %     99.8 % |
  |-----------------------------------------------------| 
- |   Total CPU time      0: 0:36                       |
+ |   Total CPU time      0: 0: 9                       |
  |=====================================================| 
 
  |-----------------------------------------------------| 
- |   SO_READ             0: 0: 1      1.9 %            |
- |   SO_WRITE            0: 0: 0      0.8 %            |
+ |   SO_READ             0: 0: 0      1.0 %            |
+ |   SO_WRITE            0: 0: 0      0.3 %            |
  |   SO_OPEN             0: 0: 0      0.0 %            |
- |   SO_CLOSE            0: 0: 0      0.0 %            |
+ |   SO_CLOSE            0: 0: 0      0.1 %            |
  |-----------------------------------------------------| 
 
  |=====================================================| 
@@ -2873,14 +2670,14 @@ Point group: C2v
  |=====================================================| 
  |   Routine           wall time   of total       sum  |
  |-----------------------------------------------------| 
- |   SO_ERES             0: 0:23     63.9 %     63.9 % |
- |   SO_SRES             0: 0: 0      0.0 %     63.9 % |
- |   SO_REDEV            0: 0: 9     25.0 %     88.9 % |
- |   SO_TRIAL2           0: 0: 4     11.1 %    100.0 % |
+ |   SO_ERES             0: 0: 5     55.6 %     55.6 % |
+ |   SO_SRES             0: 0: 0      0.0 %     55.6 % |
+ |   SO_REDEV            0: 0: 3     33.3 %     88.9 % |
+ |   SO_TRIAL2           0: 0: 1     11.1 %    100.0 % |
  |-----------------------------------------------------| 
- |   Total wall time     0: 0:36                       |
+ |   Total wall time     0: 0: 9                       |
  |=====================================================| 
- >>> Time used in EXCITA is  35.56 seconds
+ >>> Time used in EXCITA is   8.83 seconds
 
 
    ***************************************************************************
@@ -2889,16 +2686,16 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Nov 19 16:02:00 2009
-     Host name              : milos                                   
+     Date and time (Linux)  : Wed Mar 16 17:49:08 2011 
+     Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
  O          0.0000000000            0.0000000000            0.1241444240
- H    1     0.0000000000            1.4315300000           -0.9852655760
- H    2     0.0000000000           -1.4315300000           -0.9852655760
+ H   _1     0.0000000000            1.4315300000           -0.9852655760
+ H   _2     0.0000000000           -1.4315300000           -0.9852655760
 
 
 
@@ -2910,8 +2707,8 @@ Point group: C2v
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -76.0607842187 au (Hartrees)
-                         -2069.71916395 eV
-                           -199697.5603 kJ/mol
+                         -2069.71922269 eV
+                           -199697.5582 kJ/mol
 
 
           Extent of molecular orbitals (au)
@@ -3010,32 +2807,32 @@ Point group: C2v
                 ex. st.  No.      (au)          (eV)
                 =======================================
                    1        1    0.367331    9.995583
-                   1        2    0.589718   16.047045
-                   1        3    0.628895   17.113116
-                   1        4    0.719365   19.574913
-                   1        5    0.786936   21.413614
+                   1        2    0.589718   16.047046
+                   1        3    0.628895   17.113117
+                   1        4    0.719365   19.574914
+                   1        5    0.786936   21.413615
                 ---------------------------------------
-                   2        1    0.276169    7.514936
-                   2        2    0.584218   15.897383
+                   2        1    0.276169    7.514937
+                   2        2    0.584218   15.897384
                    2        3    0.675478   18.380693
-                   2        4    0.682442   18.570178
-                   2        5    1.023600   27.853560
-                   2        6    1.254433   34.134851
-                   2        7    1.362263   37.069068
+                   2        4    0.682442   18.570179
+                   2        5    1.023600   27.853561
+                   2        6    1.254437   34.134972
+                   2        7    1.362297   37.069976
                 ---------------------------------------
                    3        1    0.442852   12.050625
-                   3        2    0.517705   14.087473
-                   3        3    0.697759   18.986979
-                   3        4    0.830154   22.589644
-                   3        5    0.834598   22.710575
-                   3        6    0.944621   25.704437
+                   3        2    0.517705   14.087474
+                   3        3    0.697759   18.986980
+                   3        4    0.830154   22.589645
+                   3        5    0.834598   22.710576
+                   3        6    0.944624   25.704530
                 ---------------------------------------
                    4        1    0.348437    9.481461
-                   4        2    0.593699   16.155372
-                   4        3    0.742561   20.206104
-                   4        4    0.833580   22.682873
-                   4        5    1.350699   36.754398
-                   4        6    1.417071   38.560468
+                   4        2    0.593699   16.155373
+                   4        3    0.742561   20.206105
+                   4        4    0.833580   22.682874
+                   4        5    1.350699   36.754400
+                   4        6    1.417071   38.560475
                 ---------------------------------------
 
 
@@ -3046,25 +2843,25 @@ Point group: C2v
  ex. st.  No.      (au)          x       y       z         x       y       z
  ==============================================================================
    1        1     0.367331     0.0000  0.0000  0.7818    0.0000  0.0000  0.7033
-   1        2     0.589718     0.0000  0.0000  0.3762    0.0000  0.0000  0.3769
-   1        3     0.628895     0.0000  0.0000 -0.3558    0.0000  0.0000 -0.3325
+   1        2     0.589718     0.0000  0.0000 -0.3762    0.0000  0.0000 -0.3769
+   1        3     0.628895     0.0000  0.0000  0.3558    0.0000  0.0000  0.3325
    1        4     0.719365     0.0000  0.0000  0.0250    0.0000  0.0000  0.0560
    1        5     0.786936     0.0000  0.0000 -0.0055    0.0000  0.0000 -0.0355
  ------------------------------------------------------------------------------
-   2        1     0.276169    -0.6466  0.0000  0.0000   -0.5207  0.0000  0.0000
+   2        1     0.276169     0.6466  0.0000  0.0000    0.5207  0.0000  0.0000
    2        2     0.584218    -0.0082  0.0000  0.0000   -0.0820  0.0000  0.0000
    2        3     0.675478     0.2673  0.0000  0.0000    0.2402  0.0000  0.0000
-   2        4     0.682442     0.3963  0.0000  0.0000    0.4689  0.0000  0.0000
-   2        5     1.023600    -0.5432  0.0000  0.0000   -0.6602  0.0000  0.0000
-   2        6     1.254433    -0.2597  0.0000  0.0000   -0.3147  0.0000  0.0000
-   2        7     1.362263    -0.0513  0.0000  0.0000   -0.0551  0.0000  0.0000
+   2        4     0.682442     0.3964  0.0000  0.0000    0.4689  0.0000  0.0000
+   2        5     1.023600     0.5432  0.0000  0.0000    0.6602  0.0000  0.0000
+   2        6     1.254437    -0.2588  0.0000  0.0000   -0.3137  0.0000  0.0000
+   2        7     1.362297     0.0296  0.0000  0.0000    0.0320  0.0000  0.0000
  ------------------------------------------------------------------------------
    3        1     0.442852     0.0000 -0.5055  0.0000    0.0000 -0.4758  0.0000
    3        2     0.517705     0.0000  0.8479  0.0000    0.0000  0.8329  0.0000
-   3        3     0.697759     0.0000  0.6521  0.0000    0.0000  0.6506  0.0000
-   3        4     0.830154     0.0000  0.1841  0.0000    0.0000  0.2057  0.0000
+   3        3     0.697759     0.0000 -0.6521  0.0000    0.0000 -0.6506  0.0000
+   3        4     0.830154     0.0000 -0.1841  0.0000    0.0000 -0.2057  0.0000
    3        5     0.834598     0.0000 -0.0411  0.0000    0.0000 -0.0216  0.0000
-   3        6     0.944621     0.0000  0.7457  0.0000    0.0000  0.7593  0.0000
+   3        6     0.944624     0.0000 -0.7454  0.0000    0.0000 -0.7595  0.0000
  ------------------------------------------------------------------------------
    4        1     0.348437     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
    4        2     0.593699     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
@@ -3083,33 +2880,33 @@ Point group: C2v
  Symm.  Mode   Frequency         Conventional                  London
  ex.st.  No.     (eV)        x        y       z         x        y        z
  ==============================================================================
-   1      1     9.9956    0.00000  0.00000  0.00000   0.00000  0.00000  0.00000
-   1      2    16.0470    0.00000  0.00000  0.00000   0.00000  0.00000  0.00000
-   1      3    17.1131    0.00000  0.00000  0.00000   0.00000  0.00000  0.00000
-   1      4    19.5749    0.00000  0.00000  0.00000   0.00000  0.00000  0.00000
-   1      5    21.4136    0.00000  0.00000  0.00000   0.00000  0.00000  0.00000
+   1      1     9.9956   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      2    16.0470   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      3    17.1131   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      4    19.5749   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   1      5    21.4136   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   2      1     7.5149    0.00000  0.06289  0.00000   0.00000  0.00000  0.00000
-   2      2    15.8974    0.00000  0.01405  0.00000   0.00000  0.00000  0.00000
-   2      3    18.3807    0.00000  0.06788  0.00000   0.00000  0.00000  0.00000
-   2      4    18.5702    0.00000  0.08289  0.00000   0.00000  0.00000  0.00000
-   2      5    27.8536    0.00000 -0.01727  0.00000   0.00000  0.00000  0.00000
-   2      6    34.1349    0.00000 -0.02681  0.00000   0.00000  0.00000  0.00000
-   2      7    37.0691    0.00000 -0.00190  0.00000   0.00000  0.00000  0.00000
+   2      1     7.5149   -0.00000 -0.06289 -0.00000  -0.00000 -0.00000 -0.00000
+   2      2    15.8974   -0.00000  0.01405 -0.00000  -0.00000 -0.00000 -0.00000
+   2      3    18.3807   -0.00000  0.06787 -0.00000  -0.00000 -0.00000 -0.00000
+   2      4    18.5702   -0.00000  0.08289 -0.00000  -0.00000 -0.00000 -0.00000
+   2      5    27.8536   -0.00000  0.01727 -0.00000  -0.00000 -0.00000 -0.00000
+   2      6    34.1350   -0.00000 -0.02690 -0.00000  -0.00000 -0.00000 -0.00000
+   2      7    37.0700   -0.00000  0.00240 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   3      1    12.0506    0.08932  0.00000  0.00000   0.00000  0.00000  0.00000
-   3      2    14.0875    0.06949  0.00000  0.00000   0.00000  0.00000  0.00000
-   3      3    18.9870   -0.21716  0.00000  0.00000   0.00000  0.00000  0.00000
-   3      4    22.5896    0.05881  0.00000  0.00000   0.00000  0.00000  0.00000
-   3      5    22.7106   -0.08786  0.00000  0.00000   0.00000  0.00000  0.00000
-   3      6    25.7044    0.12245  0.00000  0.00000   0.00000  0.00000  0.00000
+   3      1    12.0506    0.08932 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    14.0875    0.06949 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      3    18.9870    0.21716 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4    22.5896   -0.05881 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      5    22.7106   -0.08786 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      6    25.7045   -0.12209 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   4      1     9.4815    0.00000  0.00000  0.07573   0.00000  0.00000  0.00000
-   4      2    16.1554    0.00000  0.00000 -0.13643   0.00000  0.00000  0.00000
-   4      3    20.2061    0.00000  0.00000 -0.05351   0.00000  0.00000  0.00000
-   4      4    22.6829    0.00000  0.00000 -0.03779   0.00000  0.00000  0.00000
-   4      5    36.7544    0.00000  0.00000 -0.13363   0.00000  0.00000  0.00000
-   4      6    38.5605    0.00000  0.00000  0.00886   0.00000  0.00000  0.00000
+   4      1     9.4815   -0.00000 -0.00000 -0.07573  -0.00000 -0.00000 -0.00000
+   4      2    16.1554   -0.00000 -0.00000 -0.13643  -0.00000 -0.00000 -0.00000
+   4      3    20.2061   -0.00000 -0.00000  0.05351  -0.00000 -0.00000 -0.00000
+   4      4    22.6829   -0.00000 -0.00000 -0.03779  -0.00000 -0.00000 -0.00000
+   4      5    36.7544   -0.00000 -0.00000  0.13362  -0.00000 -0.00000 -0.00000
+   4      6    38.5605   -0.00000 -0.00000 -0.00887  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
 
 
@@ -3122,48 +2919,48 @@ Point group: C2v
  Symm.  Mode   Frequency    Oscillator-strength      Rotational-strength   
  ex.st.  No.     (eV)        velocity  length     velocity  length   London
  ==========================================================================
-   1      1     9.9956        0.1497   0.1211       0.000    0.000    0.000
-   1      2    16.0470        0.0556   0.0559       0.000    0.000    0.000
-   1      3    17.1131        0.0531   0.0464       0.000    0.000    0.000
-   1      4    19.5749        0.0003   0.0015       0.000    0.000    0.000
-   1      5    21.4136        0.0000   0.0007       0.000    0.000    0.000
+   1      1     9.9956        0.1497   0.1211      -0.000   -0.000   -0.000
+   1      2    16.0470        0.0556   0.0559      -0.000   -0.000   -0.000
+   1      3    17.1131        0.0531   0.0464      -0.000   -0.000   -0.000
+   1      4    19.5749        0.0003   0.0015      -0.000   -0.000   -0.000
+   1      5    21.4136        0.0000   0.0007      -0.000   -0.000   -0.000
  --------------------------------------------------------------------------
-   2      1     7.5149        0.0770   0.0499       0.000    0.000    0.000
-   2      2    15.8974        0.0000   0.0026       0.000    0.000    0.000
-   2      3    18.3807        0.0322   0.0260       0.000    0.000    0.000
-   2      4    18.5702        0.0715   0.1000       0.000    0.000    0.000
-   2      5    27.8536        0.2013   0.2974       0.000    0.000    0.000
-   2      6    34.1349        0.0564   0.0828       0.000    0.000    0.000
-   2      7    37.0691        0.0024   0.0028       0.000    0.000    0.000
+   2      1     7.5149        0.0770   0.0499      -0.000   -0.000   -0.000
+   2      2    15.8974        0.0000   0.0026      -0.000   -0.000   -0.000
+   2      3    18.3807        0.0322   0.0260      -0.000   -0.000   -0.000
+   2      4    18.5702        0.0715   0.1001      -0.000   -0.000   -0.000
+   2      5    27.8536        0.2013   0.2974      -0.000   -0.000   -0.000
+   2      6    34.1350        0.0560   0.0823      -0.000   -0.000   -0.000
+   2      7    37.0700        0.0008   0.0009      -0.000   -0.000   -0.000
  --------------------------------------------------------------------------
-   3      1    12.0506        0.0755   0.0668       0.000    0.000    0.000
-   3      2    14.0875        0.2481   0.2394       0.000    0.000    0.000
-   3      3    18.9870        0.1978   0.1969       0.000    0.000    0.000
-   3      4    22.5896        0.0188   0.0234       0.000    0.000    0.000
-   3      5    22.7106        0.0009   0.0003       0.000    0.000    0.000
-   3      6    25.7044        0.3502   0.3631       0.000    0.000    0.000
+   3      1    12.0506        0.0755   0.0668      -0.000   -0.000   -0.000
+   3      2    14.0875        0.2481   0.2394      -0.000   -0.000   -0.000
+   3      3    18.9870        0.1978   0.1969      -0.000   -0.000   -0.000
+   3      4    22.5896        0.0188   0.0234      -0.000   -0.000   -0.000
+   3      5    22.7106        0.0009   0.0003      -0.000   -0.000   -0.000
+   3      6    25.7045        0.3499   0.3633      -0.000   -0.000   -0.000
  --------------------------------------------------------------------------
-   4      1     9.4815        0.0000   0.0000       0.000    0.000    0.000
-   4      2    16.1554        0.0000   0.0000       0.000    0.000    0.000
-   4      3    20.2061        0.0000   0.0000       0.000    0.000    0.000
-   4      4    22.6829        0.0000   0.0000       0.000    0.000    0.000
-   4      5    36.7544        0.0000   0.0000       0.000    0.000    0.000
-   4      6    38.5605        0.0000   0.0000       0.000    0.000    0.000
+   4      1     9.4815        0.0000   0.0000      -0.000   -0.000   -0.000
+   4      2    16.1554        0.0000   0.0000      -0.000   -0.000   -0.000
+   4      3    20.2061        0.0000   0.0000      -0.000   -0.000   -0.000
+   4      4    22.6829        0.0000   0.0000      -0.000   -0.000   -0.000
+   4      5    36.7544        0.0000   0.0000      -0.000   -0.000   -0.000
+   4      6    38.5605        0.0000   0.0000      -0.000   -0.000   -0.000
  --------------------------------------------------------------------------
 
 
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -3171,8 +2968,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -3180,7 +2977,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -3188,22 +2985,22 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- EXCITA     00:00:36     100 %
+ EXCITA     00:00:09     100 %
 
- TOTAL      00:00:36     100 %
+ TOTAL      00:00:09     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  35.56 seconds
- >>>> Total wall time used in ABACUS:  36.00 seconds
+ >>>> Total CPU  time used in ABACUS:   8.83 seconds
+ >>>> Total wall time used in ABACUS:   9.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  36.08 seconds
- >>>> Total wall time used in DALTON:  36.00 seconds
+ >>>> Total CPU  time used in DALTON:   9.06 seconds
+ >>>> Total wall time used in DALTON:   9.00 seconds
 
  
-     Date and time (Linux)  : Thu Nov 19 16:02:00 2009
-     Host name              : milos                                   
+     Date and time (Linux)  : Wed Mar 16 17:49:08 2011 
+     Host name              : fe6                                     

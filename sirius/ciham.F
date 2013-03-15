@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ciham */
       SUBROUTINE CIHAM(IWAY,MXPRDT,ICSYM,IDET,CIDIA,NCONF,
@@ -44,8 +34,8 @@ C
 C Notes:
 C  - introduce symtest using IHSYM=0
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IDET(*),CIDIA(*),FCAC(*),H2AC(*),XNDXCI(*),WRK(LWRK)
 C
 C Used from common blocks:
@@ -54,11 +44,11 @@ C   INFORB : MULD2H(8,8),NASHT,N2ASHX
 C   CIINFO : ICOMBI, IPSIGN
 C   DETBAS : KLTSOB
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <ciinfo.h>
-#include <detbas.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "ciinfo.h"
+#include "detbas.h"
 C
 C     Set some codes:
 C
@@ -187,8 +177,8 @@ C                 EIGVC CONTAINS EIGENVECTORS(COLUMNS) ON RETURN
 C
 C JEPPE OLSEN JANUARY 1989
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XNDXCI(*),WORK(*),HAMIL(*),CIDIA(*)
       DIMENSION ONEBOD(*),RJ(*),RK(*),FIJKL(*)
       DIMENSION IDET(MXPRDT), EIGVL(MXPRDT) , EIGVC(MXPRDT ** 2 )
@@ -198,9 +188,9 @@ C Used from common blocks:
 C   STRNUM : ...
 C   DETBAS : KLTSOB
 C
-#include <mxpdim.h>
-#include <strnum.h>
-#include <detbas.h>
+#include "mxpdim.h"
+#include "strnum.h"
+#include "detbas.h"
 C
       KFREEO = KFREE
 C
@@ -330,14 +320,14 @@ C IN IASTR2 AND IBSTR2
 C
 C NOTE ICOMBI IS INTRODUCED THROUGH CIINFO IN THIS IMPLEMENTATION
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER SYMPRO(8,8)
       DIMENSION IDET(*),IASTR2(*),IBSTR2(*),XNDXCI(*)
 C
-#include <mxpdim.h>
-#include <ciinfo.h>
-#include <detbas.h>
-#include <strnum.h>
+#include "mxpdim.h"
+#include "ciinfo.h"
+#include "detbas.h"
+#include "strnum.h"
 C
          CALL STFDT2(NDET,IDET,IASTR2,IBSTR2,MAXSYM,NOCTPA,NOCTPB,
      &               XNDXCI(KNSSOA),XNDXCI(KNSSOB),XNDXCI(KISSOA),
@@ -366,8 +356,8 @@ C IF ISYM .NE. 0 LOWER HALF OF HAMILTONIAN IS CONSTRUCTED
 C
 C JEPPE OLSEN JANUARY 1989
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
       DIMENSION JASTR(NAEL,*),JBSTR(NBEL,*)
 C
@@ -800,8 +790,8 @@ C RAS VERSION
 C
 C JEPPE OLSEN , JANUARY 1989
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IDET(NDET),IASTR2(NAEL,NDET),IBSTR2(NBEL,NDET)
 C
       DIMENSION NSSOA(NOCTPA,MAXSYM),NSSOB(NOCTPB,MAXSYM)
@@ -874,8 +864,8 @@ C NELMN IS THE LARGEST NUMBER LOWER THAN MXELMN THAT DOES NOT
 C SPLIT DEGENERATE PAIRS
 C ORIGINAL PLACES OF THE LOWEST ELEMENTS ARE STORED IN IPLACE
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION VEC(NDIM),IPLACE(*)
 C
       PARAMETER ( D1 = 1.0D0 )
@@ -971,8 +961,8 @@ C NELMN IS THE LARGEST NUMBER LOWER THAN MXELMN THAT DOES NOT
 C SPLIT DEGENERATE PAIRS.
 C ORIGINAL PLACES OF THE LOWEST ELEMENTS ARE STORED IN IPLACE.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION VEC(NDIM),IPLACE(*)
 C
       PARAMETER ( D1 = 1.0D0 )
@@ -1072,8 +1062,8 @@ C   IWAY = 2 : PACKED TO FULL FORM
 C              APAK STORED IN LOWER HALF
 C               SIGN * APAK TRANSPOSED IS STORED IN UPPPER PART
 C.. NOTE : COLUMN WISE STORAGE SCHEME IS USED FOR PACKED BLOCKS
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AUTPAK(MATDIM,MATDIM),APAK(*)
 C
       IF( IWAY .EQ. 1 ) THEN
@@ -1125,8 +1115,8 @@ C
 C
 C ... JEPPE OLSEN JANUARY 1989
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AI(*),AO(*)
       DIMENSION LRC(NRC),LCC(NCC)
       DIMENSION IBLKI(NRC,NCC),IBLKO(NRC,NCC)
@@ -1209,7 +1199,7 @@ C
 C ISYM = 0 : DIAGONAL BLOCKS ARE STORED IN COMPLETE FORM
 C ISYM  .GT. 0 : DIAGONAL BLOCKS ARE STORED IN  PACKED FORM
 C                ( LOWER TRIANGULAR FORM;COLUMNWISE PACKED !! )
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AIN(*),AOUT(*)
 C
       IF( ISYM .EQ. 0 ) THEN
@@ -1254,8 +1244,8 @@ C
 C ISYM= 0 : DIAGONAL BLOCKS STORED IN COMPLETE FORM
 C ISYM.GT.0 : DIAGONAL BLOCKS ARE PACKED IN LOWER TRIANGULAR FORM
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AI(*),AO(*)
       DIMENSION LRC(NRC),LCC(NCC)
       DIMENSION IBLK(NRC,NCC)
@@ -1352,8 +1342,8 @@ C PRINT BLOCKED MATRIX
 C
 C JANUARY 1989 , JEPPE OLSEN
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION A(*)
       DIMENSION LRC(NRC),LCC(NCC),IBLK(NRC,NCC)
@@ -1384,8 +1374,8 @@ C
 C TRANSPOSE BLOCKED MATRIX AI AND STORE IN AO
 C ARRAYS FOR TRANSPOSED BLOCKING IS ALSE OBTAINED.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AI(*),AO(*)
       DIMENSION LRCI(NRCI),LCCI(NCCI),IBRCI(NRCI),IBCCI(NCCI)
       DIMENSION LRCO(NCCI),LCCO(NRCI),IBRCO(NCCI),IBCCO(NRCI)
@@ -1443,18 +1433,18 @@ C l.r. 18-apr-1990 hjaaj
 C
 C get (tu|vx) integral where t,u,v,x are in Lunar order
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2AC(NNASHX,NNASHX), ILTSOB(NASHT)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFORB : NASHT,NNASHX
 C   INFTAP : LUH2AC
 C   CBGETDIS : IADH2
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <cbgetdis.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "cbgetdis.h"
 C
 C     Obtain index in Sirius order
 C
@@ -1486,8 +1476,8 @@ C
       END
 C  /* Deck eigen */
       SUBROUTINE EIGEN(A,R,N,MV,MFKR)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(*),R(*)
       DATA TESTIT/1.D-20/
       DATA TESTX /1.D-26/

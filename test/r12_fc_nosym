@@ -63,7 +63,7 @@ cat > r12_fc_nosym.dal <<'%EOF%'
 *ORBITALS
 .MOSTART
  H1DIAG
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

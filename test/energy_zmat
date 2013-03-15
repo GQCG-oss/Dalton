@@ -99,7 +99,7 @@ CTRL[2]=4
 ERROR[2]="SYMMETRY NOT CORRECT"
 
 # test geometry by testing nuclear repulsion energy
-TEST[3]=`$GREP "Nuclear repulsion energy : * 420.372349280415" $log | wc -l`
+TEST[3]=`$GREP "Nuclear repulsion energy : * 420.372351266" $log | wc -l`
 CTRL[3]=1
 ERROR[3]="INPUT GEOMETRY NOT READ CORRECTLY"
 

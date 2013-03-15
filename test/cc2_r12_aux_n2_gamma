@@ -48,7 +48,7 @@ N        0.0000000000000     0.0000000000000     1.0371572000000       *
 cat > cc2_r12_aux_n2_gamma.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -78,7 +78,7 @@ cat > cc2_r12_aux_n2_gamma.dal <<'%EOF%'
 *R12 INP
 .CC2
  1A
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -135,7 +135,7 @@ fi
 #-------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------
 
-CRIT1=`$GREP "Total CC2-R12/A energy: *\-109\.3693042691" $log | wc -l`
+CRIT1=`$GREP "Total CC2-R12/A energy: *\-109\.369304269." $log | wc -l`
 TEST[1]=`expr $CRIT1` 
 CTRL[1]=2
 ERROR[1]="CC2-R12/A ENERGY NOT CORRECT"

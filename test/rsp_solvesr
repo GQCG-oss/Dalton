@@ -206,7 +206,7 @@ SD 012 x
 SD 012 y
 .TRPPRP
 SD 012 z
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -229,7 +229,7 @@ fi
 
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
-CRIT2=`$GREP "The following one\-electron property integrals are calculated\:" $log | wc -l`
+CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- Fermi contact integrals" $log | wc -l`
 CRIT5=`$GREP "\(Dirac delta function integrals\)" $log | wc -l`
@@ -281,7 +281,7 @@ CTRL[4]=2
 ERROR[4]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-39\.63336708695[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-39\.6333670869[56]" $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="MCSCF ENERGY NOT CORRECT"

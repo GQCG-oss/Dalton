@@ -1,44 +1,34 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck xerox */
       SUBROUTINE XEROX(N,DX,DY)
 C
 C     dy(i) = dx(i)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DX(N), DY(N)
 C
       DO I = 1, N
@@ -52,7 +42,7 @@ C  /* Deck dxerox */
 C
 C     dy(i) = dy(i) + dx(i)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DX(N), DY(N)
 C
       DO I = 1, N
@@ -66,7 +56,7 @@ C  /* Deck ixerox */
 C
 C     iy(j) = iy(j) + ix(j)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IX(N), IY(N)
 C
       DO J = 1, N
@@ -80,8 +70,8 @@ C  /* Deck draise */
 C
 C     dy(i) = dx(i)^k
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D00)
       DIMENSION DX(N), DY(N)
 C
@@ -110,8 +100,8 @@ C  /* Deck caxpi */
 C
 C     dy(i) = da*dx(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX(N), DY(N)
 C
       DO I = 1, N
@@ -125,8 +115,8 @@ C  /* Deck cady */
 C
 C     dy(i) = da*dx1(i)*dx2(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX1(N), DX2(N), DY(N)
 C
       DO I = 1, N
@@ -140,8 +130,8 @@ C  /* Deck dady */
 C
 C     dy(i) = dy(i) + da*dx1(i)*dx2(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX1(N), DX2(N), DY(N)
 C
       DO I = 1, N
@@ -155,8 +145,8 @@ C  /* Deck caddy */
 C
 C     dy(i) = da*dx1(i)^k*dx2(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX1(N), DX2(N), DY(N)
 C
       IF (K .EQ. 0) THEN
@@ -184,8 +174,8 @@ C  /* Deck daddy */
 C
 C     dy(i) = dy(i) + da*dx1(i)^k*dx2(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX1(N), DX2(N), DY(N)
 C
       IF (K .EQ. 0) THEN
@@ -242,7 +232,7 @@ C          FLORIDA, GAINESVILLE
 C..........VERSION = 09/05/73/03
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO=0.D00)
       INTEGER   BEGIN
       LOGICAL   TEST
@@ -414,7 +404,7 @@ C
 C        KCOL................NUMBER OF COLUMNS TO USE IN OUTPUT
 C
 C
-C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER*4.  THE
+C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER.  THE
 C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
 C FOR THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
 C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
@@ -426,7 +416,7 @@ C REVISED; FEBRUARY 26, 1971
 C
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO=0.D00)
       INTEGER   ROWDIM,COLDIM,KCOL,BEGIN
       LOGICAL   TEST
@@ -524,29 +514,23 @@ C
       END
 C  /* Deck getname */
       SUBROUTINE GETNAME(HSTNAM)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(20) HSTNAM
 C
-#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_AIX)
-      CALL HOSTNM(HSTNAM)
-#endif
-#if defined (SYS_HAL)
+#if defined (SYS_HAL) || defined (VAR_G95)
       IRET = HOSTNM(HSTNAM)
+#else
+      CALL HOSTNM(HSTNAM)
 #endif
 C
       RETURN
       END
 C  /* Deck getdate */
       SUBROUTINE GETDATE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
-#if !defined (VAR_G77)
       CHARACTER*(24) FDATE
-#endif
-#endif
-#if defined (SYS_HAL)
-      CHARACTER*(24) CFDATE
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
       CDATE = DATE()
@@ -555,6 +539,7 @@ C  /* Deck getdate */
      *   'Date and time (CRAY) : ',CDATE,CTIME
 #endif
 #if defined (SYS_HAL)
+      CHARACTER*(24) CFDATE
       CALL FDATE(CFDATE)
       WRITE (LUPRI,'(T6,2A)') 'Date and time (HAL)    : ',CFDATE
 #endif
@@ -577,7 +562,7 @@ C  /* Deck getdate */
       WRITE (LUPRI,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_AIX)
-      WRITE (LUPRI,'(2A)') '     Date and time (IBM-AIX): ',FDATE()
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (IBM-AIX): ',FDATE()
 #endif
 C
       RETURN

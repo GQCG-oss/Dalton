@@ -15,12 +15,12 @@ C              trial vectors (including the paired ones) and
 C              normalize. Finally make a symmetric orthonormalization 
 C              of the the new trial vector and its pair trial vector. 
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <soppinf.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "soppinf.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRLDP = 1.0D-20, THROUND = 1.0D-4)

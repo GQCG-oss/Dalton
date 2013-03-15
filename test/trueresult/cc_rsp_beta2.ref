@@ -1,131 +1,154 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Henrik Koch,              University of Trondheim,      Norway     
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Mar  3 21:01:04 2005
-     Host name              : pi.biotech.kth.se                       
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
 
 
- Default print level:        0
+     Date and time (Linux)  : Wed Mar 16 17:50:06 2011 
+     Host name              : fe6                                     
 
-    Integral sections will be executed
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
-    Wave function sections will be executed
-
-Starting in Integral Section -
-
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
 
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
- Default print level:        1
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Hydrogen flourid                                                        
+ 2: small test basis                                                        
+    ------------------------------------------------------------------------
 
- * Nuclear model: Point charge
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   9.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   9 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
 
- Calculation of one- and two-electron Hamiltonian integrals.
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G**                                                                         
 
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - dipole length integrals
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
 
-
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
-
-
-
-  Title Cards
-  -----------
-
-  Hydrogen flourid                                                        
-  small test basis                                                        
-
-
-  Symmetry Operations
-  -------------------
-
-  Symmetry operations: 1
-
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G**                                                                         
 
 
-                      SYMGRP:Point group information
-                      ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: Cs 
 
@@ -137,7 +160,7 @@ Point group: Cs
 
         |  E   Oxz
    -----+----------
-     E  |  E 
+     E  |  E   Oxz
     Oxz | Oxz   E 
 
    * Character table
@@ -151,12 +174,12 @@ Point group: Cs
 
         | A'   A" 
    -----+----------
-    A'  | A' 
+    A'  | A'   A" 
     A"  | A"   A' 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            F          18.998403
                            H           1.007825
@@ -164,63 +187,57 @@ Point group: Cs
                        Total mass:    20.006228 amu
                        Natural abundance:  99.985 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000    1.674378
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    1.674378
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    2
 
   Basis set used is "6-31G**" from the basis set library.
 
-  label    atoms   charge   prim    cont     basis
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  F           1       9      27      14      [10s4p1d|3s2p1d]                             
-  H           1       1       7       5      [4s1p|2s1p]                                  
+  F           1    9.0000    27    14      [10s4p1d|3s2p1d]                                   
+  H           1    1.0000     7     5      [4s1p|2s1p]                                        
   ----------------------------------------------------------------------
-  total:      2      10      34      19
+  total:      2   10.0000    34    19
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates:  6
-
-   1   F        x      0.0000000000
-   2            y      0.0000000000
-   3            z      1.7632000000
-
-   4   H        x      0.0000000000
-   5            y      0.0000000000
-   6            z      0.0000000000
+  Total number of coordinates:    6
+  F       :     1  x   0.0000000000    2  y   0.0000000000    3  z   1.7632000000
+  H       :     4  x   0.0000000000    5  y   0.0000000000    6  z   0.0000000000
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   4  2
+  Number of coordinates in each symmetry:     4    2
 
   Symmetry  A'  ( 1)
 
-   1   F     x    1
-   2   F     z    3
-   3   H     x    4
-   4   H     z    6
+    1   F     x    1
+    2   F     z    3
+    3   H     x    4
+    4   H     z    6
 
   Symmetry  A"  ( 2)
 
-   5   F     y    2
-   6   H     y    5
+    5   F     y    2
+    6   H     y    5
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             F           H     
             ------      ------
@@ -228,12 +245,12 @@ Point group: Cs
  H     :    0.933045    0.000000
 
 
-  Max interatomic separation is    0.9330 Angstroms
-  between atoms "H     " and "F     ".
+  Max interatomic separation is    0.9330 Angstrom (    1.7632 Bohr)
+  between atoms    2 and    1, "H     " and "F     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -245,9 +262,9 @@ Point group: Cs
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    0.000000          0.000000    0.000000    1.000000
-   IB    0.833187          0.000000    1.000000    0.000000
-   IC    0.833187          1.000000    0.000000    0.000000
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB       0.833187          0.000000    1.000000    0.000000
+   IC       0.833187          1.000000    0.000000    0.000000
 
 
  Rotational constants
@@ -255,16 +272,16 @@ Point group: Cs
 
  The molecule is linear.
 
-               B =       606561.40 MHz     (   20.232711 cm-1)
+               B =       606561.40 MHz     (   20.232710 cm-1)
 
 
-  Nuclear repulsion energy :    5.104355716878
+@  Nuclear repulsion energy :    5.104355716878
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              14   5
+  Number of orbitals in each symmetry:          14    5
 
 
   Symmetry  A' ( 1)
@@ -298,37 +315,55 @@ Point group: Cs
   Symmetries of magnetic field:  A" (2)  A' (1)  A" (2)
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in HUCKEL is   0.00 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      1.674377807231
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
- >>> Time used in DIPLEN is   0.00 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
-
- >>> Time used in ONEDRV is   0.00 seconds
-
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:        4125 ( 22.7% )
  Megabytes written:                              0.048
 
-
-
- >>> Time used in TWOINT is   0.01 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
 
  *** Output from Huckel module :
@@ -338,21 +373,22 @@ Starting in Wave Function Section -
      Number of Huckel orbitals each symmetry:    5    1
 
  EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
- which normally is better than Extended Huckel Theory.
- Reference: Linderberg and Ohrm, Propagators in Quantum Chemistry (Wiley, 1973)
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
 
  Huckel EWMO eigenvalues for symmetry :  1
-          -26.387602      -1.703688      -0.817633      -0.717123      -0.247594
+          -26.384238      -1.721955      -0.830116      -0.730000      -0.248892
 
  Huckel EWMO eigenvalues for symmetry :  2
-           -0.717123
+           -0.730000
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Mar  3 21:01:04 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:50:06 2011 
+     Host name              : fe6                                     
 
  Title     :   first hyperpolarizability for the HF molecule             
                for CCS and CCSD wavefunctions compute:                   
@@ -360,7 +396,7 @@ Starting in Wave Function Section -
                - A & B coefficients  (2. and 4. order dispersion coeffici
                - core orbital frozen                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      Hydrogen flourid                                                        
      small test basis                                                        
 
@@ -372,7 +408,7 @@ Starting in Wave Function Section -
 
      This is a combination run starting with
 
-               a RHF calculation
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -380,12 +416,13 @@ Starting in Wave Function Section -
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 19
 
      Spin multiplicity                         1
      Total number of symmetries                2
@@ -393,21 +430,21 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2
-                                       --  --
-     Total number of orbitals          14   5
-     Number of basis functions         14   5
+     Abelian symmetry species          All |    1    2
+                                       --- |  ---  ---
+     Total number of orbitals           19 |   14    5
+     Number of basis functions          19 |   14    5
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.                    
-      -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals              4   1
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               5 |    4    1
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-12
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-12
 
 
  Changes of defaults for CC:
@@ -415,8 +452,16 @@ Starting in Wave Function Section -
 
 
  -Implicit frozen core calculation
+ -Quadratic response properties calculated
+  
 
- Quadratic response properties calculated
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -Implicit frozen core calculation
+ -Quadratic response properties calculated
   
 
 
@@ -428,95 +473,136 @@ Starting in Wave Function Section -
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1  -99.9159496472       1.29D+00  -9.99D+01    4  1
+      Virial theorem: -V/T =      1.997399
+      MULPOP  F      -0.44; H       0.44; 
+ -----------------------------------------------------------------------------
+   2  -100.006061881       2.26D-01  -9.01D-02    4  1
+      Virial theorem: -V/T =      2.002657
+      MULPOP  F      -0.38; H       0.38; 
+ -----------------------------------------------------------------------------
+   3  -100.008563846       8.51D-02  -2.50D-03    4  1
+      Virial theorem: -V/T =      1.999075
+      MULPOP  F      -0.41; H       0.41; 
+ -----------------------------------------------------------------------------
+   4  -100.008886254       2.15D-02  -3.22D-04    4  1
+      Virial theorem: -V/T =      2.000623
+      MULPOP  F      -0.41; H       0.41; 
+ -----------------------------------------------------------------------------
+   5  -100.008918307       3.56D-03  -3.21D-05    4  1
+      Virial theorem: -V/T =      2.000296
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   6  -100.008919840       7.37D-04  -1.53D-06    4  1
+      Virial theorem: -V/T =      2.000320
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   7  -100.008919896       5.25D-05  -5.51D-08    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   8  -100.008919896       4.66D-06  -2.57D-10    4  1
+      Virial theorem: -V/T =      2.000326
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   9  -100.008919896       4.39D-07  -1.08D-12    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  10  -100.008919896       2.49D-08  -8.53D-14    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  11  -100.008919896       2.56D-09   5.68D-14    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  12  -100.008919896       6.66D-11   1.42D-14    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  13  -100.008919896       8.93D-12  -4.26D-14    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  14  -100.008919896       3.59D-13   0.00D+00    4  1
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.00 seconds
-
-   1    -99.916491905033   1.29E+00  -9.99E+01    4  1
-   2   -100.006127020311   2.19E-01  -8.96E-02    4  1
-   3   -100.008581657025   8.09E-02  -2.45E-03    4  1
-   4   -100.008884456438   2.22E-02  -3.03E-04    4  1
-   5   -100.008918098599   3.83E-03  -3.36E-05    4  1
-   6   -100.008919861857   7.68E-04  -1.76E-06    4  1
-   7   -100.008919920745   5.17E-05  -5.89E-08    4  1
-   8   -100.008919920981   4.60E-06  -2.36E-10    4  1
-   9   -100.008919920982   4.35E-07  -1.09E-12    4  1
-  10   -100.008919920982   2.49E-08   8.88E-16    4  1
-  11   -100.008919920982   2.54E-09   8.88E-16    4  1
-  12   -100.008919920982   6.57E-11   8.88E-16    4  1
-  13   -100.008919920982   9.18E-12  -1.33E-14    4  1
-  14   -100.008919920982   4.35E-13   2.93E-14    4  1
- DIIS converged in  14 iterations !
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    4    1
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -26.27306679    -1.57292660    -0.73710507    -0.62549530     0.21639317
-         1.01969776     1.48848731     1.53899981     1.89379535
+  1    -26.27306629    -1.57292658    -0.73710501    -0.62549523     0.21639320
+         1.01969778     1.48848713     1.53899963     1.89379537
 
- Hartree-Fock orbital energies, symmetry 2
+  2     -0.62549523     1.48848713     1.89379537     2.15801858     3.02038759
 
-        -0.62549530     1.48848731     1.89379535     2.15801855     3.02038756
 
-    E(LUMO) :     0.21639317 au (symmetry 1)
-  - E(HOMO) :    -0.62549530 au (symmetry 1)
+    E(LUMO) :     0.21639320 au (symmetry 1)
+  - E(HOMO) :    -0.62549523 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.84188847 au
+    gap     :     0.84188843 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.008919920982
+     Final HF energy:            -100.008919895851                 
      Nuclear repulsion:             5.104355716878
-     Electronic energy:          -105.113275637860
+     Electronic energy:          -105.113275612730
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Thu Mar  3 21:01:04 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:50:06 2011 
+     Host name              : fe6                                     
 
-     Molecular orbitals for symmetry species   1
+ (Only coefficients >0.0100 are printed.)
 
- Orbital          1        2        3        4
-   1  F   1s    -0.9955  -0.2308  -0.0555   0.0000
-   2  F   1s    -0.0212   0.5025   0.1234   0.0000
-   3  F   1s     0.0052   0.5082   0.2358   0.0000
-   4  F   2px    0.0000   0.0000   0.0000  -0.6587
-   5  F   2pz    0.0013  -0.0602   0.5496   0.0000
-   6  F   2px    0.0000   0.0000   0.0000  -0.4859
-   7  F   2pz   -0.0009  -0.0224   0.3522   0.0000
-   8  F   3d0    0.0000   0.0013  -0.0237   0.0000
-   9  F   3d1+   0.0000   0.0000   0.0000   0.0223
-  10  F   3d2+   0.0000   0.0000   0.0000   0.0000
-  11  H   1s    -0.0001   0.1311  -0.2709   0.0000
-  12  H   1s    -0.0013   0.0073  -0.1255   0.0000
-  13  H   2px    0.0000   0.0000   0.0000  -0.0198
-  14  H   2pz    0.0006   0.0312  -0.0288   0.0000
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   2
+    Orbital         1        2        3        4        5        6
+   1 F   :1s    -0.9955  -0.2308  -0.0555  -0.0000   0.0644   0.0183
+   2 F   :1s    -0.0212   0.5025   0.1234   0.0000  -0.0741  -0.1606
+   3 F   :1s     0.0052   0.5082   0.2358   0.0000  -0.7503   0.3606
+   4 F   :2px   -0.0000   0.0000   0.0000  -0.6587  -0.0000   0.0000
+   5 F   :2pz    0.0013  -0.0602   0.5496   0.0000   0.2591   0.3919
+   6 F   :2px   -0.0000   0.0000   0.0000  -0.4859  -0.0000   0.0000
+   7 F   :2pz   -0.0009  -0.0224   0.3522   0.0000   0.4759  -0.1052
+   8 F   :3d0    0.0000   0.0013  -0.0237  -0.0000  -0.0259   0.2926
+   9 F   :3d1+   0.0000  -0.0000  -0.0000   0.0223   0.0000  -0.0000
+  11 H   :1s    -0.0001   0.1311  -0.2709  -0.0000   0.1124   0.9672
+  12 H   :1s    -0.0013   0.0073  -0.1255  -0.0000   1.3668  -0.9276
+  13 H   :2px    0.0000  -0.0000  -0.0000  -0.0198   0.0000  -0.0000
+  14 H   :2pz    0.0006   0.0312  -0.0288  -0.0000   0.0206  -0.2828
 
- Orbital          1
-   1  F   2py    0.6587
-   2  F   2py    0.4859
-   3  F   3d2-   0.0000
-   4  F   3d1-  -0.0223
-   5  H   2py    0.0198
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 F   :2py    0.6587  -0.9416   0.1036
+   2 F   :2py    0.4859   1.0109  -0.2903
+   4 F   :3d1-  -0.0223  -0.0635  -0.6960
+   5 H   :2py    0.0198   0.0764   0.4878
 
 
 
@@ -524,13 +610,19 @@ Starting in Wave Function Section -
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:01:04 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:50:06 2011 
+     Host name              : fe6                                     
 
 
-Starting Coupled Cluster -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
 
   
 
@@ -543,6 +635,12 @@ Starting Coupled Cluster -
  *                                                                             *
  *******************************************************************************
  *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
 
    
 
@@ -576,9 +674,9 @@ Starting Coupled Cluster -
 
 
 
-                     +-------------------------------+
-                     ! Coupled Cluster model is: CCS !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! Coupled Cluster model is: CCS !
+                         +-------------------------------+
 
   
      
@@ -605,9 +703,9 @@ Starting Coupled Cluster -
   PUT TRIPLE: YDIPLEN  YDIPLEN  ZDIPLEN  ON THE LIST.
 
 
-                     +-------------------------------+
-                     ! REQUESTED PROPERTY OPERATORS: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED PROPERTY OPERATORS: !
+                         +-------------------------------+
 
              Index   Oper. Label  Symmetry  Transp.  PDBS  Atom
              --------------------------------------------------
@@ -620,9 +718,9 @@ Starting Coupled Cluster -
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED EXPECTATION VALUES: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED EXPECTATION VALUES: !
+                         +-------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -631,9 +729,9 @@ Starting Coupled Cluster -
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED EFFECTIVE FOCK MATRICES: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED EFFECTIVE FOCK MATRICES: !
+                       +------------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -642,65 +740,65 @@ Starting Coupled Cluster -
 
 
 
-                   +-----------------------------------+
-                   ! REQUESTED FIRST ORDER XI VECTORS: !
-                   +-----------------------------------+
+                       +-----------------------------------+
+                       ! REQUESTED FIRST ORDER XI VECTORS: !
+                       +-----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      ZDIPLEN        F     1      0.000000E+00
-                3      YDIPLEN        F     2      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      ZDIPLEN        F     1      0.000000D+00
+                3      YDIPLEN        F     2      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER T VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER T VECTORS: !
+                        +----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      ZDIPLEN        F     1      0.000000E+00
-                3      YDIPLEN        F     2      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      ZDIPLEN        F     1     -0.000000D+00
+                3      YDIPLEN        F     2      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED FIRST ORDER ETA VECTORS: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED FIRST ORDER ETA VECTORS: !
+                       +------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      ZDIPLEN        F     1      0.000000E+00
-                3      YDIPLEN        F     2      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      ZDIPLEN        F     1      0.000000D+00
+                3      YDIPLEN        F     2      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                  +-------------------------------------+
-                  ! REQUESTED FIRST ORDER ZETA VECTORS: !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! REQUESTED FIRST ORDER ZETA VECTORS: !
+                      +-------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      ZDIPLEN        F     1      0.000000E+00
-                3      YDIPLEN        F     2      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      ZDIPLEN        F     1     -0.000000D+00
+                3      YDIPLEN        F     2      0.000000D+00
              --------------------------------------------------
 
 
 
 
-              +---------------------------------------------+
-              ! REQUESTED FIRST-ORDER RIGHT CAUCHY VECTORS: !
-              +---------------------------------------------+
+                  +---------------------------------------------+
+                  ! REQUESTED FIRST-ORDER RIGHT CAUCHY VECTORS: !
+                  +---------------------------------------------+
 
                Index   Oper. Label  Symmetry  Cauchy Order
                --------------------------------------------------
@@ -721,9 +819,9 @@ Starting Coupled Cluster -
 
 
 
-               +--------------------------------------------+
-               ! REQUESTED FIRST-ORDER LEFT CAUCHY VECTORS: !
-               +--------------------------------------------+
+                   +--------------------------------------------+
+                   ! REQUESTED FIRST-ORDER LEFT CAUCHY VECTORS: !
+                   +--------------------------------------------+
 
                Index   Oper. Label  Symmetry  Cauchy Order
                --------------------------------------------------
@@ -750,6 +848,7 @@ Starting Coupled Cluster -
 
 
 
+ 
  +======================================================================+
  !                     RHS & ETA VECTORS TO COMPUTE:                    !
  +======================================================================+
@@ -820,6 +919,7 @@ Starting Coupled Cluster -
    For the requested  7 quadratic response functions 
          -   3 G matrix transformations 
          -   5 B matrix transformations 
+         -   0 K matrix transformations 
          -   0 F matrix transformations 
          -   5 F{O} matrix transformations 
          -   7 ETA{O} vector calculations 
@@ -830,38 +930,26 @@ Starting Coupled Cluster -
 
  +--------------------------------------------------+
  | total time for   3 G transforms.:      0.00 secs.|
- +--------------------------------------------------+
-
->>> Time used for    3 G matrix transformations:        0.00 seconds.
- +--------------------------------------------------+
- | total time for   5 B transforms.:      0.01 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:     25.01      |
- |  % of time used in Fock interm. :     25.01      |
- |  % of time used in ERI          :     12.49      |
- |  % of time used in CCRDAO       :      0.00      |
- |  % of time used in (**|k del)   :      0.00      |
- |  % of time used in singles part :      0.00      |
- |  % of time used in A term       :      0.00      |
- |  % of time used in BF term      :      0.00      |
- |  % of time used in F term       :      0.00      |
- |  % of time used in E term       :      0.00      |
- |  % of time used in C term       :      0.00      |
- |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :     24.99      |
  +==================================================+
 
 
 
->>> Time used for    5 B matrix transformations:        0.01 seconds.
+>>> Time used for    3 G matrix transformations:        0.00 seconds.
+ +--------------------------------------------------+
+ | total time for   5 B transforms.:      0.00 secs.|
+ +==================================================+
+
+
+
+>>> Time used for    5 B matrix transformations:        0.00 seconds.
 
 >>> Time used for    5 F{O} matrix transform.:          0.00 seconds.
 
->>> Time used for    7 ETA{O} vector calculat.:         0.02 seconds.
+>>> Time used for    7 ETA{O} vector calculat.:         0.00 seconds.
 
 >>> Time used for    0 Xksi{O} and Eta{O2} vector calculat.:         0.00 seconds.
 
->>> Total time for   7 quadratic response func.:        0.02 seconds.
+>>> Total time for   7 quadratic response func.:        0.01 seconds.
 
 
                   +--------------------------------------------------------------------------------------+
@@ -872,19 +960,19 @@ Starting Coupled Cluster -
   A operator                  B operator                  C operator                     property 
 ------------------------------------------------------------------------------------------------------
 
- ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000      16.574445    
+ ZDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000      16.574446    
 
- ZDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.67551277    
+ ZDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.67551272    
 
- XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.67551277    
+ XDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.67551272    
 
- XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.67551277    
+ XDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.67551272    
 
- ZDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.67551277    
+ ZDIPLEN  (unrel.) -0.0000   YDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.67551272    
 
- YDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.67551277    
+ YDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.67551272    
 
- YDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.67551277    
+ YDIPLEN  (unrel.) -0.0000   YDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.67551272    
 
 
 
@@ -893,13 +981,13 @@ Starting Coupled Cluster -
   average         frequencies
 -------------------------------------------------------
 
-  beta_||    0.0000   0.0000   0.0000     10.755282    
+  beta_||   -0.0000   0.0000   0.0000     10.755283    
 
-  beta^K     0.0000   0.0000   0.0000     10.755282    
+  beta^K    -0.0000   0.0000   0.0000     10.755283    
 
-  beta_|_    0.0000   0.0000   0.0000     3.5850940    
+  beta_|_   -0.0000   0.0000   0.0000     3.5850943    
 
-  beta_ms    0.0000   0.0000   0.0000     0.0000000    
+  beta_ms   -0.0000   0.0000   0.0000   -0.55511151E-16
 
 
 ------------------------------------------------------------------------------------------------------
@@ -920,155 +1008,143 @@ Starting Coupled Cluster -
 
  +--------------------------------------------------+
  | total time for  22 G transforms.:      0.00 secs.|
- +--------------------------------------------------+
-
->>> Time used for   22 G matrix transformations:        0.00 seconds.
- +--------------------------------------------------+
- | total time for  57 B transforms.:      0.04 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:     18.42      |
- |  % of time used in Fock interm. :     31.58      |
- |  % of time used in ERI          :      0.00      |
- |  % of time used in CCRDAO       :      0.00      |
- |  % of time used in (**|k del)   :      0.00      |
- |  % of time used in singles part :      0.00      |
- |  % of time used in A term       :      0.00      |
- |  % of time used in BF term      :      0.00      |
- |  % of time used in F term       :      2.63      |
- |  % of time used in E term       :      0.00      |
- |  % of time used in C term       :      0.00      |
- |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :     23.68      |
  +==================================================+
 
 
 
->>> Time used for   57 B matrix transformations:        0.04 seconds.
+>>> Time used for   22 G matrix transformations:        0.00 seconds.
+ +--------------------------------------------------+
+ | total time for  57 B transforms.:      0.03 secs.|
+ +==================================================+
+
+
+
+>>> Time used for   57 B matrix transformations:        0.03 seconds.
 
 >>> Time used for   19 F{O} matrix transform.:          0.00 seconds.
 
 >>> Time used for   35 ETA{O} vector calculat.:         0.01 seconds.
 
->>> Total time for 245 expansion coeffients:            0.06 seconds.
+>>> Total time for 245 expansion coeffients:            0.04 seconds.
 
 
-    +------------------------------------------------------------------+
-    !      FINAL CCS RESULTS FOR DISPERSION COEFFICIENTS               !
-    +------------------------------------------------------------------+
+               +----------------------------------------------------+
+               !      FINAL CCS RESULTS FOR DISPERSION COEFFICIENTS !
+               +----------------------------------------------------+
 
 
  A operator   B operator   C operator       N    M    D_ABC
 --------------------------------------------------------------------
 
- ZDIPLEN      ZDIPLEN      ZDIPLEN          0    0    16.574445    
-                                            2    0    79.209904    
-                                            1    1    79.209904    
-                                            0    2    79.209904    
-                                            4    0    300.25844    
-                                            3    1    600.51689    
-                                            2    2    900.77533    
-                                            1    3    600.51689    
-                                            0    4    300.25844    
+ ZDIPLEN      ZDIPLEN      ZDIPLEN          0    0    16.574446    
+                                            2    0    79.209921    
+                                            1    1    79.209921    
+                                            0    2    79.209921    
+                                            4    0    300.25855    
+                                            3    1    600.51709    
+                                            2    2    900.77564    
+                                            1    3    600.51709    
+                                            0    4    300.25855    
 
- ZDIPLEN      XDIPLEN      XDIPLEN          0    0   0.67551277    
-                                            2    0    3.8606800    
-                                            1    1   -5.1183240    
-                                            0    2    3.8606800    
-                                            4    0    20.919933    
-                                            3    1   -24.781397    
-                                            2    2    18.948130    
-                                            1    3   -24.781397    
-                                            0    4    20.919933    
+ ZDIPLEN      XDIPLEN      XDIPLEN          0    0   0.67551272    
+                                            2    0    3.8606810    
+                                            1    1   -5.1183261    
+                                            0    2    3.8606810    
+                                            4    0    20.919943    
+                                            3    1   -24.781414    
+                                            2    2    18.948141    
+                                            1    3   -24.781414    
+                                            0    4    20.919943    
 
- XDIPLEN      ZDIPLEN      XDIPLEN          0    0   0.67551277    
-                                            2    0    12.839684    
-                                            1    1    12.839684    
-                                            0    2    3.8606800    
-                                            4    0    110.35079    
-                                            3    1    220.70158    
-                                            2    2    218.81192    
-                                            1    3    108.46113    
-                                            0    4    20.919933    
+ XDIPLEN      ZDIPLEN      XDIPLEN          0    0   0.67551272    
+                                            2    0    12.839688    
+                                            1    1    12.839688    
+                                            0    2    3.8606810    
+                                            4    0    110.35085    
+                                            3    1    220.70171    
+                                            2    2    218.81204    
+                                            1    3    108.46119    
+                                            0    4    20.919943    
 
- XDIPLEN      XDIPLEN      ZDIPLEN          0    0   0.67551277    
-                                            2    0    3.8606800    
-                                            1    1    12.839684    
-                                            0    2    12.839684    
-                                            4    0    20.919933    
-                                            3    1    108.46113    
-                                            2    2    218.81192    
-                                            1    3    220.70158    
-                                            0    4    110.35079    
+ XDIPLEN      XDIPLEN      ZDIPLEN          0    0   0.67551272    
+                                            2    0    3.8606810    
+                                            1    1    12.839688    
+                                            0    2    12.839688    
+                                            4    0    20.919943    
+                                            3    1    108.46119    
+                                            2    2    218.81204    
+                                            1    3    220.70171    
+                                            0    4    110.35085    
 
- ZDIPLEN      YDIPLEN      YDIPLEN          0    0   0.67551277    
-                                            2    0    3.8606800    
-                                            1    1   -5.1183240    
-                                            0    2    3.8606800    
-                                            4    0    20.919933    
-                                            3    1   -24.781397    
-                                            2    2    18.948130    
-                                            1    3   -24.781397    
-                                            0    4    20.919933    
+ ZDIPLEN      YDIPLEN      YDIPLEN          0    0   0.67551272    
+                                            2    0    3.8606810    
+                                            1    1   -5.1183261    
+                                            0    2    3.8606810    
+                                            4    0    20.919943    
+                                            3    1   -24.781414    
+                                            2    2    18.948141    
+                                            1    3   -24.781414    
+                                            0    4    20.919943    
 
- YDIPLEN      ZDIPLEN      YDIPLEN          0    0   0.67551277    
-                                            2    0    12.839684    
-                                            1    1    12.839684    
-                                            0    2    3.8606800    
-                                            4    0    110.35079    
-                                            3    1    220.70158    
-                                            2    2    218.81192    
-                                            1    3    108.46113    
-                                            0    4    20.919933    
+ YDIPLEN      ZDIPLEN      YDIPLEN          0    0   0.67551272    
+                                            2    0    12.839688    
+                                            1    1    12.839688    
+                                            0    2    3.8606810    
+                                            4    0    110.35085    
+                                            3    1    220.70171    
+                                            2    2    218.81204    
+                                            1    3    108.46119    
+                                            0    4    20.919943    
 
- YDIPLEN      YDIPLEN      ZDIPLEN          0    0   0.67551277    
-                                            2    0    3.8606800    
-                                            1    1    12.839684    
-                                            0    2    12.839684    
-                                            4    0    20.919933    
-                                            3    1    108.46113    
-                                            2    2    218.81192    
-                                            1    3    220.70158    
-                                            0    4    110.35079    
+ YDIPLEN      YDIPLEN      ZDIPLEN          0    0   0.67551272    
+                                            2    0    3.8606810    
+                                            1    1    12.839688    
+                                            0    2    12.839688    
+                                            4    0    20.919943    
+                                            3    1    108.46119    
+                                            2    2    218.81204    
+                                            1    3    220.70171    
+                                            0    4    110.35085    
 
- beta_{||}                                  0    0    10.755282    
-                                            2    0    55.750360    
-                                            1    1    55.750360    
-                                            0    2    55.750360    
-                                            4    0    241.03133    
-                                            3    1    482.06266    
-                                            2    2    723.09399    
-                                            1    3    482.06266    
-                                            0    4    241.03133    
+ beta_{||}                                  0    0    10.755283    
+                                            2    0    55.750373    
+                                            1    1    55.750373    
+                                            0    2    55.750373    
+                                            4    0    241.03142    
+                                            3    1    482.06285    
+                                            2    2    723.09427    
+                                            1    3    482.06285    
+                                            0    4    241.03142    
 
- beta^K                                     0    0    10.755282    
-                                            2    0    46.771356    
-                                            1    1    73.708368    
-                                            0    2    73.708368    
-                                            4    0    151.60047    
-                                            3    1    503.06473    
-                                            2    2    922.95777    
-                                            1    3    839.78609    
-                                            0    4    419.89304    
+ beta^K                                     0    0    10.755283    
+                                            2    0    46.771366    
+                                            1    1    73.708387    
+                                            0    2    73.708387    
+                                            4    0    151.60051    
+                                            3    1    503.06493    
+                                            2    2    922.95818    
+                                            1    3    839.78650    
+                                            0    4    419.89325    
 
- beta_{_|_}                                 0    0    3.5850940    
-                                            2    0    24.569456    
-                                            1    1    6.6114480    
-                                            0    2    6.6114480    
-                                            4    0    139.96435    
-                                            3    1    146.68617    
-                                            2    2    107.78880    
-                                            1    3   -77.794733    
-                                            0    4   -38.897367    
+ beta_{_|_}                                 0    0    3.5850943    
+                                            2    0    24.569462    
+                                            1    1    6.6114482    
+                                            0    2    6.6114482    
+                                            4    0    139.96442    
+                                            3    1    146.68623    
+                                            2    2    107.78882    
+                                            1    3   -77.794814    
+                                            0    4   -38.897407    
 
- beta_ms                                    0    0    0.0000000    
-                                            2    0    8.9790040    
-                                            1    1   -17.958008    
-                                            0    2   -17.958008    
-                                            4    0    89.430857    
-                                            3    1   -21.002075    
-                                            2    2   -199.86379    
-                                            1    3   -357.72343    
-                                            0    4   -178.86171    
+ beta_ms                                    0    0  -0.16653345E-15
+                                            2    0    8.9790071    
+                                            1    1   -17.958014    
+                                            0    2   -17.958014    
+                                            4    0    89.430912    
+                                            3    1   -21.002079    
+                                            2    2   -199.86390    
+                                            1    3   -357.72365    
+                                            0    4   -178.86182    
 --------------------------------------------------------------------
 
 
@@ -1079,49 +1155,49 @@ Starting Coupled Cluster -
  A operator   B operator   C operator       N    D^SHG           D^OR            D^EOPE
 -------------------------------------------------------------------------------------------
 
- ZDIPLEN      ZDIPLEN      ZDIPLEN          0    16.574445       16.574445       16.574445    
-                                            2    237.62971       79.209904       79.209904    
-                                            4    2702.3260       300.25844       300.25844    
+ ZDIPLEN      ZDIPLEN      ZDIPLEN          0    16.574446       16.574446       16.574446    
+                                            2    237.62976       79.209921       79.209921    
+                                            4    2702.3269       300.25855       300.25855    
 
- ZDIPLEN      XDIPLEN      XDIPLEN          0   0.67551277      0.67551277      0.67551277    
-                                            2    2.6030360       12.839684       3.8606800    
-                                            4    11.225203       110.35079       20.919933    
+ ZDIPLEN      XDIPLEN      XDIPLEN          0   0.67551272      0.67551272      0.67551272    
+                                            2    2.6030360       12.839688       3.8606810    
+                                            4    11.225200       110.35085       20.919943    
 
- XDIPLEN      ZDIPLEN      XDIPLEN          0   0.67551277      0.67551277      0.67551277    
-                                            2    29.540048       3.8606800       3.8606800    
-                                            4    679.24535       20.919933       20.919933    
+ XDIPLEN      ZDIPLEN      XDIPLEN          0   0.67551272      0.67551272      0.67551272    
+                                            2    29.540057       3.8606810       3.8606810    
+                                            4    679.24574       20.919943       20.919943    
 
- XDIPLEN      XDIPLEN      ZDIPLEN          0   0.67551277      0.67551277      0.67551277    
-                                            2    29.540048       3.8606800       12.839684    
-                                            4    679.24535       20.919933       110.35079    
+ XDIPLEN      XDIPLEN      ZDIPLEN          0   0.67551272      0.67551272      0.67551272    
+                                            2    29.540057       3.8606810       12.839688    
+                                            4    679.24574       20.919943       110.35085    
 
- ZDIPLEN      YDIPLEN      YDIPLEN          0   0.67551277      0.67551277      0.67551277    
-                                            2    2.6030360       12.839684       3.8606800    
-                                            4    11.225203       110.35079       20.919933    
+ ZDIPLEN      YDIPLEN      YDIPLEN          0   0.67551272      0.67551272      0.67551272    
+                                            2    2.6030360       12.839688       3.8606810    
+                                            4    11.225200       110.35085       20.919943    
 
- YDIPLEN      ZDIPLEN      YDIPLEN          0   0.67551277      0.67551277      0.67551277    
-                                            2    29.540048       3.8606800       3.8606800    
-                                            4    679.24535       20.919933       20.919933    
+ YDIPLEN      ZDIPLEN      YDIPLEN          0   0.67551272      0.67551272      0.67551272    
+                                            2    29.540057       3.8606810       3.8606810    
+                                            4    679.24574       20.919943       20.919943    
 
- YDIPLEN      YDIPLEN      ZDIPLEN          0   0.67551277      0.67551277      0.67551277    
-                                            2    29.540048       3.8606800       12.839684    
-                                            4    679.24535       20.919933       110.35079    
+ YDIPLEN      YDIPLEN      ZDIPLEN          0   0.67551272      0.67551272      0.67551272    
+                                            2    29.540057       3.8606810       12.839688    
+                                            4    679.24574       20.919943       110.35085    
 
- beta_{||}                                  0    10.755282       10.755282       10.755282    
-                                            2    167.25108       55.750360       55.750360    
-                                            4    2169.2820       241.03133       241.03133    
+ beta_{||}                                  0    10.755283       10.755283       10.755283    
+                                            2    167.25112       55.750373       55.750373    
+                                            4    2169.2828       241.03142       241.03142    
 
- beta^K                                     0    10.755282       10.755282       10.755282    
-                                            2    194.18809       46.771356       46.771356    
-                                            4    2837.3021       151.60047       151.60047    
+ beta^K                                     0    10.755283       10.755283       10.755283    
+                                            2    194.18814       46.771366       46.771366    
+                                            4    2837.3034       151.60051       151.60051    
 
- beta_{_|_}                                 0    3.5850940       3.5850940       3.5850940    
-                                            2    37.792352       24.569456       24.569456    
-                                            4    277.74722       139.96435       139.96435    
+ beta_{_|_}                                 0    3.5850943       3.5850943       3.5850943    
+                                            2    37.792359       24.569462       24.569462    
+                                            4    277.74725       139.96442       139.96442    
 
- beta_ms                                    0    0.0000000       0.0000000       0.0000000    
-                                            2   -26.937012       8.9790040       8.9790040    
-                                            4   -668.02015       89.430857       89.430857    
+ beta_ms                                    0  -0.16653345E-15 -0.16653345E-15 -0.16653345E-15
+                                            2   -26.937021       8.9790071       8.9790071    
+                                            4   -668.02054       89.430912       89.430912    
 -------------------------------------------------------------------------------------------
 
 
@@ -1133,9 +1209,9 @@ Starting Coupled Cluster -
 
  PROCESS INDEPENDENT COEFFICIENTS FOR beta_{||}:
 -------------------------------------------------
- beta(0)   10.755282    
- A         2.5917665    
- B         5.6026268    
+ beta(0)   10.755283    
+ A         2.5917669    
+ B         5.6026287    
 -------------------------------------------------
 
 
@@ -1144,15 +1220,21 @@ Starting Coupled Cluster -
 
  PROCESS INDEPENDENT COEFFICIENTS FOR beta_ms:
 -----------------------------------------------------------------------------------------------------
- A       0.83484598    
- B        4.1575319         B'     -0.70692688    
+ A       0.83484621    
+ B        4.1575341         B'     -0.70692736    
 -----------------------------------------------------------------------------------------------------
 
 
 
 
 
->>> Total time used in quadratic response section:        0.08 seconds.
+>>> Total time used in quadratic response section:        0.05 seconds.
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
    
 
  *******************************************************************
@@ -1172,41 +1254,42 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       848
           Total number of amplitudes in ccsd      :       882
 
- Iter.  1: Coupled cluster MP2   energy :    -100.1921480312021799
- Iter.  1: Coupled cluster CCSD  energy :    -100.1930121226930339
- Iter.  2: Coupled cluster CCSD  energy :    -100.1958483203635097
- Iter.  3: Coupled cluster CCSD  energy :    -100.1964818875460139
- Iter.  4: Coupled cluster CCSD  energy :    -100.1964843124828803
- Iter.  5: Coupled cluster CCSD  energy :    -100.1964804137863467
- Iter.  6: Coupled cluster CCSD  energy :    -100.1964787553740734
- Iter.  7: Coupled cluster CCSD  energy :    -100.1964777499846377
- Iter.  8: Coupled cluster CCSD  energy :    -100.1964778090396919
- Iter.  9: Coupled cluster CCSD  energy :    -100.1964778060192174
+ Iter.  1: Coupled cluster MP2   energy :    -100.1921479939426405
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1930120928034427
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1958482910941797
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1964818584541348
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1964842834633060
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1964803847576064
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1964787263463279
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1964777209569206
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1964777800119890
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1964777769916566
 
- CCSD  energy converged to within   0.10E-07 is   -100.196477806
-
-
-
-
-
-         +-------------------------------------------------------+
-         ! Final results from the Coupled Cluster energy program !
-         +-------------------------------------------------------+
-
-
-
-            Total SCF   energy:                  -100.0089199210
-
-            Total MP2   energy:                  -100.1921480312
-
-            Total CCSD  energy:                  -100.1964778060
+ CCSD  energy converged to within   0.10D-07 is   -100.196477777
+ Final 2-norm of the CC vector function:  4.29299989D-07
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0089198959
+
+            Total MP2   energy:                  -100.1921479939
+
+            Total CCSD  energy:                  -100.1964777770
+
+
+
+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -1228,9 +1311,9 @@ Starting Coupled Cluster -
 
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
   
      
@@ -1243,9 +1326,9 @@ Starting Coupled Cluster -
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED PROPERTY OPERATORS: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED PROPERTY OPERATORS: !
+                         +-------------------------------+
 
              Index   Oper. Label  Symmetry  Transp.  PDBS  Atom
              --------------------------------------------------
@@ -1258,9 +1341,9 @@ Starting Coupled Cluster -
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED EXPECTATION VALUES: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED EXPECTATION VALUES: !
+                         +-------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -1269,9 +1352,9 @@ Starting Coupled Cluster -
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED EFFECTIVE FOCK MATRICES: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED EFFECTIVE FOCK MATRICES: !
+                       +------------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -1280,65 +1363,65 @@ Starting Coupled Cluster -
 
 
 
-                   +-----------------------------------+
-                   ! REQUESTED FIRST ORDER XI VECTORS: !
-                   +-----------------------------------+
+                       +-----------------------------------+
+                       ! REQUESTED FIRST ORDER XI VECTORS: !
+                       +-----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      ZDIPLEN        F     1      0.000000E+00
-                3      YDIPLEN        F     2      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      ZDIPLEN        F     1      0.000000D+00
+                3      YDIPLEN        F     2      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER T VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER T VECTORS: !
+                        +----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      ZDIPLEN        F     1      0.000000E+00
-                3      YDIPLEN        F     2      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      ZDIPLEN        F     1     -0.000000D+00
+                3      YDIPLEN        F     2      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED FIRST ORDER ETA VECTORS: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED FIRST ORDER ETA VECTORS: !
+                       +------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      ZDIPLEN        F     1      0.000000E+00
-                3      YDIPLEN        F     2      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      ZDIPLEN        F     1      0.000000D+00
+                3      YDIPLEN        F     2      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                  +-------------------------------------+
-                  ! REQUESTED FIRST ORDER ZETA VECTORS: !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! REQUESTED FIRST ORDER ZETA VECTORS: !
+                      +-------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      ZDIPLEN        F     1      0.000000E+00
-                3      YDIPLEN        F     2      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      ZDIPLEN        F     1     -0.000000D+00
+                3      YDIPLEN        F     2      0.000000D+00
              --------------------------------------------------
 
 
 
 
-              +---------------------------------------------+
-              ! REQUESTED FIRST-ORDER RIGHT CAUCHY VECTORS: !
-              +---------------------------------------------+
+                  +---------------------------------------------+
+                  ! REQUESTED FIRST-ORDER RIGHT CAUCHY VECTORS: !
+                  +---------------------------------------------+
 
                Index   Oper. Label  Symmetry  Cauchy Order
                --------------------------------------------------
@@ -1359,9 +1442,9 @@ Starting Coupled Cluster -
 
 
 
-               +--------------------------------------------+
-               ! REQUESTED FIRST-ORDER LEFT CAUCHY VECTORS: !
-               +--------------------------------------------+
+                   +--------------------------------------------+
+                   ! REQUESTED FIRST-ORDER LEFT CAUCHY VECTORS: !
+                   +--------------------------------------------+
 
                Index   Oper. Label  Symmetry  Cauchy Order
                --------------------------------------------------
@@ -1388,6 +1471,7 @@ Starting Coupled Cluster -
 
 
 
+ 
  +======================================================================+
  !                     RHS & ETA VECTORS TO COMPUTE:                    !
  +======================================================================+
@@ -1458,6 +1542,7 @@ Starting Coupled Cluster -
    For the requested  7 quadratic response functions 
          -   3 G matrix transformations 
          -   5 B matrix transformations 
+         -   0 K matrix transformations 
          -   0 F matrix transformations 
          -   5 F{O} matrix transformations 
          -   7 ETA{O} vector calculations 
@@ -1467,39 +1552,27 @@ Starting Coupled Cluster -
 
 
  +--------------------------------------------------+
- | total time for   3 G transforms.:      0.03 secs.|
- +--------------------------------------------------+
-
->>> Time used for    3 G matrix transformations:        0.03 seconds.
- +--------------------------------------------------+
- | total time for   5 B transforms.:      0.07 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:      5.48      |
- |  % of time used in Fock interm. :      2.74      |
- |  % of time used in ERI          :      0.00      |
- |  % of time used in CCRDAO       :      1.37      |
- |  % of time used in (**|k del)   :      4.11      |
- |  % of time used in singles part :      4.11      |
- |  % of time used in A term       :      8.22      |
- |  % of time used in BF term      :      6.85      |
- |  % of time used in F term       :     13.70      |
- |  % of time used in E term       :      9.59      |
- |  % of time used in C term       :     12.33      |
- |  % of time used in D term       :     13.70      |
- |  % of time used in I/O          :     16.44      |
+ | total time for   3 G transforms.:      0.01 secs.|
  +==================================================+
 
 
 
->>> Time used for    5 B matrix transformations:        0.07 seconds.
+>>> Time used for    3 G matrix transformations:        0.01 seconds.
+ +--------------------------------------------------+
+ | total time for   5 B transforms.:      0.03 secs.|
+ +==================================================+
 
->>> Time used for    5 F{O} matrix transform.:          0.01 seconds.
 
->>> Time used for    7 ETA{O} vector calculat.:         0.02 seconds.
+
+>>> Time used for    5 B matrix transformations:        0.03 seconds.
+
+>>> Time used for    5 F{O} matrix transform.:          0.00 seconds.
+
+>>> Time used for    7 ETA{O} vector calculat.:         0.01 seconds.
 
 >>> Time used for    0 Xksi{O} and Eta{O2} vector calculat.:         0.00 seconds.
 
->>> Total time for   7 quadratic response func.:        0.13 seconds.
+>>> Total time for   7 quadratic response func.:        0.05 seconds.
 
 
                  +---------------------------------------------------------------------------------------+
@@ -1510,19 +1583,19 @@ Starting Coupled Cluster -
   A operator                  B operator                  C operator                     property 
 ------------------------------------------------------------------------------------------------------
 
- ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000      15.382998    
+ ZDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000      15.382999    
 
- ZDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.90284848    
+ ZDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.90284847    
 
- XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.90284848    
+ XDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.90284847    
 
- XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.90284848    
+ XDIPLEN  (unrel.) -0.0000   XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.90284847    
 
- ZDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.90284848    
+ ZDIPLEN  (unrel.) -0.0000   YDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.90284847    
 
- YDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.90284848    
+ YDIPLEN  (unrel.) -0.0000   ZDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.90284847    
 
- YDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.90284848    
+ YDIPLEN  (unrel.) -0.0000   YDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.90284847    
 
 
 
@@ -1531,13 +1604,13 @@ Starting Coupled Cluster -
   average         frequencies
 -------------------------------------------------------
 
-  beta_||    0.0000   0.0000   0.0000     10.313217    
+  beta_||   -0.0000   0.0000   0.0000     10.313217    
 
-  beta^K     0.0000   0.0000   0.0000     10.313217    
+  beta^K    -0.0000   0.0000   0.0000     10.313217    
 
-  beta_|_    0.0000   0.0000   0.0000     3.4377390    
+  beta_|_   -0.0000   0.0000   0.0000     3.4377391    
 
-  beta_ms    0.0000   0.0000   0.0000     0.0000000    
+  beta_ms   -0.0000   0.0000   0.0000    0.16653345E-15
 
 
 ------------------------------------------------------------------------------------------------------
@@ -1557,156 +1630,144 @@ Starting Coupled Cluster -
 
 
  +--------------------------------------------------+
- | total time for  22 G transforms.:      0.23 secs.|
- +--------------------------------------------------+
-
->>> Time used for   22 G matrix transformations:        0.23 seconds.
- +--------------------------------------------------+
- | total time for  57 B transforms.:      0.62 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:      1.93      |
- |  % of time used in Fock interm. :      0.00      |
- |  % of time used in ERI          :      0.00      |
- |  % of time used in CCRDAO       :      0.00      |
- |  % of time used in (**|k del)   :      0.48      |
- |  % of time used in singles part :      1.93      |
- |  % of time used in A term       :      8.70      |
- |  % of time used in BF term      :     11.27      |
- |  % of time used in F term       :     19.16      |
- |  % of time used in E term       :      9.82      |
- |  % of time used in C term       :     14.17      |
- |  % of time used in D term       :     12.40      |
- |  % of time used in I/O          :     13.85      |
+ | total time for  22 G transforms.:      0.08 secs.|
  +==================================================+
 
 
 
->>> Time used for   57 B matrix transformations:        0.62 seconds.
-
->>> Time used for   19 F{O} matrix transform.:          0.02 seconds.
-
->>> Time used for   35 ETA{O} vector calculat.:         0.04 seconds.
-
->>> Total time for 245 expansion coeffients:            0.91 seconds.
+>>> Time used for   22 G matrix transformations:        0.08 seconds.
+ +--------------------------------------------------+
+ | total time for  57 B transforms.:      0.24 secs.|
+ +==================================================+
 
 
-   +-------------------------------------------------------------------+
-   !      FINAL CCSD RESULTS FOR DISPERSION COEFFICIENTS               !
-   +-------------------------------------------------------------------+
+
+>>> Time used for   57 B matrix transformations:        0.24 seconds.
+
+>>> Time used for   19 F{O} matrix transform.:          0.01 seconds.
+
+>>> Time used for   35 ETA{O} vector calculat.:         0.02 seconds.
+
+>>> Total time for 245 expansion coeffients:            0.36 seconds.
+
+
+              +-----------------------------------------------------+
+              !      FINAL CCSD RESULTS FOR DISPERSION COEFFICIENTS !
+              +-----------------------------------------------------+
 
 
  A operator   B operator   C operator       N    M    D_ABC
 --------------------------------------------------------------------
 
- ZDIPLEN      ZDIPLEN      ZDIPLEN          0    0    15.382998    
-                                            2    0    82.954570    
-                                            1    1    82.954570    
-                                            0    2    82.954570    
-                                            4    0    348.74181    
-                                            3    1    697.48361    
-                                            2    2    1046.2254    
-                                            1    3    697.48361    
-                                            0    4    348.74181    
+ ZDIPLEN      ZDIPLEN      ZDIPLEN          0    0    15.382999    
+                                            2    0    82.954584    
+                                            1    1    82.954584    
+                                            0    2    82.954584    
+                                            4    0    348.74190    
+                                            3    1    697.48381    
+                                            2    2    1046.2257    
+                                            1    3    697.48381    
+                                            0    4    348.74190    
 
- ZDIPLEN      XDIPLEN      XDIPLEN          0    0   0.90284848    
-                                            2    0    6.4389572    
-                                            1    1   -6.6436529    
-                                            0    2    6.4389572    
-                                            4    0    41.952478    
-                                            3    1   -35.795620    
-                                            2    2    45.672206    
-                                            1    3   -35.795620    
-                                            0    4    41.952478    
+ ZDIPLEN      XDIPLEN      XDIPLEN          0    0   0.90284847    
+                                            2    0    6.4389592    
+                                            1    1   -6.6436555    
+                                            0    2    6.4389592    
+                                            4    0    41.952501    
+                                            3    1   -35.795644    
+                                            2    2    45.672233    
+                                            1    3   -35.795644    
+                                            0    4    41.952501    
 
- XDIPLEN      ZDIPLEN      XDIPLEN          0    0   0.90284848    
-                                            2    0    19.521567    
-                                            1    1    19.521567    
-                                            0    2    6.4389572    
-                                            4    0    201.16840    
-                                            3    1    402.33680    
-                                            2    2    404.77394    
-                                            1    3    203.60553    
-                                            0    4    41.952478    
+ XDIPLEN      ZDIPLEN      XDIPLEN          0    0   0.90284847    
+                                            2    0    19.521574    
+                                            1    1    19.521574    
+                                            0    2    6.4389592    
+                                            4    0    201.16852    
+                                            3    1    402.33705    
+                                            2    2    404.77417    
+                                            1    3    203.60565    
+                                            0    4    41.952501    
 
- XDIPLEN      XDIPLEN      ZDIPLEN          0    0   0.90284848    
-                                            2    0    6.4389572    
-                                            1    1    19.521567    
-                                            0    2    19.521567    
-                                            4    0    41.952478    
-                                            3    1    203.60553    
-                                            2    2    404.77394    
-                                            1    3    402.33680    
-                                            0    4    201.16840    
+ XDIPLEN      XDIPLEN      ZDIPLEN          0    0   0.90284847    
+                                            2    0    6.4389592    
+                                            1    1    19.521574    
+                                            0    2    19.521574    
+                                            4    0    41.952501    
+                                            3    1    203.60565    
+                                            2    2    404.77417    
+                                            1    3    402.33705    
+                                            0    4    201.16852    
 
- ZDIPLEN      YDIPLEN      YDIPLEN          0    0   0.90284848    
-                                            2    0    6.4389572    
-                                            1    1   -6.6436529    
-                                            0    2    6.4389572    
-                                            4    0    41.952478    
-                                            3    1   -35.795620    
-                                            2    2    45.672206    
-                                            1    3   -35.795620    
-                                            0    4    41.952478    
+ ZDIPLEN      YDIPLEN      YDIPLEN          0    0   0.90284847    
+                                            2    0    6.4389592    
+                                            1    1   -6.6436555    
+                                            0    2    6.4389592    
+                                            4    0    41.952501    
+                                            3    1   -35.795644    
+                                            2    2    45.672233    
+                                            1    3   -35.795644    
+                                            0    4    41.952501    
 
- YDIPLEN      ZDIPLEN      YDIPLEN          0    0   0.90284848    
-                                            2    0    19.521567    
-                                            1    1    19.521567    
-                                            0    2    6.4389572    
-                                            4    0    201.16840    
-                                            3    1    402.33680    
-                                            2    2    404.77394    
-                                            1    3    203.60553    
-                                            0    4    41.952478    
+ YDIPLEN      ZDIPLEN      YDIPLEN          0    0   0.90284847    
+                                            2    0    19.521574    
+                                            1    1    19.521574    
+                                            0    2    6.4389592    
+                                            4    0    201.16852    
+                                            3    1    402.33705    
+                                            2    2    404.77417    
+                                            1    3    203.60565    
+                                            0    4    41.952501    
 
- YDIPLEN      YDIPLEN      ZDIPLEN          0    0   0.90284848    
-                                            2    0    6.4389572    
-                                            1    1    19.521567    
-                                            0    2    19.521567    
-                                            4    0    41.952478    
-                                            3    1    203.60553    
-                                            2    2    404.77394    
-                                            1    3    402.33680    
-                                            0    4    201.16840    
+ YDIPLEN      YDIPLEN      ZDIPLEN          0    0   0.90284847    
+                                            2    0    6.4389592    
+                                            1    1    19.521574    
+                                            0    2    19.521574    
+                                            4    0    41.952501    
+                                            3    1    203.60565    
+                                            2    2    404.77417    
+                                            1    3    402.33705    
+                                            0    4    201.16852    
 
  beta_{||}                                  0    0    10.313217    
-                                            2    0    62.732535    
-                                            1    1    62.732535    
-                                            0    2    62.732535    
-                                            4    0    323.27443    
-                                            3    1    646.54885    
-                                            2    2    969.82328    
-                                            1    3    646.54885    
-                                            0    4    323.27443    
+                                            2    0    62.732547    
+                                            1    1    62.732547    
+                                            0    2    62.732547    
+                                            4    0    323.27455    
+                                            3    1    646.54910    
+                                            2    2    969.82366    
+                                            1    3    646.54910    
+                                            0    4    323.27455    
 
  beta^K                                     0    0    10.313217    
-                                            2    0    49.649925    
-                                            1    1    88.897755    
-                                            0    2    88.897755    
-                                            4    0    164.05850    
-                                            3    1    687.21874    
-                                            2    2    1328.9250    
-                                            1    3    1283.4125    
-                                            0    4    641.70627    
+                                            2    0    49.649932    
+                                            1    1    88.897776    
+                                            0    2    88.897776    
+                                            4    0    164.05853    
+                                            3    1    687.21900    
+                                            2    2    1328.9256    
+                                            1    3    1283.4132    
+                                            0    4    641.70660    
 
- beta_{_|_}                                 0    0    3.4377390    
-                                            2    0    29.632585    
-                                            1    1    3.4673648    
-                                            0    2    3.4673648    
-                                            4    0    213.90209    
-                                            3    1    188.40303    
-                                            2    2    83.873274    
-                                            1    3   -209.05951    
-                                            0    4   -104.52976    
+ beta_{_|_}                                 0    0    3.4377391    
+                                            2    0    29.632592    
+                                            1    1    3.4673628    
+                                            0    2    3.4673628    
+                                            4    0    213.90220    
+                                            3    1    188.40311    
+                                            2    2    83.873260    
+                                            1    3   -209.05969    
+                                            0    4   -104.52985    
 
- beta_ms                                    0    0    0.0000000    
-                                            2    0    13.082610    
-                                            1    1   -26.165220    
-                                            0    2   -26.165220    
-                                            4    0    159.21592    
-                                            3    1   -40.669882    
-                                            2    2   -359.10173    
-                                            1    3   -636.86370    
-                                            0    4   -318.43185    
+ beta_ms                                    0    0   -0.0000000    
+                                            2    0    13.082615    
+                                            1    1   -26.165229    
+                                            0    2   -26.165229    
+                                            4    0    159.21602    
+                                            3    1   -40.669893    
+                                            2    2   -359.10194    
+                                            1    3   -636.86409    
+                                            0    4   -318.43204    
 --------------------------------------------------------------------
 
 
@@ -1717,49 +1778,49 @@ Starting Coupled Cluster -
  A operator   B operator   C operator       N    D^SHG           D^OR            D^EOPE
 -------------------------------------------------------------------------------------------
 
- ZDIPLEN      ZDIPLEN      ZDIPLEN          0    15.382998       15.382998       15.382998    
-                                            2    248.86371       82.954570       82.954570    
-                                            4    3138.6762       348.74181       348.74181    
+ ZDIPLEN      ZDIPLEN      ZDIPLEN          0    15.382999       15.382999       15.382999    
+                                            2    248.86375       82.954584       82.954584    
+                                            4    3138.6771       348.74190       348.74190    
 
- ZDIPLEN      XDIPLEN      XDIPLEN          0   0.90284848      0.90284848      0.90284848    
-                                            2    6.2342615       19.521567       6.4389572    
-                                            4    57.985924       201.16840       41.952478    
+ ZDIPLEN      XDIPLEN      XDIPLEN          0   0.90284847      0.90284847      0.90284847    
+                                            2    6.2342629       19.521574       6.4389592    
+                                            4    57.985947       201.16852       41.952501    
 
- XDIPLEN      ZDIPLEN      XDIPLEN          0   0.90284848      0.90284848      0.90284848    
-                                            2    45.482092       6.4389572       6.4389572    
-                                            4    1253.8372       41.952478       41.952478    
+ XDIPLEN      ZDIPLEN      XDIPLEN          0   0.90284847      0.90284847      0.90284847    
+                                            2    45.482107       6.4389592       6.4389592    
+                                            4    1253.8379       41.952501       41.952501    
 
- XDIPLEN      XDIPLEN      ZDIPLEN          0   0.90284848      0.90284848      0.90284848    
-                                            2    45.482092       6.4389572       19.521567    
-                                            4    1253.8372       41.952478       201.16840    
+ XDIPLEN      XDIPLEN      ZDIPLEN          0   0.90284847      0.90284847      0.90284847    
+                                            2    45.482107       6.4389592       19.521574    
+                                            4    1253.8379       41.952501       201.16852    
 
- ZDIPLEN      YDIPLEN      YDIPLEN          0   0.90284848      0.90284848      0.90284848    
-                                            2    6.2342615       19.521567       6.4389572    
-                                            4    57.985924       201.16840       41.952478    
+ ZDIPLEN      YDIPLEN      YDIPLEN          0   0.90284847      0.90284847      0.90284847    
+                                            2    6.2342629       19.521574       6.4389592    
+                                            4    57.985947       201.16852       41.952501    
 
- YDIPLEN      ZDIPLEN      YDIPLEN          0   0.90284848      0.90284848      0.90284848    
-                                            2    45.482092       6.4389572       6.4389572    
-                                            4    1253.8372       41.952478       41.952478    
+ YDIPLEN      ZDIPLEN      YDIPLEN          0   0.90284847      0.90284847      0.90284847    
+                                            2    45.482107       6.4389592       6.4389592    
+                                            4    1253.8379       41.952501       41.952501    
 
- YDIPLEN      YDIPLEN      ZDIPLEN          0   0.90284848      0.90284848      0.90284848    
-                                            2    45.482092       6.4389572       19.521567    
-                                            4    1253.8372       41.952478       201.16840    
+ YDIPLEN      YDIPLEN      ZDIPLEN          0   0.90284847      0.90284847      0.90284847    
+                                            2    45.482107       6.4389592       19.521574    
+                                            4    1253.8379       41.952501       201.16852    
 
  beta_{||}                                  0    10.313217       10.313217       10.313217    
-                                            2    188.19760       62.732535       62.732535    
-                                            4    2909.4698       323.27443       323.27443    
+                                            2    188.19764       62.732547       62.732547    
+                                            4    2909.4710       323.27455       323.27455    
 
  beta^K                                     0    10.313217       10.313217       10.313217    
-                                            2    227.44543       49.649925       49.649925    
-                                            4    4105.3211       164.05850       164.05850    
+                                            2    227.44549       49.649932       49.649932    
+                                            4    4105.3229       164.05853       164.05853    
 
- beta_{_|_}                                 0    3.4377390       3.4377390       3.4377390    
-                                            2    36.567315       29.632585       29.632585    
-                                            4    172.58913       213.90209       213.90209    
+ beta_{_|_}                                 0    3.4377391       3.4377391       3.4377391    
+                                            2    36.567318       29.632592       29.632592    
+                                            4    172.58903       213.90220       213.90220    
 
- beta_ms                                    0    0.0000000       0.0000000       0.0000000    
-                                            2   -39.247830       13.082610       13.082610    
-                                            4   -1195.8512       159.21592       159.21592    
+ beta_ms                                    0   -0.0000000      -0.0000000      -0.0000000    
+                                            2   -39.247844       13.082615       13.082615    
+                                            4   -1195.8519       159.21602       159.21602    
 -------------------------------------------------------------------------------------------
 
 
@@ -1772,8 +1833,8 @@ Starting Coupled Cluster -
  PROCESS INDEPENDENT COEFFICIENTS FOR beta_{||}:
 -------------------------------------------------
  beta(0)   10.313217    
- A         3.0413660    
- B         7.8364109    
+ A         3.0413665    
+ B         7.8364138    
 -------------------------------------------------
 
 
@@ -1782,15 +1843,15 @@ Starting Coupled Cluster -
 
  PROCESS INDEPENDENT COEFFICIENTS FOR beta_ms:
 -----------------------------------------------------------------------------------------------------
- A        1.2685285    
- B        7.7190232         B'      -1.2771749    
+ A        1.2685289    
+ B        7.7190278         B'      -1.2771759    
 -----------------------------------------------------------------------------------------------------
 
 
 
 
 
->>> Total time used in quadratic response section:        1.05 seconds.
+>>> Total time used in quadratic response section:        0.41 seconds.
   
 
  *******************************************************************************
@@ -1804,12 +1865,12 @@ Starting Coupled Cluster -
  *******************************************************************************
 
                                                                                 
-            Total SCF   energy:                  -100.0089199210                
+            Total SCF   energy:                  -100.0089198959                
                                                                                 
                                                                                 
-            Total SCF   energy:                  -100.0089199210                
-            Total MP2   energy:                  -100.1921480312                
-            Total CCSD  energy:                  -100.1964778060                
+            Total SCF   energy:                  -100.0089198959                
+            Total MP2   energy:                  -100.1921479939                
+            Total CCSD  energy:                  -100.1964777770                
   
 
  *******************************************************************************
@@ -1823,11 +1884,14 @@ Starting Coupled Cluster -
  *******************************************************************************
 
 
-- End of Coupled Cluster
 
- >>>> Total CPU  time used in DALTON:   9.61 seconds
- >>>> Total wall time used in DALTON:  13.00 seconds
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   3.58 seconds
+ >>>> Total wall time used in DALTON:  27.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:01:17 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:50:33 2011 
+     Host name              : fe6                                     

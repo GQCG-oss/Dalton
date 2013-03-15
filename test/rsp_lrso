@@ -44,7 +44,7 @@ O      0.00000   0.00000  -1.14050
 cat > rsp_lrso.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONSE
-.PRESORT
+.NEWTRA
 **INTEGRALS
 .SPIN-ORBIT
 **WAVE FUNCTIONS
@@ -74,7 +74,7 @@ Z1SPNORB
 Z2SPNORB
 .ROOTS
  0 0 0 1 0 0 0 0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -143,8 +143,8 @@ CTRL[6]=2
 ERROR[6]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Transition moments
-CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-| )1\.3025817[0-9](D|E)\-03 \*ENERGY\(eV\)\: * \-2\.913258[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-| )4\.5488210[0-9](D|E)\-04 \*ENERGY\(eV\)\: * \-2\.913258[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: *\-*1\.30258[0-9]*(D|E)\-03 \*ENERGY\(eV\)\: * \-2\.913258" $log | wc -l`
+CRIT2=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: *\-*4\.54882[0-9]*(D|E)\-04 \*ENERGY\(eV\)\: * \-2\.913258" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="TRANSITION MOMENTS NOT CORRECT"
@@ -156,8 +156,8 @@ CTRL[8]=1
 ERROR[8]="EXCITATION ENERGY NOT CORRECT"
 
 # Spin-orbit coupling
-CRIT1=`$GREP "\@ *Spin\-orbit coupling constant \(Z1SPNORB\) \: ( \-|  )285\.8836[0-9] * cm\-1" $log | wc -l`
-CRIT2=`$GREP "\@ *Spin\-orbit coupling constant \(Z2SPNORB\) \: * (\-| )99\.83508[0-9] * cm\-1" $log | wc -l`
+CRIT1=`$GREP "\@ *Spin\-orbit coupling constant \(Z1SPNORB\) \: * \-*285\.8836[0-9]* * cm\-1" $log | wc -l`
+CRIT2=`$GREP "\@ *Spin\-orbit coupling constant \(Z2SPNORB\) \: * \-*99\.8350[0-9]* * cm\-1" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[9]=2
 ERROR[9]="SPIN-ORBIT COUPLING NOT CORRECT"

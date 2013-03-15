@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck direct */
       SUBROUTINE DIRECT(BIGVEC,ICENTA,ICENTB,ICENTC,ICENTD,
@@ -59,19 +49,19 @@ C
       PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00)
 C
 #endif
-#include <priunit.h>
+#include "priunit.h"
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, DIA2SO,
      &        LONDON, ZFS2EL, EXPGRA
       CHARACTER*4 ATYPE
-#include <r12int.h>
-#include <doxyz.h>
-#include <crossd.h>
-#include <subdir.h>
-#include <crsdir.h>
-#include <expcom.h>
-#include <dirprt.h>
-#include <derzer.h>
-#include <drw2el.h>
+#include "r12int.h"
+#include "doxyz.h"
+#include "crossd.h"
+#include "subdir.h"
+#include "crsdir.h"
+#include "expcom.h"
+#include "dirprt.h"
+#include "derzer.h"
+#include "drw2el.h"
       COMMON /DEODIR/ DEOVEC(54)
       COMMON /DETDIR/ DETVEC(36)
       COMMON /DHODIR/ DHOVEC(18)
@@ -1564,7 +1554,7 @@ C  /* Deck dire00 */
 #if !defined (SYS_CRAY) && !defined (SYS_T3D) && !defined (VAR_REAL) && !defined (SYS_T90)
       IMPLICIT DOUBLE PRECISION (F,S), LOGICAL (D)
 #endif
-#include <expcom.h>
+#include "expcom.h"
       COMMON /DEODIR/ DEXA00, DEXB00, DEXC00, DEXD00,
      *                DEYA00, DEYB00, DEYC00, DEYD00,
      *                DEZA00, DEZB00, DEZC00, DEZD00,
@@ -1658,7 +1648,7 @@ C  /* Deck dire00 */
      *                FHXQ00, FHYQ00, FHZQ00,
      *                FHXXPP, FHXYPP, FHXZPP, FHYYPP, FHYZPP, FHZZPP,
      *                FHXXQQ, FHXYQQ, FHXZQQ, FHYYQQ, FHYZQQ, FHZZQQ
-#include <doxyz.h>
+#include "doxyz.h"
 C
       ENTRY DIREA0(INT1,INT2,INT3,FAC1,FAC2,FAC3)
          DEXA00 = DOX
@@ -2046,8 +2036,8 @@ C
       END
 C  /* Deck dp211 */
       SUBROUTINE DP211(MAXDER,DALL2,DALL1)
-#include <implicit.h>
-#include <twocom.h>
+#include "implicit.h"
+#include "twocom.h"
       LOGICAL DALL1, DALL2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
       LC101(LOOP,IDER) = LOOP*(NUCAB*(11 + 4*NUCCD)
@@ -2079,8 +2069,8 @@ C
       END
 C  /* Deck dp422 */
       SUBROUTINE DP422(MAXDER,DALL2,DALL1)
-#include <implicit.h>
-#include <twocom.h>
+#include "implicit.h"
+#include "twocom.h"
       LOGICAL DALL1, DALL2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
       LC1E1(NTYPE,LOOP,IDER) = NTYPE*(LOOP*(NUCAB*(11 + 4*NUCCD)
@@ -2117,8 +2107,8 @@ C
       END
 C  /* Deck dcross */
       SUBROUTINE DCROSS(CROSS1,CROSS2)
-#include <implicit.h>
-#include <twocom.h>
+#include "implicit.h"
+#include "twocom.h"
       LOGICAL CROSS1, CROSS2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
       LC1E1(NTYPE,LOOP,IDER) = NTYPE*(LOOP*(NUCAB*(11 + 4*NUCCD)
@@ -2146,10 +2136,10 @@ C
 C  /* Deck dloop */
       SUBROUTINE DLOOP(NHKT1,NHKT2,KCKT1,KCKT2,DIAG12,IAB0X,IAB0Y,IAB0Z,
      *                 DER0,DER1,DER2,LOOP0,LOOP1,LOOP2)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL DIAG12, DER0, DER1, DER2
-#include <maxmom.h>
-#include <xyzpow.h>
+#include "maxmom.h"
+#include "xyzpow.h"
       IAB1X = IAB0X + 1
       IAB1Y = IAB0Y + 1
       IAB1Z = IAB0Z + 1

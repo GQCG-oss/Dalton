@@ -10,7 +10,7 @@ C
      &        ONEPRP, PROPRI, ALLATM, TRIANG, NOTWO,  NO2SO,  SOTEST,
      &        DIRAC_HER
 C     Selection of specific (property) integrals:
-      LOGICAL KINENE, NUCPOT,
+      LOGICAL KINENE, KINADI, NUCPOT,
      &        DIPLEN, DIPVEL, QUADRU, THETA,  SECMOM, THRMOM,
      &        CARMOM, SPHMOM,
      &        FERMI,  PSO, SPIDIP, DSO, NMRISS, SDFC, HDO,
@@ -26,7 +26,7 @@ C     Selection of specific (property) integrals:
      &        XDDXR3, PVIOLA, PVPINT, POTENE, QDBINT, QDBTST,
      &        RANGMO, RPSO, PXPINT, OZKE, PSOKE, DNSKE, SDKE, FCKE,
      &        DSOKE,  PSOOZ,  EFBDER, EFB2DR, MAGQDP, MQDPTS,
-     &        DERAM,  DIPANH
+     &        DERAM,  DIPANH, TEST_GEN1INT
 C
       COMMON /CBIHER/ EXPKR(3), THRESH,
      &        IPRDEF, IORCAR, IORSPH, NPQUAD, NPATOM, IPATOM(MXCENT),
@@ -34,7 +34,7 @@ C
      &        HAMILT, SUPMAT, SPNORB, DAR2EL, ORBORB,
      &        ONEPRP, PROPRI, ALLATM, TRIANG, NOTWO,  NO2SO,  SOTEST,
      &        DIRAC_HER,
-     &        KINENE, NUCPOT,
+     &        KINENE, KINADI, NUCPOT,
      &        DIPLEN, DIPVEL, QUADRU, THETA,  SECMOM, THRMOM,
      &        CARMOM, SPHMOM,
      &        FERMI,  PSO, SPIDIP, DSO, NMRISS, SDFC, HDO,
@@ -50,5 +50,5 @@ C
      &        XDDXR3, PVIOLA, PVPINT, POTENE, QDBINT, QDBTST,
      &        RANGMO, RPSO, PXPINT, OZKE, PSOKE, DNSKE, SDKE, FCKE,
      &        DSOKE,  PSOOZ,  EFBDER, EFB2DR, MAGQDP, MQDPTS,
-     &        DERAM,  DIPANH
+     &        DERAM,  DIPANH, TEST_GEN1INT
 C --- end of cbiher.h ---

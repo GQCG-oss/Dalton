@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -49,13 +39,13 @@ RSPSOL.u module written by Poul Joergensen and Kurt Mikkelsen, summer 1993
 C  /* Deck slvinp */
       SUBROUTINE SLVINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infslv.h>
-#include <rspprp.h>
-#include <infpri.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infslv.h"
+#include "rspprp.h"
+#include "infpri.h"
+#include "infrsp.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE = 2 )
@@ -123,27 +113,25 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inforb.h>
-#include <infslv.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inforb.h"
+#include "infslv.h"
 C---------------------
-#include <mxcent.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <qm3.h>
-#include <qmmm.h>
-C gnrinf.h for QM3 by CBN+JK 03.01.06
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "qm3.h"
+#include "qmmm.h"
 C---------------------
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -155,9 +143,18 @@ C
 C
       CALL QENTER('RSPSLV')
 
-      IF (SOPPA) THEN
+C      IF (SOPPA) THEN
+C         WRITE (LUPRI,*)
+C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
+C         CALL QUIT(
+C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
+C      END IF
+      IF (.NOT. SOPRPA .AND. SOPPA) THEN
          WRITE (LUPRI,*)
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
+         WRITE (LUPRI,*) 'Full solvent model SOPPA not implemented.'
+         WRITE (LUPRI,*) 'Only SOPPA/RPA (JCC, 2012-2022, 33, (2012))'
+         WRITE (LUPRI,*) 'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
          CALL QUIT(
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
       END IF
@@ -415,8 +412,8 @@ C KM + PJ 6dec92 based on SOLLIN
 C
 C Common driver for SLVLNC and SLVLNO
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION UDV(*),DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       DIMENSION UDVTR(*),DVTR(*),DTVTR(*)
@@ -424,13 +421,13 @@ C
 C Used from common blocks:
 C   INFINP : LSOLMX,NLMSOL, EPSOL, INERSF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <infinp.h>
-#include <infrsp.h>
-#include <inftap.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "infinp.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
 C     logical inersf
       inersf = .false.
 
@@ -507,14 +504,14 @@ C  Purpose:  Calculate MCSCF E2  contribution from a
 C            surrounding medium to a csf trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVEC(*),  CREF(*), CMO(*),  ISYRLM(*)
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       DIMENSION INDXCI(*), UDV(*), DV(*),   DTV(N2ASHX,*)
       DIMENSION SVEC(KZYVAR,*),     WRK(*)
       DIMENSION UDVTR(*),DVTR(*),DTVTR(N2ASHX,*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 , THRZER = 1.0D-14 )
 C
@@ -523,17 +520,16 @@ C  Used from common blocks:
 C    INFINP : NLMSOL, LSOLMX, INERSI
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFTAP : LUSOL, LBSYMB
-C    INFPRI : LUERR
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 
 C
 C     Statement functions
@@ -739,17 +735,17 @@ C            surrounding medium to an orbital trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BOVECS(*), CREF(*), CMO(*)
       DIMENSION INDXCI(*),   UDV(*),   DV(*),   ISYRLM(*)
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       DIMENSION SVEC(KZYVAR,*),    WRK(*)
       DIMENSION UDVTR(*),DVTR(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 , THRZER = 1.0D-14 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C
 C  Used from common blocks:
@@ -759,18 +755,18 @@ C    INFVAR : JWOP
 C    INFRSP :
 C    WRKRSP :
 C    INFTAP : LUSOL,  LBSYMB
-C    INFPRI : LUERR,  IPRSOL
+C    INFPRI : IPRSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
 C     Statement functions
@@ -1145,7 +1141,7 @@ C  Output:  New CI-part of sigma vector (SVECS)
 C
 C Scratch:  WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(KZCONF,*),  SVECS(KZYVAR,*)
       DIMENSION CREF(*),  RXAC(NXASHX,*),RYAC(NNASHX)
       DIMENSION TRXAC(*), XNDXCI(*), WRK(LWRK)
@@ -1157,13 +1153,12 @@ C
 C Used from common blocks:
 C   INFORB : NNASHX,N2ASHX,NASHT
 C   INFRSP : IREFSY,KSYMST,KSYMOP,NCREF,KZCONF
-C   INFPRI : LUERR
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       CALL QENTER('SLVSC ')
 C
@@ -1485,7 +1480,7 @@ C   l.r. 6-May-1990 hjaaj
 C
 C QUADRATIC PACKED DENSITY MATRIX AND ACTIVE INTEGRALS
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*), RLMAC(*), RLM(NORBT,*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -1493,10 +1488,10 @@ C Used from common blocks:
 C  INFORB: NISHT,NASHT
 C  INFIND: IROW(*), ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       IF (NASHT .GT. 0) THEN
          TELM = DDOT(N2ASHX,DV,1,RLMAC,1)
@@ -1520,7 +1515,7 @@ C   30-Nov-1986 Hans Jorgen Aa. Jensen
 C   l.r. 6-May-1990 hjaaj
 C   6DEC92 KM + PJ SOLELM MODIFIED TO QUADRATIC DTV
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DTV(NASHT,*), RLMAC(*), RLM(*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -1528,10 +1523,10 @@ C Used from common blocks:
 C  INFORB: NISHT,NASHT
 C  INFIND: IROW(*), ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       TELM =  D0
       IF (NASHT .GT. 0) THEN
@@ -1561,7 +1556,7 @@ C   l.r. 6-May-1990 hjaaj
 C
 C QUADRATIC PACKED DENSITY MATRIX AND ACTIVE INTEGRALS
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*), RLMAC(*), RLM(NORBT,*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -1569,10 +1564,10 @@ C Used from common blocks:
 C  INFORB: NISHT,NASHT
 C  INFIND: IROW(*), ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       IF (NASHT .GT. 0) THEN
          TELM = DDOT(N2ASHX,DV,1,RLMAC,1)
@@ -1595,16 +1590,16 @@ C
 C Purpose: Extract NNASHX block with active-active orbital indices out
 C          of NNORBX matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION HH(NORBT,NORBT), HHAC(NASHT,NASHT)
 C
 C INFORB : NORBT, NASHT, NNORBX,NNASHX
 C INFIND : IOBTYP(*), ICH(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('GETACQ')
       IF (NASHT .EQ. 0) GO TO 9999
@@ -1642,13 +1637,13 @@ C                  = H1X(a,b)
 C                  + sum(c) [ OITMAT(a,c) H1(c,b)
 C                           - H1(a,c) OITMAT(c,b) ]
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OITMAT(NORBT,NORBT), H1(NORBT,NORBT), H1X(NORBT,NORBT)
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NORBT, NORB(*), IORB(*)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
 C
 C One-index transform both indices and add to previous content.
@@ -1732,7 +1727,7 @@ C           K,L
 C
 C ZYM IS ONE ELECTRON OPERATOR WITH ZYMAT AS ELEMENTS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       LOGICAL ONEIND,SNGDN
 C
@@ -1741,16 +1736,16 @@ C
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C

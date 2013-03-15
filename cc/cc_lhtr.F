@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cc_lhtr */
       SUBROUTINE CC_LHTR(ECURR,
@@ -65,37 +55,37 @@ C     Current models are: CC2, CCD, CCSD
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
 C
 C   #include <infind.h> replaced by: #include <ccisao.h>
 C   C. Haettig 13.08.2004
 C
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccfield.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <cclr.h>
-#include <eribuf.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccfield.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "cclr.h"
+#include "eribuf.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
-#include <ccnoddy.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccnoddy.h"
+#include "r12int.h"
+#include "ccr12int.h"
 C
       CHARACTER*10 MODEL
       CHARACTER*8  FRHO2, FRHO1, FC2AM, FC1AM, FN3SRT, FNTOC, FRHO12,
@@ -104,6 +94,7 @@ C
       CHARACTER*6  CFIL, DFIL, PQFIL, FN3V, FNCKJD, FN3VI, FN3FOPX
       CHARACTER*5  FNDKBC3
       CHARACTER*4  FN4V, FNDKBC
+      CHARACTER*3  APROXR12
       CHARACTER*1  LR
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -114,7 +105,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION IADRPQ(MXCORB,MAXSIM)
 C
-      LOGICAL ETRAN,FCKCON,APROX12,CCSDR12,SKIPMI
+      LOGICAL ETRAN,FCKCON,CCSDR12,SKIPMI
 C
       CALL QENTER('CC_LHTR')
 C
@@ -1262,7 +1253,11 @@ C
            IF (.NOT. NYQMMM) THEN
               CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
            ELSE IF (NYQMMM) THEN
-              CALL CCMM_TGT(WORK(KFIELD),WORK(KEND2),LWRK2)
+              IF (HFFLD) THEN  !Note we are inside cc2 
+                 CALL CCMM_ADDGHF(WORK(KFIELD),WORK(KEND2),LWRK2)
+              ELSE
+                 CALL CCMM_ADDG(WORK(KFIELD),WORK(KEND2),LWRK2)
+              ENDIF
            END IF
 c          TIMMLT = TIMMLT + SECOND() - DTIME
            IF (IPRINT .GT. 5) THEN
@@ -1946,8 +1941,8 @@ C
             CALL CCMM_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
      *                  ISYMTR,LR,WORK(KEND1),LWRK1)
          ELSE IF (NYQMMM) THEN
-            CALL CCMM_TGTBAR(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,MODEL,
-     *                      ISYMTR,LR,WORK(KEND),LWRK1)
+             CALL CCMM_TRANSFORMER(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
+     *                            MODEL,ISYMTR,LR,WORK(KEND1),LWRK1)
          END IF
 c        TIMMLT = TIMMLT + SECOND() - DTIME
          IF (IPRINT .GT. 5) THEN

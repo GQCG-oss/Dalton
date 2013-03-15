@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef REV_LOG
 c ===========================================================================
@@ -63,7 +53,7 @@ C
 C Output:
 C  in INDXCI(*) : string information
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION INDXCI(*), WRK(LFRSAV)
 C
 C Used from common blocks:
@@ -71,11 +61,11 @@ C   INFINP : NACTEL, ISPIN, FLAG(26), FLAG(27), LSYM
 C   INFORB : MULD2H(8,8), NASHT,  NAS1(8), NAS2(8), NAS3(8)
 C   INFPRI : IPRCIX
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       LOGICAL     REFSPC
       CHARACTER*8 LAB123(3),LABSTR
@@ -143,32 +133,6 @@ C     ... RHF or ROHF
 C
       RETURN
       END
-C  /* Deck getfci */
-      SUBROUTINE GETFCI(FCAC,H2AC,WRK,LFREE)
-C
-C 20-Jan-1988 hjaaj :
-C
-C   Version for Determinant CI
-C
-C   Modify H2AC and FCAC as expected by CI routines.
-C
-C   >>> No modification for determinant CI <<<
-C
-Cinclude <implicit.h>
-C     DIMENSION FCAC(NNASHX),H2AC(NNASHX,NNASHX), WRK(LFREE)
-C
-C
-C Used from common blocks:
-C   INFORB : NNASHX
-C
-Cinclude <inforb.h>
-C
-C
-C
-C     *** end of getfci ***
-C
-      RETURN
-      END
 C  /* Deck getfij */
       SUBROUTINE GETFIJ(FIJ,FJI,H2AC)
 C
@@ -179,9 +143,9 @@ C
 C   extract FIJ and FJI (Coulumb and exchange integrals)
 C   for CI diagonal routine
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FIJ(NASHT,NASHT),FJI(NASHT,NASHT),H2AC(NNASHX,NNASHX)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C
 C Used from common blocks:
@@ -190,12 +154,12 @@ C   INFIND : IROW(*)
 C   INFTAP : LUH2AC
 C   CBGETDIS : IADH2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <cbgetdis.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "cbgetdis.h"
 C
 C
 C ***
@@ -240,10 +204,10 @@ C
 C for westa compatibility NOSYM has been added . if
 C NOSYM is nonvanishing symmetry is neglected
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LFREE)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP : NACTEL,ISPIN, NELMN1, NELMX1, NELMN3, NELMX3
@@ -255,17 +219,17 @@ C   CIINFO : ICOMBI,IPSIGN, MXNDT, MXNCS
 C   CBESPN : ISPIN1,ISPIN2
 C   SPINFO : MULTS,MS2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <ciinfo.h>
-#include <spinfo.h>
-#include <cbespn.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "ciinfo.h"
+#include "spinfo.h"
+#include "cbespn.h"
 C
 C
       LOGICAL  REFSPC, NEWCI, NOCSF, CHCKCI
@@ -424,11 +388,11 @@ C
 C for westa compatibility NOSYM has been added . if
 C NOSYM is nonvanishing symmetry is neglected
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       LOGICAL TRIPLET
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP : NACTEL,ISPIN, NELMN1, NELMX1, NELMN3, NELMX3
@@ -439,17 +403,17 @@ C   CIINFO : MXNDT, MXNCS
 C   CBESPN : ISPIN1,ISPIN2
 C   SPINFO : MULTS,MS2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <scbrhf.h>
-#include <ciinfo.h>
-#include <spinfo.h>
-#include <cbespn.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "scbrhf.h"
+#include "ciinfo.h"
+#include "spinfo.h"
+#include "cbespn.h"
+#include "infpri.h"
 C
 C     local variables:
 C
@@ -534,7 +498,7 @@ C
 C Check if the CI specification has changed since last call
 C to SETCI/SETCI2.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFINP : NACTEL,ISPIN, MCTYPE, NELMN1, NELMX1, NELMN3, NELMX3
@@ -542,12 +506,12 @@ C   INFORB : NASHT,NAS1(*),NAS2(*),NAS3(*)
 C   CIINFO : ICOMBI,IPSIGN, MXNDT, MXNCS
 C   SPINFO : MULTS,MS2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <ciinfo.h>
-#include <spinfo.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "ciinfo.h"
+#include "spinfo.h"
 C
 C
       LOGICAL  REFSPC, NEWCI, NOCSF
@@ -632,21 +596,27 @@ C           if RAS
 C
       IF (NEWCI) THEN
          NOCSF = FLAG(27)
-C. Ms component chosen as lowest possible component for CSF's
-CMAERKE-901019: make input option for MS2
          MULTS = ISPIN
-         IF (NOCSF) THEN
+
+         IF (DONEVPT .AND. MS2 .NE. MULTS-1) THEN
+            WRITE (LUPRI,'(/A)')
+     &      ' INFO: MS2 reset to max 2*MS value for NEVPT2'
             MS2 = MULTS - 1
-         ELSE
-c--renzo
-            IF (DONEVPT) THEN
-               MS2 = MULTS - 1
-            ELSE
-               MS2 = MOD(MULTS-1,2) !original statement
-            ENDIF
-c--renzo
          END IF
-C
+ 
+! Only set MS2 = 2 * MS value if not set in input, or out of bounds:
+         IF (MS2 .LT. -(MULTS-1) .OR. MS2 .GT. MULTS-1) THEN
+
+            IF (NOCSF) THEN
+               MS2 = MULTS - 1
+C. Ms component chosen as maximum possible value for determinants
+            ELSE
+               MS2 = MOD(MULTS-1,2)
+C. Ms component chosen as lowest possible component for CSF's for computational efficiency
+            END IF
+
+         END IF
+
 C Input test:
 C
          NERR = 0
@@ -701,18 +671,21 @@ C
 C  /* Deck getdets */
       SUBROUTINE GETDETS(ICSYM,NCSF,NDET,XNDXCI,CVEC,DVEC,WRK,LWRK)
 C
+C Get determinant coefficients in DVEC
+C corresponding to a specific CSF vector in CVEC.
+C
 C May 2000 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XNDXCI(*), WRK(LWRK)
 C
 C   INFPRI : IPRCIX
 C
-#include <csfbas.h>
-#include <ciinfo.h>
-#include <infpri.h>
+#include "csfbas.h"
+#include "ciinfo.h"
+#include "infpri.h"
 C
       IF (NCSF .NE. NCSASM(ICSYM) .OR. NDET .NE. NDTASM(ICSYM)) THEN
          WRITE (LUPRI,'(/A/A,I4,2(/A,2I12))')

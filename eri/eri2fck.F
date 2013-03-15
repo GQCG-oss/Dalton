@@ -1,64 +1,54 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck erifck */
       SUBROUTINE ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      *                  CCFBT,INDXBT,FCKTMP,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
 C
 C	I don't know if IFCTYP and ISYMDM is used properly in this 
 C	routine at the current stage, K.Ruud-jan96
 C
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <veclen.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <infpar.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "veclen.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "infpar.h"
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
      &	        FCKTMP(*)
@@ -254,23 +244,23 @@ C
 C  /* Deck erifok */
       SUBROUTINE ERIFOK(SO,IPNTCR,IODDCC,IPNTUV,FMAT,DMAT,NDMT,
      &                  IFCTYP,CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "eridst.h"
       DIMENSION SO(*), IPNTCR(MAXBCH,4), CCFBT(*), INDXBT(*),
      &          IPNTUV(KC2MAX,0:NRDER,2), WORK(LWORK), IODDCC(NRTOP),
      &          FMAT(NBASE,NBASE), DMAT(NBASE,NBASE), IFCTYP(NDMT)
-#include <cbieri.h>
-#include <aobtch.h>
-#include <ericom.h>
-#include <eribuf.h>
-#include <symmet.h>
-#include <hertop.h>
+#include "cbieri.h"
+#include "aobtch.h"
+#include "ericom.h"
+#include "eribuf.h"
+#include "symmet.h"
+#include "hertop.h"
 C
 C     Allocation for ERIFOK
 C
@@ -290,26 +280,26 @@ C  /* Deck erifo1 */
       SUBROUTINE ERIFO1(SO,INDEX,IPNTCR,IODDCC,IPNTUV,
      &                  BIN,IBIN,LBIN,FMAT,DMAT,NDMT,IFCTYP,
      &                  CCFBT,INDXBT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
-#include <eridst.h>
+#include "eridst.h"
       DIMENSION SO(*), INDEX(LBIN,4), CCFBT(*), INDXBT(*),
      &          IPNTCR(MAXBCH,4),
      &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2),
      &          BIN(LBIN), IBIN(LBIN,4),
      &          FMAT(NBASE,NBASE,NDMT), DMAT(NBASE,NBASE,NDMT),
      &          IFCTYP(NDMT)
-#include <cbieri.h>
-#include <ericom.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIFO1',-1)
 C
@@ -330,13 +320,13 @@ C
 C  /* Deck erindf */
       SUBROUTINE ERINDF(SO,INDEX,IPNTCR,IODDCC,IPNTUV,
      &                  BIN,IBIN,LBIN,CCFBT,INDXBT,INT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D1 = 1.0D0, DP5=0.50D0)
       INTEGER A, B, C, D, AB, CD, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, CTRIAC, CTRIBD, CTRIPQ,
@@ -348,14 +338,14 @@ C  /* Deck erindf */
      &          BIN(LBIN), IBIN(LBIN,4),
      &          IPNRST(0:7,3),
      &          IADCMP(MXAQN,MXAQN,2)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERINDF',-1)
@@ -558,11 +548,11 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D4 = 4.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       INTEGER P, Q, R, S
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST,NDMT,*), DMAT(NBAST,NBAST,NDMT),
      &          BUF(LBIN), IBUF(LBIN,4), IFCTYP(NDMT)
 C
@@ -600,8 +590,8 @@ C...........The multiplication factor should be one in this case.
       END
 C  /* Deck erisfk */
       SUBROUTINE ERISFK(FMAT,NBASE,NDMT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FMAT(NBASE,NBASE,NDMT)
       DO IDM = 1, NDMT
          DO I = 1, NBASE

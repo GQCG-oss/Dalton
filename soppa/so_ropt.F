@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_ropt */
       SUBROUTINE SO_ROPT(NOLDTR,NNEWTR,NEXCI,MXDIM,EIVEC,LEIVEC,EXVAL,
@@ -18,12 +18,12 @@ C              spanning the space of reduced eigenvectors of the
 C              last and the previous iterations in EIVEC.
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
-#include <ccsdsym.h>
-#include <cbiexc.h>
+#include "soppinf.h"
+#include "ccsdsym.h"
+#include "cbiexc.h"
 C
       PARAMETER   (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER   (THRNM = 1.0D-10, THRNM2 = 1.0D-12, THREX = 1.0D-5)

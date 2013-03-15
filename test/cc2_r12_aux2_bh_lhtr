@@ -51,7 +51,7 @@ cat > cc2_r12_aux2_bh_lhtr.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -89,7 +89,7 @@ cat > cc2_r12_aux2_bh_lhtr.dal <<'%EOF%'
 #.NO 2
 .CC2
  1A
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################
@@ -137,35 +137,35 @@ TEST[2]=`expr	$CRIT2`
 CTRL[2]=2
 ERROR[2]="CC2-R12/A ENERGY NOT CORRECT"
 #
-CRIT3=`$GREP " *1 *(-|-0)\.06002367.. *-1\.6333272..." $log | wc -l`
+CRIT3=`$GREP " 1 .*(-|-0)\.0600237 .*-1\.63333 " $log | wc -l`
 TEST[3]=`expr	$CRIT3`
 CTRL[3]=1
 ERROR[3]="CC2-R12/A 1A1 EXCITATION ENERGY NOT CORRECT"
-CRIT4=`$GREP " *2 *( |0)\.04918762.. *1\.3384632..." $log | wc -l`
+CRIT4=`$GREP " 2 .*( |0)\.0491876 .*1\.33846 " $log | wc -l`
 TEST[4]=`expr	$CRIT4`
 CTRL[4]=1
 ERROR[4]="CC2-R12/A 2A1 EXCITATION ENERGY NOT CORRECT"
-CRIT5=`$GREP " *3 *( |0)\.28439575.. *7\.7388018..." $log | wc -l`
+CRIT5=`$GREP " 3 .*( |0)\.2843958 .*7\.73880 " $log | wc -l`
 TEST[5]=`expr	$CRIT5`
 CTRL[5]=1
 ERROR[5]="CC2-R12/A 3A1 EXCITATION ENERGY NOT CORRECT"
-CRIT6=`$GREP " *4 *( |0)\.29982305.. *8\.1586001..." $log | wc -l`
+CRIT6=`$GREP " 4 .*( |0)\.2998231 .*8\.15860 " $log | wc -l`
 TEST[6]=`expr	$CRIT6`
 CTRL[6]=1
 ERROR[6]="CC2-R12/A 4A1 EXCITATION ENERGY NOT CORRECT"
-CRIT7=`$GREP " *5 *( |0)\.36065226.. *9\.8138470..." $log | wc -l`
+CRIT7=`$GREP " 5 .*( |0)\.3606523 .*9\.81385 " $log | wc -l`
 TEST[7]=`expr   $CRIT7`
 CTRL[7]=1
 ERROR[7]="CC2-R12/A 5A1 EXCITATION ENERGY NOT CORRECT"
-CRIT8=`$GREP " *6 *( |0)\.38487396.. *10\.4729530..." $log | wc -l`
+CRIT8=`$GREP " 6 .*( |0)\.3848740 .*10\.47295 " $log | wc -l`
 TEST[8]=`expr   $CRIT8`
 CTRL[8]=1
 ERROR[8]="CC2-R12/A 6A1 EXCITATION ENERGY NOT CORRECT"
-CRIT9=`$GREP " *7 *( |0)\.40677812.. *11\.0689954..." $log | wc -l`
+CRIT9=`$GREP " 7 .*( |0)\.4067781 .*11\.06900 " $log | wc -l`
 TEST[9]=`expr   $CRIT9`
 CTRL[9]=1
 ERROR[9]="CC2-R12/A 7A1 EXCITATION ENERGY NOT CORRECT"
-CRIT10=`$GREP " *8 *( |0)\.40858931.. *11\.1182804..." $log | wc -l`
+CRIT10=`$GREP " 8 .*( |0)\.4085893 .*11\.11828 " $log | wc -l`
 TEST[10]=`expr   $CRIT10`
 CTRL[10]=1
 ERROR[10]="CC2-R12/A 8A1 EXCITATION ENERGY NOT CORRECT"

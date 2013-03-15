@@ -52,7 +52,7 @@ N        0.0000000000000     0.0000000000000    -1.0371572000000       *
 cat > ccsdr12_n2_exc.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -87,7 +87,7 @@ cat > ccsdr12_n2_exc.dal <<'%EOF%'
 .NO HYB
 .CC2
  1B
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################
@@ -179,7 +179,7 @@ CTRL[10]=1
 CRIT11=`$GREP " 22.51089  \|" $log | wc -l`
 TEST[11]=`expr   $CRIT11`
 CTRL[11]=1
-CRIT12=`$GREP " 22.54935  \|" $log | wc -l`
+CRIT12=`$GREP " 22.5493[56]  \|" $log | wc -l`
 TEST[12]=`expr   $CRIT12`
 CTRL[12]=2
 CRIT13=`$GREP " 23.72381  \|" $log | wc -l`

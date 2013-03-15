@@ -72,7 +72,7 @@ cat > vibave_spinspin.dal <<'%EOF%'
 *LINRES
 .THRESH
 1.0D-12
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -94,8 +94,8 @@ else
 fi
 
 # Starting energy!
-CRIT1=`$GREP "Final * HF energy\: * \-74\.965901192777" $log | wc -l`
-CRIT2=`$GREP "Electronic energy\: * \-83\.872388747441" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-74\.96590119277" $log | wc -l`
+CRIT2=`$GREP "Electronic energy\: * \-83\.87238874744" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[1]=6
 ERROR[1]="STARTING ENERGY NOT CORRECT"
@@ -116,8 +116,8 @@ ERROR[2]="SYMMETRY NOT CORRECT"
 
 # isotopes, harm. frequencies, 
 CRIT1=`$GREP "O * 17\.999159" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 1\.007825" $log | wc -l`
-CRIT3=`$GREP "H * 2 * 1\.007825" $log | wc -l`
+CRIT2=`$GREP "H *_1 * 1\.007825" $log | wc -l`
+CRIT3=`$GREP "H *_2 * 1\.007825" $log | wc -l`
 CRIT4=`$GREP "1 * 4130\.[0-9][0-9] * (0| )\.0188[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "1 * 2161\.[0-9][0-9] * (0| )\.0098[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "4 * 4374\.[0-9][0-9] * (0| )\.0199[0-9][0-9]" $log | wc -l`

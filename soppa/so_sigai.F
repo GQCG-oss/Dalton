@@ -15,8 +15,8 @@ C              which are defined as ( k c | alfa delta ) x
 C              T2M1( c k i delta) with summation of repeated indices. 
 C              See also eq. (34) and (35).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION SIGAI1(LSIGAI1), SIGAI2(LSIGAI2), T2M1(LT2M1)
@@ -26,10 +26,10 @@ C
 C
       INTEGER   ALFA
 C
-#include <ccorb.h>
-#include <soppinf.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "soppinf.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Add to trace.

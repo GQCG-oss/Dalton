@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_FMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
@@ -54,15 +44,15 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "ccnoddy.h"
 
       LOGICAL LOCDBG, FD_TEST, XI_ONLY
       PARAMETER (LOCDBG=.FALSE., FD_TEST=.FALSE., XI_ONLY=.FALSE.)
@@ -96,7 +86,7 @@ C
      &        KL2AM, KINT1T0, KINT2T0, KINT1TB, KINT2TB, KEND3, LWRK3,
      &        K0IOVVO, K0IOOVV, K0IOOOO, K0IVVVV,
      &        KBIOVVO, KBIOOVV, KBIOOOO, KBIVVVV,
-     &        KL3AM, KT02AM, KF3AM, KRECNR, KINT1S0, KINT2S0, KSCR1,
+     &        KL3AM, KT02AM, KF3AM, IRECNR, KINT1S0, KINT2S0, KSCR1,
      &        KFOCK0, KFOCKB, KLAMPB, KLAMHB, KOME1, KOME2, KDUM,
      &        LUFOCK, ISYML, KFOCKD, ISYMB, KEND4, LWRK4, 
      &        KTC3AM, KINT1SC, KINT2SC, KLAMPC, KLAMHC, KFOCKC, IDLSTC,
@@ -392,10 +382,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
-            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
-            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND3),LWRK3,
-     *                  WORK(KRECNR),DIRECT)
+     *                  IRECNR,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:
@@ -760,12 +748,12 @@ c       -------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL AIBJCK
@@ -875,11 +863,11 @@ C------------------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL DELTA, ZERO
@@ -1063,17 +1051,17 @@ C------------------------------------------------------
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccl1rsp.h>
-#include <ccn2rsp.h>
-#include <cclrmrsp.h>
-#include <ccexgr.h>
-#include <ccexci.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccl1rsp.h"
+#include "ccn2rsp.h"
+#include "cclrmrsp.h"
+#include "ccexgr.h"
+#include "ccexci.h"
+#include "ccfield.h"
 
       LOGICAL LOCDBG, PRINT_T3
       PARAMETER (LOCDBG=.false.,PRINT_T3=.false.)
@@ -1104,7 +1092,7 @@ C------------------------------------------------------
       INTEGER ISYMB, KFOCKB, KL1AM, KL2AM, KL3AM, KEND1, LWRK1,
      &        IOPT, IRREP, IERR, NAI, NBJ, NCK, NAIBJCK, ILSTNR,
      &        KTB1AM, KLAMPB, KLAMHB, KINT1TB, KINT2TB, ISYMD, ILLL,
-     &        IDEL, ISYDIS, KXINT, KEND2, LWRK2, KRECNR, IR1TAMP,
+     &        IDEL, ISYDIS, KXINT, KEND2, LWRK2, IRECNR, IR1TAMP,
      &        ILSTSYM, ILSTNL, ISYML, ISYMR, IMAT, KFIELD, KFIELDAO,
      &        KFLDB1, KT3SCR
       
@@ -1219,7 +1207,7 @@ c     -----------------------------
 
       ELSE
         WRITE(LUPRI,*) 'LISTB,IDLSTB:',LISTB(1:3),IDLSTB
-        CALL QUIT('Unkown/Illegal list in CCSDT_TBAR31_NODDY.')
+        CALL QUIT('Unknown/Illegal list in CCSDT_TBAR31_NODDY.')
       END IF
 
       IF (LISTB(1:3).NE.'LE ') THEN
@@ -1324,10 +1312,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
-            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
-            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     &                  WORK(KRECNR),DIRECT)
+     &                  IRECNR,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:
@@ -1537,16 +1523,16 @@ c       -------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
-#include <dummy.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
+#include "dummy.h"
+#include "inftap.h"
 
       LOGICAL LOCDBG, XI_ONLY
       PARAMETER (LOCDBG=.FALSE., XI_ONLY=.FALSE.)

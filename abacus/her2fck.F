@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -68,10 +58,10 @@ C  All IFCTYP's added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       PARAMETER(D0 = 0.0D0)
       LOGICAL NODV, SUSCEP
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),
@@ -80,11 +70,11 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),DINTSKP(2,4),WORK(LWORK)
-#include <twocom.h>
-#include <expcom.h>
+#include "twocom.h"
+#include "expcom.h"
 C
       CALL QENTER('INTFCK')
-#include <memint.h>
+#include "memint.h"
 C
 C     Scanning for zero integrals; this is done twice, but
 C     saves quite a bit of memory
@@ -141,14 +131,14 @@ C  All IFCTYP's added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "r12int.h"
       PARAMETER (DP25=0.25D0,DP5=0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0)
       INTEGER A,B,C,D
       LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
@@ -158,11 +148,11 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),IND(NNBUF,4),DINTSKP(2,4)
-#include <twocom.h>
-#include <expcom.h>
-#include <dftcom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "expcom.h"
+#include "dftcom.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 9) THEN
          CALL HEADER('Output from INTFC1',-1)
@@ -468,16 +458,16 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSOTAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -538,23 +528,23 @@ C  /* Deck sklfck */
       SUBROUTINE SKLFCK(FMAT,HESSEE,WORK,LWORK,IPRINT,DIRFCK,DDFOCK,
      &                  EXPECT,PERTUR,NODV,MAXDER,LONDON,NDMAT,ISYMDM,
      &                  IFCTYP,IATOME,SPNORB)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "nuclei.h"
+#include "inforb.h"
       LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR, SPNORB
       DIMENSION FMAT(N2BASX,*), WORK(LWORK), HESSEE(*), ISYMDM(*),
      &          IFCTYP(*)
-#include <abainf.h>
-#include <ccom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <inftap.h>
+#include "abainf.h"
+#include "ccom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "inftap.h"
 C
       CALL QENTER('SKLFCK')
       KFREE  = 1
@@ -708,13 +698,13 @@ C 970304 - tsaue New scaling
 C
 C Implemented all IFCTYP's Oct-Nov 94 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
       PARAMETER (D1 = 1.0D0,D2I = 0.5D0)
       PARAMETER (D4I = 0.25D0, D8I = 0.125D0)
       INTEGER A, B, AP, BP
@@ -723,10 +713,9 @@ C
      &          IPOINT(NBASIS,0:MAXREP),
      &          NINDEX(0:MAXREP), NPOINT(NMAT,0:MAXREP),
      &          PTFACT(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
-#include <pincom.h>
-#include <shells.h>
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "pincom.h"
+#include "shells.h"
+#include "ibtfun.h"
 C
 C
       IF (IPRINT .GT. 5) THEN
@@ -889,7 +878,7 @@ C           NMAT SKLTON matrices for IXYZ .ne. 0  /961114-hjaaj
   430       CONTINUE
          END IF
 C
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1 / (1.0D0 + MAXREP)
          CALL DSCAL(NMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrix in SKLFC1",1)
@@ -933,7 +922,7 @@ C           one SKLTON matrix for IXYZ = 0 /961114-hjaaj
                               KHKTB  = KHKT(IB)
                               MULB   = ISTBAO(IB)
                               INDB   = KSTRT(IB) + NB - KHKTB
-#include <scalar.h>
+#include "scalar.h"
                               DO 540 ISYMB = 0, MAXOPR
                               IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
                                  INDB = INDB + KHKTB
@@ -1024,21 +1013,20 @@ C  /* Deck sklexp */
       SUBROUTINE SKLEXP(SKLTON,HESSEE,CSTRA,SCTRA,FACTOR,INDEX,IPOINT,
      &                  MAXDER,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP
       DIMENSION SKLTON(MXCOOR,MXCOOR), HESSEE(MXCOOR,MXCOOR),
      &          INDEX(NUCIND,3,0:MAXREP), FACTOR(3*NUCDEP,0:MAXREP),
      &          IPOINT(3*NUCDEP,0:MAXREP), CSTRA(*), SCTRA(*)
-#include <energy.h>
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "energy.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLEXP',-1)
 C
@@ -1107,7 +1095,7 @@ C
                GRADEE(AP) = GRADEE(AP) + FACTOR(A,ISYMOP)*SKLTON(A,1)
   310       CONTINUE
   300    CONTINUE
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1 / (MAXREP + 1.0D0)
          CALL DSCAL(MXCOOR,   FAC,GRADEE,1)
 C
 C        Construct full Hessian from skeleton
@@ -1123,7 +1111,7 @@ C
                   HESSEE(AP,BP) = HESSEE(AP,BP) + FAC*SKLTON(A,B)
   410          CONTINUE
   400       CONTINUE
-            FAC = D1/SDPRE(MAXREP + 1)
+            FAC = D1/(MAXREP + D1)
             CALL DSCAL(MXCOOR**2,FAC,HESSEE,1)
          END IF
 C
@@ -1210,13 +1198,13 @@ C  /* Deck sklond */
       SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,NDMAT,
      &                  IFCTYP,ISYMDM,SPNORB,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       LOGICAL SPNORB
       INTEGER A, B, AP, BP, X
@@ -1224,10 +1212,9 @@ C
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP), IFCTYP(NDMAT), ISYMDM(NDMAT),
      &          ISYMFC(3)
-#include <pincom.h>
-#include <shells.h>
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "pincom.h"
+#include "shells.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C
@@ -1334,7 +1321,7 @@ C
   610       CONTINUE
   600    CONTINUE
 C
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1/(MAXREP + D1)
          CALL DSCAL(NFMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrices in SKLOND",1)

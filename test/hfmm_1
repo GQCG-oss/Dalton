@@ -104,7 +104,6 @@ cat > hfmm_1.dal <<'%EOF%'
 .DIPLEN
 .NUCPOT
 .NELFLD
-.NOSUP
 .PRINT
  2
 **WAVE FUNCTIONS
@@ -137,11 +136,11 @@ else
 fi
 # Test of energy
 #
-CRIT1=`$GREP "QM/MM calculation converged" $log | wc -l`
+CRIT1=`$GREP 'QM/MM "QM3" calculation converged' $log | wc -l`
 CRIT2=`$GREP "Electrostatic energy: * ( \-|\-0)\.008726038" $log | wc -l`
 CRIT3=`$GREP "Polarization energy: * ( \-|\-0)\.000609032" $log | wc -l`
 CRIT4=`$GREP "Total QM/MM energy: * ( \-|\-0)\.009335070" $log | wc -l`
-CRIT5=`$GREP "Final HF energy:    *       \-112\.362260168" $log | wc -l`
+CRIT5=`$GREP "Final HF energy:    *     \-112\.36226016[78]" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
 CTRL[1]=5
 ERROR[1]="HF/MM ENERGY CONTRIBUTIONS NOT CORRECT"
@@ -159,8 +158,8 @@ ERROR[2]="HF/MM DIPOLE MOMENT NOT CORRECT"
 #
 # Test of HF/MM excitation energies
 #
-CRIT1=`$GREP "1        1  *  ( |0)\.15838" $log | wc -l`
-CRIT2=`$GREP "1        2  *  ( |0)\.34198" $log | wc -l`
+CRIT1=`$GREP " 1  * 1  * 0*\.15838" $log | wc -l`
+CRIT2=`$GREP " 1  * 2  * 0*\.34198" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[3]=2
 ERROR[3]="HF/MM EXCITATION ENERGIES NOT CORRECT"
@@ -169,7 +168,7 @@ PASSED=1
 for i in 1 2 3
 do
    if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

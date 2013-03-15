@@ -1,131 +1,154 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Henrik Koch,              University of Trondheim,      Norway     
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Mar  3 21:03:52 2005
-     Host name              : pi.biotech.kth.se                       
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
 
 
- Default print level:        0
+     Date and time (Linux)  : Wed Mar 16 17:54:20 2011 
+     Host name              : fe6                                     
 
-    Integral sections will be executed
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
-    Wave function sections will be executed
-
-Starting in Integral Section -
-
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
 
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
- Default print level:        1
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Hydrogen flourid                                                        
+ 2: small test basis                                                        
+    ------------------------------------------------------------------------
 
- * Nuclear model: Point charge
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   9.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   9 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
 
- Calculation of one- and two-electron Hamiltonian integrals.
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G**                                                                         
 
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - dipole length integrals
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
 
-
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
-
-
-
-  Title Cards
-  -----------
-
-  Hydrogen flourid                                                        
-  small test basis                                                        
-
-
-  Symmetry Operations
-  -------------------
-
-  Symmetry operations: 2
-
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G**                                                                         
 
 
-                      SYMGRP:Point group information
-                      ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: C2v
 
@@ -138,9 +161,9 @@ Point group: C2v
 
         |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
     Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
@@ -156,14 +179,14 @@ Point group: C2v
 
         | A1   B2   B1   A2 
    -----+--------------------
-    A1  | A1 
-    B2  | B2   A1 
-    B1  | B1   A2   A1 
+    A1  | A1   B2   B1   A2 
+    B2  | B2   A1   A2   B1 
+    B1  | B1   A2   A1   B2 
     A2  | A2   B1   B2   A1 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            F          18.998403
                            H           1.007825
@@ -171,66 +194,60 @@ Point group: C2v
                        Total mass:    20.006228 amu
                        Natural abundance:  99.985 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000    1.674378
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    1.674378
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    2
 
   Basis set used is "6-31G**" from the basis set library.
 
-  label    atoms   charge   prim    cont     basis
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  F           1       9      27      14      [10s4p1d|3s2p1d]                             
-  H           1       1       7       5      [4s1p|2s1p]                                  
+  F           1    9.0000    27    14      [10s4p1d|3s2p1d]                                   
+  H           1    1.0000     7     5      [4s1p|2s1p]                                        
   ----------------------------------------------------------------------
-  total:      2      10      34      19
+  total:      2   10.0000    34    19
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates:  6
-
-   1   F        x      0.0000000000
-   2            y      0.0000000000
-   3            z      1.7632000000
-
-   4   H        x      0.0000000000
-   5            y      0.0000000000
-   6            z      0.0000000000
+  Total number of coordinates:    6
+  F       :     1  x   0.0000000000    2  y   0.0000000000    3  z   1.7632000000
+  H       :     4  x   0.0000000000    5  y   0.0000000000    6  z   0.0000000000
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   2  2  2  0
+  Number of coordinates in each symmetry:     2    2    2    0
 
   Symmetry  A1  ( 1)
 
-   1   F     z    3
-   2   H     z    6
+    1   F     z    3
+    2   H     z    6
 
   Symmetry  B2  ( 2)
 
-   3   F     y    2
-   4   H     y    5
+    3   F     y    2
+    4   H     y    5
 
   Symmetry  B1  ( 3)
 
-   5   F     x    1
-   6   H     x    4
+    5   F     x    1
+    6   H     x    4
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             F           H     
             ------      ------
@@ -238,12 +255,12 @@ Point group: C2v
  H     :    0.933045    0.000000
 
 
-  Max interatomic separation is    0.9330 Angstroms
-  between atoms "H     " and "F     ".
+  Max interatomic separation is    0.9330 Angstrom (    1.7632 Bohr)
+  between atoms    2 and    1, "H     " and "F     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -255,9 +272,9 @@ Point group: C2v
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    0.000000          0.000000    0.000000    1.000000
-   IB    0.833187          0.000000    1.000000    0.000000
-   IC    0.833187          1.000000    0.000000    0.000000
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB       0.833187          0.000000    1.000000    0.000000
+   IC       0.833187          1.000000    0.000000    0.000000
 
 
  Rotational constants
@@ -265,16 +282,16 @@ Point group: C2v
 
  The molecule is linear.
 
-               B =       606561.40 MHz     (   20.232711 cm-1)
+               B =       606561.40 MHz     (   20.232710 cm-1)
 
 
-  Nuclear repulsion energy :    5.104355716878
+@  Nuclear repulsion energy :    5.104355716878
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              10   4   4   1
+  Number of orbitals in each symmetry:          10    4    4    1
 
 
   Symmetry  A1 ( 1)
@@ -316,39 +333,57 @@ Point group: C2v
   Symmetries of magnetic field:  B2 (2)  B1 (3)  A2 (4)
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in HUCKEL is   0.00 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      1.674377807231
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
- >>> Time used in DIPLEN is   0.00 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
-
- >>> Time used in ONEDRV is   0.00 seconds
-
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:        4125 ( 22.7% )
  Megabytes written:                              0.048
 
-
-
- >>> Time used in TWOINT is   0.01 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
 
- NCCEXCI for singlet: 0 0 0 1
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+ NCCEXCI for singlet:           0           0           0           1
 
  *** Output from Huckel module :
 
@@ -357,26 +392,27 @@ Starting in Wave Function Section -
      Number of Huckel orbitals each symmetry:    4    1    1    0
 
  EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
- which normally is better than Extended Huckel Theory.
- Reference: Linderberg and Ohrm, Propagators in Quantum Chemistry (Wiley, 1973)
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
 
  Huckel EWMO eigenvalues for symmetry :  1
-          -26.387602      -1.703688      -0.817633      -0.247594
+          -26.384238      -1.721955      -0.830116      -0.248892
 
  Huckel EWMO eigenvalues for symmetry :  2
-           -0.717123
+           -0.730000
 
  Huckel EWMO eigenvalues for symmetry :  3
-           -0.717123
+           -0.730000
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Mar  3 21:03:52 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:54:20 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      Hydrogen flourid                                                        
      small test basis                                                        
 
@@ -388,7 +424,7 @@ Starting in Wave Function Section -
 
      This is a combination run starting with
 
-               a RHF calculation
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -396,12 +432,13 @@ Starting in Wave Function Section -
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 19
 
      Spin multiplicity                         1
      Total number of symmetries                4
@@ -409,30 +446,36 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2   3   4
-                                       --  --  --  --
-     Total number of orbitals          10   4   4   1
-     Number of basis functions         10   4   4   1
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           19 |   10    4    4    1
+     Number of basis functions          19 |   10    4    4    1
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.                    
-      -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals              3   1   1   0
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-12
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-12
 
 
  Changes of defaults for CC:
  ---------------------------
 
+ -Excitation energies calculated
+ -Two-photon absorption strengths will be calculated
+  
 
- Excitation energies calculated
 
- Two-photon absorption strengths will be calculated
+ Changes of defaults for CC:
+ ---------------------------
+
+ -Excitation energies calculated
+ -Two-photon absorption strengths will be calculated
   
 
 
@@ -444,106 +487,150 @@ Starting in Wave Function Section -
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1  -99.9159496472       1.29D+00  -9.99D+01    3  1  1  0
+      Virial theorem: -V/T =      1.997399
+      MULPOP  F      -0.44; H       0.44; 
+ -----------------------------------------------------------------------------
+   2  -100.006061881       2.26D-01  -9.01D-02    3  1  1  0
+      Virial theorem: -V/T =      2.002657
+      MULPOP  F      -0.38; H       0.38; 
+ -----------------------------------------------------------------------------
+   3  -100.008563846       8.51D-02  -2.50D-03    3  1  1  0
+      Virial theorem: -V/T =      1.999075
+      MULPOP  F      -0.41; H       0.41; 
+ -----------------------------------------------------------------------------
+   4  -100.008886254       2.15D-02  -3.22D-04    3  1  1  0
+      Virial theorem: -V/T =      2.000623
+      MULPOP  F      -0.41; H       0.41; 
+ -----------------------------------------------------------------------------
+   5  -100.008918307       3.56D-03  -3.21D-05    3  1  1  0
+      Virial theorem: -V/T =      2.000296
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   6  -100.008919840       7.37D-04  -1.53D-06    3  1  1  0
+      Virial theorem: -V/T =      2.000320
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   7  -100.008919896       5.25D-05  -5.51D-08    3  1  1  0
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   8  -100.008919896       4.66D-06  -2.57D-10    3  1  1  0
+      Virial theorem: -V/T =      2.000326
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   9  -100.008919896       4.39D-07  -1.12D-12    3  1  1  0
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  10  -100.008919896       2.49D-08   1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  11  -100.008919896       2.56D-09  -7.11D-14    3  1  1  0
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  12  -100.008919896       6.66D-11   5.68D-14    3  1  1  0
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  13  -100.008919896       8.92D-12  -1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  14  -100.008919896       3.63D-13  -1.42D-14    3  1  1  0
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.00 seconds
-
-   1    -99.916491905033   1.29E+00  -9.99E+01    3  1  1  0
-   2   -100.006127020311   2.19E-01  -8.96E-02    3  1  1  0
-   3   -100.008581657025   8.09E-02  -2.45E-03    3  1  1  0
-   4   -100.008884456438   2.22E-02  -3.03E-04    3  1  1  0
-   5   -100.008918098599   3.83E-03  -3.36E-05    3  1  1  0
-   6   -100.008919861857   7.68E-04  -1.76E-06    3  1  1  0
-   7   -100.008919920745   5.17E-05  -5.89E-08    3  1  1  0
-   8   -100.008919920981   4.60E-06  -2.36E-10    3  1  1  0
-   9   -100.008919920982   4.35E-07  -1.05E-12    3  1  1  0
-  10   -100.008919920982   2.49E-08  -2.75E-14    3  1  1  0
-  11   -100.008919920982   2.54E-09   8.88E-16    3  1  1  0
-  12   -100.008919920982   6.57E-11   8.88E-16    3  1  1  0
-  13   -100.008919920982   9.18E-12   8.88E-16    3  1  1  0
-  14   -100.008919920982   4.37E-13   1.51E-14    3  1  1  0
- DIIS converged in  14 iterations !
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    3    1    1    0
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -26.27306679    -1.57292660    -0.73710507     0.21639317     1.01969776
-         1.53899981     1.93101581     2.15801855
+  1    -26.27306629    -1.57292658    -0.73710501     0.21639320     1.01969778
+         1.53899963     1.93101552     2.15801858
 
- Hartree-Fock orbital energies, symmetry 2
+  2     -0.62549523     1.48848713     1.89379537     3.02038759
 
-        -0.62549530     1.48848731     1.89379535     3.02038756
+  3     -0.62549523     1.48848713     1.89379537     3.02038759
 
- Hartree-Fock orbital energies, symmetry 3
+  4      2.15801858
 
-        -0.62549530     1.48848731     1.89379535     3.02038756
-
- Hartree-Fock orbital energies, symmetry 4
-
-         2.15801855
-
-    E(LUMO) :     0.21639317 au (symmetry 1)
-  - E(HOMO) :    -0.62549530 au (symmetry 2)
+    E(LUMO) :     0.21639320 au (symmetry 1)
+  - E(HOMO) :    -0.62549523 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.84188847 au
+    gap     :     0.84188843 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.008919920982
+     Final HF energy:            -100.008919895851                 
      Nuclear repulsion:             5.104355716878
-     Electronic energy:          -105.113275637860
+     Electronic energy:          -105.113275612730
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Thu Mar  3 21:03:52 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:54:20 2011 
+     Host name              : fe6                                     
 
-     Molecular orbitals for symmetry species   1
+ (Only coefficients >0.0100 are printed.)
 
- Orbital          1        2        3
-   1  F   1s    -0.9955  -0.2308   0.0555
-   2  F   1s    -0.0212   0.5025  -0.1234
-   3  F   1s     0.0052   0.5082  -0.2358
-   4  F   2pz    0.0013  -0.0602  -0.5496
-   5  F   2pz   -0.0009  -0.0224  -0.3522
-   6  F   3d0    0.0000   0.0013   0.0237
-   7  F   3d2+   0.0000   0.0000   0.0000
-   8  H   1s    -0.0001   0.1311   0.2709
-   9  H   1s    -0.0013   0.0073   0.1255
-  10  H   2pz    0.0006   0.0312   0.0288
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   2
+    Orbital         1        2        3        4        5
+   1 F   :1s    -0.9955  -0.2308   0.0555   0.0644   0.0183
+   2 F   :1s    -0.0212   0.5025  -0.1234  -0.0741  -0.1606
+   3 F   :1s     0.0052   0.5082  -0.2358  -0.7503   0.3606
+   4 F   :2pz    0.0013  -0.0602  -0.5496   0.2591   0.3919
+   5 F   :2pz   -0.0009  -0.0224  -0.3522   0.4759  -0.1052
+   6 F   :3d0    0.0000   0.0013   0.0237  -0.0259   0.2926
+   8 H   :1s    -0.0001   0.1311   0.2709   0.1124   0.9672
+   9 H   :1s    -0.0013   0.0073   0.1255   1.3668  -0.9276
+  10 H   :2pz    0.0006   0.0312   0.0288   0.0206  -0.2828
 
- Orbital          1
-   1  F   2py    0.6587
-   2  F   2py    0.4859
-   3  F   3d1-  -0.0223
-   4  H   2py    0.0198
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   3
+    Orbital         1        2        3
+   1 F   :2py    0.6587  -0.9416   0.1036
+   2 F   :2py    0.4859   1.0109  -0.2903
+   3 F   :3d1-  -0.0223  -0.0635  -0.6960
+   4 H   :2py    0.0198   0.0764   0.4878
 
- Orbital          1
-   1  F   2px    0.6587
-   2  F   2px    0.4859
-   3  F   3d1+  -0.0223
-   4  H   2px    0.0198
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 F   :2px    0.6587  -0.9416   0.1036
+   2 F   :2px    0.4859   1.0109  -0.2903
+   3 F   :3d1+  -0.0223  -0.0635  -0.6960
+   4 H   :2px    0.0198   0.0764   0.4878
+
+ Molecular orbitals for symmetry species  4
+ ------------------------------------------
+
+    Orbital         1
+   1 F   :3d2-   1.0000
 
 
 
@@ -551,13 +638,19 @@ Starting in Wave Function Section -
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:03:52 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:54:20 2011 
+     Host name              : fe6                                     
 
 
-Starting Coupled Cluster -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
 
   
 
@@ -570,6 +663,12 @@ Starting Coupled Cluster -
  *                                                                             *
  *******************************************************************************
  *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
 
    
 
@@ -603,9 +702,9 @@ Starting Coupled Cluster -
 
 
 
-                     +-------------------------------+
-                     ! Coupled Cluster model is: CCS !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! Coupled Cluster model is: CCS !
+                         +-------------------------------+
 
   
    
@@ -620,9 +719,9 @@ Starting Coupled Cluster -
 
 
 
-                       +---------------------------+
-                       !  CCS Excitation Energies  !
-                       +---------------------------+
+                            +--------------------------+
+                            !  CCS Excitation Energies !
+                            +--------------------------+
 
 
  --------------------------
@@ -696,7 +795,7 @@ Starting Coupled Cluster -
  Length of Excitation vectors in this class is:         9
  Converging for  1 roots.
  Start vector guessed from diagonal
- ... selected element no.  4
+ ... selected element no.  7
 
 
  SYMMETRY CLASS NR.    4
@@ -709,13 +808,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.4551442599       39.5964884125
+         1            1.4551440731       39.5964844540
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.553775661117072
+@@    4    1           -98.553775822749515
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -730,8 +829,8 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        7          |              |   -0.707079  |
- | 3   2   |   1       1     |        4          |              |    0.707079  |
+ | 2   3   |   1       1     |        7          |              |    0.707079  |
+ | 3   2   |   1       1     |        4          |              |   -0.707079  |
  +=============================================================================+
 
 
@@ -762,9 +861,9 @@ Starting Coupled Cluster -
 
 
 
-                       +---------------------------+
-                       !  CCS Excitation Energies  !
-                       +---------------------------+
+                            +--------------------------+
+                            !  CCS Excitation Energies !
+                            +--------------------------+
 
 
  --------------------------
@@ -837,7 +936,7 @@ Starting Coupled Cluster -
 
  Length of Excitation vectors in this class is:         9
  Converging for  1 roots.
-Try to use right eigenvector as startfor a left eigenvector.
+Try to use right eigenvector as start for a left eigenvector.
  Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a  CCS       RE vector
 
@@ -852,13 +951,13 @@ Try to use right eigenvector as startfor a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.4551442599       39.5964884125
+         1            1.4551440731       39.5964844540
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.553775661117072
+@@    4    1           -98.553775822749515
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -873,8 +972,8 @@ Try to use right eigenvector as startfor a left eigenvector.
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        7          |              |   -0.707079  |
- | 3   2   |   1       1     |        4          |              |    0.707079  |
+ | 2   3   |   1       1     |        7          |              |    0.707079  |
+ | 3   2   |   1       1     |        4          |              |   -0.707079  |
  +=============================================================================+
 
 
@@ -891,7 +990,7 @@ Try to use right eigenvector as startfor a left eigenvector.
 +----------------------------------------------------------------------+
 | sym | multi | state |    E / eV  | % singles | % doubles | % triples |
 +======================================================================+
-|    4|   1   |   1   |   39.59649 | 100.0000  |   0.0000  |   0.0000  |
+|    4|   1   |   1   |   39.59648 | 100.0000  |   0.0000  |   0.0000  |
 +======================================================================+
 
 
@@ -904,7 +1003,7 @@ Try to use right eigenvector as startfor a left eigenvector.
 +----------------------------------------------------------------------+
 | sym | multi | state |    E / eV  | % singles | % doubles | % triples |
 +======================================================================+
-|    4|   1   |   1   |   39.59649 | 100.0000  |   0.0000  |   0.0000  |
+|    4|   1   |   1   |   39.59648 | 100.0000  |   0.0000  |   0.0000  |
 +======================================================================+
 
 
@@ -929,9 +1028,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED PROPERTY OPERATORS: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED PROPERTY OPERATORS: !
+                         +-------------------------------+
 
              Index   Oper. Label  Symmetry  Transp.  PDBS  Atom
              --------------------------------------------------
@@ -943,9 +1042,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED EXPECTATION VALUES: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED EXPECTATION VALUES: !
+                         +-------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -954,9 +1053,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED EFFECTIVE FOCK MATRICES: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED EFFECTIVE FOCK MATRICES: !
+                       +------------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -965,71 +1064,71 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                   +-----------------------------------+
-                   ! REQUESTED FIRST ORDER XI VECTORS: !
-                   +-----------------------------------+
+                       +-----------------------------------+
+                       ! REQUESTED FIRST ORDER XI VECTORS: !
+                       +-----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2      0.000000E+00
-                2      XDIPLEN        F     3      0.000000E+00
+                1      YDIPLEN        F     2      0.000000D+00
+                2      XDIPLEN        F     3      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER T VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER T VECTORS: !
+                        +----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2     -1.455144E+00
-                2      YDIPLEN        F     2      0.000000E+00
-                3      YDIPLEN        F     2      1.455144E+00
-                4      XDIPLEN        F     3     -1.455144E+00
-                5      XDIPLEN        F     3      0.000000E+00
-                6      XDIPLEN        F     3      1.455144E+00
+                1      YDIPLEN        F     2     -1.455144D+00
+                2      YDIPLEN        F     2     -0.000000D+00
+                3      YDIPLEN        F     2      1.455144D+00
+                4      XDIPLEN        F     3     -1.455144D+00
+                5      XDIPLEN        F     3     -0.000000D+00
+                6      XDIPLEN        F     3      1.455144D+00
              --------------------------------------------------
 
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED FIRST ORDER ETA VECTORS: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED FIRST ORDER ETA VECTORS: !
+                       +------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2      0.000000E+00
-                2      XDIPLEN        F     3      0.000000E+00
+                1      YDIPLEN        F     2      0.000000D+00
+                2      XDIPLEN        F     3      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                  +-------------------------------------+
-                  ! REQUESTED FIRST ORDER ZETA VECTORS: !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! REQUESTED FIRST ORDER ZETA VECTORS: !
+                      +-------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2     -1.455144E+00
-                2      YDIPLEN        F     2      0.000000E+00
-                3      XDIPLEN        F     3     -1.455144E+00
-                4      XDIPLEN        F     3      0.000000E+00
+                1      YDIPLEN        F     2     -1.455144D+00
+                2      YDIPLEN        F     2     -0.000000D+00
+                3      XDIPLEN        F     3     -1.455144D+00
+                4      XDIPLEN        F     3     -0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER M-VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER M-VECTORS: !
+                        +----------------------------------+
 
                Index   State Symmetry  Frequency
                --------------------------------------------------
-                  1             1    4     1.455144E+00
+                  1             1    4     1.455144D+00
                --------------------------------------------------
 
 
@@ -1041,6 +1140,7 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
+ 
  +======================================================================+
  !                     RHS & ETA VECTORS TO COMPUTE:                    !
  +======================================================================+
@@ -1124,36 +1224,57 @@ Try to use right eigenvector as startfor a left eigenvector.
 
  +--------------------------------------------------+
  | total time for   2 G transforms.:      0.00 secs.|
- +--------------------------------------------------+
+ +==================================================+
+
+
 
 >>> Time used for    2 G matrix transformations:           0.00 seconds.
 
 >>> Time used for    2 F{O} matrix transformations:        0.00 seconds.
 
->>> Time used for    8 F matrix transformations:        0.02 seconds.
+>>> Time used for    8 F matrix transformations:        0.01 seconds.
 
->>> Time used for    8 Eta{O} vector calculation:        0.03 seconds.
+>>> Time used for    8 Eta{O} vector calculation:        0.01 seconds.
 
->>> Total time for   4 quadratic response func.:        0.06 seconds.
+>>> Total time for   4 quadratic response func.:        0.03 seconds.
 
 
-    +------------------------------------------------------------------+
-    !      FINAL CCS RESULTS FOR TWO-PHOTON ABSORPTION STRENGTHS       !
-    +------------------------------------------------------------------+
+           +------------------------------------------------------------+
+           !      FINAL CCS RESULTS FOR TWO-PHOTON ABSORPTION STRENGTHS !
+           +------------------------------------------------------------+
 
 
 
    transition         :   X ^1A1   <--    1^1A2 
-   excitation energy  :   1.4551442599 a.u.    39.596 e.V.    319367. cm^-1
+   excitation energy  :   1.4551440731 a.u.    39.596 e.V.    319367. cm^-1
    photon energy for A:   0.0000000000 a.u.     0.000 e.V.         0. cm^-1
-   photon energy for B:   1.4551442599 a.u.    39.596 e.V.    319367. cm^-1
+   photon energy for B:   1.4551440731 a.u.    39.596 e.V.    319367. cm^-1
 
    +-------------------+----------------+----------------+----------------+
-   |    A        B     | M_0f(  0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
+   |    A        B     | M_0f( -0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
    +-------------------+----------------+----------------+----------------+
-   | YDIPLEN  XDIPLEN  |     0.36465397 |     0.14365998 |     0.05238618 |
-   | XDIPLEN  YDIPLEN  |    -0.36465397 |    -0.14365998 |     0.05238618 |
+   | YDIPLEN  XDIPLEN  |    -0.36465377 |    -0.14365987 |     0.05238611 |
+   | XDIPLEN  YDIPLEN  |     0.36465377 |     0.14365987 |     0.05238611 |
    +-------------------+----------------+----------------+----------------+
+ 
+       Rotationally averaged two-photon transition strengths
+                       and rate constants
+ 
+       +-------------------+----------------+----------------+
+       |   Polarization    |    DELTA_TP    |   K (0 -> f)   |
+       +-------------------+----------------+----------------+
+       |  linear (para)    |   0.00000000   |  0.000000E+00  |
+       +-------------------+----------------+----------------+
+       |  linear (perp)    |   0.00000000   |  0.000000E+00  |
+       +-------------------+----------------+----------------+
+       |    circular       |   0.00000000   |  0.000000E+00  |
+       +-------------------+----------------+----------------+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
    
 
  *******************************************************************
@@ -1173,41 +1294,42 @@ Try to use right eigenvector as startfor a left eigenvector.
           Number of t2 amplitudes                 :       729
           Total number of amplitudes in ccsd      :       756
 
- Iter.  1: Coupled cluster MP2   energy :    -100.1936626104498202
- Iter.  1: Coupled cluster CC2   energy :    -100.1935148618327673
- Iter.  2: Coupled cluster CC2   energy :    -100.1946026130779615
- Iter.  3: Coupled cluster CC2   energy :    -100.1947010271786098
- Iter.  4: Coupled cluster CC2   energy :    -100.1946891665331663
- Iter.  5: Coupled cluster CC2   energy :    -100.1946869732979053
- Iter.  6: Coupled cluster CC2   energy :    -100.1946869097187260
- Iter.  7: Coupled cluster CC2   energy :    -100.1946869305646004
- Iter.  8: Coupled cluster CC2   energy :    -100.1946869343454125
- Iter.  9: Coupled cluster CC2   energy :    -100.1946869346132445
+ Iter.  1: Coupled cluster MP2   energy :    -100.1936625719348086
+ Iter.  1: Coupled cluster CC2   energy :    -100.1935148231952155
+ Iter.  2: Coupled cluster CC2   energy :    -100.1946025749528388
+ Iter.  3: Coupled cluster CC2   energy :    -100.1947009890535867
+ Iter.  4: Coupled cluster CC2   energy :    -100.1946891284135575
+ Iter.  5: Coupled cluster CC2   energy :    -100.1946869351780407
+ Iter.  6: Coupled cluster CC2   energy :    -100.1946868715986625
+ Iter.  7: Coupled cluster CC2   energy :    -100.1946868924445226
+ Iter.  8: Coupled cluster CC2   energy :    -100.1946868962250079
+ Iter.  9: Coupled cluster CC2   energy :    -100.1946868964932094
 
- CC2   energy converged to within   0.10E-08 is   -100.194686935
-
-
-
-
-
-         +-------------------------------------------------------+
-         ! Final results from the Coupled Cluster energy program !
-         +-------------------------------------------------------+
-
-
-
-            Total SCF   energy:                  -100.0089199210
-
-            Total MP2   energy:                  -100.1936626104
-
-            Total CC2   energy:                  -100.1946869346
+ CC2   energy converged to within   0.10D-08 is   -100.194686896
+ Final 2-norm of the CC vector function:  4.62876661D-08
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0089198959
+
+            Total MP2   energy:                  -100.1936625719
+
+            Total CC2   energy:                  -100.1946868965
+
+
+
+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -1225,9 +1347,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                     +-------------------------------+
-                     ! Coupled Cluster model is: CC2 !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! Coupled Cluster model is: CC2 !
+                         +-------------------------------+
 
   
    
@@ -1242,9 +1364,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                       +---------------------------+
-                       !  CC2 Excitation Energies  !
-                       +---------------------------+
+                            +--------------------------+
+                            !  CC2 Excitation Energies !
+                            +--------------------------+
 
 
  --------------------------
@@ -1331,13 +1453,13 @@ Try to use right eigenvector as startfor a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.5183294268       41.3158442167
+         1            1.5183292174       41.3158396926
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.676357507844514
+@@    4    1           -98.676357679067962
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1356,8 +1478,6 @@ Try to use right eigenvector as startfor a left eigenvector.
           Double Excitation Contribution :               0.8653 %
 
           ||T1||/||T2||                  :              10.7034
-
-          Tau1 diagnostic                :               0.3149
 
           Norm of Total Amplitude Vector :               1.0000
 
@@ -1407,9 +1527,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                       +---------------------------+
-                       !  CC2 Excitation Energies  !
-                       +---------------------------+
+                            +--------------------------+
+                            !  CC2 Excitation Energies !
+                            +--------------------------+
 
 
  --------------------------
@@ -1482,7 +1602,7 @@ Try to use right eigenvector as startfor a left eigenvector.
 
  Length of Excitation vectors in this class is:       541
  Converging for  1 roots.
-Try to use right eigenvector as startfor a left eigenvector.
+Try to use right eigenvector as start for a left eigenvector.
  Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a  CC2       RE vector
 
@@ -1497,13 +1617,13 @@ Try to use right eigenvector as startfor a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.5183294268       41.3158442165
+         1            1.5183292174       41.3158396924
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.676357507850909
+@@    4    1           -98.676357679074357
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1522,8 +1642,6 @@ Try to use right eigenvector as startfor a left eigenvector.
           Double Excitation Contribution :               1.7630 %
 
           ||T1||/||T2||                  :               7.4648
-
-          Tau1 diagnostic                :               0.3134
 
           Norm of Total Amplitude Vector :               1.0000
 
@@ -1594,9 +1712,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED PROPERTY OPERATORS: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED PROPERTY OPERATORS: !
+                         +-------------------------------+
 
              Index   Oper. Label  Symmetry  Transp.  PDBS  Atom
              --------------------------------------------------
@@ -1608,9 +1726,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED EXPECTATION VALUES: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED EXPECTATION VALUES: !
+                         +-------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -1619,9 +1737,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED EFFECTIVE FOCK MATRICES: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED EFFECTIVE FOCK MATRICES: !
+                       +------------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -1630,71 +1748,71 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                   +-----------------------------------+
-                   ! REQUESTED FIRST ORDER XI VECTORS: !
-                   +-----------------------------------+
+                       +-----------------------------------+
+                       ! REQUESTED FIRST ORDER XI VECTORS: !
+                       +-----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2      0.000000E+00
-                2      XDIPLEN        F     3      0.000000E+00
+                1      YDIPLEN        F     2      0.000000D+00
+                2      XDIPLEN        F     3      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER T VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER T VECTORS: !
+                        +----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2     -1.518329E+00
-                2      YDIPLEN        F     2      0.000000E+00
-                3      YDIPLEN        F     2      1.518329E+00
-                4      XDIPLEN        F     3     -1.518329E+00
-                5      XDIPLEN        F     3      0.000000E+00
-                6      XDIPLEN        F     3      1.518329E+00
+                1      YDIPLEN        F     2     -1.518329D+00
+                2      YDIPLEN        F     2     -0.000000D+00
+                3      YDIPLEN        F     2      1.518329D+00
+                4      XDIPLEN        F     3     -1.518329D+00
+                5      XDIPLEN        F     3     -0.000000D+00
+                6      XDIPLEN        F     3      1.518329D+00
              --------------------------------------------------
 
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED FIRST ORDER ETA VECTORS: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED FIRST ORDER ETA VECTORS: !
+                       +------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2      0.000000E+00
-                2      XDIPLEN        F     3      0.000000E+00
+                1      YDIPLEN        F     2      0.000000D+00
+                2      XDIPLEN        F     3      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                  +-------------------------------------+
-                  ! REQUESTED FIRST ORDER ZETA VECTORS: !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! REQUESTED FIRST ORDER ZETA VECTORS: !
+                      +-------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2     -1.518329E+00
-                2      YDIPLEN        F     2      0.000000E+00
-                3      XDIPLEN        F     3     -1.518329E+00
-                4      XDIPLEN        F     3      0.000000E+00
+                1      YDIPLEN        F     2     -1.518329D+00
+                2      YDIPLEN        F     2     -0.000000D+00
+                3      XDIPLEN        F     3     -1.518329D+00
+                4      XDIPLEN        F     3     -0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER M-VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER M-VECTORS: !
+                        +----------------------------------+
 
                Index   State Symmetry  Frequency
                --------------------------------------------------
-                  1             1    4     1.518329E+00
+                  1             1    4     1.518329D+00
                --------------------------------------------------
 
 
@@ -1706,6 +1824,7 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
+ 
  +======================================================================+
  !                     RHS & ETA VECTORS TO COMPUTE:                    !
  +======================================================================+
@@ -1788,37 +1907,58 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
  +--------------------------------------------------+
- | total time for   2 G transforms.:      0.01 secs.|
- +--------------------------------------------------+
+ | total time for   2 G transforms.:      0.00 secs.|
+ +==================================================+
 
->>> Time used for    2 G matrix transformations:           0.01 seconds.
+
+
+>>> Time used for    2 G matrix transformations:           0.00 seconds.
 
 >>> Time used for    2 F{O} matrix transformations:        0.00 seconds.
 
->>> Time used for    8 F matrix transformations:        0.07 seconds.
+>>> Time used for    8 F matrix transformations:        0.02 seconds.
 
->>> Time used for    8 Eta{O} vector calculation:        0.05 seconds.
+>>> Time used for    8 Eta{O} vector calculation:        0.01 seconds.
 
->>> Total time for   4 quadratic response func.:        0.14 seconds.
+>>> Total time for   4 quadratic response func.:        0.04 seconds.
 
 
-    +------------------------------------------------------------------+
-    !      FINAL CC2 RESULTS FOR TWO-PHOTON ABSORPTION STRENGTHS       !
-    +------------------------------------------------------------------+
+           +------------------------------------------------------------+
+           !      FINAL CC2 RESULTS FOR TWO-PHOTON ABSORPTION STRENGTHS !
+           +------------------------------------------------------------+
 
 
 
    transition         :   X ^1A1   <--    1^1A2 
-   excitation energy  :   1.5183294268 a.u.    41.316 e.V.    333235. cm^-1
+   excitation energy  :   1.5183292174 a.u.    41.316 e.V.    333235. cm^-1
    photon energy for A:   0.0000000000 a.u.     0.000 e.V.         0. cm^-1
-   photon energy for B:   1.5183294268 a.u.    41.316 e.V.    333235. cm^-1
+   photon energy for B:   1.5183292174 a.u.    41.316 e.V.    333235. cm^-1
 
    +-------------------+----------------+----------------+----------------+
-   |    A        B     | M_0f(  0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
+   |    A        B     | M_0f( -0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
    +-------------------+----------------+----------------+----------------+
-   | YDIPLEN  XDIPLEN  |     0.81547844 |     0.41404820 |     0.33764738 |
-   | XDIPLEN  YDIPLEN  |     0.81547844 |     0.41404820 |     0.33764738 |
+   | YDIPLEN  XDIPLEN  |     0.81547921 |     0.41404860 |     0.33764802 |
+   | XDIPLEN  YDIPLEN  |     0.81547921 |     0.41404860 |     0.33764802 |
    +-------------------+----------------+----------------+----------------+
+ 
+       Rotationally averaged two-photon transition strengths
+                       and rate constants
+ 
+       +-------------------+----------------+----------------+
+       |   Polarization    |    DELTA_TP    |   K (0 -> f)   |
+       +-------------------+----------------+----------------+
+       |  linear (para)    |   0.00000000   |  0.000000E+00  |
+       +-------------------+----------------+----------------+
+       |  linear (perp)    |   0.00000000   |  0.000000E+00  |
+       +-------------------+----------------+----------------+
+       |    circular       |   0.00000000   |  0.000000E+00  |
+       +-------------------+----------------+----------------+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
    
 
  *******************************************************************
@@ -1838,42 +1978,43 @@ Try to use right eigenvector as startfor a left eigenvector.
           Number of t2 amplitudes                 :       729
           Total number of amplitudes in ccsd      :       756
 
- Iter.  1: Coupled cluster RSTAR energy :    -100.1946869346132445
- Iter.  1: Coupled cluster CCSD  energy :    -100.1952031944232004
- Iter.  2: Coupled cluster CCSD  energy :    -100.1975917211472620
- Iter.  3: Coupled cluster CCSD  energy :    -100.1977331170141809
- Iter.  4: Coupled cluster CCSD  energy :    -100.1977837437397767
- Iter.  5: Coupled cluster CCSD  energy :    -100.1977917847707147
- Iter.  6: Coupled cluster CCSD  energy :    -100.1977909128957123
- Iter.  7: Coupled cluster CCSD  energy :    -100.1977909671295066
- Iter.  8: Coupled cluster CCSD  energy :    -100.1977909365739947
- Iter.  9: Coupled cluster CCSD  energy :    -100.1977909379636174
- Iter. 10: Coupled cluster CCSD  energy :    -100.1977909371873636
+ Iter.  1: Coupled cluster RSTAR energy :    -100.1946868964932094
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1952031638119678
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1975916911308389
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1977330868338782
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1977837135661957
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1977917545950163
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1977908827200849
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1977909369536519
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1977909063985095
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1977909077876348
+ Iter. 10: Coupled cluster CCSD  energy :    -100.1977909070113952
 
- CCSD  energy converged to within   0.10E-08 is   -100.197790937
-
-
-
-
-
-         +-------------------------------------------------------+
-         ! Final results from the Coupled Cluster energy program !
-         +-------------------------------------------------------+
-
-
-
-            Total SCF   energy:                  -100.0089199210
-
-            Total RSTAR energy:                  -100.1946869346
-
-            Total CCSD  energy:                  -100.1977909372
+ CCSD  energy converged to within   0.10D-08 is   -100.197790907
+ Final 2-norm of the CC vector function:  1.05294698D-07
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0089198959
+
+            Total RSTAR energy:                  -100.1946868965
+
+            Total CCSD  energy:                  -100.1977909070
+
+
+
+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -1895,9 +2036,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
@@ -1914,9 +2055,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                       +----------------------------+
-                       !  CCSD Excitation Energies  !
-                       +----------------------------+
+                           +---------------------------+
+                           !  CCSD Excitation Energies !
+                           +---------------------------+
 
 
  --------------------------
@@ -2003,13 +2144,13 @@ Try to use right eigenvector as startfor a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.3282161381       36.1425986210
+         1            1.3282160006       36.1425959056
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.869574799128912
+@@    4    1           -98.869574906432760
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2028,8 +2169,6 @@ Try to use right eigenvector as startfor a left eigenvector.
           Double Excitation Contribution :              99.6545 %
 
           ||T1||/||T2||                  :               0.0589
-
-          Tau1 diagnostic                :               0.0186
 
           Norm of Total Amplitude Vector :               1.0000
 
@@ -2079,9 +2218,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                       +----------------------------+
-                       !  CCSD Excitation Energies  !
-                       +----------------------------+
+                           +---------------------------+
+                           !  CCSD Excitation Energies !
+                           +---------------------------+
 
 
  --------------------------
@@ -2168,13 +2307,13 @@ Try to use right eigenvector as startfor a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.3282161380       36.1425986207
+         1            1.3282160006       36.1425959053
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -98.869574799138050
+@@    4    1           -98.869574906441883
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2193,8 +2332,6 @@ Try to use right eigenvector as startfor a left eigenvector.
           Double Excitation Contribution :              99.8512 %
 
           ||T1||/||T2||                  :               0.0386
-
-          Tau1 diagnostic                :               0.0122
 
           Norm of Total Amplitude Vector :               1.0000
 
@@ -2268,9 +2405,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED PROPERTY OPERATORS: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED PROPERTY OPERATORS: !
+                         +-------------------------------+
 
              Index   Oper. Label  Symmetry  Transp.  PDBS  Atom
              --------------------------------------------------
@@ -2282,9 +2419,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED EXPECTATION VALUES: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED EXPECTATION VALUES: !
+                         +-------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -2293,9 +2430,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED EFFECTIVE FOCK MATRICES: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED EFFECTIVE FOCK MATRICES: !
+                       +------------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -2304,71 +2441,71 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                   +-----------------------------------+
-                   ! REQUESTED FIRST ORDER XI VECTORS: !
-                   +-----------------------------------+
+                       +-----------------------------------+
+                       ! REQUESTED FIRST ORDER XI VECTORS: !
+                       +-----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2      0.000000E+00
-                2      XDIPLEN        F     3      0.000000E+00
+                1      YDIPLEN        F     2      0.000000D+00
+                2      XDIPLEN        F     3      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER T VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER T VECTORS: !
+                        +----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2     -1.328216E+00
-                2      YDIPLEN        F     2      0.000000E+00
-                3      YDIPLEN        F     2      1.328216E+00
-                4      XDIPLEN        F     3     -1.328216E+00
-                5      XDIPLEN        F     3      0.000000E+00
-                6      XDIPLEN        F     3      1.328216E+00
+                1      YDIPLEN        F     2     -1.328216D+00
+                2      YDIPLEN        F     2     -0.000000D+00
+                3      YDIPLEN        F     2      1.328216D+00
+                4      XDIPLEN        F     3     -1.328216D+00
+                5      XDIPLEN        F     3     -0.000000D+00
+                6      XDIPLEN        F     3      1.328216D+00
              --------------------------------------------------
 
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED FIRST ORDER ETA VECTORS: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED FIRST ORDER ETA VECTORS: !
+                       +------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2      0.000000E+00
-                2      XDIPLEN        F     3      0.000000E+00
+                1      YDIPLEN        F     2      0.000000D+00
+                2      XDIPLEN        F     3      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                  +-------------------------------------+
-                  ! REQUESTED FIRST ORDER ZETA VECTORS: !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! REQUESTED FIRST ORDER ZETA VECTORS: !
+                      +-------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      YDIPLEN        F     2     -1.328216E+00
-                2      YDIPLEN        F     2      0.000000E+00
-                3      XDIPLEN        F     3     -1.328216E+00
-                4      XDIPLEN        F     3      0.000000E+00
+                1      YDIPLEN        F     2     -1.328216D+00
+                2      YDIPLEN        F     2     -0.000000D+00
+                3      XDIPLEN        F     3     -1.328216D+00
+                4      XDIPLEN        F     3     -0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER M-VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER M-VECTORS: !
+                        +----------------------------------+
 
                Index   State Symmetry  Frequency
                --------------------------------------------------
-                  1             1    4     1.328216E+00
+                  1             1    4     1.328216D+00
                --------------------------------------------------
 
 
@@ -2380,6 +2517,7 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
+ 
  +======================================================================+
  !                     RHS & ETA VECTORS TO COMPUTE:                    !
  +======================================================================+
@@ -2582,37 +2720,52 @@ LORXFIL:    F
 
 
  +--------------------------------------------------+
- | total time for   2 G transforms.:      0.03 secs.|
- +--------------------------------------------------+
+ | total time for   2 G transforms.:      0.01 secs.|
+ +==================================================+
 
->>> Time used for    2 G matrix transformations:           0.03 seconds.
+
+
+>>> Time used for    2 G matrix transformations:           0.01 seconds.
 
 >>> Time used for    2 F{O} matrix transformations:        0.00 seconds.
 
->>> Time used for    8 F matrix transformations:        0.20 seconds.
+>>> Time used for    8 F matrix transformations:        0.06 seconds.
 
->>> Time used for    8 Eta{O} vector calculation:        0.05 seconds.
+>>> Time used for    8 Eta{O} vector calculation:        0.01 seconds.
 
->>> Total time for   4 quadratic response func.:        0.29 seconds.
+>>> Total time for   4 quadratic response func.:        0.08 seconds.
 
 
-   +-------------------------------------------------------------------+
-   !      FINAL CCSD RESULTS FOR TWO-PHOTON ABSORPTION STRENGTHS       !
-   +-------------------------------------------------------------------+
+          +-------------------------------------------------------------+
+          !      FINAL CCSD RESULTS FOR TWO-PHOTON ABSORPTION STRENGTHS !
+          +-------------------------------------------------------------+
 
 
 
    transition         :   X ^1A1   <--    1^1A2 
-   excitation energy  :   1.3282161381 a.u.    36.143 e.V.    291510. cm^-1
+   excitation energy  :   1.3282160006 a.u.    36.143 e.V.    291510. cm^-1
    photon energy for A:   0.0000000000 a.u.     0.000 e.V.         0. cm^-1
-   photon energy for B:   1.3282161381 a.u.    36.143 e.V.    291510. cm^-1
+   photon energy for B:   1.3282160006 a.u.    36.143 e.V.    291510. cm^-1
 
    +-------------------+----------------+----------------+----------------+
-   |    A        B     | M_0f(  0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
+   |    A        B     | M_0f( -0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
    +-------------------+----------------+----------------+----------------+
-   | YDIPLEN  XDIPLEN  |    -0.16802886 |    -0.04758689 |     0.00799597 |
-   | XDIPLEN  YDIPLEN  |    -0.16802886 |    -0.04758689 |     0.00799597 |
+   | YDIPLEN  XDIPLEN  |    -0.16802896 |    -0.04758692 |     0.00799598 |
+   | XDIPLEN  YDIPLEN  |    -0.16802896 |    -0.04758692 |     0.00799598 |
    +-------------------+----------------+----------------+----------------+
+ 
+       Rotationally averaged two-photon transition strengths
+                       and rate constants
+ 
+       +-------------------+----------------+----------------+
+       |   Polarization    |    DELTA_TP    |   K (0 -> f)   |
+       +-------------------+----------------+----------------+
+       |  linear (para)    |   0.00000000   |  0.000000E+00  |
+       +-------------------+----------------+----------------+
+       |  linear (perp)    |   0.00000000   |  0.000000E+00  |
+       +-------------------+----------------+----------------+
+       |    circular       |   0.00000000   |  0.000000E+00  |
+       +-------------------+----------------+----------------+
   
 
  *******************************************************************************
@@ -2626,7 +2779,7 @@ LORXFIL:    F
  *******************************************************************************
 
                                                                                 
-            Total SCF   energy:                  -100.0089199210                
+            Total SCF   energy:                  -100.0089198959                
                                                                                 
                                                                                 
  +=============================================================================+
@@ -2634,17 +2787,17 @@ LORXFIL:    F
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A2  |    1   |     1.4551443  |      39.59649  |    319367.250  | 100.00  |
+ | ^1A2  |    1   |     1.4551441  |      39.59648  |    319367.206  | 100.00  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A2       -98.5537756611                                        
+             1 ^1A2       -98.5537758227                                        
                                                                                 
                                                                                 
-            Total SCF   energy:                  -100.0089199210                
-            Total MP2   energy:                  -100.1936626104                
-            Total CC2   energy:                  -100.1946869346                
+            Total SCF   energy:                  -100.0089198959                
+            Total MP2   energy:                  -100.1936625719                
+            Total CC2   energy:                  -100.1946868965                
                                                                                 
                                                                                 
  +=============================================================================+
@@ -2652,17 +2805,17 @@ LORXFIL:    F
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A2  |    1   |     1.5183294  |      41.31584  |    333234.791  |  99.13  |
+ | ^1A2  |    1   |     1.5183292  |      41.31584  |    333234.742  |  99.13  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A2       -98.6763575078                                        
+             1 ^1A2       -98.6763576791                                        
                                                                                 
                                                                                 
-            Total SCF   energy:                  -100.0089199210                
-            Total RSTAR energy:                  -100.1946869346                
-            Total CCSD  energy:                  -100.1977909372                
+            Total SCF   energy:                  -100.0089198959                
+            Total RSTAR energy:                  -100.1946868965                
+            Total CCSD  energy:                  -100.1977909070                
                                                                                 
                                                                                 
  +=============================================================================+
@@ -2670,15 +2823,15 @@ LORXFIL:    F
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A2  |    1   |     1.3282161  |      36.14260  |    291509.747  |   0.35  |
+ | ^1A2  |    1   |     1.3282160  |      36.14260  |    291509.714  |   0.35  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A2       -98.8695747991                                        
+             1 ^1A2       -98.8695749064                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -2692,11 +2845,14 @@ LORXFIL:    F
  *******************************************************************************
 
 
-- End of Coupled Cluster
 
- >>>> Total CPU  time used in DALTON:   8.74 seconds
- >>>> Total wall time used in DALTON:  12.00 seconds
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   2.56 seconds
+ >>>> Total wall time used in DALTON:  24.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:04:04 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:54:44 2011 
+     Host name              : fe6                                     

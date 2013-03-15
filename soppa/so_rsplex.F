@@ -11,8 +11,8 @@ C
 C     PURPOSE: Drive the calculation and analysis of SOPPA and 
 C              SOPPA(CCSD) excitation energies and vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION EXVAL(LEXVAL)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
@@ -22,16 +22,16 @@ C
       PARAMETER ( D100 = 100.0D0 )
       CHARACTER MODEL*5
 C
-#include <codata.h>
-#include <wrkrsp.h>
+#include "codata.h"
+#include "wrkrsp.h"
 CSPAS:15/03-2006: merge with Dalton-2.0      
 C#include <infpp.h>
 CKeinSPASmehr
-#include <inforb.h>
-#include <infpri.h>
-#include <ccsdsym.h>
-#include <soppinf.h>
-#include <cbiexc.h>
+#include "inforb.h"
+#include "infpri.h"
+#include "ccsdsym.h"
+#include "soppinf.h"
+#include "cbiexc.h"
 C
 C------------------
 C     Add to trace.

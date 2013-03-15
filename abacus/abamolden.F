@@ -1,52 +1,42 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C     Original: abamolden  alex a auer 5.2.99
 C
-C this file contains all output routines thar write parts of the molden.inp 
-C file which will be read by MOLDEN.
-C infos about MOLDEN can be obtained at :
+C This file contains all output routines thar write parts of the molden.inp 
+C file which will be read by Molden.
+C Info about Molden can be obtained at :
 C        http://www.caos.kun.nl/~schaft/molden/molden.html
 C
 C
        SUBROUTINE MOHEAD
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <inftap.h>
-#include <molde.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "inftap.h"
+#include "molde.h"
 C
       DONEIT=.FALSE.
       DONEIU=.FALSE.
@@ -64,22 +54,22 @@ C
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
 
-#include <implicit.h>
-#include <maxorb.h>
-#include <molde.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <aosotr.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "molde.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "aosotr.h"
+#include "maxaqn.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <ccom.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <primit.h>
+#include "ccom.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "primit.h"
 
 
       CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
@@ -159,29 +149,29 @@ Clf 400              CONTINUE
 
       SUBROUTINE MOATOMS(WORD)
 C          
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "codata.h"
 
       CHARACTER*6 NAME
       CHARACTER*4 WORD
 
 C     include character ASYMB(103)*2 with atomic symbols
-#include <asymb.h>
+#include "asymb.h"
 
-#include <molde.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <cbirea.h>
-#include <inftap.h>
-#include <chrxyz.h>
-#include <chrsgn.h>
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "molde.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "cbirea.h"
+#include "inftap.h"
+#include "chrxyz.h"
+#include "chrsgn.h"
+#include "chrnos.h"
+#include "ibtfun.h"
 
        IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
 
@@ -250,47 +240,59 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
        RETURN
        END
 
-      SUBROUTINE MOMOS(ITASK,ORVAL,OCCUP,ORBTRA,UNPAK,ORBVEC)
+      SUBROUTINE MOMOS(ITASK,CMO,OCCUP,ORBTRA,UCMO,ORBVEC)
 C
-C ORVAL  =  contains MO coefficients
-C itask  =  1 print everything to file
-C           2 save orbital energies in ORVAL
+C CMO    =  contains MO coefficients, symmetry packed
+C UCMO   =  contains MO coefficients, symmetry unpacked
+C itask  =  1 : print everything to Molden file
+C           2 : save orbital energies in OREN in molde.h
 
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <inftap.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aosotr.h>
-#include <molde.h>
-#include <cbieri.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <pgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+
+! inftap.h: LUMOLDEN
+#include "inftap.h"
+! aosotr.h: JAOAO(:,2)
+#include "aosotr.h"
+! molde.h: DONIV, OREN(:)
+#include "molde.h"
+! inforb.h: NBAST, NORBT, ...
+#include "inforb.h"
+! pgroup.h: REP
+#include "pgroup.h"
+! ccom.h: SPHNRM
+#include "ccom.h"
     
       LOGICAL WRTELEM,WRTZERO
-      DIMENSION ORVAL(*), OCCUP(*), ORBTRA(*), UNPAK(*), ORBVEC(*)
+      DIMENSION CMO(*), OCCUP(*), ORBTRA(*), UCMO(NBAST,NORBT)
+      DIMENSION ORBVEC(*)
 
-#include <chrsgn.h>
+#include "chrsgn.h"
 
       MOPRIN = 0
       IF (ITASK .EQ. 1) THEN
+         IF ( .NOT. SPHNRM ) THEN
+            NINFO = NINFO + 1
+            WRITE (LUPRI,'(//A)') ' INFO: Sorry, plot of MOs with '//
+     &         'Molden is only implemented for spherical GTOs'
+            DONEIV = .TRUE.
+         END IF
          IF (.NOT. DONEIV) THEN 
             WRITE(LUMOLDEN,'(/A)') '[5D]' 
             WRITE(LUMOLDEN,'(/A)') '[MO]' 
 C           call traorb to generate SO to AO transformation
             CALL TRAORB(ORBTRA,NBAST,-1,MOPRIN)
-            CALL DZERO(UNPAK, NBAST * NORBT)
+            CALL DZERO(UCMO,  NBAST * NORBT)
             CALL DZERO(ORBVEC,NBAST)
-            CALL UPKCMO(ORVAL,UNPAK)
+            CALL UPKCMO(CMO,UCMO)
             JOCC = 0
-            IIO = 0
+            jORB = 0
             DO ISYM = 1,NSYM
                NOCCI = NOCC(ISYM)
                DO I=1,NORB(ISYM)
-                  IIO = IIO + 1
+                  jORB = jORB + 1
                   II = IORB(ISYM) + I         
                   WRITE(LUMOLDEN,'(2A)')     'Sym= ',REP(ISYM-1)
                   WRITE(LUMOLDEN,'(A,F9.4)') 'Ene= ',OREN(II)
@@ -301,13 +303,12 @@ C           call traorb to generate SO to AO transformation
                   ELSE
                      WRITE(LUMOLDEN,'(A     )') 'Occup= 0.0000'
                   END IF
-                  JJO = 1 + (IIO-1) * NBAST
                   ICENT = IPCEN(I)
                   CALL DGEMV('T',NBAST,NBAST,1.0D0,ORBTRA,NBAST,
-     $                 UNPAK(JJO),1,0.0D0,ORBVEC,1)
+     $                 UCMO(1,jORB),1,0.0D0,ORBVEC,1)
                   DO IB=1,NBAST
                      WRITE(LUMOLDEN,'(I5,1X,2F15.6)') 
-     $                    IB,ORBVEC(JAOAO(IB,1)+JAOAO(IB,2))
+     $                    IB,ORBVEC(JAOAO(IB,2))
                   END DO
                END DO
             END DO
@@ -318,7 +319,7 @@ C           call traorb to generate SO to AO transformation
 
       IF (ITASK .EQ. 2) THEN
          DO I = 1, NORBT
-            OREN(I)=ORVAL(I)
+            OREN(I)=CMO(I)
          ENDDO
       END IF
       CALL FLSHFO(LUMOLDEN)
@@ -326,12 +327,11 @@ C           call traorb to generate SO to AO transformation
       END
 
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
-#include <implicit.h> 
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <molde.h>
-#include <inftap.h>
+#include "implicit.h" 
+#include "maxorb.h"
+#include "codata.h"
+#include "molde.h"
+#include "inftap.h"
 
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD)
       SXFAMU = SQRT(XFAMU)
@@ -353,12 +353,11 @@ C           call traorb to generate SO to AO transformation
       END
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
-#include <implicit.h> 
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <molde.h>
-#include <inftap.h>
+#include "implicit.h" 
+#include "maxorb.h"
+#include "codata.h"
+#include "molde.h"
+#include "inftap.h"
         LOGICAL WRITENOW
         IF(WRITENOW)THEN
            IF (.NOT. DONEIW) THEN 
@@ -379,12 +378,11 @@ C           call traorb to generate SO to AO transformation
       END
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
-#include <implicit.h> 
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <molde.h>
-#include <inftap.h>
+#include "implicit.h" 
+#include "maxorb.h"
+#include "codata.h"
+#include "molde.h"
+#include "inftap.h"
       LOGICAL WRITENOW
       IF(WRITENOW)THEN
          
@@ -407,4 +405,5 @@ C           call traorb to generate SO to AO transformation
       ENDIF
       CALL FLSHFO(LUMOLDEN)
       RETURN
+! -- end of abacus/abamolden.F --
       END

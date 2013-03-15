@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck flshfo */
       SUBROUTINE FLSHFO (IUNIT)
@@ -85,7 +75,7 @@ C
  || defined (SYS_SUN) || defined (SYS_LINUX) || defined(SYS_HPUX) \
  || defined (SYS_SX) || defined (SYS_DARWIN) || defined (SYS_NEC) 
       CHARACTER*(24) FFDATE
-#if defined(SYS_AIX) || defined (SYS_HAL)
+#if defined (SYS_HAL)
       CALL FDATE(FFDATE)
 #else
       CHARACTER*(24) FDATE
@@ -100,193 +90,101 @@ C
 #endif
       RETURN
       END
-C  /* Deck gettim */
-      SUBROUTINE GETTIM(TIMCPU,TIMWAL)
-C
-C Written 18-Dec-1984 Hans Joergen Aa. Jensen
-C
-C Return elapsed CPU time and elapsed real time.
-C
-#include "implicit.h"
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-C...  Cray unicos timing code
-      REAL    TCPU0, TWALL0
-      LOGICAL FIRST
-      PARAMETER ( DP001 = 0.001 )
-      SAVE TCPU0, TWALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-#if defined (SYS_CRAY) || defined (SYS_T90)
-         TCPU0  = SECOND()
-         TWALL0 = TIMEF()
-      ENDIF
-      TIMCPU = SECOND() - TCPU0
-#else
-         TCPU0 = TSECND()
-         TWALL0 = TIMEF()
-      ENDIF
-      TIMCPU = TSECND() - TCPU0
-#endif
-      TIMWAL = DP001 * ( TIMEF() - TWALL0 )
-#else
-#if defined (SYS_NEC)
-C...  NEC SX4     timing code
-      REAL*8  TCPU0, TWALL0
-      REAL*8  SECOND1,SECOND2
-      LOGICAL FIRST
-      PARAMETER ( DP001 = 0.001 )
-      SAVE TCPU0, TWALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-         call clock(second1)
-         TCPU0  = SECOND1
-         call etime(second2)
-         TWALL0 = second2
-      ENDIF
 
-      call clock(second1)
-      call etime(second2)
-      TIMCPU = second1 - TCPU0
-      TIMWAL = second2 - TWALL0
-#else
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
- || defined (SYS_SUN) || defined (SYS_HAL) \
- || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT) \
- || defined (SYS_DEC) || defined (SYS_SX)
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_DEC) \
- || defined (SYS_SX)  || defined (SYS_AIX)
-C...  SGI IRIX  etc. code
-      external time
-C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
-#endif
-      integer time
-      real*4  etime, tarray(2)
-      logical first
-      save    first,iwall0,TCPU0
-      data    first /.true./
-C
+      subroutine gettim(cputime,walltime)
+      implicit none
+      real*8      cputime, walltime
+
+      logical     first
+      data        first /.true./
+
+      real*8      TCPU0, TWALL0, tcpu1, twall1
+      save        TCPU0, TWALL0
+      integer*4   dateandtime0(8), dateandtime1(8)
+
       if (first) then
          first = .false.
-         TCPU0 = etime(tarray)
-         iwall0 = time()
+         call cpu_time(TCPU0)
+         call date_and_time(values=dateandtime0)
+         call get_walltime(dateandtime0,TWALL0)
       end if
-      TIMCPU = etime(tarray) - TCPU0
-      itimwl = time() - iwall0
-      TIMWAL = itimwl
-#else
-#if (defined (SYS_LINUX) && defined (VAR_IFC))
-      integer time,darr(9)
-      real*4  etime, tarray(2)
-      logical first
-      save    first,iwall0,TCPU0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         TCPU0 = etime(tarray)
-          call gettimeofday(darr,err)
-          iwall0 = darr(1)
-      end if
-      TIMCPU = etime(tarray) - TCPU0
-      call gettimeofday(darr,err)
-      itimwl = darr(1) - iwall0
-      TIMWAL = itimwl
-#else
-#if defined (VAR_G77) || defined (VAR_GFORTRAN)
-C 990819-ekd: Use time8() and second() system routines for timings
-C             ONLY available for GNU g77 compiler!!!!!!!!
-      logical first
-      save    TWALL0,TCPU0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         TWALL0 = time8()
-         TCPU0  = second()
-      end if
-      TIMWAL = time8() - TWALL0
-      TIMCPU = second() - TCPU0
-#else
-      PARAMETER (D0 = 0.0D0)
-      logical first
-      save    TWALL0,TCPU0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         TCPU0  = second()
-      end if
-      TIMCPU = SECOND() - TCPU0
-C insert appropriate routine to get elapsed real time (wall time)
-C here
-      TIMWAL = D0
-#endif  /* VAR_G77, VAR_GFORTRAN */
-#endif  /* VAR_IFC */
-#endif  /* SYS_AIX, SYS_IRIX, SYS_SUN, SYS_HPUX etc. */
-#endif  /* SYS_NEC */
-#endif  /* SYS_CRAY etc. */
-C
-      RETURN
-      END
-C  /* Deck settim */
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))||(defined (SYS_LINUX) && defined (VAR_IFC)) || defined (SYS_AIX)
-      SUBROUTINE SETTIM
-C
-C  Unix timing routines emulating Lund IBM timing routines
-C  5-Dec-1988 hjaaj
-C
-      REAL*4 ECPU, ESYST, ETCPU
-      REAL*4 SCPU, SSYST, STCPU
-      REAL*4 PCPU, PSYST, PTCPU
-      REAL*4 ETIME,TARRAY(2)
-      REAL*8 CPUE, CPUA, TIOE, TIOA
-      SAVE   SCPU, SSYST, STCPU
-      SAVE   PCPU, PSYST, PTCPU
-C
-      STCPU  = ETIME(TARRAY)
-      SCPU   = TARRAY(1)
-      SSYST  = TARRAY(2)
-      PCPU   = SCPU
-      PSYST  = SSYST
-      PTCPU  = STCPU
-      RETURN
-C
-C     ----- entry timing -----
-C
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      ETCPU  = ETIME(TARRAY)
-      ECPU   = TARRAY(1)
-      ESYST  = TARRAY(2)
-      CPUA   = ECPU - SCPU
-      CPUE   = ECPU - PCPU
-      PCPU   = ECPU
-      TIOA   = ESYST - SSYST
-      TIOE   = ESYST - PSYST
-      PSYST  = ESYST
-C
-      RETURN
-      END
-#else
-      SUBROUTINE SETTIM()
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER ( D0 = 0.0D0 )
-c     WRITE (LUPRI,*) 'DUMMY SETTIM called'
-      RETURN
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      CPUA = D0
-      CPUE = D0
-      TIOA = D0
-      TIOE = D0
-      WRITE (LUPRI,*) 'Dummy TIMING routine called'
-      RETURN
-      END
-#endif
+      call cpu_time(tcpu1)
+      call date_and_time(values=dateandtime1)
+      call get_walltime(dateandtime1,twall1)
+
+      cputime  = tcpu1  - TCPU0
+      walltime = twall1 - TWALL0
+
+      end subroutine gettim
+
+!> \brief Get elapsed walltime in seconds since 1/1-2010 00:00:00
+!> \author S. Host
+!> \date October 2010
+!>
+!> Years that are evenly divisible by 4 are leap years. 
+!> Exception: Years that are evenly divisible by 100 are not leap years, 
+!> unless they are also evenly divisible by 400. Source: Wikipedia
+!>
+      subroutine get_walltime(dateandtime,walltime)
+      implicit none
+      integer*4  dateandtime(8) ! "values" output from fortran intrinsic subroutine date_and_time
+      real*8     walltime       ! Elapsed wall time in seconds
+      integer*4  month, year
+   
+! The output from the fortran intrinsic date_and_time
+! gives the following values:
+! 1. Year
+! 2. Month
+! 3. Day of the month
+! 4. Time difference in minutes from Greenwich Mean Time (GMT)
+! 5. Hour
+! 6. Minute
+! 7. Second
+! 8. Millisecond
+
+! Count seconds, minutes, hours, days, months and years and sum up seconds:
+
+      walltime = 1.0d-3*dateandtime(8)                     !Milliseconds
+      walltime = walltime + dateandtime(7)*1.0d0           !Seconds counted
+      walltime = walltime + 60d0*dateandtime(6)            !Minutes counted
+      walltime = walltime + 3600d0*dateandtime(5)          !Hours counted
+      walltime = walltime + 24d0*3600d0*(dateandtime(3)-1) !Days counted (substract 1 to count only whole days)
+
+      !Months are special, since they are not equally long:
+
+      do month = 1, dateandtime(2)-1 !substract 1 to count only whole months
+         if (month == 1 .or. month == 3 .or. month == 5 .or.
+     &       month == 7 .or. month == 8 .or. month == 10) then  !Since we subtract 1, month can never be 12
+            walltime = walltime + 31d0*24d0*3600d0
+         else if (month == 2) then
+            if (.false.) then !insert exception for if current year is a leap year
+               walltime = walltime + 29d0*24d0*3600d0
+            else
+               walltime = walltime + 28d0*24d0*3600d0
+            endif
+         else if (month == 4 .or. month == 6 .or. month == 9 .or.
+     &           month == 11) then
+            walltime = walltime + 30d0*24d0*3600d0
+         else
+            call quit('Unknown month (get_walltime)')
+         endif
+      enddo
+
+      !Years are special, since leap years are one day longer:
+
+      do year = 2010, dateandtime(1) 
+         if (mod(year,400)==0) then
+            walltime = walltime + 366*24*3600 !Leap year
+         else if (mod(year,100)==0) then
+            walltime = walltime + 365*24*3600 !Not leap year
+         else if (mod(year,4)==0) then
+            walltime = walltime + 366*24*3600 !Leap year
+         else
+            walltime = walltime + 365*24*3600 !Not leap year
+         endif
+      enddo
+
+      end subroutine get_walltime
 C  /* Deck timtxt */
       SUBROUTINE TIMTXT(TEXT,TIMUSD,LUPRIN)
 C
@@ -419,7 +317,11 @@ c     bug in gfortran-4.0.2 causes a segfault here.
 #if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX)\
  || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC)   \
  || defined (SYS_SUN)
+#ifdef VAR_G95
+      IRET = HOSTNM(HSTNAM)
+#else
       CALL HOSTNM(HSTNAM)
+#endif
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #if defined (SYS_HAL)
@@ -427,16 +329,9 @@ c     bug in gfortran-4.0.2 causes a segfault here.
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #if defined (SYS_AIX)
-C 930414-hjaaj: apparent error IBM's xlf library routines:
-C    when 'T6' then column 1-5 not blanked but contains text
-C    from a previous print statement!
-C     AIX XL FORTRAN version 2.3+
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
-C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
-C     CALL hostnm_(HSTNAM)
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate()
       CALL hostnm(HSTNAM)
-      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
-C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
+      WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 C
       RETURN
@@ -589,34 +484,44 @@ C
    10 CONTINUE
       RETURN
       END
-C  /* Deck trace */
-      SUBROUTINE TRACE
+C  /* Deck our_own_traceback */
+      SUBROUTINE OUR_OWN_TRACEBACK
 C
-C Written 4-Dec-1983 hjaaj
+C Written 4-Dec-1983 hjaaj; last revision Jan. 2011
 C
 #include "implicit.h"
 #include "priunit.h"
-#if !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) \
-  && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D)   \
-  && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) \
-  && !defined (SYS_HAL) && !defined (SYS_T90)
+
+#if defined (SYS_AIX)
+      include 'fexcp.h'
+#endif
+
       INTEGER A,B,C
       SAVE    A,B,C
       DATA    A/1/,B/0/,C/0/
-      C = C + A/B
-#endif
-#if defined (SYS_AIX)
+
 C  920522-hjaaj -- ad hoc routine for creating traceback on IBM-AIX
+C  and some other operating systems
 C  Note: integer divide by zero is the only error which
 C        always will cause an exception
 C
-      include 'fexcp.h'
-      save i,j
-      data i,j /1,0/
-C
+ 
+#if defined (SYS_AIX)
       call SIGNAL(SIGTRAP,xl__trce)
-      i = i/j
+#elif defined (VAR_SECSEC)
+      CALL STRACE
+#elif defined (SYS_NEC)
+      CALL ABORT()
+#elif defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+      CALL TRBK()
+#else
+
+      C = C + A/B
+
+C The print statements below will onl be printed if the integer divide by zero
+C code above does not cause the program to exit.
 #endif
+
 Chjaaj apr06:
 C     Use stderr on unix/linux systems, if LUPRI not defined yet.
       IF (LUPRI .LT. 0) LUPRI = 0
@@ -632,22 +537,12 @@ C     Use stderr on unix/linux systems, if LUPRI not defined yet.
 #if defined (SYS_HPUX)
       WRITE(LUPRI,*) 'HP-UX has no obvious system traceback facility.'
 #endif
-#if defined (SYS_HAL)
-      WRITE(LUPRI,*) 'HAL has no obvious system traceback facility.'
-#endif
-#if defined (VAR_SECSEC)
-      CALL STRACE
-#endif
-#if defined (SYS_NEC)
-      CALL ABORT()
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      CALL TRBK()
-#endif
+
       RETURN
       END
 C  /* Deck canon */
       SUBROUTINE CANON(I,J,K,L)
+C     reorder I, J, K, L to canonical 2-electron integral order
 #include "implicit.h"
       IP=MAX(I,J)
       JP=I+J-IP
@@ -981,9 +876,9 @@ C
          CALL DCOPY(N,W,1,VC(1,I),1)
 C
          IF (ITURN .EQ. 1 .AND. IROUND .GT. 0) THEN
-            IF (IPRERR .GT. 0) THEN
-               WRITE (LUERR,*) 'Info: second round in NORM, I=',I
-               CALL QDUMP(LUERR)
+            IF (IPRSTAT .GT. 0) THEN
+               WRITE (LUSTAT,*) 'Info: second round in NORM, I=',I
+               CALL QDUMP(LUSTAT)
             END IF
             GO TO 1
          END IF
@@ -1334,11 +1229,11 @@ C
       RETURN
 C
     3 IF (LUERR.LT.0) THEN
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1393,7 +1288,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE (LU,ERR=7)
 C     ... aug07-hjaaj: new ERR branch to avoid problems with backspace on empty files.
       GO TO 8
@@ -1430,11 +1325,11 @@ C
          RETURN
 C
     3 IF (LUERR.LT.0) THEN
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1483,11 +1378,11 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       GO TO 8
     3 CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE LU
 #endif
     8 FNDLB2 = .FALSE.
@@ -1500,7 +1395,7 @@ C
 C  06-Jun-2000 ALig
 C  (as FNDLB2, but the IVALUE returns the value of the
 C   symmetry representation of the operator SRCLBL and 0 if the
-C   label doesn't exist)
+C   label does not exist)
 C
 #include "implicit.h"
       CHARACTER*8 SRCLBL, B(4), STAR8
@@ -1518,11 +1413,11 @@ C
       IF (IRDERR .LT. 5) GO TO 1 
       GO TO 8 
     3 CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE LU
 #endif
     8 IVALUE = 0
@@ -1553,11 +1448,11 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       GO TO 8
     3 CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE LU
 #endif
     8 NXTLAB = .FALSE.
@@ -1645,20 +1540,11 @@ C
       END IF
       END
 C  /* Deck second */
-#if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_G77) && !defined (VAR_GFORTRAN)
-      FUNCTION SECOND ()
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
- || defined (SYS_NEC) || defined (SYS_DEC)  || defined (SYS_SUN)  \
- || defined (SYS_T3D) || defined (SYS_HAL)  || defined (SYS_SX)   \
- || (defined (SYS_LINUX) && (defined(VAR_PGF77)||defined(VAR_IFC)))
-#include "implicit.h"
-      real*4 etime,tarray(2)
-#if !defined (SYS_T3D)
-      SECOND = etime(tarray)
-#else
-      SECOND = 1.0D0
-#endif
-#endif
+#if !defined (SYS_CRAY) && !defined (SYS_T90) && !defined (VAR_GFORTRAN)
+      REAL*8 FUNCTION SECOND ()
+      REAL*4 TIME_CPU
+      CALL CPU_TIME(TIME_CPU)
+      SECOND = TIME_CPU
       RETURN
       END
 #endif
@@ -1931,20 +1817,22 @@ C
   140 CONTINUE
       RETURN
       END
-c     LOC() is not provided by gfortran-4.0.2 and this routine is not
-c     used at all in ther code.
-#if !(defined(GFORTRAN) && GFORTRAN <= 402)
       SUBROUTINE COMPOFF(WRK, WORK, KBASE)
 C
-C     Nov. 2004 Hans Joergen Aa. Jensen
+C     Nov. 2004 Hans Joergen Aa. Jensen; revised Dec. 2010
 C
 C     COMPOFF - Compute off-set from WORK to WRK
 C               i.e. WRK(I) = WORK(KBASE+I)
 C
-      REAL*8 WRK(*), WORK(*)
-      KADDR = LOC(WRK) - LOC(WORK) + 1
-      KBASE = KADDR / 8
-C     write (6,*) 'COMPOFF: KADDR, KBASE', KADDR, KBASE
-      RETURN
+      REAL*8                    :: WRK(*), WORK(*)
+      integer(8), intent(inout) :: kbase
+      integer(8)                :: kaddr
+
+      !print *,'LOC(WRK) ',LOC(WRK)
+      !print *,'LOC(WORK)',LOC(WORK)
+      KADDR = LOC(WRK)  - LOC(WORK)
+      KBASE = KADDR / 8 + 1 ! from byte address to REAL*8 address
+
+      !print *,'COMPOFF: KADDR, KBASE', KADDR, KBASE, KBASE*8
       END
-#endif
+C -- end of gphjj.F --

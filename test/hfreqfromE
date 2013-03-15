@@ -59,8 +59,7 @@ cat > hfreqfromE.dal <<'%EOF%'
 *SCF INP
 .THRESH
  1.0D-12
-**PROPERTIES
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -83,11 +82,11 @@ fi
 
 # Starting geometry and energy.
 CRIT1=`$GREP "bond distance\: * H * O * (0| )\.946283" $log | wc -l`
-CRIT2=`$GREP "Final * HF energy\: * \-76\.027053512722" $log | wc -l`
-CRIT3=`$GREP "Nuclear repulsion\: * 9\.300824137369" $log | wc -l`
-CRIT4=`$GREP "Electronic energy\: * \-85\.327877650091" $log | wc -l`
+CRIT2=`$GREP "Final * HF energy\: * \-76\.02705351272" $log | wc -l`
+CRIT3=`$GREP "Nuclear repulsion\: *    9\.30082413736" $log | wc -l`
+CRIT4=`$GREP "Electronic energy\: * \-85\.32787765009" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[1]=10
+CTRL[1]=8
 ERROR[1]="STARTING GEOMETRY AND ENERGY NOT CORRECT"
 
 # Matrix elements and character tables

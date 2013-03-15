@@ -19,7 +19,7 @@ fi
 #######################################################################
 cat > cc_prop_file.info <<'%EOF%'
    cc_prop_file
-   -----------
+   -------------
    Molecule:         CH2O
    Wave Function:    CCSD / STO-3G  
    Test Purpose:     Test if correct write to DALTON.PROP from CC module
@@ -48,7 +48,6 @@ cat > cc_prop_file.dal <<'%EOF%'
 .RUN WAVEFUNCTION
 **INTEGRALS
 .DIPLEN
-.NOSUP
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -80,7 +79,7 @@ cat > cc_prop_file.dal <<'%EOF%'
 *CCEXCI
 .NCCEXCI
  2
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################
@@ -101,7 +100,7 @@ fi
 # Test af Energies
 #
 
-CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy =    * \-112\.4948864024" $log | wc -l`
+CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy = * \-112\.49488640" $log | wc -l`
 TEST[1]=` expr $CRIT1 ` 
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
@@ -109,9 +108,9 @@ ERROR[1]="ENERGY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
 #
 # Test of CCSD dipole moment 
 #
-CRIT1=`$GREP "#  2 1 * <XDIPLEN > =   *   ( |0)\.00417488" $log | wc -l`
-CRIT2=`$GREP "#  3 1 * <YDIPLEN > =   *   ( |0)\.00003466" $log | wc -l`
-CRIT3=`$GREP "#  4 1 * <ZDIPLEN > =   *  ( \-|\-0)\.44399466" $log | wc -l`
+CRIT1=`$GREP "#  2 1 * <XDIPLEN > =   *  \-0*\.00000755" $log | wc -l`
+CRIT2=`$GREP "#  3 1 * <YDIPLEN > =   *    0*\.00376264" $log | wc -l`
+CRIT3=`$GREP "#  4 1 * <ZDIPLEN > =   *  \-0*\.44399835" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[2]=3
 ERROR[2]="CCSD DIPOLE MOMENT NOT CORRECTLY WRITTEN TO PROPERTY FILE"
@@ -119,15 +118,15 @@ ERROR[2]="CCSD DIPOLE MOMENT NOT CORRECTLY WRITTEN TO PROPERTY FILE"
 #
 # Test of CCSD polarizability
 #
-CRIT1=`$GREP " #  9 1 * <<XDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  6\.074461" $log | wc -l`
-CRIT2=`$GREP " # 10 1 * <<XDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  ( |0)\.022538" $log | wc -l`
-CRIT3=`$GREP " # 11 1 * <<XDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.025364" $log | wc -l`
-CRIT4=`$GREP " # 12 1 * <<YDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  ( |0)\.022538" $log | wc -l`
-CRIT5=`$GREP " # 13 1 * <<YDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  2\.465752" $log | wc -l`
-CRIT6=`$GREP " # 14 1 * <<YDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.000230" $log | wc -l`
-CRIT7=`$GREP " # 15 1 * <<ZDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.025364" $log | wc -l`
-CRIT8=`$GREP " # 16 1 * <<ZDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.000230" $log | wc -l`
-CRIT9=`$GREP " # 17 1 * <<ZDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  8\.604020" $log | wc -l`
+CRIT1=`$GREP " #  9 1 * <<XDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *    2\.465612" $log | wc -l`
+CRIT2=`$GREP " # 10 1 * <<XDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *   0*\.00000" $log | wc -l`
+CRIT3=`$GREP " # 11 1 * <<XDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *   0*\.00005" $log | wc -l`
+CRIT4=`$GREP " # 12 1 * <<YDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *   0*\.00000" $log | wc -l`
+CRIT5=`$GREP " # 13 1 * <<YDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *    6\.074557" $log | wc -l`
+CRIT6=`$GREP " # 14 1 * <<YDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  * \-0*\.023016" $log | wc -l`
+CRIT7=`$GREP " # 15 1 * <<ZDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *   0*\.00005" $log | wc -l`
+CRIT8=`$GREP " # 16 1 * <<ZDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  * \-0*\.023016" $log | wc -l`
+CRIT9=`$GREP " # 17 1 * <<ZDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *    8\.604065" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
 CTRL[3]=9
 ERROR[3]="CCSD POLARZABILITY NOT CORRECTLY WRITTEN TO PROPERTY FILE"

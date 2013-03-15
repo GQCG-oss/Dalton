@@ -172,7 +172,7 @@ SD 009 x
 SD 009 y
 .TRPPRP
 SD 009 z
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -195,7 +195,7 @@ fi
 
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
-CRIT2=`$GREP "The following one\-electron property integrals are calculated\:" $log | wc -l`
+CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- Fermi contact integrals" $log | wc -l`
 CRIT5=`$GREP "\(Dirac delta function integrals\)" $log | wc -l`
@@ -222,16 +222,16 @@ CTRL[3]=1
 ERROR[3]="ENERGY NOT CORRECT"
 
 # ESR parameters
-CRIT1=`$GREP "TRIPLET OPERATOR\: \"FC Cl 01\" LAGRANGIAN\: * 1\.96439(2|3) AVERAGE\: * (0| )\.000000 TOTAL\: * 1\.96439(2|3)" $log | wc -l`
-CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC O1 02\" LAGRANGIAN\: * 2\.15636. AVERAGE\: * (0| )\.000000 TOTAL\: * 2\.15636." $log | wc -l`
-CRIT3=`$GREP "TRIPLET OPERATOR\: \"SD * 002 y\" LAGRANGIAN\: (\-0| \-)\.18777. AVERAGE\: \-1\.4718(1|2). TOTAL\: \-1\.659600" $log | wc -l`
-CRIT4=`$GREP "TRIPLET OPERATOR\: \"SD * 003 y\" LAGRANGIAN\: (\-0| \-)\.6396(1|2). AVERAGE\: \-1\.1474(3|4). TOTAL\: \-1\.78705(3|4)" $log | wc -l`
-CRIT5=`$GREP "TRIPLET OPERATOR\: \"SD * 004 y\" LAGRANGIAN\: * (0| )\.01107(8|9) AVERAGE\: (\-0| \-)\.02511(7|8) TOTAL\: (\-0| \-)\.014039" $log | wc -l`
-CRIT6=`$GREP "TRIPLET OPERATOR\: \"SD * 005 x\" LAGRANGIAN\: * (0| )\.63108. AVERAGE\: * 2\.95178. TOTAL\: * 3\.5828(69|70)" $log | wc -l`
-CRIT7=`$GREP "TRIPLET OPERATOR\: \"SD * 006 x\" LAGRANGIAN\: * 1\.1568(2|3). AVERAGE\: * 2\.3243(8|9). TOTAL\: * 3\.48122(1|2)" $log | wc -l`
-CRIT8=`$GREP "TRIPLET OPERATOR\: \"SD * 007 z\" LAGRANGIAN\: (\-0| \-)\.4433(1|2). AVERAGE\: \-1\.4799(4|5). TOTAL\: \-1\.9232(69|70)" $log | wc -l`
-CRIT9=`$GREP "TRIPLET OPERATOR\: \"SD * 008 z\" LAGRANGIAN\: * (0| )\.01107(8|9) AVERAGE\: (\-0| \-)\.02511(7|8) TOTAL\: (\-0| \-)\.014039" $log | wc -l`
-CRIT10=`$GREP "TRIPLET OPERATOR\: \"SD * 009 z\" LAGRANGIAN\: (\-0| \-)\.51721. AVERAGE\: \-1\.17695. TOTAL\: \-1\.69416(8|9)" $log | wc -l`
+CRIT1=`$GREP "TRIPLET OPERATOR\: \"FC Cl 01\" LAGRANGIAN\: * 1\.9643.. AVERAGE\: * (0| )\.000000 TOTAL\: * 1\.9643" $log | wc -l`
+CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC O1 02\" LAGRANGIAN\: * 2\.1563.. AVERAGE\: * (0| )\.000000 TOTAL\: * 2\.1563" $log | wc -l`
+CRIT3=`$GREP "TRIPLET OPERATOR\: \"SD * 002 y\" LAGRANGIAN\: (\-0| \-)\.1877.. AVERAGE\: \-1\.4718.. TOTAL\: \-1\.6596" $log | wc -l`
+CRIT4=`$GREP "TRIPLET OPERATOR\: \"SD * 003 y\" LAGRANGIAN\: (\-0| \-)\.639... AVERAGE\: \-1\.1474.. TOTAL\: \-1\.7870" $log | wc -l`
+CRIT5=`$GREP "TRIPLET OPERATOR\: \"SD * 004 y\" LAGRANGIAN\: * (0| )\.0110.. AVERAGE\: (\-0| \-)\.0251.. TOTAL\: (\-0| \-)\.0140" $log | wc -l`
+CRIT6=`$GREP "TRIPLET OPERATOR\: \"SD * 005 x\" LAGRANGIAN\: * (0| )\.6310.. AVERAGE\: * 2\.9517.. TOTAL\: * 3\.5828" $log | wc -l`
+CRIT7=`$GREP "TRIPLET OPERATOR\: \"SD * 006 x\" LAGRANGIAN\: * 1\.1568.. AVERAGE\: * 2\.3243.. TOTAL\: * 3\.4812" $log | wc -l`
+CRIT8=`$GREP "TRIPLET OPERATOR\: \"SD * 007 z\" LAGRANGIAN\: (\-0| \-)\.4433.. AVERAGE\: \-1\.4799.. TOTAL\: \-1\.9232" $log | wc -l`
+CRIT9=`$GREP "TRIPLET OPERATOR\: \"SD * 008 z\" LAGRANGIAN\: * (0| )\.0110.. AVERAGE\: (\-0| \-)\.0251.. TOTAL\: (\-0| \-)\.0140" $log | wc -l`
+CRIT10=`$GREP "TRIPLET OPERATOR\: \"SD * 009 z\" LAGRANGIAN\: (\-0| \-)\.5172.. AVERAGE\: \-1\.1769.. TOTAL\: \-1\.6941" $log | wc -l`
 CRIT11=`$GREP "TRIPLET OPERATOR\: \"SD * 001 y\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
 CRIT12=`$GREP "TRIPLET OPERATOR\: \"SD * 005 z\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
 CRIT13=`$GREP "TRIPLET OPERATOR\: \"SD * 006 z\" contribution \= (0| )\.0 by symmetry" $log | wc -l`

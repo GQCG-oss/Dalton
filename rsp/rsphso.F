@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C  /* Deck hsoctl */
       SUBROUTINE HSOCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
 C
@@ -48,16 +38,15 @@ C        Index vector, XINDX
 C
 C Output: Spin-orbit property vector returned in first elements of WRK
 C
-#include <implicit.h>
-      DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK),NEEDSO(6)
+#include "implicit.h"
+      DIMENSION  GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
       CHARACTER*8 WORD
-      DATA NEEDSO/1,1,1,1,1,0/
 C
-      PARAMETER(D0=0D0, D1=1D0, DM1=-1D0, D2=2D0)
-      LOGICAL SO2TRA, FILE_EXISTS, FOPEN, DO1, DO2, LORB, LCON, TRPDEN
+      PARAMETER (D0=0.D0, D1=1.D0, DM1=-1.D0, D2=2.D0)
+      LOGICAL    SO2TRA, FILE_EXISTS, FOPEN, DO1,DO2, LORB, LCON, TRPDEN
       CHARACTER*8 LABEL
-      LOGICAL  FNDLAB
-      EXTERNAL FNDLAB
+      LOGICAL    FNDLAB
+      EXTERNAL   FNDLAB
 C
 C Used from common blocks:
 C  MULD2H,ISMO,ISW,IOBTYP,IDBTYP,NISHT,NORBT,NASHT,NNASHX
@@ -71,31 +60,31 @@ C  INFPP: EXMOM
 C  INFRSP: ???,SOPPA
 C
 C-- common blocks:
-#include <maxash.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <trhso.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "trhso.h"
 #include "rspprp.h"
-#include <infhso.h>
-#include <infhyp.h>
-#include <infsmo.h>
-#include <infpp.h>
-#include <iratdef.h>
-#include <codata.h>
-#include <inflr.h>
-#include <qrinf.h>
-#include <cbihr2.h>
+#include "infhso.h"
+#include "infhyp.h"
+#include "infsmo.h"
+#include "infpp.h"
+#include "iratdef.h"
+#include "codata.h"
+#include "inflr.h"
+#include "qrinf.h"
+#include "cbihr2.h"
 #include "infesr.h"
-#include <dftcom.h>
+#include "dftcom.h"
 C
       CALL QENTER('HSOCTL')
 C
@@ -258,7 +247,7 @@ C
       IF (DO1) THEN
          CALL DAXPY(N2ORBX,D1,WRK(KH1),1,WRK(KFC),1)
          IF (TDHF.AND.NASHT.GT.0) THEN
-            CALL DAXPY(N2ORBX,-D1,WRK(KH1),1,WRK(KFV),1)
+            CALL DAXPY(N2ORBX,DM1,WRK(KH1),1,WRK(KFV),1)
          END IF
       END IF
 C
@@ -271,7 +260,7 @@ C
          IF (TRPLET) THEN
             CALL HSOORB(.TRUE.,1,DUMMY1,
      *         WRK(KFC),WRK(KFV),WRK(KQA),WRK(KQB),
-     *         UDV    ,GP,DUMMY2,TRPDEN)
+     *         UDV    ,GP,TRPDEN)
          ELSE
 C
 C Quick fix for high spin matrices which do not fit neatly into HSOORB
@@ -280,16 +269,16 @@ C
 C
             CALL HSOORB(.TRUE.,1,DUMMY1,
      *         WRK(KFC),WRK(KFV),WRK(KQA),WRK(KQB),
-     *         WRK(KD),GP,DUMMY2,TRPDEN)
+     *         WRK(KD),GP,TRPDEN)
          END IF
 C        CALL HSOORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,
-C    *                  EVECS,ZYMAT,TRPDEN)
+C    *                  EVECS,TRPDEN)
 C
 C
-         IF (IPRHSO.GT.2) CALL TIMER('RSPORB',ORBSTA,ORBTIM)
+         IF (IPRHSO.GT.2) CALL TIMER('HSOORB',ORBSTA,ORBTIM)
       END IF
 C
-C  Compensate for the sign in RSPORB
+C  Compensate for the sign in HSOORB
 C
       CALL DSCAL(KZWOPT,DM1,GP(1+KZCONF),1)
       CALL DSCAL(KZWOPT,DM1,GP(1+KZCONF+KZVAR),1)
@@ -359,16 +348,16 @@ C
 C  /* Deck hsoinp */
       SUBROUTINE HSOINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "infs0.h"
-#include <infpri.h>
-#include <infdim.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "infpri.h"
+#include "infdim.h"
+#include "trhso.h"
+#include "infhso.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE =  8 )
@@ -476,7 +465,7 @@ C  FVSO(P,Q) = SUM (X,Y) (XY|P^Q) D(XY) - SUM (K) 3/2*(PX|Y^Q) D(XY)
 C                                     - SUM (K) 3/2*(XQ|P^Y) D(XY)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C
@@ -485,17 +474,17 @@ C   INFIND : ISMO,IOBTYP,ICH,ISMO,IASH,IORB,NISH,NASH,NOCC,NORB
 C   INFHSO :
 C   WRKRSP : KSYMOP
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
+#include "trhso.h"
+#include "infhso.h"
 C
       DIMENSION H2(NORBT,NORBT)
       DIMENSION FCSO(NORBT,NORBT),FVSO(NORBT,NORBT)
@@ -815,19 +804,19 @@ C
 C   where PV(++)(P,Q,R,S) = <0| e(+,+)(pqrs) |0>
 C    and  PV(--)(P,Q,R,S) = <0| e(-,-)(pqrs) |0>
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
+#include "trhso.h"
+#include "infhso.h"
 C
 C
       DIMENSION QASO(NORBT,NASHT),QBSO(NORBT,NASHT)
@@ -1139,25 +1128,25 @@ C triangularly packed form
 C
 C Olav Vahtras
 C Sep 14, 1990
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FC(NORBT,NORBT)
       DIMENSION H2AC(NNASHX,NNASHX)
       DIMENSION GP(KZYVAR),XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <cbgetdis.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "cbgetdis.h"
+#include "trhso.h"
+#include "infhso.h"
 C
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -1315,7 +1304,7 @@ C  /* Deck h2acso */
 C
 C 20-Jun-1990 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2ACPK(NNASHX,NNASHX), H2SOAC(N2ASHX,NASHT,NASHT)
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -1324,10 +1313,10 @@ C Used from common blocks:
 C  INFORB : NASHT,NNASHX,N2ASHX
 C  INFIND : IROW()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('H2ACSO')
 C
@@ -1345,19 +1334,19 @@ C
       RETURN
       END
       SUBROUTINE TRANSFORM_HSO(WORD,CMO,WRK,KWRK1,LWRK1)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 WORD
       DIMENSION  WRK(*), CMO(*)
-#include <dummy.h>
+#include "dummy.h"
 #include "rspprp.h"
-#include <infhso.h>
-#include <infhyp.h>
-#include <infpp.h>
-#include <infsmo.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <trhso.h>
-#include <wrkrsp.h>
+#include "infhso.h"
+#include "infhyp.h"
+#include "infpp.h"
+#include "infsmo.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "trhso.h"
+#include "wrkrsp.h"
       LOGICAL FOPEN
       LOGICAL MOEXIS, SO2TRA
 C
@@ -1420,13 +1409,13 @@ C
       END
       SUBROUTINE HSOFCK(WORD,FC,FV,QA,QB,H2AC,UDV,PV,CMO,LORB,LCON,
      &   WRK,KWRK1,LWRK1)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 WORD
       DIMENSION FC(*), FV(*), QA(*), QB(*), H2AC(*), UDV(*), PV(*),
      &   CMO(*), WRK(*)
       LOGICAL LORB, LCON
-#include <infrsp.h>
-#include <inforb.h>
+#include "infrsp.h"
+#include "inforb.h"
       CALL QENTER('HSOFCK')
       IF (TDHF) THEN
          IF (NASHT.GT.0) THEN
@@ -1453,18 +1442,18 @@ C Build HSO inactive fockmatrix from AO integrals
 C If DIRFCK=.TRUE. call TWOINT
 C else read from AO2SOINT
 C
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <dummy.h>
-#include <infinp.h>
-#include <wrkrsp.h>
-#include <inforb.h>
-#include <aovec.h>
-#include <infrsp.h>
-#include <dftcom.h>
-#include <symmet.h>
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "dummy.h"
+#include "infinp.h"
+#include "wrkrsp.h"
+#include "inforb.h"
+#include "aovec.h"
+#include "infrsp.h"
+#include "dftcom.h"
+#include "symmet.h"
 #ifdef VAR_DEBUG
 #define DEBUG .TRUE.
 #else
@@ -1632,20 +1621,18 @@ C
 C  /* Deck hsofckmo  */
       SUBROUTINE HSOFCKMO(FC,FV,QA,QB,H2AC,UDV,PV,LORB,LCON,
      &   WRK,KWRK1,LWRK1)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FC(*), FV(*), QA(*), QB(*), H2AC(*), UDV(*), PV(*), 
-     &   WRK(*)
-      LOGICAL LORB, LCON
-#include <infhso.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <inforb.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-      PARAMETER (D1=1.0D0)
-      INTEGER NEEDSO(6)
-      DATA NEEDSO/1,1,1,1,1,0/
+     &          WRK(*)
+      LOGICAL   LORB, LCON
+#include "infhso.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+      INTEGER NEEDSO(-4:6)
       CALL QENTER('HSOFCK')
       CALL DZERO(FC,N2ORBX)
       IF (LORB) THEN
@@ -1663,12 +1650,14 @@ C  /* Deck hsofckmo  */
       CALL MEMGET('REAL',KH2,N2ORBX,WRK,KWRK1,LWRK1)
       CALL MEMGET('REAL',KPV12,N2ASHX,WRK,KWRK1,LWRK1)
       CALL MEMGET('REAL',KPV21,N2ASHX,WRK,KWRK1,LWRK1)
-      IDIST = 0
-      KFREE = 1
-      LFREE = LWRK1
 C
 C Read distributions
 C
+      NEEDSO(-4:6) = 0
+      NEEDSO( 1:5) = 1
+      IDIST = 0
+      KFREE = 1
+      LFREE = LWRK1
  90   CALL NXTHSO(IC,ID,WRK(KH2),NEEDSO,WRK(KWRK1),KFREE,LFREE,IDIST)
       IF (IDIST.LT.0) GOTO 95
       IF (IC.EQ.ID) GOTO 90
@@ -1709,7 +1698,7 @@ C
          ELSE
             NCDW = IROW(NDW) + NCW
             KH2XY = 1 + (NCDW-1)*NNASHX
-            CALL DAXPY(N2ORBX,-D1,WRK(KH2),1,WRK(KWRK1-1+KFREE),1)
+            CALL DAXPY(N2ORBX,-1.0D0,WRK(KH2),1,WRK(KWRK1-1+KFREE),1)
             CALL ADH2AC(H2AC(KH2XY),WRK(KWRK1-1+KFREE),KCDSYM)
          END IF
       END IF
@@ -1747,7 +1736,7 @@ C
       END
 C  /* Deck hsoorb */
       SUBROUTINE HSOORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,
-     *                  EVECS,ZYMAT,TRPDEN)
+     *                  EVECS,TRPDEN)
 C
 C WRITTEN 14-FEB 1986
 C adapted 5-Apr 2001
@@ -1812,27 +1801,26 @@ C    -2*FCX(J,A)-2*FVX(J,A)
 C           K,L        K,L
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       LOGICAL ONEIND, TRPDEN
 C
       DIMENSION FC(*),FCX(NORBT,NORBT,*),FVX(NORBT,NORBT,*)
       DIMENSION QAX(NORBT,NASHDI,*),QBX(NORBT,NASHDI,*)
       DIMENSION UDV(NASHDI,NASHDI,*), EVECS(KZYVAR,*)
-      DIMENSION ZYMAT(NORBT,NORBT,*)
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -2039,11 +2027,11 @@ C
  3000 CONTINUE
 C
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  E(2)'
+         WRITE(LUPRI,*)' HSOORB: LINEAR TRANSFORMATION WITH  E(2)'
          CALL OUTPUT(EVECS,1,KZYVAR,1,NSIM,KZYVAR,NSIM,1,LUPRI)
       END IF
 C
-C END OF RSPORB
+C END OF HSOORB
 C
       RETURN
       END
@@ -2053,7 +2041,7 @@ C
 C Alternative routine for constructing spin-orbit gradient
 C by way of X2HSO Case 2
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION GP(*), CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
       CHARACTER*8 WORD
 C
@@ -2071,18 +2059,18 @@ C INFRSP: NCREF,IREFSY,DIROIT,SOPPA
 C INFHSO: DOSO1
 C INFTAP: LUINDX, LUMHSO
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <infhso.h>
-#include <trhso.h>
-#include <inftap.h>
+#include "infhso.h"
+#include "trhso.h"
+#include "inftap.h"
 C
       CALL QENTER('HSOAL2')
       CALL HEADER('HSOAL2: TEST OF SPIN-ORBIT GRADIENT',1)
@@ -2269,18 +2257,18 @@ C
 C /* Deck getfmatx */
 C
       SUBROUTINE GETFMATX(WORD,TRIPLET,F,D,ND)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 WORD
       INTEGER ND
       LOGICAL TRIPLET(ND)
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION F(NBAST,NBAST,ND), D(NBAST,NBAST,ND)
 C
 C Generalize GETFMAT to handle non-symmetric densities (quadratic
 C response)
 C
-#include <priunit.h>
-#include <iratdef.h>
+#include "priunit.h"
+#include "iratdef.h"
 C
 C LOCAL
 C
@@ -2340,10 +2328,17 @@ cF90     IF (LENGTH.LE.0) EXIT
 cF90     BUFFER: DO IB=1,LENGTH
          DO IB=1,LENGTH
             LABEL=IBUF(IB)
+#ifdef VAR_INT64
+            I = IBITS(LABEL,48,16)
+            J = IBITS(LABEL,32,16)
+            K = IBITS(LABEL,16,16)
+            L = IBITS(LABEL, 0,16)
+#else
             I = IBITS(LABEL,24,8)
             J = IBITS(LABEL,16,8)
             K = IBITS(LABEL, 8,8)
             L = IBITS(LABEL, 0,8)
+#endif
             IF (L.EQ.0) THEN
                ICOOR = K
 cF90           CYCLE BUFFER

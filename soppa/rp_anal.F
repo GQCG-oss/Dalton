@@ -10,12 +10,12 @@ C
 C     PURPOSE: Analysis of eigenvectors in terms of most important
 C              orbital excitations which are printed.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "soppinf.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       PARAMETER (ZERO = 0.0D+00, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THREE = 3.0D0)

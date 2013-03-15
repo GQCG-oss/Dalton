@@ -1,36 +1,31 @@
 /*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+
+
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+
+!
+
 */
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* The DFT integrator.
@@ -215,7 +210,7 @@ dft_integrate_collect_info(real *electrons)
    FIXME: adapt to open-shell scheme.
  */
 real
-dft_integrate(real* cmo, real* work, integer* lwork, 
+dft_integrate(real* cmo, real* work, integer* lwork, integer* iprint,
 	      const DftCallbackData* cbarr, int cbcount)
 {
     int npoints, ipnt, cbno;
@@ -232,7 +227,7 @@ dft_integrate(real* cmo, real* work, integer* lwork,
     /* start integration */
     electrons  = 0.0;
 
-    rawgrid = grid_open_cmo(inforb_.nbast, cmo, work, lwork);
+    rawgrid = grid_open_cmo(inforb_.nbast, cmo, work, lwork, *iprint);
     npoints = 0;
     while( (blocksz=grid_getchunk_plain(rawgrid, GRID_BUFF_SZ,
                                         grid->coor, grid->weight)) >=0) {
@@ -315,7 +310,7 @@ dft_integrate(real* cmo, real* work, integer* lwork,
    Returns integrated charge.
  */
 real
-dft_integrate_ao(DftDensity* dens, real* work, integer* lwork,
+dft_integrate_ao(DftDensity* dens, real* work, integer* lwork, integer* iprint,
                  int needgrad, int needlap, int needgb, 
                  const DftCallbackData* cbarr, int cbcount)
 {
@@ -331,7 +326,7 @@ dft_integrate_ao(DftDensity* dens, real* work, integer* lwork,
     /* start integration */
     electrons  = 0.0;
     /*printf("CALLING grid_open from dft_integrate_ao\n");*/
-    rawgrid = grid_open(inforb_.nbast, dens->dmata, work, lwork);
+    rawgrid = grid_open(inforb_.nbast, dens->dmata, work, lwork, *iprint);
     npoints = 0;
     while( (blocksz=grid_getchunk_plain(rawgrid, GRID_BUFF_SZ,
                                         grid->coor, grid->weight)) >=0) {
@@ -461,7 +456,7 @@ FSYM2(getrho_blocked_gga)(real*dmat, const real* atv,
 			  real *rho, real (*grad)[3]);
 
 real
-dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork,
+dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork, integer *iprint,
                     int needlnd, DftBlockCallback cb, void *cb_data)
 {
     int npoints, ipnt, i, j;
@@ -479,7 +474,7 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork,
     /* start integration */
     electrons  = 0.0;
     /*printf("CALLING grid_open from dft_integrate_ao_bl\n");*/
-    rawgrid = grid_open(inforb_.nbast, dmat, work, lwork);
+    rawgrid = grid_open(inforb_.nbast, dmat, work, lwork, *iprint);
     npoints = 0;
     while( (blocksz=grid_getchunk_blocked(rawgrid, GRID_BUFF_SZ,
                                           &grid->shl_bl_cnt, 
@@ -509,14 +504,14 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork,
                 for(j=0; j<len; j++)
                     electrons += grid->weight[ipnt+j]*grid->r.rho[j+roff];
             }
-#if 0
+/*#if 0
             for(lo=0; lo<len && grid->rhoa[lo]<1e-10; lo++)
                 ;
             for(hi=len-1; hi>lo && grid->rhoa[hi]<1e-10; hi--)
                 ;
-#else
+#else */
             lo = 0; hi = len-1;
-#endif
+/*#endif */
             npoints += len;
             if(lo<=hi)
                 cb(grid, dmagao, len, lo, hi+1, cb_data);
@@ -524,6 +519,9 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork,
     }
     grid_close(rawgrid);
 #ifdef VAR_MPI
+/*
+    printf("collecting e- \n");
+*/
     FSYM(dftintcollect)(&electrons);
 #endif
     free(dmagao);

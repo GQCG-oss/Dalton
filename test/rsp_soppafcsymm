@@ -53,7 +53,6 @@ cat > rsp_soppafcsymm.dal <<'%EOF%'
 .MP2
 **RESPONSE
 .S0MIX
-.NOITRA
 .TRPFLG
 .SOPPA
 *LINEAR
@@ -86,7 +85,7 @@ fi
 
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
-CRIT2=`$GREP "The following one\-electron property integrals are calculated\:" $log | wc -l`
+CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- Fermi contact integrals" $log | wc -l`
 CRIT5=`$GREP "\(Dirac delta function integrals\)" $log | wc -l`
@@ -129,10 +128,10 @@ CTRL[4]=2
 ERROR[4]="ENERGIES NOT CORRECT"
 
 # Fermi-contact contribution
-CRIT1=`$GREP "\@.*FC O * 01 .* FC O * 01 .* 1\.326991.....[0-9](D|E)\+04" $log | wc -l`
-CRIT2=`$GREP "\@.*FC O * 01 .* FC H * 02 .* \-8\.5365(4|5)......[0-9](D|E)\+01" $log | wc -l`
-CRIT3=`$GREP "\@.*FC H * 02 .* FC H * 02 .* 1\.085058.....[0-9](D|E)\+02" $log | wc -l`
-CRIT4=`$GREP "\@.*FC H * 03 .* FC H * 03 .* 1\.059529.....[0-9](D|E)\+02" $log | wc -l`
+CRIT1=`$GREP "\@.*FC O * 01 .* FC O * 01 .* 1\.32699.......(D|E)\+04" $log | wc -l`
+CRIT2=`$GREP "\@.*FC O * 01 .* FC H * 02 .* \-8\.5365........(D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "\@.*FC H * 02 .* FC H * 02 .* 1\.08505.......(D|E)\+02" $log | wc -l`
+CRIT4=`$GREP "\@.*FC H * 03 .* FC H * 03 .* 1\.05952.......(D|E)\+02" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[5]=4
 ERROR[5]="FERMI-CONTACT NOT CORRECT"

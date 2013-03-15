@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE DENFIT_NODDY_INT
 *
 ****************************************************************************
@@ -59,27 +49,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <inforb.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "inforb.h"
 
 C
       CHARACTER TITLER*14, SPACER*14
@@ -169,27 +159,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <hertop.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "hertop.h"
 
 C
       CHARACTER*17 FNAB 
@@ -415,27 +405,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <hertop.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "hertop.h"
 
 C
       CHARACTER*17 FNABAL 
@@ -664,27 +654,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <hertop.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "hertop.h"
 
 C
       CHARACTER*17 FNABCD 
@@ -983,8 +973,8 @@ C  /* Deck get_factor */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 !#if defined (SYS_CRAY)
 !      REAL P,Q,FAC
@@ -1020,9 +1010,9 @@ C  /* Deck get_ikm */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <hertop.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "hertop.h"
 C
          DIMENSION IKM((JTOP+1)*(JTOP+2)*(JTOP+3)/6,3)
 C
@@ -1055,8 +1045,8 @@ C  /* Deck get_eijt */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D1 = 1.0D0,D2 = 2.0D0)
 C
@@ -1107,8 +1097,8 @@ C  /* Deck get_rtuv */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 C
@@ -1195,8 +1185,8 @@ C  /* Deck denfit_coeffs_noddy */
 ****************************************************************************
 *
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER TITLER*21, SPACER*21
       PARAMETER (TITLER = 'DENFIT_COEFFS_NODDY> ')
@@ -1310,8 +1300,8 @@ C  /* Deck get_gamma_vec */
 *
 ****************************************************************************
 *
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*17 FNABAL
       PARAMETER(FNABAL = 'DENFIT_NODDY_INT3')
@@ -1398,8 +1388,8 @@ C  /* Deck get_m_mat */
 *
 ****************************************************************************
 *
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*17 FNAB
       PARAMETER(FNAB = 'DENFIT_NODDY_INT2')
@@ -1452,8 +1442,8 @@ C  /* Deck matinv */
 *
 ****************************************************************************
 *
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
 C
@@ -1511,8 +1501,8 @@ C  /* Deck get_coeffs */
 *
 ****************************************************************************
 *
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D1 = 1.0D0)
 C
@@ -1585,8 +1575,8 @@ C  /* Deck jab_noddy */
 *
 ****************************************************************************
 *
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*17 FNABCD
       PARAMETER(FNABCD = 'DENFIT_NODDY_INT4')
@@ -1685,8 +1675,8 @@ C  /* Deck jab_denfit_noddy */
 *
 ****************************************************************************
 *
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*17 FNABAL
       PARAMETER(FNABAL = 'DENFIT_NODDY_INT3')
@@ -1781,27 +1771,27 @@ C FIXME: Clean up calling list and declarations after things are working!!!
 C        At the moment it's a copy of header files from the REAPRI routine.
 C
 C     IMPLICIT NONE
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <hertop.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "hertop.h"
 
 C
       CHARACTER*17 FNABCD 

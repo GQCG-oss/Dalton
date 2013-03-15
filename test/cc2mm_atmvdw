@@ -239,16 +239,16 @@ ERROR[2]="THE QM/MM ENERGY TERMS ARE NOT CORRECT"
 
 # Dipole moment components compared:
 CRIT1=` $GREP "x * (\-|\-0)\.00380000 * (\-|\-0)\.00965863" $log | wc -l`
-CRIT2=` $GREP "y * ( |0)\.37540239 * ( |0)\.95417761" $log | wc -l`
-CRIT3=` $GREP "z * (\-|\-0)\.22168041 * (\-|\-0)\.56345533" $log | wc -l`
+CRIT2=` $GREP "y * ( |0)\.375402(39|40) * ( |0)\.95417766" $log | wc -l`
+CRIT3=` $GREP "z * (\-|\-0)\.22168041 * (\-|\-0)\.56345537" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
 
 # Quadrupole moment components compared:
-CRIT1=` $GREP "1 * \-2\.99511544 * ( |0)\.01163407 * ( |0)\.00364972" $log | wc -l`
-CRIT2=` $GREP "2 * ( |0)\.01163407 * 1\.80034154 * \-3\.79640215" $log | wc -l`
-CRIT3=` $GREP "3 * ( |0)\.00364972 * \-3\.79640215 * 1\.19477391" $log | wc -l`
+CRIT1=` $GREP "1 * \-2\.995115.. * ( |0)\.0116340. * ( |0)\.0036497." $log | wc -l`
+CRIT2=` $GREP "2 * ( |0)\.0116340. * 1\.800341.. * \-3\.7964021." $log | wc -l`
+CRIT3=` $GREP "3 * ( |0)\.0036497. * \-3\.7964021. * 1\.194773.." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="QUADRUPOLE MOMENT COMPONENTS ARE NOT CORRECT"

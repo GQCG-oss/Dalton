@@ -1,54 +1,44 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE GETSOS(GSO,NCNT,COR,WORK,LWORK,NBAST,
      &                  DOLND,DOGGA,DFTHRI,IPRINT)
 C
 C     T. Helgaker feb 01
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
       LOGICAL DOLND, DOGGA
       DIMENSION GSO(NBAST*NTYPSO), WORK(LWORK), NCNT(NBAST),COR(3)
 C
-#include <dftinf.h>
-#include <symmet.h>
+#include "dftinf.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (MAXREP.EQ.0) THEN
          CALL DFTAOS(GSO(KSO0),GSO(KSO1),GSO(KSO2),GSO(KSOB),GSO(KSOB1),
@@ -72,12 +62,12 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "aovec.h"
 C
       PARAMETER (D0 = 0.0D0, DTHRS = 20.0D0)
 C   
@@ -85,17 +75,17 @@ C
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), GAB2(NBAST,3,3), NCNT(NBAST)
 C
-#include <onecom.h>
-#include <lmns.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <primit.h>
-#include <sphtrm.h>
-#include <orgcom.h>
-#include <dftinf.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "primit.h"
+#include "sphtrm.h"
+#include "orgcom.h"
+#include "dftinf.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL DZERO(GAO,NTYPSO*NBAST)
 C
@@ -183,19 +173,19 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       DIMENSION GAO(KCKTA)
       DIMENSION CSP(KHKTA,KCKTA)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
 C     loop over primitives
 C
@@ -269,11 +259,11 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
@@ -281,11 +271,9 @@ C
      &          CAO(MXAQN), CAOX(MXAQN), CAOY(MXAQN), CAOZ(MXAQN)
       DIMENSION CSP(KHKTA,KCKTA)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
-C
-#include <sdpre.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
 C     loop over primitives
 C
@@ -344,11 +332,11 @@ C
                GAY = FY*P0
                GAZ = FZ*P0
                IF(L.GT.0) GAX = GAX
-     &                    + SDPRE(L)*(PAX**(L-1))*(PAY**M)*(PAZ**N)*GA
+     &                    + L*(PAX**(L-1))*(PAY**M)*(PAZ**N)*GA
                IF(M.GT.0) GAY = GAY
-     &                    + SDPRE(M)*(PAX**L)*(PAY**(M-1))*(PAZ**N)*GA
+     &                    + M*(PAX**L)*(PAY**(M-1))*(PAZ**N)*GA
                IF(N.GT.0) GAZ = GAZ
-     &                    + SDPRE(N)*(PAX**L)*(PAY**M)*(PAZ**(N-1))*GA
+     &                    + N*(PAX**L)*(PAY**M)*(PAZ**(N-1))*GA
                IF (SPHRA) THEN
                   CAO (ICOMPA) = GA*P0
                   CAOX(ICOMPA) = GAX
@@ -418,11 +406,11 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
       DIMENSION GAOXX(KCKTA), GAOXY(KCKTA), GAOXZ(KCKTA),
@@ -431,11 +419,9 @@ C
      &          CAOYY(MXAQN), CAOYZ(MXAQN), CAOZZ(MXAQN)
       DIMENSION CSP(KHKTA,KCKTA)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
-C
-#include <sdpre.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
       IF (SPHRA) THEN
          DO I=1,KCKTA
@@ -463,15 +449,15 @@ C
                PXD = D0
                PYD = D0
                PZD = D0
-               IF (L.GT.1) PXD = SDPRE(L*(L-1))*(PAX**(L-2))
-               IF (M.GT.1) PYD = SDPRE(M*(M-1))*(PAY**(M-2))
-               IF (N.GT.1) PZD = SDPRE(N*(N-1))*(PAZ**(N-2))
+               IF (L.GT.1) PXD = (L*(L-1))*(PAX**(L-2))
+               IF (M.GT.1) PYD = (M*(M-1))*(PAY**(M-2))
+               IF (N.GT.1) PZD = (N*(N-1))*(PAZ**(N-2))
                PXM = D0
                PYM = D0
                PZM = D0
-               IF (L.GT.0) PXM = SDPRE(L)*(PAX**(L-1))
-               IF (M.GT.0) PYM = SDPRE(M)*(PAY**(M-1))
-               IF (N.GT.0) PZM = SDPRE(N)*(PAZ**(N-1))
+               IF (L.GT.0) PXM = L*(PAX**(L-1))
+               IF (M.GT.0) PYM = M*(PAY**(M-1))
+               IF (N.GT.0) PZM = N*(PAZ**(N-1))
                PX0 = PAX**L
                PY0 = PAY**M
                PZ0 = PAZ**N
@@ -480,9 +466,9 @@ C
                PZP = TAPAZ*PZ0
                P000 = PX0*PY0*PZ0 
 C
-               GAXX = (TAPAX**2 + TALPH*SDPRE(2*L+1))*P000 + PXD*PY0*PZ0
-               GAYY = (TAPAY**2 + TALPH*SDPRE(2*M+1))*P000 + PX0*PYD*PZ0
-               GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N+1))*P000 + PX0*PY0*PZD
+               GAXX = (TAPAX**2 + TALPH*(2*L+1))*P000 + PXD*PY0*PZ0
+               GAYY = (TAPAY**2 + TALPH*(2*M+1))*P000 + PX0*PYD*PZ0
+               GAZZ = (TAPAZ**2 + TALPH*(2*N+1))*P000 + PX0*PY0*PZD
                GAXY = TAPAX*TAPAY*P000 + (PXP*PYM+PXM*PYP+PXM*PYM)*PZ0
                GAXZ = TAPAX*TAPAZ*P000 + (PXP*PZM+PXM*PZP+PXM*PZM)*PY0
                GAYZ = TAPAY*TAPAZ*P000 + (PYP*PZM+PYM*PZP+PYM*PZM)*PX0
@@ -539,18 +525,18 @@ C  /* Deck getgb1 */
 C
 C     T. Helgaker Oct 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KHKTA), GAOY(KHKTA), GAOZ(KHKTA), GAO(KHKTA)
 C
-#include <onecom.h>
-#include <primit.h>
-#include <orgcom.h>
+#include "onecom.h"
+#include "primit.h"
+#include "orgcom.h"
 C
       FCX = DP5*PAX
       FCY = DP5*PAY
@@ -565,8 +551,8 @@ C
       END
 C /* Deck dftsph */
       SUBROUTINE DFTSPH(CARINT,SPHINT,CSP,KHKTA,KCKTA)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION CARINT(KCKTA), SPHINT(KHKTA)
       DIMENSION CSP(KHKTA,KCKTA)
@@ -584,16 +570,16 @@ C
 C  /* Deck dftsos */
       SUBROUTINE DFTSOS(GAO,GSO,NBAST,NVEC,NCNT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION GSO(NBAST,NVEC), GAO(NBAST,NVEC), NCNT(NBAST)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 100) CALL HEADER('Subroutine DFTSOS',-1)
 C
 C     Loop over all irreps in molecule
@@ -646,21 +632,21 @@ C  /* Deck blgetsos */
 C
 C     T. Helgaker feb 01, P. Salek 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
       LOGICAL DOLND, DOGGA
       DIMENSION GSO(NVCLEN*NBAST*NTYPSO), WORK(LWORK)
       DIMENSION COOR(3,NVCLEN)
       DIMENSION IBLCKS(2,NBLCNT)
 C
-#include <symmet.h>
-#include <dftinf.h>
+#include "symmet.h"
+#include "dftinf.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (MAXREP.EQ.0) THEN
          CALL BLDFTAOS(NVCLEN,GSO,COOR,NBLCNT,IBLCKS,
@@ -684,12 +670,12 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99, P. Salek 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "aovec.h"
 C
       PARAMETER (D0 = 0.0D0, DTHRS = 20.0D0)
 C   
@@ -700,23 +686,18 @@ C
 C     PA2 contains distance from the basis function center to respective
 c     grid point.
       DIMENSION PA(3,NVCLEN), PA2(NVCLEN)
-#include <onecom.h>
-#include <lmns.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <primit.h>
-#include <sphtrm.h>
-#include <orgcom.h>
-#include <dftinf.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "primit.h"
+#include "sphtrm.h"
+#include "orgcom.h"
+#include "dftinf.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 
-!#define DEBUG_SHELL_RANGE
-#ifdef DEBUG_SHELL_RANGE
-!radovan: this debug info is used in DIRAC
-      character(kmax) :: shell_range
-#endif
 
 C
       IF(NDER.GT.1) THEN
@@ -727,18 +708,10 @@ c        fixme - this won't scale linearly
          END IF
       END IF
 
-#ifdef DEBUG_SHELL_RANGE
-      do ishela = 1, kmax
-         shell_range(ishela:ishela) = ' '
-      end do
-#endif
 
       DO IBL = 1, NBLCNT
       DO ISHELA = IBLCKS(1,IBL),IBLCKS(2,IBL)
 
-#ifdef DEBUG_SHELL_RANGE
-         shell_range(ishela:ishela) = '*'
-#endif
 
          IADR =   KSTRT(ISHELA)+1
          NHKTA  = NHKT(ISHELA)
@@ -817,9 +790,6 @@ C        write (2,*) ' zz integrals from BLDFTAOS '
 C        call output(gao(1,1,10),1,nvclen,1,nbast,nvclen,nbast,1,2)
 C     end if
 
-#ifdef DEBUG_SHELL_RANGE
-      write(lupri, *) 'shell range: [', shell_range, ']'
-#endif
 
       RETURN
       END
@@ -828,12 +798,12 @@ C  /* Deck blgetgao */
 C
 C     T. Helgaker Sep 99, P. Salek 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <dftinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "dftinf.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       DIMENSION GAO(NVCLEN,KCKTA)
@@ -842,9 +812,9 @@ C
 c
       DIMENSION GA(NVCLEN),CINT(NVCLEN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
       CALL DZERO(GA,NVCLEN)
 C
@@ -945,11 +915,11 @@ C  /* Deck blgetga1 */
 C
 C     T. Helgaker Sep 99, P. Salek 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
       PARAMETER (I0=1,IX=2,IY=3,IZ=4)
@@ -965,11 +935,9 @@ c     GAO(1..NVCLEN, 1..KCKTA,1..4) is set
      &          FX(NVCLEN), FY(NVCLEN), FZ(NVCLEN),
      &          SPH0(NVCLEN), SPHX(NVCLEN), SPHY(NVCLEN), SPHZ(NVCLEN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
-C
-#include <sdpre.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
 C     loop over primitives
 C
@@ -1030,9 +998,9 @@ C
             N = NVALUA(ICOMPA)
             DO K = 1, NVCLEN
                P0(K)  = 1D0
-               GAX(K) = GA(K)*SDPRE(L)
-               GAY(K) = GA(K)*SDPRE(M)
-               GAZ(K) = GA(K)*SDPRE(N)
+               GAX(K) = GA(K)*L
+               GAY(K) = GA(K)*M
+               GAZ(K) = GA(K)*N
             END DO
             IF(L.GT.0) THEN
                DO K = 1, NVCLEN
@@ -1161,11 +1129,11 @@ C     P. Salek    Oct 03 - vector version.
 C
 c     routine sets GAO__(1:NVCLEN, 1:KCKTA)
 c
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
       DIMENSION GAOXX(NVCLEN,KCKTA), GAOXY(NVCLEN,KCKTA),
@@ -1177,11 +1145,9 @@ C
      &          CAOXZ(MXAQN), CAOYY(MXAQN),
      &          CAOYZ(MXAQN), CAOZZ(MXAQN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
-C
-#include <sdpre.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
       DO IV = 1, NVCLEN
          IF (SPHRA) THEN
@@ -1210,15 +1176,15 @@ C
                   PXD = D0
                   PYD = D0
                   PZD = D0
-                  IF (L.GT.1) PXD = SDPRE(L*(L-1))*(PA(1,IV)**(L-2))
-                  IF (M.GT.1) PYD = SDPRE(M*(M-1))*(PA(2,IV)**(M-2))
-                  IF (N.GT.1) PZD = SDPRE(N*(N-1))*(PA(3,IV)**(N-2))
+                  IF (L.GT.1) PXD = (L*(L-1))*(PA(1,IV)**(L-2))
+                  IF (M.GT.1) PYD = (M*(M-1))*(PA(2,IV)**(M-2))
+                  IF (N.GT.1) PZD = (N*(N-1))*(PA(3,IV)**(N-2))
                   PXM = D0
                   PYM = D0
                   PZM = D0
-                  IF (L.GT.0) PXM = SDPRE(L)*(PA(1,IV)**(L-1))
-                  IF (M.GT.0) PYM = SDPRE(M)*(PA(2,IV)**(M-1))
-                  IF (N.GT.0) PZM = SDPRE(N)*(PA(3,IV)**(N-1))
+                  IF (L.GT.0) PXM = L*(PA(1,IV)**(L-1))
+                  IF (M.GT.0) PYM = M*(PA(2,IV)**(M-1))
+                  IF (N.GT.0) PZM = N*(PA(3,IV)**(N-1))
                   PX0 = PA(1,IV)**L
                   PY0 = PA(2,IV)**M
                   PZ0 = PA(3,IV)**N
@@ -1236,9 +1202,9 @@ C      s orbitals
                      GAYZ = TAPAY*TAPAZ
 C      p orbitals
                   ELSE IF (NHKTA.EQ.2) THEN
-                     GAXX = (TAPAX**2 + TALPH*SDPRE(2*L+1))*P000
-                     GAYY = (TAPAY**2 + TALPH*SDPRE(2*M+1))*P000
-                     GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N+1))*P000
+                     GAXX = (TAPAX**2 + TALPH*(2*L+1))*P000
+                     GAYY = (TAPAY**2 + TALPH*(2*M+1))*P000
+                     GAZZ = (TAPAZ**2 + TALPH*(2*N+1))*P000
 
                      GAXY = TAPAX*TAPAY*P000
      &                    + (PXP*PYM + PXM*PYP)*PZ0
@@ -1248,11 +1214,11 @@ C      p orbitals
      &                    + (PYP*PZM + PYM*PZP)*PX0
 C      d and higher orbitals
                   ELSE 
-                     GAXX = (TAPAX**2 + TALPH*SDPRE(2*L+1))*P000
+                     GAXX = (TAPAX**2 + TALPH*(2*L+1))*P000
      &                    + PXD*PY0*PZ0
-                     GAYY = (TAPAY**2 + TALPH*SDPRE(2*M+1))*P000
+                     GAYY = (TAPAY**2 + TALPH*(2*M+1))*P000
      &                    + PX0*PYD*PZ0
-                     GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N+1))*P000
+                     GAZZ = (TAPAZ**2 + TALPH*(2*N+1))*P000
      &                    + PX0*PY0*PZD
                      GAXY = TAPAX*TAPAY*P000
      &                    + (PXP*PYM+PXM*PYP+PXM*PYM)*PZ0
@@ -1320,11 +1286,11 @@ C
 C     O. Lutnaes, D. Wilson Feb 04
 C
 c     routine sets GAO___(1:NVCLEN, 1:KCKTA)
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
 C
       DIMENSION GAOXXX(NVCLEN,KCKTA), GAOXXY(NVCLEN,KCKTA),
@@ -1339,10 +1305,9 @@ C
      &          CAOYYY(MXAQN), CAOYYZ(MXAQN),
      &          CAOYZZ(MXAQN), CAOZZZ(MXAQN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
-#include <sdpre.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
       DO IV = 1, NVCLEN
          IF (SPHRA) THEN
@@ -1383,21 +1348,21 @@ C
                   PXT = D0
                   PYT = D0
                   PZT = D0
-                  IF (L.GT.2) PXT=SDPRE(L*(L-1)*(L-2))*(PA(1,IV)**(L-3))
-                  IF (M.GT.2) PYT=SDPRE(M*(M-1)*(M-2))*(PA(2,IV)**(M-3))
-                  IF (N.GT.2) PZT=SDPRE(N*(N-1)*(N-2))*(PA(3,IV)**(N-3))
+                  IF (L.GT.2) PXT=(L*(L-1)*(L-2))*(PA(1,IV)**(L-3))
+                  IF (M.GT.2) PYT=(M*(M-1)*(M-2))*(PA(2,IV)**(M-3))
+                  IF (N.GT.2) PZT=(N*(N-1)*(N-2))*(PA(3,IV)**(N-3))
                   PXD = D0
                   PYD = D0
                   PZD = D0
-                  IF (L.GT.1) PXD = SDPRE(L*(L-1))*(PA(1,IV)**(L-2))
-                  IF (M.GT.1) PYD = SDPRE(M*(M-1))*(PA(2,IV)**(M-2))
-                  IF (N.GT.1) PZD = SDPRE(N*(N-1))*(PA(3,IV)**(N-2))
+                  IF (L.GT.1) PXD = (L*(L-1))*(PA(1,IV)**(L-2))
+                  IF (M.GT.1) PYD = (M*(M-1))*(PA(2,IV)**(M-2))
+                  IF (N.GT.1) PZD = (N*(N-1))*(PA(3,IV)**(N-2))
                   PXM = D0
                   PYM = D0
                   PZM = D0
-                  IF (L.GT.0) PXM = SDPRE(L)*(PA(1,IV)**(L-1))
-                  IF (M.GT.0) PYM = SDPRE(M)*(PA(2,IV)**(M-1))
-                  IF (N.GT.0) PZM = SDPRE(N)*(PA(3,IV)**(N-1))
+                  IF (L.GT.0) PXM = L*(PA(1,IV)**(L-1))
+                  IF (M.GT.0) PYM = M*(PA(2,IV)**(M-1))
+                  IF (N.GT.0) PZM = N*(PA(3,IV)**(N-1))
                   PX0  = PA(1,IV)**L
                   PY0  = PA(2,IV)**M
                   PZ0  = PA(3,IV)**N
@@ -1422,51 +1387,51 @@ C       s orbitals
                   GAXYZ = TAPAX*TAPAY*TAPAZ
 C       p orbitals
                   ELSE IF (NHKTA.EQ.2) THEN
-                  GAXXX = (TAPAX**3 + SDPRE(3*L+3)*TALPH*TAPAX)*P000
+                  GAXXX = (TAPAX**3 + (3*L+3)*TALPH*TAPAX)*P000
      &                  + D3*TALPH*PXM*PY0*PZ0
-                  GAYYY = (TAPAY**3 + SDPRE(3*M+3)*TALPH*TAPAY)*P000
+                  GAYYY = (TAPAY**3 + (3*M+3)*TALPH*TAPAY)*P000
      &                  + D3*TALPH*PYM*PX0*PZ0
-                  GAZZZ = (TAPAZ**3 + SDPRE(3*N+3)*TALPH*TAPAZ)*P000
+                  GAZZZ = (TAPAZ**3 + (3*N+3)*TALPH*TAPAZ)*P000
      &                  + D3*TALPH*PZM*PX0*PY0
                   GAXXY = TAPAX**2*TAPAY*P000 + TAPAX*PXP*PYM*PZ0
-     &                  + SDPRE(2*L+1)*TALPH*PX0*PZ0*PYPM
+     &                  + (2*L+1)*TALPH*PX0*PZ0*PYPM
                   GAXXZ = TAPAX**2*TAPAZ*P000 + TAPAX*PXP*PZM*PY0
-     &                  + SDPRE(2*L+1)*TALPH*PX0*PY0*PZPM
+     &                  + (2*L+1)*TALPH*PX0*PY0*PZPM
                   GAXYY = TAPAX*TAPAY**2*P000 + TAPAY*PYP*PXM*PZ0
-     &                  + SDPRE(2*M+1)*TALPH*PY0*PZ0*PXPM
+     &                  + (2*M+1)*TALPH*PY0*PZ0*PXPM
                   GAXZZ = TAPAX*TAPAZ**2*P000 + TAPAZ*PZP*PXM*PY0
-     &                  + SDPRE(2*N+1)*TALPH*PZ0*PY0*PXPM
+     &                  + (2*N+1)*TALPH*PZ0*PY0*PXPM
                   GAYYZ = TAPAY**2*TAPAZ*P000 + TAPAY*PYP*PZM*PX0
-     &                  + SDPRE(2*M+1)*TALPH*PY0*PX0*PZPM
+     &                  + (2*M+1)*TALPH*PY0*PX0*PZPM
                   GAYZZ = TAPAY*TAPAZ**2*P000 + TAPAZ*PZP*PYM*PX0
-     &                  + SDPRE(2*N+1)*TALPH*PZ0*PX0*PYPM
+     &                  + (2*N+1)*TALPH*PZ0*PX0*PYPM
                   GAXYZ = TAPAX*TAPAY*TAPAZ*P000 + PXM*PYP*PZP
      &                  + PXP*PYM*PZP + PXP*PYP*PZM
 C       d and higher orbitals
                   ELSE  
-                  GAXXX = (TAPAX**3 + SDPRE(3*L+3)*TALPH*TAPAX)*P000
-     &                  + (PXT + SDPRE(3*L)*TALPH*PXM)*PY0*PZ0 
-                  GAYYY = (TAPAY**3 + SDPRE(3*M+3)*TALPH*TAPAY)*P000
-     &                  + (PYT + SDPRE(3*M)*TALPH*PYM)*PX0*PZ0 
-                  GAZZZ = (TAPAZ**3 + SDPRE(3*N+3)*TALPH*TAPAZ)*P000
-     &                  + (PZT + SDPRE(3*N)*TALPH*PZM)*PX0*PY0
+                  GAXXX = (TAPAX**3 + (3*L+3)*TALPH*TAPAX)*P000
+     &                  + (PXT + (3*L)*TALPH*PXM)*PY0*PZ0 
+                  GAYYY = (TAPAY**3 + (3*M+3)*TALPH*TAPAY)*P000
+     &                  + (PYT + (3*M)*TALPH*PYM)*PX0*PZ0 
+                  GAZZZ = (TAPAZ**3 + (3*N+3)*TALPH*TAPAZ)*P000
+     &                  + (PZT + (3*N)*TALPH*PZM)*PX0*PY0
                   GAXXY = TAPAX**2*TAPAY*P000
-     &                  + (PXD + SDPRE(2*L+1)*TALPH*PX0)*PZ0*PYPM
+     &                  + (PXD + (2*L+1)*TALPH*PX0)*PZ0*PYPM
      &                  + PXP*TAPAX*PYM*PZ0
                   GAXXZ = TAPAX**2*TAPAZ*P000
-     &                  + (PXD + SDPRE(2*L+1)*TALPH*PX0)*PY0*PZPM
+     &                  + (PXD + (2*L+1)*TALPH*PX0)*PY0*PZPM
      &                  + PXP*TAPAX*PY0*PZM
                   GAXYY = TAPAX*TAPAY**2*P000
-     &                  + (PYD + SDPRE(2*M+1)*TALPH*PY0)*PZ0*PXPM
+     &                  + (PYD + (2*M+1)*TALPH*PY0)*PZ0*PXPM
      &                  + PYP*TAPAY*PXM*PZ0
                   GAXZZ = TAPAX*TAPAZ**2*P000
-     &                  + (PZD + SDPRE(2*N+1)*TALPH*PZ0)*PY0*PXPM
+     &                  + (PZD + (2*N+1)*TALPH*PZ0)*PY0*PXPM
      &                  + PZP*TAPAZ*PXM*PY0
                   GAYYZ = TAPAY**2*TAPAZ*P000
-     &                  + (PYD + SDPRE(2*M+1)*TALPH*PY0)*PX0*PZPM
+     &                  + (PYD + (2*M+1)*TALPH*PY0)*PX0*PZPM
      &                  + PYP*TAPAY*PZM*PX0
                   GAYZZ = TAPAY*TAPAZ**2*P000
-     &                  + (PZD + SDPRE(2*N+1)*TALPH*PZ0)*PX0*PYPM
+     &                  + (PZD + (2*N+1)*TALPH*PZ0)*PX0*PYPM
      &                  + PZP*TAPAZ*PYM*PX0
                   GAXYZ = TAPAX*TAPAY*TAPAZ*P000
      &                  + PXM*PYM*PZM
@@ -1551,12 +1516,12 @@ C
 C     T. Helgaker Oct 99
 c     vectorized by Pawel Salek, Apr 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <dftinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "dftinf.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAO (NVCLEN,NBAST), GABX(NVCLEN,NBAST),
@@ -1564,9 +1529,9 @@ C
      &          PA(3,NVCLEN)
       
 C
-#include <onecom.h>
-#include <primit.h>
-#include <orgcom.h>
+#include "onecom.h"
+#include "primit.h"
+#include "orgcom.h"
 C
       DO ICOMPA = 1,KHKTA
          DO K = 1, NVCLEN
@@ -1581,16 +1546,16 @@ C
 C  /* Deck bldftsos */
       SUBROUTINE BLDFTSOS(NVCLEN,GAO,GSO,NBAST,NVEC,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION GAO(NVCLEN,NBAST,NVEC), GSO(NVCLEN,NBAST,NVEC)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DFTSOS',-1)
 C
 C     Loop over all irreps in molecule
@@ -1632,7 +1597,7 @@ C
 C     Set DFTINF common block up so it is ready for subsequent
 C     execution of GETSOS.
 C
-#include <implicit.h>
+#include "implicit.h"
 c     Pawel Salek, feb 2001
 c     GEODRV - 0 for just orbital values, 1 for first order orbital
 c     derivatives, 2 for laplacian.
@@ -1646,8 +1611,8 @@ c     the computed orbitals are ordered as follows:
 c     (orbital values=O, [dO/dx,dO/dy,dO/dz, [d0/dxx, ..]],
 c      [dO/dBx, dO/dBy, dO/dBz])
 C
-#include <dftinf.h>
-#include <inforb.h>
+#include "dftinf.h"
+#include "inforb.h"
 C
       CALL QENTER('SETUPSOS')
       NDER = GEODRV
@@ -1693,8 +1658,8 @@ C
       END
 C
       SUBROUTINE zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION TMP(NVCLEN,NBAST),NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM)
       DO ISYM = 1, NSYM
          DO IBL = 1, NBLOCKS(ISYM)

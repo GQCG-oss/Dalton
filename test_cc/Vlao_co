@@ -29,7 +29,7 @@ O     0.0000000000000000  0.0000000000000000 -.91397310000000000       *
 #  DALTON INPUT
 #######################################################################
 cat > Vlao_co__1.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -42,10 +42,10 @@ XYZ-ALL
  0.0 0.0 0.0
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-10
-.HF OCCUPATION
+.DOUBLY OCCUPIED
  5 1 1 0
 *ORBITAL INPUT
 .NOSUPSYM
@@ -78,11 +78,11 @@ ZDIPLEN XDIPLEN dh/dBY
 1
 0.11391
 0.0
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 cat > Vlao_co__2.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -95,10 +95,10 @@ XYZ-ALL
  0.0 0.0 25.0
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-10
-.HF OCCUPATION
+.DOUBLY OCCUPIED
  5 1 1 0
 *ORBITAL INPUT
 .NOSUPSYM
@@ -131,8 +131,7 @@ ZDIPLEN XDIPLEN dh/dBY
 1
 0.11391
 0.0
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -238,7 +237,7 @@ PASSED=1
 for i in 1 2 3 4 
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

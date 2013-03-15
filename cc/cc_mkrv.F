@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck makerv*/ 
       SUBROUTINE MAKERV(V2AM,R2AM,U2AM,S2AM,T2AM,
@@ -45,8 +35,8 @@ C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C     Ansatz 3 added on 15 May 2004.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0, DELTA=0.0D0)
       REAL*8  SU, US, SV, VU, VR, RR, UR, RU, UT, TU, QQIJKL, QQIJLK,
@@ -84,11 +74,11 @@ C
       CHARACTER*8 EOFLAB
       LOGICAL FRSTWR
       INTEGER NKILJ(8)
-#include <r12int.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccr12int.h>
+#include "r12int.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccr12int.h"
       DATA APPROX 
      &/'0  ','A  ','A  ','A'' ','A* ','A* ','A*''','B  ',
      & 'B  ','xxx','xxx','B* ','B* ','xxx','xxx',
@@ -463,6 +453,14 @@ C
                                        EIJ = D1 / 
      *                                      (EV(KOFFI) + EV(KOFFJ) -
      *                                       EV(KOFFA) - EV(KOFFB)) 
+!
+!                                      hjaaj: sometimes EIJ = Infinity or -Infinity
+!                                             apparently W11 with these values are not used
+!                                             However, ifort and -i8 stops with "invalid float from "-Infinity + Infinity"
+!                                             My solution: reset value to 1.D100, then it will be obvious if the value is used.
+                                       IF (abs(eij) .gt. 1.D100)
+     &                                      eij = 1.D100
+!
 C
                                        W11(KOFFI,KOFFJ,KOFFK,KOFFL) = 
      *                                 W11(KOFFI,KOFFJ,KOFFK,KOFFL) -
@@ -819,12 +817,17 @@ C
         CALL DSCAL(NSPAIR*NSPAIR,2.0D0,VT11,1)
         CALL DSCAL(NSPAIR*NSPAIR,1.0D0/3.0D0,VT11,1)
         CALL CCR12PCK(WORK(KSCR),1,VS11,VT11,NRHF,NRHFA,NKILJ)
+
         CALL GPOPEN(LU43,FCCR12V,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,LDUM)
  1244   READ(LU43,END=1243) IDUM
         READ(LU43) 
         GOTO 1244
  1243   CONTINUE
+#ifdef VAR_MFDS
+!       backspace if multifile dataset
+        BACKSPACE (LU43)
+#endif
         WRITE(LU43) IANSAZ
         WRITE(LU43) (WORK(KSCR-1+I), I=1, NKILJ(1))
         CALL GPCLOSE(LU43,'KEEP') 
@@ -850,6 +853,10 @@ C
          READ(LU43) 
          GOTO 1246
  1245    CONTINUE
+#ifdef VAR_MFDS
+!        backspace if multifile dataset
+         BACKSPACE (LU43)
+#endif
         END IF
         WRITE(LU43) IANSAZ
         WRITE(LU43) (WORK(KSCR-1+I), I=1, NKILJ(1)) 
@@ -868,6 +875,10 @@ C
          READ(LU44) 
          GOTO 1248
  1247    CONTINUE
+#ifdef VAR_MFDS
+!        backspace if multifile dataset
+         BACKSPACE (LU44)
+#endif
         END IF
         CALL GPOPEN(LU45,FCCR12D,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,LDUM)
@@ -876,6 +887,10 @@ C
          READ(LU45) 
          GOTO 1250
  1249    CONTINUE
+#ifdef VAR_MFDS
+!        backspace if multifile dataset
+         BACKSPACE (LU45)
+#endif
         END IF
          FRSTWR = .FALSE.
       END IF
@@ -1113,18 +1128,18 @@ C  /* Deck ryr*/
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
       DIMENSION R2AM(*), SF(*), TF(*),
      *          ISB(8), Q11(NOCDIM,NOCDIM,NOCDIM,NOCDIM)
       INTEGER IDUM
       LOGICAL LDUM
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       CALL DZERO(Q11,NOCDIM**4)
       ISB(1) = 0
@@ -1409,8 +1424,8 @@ C     are diagonal in the secondary-secondary block. This is tested for.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
       PARAMETER (THRDIA = 1D-9)
@@ -1418,10 +1433,10 @@ C
      *          ISB(8), Q11(NOCDIM,NOCDIM,NOCDIM,NOCDIM)
       LOGICAL LDUM
       INTEGER IDUM
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       CALL DZERO(Q11,NOCDIM**4)
       ISB(1) = 0
@@ -1730,8 +1745,8 @@ C     utilizing the secondary basis RI approximation.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>  
+#include "implicit.h"
+#include "priunit.h"  
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0,
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
       PARAMETER (THRDIA = 1D-9)
@@ -1739,10 +1754,10 @@ C
       REAL*8  RR, VV, XBD, XAC, DSM
       LOGICAL LDUM
       INTEGER IDUM
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       ISB(1) = 0
       DO 100 ISYM = 2, NSYM

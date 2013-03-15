@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2001 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 1.2
-C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-C...   and O. Vahtras"
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 
 *=====================================================================*
       subroutine CCLHTR_FP(RHO1,XLAMDH,WORK,LWORK,ISYMC,FC12AM,LUFC12,
@@ -42,12 +32,12 @@ C
 C     C. Neiss, C. Hättig, summer 2004
 *---------------------------------------------------------------------*
       implicit none
-#include <r12int.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "r12int.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       integer LWORK,ISYMC,LUFC12,IFILE,isymak,isymk,isyma,
      &        kvec,kvajkl,kend1,lwrk1,luvajkl
@@ -128,12 +118,12 @@ C
 C     C. Neiss, C. Hättig, summer 2004
 *---------------------------------------------------------------------*
       implicit none
-#include <r12int.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccr12int.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccr12int.h"
+#include "ccsdinp.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -225,12 +215,12 @@ C
 C     C. Neiss october/november 2005
 *---------------------------------------------------------------------*
       implicit none
-#include <r12int.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccr12int.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccr12int.h"
+#include "ccsdinp.h"
 
       integer isygam,isymc,isymv,isymij,isymmn,isymkl
       integer lwork,kend1,lwrk1,koff1,koff2,koff3,kscr,iopt,
@@ -357,10 +347,10 @@ C
 C     C. Neiss october 2005
 *---------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
 C     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -443,12 +433,12 @@ C
 C     C. Neiss october 2005
 *---------------------------------------------------------------------*
       implicit none
-#include <r12int.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccr12int.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccr12int.h"
+#include "ccsdinp.h"
 
       integer isymkl,isymin,isymij,isymnj,isymi,isymj,isymn,isymk,isyml
       integer idxkl,koffx,kvinkl,kvijkl,isymtr 

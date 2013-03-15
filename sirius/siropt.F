@@ -1,62 +1,38 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
-C
-#ifdef OLD_REV_LOG
-!===========================================================================
-!Revision 1.2  2001/01/17 10:41:34  vebjornb
-!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 !
-!Revision 1.5  2000/05/24 12:43:25  hjj
-!1) attempted to get WLKREJ true working again (not tested)
-!2) new parameter lists to SOLFCK and WRSIFC
-!3) write CREF in determinants on SIRIFC in WRSIFC
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
 !
-!Revision 1.4  2000/05/01 14:07:33  hjj
-!removed obsolete KAVER,KSYM(4) in WRITE (LUSIFC)
 !
-!revision 1.3 2000/05/01 07:21:48 hjj
-!polishing of warnings so that 'grep WARNING' gets more relevant information.
-!----------------------------
-!revision 1.2 2000/04/14 10:10:52 hjj
-!\hjaaj jan 2000:
-!also screening for SIRCNO in OPTST
-!\hjaaj dec 1999:
-!1) implemented dynamic Fock matrix screening for QCHF and DIRFCK
-!2) polishing
-!===========================================================================
-#endif
+#include "single.h"
+C
+C FILE : siropt.F
+C
+C SIROPT controls second order MCSCF or SCF optimization in SIRIUS.
+C RHFENR print RHF orbital energies
+C OPTST  starting the optimization
+C SIRSTP step control
+C TIMOPT timing statistics of optimization
+C WR_SIRIFC write SIRIFC interface file from SIRIUS to RESPONS and ABACUS
+C
+C===========================================================================
 C  /* Deck siropt */
       SUBROUTINE SIROPT(WRK,LFREE,ICONV)
 C
@@ -66,7 +42,6 @@ C   6-Aug-1984/16-May-1984 - hjaaj
 C  14-May-1985 - hjaaj (update     -- sirupd)
 C  10-Nov-1985 - hjaaj (absorption -- sirorb)
 C  14-May-1986 - hjaaj (nr eq's    -- sirnr)
-C  Last revision 15-Mar-1991 - hjaaj
 C
 C Purpose: Control MCSCF optimization.
 C
@@ -80,17 +55,22 @@ C         .gt.0  MCSCF converged.
 C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
-#include <implicit.h>
+#ifdef VAR_MPI
+      use par_mcci_io
+#endif
+
+#include "implicit.h"
+
 C
       DIMENSION WRK(LFREE)
 C
-#include <thrldp.h>
-      PARAMETER (MAXBCK = 15)
+#include "thrldp.h"
+      PARAMETER (MAXBCK = 5)
       PARAMETER (FAKABS = 0.40D0, STPABS = 0.20D0)
       PARAMETER (STPLCL = 0.15D0, SHFLCL = 1.D-3)
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.0D0)
-#include <iratdef.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "dummy.h"
 C
 C used from common blocks:
 C  INFINP: LSYM,FLAG(*),...,ITRLVL,ITRFIN,THRPWF,THRCGR,MAXUIT,
@@ -104,58 +84,81 @@ C  CBIHR2: IFTHRS,USRSCR
 C  CBIREA: LMULBS
 C  R12INT: R12CAL
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <itinfo.h>
-#include <gnrinf.h>
-#include <cbihr2.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "itinfo.h"
+#include "gnrinf.h"
+#include "cbihr2.h"
+#include "cbirea.h"
+#include "r12int.h"
 C------------------------
-#include <dfterg.h>
-#include <dftcom.h>
+#include "dfterg.h"
+#include "dftcom.h"
 C ---
 C
 C *** local:
       CHARACTER*8 STAR8, RTNLBL(2)
-      LOGICAL ABSORP, UPDATE, SOLVNT, GEOWLK, RHFCLC
+      CHARACTER*8 WF_TYPE
+      LOGICAL ABSORP, UPDATE, SOLVNT, GEOWLK, RHF_CALC
       LOGICAL CHKSTP, DONR, NRALW,   LOCAL
 C *** data:
       DATA STAR8/'********'/
 C
       CALL QENTER('SIROPT')
 C
-      IF (IPRERR .GT. 0) CALL TIMOPT('START',LUERR,WRK,LFREE)
+C *** Start timing:
 C
-      IF (NASHT .GT. 1) THEN
-         WRITE (LUW4,960)
-         IF (LUPRI .NE. LUW4) WRITE (LUPRI,960)
-      ELSE
-         WRITE (LUW4,961)
-         IF (LUPRI .NE. LUW4) WRITE (LUPRI,961)
-      END IF
-  960 FORMAT(//T9,     'SIRIUS MCSCF optimization (SIROPT)'
-     *       /' ================================================'/)
-  961 FORMAT(//T9,     'SIRIUS QC-HF optimization (SIROPT)'
-     *       /' ================================================'/)
-C
+      IF (IPRSTAT .GT. 0) CALL TIMOPT('START',LUSTAT,WRK,LFREE)
       TOPT  = SECOND()
       TIMST = TOPT
+C
+C *** WF_TYPE
+C
+      RHF_CALC = (NASHT .LE. 1 .OR. HSROHF)
+      IF ( (MCTYPE.EQ.0) .NEQV. RHF_CALC ) THEN
+         WRITE (LUPRI,'(//A,I5)')
+     &  'WARNING siropt: RHF_CALC neqv MCTYPE =',MCTYPE
+      END IF
+      IF (RHF_CALC) THEN
+         IF (DOHFSRDFT) THEN
+            WF_TYPE = 'HF-srDFT'
+            len_WF_TYPE = 8
+         ELSE IF (DODFT) THEN
+            WF_TYPE = 'QC-DFT'
+            len_WF_TYPE = 6
+         ELSE IF (HSROHF) THEN
+            WF_TYPE = 'HSROHF'
+            len_WF_TYPE = 6
+         ELSE
+            WF_TYPE = 'QC-HF'
+            len_WF_TYPE = 5
+         END IF
+      ELSE IF (DOMCSRDFT) THEN
+         WF_TYPE = 'MC-srDFT'
+         len_WF_TYPE = 8
+      ELSE
+         WF_TYPE = 'MCSCF'
+         len_WF_TYPE = 5
+      END IF
+
+      WRITE (LUW4,960) WF_TYPE(1:len_WF_TYPE)
+      IF (LUPRI .NE. LUW4) WRITE (LUPRI,960) WF_TYPE(1:len_WF_TYPE)
+  960 FORMAT(//T9,     'SIRIUS ',A,' optimization (SIROPT)'
+     *       /' ================================================'/)
 C
 C *** Initializations
 C     convergence flag ICONV to "not converged"
 C     UPDATE , if use UPDATE for MC optimization
 C
       ICONV  = 0
-      RHFCLC = (NASHT .LE. 1 .OR. HSROHF)
       SOLVNT = FLAG(16)
       ABSORP = ( FLAG(51) .OR. FLAG(52) .OR. FLAG(53) )
 #if defined (VAR_NOEXCABS)
@@ -186,11 +189,6 @@ CHJ      KTRLVL = 0
 CHJ   ELSE
          KTRLVL = ITRLVL
 CHJ   END IF
-#if defined (VAR_NOITRABS)
-C --- 851216 -- EXPLICIT ORBITAL HESSIAN DIAGONAL IS WRONG
-C               IF KTRLVL = 0 !
-      KTRLVL = ITRLVL
-#endif
 C     If FLAG(39) always NR (e.g. for core hole calculations /860515-hj)
 C     921028-hjaaj: FLAG(39) copied to local variable, because
 C     it may be reset to true in local region
@@ -246,7 +244,7 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
       KCREF  = KFCAC  + NNASHX
       KH2AC  = KCREF  + NCONF
       KWRK12 = KH2AC  + NNASHX*NNASHX
-C.. 1.2.1 .. (GRAD,SOLGRD,WRSIFC)
+C.. 1.2.1 .. (GRAD,SOLGRD,WR_SIRIFC)
       KERLM  = KWRK12
       IF (SOLVNT) THEN
          KWRKG  = KERLM + 2*NLMSOL
@@ -282,8 +280,8 @@ C..
 C
 C     Get CI information if active orbitals
 C
-      IF (.NOT.RHFCLC)
-     *   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
+      IF (.NOT.RHF_CALC)
+     &   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
 C
 C ****************************
 C *** GET STARTING VECTORS ***
@@ -415,7 +413,7 @@ C        CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
       END IF
       TIMITR = SECOND() - TIMITR
       IF (NWOPT.EQ.0 .OR. FLAG(34)) THEN
-C        ... We don't need the integrals for optimization.
+C        ... We do not need the integrals for optimization.
 C        ... flag(34) = (int.transf. not needed in optimization)
          FLAG(14) = .TRUE.
       ELSE
@@ -474,9 +472,10 @@ C        use PRWF here ?? 890925-hjaaj
 C
 C *** Calculate gradient for CREF and some matrices/arrays needed later.
 C
-C Dec99 hjaaj: set screening threshold for direct SCF gradient
+C Dec99 hjaaj: implemented dynamic Fock matrix screening for QCHF and DIRFCK
+C              (based on code in sirdiis.F) :
+C              set screening threshold for direct SCF gradient
 C              GNORM(3) = grdnrm from prev.iter. (THRGRD in iter 1)
-C              (based on code in sirdiis.F)
 C Nov07 hjaaj: we expect quadratic convergence and GNORM(3) is from
 C              prev.iter., thus GNORM(3)**2 
 C              NORBT factor: statistical error is ca. sqrt(# elements) ~ NORBT
@@ -588,22 +587,22 @@ chj   END IF
          IF (QM3) WRITE (LUPRI,1017) EQM3
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
- 1005 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T54,
+ 1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
      *        '(after absorp',I4,')' )
- 1010 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T60,
+ 1010 FORMAT(/' Total MCSCF energy       :',F30.15,T60,
      *        '(MACRO ',I4,')' )
- 1011 FORMAT(/' Total MC-SRDFT energy    :',1P,G25.15,T60,
+ 1011 FORMAT(/' Total MC-srDFT energy    :',F30.15,T60,
      *        '(MACRO ',I4,')' )
- 1015 FORMAT(/' - Nuclear repulsion      :',1P,G25.15,
-     *       /' - Inactive energy        :',1P,G25.15,
-     *       /' - Active energy          :',1P,G25.15)
- 1016 FORMAT( ' - Dielec. solvation ener.:',1P,G25.15)
- 1017 FORMAT( ' - QM/MM solvation ener.  :',1P,G25.15)
- 1018 FORMAT( ' - SRDFT effective energy :',1P,G25.15)
- 1019 FORMAT( ' - PCM solvation energy   :',1P,G25.15)
- 1020 FORMAT(/' Norm of total gradient   :',F22.12,
-     *       /' -    of CI gradient      :',F22.12,
-     *       /' -    of orbital gradient :',F22.12)
+ 1015 FORMAT(/' - Nuclear repulsion      :',F30.15,
+     *       /' - Inactive energy        :',F30.15,
+     *       /' - Active energy          :',F30.15)
+ 1016 FORMAT( ' - Dielec. solvation ener.:',F30.15)
+ 1017 FORMAT( ' - QM/MM solvation energy :',F30.15)
+ 1018 FORMAT( ' - srDFT effective energy :',F30.15)
+ 1019 FORMAT( ' - PCM solvation energy   :',F30.15)
+ 1020 FORMAT(/' Norm of total gradient   :',F27.12,
+     *       /' -    of CI gradient      :',F27.12,
+     *       /' -    of orbital gradient :',F27.12)
 
       IF (lim_poppri .gt. 0) THEN
          call sirpop('MCITER',WRK(KDV),WRK(KWRKG),LWRKG)
@@ -845,7 +844,7 @@ C        CALL SIRUPD(ICONV,MAXIT,REF1,GRD,CMO1,INDXCI,WRK,LFREE)
      &            ' >>> after UPDATE: recalculating gradient for SIRIFC'
                ICONV    = 0
                UPDATE   = .FALSE.
-               IF (.NOT. RHFCLC) FLAG(14) = .TRUE.
+               IF (.NOT. RHF_CALC) FLAG(14) = .TRUE.
                GO TO 700
             END IF
             GO TO 800
@@ -939,7 +938,7 @@ C     If (not noupdate or not neo_always or not nr_always) then
          LOCAL = (STPLEN .LT. STPLCL*RTRUST .AND. STPC .LT. STPO)
          I = ISTATE + 1 - IINFO(13)
          SHFLVL = DINFO(20+I)
-         IF (IPRERR .GT. 5) WRITE (LUERR,'(/A,F20.10)')
+         IF (IPRSTAT .GT. 5) WRITE (LUSTAT,'(/A,F20.10)')
      *      ' Level shift used for UPDATE/SIRNR test:',SHFLVL
          LOCAL = LOCAL .AND. (ABS(SHFLVL) .LT. SHFLCL)
          LOCAL = LOCAL .AND. ITBCK .EQ. 0
@@ -973,11 +972,11 @@ C
       DINFO(18) = TIMITR
       WRITE (LUINF) DINFO,IINFO
 C
-      IF (IPRERR .GT. 1) THEN
-         WRITE (LUERR,'(//A/A/)')
+      IF (IPRSTAT .GT. 1) THEN
+         WRITE (LUSTAT,'(//A/A/)')
      *   ' Iteration no., total time, integral transformation time,',
      *   ' micro it. time, and lin.trn. time'
-         WRITE (LUERR,'(I5,4F10.2)')
+         WRITE (LUSTAT,'(I5,4F10.2)')
      *   ITMAC,TIMMAC,TIMITR,DINFO(17),DINFO(19)
       END IF
 C     ( DINFO(17) = TIMMIC and DINFO(19) = TIMLIN )
@@ -989,9 +988,9 @@ C
          IF (LUPRI.NE.LUW4)
      *   WRITE (LUPRI,7011) DEPRED,(EMCSCF+DEPRED-POTNUC),EMCSCF+DEPRED
       END IF
- 7011 FORMAT(/' (SIROPT) CI energy lowering:  ',F25.15,
-     *       /T11,'CI electronic energy:',F25.15,
-     *       /T11,'CI total energy:     ',F25.15)
+ 7011 FORMAT(/' (SIROPT) CI energy lowering:  ',F30.15,
+     *       /T11,'CI electronic energy:',F30.15,
+     *       /T11,'CI total energy:     ',F30.15)
 C
       IF (ICONV .GT. 0) GO TO 800
       IF (FLAG(20))     GO TO 890
@@ -1007,12 +1006,15 @@ C We did not converge...
 C
       NWARN = NWARN + 1
       TOPT = SECOND() - TOPT
-      WRITE (LUERR,7050) ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
-      WRITE (LUW4,7050)  ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
-      IF (LUPRI.NE.LUW4)
-     *WRITE (LUPRI,7050)  ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+      WRITE (LUSTAT,7050) WF_TYPE(1:len_WF_TYPE),
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+      WRITE (LUW4,7050)  WF_TYPE(1:len_WF_TYPE),
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+      IF (LUPRI.NE.LUW4) WRITE (LUPRI,7050)  WF_TYPE(1:len_WF_TYPE),
+     &   ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
  7050 FORMAT(
-     *   /' *** Optimization control WARNING: MCSCF not converged ***',
+     *   /' *** Optimization control WARNING: ',A,
+     &    ' not converged ***',
      *   /5X,  'Maximum number of iterations or backsteps reached:',
      *   /5X,  'Number of macro iterations used',T45,I5,
      *   /5X,  '   Maximum',T45,I5,
@@ -1025,12 +1027,13 @@ C
   750 CONTINUE
       NWARN = NWARN + 1
       TOPT = SECOND() - TOPT
-      WRITE (LUERR,7051) ITMACN,ITMICT,TOPT
-      WRITE (LUW4,7051)  ITMACN,ITMICT,TOPT
+      WRITE (LUSTAT,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
+      WRITE (LUW4  ,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
       IF (LUPRI.NE.LUW4)
-     *WRITE (LUPRI,7051)  ITMACN,ITMICT,TOPT
+     *WRITE (LUPRI ,7051) WF_TYPE(1:len_WF_TYPE),ITMACN,ITMICT,TOPT
  7051 FORMAT(
-     *   /' *** Optimization control WARNING: MCSCF not converged ***',
+     *   /' *** Optimization control WARNING: ',A,
+     &    ' not converged ***',
      *   /5X,  'Number of macro iterations used',T45,I5,
      *   /5X,  'Number of micro iterations used',T45,I5,
      *   /5X,  'Total number of CPU seconds used',F13.2)
@@ -1042,9 +1045,10 @@ C We have converged...
 C
   800 CONTINUE
       TOPT = SECOND() - TOPT
-      WRITE (LUW4,8000) ITMAC,ITMICT,TOPT
-      IF (LUPRI.NE.LUW4) WRITE (LUPRI,8000) ITMAC,ITMICT,TOPT
- 8000 FORMAT(/' *** Optimization control: MCSCF converged ***',
+      WRITE (LUW4 ,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,TOPT
+      IF (LUPRI.NE.LUW4)
+     &WRITE (LUPRI,8000) WF_TYPE(1:len_WF_TYPE),ITMAC,ITMICT,TOPT
+ 8000 FORMAT(/' *** Optimization control: ',A,' converged ***',
      *       /5X,  'Number of macro iterations used',T45,I5,
      *       /5X,  'Number of micro iterations used',T45,I5,
      *       /5X,  'Total number of CPU seconds used',F13.2)
@@ -1121,9 +1125,8 @@ C
 C     ... this is RHF which will be followed by MCSCF
       IF (LSTLVL .EQ. 1 .AND. (FLAG(25) .OR. INERSI)) THEN
          IF (GEOWLK) THEN
-            IF (.NOT. OPTNEW)
-     *         WRITE (LUW4,'(//A/)')
-     *            ' Check ratio for geometry walk with converged MC :'
+            IF (.NOT. OPTNEW) WRITE (LUW4,'(//A/)')
+     &         ' Check ratio for geometry walk with converged MC :'
             JWSTEP = 1
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
@@ -1134,12 +1137,13 @@ C     ... this is RHF which will be followed by MCSCF
 C
 Chj      if walk is rejected: do not update information on SIRIFC
          IF (.NOT.WLKREJ)
-     *   CALL WRSIFC(WRK(KCMO),WRK(KDV),WRK(KPV),WRK(KFCSOL),WRK(KFV),
-     *               WRK(KFQ),WRK(KCREF),WRK(KFCAC),WRK(KH2AC),
-     *               WRK(KWRKG),LWRKG,WRK(KGTOT+NCONF),WRK(KERLM),
-     *              .TRUE.,WRK(KCINDX))
-C        CALL WRSIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
-C    *               GORB,ERLM,ORBHES,XINDX)
+     &   CALL WR_SIRIFC(WRK(KCMO),WRK(KDV),WRK(KPV),
+     &               WRK(KFCSOL),WRK(KFV),WRK(KFQ),
+     &               WRK(KCREF),WRK(KFCAC),WRK(KH2AC),
+     &               WRK(KWRKG),LWRKG,WRK(KGTOT+NCONF),WRK(KERLM),
+     &              .TRUE.,WRK(KCINDX))
+C        CALL WR_SIRIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
+C    &               GORB,ERLM,ORBHES,XINDX)
 C        ... note: GORB will in a normal macro iteration be
 C                  overwritten in SIRNEO or SIRNR, but none of
 C                  these routines have been called after GRAD
@@ -1155,6 +1159,8 @@ C
       IF (FLAG(21) .AND. (DOMP2 .OR. DOCI .OR. DOMC)) LSTLVL = 0
 C     ... if (true) this QCHF will be followed by higher wf level
       IF (LSTLVL .EQ. 1 .AND. ABS(ITRFIN) .LE. 10) THEN
+         CALL FLSHFO(LUW4)
+         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/2A,I3,A)')
      *   ' >>> Transforming integrals for Abacus/response with',
      *   ' ITRLVL =',ITRFIN,' <<<'
@@ -1176,9 +1182,9 @@ C     restore control variables
       CALL FLSHFO(LUW4)
       IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
 C
-C write timing information for optimization to LUERR
+C write timing information for optimization to LUSTAT
 C
-      IF (IPRERR.GT.0) CALL TIMOPT('END',LUERR,WRK,LFREE)
+      IF (IPRSTAT.GT.0) CALL TIMOPT('END',LUSTAT,WRK,LFREE)
 C *** end of subroutine SIROPT
       CALL QEXIT('SIROPT')
       RETURN
@@ -1198,13 +1204,13 @@ C
 C Scratch:
 C  SCRA; general scratch area
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FD(*),SCRA(*)
 C
 C
       PARAMETER (D0 = 0.0D0,    EMYCNV = 1.D-4,
      &           DBIG = 1.D+12, GAPMIN = 0.1D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C  Used from common blocks:
 C     INFORB : NISH(*), NISHT, ...
@@ -1213,13 +1219,13 @@ C          correct in DIIS if AUTOCC and occupations have changed.
 C     SCBRHF : IOPRHF,NFRRHF(*)
 C     INFIND : IROW(*),ISW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <molde.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "molde.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infind.h"
 C
       CALL QENTER('RHFENR')
 C
@@ -1346,9 +1352,17 @@ C     take care of 1-electron case and no virtuals case
      &   '  - E(HOMO) :',EHOMO,' au (symmetry',IHOMO,')',
      &   '  ------------------------------------------',
      &   '    gap     :',ELUMO-EHOMO,' au'
-      IF (NASHT .GT. 0) THEN
+      IF (NASHT .EQ. 1) THEN
          WRITE (LUPRI,'(/A,F15.8,A,I2,A)')
      &   'and E(SOMO) :',ESOMO,' au (symmetry',ISOMO,')'
+      ELSE IF (HSROHF) THEN
+         WRITE (LUPRI,'(/A)')
+     &   'and energy and symmetry of HSROHF open shell orbitals:'
+         DO IW = NISHT+1,NOCCT
+            I = ISX(IW)
+            ISYM = ISMO(I)
+            WRITE (LUPRI,'(F15.8,I10)') SCRA(I), ISYM
+         END DO
       END IF
       IF (ELUMO-EHOMO .LT. GAPMIN) THEN
          WRITE(LUPRI,'(/A)')
@@ -1370,8 +1384,8 @@ C     take care of 1-electron case and no virtuals case
  9999 CALL QEXIT('RHFENR')
       RETURN
 C
-C1730 FORMAT(//' Hartree-Fock electronic energy:',F25.12)
-C1732 FORMAT( /' Hartree-Fock total      energy:',F25.12)
+C1730 FORMAT(//' Hartree-Fock electronic energy:',F30.15)
+C1732 FORMAT( /' Hartree-Fock total      energy:',F30.15)
  1740 FORMAT( /' Sym       Hartree-Fock orbital energies')
  1741 FORMAT( /' Sym       Hartree-Fock orbital energies',
      &         ' (supersymmetry in parenthesis)')
@@ -1436,12 +1450,12 @@ C
 C     =7 : Start using MC update information ('UPDSAVE' in SIRSAV)
 C end if
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION INDXCI(*),WRK(LFREE)
 C
       PARAMETER ( D0=0.0D0, DP5=0.5D0, D1=1.0D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP: ISTATE,LROOTS,FLAG(*),MAXCIT,THRGRD,ITRLVL,?
@@ -1452,17 +1466,17 @@ C   INFDIM: IVEX4,INTOT
 C   INFTAP: LUIT1,?
 C   INFPRI: ?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <gnrinf.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "gnrinf.h"
+#include "dftcom.h"
 C
 C *** Externals:
 C
@@ -1528,14 +1542,14 @@ C        ... 930521-hjaaj: JCSTRT introduced to
 C            fix AIX xlf v.2.3 error for 'xlf -O'.
          IF (JCSTRT.GT.NCONF) THEN
             WRITE (LUPRI,5010) JCSTRT,NCONF
-            WRITE (LUERR ,5010) JCSTRT,NCONF
+            WRITE (LUERR,5010) JCSTRT,NCONF
             CALL QTRACE(LUERR)
             CALL QUIT(
      &         'ERROR (OPTST) non-existent configuration specified')
          END IF
          IF (LROOTS.GT.1) THEN
-            WRITE (LUPRI,5020)
-            WRITE (LUERR ,5020)
+            WRITE (LUPRI,5020) ICSTRT
+            WRITE (LUERR,5020) ICSTRT
             CALL QTRACE(LUERR)
             CALL QUIT('(OPTST) ICSTRT must be pos. when LROOTS .gt. 1')
          END IF
@@ -1575,11 +1589,11 @@ C        single configuration has always natural orbitals
          GO TO 9000
       END IF
  5010 FORMAT(/' OPTST FATAL ERROR,'
-     *       /' specified start configuration no.',I8,
-     *        ' is non-existent (last CSF is no.',I8,')')
+     *       /' specified start configuration no.',I10,
+     *        ' is non-existent (last is no.',I10,')')
  5020 FORMAT(/' OPTST FATAL ERROR,'
-     *       /' negative CISTRT option not allowed',
-     *        ' when LROOTS is greater then one.')
+     *       /' negative CISTRT option not allowed',I10,
+     *       /' when LROOTS is greater then one.')
 C
 C
 C *** ICSTRT > 0 ***
@@ -1707,8 +1721,9 @@ C
       GO TO 9000
 C
 C *** ICSTRT = 4, 5, 6, or 7 ***
+C     (See what codes means at beginning of this subroutine)
 C
-C === start guess should already be on LUIT1
+C === start guess should already be on LUIT1 (SIRIUS.RST)
 C     (but we test to be sure!)
 C
   400 CONTINUE
@@ -1716,6 +1731,9 @@ C
          IF ( .NOT.FNDLAB(TABLE(2),LUIT1) ) GO TO 490
             READ (LUIT1,END=490,ERR=490)
          IF ( .NOT.FNDLB2(TABLE(3),LBLINF,LUIT1) ) GO TO 490
+         IF ( ICSTRT.EQ.5 .AND. LBLINF(2).EQ.'NRSAVE  ')
+     &      FLAG(39) = .TRUE.
+C        ... if user has specified .RESTART, then respect shift to NR
          IF (FLAG(39)) GO TO 495
 C        ... if (ONLYNR) one vector is all that is needed,
 C            so no reason to do more checking.
@@ -1782,7 +1800,7 @@ C        1) get trust radius and beta
 C        2) if (absorption) check if absorption switched off
          IF ( .NOT.FNDLB2(TABLE(5),LBLINF,LUIT1) ) THEN
           WRITE (LUPRI,'(//A)')
-     &    ' (OPTST) Error, restart information not found on SRIUS.RST.'
+     &    ' (OPTST) Error, restart information not found on SIRIUS.RST.'
           CALL QUIT(
      &    '(OPTST) Error, restart information not found on SIRIUS.RST.')
          END IF
@@ -1849,15 +1867,15 @@ C        "UPDSAVE" restart
       END IF
       REWIND LUIT1
       GO TO 9000
- 5000 FORMAT(/' (OPTST) RESTART, Old MCSCF energy:',T50,1P,G25.15,
+ 5000 FORMAT(/' (OPTST) RESTART, Old MCSCF energy:',T50,F30.15,
      *       /T18,'for macro iteration no.',T49,I10
      *       /T23,'BETA value:',T49,F10.2,
      *       /T23,'Trust radius:',T44,F15.5,
-     *       /T18,'Predicted new MCSCF energy:',T50,1P,G25.15)
+     *       /T18,'Predicted new MCSCF energy:',T50,F30.15)
  6000 FORMAT(//' (OPTST) Geometry walk',
-     *       /T16,'Old MCSCF energy:       ',F25.15,
-     *       /T16,'Predicted energy change:',F25.15,
-     *       /T16,'Predicted new energy:   ',F25.15,
+     *       /T16,'Old MCSCF energy:       ',F30.15,
+     *       /T16,'Predicted energy change:',F30.15,
+     *       /T16,'Predicted new energy:   ',F30.15,
      *      //T16,'Ratios for rejecting walk,',
      *       /T16,'  Minimum :',F14.5,
      *       /T16,'  Maximum :',F14.5)
@@ -2018,12 +2036,12 @@ C
 C Scratch:
 C  WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), IBNDX(*), INDXCI(*), WRK(LFREE)
       PARAMETER ( DP1 = 0.1D0, DP5 = 0.5D0,
      *            D0  = 0.0D0, D1  = 1.0D0, D2  = 2.0D0 )
-      PARAMETER ( THDE = 1.D-5 )
-#include <dummy.h>
+      PARAMETER ( THDE = 1.D-10 )
+#include "dummy.h"
 C
 C Used from common blocks:
 C  INFINP: ISTATE,FLAG(*),?
@@ -2036,16 +2054,16 @@ C  ITINFO: DINFO(*)
 C  INFTAP: LUIT1
 C  INFPRI: P4FLAG(*),P6FLAG(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <itinfo.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <gnrinf.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "itinfo.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "gnrinf.h"
 C
 C -- local:
 C
@@ -2074,7 +2092,7 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
-      IF ( ABS(DEPRED).GT.ABS(THDE*EMCSCF) ) THEN
+      IF ( ABS(DEPRED/EMCSCF).GT.THDE ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
       ELSE
@@ -2280,7 +2298,7 @@ C Purpose:
 C  Write timing statistics to LUPRI for central (time-consuming)
 C  routines used in MC optimization, that is from SIROPT.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) KEY
 C
       PARAMETER ( NTYP = 7 )
@@ -2292,7 +2310,7 @@ C
 C Used from common blocks:
 C   INFTIM : NCALLS,TIMCPU,TIMWAL
 C
-#include <inftim.h>
+#include "inftim.h"
 C
 C Local variables:
 C
@@ -2375,8 +2393,8 @@ C
    25 FORMAT(/1X,A8,' has not been called in this calculation.')
    30 FORMAT(/1X,A8,10X,4F15.2)
       END
-C  /* Deck wrsifc */
-      SUBROUTINE WRSIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
+C  /* Deck wr_sifc */
+      SUBROUTINE WR_SIRIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
      *                  GORB,ERLM,ORBHES,XINDX)
 C
 C MOTECC: this routine writes interface file for post-programs.
@@ -2401,13 +2419,13 @@ C                orbitals or natural orbitals or ?
 C
 C  The following records are written:
 C
-C    0) label
+C    0) label LBSIFC ("SIR IPH ")
 C    1) POTNUC,EMY,EACTIV,EMCSCF
 C    2) NISHT,NASHT,...
 C    3) CMO
 C    4) CREF
 C    5) DV
-C    6) F
+C    6) FOCK
 C    7) PV
 C    8) FC
 C    9) FV
@@ -2446,13 +2464,17 @@ C   If (CSF's) then
 C    *) label "CREFDETS"
 C    *) CREF in dets
 C   end if
+C    *) label 'TRCCINT"
+C    *) NSYM, NORBT, ...
+C    *) FCDIA, ISMO
+C    *) CMO
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
       DIMENSION ERLM(NLMSOL,2),GORB(*),CREF(*),FCAC(*),H2AC(*),WRK(*)
 C
       PARAMETER ( D0=0.0D0, D2=2.0D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : ABAIPH,ISTATE,ISPIN,NACTEL,FLAG(*),INERSI
@@ -2467,27 +2489,27 @@ C CBGETDIS : IADH2
 C   CBIREA : LMULBS
 C   R12INT : R12CAL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <priunit.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <cbgetdis.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "priunit.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "cbgetdis.h"
+#include "cbirea.h"
+#include "r12int.h"
 C----------------
 C CBN+JK 03.01.06 gnrinf.h included
-#include <gnrinf.h>
+#include "gnrinf.h"
 C----------------
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
@@ -2498,39 +2520,24 @@ C
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
      *            'PCMINFO ','PCMJXMAT'/
-      DATA LABEOD, LABCC /'EODATA  ', 'TRCCINT '/
+      DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
-      CALL QENTER('WRSIFC')
+      CALL QENTER('WR_SIRIFC')
       LGLOCAL = BOYORB.OR.PIPORB
       CALL GETDAT(LAB123(2),LAB123(3))
 C     ... place date in LAB123(2) and time in LAB123(3)
-C
+
 C
 C *** Now create LUSIFC and write ...
 C
       IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,FNSIFC,
      &            'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSIFC)
-C     If (INERSI but not the interface flag flag(25)) go to solvent part
-      IF (INERSI .AND. .NOT. FLAG(25)) THEN
-         IF (IPRI6 .GE. 1) WRITE (LUPRI,'(/A)')
-     *   ' >>> Writing Sirius interface file for'//
-     *   ' inertial solvent polarization in WRSIFC. <<<'
-C
-C VB mar 2001:
-C     KWRK1, KFCDIA and MMORBT have to initialized before we jump
-C     further down in the subroutine.
-C
-         KWRK1 = 1
-         KFCDIA = 1
-         MMORBT = MAX(4,NNORBT)
-         NCMOT4 = MAX(4,NCMOT)
-         GO TO 700
-      END IF
+
       IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/A)')
      *   ' >>> Writing Sirius interface file for'//
-     *   ' post-programs in WRSIFC. <<<'
+     *   ' post-programs in WR_SIRIFC. <<<'
 C
 C     Calculate Fock matrix
 C
@@ -2542,7 +2549,7 @@ C
       KFCFV  = KUDV   + N2ASHX
       KEND   = KFCFV  + NNORBT
       KEND   = MAX(KEND,KWRK1+NCONF,KWRK1+NWOPT)
-      IF (KEND .GT. LFREE) CALL ERRWRK('WRSIFC',KEND,LFREE)
+      IF (KEND .GT. LFREE) CALL ERRWRK('WR_SIRIFC',KEND,LFREE)
 C
       IF (NASHT .EQ. 0) THEN
          DO I = 1,NNORBT
@@ -2611,9 +2618,9 @@ C
   500 CONTINUE
 C
       IF (P6FLAG(14)) THEN
-         WRITE (LUPRI,'(/A)') ' Full Fock matrix from WRSIFC :'
+         WRITE (LUPRI,'(/A)') ' Full Fock matrix from WR_SIRIFC :'
          CALL OUTPTB(WRK(KFOCK),NORB,NSYM,1,LUPRI)
-         WRITE (LUPRI,'(/A)') ' FC diagonal elememts from WRSIFC :'
+         WRITE (LUPRI,'(/A)') ' FC diagonal elememts from WR_SIRIFC :'
          WRITE (LUPRI,'(/,(1X,5F15.8))') (WRK(KFCDIA-1+I),I=1,NORBT)
       END IF
 C
@@ -2621,13 +2628,13 @@ C
       WRITE (LUSIFC) LAB123,LBSIFC
 C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-     *               ISTATE,ISPIN,NACTEL,LSYM
+     &               ISTATE,ISPIN,NACTEL,LSYM
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
-     *               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
-     *               NSYM,MULD2H, NRHF,NFRO,
-     *               NISH,NASH,NORB,NBAS,
-     *               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
-     *               NAS1, NAS2, NAS3
+     &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
+     &               NSYM,MULD2H, NRHF,NFRO,
+     &               NISH,NASH,NORB,NBAS,
+     &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
+     &               NAS1, NAS2, NAS3
 C
 C 880920-hjaaj: later write label here for orbitals
 C
@@ -2641,21 +2648,21 @@ C
       MMASHY = MAX(4,NNASHY)
       M2ASHY = MAX(4,NNASHX*NNASHX)
 C
-      CALL WRITT (LUSIFC,NCMOT4,CMO)
-      CALL WRITT (LUSIFC,NC4,CREF)
-      CALL WRITT (LUSIFC,MMASHX,DV)
+      CALL WRITT (LUSIFC,NCMOT4,CMO) ! rec no. 3
+      CALL WRITT (LUSIFC,NC4,CREF)   ! rec no. 4
+      CALL WRITT (LUSIFC,MMASHX,DV)  ! rec no. 5
 C Write Fock matrix.
-      CALL WRITT (LUSIFC,M2ORBT,WRK(KFOCK))
-      CALL WRITT (LUSIFC,M2ASHY,PV)
-      CALL WRITT (LUSIFC,MMORBT,FC)
+      CALL WRITT (LUSIFC,M2ORBT,WRK(KFOCK)) ! rec no. 6
+      CALL WRITT (LUSIFC,M2ASHY,PV)  ! rec no. 7
+      CALL WRITT (LUSIFC,MMORBT,FC)  ! rec no. 8
       IF (NASHT .EQ. 0) THEN
          CALL DZERO(WRK(KFOCK),NNORBT)
          CALL WRITT (LUSIFC,MMORBT,WRK(KFOCK))
       ELSE
-         CALL WRITT (LUSIFC,MMORBT,FV)
+         CALL WRITT (LUSIFC,MMORBT,FV) ! rec. no. 9
       END IF
 C
-      CALL WRITT (LUSIFC,MMASHX,FCAC)
+      CALL WRITT (LUSIFC,MMASHX,FCAC) ! rec. no. 10
       IF (IADH2 .GE. 0) THEN
 #if defined (VAR_NEWCODE)
 ... 27-Jun-1987/hjaaj -- noget lignende : MAERKE
@@ -2666,14 +2673,14 @@ C
 ... men der mangler en label som fortaeller response at H2AC on disk.
 #else
          WRITE (LUPRI,*)
-     &      'SIRCI.WRSIFC: ".DISKH2" not implemented here yet.'
+     &      'SIRCI.WR_SIRIFC: ".DISKH2" not implemented here yet.'
          CALL QTRACE(LUPRI)
-         CALL QUIT('SIRCI.WRSIFC: ".DISKH2" not implemented here yet.')
+         CALL QUIT('SIRCI.WR_SIRIFC: ".DISKH2" not implemented here.')
 #endif
       ELSE
-         CALL WRITT (LUSIFC,(MMASHX*MMASHX),H2AC)
+         CALL WRITT (LUSIFC,(MMASHX*MMASHX),H2AC) ! rec no. 11
       END IF
-      CALL WRITT (LUSIFC,NWH4,GORB)
+      CALL WRITT (LUSIFC,NWH4,GORB) ! rec no. 12
 C
 C *** now write diagonals of L-matrix needed for LINTRN
 C     and for conjugate gradient "next" algorithm
@@ -2713,12 +2720,14 @@ C     Write External fields, if any
          WRITE (LUSIFC) (EFIELD(I),I=1,NFIEL4)
          WRITE (LUSIFC) (LFIELD(I),I=1,NFIEL4)
       END IF
+
 C     Write Solvent information, if Solvent calculation.
-  700 IF (FLAG(16)) THEN
+      IF (FLAG(16)) THEN
          KTMAT = KWRK1
          KWRK2 = KTMAT + NNORBT
          LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-SOLVENT',KWRK2,LFREE)
+         IF (KWRK2 .GT. LFREE)
+     &      CALL ERRWRK('WR_SIRIFC-SOLVENT',KWRK2,LFREE)
          WRITE (LUSIFC) LAB123,TABLE(6)
          WRITE (LUSIFC) EPSOL,EPSTAT,RSOL,LSOLMX
          WRITE (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
@@ -2727,7 +2736,7 @@ C     Write Solvent information, if Solvent calculation.
          CALL WRITT (LUSIFC,NLMSO4,ERLM(1,2))
          WRITE (LUSIFC) NSYM, NBAS
          CALL SOLFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,ERLM(1,1),.TRUE.,
-     *               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
+     &               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
          WRITE (LUSIFC) LAB123,TABLE(7)
          CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
       END IF
@@ -2761,7 +2770,7 @@ C     Write PCM solvent info if PCM calculation
          KPOT  = KDVAO + N2BASX
          KWRK2 = KPOT  + NTS
          LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-PCM',KWRK2,LFREE)
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WR_SIRIFC-PCM',KWRK2,LFREE)
 C
          CALL PCMFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,.TRUE.,
      *               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
@@ -2802,17 +2811,40 @@ Ckr
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
+C--------------
+C CBN+JK, 03.01.06
+C-------------------
+C Write qm3 solvent part of the Fock matrix to interface file
+
+      IF (QM3) THEN
+         KTMAT = KWRK1
+         KFSOLAO = KTMAT + NNORBT
+         KUCMO = KFSOLAO + NNBASX
+         KWRK2 = KUCMO + NORBT*NBAST
+         LWRK2 = LFREE - KWRK2 + 1
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WR_SIRIFC-QM3',KWRK2,LFREE)
+         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IPRSOL)
+         CALL UPKCMO(CMO,WRK(KUCMO))
+         CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
+     &             NBAST,NORBT)
+         WRITE (LUSIFC) LAB123,TABLE(7)
+         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
+      END IF
+C--------------
+C CBN+JK, 03.01.06
+C-------------------
 C
+C     Revision 2000/05/24 12:43:25  hjj
 C     Write CREF in determinants here, if NCDETS .gt. NCONF
 C
       IF (NCDETS .GT. NCONF) THEN
          IF (FLAG(27)) THEN
             WRITE (LUPRI,*)
-     &      'WRSIFC ERROR, .DETERMINANTS but NCDETS.gt.NCONF:',
+     &      'WR_SIRIFC ERROR, .DETERMINANTS but NCDETS.gt.NCONF:',
      &      NCDETS, NCONF
-            CALL QUIT('WRSIFC: NCDETS.gt. NCONF for .DETERMINANTS')
+            CALL QUIT('WR_SIRIFC: NCDETS.gt. NCONF for .DETERMINANTS')
          END IF
-         WRITE (LUSIFC) LAB123,TABLE(8)
+         WRITE (LUSIFC) LAB123,TABLE(8) ! label "CREFDETS"
          KWRK1 = 1 + NCDETS
          LWRK1 = LFREE - KWRK1
          CALL GETDETS(LSYM,NCONF,NCDETS,XINDX,CREF,WRK,WRK(KWRK1),LWRK1)
@@ -2837,7 +2869,7 @@ C
             ENDDO
          ENDDO
          NCMOTX = MAX(4,NCMOT1)
-         WRITE (LUSIFC) LAB123, LABCC
+         WRITE (LUSIFC) LAB123, LABCC ! label "TRCCINT "
          WRITE (LUSIFC) NSYM,NORBT,NBAST1,NCMOT1,(NOCC(I),I=1,NSYM),
      *        (NORB(I),I=1,NSYM),(MBAS1(I),I=1,NSYM),POTNUC,EMCSCF
          WRITE (LUSIFC) (WRK(KFCDIA-1+I),I=1,NORBT),(ISMO(I),I=1,NORBT),
@@ -2900,7 +2932,7 @@ C        Interface for auxiliary basis set (WK/UniKA/04-11-2002).
             END DO
          END DO
          CALL GPCLOSE(LUMULB,'KEEP')
-         WRITE (LUSIFC) LAB123, LABAUX
+         WRITE (LUSIFC) LAB123, LABAUX ! label "AUXILBAS"
          WRITE (LUSIFC) NSYM,NAUXT,NBAST,MOAUX,
      *                  (0,I=1,NSYM),
      *                  (NORB2(I),I=1,NSYM),
@@ -2971,10 +3003,11 @@ C        Interface for primary and secondary basis sets (WK/UniKA/04-11-2002).
          END IF
       END IF
 C
-C *** end of subroutine WRSIFC
+C *** end of subroutine WR_SIRIFC
 C
       WRITE (LUSIFC) LAB123,LABEOD
       CALL GPCLOSE(LUSIFC,'KEEP')
-      CALL QEXIT('WRSIFC')
+      CALL QEXIT('WR_SIRIFC')
       RETURN
       END
+C --- end of siropt.F ---

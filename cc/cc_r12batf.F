@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 *=====================================================================*
       subroutine r12batf(r2am,fback,fback2,lauxbeta,projvir,work,lwork)
 c----------------------------------------------------------------------
@@ -41,10 +64,10 @@ c  introduced projvir option: Christof Haettig, spring 2005
 c  adapted for CABS, Ansatz 3: Christian Neiss, winter 2006
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 
       integer isymr2
       parameter (isymr2 = 1)
@@ -555,12 +578,12 @@ c     H. Fliegl, C. Haettig  spring 2003
 c     modified C. Neiss      autumn 2004
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 !for first order properties, app. B (Elena):
-#include <ccr12int.h>
+#include "ccr12int.h"
 
       logical locdbg
       character*(*) fback !for first order properties, app. B (Elena)
@@ -696,10 +719,10 @@ c     adapted for more general R12-MOs:
 c     C. Neiss, summer 2005
 c----------------------------------------------------------------------
       implicit none 
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       integer nr1orb(8),nr1xorb(8),nr1bas(8),nr1xbas(8),nr2bas,n2bst1(8)
       integer ir1xbas(8,8),ir1xorb(8,8)
       integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),iaodis1(8,8)

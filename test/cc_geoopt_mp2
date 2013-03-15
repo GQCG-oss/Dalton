@@ -149,7 +149,7 @@ CTRL[3]=9
 ERROR[3]="SECOND ITERATION IS NOT CORRECT"
 
 # Final summary:
-CRIT1=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.602803" $log | wc -l`
+CRIT1=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.60280[23]" $log | wc -l`
 CRIT2=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.134513" $log | wc -l`
 CRIT3=`$GREP "Geometry converged in * 5 *iterations!" $log | wc -l`
 CRIT4=`$GREP "Energy at final geometry is * : *-100\.223199 a.u." $log | wc -l`

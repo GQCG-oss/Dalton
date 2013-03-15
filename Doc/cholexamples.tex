@@ -1,0 +1,252 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Examples of Cholesky decomposition-based calculations}
+\label{ch:choexamples}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+We present in this Chapter some examples of input files 
+\verb|DALTON.INP| for calculations that can be done
+with the Dalton program using either decomposed two-electron 
+integrals~\cite{choint,chorsp} either decomposed orbital 
+energy denominators~\cite{jcp_chopt,ijqc_chopt}.
+A few more examples may be found in the test suite. 
+
+
+\section{Hartree-Fock energy and polarizability}
+%
+{\choles}  allows for the calculation of Hartree-Fock energy
+and properties. The use of decomposed integrals is invoked by 
+the keyword \Key{CHOLES} in the \Sec{*DALTON} input module. The
+next example shows how to compute the dipole polarizabilty in this
+way. 
+%
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPER
+.CHOLES
+**CHOLES
+.REDUCE
+.THRCOM
+ 1.0D-6
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.ALPHA
+*ABALNR
+.FREQUE
+  2
+ 0.0   0.0932
+*END OF
+\end{verbatim}
+Observe, that actually the keyword \Key{REDUCE} it is not needed, since it is
+the default. The threshold of the decompostion is $10^{-6}$, which is enough to 
+converge the wave function until the default value of $10^{-5}$. Furthermore,
+note that the full section \Sec{*CHOLES} could have been omitted if the
+decomposition would have been carried out until its default value of $10^{-8}$.
+
+\section{KT3 magnetic properties using London orbitals}
+
+The following input exemplifies the calculation of magnetic properties 
+(magnetizabilities and nuclear shielding constants) using Cholesky
+decomposed two-electron integrals, as required by keyword \Key{CHOLES}.
+The decomposition uses default values since no \Sec{*CHOLES} appears.
+Just to show how to do it, it has been required a tighter convergence
+of the linear equations.  Note that otherwise the input is basically identical 
+to a standard (or direct) calculation of magnetic properties with {\dalton}.
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+.CHOLES
+**WAVE FUNCTIONS
+.DFT
+ KT3
+*HF INPUT
+.THRESHOLD
+ 1.0D-8
+**PROPERTIES
+.MAGNET
+.SHIELD
+*LINRES
+.THRESH
+ 1.0D-6
+*END OF INPUT
+\end{verbatim}
+
+
+\section{MP2 energy}
+This example shows how to compute the MP2 energy using decomposed integrals. 
+Observe that, since default values for the decompostions all used throughout
+the whole calculation, the only difference with respect to a standard 
+MP2 calculation using the {\cc} code is the presence of the keyword 
+\Key{CHOLES} in the \Sec{*DALTON} general input section.
+
+\begin{verbatim}
+**DALTON INPUT
+.CHOLES
+.RUN WAVE
+**WAVE FUNCTIONS
+.CC
+*SCF IN
+.THRESHOLD
+ 5.0D-8
+.MAX DIIS
+ 100
+*CC INP
+.PRINT
+ 3
+.FREEZE
+  54 0
+.MP2
+*END OF DALTON INPUT
+\end{verbatim}
+
+\section{Restart of MP2 energy}
+Let's assume now that the above example did not finish because, say,
+it exceeded the CPU time limit of the queue system. In addition to
+the standard output, one can find in the scratch directory the
+file \verb|CHOMP2_RST| with, for instance, the following
+contents:
+
+\begin{verbatim}
+
+          Cholesky MP2 restart information
+          --------------------------------
+
+
+  FstSy   FstOr   Bfrst        LstSy   LstOr   Blast              Energy
+    1        1       1           1       37      37           -0.7588448137
+    1       38      38           1       74      74           -1.1690778421
+    1       75      75           1      111     111           -1.4200963373
+    1      112     112           1      148     148           -1.5553412292
+    1      149     149           1      185     185           -1.6280847066
+    1      186     186           2       35     222           -2.3350317768
+    2       36     223           2       72     259           -2.7682043113
+    2       73     260           2      109     296           -3.0257337904
+    2      110     297           2      146     333           -3.1460304016
+    2      147     334           2      183     370           -3.2146165324
+    2      184     371           3       35     407           -3.8731562262
+    3       36     408           3       72     444           -4.2604843530
+    3       73     445           3      109     481           -4.4682304682
+    3      110     482           3      146     518           -4.5838011660
+\end{verbatim}
+
+Looking at the last line, we can know that the calculation died after having
+finished the (outermost) virtual orbital batch comprising from virtual
+orbital nr. 482, i.e. \verb|Bfrst|, to virtual orbital nr. 518, i.e.
+\verb|Blast|. This last orbital is nr. 146 (\verb|LstOr|) of symmetry
+3 (\verb|LstSy|), the MP2 contribution until this point being -4.5838 a.u.
+With this information, it is possible to restart the calculation by means
+of the following input:
+
+\begin{verbatim}
+**DALTON INPUT
+.CHOLES
+.RUN WAVE FUNCTIONS
+*CHOLES
+.RSTDIA          ! Requires file CHODIAG
+.RSTCHO          ! Requires files CHOLESKY.RST and CHOLES_*
+**SIRIUS
+.CC
+*SCF INPUT
+.THRESHOLD
+ 5.0D-8
+.MAX DIIS
+ 100
+*ORBITAL
+.MOSTART
+ NEWORB
+*CC INP
+.PRINT
+ 3
+.FREEZE
+  54 0
+.MP2
+*CHOMP2
+.SKIPTR          ! Requires files CHOIA_*
+.RSTMP2
+   3  147        ! The virtual loop begins in orbital 147 of symmetry 3.
+.OLDEN2
+  -4.5838011660  ! The contribution of previous orbitals.
+**END OF DALTON INPUT
+\end{verbatim}
+
+Of course, the comments (marked by the ! sign) are not needed. In
+addition, keep in mind that if the default value \Key{REDUCE} is
+used in the original AO decomposition, it is not possible to modify the
+decomposition threshold later on.
+
+
+\section{CC2 magnetic properties using the CTOCD/DZ method}
+This example shows how to compute CTOCD/DZ magnetic properties
+at the CC2 level with Cholesky decomposed integrals. Again, 
+default values are used in the decomposition and, therefore, the
+same input can be used in standard calculations provided that the 
+keyword \Key{CHOLES} is deleted. In that case, CCSD calculations 
+are also possible. Note that the needed one-electron integrals
+are explicitly required by the keywords \Key{DIPVEL} and so on.
+The code does not check if they are not available, but simply
+takes them as zero!
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN WAVE
+.CHOLES
+**INTEGRAL
+.DIPVEL             ! Susceptibilities and shiledings
+.RANGMO             ! Susceptibilities
+.ANGMOM             ! Susceptibilities and shiledings
+.RPSO               ! Shieldings
+.PSO                ! Shieldings
+**WAVE FUN
+.CC
+*SCF INPUT
+.THRESHOLD
+ 1.0D-8
+*CC INP
+.CC2
+.MAX IT
+ 150
+.THRENR
+ 1.0D-8
+.THRLEQ
+ 1.0D-6
+*CCLR
+.CTOSUS             ! Compute susceptibilities (magnetizabilities)
+.CTOSHI             ! Compute nuclear magnetic shieldings.
+*END OF DALTON INPUT
+\end{verbatim}
+
+Obviously, it is not needed to compute simultaneously the two
+magnetic properties presented here.
+
+\section{CCSD(T) energy calculation using decomposed 
+         energy denominators}
+
+We now illustrate the use of Cholesky-based techniques to calculate
+the CCSD(T) energy correction. The calculation of molecular 
+properties has not been implemented yet with this method. Finally,
+note that standard (not decomposed) two-electron integrals are 
+used. More detailed information can be found at section~\ref{sec:chopt}.
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN WAVE
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0d-8
+*CC INPUT
+.THRENR
+ 1.0d-08
+.PRINT
+ 3
+.FREEZE
+ 24   0
+.CHO(T)
+*CHO(T)
+.THRCHO     ! Converge each term only to 1.0D-6 a.u.
+ 1.0D-6
+.MXCHVE     ! Trunk the expansion of the denominators after the 6th term.
+  6
+*END OF DALTON INPUT
+\end{verbatim}

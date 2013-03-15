@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ccsdpt_eta */
       SUBROUTINE CCSDPT_ETA(OMEGA1,OMEGA2,T1AM,ISYMT1,T2TP,
@@ -51,15 +41,15 @@ C         Isyres = isymt1*isymt2*isymop
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <second.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "second.h"
 C
       INTEGER ISYMT1, ISYMT2, LWORK
       INTEGER ISYMTR, ISYRES, ISINT1, ISINT2, ISYMIM, KFOCKD, KOMG1
@@ -178,7 +168,7 @@ C
 C
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND0
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND0
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C
@@ -310,7 +300,7 @@ C
 C
       IF (LWRK2 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND2
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C
@@ -468,7 +458,7 @@ C
 C
          IF (LWRK4 .LT. 0) THEN
             WRITE(LUPRI,*) 'Memory available : ',LWORK
-            WRITE(LUPRI,*) 'Memory needed    : ',KEND4
+            WRITE(LUPRI,*) 'Memory needed    > ',KEND4
             CALL QUIT('Insufficient space in CCSDT_OMEG')
          END IF
 C
@@ -675,7 +665,7 @@ C
 C
                IF (LWRK4 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Memory available : ',LWORK
-                  WRITE(LUPRI,*) 'Memory needed    : ',KEND4
+                  WRITE(LUPRI,*) 'Memory needed    > ',KEND4
                   CALL QUIT('Insufficient space in CCSDT_OMEG')
                END IF
 C
@@ -1083,10 +1073,10 @@ C                       ISYMT1 / ISYMT2 is symmetry of T1AM / (T2TP,T2TCME).
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMT1, ISYMT2, ISINT1, LWORK, LENSQ, ISYMB, ISYMC
       INTEGER ISINT2, ISYMBC, ISYRES, JSAIKJ, ISYMDK, LENGTH, ISYMK
@@ -1884,9 +1874,9 @@ C     Calculate 2*C-E from the occupied integrals
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYINT
       INTEGER ISYMA, ISYJIK, ISYMK, ISYMJI, ISYMJ, ISYMI, KOFF1, KOFF2
@@ -1965,10 +1955,10 @@ C     Calculate QMAT for t3-bar.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMT1, ISYMT2, ISINT1, ISINT2, LWORK, LENSQ
       INTEGER ISYMB, ISYMD
@@ -2439,12 +2429,12 @@ C                       and TMAT intermdiates.
 C                       ISYINT is symmetry of FOCKAK and XIAJB
 C                       ISYRES = ISYMIM*ISYINT
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -2600,12 +2590,12 @@ C                       (including isymib*isymid)
 C                       ISYINT is symmetry of integrals in TROCC and TROCC1.
 C                       ISYRES = ISYMIM*ISYINT
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -2913,16 +2903,16 @@ C     For CCSD(T) we do not use LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccfop.h>
-#include <second.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccfop.h"
+#include "second.h"
 C
       INTEGER ISYMTR, ISYMT1, ISYMT2, ISYML1, ISYML2, LWORK
       INTEGER ISYRES, ISINT1, ISINT2, ISYMIM, KFOCKD
@@ -4865,10 +4855,10 @@ C                       ISYRES = ISYMIM*ISYINT
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMIM, ISYINT, LENSQ, LWORK, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMC, ISYMK, ISYMBC, JSAIKJ
@@ -5082,10 +5072,10 @@ C     IOPT = 2. Calculate the terms from T3BAR.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMIM, ISYMT2, LWORK, LENSQ, ISYMB, ISYMD, IOPT
       INTEGER INDSQ(LENSQ,6)
@@ -5290,8 +5280,8 @@ C     Purpose : Remove the forbidden t3/t3-bar amplitudes.
 C
       IMPLICIT NONE
 C
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMIM, ISYMB, ISYMD, ISYIJK, ISYMK, ISYMIJ
       INTEGER ISYBIJ, ISYMJ, ISYMI, ISYMBI, KOFF1, ISYMBD
@@ -5384,9 +5374,9 @@ C               where the densities have a constant C.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYVIR, ISYMB, ISYMA, ISYMI, ISYMAI, ISYMBI
       INTEGER KOFF1, KOFF2, ISYMAB
@@ -5457,9 +5447,9 @@ C               Store the total density on file.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER LUVIR1, LUVIR2, ISYRES
       INTEGER ISYMD, ISYAIB, ISYMB, ISYMAI, ISYAID, KOFF1, KOFF2
@@ -5534,9 +5524,9 @@ C               densities d_{iajk} and d_{aijk} respectively.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMIM, ISYMT2, LWORK,LENSQ, ISYMB, ISYMD, IOPT
       INTEGER INDSQ(LENSQ,6)
@@ -5755,10 +5745,10 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMT2, ISYMIM, LENSQ, LWORK, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMC, ISYMI, ISYAKJ, ISYMJ, ISYMBJ, ISYMAK
@@ -5995,9 +5985,9 @@ C               and transpose the matrix to (ai) from (ia)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER LWORK, ISYAO
       INTEGER AL, BE
@@ -6160,9 +6150,9 @@ C     K. Hald, Fall 2001.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMB, ISYMD, IAIKJ, IOPT
       INTEGER KOFF1, KOFF2, ISYMJ, ISYMK, ISYMA, ISYMI, ISYAIK, ISYMBJ
@@ -6371,9 +6361,9 @@ C     K. Hald, Fall 2001.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMIM, IOPT, KOFF1, KOFF2, KOFF3, KOFF4, KOFF5, KOFF6
       INTEGER ISYMA, ISYMB, ISYMAB, IAIKJ, ISYMC, ISYMI, ISYMJ, ISYMK
@@ -6599,9 +6589,9 @@ C               density with a delta function.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYRES, ISYMA, ISYMI, ISYMJ, ISYMIJ, ISYMJJ, KOFF1
       INTEGER KOFF2
@@ -6702,10 +6692,10 @@ C               U^{bd}(ck,i,j) = t2(bi,cl) (dj|lk) - t2(bi,dk) (dj|cd)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER ISYMT2, ISYINT, LWORK, LENSQ, ISYMB, ISYMD
       INTEGER INDSQ(LENSQ,6)
@@ -6936,10 +6926,10 @@ C               U^{bd}(ck,i,j) = t2(bi,cl) (dj|lk) - t2(bi,dk) (dj|cd)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER ISYMT1, ISYMT2, ISINT1, ISYINT, LWORK, LENSQ, ISYMB, ISYMD
       INTEGER INDSQ(LENSQ,6), INDEX
@@ -7416,9 +7406,9 @@ C     IOPT = 2 : Sort FROM akjl TO ljka
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYINT, IOPT, KOFF1, KOFF2
       INTEGER ISYMA, ISYLJK, ISYMK, ISYMLJ, ISYMAK, ISYMJ
@@ -7502,9 +7492,9 @@ C     Written by K. Hald, Fall 2001.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER LENSQ, ISSMAT, LWORK
       INTEGER INDSQ(LENSQ,6)
@@ -7619,16 +7609,16 @@ C
 C
       RETURN
       END
-C  /* Deck ccsdt_symsort */
+C  /* Deck ccsdpt_symsort */
       SUBROUTINE CCSDPT_SYMSORT(UMAT,ISSMAT,WORK,LWORK)
 C
 C     Written by K. Hald, Fall 2001.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISSMAT, LWORK
       INTEGER ISYMK, ISYAIJ, ISYMJ, ISYMAI, ISYMJK, NJK
@@ -7697,9 +7687,9 @@ C     Written by K. Hald, Winter 2001/2002.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISSMAT, ISYMT2, ISYMB, ISYMD, LWORK
       INTEGER ISYFIK, ISYANM, ISYRES, KT2SOR, KT2SOR2, KEND1, LWRK1

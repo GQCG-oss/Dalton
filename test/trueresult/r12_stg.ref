@@ -1,142 +1,178 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Jakob Kongsted,           Aarhus University,            Denmark    
-    Henrik Koch,              University of Trondheim,      Norway     
-    Andrea Ligabue,           University of Modena,         Italy      
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Anders Osted,             Copenhagen University,        Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Aug 19 20:13:54 2005
-     Host name              : tchplx50                                
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
-
- Default print level:        0
-
-    Direct calculation
-    Integral sections will be executed
-    Wave function sections will be executed
-
-Starting in Integral Section -
+ --------------------------------------------------------------------------------
 
 
+     Date and time (Linux)  : Wed Mar 16 19:11:27 2011 
+     Host name              : fe6                                     
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
-
- Default print level:        1
-
- * Nuclear model: Point charge
-
- Calculation of one-electron Hamiltonian integrals.
-
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - Cartesian multipole moment integrals of orders 2 and lower
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+
+
+ INFO : "*READIN" is deprecated, use instead "*MOLBAS"
 
 
 
-  Title Cards
-  -----------
+ Changes of defaults for *MOLBAS:
+ --------------------------------
 
-  Direct MP2-R12/B calculation using symmetry                             
-                                                                          
+ Print level in molecule setup (READIN):    1
+
+ .R12AUX: Reading auxiliary basis sets from .mol file for R12
+
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Direct MP2-R12/B calculation using symmetry                             
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
   Used basis set file for basis set for elements with Z =   6 :
-     "/usr/app/cvsimage/dalton/basis/6-311G"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
   Used basis set file for basis set for elements with Z =   1 :
-     "/usr/app/cvsimage/dalton/basis/6-311G"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G"
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  This is an auxiliary basis for R12, MBSI:    2
   Used basis set file for basis set for elements with Z =   6 :
-     "/usr/app/cvsimage/dalton/basis/Turbomole-TZVPP"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Turbomole-TZVPP"
+
+  Atomic type no.    4
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  This is an auxiliary basis for R12, MBSI:    2
   Used basis set file for basis set for elements with Z =   1 :
-     "/usr/app/cvsimage/dalton/basis/Turbomole-TZVPP"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/Turbomole-TZVPP"
 
 
-  Symmetry Operations
-  -------------------
-
-  Symmetry operations: 2
-
-
-
-                      SYMGRP:Point group information
-                      ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: D2 
 
@@ -149,9 +185,9 @@ Point group: D2
 
         |  E   C2z  C2y  C2x
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    C2y | C2y  C2x   E 
+     E  |  E   C2z  C2y  C2x
+    C2z | C2z   E   C2x  C2y
+    C2y | C2y  C2x   E   C2z
     C2x | C2x  C2y  C2z   E 
 
    * Character table
@@ -167,187 +203,157 @@ Point group: D2
 
         | A    B2   B1   B3 
    -----+--------------------
-    A   | A  
-    B2  | B2   A  
-    B1  | B1   B3   A  
+    A   | A    B2   B1   B3 
+    B2  | B2   A    B3   B1 
+    B1  | B1   B3   A    B2 
     B3  | B3   B1   B2   A  
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            C          12.000000
-                           H    1      1.007825
-                           H    2      1.007825
-                           H    3      1.007825
-                           H    4      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           H   _3      1.007825
+                           H   _4      1.007825
                            C           0.000000
-                           H    1      0.000000
-                           H    2      0.000000
-                           H    3      0.000000
-                           H    4      0.000000
+                           H   _1      0.000000
+                           H   _2      0.000000
+                           H   _3      0.000000
+                           H   _4      0.000000
 
                        Total mass:    16.031300 amu
                        Natural abundance:   0.000 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     4
+  Number of atom types :    4
   Total number of atoms:   10
 
-  Basis-set 1 refers to the basis "6-311G" from the basis-set library.
+  Basis set 1 refers to the basis "6-311G" from the basis set library.
 
-  Basis-set 2 refers to the basis "Turbomole-TZVPP" from the basis-set library.
+  Basis set 2 refers to the basis "Turbomole-TZVPP" from the basis set library.
 
-  label  basis   atoms  charge   prim    cont     basis
+  label  basis   atoms  charge   prim  cont     basis
   ------------------------------------------------------------------------------
-  C        1       1       6      26      13      [11s5p|4s3p]                                       
-  H        1       4       1       5       3      [5s|3s]                                            
-  C        2       1       0      46      31      [11s6p2d1f|5s3p2d1f]                               
-  H        2       4       0      16      14      [5s2p1d|3s2p1d]                                    
+  C        1       1    6.0000    26    13      [11s5p|4s3p]                                       
+  H        1       4    1.0000     5     3      [5s|3s]                                            
+  C        2       1    0.0000    46    31      [11s6p2d1f|5s3p2d1f]                               
+  H        2       4    0.0000    16    14      [5s2p1d|3s2p1d]                                    
   ------------------------------------------------------------------------------
-  total:          10      10     156     112
+  total:          10   10.0000   156   112
   ------------------------------------------------------------------------------
   Spherical harmonic basis used.
 
   Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates: 30
-
-   1   C        x      0.0000000000
-   2            y      0.0000000000
-   3            z      0.0000000000
-
-   4   H    1   x      1.2767310000
-   5            y      1.2767310000
-   6            z      1.2767310000
-
-   7   H    2   x     -1.2767310000
-   8            y     -1.2767310000
-   9            z      1.2767310000
-
-  10   H    3   x     -1.2767310000
-  11            y      1.2767310000
-  12            z     -1.2767310000
-
-  13   H    4   x      1.2767310000
-  14            y     -1.2767310000
-  15            z     -1.2767310000
-
-  16   C        x      0.0000000000
-  17            y      0.0000000000
-  18            z      0.0000000000
-
-  19   H    1   x      1.2767310000
-  20            y      1.2767310000
-  21            z      1.2767310000
-
-  22   H    2   x     -1.2767310000
-  23            y     -1.2767310000
-  24            z      1.2767310000
-
-  25   H    3   x     -1.2767310000
-  26            y      1.2767310000
-  27            z     -1.2767310000
-
-  28   H    4   x      1.2767310000
-  29            y     -1.2767310000
-  30            z     -1.2767310000
+  Total number of coordinates:   30
+  C       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  H   / 1 :     4  x   1.2767310000    5  y   1.2767310000    6  z   1.2767310000
+  H   / 2 :     7  x  -1.2767310000    8  y  -1.2767310000    9  z   1.2767310000
+  H   / 3 :    10  x  -1.2767310000   11  y   1.2767310000   12  z  -1.2767310000
+  H   / 4 :    13  x   1.2767310000   14  y  -1.2767310000   15  z  -1.2767310000
+  C       :    16  x   0.0000000000   17  y   0.0000000000   18  z   0.0000000000
+  H   / 1 :    19  x   1.2767310000   20  y   1.2767310000   21  z   1.2767310000
+  H   / 2 :    22  x  -1.2767310000   23  y  -1.2767310000   24  z   1.2767310000
+  H   / 3 :    25  x  -1.2767310000   26  y   1.2767310000   27  z  -1.2767310000
+  H   / 4 :    28  x   1.2767310000   29  y  -1.2767310000   30  z  -1.2767310000
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   6  8  8  8
+  Number of coordinates in each symmetry:     6    8    8    8
 
   Symmetry  A   ( 1)
 
-   1   H     x    [  4  -   7  -  10  +  13 ]/4
-   2   H     y    [  5  -   8  +  11  -  14 ]/4
-   3   H     z    [  6  +   9  -  12  -  15 ]/4
-   4   H     x    [ 19  -  22  -  25  +  28 ]/4
-   5   H     y    [ 20  -  23  +  26  -  29 ]/4
-   6   H     z    [ 21  +  24  -  27  -  30 ]/4
+    1   H     x    [  4  -    7  -   10  +   13 ]/4
+    2   H     y    [  5  -    8  +   11  -   14 ]/4
+    3   H     z    [  6  +    9  -   12  -   15 ]/4
+    4   H     x    [ 19  -   22  -   25  +   28 ]/4
+    5   H     y    [ 20  -   23  +   26  -   29 ]/4
+    6   H     z    [ 21  +   24  -   27  -   30 ]/4
 
   Symmetry  B2  ( 2)
 
-   7   C     y    2
-   8   H     x    [  4  +   7  -  10  -  13 ]/4
-   9   H     y    [  5  +   8  +  11  +  14 ]/4
-  10   H     z    [  6  -   9  -  12  +  15 ]/4
-  11   C     y   17
-  12   H     x    [ 19  +  22  -  25  -  28 ]/4
-  13   H     y    [ 20  +  23  +  26  +  29 ]/4
-  14   H     z    [ 21  -  24  -  27  +  30 ]/4
+    7   C     y    2
+    8   H     x    [  4  +    7  -   10  -   13 ]/4
+    9   H     y    [  5  +    8  +   11  +   14 ]/4
+   10   H     z    [  6  -    9  -   12  +   15 ]/4
+   11   C     y   17
+   12   H     x    [ 19  +   22  -   25  -   28 ]/4
+   13   H     y    [ 20  +   23  +   26  +   29 ]/4
+   14   H     z    [ 21  -   24  -   27  +   30 ]/4
 
   Symmetry  B1  ( 3)
 
-  15   C     z    3
-  16   H     x    [  4  -   7  +  10  -  13 ]/4
-  17   H     y    [  5  -   8  -  11  +  14 ]/4
-  18   H     z    [  6  +   9  +  12  +  15 ]/4
-  19   C     z   18
-  20   H     x    [ 19  -  22  +  25  -  28 ]/4
-  21   H     y    [ 20  -  23  -  26  +  29 ]/4
-  22   H     z    [ 21  +  24  +  27  +  30 ]/4
+   15   C     z    3
+   16   H     x    [  4  -    7  +   10  -   13 ]/4
+   17   H     y    [  5  -    8  -   11  +   14 ]/4
+   18   H     z    [  6  +    9  +   12  +   15 ]/4
+   19   C     z   18
+   20   H     x    [ 19  -   22  +   25  -   28 ]/4
+   21   H     y    [ 20  -   23  -   26  +   29 ]/4
+   22   H     z    [ 21  +   24  +   27  +   30 ]/4
 
   Symmetry  B3  ( 4)
 
-  23   C     x    1
-  24   H     x    [  4  +   7  +  10  +  13 ]/4
-  25   H     y    [  5  +   8  -  11  -  14 ]/4
-  26   H     z    [  6  -   9  +  12  -  15 ]/4
-  27   C     x   16
-  28   H     x    [ 19  +  22  +  25  +  28 ]/4
-  29   H     y    [ 20  +  23  -  26  -  29 ]/4
-  30   H     z    [ 21  -  24  +  27  -  30 ]/4
+   23   C     x    1
+   24   H     x    [  4  +    7  +   10  +   13 ]/4
+   25   H     y    [  5  +    8  -   11  -   14 ]/4
+   26   H     z    [  6  -    9  +   12  -   15 ]/4
+   27   C     x   16
+   28   H     x    [ 19  +   22  +   25  +   28 ]/4
+   29   H     y    [ 20  +   23  -   26  -   29 ]/4
+   30   H     z    [ 21  -   24  +   27  -   30 ]/4
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
-            C           H    1      H    2      H    3      H    4      C     
+            C           H   _1      H   _2      H   _3      H   _4      C     
             ------      ------      ------      ------      ------      ------
  C     :    0.000000
- H    1:    1.170203    0.000000
- H    2:    1.170203    1.910933    0.000000
- H    3:    1.170203    1.910933    1.910933    0.000000
- H    4:    1.170203    1.910933    1.910933    1.910933    0.000000
+ H   _1:    1.170203    0.000000
+ H   _2:    1.170203    1.910933    0.000000
+ H   _3:    1.170203    1.910933    1.910933    0.000000
+ H   _4:    1.170203    1.910933    1.910933    1.910933    0.000000
  C     :    0.000000    1.170203    1.170203    1.170203    1.170203    0.000000
- H    1:    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
- H    2:    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
- H    3:    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
- H    4:    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
+ H   _1:    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
+ H   _2:    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
+ H   _3:    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
+ H   _4:    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
 
-            H    1      H    2      H    3      H    4
+            H   _1      H   _2      H   _3      H   _4
             ------      ------      ------      ------
- H    1:    0.000000
- H    2:    1.910933    0.000000
- H    3:    1.910933    1.910933    0.000000
- H    4:    1.910933    1.910933    1.910933    0.000000
+ H   _1:    0.000000
+ H   _2:    1.910933    0.000000
+ H   _3:    1.910933    1.910933    0.000000
+ H   _4:    1.910933    1.910933    1.910933    0.000000
 
 
-  Max interatomic separation is    1.9109 Angstroms
-  between atoms "H    2" and "H    1".
+  Max interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     C            1.170203
-  bond distance:  H    2     C            1.170203
-  bond distance:  H    3     C            1.170203
-  bond distance:  H    4     C            1.170203
+  bond distance:  H   _1     C            1.170203
+  bond distance:  H   _2     C            1.170203
+  bond distance:  H   _3     C            1.170203
+  bond distance:  H   _4     C            1.170203
 
 
   Bond angles (degrees):
@@ -355,12 +361,12 @@ Point group: D2
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     C          H    2       109.471
-  bond angle:     H    1     C          H    3       109.471
-  bond angle:     H    1     C          H    4       109.471
-  bond angle:     H    2     C          H    3       109.471
-  bond angle:     H    2     C          H    4       109.471
-  bond angle:     H    3     C          H    4       109.471
+  bond angle:     H   _1     C          H   _2       109.471
+  bond angle:     H   _1     C          H   _3       109.471
+  bond angle:     H   _1     C          H   _4       109.471
+  bond angle:     H   _2     C          H   _3       109.471
+  bond angle:     H   _2     C          H   _4       109.471
+  bond angle:     H   _3     C          H   _4       109.471
 
 
 
@@ -368,9 +374,9 @@ Point group: D2
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    3.680240          1.000000    0.000000    0.000000
-   IB    3.680240          0.000000    1.000000    0.000000
-   IC    3.680240          0.000000    0.000000    1.000000
+   IA       3.680240          1.000000    0.000000    0.000000
+   IB       3.680240          0.000000    1.000000    0.000000
+   IC       3.680240          0.000000    0.000000    1.000000
 
 
  Rotational constants
@@ -378,20 +384,20 @@ Point group: D2
 
                A                   B                   C
 
-         137322.2826         137322.2826         137322.2826 MHz
+         137322.2814         137322.2814         137322.2814 MHz
             4.580578            4.580578            4.580578 cm-1
 
 
-  Nuclear repulsion energy :   12.514560078913
+@  Nuclear repulsion energy :   12.514560078913
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              31  27  27  27
+  Number of orbitals in each symmetry:          31   27   27   27
 
-  Number of main orbitals in each symmetry:          7   6   6   6
-  Number of auxiliary functions in each symmetry:   24  21  21  21
+  Number of main orbitals in each symmetry:           7    6    6    6
+  Number of auxiliary functions in each symmetry:    24   21   21   21
 
 
   Symmetry  A  ( 1)
@@ -400,9 +406,9 @@ Point group: D2
     2     C    M   1s         2
     3     C    M   1s         3
     4     C    M   1s         4
-    5     H    M   1s        14  +  15  +  16  +  17
-    6     H    M   1s        18  +  19  +  20  +  21
-    7     H    M   1s        22  +  23  +  24  +  25
+    5     H    M   1s        14 +   15 +   16 +   17
+    6     H    M   1s        18 +   19 +   20 +   21
+    7     H    M   1s        22 +   23 +   24 +   25
     8     C    A   1s        26
     9     C    A   1s        27
    10     C    A   1s        28
@@ -413,20 +419,20 @@ Point group: D2
    15     C    A   3d0       47
    16     C    A   3d2+      49
    17     C    A   4f2-      51
-   18     H    A   1s        57  +  58  +  59  +  60
-   19     H    A   1s        61  +  62  +  63  +  64
-   20     H    A   1s        65  +  66  +  67  +  68
-   21     H    A   2px       69  -  70  -  71  +  72
-   22     H    A   2py       73  -  74  +  75  -  76
-   23     H    A   2pz       77  +  78  -  79  -  80
-   24     H    A   2px       81  -  82  -  83  +  84
-   25     H    A   2py       85  -  86  +  87  -  88
-   26     H    A   2pz       89  +  90  -  91  -  92
-   27     H    A   3d2-      93  +  94  -  95  -  96
-   28     H    A   3d1-      97  -  98  -  99  + 100
-   29     H    A   3d0      101  + 102  + 103  + 104
-   30     H    A   3d1+     105  - 106  + 107  - 108
-   31     H    A   3d2+     109  + 110  + 111  + 112
+   18     H    A   1s        57 +   58 +   59 +   60
+   19     H    A   1s        61 +   62 +   63 +   64
+   20     H    A   1s        65 +   66 +   67 +   68
+   21     H    A   2px       69 -   70 -   71 +   72
+   22     H    A   2py       73 -   74 +   75 -   76
+   23     H    A   2pz       77 +   78 -   79 -   80
+   24     H    A   2px       81 -   82 -   83 +   84
+   25     H    A   2py       85 -   86 +   87 -   88
+   26     H    A   2pz       89 +   90 -   91 -   92
+   27     H    A   3d2-      93 +   94 -   95 -   96
+   28     H    A   3d1-      97 -   98 -   99 +  100
+   29     H    A   3d0      101 +  102 +  103 +  104
+   30     H    A   3d1+     105 -  106 +  107 -  108
+   31     H    A   3d2+     109 +  110 +  111 +  112
 
 
   Symmetry  B2 ( 2)
@@ -434,9 +440,9 @@ Point group: D2
    32     C    M   2py        6
    33     C    M   2py        9
    34     C    M   2py       12
-   35     H    M   1s        14  -  15  +  16  -  17
-   36     H    M   1s        18  -  19  +  20  -  21
-   37     H    M   1s        22  -  23  +  24  -  25
+   35     H    M   1s        14 -   15 +   16 -   17
+   36     H    M   1s        18 -   19 +   20 -   21
+   37     H    M   1s        22 -   23 +   24 -   25
    38     C    A   2py       32
    39     C    A   2py       35
    40     C    A   2py       38
@@ -444,20 +450,20 @@ Point group: D2
    42     C    A   3d1+      48
    43     C    A   4f3-      50
    44     C    A   4f1-      52
-   45     H    A   1s        57  -  58  +  59  -  60
-   46     H    A   1s        61  -  62  +  63  -  64
-   47     H    A   1s        65  -  66  +  67  -  68
-   48     H    A   2px       69  +  70  -  71  -  72
-   49     H    A   2py       73  +  74  +  75  +  76
-   50     H    A   2pz       77  -  78  -  79  +  80
-   51     H    A   2px       81  +  82  -  83  -  84
-   52     H    A   2py       85  +  86  +  87  +  88
-   53     H    A   2pz       89  -  90  -  91  +  92
-   54     H    A   3d2-      93  -  94  -  95  +  96
-   55     H    A   3d1-      97  +  98  -  99  - 100
-   56     H    A   3d0      101  - 102  + 103  - 104
-   57     H    A   3d1+     105  + 106  + 107  + 108
-   58     H    A   3d2+     109  - 110  + 111  - 112
+   45     H    A   1s        57 -   58 +   59 -   60
+   46     H    A   1s        61 -   62 +   63 -   64
+   47     H    A   1s        65 -   66 +   67 -   68
+   48     H    A   2px       69 +   70 -   71 -   72
+   49     H    A   2py       73 +   74 +   75 +   76
+   50     H    A   2pz       77 -   78 -   79 +   80
+   51     H    A   2px       81 +   82 -   83 -   84
+   52     H    A   2py       85 +   86 +   87 +   88
+   53     H    A   2pz       89 -   90 -   91 +   92
+   54     H    A   3d2-      93 -   94 -   95 +   96
+   55     H    A   3d1-      97 +   98 -   99 -  100
+   56     H    A   3d0      101 -  102 +  103 -  104
+   57     H    A   3d1+     105 +  106 +  107 +  108
+   58     H    A   3d2+     109 -  110 +  111 -  112
 
 
   Symmetry  B1 ( 3)
@@ -465,9 +471,9 @@ Point group: D2
    59     C    M   2pz        7
    60     C    M   2pz       10
    61     C    M   2pz       13
-   62     H    M   1s        14  +  15  -  16  -  17
-   63     H    M   1s        18  +  19  -  20  -  21
-   64     H    M   1s        22  +  23  -  24  -  25
+   62     H    M   1s        14 +   15 -   16 -   17
+   63     H    M   1s        18 +   19 -   20 -   21
+   64     H    M   1s        22 +   23 -   24 -   25
    65     C    A   2pz       33
    66     C    A   2pz       36
    67     C    A   2pz       39
@@ -475,20 +481,20 @@ Point group: D2
    69     C    A   3d2-      45
    70     C    A   4f0       53
    71     C    A   4f2+      55
-   72     H    A   1s        57  +  58  -  59  -  60
-   73     H    A   1s        61  +  62  -  63  -  64
-   74     H    A   1s        65  +  66  -  67  -  68
-   75     H    A   2px       69  -  70  +  71  -  72
-   76     H    A   2py       73  -  74  -  75  +  76
-   77     H    A   2pz       77  +  78  +  79  +  80
-   78     H    A   2px       81  -  82  +  83  -  84
-   79     H    A   2py       85  -  86  -  87  +  88
-   80     H    A   2pz       89  +  90  +  91  +  92
-   81     H    A   3d2-      93  +  94  +  95  +  96
-   82     H    A   3d1-      97  -  98  +  99  - 100
-   83     H    A   3d0      101  + 102  - 103  - 104
-   84     H    A   3d1+     105  - 106  - 107  + 108
-   85     H    A   3d2+     109  + 110  - 111  - 112
+   72     H    A   1s        57 +   58 -   59 -   60
+   73     H    A   1s        61 +   62 -   63 -   64
+   74     H    A   1s        65 +   66 -   67 -   68
+   75     H    A   2px       69 -   70 +   71 -   72
+   76     H    A   2py       73 -   74 -   75 +   76
+   77     H    A   2pz       77 +   78 +   79 +   80
+   78     H    A   2px       81 -   82 +   83 -   84
+   79     H    A   2py       85 -   86 -   87 +   88
+   80     H    A   2pz       89 +   90 +   91 +   92
+   81     H    A   3d2-      93 +   94 +   95 +   96
+   82     H    A   3d1-      97 -   98 +   99 -  100
+   83     H    A   3d0      101 +  102 -  103 -  104
+   84     H    A   3d1+     105 -  106 -  107 +  108
+   85     H    A   3d2+     109 +  110 -  111 -  112
 
 
   Symmetry  B3 ( 4)
@@ -496,9 +502,9 @@ Point group: D2
    86     C    M   2px        5
    87     C    M   2px        8
    88     C    M   2px       11
-   89     H    M   1s        14  -  15  -  16  +  17
-   90     H    M   1s        18  -  19  -  20  +  21
-   91     H    M   1s        22  -  23  -  24  +  25
+   89     H    M   1s        14 -   15 -   16 +   17
+   90     H    M   1s        18 -   19 -   20 +   21
+   91     H    M   1s        22 -   23 -   24 +   25
    92     C    A   2px       31
    93     C    A   2px       34
    94     C    A   2px       37
@@ -506,68 +512,89 @@ Point group: D2
    96     C    A   3d1-      46
    97     C    A   4f1+      54
    98     C    A   4f3+      56
-   99     H    A   1s        57  -  58  -  59  +  60
-  100     H    A   1s        61  -  62  -  63  +  64
-  101     H    A   1s        65  -  66  -  67  +  68
-  102     H    A   2px       69  +  70  +  71  +  72
-  103     H    A   2py       73  +  74  -  75  -  76
-  104     H    A   2pz       77  -  78  +  79  -  80
-  105     H    A   2px       81  +  82  +  83  +  84
-  106     H    A   2py       85  +  86  -  87  -  88
-  107     H    A   2pz       89  -  90  +  91  -  92
-  108     H    A   3d2-      93  -  94  +  95  -  96
-  109     H    A   3d1-      97  +  98  +  99  + 100
-  110     H    A   3d0      101  - 102  - 103  + 104
-  111     H    A   3d1+     105  + 106  - 107  - 108
-  112     H    A   3d2+     109  - 110  - 111  + 112
+   99     H    A   1s        57 -   58 -   59 +   60
+  100     H    A   1s        61 -   62 -   63 +   64
+  101     H    A   1s        65 -   66 -   67 +   68
+  102     H    A   2px       69 +   70 +   71 +   72
+  103     H    A   2py       73 +   74 -   75 -   76
+  104     H    A   2pz       77 -   78 +   79 -   80
+  105     H    A   2px       81 +   82 +   83 +   84
+  106     H    A   2py       85 +   86 -   87 -   88
+  107     H    A   2pz       89 -   90 +   91 -   92
+  108     H    A   3d2-      93 -   94 +   95 -   96
+  109     H    A   3d1-      97 +   98 +   99 +  100
+  110     H    A   3d0      101 -  102 -  103 +  104
+  111     H    A   3d1+     105 +  106 -  107 -  108
+  112     H    A   3d2+     109 -  110 -  111 +  112
+
+  Number of floating/multiple basis set orbitals :    5
 
   Symmetries of electric field:  B3 (4)  B2 (2)  B1 (3)
 
   Symmetries of magnetic field:  B3 (4)  B2 (2)  B1 (3)
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in OVERLA is   0.01 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in CARMOM is   0.00 seconds
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - Cartesian multipole moment integrals of orders 2 and lower
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
- >>> Time used in CARMOM is   0.01 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 
- >>> Time used in CARMOM is   0.00 seconds
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
 
- >>> Time used in GABGEN is   0.03 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.06 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
-
-- End of Integral Section
-
-
-Starting in Wave Function Section -
-
+ >>>> Detected R12 input:
+ Direct Fock matrix formation switched on!
  Scale factors for CC excitations manifolds:
- for bra states (projection manifold):   1.00000000000000     
- for ket states (operator manifold)  :   1.00000000000000     
+ for bra states (projection manifold):  1.00000000000000000     
+ for ket states (operator manifold)  :  1.00000000000000000     
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Aug 19 20:13:54 2005
-     Host name              : tchplx50                                
+     Date and time (Linux)  : Wed Mar 16 19:11:28 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      Direct MP2-R12/B calculation using symmetry                             
                                                                              
 
@@ -579,7 +606,7 @@ Starting in Wave Function Section -
 
      This is a combination run starting with
 
-               a RHF calculation
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -589,12 +616,13 @@ Starting in Wave Function Section -
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 25
 
      Spin multiplicity                         1
      Total number of symmetries                4
@@ -602,21 +630,32 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2   3   4
-                                       --  --  --  --
-     Total number of orbitals           7   6   6   6
-     Number of basis functions         31  27  27  27
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           25 |    7    6    6    6
+     Number of basis functions         112 |   31   27   27   27
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
-      -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals              2   1   1   1
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               5 |    2    1    1    1
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
+     Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+  
 
 
  Changes of defaults for CC:
@@ -638,108 +677,101 @@ Starting in Wave Function Section -
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
- Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   1  -27.1365641112       1.69D+01  -2.71D+01    2  1  1  1
+      Virial theorem: -V/T =      1.403372
+      MULPOP  C      -3.73; H   _1  0.93; H   _2  0.93; H   _3  0.93; H   _4  0.93; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2  -34.5898762638       5.94D+00  -7.45D+00    2  1  1  1
+      Virial theorem: -V/T =      2.091355
+      MULPOP  C       7.29; H   _1 -1.82; H   _2 -1.82; H   _3 -1.82; H   _4 -1.82; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3  -38.7946873519       4.88D+00  -4.20D+00    2  1  1  1
+      Virial theorem: -V/T =      1.867310
+      MULPOP  C      -2.33; H   _1  0.58; H   _2  0.58; H   _3  0.58; H   _4  0.58; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4  -40.0763992781       1.17D+00  -1.28D+00    2  1  1  1
+      Virial theorem: -V/T =      1.982613
+      MULPOP  C      -1.13; H   _1  0.28; H   _2  0.28; H   _3  0.28; H   _4  0.28; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5  -40.1693024510       7.17D-02  -9.29D-02    2  1  1  1
+      Virial theorem: -V/T =      2.012201
+      MULPOP  C      -0.65; H   _1  0.16; H   _2  0.16; H   _3  0.16; H   _4  0.16; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   6  -40.1695672514       2.35D-02  -2.65D-04    2  1  1  1
+      Virial theorem: -V/T =      2.010994
+      MULPOP  C      -0.65; H   _1  0.16; H   _2  0.16; H   _3  0.16; H   _4  0.16; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7  -40.1696077079       1.69D-03  -4.05D-05    2  1  1  1
+      Virial theorem: -V/T =      2.010335
+      MULPOP  C      -0.65; H   _1  0.16; H   _2  0.16; H   _3  0.16; H   _4  0.16; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8  -40.1696081787       1.82D-04  -4.71D-07    2  1  1  1
+      Virial theorem: -V/T =      2.010296
+      MULPOP  C      -0.65; H   _1  0.16; H   _2  0.16; H   _3  0.16; H   _4  0.16; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9  -40.1696081840       2.57D-05  -5.32D-09    2  1  1  1
+      Virial theorem: -V/T =      2.010298
+      MULPOP  C      -0.65; H   _1  0.16; H   _2  0.16; H   _3  0.16; H   _4  0.16; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10  -40.1696081841       1.78D-06  -5.88D-11    2  1  1  1
+      Virial theorem: -V/T =      2.010298
+      MULPOP  C      -0.65; H   _1  0.16; H   _2  0.16; H   _3  0.16; H   _4  0.16; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11  -40.1696081841       1.32D-07  -2.27D-13    2  1  1  1
+      Virial theorem: -V/T =      2.010298
+      MULPOP  C      -0.65; H   _1  0.16; H   _2  0.16; H   _3  0.16; H   _4  0.16; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12  -40.1696081841       3.24D-08   4.26D-14    2  1  1  1
+      Virial theorem: -V/T =      2.010298
+      MULPOP  C      -0.65; H   _1  0.16; H   _2  0.16; H   _3  0.16; H   _4  0.16; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13  -40.1696081841       2.10D-10  -5.68D-14    2  1  1  1
+      Virial theorem: -V/T =      2.010298
+      MULPOP  C      -0.65; H   _1  0.16; H   _2  0.16; H   _3  0.16; H   _4  0.16; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  14  -40.1696081841       1.31D-11   4.26D-14    2  1  1  1
 
- >>> Time used in TWOINT is   0.02 seconds
-
-   1    -27.136564111241   1.69D+01  -2.71D+01    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
-
- >>> Time used in TWOINT is   0.01 seconds
-
-   2    -34.589876264015   5.94D+00  -7.45D+00    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
-
- >>> Time used in TWOINT is   0.01 seconds
-
-   3    -38.794687356854   4.88D+00  -4.20D+00    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
-
- >>> Time used in TWOINT is   0.02 seconds
-
-   4    -40.076399281293   1.17D+00  -1.28D+00    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
-
- >>> Time used in TWOINT is   0.01 seconds
-
-   5    -40.169302450989   7.17D-02  -9.29D-02    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
-
- >>> Time used in TWOINT is   0.02 seconds
-
-   6    -40.169567251280   2.35D-02  -2.65D-04    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
-
- >>> Time used in TWOINT is   0.01 seconds
-
-   7    -40.169607707938   1.69D-03  -4.05D-05    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
-
- >>> Time used in TWOINT is   0.02 seconds
-
-   8    -40.169608178674   1.82D-04  -4.71D-07    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.01 seconds
-
-   9    -40.169608183990   2.57D-05  -5.32D-09    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.01 seconds
-
-  10    -40.169608184049   1.78D-06  -5.88D-11    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.02 seconds
-
-  11    -40.169608184049   1.32D-07  -2.70D-13    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.01 seconds
-
-  12    -40.169608184049   3.24D-08   2.84D-14    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.02 seconds
-
-  13    -40.169608184049   2.10D-10   1.42D-14    2  1  1  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.01 seconds
-
-  14    -40.169608184049   1.31D-11  -1.42D-14    2  1  1  1
- DIIS converged in  14 iterations !
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.28 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    2    1    1    1
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -11.24883460    -0.91570058     0.15124038     0.66852352     0.98912603
+  1    -11.24883460    -0.91570058     0.15124038     0.66852352     0.98912603
          2.55246795    24.48920405
 
- Hartree-Fock orbital energies, symmetry 2
-
-        -0.52493145     0.22803923     0.41917923     0.77943391     2.56471901
+  2     -0.52493145     0.22803923     0.41917923     0.77943391     2.56471901
          3.26692922
 
- Hartree-Fock orbital energies, symmetry 3
-
-        -0.52493145     0.22803923     0.41917923     0.77943391     2.56471901
+  3     -0.52493145     0.22803923     0.41917923     0.77943391     2.56471901
          3.26692922
 
- Hartree-Fock orbital energies, symmetry 4
-
-        -0.52493145     0.22803923     0.41917923     0.77943391     2.56471901
+  4     -0.52493145     0.22803923     0.41917923     0.77943391     2.56471901
          3.26692922
 
     E(LUMO) :     0.15124038 au (symmetry 1)
-  - E(HOMO) :    -0.52493145 au (symmetry 4)
+  - E(HOMO) :    -0.52493145 au (symmetry 3)
   ------------------------------------------
     gap     :     0.67617183 au
 
@@ -760,26 +792,18 @@ Starting in Wave Function Section -
 @   2 MO components are deleted in symmetry    1
  Overlap eigenvalues of the deleted orbitals:
   2.81D-07  8.87D-09
- DELMO: ISYM, ITURN, NORBISAV, NORBI           1           2          24
-          22
 
 @   2 MO components are deleted in symmetry    2
  Overlap eigenvalues of the deleted orbitals:
   4.95D-07  1.42D-08
- DELMO: ISYM, ITURN, NORBISAV, NORBI           2           2          21
-          19
 
 @   2 MO components are deleted in symmetry    3
  Overlap eigenvalues of the deleted orbitals:
   4.95D-07  1.42D-08
- DELMO: ISYM, ITURN, NORBISAV, NORBI           3           2          21
-          19
 
 @   2 MO components are deleted in symmetry    4
  Overlap eigenvalues of the deleted orbitals:
   4.95D-07  1.42D-08
- DELMO: ISYM, ITURN, NORBISAV, NORBI           4           2          21
-          19
 
   Canonical primary and secondary basis sets
   ISYM       NORB1 MBAS1       NORB2 MBAS2
@@ -787,9 +811,6 @@ Starting in Wave Function Section -
      2           6     6          19    21
      3           6     6          19    21
      4           6     6          19    21
-
- >>> Time used in TWOINT is   0.09 seconds
-
 
  Computation of exchange matrix done [5]
 
@@ -800,167 +821,92 @@ Starting in Wave Function Section -
    3      0.000000000000
    4      0.000000000000
 
- >>> Time used in R12AUX is   0.11 seconds
 
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
 
-
-                    >>> FINAL RESULTS FROM SIRIUS <<<
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -40.169608184049
+     Final HF energy:             -40.169608184050                 
      Nuclear repulsion:            12.514560078913
-     Electronic energy:           -52.684168262962
+     Electronic energy:           -52.684168262963
 
      Final gradient norm:           0.000000000013
 
  
-     Date and time (Linux)  : Fri Aug 19 20:13:54 2005
-     Host name              : tchplx50                                
+     Date and time (Linux)  : Wed Mar 16 19:11:28 2011 
+     Host name              : fe6                                     
 
-     Molecular orbitals for symmetry species   1
+ (Only coefficients >0.0100 are printed.)
 
- Orbital          1        2
-   1  C   1s     0.5635  -0.1021
-   2  C   1s     0.4666  -0.1727
-   3  C   1s     0.0036   0.4457
-   4  C   1s    -0.0004   0.3911
-   5  H   1s     0.0003   0.0803
-   6  H   1s     0.0001   0.0818
-   7  H   1s     0.0001  -0.0006
-   8  C   1s     0.0000   0.0000
-   9  C   1s     0.0000   0.0000
-  10  C   1s     0.0000   0.0000
-  11  C   1s     0.0000   0.0000
-  12  C   1s     0.0000   0.0000
-  13  C   3d0    0.0000   0.0000
-  14  C   3d2+   0.0000   0.0000
-  15  C   3d0    0.0000   0.0000
-  16  C   3d2+   0.0000   0.0000
-  17  C   4f2-   0.0000   0.0000
-  18  H   1s     0.0000   0.0000
-  19  H   1s     0.0000   0.0000
-  20  H   1s     0.0000   0.0000
-  21  H   2px    0.0000   0.0000
-  22  H   2py    0.0000   0.0000
-  23  H   2pz    0.0000   0.0000
-  24  H   2px    0.0000   0.0000
-  25  H   2py    0.0000   0.0000
-  26  H   2pz    0.0000   0.0000
-  27  H   3d2-   0.0000   0.0000
-  28  H   3d1-   0.0000   0.0000
-  29  H   3d0    0.0000   0.0000
-  30  H   3d1+   0.0000   0.0000
-  31  H   3d2+   0.0000   0.0000
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   2
+    Orbital         1        2        3        4
+   1 C   :1s     0.5635  -0.1021   0.0533  -0.0689
+   2 C   :1s     0.4666  -0.1727   0.0859  -0.1329
+   3 C   :1s     0.0036   0.4457  -0.1037   0.4206
+   4 C   :1s    -0.0004   0.3911  -1.9654   1.3118
+   5 H   :1s     0.0003   0.0803   0.0194  -0.0607
+   6 H   :1s     0.0001   0.0818  -0.0072  -1.0444
+   7 H   :1s     0.0001  -0.0006   0.7462   0.2806
 
- Orbital          1
-   1  C   2py    0.1801
-   2  C   2py    0.3119
-   3  C   2py    0.2086
-   4  H   1s     0.0975
-   5  H   1s     0.1604
-   6  H   1s     0.0679
-   7  C   2py    0.0000
-   8  C   2py    0.0000
-   9  C   2py    0.0000
-  10  C   3d1+   0.0000
-  11  C   3d1+   0.0000
-  12  C   4f3-   0.0000
-  13  C   4f1-   0.0000
-  14  H   1s     0.0000
-  15  H   1s     0.0000
-  16  H   1s     0.0000
-  17  H   2px    0.0000
-  18  H   2py    0.0000
-  19  H   2pz    0.0000
-  20  H   2px    0.0000
-  21  H   2py    0.0000
-  22  H   2pz    0.0000
-  23  H   3d2-   0.0000
-  24  H   3d1-   0.0000
-  25  H   3d0    0.0000
-  26  H   3d1+   0.0000
-  27  H   3d2+   0.0000
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   3
+    Orbital         1        2        3
+   1 C   :2py   -0.1801  -0.1426   0.0217
+   2 C   :2py   -0.3119  -0.1410  -0.0468
+   3 C   :2py   -0.2086  -1.1541   1.3027
+   4 H   :1s    -0.0975   0.0198  -0.0401
+   5 H   :1s    -0.1604  -0.0463  -0.7577
+   6 H   :1s    -0.0679   1.2200   0.2430
 
- Orbital          1
-   1  C   2pz    0.1801
-   2  C   2pz    0.3119
-   3  C   2pz    0.2086
-   4  H   1s     0.0975
-   5  H   1s     0.1604
-   6  H   1s     0.0679
-   7  C   2pz    0.0000
-   8  C   2pz    0.0000
-   9  C   2pz    0.0000
-  10  C   3d2-   0.0000
-  11  C   3d2-   0.0000
-  12  C   4f0    0.0000
-  13  C   4f2+   0.0000
-  14  H   1s     0.0000
-  15  H   1s     0.0000
-  16  H   1s     0.0000
-  17  H   2px    0.0000
-  18  H   2py    0.0000
-  19  H   2pz    0.0000
-  20  H   2px    0.0000
-  21  H   2py    0.0000
-  22  H   2pz    0.0000
-  23  H   3d2-   0.0000
-  24  H   3d1-   0.0000
-  25  H   3d0    0.0000
-  26  H   3d1+   0.0000
-  27  H   3d2+   0.0000
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   4
+    Orbital         1        2        3
+   1 C   :2pz   -0.1801  -0.1426   0.0217
+   2 C   :2pz   -0.3119  -0.1410  -0.0468
+   3 C   :2pz   -0.2086  -1.1541   1.3027
+   4 H   :1s    -0.0975   0.0198  -0.0401
+   5 H   :1s    -0.1604  -0.0463  -0.7577
+   6 H   :1s    -0.0679   1.2200   0.2430
 
- Orbital          1
-   1  C   2px    0.1801
-   2  C   2px    0.3119
-   3  C   2px    0.2086
-   4  H   1s     0.0975
-   5  H   1s     0.1604
-   6  H   1s     0.0679
-   7  C   2px    0.0000
-   8  C   2px    0.0000
-   9  C   2px    0.0000
-  10  C   3d1-   0.0000
-  11  C   3d1-   0.0000
-  12  C   4f1+   0.0000
-  13  C   4f3+   0.0000
-  14  H   1s     0.0000
-  15  H   1s     0.0000
-  16  H   1s     0.0000
-  17  H   2px    0.0000
-  18  H   2py    0.0000
-  19  H   2pz    0.0000
-  20  H   2px    0.0000
-  21  H   2py    0.0000
-  22  H   2pz    0.0000
-  23  H   3d2-   0.0000
-  24  H   3d1-   0.0000
-  25  H   3d0    0.0000
-  26  H   3d1+   0.0000
-  27  H   3d2+   0.0000
+ Molecular orbitals for symmetry species  4
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 C   :2px   -0.1801  -0.1426   0.0217
+   2 C   :2px   -0.3119  -0.1410  -0.0468
+   3 C   :2px   -0.2086  -1.1541   1.3027
+   4 H   :1s    -0.0975   0.0198  -0.0401
+   5 H   :1s    -0.1604  -0.0463  -0.7577
+   6 H   :1s    -0.0679   1.2200   0.2430
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.36 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.42 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Fri Aug 19 20:13:54 2005
-     Host name              : tchplx50                                
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 19:11:28 2011 
+     Host name              : fe6                                     
 
 
-Starting Coupled Cluster -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
 
   
 
@@ -981,6 +927,7 @@ Starting Coupled Cluster -
  CCR12 APPROX =   0
 
    NRHF   :       1       1       1       1
+   NRHFS  :       2       1       1       1
    NORB1  :       7       6       6       6
    NORB2  :      22      19      19      19
 
@@ -1001,7 +948,7 @@ Starting Coupled Cluster -
  Expansion coefficients and exponents:
     1        0.468300000000000        0.082575000000000
     2        0.308700000000000        0.580250000000000
-    3        0.152900000000000        4.070000000000001
+    3        0.152900000000000        4.070000000000000
  The B matrix is transformed into an orthogonal basis
  and inverted by diagonalization
 
@@ -1012,54 +959,36 @@ Starting Coupled Cluster -
  must be specified in the Dalton input file.
  ------------------------------------------------------------------------------
  Ansaetze 1, 2, 3 are used and results are printed for approximations A and B.
- ------------------------------------------------------------------------------
+------------------------------------------------------------------------------
  The Gaussian-damped R12 integrals are computed as described in:
  C. C. M. Samson, W. Klopper and T. Helgaker,
  Comp. Phys. Commun. 149, 1-10 (2002).
  ******************************************************************************
 
- Core memory required by CCSD_R12 :         122743  (double words)
+ Core memory required by CCSD_R12 :         128877  (double words)
 
  Computation of (ik|[[f12,T1],f12]|jl) integrals done
-
- >>> Time used in #6 [4] is   1.02 seconds
-
+ >>> Time used in #6 [4] is   0.45 seconds
  Computation of (ik|f12**2|jl) integrals done
-
- >>> Time used in #4 [4] is   0.97 seconds
-
+ >>> Time used in #4 [4] is   0.40 seconds
  Computation of (ik|f12/r12|jl) integrals done
-
- >>> Time used in #2 [4] is   0.95 seconds
-
+ >>> Time used in #2 [4] is   0.34 seconds
  Computation of (ip'|f12|jq') integrals done
-
- >>> Time used in #3 [5] is   2.82 seconds
-
+ >>> Time used in #3 [5] is   1.56 seconds
  Computation of (ip'|1/r12|jq') integrals done
-
- >>> Time used in #1 [5] is   2.44 seconds
-
-
- >>> Time used in #4 [4] is   0.96 seconds
-
+ >>> Time used in #1 [5] is   1.21 seconds
+ >>> Time used in #4 [4] is   0.39 seconds
  Computation of (i* p'|f12|jq') integrals done
-
- >>> Time used in #3 [5] is   2.81 seconds
-
+ >>> Time used in #3 [5] is   1.58 seconds
  Computation of (i'p|f12|jq') integrals done
-
- >>> Time used in #3 [5] is   2.86 seconds
-
+ >>> Time used in #3 [5] is   1.58 seconds
  Computation of (ip'|[T,f12]|jq') integrals done
-
- >>> Time used in #5 [5] is   4.18 seconds
-
+ >>> Time used in #5 [5] is   2.41 seconds
 
 
-             +-----------------------------------------------+
-             ! MP2-R12 ansatz := (1 - P1 - P2 + P1*P2) * R12 !
-             +-----------------------------------------------+
+                 +-----------------------------------------------+
+                 ! MP2-R12 ansatz := (1 - P1 - P2 + P1*P2) * R12 !
+                 +-----------------------------------------------+
 
 
  SECOND-ORDER PAIR ENERGIES:
@@ -1078,9 +1007,9 @@ Starting Coupled Cluster -
  MP2 =   -0.109876008   -0.082732159   -0.027143850
 
 
-                        +-------------------------+
-                        ! Original MP2-R12 method !
-                        +-------------------------+
+                            +-------------------------+
+                            ! Original MP2-R12 method !
+                            +-------------------------+
 
 
  SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
@@ -1225,9 +1154,9 @@ Starting Coupled Cluster -
               MP2-R12/B   correlation energy =   -0.271114602
 
 
-                     +--------------------------------+
-                     ! Auxiliary-basis MP2-R12 method !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Auxiliary-basis MP2-R12 method !
+                         +--------------------------------+
 
 
  SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
@@ -1372,15 +1301,15 @@ Starting Coupled Cluster -
               MP2-R12/B   correlation energy =   -0.173373550
 
 
-             +-----------------------------------------------+
-             ! MP2-R12 ansatz := (1 - O1 - O2 + O1*O2) * R12 !
-             +-----------------------------------------------+
+                 +-----------------------------------------------+
+                 ! MP2-R12 ansatz := (1 - O1 - O2 + O1*O2) * R12 !
+                 +-----------------------------------------------+
 
 
 
-                     +--------------------------------+
-                     ! Auxiliary-basis MP2-R12 method !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Auxiliary-basis MP2-R12 method !
+                         +--------------------------------+
 
 
  SECOND-ORDER R12/0 PAIR ENERGIES:
@@ -1636,15 +1565,15 @@ Starting Coupled Cluster -
               MP2-R12/B*  correlation energy =   -0.207013987
 
 
-      +-------------------------------------------------------------+
-      ! MP2-R12 ansatz := (1 - V1*V2) * (1 - O1 - O2 + O1*O2) * R12 !
-      +-------------------------------------------------------------+
+          +-------------------------------------------------------------+
+          ! MP2-R12 ansatz := (1 - V1*V2) * (1 - O1 - O2 + O1*O2) * R12 !
+          +-------------------------------------------------------------+
 
 
 
-                     +--------------------------------+
-                     ! Auxiliary-basis MP2-R12 method !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Auxiliary-basis MP2-R12 method !
+                         +--------------------------------+
 
 
  SECOND-ORDER NONINVARIANT R12/B   PAIR ENERGIES:
@@ -1693,11 +1622,9 @@ Starting Coupled Cluster -
        -0.082732159   -0.156099028   -0.027143850   -0.053882705
 
               MP2-R12/B   correlation energy =   -0.209981733
-
- >>> Time used in E(R12) is   0.78 seconds
-
- Time for MP2-R12 part cpu:   19.7900006139278     
- Time for MP2-R12 part wall:   20.0000000000000     
+ >>> Time used in E(R12) is   0.22 seconds
+ Time for MP2-R12 part cpu:   10.132459819316864     
+ Time for MP2-R12 part wall:   11.000000000000000     
 
  *******************************************************************
 
@@ -1733,11 +1660,14 @@ Starting Coupled Cluster -
  *******************************************************************************
 
 
-- End of Coupled Cluster
 
- >>>> Total CPU  time used in DALTON:  20.21 seconds
- >>>> Total wall time used in DALTON:  20.00 seconds
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  10.63 seconds
+ >>>> Total wall time used in DALTON:  12.00 seconds
 
  
-     Date and time (Linux)  : Fri Aug 19 20:14:14 2005
-     Host name              : tchplx50                                
+     Date and time (Linux)  : Wed Mar 16 19:11:39 2011 
+     Host name              : fe6                                     

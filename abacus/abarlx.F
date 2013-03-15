@@ -1,48 +1,38 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck rlxinp */
       SUBROUTINE RLXINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 5)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbirlx.h>
+#include "abainf.h"
+#include "cbirlx.h"
       DATA TABLE /'.SKIP  ', '.PRINT ','.SYMTES','.NOSELL','.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*RELAX')
@@ -121,10 +111,10 @@ C  /* Deck rlxini */
 C
 C     Initialize /CBIRLX/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbirlx.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbirlx.h"
 C
       IPRINT = IPRDEF
       SKIP   = .NOT. (MOLHES .OR. DIPDER .OR. POLAR .OR. MAGSUS .OR.
@@ -144,15 +134,43 @@ C     Rewritten to include dip. grad. and polarizabilities Jan 1990 tuh
 C
 C     Purpose: Calculate response contributions to molecular Hessian
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "dummy.h"
 C
       LOGICAL PASS, OLDDX, DOREAL, DOIMAG, DOSEL, DOTRPL, SELLER
       DIMENSION SPNPSO(*),SPNSD(*), SPNFC(*), SPSDFC(*), WORK(LWORK)
+
+#ifdef VAR_G95
+      real(8), allocatable :: fc_contribution(:, :)
+!bugfix for the G95 compiler May 2011,
+!should be removed again when G95 compiler fixed.
+!  from the Dalton svn log:
+!=========================================================
+!r10285 | bast | 2011-05-14 16:28:15 +0200 (Sat, 14 May 2011) | 15 lines
+
+!bugfix: spin-spin coupling using g95 with optimization
+
+!runs crashed in the FC contribution
+!reason: mystery
+!more specifically due to invalid access to WORK array segment
+!which looked correctly "allocated" but g95 optimized it into a crash
+
+!changing a WORK "allocation" into a dynamic allocation solved
+!the issue
+
+!restores tests: prop_spinspin prop_spinspin2 prop_spinspin4
+!prop_newtrasoppa
+!prop_newtrasoppacc dft_properties_sym dft_properties_nosym
+!vibave_spinspin
+!hfreqfromg prop_spinspin5 prop_newtramcscf shield_spin
+!=========================================================
+
+#endif
+
 C
 C      Used from common blocks:
 C       /ENERGY/: HESREL(*,*)
@@ -161,28 +179,28 @@ C       /INFTAP/: LUGDR,LURDR
 C       /INFVAR/: NCONF,NWOPT,NVAR
 C       /INFDIM/: NVARMA
 C
-#include <abainf.h>
-#include <spnout.h>
-#include <cbirlx.h>
+#include "abainf.h"
+#include "spnout.h"
+#include "cbirlx.h"
 C
-#include <energy.h>
-#include <moldip.h>
-#include <dipole.h>
-#include <suscpt.h>
-#include <spinro.h>
-#include <molgfa.h>
-#include <sigma.h>
-#include <difsec.h>
+#include "energy.h"
+#include "moldip.h"
+#include "dipole.h"
+#include "suscpt.h"
+#include "spinro.h"
+#include "molgfa.h"
+#include "sigma.h"
+#include "difsec.h"
 C
-#include <nuclei.h>
-#include <dorps.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <gdvec.h>
-#include <dftcom.h>
+#include "nuclei.h"
+#include "dorps.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "gdvec.h"
+#include "dftcom.h"
 C
       IF (SKIP) RETURN
       CALL QENTER('RELAX')
@@ -262,7 +280,13 @@ C
          CALL HESZER(SPNFC)
          CALL HESZER(SPSDFC)
          CALL DZERO(WORK(KWRKSD),9*9*NUCDEP*NUCDEP)
+#ifdef VAR_G95
+!bugfix for the G95 compiler May 2011
+         allocate(fc_contribution(nucdep, nucdep))
+         fc_contribution = 0.0d0
+#else
          CALL DZERO(WORK(KWRKFC),NUCDEP*NUCDEP)
+#endif
          CALL DZERO(WORK(KWRKSF),9*NUCDEP*NUCDEP)
       ELSE
          IF (POLAR)  CALL DZERO(POLARS,9)
@@ -345,8 +369,14 @@ C
      &                      LURD,ITYPE,IPRINT)
                END IF
                IF (DOTRPL) THEN
+#ifdef VAR_G95
+!bugfix for the G95 compiler May 2011
+                  CALL ADDTRP(WORK(KREL),NVEC,IPRINT,WORK(KWRKSD),
+     &                        fc_contribution,WORK(KWRKSF))
+#else
                   CALL ADDTRP(WORK(KREL),NVEC,IPRINT,WORK(KWRKSD),
      &                        WORK(KWRKFC),WORK(KWRKSF))
+#endif
                ELSE
                   CALL ADDREL(WORK(KREL),WORK(KHESRL),SPNPSO,NVEC,
      &                        ITYPE,IPRINT)
@@ -384,7 +414,12 @@ C
          END IF
       END IF
       IF (DOIMAG) THEN
-         CALL GPCLOSE(LUGDI,'DELETE')
+         IF (SOSSPN) THEN
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+            CALL GPCLOSE(LUGDI,'KEEP')
+         ELSE
+            CALL GPCLOSE(LUGDI,'DELETE')
+         END IF
          IF (VCD) THEN
             CALL GPCLOSE(LURDI,'KEEP')
          ELSE
@@ -400,8 +435,17 @@ C     ******************************************
 C     ***** Add up SD and FC contributions *****
 C     ******************************************
 C
-      IF (DOTRPL) CALL TRPMOV(SPNSD,SPNFC,SPSDFC,WORK(KWRKSD),
-     &                        WORK(KWRKFC),WORK(KWRKSF))
+      IF (DOTRPL) THEN
+#ifdef VAR_G95
+!bugfix for the G95 compiler May 2011
+          CALL TRPMOV(SPNSD,SPNFC,SPSDFC,WORK(KWRKSD),
+     &                fc_contribution,WORK(KWRKSF))
+         deallocate(fc_contribution)
+#else
+         CALL TRPMOV(SPNSD,SPNFC,SPSDFC,WORK(KWRKSD),
+     &               WORK(KWRKFC),WORK(KWRKSF))
+#endif
+      END IF
       IF (MOLHES .AND. .NOT. DOTRPL) CALL ADDHES(WORK(KHESRL))
 C
 C     ************************************
@@ -492,21 +536,21 @@ C     SOL(I)      : Solution
 C     RES(I)      : Residual
 C     REL(I,J)    : Second-order property
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0)
 C
       LOGICAL DOSEL, SYMTST, DOTRPL
       DIMENSION REL(NOP,NOP), WORK(LWORK)
 C
-#include <abainf.h>
-#include <gdvec.h>
-#include <inflin.h>
-#include <spnout.h>
+#include "abainf.h"
+#include "gdvec.h"
+#include "inflin.h"
+#include "spnout.h"
 C
-#include <chrnos.h>
+#include "chrnos.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ABASEL','*',103)
       KIRHS = 1
@@ -638,20 +682,20 @@ C     GDPSO(I)       : Right-hand side for PSO
 C     SOLB(I)        : Solution vector for magnetic field B
 C     REL(I,J)       : Second-order property
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0)
 C
       DIMENSION REL(NOP,NOP), WORK(LWORK)
 C
-#include <gdvec.h>
-#include <abainf.h>
-#include <spnout.h>
-#include <inflin.h>
+#include "gdvec.h"
+#include "abainf.h"
+#include "spnout.h"
+#include "inflin.h"
 C
-#include <chrnos.h>
+#include "chrnos.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from PSOB','*',103)
       KIRHS = 1
@@ -702,28 +746,28 @@ C
 C     This subroutine retrieves relaxation terms from REL and
 C     adds these to the matrices HESREL, DDIPR, and POLARS
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION REL(NOP,NOP), HESREL(MXCOOR,MXCOOR), 
      &          SPNPSO(MXCOOR,MXCOOR)
-#include <abainf.h>
-#include <spnout.h>
-#include <energy.h>
-#include <sigma.h>
-#include <suscpt.h>
-#include <molgfa.h>
-#include <spinro.h>
-#include <dipole.h>
-#include <moldip.h>
-#include <inflin.h>
-#include <difsec.h>
-#include <symmet.h>
-#include <gdvec.h>
+#include "abainf.h"
+#include "spnout.h"
+#include "energy.h"
+#include "sigma.h"
+#include "suscpt.h"
+#include "molgfa.h"
+#include "spinro.h"
+#include "dipole.h"
+#include "moldip.h"
+#include "inflin.h"
+#include "difsec.h"
+#include "symmet.h"
+#include "gdvec.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ADDREL','*',103)
       DO 100 I = 1, NOP
@@ -809,16 +853,16 @@ C
 C     KR, Oct.-92, based on ADDREL, but modified for triplet
 C     contributions to spin-spin-interactions
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION REL(NOP,NOP), WRKSD(9*NUCDEP,9*NUCDEP),
      &          WRKFC(NUCDEP,NUCDEP), WRKSDF(9*NUCDEP,NUCDEP)
-#include <abainf.h>
-#include <energy.h>
-#include <inflin.h>
-#include <gdvec.h>
+#include "abainf.h"
+#include "energy.h"
+#include "inflin.h"
+#include "gdvec.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ADDTRP','*',103)
       DO 100 I = 1, NOP
@@ -844,19 +888,19 @@ C
 C  /* Deck trpmov */
       SUBROUTINE TRPMOV(SPNSD,SPNFC,SPSDFC,WRKSD,WRKFC,WRKSDF)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION WRKSD(9*NUCDEP,9*NUCDEP), WRKFC(NUCDEP,NUCDEP),
      &          WRKSDF(9*NUCDEP,NUCDEP), SPNSD(MXCOOR,MXCOOR),
      &          SPNFC(MXCOOR,MXCOOR), SPSDFC(MXCOOR,MXCOOR)
-#include <cbitrp.h>
-#include <spnout.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "cbitrp.h"
+#include "spnout.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       CALL DZERO(SPNSD,MXCOOR*MXCOOR)
       IF (DOSD .OR. DOSDFC) THEN

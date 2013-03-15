@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cc3_aden_cub_t0 */
       SUBROUTINE CC3_ADEN_CUB_T0(LISTL,IDLSTL,LISTR,IDLSTR,
@@ -45,11 +35,11 @@ C  /* Deck cc3_aden_cub_t0 */
      *                            LU3FOP2X,FN3FOP2X)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       LOGICAL DO_YMMAT
 C
@@ -192,16 +182,16 @@ C  /* Deck cc3_adenocc_cub_t0 */
 *=====================================================================*
 C
       IMPLICIT NONE
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
-#include <ccr2rsp.h>
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
+#include "ccr2rsp.h"
 C
       INTEGER ISYM0
       PARAMETER(ISYM0 = 1)
@@ -345,7 +335,7 @@ C
         END IF
 
       ELSE 
-         CALL QUIT('Unkown left list in CC3_ADENOCC_CUB')
+         CALL QUIT('Unknown left list in CC3_ADENOCC_CUB')
       END IF
 
       IF (LISTR(1:3).EQ.'R2 ') THEN
@@ -374,7 +364,7 @@ C
       ELSE
          WRITE(LUPRI,*)'LISTR = ',LISTR(1:3)
          WRITE(LUPRI,*)'CC3_ADENVIR_CUB is designed for LISTR = R2'
-         CALL QUIT('Unkown right list in CC3_ADENOCC_CUB')
+         CALL QUIT('Unknown right list in CC3_ADENOCC_CUB')
       END IF
 
       FREQZU = FREQRZ + FREQRU
@@ -1399,20 +1389,20 @@ C  /* Deck cc3_adenvir_cub_t0 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <cc3t3d.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <cclrmrsp.h>
-#include <ccexci.h>
-#include <ccr2rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "cc3t3d.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "cclrmrsp.h"
+#include "ccexci.h"
+#include "ccr2rsp.h"
 
 C
       CHARACTER*10 MODEL
@@ -1645,7 +1635,7 @@ C
 C
       ELSE
          WRITE(LUPRI,*)'LISTL ',LISTL
-         CALL QUIT('Unkown left list in CC3_ADENVIR_CUB_T0')
+         CALL QUIT('Unknown left list in CC3_ADENVIR_CUB_T0')
       END IF
 
       IF (LISTR(1:3).EQ.'R2 ') THEN
@@ -1674,7 +1664,7 @@ C
       ELSE
          WRITE(LUPRI,*)'LISTR = ',LISTR(1:3)
          WRITE(LUPRI,*)'CC3_ADENVIR_CUB is designed for LISTR = R2'
-         CALL QUIT('Unkown right list in CC3_ADENVIR_CUB')
+         CALL QUIT('Unknown right list in CC3_ADENVIR_CUB')
       END IF
 
       FREQZU = FREQRZ + FREQRU
@@ -3696,10 +3686,10 @@ C=========================================================================
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cc3t3d.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cc3t3d.h"
 C
       INTEGER ISYMT3,ISWMAT,LUT3,LUWBMAT,LWORK,ISYMD,ISYDEN
       INTEGER ISYML,ISYMDL,ISWMATDL,ISYMT3DL,ISYMN,ISYEMF,ISYMBN,ISYMEM
@@ -4239,9 +4229,9 @@ C  /* Deck dab_cont_cub_t0 */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL TRANSPOSEW
 C
@@ -4352,10 +4342,10 @@ C  /* Deck aden_dij_jk_t0 */
       SUBROUTINE ADEN_DIJ_JK_t0(DIJ,THLM,ISYMTHLM,WLM,ISYMWLM)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMTHLM,ISYMWLM
       INTEGER ISYMJ,ISYMDEF,ISYMI,KOFF1,KOFF2,KOFF3,NTOTDEF,NTOTI
@@ -4403,10 +4393,10 @@ C  /* Deck aden_dab_lm_cub_t0 */
      *                           WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER IOPT
       INTEGER ISYMTHLM,ISYMWLM,LWORK

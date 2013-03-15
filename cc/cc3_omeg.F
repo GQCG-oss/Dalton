@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cc3_omeg */
       SUBROUTINE CC3_OMEG(ECURR,OMEGA1,OMEGA2,T1AM,ISYMT1,T2TP,ISYMT2,
@@ -54,19 +44,19 @@ C         triples integrals have been transformed with.
 C
 C         Isyres = isymt1*isymt2*isymop
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2TP(*),
      *          FOCK(*),XLAMDP(*),XLAMDH(*),WORK(LWORK)
 C
-#include <iratdef.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CHARACTER*(*) FN3SRT, FNDELD, FNCKJD, FNDKBC, FNTOC, FN3VI, FN3VI2
       CHARACTER*1 CDUMMY
@@ -165,7 +155,7 @@ C
 C
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND0
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND0
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C
@@ -238,7 +228,7 @@ C
 C
       IF (LWRK2 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND2
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C
@@ -683,7 +673,7 @@ C
 C
                IF (LWRK4 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Memory available : ',LWORK
-                  WRITE(LUPRI,*) 'Memory needed    : ',KEND4
+                  WRITE(LUPRI,*) 'Memory needed    > ',KEND4
                   CALL QUIT('Insufficient space in CCSDT_OMEG')
                END IF
 C
@@ -938,14 +928,14 @@ C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ij,k,a)
 C
 C     Kasper Hald, Summer 2002 -> generalisation to nonsymmetric lambda
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XINT(*),TRINT(*),XLAMDH(*),WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSDT_TROCC')
 C
@@ -1027,14 +1017,14 @@ C     Ove Christiansen 11-1-1996: ISYINT is symmetry of (ck|alpha d)
 C
 C     Kasper Hald, 01062002 : General symmetry of Lambda
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XINT(*),TRINT(*),XLAMDP(*),WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSDT_TRVIR')
 C
@@ -1083,17 +1073,17 @@ C
 C     General symmetry: ISYINT is symmetr of integrals and ISYMT2 is
 C                       symmetry of T2TP.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION TRVIR(*),TRVIR2(*),TROCC(*),SMAT(*),FOCKD(*)
       DIMENSION INDAJL(*),DIAG(*),T2TP(*),INDSQ(LENSQ,6),TMAT(*)
       DIMENSION WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_SMAT')
 C
@@ -1394,15 +1384,15 @@ C     initially stored I(dk,a,c) to finally I'(a,k,d,c)
 C
 C     Ove Christiansen 11-1-1996: ISYINT general symmetry of integral I(dk,a,c)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION TRVIR(*),TRVIR2(*)
       DIMENSION WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSDT_SRTVIR')
 C
@@ -1456,14 +1446,14 @@ C     initially stored I(ai,j,k) to finally I'(j,i,k,a)
 C
 C     Ove Christiansen 11-1-1996: ISYINT symmetry of I(ai,j,k)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION TROCC(*),TROCC2(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSDT_SRTOCC')
 C
@@ -1521,13 +1511,13 @@ C  /* Deck cc3_index */
 C
 C     Henrik Koch.          Feb 1994
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION INDAJL(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_INDEX')
 C
@@ -1587,17 +1577,17 @@ C     General symmetry: ISYINT is symmetr of integrals and ISYMT2 is
 C                       symmetry of T2TP.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
       DIMENSION T2TP(*),TRVIR(*),TROCC(*),FOCKD(*),QMAT(*)
       DIMENSION WORK(LWORK),DIAG(*),INDSQ(LENSQ,6)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_QMAT')
 C
@@ -1613,7 +1603,7 @@ C
       LENGTH = NCKIJ(ISCIKJ)
 C
       IF (LWORK .LT. LENGTH) THEN
-         CALL QUIT('Insufficient core in CCSDT_QMAT')
+         CALL QUIT('Insufficient core in CC3_QMAT')
       ENDIF
 C
       DO 100 ISYMK = 1,NSYM
@@ -1771,16 +1761,16 @@ C     Sort (kb|dd') = I(bk,d',d) as I'(d'k,b,d) =  I'(fk,b,d)
 C
 C     Ove Christiansen 11-1-1996: ISYINT = symmetry of I(bk,d',d)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
       DIMENSION TRVIR(*),SCR(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSDT_SRVIR3')
 C
@@ -1833,7 +1823,7 @@ C     General symmetry: ISYMIM is symmetry of SMAT and TMAT intermdiates.
 C                       ISYINT is symmetry of FOCKAK and XIAJB
 C                       ISYRES = ISYMIM*ISYINT
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -1841,10 +1831,10 @@ C
       DIMENSION TMAT(*),TRVIR(*),TRVIR1(*)
       DIMENSION WORK(LWORK),INDSQ(LENSQ,6)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1862,7 +1852,7 @@ C     First virtual term.
 C------------------------
 C
       IF (LWORK .LT. NCKIJ(ISCKIJ)) THEN
-         CALL QUIT('Insufficient core in CCSDT_CONVIR')
+         CALL QUIT('Insufficient core in CC3_CONVIR')
       ENDIF
 C
 c     CALL DCOPY(LENGTH,SMAT,1,TMAT,1)
@@ -1908,7 +1898,7 @@ C
          LWRK1  = LWORK - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
-            CALL QUIT('Insufficient work space in CCSDT_CONVIR')
+            CALL QUIT('Insufficient work space in CC3_CONVIR')
          ENDIF
 C
          DO 210 J = 1,NRHF(ISYMJ)
@@ -1985,7 +1975,7 @@ C
          LWRK1  = LWORK - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
-            CALL QUIT('Insufficient work space in CCSDT_CONVIR')
+            CALL QUIT('Insufficient work space in CC3_CONVIR')
          ENDIF
 C
          DO 310 J = 1,NRHF(ISYMJ)
@@ -2034,17 +2024,17 @@ C                       (including isymib*isymid)
 C                       ISYINT is symmetry of integrals in TROCC and TROCC1.
 C                       ISYRES = ISYMIM*ISYINT
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION OMEGA2(*),RMAT1(*),RMAT2(*),SMAT(*),TMAT(*)
       DIMENSION TROCC(*),TROCC1(*),WORK(LWORK),INDSQ(LENSQ,6)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2269,7 +2259,7 @@ C
          ISYCKL = MULD2H(ISYMI,JSCKLI)
 C
          IF (LWORK .LT. NRHF(ISYMI)*NRHF(ISYMJ)) THEN
-            CALL QUIT('Insufficient memory in CCSDT_CONOCC')
+            CALL QUIT('Insufficient memory in CC3_CONOCC')
          END IF
 C
          NTOCKL = MAX(NCKI(ISYCKL),1)
@@ -2351,17 +2341,17 @@ C     Sort occupied integrals I(kl,j,c) as I'(ck,l,j)
 C
 C     Ove Christiansen 16-1-1996: ISYINT sym of I(kl,j,c)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION TROCC(*),TROCC1(*)
       DIMENSION WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSDT_SRTOC2')
 C
@@ -2428,16 +2418,16 @@ C     N.B.: quick hack to fix symmetry bug,
 C           but now crappy and propably inefficient...
 C           Ch. Haettig
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION T2AM(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2586,17 +2576,17 @@ C     General symmetry: ISYMIM is symmetry of SMAT and TMAT intermdiates.(incl i
 C                       ISYINT is symmetry of FOCKAK and XIAJB
 C                       ISYRES = ISYMIM*ISYINT
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION OMEGA1(*),OMEGA2(*),RMAT1(*),RMAT2(*),FOCKAK(*),SMAT(*)
       DIMENSION TMAT(*),XIAJB(*),WORK(LWORK),INDSQ(LENSQ,6)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2623,7 +2613,7 @@ C
       LENGTH = NCKIJ(JSAIKJ)
 C
       IF (LWORK .LT. LENGTH) THEN
-         CALL QUIT('Not enough core in CCSDT_ONEL')
+         CALL QUIT('Not enough core in CC3_ONEL')
       END IF
 C
 c     CALL CC_GATHER(LENGTH,TMAT,SMAT,INDSQ(1,4))
@@ -2657,7 +2647,7 @@ C
       IF ((.NOT. CC3LR) .AND. (NRHF(ISYMI) .NE. 0)) THEN
 C
          IF (LWORK .LT. NCKI(ISYAKJ)) THEN
-            CALL QUIT('Not enough core in CCSDT_ONEL')
+            CALL QUIT('Not enough core in CC3_ONEL')
          END IF
 C
 C        Construct M(ak,j) = L(ak,bj)
@@ -2708,7 +2698,7 @@ C
       LENGTH = NCKIJ(JSAIKJ)
 C
       IF (LWORK .LT. LENGTH) THEN
-         CALL QUIT('Not enough core in CCSDT_ONEL')
+         CALL QUIT('Not enough core in CC3_ONEL')
       END IF
 C
 c     CALL CC_GATHER(LENGTH,TMAT,SMAT,INDSQ(1,5))
@@ -2793,7 +2783,7 @@ C
       LENGTH = NCKIJ(JSAKIJ)
 C
       IF (LWORK .LT. LENGTH) THEN
-         CALL QUIT('Not enough core in CCSDT_ONEL')
+         CALL QUIT('Not enough core in CC3_ONEL')
       END IF
 C
 c     CALL CC_GATHER(LENGTH,TMAT,SMAT,INDSQ(1,1))
@@ -2938,16 +2928,16 @@ C     Henrik Koch and Alfredo Sanchez.         Dec 1994
 C
 C     Calculate modified Fock matrix iused in CC3LR.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION FOCK(*),T1AM(*),XIAJB(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -3006,16 +2996,16 @@ C     Henrik Koch and Alfredo Sanchez.         Dec 1994
 C
 C     Calculate modified Fock matrix iused in CC3LR.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION P1INT(*),P2INT(*),T1AM(*),XIAJB(*),WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -3151,16 +3141,16 @@ C     Henrik Koch and Alfredo Sanchez.         Dec 1994
 C
 C     int(clki) = int(cidj)*tdi
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION QINT(*),T1AM(*),XIAJB(*),WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -3236,15 +3226,15 @@ C     Resort occupied integrals
 C
 C     initially stored I(ai,j,k) to finally I'(ai,k,j)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION XOCC(*)
       DIMENSION WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_SORTOCC')
 C
@@ -3296,18 +3286,18 @@ C
 C     Ove Christiansen 11-1-1996: ISYINT; symmetry of integrals.
 C                                 (C1 transformed integrals)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
       DIMENSION XLAMD(*),WORK(LWORK)
 C
       CHARACTER*(*) FNDELD, FNDKBC
 C
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_SINT')
 C
@@ -3507,15 +3497,15 @@ C     Henrik Koch Feb 1995
 C
 C     Construct diagonal matrix D(aikj) = F(a) - F(k) - F(j) - F(i)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
       DIMENSION DIAG(*),FOCKD(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_DIAG')
 C
@@ -3580,13 +3570,13 @@ C                    (cjik) (5)
 C
 C     index(ck,ij) = (ckij) (6)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION INDSQ(LENGTH,6)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_INDSQ')
 C
@@ -3698,13 +3688,13 @@ C
 C     t2tp(aijb) = t2am(ai,bj)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION T2AM(*),T2TP(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_T2TP')
 C
@@ -3751,7 +3741,7 @@ C
 C     Fortran version of Cray's gather routine.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION VEC1(*),VEC2(*),INDEX(*)
 C
@@ -3780,14 +3770,14 @@ C     Purpose :  Accumulate the R matrix into the Omega vector.
 C
 C     OC: 9-1-1996 general symmetry, ISYRES is symmetry of resulting vector.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (TWO = 2.0D0)
 C
       DIMENSION OMEGA2(*),RMAT(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -3871,15 +3861,15 @@ C     Transform (ai|j delta) integrals to (ai|j k) and sort as (ij,k,a)
 C
 C     Debugged for ISYINT .NE. 1 Ove Christiansen 11-1-1996
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XINT(*),TRINT(*),XLAMDH(*),WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('CC3_TROCC')
 C
@@ -4028,14 +4018,14 @@ C     Ove Christiansen 30-11-1995
 C
 C     Open files for storage of integrals in triple routines
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_FILOP')
 C
@@ -4077,14 +4067,14 @@ C     Ove Christiansen 30-11-1995
 C
 C     Close files for storage of integrals in triple routines
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC3_FILCL')
 C

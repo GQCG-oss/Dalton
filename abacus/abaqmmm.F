@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C FILE: abacus/abaqmmm.F
 C*******************************************************************
 C/* deck qmmmfirst */
@@ -45,23 +35,27 @@ c
 c VEC2 (OUTPUT)  : contribution to be added to perturbed Fock matrix
 c NCOMP (INPUT)  : number of independent perturbation (3)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL,LOCDEB
       LOGICAL LCOMB
       DIMENSION WORK(*),VEC2(*)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+      CALL QENTER('QMMMFIRST')
+      IF (MMTIME) DTIME = SECOND()
 
       LOCDEB = .FALSE.
 
@@ -512,6 +506,12 @@ C
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 C
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMFIRST = TMMFIRST + DTIME
+      ENDIF
+C
+      CALL QEXIT('QMMMFIRST')
       RETURN
       END
 C*****************************************************************************
@@ -525,17 +525,18 @@ c Lund, Nov. 2008, J. Kongsted, based on QM3B3 by K. Ruud.
 c
 c EXPVAL (OUTPUT): contribution to be added to diamagnetic magnetizability
 c
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
@@ -543,6 +544,10 @@ C
       DIMENSION WORK(*), EXPVAL(6), DENMAT(*)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 C
+
+      CALL QENTER('QMMMB2')
+      IF (MMTIME) DTIME = SECOND()
+
       LOCDEB = .FALSE.
 
 C     If we have BOTH permanent dipoles AND induced dipoles then these
@@ -873,6 +878,12 @@ C     Put back the dipole origin
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 C
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMB2 = TMMB2 + DTIME
+      ENDIF
+C
+      CALL QEXIT('QMMMB2')
       RETURN
       END
 C****************************************************************************
@@ -881,24 +892,26 @@ C****************************************************************************
 C/* deck qmmmfirst_m1 */
       SUBROUTINE QMMMFIRST_M1(VEC2,IPRINT,INTPRI,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),VEC2(*)
 
@@ -911,7 +924,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST_M1',-KLAST,LWORK)
 
-      IPRTYP = 34
+      IPRTYP = QMMMFIRST_1_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -919,7 +932,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -943,7 +955,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -980,24 +991,24 @@ C****************************************************************************
 C/* deck qmmmfirst_s1 */
       SUBROUTINE QMMMFIRST_S1(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1011,7 +1022,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -1035,7 +1045,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -1107,24 +1116,26 @@ C
 C/* deck qmmmfirst_m2 */
       SUBROUTINE QMMMFIRST_M2(VEC2,IPRINT,INTPRI,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),VEC2(*)
 
@@ -1137,7 +1148,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST_M2',-KLAST,LWORK)
 
-      IPRTYP = 35
+      IPRTYP = QMMMFIRST_2_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -1145,7 +1156,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -1169,7 +1179,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -1206,24 +1215,24 @@ C****************************************************************************
 C/* deck qmmmfirst_S2 */
       SUBROUTINE QMMMFIRST_S2(WORK,LWORK,INTPRI)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1237,7 +1246,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -1261,7 +1269,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -1364,24 +1371,26 @@ C
 C/* deck qmmmfirst_m3 */
       SUBROUTINE QMMMFIRST_M3(AINDMOM,VEC2,IPRINT,INTPRI,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),VEC2(*),AINDMOM(3*NNZAL)
 
@@ -1394,7 +1403,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST_M3',-KLAST,LWORK)
 
-      IPRTYP = 36
+      IPRTYP = QMMMFIRST_3_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(INTPRI,1,'INTEGER',MASTER)
@@ -1402,7 +1411,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -1427,7 +1435,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -1471,24 +1478,24 @@ C****************************************************************************
 C/* deck qmmmfirst_s3 */
       SUBROUTINE QMMMFIRST_S3(WORK,LWORK,INTPRI)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1502,7 +1509,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -1527,7 +1533,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -1630,24 +1635,26 @@ C
 C/* deck qmmmfirst_m4 */
       SUBROUTINE QMMMFIRST_M4(TOTMOM,VEC2,IPRINT,INTPRI,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(LWORK),VEC2(3*N2BASX),TOTMOM(3*MMCENT)
 
@@ -1660,7 +1667,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST_M4',-KLAST,LWORK)
 
-      IPRTYP = 37
+      IPRTYP = QMMMFIRST_4_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -1668,7 +1675,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -1692,7 +1698,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -1731,30 +1736,30 @@ C****************************************************************************
 C/* deck qmmmfirst_s4 */
       SUBROUTINE QMMMFIRST_S4(WORK,LWORK,INTPRI)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 C nuclei.h: NCTOT, CORD, CHARGE, NUCIND, NUCDEP, 
-#include <nuclei.h>
+#include "nuclei.h"
 C qm3.h: QMCOM, FORQM3, ISYTP
-#include <qm3.h>
+#include "qm3.h"
 C qmmm.h: MMCENT,IPOLTP,MXMMIT,MXMMDI,IPQMMM,MMCORD, MMMAT
-#include <qmmm.h>
+#include "qmmm.h"
 C inforb.h: N2BASX, NNBASX, ICMO, NBAST
-#include <inforb.h>
+#include "inforb.h"
 C inftap.h: LUPROP
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 C cbiher.h: NPATOM, IPATOM
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1768,7 +1773,6 @@ C cbiher.h: NPATOM, IPATOM
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -1792,7 +1796,6 @@ C cbiher.h: NPATOM, IPATOM
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -1902,24 +1905,26 @@ C****************************************************************************
 C/* deck qmmmb2_m1 */
       SUBROUTINE QMMMB2_M1(EXPVAL,IPRINT,DENMAT,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(LWORK),EXPVAL(6), DENMAT(NNBASX)
 
@@ -1932,7 +1937,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMB2_M1',-KLAST,LWORK)
 
-      IPRTYP = 38
+      IPRTYP = QMMMB2_1_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -1940,7 +1945,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -1964,7 +1968,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -2003,24 +2006,24 @@ C****************************************************************************
 C/* deck qmmmb2_s1 */
       SUBROUTINE QMMMB2_S1(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -2034,7 +2037,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -2058,7 +2060,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -2121,24 +2122,26 @@ C****************************************************************************
 C/* deck qmmmb2_m2 */
       SUBROUTINE QMMMB2_M2(EXPVAL,IPRINT,DENMAT,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),EXPVAL(6), DENMAT(NNBASX)
 
@@ -2151,7 +2154,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMB2_M2',-KLAST,LWORK)
 
-      IPRTYP = 39
+      IPRTYP = QMMMB2_2_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -2159,7 +2162,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -2183,7 +2185,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -2221,24 +2222,24 @@ C****************************************************************************
 C/* deck qmmmb2_S2 */
       SUBROUTINE QMMMB2_S2(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -2252,7 +2253,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -2276,7 +2276,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -2351,24 +2350,26 @@ C****************************************************************************
 C/* deck qmmmb2_m3 */
       SUBROUTINE QMMMB2_M3(AINDMOM,EXPVAL,IPRINT,DENMAT,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(*),EXPVAL(6),AINDMOM(3*NNZAL), DENMAT(NNBASX)
 
@@ -2381,7 +2382,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMB2_M3',-KLAST,LWORK)
 
-      IPRTYP = 40
+      IPRTYP = QMMMB2_3_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -2389,7 +2390,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -2414,7 +2414,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -2458,24 +2457,24 @@ C****************************************************************************
 C/* deck qmmmb2_s3 */
       SUBROUTINE QMMMB2_S3(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -2489,7 +2488,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -2514,7 +2512,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -2587,24 +2584,26 @@ C****************************************************************************
 C/* deck qmmmb2_m4 */
       SUBROUTINE QMMMB2_M4(TOTMOM,EXPVAL,IPRINT,DENMAT,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 
       DIMENSION WORK(LWORK),EXPVAL(6),TOTMOM(3*MMCENT), DENMAT(NNBASX)
 
@@ -2617,7 +2616,7 @@ C
 
       IF (LWRK .LT. 0) CALL ERRWRK('QMMMB2_M4',-KLAST,LWORK)
 
-      IPRTYP = 41
+      IPRTYP = QMMMB2_4_WORK
 
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
@@ -2625,7 +2624,6 @@ C
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -2649,7 +2647,6 @@ C
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 
@@ -2688,30 +2685,30 @@ C****************************************************************************
 C/* deck qmmmb2_s4 */
       SUBROUTINE QMMMB2_S4(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 C nuclei.h: NCTOT, CORD, CHARGE, NUCIND, NUCDEP, 
-#include <nuclei.h>
+#include "nuclei.h"
 C qm3.h: QMCOM, FORQM3, ISYTP
-#include <qm3.h>
+#include "qm3.h"
 C qmmm.h: MMCENT,IPOLTP,MXMMIT,MXMMDI,IPQMMM,MMCORD, MMMAT
-#include <qmmm.h>
+#include "qmmm.h"
 C inforb.h: N2BASX, NNBASX, ICMO, NBAST
-#include <inforb.h>
+#include "inforb.h"
 C inftap.h: LUPROP
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 C cbiher.h: NPATOM, IPATOM
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -2725,7 +2722,6 @@ C cbiher.h: NPATOM, IPATOM
       CALL MPIXBCAST(N2BASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NNBASX,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MMCENT,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(MXMMIT,1,'INTEGER',MASTER)
@@ -2749,7 +2745,6 @@ C cbiher.h: NPATOM, IPATOM
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
 

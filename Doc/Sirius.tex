@@ -1637,12 +1637,25 @@ reordering and punching of orbitals.
   \kw{READ (LUINP,*) REWORD} \\
   Specify that the doubly occupied (inactive) orbitals should be localized after SCF 
   or MCSCF is converged.
-  One option for localization of the orbitals is currently available:
-  %Two options for localization of the orbitals are available:
+  Two options for localization of the orbitals are currently available:
   \begin{description}
   \item[{\tt BOYLOC\ }] Use the Boys localization scheme~\cite{Boyloc}.
   %\item[{\tt PIPLOC\ }] Use the Pipek-Mezey localization scheme~\cite{}.
   % aug 04: PIPLOC is not implemented yet.
+  \item[{\tt SELECT\ }] Select a subset of the orbitals to be localized. The first
+  line following this option contains the number orbitals to localize per symmetry,
+  and the following lines contain which orbitals to localize within each symmetry,
+  one line per symmetry with orbitals to localize.
+  This option is typically used for localizing degenerate 
+  core orbitals, leaving all other orbitals intact.
+  \begin{verbatim}
+         READ(LUCMD,*)(NBOYS(I),I=1,NSYM)
+         DO I=1,NSYM
+            IF (NBOYS(I).GT.0) THEN
+               READ(LUCMD,*)(BOYSORB(J,I),J=1,NBOYS(I))
+            END IF
+         END DO
+   \end{verbatim}
   \end{description}
 
 \item[\Key{MOSTART}]
@@ -2401,12 +2414,6 @@ basis\index{molecular orbital}.
 \item[\Key{OLD TRANSFORMATION}]
   Use existing transformed integrals
 
-\item[\Key{PRESORT}]
-Indicates that the transformed two-electron integrals are already
-present generated through the keyword \Key{SORT I} in the
-\Sec{*INTEGRALS} input module. This keyword is true if
-\quotekw{.PRESORT} has been set in the general input module.
-
 \item[\Key{PRINT}]
   \kw{READ (LUINP,*) IPRTRA} \\
   Print level in integral transformation module
@@ -2451,6 +2458,60 @@ specified by the two transformation level keywords.
 
   \item[10:] Full transformation.
 \end{itemize}
+
+
+\pagebreak[3]
+\subsection{\label{ref-cube}\Sec{CUBE}}
+
+{\bf Purpose:}
+
+Generates cube file\index{cube file} of total SCF electron density and/or
+molecular orbitals after SCF calculations. The keyword \quotekw{\Key{INTERFACE}}
+must be specified.
+
+\begin{description}
+\item[\Key{DENSITY}]
+  Generates cube file ``\kw{density.cube}'' with total SCF electron density.
+
+\item[\Key{HOMO}]
+  Generates cube file ``\kw{homo.cube}'' with the information of the highest
+occupied molecular orbitals.
+
+\item[\Key{LUMO}]
+  Generates cube file ``\kw{lumo.cube}'' with the information of the lowest
+unoccupied molecular orbitals.
+
+\item[\Key{MO}]
+  \kw{READ (LUINP,*) IDX\_MO} \\
+  Generates cube file ``\kw{mo.cube}'' with specified indices of molecular orbitals
+by ``\kw{IDX\_MO}''. For instance, valid format is like ``1-6,7,10-12'' only including
+digits, minus sign and comma.
+
+\item[\Key{FORMAT}]
+  \kw{READ (LUINP,*) CUBE\_FORMAT} \\
+  Specifies cube file format, only ``\kw{GAUSSIAN}'' (Gaussian cube file format,
+see\linebreak \verb|http://www.gaussian.com/g_tech/g_ur/u_cubegen.htm|) for the
+time being.
+
+\item[\Key{ORIGIN}]
+  \kw{READ (LUINP,*) CUBE\_ORIGIN} \\
+  Reads the coordinates (a.u.) of origin/initial point.
+
+\item[\Key{INCREMENT}]
+  \kw{READ (LUINP,*) N1, X1, Y1, Z1} \\
+  \kw{READ (LUINP,*) N2, X2, Y2, Z2} \\
+  \kw{READ (LUINP,*) N3, X3, Y3, Z3} \\
+  Reads the number of increments and increments (a.u.) along three running directions,
+in which ``\kw{(X1,Y1,Z1)}'' is the slowest running direction, and ``\kw{(X3,Y3,Z3)}''
+is the fastest running direction.
+
+As described at \verb|http://www.gaussian.com/g_tech/g_ur/u_cubegen.htm|, if the
+origin/initial point is (X0,Y0,Z0), then the point at (I1,I2,I3) has coordinates:
+
+X-coordinate: X0+(I1-1)*X1+(I2-1)*X2+(I3-1)*X3\\
+Y-coordinate: Y0+(I1-1)*Y1+(I2-1)*Y2+(I3-1)*Y3\\
+Z-coordinate: Z0+(I1-1)*Z1+(I2-1)*Z2+(I3-1)*Z3
+\end{description}
 
 
 \pagebreak[3]

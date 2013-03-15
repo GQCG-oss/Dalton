@@ -121,9 +121,9 @@ CTRL[2]=6
 ERROR[2]="SYMMETRY NOT CORRECT"
 
 # Initial energy
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.0401803723" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.26328827.." $log | wc -l`
-CRIT3=`$GREP "Final MCSCF energy\: * \-75\.7939317218(2|3)." $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.040180372" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.2632882.." $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-75\.7939317218" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="INITIAL ENERGY NOT CORRECT"
@@ -152,8 +152,8 @@ CTRL[5]=9
 ERROR[5]="INITIAL HESSIAN NOT CORRECT"
 
 # First step
-CRIT1=`$GREP "H * 1 * (0| )\.0000000000 * 1\.60408(6|7)..[0-9][0-9] * (0| )\.94631[2-4]..[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.60408(6|7)..[0-9][0-9] * (0| )\.94631[2-4]..[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "H *_1 * (0| )\.0000000000 * 1\.60408(6|7)..[0-9][0-9] * (0| )\.94631[2-4]..[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "H *_2 * (0| )\.0000000000 * \-1\.60408(6|7)..[0-9][0-9] * (0| )\.94631[2-4]..[0-9][0-9]" $log | wc -l`
 CRIT3=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.02112[2-5]..[0-9][0-9]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
@@ -174,8 +174,8 @@ CTRL[8]=2
 ERROR[8]="THIRD ITERATION NOT CORRECT"
 
 # Last geometry
-CRIT1=`$GREP "H * 1 * (0| )\.0000000000 * 2\.478105..[0-9][0-9] * (0| )\.623821..[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * (0| )\.0000000000 * \-2\.478105..[0-9][0-9] * (0| )\.623821..[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "H *_1 * (0| )\.0000000000 * 2\.478105..[0-9][0-9] * (0| )\.623821..[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "H *_2 * (0| )\.0000000000 * \-2\.478105..[0-9][0-9] * (0| )\.623821..[0-9][0-9]" $log | wc -l`
 CRIT3=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.623860..[0-9][0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=12

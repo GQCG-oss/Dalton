@@ -28,7 +28,7 @@ Ne    0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > oddisp2.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -56,7 +56,7 @@ cat > oddisp2.dal <<%EOF%
 XDIPLEN YDIPLEN ZANGMOM
 .DISPCF
   7
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -115,7 +115,7 @@ PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

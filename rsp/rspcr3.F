@@ -1,45 +1,35 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
       SUBROUTINE CRHYP(VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,
      *                 RESVEC,CMO,UDV,PV,FOCK,FC,FV,
      *                 XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
 C
 C PURPOSE:
 C CALCULATION OF SECOND HYPERPOLARIZABILITIES
@@ -59,22 +49,22 @@ C
 C
       PARAMETER ( D0 = 0.0D0 , THRFRQ = 1.0D-14 )
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <tstjep.h>
-#include <infhso.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "tstjep.h"
+#include "infhso.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <rspprp.h>
-#include <indcr.h>
-#include <infcr.h>
-#include <infinp.h>
+#include "rspprp.h"
+#include "indcr.h"
+#include "infcr.h"
+#include "infinp.h"
 C
       CALL QENTER('CRHYP')
       WRITE(LUPRI,'(//A,A)')
@@ -461,8 +451,8 @@ C
 C
 C PURPOSE: Read in response vectors. Called from BCDCHK.
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 ALAB,BLAB,CLAB,DLAB,BLANK
@@ -470,23 +460,23 @@ C
       DIMENSION VECA(*),VECB(*),VECC(*),VECD(*)
       DIMENSION VECBC(*),VECCD(*),VECBD(*)
 C
-#include <infrsp.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <tstjep.h>
-#include <infhso.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <qrinf.h>
-#include <indcr.h>
-#include <infcr.h>
-#include <inflr.h>
-#include <inftmo.h>
+#include "infrsp.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "tstjep.h"
+#include "infhso.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "qrinf.h"
+#include "indcr.h"
+#include "infcr.h"
+#include "inflr.h"
+#include "inftmo.h"
 C
       IF (IPRRSP.GT.100) THEN
          WRITE(LUPRI,'(3(/A),4I3,/A,4A10,/A,4F12.8)')
@@ -505,13 +495,13 @@ C
          IF (.NOT. FOUND) THEN
             WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',ALAB,
      &           ' with frequency ',FREQA, ' and symmetry',
-     &           ISYMA,' not found on file LURSP'
+     &           ISYMA,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
      &           ' Response label ',ALAB,
      &           ' with frequency ',FREQA, ' and symmetry',
-     &           ISYMA,' not converged on file LURSP'
+     &           ISYMA,' not converged on file RSPVEC'
          END IF
       END IF
       IF (FREQA .LT. D0) THEN
@@ -534,13 +524,13 @@ C
          IF (.NOT. FOUND) THEN
             WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',BLAB,
      &           ' with frequency ',FREQB, ' and symmetry',
-     &           ISYMB,' not found on file LURSP'
+     &           ISYMB,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
      &           ' Response label ',BLAB,
      &           ' with frequency ',FREQB, ' and symmetry',
-     &           ISYMB,' not converged on file LURSP'
+     &           ISYMB,' not converged on file RSPVEC'
          END IF
       END IF
       IF (FREQB .LT. D0) THEN
@@ -562,13 +552,13 @@ C
          IF (.NOT. FOUND) THEN
             WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',CLAB,
      &           ' with frequency ',FREQC, ' and symmetry',
-     &           ISYMC,' not found on file LURSP'
+     &           ISYMC,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
      &           ' Response label ',CLAB,
      &           ' with frequency ',FREQC, ' and symmetry',
-     &           ISYMC,' not converged on file LURSP'
+     &           ISYMC,' not converged on file RSPVEC'
          END IF
       END IF
       IF (FREQC .LT. D0) THEN
@@ -590,13 +580,13 @@ C
          IF (.NOT. FOUND) THEN
             WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',DLAB,
      &           ' with frequency ',FREQD, ' and symmetry',
-     &           ISYMD,' not found on file LURSP'
+     &           ISYMD,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
      &           ' Response label ',DLAB,
      &           ' with frequency ',FREQD, ' and symmetry',
-     &           ISYMD,' not converged on file LURSP'
+     &           ISYMD,' not converged on file RSPVEC'
          END IF
       END IF
       IF (FREQD .LT. D0) THEN
@@ -620,14 +610,14 @@ C
      &           ' Response labels ',BLAB,CLAB,
      &           ' with frequencies ',FREQB, FREQC,
      &           ' and symmetries ',ISYMB,ISYMC,
-     &           ' not found on file LURSP'
+     &           ' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,1X,A,F7.5,1X,F7.5,/A,I3,1X,I3,A)') 
      &           ' @WARNING>>>> Response labels ',BLAB,CLAB,
      &           ' with frequencies ',FREQB, FREQC,
      &           ' and symmetries ',ISYMB,ISYMC,
-     &           ' not converged on file LURSP'
+     &           ' not converged on file RSPVEC'
          END IF
       END IF
 C
@@ -647,14 +637,14 @@ C
      &           ' Response labels ',BLAB,DLAB,
      &           ' with frequencies ',FREQB, FREQD,
      &           ' and symmetries ',ISYMB,ISYMD,
-     &           ' not found on file LURSP'
+     &           ' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,1X,A,F7.5,1X,F7.5,/A,I3,1X,I3,A)') 
      &           ' @WARNING>>>> Response labels ',BLAB,DLAB,
      &           ' with frequencies ',FREQB, FREQD,
      &           ' and symmetries ',ISYMB,ISYMD,
-     &           ' not converged on file LURSP'
+     &           ' not converged on file RSPVEC'
          END IF
       END IF
 C
@@ -674,14 +664,14 @@ C
      &           ' Response labels ',CLAB,DLAB,
      &           ' with frequencies ',FREQC, FREQD,
      &           ' and symmetries ',ISYMC,ISYMD,
-     &           ' not found on file LURSP'
+     &           ' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,1X,A,F7.5,1X,F7.5,/A,I3,1X,I3,A)') 
      &           ' @WARNING>>>> Response labels ',CLAB,DLAB,
      &           ' with frequencies ',FREQC, FREQD,
      &           ' and symmetries ',ISYMC,ISYMD,
-     &           ' not converged on file LURSP'
+     &           ' not converged on file RSPVEC'
          END IF
       END IF
 C
@@ -695,23 +685,23 @@ C
       END
       SUBROUTINE GAMPRI(GAMMA,FREQB,FREQC,FREQD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infrsp.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <tstjep.h>
-#include <rspprp.h>
-#include <infhso.h>
-#include <qrinf.h>
-#include <indcr.h>
-#include <infcr.h>
-#include <inftmo.h>
+#include "maxorb.h"
+#include "infrsp.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "tstjep.h"
+#include "rspprp.h"
+#include "infhso.h"
+#include "qrinf.h"
+#include "indcr.h"
+#include "infcr.h"
+#include "inftmo.h"
 C
       PARAMETER( D0=0.0D0 )
       CHARACTER*1 DIPOP

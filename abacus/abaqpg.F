@@ -1,48 +1,38 @@
-C
-C...   Copyright (c) 2001 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 1.2
-C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-C...   and O. Vahtras"
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck qpginp */
       SUBROUTINE QPGINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 7)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbiqpg.h>
+#include "abainf.h"
+#include "cbiqpg.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NODC  ', '.NODV  ',
      *            'XXXXXXX', 'XXXXXXX', '.STOP  '/
 C
@@ -126,10 +116,10 @@ C  /* Deck qpgini */
 C
 C     Initialize /CBIQPG/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbiqpg.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbiqpg.h"
       IPRINT = IPRDEF
       QNODC   = .FALSE.
       QNODV   = .FALSE.
@@ -145,15 +135,15 @@ C
 C     Based on DIPCTL by tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
-#include <cbiqpg.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <infdim.h>
+#include "cbiqpg.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "infdim.h"
 C
       IF (QSKIP) RETURN
       CALL TIMER('START ',TIMSTR,TIMEND) 
@@ -189,12 +179,12 @@ C  /* Deck qpgct1 */
 C
 C     December 1989, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
       PARAMETER (DM1 = -1.0D0)
 C
       CHARACTER*8 LABINT(3*MXCOOR)
@@ -202,26 +192,26 @@ C
      *          SOPACK(NNBASX,6), SECRHS(NVARMA), SECREO(3*NUCDEP),
      *          WORK(LWORK), SOINT(NBAST,NBAST)
 C
-#include <dipole.h>
-#include <moldip.h>
+#include "dipole.h"
+#include "moldip.h"
 C
-#include <difsec.h>
-#include <cbiqpg.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <abainf.h>
-#include <linaba.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <inflin.h>
-#include <gdvec.h>
-#include <chrxyz.h>
+#include "difsec.h"
+#include "cbiqpg.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "abainf.h"
+#include "linaba.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "inflin.h"
+#include "gdvec.h"
+#include "chrxyz.h"
       LOGICAL OLDDX
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from QPGCT1','*',103)
 C
@@ -353,11 +343,11 @@ C
       END
 C  /* Deck secadd */
       SUBROUTINE SECADD(AMAT)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION AMAT(3,3,MXCOOR)
-#include <nuclei.h>
-#include <difsec.h>
+#include "nuclei.h"
+#include "difsec.h"
       NCOORD = 3*NUCDEP
       DO I = 1, 3
          DO J = 1, 3
@@ -377,26 +367,26 @@ C Atomic dipole moments
 C
 C according to J. Cioslowski, Phys. Rev. Lett. 62 (1989) 1469-1471
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (THIRD = 1.0D0/3.0D0)
       DIMENSION CSEC(3,3,MXCOOR), CDIP(3,MXCOOR)
       DIMENSION CSTRA(*), SCTRA(*)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrxyz.h>
-#include <difsec.h>
-#include <moldip.h>
-#include <dipole.h>
-#include <inforb.h>
-#include <infinp.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "difsec.h"
+#include "moldip.h"
+#include "dipole.h"
+#include "inforb.h"
+#include "infinp.h"
       DIMENSION DIPATM(3,NUCDEP), DIPEAT(3,NUCDEP)
       DIMENSION GEOM(3*NATOMS), NATTYP(NATOMS)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       NCOOR = 3*NUCDEP
 C
@@ -515,23 +505,23 @@ C     hs 270503
 C
 C Molecular multipole moments from atomic charges and dipole moments
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrxyz.h>
-#include <difsec.h>
-#include <moldip.h>
-#include <dipole.h>
-#include <inforb.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "difsec.h"
+#include "moldip.h"
+#include "dipole.h"
+#include "inforb.h"
+#include "infinp.h"
       DIMENSION DIPA(3), SECA(3,3), THIRDA(3,3,3)
       DIMENSION DIPATM(3,NUCDEP), DIPEAT(3,NUCDEP), GEOM(3*NATOMS)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Molecular dipole moment
 C

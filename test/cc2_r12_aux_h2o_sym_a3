@@ -51,7 +51,7 @@ H     1.45235 0.899623 0.0
 cat > cc2_r12_aux_h2o_sym_a3.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -84,7 +84,7 @@ cat > cc2_r12_aux_h2o_sym_a3.dal <<'%EOF%'
 .NO HYB
 .CC2
  3B
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

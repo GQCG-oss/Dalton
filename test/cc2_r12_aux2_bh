@@ -51,7 +51,7 @@ cat > cc2_r12_aux2_bh.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -88,7 +88,7 @@ cat > cc2_r12_aux2_bh.dal <<'%EOF%'
 #.NO 2
 .CC2
  1A
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################
@@ -136,35 +136,35 @@ TEST[2]=`expr	$CRIT2`
 CTRL[2]=2
 ERROR[2]="CC2-R12/A ENERGY NOT CORRECT"
 #
-CRIT3=`$GREP " *-1\.63332720.." $log | wc -l`
+CRIT3=`$GREP " -1\.63333 " $log | wc -l`
 TEST[3]=`expr	$CRIT3`
 CTRL[3]=1
 ERROR[3]="CC2-R12/A 1A1 EXCITATION ENERGY NOT CORRECT"
-CRIT4=`$GREP " *1\.33846325.." $log | wc -l`
+CRIT4=`$GREP "  1\.33846 " $log | wc -l`
 TEST[4]=`expr	$CRIT4`
 CTRL[4]=1
 ERROR[4]="CC2-R12/A 2A1 EXCITATION ENERGY NOT CORRECT"
-CRIT5=`$GREP " *7\.73880186.." $log | wc -l`
+CRIT5=`$GREP " 7\.73880 " $log | wc -l`
 TEST[5]=`expr	$CRIT5`
 CTRL[5]=1
 ERROR[5]="CC2-R12/A 3A1 EXCITATION ENERGY NOT CORRECT"
-CRIT6=`$GREP " *8\.15860012.." $log | wc -l`
+CRIT6=`$GREP " 8\.15860 " $log | wc -l`
 TEST[6]=`expr	$CRIT6`
 CTRL[6]=1
 ERROR[6]="CC2-R12/A 4A1 EXCITATION ENERGY NOT CORRECT"
-CRIT7=`$GREP " *9\.81384708.." $log | wc -l`
+CRIT7=`$GREP " 9\.81385 " $log | wc -l`
 TEST[7]=`expr   $CRIT7`
 CTRL[7]=1
 ERROR[7]="CC2-R12/A 5A1 EXCITATION ENERGY NOT CORRECT"
-CRIT8=`$GREP " *10\.47295304.." $log | wc -l`
+CRIT8=`$GREP " 10\.47295 " $log | wc -l`
 TEST[8]=`expr   $CRIT8`
 CTRL[8]=1
 ERROR[8]="CC2-R12/A 6A1 EXCITATION ENERGY NOT CORRECT"
-CRIT9=`$GREP " *11\.06899549.." $log | wc -l`
+CRIT9=`$GREP " 11\.06900 " $log | wc -l`
 TEST[9]=`expr   $CRIT9`
 CTRL[9]=1
 ERROR[9]="CC2-R12/A 7A1 EXCITATION ENERGY NOT CORRECT"
-CRIT10=`$GREP " *11\.11828043.." $log | wc -l`
+CRIT10=`$GREP " 11\.11828 " $log | wc -l`
 TEST[10]=`expr   $CRIT10`
 CTRL[10]=1
 ERROR[10]="CC2-R12/A 8A1 EXCITATION ENERGY NOT CORRECT"

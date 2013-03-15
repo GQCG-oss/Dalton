@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck broydn */
       SUBROUTINE BROYDN(LUIT7,KIT,NTVAR,VECK,VECG,VECT,VECQ,
@@ -106,27 +96,27 @@ C   VECK   unchanged
 C   VECG   if not BCKSTP then unchanged (i.e. g(k)),
 C          else reset ot g(k-1).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION VECK(*),VECG(*),VECT(*),VECQ(*),WRK1(*),WRK2(*)
       LOGICAL BROYIT,BCKSTP
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
 C
-#include <infpri.h>
-#include <inftap.h>
+#include "infpri.h"
+#include "inftap.h"
 C
-      IF (IPRERR .GE. 5)
-     *   WRITE(LUERR,'(/A,I4)')' ******** BROYDN BEGIN, KIT =',KIT
-      IF (IPRERR .GT. 16) THEN
-         WRITE(LUERR,'(/A,I5)')' VECK, NTVAR=',NTVAR
-         WRITE(LUERR,'(1X,5F15.8)')(VECK(I),I=1,NTVAR)
-         WRITE(LUERR,'(/A)')' VECG'
-         WRITE(LUERR,'(1X,5F15.8)')(VECG(I),I=1,NTVAR)
-         WRITE(LUERR,'(/A)')' G(0) g(k)'
-         WRITE(LUERR,'(1X,5F15.8)')(VECT(I),I=1,NTVAR)
-         WRITE(LUERR,'(/A)')' G(0)T k(k)'
-         WRITE(LUERR,'(1X,5F15.8)')(VECQ(I),I=1,NTVAR)
+      IF (IPRSTAT .GE. 5)
+     *   WRITE(LUSTAT,'(/A,I4)')' ******** BROYDN BEGIN, KIT =',KIT
+      IF (IPRSTAT .GT. 16) THEN
+         WRITE(LUSTAT,'(/A,I5)')' VECK, NTVAR=',NTVAR
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECK(I),I=1,NTVAR)
+         WRITE(LUSTAT,'(/A)')' VECG'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECG(I),I=1,NTVAR)
+         WRITE(LUSTAT,'(/A)')' G(0) g(k)'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECT(I),I=1,NTVAR)
+         WRITE(LUSTAT,'(/A)')' G(0)T k(k)'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECQ(I),I=1,NTVAR)
       END IF
 C
 C     CONSTRUCT VECT = H(k-1) * g(k) AND VECQ = H(k-1)T * k(k)
@@ -139,20 +129,20 @@ C
          CALL DAXPY(NTVAR,XT,WRK1,1,VECT,1)
          CALL DAXPY(NTVAR,XQ,WRK2,1,VECQ,1)
  200  CONTINUE
-      IF (IPRERR .GT. 15) THEN
-         WRITE(LUERR,'(/A)')' H(k-1) g(k)'
-         WRITE(LUERR,'(1X,5F15.8)')(VECT(I),I=1,NTVAR)
-         WRITE(LUERR,'(/A)')' H(k-1)T k(k)'
-         WRITE(LUERR,'(1X,5F15.8)')(VECQ(I),I=1,NTVAR)
+      IF (IPRSTAT .GT. 15) THEN
+         WRITE(LUSTAT,'(/A)')' H(k-1) g(k)'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECT(I),I=1,NTVAR)
+         WRITE(LUSTAT,'(/A)')' H(k-1)T k(k)'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECQ(I),I=1,NTVAR)
       END IF
 C
 C     Finish t(k) in VECT and q(k) in VECQ.
 C
       IF (BROYIT) THEN
          XQNOR =  DDOT(NTVAR,VECK,1,VECT,1) + DDOT(NTVAR,VECK,1,VECK,1)
-         IF (IPRERR .GE. 5) THEN
-            WRITE(LUERR,'(/A)')' Last step was a Broyden step'
-            WRITE(LUERR,*)'Variable metric :',XQNOR
+         IF (IPRSTAT .GE. 5) THEN
+            WRITE(LUSTAT,'(/A)')' Last step was a Broyden step'
+            WRITE(LUSTAT,*)'Variable metric :',XQNOR
          END IF
       ELSE
          REWIND(LUIT7)
@@ -161,9 +151,9 @@ C
          CALL READT(LUIT7,NTVAR,WRK2)
          CALL DAXPY(NTVAR,D1,WRK2,1,VECT,1)
          XQNOR = DDOT(NTVAR,VECT,1,VECK,1)
-         IF (IPRERR .GE. 5) THEN
-            WRITE(LUERR,'(/A)')' Last step was NOT the Broyden step'
-            WRITE(LUERR,*)'Variable metric :',XQNOR
+         IF (IPRSTAT .GE. 5) THEN
+            WRITE(LUSTAT,'(/A)')' Last step was NOT the Broyden step'
+            WRITE(LUSTAT,*)'Variable metric :',XQNOR
          END IF
          CALL DAXPY(NTVAR,DM1,VECK,1,VECT,1)
       END IF
@@ -184,10 +174,10 @@ C
             READ   (LUIT7)
             CALL READT(LUIT7,NTVAR,WRK2)
          END IF
-         IF (IPRERR .GE. 5) THEN
+         IF (IPRSTAT .GE. 5) THEN
             XQNOR = DDOT(NTVAR,VECQ,1,VECG,1)
-            WRITE(LUERR,'(/A)')'*** THIS IS A BACK STEP ***'
-            WRITE(LUERR,*)' < q(k) / g(k) >   =',XQNOR
+            WRITE(LUSTAT,'(/A)')'*** THIS IS A BACK STEP ***'
+            WRITE(LUSTAT,*)' < q(k) / g(k) >   =',XQNOR
          END IF
          CALL READT(LUIT7,NTVAR,VECG)
       END IF
@@ -201,11 +191,11 @@ C
          CALL DSCAL(NTVAR,XQNOR,VECT,1)
          CALL DAXPY(NTVAR,DM1,WRK1,1,VECT,1)
       END IF
-      IF (IPRERR .GE. 5) THEN
+      IF (IPRSTAT .GE. 5) THEN
          IF (BCKSTP) THEN
-            WRITE(LUERR,*)' < q(k) / g(k-1) > =',XQNOR
+            WRITE(LUSTAT,*)' < q(k) / g(k-1) > =',XQNOR
          ELSE
-            WRITE(LUERR,*)' < q(k) / g(k) > =',XQNOR
+            WRITE(LUSTAT,*)' < q(k) / g(k) > =',XQNOR
          END IF
       END IF
 C
@@ -216,12 +206,12 @@ C
       CALL WRITT(LUIT7,NTVAR,VECT)
       CALL WRITT(LUIT7,NTVAR,VECG)
 C
-      IF (IPRERR .GT. 11) THEN
-         WRITE(LUERR,'(/A)')' Broyden step returned'
-         WRITE(LUERR,'(1X,5F15.8)')(VECT(I),I=1,NTVAR)
-         WRITE(LUERR,'(/A)')
+      IF (IPRSTAT .GT. 11) THEN
+         WRITE(LUSTAT,'(/A)')' Broyden step returned'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECT(I),I=1,NTVAR)
+         WRITE(LUSTAT,'(/A)')
      *      ' q vector returned (has been divided by var. metric)'
-         WRITE(LUERR,'(1X,5F15.8)')(VECQ(I),I=1,NTVAR)
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECQ(I),I=1,NTVAR)
       END IF
 C
       RETURN
@@ -240,7 +230,7 @@ C
 C GSCAL = gradient scale factor to give correct first order
 C         energy prediction in PC representation.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER( D1=1.0D0 , DM1=-1.0D0 )
       DIMENSION CREF(*),C(*),GRD(*)
 C
@@ -261,7 +251,7 @@ C  /* Deck pctoc */
 C
 C TRANSFORM FROM X REPRESENTATION TO C REPRESENTATION
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*),C(*)
       PARAMETER ( D1=1.0D0 )
 C
@@ -278,14 +268,14 @@ C
 C PURPOSE:
 C  Do a Broyden inverse update optimization.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION REF1(*),GRD(*),CMO1(*),INDXCI(*),WRK(*)
 C
       PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0, DP5=0.5D0 )
       PARAMETER ( XRNEG=1.D-3, XRED=0.8D0, XRBCK=0.5D0 )
       PARAMETER ( XLIM=1.D-7, DP1LIM=1.D-10, XRSTP=10.0D0 )
 C     PARAMETER ( XCFROZ=12.D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C used from common blocks:
 C    INFINP : ISTATE,POTNUC,FLAG(*),?
@@ -293,16 +283,16 @@ C    INFOPT : EMCOLD,EMCSCF,GNORM(3)
 C    INFDIM : MAXRL
 C    INFPRI : P4FLAG(*),P6FLAG(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <inftra.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "inftra.h"
 C
       LOGICAL BCKSTP, BROYIT, DOTRA, HESFIX, LSAVE
 C
@@ -444,11 +434,11 @@ C
 C
 C     FIND NEW ORBITAL AND CSF PARAMETERS
 C
-      IF (IPRERR.GT.14) THEN
-         WRITE(LUERR,'(/A)')' STEP VECTOR IN VECT SIRUPD'
-         WRITE(LUERR,'(1X,5F15.8)')(WRK(KVECT-1+I),I=1,NVAR)
-         WRITE(LUERR,'(/A)')' REF0, THE CURRENT MC POINT (BEFORE STEP)'
-         WRITE(LUERR,'(1X,5F15.8)')(WRK(KREF0-1+I),I=1,NVAR)
+      IF (IPRSTAT.GT.14) THEN
+         WRITE(LUSTAT,'(/A)')' STEP VECTOR IN VECT SIRUPD'
+         WRITE(LUSTAT,'(1X,5F15.8)')(WRK(KVECT-1+I),I=1,NVAR)
+         WRITE(LUSTAT,'(/A)')' REF0, THE CURRENT MC POINT (BEFORE STEP)'
+         WRITE(LUSTAT,'(1X,5F15.8)')(WRK(KREF0-1+I),I=1,NVAR)
       END IF
       DO 400 I=1,NVAR
          REF1(I) = WRK(KVECT-1+I) + WRK(KREF0-1+I)
@@ -690,8 +680,8 @@ C   2)PUT T AND Q VECTORS ON LUIT3 AND LUIT5
 C   3)RETURN STEP VECTOR IN VECT .GIVES ITERATION POINT TWO WHEN
 C     ADDED TO PC PARAMETERS AT ITERATION POINT 2
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION REDINV(*),IBNDX(*),REF0(*),CMO(*)
       DIMENSION VECK(*),VECG(*),VECT(*),VECQ(*),VECX(*),G0(*)
@@ -700,12 +690,12 @@ C
 C  INFINP : FLAG(*)
 C  INFTAP : LUIT1,?
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
 C
 C
       LOGICAL HESFIX
@@ -790,18 +780,18 @@ C
       CALL DAXPY(NVAR,DM1,VECK,1,VECT,1)
       CALL WRITT(LUIT3,NVAR,VECT)
       CALL WRITT(LUIT5,NVAR,VECQ)
-      IF (IPRERR .GT. 11) THEN
-         WRITE(LUERR,'(/A)')' UPDST: VECT 1 WRITTEN ON LUIT3'
-         WRITE(LUERR,'(1X,5F15.8)')(VECT(I),I=1,NVAR)
-         WRITE(LUERR,'(/A)')' UPDST: VECQ 1 WRITTEN ON LUIT5'
-         WRITE(LUERR,'(1X,5F15.8)')(VECQ(I),I=1,NVAR)
+      IF (IPRSTAT .GT. 11) THEN
+         WRITE(LUSTAT,'(/A)')' UPDST: VECT 1 WRITTEN ON LUIT3'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECT(I),I=1,NVAR)
+         WRITE(LUSTAT,'(/A)')' UPDST: VECQ 1 WRITTEN ON LUIT5'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECQ(I),I=1,NVAR)
       END IF
 C
 C FIND BROYDN STEP AND WRITE STEP AS SECOND RECORD ON LUIT7
 C
       CALL DCOPY(NVAR,REF0,1,VECG,1)
       XQG = DDOT(NVAR,VECQ,1,VECG,1)
-      IF (IPRERR.GE.8) WRITE (LUERR,'(/A,F15.8)') ' < Q1 / F1 > =',XQG
+      IF (IPRSTAT.GE.8) WRITE (LUSTAT,'(/A,F15.8)') ' < Q1 / F1 > =',XQG
       CALL DSCAL(NVAR,XQG,VECT,1)
       CALL UPDH0(LUIT7,IBNDX,REDINV,VECK,VECG,REF0,VECQ,G0,VECX)
       CALL DAXPY(NVAR,DM1,REF0,1,VECT,1)
@@ -809,9 +799,9 @@ C
       READ  (LUIT7)
       CALL WRITT(LUIT7,NVAR,VECT)
       CALL WRITT(LUIT7,NVAR,VECG)
-      IF (IPRERR .GT. 11) THEN
-         WRITE(LUERR,'(/A)')' UPDST: STEP VECTOR 1 WRITTEN ON LUIT7'
-         WRITE(LUERR,'(1X,5F15.8)')(VECT(I),I=1,NVAR)
+      IF (IPRSTAT .GT. 11) THEN
+         WRITE(LUSTAT,'(/A)')' UPDST: STEP VECTOR 1 WRITTEN ON LUIT7'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECT(I),I=1,NVAR)
       END IF
 C
 C     STEP VECTOR IS IN VECK IN PC REPRESENTATION
@@ -831,18 +821,18 @@ C PURPOSE:
 C   MULTIPLY ZEROTH ORDER APPROXIMATION TO THE INVERSE HESSIAN
 C   ONTO VECG (RETURNED IN VECT) AND ONTO VECK (RETURNED IN VECQ)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION IBNDX(*),REDINV(NREDL,*),VECK(*),VECG(*),VECT(*),VECQ(*)
       DIMENSION WRKX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <ibndxdef.h>
-#include <infpri.h>
-#include <infopt.h>
-#include <infvar.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "ibndxdef.h"
+#include "infpri.h"
+#include "infopt.h"
+#include "infvar.h"
+#include "inftap.h"
 C
 C     DEFINE WORK SPACE
 C
@@ -874,15 +864,15 @@ C
      &           REDINV,NREDL,
      &           WRK(KYVECG),NREDL,0.D0,
      &           WRK(KRVECG),NREDL)
-      IF (IPRERR .GE. 10) THEN
-         WRITE(LUERR,'(/A)')' (UPDH0) YVECG'
-         WRITE(LUERR,'(1X,5F15.8)')(WRK(KYVECG-1+I),I=1,NREDL)
-         WRITE(LUERR,'(/A)')' YVECK'
-         WRITE(LUERR,'(1X,5F15.8)')(WRK(KYVECK-1+I),I=1,NREDL)
-         WRITE(LUERR,'(/A)')' RVECG'
-         WRITE(LUERR,'(1X,5F15.8)')(WRK(KRVECG-1+I),I=1,NREDL)
-         WRITE(LUERR,'(/A)')' RVECK'
-         WRITE(LUERR,'(1X,5F15.8)')(WRK(KRVECK-1+I),I=1,NREDL)
+      IF (IPRSTAT .GE. 10) THEN
+         WRITE(LUSTAT,'(/A)')' (UPDH0) YVECG'
+         WRITE(LUSTAT,'(1X,5F15.8)')(WRK(KYVECG-1+I),I=1,NREDL)
+         WRITE(LUSTAT,'(/A)')' YVECK'
+         WRITE(LUSTAT,'(1X,5F15.8)')(WRK(KYVECK-1+I),I=1,NREDL)
+         WRITE(LUSTAT,'(/A)')' RVECG'
+         WRITE(LUSTAT,'(1X,5F15.8)')(WRK(KRVECG-1+I),I=1,NREDL)
+         WRITE(LUSTAT,'(/A)')' RVECK'
+         WRITE(LUSTAT,'(1X,5F15.8)')(WRK(KRVECK-1+I),I=1,NREDL)
       END IF
 C
 C READ IN DIAGONAL INVERSE HESSIAN
@@ -897,11 +887,11 @@ C
          VECT(I)=VECG(I)*WRKX(I)
          VECQ(I)=VECK(I)*WRKX(I)
  1030 CONTINUE
-      IF (IPRERR .GT. 15) THEN
-         WRITE(LUERR,'(/A)')' T VECTOR AFTER DIAGONAL INVERSE HESSIAN'
-         WRITE(LUERR,'(1X,5F15.8)')(VECT(I),I=1,NVAR)
-         WRITE(LUERR,'(/A)')' Q VECTOR AFTER DIAGONAL INVERSE HESSIAN'
-         WRITE(LUERR,'(1X,5F15.8)')(VECQ(I),I=1,NVAR)
+      IF (IPRSTAT .GT. 15) THEN
+         WRITE(LUSTAT,'(/A)')' T VECTOR AFTER DIAGONAL INVERSE HESSIAN'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECT(I),I=1,NVAR)
+         WRITE(LUSTAT,'(/A)')' Q VECTOR AFTER DIAGONAL INVERSE HESSIAN'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECQ(I),I=1,NVAR)
       END IF
       REWIND LUIT3
       REWIND LUIT5
@@ -922,11 +912,11 @@ C
          CALL DAXPY(NTOT,FACT,WRKX,1,VECT(IOFF),1)
          CALL DAXPY(NTOT,FACQ,WRKX,1,VECQ(IOFF),1)
  1040 CONTINUE
-      IF (IPRERR .GT. 14) THEN
-         WRITE(LUERR,'(/A)')' T VECTOR AFTER UPDH0'
-         WRITE(LUERR,'(1X,5F15.8)')(VECT(I),I=1,NVAR)
-         WRITE(LUERR,'(/A)')' Q VECTOR AFTER UPDH0'
-         WRITE(LUERR,'(1X,5F15.8)')(VECQ(I),I=1,NVAR)
+      IF (IPRSTAT .GT. 14) THEN
+         WRITE(LUSTAT,'(/A)')' T VECTOR AFTER UPDH0'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECT(I),I=1,NVAR)
+         WRITE(LUSTAT,'(/A)')' Q VECTOR AFTER UPDH0'
+         WRITE(LUSTAT,'(1X,5F15.8)')(VECQ(I),I=1,NVAR)
       END IF
       RETURN
 C     End of UPDH0.
@@ -943,12 +933,12 @@ C     VECTORS ON LUIT3  ON LUIT5
 C  3) ADD TO INVERSE REDUCED HESSIAN THE INVERSE DIAGONAL
 C     HESSIAN
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION REDINV(*),IBNDX(*),G0(*),WRK(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
       PARAMETER ( D0=0.0D0 , D1=1.0D0 ,D2=2.0D0 )
       PARAMETER ( DTEST=1.0D-3 )
@@ -956,12 +946,12 @@ C
 C   INFINP : FLAG(*)
 C   INFTAP : LUIT1,?
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
       LOGICAL HESIVD
@@ -985,25 +975,25 @@ C
          READ (LUIT1) DUM,DUM,DUM,DUM,DUM,IDUM,
      *                MREDL,(IBNDX(I),I=1,MREDL)
          IF (MREDL.NE.NREDL) THEN
-            WRITE (LUERR,'(/1X,A,2I5/1X,A)')
+            WRITE (LUSTAT,'(/1X,A,2I5/1X,A)')
      *      'UPDINI: NREDL on LUIT1 inconsistent with NREDL in common:',
      *      MREDL,NREDL,
-     *      'INVERSE DIAGONAL USED AS APPROXIMATE INVERSE HESSIAN.'
-C           CALL QTRACE(LUERR)
+     *      '--> INVERSE DIAGONAL USED AS APPROXIMATE INVERSE HESSIAN.'
+C           CALL QTRACE(LUSTAT)
 C           CALL QUIT('***ERROR*** UPDINI: NREDL on LUIT1 inconsistent')
             NREDL = 1
          END IF
       END IF
       NNREDL=NREDL*(NREDL+1)/2
       READ (LUIT1) DUM,EACT
-      IF (IPRERR .GE. 5)
-     *   WRITE (LUERR,'(/A,F25.15)') ' UPDINI: Active energy:',EACT
+      IF (IPRSTAT .GE. 5)
+     *   WRITE (LUSTAT,'(/A,F25.15)') ' UPDINI: Active energy:',EACT
       IF (HESIVD) GO TO 525
       CALL MOLLAB(TABLE(3),LUIT1,lupri)
       CALL READT(LUIT1,NNREDL,WRK(1))
-      IF (IPRERR .GE. 8) THEN
-         WRITE (LUERR,*) 'Reduced L matrix, dimension ',NREDL
-         CALL OUTPAK(WRK,NREDL,1,LUERR)
+      IF (IPRSTAT .GE. 8) THEN
+         WRITE (LUSTAT,*) 'Reduced L matrix, dimension ',NREDL
+         CALL OUTPAK(WRK,NREDL,1,LUSTAT)
       END IF
 C
 C     PACK REDUCED HESSIAN IN TWO DIMENSIONAL ARRAY
@@ -1022,26 +1012,26 @@ C
          REDINV(I)=D0
  500  CONTINUE
       REDINV(1)=D1
-      IF (IPRERR .GE. 10) THEN
-         WRITE(LUERR,'(/A)')' REDUCED HESSIAN REF0 PROJECTED OUT'
-         CALL OUTPUT(REDINV,1,NREDL,1,NREDL,NREDL,NREDL,1,LUERR)
+      IF (IPRSTAT .GE. 10) THEN
+         WRITE(LUSTAT,'(/A)')' REDUCED HESSIAN REF0 PROJECTED OUT'
+         CALL OUTPUT(REDINV,1,NREDL,1,NREDL,NREDL,NREDL,1,LUSTAT)
       END IF
 C
 C     INVERS OF REDUCED HESSIAN
 C
       CALL DGEINV(NREDL,REDINV,REDINV,WRK(1),WRK(1+NREDL),INFO)
       IF (INFO .NE. 0) THEN
-         WRITE (LUERR,'(//A/T6,A,I5/T6,A/)') ' *** ERROR (UPDINI) ***',
+         WRITE (LUSTAT,'(//A/T6,A,I5/T6,A/)') ' *** ERROR (UPDINI) ***',
      *      ' Reduced Hessian singular, INFO from DGEINV =',INFO,
      *      ' Only diagonal elements used for H0.'
          NREDL = 1
       END IF
  525  CONTINUE
       REDINV(1)=D0
-      IF (IPRERR .GE. 10) THEN
-         WRITE(LUERR,'(/A)')
+      IF (IPRSTAT .GE. 10) THEN
+         WRITE(LUSTAT,'(/A)')
      *      ' REDUCED INVERSE HESSIAN, REF0 PROJECTED OUT'
-         CALL OUTPUT(REDINV,1,NREDL,1,NREDL,NREDL,NREDL,1,LUERR)
+         CALL OUTPUT(REDINV,1,NREDL,1,NREDL,NREDL,NREDL,1,LUSTAT)
       END IF
 C
 C     READ IN DIAGONAL L-MATRIX (ACTIVE ENERGY IS NOT SUBTRACTED)
@@ -1057,9 +1047,9 @@ C
       ELSE
          G0(1) = D0
       END IF
-      IF (IPRERR .GT. 12) THEN
-         WRITE(LUERR,'(/A)') ' Diagonal L matrix'
-         WRITE(LUERR,'(1X,5F15.8)')(G0(I),I=1,NVAR)
+      IF (IPRSTAT .GT. 12) THEN
+         WRITE(LUSTAT,'(/A)') ' Diagonal L matrix'
+         WRITE(LUSTAT,'(1X,5F15.8)')(G0(I),I=1,NVAR)
       END IF
 C PHPMAERKE : Oct90/hjaaj: implement PHP here ?
 C
@@ -1082,9 +1072,9 @@ C
             G0(J)=D1/D
          END IF
  1026 CONTINUE
-      IF (IPRERR .GT. 11) THEN
-         WRITE(LUERR,'(/A)')'DIAGONAL INVERSE  HESSIAN'
-         WRITE(LUERR,'(1X,5F15.8)')(G0(I),I=1,NVAR)
+      IF (IPRSTAT .GT. 11) THEN
+         WRITE(LUSTAT,'(/A)')'DIAGONAL INVERSE  HESSIAN'
+         WRITE(LUSTAT,'(1X,5F15.8)')(G0(I),I=1,NVAR)
       END IF
       REWIND LUIT7
       CALL WRITT(LUIT7,NVAR,G0)
@@ -1135,10 +1125,10 @@ C
             END IF
  1040    CONTINUE
  1030 CONTINUE
-      IF (IPRERR .GE. 10) THEN
-         WRITE(LUERR,'(/A)')
+      IF (IPRSTAT .GE. 10) THEN
+         WRITE(LUSTAT,'(/A)')
      *      ' REDUCED INVERSE HESSIAN WITH YX CONTRIBUTION ADDED'
-         CALL OUTPUT(REDINV,1,NREDL,1,NREDL,NREDL,NREDL,1,LUERR)
+         CALL OUTPUT(REDINV,1,NREDL,1,NREDL,NREDL,NREDL,1,LUSTAT)
       END IF
       RETURN
 C     End of UPDINI.

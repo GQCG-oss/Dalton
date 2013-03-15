@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_XI_NODDY(IOPTRES,XI1,XI2,XI1EFF,XI2EFF,
@@ -51,13 +41,13 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -244,13 +234,13 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccnoddy.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccnoddy.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -411,17 +401,17 @@ C     ----------------------------------------------
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccr1rsp.h>
-#include <ccrc1rsp.h>
-#include <ccexci.h>
-#include <ccfield.h>
-#include <ccnoddy.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccr1rsp.h"
+#include "ccrc1rsp.h"
+#include "ccexci.h"
+#include "ccfield.h"
+#include "ccnoddy.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG, PRINT_T3
       PARAMETER (LOCDBG=.FALSE.,PRINT_T3=.FALSE.)
@@ -467,7 +457,7 @@ C     ----------------------------------------------
       CHARACTER*10 MODEL, LABELB*8
       INTEGER KTB1AM, KEND0, KSCR1, KTB2AM, KEND1, NAI, NBJ, NCK,
      &        LWRK1, IOPT, KXINT, ISYMD, ILLL, IDEL, KEND2, LWRK2,
-     &        KT02AM, ISYDIS, ISYMB, KRECNR, IERR, IRREP, NAIBJCK,
+     &        KT02AM, ISYDIS, ISYMB, IERR, IRREP, NAIBJCK,
      &        ISYMM, ILSTSYM, LWRK0, KFIELD, KFLDB1, NCAU, MCAU,
      &        KFIELDAO, KT03AM, KT3SCR, LUTEMP, IDLSTBM
 
@@ -745,11 +735,11 @@ c         ----------------------------------
 *     response versions XINT1SB=(ck|db)-bar and XINT2SB=(ck|lj)-bar
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       LOGICAL DO_INTS1, DO_INTT1
       INTEGER LWORK
@@ -850,10 +840,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
  
 #if defined (SYS_CRAY)
       REAL ONE
@@ -897,10 +887,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
  
 #if defined (SYS_CRAY)
       REAL HALF
@@ -972,10 +962,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
  
 #if defined (SYS_CRAY)
       REAL HALF
@@ -1047,10 +1037,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 
 #if defined (SYS_CRAY)
       REAL XKSI2(NT1AMX,NT1AMX)
@@ -1102,10 +1092,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 
 #if defined (SYS_CRAY)
       REAL OMEGA2(NT1AMX,NT1AMX)
@@ -1171,11 +1161,11 @@ C
 C     Compute a response Fock matrix:
 C        FOCK(kc) = FOCK(kc) + sum_ia L_kcia t_ia
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XLIAJB(NT1AMX,NT1AMX)
       DIMENSION T1AM(NT1AMX)
       DIMENSION FOCK(NORBT,NORBT)
@@ -1211,14 +1201,14 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE  
 
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <cclists.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "cclists.h"
+#include "ccroper.h"
 
       CHARACTER*12 FNDEFF
       PARAMETER( FNDEFF = 'TMP-XIETADEN' )
@@ -1257,7 +1247,7 @@ C    *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  )
       LOGICAL LTWOEL, LRELAX, SKIPXI
       INTEGER KINT1T, KINT2T, KXIAJB, KYIAJB, KINT1S, KINT2S, KEND1,
      &        ISYMD, ILLL, IDEL, ISYDIS, KXINT, KEND2, LWRK2, LWRK1,
-     &        KRECNR, KT2AM, KT3AM, IOPT, LUSIFC, IDLSTL, KFOCK0,
+     &        IRECNR, KT2AM, KT3AM, IOPT, LUSIFC, IDLSTL, KFOCK0,
      &        LUDEFF, M2BST, KFOCKD, ISYM, IDUMMY, LUFOCK, KSCR1, IF,
      &        KLC3AM, KDIJ, KDAB, KDIA, KMINT, IDENS, IADRIJ, IADRAB,
      &        IADRIA, ITRAN, IOPER, IRELAX, ISYHOP, ISYML, IDX, IVEC,
@@ -1394,10 +1384,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
-            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
-            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
+     *                  IRECNR,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:
@@ -1517,7 +1505,7 @@ C     --------------------------------------------
 
         ELSE
           WRITE(LUPRI,*) 'LISTL,IDLSTL:',LISTL(1:3),IDLSTL
-          CALL QUIT('Unkown/Illegal list in CCSDT_XI_CONT_NODDY.')
+          CALL QUIT('Unknown/Illegal list in CCSDT_XI_CONT_NODDY.')
         END IF
 
 
@@ -1663,7 +1651,7 @@ c         ---------------------------------------------------------
 *     Written by Christof Haettig, Nov 2002, Friedrichstal            *
 *---------------------------------------------------------------------*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

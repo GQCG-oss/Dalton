@@ -97,7 +97,7 @@ cat > prop_nolondon_soppacc.dal <<%EOF%
 .SOPPA(CCSD)
 .MAGNET
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -187,17 +187,17 @@ CTRL[7]=3
 ERROR[7]="TOTAL MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Diamagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * \-3\.4844246(7|8)...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-3\.09608072...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.2761533(6|7)...[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * \-3\.484424[0-9]* * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-3\.096080[0-9]* * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.276153" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Paramagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * (0| )\.4583364(1|2)...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.12897876...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * (0| )\.24232253...[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * (0| )\.458336[0-9]* * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.128978[0-9]* * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * (0| )\.242322" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
@@ -214,22 +214,22 @@ CTRL[10]=6
 ERROR[10]="MOLECULAR ROT G-FACTOR NOT CORRECT"
 
 # Molecular rotational g-factor in principal axis system
-CRIT1=`$GREP "A * (0| )\.7081141[0-9] * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000" $log | wc -l`
-CRIT2=`$GREP "B * (\-0| \-| 0|  )\.00000000 * (0| )\.7630889[0-9] * (\-0| \-| 0|  )\.00000000" $log | wc -l`
-CRIT3=`$GREP "C * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000 * (0| )\.6886009[0-9]" $log | wc -l`
+CRIT1=`$GREP "A * (0| )\.708114[0-9]* * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000" $log | wc -l`
+CRIT2=`$GREP "B * (\-0| \-| 0|  )\.00000000 * (0| )\.763088[0-9]* * (\-0| \-| 0|  )\.00000000" $log | wc -l`
+CRIT3=`$GREP "C * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000 * (0| )\.688600" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=3
 ERROR[11]="MOLECULAR ROT G-FACTOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
 
 # Shielding tensors (symmetry coordinates)
-CRIT1=`$GREP "O * y * 354\.86104..[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * y * 78\.112319.[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * z * \-15\.328071.[0-9]" $log | wc -l`
-CRIT4=`$GREP "O * x * 297\.18073..[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * x * 46\.48050..[0-9]" $log | wc -l`
-CRIT6=`$GREP "O * z * 303\.4487(2|3)..[0-9]" $log | wc -l`
-CRIT7=`$GREP "H * y * \-19\.22718..[0-9]" $log | wc -l`
-CRIT8=`$GREP "H * z * 59\.78655..[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * y * 354\.8610" $log | wc -l`
+CRIT2=`$GREP "H * y * 78\.1123" $log | wc -l`
+CRIT3=`$GREP "H * z * \-15\.3280" $log | wc -l`
+CRIT4=`$GREP "O * x * 297\.1807" $log | wc -l`
+CRIT5=`$GREP "H * x * 46\.4805" $log | wc -l`
+CRIT6=`$GREP "O * z * 303\.4487" $log | wc -l`
+CRIT7=`$GREP "H * y * \-19\.2271" $log | wc -l`
+CRIT8=`$GREP "H * z * 59\.7865" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[12]=9
@@ -246,15 +246,15 @@ CTRL[13]=5
 ERROR[13]="CHEMICAL SHIELDING FOR OXYGEN NOT CORRECT"
 
 # Total shielding tensor for O
-CRIT1=`$GREP "O * x * 297\.18073..[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "O * y * (0| )\.00000000 * 354\.86104..[0-9] * (0| )\.00000000" $log | wc -l`
-CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 * 303\.44873..[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * x * 297\.1807[0-9]* * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "O * y * (0| )\.00000000 * 354\.8610[0-9]* * (0| )\.00000000" $log | wc -l`
+CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 * 303\.4487" $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[14]=3
 ERROR[14]="TOTAL SHIELDING TENSOR FOR OXYGEN NOT CORRECT"
 
 # Diamagnetic and paramagnetic contributions
-CRIT1=`$GREP "Diamagnetic contribution\: * 414\.95191[0-9] * Paramagnetic\: * \-96\.45507[0-9]" $log | wc -l`
+CRIT1=`$GREP "Diamagnetic contribution\: * 414\.9519.. * Paramagnetic\: * \-96\.4550" $log | wc -l`
 TEST[15]=`expr	$CRIT1`
 CTRL[15]=1
 ERROR[15]="DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR OXYGEN NOT CORRECT"
@@ -270,9 +270,9 @@ CTRL[16]=10
 ERROR[16]="CHEMICAL SHIELDING FOR HYDROGEN NOT CORRECT"
 
 # Total shielding tensor for H1
-CRIT1=`$GREP "H * 1 x * 23\.24025..[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "H * 1 y * (0| )\.00000000 * 39\.05615..[0-9] * \-9\.61359..[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 1 z * (0| )\.00000000 * \-7\.66403..[0-9] * 29\.89327..[0-9]" $log | wc -l`
+CRIT1=`$GREP "H * _1 x * 23\.2402...[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H * _1 y * (0| )\.00000000 * 39\.0561...[0-9] * \-9\.6135...[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * _1 z * (0| )\.00000000 * \-7\.6640...[0-9] * 29\.8932...[0-9]" $log | wc -l`
 TEST[17]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[17]=3
 ERROR[17]="TOTAL SHIELDING TENSOR FOR HYDROGEN1 NOT CORRECT"
@@ -284,20 +284,20 @@ CTRL[18]=2
 ERROR[18]="DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR HYDROGEN NOT CORRECT"
 
 # Total shielding tensor for H2
-CRIT1=`$GREP "H * 2 x * 23\.24025..[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "H * 2 y * (0| )\.00000000 * 39\.05615..[0-9] * 9\.61359..[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 z * (0| )\.00000000 * 7\.66403..[0-9] * 29\.89327..[0-9]" $log | wc -l`
+CRIT1=`$GREP "H * _2 x * 23\.2402...[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H * _2 y * (0| )\.00000000 * 39\.0561...[0-9] * 9\.6135...[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * _2 z * (0| )\.00000000 * 7\.6640...[0-9] * 29\.8932...[0-9]" $log | wc -l`
 TEST[19]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[19]=3
 ERROR[19]="TOTAL SHIELDING TENSOR FOR HYDROGEN2 NOT CORRECT"
 
 # Chemical shieldings
-CRIT1=`$GREP "\@1O * 318\.496[0-9] * 414\.951[0-9] * \-96\.455[0-9] * (0| )\.782[0-9] * 57\.680[0-9] * 54\.546[0-9] * (0| )\.172[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@1H * 1 * 30\.729[0-9] * 24\.753[0-9] * 5\.976[0-9] * (0| )\.861[0-9] * 21\.013[0-9] * 20\.285[0-9] * (0| )\.107[0-9]" $log | wc -l`
-CRIT3=`$GREP "\@1H * 2 * 30\.729[0-9] * 24\.753[0-9] * 5\.976[0-9] * (0| )\.861[0-9] * 21\.013[0-9] * 20\.285[0-9] * (0| )\.107[0-9]" $log | wc -l`
-CRIT4=`$GREP "\@2O * 318\.496[0-9] * 414\.951[0-9] * \-96\.455[0-9] * 54\.546[0-9] * (0| )\.172[0-9] * 54\.815[0-9] * (0| )\.0000" $log | wc -l`
-CRIT5=`$GREP "\@2H * 1 * 30\.729[0-9] * 24\.753[0-9] * 5\.976[0-9] * 20\.285[0-9] * (0| )\.107[0-9] * 20\.324[0-9] * (0| )\.974[0-9]" $log | wc -l`
-CRIT6=`$GREP "\@2H * 2 * 30\.729[0-9] * 24\.753[0-9] * 5\.976[0-9] * 20\.285[0-9] * (0| )\.107[0-9] * 20\.324[0-9] * (0| )\.974[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@1 O * 318\.496[0-9] * 414\.951[0-9] * \-96\.455[0-9] * (0| )\.782[0-9] * 57\.680[0-9] * 54\.546[0-9] * (0| )\.172[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@1 H * _1 * 30\.729[0-9] * 24\.753[0-9] * 5\.976[0-9] * (0| )\.861[0-9] * 21\.01[23][0-9] * 20\.285[0-9] * (0| )\.107[0-9]" $log | wc -l`
+CRIT3=`$GREP "\@1 H * _2 * 30\.729[0-9] * 24\.753[0-9] * 5\.976[0-9] * (0| )\.861[0-9] * 21\.01[23][0-9] * 20\.285[0-9] * (0| )\.107[0-9]" $log | wc -l`
+CRIT4=`$GREP "\@2 O * 318\.496[0-9] * 414\.951[0-9] * \-96\.455[0-9] * 54\.546[0-9] * (0| )\.172[0-9] * 54\.815[0-9] * (0| )\.0000" $log | wc -l`
+CRIT5=`$GREP "\@2 H * _1 * 30\.729[0-9] * 24\.753[0-9] * 5\.976[0-9] * 20\.285[0-9] * (0| )\.107[0-9] * 20\.324[0-9] * (0| )\.974[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@2 H * _2 * 30\.729[0-9] * 24\.753[0-9] * 5\.976[0-9] * 20\.285[0-9] * (0| )\.107[0-9] * 20\.324[0-9] * (0| )\.974[0-9]" $log | wc -l`
 TEST[20]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[20]=6
 ERROR[20]="CHEMICAL SHIELDINGS NOT CORRECT"

@@ -79,7 +79,7 @@ H         -0.2012451011           -1.7773969533            0.0000000000
 *LINRES
 .THRESH
 1.0D-7
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -202,15 +202,15 @@ CTRL[8]=6
 ERROR[8]="INITIAL MAGNETIZABILITIES NOT CORRECT"
 
 # Initial g-tensor
-CRIT1=`$GREP "Isotropic g\-tensor * \: * 0*\.4503330[0-9]" $log | wc -l`
-CRIT2=`$GREP "Nuclear contribution * \: * 0*\.98513150" $log | wc -l`
+CRIT1=`$GREP "Isotropic g\-tensor  * \: * 0*\.4503330[0-9]" $log | wc -l`
+CRIT2=`$GREP "Nuclear contribution * \: * 0*\.985131(49|50)" $log | wc -l`
 CRIT3=`$GREP "Electronic contribution * \: * (\-0| \-)\.1077988[0-9]" $log | wc -l`
 CRIT4=`$GREP "Parallel component\: * 0*\.4139216[0-9]" $log | wc -l`
 CRIT5=`$GREP "Perpendicular component\: * 0*\.4685387[0-9]" $log | wc -l`
 CRIT6=`$GREP "Anisotropy\: * (\-0| \-)\.0546170[0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[9]=6
-ERROR[9]="INITIAL G-TENSOR NOT CORRECT"
+ERROR[9]="INITIAL ROTATIONAL G-TENSOR NOT CORRECT"
 
 # Initial shielding tensor
 CRIT1=`$GREP "N * x * 290\.4388[0-9]* * (\-0| \-)\.000000[0-9]* * (\-0|\-|0| )\.00000000" $log | wc -l`
@@ -249,8 +249,8 @@ CTRL[12]=12
 ERROR[12]="INITIAL CHEMICAL SHIELDING FOR HYDROGEN NOT CORRECT"
 
 # Summary of initial shieldings
-CRIT1=`$GREP "\@1N * 299\.7727 * 415\.1852 \-115\.4125 * \-1\.0000 * 14\.0008 * 7\.0004 * 3\.0000" $log | wc -l`
-CRIT2=`$GREP "\@1H * 32\.2659 * 31\.6749 * 0*\.5910 * 0*\.6669 * 15\.2184 * 13\.9511 * 0*\.2725" $log | wc -l`
+CRIT1=`$GREP "\@1 N * 299\.7727 * 415\.1852 \-115\.4125 * \-1\.0000 * 14\.0008 * 7\.0004 * 3\.0000" $log | wc -l`
+CRIT2=`$GREP "\@1 H * 32\.2659 * 31\.6749 * 0*\.5910 * 0*\.6669 * 15\.2184 * 13\.9511 * 0*\.2725" $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[13]=4
 ERROR[13]="SUMMARY OF INITIAL SHIELDINGS NOT CORRECT"
@@ -339,12 +339,12 @@ CTRL[19]=4
 ERROR[19]="MAGNETIZABILITIES AT EFFECTIVE GEOMETRY NOT CORRECT"
 
 # g-tensor at effective geometry
-CRIT1=`$GREP "Bx * 0*\.41392167[0-1][0-9][0-9][0-9] * (\-0| \-)\.000000002[0-9][0-9][0-9] * (\-0|\-|0| )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-)\.000000009[0-9][0-9][0-9] * 0*\.46853876[0-9]* * (\-0|\-|0| )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0|\-|0| )\.000000000000 * (\-0|\-|0| )\.000000000000 * 0*\.46853868(8|9)[0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * 0*\.4139216[67].* * -0*\.000000002[0-9]* * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-0*\.000000009[0-9]* * 0*\.46853876[0-9]* * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 * 0*\.46853868" $log | wc -l`
 TEST[20]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[20]=3
-ERROR[20]="G-TENSOR AT EFFECTIVE GEOMETRY NOT CORRECT"
+ERROR[20]="ROTATIONAL G-TENSOR AT EFFECTIVE GEOMETRY NOT CORRECT"
 
 # Chemical shielding tensors at effective geometry
 CRIT1=`$GREP "N * x * 290*\.4388[0-9][0-9][0-9][0-9] * 0*\.000000[0-9][0-9] * (\-0|\-|0| )\.00000000" $log | wc -l`

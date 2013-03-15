@@ -48,7 +48,6 @@ cat > rsp_prop_file.dal <<'%EOF%'
 .RUN RESPONSE
 **INTEGRALS
 .DIPLEN
-*END OF HERMIT
 **WAVE FUNCTIONS
 .HF
 *SCF INPUT
@@ -61,7 +60,7 @@ cat > rsp_prop_file.dal <<'%EOF%'
 .DIPLEN
 .THCLR
 1.0D-9
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################
@@ -82,7 +81,7 @@ fi
 # Test af Energy
 #
 
-CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy =    * \-112\.3536975097" $log | wc -l`
+CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy =    * \-112\.353697509" $log | wc -l`
 TEST[1]=`expr $CRIT1 ` 
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
@@ -90,12 +89,12 @@ ERROR[1]="ENERGY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
 #
 # Test of HF polarizability
 #
-CRIT1=`$GREP " #  2 1 * <<XDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  6\.184388" $log | wc -l`
-CRIT2=`$GREP " #  3 1 * <<XDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  ( |0)\.023252" $log | wc -l`
-CRIT3=`$GREP " #  4 1 * <<XDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.019988" $log | wc -l`
-CRIT4=`$GREP " #  5 1 * <<YDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  2\.461314" $log | wc -l`
-CRIT5=`$GREP " #  6 1 * <<YDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.000141" $log | wc -l`
-CRIT6=`$GREP " #  7 1 * <<ZDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  10\.308148" $log | wc -l`
+CRIT1=`$GREP " #  2 1 * <<XDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *     2\.461169" $log | wc -l`
+CRIT2=`$GREP " #  3 1 * <<XDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *    0*\.00000" $log | wc -l`
+CRIT3=`$GREP " #  4 1 * <<XDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *    0*\.00000" $log | wc -l`
+CRIT4=`$GREP " #  5 1 * <<YDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *     6\.184500" $log | wc -l`
+CRIT5=`$GREP " #  6 1 * <<YDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  \-0*\.016158" $log | wc -l`
+CRIT6=`$GREP " #  7 1 * <<ZDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *    10\.308181" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[2]=6
 ERROR[2]="HF POLARZABILITY NOT CORRECTLY WRITTEN TO PROPERTY FILE"

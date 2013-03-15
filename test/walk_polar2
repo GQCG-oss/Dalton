@@ -140,8 +140,8 @@ CTRL[4]=1
 ERROR[4]="INITIAL HF ENERGY NOT CORRECT"
 
 # MCSCF energy, 1st iteration:
-CRIT1=`$GREP "MP2 second order energy \: * \-224\.9639138(3|4).[0-9]" $log | wc -l`
-CRIT2=`$GREP "Final MCSCF energy\: * \-224\.5185239102[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "MP2 second order energy \: * \-224\.963913" $log | wc -l`
+CRIT2=`$GREP "Final MCSCF energy\: * \-224\.5185239102" $log | wc -l`
 TEST[5]=`expr $CRIT1  \+ $CRIT2`
 CTRL[5]=2
 ERROR[5]="INITIAL MCSCF ENERGY IS NOT CORRECT"
@@ -158,8 +158,8 @@ ERROR[6]="INITIAL OCCUPANCIES NOT CORRECT"
 
 # SCF energy, 1st iteration:
 CRIT1=`$GREP "Total energy * \-224\.518523910[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-6109\.4596430[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589473\.299[0-9] kJ\/mol" $log | wc -l`
+CRIT2=`$GREP "\-6109\.4598163[0-9] eV" $log | wc -l`
+CRIT3=`$GREP "\-589473\.293[0-9] kJ\/mol" $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="INITIAL ENERGY NOT CORRECT"
@@ -195,23 +195,23 @@ CTRL[10]=3
 ERROR[10]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "OP * 1 * (0| )\.0043859..[0-9] * (0| )\.0169374..[0-9] * (0| )\.0000000000" $log | wc -l`
-CRIT2=`$GREP "OP * 2 * (0| )\.0043859..[0-9] * (\-0|\-)\.0169374..[0-9] * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "OP *_1 * (0| )\.0043859..[0-9] * (0| )\.0169374..[0-9] * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "OP *_2 * (0| )\.0043859..[0-9] * (\-0|\-)\.0169374..[0-9] * (0| )\.0000000000" $log | wc -l`
 TEST[11]=`expr $CRIT1  \+ $CRIT2`
 CTRL[11]=4
 ERROR[11]="INITIAL STEP NOT CORRECT"
 
 # Geometry, 2nd iteration:
-CRIT1=`$GREP "OP * 1 * 1\.2678362..[0-9] * 2\.0618393..[0-9] * (0| )\.0000000000" $log | wc -l`
-CRIT2=`$GREP "OP * 2 * 1\.2678362..[0-9] * \-2\.0618393..[0-9] * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "OP *_1 * 1\.2678362..[0-9] * 2\.0618393..[0-9] * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "OP *_2 * 1\.2678362..[0-9] * \-2\.0618393..[0-9] * (0| )\.0000000000" $log | wc -l`
 TEST[12]=`expr $CRIT1  \+ $CRIT2`
 CTRL[12]=4
 ERROR[12]="SECOND GEOMETRY NOT CORRECT"
 
 # Energy, 2nd iteration:
-CRIT1=`$GREP "Total energy * \-224\.51875646.[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-6109\.465971(2|3)[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589473\.910[0-9] kJ\/mol" $log | wc -l`
+CRIT1=`$GREP "Total energy * \-224\.51875646[0-9]* au \(Hartrees\)" $log | wc -l`
+CRIT2=`$GREP "\-6109\.466144[0-9]* eV" $log | wc -l`
+CRIT3=`$GREP "\-589473\.904[0-9] kJ\/mol" $log | wc -l`
 TEST[13]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[13]=3
 ERROR[13]="SECOND ENERGY NOT CORRECT"
@@ -264,8 +264,8 @@ ERROR[17]="DIPOLE MOMENT GRADIENT NOT CORRECT"
 
 # Cioslowski charges:
 CRIT1=`$GREP "OS * (0| )\.38364[0-9]" $log | wc -l`
-CRIT2=`$GREP "OP * 1 * (\-0|\-)\.19182[0-9]" $log | wc -l`
-CRIT3=`$GREP "OP * 2 * (\-0|\-)\.19182[0-9]" $log | wc -l`
+CRIT2=`$GREP "OP *_1 * (\-0|\-)\.19182[0-9]" $log | wc -l`
+CRIT3=`$GREP "OP *_2 * (\-0|\-)\.19182[0-9]" $log | wc -l`
 TEST[18]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[18]=3
 ERROR[18]="CIOSLOWSKI CHARGES NOT CORRECT"
@@ -295,7 +295,7 @@ CTRL[20]=12
 ERROR[20]="DYNAMIC POLARIZABILITIES NOT CORRECT"
 
 # Rotational constants:
-CRIT1=`$GREP "103752\.210[0-9] * 13259\.75[1-2][0-9] * 11757\.16.[0-9] MHz" $log | wc -l`
+CRIT1=`$GREP "103752\.2(09|10)[0-9]* * 13259\.75[0-9]* * 11757\.16[0-9]* MHz" $log | wc -l`
 CRIT2=`$GREP "3\.46080[0-9] * (0| )\.44229[0-9] * (0| )\.39217[0-9] cm\-1" $log | wc -l`
 TEST[21]=`expr $CRIT1  \+ $CRIT2`
 CTRL[21]=2

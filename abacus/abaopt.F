@@ -1,39 +1,29 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include "single.h"
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C
 C FILE: abaopt.F
+#include "single.h"
 C
 C 950915-vebjornb: New module taking care of optimizations.
 C                  It uses both the old cbiwlk.h and the new optinf.h
@@ -54,24 +44,24 @@ C  /* Deck opinpu */
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE FIRST
-      DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC',
-     &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
-     &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA',
-     &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ',
-     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG',
-     &            '.INITHE', '.INITEV', '.HESFIL', '.REJINI', 
-     &            '.STEEPD', '.RANKON', '.PSB   ', '.DFP   ',
-     &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG',
-     &            '.HELLMA', '.BAKER ', '.M-BFGS', '.CARTES',
-     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD',
-     &            '.GRDINI', '.DISPLA', '.CONSTR', '.MODHES',
-     &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD',
-     &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE',
-     &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
-     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL',
-     &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA',
-     &            '.ADDCRD', '.NOADDA', '.RREDUN', '.NATNRM',
-     &            '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT',
+      DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC', !  4
+     &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY', !  8
+     &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA', ! 12
+     &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ', ! 16
+     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG', ! 20
+     &            '.INITHE', '.INITEV', '.HESFIL', '.REJINI', ! 24
+     &            '.STEEPD', '.RANKON', '.PSB   ', '.DFP   ', ! 28
+     &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG', ! 32
+     &            '.HELLMA', '.BAKER ', '.M-BFGS', '.CARTES', ! 36
+     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD', ! 40
+     &            '.GRDINI', '.DISPLA', '.CONSTR', '.MODHES', ! 44
+     &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD', ! 48
+     &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE', ! 52
+     &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ', ! 56
+     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL', ! 60
+     &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA', ! 64
+     &            '.ADDCRD', '.NOADDA', '.RREDUN', '.NATNRM', ! 68
+     &            '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT', ! 72
      &            '.NOHSWR', '.FREEZE', '.FRZITR'/
 C
       DATA FIRST /.TRUE./
@@ -149,7 +139,7 @@ C
       VREIGV = .FALSE.
       VRCORD = .FALSE.
       VRVIBA = .FALSE.
-      VRSYMM = .FALSE.
+      VRML_SYM = .FALSE.
       TRSTCH = .FALSE.
       TRSTFC = .FALSE.
       IPRINT = 0
@@ -158,7 +148,7 @@ C
       TRSTDE = 0.7D0
       RTENBD = 0.4D0
       RTENGD = 0.8D0
-      RTRJMN = -0.1D0
+      RTRJMN = 0.1D0
       RTRJMX = 3.0D0
       LNSRCH = .FALSE.
       RATFUN = .FALSE.
@@ -412,7 +402,8 @@ C
             GOTO 100
  54         VRVIBA = .TRUE.
             GOTO 100
- 55         VRSYMM = .TRUE.
+C           .VR-SYM
+ 55         VRML_SYM = .TRUE.
             GOTO 100
  56         MULTI = .TRUE.
             PSB = .TRUE.
@@ -540,7 +531,7 @@ C
      &        ' Bonds will be drawn between nearby atoms.'
          IF (VRCORD) WRITE(LUPRI,'(A)')
      &        ' Coordinate axes will be drawn.'
-         IF (VRSYMM) THEN
+         IF (VRML_SYM) THEN
             WRITE(LUPRI,'(A/A)')
      &        ' Symmetry elements will be visualized.',
      &        ' Please note that symmetry should NOT be explicitly' //
@@ -1065,17 +1056,15 @@ C
          END IF
       END IF
 C
-#ifdef VAR_LINSCA
-      IF (BAKER) THEN
-         WRITE(LUPRI,'(/,A)')' ERROR! Can not use .BAKER when ' //
-     &        'running linsca. Only NATNRM can be used!'
-         CALL QUIT('Conflicting specifications of ' //
-     &        'convergence setup in '//WORD1)
-      END IF
-#endif     
       IF (BAKER) THEN
          WRITE(LUPRI,'(/A/)')
      &        ' Baker''s convergence criteria will be used.'
+#ifdef VAR_LINSCA
+         WRITE(LUPRI,'(/A)')' ERROR! Can not use .BAKER when ' //
+     &        'running linsca. Only NATNRM can be used!'
+         CALL QUIT('Conflicting specifications of ' //
+     &        'convergence setup in '//WORD1)
+#endif     
          IF (NATNRM) THEN
             WRITE(LUPRI,'(/A/)')
      &        ' INFO:  .NATNRM is ignored when .BAKER requested!'
@@ -1308,7 +1297,7 @@ C
      &        ' Bonds will be drawn between nearby atoms.'
          IF (VRCORD) WRITE(LUPRI,'(A)')
      &        ' Coordinate axes will be drawn.'
-         IF (VRSYMM) THEN
+         IF (VRML_SYM) THEN
             WRITE(LUPRI,'(A/A)')
      &        ' Symmetry elements will be visualized.',
      &        ' Please note that symmetry should NOT be explicitly' //
@@ -1467,7 +1456,7 @@ C
 C#if defined (VAR_MPI)
 C      IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
 C         IJOB = 0
-C         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
+C         CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MASTER),
 C     &                  MPI_COMM_WORLD,IERR)
 C      END IF
 C#endif      
@@ -1500,7 +1489,7 @@ C  /* Deck runopt */
 #include "cbiwlk.h"
 #include "molde.h"
 #include "numder.h"
-      LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
+      LOGICAL EXHER, EXSIR, EXABA, MINEND, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP
       CHARACTER TMPLIN*80, WRDRSP*7
       DIMENSION EGRAD(MXCOOR), CSTEP(MXCOOR), SCLVEC(MXCOOR)
@@ -1547,7 +1536,6 @@ C
       ACTIVE = .FALSE.
       KEPTIT = 0
       GEINFO(0,5) = TRSTRA
-      IWOFF = 0
 C
 C     Perform preoptimization if requested.
 C
@@ -1566,13 +1554,13 @@ C     first order method with initial Hessian.
 C
       IF (NEWTON .OR. INITHS) THEN
          CALL GTHESS(EGRAD,WORK(KEHESS),WORK(KALHES),EXHER,EXSIR,EXABA,
-     &        WORK(KWRK1),LWRK1,IWOFF,WRKDLM)
+     &        WORK(KWRK1),LWRK1,WRKDLM)
 C
 C     First order methods only require the energy and the gradient.
 C
       ELSE
          CALL GTGRAD(EGRAD, EXHER,EXSIR,EXABA,
-     &        WORK(KWRK1),LWRK1,IWOFF,WRKDLM)
+     &        WORK(KWRK1),LWRK1,WRKDLM)
       END IF
 C
 C     Make VRML-file of initial geometry if requested.
@@ -1583,8 +1571,8 @@ C
          KEVC1  = KEVEC  + MXCOOR*MXCOOR
          KEVC2  = KEVC1  + MXCOOR
          KWRK2  = KEVC2  + MXCOOR
-         LWRK   = LWORK  - (KWRK2 - IWOFF) + 1
-         IF (KWRK2-IWOFF .GT. LWORK) CALL STOPIT('RUNOPT',' ',
+         LWRK   = LWORK  - KWRK2 + 1
+         IF (KWRK2 .GT. LWORK) CALL STOPIT('RUNOPT',' ',
      &        KWRK2,LWORK)
          CALL MKVRML(.FALSE.,WORK(KATARR),MXCOOR,WORK(KEVEC),
      &        WORK(KEVC1),WORK(KEVC2))
@@ -1674,8 +1662,7 @@ C emg -----------------------------------------------------------------
             CALL TRAHES(HESMOL,MXCOOR,WORK(KH2),WORK(KCSTRA),
      &                  WORK(KSCTRA),MXCOOR,NUCDEP*3,1)
          ENDIF 
-         CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,
-     &              IWOFF,WRKDLM)
+         CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,WRKDLM)
          CALL GPOPEN(LUHES,'midasifc.ederivs','UNKNOWN',' ',
      &            'FORMATTED', IDUMMY,.FALSE.)
          WRITE(LUHES,'(I6)') 3*NUCDEP
@@ -1792,7 +1779,7 @@ C
 C
       IF (.NOT. GECONV) CALL FNDGEO(CSTEP,EGRAD,WORK(KTEMP1),
      &     WORK(KTEMP2),EXHER,EXSIR,EXABA,WORK(KWRK2),LWRK2,
-     &     IWOFF,WRKDLM,IREJ,GEINFO,NEWSTP)
+     &     WRKDLM,IREJ,GEINFO,NEWSTP)
       IF (NEWSTP) GOTO 755
       GEINFO(0,2) = GRADNM
       GEINFO(0,4) = STPNRM
@@ -1882,10 +1869,10 @@ C     We go through the same procedure as for the first iteration.
 C
          IF (NEWTON) THEN
             CALL GTHESS(EGRAD,WORK(KEHESS),WORK(KALHES),
-     &           EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,IWOFF,WRKDLM)
+     &           EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,WRKDLM)
          ELSE
-            CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,
-     &           IWOFF,WRKDLM)
+            CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,
+     &           WORK(KWRK1),LWRK1,WRKDLM)
          END IF
 C hj aug 99: reset hermit/abacus print to lower level for following iter.
          IPRUSR = IPRUSR_reduced
@@ -2011,7 +1998,7 @@ C
          NEWSTP = .FALSE.
          IF ((.NOT. GECONV) .AND. ((.NOT. BRKSYM) .OR. NOBRKS))
      &        CALL FNDGEO(CSTEP,EGRAD,WORK(KTEMP1),WORK(KTEMP2),EXHER,
-     &        EXSIR,EXABA,WORK(KWRK2),LWRK2,IWOFF,WRKDLM,IREJ,
+     &        EXSIR,EXABA,WORK(KWRK2),LWRK2,WRKDLM,IREJ,
      &        GEINFO,NEWSTP)
          IF (NEWSTP) GOTO 756
          GEINFO(ITRNMR,2) = GRADNM
@@ -2127,13 +2114,13 @@ C
 C
 C     We check to see if there is any properties to be calculated
 C
-         WORK(IWOFF+1) = WRKDLM
+         WORK(1) = WRKDLM
          WRINDX = .TRUE.
 Chj aug 99: reset IPRUSR to original level
          IPRUSR = IPRUSR_orig
          IPREAD = IPREAD_orig
-         CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
-         CALL EXEABA(WORK,LWORK,WRKDLM)
+         CALL ABAINP('**PROPE',WORK(2),LWORK)
+         CALL EXEABA(WORK,LWORK-1,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
 C
@@ -2148,10 +2135,10 @@ C
          IF (WRDRSP .EQ. '**RESPO') THEN
             REWIND (LUCMD)
             RNRESP = .TRUE.
-            CALL SETSIR(WORK(IWOFF + 2),LWORK)
+            CALL SETSIR(WORK(2),LWORK)
             CALL GPCLOSE(LUSIFC,'KEEP')
             CALL GPCLOSE(LUCMD,'KEEP')
-            CALL RSPDRV(WORK(IWOFF + 2),LWORK)
+            CALL RSPDRV(WORK(2),LWORK)
          ELSE
             GOTO 133
          END IF
@@ -2160,15 +2147,15 @@ C
 C
 C     Single point energy is calculated if requested.
 C
-         WORK(IWOFF+1) = WRKDLM
+         WORK(1) = WRKDLM
          IF (DOSPE) CALL SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,
-     &           LWORK,IWOFF,WRKDLM)
+     &           LWORK,WRKDLM)
 C
 C     Final results are printed, partially through PRIINF.
 C
          IF (MOLDEN) CALL MOGECON(.TRUE.,DUMMY)
          CALL TITLER(' End of Optimization ','<',120)
-         CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
+         CALL PRIINF(GEINFO,WORK(2),LWORK)
          WRITE(LUPRI,*)
          IF (CONOPT) THEN
             WRITE(LUPRI,*) 'Constrained optimization converged in ',
@@ -2229,7 +2216,7 @@ C     No single point energy has been calculated.
          TMPLOG = DOSPE
          DOSPE = .FALSE.
          CALL TITLER('Optimization Control Center','<',120)
-         CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
+         CALL PRIINF(GEINFO,WORK(2),LWORK)
          DOSPE = TMPLOG
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'WARNING: Geometry has NOT converged!'
@@ -2426,7 +2413,7 @@ C
       END
 
 C  /* Deck gtnrgy */
-      SUBROUTINE GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,WRKDLM)
 C
 C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
@@ -2453,16 +2440,16 @@ C
 #endif
 Cef begin
 #ifndef VAR_LINSCA
-#include <incore.h>
+#include "incore.h"
 #endif
 Cef end
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
       REAL EXCQQ2
       CALL QENTER('GTNRGY')
-      WORK(IWOFF+1) = WRKDLM
+      WORK(1) = WRKDLM
       IF (.NOT. EXHER) THEN
-         CALL EXEHER(WORK,LWORK,WRKDLM)
+         CALL EXEHER(WORK,LWORK-1,WRKDLM)
          EXHER  = .TRUE.
          NEWGEO = .TRUE.
          NPCMIN = .TRUE.
@@ -2496,14 +2483,14 @@ C        *** reassign the symmetry of the frozen core    ***
 C        *** orbitals. tar 01-2001                       ***
 C
          IF (NMWALK.AND.DOCCSD) THEN
-            KWORD = IWOFF + 2
+            KWORD = 2
             KLAST = KWORD + 80*KMLINE
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded ' //
      &                                       'in fndexs.')
             CALL FNDEXS(WORK(KWORD),IPRINT)
          END IF
 C
-         CALL EXESIR(WORK,LWORK,WRKDLM)
+         CALL EXESIR(WORK,LWORK-1,WRKDLM)
 C
 C        Reduce gradient criterion for DFT optimization
 C
@@ -2527,13 +2514,13 @@ C
 #ifdef VAR_LINSCA
 #ifdef MOD_CC
             CALL CC_GEOFLAG
-            CALL EXECC(WORK,LWORK,WRKDLM)
+            CALL EXECC(WORK,LWORK-1,WRKDLM)
 #else
             CALL QUIT('CC disabled in this build')
 #endif
 #else
             CALL CC_GEOFLAG
-            CALL EXECC(WORK,LWORK,WRKDLM)
+            CALL EXECC(WORK,LWORK-1,WRKDLM)
 #endif
          ENDIF
          EXSIR = .TRUE.
@@ -2629,7 +2616,7 @@ Cdj moved from gtgrad
       END
 
 C  /* Deck gtgrad */
-      SUBROUTINE GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK,LWORK,WRKDLM)
 C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
@@ -2659,14 +2646,19 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR)
       CALL QENTER('GTGRAD')
-      WORK(IWOFF+1) = WRKDLM
-      KFREE = IWOFF + 2
+      WORK(1) = WRKDLM
+      KFREE = 2
       LFREE = LWORK - KFREE + 1
       CALL DZERO(EGRAD,MXCOOR)
       
       EXESG = FNDKEY('*ESG   ')
+#if defined (VAR_PARIO)
+! WARNING! do not activate VAR_PARIO without fixing
+!          the PARIO code !!!! /Feb 2011 hjaaj
       IF ((.NOT.PARIO) .OR. (MYNUM .EQ. 0)) THEN
-         CALL GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,IWOFF,WRKDLM)
+#endif
+         CALL GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,WRKDLM)
+#if defined (VAR_PARIO)
       ELSE
 chj-s-090516
 chj      HRINPC = .FALSE.
@@ -2679,6 +2671,7 @@ C        indicates that LUONEL will NOT be written.
          CALL READIN(WORK(KFREE),LFREE,.FALSE.)
 chj-e-090516
       END IF
+#endif
 C
 C     Find out if we are running an excited state calculation
 #ifdef VAR_LINSCA
@@ -2698,7 +2691,7 @@ C
          CALL FNDANA(NAORDR)
 C
          IF (NAORDR.EQ.0) THEN 
-            CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
+            CALL NUMGRD(WORK,LWORK,WRKDLM)
          ELSE
             WRINDX = .TRUE.
             MOLGRD = .TRUE.
@@ -2713,8 +2706,8 @@ C
 #endif
             END IF
 C        *** For numerical differentiation (vibrational ***
-C        *** average), we don't nescesary calculate all ***
-C        *** properties.                                ***
+C        *** average), we don't nescesarily calculate   ***
+C        *** all properties.                            ***
 C
             IF (.NOT.CNMPRP) THEN
                CALL NVBPIN(IPRINT)
@@ -2724,16 +2717,16 @@ C
 #ifdef VAR_LINSCA
 #ifdef MOD_CC
                CALL CC_GEOFLAG
-               CALL EXECC(WORK,LWORK,WRKDLM)
+               CALL EXECC(WORK,LWORK-1,WRKDLM)
 #else
                CALL QUIT('CC disabled in this build')
 #endif
 #else
                CALL CC_GEOFLAG
-               CALL EXECC(WORK,LWORK,WRKDLM)
+               CALL EXECC(WORK,LWORK-1,WRKDLM)
 #endif
             ELSE
-               CALL EXEABA(WORK,LWORK,WRKDLM)
+               CALL EXEABA(WORK,LWORK-1,WRKDLM)
             END IF
             EXABA = .TRUE.
             MOLGRD = .FALSE.
@@ -2753,7 +2746,7 @@ C
 
 C  /* Deck gthess */
       SUBROUTINE GTHESS(EGRAD,EHESS,ALLHES,EXHER,EXSIR,EXABA,
-     &                                 WORK,LWORK,IWOFF,WRKDLM)
+     &                                 WORK,LWORK,WRKDLM)
 C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
@@ -2777,12 +2770,12 @@ C
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
       CALL QENTER('GTHESS')
-      WORK(IWOFF+1) = WRKDLM
-      KFREE = IWOFF + 2
+      WORK(1) = WRKDLM
+      KFREE = 2
       LFREE = LWORK - KFREE + 1
       CALL DZERO(EGRAD,MXCOOR)
       CALL DZERO(EHESS,MXCOOR*MXCOOR)
-      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
+      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,WRKDLM)
 #ifdef VAR_LINSCA
       CLOSE (13)
 #endif
@@ -2808,7 +2801,7 @@ C
          CALL NVBPIN(IPRINT)
       END IF
 C
-      CALL EXEABA(WORK,LWORK,WRKDLM)
+      CALL EXEABA(WORK,LWORK-1,WRKDLM)
       EXABA = .TRUE.
       START = .FALSE.
       MOLGRD = .FALSE.
@@ -5582,9 +5575,11 @@ C
      &           'Trust radius squarely decreased due to bad ratio.'
             TRSTRA = TRSTDE*TRSTDE*STPNRM
          ELSE
-            WRITE(LUPRI,'(/A/A,F12.6)')
-     &           ' Step rejected because ratio between predicted',
-     &           ' and actual energy change is : ', RATIO
+            WRITE(LUPRI,'(/A,2(/A,F14.8),/A,F14.2)')
+     &           ' Step rejected because ratio between',
+     &           '        actual energy change :', ERGDIF,
+     &           ' and predicted energy change :', ERGPRD,
+     &           '                          is :', RATIO
             REJGEO = .TRUE.
          END IF
       ELSE IF (RATIO .LT. RTENBD) THEN
@@ -6398,7 +6393,7 @@ C
       
 C  /* Deck fndgeo */
       SUBROUTINE FNDGEO(CSTEP,EGRAD,COONEW,COOOLD,EXHER,EXSIR,EXABA,
-     &     WORK,LWORK,IWOFF,WRKDLM,IREJ,GEINFO,NEWSTP)
+     &     WORK,LWORK,WRKDLM,IREJ,GEINFO,NEWSTP)
 C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
@@ -6486,7 +6481,7 @@ C
 C
 C     Memory trap has to be reinitialized.
 C
-         WORK(IWOFF+1) = WRKDLM
+         WORK(1) = WRKDLM
 C
 C     Calculate energy at new geometry, which is compared to predicted
 C     energy(change) in UPTRAD.
@@ -6494,7 +6489,7 @@ C     The temporary update of ITRNMR is in case the molecule input is
 C     provided in the DALTON input file
 C
          ITRNMR = ITRNMR + 1
-         CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
+         CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,WRKDLM)
          ITRNMR = ITRNMR - 1
          IF (IREJ .EQ. 0 .AND. .NOT. ESG) THEN
             CALL UPTRAD(REJGEO)
@@ -6659,7 +6654,7 @@ C
 C     Otherwise we give up...
 C
          ELSE
-            CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
+            CALL PRIINF(GEINFO,WORK(2),LWORK)
             WRITE(LUPRI,*) 'Maximum number of rejected steps (',MAXREJ,
      &        ') reached.'
             WRITE(LUPRI,'(A)') 'No acceptable step found. Aborting.'
@@ -6697,6 +6692,7 @@ C
       DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT), JCO(MXAQN,MXCENT)
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR), IQM(MXCENT)
       DIMENSION TMPMAT(NCRTOT*NCRTOT), Q(MXCENT)
+      DIMENSION RADIUS_PCM(MXCENT), ALPHA_PCM(MXCENT)
 #include "ibtfun.h"
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
@@ -6865,8 +6861,9 @@ C
       DO 50 J = 1, NONTYP
          CALL UPCASE(MLINE(I))
          IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
-            CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM,JCO(1,J),MXAQN,
-     &                 BASIS,ATOMBA,LMULBS,BSNM,KSPH)
+            CALL LINE5R(MLINE(I),Q(J),NONT(J),MBSI,IQM,JCO(1,J),MXAQN,
+     &                 BASIS,ATOMBA,LMULBS,BSNM,
+     &                 RADIUS_PCM(J), ALPHA_PCM(J))
          ELSE
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
@@ -6921,7 +6918,8 @@ C
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
          IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
             CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,BASIS,
-     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
+     &           ATOMBA,LMULBS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,
+     &           RADIUS_PCM(ITYP), ALPHA_PCM(ITYP))
          ELSE
             WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
          END IF
@@ -7125,6 +7123,7 @@ C
       RDMLIN = .FALSE.
       HRINPC = .FALSE.
       NEWSYM = .TRUE.
+      NEWBAS = .TRUE.
       KEEPHE = .TRUE.
       ERGOLD =  ENERGY
       CALL IZERO(NUCNUM, MXCENT*8)
@@ -7389,8 +7388,7 @@ C
       END
 
 C  /* Deck spnrgy */
-      SUBROUTINE SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,LWORK,
-     &                                                IWOFF,WRKDLM)
+      SUBROUTINE SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,LWORK,WRKDLM)
 C
 C     Calculates single point energy with another basis if requested.
 C
@@ -7418,10 +7416,10 @@ C
 C
 C     Initialization of new memory trap for programs.
 C
-      WORK(IWOFF+1) = WRKDLM
+      WORK(1) = WRKDLM
 C
       NEWSYM = .TRUE.
-      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
+      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,WRKDLM)
       GEINFO(ITRNMR+1,1) = ENERGY
       RETURN
       END
@@ -7912,7 +7910,7 @@ C
       END
 
 C  /* Deck numgrd */
-      SUBROUTINE NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE NUMGRD(WORK,LWORK,WRKDLM)
 C
 C     Performs a numerical differentiation in order to get an
 C     finite-difference molecular gradient for use in geometry optimization
@@ -7948,22 +7946,23 @@ C
 #include "gnrinf.h"
 #include "optinf.h"
 #include "infopt.h"
+
+#if defined (VAR_PARIO)
       SAVE FIRST
       DATA FIRST /.TRUE./
 C
-      CALL QENTER('NUMGRD')
-#if defined (VAR_MPI)
+! WARNING! do not activate VAR_PARIO without fixing
+!          the PARIO code !!!! /Feb 2011 hjaaj
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
          IF (FIRST) THEN
             FIRST = .FALSE.
          ELSE
-            IJOB = 1
-            CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
-     &                     MPI_COMM_WORLD,IERR)
             CALL PARIOT
          END IF
       END IF
 #endif
+
+      CALL QENTER('NUMGRD')
       IF (.NOT. CHGRDT) THEN
          GRDTHR = 1.0D-4
          THRSTP = GRDTHR
@@ -7980,7 +7979,6 @@ C
 C
 C     Call new numerical derivative routines.
 C
-      IWOTMP = IWOFF
       CALL NMDINI(IPRINT)
       IF (LUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP','OLD',
      &   ' ','FORMATTED',IDUMMY,.FALSE.)
@@ -7993,9 +7991,9 @@ C
  1110 CALL GPCLOSE(LUCMD,'KEEP')
       FCLASS = GROUP
       IF (NMORDR .LT. 1) NMORDR = 1
-      CALL NUMDRV(WORK,LWORK,IWOFF,IPRINT,WRKDLM)
-      IF (IWOTMP .NE. IWOFF) IWOFF = IWOTMP
+      CALL NUMDRV(WORK,LWORK,IPRINT,WRKDLM)
 C
       CALL QEXIT('NUMGRD')
       RETURN
       END
+C --- end of abaopt.F ---

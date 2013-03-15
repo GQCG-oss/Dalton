@@ -33,11 +33,11 @@ test='
 check_scf_energy DFT -76.379271941215 1e-11
 
 check_mol_gradient 1 "O     " 0.0  0.0            0.1639548715 1e-5
-check_mol_gradient 1 "H    1" 0.0 -0.1042084035  -0.0819821486 1e-5
-check_mol_gradient 1 "H    2" 0.0  0.1042084035  -0.0819821486 1e-5
+check_mol_gradient 1 "H   _1" 0.0 -0.1042084035  -0.0819821486 1e-5
+check_mol_gradient 1 "H   _2" 0.0  0.1042084035  -0.0819821486 1e-5
 check_final_geometry "O     " 0  0           -0.3086430823     1e-5
-check_final_geometry "H    1" 0  1.4411452515 0.8200236999     1e-5
-check_final_geometry "H    2" 0 -1.4411452515 0.8200236999     1e-5
+check_final_geometry "H   _1" 0  1.4411452515 0.8200236999     1e-5
+check_final_geometry "H   _2" 0 -1.4411452515 0.8200236999     1e-5
 
 #check_optimization_step 0
 #check_optimization_step 1

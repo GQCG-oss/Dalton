@@ -195,7 +195,7 @@ routines. These routines will detect any symmetry of a molecule
 by explicit testing for the occurrence of rotation axes, mirror planes
 and center of inversion. The occurrence of a symmetry element is
 tested in the program against a threshold which may be adjusted by the
-keyword \Key{SYMTHR} in the \Sec{READIN} input section. By default,
+keyword \Key{SYMTHR} in the \Sec{MOLBAS} input section. By default,
 the program will require
 geometries that are correct to the sixth decimal place in order to
 detect all symmetry elements.
@@ -294,10 +294,13 @@ atoms of this kind).
   \verb|Basis=pointcharge|\index{point charge}, the
   atoms in this block will be treated as point charges, that is,
   having only a charge but no basis functions attached to
-  them. Stuttgart effective core potentials (ECP) with corresponding
+  them.
+
+  Different effective core potentials (ECP) could be used when \verb|ATOMBASIS|
+  is specified. For instance, Stuttgart ECPs with corresponding
   Stuttgart double zeta basis sets\index{effective core
-  potentials}\index{ECP} can also by used by specifying
-  \verb|Basis=ecp-sdd-DZ|.
+  potentials}\index{ECP} can be used by specifying
+  \verb|Basis=ecp-sdd-DZ| \verb|ECP=ecp-sdd-DZ| (see \verb|test/rsp_ecp| for example).
 \item[Blocks] \verb|(Integers)|. Maximum angular quantum number + 1 used in the
 basis set for this atom type ($s=1$, $p=2$, etc.).
 Ignored if library basis sets are being used (\verb|BASIS| or
@@ -331,7 +334,7 @@ integral\index{performance of integral program} calculation.
   is the ordinary orbital basis or the auxiliary basis set needed for
   instance in certain r12 calculations, see
   Sec.~\ref{sec:r12aux}. The keyword is only active when the keyword
-  \Key{R12AUX} has been specified in the \Sec{READIN} input section.
+  \Key{R12AUX} has been specified in the \Sec{MOLBAS} input section.
 \end{description}
 \item[6] \verb|NAME X Y Z Isotope=18|
 \begin{description}
@@ -706,7 +709,7 @@ Examples are provided by the following input files:
 12:H      1.427450200000000    .000000000000000   0.986437000000000       *
 \end{verbatim}
 Note that the keyword \Key{R12AUX} must be specified in the 
-\Sec{READIN} input section to be able to read the above inputs.
+\Sec{MOLBAS} input section to be able to read the above inputs.
 
 \section{The basis sets supplied with \dalton }
 \label{sec:basislist}
@@ -915,14 +918,152 @@ ano-4 & H--Kr & \cite{kpbdpowbortca90} Roos ANO basis sets\\
 raf-r & O, Y--Pd, Hf--Tl, & Wahlgren/Faegri Relavistic Basis Set\\
  & Po, Th, U & \\
 \hline
-\multicolumn{3}{l}{\bf{\emph{Stuttgart effective core potentials}}} \\
-\multicolumn{3}{l}{\emph{(see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html)}} \\
-ecp-sdd-DZ & Li--Bi & Stuttgart ECP valence basis sets  \\
-           & \multicolumn{2}{l}{(some elements excluded)}  \\
-ecp-sdd-pseudo & H--Rn & Stuttgart ECPs. \\
-           & \multicolumn{2}{l}{(some elements excluded)}  \\
+\multicolumn{3}{l}{\bf{\emph{Effective core potential (ECP) basis sets}}} \\
+\multicolumn{3}{l}{\emph{Note}: ecp-sdd-DZ is Stuttgart ECP valence basis sets included in previous \dalton,}\\
+\multicolumn{3}{l}{see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html.}\\
+\multicolumn{3}{l}{Others are from EMSL with the EMSL name given in the third column,}\\
+\multicolumn{3}{l}{please check EMSL for complete reference.}\\
+aug\_cc\_pvdz\_pp & Cu-Kr, Y-Xe, & aug-cc-pVDZ-PP\\
+                  & Hf-Rn &\\
+aug\_cc\_pvtz\_pp & Cu-Kr, Y-Xe, & aug-cc-pVTZ-PP\\
+                  & Hf-Rn &\\
+aug\_cc\_pvqz\_pp & Cu-Kr, Y-Xe, & aug-cc-pVQZ-PP\\
+                  & Hf-Rn &\\
+aug\_cc\_pv5z\_pp & Cu-Kr, Y-Xe, & aug-cc-pV5Z-PP\\
+                  & Hf-Rn &\\
+cc\_pvdz\_pp & Cu-Kr, Y-Xe, & cc-pVDZ-PP\\
+             & Hf-Rn &\\
+cc\_pvtz\_pp & Cu-Kr, Y-Xe, & cc-pVTZ-PP\\
+             & Hf-Rn &\\
+cc\_pvqz\_pp & Cu-Kr, Y-Xe, & cc-pVQZ-PP\\
+             & Hf-Rn &\\
+cc\_pv5z\_pp & Cu-Kr, Y-Xe, & cc-pV5Z-PP\\
+             & Hf-Rn &\\
+cc\_pwcvdz\_pp & Cu, Zn, Y-Cd, & cc-pwCVDZ-PP\\
+               & I, Hf-Hg &\\
+cc\_pwcvtz\_pp & Cu, Zn, Y-Cd, & cc-pwCVTZ-PP\\
+               & I, Hf-Hg &\\
+cc\_pwcvqz\_pp & Cu, Zn, Y-Cd, & cc-pwCVQZ-PP\\
+               & I, Hf-Hg &\\
+cc\_pwcv5z\_pp & Cu, Zn, Y-Cd, & cc-pwCV5Z-PP\\
+               & Hf-Hg &\\
+crenbl\_ecp & H, Li-Uus & CRENBL ECP\\
+crenbs\_ecp & Sc-Zn, Y-Cd, La, & CRENBS ECP\\
+            & Hf-Rn, Rf-Uus &\\
+def2\_qzvp & H-La, Hf-Rn & Def2-QZVP\\
+def2\_qzvpp & H-La, Hf-Rn & Def2-QZVPP\\
+def2\_sv\_p & H-La, Hf-Rn & Def2-SV(P)\\
+def2\_svp & H-La, Hf-Rn & Def2-SVP\\
+def2\_tzvp & H-La, Hf-Rn & Def2-TZVP\\
+def2\_tzvpp & H-La, Hf-Rn & Def2-TZVPP\\
+dzq & Y-Ag & DZQ\\
+ecp-sdd-DZ & Li, B-F, Na-Cl, & Stuttgart ECP valence basis sets\\
+           & K-Sc, Cr-Kr, Sr, &\\
+           & Zr-Ba, Hf-Bi &\\
+hay\_wadt\_mb\_n1\_ecp & K-Cu, Rb-Ag, & Hay-Wadt MB (n+1) ECP\\
+                       & Cs-Au &\\
+hay\_wadt\_vdz\_n1\_ecp & K-Cu, Rb-Ag, & Hay-Wadt VDZ (n+1) ECP\\
+                        & Cs-Au &\\
+lanl08 & Na-La, Hf-Bi & LANL08\\
+lanl08\_f & Sc-Cu, Y-Ag, & LANL08(f)\\
+          & La, Hf-Au &\\
+lanl08\_p & Sc-Zn & LANL08+\\
+lanl08d & Si-Cl, Ge-Br, & LANL08d\\
+        & Sn-I, Pb-Bi &\\
+lanl2dz\_ecp & H, Li-La, Hf-Au, & LANL2DZ ECP\\
+             & Pb-Bi, U-Pu &\\
+lanl2dzdp\_ecp & C-F, Si-Cl, & LANL2DZdp ECP\\
+               & Ge-Br, Sn-I, &\\
+               & Pb-Bi &\\
+lanl2tz & Sc-Zn, Y-Cd, & LANL2TZ\\
+        & La, Hf-Hg &\\
+lanl2tz\_f & Sc-Cu, Y-Ag, & LANL2TZ(f)\\
+           & La, Hf-Au &\\
+lanl2tz\_p & Sc-Zn & LANL2TZ+\\
+modified\_lanl2dz & Sc-Cu, Y-Ag, & modified LANL2DZ\\
+                  & La, Hf-Au &\\
+sbkjc\_polarized\_p\_2d\_lfk & H-Ca, Ge-Sr, & SBKJC Polarized (p,2d) - LFK\\
+                             & Sn-Ba, Pb-Rn &\\
+sbkjc\_vdz\_ecp & H-Ce, Hf-Rn & SBKJC VDZ ECP\\
+sdb\_aug\_cc\_pvqz & Ga-Br, In-I & SDB-aug-cc-pVQZ\\
+sdb\_aug\_cc\_pvtz & Ga-Br, In-I  & SDB-aug-cc-pVTZ\\
+sdb\_cc\_pvqz & Ga-Kr, In-Xe & SDB-cc-pVQZ\\
+sdb\_cc\_pvtz & Ga-Kr, In-Xe & SDB-cc-pVTZ\\
+stuttgart\_rlc\_ecp & Li-Ca, Zn-Sr, & Stuttgart RLC ECP\\
+                    & In-Ba, Hg-Rn, &\\
+                    & Ac-Lr &\\
+stuttgart\_rsc\_1997\_ecp & K-Zn, Rb-Cd, & Stuttgart RSC 1997 ECP\\
+                          & Cs-Ba, Ce-Yb, &\\
+                          & Hf-Hg, Ac-Lr, &\\
+                          & Db &\\
+stuttgart\_rsc\_ano\_ecp & La-Lu & Stuttgart RSC ANO/ECP\\
+stuttgart\_rsc\_segmented\_ecp & La-Lu & Stuttgart RSC Segmented/ECP\\
 \hline
 \end{longtable}
 
+In the following, we give the comprehensive list of all ECPs included in \dalton,
+together with a list of the elements supported. The ecp-sdd-DZ is Stuttgart
+ECPs included in previous \dalton~(see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html),
+while others are from EMSL, please check EMSL for the complete reference to be cited.
 
-
+\setlongtables
+\begin{longtable}{lll}
+\multicolumn{3}{}{\bf ECPs included in \dalton\ distribution.} \\ 
+\hline \hline
+\bf{ECP name} & \bf{Elements} & \bf{EMSL name}\\
+\hline\hline
+\endfirsthead
+\multicolumn{3}{}{\bf{ECPs included in \dalton\ distribution.}} \\
+\hline \hline
+\bf{ECP name} & \bf{Elements} & \bf{EMSL name}\\
+\hline \hline
+\endhead
+\endfoot \endlastfoot
+aug\_cc\_pvdz\_pp & Cu-Kr, Y-Xe, Hf-Rn & aug-cc-pVDZ-PP\\
+aug\_cc\_pvtz\_pp & Cu-Kr, Y-Xe, Hf-Rn & aug-cc-pVTZ-PP\\
+aug\_cc\_pvqz\_pp & Cu-Kr, Y-Xe, Hf-Rn & aug-cc-pVQZ-PP\\
+aug\_cc\_pv5z\_pp & Cu-Kr, Y-Xe, Hf-Rn & aug-cc-pV5Z-PP\\
+cc\_pvdz\_pp & Cu-Kr, Y-Xe, Hf-Rn & cc-pVDZ-PP\\
+cc\_pvtz\_pp & Cu-Kr, Y-Xe, Hf-Rn & cc-pVTZ-PP\\
+cc\_pvqz\_pp & Cu-Kr, Y-Xe, Hf-Rn & cc-pVQZ-PP\\
+cc\_pv5z\_pp & Cu-Kr, Y-Xe, Hf-Rn & cc-pV5Z-PP\\
+cc\_pwcvdz\_pp & Cu, Zn, Y-Cd, I, Hf-Hg & cc-pwCVDZ-PP\\
+cc\_pwcvtz\_pp & Cu, Zn, Y-Cd, I, Hf-Hg & cc-pwCVTZ-PP\\
+cc\_pwcvqz\_pp & Cu, Zn, Y-Cd, I, Hf-Hg & cc-pwCVQZ-PP\\
+cc\_pwcv5z\_pp & Cu, Zn, Y-Cd, Hf-Hg & cc-pwCV5Z-PP\\
+crenbl\_ecp & Li-Uus & CRENBL ECP\\
+crenbs\_ecp & Sc-Zn, Y-Cd, La, Hf-Rn, Rf-Uus & CRENBS ECP\\
+def2\_qzvp & Rb-La, Hf-Rn & Def2-QZVP\\
+def2\_qzvpp & Rb-La, Hf-Rn & Def2-QZVPP\\
+def2\_sv\_p & Rb-La, Hf-Rn & Def2-SV(P)\\
+def2\_svp & Rb-La, Hf-Rn & Def2-SVP\\
+def2\_tzvp & Rb-La, Hf-Rn & Def2-TZVP\\
+def2\_tzvpp & Rb-La, Hf-Rn & Def2-TZVPP\\
+dzq & Y-Ag & DZQ\\
+ecp-sdd-DZ & Li-Mg, Si-Ce, Nd, Sm-Tb, & Stuttgart ECPs\\
+           & Ho, Yb-Bi, Rn &\\
+hay\_wadt\_mb\_n1\_ecp & K-Cu, Rb-Ag, Cs-La, Hf-Au & Hay-Wadt MB (n+1) ECP\\
+hay\_wadt\_vdz\_n1\_ecp & K-Cu, Rb-Ag, Cs-La, Ta-Au & Hay-Wadt VDZ (n+1) ECP\\
+lanl08 & Na-La, Hf-Bi & LANL08\\
+lanl08\_f & Sc-Cu, Y-Ag, La, Hf-Au & LANL08(f)\\
+lanl08\_p & Sc-Zn & LANL08+\\
+lanl08d & Si-Cl, Ge-Br, Sn-I, Pb-Bi & LANL08d\\
+lanl2dz\_ecp & Na-La, Hf-Au, Pb-Bi, U-Pu & LANL2DZ ECP\\
+lanl2dzdp\_ecp & Si-Cl, Ge-Br, Sn-I, Pb-Bi & LANL2DZdp ECP\\
+lanl2tz & Sc-Zn, Y-Cd, La, Hf-Au & LANL2TZ\\
+lanl2tz\_f & Sc-Cu, Y-Ag, La, Hf-Au & LANL2TZ(f)\\
+lanl2tz\_p & Sc-Zn & LANL2TZ+\\
+modified\_lanl2dz & Sc-Cu, Y-Ag, La, Hf-Au & modified LANL2DZ\\
+sbkjc\_polarized\_p\_2d\_lfk & Li-Ca, Ge-Sr, Sn-Ba, Pb-Rn & SBKJC Polarized (p,2d) - LFK\\
+sbkjc\_vdz\_ecp & Li-Ce, Hf-Rn & SBKJC VDZ ECP\\
+sdb\_aug\_cc\_pvqz & Ga-Br, In-I & SDB-aug-cc-pVQZ\\
+sdb\_aug\_cc\_pvtz & Ga-Br, In-I & SDB-aug-cc-pVTZ\\
+sdb\_cc\_pvqz & Ga-Kr, In-Xe & SDB-cc-pVQZ\\
+sdb\_cc\_pvtz & Ga-Kr, In-Xe & SDB-cc-pVTZ\\
+stuttgart\_rlc\_ecp & Li-Ca, Zn-Sr, In-Ba, Hg-Rn, Ac-Lr & Stuttgart RLC ECP\\
+stuttgart\_rsc\_1997\_ecp & K-Zn, Rb-Cd, Cs-Ba, Cs-Yb, & Stuttgart RSC 1997 ECP\\
+                          & Hf-Hg, Ac-Lr, Db &\\
+stuttgart\_rsc\_ano\_ecp & La-Lu & Stuttgart RSC ANO/ECP\\
+stuttgart\_rsc\_segmented\_ecp & La-Lu & Stuttgart RSC Segmented/ECP\\
+\hline
+\end{longtable}

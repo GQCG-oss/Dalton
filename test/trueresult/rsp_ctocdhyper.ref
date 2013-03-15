@@ -1,137 +1,153 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Henrik Koch,              University of Trondheim,      Norway     
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Mar  3 20:11:08 2005
-     Host name              : pi.biotech.kth.se                       
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
 
 
- Default print level:        0
+     Date and time (Linux)  : Wed Mar 16 17:45:59 2011 
+     Host name              : fe6                                     
 
-    Integral sections will be executed
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
-    Wave function sections will be executed
-    Dynamic molecular property section will be executed
-
-Starting in Integral Section -
-
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
 
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
-
-
- Default print level:        1
-
- * Nuclear model: Point charge
-
- Calculation of one- and two-electron Hamiltonian integrals.
-
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - dipole length integrals
-          - dipole velocity integrals
-          - Product between (r - r_go) and l_go for the  computation of CTOCD-DZ magnetizability in an  analytical way
-
-
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
 
-  Title Cards
-  -----------
+ WARNING -- line in ".mol" file truncated, line    2
+ Line from file: Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability through RESPONSE                                   
+ Truncated line: Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability through RES
 
-  Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability thr
-                                                                          
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability thr
+ 2:                                                                         
+    ------------------------------------------------------------------------
 
-  INFO from READIN: Threshold for discarding integrals was    1.00E-16
-  INFO from READIN: Threshold is reset to minimum value       1.00E-15
+  INFO from READIN: Threshold for discarding integrals was    1.00D-16
+  INFO from READIN: Threshold is reset to minimum value       1.00D-15
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
 
 
-  Symmetry Operations
-  -------------------
-
-  Symmetry operations: 2
-
-
-
-                      SYMGRP:Point group information
-                      ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: C2v
 
@@ -144,9 +160,9 @@ Point group: C2v
 
         |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
     Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
@@ -162,110 +178,101 @@ Point group: C2v
 
         | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
     A2  | A2   B2   B1   A1 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000   -0.000015
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000015
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    3
 
-  label    atoms   charge   prim    cont     basis
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  O           1       8      44      27      [11s7p2d|6s5p1d]                             
-  H           2       1       8       6      [5s1p|3s1p]                                  
+  O           1    8.0000    44    27      [11s7p2d|6s5p1d]                                   
+  H           2    1.0000     8     6      [5s1p|3s1p]                                        
   ----------------------------------------------------------------------
-  total:      3      10      60      39
+  total:      3   10.0000    60    39
   ----------------------------------------------------------------------
   Cartesian basis used.
   (Note that d, f, ... atomic GTOs are not all normalized.)
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates:  9
-
-   1   O        x      0.0000000000
-   2            y      0.0000000000
-   3            z      0.1241444240
-
-   4   H    1   x      0.0000000000
-   5            y      1.4315300000
-   6            z     -0.9852655760
-
-   7   H    2   x      0.0000000000
-   8            y     -1.4315300000
-   9            z     -0.9852655760
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.1241444240
+  H   / 1 :     4  x   0.0000000000    5  y   1.4315300000    6  z  -0.9852655760
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4315300000    9  z  -0.9852655760
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   3  2  3  1
+  Number of coordinates in each symmetry:     3    2    3    1
 
   Symmetry  A1  ( 1)
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
 
   Symmetry  B1  ( 2)
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
 
   Symmetry  B2  ( 3)
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
 
   Symmetry  A2  ( 4)
 
-   9   H     x    [  4  -   7 ]/2
+    9   H     x    [  4  -    7 ]/2
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
-  Max interatomic separation is    1.5151 Angstroms
-  between atoms "H    2" and "H    1".
+  Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -273,7 +280,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -281,9 +288,9 @@ Point group: C2v
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    0.616959          0.000000    1.000000    0.000000
-   IB    1.156693          0.000000    0.000000    1.000000
-   IC    1.773652          1.000000    0.000000    0.000000
+   IA       0.616959          0.000000    1.000000    0.000000
+   IB       1.156694          0.000000    0.000000    1.000000
+   IC       1.773652          1.000000    0.000000    0.000000
 
 
  Rotational constants
@@ -293,17 +300,17 @@ Point group: C2v
 
                A                   B                   C
 
-         819145.5197         436916.9613         284936.9173 MHz
-           27.323753           14.573981            9.504473 cm-1
+         819145.5126         436916.9575         284936.9149 MHz
+           27.323753           14.573981            9.504472 cm-1
 
 
-  Nuclear repulsion energy :    9.183706230245
+@  Nuclear repulsion energy :    9.183706230245
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              19   7  11   2
+  Number of orbitals in each symmetry:          19    7   11    2
 
 
   Symmetry  A1 ( 1)
@@ -322,11 +329,11 @@ Point group: C2v
    12     O        dxx       22
    13     O        dyy       25
    14     O        dzz       27
-   15     H        s         28  +  29
-   16     H        s         30  +  31
-   17     H        s         32  +  33
-   18     H        py        36  -  37
-   19     H        pz        38  +  39
+   15     H        s         28 +   29
+   16     H        s         30 +   31
+   17     H        s         32 +   33
+   18     H        py        36 -   37
+   19     H        pz        38 +   39
 
 
   Symmetry  B1 ( 2)
@@ -337,7 +344,7 @@ Point group: C2v
    23     O        px        16
    24     O        px        19
    25     O        dxz       24
-   26     H        px        34  +  35
+   26     H        px        34 +   35
 
 
   Symmetry  B2 ( 3)
@@ -348,60 +355,75 @@ Point group: C2v
    30     O        py        17
    31     O        py        20
    32     O        dyz       26
-   33     H        s         28  -  29
-   34     H        s         30  -  31
-   35     H        s         32  -  33
-   36     H        py        36  +  37
-   37     H        pz        38  -  39
+   33     H        s         28 -   29
+   34     H        s         30 -   31
+   35     H        s         32 -   33
+   36     H        py        36 +   37
+   37     H        pz        38 -   39
 
 
   Symmetry  A2 ( 4)
 
    38     O        dxy       23
-   39     H        px        34  -  35
+   39     H        px        34 -   35
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
   Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in HUCKEL is   0.00 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+          - dipole velocity integrals
+          - Product between (r - r_go) and l_go for the  computation of CTOCD-DZ magnetizability in an  analytical way
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.000015049426
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
- >>> Time used in DIPLEN is   0.00 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
-
- >>> Time used in DIPVEL is   0.00 seconds
-
-
- >>> Time used in RANGMO is   0.02 seconds
-
-
- >>> Time used in ONEDRV is   0.00 seconds
-
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:       75206 ( 24.7% )
  Megabytes written:                              0.866
 
+ >>> Time used in TWOINT is   0.18 seconds
+ >>>> Total CPU  time used in HERMIT:   0.20 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
- >>> Time used in TWOINT is   0.29 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.33 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
-
-- End of Integral Section
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
 
  *** Output from Huckel module :
@@ -411,22 +433,23 @@ Starting in Wave Function Section -
      Number of Huckel orbitals each symmetry:    4    1    2    0
 
  Huckel EHT eigenvalues for symmetry :  1
-          -20.808642      -2.105181      -0.685433       0.275513
+          -20.705520      -1.505990      -0.670643      -0.292535
 
  Huckel EHT eigenvalues for symmetry :  2
-           -0.623712
+           -0.616200
 
  Huckel EHT eigenvalues for symmetry :  3
-           -0.934274       0.107627
+           -0.731199      -0.257813
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Mar  3 20:11:09 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:45:59 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      Calculation of CTOCD-DZ diamagnetic part of the hypermagnetizability thr
                                                                              
 
@@ -435,21 +458,18 @@ Starting in Wave Function Section -
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
      Time-dependent Hartree-Fock calculation (random phase approximation).
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART HUCKEL" input option.
+ ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 39
 
      Spin multiplicity                         1
      Total number of symmetries                4
@@ -457,21 +477,21 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2   3   4
-                                       --  --  --  --
-     Total number of orbitals          19   7  11   2
-     Number of basis functions         19   7  11   2
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           39 |   19    7   11    2
+     Number of basis functions          39 |   19    7   11    2
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.                    
-      -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals              3   1   1   0
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-06
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -482,141 +502,178 @@ Starting in Wave Function Section -
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1  -75.8289971698       2.45D+00  -7.58D+01    3  1  1  0
+      Virial theorem: -V/T =      1.995901
+      MULPOP  O      -0.57; H   _1  0.28; H   _2  0.28; 
+ -----------------------------------------------------------------------------
+   2  -76.0524427034       3.70D-01  -2.23D-01    3  1  1  0
+      Virial theorem: -V/T =      2.001342
+      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+   3  -76.0600525846       8.30D-02  -7.61D-03    3  1  1  0
+      Virial theorem: -V/T =      2.001274
+      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+   4  -76.0607501246       1.70D-02  -6.98D-04    3  1  1  0
+      Virial theorem: -V/T =      2.000717
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+   5  -76.0607819964       5.18D-03  -3.19D-05    3  1  1  0
+      Virial theorem: -V/T =      2.000873
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+   6  -76.0607838687       1.92D-03  -1.87D-06    3  1  1  0
+      Virial theorem: -V/T =      2.000774
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
+   7  -76.0607842024       3.22D-04  -3.34D-07    3  1  1  0
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+   8  -76.0607842185       4.12D-05  -1.61D-08    3  1  1  0
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+   9  -76.0607842187       7.64D-06  -1.83D-10    3  1  1  0
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.02 seconds
-
-   1    -75.715298195801   3.64E+00  -7.57E+01    3  1  1  0
-   2    -76.044378618948   4.83E-01  -3.29E-01    3  1  1  0
-   3    -76.058493044188   2.06E-01  -1.41E-02    3  1  1  0
-   4    -76.060382568895   7.16E-02  -1.89E-03    3  1  1  0
-   5    -76.060764333559   1.35E-02  -3.82E-04    3  1  1  0
-   6    -76.060782809275   2.88E-03  -1.85E-05    3  1  1  0
-   7    -76.060784184566   4.45E-04  -1.38E-06    3  1  1  0
-   8    -76.060784217971   6.88E-05  -3.34E-08    3  1  1  0
-   9    -76.060784218643   1.51E-05  -6.72E-10    3  1  1  0
-  10    -76.060784218681   2.32E-06  -3.81E-11    3  1  1  0
-  11    -76.060784218682   2.93E-07  -8.30E-13    3  1  1  0
- DIIS converged in  11 iterations !
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    3    1    1    0
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -20.56238097    -1.35070291    -0.58322553     0.13488236     0.46314710
-         0.61795219     0.96390625     1.24752064
+  1    -20.56238159    -1.35070305    -0.58322522     0.13488243     0.46314718
+         0.61795236     0.96390620     1.24752055
 
- Hartree-Fock orbital energies, symmetry 2
+  2     -0.50746029     0.47365376     1.30684658     2.03588060     3.06713286
+         6.59507882
 
-        -0.50745989     0.47365391     1.30684668     2.03588082     3.06713276
-         6.59507912
+  3     -0.71596770     0.19110998     0.50061389     0.67340588     1.74928905
+         2.12363448
 
- Hartree-Fock orbital energies, symmetry 3
+  4      1.26154315     2.98152157
 
-        -0.71596731     0.19111002     0.50061393     0.67340607     1.74928910
-         2.12363466
-
- Hartree-Fock orbital energies, symmetry 4
-
-         1.26154317     2.98152148
-
-    E(LUMO) :     0.13488236 au (symmetry 1)
-  - E(HOMO) :    -0.50745989 au (symmetry 2)
+    E(LUMO) :     0.13488243 au (symmetry 1)
+  - E(HOMO) :    -0.50746029 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.64234224 au
+    gap     :     0.64234272 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.060784218682
+     Final HF energy:             -76.060784218676                 
      Nuclear repulsion:             9.183706230245
-     Electronic energy:           -85.244490448927
+     Electronic energy:           -85.244490448921
 
-     Final gradient norm:           0.000000293421
+     Final gradient norm:           0.000007644696
 
  
-     Date and time (Linux)  : Thu Mar  3 20:11:09 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:45:59 2011 
+     Host name              : fe6                                     
 
-     Molecular orbitals for symmetry species   1
+ (Only coefficients >0.0100 are printed.)
 
- Orbital          1        2        3
-   1  O   s      0.3905  -0.0859  -0.0284
-   2  O   s      0.4237  -0.1378  -0.0459
-   3  O   s      0.2819  -0.1215  -0.0431
-   4  O   s      0.0265   0.2173   0.0651
-   5  O   s      0.0055  -0.5023  -0.2007
-   6  O   s      0.0155   0.1756   0.2265
-   7  O   pz    -0.0012  -0.0103   0.0721
-   8  O   pz    -0.0004  -0.0234   0.1696
-   9  O   pz    -0.0002  -0.0499   0.2999
-  10  O   pz     0.0004  -0.0487   0.3172
-  11  O   pz    -0.0006  -0.0078   0.1975
-  12  O   dxx   -0.0029   0.0146   0.0070
-  13  O   dyy   -0.0030   0.0263   0.0015
-  14  O   dzz   -0.0030   0.0251  -0.0304
-  15  H   s      0.0003   0.0918  -0.0879
-  16  H   s      0.0001   0.0539  -0.1102
-  17  H   s     -0.0008   0.0066  -0.0189
-  18  H   py    -0.0001  -0.0144   0.0141
-  19  H   pz     0.0000   0.0099   0.0025
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   2
+    Orbital         1        2        3        4        5
+   1 O   :s      0.3905  -0.0859  -0.0284   0.0258   0.0135
+   2 O   :s      0.4237  -0.1378  -0.0459   0.0378   0.0306
+   3 O   :s      0.2819  -0.1215  -0.0431   0.0497  -0.0041
+   4 O   :s      0.0265   0.2173   0.0651  -0.2180  -0.2033
+   5 O   :s      0.0055  -0.5023  -0.2007  -0.1581  -0.0657
+   6 O   :s      0.0155   0.1756   0.2265  -0.9082  -0.1321
+   7 O   :pz    -0.0012  -0.0103   0.0721   0.0191  -0.0321
+   8 O   :pz    -0.0004  -0.0234   0.1696   0.0449  -0.1369
+   9 O   :pz    -0.0002  -0.0499   0.2999   0.0858   0.0069
+  10 O   :pz     0.0004  -0.0487   0.3172   0.0693  -0.7063
+  11 O   :pz    -0.0006  -0.0078   0.1975   0.2876   1.6736
+  12 O   :dxx   -0.0029   0.0146   0.0070  -0.0620  -0.1443
+  13 O   :dyy   -0.0030   0.0263   0.0015  -0.0507  -0.1683
+  14 O   :dzz   -0.0030   0.0251  -0.0304  -0.0614  -0.1732
+  15 H   :s      0.0003   0.0918  -0.0879   0.0285  -0.0105
+  16 H   :s      0.0001   0.0539  -0.1102  -0.0295   0.5540
+  17 H   :s     -0.0008   0.0066  -0.0189   0.9445   0.1271
+  18 H   :py    -0.0001  -0.0144   0.0141   0.0199  -0.0037
+  19 H   :pz     0.0000   0.0099   0.0025  -0.0117   0.0068
 
- Orbital          1
-   1  O   px     0.0819
-   2  O   px     0.1941
-   3  O   px     0.3396
-   4  O   px     0.3822
-   5  O   px     0.2591
-   6  O   dxz   -0.0383
-   7  H   px     0.0183
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   3
+    Orbital         1        2        3
+   1 O   :px     0.0819  -0.0403   0.0108
+   2 O   :px     0.1941  -0.1683   0.0187
+   3 O   :px     0.3396  -0.0020   0.0667
+   4 O   :px     0.3822  -0.8903  -0.0370
+   5 O   :px     0.2591   1.3740   0.0656
+   6 O   :dxz   -0.0383  -0.0021   0.9472
+   7 H   :px     0.0183   0.0056  -0.0833
 
- Orbital          1
-   1  O   py     0.0653
-   2  O   py     0.1529
-   3  O   py     0.2746
-   4  O   py     0.2860
-   5  O   py     0.1253
-   6  O   dyz   -0.0554
-   7  H   s      0.1438
-   8  H   s      0.1473
-   9  H   s      0.0368
-  10  H   py    -0.0096
-  11  H   pz     0.0163
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :py     0.0653   0.0306   0.0081
+   2 O   :py     0.1529   0.0600  -0.0127
+   3 O   :py     0.2746   0.1667   0.0964
+   4 O   :py     0.2860  -0.0539  -0.0558
+   5 O   :py     0.1253   0.9468   1.9322
+   6 O   :dyz   -0.0554   0.0253  -0.0628
+   7 H   :s      0.1438  -0.0176  -0.0539
+   8 H   :s      0.1473   0.1648  -1.1763
+   9 H   :s      0.0368  -2.0991  -0.4183
+  10 H   :py    -0.0096  -0.0204   0.0307
+  11 H   :pz     0.0163   0.0225  -0.0098
+
+ Molecular orbitals for symmetry species  4
+ ------------------------------------------
+
+    Orbital         1        2
+   1 O   :dxy    0.9129   0.7003
+   2 H   :px     0.1116  -0.8095
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:11:09 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:45:59 2011 
+     Host name              : fe6                                     
 
 
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
 
-  This is output from RESPONSE  -  an MCSCF and SOPPA response property program
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
  ------------------------------------------------------------------------------
-
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
 
 
  <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
@@ -633,12 +690,12 @@ Starting in Wave Function Section -
  Spin of operator B , ISPINB=    0
  Spin of operator C , ISPINC=    0
 
-  1 B-frequencies  0.000000E+00
-  1 C-frequencies  0.000000E+00
+  1 B-frequencies  0.000000D+00
+  1 C-frequencies  0.000000D+00
 
  Print level                                    : IPRHYP =   2
  Maximum number of iterations in lin.rsp. solver: MAXITL =  60
- Threshold for convergence of linear resp. eq.s : THCLR  = 1.000E-03
+ Threshold for convergence of linear resp. eq.s : THCLR  = 1.000D-03
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
  Direct one-index transformation                : DIROIT= T
 
@@ -688,9 +745,15 @@ Starting in Wave Function Section -
           ZZRANG  
 
 
-   SCF energy         :      -76.060784218681704
- -- inactive part     :      -85.244490448926939
- -- nuclear repulsion :        9.183706230245230
+   SCF energy         :      -76.060784218675622
+ -- inactive part     :      -85.244490448920857
+ -- nuclear repulsion :        9.183706230245228
+
+
+                     ***************************************
+                     *** RHF response calculation (TDHF) ***
+                     ***************************************
+
 
 
  Linear response calculations for quadratic response
@@ -717,23 +780,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   1.54E-04
+ RSP solution vector no.    1; norm of residual   1.54D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XYRANG      FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XYRANG      FREQUENCY   0.000000D+00
  SYMMETRY    1
 
-@QRLRVE:  << XYRANG   ; XYRANG   >> (   0.00000):     8.61975179372    
+@QRLRVE:  << XYRANG   ; XYRANG   >> (   0.00000):     8.61976343566    
 
-@QRLRVE:  << YXRANG   ; XYRANG   >> (   0.00000):    -4.91614972237    
+@QRLRVE:  << YXRANG   ; XYRANG   >> (   0.00000):    -4.91615179948    
 
-@QRLRVE:  << ZDIPLEN  ; XYRANG   >> (   0.00000):    -3.28247104173    
+@QRLRVE:  << ZDIPLEN  ; XYRANG   >> (   0.00000):    -3.28247983706    
 
-@QRLRVE:  << ZDIPVEL  ; XYRANG   >> (   0.00000):    -4.70348733368    
+@QRLRVE:  << ZDIPVEL  ; XYRANG   >> (   0.00000):    -4.70348404496    
 
 
  QRLRVE -- linear response calculation for symmetry  1
@@ -749,23 +812,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   1.10E-04
+ RSP solution vector no.    1; norm of residual   1.10D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YXRANG      FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YXRANG      FREQUENCY   0.000000D+00
  SYMMETRY    1
 
-@QRLRVE:  << XYRANG   ; YXRANG   >> (   0.00000):    -4.91616942960    
+@QRLRVE:  << XYRANG   ; YXRANG   >> (   0.00000):    -4.91617150621    
 
-@QRLRVE:  << YXRANG   ; YXRANG   >> (   0.00000):     14.7207357950    
+@QRLRVE:  << YXRANG   ; YXRANG   >> (   0.00000):     14.7207518938    
 
-@QRLRVE:  << ZDIPLEN  ; YXRANG   >> (   0.00000):     3.28247104173    
+@QRLRVE:  << ZDIPLEN  ; YXRANG   >> (   0.00000):     3.28247983706    
 
-@QRLRVE:  << ZDIPVEL  ; YXRANG   >> (   0.00000):     5.94855833248    
+@QRLRVE:  << ZDIPVEL  ; YXRANG   >> (   0.00000):     5.94855450567    
 
 
  QRLRVE -- linear response calculation for symmetry  1
@@ -781,23 +844,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   3.07E-04
+ RSP solution vector no.    1; norm of residual   3.07D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.000000D+00
  SYMMETRY    1
 
-@QRLRVE:  << XYRANG   ; ZDIPLEN  >> (   0.00000):    -3.28247104173    
+@QRLRVE:  << XYRANG   ; ZDIPLEN  >> (   0.00000):    -3.28247983706    
 
-@QRLRVE:  << YXRANG   ; ZDIPLEN  >> (   0.00000):     3.28247104173    
+@QRLRVE:  << YXRANG   ; ZDIPLEN  >> (   0.00000):     3.28247983706    
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):     6.56494208345    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):     6.56495967411    
 
-@QRLRVE:  << ZDIPVEL  ; ZDIPLEN  >> (   0.00000):    6.088940115736E-16
+@QRLRVE:  << ZDIPVEL  ; ZDIPLEN  >> (   0.00000):    1.504005253672E-15
 
 
  QRLRVE -- linear response calculation for symmetry  1
@@ -813,23 +876,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   4.32E-04
+ RSP solution vector no.    1; norm of residual   4.32D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPVEL     FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   ZDIPVEL     FREQUENCY   0.000000D+00
  SYMMETRY    1
 
-@QRLRVE:  << XYRANG   ; ZDIPVEL  >> (   0.00000):    -4.70339260376    
+@QRLRVE:  << XYRANG   ; ZDIPVEL  >> (   0.00000):    -4.70338931405    
 
-@QRLRVE:  << YXRANG   ; ZDIPVEL  >> (   0.00000):     5.94858923207    
+@QRLRVE:  << YXRANG   ; ZDIPVEL  >> (   0.00000):     5.94858540584    
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPVEL  >> (   0.00000):   -1.810526982497E-16
+@QRLRVE:  << ZDIPLEN  ; ZDIPVEL  >> (   0.00000):    4.631711680858E-16
 
-@QRLRVE:  << ZDIPVEL  ; ZDIPVEL  >> (   0.00000):     9.26836451470    
+@QRLRVE:  << ZDIPVEL  ; ZDIPVEL  >> (   0.00000):     9.26836146882    
 
 
  Linear response calculations for quadratic response
@@ -856,23 +919,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   9.87E-04
+ RSP solution vector no.    1; norm of residual   9.87D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.000000D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     5.31786577093    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     5.31785500737    
 
-@QRLRVE:  << XDIPVEL  ; XDIPLEN  >> (   0.00000):   -1.360556613308E-15
+@QRLRVE:  << XDIPVEL  ; XDIPLEN  >> (   0.00000):    2.386979502944E-15
 
-@QRLRVE:  << YZRANG   ; XDIPLEN  >> (   0.00000):    -2.65893288547    
+@QRLRVE:  << YZRANG   ; XDIPLEN  >> (   0.00000):    -2.65892750368    
 
-@QRLRVE:  << ZYRANG   ; XDIPLEN  >> (   0.00000):     2.65893288547    
+@QRLRVE:  << ZYRANG   ; XDIPLEN  >> (   0.00000):     2.65892750368    
 
 
  QRLRVE -- linear response calculation for symmetry  2
@@ -888,23 +951,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   9.63E-04
+ RSP solution vector no.    1; norm of residual   9.63D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPVEL     FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XDIPVEL     FREQUENCY   0.000000D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPVEL  >> (   0.00000):   -2.074293276636E-15
+@QRLRVE:  << XDIPLEN  ; XDIPVEL  >> (   0.00000):    4.440892098501E-16
 
-@QRLRVE:  << XDIPVEL  ; XDIPVEL  >> (   0.00000):     8.97998468060    
+@QRLRVE:  << XDIPVEL  ; XDIPVEL  >> (   0.00000):     8.97998535212    
 
-@QRLRVE:  << YZRANG   ; XDIPVEL  >> (   0.00000):    -5.57660882963    
+@QRLRVE:  << YZRANG   ; XDIPVEL  >> (   0.00000):    -5.57660931094    
 
-@QRLRVE:  << ZYRANG   ; XDIPVEL  >> (   0.00000):     4.98826141538    
+@QRLRVE:  << ZYRANG   ; XDIPVEL  >> (   0.00000):     4.98826161390    
 
 
  QRLRVE -- linear response calculation for symmetry  2
@@ -920,23 +983,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   5.78E-04
+ RSP solution vector no.    1; norm of residual   5.78D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YZRANG      FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YZRANG      FREQUENCY   0.000000D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; YZRANG   >> (   0.00000):    -2.65893288547    
+@QRLRVE:  << XDIPLEN  ; YZRANG   >> (   0.00000):    -2.65892750368    
 
-@QRLRVE:  << XDIPVEL  ; YZRANG   >> (   0.00000):    -5.57667056420    
+@QRLRVE:  << XDIPVEL  ; YZRANG   >> (   0.00000):    -5.57667104755    
 
-@QRLRVE:  << YZRANG   ; YZRANG   >> (   0.00000):     12.9451705614    
+@QRLRVE:  << YZRANG   ; YZRANG   >> (   0.00000):     12.9451486592    
 
-@QRLRVE:  << ZYRANG   ; YZRANG   >> (   0.00000):    -6.78071380015    
+@QRLRVE:  << ZYRANG   ; YZRANG   >> (   0.00000):    -6.78070752599    
 
 
  QRLRVE -- linear response calculation for symmetry  2
@@ -952,23 +1015,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   4.38E-04
+ RSP solution vector no.    1; norm of residual   4.38D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZYRANG      FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   ZYRANG      FREQUENCY   0.000000D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; ZYRANG   >> (   0.00000):     2.65893288547    
+@QRLRVE:  << XDIPLEN  ; ZYRANG   >> (   0.00000):     2.65892750368    
 
-@QRLRVE:  << XDIPVEL  ; ZYRANG   >> (   0.00000):     4.98843139279    
+@QRLRVE:  << XDIPVEL  ; ZYRANG   >> (   0.00000):     4.98843158955    
 
-@QRLRVE:  << YZRANG   ; ZYRANG   >> (   0.00000):    -6.78071526362    
+@QRLRVE:  << YZRANG   ; ZYRANG   >> (   0.00000):    -6.78070898853    
 
-@QRLRVE:  << ZYRANG   ; ZYRANG   >> (   0.00000):     9.77609341792    
+@QRLRVE:  << ZYRANG   ; ZYRANG   >> (   0.00000):     9.77609046162    
 
 
  Linear response calculations for quadratic response
@@ -995,23 +1058,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   5.75E-04
+ RSP solution vector no.    1; norm of residual   5.75D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.000000D+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.00000):     7.83619932466    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.00000):     7.83619926578    
 
-@QRLRVE:  << YDIPVEL  ; YDIPLEN  >> (   0.00000):    1.020485829638E-15
+@QRLRVE:  << YDIPVEL  ; YDIPLEN  >> (   0.00000):   -4.492933802780E-16
 
-@QRLRVE:  << XZRANG   ; YDIPLEN  >> (   0.00000):     3.91809966233    
+@QRLRVE:  << XZRANG   ; YDIPLEN  >> (   0.00000):     3.91809963289    
 
-@QRLRVE:  << ZXRANG   ; YDIPLEN  >> (   0.00000):    -3.91809966233    
+@QRLRVE:  << ZXRANG   ; YDIPLEN  >> (   0.00000):    -3.91809963289    
 
 
  QRLRVE -- linear response calculation for symmetry  3
@@ -1027,23 +1090,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   5.40E-04
+ RSP solution vector no.    1; norm of residual   5.40D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPVEL     FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPVEL     FREQUENCY   0.000000D+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPVEL  >> (   0.00000):    4.417176336098E-16
+@QRLRVE:  << YDIPLEN  ; YDIPVEL  >> (   0.00000):   -1.995582518677E-15
 
-@QRLRVE:  << YDIPVEL  ; YDIPVEL  >> (   0.00000):     9.43722173005    
+@QRLRVE:  << YDIPVEL  ; YDIPVEL  >> (   0.00000):     9.43722447785    
 
-@QRLRVE:  << XZRANG   ; YDIPVEL  >> (   0.00000):     5.03958156223    
+@QRLRVE:  << XZRANG   ; YDIPVEL  >> (   0.00000):     5.03958260618    
 
-@QRLRVE:  << ZXRANG   ; YDIPVEL  >> (   0.00000):    -5.70221841153    
+@QRLRVE:  << ZXRANG   ; YDIPVEL  >> (   0.00000):    -5.70222121707    
 
 
  QRLRVE -- linear response calculation for symmetry  3
@@ -1059,23 +1122,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   3.97E-04
+ RSP solution vector no.    1; norm of residual   3.97D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XZRANG      FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XZRANG      FREQUENCY   0.000000D+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; XZRANG   >> (   0.00000):     3.91809966233    
+@QRLRVE:  << YDIPLEN  ; XZRANG   >> (   0.00000):     3.91809963289    
 
-@QRLRVE:  << YDIPVEL  ; XZRANG   >> (   0.00000):     5.03986171510    
+@QRLRVE:  << YDIPVEL  ; XZRANG   >> (   0.00000):     5.03986275311    
 
-@QRLRVE:  << XZRANG   ; XZRANG   >> (   0.00000):     8.90795686893    
+@QRLRVE:  << XZRANG   ; XZRANG   >> (   0.00000):     8.90794880873    
 
-@QRLRVE:  << ZXRANG   ; XZRANG   >> (   0.00000):    -6.17113958685    
+@QRLRVE:  << ZXRANG   ; XZRANG   >> (   0.00000):    -6.17114004329    
 
 
  QRLRVE -- linear response calculation for symmetry  3
@@ -1091,23 +1154,23 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   2.93E-04
+ RSP solution vector no.    1; norm of residual   2.93D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZXRANG      FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   ZXRANG      FREQUENCY   0.000000D+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; ZXRANG   >> (   0.00000):    -3.91809966233    
+@QRLRVE:  << YDIPLEN  ; ZXRANG   >> (   0.00000):    -3.91809963289    
 
-@QRLRVE:  << YDIPVEL  ; ZXRANG   >> (   0.00000):    -5.70284856659    
+@QRLRVE:  << YDIPVEL  ; ZXRANG   >> (   0.00000):    -5.70285136956    
 
-@QRLRVE:  << XZRANG   ; ZXRANG   >> (   0.00000):    -6.17125702346    
+@QRLRVE:  << XZRANG   ; ZXRANG   >> (   0.00000):    -6.17125748090    
 
-@QRLRVE:  << ZXRANG   ; ZXRANG   >> (   0.00000):     12.2169655622    
+@QRLRVE:  << ZXRANG   ; ZXRANG   >> (   0.00000):     12.2169704874    
 
 
  Linear response calculations for quadratic response
@@ -1134,21 +1197,21 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   4.61E-04
+ RSP solution vector no.    1; norm of residual   4.61D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XXRANG      FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XXRANG      FREQUENCY   0.000000D+00
  SYMMETRY    4
 
-@QRLRVE:  << XXRANG   ; XXRANG   >> (   0.00000):     2.19529853325    
+@QRLRVE:  << XXRANG   ; XXRANG   >> (   0.00000):     2.19529991531    
 
-@QRLRVE:  << YYRANG   ; XXRANG   >> (   0.00000):    -1.23461272400    
+@QRLRVE:  << YYRANG   ; XXRANG   >> (   0.00000):    -1.23461639997    
 
-@QRLRVE:  << ZZRANG   ; XXRANG   >> (   0.00000):   -0.960685809248    
+@QRLRVE:  << ZZRANG   ; XXRANG   >> (   0.00000):   -0.960683515332    
 
 
  QRLRVE -- linear response calculation for symmetry  4
@@ -1164,21 +1227,21 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   9.78E-04
+ RSP solution vector no.    1; norm of residual   9.78D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YYRANG      FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YYRANG      FREQUENCY   0.000000D+00
  SYMMETRY    4
 
-@QRLRVE:  << XXRANG   ; YYRANG   >> (   0.00000):    -1.23395969208    
+@QRLRVE:  << XXRANG   ; YYRANG   >> (   0.00000):    -1.23396336948    
 
-@QRLRVE:  << YYRANG   ; YYRANG   >> (   0.00000):     5.32754285414    
+@QRLRVE:  << YYRANG   ; YYRANG   >> (   0.00000):     5.32754005687    
 
-@QRLRVE:  << ZZRANG   ; YYRANG   >> (   0.00000):    -4.09358316206    
+@QRLRVE:  << ZZRANG   ; YYRANG   >> (   0.00000):    -4.09357668740    
 
 
  QRLRVE -- linear response calculation for symmetry  4
@@ -1194,21 +1257,21 @@ Starting in Wave Function Section -
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-03
+ Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   7.40E-04
+ RSP solution vector no.    1; norm of residual   7.40D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZZRANG      FREQUENCY   0.000000E+00
+ QRLRVE: SINGLET SOLUTION   LABEL   ZZRANG      FREQUENCY   0.000000D+00
  SYMMETRY    4
 
-@QRLRVE:  << XXRANG   ; ZZRANG   >> (   0.00000):   -0.960566561259    
+@QRLRVE:  << XXRANG   ; ZZRANG   >> (   0.00000):   -0.960564266432    
 
-@QRLRVE:  << YYRANG   ; ZZRANG   >> (   0.00000):    -4.09341350703    
+@QRLRVE:  << YYRANG   ; ZZRANG   >> (   0.00000):    -4.09340703345    
 
-@QRLRVE:  << ZZRANG   ; ZZRANG   >> (   0.00000):     5.05398006829    
+@QRLRVE:  << ZZRANG   ; ZZRANG   >> (   0.00000):     5.05397129988    
  
  ======================================================================
  >>>>>>>>    L I N E A R   R E S P O N S E   F U N C T I O N   <<<<<<<<
@@ -1218,7 +1281,7 @@ Starting in Wave Function Section -
  in a *QUADRA calculation of <<A;B,C>>(omega_b,omega_c)
 
  Note: the accuracy of off-diagonal elements will be linear
- in the convergence threshold THCLR =  1.00E-03
+ in the convergence threshold THCLR =  1.00D-03
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -1229,7 +1292,7 @@ Starting in Wave Function Section -
 
 @ Singlet linear response function in a.u.
 
-@ A operator, symmetry, frequency:   ZDIPVEL    1  0.000000
+@ A operator, symmetry, frequency:   ZDIPVEL    1 -0.000000
 @ B operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 
 @ Value of linear response -<<A;B>(omega):       0.000000000000
@@ -1243,7 +1306,7 @@ Starting in Wave Function Section -
 
 @ Singlet linear response function in a.u.
 
-@ A operator, symmetry, frequency:   XDIPVEL    2  0.000000
+@ A operator, symmetry, frequency:   XDIPVEL    2 -0.000000
 @ B operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
 @ Value of linear response -<<A;B>(omega):       0.000000000000
@@ -1257,10 +1320,10 @@ Starting in Wave Function Section -
 
 @ Singlet linear response function in a.u.
 
-@ A operator, symmetry, frequency:   YDIPVEL    3  0.000000
+@ A operator, symmetry, frequency:   YDIPVEL    3 -0.000000
 @ B operator, symmetry, frequency:   YDIPLEN    3  0.000000
 
-@ Value of linear response -<<A;B>(omega):       0.000000000000
+@ Value of linear response -<<A;B>(omega):      -0.000000000000
 
 
   Results from quadratic response calculation
@@ -1273,7 +1336,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: XYRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -1.87965515
+@omega B, omega C, QR value :     0.00000000     0.00000000    -1.87966337
 
 
 @ Quadratic response function value in a.u. for
@@ -1281,7 +1344,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: YXRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.21494799
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.21494958
 
 
 @ Quadratic response function value in a.u. for
@@ -1289,7 +1352,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: XYRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.61551171
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.61550694
 
 
 @ Quadratic response function value in a.u. for
@@ -1297,7 +1360,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: YXRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.31794029
+@omega B, omega C, QR value :     0.00000000     0.00000000     0.31793654
 
 
 @ Quadratic response function value in a.u. for
@@ -1305,7 +1368,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: XYRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.05185234
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.05185045
 
 
 @ Quadratic response function value in a.u. for
@@ -1313,7 +1376,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: YXRANG      1    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     1.78597171
+@omega B, omega C, QR value :     0.00000000     0.00000000     1.78596971
 
 
 @ Quadratic response function value in a.u. for
@@ -1321,7 +1384,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: YZRANG      2    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.34669842
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.34669619
 
 
 @ Quadratic response function value in a.u. for
@@ -1329,7 +1392,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: ZYRANG      2    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     2.39443578
+@omega B, omega C, QR value :     0.00000000     0.00000000     2.39444368
 
 
 @ Quadratic response function value in a.u. for
@@ -1337,7 +1400,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: YZRANG      2    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.41708531
+@omega B, omega C, QR value :     0.00000000     0.00000000     0.41709073
 
 
 @ Quadratic response function value in a.u. for
@@ -1345,7 +1408,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: ZYRANG      2    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -1.82932612
+@omega B, omega C, QR value :     0.00000000     0.00000000    -1.82932389
 
 
 @ Quadratic response function value in a.u. for
@@ -1353,7 +1416,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: XZRANG      3    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.65126883
+@omega B, omega C, QR value :     0.00000000     0.00000000     0.65126444
 
 
 @ Quadratic response function value in a.u. for
@@ -1361,7 +1424,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: ZDIPLEN     1    0
 @ C operator, symmetry, spin: ZXRANG      3    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.08403253
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.08401984
 
 
 @ Quadratic response function value in a.u. for
@@ -1369,7 +1432,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: XZRANG      3    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.03572136
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.03571582
 
 
 @ Quadratic response function value in a.u. for
@@ -1377,7 +1440,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: ZXRANG      3    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.06057196
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.06057330
 
 
 @ Quadratic response function value in a.u. for
@@ -1385,7 +1448,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: XXRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.23965935
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.23965989
 
 
 @ Quadratic response function value in a.u. for
@@ -1393,7 +1456,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: YYRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.11120158
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.11120011
 
 
 @ Quadratic response function value in a.u. for
@@ -1401,7 +1464,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: XDIPLEN     2    0
 @ C operator, symmetry, spin: ZZRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.35060503
+@omega B, omega C, QR value :     0.00000000     0.00000000     0.35060410
 
 
 @ Quadratic response function value in a.u. for
@@ -1409,7 +1472,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: XXRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.20449403
+@omega B, omega C, QR value :     0.00000000     0.00000000     0.20449008
 
 
 @ Quadratic response function value in a.u. for
@@ -1417,7 +1480,7 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: YYRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000    -0.24841301
+@omega B, omega C, QR value :     0.00000000     0.00000000    -0.24840944
 
 
 @ Quadratic response function value in a.u. for
@@ -1425,13 +1488,19 @@ Starting in Wave Function Section -
 @ B operator, symmetry, spin: YDIPLEN     3    0
 @ C operator, symmetry, spin: ZZRANG      4    0
 
-@omega B, omega C, QR value :     0.00000000     0.00000000     0.04359417
+@omega B, omega C, QR value :     0.00000000     0.00000000     0.04359456
 
- >>>> Total CPU  time used in RESPONSE:   1.06 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
- >>>> Total CPU  time used in DALTON:   1.46 seconds
- >>>> Total wall time used in DALTON:   2.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.37 seconds
+ >>>> Total wall time used in RESPONSE:   3.00 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   0.60 seconds
+ >>>> Total wall time used in DALTON:   3.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:11:10 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:46:02 2011 
+     Host name              : fe6                                     

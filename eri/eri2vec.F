@@ -1,48 +1,38 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck eriexp */
       SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,
      &                  RODPE1,RODPE2,IPNTPP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "r12int.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0)
       INTEGER AB, CD, PQ, RST
       DIMENSION EXPAB(NPQBCS,MLTPZ,NPRFAB,3),
@@ -53,13 +43,13 @@ C  /* Deck eriexp */
      &          FACPQ(NPQBCS,NPRFPQ),
      &          RODPE1(NODPP1,  2), RODPE2(NODPP2,  2),
      &          IPNTPP(MAXBCH,2)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERIEXP','*',103)
@@ -145,22 +135,22 @@ C
       END
 C  /* Deck ericor */
       SUBROUTINE ERICOR(COORTR,IPNTCR,CORBCH,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       INTEGER PQ
       DIMENSION COORTR(NPQBCS,3,4),
      &          IPNTCR(MAXBCH,4), CORBCH(NPQBCS,3)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       DO IATOM = 1,4
 #if defined (VAR_CRY)
@@ -197,22 +187,22 @@ C
       END
 C  /* Deck erisso */
       SUBROUTINE ERISSO(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER PQ, R, S, T, RST, X
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <erisop.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "erisop.h"
+#include "ibtfun.h"
       XPAR(I) = PT(IBTAND(ISYMAX(1,1),I))
       YPAR(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZPAR(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -271,13 +261,13 @@ C
 C  /* Deck eripfs */
       SUBROUTINE ERIPFS(FACINT,FACPQ,RODAB,RODCD,RODPF1,RODPF2,IPNTPP,
      &                  ROD1,ROD2,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "symmet.h"
       INTEGER AB, CD, PQ, RST
       DIMENSION FACINT(NPQBCS,MLTPZ,NPRFPQ),
      &          FACPQ(NPQBCS,NPRFPQ), 
@@ -286,12 +276,12 @@ C  /* Deck eripfs */
      &          RODPF1(MAXOPR+1,*), RODPF2(MAXOPR+1,*),
      &          ROD1(NPQBCS,NPRFAB,3), ROD2(NPQBCS,NPRFCD,3),
      &          IPNTPP(MAXBCH,2)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <erisop.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "erisop.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERIPFS','*',103)
@@ -346,14 +336,14 @@ C
       END
 C  /* Deck ericrs */
       SUBROUTINE ERICRS(COORAO,COORTR,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER PQ, RST, X
       DIMENSION COORTR(NPQBCS,12),
      &          COORAO(NPQBCS,MLTPZ,12)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erisop.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erisop.h"
 C
       DO X = 1, 12
          DO RST = 1, MLTPZ
@@ -380,8 +370,8 @@ C
       END
 C  /* Deck erivcs */
       SUBROUTINE ERIVCS(EXPAB,EXPCD,COORAO,COORAB,COORCD,COORPQ,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER X
       DIMENSION COORAO(NPQBCX,3,4),
      &          EXPAB (NPQBCX,NPRFAB,3), 
@@ -389,11 +379,11 @@ C  /* Deck erivcs */
      &          COORAB(NPQBCX,NPRFAB,3,2), 
      &          COORCD(NPQBCX,NPRFCD,3,2), 
      &          COORPQ(NPQBCX,NPRFAB,NPRFCD,3)
-#include <ericom.h>
-#include <eriao.h>
-#include <erithr.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "erithr.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
 C     AB coordinates
 C     ==============
@@ -514,12 +504,12 @@ C
       END
 C  /* Deck locsym */
       SUBROUTINE LOCSYM(VECTOR,NINNER,NDIM,I0,IXYZ)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER X
       DIMENSION VECTOR(NINNER,NDIM,3), I0(3)
-#include <erithr.h>
-#include <cbieri.h>
+#include "erithr.h"
+#include "cbieri.h"
 C
       IF (NOLOCS) THEN
          I0(1) = 0
@@ -559,13 +549,13 @@ C
       END
 C  /* Deck locsyb */
       SUBROUTINE LOCSYB(COORAO,I0,IXYZ)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER X
       DIMENSION COORAO(NPQBCX,3), I0(3)
-#include <orgcom.h>
-#include <erithr.h>
-#include <cbieri.h>
-#include <ericom.h>
+#include "orgcom.h"
+#include "erithr.h"
+#include "cbieri.h"
+#include "ericom.h"
 C
       IF (.NOT.NOLOCS) THEN
          DO X = 1, 3
@@ -586,19 +576,19 @@ C  /* Deck ericnt */
 C
 C     tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       INTEGER RST, PQ, A
       DIMENSION NCENTR(MLTPZ,NPQBCS,4), IPNTCR(MAXBCH,4)
-#include <nuclei.h>
-#include <aobtch.h>
-#include <ericom.h>
-#include <erisop.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "aobtch.h"
+#include "ericom.h"
+#include "erisop.h"
+#include "ibtfun.h"
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
 C
       IF (IPRINT .GT. 10) THEN
@@ -632,30 +622,30 @@ C
       END
 C  /* Deck ericls */
       SUBROUTINE ERICLS(FACINT,COORPQ,EXPAB,EXPCD,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C     tuh
 C
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL CLASIC 
       DIMENSION FACINT(NPQBCX,NPRFAB,NPRFCD),
      &          COORPQ(NPQBCX,NPRFAB,NPRFCD,3), 
      &          EXPAB (NPQBCX,NPRFAB,3),
      &          EXPCD (NPQBCX,NPRFCD,3)
-#include <cbieri.h>
-#include <odclss.h>
-#include <ericom.h>
-#include <hertop.h>
-#include <aobtch.h>
-#include <erisop.h>
-#include <erithr.h>
-#include <symmet.h>
-#include <clsfmm.h>
+#include "cbieri.h"
+#include "odclss.h"
+#include "ericom.h"
+#include "hertop.h"
+#include "aobtch.h"
+#include "erisop.h"
+#include "erithr.h"
+#include "symmet.h"
+#include "clsfmm.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERICLS','*',103)

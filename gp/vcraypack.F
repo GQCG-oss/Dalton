@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -46,7 +36,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
 ===========================================================================
 #endif
       SUBROUTINE VSADD(A,LA,S,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)+S
@@ -54,7 +44,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VSMA(A,LA,S,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)*S+B(1+LB*I)
@@ -62,7 +52,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VSMUL(A,LA,S,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)*S
@@ -70,7 +60,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VSQRT(A,LA,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=SQRT(A(1+LA*I))
@@ -78,7 +68,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VSUB(A,LA,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=B(1+LB*I)-A(1+LA*I)
@@ -86,7 +76,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VMOV(A,LA,B,LB,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*)
       DO 10 I=0,N-1
          B(1+I*LB)=A(1+I*LA)
@@ -94,7 +84,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VMSA(A,LA,B,LB,S,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)*B(1+LB*I)+S
@@ -102,7 +92,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VMUL(A,LA,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)*B(1+LB*I)
@@ -110,7 +100,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VDIV(A,LA,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=B(1+LB*I)/A(1+LA*I)
@@ -118,7 +108,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VADD(A,LA,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)+B(1+LB*I)
@@ -127,7 +117,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       END
 #if defined (SYS_CRAY) || defined (SYS_T90)
       SUBROUTINE VCLR(A,LA,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
       PARAMETER ( D0 = 0.0D0 )
       DO 10 I=0,N-1
@@ -144,9 +134,9 @@ C    this one is cheaper.
 C    For NEC, we use the NEC internal routine, which is still faster.
 C                                           gh - 970910
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION A(*),B(*),C(*)
 #if !defined (VAR_ESSL) && !defined (SYS_NEC)
       DO 100 IROW=0,NROW-1
@@ -232,7 +222,7 @@ C     RETURN
       RETURN
       END
       SUBROUTINE MXMAA(A,ICA,IRA, B,ICB,IRB, C,ICC,IRC, NROW,NSUM,NCOL)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
  
@@ -250,7 +240,7 @@ C     RETURN
       RETURN
       END
       SUBROUTINE MXMAM(A,ICA,IRA, B,ICB,IRB, C,ICC,IRC, NROW,NSUM,NCOL)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
  
@@ -268,7 +258,7 @@ C     RETURN
       RETURN
       END
       SUBROUTINE MXMT(A,ICA,IRA, B,ICB,IRB, C, NROW,NSUM)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
       IND=0

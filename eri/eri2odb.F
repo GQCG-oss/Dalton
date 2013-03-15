@@ -1,59 +1,49 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck odbchs */
       SUBROUTINE ODBCHS(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
      &                  KODPP1,KODPP2,KRDPP1,KRDPP2,
      &                  KFREE,LFREE,CCFBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       LOGICAL SAMEOD, ODALL1, ODALL2
       DIMENSION CCFBT(*), WORK(LWORK)
-#include <cbieri.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <iratdef.h>
-#include <odbtch.h>
-#include <odclss.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "cbieri.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "iratdef.h"
+#include "odbtch.h"
+#include "odclss.h"
+#include "cbirea.h"
+#include "r12int.h"
 C
       CALL QENTER('ODBCHS')
 C
@@ -103,7 +93,7 @@ C     SAMEOD: ODs are the same for both electrons
 C
       SAMEOD = ODTRI1 .EQV. ODTRI2 .AND. ODALL1 .EQV. ODALL2
 C
-C     Gab integrals for Cauchy-Schwartz inequality
+C     Gab integrals for Cauchy-Schwarz inequality
 C     ============================================
 C
       CALL MEMGET('REAL',KGAB,NGAB*NGAB,WORK,KFREE,LFREE)
@@ -291,7 +281,7 @@ C
       END
 C  /* Deck rtrmat */
       SUBROUTINE RTRMAT(NA,NB,AMAT,BMAT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(NA,NB), BMAT(NB,NA)
       DO 100 I = 1, NA
       DO 100 J = 1, NB
@@ -301,7 +291,7 @@ C  /* Deck rtrmat */
       END
 C  /* Deck itrmat */
       SUBROUTINE ITRMAT(NA,NB,IAMAT,IBMAT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IAMAT(NA,NB), IBMAT(NB,NA)
       DO 100 I = 1, NA
       DO 100 J = 1, NB
@@ -312,20 +302,20 @@ C  /* Deck itrmat */
 C  /* Deck godbch */
       SUBROUTINE GODBCH(IODBCH,IODTRA,RODBCH,NAOBC2,IODPPR,RODPPR,
      &                  NPRIM2,CCFBT,WORK,LWORK,ODTRI,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       LOGICAL ODTRI
       DIMENSION IODBCH(NITBC,NAOBC2), IODTRA(NITTR,NAOBC2),
      &          RODBCH(NRTBC,NAOBC2),
      &          IODPPR(NITPP,NPRIM2), RODPPR(NRTPP,NPRIM2),
      &          CCFBT(*), WORK(LWORK)
-#include <aobtch.h>
-#include <odbtch.h>
-#include <odclss.h>
+#include "aobtch.h"
+#include "odbtch.h"
+#include "odclss.h"
 C
       IBATCH = 1
       ICLASS = 0
@@ -350,7 +340,7 @@ C
          WRITE(LUPRI,'(1X,A,3I5)')' Number of OD classes NODCLS:',NODCLS
          WRITE(LUPRI,'(1X,A, L5)')' ODTRI:                      ',ODTRI
          CALL HEADER(
-     &    '       #     class     A    B           Cauchy-Schwartz',1)
+     &    '       #     class     A    B           Cauchy-Schwarz',1)
          DO 300 I = 1, NODBCH
             WRITE (LUPRI,'(6X,I5,5X,4I5,5X,F20.15)')
      &        I, (IODBCH(J,I),J=1,NITBC), RODBCH(1,I)
@@ -362,20 +352,20 @@ C  /* Deck odsort */
       SUBROUTINE ODSORT(NHKTA,NHKTB,ODTRI,NBCHAB,IODBCH,IODTRA,RODBCH,
      &                  ICLASS,IODPPR,RODPPR,IPRADR,CCFBT,WORK,LWORK,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       LOGICAL ODTRI, TRIBCH
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), RODBCH(NRTBC,*),
      &          WORK(LWORK), IODPPR(NITPP,*), RODPPR(NRTPP,*),
      &          CCFBT(*)
-#include <odclss.h>
-#include <aobtch.h>
-#include <odbtch.h>
+#include "odclss.h"
+#include "aobtch.h"
+#include "odbtch.h"
 C
       NQNBTA = NQNBT(NHKTA)
       NQNBTB = NQNBT(NHKTB)
@@ -401,17 +391,17 @@ C  /* Deck odsor1 */
       SUBROUTINE ODSOR1(NHKTA,NHKTB,TRIBCH,NBCH,NBCHAB,IODBCH,IODTRA,
      &                  RODBCH,ICLASS,IODPPR,RODPPR,IPRADR,ISORT,DSORT,
      &                  NSORT,KODSRT,KCLASS,CCFBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       LOGICAL TRIBCH, ODBTGT
       INTEGER A, B
-#include <aobtch.h>
-#include <odbtch.h>
-#include <odclss.h>
+#include "aobtch.h"
+#include "odbtch.h"
+#include "odclss.h"
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), RODBCH(NRTBC,*),
      &          ISORT(3,NBCH), DSORT(1,NBCH), NSORT(NPSORT,NBCH),
      &          IODPPR(*), RODPPR(NRTPP,*),
@@ -546,25 +536,25 @@ C
 C  /* Deck noddim */
       SUBROUTINE NODDIM(A,B,NPRFAB,NCTFAB,NCNTAB,NGTOAB,ISTBLA,ISTBLB,
      &                  ICMATA,ICMATB,PRXFAB,IODPPR,RODPPR,CCFBT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "pi.h"
       PARAMETER (D0 = 0.D0)
       LOGICAL GCNT
       INTEGER A, B, R, R1
       DIMENSION IODPPR(NITPP,*), RODPPR(NRTPP,*), PFAC(8)
       DIMENSION CCFBT(MXPRIM*MXCONT)
-#include <cbieri.h>
-#include <erithr.h>
-#include <odclss.h>
-#include <aobtch.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "erithr.h"
+#include "odclss.h"
+#include "aobtch.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       XPAR(I) = PT(IBTAND(ISYMAX(1,1),I))
       YPAR(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZPAR(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -631,14 +621,14 @@ C
       END
 C  /* Deck odbtgt */
       LOGICAL FUNCTION ODBTGT(IOD1,IOD2,NSORT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <aobtch.h>
-#include <odbtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "aobtch.h"
+#include "odbtch.h"
       DIMENSION NSORT(NPSORT,*)
 C
 C     This routine sorts according to NPSORT criteria
@@ -654,14 +644,14 @@ C
       END
 C  /* Deck odcls */
       SUBROUTINE ODCLS(KCLASS,KODSRT,NSORT,NBCHAB,ICLASS,NCLASS,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <aobtch.h>
-#include <odbtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "aobtch.h"
+#include "odbtch.h"
       LOGICAL NEWCLS
       DIMENSION KCLASS(*), KODSRT(*), NSORT(NPSORT,*)
 C
@@ -686,18 +676,18 @@ C
       END
 C  /* Deck clsinf */
       SUBROUTINE CLSINF(IODBCH,IODTRA,IODCLS,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <shells.h>
-#include <odbtch.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "odbtch.h"
+#include "aobtch.h"
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), IODCLS(NITCL,NODCLS),
      &          WORK(LWORK)
-#include <odclss.h>
+#include "odclss.h"
 C
       CALL IZERO(IODCLS,NITCL*NODCLS)
 C
@@ -761,11 +751,11 @@ C
       END
 C  /* Deck odstat */
       SUBROUTINE ODSTAT(IODCLS,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <odbtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "odbtch.h"
       DIMENSION IODCLS(NITCL,NODCLS), WORK(LWORK)
-#include <odclss.h>
+#include "odclss.h"
 C
 C     IODCLS(1,*): # ods
 C     IODCLS(2,*): pointer to first od
@@ -862,12 +852,12 @@ C
 C  /* Deck MBIDAB */
       INTEGER FUNCTION MBIDAB(I,J)
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <shells.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "shells.h"
       MBIDAB = MBIDBT(I) + MBIDBT(J) * 2
       RETURN
       END

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ccsdt_tran1_r */
       SUBROUTINE CCSDT_TRAN1_R(XINT1,XINT2,XLAMDP0,XLAMDH0,
@@ -41,11 +31,11 @@ C     XINT1 = XINT1 + (K^p0 C^h0|B^p1 D^h0)
 C     XINT2 = XINT2 + (K^p0 C^h0|L^p0 J^h1)
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION XLAMDP0(NBAST,NORBT), XLAMDH0(NBAST,NORBT)
       DIMENSION XLAMDP1(NBAST,NORBT), XLAMDH1(NBAST,NORBT)
@@ -105,11 +95,11 @@ C
 C     XINT1 = XINT1 + (C^p1 K^h1|B^p2 D^h0)
 C     XINT2 = XINT2 + (C^p1 K^h1|L^p0 J^h2)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION XLAMDP0(NBAST,NORBT), XLAMDH0(NBAST,NORBT)
       DIMENSION XLAMDP1(NBAST,NORBT), XLAMDH1(NBAST,NORBT)
@@ -174,11 +164,11 @@ C     XINT2 = (K^p0 L^h1|C^p2 D^h0)    "(O-0 O-1|V-2 V-0)"
 C     XINT3 = (K^p0 L^h1|M^p0 N^h2)    "(O-0 O-1|O-0 O-2)"
 C     XINT4 = (C^p1 D^h0|E^p2 F^h0)    "(V-1 V-0|V-2 V-0)"
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NRHFT,NVIRT,NVIRT,NRHFT)
       DIMENSION XINT2(NRHFT,NRHFT,NVIRT,NVIRT)
       DIMENSION XINT3(NRHFT,NRHFT,NRHFT,NRHFT)
@@ -308,12 +298,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -322,27 +313,16 @@ C
 
       LOGICAL DO_INTXY, DO_INTS0, DO_INTT0
       INTEGER LWORK
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK)
-      REAL XINT1T(NT1AMX*NVIRT*NVIRT)
-      REAL XINT2T(NRHFT*NRHFT*NT1AMX)
-      REAL XINT1S(NT1AMX*NVIRT*NVIRT)
-      REAL XINT2S(NRHFT*NRHFT*NT1AMX)
-      REAL XIAJB(NT1AMX*NT1AMX)
-      REAL YIAJB(NT1AMX*NT1AMX)
-      REAL XLAMDP(*), XLAMDH(*)
-#else
-      DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION XINT1T(NT1AMX*NVIRT*NVIRT)
-      DOUBLE PRECISION XINT2T(NRHFT*NRHFT*NT1AMX)
-      DOUBLE PRECISION XINT1S(NT1AMX*NVIRT*NVIRT)
-      DOUBLE PRECISION XINT2S(NRHFT*NRHFT*NT1AMX)
-      DOUBLE PRECISION XIAJB(NT1AMX*NT1AMX)
-      DOUBLE PRECISION YIAJB(NT1AMX*NT1AMX)
-      DOUBLE PRECISION XLAMDP(*), XLAMDH(*)
-#endif
+      REAL*8  WORK(LWORK)
+      REAL*8  XINT1T(NT1AMX*NVIRT*NVIRT)
+      REAL*8  XINT2T(NRHFT*NRHFT*NT1AMX)
+      REAL*8  XINT1S(NT1AMX*NVIRT*NVIRT)
+      REAL*8  XINT2S(NRHFT*NRHFT*NT1AMX)
+      REAL*8  XIAJB(NT1AMX*NT1AMX)
+      REAL*8  YIAJB(NT1AMX*NT1AMX)
+      REAL*8  XLAMDP(*), XLAMDH(*)
 
-      INTEGER ISYMD, ILLL, IDEL, ISYDIS, KXINT, KEND1, LWRK1, IRECNR
+      INTEGER ISYMD, ILLL, IDEL, ISYDIS, KXINT, KEND1, LWRK1
 
       CALL QENTER('CCSDT_INTS0_NODDY')
 
@@ -385,7 +365,7 @@ C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND1),LWRK1,
-     *                  IRECNR,DIRECT)
+     *                  IDUMMY,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:
@@ -432,14 +412,14 @@ C           ----------------------------------
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <ccnoddy.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "ccnoddy.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -447,11 +427,7 @@ C           ----------------------------------
       PARAMETER (ISYM0=1)
 
       INTEGER LWORK
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK), FF, DDOT
-#else
-      DOUBLE PRECISION WORK(LWORK), FF, DDOT
-#endif
+      REAL*8  WORK(LWORK), FF, DDOT
 
       LOGICAL DO_L03AM
 
@@ -460,7 +436,7 @@ C           ----------------------------------
      &        KLAMP0, KLAMH0, KINT1T0, KINT2T0, KINT1S0, KINT2S0,
      &        KXIAJB, KYIAJB, K0IOVVO, K0IOOVV, K0IOOOO, K0IVVVV,
      &        KT01AM, KT02AM, KT03AM, KT3SCR, LUSIFC, IOPT, LUFOCK,
-     &        LUTEMP, ILLL, IDEL, ISYMD, KRECNR, ISYDIS, KEND2, LWRK2,
+     &        LUTEMP, ILLL, IDEL, ISYMD, ISYDIS, KEND2, LWRK2,
      &        KXINT
 
       CALL QENTER('CCTINI')
@@ -675,10 +651,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
-            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
-            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
+     *                  IDUMMY,DIRECT) ! NB! DIRECT always .false. here
  
             CALL CCFOP_TRAN1_R(WORK(K0IOVVO),WORK(K0IOOVV),
      &                         WORK(K0IOOOO),WORK(K0IVVVV),
@@ -767,11 +741,11 @@ C           ---------------------------
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccfield.h>
-#include <ccnoddy.h>
-#include <ccsdinp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccfield.h"
+#include "ccnoddy.h"
+#include "ccsdinp.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -780,17 +754,10 @@ C           ---------------------------
 
       LOGICAL RD_FOCK0, RD_INTXY, RD_INTS0, RD_INTT0, RD_INTV0, RD_XLAM0
 
-#if defined (SYS_CRAY)
-      REAL FOCKD(*), FOCK0(*)
-      REAL FIELD(*), FIELDAO(*), XIAJB(*), YIAJB(*)
-      REAL XINT1S0(*), XINT2S0(*), XINT1T0(*), XINT2T0(*)
-      REAL XOVVO(*), XOOVV(*), XOOOO(*), XVVVV(*)
-#else
-      DOUBLE PRECISION FOCKD(*), FOCK0(*)
-      DOUBLE PRECISION FIELD(*), FIELDAO(*), XIAJB(*), YIAJB(*)
-      DOUBLE PRECISION XINT1S0(*), XINT2S0(*), XINT1T0(*), XINT2T0(*)
-      DOUBLE PRECISION XOVVO(*), XOOVV(*), XOOOO(*), XVVVV(*)
-#endif
+      REAL*8  FOCKD(*), FOCK0(*)
+      REAL*8  FIELD(*), FIELDAO(*), XIAJB(*), YIAJB(*)
+      REAL*8  XINT1S0(*), XINT2S0(*), XINT1T0(*), XINT2T0(*)
+      REAL*8  XOVVO(*), XOOVV(*), XOOOO(*), XVVVV(*)
 
       CALL QENTER('CCTRDI')
 

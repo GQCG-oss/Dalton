@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C     /* Deck nvbinp */
       SUBROUTINE NVBINP(WORD)
@@ -44,18 +34,18 @@ C     **** variables are initiated in this routine****
 C     **** so one needs to run NMDINI and NMDINP  ****
 C     **** first.                                 ****
 C     ************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 5)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7,
      &          WORD1*7
-#include <numder.h>
-#include <prpndr.h>
-#include <fcsym.h>
-#include <cbinum.h>
-#include <abainf.h>
-#include <cbiwlk.h>
+#include "numder.h"
+#include "prpndr.h"
+#include "fcsym.h"
+#include "cbinum.h"
+#include "abainf.h"
+#include "cbiwlk.h"
 C
       DATA TABLE /'.EFFECT','.HARM-P','.ANHA-P','.SPIN-S','.MODE A'/
 C
@@ -163,13 +153,13 @@ C
 C
 C  /* Deck nvbini */
       SUBROUTINE NVBINI
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <prpndr.h>
-#include <pvibav.h>
-#include <abainf.h>
+#include "prpndr.h"
+#include "pvibav.h"
+#include "abainf.h"
 C
 C     /PRPNDR/
       NSPNSP = .FALSE.
@@ -190,14 +180,14 @@ C     *** Subroutine that resets a few variables   ***
 C     *** if properties should be calculated using ***
 C     *** normal coordinates.                      ***
 C     ************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <prpndr.h>
-#include <abainf.h>
-#include <magone.h>
-#include <spnout.h>
+#include "prpndr.h"
+#include "abainf.h"
+#include "magone.h"
+#include "spnout.h"
 C
       IF (IPRINT.GT.20) THEN
          CALL HEADER('No properties calculated in this geometry of ' //
@@ -228,14 +218,14 @@ C     *** Driver routine for vibrational analysis ***
 C     *** from numerical derivatives. Property    ***
 C     *** derivatives and frequencies.            ***
 C     ***********************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <abainf.h>
-#include <trkoor.h>
-#include <cbinum.h>
-#include <numder.h>
+#include "abainf.h"
+#include "trkoor.h"
+#include "cbinum.h"
+#include "numder.h"
       DIMENSION DERIV(NDERIV), SYMCOR(NCOOR,NCOOR), FREQ(NCOOR),
      &          RNNORM(NCOOR), CSTART(NCOOR      ), WORK(LWORK)
 C
@@ -283,16 +273,16 @@ C  /* Deck ahrmvb */
 C     *********************************************************
 C     *** Readying the third derivative matrix for analyses ***
 C     *********************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <codata.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
-#include <trkoor.h>
-#include <cbinum.h>
-#include <inftap.h>
-#include <numder.h>
-#include <cbiwlk.h>
+#include "trkoor.h"
+#include "cbinum.h"
+#include "inftap.h"
+#include "numder.h"
+#include "cbiwlk.h"
       DIMENSION DERIV(NDERIV), SYMCOR(NCOOR,NCOOR), FREQ(NCOOR),
      &          TDER(NCOOR,NCOOR,NCOOR), EVEC(NCOOR,NCOOR),
      &          RNNORM(NCOOR), CSTART(NCOOR), WORK(LWORK)
@@ -371,10 +361,10 @@ C     *** Subroutine that transforms the third derivative from ***
 C     *** symmetry to cartesian coordinates (if not in normal  ***
 C     *** coor).                                               ***
 C     ************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <fcsym.h>
+#include "fcsym.h"
       CHARACTER*80 TEXT
       DIMENSION TDER  (NCOOR,NCOOR,NCOOR), TMPTDR(NCOOR,NCOOR,NCOOR),
      &          SYMCOR(NCOOR,NCOOR      ), CSTART(NCOOR            ),
@@ -424,10 +414,10 @@ C
 C
 C     /* Deck wravfl */
       SUBROUTINE WRAVFL(PRMTRX,NDIM1,NDIM2,NDIM3,PRPTXT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <numder.h>
+#include "numder.h"
       CHARACTER*9 PRPTXT
       DIMENSION PRMTRX(NDIM1,NDIM2,NDIM3)
 C
@@ -498,18 +488,18 @@ C     *** This routine keeps track of which property ***
 C     *** that will be read from file next. The      ***
 C     *** routine RDAVFL then reads it from file.    ***
 C     **************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <cbiexc.h>
-#include <inforb.h>
-#include <abainf.h>
-#include <trkoor.h>
-#include <numder.h>
-#include <gnrinf.h>
-#include <pvibav.h>
-#include <prpc.h>
+#include "cbiexc.h"
+#include "inforb.h"
+#include "abainf.h"
+#include "trkoor.h"
+#include "numder.h"
+#include "gnrinf.h"
+#include "pvibav.h"
+#include "prpc.h"
       CHARACTER*9 PRPTXT
       LOGICAL CCPRP
       DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL),
@@ -670,13 +660,13 @@ C
 C     /* Deck chprrd*/
       SUBROUTINE CHPRRD(SPSPFV,TRAMAT,TRLNFV,EXENFV,CCPRFV,NDIM1,NDIM2,
      &                  NDIM3,PRPTXT,CCPRP)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
 C
-#include <cbiexc.h>
-#include <trkoor.h>
-#include <inforb.h>
-#include <prpc.h>
+#include "cbiexc.h"
+#include "trkoor.h"
+#include "inforb.h"
+#include "prpc.h"
       LOGICAL CCPRP
       CHARACTER*9 PRPTXT
       DIMENSION SPSPFV(NCOOR,NCOOR,6), TRLNFV(3,NSYM,MXNEXI),
@@ -731,9 +721,9 @@ C     ****************************************************
 C     *** This routine reads a property from vib. ave. ***
 C     *** file, and stores it in PRMTRX.               ***
 C     ****************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <numder.h>
+#include "numder.h"
       CHARACTER*23 GRBG
       DIMENSION PRMTRX(NDIM1,NDIM2,NDIM3)
 C
@@ -760,12 +750,12 @@ C
 C     /* Deck otrten */
       SUBROUTINE OTRTEN(AMTRIX,TRAMAT,TMPMAT,NDIMA,NDIMT1,NDIMT2,
      &                  IPRINT,T1,T2)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
-#include <maxorb.h>
+#include "maxorb.h"
 C
-#include <infpar.h>
-#include <priunit.h>
+#include "infpar.h"
+#include "priunit.h"
       CHARACTER*1 T1, T2
       DIMENSION AMTRIX(NDIMA,NDIMA), TMPMAT(NDIMT1,NDIMT1),
      &          TRAMAT(NDIMT1,NDIMT2)
@@ -796,13 +786,13 @@ C     *** This subroutine organize the writing of ***
 C     *** properties and property derivatives for ***
 C     *** vibrational averaging.                  ***
 C     ***********************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
-#include <numder.h>
-#include <abainf.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "abainf.h"
       DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL),
      &          SPSPDR(NCOOR,NCOOR,6,NPPDER)
 C
@@ -836,13 +826,13 @@ C     *** starting geometry (FUNVAL) and the property derivative ***
 C     *** (DERVAL) to file (i.e. the values needed for           ***
 C     *** vibrational averaging.                                 ***
 C     **************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL PRIVAL
       CHARACTER*9 PRPTXT
       DIMENSION FUNVAL(NDIM1,NDIM2,NDIM3       ),
      &          DERVAL(NDIM1,NDIM2,NDIM3,NDERVL)
-#include <numder.h>
+#include "numder.h"
 C
 C     *** Function value ***
 C
@@ -890,12 +880,12 @@ C     *****************************************************
 C     *** This routine reads nessecary information from ***
 C     *** file, before doing the vibrational analysis.  ***
 C     *****************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
-#include <numder.h>
+#include "trkoor.h"
+#include "numder.h"
       CHARACTER*9 PRPTXT
       DIMENSION DERIV(NDERIV), SPSPDR(NCOOR,NCOOR,6,NPPDER),
      &          FREQ(NCOOR), SPSPFV(NCOOR,NCOOR,6), RNNORM(NCOOR),
@@ -939,12 +929,12 @@ C     **************************************************************
 C     *** This sorts out the nescecary information and calculate ***
 C     *** vibrational average of property in funval.             ***
 C     **************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
-#include <numder.h>
+#include "trkoor.h"
+#include "numder.h"
       CHARACTER*9 PRPTXT
       DIMENSION FDERIV(NDERIV), DERIVA(NDIM1,NDIM2,NDIM3,NPPDER),
      &          FREQ(NCOOR), FUNVAL(NDIM1,NDIM2,NDIM3), RNNORM(NCOOR),
@@ -978,12 +968,12 @@ C     **************************************************************
 C     *** This routine reads the nescecary information, from the ***
 C     *** file PROPERTY.NDER, for the vibrational averaging.     ***
 C     **************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <numder.h>
-#include <trkoor.h>
+#include "numder.h"
+#include "trkoor.h"
       CHARACTER*9  PRPTXT
       CHARACTER*11 GRBG
       LOGICAL RDDVAL
@@ -1094,15 +1084,15 @@ C     /* Deck clcvba */
       SUBROUTINE CLCVBA(FDERIV,FREQ,SYMCOR,RNNORM,FUNVAL,DERIVA,HARMCO,
      &                  AHRMCO,VIBAVE,TDER,WORK,NDERIV,NDIM1,NDIM2,
      &                  NDIM3,NPPDER,KTNRDR,LWORK,IPRINT,PRPTXT)
-#include <implicit.h>
-#include <priunit.h>
-#include <codata.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
+#include "mxcent.h"
       PARAMETER (D0=0.0D0, D025 = 0.25D0, D15=1.5D0, D2 = 2.0D0)
-#include <trkoor.h>
-#include <numder.h>
-#include <nuclei.h>
-#include <spnout.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "nuclei.h"
+#include "spnout.h"
       CHARACTER*9 PRPTXT
       DIMENSION FDERIV(NDERIV), FREQ(NCOOR), TDER(NDCOOR,NDCOOR,NDCOOR),
      &          DERIVA(NDIM1,NDIM2,NDIM3,NPPDER), RNNORM(NCOOR),
@@ -1309,13 +1299,13 @@ C
 C
 C  /* Deck sttder */
       SUBROUTINE STTDER(DERIV,TDER,RNNORM,NDERIV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1=1.0D0)
-#include <trkoor.h>
-#include <numder.h>
-#include <cbinum.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "cbinum.h"
       DIMENSION DERIV(NDERIV), TDER(NDCOOR,NDCOOR,NDCOOR), RNNORM(NCOOR)
 C
       DFAC = D1
@@ -1361,14 +1351,14 @@ C     /* Deck modean */
       SUBROUTINE MODEAN(DERIVA,FREQ,TDER,VIBAVE,RNNORM,FUNVAL,CMPVIB,
      &                  WORK,NDIM1,NDIM2,NDIM3,NPPDER,LWORK,IPRINT,
      &                  PRPTXT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0=0.0D0, D025 = 0.25D0, D2 = 2.0D0)
-#include <trkoor.h>
-#include <numder.h>
-#include <nuclei.h>
-#include <spnout.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "nuclei.h"
+#include "spnout.h"
       CHARACTER*9 PRPTXT
       DIMENSION CMPVIB(NDIM1,NDIM2,NDIM3,NDCOOR),
      &          DERIVA(NDIM1,NDIM2,NDIM3,NPPDER), FREQ(NCOOR),
@@ -1492,10 +1482,10 @@ C
 #ifdef NOT_USED_IN_THIS_DALTON_VERSION
 C     /* Deck rdrefg */
       SUBROUTINE RDREFG(EXCERF,NSYM,PRPTXT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <cbiexc.h>
+#include "cbiexc.h"
       CHARACTER*9 PRPTXT
       DIMENSION EXCERF(NSYM,MXNEXI)
 C

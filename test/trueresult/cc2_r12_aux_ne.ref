@@ -1,84 +1,107 @@
 
 
-         ****************************************************************
-         *********** DALTON - An electronic structure program ***********
-         ****************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Jakob Kongsted,           Aarhus University,            Denmark    
-    Henrik Koch,              University of Trondheim,      Norway     
-    Andrea Ligabue,           University of Modena,         Italy      
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Anders Osted,             Copenhagen University,        Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed Jul  9 09:09:50 2008
-     Host name              : fatduck                                 
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
+
+
+     Date and time (Linux)  : Wed Mar 16 19:47:45 2011 
+     Host name              : fe6                                     
+
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
@@ -86,32 +109,28 @@
 
     AO-direct calculation (in sections where implemented)
     HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
     Wave function sections will be executed (SIRIUS module)
  --------------------------------------------------------------------------------
 
-Starting in Integral Section -
+
+ INFO : "*READIN" is deprecated, use instead "*MOLBAS"
 
 
 
-    *************************************************************************
-    ****************** Output from HERMIT input processing ******************
-    *************************************************************************
+ Changes of defaults for *MOLBAS:
+ --------------------------------
+
+ Print level in molecule setup (READIN):    1
+
+ .R12AUX: Reading auxiliary basis sets from .mol file for R12
 
 
- Default print level:        1
 
- * Nuclear model: Point charge
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
- Calculation of one-electron Hamiltonian integrals.
-
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - Cartesian multipole moment integrals of orders 2 and lower
-
-
-    *************************************************************************
-    ****************** Output from READIN input processing ******************
-    *************************************************************************
 
     The two title cards from your ".mol" input:
     ------------------------------------------------------------------------
@@ -122,20 +141,28 @@ Starting in Integral Section -
   Atomic type no.    1
   --------------------
   Nuclear charge:  10.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
   Used basis set file for basis set for elements with Z =  10 :
-     "/home/ruud/dalton/dalton/basis/6-31G"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G                                                                           
 
   Atomic type no.    2
   --------------------
   Nuclear charge:  10.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  This is an auxiliary basis for R12, MBSI:    2
   Used basis set file for basis set for elements with Z =  10 :
-     "/home/ruud/dalton/dalton/basis/6-311++G(3df,3pd)"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311++G(3df,3pd)"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-311++G(3df,3pd)                                                               
 
 
-                          SYMGRP:Point group information
-                          ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: D2h
 
@@ -149,13 +176,13 @@ Point group: D2h
 
         |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
    -----+----------------------------------------
-     E  |  E 
-    C2z | C2z   E 
-    C2y | C2y  C2x   E 
-    C2x | C2x  C2y  C2z   E 
-     i  |  i   Oxy  Oxz  Oyz   E 
-    Oxy | Oxy   i   Oyz  Oxz  C2z   E 
-    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E 
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
     Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
 
    * Character table
@@ -175,13 +202,13 @@ Point group: D2h
 
         | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
    -----+----------------------------------------
-    Ag  | Ag 
-    B3u | B3u  Ag 
-    B2u | B2u  B1g  Ag 
-    B1g | B1g  B2u  B3u  Ag 
-    B1u | B1u  B2g  B3g  Au   Ag 
-    B2g | B2g  B1u  Au   B3g  B3u  Ag 
-    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag 
+    Ag  | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+    B3u | B3u  Ag   B1g  B2u  B2g  B1u  Au   B3g
+    B2u | B2u  B1g  Ag   B3u  B3g  Au   B1u  B2g
+    B1g | B1g  B2u  B3u  Ag   Au   B3g  B2g  B1u
+    B1u | B1u  B2g  B3g  Au   Ag   B3u  B2u  B1g
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   B1g  B2u
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   B3u
     Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
 
 
@@ -200,12 +227,12 @@ Point group: D2h
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    2
 
-  Basis-set 1 refers to the basis "6-31G" from the basis-set library.
+  Basis set 1 refers to the basis "6-31G" from the basis set library.
 
-  Basis-set 2 refers to the basis "6-311++G(3df,3pd)" from the basis-set library.
+  Basis set 2 refers to the basis "6-311++G(3df,3pd)" from the basis set library.
 
   label  basis   atoms  charge   prim  cont     basis
   ------------------------------------------------------------------------------
@@ -216,36 +243,36 @@ Point group: D2h
   ------------------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
   Cartesian Coordinates (a.u.)
   ----------------------------
 
   Total number of coordinates:    6
-  Ne      :    1  x   0.0000000000   2  y   0.0000000000   3  z   0.0000000000
-  Ne      :    4  x   0.0000000000   5  y   0.0000000000   6  z   0.0000000000
+  Ne      :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  Ne      :     4  x   0.0000000000    5  y   0.0000000000    6  z   0.0000000000
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:    0   2   2   0   2   0   0   0
+  Number of coordinates in each symmetry:     0    2    2    0    2    0    0    0
 
   Symmetry  B3u ( 2)
 
-   1   Ne    x    1
-   2   Ne    x    4
+    1   Ne    x    1
+    2   Ne    x    4
 
   Symmetry  B2u ( 3)
 
-   3   Ne    y    2
-   4   Ne    y    5
+    3   Ne    y    2
+    4   Ne    y    5
 
   Symmetry  B1u ( 5)
 
-   5   Ne    z    3
-   6   Ne    z    6
+    5   Ne    z    3
+    6   Ne    z    6
 
 
   Bond distances (Angstrom):
@@ -272,16 +299,16 @@ Point group: D2h
 
 
 
-  Nuclear repulsion energy :    0.000000000000
+@  Nuclear repulsion energy :    0.000000000000
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              14   8   8   3   8   3   3   1
+  Number of orbitals in each symmetry:          14    8    8    3    8    3    3    1
 
-  Number of main orbitals in each symmetry:          3   2   2   0   2   0   0   0
-  Number of auxiliary functions in each symmetry:   11   6   6   3   6   3   3   1
+  Number of main orbitals in each symmetry:           3    2    2    0    2    0    0    0
+  Number of auxiliary functions in each symmetry:    11    6    6    3    6    3    3    1
 
 
   Symmetry  Ag ( 1)
@@ -363,39 +390,74 @@ Point group: D2h
 
    48     Ne   A   4f2-      43
 
+  Number of floating/multiple basis set orbitals :    1
+
   Symmetries of electric field:  B3u(2)  B2u(3)  B1u(5)
 
   Symmetries of magnetic field:  B3g(7)  B2g(6)  B1g(4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - Cartesian multipole moment integrals of orders 2 and lower
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
      ************************************************************************
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
 
  >>>> Detected R12 input:
  Direct Fock matrix formation switched on!
  Scale factors for CC excitations manifolds:
- for bra states (projection manifold):  1.
- for ket states (operator manifold)  :  1.
+ for bra states (projection manifold):  1.00000000000000000     
+ for ket states (operator manifold)  :  1.00000000000000000     
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Jul  9 09:09:50 2008
-     Host name              : fatduck                                 
+     Date and time (Linux)  : Wed Mar 16 19:47:45 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      Ne                                                                      
                                                                              
 
@@ -407,7 +469,7 @@ Starting in Wave Function Section -
 
      This is a combination run starting with
 
-               an RHF calculation
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -417,12 +479,13 @@ Starting in Wave Function Section -
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                  9
 
      Spin multiplicity                         1
      Total number of symmetries                8
@@ -430,21 +493,32 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2   3   4   5   6   7   8
-                                       --  --  --  --  --  --  --  --
-     Total number of orbitals           3   2   2   0   2   0   0   0
-     Number of basis functions         14   8   8   3   8   3   3   1
+     Abelian symmetry species          All |    1    2    3    4    5    6    7    8
+                                       --- |  ---  ---  ---  ---  ---  ---  ---  ---
+     Total number of orbitals            9 |    3    2    2    0    2    0    0    0
+     Number of basis functions          48 |   14    8    8    3    8    3    3    1
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
-      -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals              2   1   1   0   1   0   0   0
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               5 |    2    1    1    0    1    0    0    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
-     Threshold for SCF convergence     1.00E-10
+     Threshold for SCF convergence     1.00D-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+  
 
 
  Changes of defaults for CC:
@@ -467,29 +541,45 @@ Starting in Wave Function Section -
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
    1  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   1  -122.655286244       9.15E+00  -1.23E+02    2  1  1  0  1  0  0  0
- POP Ne 10.00;
+   1  -122.655286244       9.15D+00  -1.23D+02    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      1.778056
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    2  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   2  -127.358153170       6.06E+00  -4.70E+00    2  1  1  0  1  0  0  0
- POP Ne 10.00;
+   2  -127.358153170       6.06D+00  -4.70D+00    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      2.084309
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    3  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   3  -128.471546261       2.72E-01  -1.11E+00    2  1  1  0  1  0  0  0
- POP Ne 10.00;
+   3  -128.471546261       2.72D-01  -1.11D+00    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      2.002796
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
    4  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   4  -128.473805769       5.68E-02  -2.26E-03    2  1  1  0  1  0  0  0
- POP Ne 10.00;
+   4  -128.473805769       5.68D-02  -2.26D-03    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      1.999215
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
    5  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   5  -128.473873190       1.25E-02  -6.74E-05    2  1  1  0  1  0  0  0
- POP Ne 10.00;
+   5  -128.473873190       1.25D-02  -6.74D-05    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      1.999825
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
    6  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   6  -128.473876870       1.01E-04  -3.68E-06    2  1  1  0  1  0  0  0
- POP Ne 10.00;
+   6  -128.473876870       1.01D-04  -3.68D-06    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      2.000002
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    7  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   7  -128.473876871       1.28E-07  -2.90E-10    2  1  1  0  1  0  0  0
- POP Ne 10.00;
+   7  -128.473876871       1.28D-07  -2.90D-10    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      2.000004
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    8  Screening settings (-IFTHRS, DIFDEN)  -20    F
-   8  -128.473876871       1.49E-11   0.00E+00    2  1  1  0  1  0  0  0
- DIIS converged in   8 iterations !
+   8  -128.473876871       1.49D-11   0.00D+00    2  1  1  0  1  0  0  0
+
+ *** DIIS converged in   8 iterations !
+   - total time used in SIRFCK :              0.01 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -509,8 +599,8 @@ Starting in Wave Function Section -
 
   5     -0.83077071     1.75579895
 
-    E(LUMO) :     1.75579895 au (symmetry 5)
-  - E(HOMO) :    -0.83077071 au (symmetry 3)
+    E(LUMO) :     1.75579895 au (symmetry 2)
+  - E(HOMO) :    -0.83077071 au (symmetry 5)
   ------------------------------------------
     gap     :     2.58656966 au
 
@@ -541,64 +631,75 @@ Starting in Wave Function Section -
    8      0.217880986967
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -128.473876870544
+     Final HF energy:            -128.473876870545                 
      Nuclear repulsion:             0.000000000000
-     Electronic energy:          -128.473876870544
+     Electronic energy:          -128.473876870545
 
      Final gradient norm:           0.000000000015
 
  
-     Date and time (Linux)  : Wed Jul  9 09:09:50 2008
-     Host name              : fatduck                                 
+     Date and time (Linux)  : Wed Mar 16 19:47:45 2011 
+     Host name              : fe6                                     
+
+ (Only coefficients >0.0100 are printed.)
 
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3
-   1 Ne  :1s     0.9955  -0.2448  -0.1262
-   2 Ne  :1s     0.0201   0.5456   1.4644
-   3 Ne  :1s    -0.0038   0.5485  -1.4353
+    Orbital         1        2        3
+   1 Ne  :1s     0.9955  -0.2448   0.1262
+   2 Ne  :1s     0.0201   0.5456  -1.4644
+   3 Ne  :1s    -0.0038   0.5485   1.4353
 
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 Ne  :2px    0.6902
    2 Ne  :2px    0.4593
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
-   1 Ne  :2py    0.6902   0.9190
-   2 Ne  :2py    0.4593  -1.0536
+    Orbital         1        2
+   1 Ne  :2py    0.6902  -0.9190
+   2 Ne  :2py    0.4593   1.0536
 
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2
-   1 Ne  :2pz    0.6902   0.9190
-   2 Ne  :2pz    0.4593  -1.0536
+    Orbital         1        2
+   1 Ne  :2pz    0.6902  -0.9190
+   2 Ne  :2pz    0.4593   1.0536
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.04 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Jul  9 09:09:50 2008
-     Host name              : fatduck                                 
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 19:47:45 2011 
+     Host name              : fe6                                     
 
 
-Starting Coupled Cluster -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
 
   
 
@@ -615,11 +716,11 @@ Starting Coupled Cluster -
 
   I am freezing!
   >> output from FNDMN3 <<
-  NUMBER OF ELEMENTS OBTAINED IN FNDMN3  1
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            1
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      1
-  MIN AND MAX IN SELECTED SUPSPACE  -32.7593234 -32.7593234
+  MIN AND MAX IN SELECTED SUPSPACE   -32.759323407610168       -32.759323407610168     
  Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -32.7593
  In total frozen-core per symmetry-class:  1  0  0  0  0  0  0  0
  
@@ -665,27 +766,19 @@ Starting Coupled Cluster -
  Core memory required by CCSD_R12 :          29586  (double words)
 
  Computation of (ip'|r12|jq') integrals done
-
- >>> Time used in R  [6] is   0.51 seconds
-
+ >>> Time used in R  [6] is   0.42 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of V^aj_kl intermediate done
 
  >>> Time used for V^aj_kl is    0.00 seconds
 
  Computation of (ip'|1/r12|jq') integrals done
-
- >>> Time used in 1/R[5] is   0.23 seconds
-
+ >>> Time used in 1/R[5] is   0.15 seconds
  Computation of (ip'|r12|jq')X(p'r')(kr'|r12|lq') integrals done
  Computation of (i'p'|r12|jq') integrals done
-
- >>> Time used in R  [6] is   0.51 seconds
-
+ >>> Time used in R  [6] is   0.43 seconds
  Computation of (ip'|[T,r12]|jq') integrals done
-
- >>> Time used in T,R[5] is   0.24 seconds
-
+ >>> Time used in T,R[5] is   0.18 seconds
 
 
                  +-----------------------------------------------+
@@ -716,16 +809,16 @@ Starting Coupled Cluster -
 
  SECOND-ORDER R12/A PAIR ENERGIES:
 
-   1   -0.003431990   -0.013265202    0.000000000    0.000000000     1.74157         3.06925    
+   1   -0.003431990   -0.013265202    0.000000000   -0.000000000     1.74157         3.06925    
    2   -0.006423879   -0.014915321   -0.004418127   -0.006884706     1.74157         3.06925    
-   3   -0.008648319   -0.027368706    0.000000000    0.000000000     1.74157         3.06925    
+   3   -0.008648319   -0.027368706    0.000000000   -0.000000000     1.74157         3.06925    
    4   -0.006423879   -0.014523835   -0.004418127   -0.006801265     1.74157         3.06925    
    5   -0.006273668   -0.014900054   -0.010877113   -0.029291684     1.74157         3.06925    
-   6   -0.008648319   -0.025477449    0.000000000    0.000000000     1.74157         3.06925    
+   6   -0.008648319   -0.025477449    0.000000000   -0.000000000     1.74157         3.06925    
    7   -0.006423879   -0.014523835   -0.004418127   -0.006801265     1.74157         3.06925    
    8   -0.006273668   -0.014900054   -0.010877113   -0.029291684     1.74157         3.06925    
    9   -0.006273668   -0.014845418   -0.010877113   -0.029253236     1.74157         3.06925    
-  10   -0.008648319   -0.025477449    0.000000000    0.000000000     1.74157         3.06925    
+  10   -0.008648319   -0.025477449    0.000000000   -0.000000000     1.74157         3.06925    
 
        -0.067469586   -0.180197321   -0.045885718   -0.108323841
 
@@ -733,30 +826,30 @@ Starting Coupled Cluster -
 
  SECOND-ORDER R12/B PAIR ENERGIES:
 
-   1   -0.003431990   -0.010634614    0.000000000    0.000000000     7.23764         7.84469    
+   1   -0.003431990   -0.010634614    0.000000000   -0.000000000     7.23764         7.84469    
    2   -0.006423879   -0.013610558   -0.004418127   -0.006493065     6.15759         6.76465    
-   3   -0.008648319   -0.023210226    0.000000000    0.000000000     5.07754         5.68460    
+   3   -0.008648319   -0.023210226    0.000000000   -0.000000000     5.07754         5.68460    
    4   -0.006423879   -0.013199747   -0.004418127   -0.006394431     6.15759         6.76465    
    5   -0.006273668   -0.013208915   -0.010877113   -0.025701263     5.07754         5.68460    
-   6   -0.008648319   -0.022179072    0.000000000    0.000000000     5.07754         5.68460    
+   6   -0.008648319   -0.022179072    0.000000000   -0.000000000     5.07754         5.68460    
    7   -0.006423879   -0.013199747   -0.004418127   -0.006394431     6.15759         6.76465    
    8   -0.006273668   -0.013208915   -0.010877113   -0.025701263     5.07754         5.68460    
    9   -0.006273668   -0.012990304   -0.010877113   -0.025276178     5.07754         5.68460    
-  10   -0.008648319   -0.022179072    0.000000000    0.000000000     5.07754         5.68460    
+  10   -0.008648319   -0.022179072    0.000000000   -0.000000000     5.07754         5.68460    
 
        -0.067469586   -0.157621169   -0.045885718   -0.095960631
 
               MP2-R12/B   correlation energy =   -0.253581799
- Time for MP2-R12 part cpu:  1.50809491
- Time for MP2-R12 part wall:  2.
+ Time for MP2-R12 part cpu:   1.2008170560002327     
+ Time for MP2-R12 part wall:   2.0000000000000000     
 
   I am freezing!
   >> output from FNDMN3 <<
-  NUMBER OF ELEMENTS OBTAINED IN FNDMN3  1
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            1
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      1
-  MIN AND MAX IN SELECTED SUPSPACE  -32.7593234 -32.7593234
+  MIN AND MAX IN SELECTED SUPSPACE   -32.759323407610168       -32.759323407610168     
  Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -32.7593
  In total frozen-core per symmetry-class:  1  0  0  0  0  0  0  0
  
@@ -782,130 +875,143 @@ Starting Coupled Cluster -
 
  Iter.  1: Coupled cluster MP2-R12/B energy :    -128.7274586699953147
      Conventional correlation energy:    -0.1133553046066424
-     R12 correlation energy         :    -0.1402264948441947
-     Total correlation energy       :    -0.2535817994508372
+     R12 correlation energy         :    -0.1402264948441705
+     Total correlation energy       :    -0.2535817994508129
 
 
        Iteration no.:  1
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.18 seconds
-       Norm^2 of omega1 after ccvec:        0.4294393747E-03
-       Norm^2 of omega2 after ccvec:        0.4052983893E-32
-       Norm^2 of Omegar12  in NXTAM:        0.1043146387E-28
+       Time used in   RHS - TOTAL  :       0.11 seconds
+       Norm^2 of omega1 after ccvec:        0.4294393747D-03
+       Norm^2 of omega2 after ccvec:        0.3647350203D-30
+       Norm^2 of Omegar12  in NXTAM:        0.2789705855D-28
  Iter.  1: Coupled cluster CC2-R12/B energy :    -128.7274042313832751
      Conventional correlation energy:    -0.1133008659946029
-     R12 correlation energy         :    -0.1402264948441953
-     Total correlation energy       :    -0.2535273608387982
+     R12 correlation energy         :    -0.1402264948441677
+     Total correlation energy       :    -0.2535273608387706
 
 
        Iteration no.:  2
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.18 seconds
-       Norm^2 of omega1 after ccvec:        0.2421979867E-05
-       Norm^2 of omega2 after ccvec:        0.4528294221E-05
-       Norm^2 of Omegar12  in NXTAM:        0.3802623858E-06
+       Time used in   RHS - TOTAL  :       0.11 seconds
+       Norm^2 of omega1 after ccvec:        0.2421979867D-05
+       Norm^2 of omega2 after ccvec:        0.4528294221D-05
+       Norm^2 of Omegar12  in NXTAM:        0.3802623858D-06
  Iter.  2: Coupled cluster CC2-R12/B energy :    -128.7277042828488050
      Conventional correlation energy:    -0.1136927997393968
-     R12 correlation energy         :    -0.1401346125649354
-     Total correlation energy       :    -0.2538274123043323
+     R12 correlation energy         :    -0.1401346125649075
+     Total correlation energy       :    -0.2538274123043043
 
 
        Iteration no.:  3
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.19 seconds
-       Norm^2 of omega1 after ccvec:        0.8446993552E-07
-       Norm^2 of omega2 after ccvec:        0.1351064265E-07
-       Norm^2 of Omegar12  in NXTAM:        0.2200733188E-08
+       Time used in   RHS - TOTAL  :       0.10 seconds
+       Norm^2 of omega1 after ccvec:        0.8446993552D-07
+       Norm^2 of omega2 after ccvec:        0.1351064265D-07
+       Norm^2 of Omegar12  in NXTAM:        0.2200733188D-08
  Iter.  3: Coupled cluster CC2-R12/B energy :    -128.7277136229157009
      Conventional correlation energy:    -0.1137001751399112
-     R12 correlation energy         :    -0.1401365772313124
-     Total correlation energy       :    -0.2538367523712236
+     R12 correlation energy         :    -0.1401365772312853
+     Total correlation energy       :    -0.2538367523711964
 
 
        Iteration no.:  4
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.18 seconds
-       Norm^2 of omega1 after ccvec:        0.2820285518E-08
-       Norm^2 of omega2 after ccvec:        0.3018619120E-09
-       Norm^2 of Omegar12  in NXTAM:        0.7307144280E-10
+       Time used in   RHS - TOTAL  :       0.10 seconds
+       Norm^2 of omega1 after ccvec:        0.2820285518D-08
+       Norm^2 of omega2 after ccvec:        0.3018619120D-09
+       Norm^2 of Omegar12  in NXTAM:        0.7307144281D-10
  Iter.  4: Coupled cluster CC2-R12/B energy :    -128.7277137258242306
      Conventional correlation energy:    -0.1136992432649038
-     R12 correlation energy         :    -0.1401376120148644
-     Total correlation energy       :    -0.2538368552797682
+     R12 correlation energy         :    -0.1401376120148367
+     Total correlation energy       :    -0.2538368552797405
 
 
        Iteration no.:  5
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.19 seconds
-       Norm^2 of omega1 after ccvec:        0.1017375691E-10
-       Norm^2 of omega2 after ccvec:        0.2622690277E-11
-       Norm^2 of Omegar12  in NXTAM:        0.7153655328E-12
+       Time used in   RHS - TOTAL  :       0.10 seconds
+       Norm^2 of omega1 after ccvec:        0.1017375688D-10
+       Norm^2 of omega2 after ccvec:        0.2622690273D-11
+       Norm^2 of Omegar12  in NXTAM:        0.7153655310D-12
  Iter.  5: Coupled cluster CC2-R12/B energy :    -128.7277137473161872
      Conventional correlation energy:    -0.1136991907923459
-     R12 correlation energy         :    -0.1401376859793591
-     Total correlation energy       :    -0.2538368767717051
+     R12 correlation energy         :    -0.1401376859793324
+     Total correlation energy       :    -0.2538368767716783
 
 
        Iteration no.:  6
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.18 seconds
-       Norm^2 of omega1 after ccvec:        0.6605181138E-13
-       Norm^2 of omega2 after ccvec:        0.1264168173E-13
-       Norm^2 of Omegar12  in NXTAM:        0.7196549209E-15
+       Time used in   RHS - TOTAL  :       0.10 seconds
+       Norm^2 of omega1 after ccvec:        0.6605181162D-13
+       Norm^2 of omega2 after ccvec:        0.1264168162D-13
+       Norm^2 of Omegar12  in NXTAM:        0.7196549334D-15
  Iter.  6: Coupled cluster CC2-R12/B energy :    -128.7277137492960435
      Conventional correlation energy:    -0.1136991945617467
-     R12 correlation energy         :    -0.1401376841898354
-     Total correlation energy       :    -0.2538368787515821
+     R12 correlation energy         :    -0.1401376841898082
+     Total correlation energy       :    -0.2538368787515549
 
 
        Iteration no.:  7
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.18 seconds
-       Norm^2 of omega1 after ccvec:        0.5145069598E-17
-       Norm^2 of omega2 after ccvec:        0.1922395726E-17
-       Norm^2 of Omegar12  in NXTAM:        0.8076561358E-19
+       Time used in   RHS - TOTAL  :       0.10 seconds
+       Norm^2 of omega1 after ccvec:        0.5145059188D-17
+       Norm^2 of omega2 after ccvec:        0.1922392035D-17
+       Norm^2 of Omegar12  in NXTAM:        0.8076562272D-19
  Iter.  7: Coupled cluster CC2-R12/B energy :    -128.7277137492772283
      Conventional correlation energy:    -0.1136991945641341
-     R12 correlation energy         :    -0.1401376841686115
-     Total correlation energy       :    -0.2538368787327456
+     R12 correlation energy         :    -0.1401376841685839
+     Total correlation energy       :    -0.2538368787327181
 
 
        Iteration no.:  8
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.18 seconds
-       Norm^2 of omega1 after ccvec:        0.2670673918E-21
-       Norm^2 of omega2 after ccvec:        0.6005076665E-22
-       Norm^2 of Omegar12  in NXTAM:        0.1768180660E-23
- Iter.  8: Coupled cluster CC2-R12/B energy :    -128.7277137492760914
+       Time used in   RHS - TOTAL  :       0.10 seconds
+       Norm^2 of omega1 after ccvec:        0.2670872315D-21
+       Norm^2 of omega2 after ccvec:        0.6005671882D-22
+       Norm^2 of Omegar12  in NXTAM:        0.1769004247D-23
+ Iter.  8: Coupled cluster CC2-R12/B energy :    -128.7277137492761199
      Conventional correlation energy:    -0.1136991945624857
-     R12 correlation energy         :    -0.1401376841691460
-     Total correlation energy       :    -0.2538368787316316
+     R12 correlation energy         :    -0.1401376841691190
+     Total correlation energy       :    -0.2538368787316047
 
 
        Iteration no.:  9
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.18 seconds
-       Norm^2 of omega1 after ccvec:        0.9207573681E-26
-       Norm^2 of omega2 after ccvec:        0.1611289447E-25
-       Norm^2 of Omegar12  in NXTAM:        0.4106104785E-27
+       Time used in   RHS - TOTAL  :       0.10 seconds
+       Norm^2 of omega1 after ccvec:        0.8765721747D-26
+       Norm^2 of omega2 after ccvec:        0.1618622629D-25
+       Norm^2 of Omegar12  in NXTAM:        0.4380060607D-27
  Iter.  9: Coupled cluster CC2-R12/B energy :    -128.7277137492760914
      Conventional correlation energy:    -0.1136991945624857
-     R12 correlation energy         :    -0.1401376841691389
-     Total correlation energy       :    -0.2538368787316246
+     R12 correlation energy         :    -0.1401376841691113
+     Total correlation energy       :    -0.2538368787315970
 
 
- CC2-R12/B energy converged to within   0.10E-13 is   -128.727713749
- Final 2-norm of the CC vector function:  1.59124065E-13
- R12       energy converged to within   0.10E-13 is     -0.140137684
+       Iteration no.: 10
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.10 seconds
+       Norm^2 of omega1 after ccvec:        0.6637885604D-28
+       Norm^2 of omega2 after ccvec:        0.9829681621D-28
+       Norm^2 of Omegar12  in NXTAM:        0.7842313881D-29
+ Iter. 10: Coupled cluster CC2-R12/B energy :    -128.7277137492760914
+     Conventional correlation energy:    -0.1136991945624857
+     R12 correlation energy         :    -0.1401376841691115
+     Total correlation energy       :    -0.2538368787315972
+
+
+ CC2-R12/B energy converged to within   0.10D-13 is   -128.727713749
+ Final 2-norm of the CC vector function:  1.28326019D-14
+ R12       energy converged to within   0.10D-13 is     -0.140137684
 
 
                     +------------------------------------------+
@@ -934,8 +1040,8 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 3   3   |   1       1     |        3          |              |   -0.004851  |
- | 5   5   |   1       1     |        4          |              |   -0.004851  |
+ | 3   3   |   1       1     |        3          |              |    0.004851  |
+ | 5   5   |   1       1     |        4          |              |    0.004851  |
  +-----------------------------------------------------------------------------+
  | 2 2 2 2 |   1   1   1   1 |        2        2 |            3 |   -0.039082  |
  | 3 3 3 3 |   1   1   1   1 |        3        3 |            6 |   -0.039173  |
@@ -981,8 +1087,8 @@ Starting Coupled Cluster -
  CCR12 APPROX =   7
 
  Preparing R12 V-interm. ... ONEAUX= F
- Time used for V^albe_kl cpu:  0.180011034
- Time used for V^albe_kl wall:  1.
+ Time used for V^albe_kl cpu:  0.10198497772216797     
+ Time used for V^albe_kl wall:   0.0000000000000000     
 
    
 
@@ -1006,195 +1112,195 @@ Starting Coupled Cluster -
 
  Iter.  1: Coupled cluster RSTAR(R12)/B energy :    -128.7277137492760914
      Conventional correlation energy:    -0.1136991945624857
-     R12 correlation energy         :    -0.1401376841691389
-     Total correlation energy       :    -0.2538368787316246
+     R12 correlation energy         :    -0.1401376841691115
+     Total correlation energy       :    -0.2538368787315972
 
 
        Iteration no.:  1
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.05 seconds
-       Norm^2 of omega1 after ccvec:        0.7526750448E-28
-       Norm^2 of omega2 after ccvec:        0.1288364763E-02
-       Norm^2 of Omegar12  in NXTAM:        0.7110542353E-04
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.1712025694D-29
+       Norm^2 of omega2 after ccvec:        0.1288364763D-02
+       Norm^2 of Omegar12  in NXTAM:        0.7110542353D-04
  Iter.  1: Coupled cluster CCSD(R12)/B energy :    -128.7213645725519200
      Conventional correlation energy:    -0.1095531994175474
-     R12 correlation energy         :    -0.1379345025899093
-     Total correlation energy       :    -0.2474877020074567
+     R12 correlation energy         :    -0.1379345025898821
+     Total correlation energy       :    -0.2474877020074295
 
 
        Iteration no.:  2
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.04 seconds
-       Norm^2 of omega1 after ccvec:        0.1512103938E-05
-       Norm^2 of omega2 after ccvec:        0.1617179084E-03
-       Norm^2 of Omegar12  in NXTAM:        0.2369659915E-07
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.1512103938D-05
+       Norm^2 of omega2 after ccvec:        0.1617179084D-03
+       Norm^2 of Omegar12  in NXTAM:        0.2369659915D-07
  Iter.  2: Coupled cluster CCSD(R12)/B energy :    -128.7223401491208392
      Conventional correlation energy:    -0.1105157765815932
-     R12 correlation energy         :    -0.1379475019947787
-     Total correlation energy       :    -0.2484632785763719
+     R12 correlation energy         :    -0.1379475019947515
+     Total correlation energy       :    -0.2484632785763447
 
 
        Iteration no.:  3
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.05 seconds
-       Norm^2 of omega1 after ccvec:        0.1795447343E-06
-       Norm^2 of omega2 after ccvec:        0.1081766164E-04
-       Norm^2 of Omegar12  in NXTAM:        0.2903362276E-07
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.1795447343D-06
+       Norm^2 of omega2 after ccvec:        0.1081766164D-04
+       Norm^2 of Omegar12  in NXTAM:        0.2903362276D-07
  Iter.  3: Coupled cluster CCSD(R12)/B energy :    -128.7224860040562362
      Conventional correlation energy:    -0.1106970262971174
-     R12 correlation energy         :    -0.1379121072146429
-     Total correlation energy       :    -0.2486091335117603
+     R12 correlation energy         :    -0.1379121072146157
+     Total correlation energy       :    -0.2486091335117331
 
 
        Iteration no.:  4
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.04 seconds
-       Norm^2 of omega1 after ccvec:        0.3264790200E-08
-       Norm^2 of omega2 after ccvec:        0.1119896716E-06
-       Norm^2 of Omegar12  in NXTAM:        0.7119435564E-09
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.3264790200D-08
+       Norm^2 of omega2 after ccvec:        0.1119896716D-06
+       Norm^2 of Omegar12  in NXTAM:        0.7119435564D-09
  Iter.  4: Coupled cluster CCSD(R12)/B energy :    -128.7225067028765011
      Conventional correlation energy:    -0.1107226030869697
-     R12 correlation energy         :    -0.1379072292450658
-     Total correlation energy       :    -0.2486298323320355
+     R12 correlation energy         :    -0.1379072292450386
+     Total correlation energy       :    -0.2486298323320083
 
 
        Iteration no.:  5
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.05 seconds
-       Norm^2 of omega1 after ccvec:        0.3558767150E-10
-       Norm^2 of omega2 after ccvec:        0.2792325671E-08
-       Norm^2 of Omegar12  in NXTAM:        0.4254168217E-11
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.3558767149D-10
+       Norm^2 of omega2 after ccvec:        0.2792325671D-08
+       Norm^2 of Omegar12  in NXTAM:        0.4254168217D-11
  Iter.  5: Coupled cluster CCSD(R12)/B energy :    -128.7225054926282439
      Conventional correlation energy:    -0.1107211595792421
-     R12 correlation energy         :    -0.1379074625045253
-     Total correlation energy       :    -0.2486286220837675
+     R12 correlation energy         :    -0.1379074625044981
+     Total correlation energy       :    -0.2486286220837403
 
 
        Iteration no.:  6
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.04 seconds
-       Norm^2 of omega1 after ccvec:        0.1344076850E-11
-       Norm^2 of omega2 after ccvec:        0.5676868487E-10
-       Norm^2 of Omegar12  in NXTAM:        0.4429138110E-13
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.1344076860D-11
+       Norm^2 of omega2 after ccvec:        0.5676868487D-10
+       Norm^2 of Omegar12  in NXTAM:        0.4429138111D-13
  Iter.  6: Coupled cluster CCSD(R12)/B energy :    -128.7225057308966427
      Conventional correlation energy:    -0.1107213333593222
-     R12 correlation energy         :    -0.1379075269928349
-     Total correlation energy       :    -0.2486288603521571
+     R12 correlation energy         :    -0.1379075269928077
+     Total correlation energy       :    -0.2486288603521299
 
 
        Iteration no.:  7
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.05 seconds
-       Norm^2 of omega1 after ccvec:        0.2079600549E-14
-       Norm^2 of omega2 after ccvec:        0.1843847997E-12
-       Norm^2 of Omegar12  in NXTAM:        0.1479041496E-14
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.2079600208D-14
+       Norm^2 of omega2 after ccvec:        0.1843847995D-12
+       Norm^2 of Omegar12  in NXTAM:        0.1479041500D-14
  Iter.  7: Coupled cluster CCSD(R12)/B energy :    -128.7225057320177370
      Conventional correlation energy:    -0.1107213405292669
-     R12 correlation energy         :    -0.1379075209439917
-     Total correlation energy       :    -0.2486288614732586
+     R12 correlation energy         :    -0.1379075209439645
+     Total correlation energy       :    -0.2486288614732314
 
 
        Iteration no.:  8
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.04 seconds
-       Norm^2 of omega1 after ccvec:        0.2085313519E-16
-       Norm^2 of omega2 after ccvec:        0.1898174078E-14
-       Norm^2 of Omegar12  in NXTAM:        0.7396112942E-17
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.2085314208D-16
+       Norm^2 of omega2 after ccvec:        0.1898174114D-14
+       Norm^2 of Omegar12  in NXTAM:        0.7396112999D-17
  Iter.  8: Coupled cluster CCSD(R12)/B energy :    -128.7225057303243148
      Conventional correlation energy:    -0.1107213393364361
-     R12 correlation energy         :    -0.1379075204434127
-     Total correlation energy       :    -0.2486288597798489
+     R12 correlation energy         :    -0.1379075204433856
+     Total correlation energy       :    -0.2486288597798217
 
 
        Iteration no.:  9
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.05 seconds
-       Norm^2 of omega1 after ccvec:        0.2032079393E-17
-       Norm^2 of omega2 after ccvec:        0.1826964956E-16
-       Norm^2 of Omegar12  in NXTAM:        0.2673358665E-19
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.2032072518D-17
+       Norm^2 of omega2 after ccvec:        0.1826964600D-16
+       Norm^2 of Omegar12  in NXTAM:        0.2673358632D-19
  Iter.  9: Coupled cluster CCSD(R12)/B energy :    -128.7225057303897984
      Conventional correlation energy:    -0.1107213393997313
-     R12 correlation energy         :    -0.1379075204455841
-     Total correlation energy       :    -0.2486288598453154
+     R12 correlation energy         :    -0.1379075204455569
+     Total correlation energy       :    -0.2486288598452882
 
 
        Iteration no.: 10
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.04 seconds
-       Norm^2 of omega1 after ccvec:        0.9726712050E-19
-       Norm^2 of omega2 after ccvec:        0.1012228325E-17
-       Norm^2 of Omegar12  in NXTAM:        0.9976590632E-21
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.9726650856D-19
+       Norm^2 of omega2 after ccvec:        0.1012228370D-17
+       Norm^2 of Omegar12  in NXTAM:        0.9976559832D-21
  Iter. 10: Coupled cluster CCSD(R12)/B energy :    -128.7225057303994333
      Conventional correlation energy:    -0.1107213394142832
-     R12 correlation energy         :    -0.1379075204406695
-     Total correlation energy       :    -0.2486288598549527
+     R12 correlation energy         :    -0.1379075204406423
+     Total correlation energy       :    -0.2486288598549255
 
 
        Iteration no.: 11
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.04 seconds
-       Norm^2 of omega1 after ccvec:        0.1238790128E-21
-       Norm^2 of omega2 after ccvec:        0.4120293283E-20
-       Norm^2 of Omegar12  in NXTAM:        0.1510814039E-22
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.1238242443D-21
+       Norm^2 of omega2 after ccvec:        0.4120449140D-20
+       Norm^2 of Omegar12  in NXTAM:        0.1510878952D-22
  Iter. 11: Coupled cluster CCSD(R12)/B energy :    -128.7225057304023608
      Conventional correlation energy:    -0.1107213394179212
-     R12 correlation energy         :    -0.1379075204399621
-     Total correlation energy       :    -0.2486288598578833
+     R12 correlation energy         :    -0.1379075204399350
+     Total correlation energy       :    -0.2486288598578561
 
 
        Iteration no.: 12
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.05 seconds
-       Norm^2 of omega1 after ccvec:        0.9216280536E-23
-       Norm^2 of omega2 after ccvec:        0.6933099449E-22
-       Norm^2 of Omegar12  in NXTAM:        0.6474161326E-24
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.9212128062D-23
+       Norm^2 of omega2 after ccvec:        0.6932153454D-22
+       Norm^2 of Omegar12  in NXTAM:        0.6475016059D-24
  Iter. 12: Coupled cluster CCSD(R12)/B energy :    -128.7225057304023892
      Conventional correlation energy:    -0.1107213394180064
-     R12 correlation energy         :    -0.1379075204399229
-     Total correlation energy       :    -0.2486288598579293
+     R12 correlation energy         :    -0.1379075204398957
+     Total correlation energy       :    -0.2486288598579022
 
 
        Iteration no.: 13
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.04 seconds
-       Norm^2 of omega1 after ccvec:        0.2230511671E-25
-       Norm^2 of omega2 after ccvec:        0.2125871414E-23
-       Norm^2 of Omegar12  in NXTAM:        0.4059822415E-26
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.2142594838D-25
+       Norm^2 of omega2 after ccvec:        0.2127388077D-23
+       Norm^2 of Omegar12  in NXTAM:        0.4066274566D-26
  Iter. 13: Coupled cluster CCSD(R12)/B energy :    -128.7225057304023323
      Conventional correlation energy:    -0.1107213394179496
-     R12 correlation energy         :    -0.1379075204399141
-     Total correlation energy       :    -0.2486288598578637
+     R12 correlation energy         :    -0.1379075204398869
+     Total correlation energy       :    -0.2486288598578365
 
 
        Iteration no.: 14
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.04 seconds
-       Norm^2 of omega1 after ccvec:        0.1158234585E-26
-       Norm^2 of omega2 after ccvec:        0.4058559753E-25
-       Norm^2 of Omegar12  in NXTAM:        0.8664834804E-28
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of omega1 after ccvec:        0.9580646912D-27
+       Norm^2 of omega2 after ccvec:        0.4045145233D-25
+       Norm^2 of Omegar12  in NXTAM:        0.8688515396D-28
  Iter. 14: Coupled cluster CCSD(R12)/B energy :    -128.7225057304023323
      Conventional correlation energy:    -0.1107213394179496
-     R12 correlation energy         :    -0.1379075204399142
-     Total correlation energy       :    -0.2486288598578638
+     R12 correlation energy         :    -0.1379075204398870
+     Total correlation energy       :    -0.2486288598578366
 
 
- CCSD(R12)/B energy converged to within   0.10E-13 is   -128.722505730
- Final 2-norm of the CC vector function:  2.04313074E-13
- R12       energy converged to within   0.10E-13 is     -0.137907520
+ CCSD(R12)/B energy converged to within   0.10D-13 is   -128.722505730
+ Final 2-norm of the CC vector function:  2.03493285D-13
+ R12       energy converged to within   0.10D-13 is     -0.137907520
 
 
                     +------------------------------------------+
@@ -1223,8 +1329,8 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 3   3   |   1       1     |        3          |              |   -0.004646  |
- | 5   5   |   1       1     |        4          |              |   -0.004646  |
+ | 3   3   |   1       1     |        3          |              |    0.004646  |
+ | 5   5   |   1       1     |        4          |              |    0.004646  |
  +-----------------------------------------------------------------------------+
  | 2 2 2 2 |   1   1   1   1 |        2        2 |            3 |   -0.040012  |
  | 3 3 3 3 |   1   1   1   1 |        3        3 |            6 |   -0.040321  |
@@ -1298,11 +1404,14 @@ Starting Coupled Cluster -
  *******************************************************************************
 
 
-- End of Coupled Cluster
 
- >>>> Total CPU  time used in DALTON:   4.14 seconds
- >>>> Total wall time used in DALTON:   4.00 seconds
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   2.81 seconds
+ >>>> Total wall time used in DALTON:   6.00 seconds
 
  
-     Date and time (Linux)  : Wed Jul  9 09:09:54 2008
-     Host name              : fatduck                                 
+     Date and time (Linux)  : Wed Mar 16 19:47:51 2011 
+     Host name              : fe6                                     

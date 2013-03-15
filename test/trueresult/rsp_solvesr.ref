@@ -1,145 +1,145 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Henrik Koch,              University of Trondheim,      Norway     
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Mar  3 21:22:23 2005
-     Host name              : pi.biotech.kth.se                       
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
 
 
- Default print level:        0
+     Date and time (Linux)  : Wed Mar 16 18:14:11 2011 
+     Host name              : fe6                                     
 
-    Integral sections will be executed
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
-    Wave function sections will be executed
-    Dynamic molecular property section will be executed
-
-Starting in Integral Section -
-
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
 
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
- Default print level:        1
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Calculation of ESR hyperfine couplings with solvent for the CH3 radical 
+ 2:                                                                         
+    ------------------------------------------------------------------------
 
- * Nuclear model: Point charge
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
 
- Calculation of one- and two-electron Hamiltonian integrals.
-
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - Fermi contact integrals
-            (Dirac delta function integrals)
-          - spin-dipole integrals
-            (electron spin - nuclear moment coupling)
-
- Integrals for all indirect spin-spin coupling and/or shielding tensors are calculated.
-
-
-  Changes of defaults for ONEINP:
-  -------------------------------
-
- One-electron RLM integrals calculated.
- Maximum L quantum number: 12
- All symmetries saved on file.
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
 
 
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
-
-
-
-  Title Cards
-  -----------
-
-  Calculation of ESR hyperfine couplings with solvent for the CH3 radical 
-                                                                          
-
-
-  Symmetry Operations
-  -------------------
-
-  Symmetry operations: 1
-
-
-
-                      SYMGRP:Point group information
-                      ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: Cs 
 
@@ -151,7 +151,7 @@ Point group: Cs
 
         |  E   Oxz
    -----+----------
-     E  |  E 
+     E  |  E   Oxz
     Oxz | Oxz   E 
 
    * Character table
@@ -165,112 +165,99 @@ Point group: Cs
 
         | A'   A" 
    -----+----------
-    A'  | A' 
+    A'  | A'   A" 
     A"  | A"   A' 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
-                           C          12.000000
-                           H1          1.007825
-                           H2   1      1.007825
-                           H2   2      1.007825
+                            C         12.000000
+                            H1         1.007825
+                            H2 _1      1.007825
+                            H2 _2      1.007825
 
                        Total mass:    15.023475 amu
                        Natural abundance:  98.856 %
 
- Center-of-mass coordinates (A):   -0.023868    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):   -0.023868    0.000000   -0.000000
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    4
 
-  label    atoms   charge   prim    cont     basis
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  C           1       6      44      38      [12s5p2d1f|12s3p2d1f]                        
-  H1          1       1      18      18      [7s2p1d|7s2p1d]                              
-  H2          2       1      18      18      [7s2p1d|7s2p1d]                              
+   C          1    6.0000    44    38      [12s5p2d1f|12s3p2d1f]                              
+   H          3    1.0000    18    18      [7s2p1d|7s2p1d]                                    
   ----------------------------------------------------------------------
-  total:      4       9      98      92
+  total:      4    9.0000    98    92
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates: 12
-
-   1   C        x      0.0000000000
-   2            y      0.0000000000
-   3            z      0.0000000000
-
-   4   H1       x     -0.1185980000
-   5            y      0.0000000000
-   6            z      2.0362470000
-
-   7   H2   1   x     -0.1185980000
-   8            y      1.7634410000
-   9            z     -1.0181240000
-
-  10   H2   2   x     -0.1185980000
-  11            y     -1.7634410000
-  12            z     -1.0181240000
+  Total number of coordinates:   12
+   C      :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+   H1     :     4  x  -0.1185980000    5  y   0.0000000000    6  z   2.0362470000
+   H2 / 1 :     7  x  -0.1185980000    8  y   1.7634410000    9  z  -1.0181240000
+   H2 / 2 :    10  x  -0.1185980000   11  y  -1.7634410000   12  z  -1.0181240000
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   7  5
+  Number of coordinates in each symmetry:     7    5
 
   Symmetry  A'  ( 1)
 
-   1   C     x    1
-   2   C     z    3
-   3   H1    x    4
-   4   H1    z    6
-   5   H2    x    [  7  +  10 ]/2
-   6   H2    y    [  8  -  11 ]/2
-   7   H2    z    [  9  +  12 ]/2
+    1    C    x    1
+    2    C    z    3
+    3    H1   x    4
+    4    H1   z    6
+    5    H2   x    [  7  +   10 ]/2
+    6    H2   y    [  8  -   11 ]/2
+    7    H2   z    [  9  +   12 ]/2
 
   Symmetry  A"  ( 2)
 
-   8   C     y    2
-   9   H1    y    5
-  10   H2    x    [  7  -  10 ]/2
-  11   H2    y    [  8  +  11 ]/2
-  12   H2    z    [  9  -  12 ]/2
+    8    C    y    2
+    9    H1   y    5
+   10    H2   x    [  7  -   10 ]/2
+   11    H2   y    [  8  +   11 ]/2
+   12    H2   z    [  9  -   12 ]/2
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
-            C           H1          H2   1      H2   2
+             C           H1          H2 _1       H2 _2
             ------      ------      ------      ------
- C     :    0.000000
- H1    :    1.079362    0.000000
- H2   1:    1.079361    1.866346    0.000000
- H2   2:    1.079361    1.866346    1.866346    0.000000
+  C    :    0.000000
+  H1   :    1.079362    0.000000
+  H2 _1:    1.079361    1.866346    0.000000
+  H2 _2:    1.079361    1.866346    1.866346    0.000000
 
 
-  Max interatomic separation is    1.8663 Angstroms
-  between atoms "H2   2" and "H1    ".
+  Max interatomic separation is    1.8663 Angstrom (    3.5269 Bohr)
+  between atoms    3 and    2, " H2 _1" and " H1   ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H1         C            1.079362
-  bond distance:  H2   1     C            1.079361
-  bond distance:  H2   2     C            1.079361
+  bond distance:   H1         C           1.079362
+  bond distance:   H2 _1      C           1.079361
+  bond distance:   H2 _2      C           1.079361
 
 
   Bond angles (degrees):
@@ -278,9 +265,9 @@ Point group: Cs
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H1         C          H2   1       119.665
-  bond angle:     H1         C          H2   2       119.665
-  bond angle:     H2   1     C          H2   2       119.665
+  bond angle:      H1         C          H2 _1       119.665
+  bond angle:      H1         C          H2 _2       119.665
+  bond angle:      H2 _1      C          H2 _2       119.665
 
 
 
@@ -288,9 +275,9 @@ Point group: Cs
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    1.764763          0.000000    0.000000    1.000000
-   IB    1.764765          0.000000    1.000000    0.000000
-   IC    3.510504          1.000000    0.000000    0.000000
+   IA       1.764763          0.000000    0.000000    1.000000
+   IB       1.764765          0.000000    1.000000    0.000000
+   IC       3.510504          1.000000    0.000000   -0.000000
 
 
  Rotational constants
@@ -298,193 +285,189 @@ Point group: Cs
 
                A                   B                   C
 
-         286372.1440         286371.8471         143961.9505 MHz
-            9.552347            9.552337            4.802054 cm-1
+         286372.1414         286371.8446         143961.9493 MHz
+            9.552346            9.552337            4.802054 cm-1
 
 
-  Nuclear repulsion energy :    9.675446789642
+@  Nuclear repulsion energy :    9.675446789642
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              60  32
+  Number of orbitals in each symmetry:          60   32
 
 
   Symmetry  A' ( 1)
 
-    1     C        1s         1
-    2     C        1s         2
-    3     C        1s         3
-    4     C        1s         4
-    5     C        1s         5
-    6     C        1s         6
-    7     C        1s         7
-    8     C        1s         8
-    9     C        1s         9
-   10     C        1s        10
-   11     C        1s        11
-   12     C        1s        12
-   13     C        2px       13
-   14     C        2pz       15
-   15     C        2px       16
-   16     C        2pz       18
-   17     C        2px       19
-   18     C        2pz       21
-   19     C        3d0       24
-   20     C        3d1+      25
-   21     C        3d2+      26
-   22     C        3d0       29
-   23     C        3d1+      30
-   24     C        3d2+      31
-   25     C        4f0       35
-   26     C        4f1+      36
-   27     C        4f2+      37
-   28     C        4f3+      38
-   29     H1       1s        39
-   30     H1       1s        40
-   31     H1       1s        41
-   32     H1       1s        42
-   33     H1       1s        43
-   34     H1       1s        44
-   35     H1       1s        45
-   36     H1       2px       46
-   37     H1       2pz       48
-   38     H1       2px       49
-   39     H1       2pz       51
-   40     H1       3d0       54
-   41     H1       3d1+      55
-   42     H1       3d2+      56
-   43     H2       1s        57  +  58
-   44     H2       1s        59  +  60
-   45     H2       1s        61  +  62
-   46     H2       1s        63  +  64
-   47     H2       1s        65  +  66
-   48     H2       1s        67  +  68
-   49     H2       1s        69  +  70
-   50     H2       2px       71  +  72
-   51     H2       2py       73  -  74
-   52     H2       2pz       75  +  76
-   53     H2       2px       77  +  78
-   54     H2       2py       79  -  80
-   55     H2       2pz       81  +  82
-   56     H2       3d2-      83  -  84
-   57     H2       3d1-      85  -  86
-   58     H2       3d0       87  +  88
-   59     H2       3d1+      89  +  90
-   60     H2       3d2+      91  +  92
+    1      C       1s         1
+    2      C       1s         2
+    3      C       1s         3
+    4      C       1s         4
+    5      C       1s         5
+    6      C       1s         6
+    7      C       1s         7
+    8      C       1s         8
+    9      C       1s         9
+   10      C       1s        10
+   11      C       1s        11
+   12      C       1s        12
+   13      C       2px       13
+   14      C       2pz       15
+   15      C       2px       16
+   16      C       2pz       18
+   17      C       2px       19
+   18      C       2pz       21
+   19      C       3d0       24
+   20      C       3d1+      25
+   21      C       3d2+      26
+   22      C       3d0       29
+   23      C       3d1+      30
+   24      C       3d2+      31
+   25      C       4f0       35
+   26      C       4f1+      36
+   27      C       4f2+      37
+   28      C       4f3+      38
+   29      H1      1s        39
+   30      H1      1s        40
+   31      H1      1s        41
+   32      H1      1s        42
+   33      H1      1s        43
+   34      H1      1s        44
+   35      H1      1s        45
+   36      H1      2px       46
+   37      H1      2pz       48
+   38      H1      2px       49
+   39      H1      2pz       51
+   40      H1      3d0       54
+   41      H1      3d1+      55
+   42      H1      3d2+      56
+   43      H2      1s        57 +   58
+   44      H2      1s        59 +   60
+   45      H2      1s        61 +   62
+   46      H2      1s        63 +   64
+   47      H2      1s        65 +   66
+   48      H2      1s        67 +   68
+   49      H2      1s        69 +   70
+   50      H2      2px       71 +   72
+   51      H2      2py       73 -   74
+   52      H2      2pz       75 +   76
+   53      H2      2px       77 +   78
+   54      H2      2py       79 -   80
+   55      H2      2pz       81 +   82
+   56      H2      3d2-      83 -   84
+   57      H2      3d1-      85 -   86
+   58      H2      3d0       87 +   88
+   59      H2      3d1+      89 +   90
+   60      H2      3d2+      91 +   92
 
 
   Symmetry  A" ( 2)
 
-   61     C        2py       14
-   62     C        2py       17
-   63     C        2py       20
-   64     C        3d2-      22
-   65     C        3d1-      23
-   66     C        3d2-      27
-   67     C        3d1-      28
-   68     C        4f3-      32
-   69     C        4f2-      33
-   70     C        4f1-      34
-   71     H1       2py       47
-   72     H1       2py       50
-   73     H1       3d2-      52
-   74     H1       3d1-      53
-   75     H2       1s        57  -  58
-   76     H2       1s        59  -  60
-   77     H2       1s        61  -  62
-   78     H2       1s        63  -  64
-   79     H2       1s        65  -  66
-   80     H2       1s        67  -  68
-   81     H2       1s        69  -  70
-   82     H2       2px       71  -  72
-   83     H2       2py       73  +  74
-   84     H2       2pz       75  -  76
-   85     H2       2px       77  -  78
-   86     H2       2py       79  +  80
-   87     H2       2pz       81  -  82
-   88     H2       3d2-      83  +  84
-   89     H2       3d1-      85  +  86
-   90     H2       3d0       87  -  88
-   91     H2       3d1+      89  -  90
-   92     H2       3d2+      91  -  92
+   61      C       2py       14
+   62      C       2py       17
+   63      C       2py       20
+   64      C       3d2-      22
+   65      C       3d1-      23
+   66      C       3d2-      27
+   67      C       3d1-      28
+   68      C       4f3-      32
+   69      C       4f2-      33
+   70      C       4f1-      34
+   71      H1      2py       47
+   72      H1      2py       50
+   73      H1      3d2-      52
+   74      H1      3d1-      53
+   75      H2      1s        57 -   58
+   76      H2      1s        59 -   60
+   77      H2      1s        61 -   62
+   78      H2      1s        63 -   64
+   79      H2      1s        65 -   66
+   80      H2      1s        67 -   68
+   81      H2      1s        69 -   70
+   82      H2      2px       71 -   72
+   83      H2      2py       73 +   74
+   84      H2      2pz       75 -   76
+   85      H2      2px       77 -   78
+   86      H2      2py       79 +   80
+   87      H2      2pz       81 -   82
+   88      H2      3d2-      83 +   84
+   89      H2      3d1-      85 +   86
+   90      H2      3d0       87 -   88
+   91      H2      3d1+      89 -   90
+   92      H2      3d2+      91 -   92
 
   Symmetries of electric field:  A' (1)  A" (2)  A' (1)
 
   Symmetries of magnetic field:  A" (2)  A' (1)  A" (2)
 
 
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
-  Symmetrized nuclear magnetic moments
-  ------------------------------------
 
-  Number of components in each symmetry:   5  7
-
-
-  Symmetry  A' ( 0)
-
-  I  1   C     y    2
-  I  2   H1    y    5
-  I  3   H2    x    7  - 10
-  I  4   H2    y    8  + 11
-  I  5   H2    z    9  - 12
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
-  Symmetry  A" ( 1)
+ Default print level:        1
 
-  I  6   C     x    1
-  I  7   C     z    3
-  I  8   H1    x    4
-  I  9   H1    z    6
-  I 10   H2    x    7  + 10
-  I 11   H2    y    8  - 11
-  I 12   H2    z    9  + 12
+ * Nuclear model: Point charge
 
- Cavity center (center of mass):   -0.023868    0.000000    0.000000
+ Calculation of one- and two-electron Hamiltonian integrals.
 
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - Fermi contact integrals
+            (Dirac delta function integrals)
+          - spin-dipole integrals
+            (electron spin - nuclear moment coupling)
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+ Center of mass  (bohr):     -0.023867852681      0.000000000000     -0.000000067083
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
-
- >>> Time used in RLMNUC is   0.00 seconds
-
-
- >>> Time used in RLMINT is   0.46 seconds
+ Integrals for all indirect spin-spin coupling and/or shielding tensors are calculated.
 
 
- >>> Time used in HUCKEL is   0.01 seconds
+  Changes of defaults for ONEINP:
+  -------------------------------
+
+ One-electron RLM integrals calculated.
+ Maximum L quantum number: 12
+ All symmetries saved on file.
+
+ Cavity center (center of mass):   -0.023868    0.000000   -0.000000
 
 
- >>> Time used in OVERLA is   0.00 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
-
- >>> Time used in FERMI  is   0.01 seconds
-
-
- >>> Time used in SPIN-D is   0.05 seconds
-
-
- >>> Time used in ONEDRV is   0.01 seconds
-
+ >>> Time used in RLMINT is   0.18 seconds
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:     3918122 ( 42.8% )
  Megabytes written:                             44.870
 
-
-
- >>> Time used in TWOINT is   1.59 seconds
-
- >>>> Total CPU  time used in HERMIT:   2.15 seconds
+ >>> Time used in TWOINT is   0.68 seconds
+ >>>> Total CPU  time used in HERMIT:   0.93 seconds
  >>>> Total wall time used in HERMIT:   2.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
 
  *** Output from Huckel module :
@@ -494,20 +477,21 @@ Starting in Wave Function Section -
      Number of Huckel orbitals each symmetry:    6    2
 
  Huckel EHT eigenvalues for symmetry :  1
-          -11.512504      -1.708382      -0.886316      -0.431427       0.152340
-            0.299147
+          -11.371425      -1.112927      -0.626734      -0.407683      -0.233795
+           -0.195951
 
  Huckel EHT eigenvalues for symmetry :  2
-           -0.886316       0.152340
+           -0.626734      -0.195951
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Mar  3 21:22:25 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 18:14:13 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      Calculation of ESR hyperfine couplings with solvent for the CH3 radical 
                                                                              
 
@@ -523,11 +507,11 @@ Starting in Wave Function Section -
 
      This is a combination run starting with
 
-               an open shell RHF calculation
+               a restricted, one open shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART HUCKEL" input option.
+ ".MOSTART EHT   " input option.
 
      SOLVATION MODEL: molecule is in a spherical cavity in a dielectric medium,
                 dielectric constant =    1.700000
@@ -536,12 +520,10 @@ Starting in Wave Function Section -
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons          2
      Number of electrons in active shells      7
      Total charge of the molecule              0
-
-     Number of active orbitals                 7
-     Total number of orbitals                 92
 
      Spin multiplicity                         2
      Total number of symmetries                2
@@ -549,28 +531,30 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2
-                                       --  --
-     Inactive orbitals                  1   0
-     Active orbitals                    5   2
-     Secondary orbitals                54  30
-     Total number of orbitals          60  32
-     Number of basis functions         60  32
+     Abelian symmetry species          All |    1    2
+                                       --- |  ---  ---
+     Inactive orbitals                   1 |    1    0
+     Active orbitals                     7 |    5    2
+     Secondary orbitals                 84 |   54   30
+     Total number of orbitals           92 |   60   32
+     Number of basis functions          92 |   60   32
 
-     Occupied SCF orbitals              3   1
+      -- Initial occupation of symmetries is determined from user input.                      
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               4 |    3    1
 
      plus one open shell SCF orbital of symmetry   1
 
      Optimization information
      ========================
-     Number of determinants              625
-     Number of orbital rotations         389
-     ---------------------------------------
-     Total number of variables          1014
+     Number of determinants                 625
+     Number of orbital rotations            389
+     ------------------------------------------
+     Total number of variables             1014
 
-     Maximum number of macro iterations      15
-     Maximum number of micro iterations     360
-     Threshold for gradient            1.00E-08
+     Maximum number of macro iterations      25
+     Maximum number of micro iterations     600
+     Threshold for gradient            1.00D-08
      Number of initial trial vectors          1
      Number of initial CI iterations          3
      Number of simultaneous trial vectors     1
@@ -586,27 +570,52 @@ Starting in Wave Function Section -
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
- -----------------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+ >>> Time used in FORMSUP is   0.23 seconds
+   1  -39.4067014936     -8.643809320251E-06    2.28750D+01   -3.94D+01
+      Virial theorem: -V/T =      2.019995
+      MULPOP   C     -0.18;  H1     0.06;  H2 _1  0.06;  H2 _2  0.06; 
+ -----------------------------------------------------------------------------
+   2  -39.5560324111     -3.917505669094E-04    4.48315D-01   -1.49D-01
+      Virial theorem: -V/T =      1.989063
+      MULPOP   C     -0.37;  H1     0.12;  H2 _1  0.12;  H2 _2  0.12; 
+ -----------------------------------------------------------------------------
+   3  -39.5712077503     -2.965757594716E-04    2.04704D-01   -1.52D-02
+      Virial theorem: -V/T =      2.007351
+      MULPOP   C     -0.15;  H1     0.05;  H2 _1  0.05;  H2 _2  0.05; 
+ -----------------------------------------------------------------------------
+   4  -39.5739908720     -3.703727805055E-04    2.51291D-02   -2.78D-03
+      Virial theorem: -V/T =      2.001727
+      MULPOP   C     -0.21;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   5  -39.5740791589     -3.893568813602E-04    2.93667D-03   -8.83D-05
+      Virial theorem: -V/T =      2.001155
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   6  -39.5740808069     -3.913805178777E-04    5.38138D-04   -1.65D-06
+      Virial theorem: -V/T =      2.001147
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   7  -39.5740808619     -3.914723655073E-04    1.61832D-04   -5.50D-08
+      Virial theorem: -V/T =      2.001151
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   8  -39.5740808664     -3.915316754747E-04    3.88551D-05   -4.59D-09
+      Virial theorem: -V/T =      2.001151
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   9  -39.5740808669     -3.915582961960E-04    1.30701D-05   -4.39D-10
+      Virial theorem: -V/T =      2.001150
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+  10  -39.5740808669     -3.915642044533E-04    4.86329D-06   -6.45D-11
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
- >>> Time used in FRMSUP is   0.85 seconds
-
-    1    -39.378729358298     -0.000018948714    2.28788E+01   -3.94E+01
-    2    -39.557882914087     -0.000411373285    4.21142E-01   -1.79E-01
-    3    -39.571644182694     -0.000313628461    1.86644E-01   -1.38E-02
-    4    -39.573973737342     -0.000379035296    2.60503E-02   -2.33E-03
-    5    -39.574078894038     -0.000391257284    3.26595E-03   -1.05E-04
-    6    -39.574080777568     -0.000391813511    6.03050E-04   -1.88E-06
-    7    -39.574080852902     -0.000391583807    2.04260E-04   -7.53E-08
-    8    -39.574080864434     -0.000391560626    7.01252E-05   -1.15E-08
-    9    -39.574080866524     -0.000391568397    3.00710E-05   -2.09E-09
-   10    -39.574080866893     -0.000391566886    1.15442E-05   -3.69E-10
-   11    -39.574080866948     -0.000391566078    4.59151E-06   -5.48E-11
-   12    -39.574080866956     -0.000391564171    1.78050E-06   -8.31E-12
-   13    -39.574080866958     -0.000391563234    7.07869E-07   -1.25E-12
- DIIS converged in  13 iterations !
+ >>> Writing SIRIFC interface file <<<
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -623,10 +632,10 @@ Starting in Wave Function Section -
 
  Element no. Config.no.    Active energy      Total energy
 
-         1 :        226    -13.9485616074    -39.5736893037
-         2 :        227    -13.6640378813    -39.2891655776
-         3 :        246    -13.6617066829    -39.2868343792
-         4 :        230    -13.5936451244    -39.2187728207
+         1 :        226    -13.9485616084    -39.5736893027
+         2 :        227    -13.6640381702    -39.2891658646
+         3 :        246    -13.6617068498    -39.2868345442
+         4 :        230    -13.5936454405    -39.2187731349
 
 
  Convergence threshold for CI optimization :     0.00000001
@@ -638,7 +647,10 @@ Starting in Wave Function Section -
 
 
  CI energies and residuals:
-    1      -39.578418472965282       2.83E-03
+    1      -39.578418481356252       2.83D-03
+
+
+ Final CI energy:      -39.578418481356252
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -647,11 +659,11 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.997852318   1.997674130   1.000005483   0.002405223   0.002194696
+   1.997852313   1.997674127   1.000005482   0.002405229   0.002194700
 
  Symmetry  2
 
-   1.997673813   0.002194337
+   1.997673809   0.002194340
 
 
  <<< MACRO ITERATION  1 >>>
@@ -668,22 +680,28 @@ Starting in Wave Function Section -
               5   -0.0000000239
               6   -0.0000000014
               7   -0.0000000001
-              8    0.0000000000
-              9    0.0000000000
-             10    0.0000000000
-             11    0.0000000000
-             12    0.0000000000
+              8   -0.0000000000
+              9   -0.0000000000
+             10   -0.0000000000
+             11   -0.0000000000
+             12   -0.0000000000
 
- Total MCSCF energy       :      -39.578743003474379       (MACRO    1)
- - Dielec. solvation ener.:       -0.000324530509106
+ Total MCSCF energy       :    -39.5787430109654           (MACRO    1)
 
- Norm of total gradient   :        0.029090140434
- -    of CI gradient      :        0.006342529597
- -    of orbital gradient :        0.028390290396
+ - Nuclear repulsion      :     9.67544678964161    
+ - Inactive energy        :    -35.3005744840222    
+ - Active energy          :    -13.9532907869757    
+ - Dielec. solvation ener.:   -3.245296091497135E-04
+
+ Norm of total gradient   :        0.029089254840
+ -    of CI gradient      :        0.006342523563
+ -    of orbital gradient :        0.028389384319
+      Virial theorem: -V/T =      2.002067
+      MULPOP   C     -0.14;  H1     0.05;  H2 _1  0.05;  H2 _2  0.05; 
 
  Residual norm when dim(red L) =  11
  NEO root     CSF        orbital          total
-    1     0.00278897     0.00075897     0.00289040 converged
+    1     0.00274286     0.00056571     0.00280059 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -694,26 +712,32 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.988329230   1.987427657   1.000005869   0.012998699   0.011905537
+   1.988321079   1.987428550   1.000006191   0.013011724   0.011901843
 
  Symmetry  2
 
-   1.987427430   0.011905578
+   1.987431208   0.011899405
 
 
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :      -39.599831259964155       (MACRO    2)
- - Dielec. solvation ener.:       -0.000212732744247
+ Total MCSCF energy       :    -39.5998360349554           (MACRO    2)
 
- Norm of total gradient   :        0.083999702409
- -    of CI gradient      :        0.060514949022
- -    of orbital gradient :        0.058257110722
+ - Nuclear repulsion      :     9.67544678964161    
+ - Inactive energy        :    -35.3014074018329    
+ - Active energy          :    -13.9736627611761    
+ - Dielec. solvation ener.:   -2.126615879184800E-04
 
- Residual norm when dim(red L) =   7
+ Norm of total gradient   :        0.084219958686
+ -    of CI gradient      :        0.060568705075
+ -    of orbital gradient :        0.058518658619
+      Virial theorem: -V/T =      2.002148
+      MULPOP   C     -0.04;  H1     0.01;  H2 _1  0.01;  H2 _2  0.01; 
+
+ Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
-    1     0.01157803     0.00844139     0.01432857 converged
+    1     0.01289638     0.00184714     0.01302799 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -724,26 +748,32 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.976263288   1.970501501   0.999973791   0.029920351   0.026419166
+   1.976166654   1.970248888   0.999973036   0.030195054   0.026583300
 
  Symmetry  2
 
-   1.970507451   0.026414451
+   1.970250895   0.026582175
 
 
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :      -39.625451830852320       (MACRO    3)
- - Dielec. solvation ener.:       -0.000215285504013
+ Total MCSCF energy       :    -39.6255254069897           (MACRO    3)
 
- Norm of total gradient   :        0.118498479668
- -    of CI gradient      :        0.112879338029
- -    of orbital gradient :        0.036057519740
+ - Nuclear repulsion      :     9.67544678964161    
+ - Inactive energy        :    -35.3010581412123    
+ - Active energy          :    -13.9997038905164    
+ - Dielec. solvation ener.:   -2.101649025520686E-04
+
+ Norm of total gradient   :        0.118085732544
+ -    of CI gradient      :        0.112798837951
+ -    of orbital gradient :        0.034937979155
+      Virial theorem: -V/T =      1.999206
+      MULPOP   C     -0.08;  H1     0.03;  H2 _1  0.03;  H2 _2  0.03; 
 
  Residual norm when dim(red L) =   7
  NEO root     CSF        orbital          total
-    1     0.01911464     0.00530031     0.01983589 converged
+    1     0.01878303     0.00565252     0.01961513 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -754,26 +784,32 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.980410007   1.977157862   0.999987289   0.024670976   0.020306678
+   1.980515067   1.977230768   0.999987286   0.024533011   0.020250371
 
  Symmetry  2
 
-   1.977156711   0.020310478
+   1.977231627   0.020251871
 
 
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :      -39.633101171456545       (MACRO    4)
- - Dielec. solvation ener.:       -0.000275090053661
+ Total MCSCF energy       :    -39.6331043156249           (MACRO    4)
 
- Norm of total gradient   :        0.044538827765
- -    of CI gradient      :        0.041255146543
- -    of orbital gradient :        0.016784518533
+ - Nuclear repulsion      :     9.67544678964161    
+ - Inactive energy        :    -35.3013734785121    
+ - Active energy          :    -14.0069026511336    
+ - Dielec. solvation ener.:   -2.749756208934431E-04
+
+ Norm of total gradient   :        0.043409970796
+ -    of CI gradient      :        0.040174253658
+ -    of orbital gradient :        0.016445513293
+      Virial theorem: -V/T =      1.998613
+      MULPOP   C     -0.17;  H1     0.06;  H2 _1  0.06;  H2 _2  0.06; 
 
  Residual norm when dim(red L) =   9
  NEO root     CSF        orbital          total
-    1     0.00100460     0.00016100     0.00101742 converged
+    1     0.00096504     0.00022157     0.00099015 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -784,26 +820,32 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.981807150   1.978333449   0.999992296   0.023537732   0.018997899
+   1.981806019   1.978338874   0.999992086   0.023537378   0.018993483
 
  Symmetry  2
 
-   1.978333316   0.018998158
+   1.978337596   0.018994563
 
 
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :      -39.633366415442460       (MACRO    5)
- - Dielec. solvation ener.:       -0.000294320600428
+ Total MCSCF energy       :    -39.6333663754589           (MACRO    5)
 
- Norm of total gradient   :        0.001191667652
- -    of CI gradient      :        0.001102878235
- -    of orbital gradient :        0.000451366138
+ - Nuclear repulsion      :     9.67544678964161    
+ - Inactive energy        :    -35.3013512624543    
+ - Active energy          :    -14.0071674655457    
+ - Dielec. solvation ener.:   -2.944371004927689E-04
+
+ Norm of total gradient   :        0.001186521409
+ -    of CI gradient      :        0.001068046063
+ -    of orbital gradient :        0.000516827498
+      Virial theorem: -V/T =      1.998806
+      MULPOP   C     -0.20;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
 
  Residual norm when dim(red L) =  17
  NEO root     CSF        orbital          total
-    1     0.00000394     0.00000127     0.00000413 converged
+    1     0.00000483     0.00000106     0.00000494 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -814,26 +856,32 @@ Starting in Wave Function Section -
 
  Symmetry  1
 
-   1.981794366   1.978344627   0.999994341   0.023538855   0.018991589
+   1.981794327   1.978344632   0.999994338   0.023538857   0.018991597
 
  Symmetry  2
 
-   1.978344629   0.018991594
+   1.978344612   0.018991636
 
 
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :      -39.633367086948887       (MACRO    6)
- - Dielec. solvation ener.:       -0.000294228978201
+ Total MCSCF energy       :    -39.6333670869474           (MACRO    6)
 
- Norm of total gradient   :        0.000007730790
- -    of CI gradient      :        0.000007255288
- -    of orbital gradient :        0.000002669440
+ - Nuclear repulsion      :     9.67544678964161    
+ - Inactive energy        :    -35.3013466257371    
+ - Active energy          :    -14.0071730215799    
+ - Dielec. solvation ener.:   -2.942292720524012E-04
 
- Residual norm when dim(red L) =  17
+ Norm of total gradient   :        0.000008645694
+ -    of CI gradient      :        0.000008171287
+ -    of orbital gradient :        0.000002824552
+      Virial theorem: -V/T =      1.998815
+      MULPOP   C     -0.20;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+
+ Residual norm when dim(red L) =  20
  NEO root     CSF        orbital          total
-    1     0.00000001     0.00000000     0.00000001 converged
+    1     0.00000001     0.00000001     0.00000001 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -854,106 +902,125 @@ Starting in Wave Function Section -
  <<< MACRO ITERATION  7 >>>
  --------------------------
 
- Total MCSCF energy       :      -39.633367086958913       (MACRO    7)
- - Dielec. solvation ener.:       -0.000294232109358
+ Total MCSCF energy       :    -39.6333670869604           (MACRO    7)
 
- Norm of total gradient   :        0.000000008805
- -    of CI gradient      :        0.000000008661
- -    of orbital gradient :        0.000000001586
+ - Nuclear repulsion      :     9.67544678964161    
+ - Inactive energy        :    -35.3013466301962    
+ - Active energy          :    -14.0071730143019    
+ - Dielec. solvation ener.:   -2.942321039456395E-04
+
+ Norm of total gradient   :        0.000000008186
+ -    of CI gradient      :        0.000000005262
+ -    of orbital gradient :        0.000000006271
+      Virial theorem: -V/T =      1.998815
+      MULPOP   C     -0.20;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+
+ (SIRSTP) Close to convergence, ratio set to one.
+ Energy difference; actual and predicted:   -1.29816D-11   -1.30806D-11
+
+ (SIRSTP) Close to convergence, ratio set to one.
+ Energy difference; actual and predicted:    9.92434D-01
+ Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            7
-     Number of micro iterations used           57
-     Total number of CPU seconds used        51.52
+     Number of micro iterations used           61
+     Total number of CPU seconds used        18.25
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Thu Mar  3 21:23:19 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 18:14:37 2011 
+     Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1   10    -39.578743003474   0.0290901404  0.000000   0.7134227048
-    2    5    -39.599831259964   0.0839997024  0.882289   0.7544303795
-    3    5    -39.625451830852   0.1184984797  0.709407   0.4667138785
-    4    7    -39.633101171457   0.0445388278  1.025487   0.0653207147
-    5   15    -39.633366415442   0.0011916677  1.013539   0.0052642072
-    6   15    -39.633367086949   0.0000077308  1.000943   0.0000133434
-    7    0    -39.633367086959   0.0000000088  1.000000   0.0000000000
+    1   10    -39.578743010965   0.0290892548  0.000000   0.7135868715
+    2    6    -39.599836034955   0.0842199587  0.882186   0.7562346888
+    3    5    -39.625525406990   0.1180857325  0.708739   0.4581978488
+    4    7    -39.633104315625   0.0434099708  1.028605   0.0678055337
+    5   15    -39.633366375459   0.0011865214  1.014763   0.0054616199
+    6   18    -39.633367086947   0.0000086457  1.001032   0.0000153422
+    7    0    -39.633367086960   0.0000000082  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1    231   -0.001451    0.006343     63   -0.009066    0.028390    0.029090
-    2    267    0.010402    0.060515    361    0.019980    0.058257    0.084000
-    3    351    0.037567    0.112879    361    0.014906    0.036058    0.118498
-    4    441    0.009727    0.041255    150   -0.005140    0.016785    0.044539
-    5    625   -0.000622    0.001103    338    0.000112    0.000451    0.001192
-    6    351    0.000002    0.000007    186    0.000001    0.000003    0.000008
-    7    625    0.000000    0.000000      4    0.000000    0.000000    0.000000
+    1    231   -0.001451    0.006343     63    0.009066    0.028389    0.029089
+    2    267    0.010432    0.060569    280   -0.019982    0.058519    0.084220
+    3    351    0.037523    0.112799    361    0.014904    0.034938    0.118086
+    4    441    0.009647    0.040174    137    0.005027    0.016446    0.043410
+    5    625   -0.000544    0.001068    150   -0.000124    0.000517    0.001187
+    6    436   -0.000002    0.000008    186   -0.000001    0.000003    0.000009
+    7    625   -0.000000    0.000000     46   -0.000000    0.000000    0.000000
 
 
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1    10     6     4      7.42      3.30      3.79      3.70      0.38
-    2     5     4     2      5.78      3.30      2.14      2.07      0.43
-    3     5     3     3      6.01      3.29      2.39      2.31      0.48
-    4     7     4     4      6.80      3.30      3.17      3.09      0.45
-    5    15     9     7      9.65      3.26      6.06      5.97      0.40
-    6    15     9     7      9.69      3.30      6.06      5.98      0.40
-    7     0     0     0      3.64      3.31      0.00      0.00
+    1    10     6     4      2.61      0.83      1.61      1.57      0.16
+    2     6     4     3      2.13      0.83      1.14      1.09      0.19
+    3     5     3     3      2.00      0.83      1.01      0.97      0.20
+    4     7     4     4      2.33      0.83      1.34      1.30      0.19
+    5    15     9     7      3.62      0.83      2.62      2.57      0.17
+    6    18    12     7      3.96      0.83      2.97      2.91      0.16
+    7     0     0     0      0.99      0.83      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1    -35.300574485943    -13.953290776664    -39.578743003474
-    2    -35.301403148815    -13.973662168046    -39.599831259964
-    3    -35.301103116555    -13.999580218435    -39.625451830852
-    4    -35.301373971977    -14.006898899067    -39.633101171457
-    5    -35.301351153558    -14.007167730925    -39.633366415442
-    6    -35.301346620538    -14.007173027074    -39.633367086949
-    7    -35.301346630190    -14.007173014301    -39.633367086959
+    1    -35.300574484022    -13.953290786976    -39.578743010965
+    2    -35.301407401833    -13.973662761176    -39.599836034955
+    3    -35.301058141212    -13.999703890516    -39.625525406990
+    4    -35.301373478512    -14.006902651134    -39.633104315625
+    5    -35.301351262454    -14.007167465546    -39.633366375459
+    6    -35.301346625737    -14.007173021580    -39.633367086947
+    7    -35.301346630196    -14.007173014302    -39.633367086960
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.023901746302     -0.021088256490      0.882289361760
-    3     -0.036115489542     -0.025620570888      0.709406717541
-    4     -0.007459229462     -0.007649340604      1.025486699867
-    5     -0.000261700921     -0.000265243986      1.013538604748
-    6     -0.000000670874     -0.000000671506      1.000942915088
-    7     -0.000000000010     -0.000000000010      1.000000000000
+    2     -0.023909950648     -0.021093023990      0.882186011182
+    3     -0.036246581702     -0.025689372034      0.708739164575
+    4     -0.007368140619     -0.007578908635      1.028605319480
+    5     -0.000258247411     -0.000262059834      1.014762675168
+    6     -0.000000710755     -0.000000711489      1.001032375973
+    7     -0.000000000013     -0.000000000013      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      2.36352819  1.00000000      0.713422704789      0.700000000000
-    2      1.43523800  1.00000000      0.754430379494      0.700000000000
-    3      0.20000000  1.00000000      0.466713878469      0.700000000000
-    4      0.20000000  1.00000000      0.065320714715      0.700000000000
-    5      0.20000000  1.00000000      0.005264207161      0.700000000000
-    6      0.20000000  1.00000000      0.000013343405      0.700000000000
+    1      2.36341274  1.00000000      0.713586871511      0.700000000000
+    2      1.43514991  1.00000000      0.756234688770      0.700000000000
+    3      0.20000000  1.00000000      0.458197848831      0.700000000000
+    4      0.20000000  1.00000000      0.067805533738      0.700000000000
+    5      0.20000000  1.00000000      0.005461619905      0.700000000000
+    6      0.20000000  1.00000000      0.000015342227      0.700000000000
     7      0.00000000  0.00000000      0.000000000000      0.700000000000
 
 
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.069483595794   -0.510094383760    0.839482957253   -0.096831011449
-    2   -0.068489809071   -0.678464773986    0.026807144260    0.712733840949
-    3   -0.000591583961    0.995671825793   -0.004978577057   -0.087039172950
-    4   -0.000020932501    0.999914675006   -0.001549688379   -0.010934617625
-    5   -0.000000053670    0.999999445763   -0.000104489492   -0.000952569502
-    6   -0.000000000001    0.999999999996   -0.000000395877   -0.000002171259
+    1   -0.069482020407   -0.510025991021    0.839471880320   -0.096804632651
+    2   -0.068557350998   -0.677612207395    0.026534112371    0.712912007701
+    3   -0.000584542373    0.995827357111   -0.005205327042   -0.085709377636
+    4   -0.000020655994    0.999908060873   -0.001479996125   -0.011482917119
+    5   -0.000000056860    0.999999403415   -0.000110382131   -0.000983901993
+    6   -0.000000000001    0.999999999995   -0.000000467839   -0.000002556516
     7    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           2
      Spatial symmetry:            1
@@ -966,206 +1033,179 @@ Starting in Wave Function Section -
           max l value         =          12
      State number:                1
 
-     Final MCSCF energy:          -39.633367086959
+     Final MCSCF energy:          -39.633367086960                 
      Nuclear repulsion:             9.675446789642
-     Electronic energy:           -49.308519644491
-     Solvation  energy:            -0.000294232109
+     Electronic energy:           -49.308519644498
+     Solvation  energy:            -0.000294232104
 
-     Final gradient norm:           0.000000008805
+     Final gradient norm:           0.000000008186
 
  
-     Date and time (Linux)  : Thu Mar  3 21:23:19 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 18:14:37 2011 
+     Host name              : fe6                                     
 
 
  Occupancies of natural orbitals
  -------------------------------
 
- Symmetry  1
+ Symmetry  1 -- Total occupation in this symmetry is   7.002663772
 
    2.000000000   1.981794647   1.978344923   0.999994338   0.023538564
    0.018991300
 
- Sum =           7.002663772
-
- Symmetry  2
+ Symmetry  2 -- Total occupation in this symmetry is   1.997336228
 
    1.978344924   0.018991305
 
- Sum =           1.997336228
+ (Only coefficients >0.0100 are printed.)
 
-     Molecular orbitals for symmetry species   1
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
 
- Orbital          1        2        3        4        5        6
-   1  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
-   2  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
-   3  C   1s     0.0005  -0.0001   0.0000   0.0000   0.0001   0.0000
-   4  C   1s     0.0041  -0.0007   0.0000  -0.0001   0.0009   0.0000
-   5  C   1s     0.0211  -0.0037   0.0000  -0.0003   0.0049   0.0000
-   6  C   1s     0.0820  -0.0149   0.0000  -0.0011   0.0189   0.0000
-   7  C   1s     0.2349  -0.0462   0.0000  -0.0035   0.0612   0.0000
-   8  C   1s     0.4346  -0.1035   0.0000  -0.0079   0.1324   0.0000
-   9  C   1s     0.3461  -0.1420   0.0000  -0.0109   0.2210   0.0000
-  10  C   1s     0.0438   0.1209   0.0000   0.0079  -0.3681   0.0000
-  11  C   1s    -0.0203   0.4100   0.0000   0.0434  -0.9943   0.0000
-  12  C   1s    -0.0007   0.1758   0.0000   0.0522  -0.0902   0.0000
-  13  C   2px    0.0000  -0.0318   0.0000   0.8955   0.1195   0.0000
-  14  C   2pz    0.0000   0.0000   0.6884   0.0000   0.0000  -1.5274
-  15  C   2px    0.0004   0.0042   0.0000   0.0072  -0.0040   0.0000
-  16  C   2pz    0.0000   0.0000  -0.0566   0.0000   0.0000  -0.0562
-  17  C   2px    0.0001   0.0056   0.0000   0.0833  -0.0281   0.0000
-  18  C   2pz    0.0000   0.0000  -0.1156   0.0000   0.0000   0.4880
-  19  C   3d0    0.0001   0.0052   0.0149  -0.0008  -0.0016  -0.0425
-  20  C   3d1+   0.0000   0.0000  -0.0022   0.0000   0.0000   0.0062
-  21  C   3d2+  -0.0002  -0.0091   0.0086   0.0015   0.0027  -0.0245
-  22  C   3d0   -0.0007   0.0026   0.0176  -0.0021   0.0197  -0.1571
-  23  C   3d1+   0.0000   0.0000  -0.0029   0.0000   0.0000   0.0119
-  24  C   3d2+   0.0012  -0.0045   0.0102   0.0036  -0.0342  -0.0907
-  25  C   4f0    0.0002   0.0038   0.0018   0.0001  -0.0208  -0.0066
-  26  C   4f1+   0.0000  -0.0004  -0.0003  -0.0013   0.0009   0.0029
-  27  C   4f2+   0.0002   0.0030  -0.0023   0.0001  -0.0161   0.0085
-  28  C   4f3+   0.0000   0.0005  -0.0002   0.0017  -0.0012   0.0023
-  29  H1  1s     0.0000   0.0002   0.0003   0.0000   0.0003   0.0003
-  30  H1  1s     0.0000  -0.0001  -0.0001   0.0000   0.0000  -0.0001
-  31  H1  1s     0.0000   0.0025   0.0044  -0.0002   0.0037   0.0044
-  32  H1  1s     0.0000   0.0184   0.0337  -0.0013   0.0330   0.0397
-  33  H1  1s    -0.0008   0.0778   0.1408  -0.0052   0.2020   0.2673
-  34  H1  1s     0.0028   0.1344   0.2659  -0.0132   0.4278   0.7896
-  35  H1  1s    -0.0004   0.0218   0.1011  -0.0068   0.0735   0.1426
-  36  H1  2px    0.0000   0.0003   0.0010   0.0086   0.0005  -0.0016
-  37  H1  2pz    0.0003  -0.0090  -0.0128   0.0008   0.0108   0.0331
-  38  H1  2px    0.0001   0.0004   0.0012   0.0162   0.0016   0.0079
-  39  H1  2pz   -0.0017  -0.0151  -0.0127   0.0012  -0.0213  -0.0808
-  40  H1  3d0    0.0000   0.0028   0.0041  -0.0005  -0.0093  -0.0220
-  41  H1  3d1+   0.0000  -0.0002  -0.0005  -0.0036   0.0001   0.0017
-  42  H1  3d2+  -0.0001  -0.0002   0.0001   0.0002  -0.0022  -0.0007
-  43  H2  1s     0.0000   0.0002  -0.0002   0.0000   0.0003  -0.0002
-  44  H2  1s     0.0000  -0.0001   0.0000   0.0000   0.0000   0.0000
-  45  H2  1s     0.0000   0.0025  -0.0022  -0.0002   0.0037  -0.0022
-  46  H2  1s     0.0000   0.0184  -0.0168  -0.0013   0.0330  -0.0198
-  47  H2  1s    -0.0008   0.0778  -0.0704  -0.0052   0.2020  -0.1337
-  48  H2  1s     0.0028   0.1344  -0.1330  -0.0132   0.4278  -0.3948
-  49  H2  1s    -0.0004   0.0218  -0.0505  -0.0068   0.0735  -0.0713
-  50  H2  2px    0.0000   0.0003  -0.0005   0.0086   0.0005   0.0008
-  51  H2  2py    0.0002  -0.0078   0.0075   0.0007   0.0094  -0.0140
-  52  H2  2pz   -0.0001   0.0045   0.0002  -0.0004  -0.0054   0.0088
-  53  H2  2px    0.0001   0.0004  -0.0006   0.0162   0.0016  -0.0040
-  54  H2  2py   -0.0015  -0.0130   0.0099   0.0010  -0.0184   0.0334
-  55  H2  2pz    0.0009   0.0075   0.0043  -0.0006   0.0106  -0.0229
-  56  H2  3d2-   0.0000  -0.0002   0.0003  -0.0031   0.0001  -0.0010
-  57  H2  3d1-   0.0000  -0.0020   0.0006   0.0003   0.0079  -0.0078
-  58  H2  3d0    0.0001  -0.0002   0.0017   0.0000   0.0026  -0.0026
-  59  H2  3d1+   0.0000   0.0001  -0.0001   0.0018   0.0000  -0.0001
-  60  H2  3d2+  -0.0001  -0.0020   0.0022   0.0004   0.0047  -0.0075
+    Orbital         2        3        4        5        6        7        8
+   6  C  :1s    -0.0149  -0.0000  -0.0011   0.0189  -0.0000   0.0004  -0.0000
+   7  C  :1s    -0.0462  -0.0000  -0.0035   0.0612  -0.0000   0.0004  -0.0000
+   8  C  :1s    -0.1035  -0.0000  -0.0079   0.1324  -0.0000   0.0042  -0.0000
+   9  C  :1s    -0.1420  -0.0000  -0.0109   0.2210  -0.0000   0.0033  -0.0000
+  10  C  :1s     0.1209   0.0000   0.0079  -0.3681   0.0000  -0.1005   0.0000
+  11  C  :1s     0.4100   0.0000   0.0434  -0.9943   0.0000   0.2881  -0.0000
+  12  C  :1s     0.1758   0.0000   0.0522  -0.0902   0.0000   3.8278  -0.0000
+  13  C  :2px   -0.0318  -0.0000   0.8955   0.1195  -0.0000   0.0200  -0.0000
+  14  C  :2pz   -0.0000   0.6884  -0.0000  -0.0000  -1.5274   0.0000  -0.1181
+  15  C  :2px    0.0042   0.0000   0.0072  -0.0040   0.0000  -0.0467   0.0000
+  16  C  :2pz    0.0000  -0.0566   0.0000  -0.0000  -0.0562  -0.0000   0.0411
+  17  C  :2px    0.0056   0.0000   0.0833  -0.0281   0.0000  -0.1257   0.0000
+  18  C  :2pz    0.0000  -0.1156   0.0000   0.0000   0.4880  -0.0000   1.5396
+  19  C  :3d0    0.0052   0.0149  -0.0008  -0.0016  -0.0425   0.0123   0.0120
+  21  C  :3d2+  -0.0091   0.0086   0.0015   0.0027  -0.0245  -0.0212   0.0069
+  22  C  :3d0    0.0026   0.0176  -0.0021   0.0197  -0.1571   0.1801   0.0646
+  23  C  :3d1+   0.0000  -0.0029  -0.0000   0.0000   0.0119   0.0000  -0.0251
+  24  C  :3d2+  -0.0045   0.0102   0.0036  -0.0342  -0.0907  -0.3120   0.0373
+  25  C  :4f0    0.0038   0.0018   0.0001  -0.0208  -0.0066   0.0407   0.0045
+  27  C  :4f2+   0.0030  -0.0023   0.0001  -0.0161   0.0085   0.0315  -0.0058
+  32  H1 :1s     0.0184   0.0337  -0.0013   0.0330   0.0397   0.0194   0.0308
+  33  H1 :1s     0.0778   0.1408  -0.0052   0.2020   0.2673   0.0263   0.0075
+  34  H1 :1s     0.1344   0.2659  -0.0132   0.4278   0.7896  -0.0944   0.6603
+  35  H1 :1s     0.0218   0.1011  -0.0068   0.0735   0.1426  -1.5806  -3.0693
+  37  H1 :2pz   -0.0090  -0.0128   0.0008   0.0108   0.0331  -0.0100  -0.0282
+  38  H1 :2px    0.0004   0.0012   0.0162   0.0016   0.0079  -0.0151  -0.0136
+  39  H1 :2pz   -0.0151  -0.0127   0.0012  -0.0213  -0.0808   0.3779   0.2674
+  40  H1 :3d0    0.0028   0.0041  -0.0005  -0.0093  -0.0220  -0.0245  -0.0095
+  46  H2 :1s     0.0184  -0.0168  -0.0013   0.0330  -0.0198   0.0194  -0.0154
+  47  H2 :1s     0.0778  -0.0704  -0.0052   0.2020  -0.1337   0.0263  -0.0037
+  48  H2 :1s     0.1344  -0.1330  -0.0132   0.4278  -0.3948  -0.0944  -0.3302
+  49  H2 :1s     0.0218  -0.0505  -0.0068   0.0735  -0.0713  -1.5806   1.5347
+  51  H2 :2py   -0.0078   0.0075   0.0007   0.0094  -0.0140  -0.0087   0.0175
+  53  H2 :2px    0.0004  -0.0006   0.0162   0.0016  -0.0040  -0.0151   0.0068
+  54  H2 :2py   -0.0130   0.0099   0.0010  -0.0184   0.0334   0.3273  -0.1652
+  55  H2 :2pz    0.0075   0.0043  -0.0006   0.0106  -0.0229  -0.1889  -0.0187
+  57  H2 :3d1-  -0.0020   0.0006   0.0003   0.0079  -0.0078   0.0166  -0.0014
+  60  H2 :3d2+  -0.0020   0.0022   0.0004   0.0047  -0.0075   0.0184  -0.0051
 
-     Molecular orbitals for symmetry species   2
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
 
- Orbital          1        2
-   1  C   2py    0.6884   1.5274
-   2  C   2py   -0.0566   0.0562
-   3  C   2py   -0.1156  -0.4880
-   4  C   3d2-  -0.0022  -0.0062
-   5  C   3d1-  -0.0172  -0.0491
-   6  C   3d2-  -0.0029  -0.0119
-   7  C   3d1-  -0.0203  -0.1814
-   8  C   4f3-  -0.0028  -0.0104
-   9  C   4f2-   0.0004   0.0037
-  10  C   4f1-   0.0007   0.0027
-  11  H1  2py    0.0045  -0.0007
-  12  H1  2py    0.0100   0.0036
-  13  H1  3d2-   0.0001   0.0007
-  14  H1  3d1-  -0.0022  -0.0015
-  15  H2  1s     0.0003  -0.0003
-  16  H2  1s    -0.0001   0.0001
-  17  H2  1s     0.0038  -0.0038
-  18  H2  1s     0.0292  -0.0344
-  19  H2  1s     0.1220  -0.2315
-  20  H2  1s     0.2303  -0.6838
-  21  H2  1s     0.0875  -0.1235
-  22  H2  2px    0.0009   0.0014
-  23  H2  2py   -0.0084  -0.0250
-  24  H2  2pz    0.0075   0.0140
-  25  H2  2px    0.0010  -0.0069
-  26  H2  2py   -0.0070   0.0615
-  27  H2  2pz    0.0099  -0.0334
-  28  H2  3d2-  -0.0004  -0.0011
-  29  H2  3d1-  -0.0033  -0.0150
-  30  H2  3d0    0.0003  -0.0022
-  31  H2  3d1+   0.0003   0.0010
-  32  H2  3d2+  -0.0018  -0.0117
+    Orbital         1        2        3        4
+   1  C  :2py    0.6884  -1.5274   0.1181  -0.3073
+   2  C  :2py   -0.0566  -0.0562  -0.0411   0.8606
+   3  C  :2py   -0.1156   0.4880  -1.5396   3.4743
+   5  C  :3d1-  -0.0172   0.0491   0.0139   0.0030
+   6  C  :3d2-  -0.0029   0.0119   0.0251  -0.0856
+   7  C  :3d1-  -0.0203   0.1814   0.0746  -0.7306
+   8  C  :4f3-  -0.0028   0.0104   0.0071  -0.0577
+   9  C  :4f2-   0.0004  -0.0037   0.0004   0.0135
+  10  C  :4f1-   0.0007  -0.0027  -0.0018   0.0149
+  11  H1 :2py    0.0045   0.0007  -0.0121   0.0136
+  12  H1 :2py    0.0100  -0.0036   0.1140   0.0873
+  18  H2 :1s     0.0292   0.0344  -0.0267  -0.0154
+  19  H2 :1s     0.1220   0.2315  -0.0065   0.0322
+  20  H2 :1s     0.2303   0.6838  -0.5719  -1.7549
+  21  H2 :1s     0.0875   0.1235   2.6581  -1.9526
+  23  H2 :2py   -0.0084   0.0250   0.0181   0.0204
+  24  H2 :2pz    0.0075  -0.0140  -0.0175  -0.0039
+  25  H2 :2px    0.0010   0.0069   0.0118  -0.0314
+  26  H2 :2py   -0.0070  -0.0615  -0.1721   0.5242
+  27  H2 :2pz    0.0099   0.0334   0.1652  -0.2522
+  29  H2 :3d1-  -0.0033   0.0150  -0.0068   0.0355
+  30  H2 :3d0    0.0003   0.0022   0.0013   0.0139
+  32  H2 :3d2+  -0.0018   0.0117  -0.0051   0.0249
 
-
- Printout of CI-coefficients larger than 0.05000 for root  1
-
- (this is the reference state)
-
+ Printout of CI-coefficients abs greater than 0.05000 for root  1
+ *** NOTE: this root is the reference state ***
 
 
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   ==============================================================
 
-  Coefficient of determinant      226 is 0.98319298E+00
-  alpha-string:   1   2   3   6
-   beta-string:   1   2   6
+ Coefficient of determinant       226 is      0.98319298  9.83192984E-01
+ alpha-string:  1  2  3        6
+  beta-string:  1  2           6
 
 
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   ==============================================================
-    ( no coefficients )
+   ( no coefficients )
 
 
   Printout of coefficients in interval  0.5000E-01 to 0.1000E+00
   ==============================================================
 
-  Coefficient of determinant      267 is -.51153673E-01
-  alpha-string:   1   2   4   6
-   beta-string:   2   3   6
+ Coefficient of determinant       267 is     -0.05115367 -5.11536715E-02
+ alpha-string:  1  2     4     6
+  beta-string:     2  3        6
 
-  Coefficient of determinant      351 is 0.60814717E-01
-  alpha-string:   1   3   5   6
-   beta-string:   1   5   6
+ Coefficient of determinant       351 is      0.06081472  6.08147175E-02
+ alpha-string:  1     3     5  6
+  beta-string:  1           5  6
 
-  Coefficient of determinant      436 is -.60814769E-01
-  alpha-string:   1   2   3   7
-   beta-string:   1   2   7
+ Coefficient of determinant       436 is     -0.06081477 -6.08147691E-02
+ alpha-string:  1  2  3           7
+  beta-string:  1  2              7
 
+ Norm of printed part of CI vector ..      0.97668201
 
-  Norm of printed CI vector ..      0.97668201
+  Magnitude of CI coefficients
+  ============================
 
-   Magnitude of CI coefficients 
-  ==============================
-
-   ( Ranges are relative to norm of vector :  1.00E+00 )
+  ( Ranges are relative to norm of vector :  1.00E+00 )
 
   10- 1 to 10- 0         1    0.96666844E+00    0.96666844E+00
   10- 2 to 10- 1        44    0.32459079E-01    0.99912752E+00
-  10- 3 to 10- 2        88    0.82654597E-03    0.99995407E+00
-  10- 4 to 10- 3       187    0.45481271E-04    0.99999955E+00
-  10- 5 to 10- 4       161    0.44881572E-06    0.10000000E+01
-  10- 6 to 10- 5        28    0.13843773E-08    0.10000000E+01
-  10- 7 to 10- 6        10    0.17816955E-11    0.10000000E+01
-  10- 8 to 10- 7        15    0.28013105E-13    0.10000000E+01
-  10- 9 to 10- 8        28    0.55851048E-15    0.10000000E+01
-  10-10 to 10- 9        43    0.87194585E-17    0.10000000E+01
-  10-11 to 10-10        20    0.74960361E-19    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is   0
+  10- 3 to 10- 2        88    0.82654594E-03    0.99995407E+00
+  10- 4 to 10- 3       187    0.45481273E-04    0.99999955E+00
+  10- 5 to 10- 4       161    0.44881566E-06    0.10000000E+01
+  10- 6 to 10- 5        28    0.13843780E-08    0.10000000E+01
+  10- 7 to 10- 6        10    0.17817199E-11    0.10000000E+01
+  10- 8 to 10- 7        15    0.28013196E-13    0.10000000E+01
+  10- 9 to 10- 8        28    0.56068925E-15    0.10000000E+01
+  10-10 to 10- 9        44    0.86381476E-17    0.10000000E+01
+  10-11 to 10-10        19    0.62365007E-19    0.10000000E+01
+  Number of coefficients less than 10^-11 times norm is             0
 
 
 
- >>>> Total CPU  time used in SIRIUS :     53.43 seconds
- >>>> Total wall time used in SIRIUS :     54.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     18.95 seconds
+ >>>> Total wall time used in SIRIUS :     24.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:23:19 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 18:14:37 2011 
+     Host name              : fe6                                     
 
 
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
 
-  This is output from RESPONSE  -  an MCSCF and SOPPA response property program
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
  ------------------------------------------------------------------------------
-
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
 
 
  <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
@@ -1194,9 +1234,9 @@ Starting in Wave Function Section -
 
    22 ESR CALC. : TRIPLET OP.  SYMMETRY NO:    1 AND LABEL:
 
-          FC C  01
-          FC H1 02
-          FC H2 03
+          FC  C 01
+          FC  H102
+          FC  H203
           SD 001 y
           SD 002 y
           SD 003 y
@@ -1219,7 +1259,7 @@ Starting in Wave Function Section -
 
    18 ESR CALC. : TRIPLET OP.  SYMMETRY NO:    2 AND LABEL:
 
-          FC H2 04
+          FC  H204
           SD 001 x
           SD 001 z
           SD 002 x
@@ -1241,10 +1281,16 @@ Starting in Wave Function Section -
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :      -39.633367086958913
- -- inactive part     :      -35.301346630190118
- --   active part     :      -14.007173014301049
- -- nuclear repulsion :        9.675446789641612
+ MCSCF energy         :      -39.633367086960405
+ -- inactive part     :      -35.301346630196214
+ --   active part     :      -14.007173014301856
+ -- nuclear repulsion :        9.675446789641613
+
+
+                        **********************************
+                        *** MCSCF response calculation ***
+                        **********************************
+
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -1273,11 +1319,11 @@ Starting in Wave Function Section -
               5   -0.0000000239
               6   -0.0000000014
               7   -0.0000000001
-              8    0.0000000000
-              9    0.0000000000
-             10    0.0000000000
-             11    0.0000000000
-             12    0.0000000000
+              8   -0.0000000000
+              9   -0.0000000000
+             10   -0.0000000000
+             11   -0.0000000000
+             12   -0.0000000000
 
 
 
@@ -1285,57 +1331,58 @@ Starting in Wave Function Section -
 
  Operator symmetry =  1; triplet =   T
 
+RSPORT:    1 out of    2 new trial vectors linear dependent
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-05
+ Convergence of RSP solution vectors, threshold = 1.00D-05
  ---------------------------------------------------------------
  (dimension of paired reduced space:   30)
- RSP solution vector no.    1; norm of residual   8.46E-06
+ RSP solution vector no.    1; norm of residual   8.46D-06
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
  *** Individual non-zero orbital contributions
- *** to the expectation value for property FC C  01 :
+ *** to the expectation value for property FC  C 01 :
 
      Active-active  1  1 in sym 1 :     0.04789312
      Active-active  2  1 in sym 1 :     0.00000000
      Active-active  3  1 in sym 1 :     0.00104835
-     Active-active  4  1 in sym 1 :     1.08322366
+     Active-active  4  1 in sym 1 :     1.08322363
      Active-active  5  1 in sym 1 :     0.00000000
      Active-active  1  2 in sym 1 :     0.00000000
      Active-active  2  2 in sym 1 :     0.00000000
      Active-active  3  2 in sym 1 :     0.00000000
      Active-active  4  2 in sym 1 :     0.00000000
-     Active-active  5  2 in sym 1 :     0.00000000
+     Active-active  5  2 in sym 1 :    -0.00000000
      Active-active  1  3 in sym 1 :     0.00104835
      Active-active  2  3 in sym 1 :     0.00000000
      Active-active  3  3 in sym 1 :     0.08782369
      Active-active  4  3 in sym 1 :    -0.00040614
-     Active-active  5  3 in sym 1 :     0.00000000
-     Active-active  1  4 in sym 1 :     1.08322366
+     Active-active  5  3 in sym 1 :    -0.00000000
+     Active-active  1  4 in sym 1 :     1.08322363
      Active-active  2  4 in sym 1 :     0.00000000
      Active-active  3  4 in sym 1 :    -0.00040614
-     Active-active  4  4 in sym 1 :     0.06602102
+     Active-active  4  4 in sym 1 :     0.06602101
      Active-active  5  4 in sym 1 :     0.00000000
      Active-active  1  5 in sym 1 :     0.00000000
-     Active-active  2  5 in sym 1 :     0.00000000
-     Active-active  3  5 in sym 1 :     0.00000000
+     Active-active  2  5 in sym 1 :    -0.00000000
+     Active-active  3  5 in sym 1 :    -0.00000000
      Active-active  4  5 in sym 1 :     0.00000000
      Active-active  5  5 in sym 1 :     0.00000000
      Active-active  1  1 in sym 2 :     0.00000000
-     Active-active  2  1 in sym 2 :     0.00000000
-     Active-active  1  2 in sym 2 :     0.00000000
+     Active-active  2  1 in sym 2 :    -0.00000000
+     Active-active  1  2 in sym 2 :    -0.00000000
      Active-active  2  2 in sym 2 :     0.00000000
 
-     FC C  01 inactive part:     0.00000000
-     FC C  01 active part  :     2.36946957
-     FC C  01 total        :     2.36946957
+     FC  C 01 inactive part:     0.00000000
+     FC  C 01 active part  :     2.36946952
+     FC  C 01 total        :     2.36946952
 
-TRIPLET OPERATOR: "FC C  01" LAGRANGIAN: -1.516278 AVERAGE:  2.369470 TOTAL:  0.853192
+TRIPLET OPERATOR: "FC  C 01" LAGRANGIAN: -1.516278 AVERAGE:  2.369470 TOTAL:  0.853192
 
  *** Individual non-zero orbital contributions
- *** to the expectation value for property FC H1 02 :
+ *** to the expectation value for property FC  H102 :
 
      Active-active  1  1 in sym 1 :     0.00146428
      Active-active  2  1 in sym 1 :     0.00000000
@@ -1344,11 +1391,11 @@ TRIPLET OPERATOR: "FC C  01" LAGRANGIAN: -1.516278 AVERAGE:  2.369470 TOTAL:  0.
      Active-active  5  1 in sym 1 :     0.00000011
      Active-active  1  2 in sym 1 :     0.00000000
      Active-active  2  2 in sym 1 :     0.00063006
-     Active-active  3  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
      Active-active  4  2 in sym 1 :    -0.00000020
      Active-active  5  2 in sym 1 :    -0.04141031
      Active-active  1  3 in sym 1 :    -0.00002762
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :     0.00199449
      Active-active  4  3 in sym 1 :    -0.00001241
      Active-active  5  3 in sym 1 :     0.00000000
@@ -1356,32 +1403,32 @@ TRIPLET OPERATOR: "FC C  01" LAGRANGIAN: -1.516278 AVERAGE:  2.369470 TOTAL:  0.
      Active-active  2  4 in sym 1 :    -0.00000020
      Active-active  3  4 in sym 1 :    -0.00001241
      Active-active  4  4 in sym 1 :     0.00271506
-     Active-active  5  4 in sym 1 :     0.00000000
+     Active-active  5  4 in sym 1 :    -0.00000000
      Active-active  1  5 in sym 1 :     0.00000011
      Active-active  2  5 in sym 1 :    -0.04141031
      Active-active  3  5 in sym 1 :     0.00000000
-     Active-active  4  5 in sym 1 :     0.00000000
+     Active-active  4  5 in sym 1 :    -0.00000000
      Active-active  5  5 in sym 1 :     0.00105760
      Active-active  1  1 in sym 2 :     0.00000000
-     Active-active  2  1 in sym 2 :     0.00000000
-     Active-active  1  2 in sym 2 :     0.00000000
+     Active-active  2  1 in sym 2 :    -0.00000000
+     Active-active  1  2 in sym 2 :    -0.00000000
      Active-active  2  2 in sym 2 :     0.00000000
 
-     FC H1 02 inactive part:     0.00000000
-     FC H1 02 active part  :    -0.15185888
-     FC H1 02 total        :    -0.15185888
+     FC  H102 inactive part:     0.00000000
+     FC  H102 active part  :    -0.15185888
+     FC  H102 total        :    -0.15185888
 
-TRIPLET OPERATOR: "FC H1 02" LAGRANGIAN: -0.022566 AVERAGE: -0.151859 TOTAL: -0.174425
+TRIPLET OPERATOR: "FC  H102" LAGRANGIAN: -0.022566 AVERAGE: -0.151859 TOTAL: -0.174425
 
  *** Individual non-zero orbital contributions
- *** to the expectation value for property FC H2 03 :
+ *** to the expectation value for property FC  H203 :
 
      Active-active  1  1 in sym 1 :     0.00292858
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :    -0.00005525
      Active-active  4  1 in sym 1 :    -0.07681961
      Active-active  5  1 in sym 1 :    -0.00000011
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :     0.00031503
      Active-active  3  2 in sym 1 :     0.00000000
      Active-active  4  2 in sym 1 :     0.00000020
@@ -1390,7 +1437,7 @@ TRIPLET OPERATOR: "FC H1 02" LAGRANGIAN: -0.022566 AVERAGE: -0.151859 TOTAL: -0.
      Active-active  2  3 in sym 1 :     0.00000000
      Active-active  3  3 in sym 1 :     0.00398898
      Active-active  4  3 in sym 1 :    -0.00002482
-     Active-active  5  3 in sym 1 :     0.00000000
+     Active-active  5  3 in sym 1 :    -0.00000000
      Active-active  1  4 in sym 1 :    -0.07681961
      Active-active  2  4 in sym 1 :     0.00000020
      Active-active  3  4 in sym 1 :    -0.00002482
@@ -1398,7 +1445,7 @@ TRIPLET OPERATOR: "FC H1 02" LAGRANGIAN: -0.022566 AVERAGE: -0.151859 TOTAL: -0.
      Active-active  5  4 in sym 1 :     0.00000000
      Active-active  1  5 in sym 1 :    -0.00000011
      Active-active  2  5 in sym 1 :    -0.02070519
-     Active-active  3  5 in sym 1 :     0.00000000
+     Active-active  3  5 in sym 1 :    -0.00000000
      Active-active  4  5 in sym 1 :     0.00000000
      Active-active  5  5 in sym 1 :     0.00052880
      Active-active  1  1 in sym 2 :     0.00094508
@@ -1406,21 +1453,21 @@ TRIPLET OPERATOR: "FC H1 02" LAGRANGIAN: -0.022566 AVERAGE: -0.151859 TOTAL: -0.
      Active-active  1  2 in sym 2 :    -0.06211551
      Active-active  2  2 in sym 2 :     0.00158640
 
-     FC H2 03 inactive part:     0.00000000
-     FC H2 03 active part  :    -0.30371763
-     FC H2 03 total        :    -0.30371763
+     FC  H203 inactive part:     0.00000000
+     FC  H203 active part  :    -0.30371763
+     FC  H203 total        :    -0.30371763
 
-TRIPLET OPERATOR: "FC H2 03" LAGRANGIAN: -0.045133 AVERAGE: -0.303718 TOTAL: -0.348850
+TRIPLET OPERATOR: "FC  H203" LAGRANGIAN: -0.045133 AVERAGE: -0.303718 TOTAL: -0.348850
 
  *** Individual non-zero orbital contributions
  *** to the expectation value for property SD 001 y :
 
      Active-active  1  1 in sym 1 :     0.00008921
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :     0.00001767
      Active-active  4  1 in sym 1 :    -0.00156197
-     Active-active  5  1 in sym 1 :     0.00000000
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  5  1 in sym 1 :    -0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :    -0.00015412
      Active-active  3  2 in sym 1 :     0.00000000
      Active-active  4  2 in sym 1 :     0.00000000
@@ -1429,15 +1476,15 @@ TRIPLET OPERATOR: "FC H2 03" LAGRANGIAN: -0.045133 AVERAGE: -0.303718 TOTAL: -0.
      Active-active  2  3 in sym 1 :     0.00000000
      Active-active  3  3 in sym 1 :    -0.55559474
      Active-active  4  3 in sym 1 :    -0.00001606
-     Active-active  5  3 in sym 1 :     0.00000000
+     Active-active  5  3 in sym 1 :    -0.00000000
      Active-active  1  4 in sym 1 :    -0.00156197
      Active-active  2  4 in sym 1 :     0.00000000
      Active-active  3  4 in sym 1 :    -0.00001606
      Active-active  4  4 in sym 1 :    -0.00006638
      Active-active  5  4 in sym 1 :     0.00000000
-     Active-active  1  5 in sym 1 :     0.00000000
+     Active-active  1  5 in sym 1 :    -0.00000000
      Active-active  2  5 in sym 1 :    -0.01707151
-     Active-active  3  5 in sym 1 :     0.00000000
+     Active-active  3  5 in sym 1 :    -0.00000000
      Active-active  4  5 in sym 1 :     0.00000000
      Active-active  5  5 in sym 1 :    -0.00081886
      Active-active  1  1 in sym 2 :     0.00032299
@@ -1455,17 +1502,17 @@ TRIPLET OPERATOR: "SD 001 y" LAGRANGIAN: -0.020738 AVERAGE: -0.524597 TOTAL: -0.
  *** to the expectation value for property SD 002 y :
 
      Active-active  1  1 in sym 1 :    -0.00016321
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :     0.00000085
      Active-active  4  1 in sym 1 :    -0.00352193
      Active-active  5  1 in sym 1 :     0.00000001
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :    -0.00003188
-     Active-active  3  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
      Active-active  4  2 in sym 1 :    -0.00000001
      Active-active  5  2 in sym 1 :    -0.00330418
      Active-active  1  3 in sym 1 :     0.00000085
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :    -0.06568588
      Active-active  4  3 in sym 1 :    -0.00000148
      Active-active  5  3 in sym 1 :     0.00000000
@@ -1497,7 +1544,7 @@ TRIPLET OPERATOR: "SD 002 y" LAGRANGIAN:  0.001683 AVERAGE: -0.080727 TOTAL: -0.
      Active-active  2  1 in sym 1 :     0.00000000
      Active-active  3  1 in sym 1 :    -0.00013581
      Active-active  4  1 in sym 1 :    -0.00004165
-     Active-active  5  1 in sym 1 :     0.00000000
+     Active-active  5  1 in sym 1 :    -0.00000000
      Active-active  1  2 in sym 1 :     0.00000000
      Active-active  2  2 in sym 1 :    -0.00000623
      Active-active  3  2 in sym 1 :     0.00000000
@@ -1512,11 +1559,11 @@ TRIPLET OPERATOR: "SD 002 y" LAGRANGIAN:  0.001683 AVERAGE: -0.080727 TOTAL: -0.
      Active-active  2  4 in sym 1 :     0.00000000
      Active-active  3  4 in sym 1 :     0.00002012
      Active-active  4  4 in sym 1 :     0.00001494
-     Active-active  5  4 in sym 1 :     0.00000000
-     Active-active  1  5 in sym 1 :     0.00000000
+     Active-active  5  4 in sym 1 :    -0.00000000
+     Active-active  1  5 in sym 1 :    -0.00000000
      Active-active  2  5 in sym 1 :    -0.00059710
      Active-active  3  5 in sym 1 :     0.00000000
-     Active-active  4  5 in sym 1 :     0.00000000
+     Active-active  4  5 in sym 1 :    -0.00000000
      Active-active  5  5 in sym 1 :    -0.00001423
      Active-active  1  1 in sym 2 :    -0.00000928
      Active-active  2  1 in sym 2 :    -0.00089729
@@ -1533,11 +1580,11 @@ TRIPLET OPERATOR: "SD 003 y" LAGRANGIAN:  0.004329 AVERAGE: -0.013220 TOTAL: -0.
  *** to the expectation value for property SD 004 y :
 
      Active-active  1  1 in sym 1 :     0.00044814
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :    -0.00001426
      Active-active  4  1 in sym 1 :     0.00726561
      Active-active  5  1 in sym 1 :     0.00000002
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :     0.00006816
      Active-active  3  2 in sym 1 :     0.00000000
      Active-active  4  2 in sym 1 :    -0.00000001
@@ -1572,28 +1619,28 @@ TRIPLET OPERATOR: "SD 004 y" LAGRANGIAN: -0.025017 AVERAGE:  0.095850 TOTAL:  0.
  *** to the expectation value for property SD 005 y :
 
      Active-active  1  1 in sym 1 :    -0.00044719
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :     0.00000922
      Active-active  4  1 in sym 1 :    -0.00826160
-     Active-active  5  1 in sym 1 :     0.00000000
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  5  1 in sym 1 :    -0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :    -0.00002215
-     Active-active  3  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
      Active-active  4  2 in sym 1 :     0.00000001
      Active-active  5  2 in sym 1 :    -0.00223120
      Active-active  1  3 in sym 1 :     0.00000922
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :    -0.11087627
      Active-active  4  3 in sym 1 :    -0.00000364
-     Active-active  5  3 in sym 1 :     0.00000000
+     Active-active  5  3 in sym 1 :    -0.00000000
      Active-active  1  4 in sym 1 :    -0.00826160
      Active-active  2  4 in sym 1 :     0.00000001
      Active-active  3  4 in sym 1 :    -0.00000364
      Active-active  4  4 in sym 1 :    -0.00012882
      Active-active  5  4 in sym 1 :     0.00000000
-     Active-active  1  5 in sym 1 :     0.00000000
+     Active-active  1  5 in sym 1 :    -0.00000000
      Active-active  2  5 in sym 1 :    -0.00223120
-     Active-active  3  5 in sym 1 :     0.00000000
+     Active-active  3  5 in sym 1 :    -0.00000000
      Active-active  4  5 in sym 1 :     0.00000000
      Active-active  5  5 in sym 1 :    -0.00008168
      Active-active  1  1 in sym 2 :    -0.00008070
@@ -1614,23 +1661,23 @@ TRIPLET OPERATOR: "SD 005 y" LAGRANGIAN:  0.016387 AVERAGE: -0.148554 TOTAL: -0.
      Active-active  2  1 in sym 1 :     0.00000000
      Active-active  3  1 in sym 1 :    -0.00003534
      Active-active  4  1 in sym 1 :     0.00312395
-     Active-active  5  1 in sym 1 :     0.00000000
+     Active-active  5  1 in sym 1 :    -0.00000000
      Active-active  1  2 in sym 1 :     0.00000000
      Active-active  2  2 in sym 1 :    -0.00016887
-     Active-active  3  2 in sym 1 :     0.00000000
-     Active-active  4  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
+     Active-active  4  2 in sym 1 :    -0.00000000
      Active-active  5  2 in sym 1 :    -0.01655236
      Active-active  1  3 in sym 1 :    -0.00003534
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :     1.11118947
      Active-active  4  3 in sym 1 :     0.00003213
      Active-active  5  3 in sym 1 :     0.00000000
      Active-active  1  4 in sym 1 :     0.00312395
-     Active-active  2  4 in sym 1 :     0.00000000
+     Active-active  2  4 in sym 1 :    -0.00000000
      Active-active  3  4 in sym 1 :     0.00003213
      Active-active  4  4 in sym 1 :     0.00013276
      Active-active  5  4 in sym 1 :     0.00000000
-     Active-active  1  5 in sym 1 :     0.00000000
+     Active-active  1  5 in sym 1 :    -0.00000000
      Active-active  2  5 in sym 1 :    -0.01655236
      Active-active  3  5 in sym 1 :     0.00000000
      Active-active  4  5 in sym 1 :     0.00000000
@@ -1650,24 +1697,24 @@ TRIPLET OPERATOR: "SD 006 x" LAGRANGIAN:  0.041476 AVERAGE:  1.049195 TOTAL:  1.
  *** to the expectation value for property SD 006 z :
 
      Active-active  1  1 in sym 1 :     0.00000000
-     Active-active  2  1 in sym 1 :     0.00000000
-     Active-active  3  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
+     Active-active  3  1 in sym 1 :    -0.00000000
      Active-active  4  1 in sym 1 :     0.00000000
      Active-active  5  1 in sym 1 :     0.00000001
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :    -0.00000165
      Active-active  3  2 in sym 1 :     0.00000000
      Active-active  4  2 in sym 1 :    -0.00000001
      Active-active  5  2 in sym 1 :     0.00005533
-     Active-active  1  3 in sym 1 :     0.00000000
+     Active-active  1  3 in sym 1 :    -0.00000000
      Active-active  2  3 in sym 1 :     0.00000000
-     Active-active  3  3 in sym 1 :     0.00000000
-     Active-active  4  3 in sym 1 :     0.00000000
+     Active-active  3  3 in sym 1 :    -0.00000000
+     Active-active  4  3 in sym 1 :    -0.00000000
      Active-active  5  3 in sym 1 :     0.00000000
      Active-active  1  4 in sym 1 :     0.00000000
      Active-active  2  4 in sym 1 :    -0.00000001
-     Active-active  3  4 in sym 1 :     0.00000000
-     Active-active  4  4 in sym 1 :     0.00000000
+     Active-active  3  4 in sym 1 :    -0.00000000
+     Active-active  4  4 in sym 1 :    -0.00000000
      Active-active  5  4 in sym 1 :     0.00000000
      Active-active  1  5 in sym 1 :     0.00000001
      Active-active  2  5 in sym 1 :     0.00005533
@@ -1679,34 +1726,34 @@ TRIPLET OPERATOR: "SD 006 x" LAGRANGIAN:  0.041476 AVERAGE:  1.049195 TOTAL:  1.
      Active-active  1  2 in sym 2 :    -0.00005533
      Active-active  2  2 in sym 2 :     0.00000098
 
-     SD 006 z inactive part: 0.00000000E+00
-     SD 006 z active part  :-3.75080297E-09
-     SD 006 z total        :-3.75080297E-09
+     SD 006 z inactive part: 0.00000000D+00
+     SD 006 z active part  :-2.35472862D-09
+     SD 006 z total        :-2.35472862D-09
 
-TRIPLET OPERATOR: "SD 006 z" LAGRANGIAN:  0.000000 AVERAGE:  0.000000 TOTAL:  0.000000
+TRIPLET OPERATOR: "SD 006 z" LAGRANGIAN:  0.000000 AVERAGE: -0.000000 TOTAL: -0.000000
 
  *** Individual non-zero orbital contributions
  *** to the expectation value for property SD 007 x :
 
      Active-active  1  1 in sym 1 :     0.00000000
-     Active-active  2  1 in sym 1 :     0.00000000
-     Active-active  3  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
+     Active-active  3  1 in sym 1 :    -0.00000000
      Active-active  4  1 in sym 1 :     0.00000000
      Active-active  5  1 in sym 1 :     0.00000001
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :    -0.00000165
      Active-active  3  2 in sym 1 :     0.00000000
      Active-active  4  2 in sym 1 :    -0.00000001
      Active-active  5  2 in sym 1 :     0.00005533
-     Active-active  1  3 in sym 1 :     0.00000000
+     Active-active  1  3 in sym 1 :    -0.00000000
      Active-active  2  3 in sym 1 :     0.00000000
-     Active-active  3  3 in sym 1 :     0.00000000
-     Active-active  4  3 in sym 1 :     0.00000000
+     Active-active  3  3 in sym 1 :    -0.00000000
+     Active-active  4  3 in sym 1 :    -0.00000000
      Active-active  5  3 in sym 1 :     0.00000000
      Active-active  1  4 in sym 1 :     0.00000000
      Active-active  2  4 in sym 1 :    -0.00000001
-     Active-active  3  4 in sym 1 :     0.00000000
-     Active-active  4  4 in sym 1 :     0.00000000
+     Active-active  3  4 in sym 1 :    -0.00000000
+     Active-active  4  4 in sym 1 :    -0.00000000
      Active-active  5  4 in sym 1 :     0.00000000
      Active-active  1  5 in sym 1 :     0.00000001
      Active-active  2  5 in sym 1 :     0.00005533
@@ -1718,11 +1765,11 @@ TRIPLET OPERATOR: "SD 006 z" LAGRANGIAN:  0.000000 AVERAGE:  0.000000 TOTAL:  0.
      Active-active  1  2 in sym 2 :    -0.00005533
      Active-active  2  2 in sym 2 :     0.00000098
 
-     SD 007 x inactive part: 0.00000000E+00
-     SD 007 x active part  :-3.75080297E-09
-     SD 007 x total        :-3.75080297E-09
+     SD 007 x inactive part: 0.00000000D+00
+     SD 007 x active part  :-2.35472862D-09
+     SD 007 x total        :-2.35472862D-09
 
-TRIPLET OPERATOR: "SD 007 x" LAGRANGIAN:  0.000000 AVERAGE:  0.000000 TOTAL:  0.000000
+TRIPLET OPERATOR: "SD 007 x" LAGRANGIAN:  0.000000 AVERAGE: -0.000000 TOTAL: -0.000000
 
  *** Individual non-zero orbital contributions
  *** to the expectation value for property SD 007 z :
@@ -1734,23 +1781,23 @@ TRIPLET OPERATOR: "SD 007 x" LAGRANGIAN:  0.000000 AVERAGE:  0.000000 TOTAL:  0.
      Active-active  5  1 in sym 1 :     0.00000000
      Active-active  1  2 in sym 1 :     0.00000000
      Active-active  2  2 in sym 1 :     0.00032299
-     Active-active  3  2 in sym 1 :     0.00000000
-     Active-active  4  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
+     Active-active  4  2 in sym 1 :    -0.00000000
      Active-active  5  2 in sym 1 :     0.03362388
      Active-active  1  3 in sym 1 :     0.00001767
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :    -0.55559473
      Active-active  4  3 in sym 1 :    -0.00001606
      Active-active  5  3 in sym 1 :     0.00000000
      Active-active  1  4 in sym 1 :    -0.00156198
-     Active-active  2  4 in sym 1 :     0.00000000
+     Active-active  2  4 in sym 1 :    -0.00000000
      Active-active  3  4 in sym 1 :    -0.00001606
      Active-active  4  4 in sym 1 :    -0.00006638
-     Active-active  5  4 in sym 1 :     0.00000000
+     Active-active  5  4 in sym 1 :    -0.00000000
      Active-active  1  5 in sym 1 :     0.00000000
      Active-active  2  5 in sym 1 :     0.03362388
      Active-active  3  5 in sym 1 :     0.00000000
-     Active-active  4  5 in sym 1 :     0.00000000
+     Active-active  4  5 in sym 1 :    -0.00000000
      Active-active  5  5 in sym 1 :     0.00164043
      Active-active  1  1 in sym 2 :    -0.00015412
      Active-active  2  1 in sym 2 :    -0.01707152
@@ -1767,11 +1814,11 @@ TRIPLET OPERATOR: "SD 007 z" LAGRANGIAN: -0.020738 AVERAGE: -0.524597 TOTAL: -0.
  *** to the expectation value for property SD 008 x :
 
      Active-active  1  1 in sym 1 :    -0.00018996
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :     0.00000894
      Active-active  4  1 in sym 1 :    -0.00249580
      Active-active  5  1 in sym 1 :     0.00000001
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :    -0.00002951
      Active-active  3  2 in sym 1 :     0.00000000
      Active-active  4  2 in sym 1 :    -0.00000001
@@ -1806,28 +1853,28 @@ TRIPLET OPERATOR: "SD 008 x" LAGRANGIAN:  0.015556 AVERAGE: -0.010082 TOTAL:  0.
  *** to the expectation value for property SD 008 z :
 
      Active-active  1  1 in sym 1 :    -0.00001296
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :    -0.00007841
      Active-active  4  1 in sym 1 :    -0.00002405
      Active-active  5  1 in sym 1 :     0.00000000
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :    -0.00000745
-     Active-active  3  2 in sym 1 :     0.00000000
-     Active-active  4  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
+     Active-active  4  2 in sym 1 :    -0.00000000
      Active-active  5  2 in sym 1 :    -0.00069999
      Active-active  1  3 in sym 1 :    -0.00007841
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :    -0.00569427
      Active-active  4  3 in sym 1 :     0.00001162
-     Active-active  5  3 in sym 1 :     0.00000000
+     Active-active  5  3 in sym 1 :    -0.00000000
      Active-active  1  4 in sym 1 :    -0.00002405
-     Active-active  2  4 in sym 1 :     0.00000000
+     Active-active  2  4 in sym 1 :    -0.00000000
      Active-active  3  4 in sym 1 :     0.00001162
      Active-active  4  4 in sym 1 :     0.00000862
      Active-active  5  4 in sym 1 :     0.00000000
      Active-active  1  5 in sym 1 :     0.00000000
      Active-active  2  5 in sym 1 :    -0.00069999
-     Active-active  3  5 in sym 1 :     0.00000000
+     Active-active  3  5 in sym 1 :    -0.00000000
      Active-active  4  5 in sym 1 :     0.00000000
      Active-active  5  5 in sym 1 :    -0.00001123
      Active-active  1  1 in sym 2 :    -0.00000150
@@ -1835,9 +1882,9 @@ TRIPLET OPERATOR: "SD 008 x" LAGRANGIAN:  0.015556 AVERAGE: -0.010082 TOTAL:  0.
      Active-active  1  2 in sym 2 :    -0.00016280
      Active-active  2  2 in sym 2 :    -0.00000626
 
-     SD 008 z inactive part: 0.00000000E+00
-     SD 008 z active part  :-7.63228762E-03
-     SD 008 z total        :-7.63228762E-03
+     SD 008 z inactive part: 0.00000000D+00
+     SD 008 z active part  :-7.63228757D-03
+     SD 008 z total        :-7.63228757D-03
 
 TRIPLET OPERATOR: "SD 008 z" LAGRANGIAN:  0.002500 AVERAGE: -0.007632 TOTAL: -0.005133
 
@@ -1845,28 +1892,28 @@ TRIPLET OPERATOR: "SD 008 z" LAGRANGIAN:  0.002500 AVERAGE: -0.007632 TOTAL: -0.
  *** to the expectation value for property SD 009 x :
 
      Active-active  1  1 in sym 1 :    -0.00001296
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :    -0.00007841
      Active-active  4  1 in sym 1 :    -0.00002405
      Active-active  5  1 in sym 1 :     0.00000000
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :    -0.00000745
-     Active-active  3  2 in sym 1 :     0.00000000
-     Active-active  4  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
+     Active-active  4  2 in sym 1 :    -0.00000000
      Active-active  5  2 in sym 1 :    -0.00069999
      Active-active  1  3 in sym 1 :    -0.00007841
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :    -0.00569427
      Active-active  4  3 in sym 1 :     0.00001162
-     Active-active  5  3 in sym 1 :     0.00000000
+     Active-active  5  3 in sym 1 :    -0.00000000
      Active-active  1  4 in sym 1 :    -0.00002405
-     Active-active  2  4 in sym 1 :     0.00000000
+     Active-active  2  4 in sym 1 :    -0.00000000
      Active-active  3  4 in sym 1 :     0.00001162
      Active-active  4  4 in sym 1 :     0.00000862
      Active-active  5  4 in sym 1 :     0.00000000
      Active-active  1  5 in sym 1 :     0.00000000
      Active-active  2  5 in sym 1 :    -0.00069999
-     Active-active  3  5 in sym 1 :     0.00000000
+     Active-active  3  5 in sym 1 :    -0.00000000
      Active-active  4  5 in sym 1 :     0.00000000
      Active-active  5  5 in sym 1 :    -0.00001123
      Active-active  1  1 in sym 2 :    -0.00000150
@@ -1874,9 +1921,9 @@ TRIPLET OPERATOR: "SD 008 z" LAGRANGIAN:  0.002500 AVERAGE: -0.007632 TOTAL: -0.
      Active-active  1  2 in sym 2 :    -0.00016280
      Active-active  2  2 in sym 2 :    -0.00000626
 
-     SD 009 x inactive part: 0.00000000E+00
-     SD 009 x active part  :-7.63228762E-03
-     SD 009 x total        :-7.63228762E-03
+     SD 009 x inactive part: 0.00000000D+00
+     SD 009 x active part  :-7.63228757D-03
+     SD 009 x total        :-7.63228757D-03
 
 TRIPLET OPERATOR: "SD 009 x" LAGRANGIAN:  0.002500 AVERAGE: -0.007632 TOTAL: -0.005133
 
@@ -1890,23 +1937,23 @@ TRIPLET OPERATOR: "SD 009 x" LAGRANGIAN:  0.002500 AVERAGE: -0.007632 TOTAL: -0.
      Active-active  5  1 in sym 1 :    -0.00000002
      Active-active  1  2 in sym 1 :     0.00000000
      Active-active  2  2 in sym 1 :     0.00006139
-     Active-active  3  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
      Active-active  4  2 in sym 1 :     0.00000002
      Active-active  5  2 in sym 1 :     0.00637557
      Active-active  1  3 in sym 1 :    -0.00000979
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :     0.06234293
      Active-active  4  3 in sym 1 :     0.00000272
-     Active-active  5  3 in sym 1 :     0.00000000
+     Active-active  5  3 in sym 1 :    -0.00000000
      Active-active  1  4 in sym 1 :     0.00601773
      Active-active  2  4 in sym 1 :     0.00000002
      Active-active  3  4 in sym 1 :     0.00000272
      Active-active  4  4 in sym 1 :     0.00011347
-     Active-active  5  4 in sym 1 :     0.00000000
+     Active-active  5  4 in sym 1 :    -0.00000000
      Active-active  1  5 in sym 1 :    -0.00000002
      Active-active  2  5 in sym 1 :     0.00637557
-     Active-active  3  5 in sym 1 :     0.00000000
-     Active-active  4  5 in sym 1 :     0.00000000
+     Active-active  3  5 in sym 1 :    -0.00000000
+     Active-active  4  5 in sym 1 :    -0.00000000
      Active-active  5  5 in sym 1 :     0.00010169
      Active-active  1  1 in sym 2 :     0.00002226
      Active-active  2  1 in sym 2 :     0.00148563
@@ -1929,23 +1976,23 @@ TRIPLET OPERATOR: "SD 009 z" LAGRANGIAN: -0.017239 AVERAGE:  0.090809 TOTAL:  0.
      Active-active  5  1 in sym 1 :    -0.00000001
      Active-active  1  2 in sym 1 :     0.00000000
      Active-active  2  2 in sym 1 :    -0.00004331
-     Active-active  3  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
      Active-active  4  2 in sym 1 :     0.00000001
      Active-active  5  2 in sym 1 :    -0.00295352
      Active-active  1  3 in sym 1 :     0.00001788
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :     0.00668594
      Active-active  4  3 in sym 1 :    -0.00000248
-     Active-active  5  3 in sym 1 :     0.00000000
+     Active-active  5  3 in sym 1 :    -0.00000000
      Active-active  1  4 in sym 1 :    -0.00499159
      Active-active  2  4 in sym 1 :     0.00000001
      Active-active  3  4 in sym 1 :    -0.00000248
      Active-active  4  4 in sym 1 :    -0.00015637
-     Active-active  5  4 in sym 1 :     0.00000000
+     Active-active  5  4 in sym 1 :    -0.00000000
      Active-active  1  5 in sym 1 :    -0.00000001
      Active-active  2  5 in sym 1 :    -0.00295352
-     Active-active  3  5 in sym 1 :     0.00000000
-     Active-active  4  5 in sym 1 :     0.00000000
+     Active-active  3  5 in sym 1 :    -0.00000000
+     Active-active  4  5 in sym 1 :    -0.00000000
      Active-active  5  5 in sym 1 :    -0.00009471
      Active-active  1  1 in sym 2 :    -0.00005379
      Active-active  2  1 in sym 2 :    -0.00507970
@@ -1962,22 +2009,22 @@ TRIPLET OPERATOR: "SD 010 x" LAGRANGIAN:  0.031112 AVERAGE: -0.020164 TOTAL:  0.
  *** to the expectation value for property SD 010 z :
 
      Active-active  1  1 in sym 1 :     0.00001296
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :     0.00007841
      Active-active  4  1 in sym 1 :     0.00002404
      Active-active  5  1 in sym 1 :     0.00000000
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :     0.00000116
-     Active-active  3  2 in sym 1 :     0.00000000
-     Active-active  4  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
+     Active-active  4  2 in sym 1 :    -0.00000000
      Active-active  5  2 in sym 1 :     0.00015417
      Active-active  1  3 in sym 1 :     0.00007841
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :     0.00569427
      Active-active  4  3 in sym 1 :    -0.00001162
      Active-active  5  3 in sym 1 :     0.00000000
      Active-active  1  4 in sym 1 :     0.00002404
-     Active-active  2  4 in sym 1 :     0.00000000
+     Active-active  2  4 in sym 1 :    -0.00000000
      Active-active  3  4 in sym 1 :    -0.00001162
      Active-active  4  4 in sym 1 :    -0.00000862
      Active-active  5  4 in sym 1 :     0.00000000
@@ -1991,9 +2038,9 @@ TRIPLET OPERATOR: "SD 010 x" LAGRANGIAN:  0.031112 AVERAGE: -0.020164 TOTAL:  0.
      Active-active  1  2 in sym 2 :     0.00070861
      Active-active  2  2 in sym 2 :     0.00001212
 
-     SD 010 z inactive part: 0.00000000E+00
-     SD 010 z active part  : 7.63229657E-03
-     SD 010 z total        : 7.63229657E-03
+     SD 010 z inactive part: 0.00000000D+00
+     SD 010 z active part  : 7.63229634D-03
+     SD 010 z total        : 7.63229634D-03
 
 TRIPLET OPERATOR: "SD 010 z" LAGRANGIAN: -0.002500 AVERAGE:  0.007632 TOTAL:  0.005133
 
@@ -2004,7 +2051,7 @@ TRIPLET OPERATOR: "SD 010 z" LAGRANGIAN: -0.002500 AVERAGE:  0.007632 TOTAL:  0.
      Active-active  2  1 in sym 1 :     0.00000000
      Active-active  3  1 in sym 1 :    -0.00013581
      Active-active  4  1 in sym 1 :    -0.00004165
-     Active-active  5  1 in sym 1 :     0.00000000
+     Active-active  5  1 in sym 1 :    -0.00000000
      Active-active  1  2 in sym 1 :     0.00000000
      Active-active  2  2 in sym 1 :    -0.00000623
      Active-active  3  2 in sym 1 :     0.00000000
@@ -2019,11 +2066,11 @@ TRIPLET OPERATOR: "SD 010 z" LAGRANGIAN: -0.002500 AVERAGE:  0.007632 TOTAL:  0.
      Active-active  2  4 in sym 1 :     0.00000000
      Active-active  3  4 in sym 1 :     0.00002012
      Active-active  4  4 in sym 1 :     0.00001494
-     Active-active  5  4 in sym 1 :     0.00000000
-     Active-active  1  5 in sym 1 :     0.00000000
+     Active-active  5  4 in sym 1 :    -0.00000000
+     Active-active  1  5 in sym 1 :    -0.00000000
      Active-active  2  5 in sym 1 :    -0.00059710
      Active-active  3  5 in sym 1 :     0.00000000
-     Active-active  4  5 in sym 1 :     0.00000000
+     Active-active  4  5 in sym 1 :    -0.00000000
      Active-active  5  5 in sym 1 :    -0.00001423
      Active-active  1  1 in sym 2 :    -0.00000928
      Active-active  2  1 in sym 2 :    -0.00089729
@@ -2040,28 +2087,28 @@ TRIPLET OPERATOR: "SD 011 x" LAGRANGIAN:  0.004329 AVERAGE: -0.013220 TOTAL: -0.
  *** to the expectation value for property SD 011 z :
 
      Active-active  1  1 in sym 1 :    -0.00044719
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :     0.00000922
      Active-active  4  1 in sym 1 :    -0.00826160
-     Active-active  5  1 in sym 1 :     0.00000000
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  5  1 in sym 1 :    -0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :    -0.00002215
-     Active-active  3  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
      Active-active  4  2 in sym 1 :     0.00000001
      Active-active  5  2 in sym 1 :    -0.00223120
      Active-active  1  3 in sym 1 :     0.00000922
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :    -0.11087627
      Active-active  4  3 in sym 1 :    -0.00000364
-     Active-active  5  3 in sym 1 :     0.00000000
+     Active-active  5  3 in sym 1 :    -0.00000000
      Active-active  1  4 in sym 1 :    -0.00826160
      Active-active  2  4 in sym 1 :     0.00000001
      Active-active  3  4 in sym 1 :    -0.00000364
      Active-active  4  4 in sym 1 :    -0.00012882
      Active-active  5  4 in sym 1 :     0.00000000
-     Active-active  1  5 in sym 1 :     0.00000000
+     Active-active  1  5 in sym 1 :    -0.00000000
      Active-active  2  5 in sym 1 :    -0.00223120
-     Active-active  3  5 in sym 1 :     0.00000000
+     Active-active  3  5 in sym 1 :    -0.00000000
      Active-active  4  5 in sym 1 :     0.00000000
      Active-active  5  5 in sym 1 :    -0.00008168
      Active-active  1  1 in sym 2 :    -0.00008070
@@ -2079,22 +2126,22 @@ TRIPLET OPERATOR: "SD 011 z" LAGRANGIAN:  0.016387 AVERAGE: -0.148554 TOTAL: -0.
  *** to the expectation value for property SD 012 x :
 
      Active-active  1  1 in sym 1 :     0.00001296
-     Active-active  2  1 in sym 1 :     0.00000000
+     Active-active  2  1 in sym 1 :    -0.00000000
      Active-active  3  1 in sym 1 :     0.00007841
      Active-active  4  1 in sym 1 :     0.00002404
      Active-active  5  1 in sym 1 :     0.00000000
-     Active-active  1  2 in sym 1 :     0.00000000
+     Active-active  1  2 in sym 1 :    -0.00000000
      Active-active  2  2 in sym 1 :     0.00000116
-     Active-active  3  2 in sym 1 :     0.00000000
-     Active-active  4  2 in sym 1 :     0.00000000
+     Active-active  3  2 in sym 1 :    -0.00000000
+     Active-active  4  2 in sym 1 :    -0.00000000
      Active-active  5  2 in sym 1 :     0.00015417
      Active-active  1  3 in sym 1 :     0.00007841
-     Active-active  2  3 in sym 1 :     0.00000000
+     Active-active  2  3 in sym 1 :    -0.00000000
      Active-active  3  3 in sym 1 :     0.00569427
      Active-active  4  3 in sym 1 :    -0.00001162
      Active-active  5  3 in sym 1 :     0.00000000
      Active-active  1  4 in sym 1 :     0.00002404
-     Active-active  2  4 in sym 1 :     0.00000000
+     Active-active  2  4 in sym 1 :    -0.00000000
      Active-active  3  4 in sym 1 :    -0.00001162
      Active-active  4  4 in sym 1 :    -0.00000862
      Active-active  5  4 in sym 1 :     0.00000000
@@ -2108,9 +2155,9 @@ TRIPLET OPERATOR: "SD 011 z" LAGRANGIAN:  0.016387 AVERAGE: -0.148554 TOTAL: -0.
      Active-active  1  2 in sym 2 :     0.00070861
      Active-active  2  2 in sym 2 :     0.00001212
 
-     SD 012 x inactive part: 0.00000000E+00
-     SD 012 x active part  : 7.63229657E-03
-     SD 012 x total        : 7.63229657E-03
+     SD 012 x inactive part: 0.00000000D+00
+     SD 012 x active part  : 7.63229634D-03
+     SD 012 x total        : 7.63229634D-03
 
 TRIPLET OPERATOR: "SD 012 x" LAGRANGIAN: -0.002500 AVERAGE:  0.007632 TOTAL:  0.005133
 
@@ -2136,11 +2183,11 @@ TRIPLET OPERATOR: "SD 012 x" LAGRANGIAN: -0.002500 AVERAGE:  0.007632 TOTAL:  0.
      Active-active  2  4 in sym 1 :     0.00000001
      Active-active  3  4 in sym 1 :    -0.00000086
      Active-active  4  4 in sym 1 :     0.00000381
-     Active-active  5  4 in sym 1 :     0.00000000
+     Active-active  5  4 in sym 1 :    -0.00000000
      Active-active  1  5 in sym 1 :    -0.00000001
      Active-active  2  5 in sym 1 :    -0.00253763
      Active-active  3  5 in sym 1 :     0.00000000
-     Active-active  4  5 in sym 1 :     0.00000000
+     Active-active  4  5 in sym 1 :    -0.00000000
      Active-active  5  5 in sym 1 :    -0.00002865
      Active-active  1  1 in sym 2 :     0.00001402
      Active-active  2  1 in sym 2 :     0.00070136
@@ -2153,7 +2200,7 @@ TRIPLET OPERATOR: "SD 012 x" LAGRANGIAN: -0.002500 AVERAGE:  0.007632 TOTAL:  0.
 
 TRIPLET OPERATOR: "SD 012 z" LAGRANGIAN: -0.006095 AVERAGE: -0.075686 TOTAL: -0.081781
 
-TRIPLET OPERATOR: "FC H2 04" contribution = 0.0 by symmetry.
+TRIPLET OPERATOR: "FC  H204" contribution = 0.0 by symmetry.
 - Operator is of symmetry no.  2
 
 TRIPLET OPERATOR: "SD 001 x" contribution = 0.0 by symmetry.
@@ -2207,11 +2254,17 @@ TRIPLET OPERATOR: "SD 011 y" contribution = 0.0 by symmetry.
 TRIPLET OPERATOR: "SD 012 y" contribution = 0.0 by symmetry.
 - Operator is of symmetry no.  2
 
- >>>> Total CPU  time used in RESPONSE:   8.86 seconds
- >>>> Total wall time used in RESPONSE:   9.00 seconds
- >>>> Total CPU  time used in DALTON:  1 minute   4 seconds
- >>>> Total wall time used in DALTON:  1 minute   5 seconds
+ >>>> Total CPU  time used in RESPONSE:   3.14 seconds
+ >>>> Total wall time used in RESPONSE:   5.00 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  23.04 seconds
+ >>>> Total wall time used in DALTON:  31.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:23:28 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 18:14:42 2011 
+     Host name              : fe6                                     

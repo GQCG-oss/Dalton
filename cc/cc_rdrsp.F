@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c/* Deck cc_rdrsp */
       SUBROUTINE CC_RDRSP(LIST,IDXLST,ISYM,IOPT,MODFIL,VEC1,VEC2)
@@ -91,6 +81,7 @@ C          'CR2': right second-order Cauchy vectors
 C          'RE' : right eigenvectors
 C          'ER1': first-order response of right eigenvetors
 C          'ER2': second-order response of right eigenvetors
+C          'QL' : Lanczos chain Q vectors (columns of Q matrix)
 C
 C          'L0' : left zeroth-order lamdba vector (IDXLST ignored)
 C          'L1' : left first-order response vector
@@ -111,6 +102,11 @@ C          'F4' : F-transformed fourth-order right vectors
 C          'FC' : F-transformed first-order right Cauchy vectors
 C          'CF2': F-transformed second-order right Cauchy vectors
 C          'FR' : F-transformed right eigenvector
+C          'FQ' : F-transformed Lanczos q vectors (FQ matrix)
+C
+C          'XF1': F-transformed right first-order response vectors,
+C                 F12*R2 contribution for Cholesky CC2.
+C
 C
 C          'O1 ': rhs for first-order amplitude equations
 C          'O2' : rhs for second-order amplitude equations
@@ -119,6 +115,10 @@ C          'O4' : rhs for fourth-order amplitude equations
 C          'CO2': rhs for second-order cauchy equations
 C          'EO1': rhs for right eigenvector first-order response
 C          'EO2': rhs for right eigenvector second-order response
+C
+C          'eO1': effective rhs for first-order amplitude equations for
+C                 Cholesky CC2
+C
 C
 C          'X1' : first-order eta vectors
 C          'X2': second-order eta vectors
@@ -148,14 +148,21 @@ C
 C  Christof Haettig, October 1996, restructered in May 1997
 C  PL1 vectors introduced in March 2000 by Sonia Coriani
 C  CC3 effective vectors introduced 2002 by Christof Haettig
+C  Cholesky extensions by Thomas Bondo Pedersen, March/April 2003.
 C  R12 double excitation part introduced Jun 2003 by Christof Haettig
+C  Lanczos vectors Q and FQ introduced in 2010. Sonia
+C
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
 C
       CHARACTER SUBRNAME*(8)
       PARAMETER (SUBRNAME = 'CC_RDRSP')
@@ -194,10 +201,18 @@ C
 
 *---------------------------------------------------------------------*
 *     Test if abort under fail 
+*     If Cholesky CC2, then IOPT=33 means singles if available, please!
+*     [Note: IOPT=3 is actually OK, as IOPT is reset during the check
+*      of the header as IOPT = IAND(IOPT,5)]
 *---------------------------------------------------------------------*
       IF (IOPT .EQ. 33) THEN
          IOPTSV = 33
-         IOPT   = 3
+Chol     IOPT   = 3
+         IF (CHOINT .AND. CC2) THEN
+            IOPT = 1
+         ELSE
+            IOPT   = 3
+         ENDIF
       ELSE IF (IOPT.LT.0) THEN
          IOPTSV = 33
          IOPT   = -IOPT
@@ -344,18 +359,18 @@ C   Purpose:  generate file name and account for special treatment
 C             of Cauchy vectors with zero-order Cauchy order
 C
 C  Christof Haettig, november 1998
-C 
+C  Extended to more than 999 files - Sonia, 2011
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccl2rsp.h>
-#include <cccx2rsp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccl2rsp.h"
+#include "cccx2rsp.h"
 C
       CHARACTER SUBRNAME*(8)
       PARAMETER (SUBRNAME = 'CC_RWPRE')
@@ -397,6 +412,8 @@ C
       ELSE
          LIST3 = LIST(1:3)
       END IF
+
+
       IF ( LIST(1:2).EQ.'R0' .OR. LIST(1:2).EQ.'L0' .OR.
      &     LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'L1' .OR.
      &     LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'L2' .OR.
@@ -413,6 +430,8 @@ C
      &     LIST(1:2).EQ.'RE' .OR. LIST(1:2).EQ.'LE' .OR.
      &     LIST(1:2).EQ.'E0' .OR. LIST(1:2).EQ.'BE' .OR.
      &     LIST(1:2).EQ.'N2' .OR. LIST(1:2).EQ.'BR' .OR.
+!Lanczos QL added. Sonia
+     &     LIST(1:2).EQ.'QL' .OR. LIST(1:2).EQ.'FQ' .OR.
      &     LIST(1:2).EQ.'FR' .OR. LIST(1:2).EQ.'M1' 
      &                                                   ) THEN
 
@@ -487,10 +506,22 @@ C
       IF (ISYM .EQ. 7) LISTI = LISTI(1:3)//'7'
       IF (ISYM .EQ. 8) LISTI = LISTI(1:3)//'8'
  
-      WRITE(FILEX,'(A2,A4,1X,I3)') 'CC',LISTI(1:4), IDXFIL
-      DO I = 1, 10
-        IF ( FILEX(I:I) .EQ. ' ' ) FILEX(I:I) = '_'
-      END DO
+      !WRITE(FILEX,'(A2,A4,1X,I3)') 'CC',LISTI(1:4), IDXFIL
+      !DO I = 1, 10
+      !  IF ( FILEX(I:I) .EQ. ' ' ) FILEX(I:I) = '_'
+      !END DO
+      !Generalized to handle more that 999 files (for Lanczos). Sonia
+      IF (IDXFIL.LE.999) THEN
+        WRITE(FILEX,'(A2,A4,1X,I3)') 'CC',LISTI(1:4), IDXFIL
+        DO I = 1, 10
+          IF ( FILEX(I:I) .EQ. ' ' ) FILEX(I:I) = '_'
+        END DO
+      ELSE IF (IDXFIL.GT.999) THEN
+        WRITE(FILEX,'(A2,A4,I4)') 'CC',LISTI(1:4), IDXFIL
+        !DO I = 1, 10
+        !  IF ( FILEX(I:I) .EQ. ' ' ) FILEX(I:I) = '_'
+        !END DO
+      END IF
 
 *---------------------------------------------------------------------*
 * special file name: 
@@ -512,40 +543,47 @@ c/* Deck cc_rcrsp */
 *
 *   Christof Haettig 15-05-1996
 *   Introduced PL1, Sonia Coriani March 2000
+*   Introduced QL (Lanczos Q vectors), Sonia Coriani August 2010
 *=====================================================================*
        IMPLICIT NONE
 
-#include <priunit.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <cco1rsp.h>
-#include <cco2rsp.h>
-#include <cco3rsp.h>
-#include <cco4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <ccx1rsp.h>
-#include <ccx2rsp.h>
-#include <ccx3rsp.h>
-#include <ccx4rsp.h>
-#include <ccn2rsp.h>
-#include <cclrmrsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccx2rsp.h>
-#include <cccl2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
+#include "priunit.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "cco1rsp.h"
+#include "cco2rsp.h"
+#include "cco3rsp.h"
+#include "cco4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "ccx1rsp.h"
+#include "ccx2rsp.h"
+#include "ccx3rsp.h"
+#include "ccx4rsp.h"
+#include "ccn2rsp.h"
+#include "cclrmrsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccx2rsp.h"
+#include "cccl2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
+!Lanczos
+#include <ccqlrlcz.h>
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
   
       CHARACTER SUBRNAME*(8)
       PARAMETER (SUBRNAME = 'CC_RCRSP')
@@ -578,6 +616,9 @@ c/* Deck cc_rcrsp */
       LOGICAL LSYM, LLBL, LFRQ, LIND, LORX
       INTEGER ORDER, IOP, IBIT32
   
+!Lanczos (to be tested). Sonia
+      integer idqllst(maxorder), idqlfil(maxorder)
+
 
 *=====================================================================*
 * set up the information to check the header:
@@ -597,8 +638,13 @@ c/* Deck cc_rcrsp */
 *.....................................................................
 * 'R1' - first-order response t amplitudes:
 * 'F1' - F transformation of first-order response t amplitudes:
+* 'XF1' - F transformed first-order response t amplitudes,
+*         F12*R2 contribution:
+* 'eO1' - Effective rhs for Cholesky first-order response t  amplitude
 *.....................................................................
-      ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+Chol  ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+      ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1' .OR.
+     &          LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'eO1') THEN
           ORDER = 1
           DO IOP = 1, ORDER
             FRQLST(IOP)  = FRQLRT(IDXLST)
@@ -1013,6 +1059,21 @@ Cold        LORXLST(IOP) = .FALSE.
             INDLST(IOP)  = 0
           END DO
 *.....................................................................
+* 'QL' - Lanczos Q vectors
+* 'FQ' - F transformation of Lanczos Q vectors
+*  FIXME: IDQLLST??? Sonia
+*.....................................................................
+      ELSE IF ( LIST(1:2).EQ.'QL' .OR. LIST(1:2).EQ.'FQ') THEN
+          ORDER = 1
+          DO IOP = 1, ORDER
+            FRQLST(IOP)  = FRQQL(IDXLST)
+            LABLST(IOP)  = LBLQL(IDXLST)
+            ISYLST(IOP)  = ISYQL(IDXLST)
+            LORXLST(IOP) = LORXQL(IDXLST)
+            IDQLLST(IOP) = IDXQL(IDXLST)
+            INDLST(IOP)  = 0
+          END DO
+*.....................................................................
 * 'D0' - dummy vector
 *.....................................................................
       ELSE IF ( LIST(1:2).EQ.'D0' ) THEN
@@ -1085,6 +1146,16 @@ Cold    TYPE(3:3)  = '_'
         INDFIL(1) = 0
       
 *.....................................................................
+* XF1, eO1   (Cholesky)
+*.....................................................................
+      ELSE IF ( LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'eO1') THEN
+
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3),
+     &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1)
+
+        INDFIL(1) = 0
+
+*.....................................................................
 * ER1, EO1, EL1, EX1
 *.....................................................................
       ELSE IF ( LIST3.EQ.'ER1' .OR. LIST3.EQ.'EO1' .OR.
@@ -1108,7 +1179,16 @@ Cold    TYPE(3:3)  = '_'
      &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1)
 
         INDFIL(1) = 0
+*.....................................................................
+* 'QL ', 'FQ '  Lanczos
+*  FIXME: Verify what IDQLFIL is (replace with INDFIL?)
+*.....................................................................
+      ELSE IF ( LIST(1:2).EQ.'QL' .OR. LIST(1:2).EQ.'FQ' ) THEN
+        !read the header of the QL/FQL vector on file (Lanczos)
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3),
+     &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1), IDQLFIL(1)
 
+        INDFIL(1) = 0
 *.....................................................................
 * RC, LC, FC
 *.....................................................................
@@ -1334,6 +1414,11 @@ Cold    TYPE(3:3)  = '_'
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
      *      (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
         IOPT = IAND(IOPT,1+4)
+Cholesky
+C     No doubles in Cholesky CC2
+      ELSE IF (MODFIL(1:3).EQ.'CC2' .AND. CHOINT) THEN
+        IOPT = IAND(IOPT,5)
+Cholesky
       ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
      *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
      *        ) THEN
@@ -1382,11 +1467,11 @@ C
 C             in case of an error IOPT is set to -IOPT on output
 C
 C---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       INTEGER LUSAVE
 C
@@ -1547,15 +1632,15 @@ c /* deck CCPRPAO */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <ccisao.h>
-#include <dummy.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "ccisao.h"
+#include "dummy.h"
+#include "r12int.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -1821,11 +1906,11 @@ C     ENDIF
 *     Christof Haettig, spring 2001, Oslo
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "ccsdinp.h"
 
       INTEGER I
 
@@ -1862,11 +1947,11 @@ C     ENDIF
 *     Christof Haettig, spring 2005, Friedrichstal(Baden)
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "ccsdinp.h"
 
       LOGICAL DELFRO, LOCDBG
       INTEGER IDX, NORBEN, LWORK

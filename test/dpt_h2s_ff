@@ -43,7 +43,7 @@ H       1.82237883747756    0.00000000000000    1.75080674629681       *
 #  DALTON INPUT
 #######################################################################
 cat > dpt_h2s_ff.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN PROPERTIES
 **INTEGRAL
 .DIPORG
@@ -57,7 +57,6 @@ cat > dpt_h2s_ff.dal <<%EOF%
 .DPTPOT
 .DPTPXP
 .KINENER
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *HAMILTONIAN
@@ -79,7 +78,7 @@ ZDIPLEN
 .ALLONE
 .DPTECO
 .2ELDAR
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

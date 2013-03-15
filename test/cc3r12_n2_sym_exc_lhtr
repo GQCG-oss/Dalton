@@ -49,7 +49,7 @@ N        0.0000000000000     0.0000000000000     1.0371572000000       *
 cat > cc3r12_n2_sym_exc_lhtr.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -83,7 +83,7 @@ cat > cc3r12_n2_sym_exc_lhtr.dal <<'%EOF%'
 .NO HYB
 .CC2
  1B
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

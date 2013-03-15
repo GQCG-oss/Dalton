@@ -112,7 +112,7 @@ cat > prop_spinspin.dal <<'%EOF%'
 *SPIN-S
 .ABUNDA
      .01
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

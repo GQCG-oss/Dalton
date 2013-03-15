@@ -9,13 +9,13 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Read one-electron AO property integrals from file.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "soppinf.h"
 C
       LOGICAL     FNDLB2
       DIMENSION   PRP1(LPRP1), WORK(LWORK)

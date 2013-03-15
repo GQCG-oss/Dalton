@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck orblin */
       SUBROUTINE ORBLIN(NOSIM,BOVECS,CMO,GORB,DV,PV,FC,FV,
@@ -40,10 +30,10 @@ C
 C December 1989 Hans Joergen Aa. Jensen
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BOVECS(*),CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*),
      &          WRK(*)
-#include <dummy.h>
+#include "dummy.h"
 C
       CALL QENTER('ORBLIN')
       NCSIM = -1
@@ -99,12 +89,12 @@ C                               starting at WRK(1+NCSIM*NVAR)
 C                          else SOVECS(NWOPT,NOSIM),
 C                               starting at WRK(1)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(NCONDI,*), BOVECS(NWOPDI,*)
       DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
       DIMENSION FC(*), FV(*), FCAC(*), H2AC(*)
       DIMENSION INDXCI(*),WRK(*)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C *** local constants
 C
@@ -120,27 +110,27 @@ C   INFPRI : P6FLAG(*), ?
 C CBGETDIS : DISTYP,IADINT,IADH2,IADH2X
 C   INFTIM : NCALLS,TIMCPU,TIMWAL  ! IDTIM is index for these
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <cbgetdis.h>
-#include <dftcom.h> 
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "cbgetdis.h"
+#include "dftcom.h" 
 ! gnrinf.h: QM3 /CBN+JK 03.01.06
-#include <gnrinf.h>
-#include <wrkrsp.h>
+#include "gnrinf.h"
+#include "wrkrsp.h"
 C ---
       PARAMETER (IDTIM1 = 6, IDTIM2 = 8, D4 = 4.0D0)
-#include <inftim.h>
+#include "inftim.h"
 C
       LOGICAL SOLVNT, ORBLIN, MEMLIN, DFTADX
 C
@@ -399,8 +389,6 @@ C
                JH2XAC = KH2XAC + (IOSIM-1)*NNASHX*NNASHX
                CALL GETAC1(WRK(JFXC),WRK(KCW))
                CALL DGETSP(NASHT,WRK(KCW),WRK(JFXCAC))
-               CALL GETFCI(WRK(JFXCAC),WRK(JH2XAC),WRK(K3),L3)
-C              CALL GETFCI(FCAC,H2AC,WRK,LFREE)
                IF (P6FLAG(22) .OR. IPRLIN .GE. 22) THEN
                   WRITE (LUPRI,6010) IOSIM,NOSIM
                   CALL OUTPAK(WRK(JFXCAC),NASHT,1,LUPRI)
@@ -436,7 +424,7 @@ C
            KSYMOX = KSYMOP
            KSYMOP = 1
            CALL DFT_LIN_RESPF(1,WRK(KFXC),CMO,WRK(KUBO),
-     &                        .FALSE.,KSYMOP,WRK(K3A),L3A)
+     &                        .FALSE.,KSYMOP,WRK(K3A),L3A,IPRDFT)
            KSYMOP = KSYMOX
            CALL PKWOP(NWOPT,JWOP,WRK(KUBO),WRK(KFXC))
            IF (IPRLIN.GT.20) THEN
@@ -521,7 +509,7 @@ C            "Calculation of the Orbital Part of the Gradient
 C            Vectors and Sigma Vectors"
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SCVECS(*), SOVECS(*)
       DIMENSION DTV(*), FC(*), FTV(*), FTQ(*)
       DIMENSION BOVECS(NWOPDI,*), DV(*), FXC(*), FXV(*), FXQ(*)
@@ -534,14 +522,14 @@ C   INFDIM : NWOPDI
 C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG()
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inflin.h>
-#include <infpri.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inflin.h"
+#include "infpri.h"
+#include "infinp.h"
 C
       LOGICAL ORBLIN
 C
@@ -656,8 +644,8 @@ C
 C Scratch:
 C   UDV; dimension: NASHT*NASHT
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION SCVECS(NVAR,*), SOVECS(*)
       DIMENSION DTV(*), FC(*), FTV(NORBT,NORBT,*),
      &          FTQ(NORBT,NASHDI,*)
@@ -674,13 +662,13 @@ C   INFORB : NORBT,NNASHX,NNORBT,?
 C   INFIND : IROW(*),ISMO(*)
 C   INFDIM : NASHDI
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <line.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+
 C
 C ***** Step 1: calculate sigma vectors of configuration trial vectors
 C

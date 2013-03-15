@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C File: sirius/sirset.F
 C ===========================================================================
@@ -44,10 +34,10 @@ C  input/output unit numbers and buffer sizes
 C  .. unit numbers are now defined with GPOPEN
 C  initialize IROW
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
-#include <litinfo.h>
+#include "litinfo.h"
 C ... for calculating LBINFO
 C
 C Used from common blocks:
@@ -55,11 +45,11 @@ C   INFIND : IROW(*)
 C   INFDIM : LBUFMA
 C   INFTAP : LB*
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <inftap.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "inftap.h"
 C#include <infpri.h>
 C
       CALL QENTER('SIRINI')
@@ -70,7 +60,8 @@ C LUCMD    input unit for program control
 C LUPRI    output unit for print output
 C LUW4     do.
 C LUPNCH   Formatted output of final MCSCF or natural/canonical orbitals
-C LUERR    output unit for error messages and statistics
+C LUERR    output unit for error and warning messages
+C LUSTAT   output unit for statistics
 C LUINDX   orbital operators of symmetry 1 to NSYM.
 C LUSYMB   symbolic matrix elements
 C LUINTA   AO integral file
@@ -89,7 +80,7 @@ C          LUIT7 is for update information in SIRUPD
 C LUINF    file for writing information on convergence etc.
 C
 C *** Define buffer sizes (LBXXXX is buffer size for file LUXXXX)
-C     LBINTM defined in SIROPI (891107-hjaaj)
+C     LBINTM defined in SIR_INTOPEN (891107-hjaaj)
 C     LBONEL defined in RDONEL, if LBONEL .lt. 0 (900221)
 C     MAERKE 900108-hjaaj: LBXXXX should always be defined in routines
 C
@@ -135,14 +126,14 @@ C                      TRIANGULARIZED OR SQUARED.
 C  SUFFIX  Y           EXAMPLE: NASHY = NASHX*(NASHX + 1)/2
 C  SUFFIX  (K)         SYMMETRY NUMBER
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LFREE)
       LOGICAL   OLDWOP
-#include <iratdef.h>
-#include <litinfo.h>
+#include "iratdef.h"
+#include "litinfo.h"
 C -- local constants
       PARAMETER (D2=2.0D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : LSYM,ITRLVL,?
@@ -153,18 +144,18 @@ C   INFDIM : NWOPMA,MAXPHP,LPHPMX,...
 C   INFOPT : ?
 C   INFLIN : most of it (defined here)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL FIRST, GETWOP
       CHARACTER*8 OPLBL(8)
@@ -286,16 +277,16 @@ C
 C ***
 C
       IF (NUMERR .GT. 0) THEN
-         IF (FIRST) CALL PRTINP(LUW4,-1,-1)
+         IF (FIRST) CALL SIR_PRTINP(LUW4,-1,-1)
          WRITE (LUW4,'(///A/)')
      *      ' SIRSET - FATAL ERRORS DETECTED, SEE ABOVE'
          IF (LUPRI .NE. LUW4) THEN
-            IF (FIRST) CALL PRTINP(LUPRI,-1,-1)
+            IF (FIRST) CALL SIR_PRTINP(LUPRI,-1,-1)
             WRITE (LUPRI,'(///A/)')
      *         ' SIRSET - FATAL ERRORS DETECTED, SEE ABOVE'
          END IF
          WRITE (LUERR,'(//A)')
-     *       ' *** ERROR *** input inconsistent (SIRSET)'
+     *       ' *** ERROR *** input is inconsistent (SIRSET)'
          CALL QTRACE(LUERR)
          CALL QUIT('*** ERROR *** input inconsistent (SIRSET)')
       END IF
@@ -305,34 +296,34 @@ C
       CALL QEXIT('SIRSET')
       RETURN
       END
-C  /* Deck siropn */
-      SUBROUTINE SIROPN
+C  /* Deck sir_open */
+      SUBROUTINE SIR_OPEN
 C
 C  5-May-1989 Hans Joergen Aa. Jensen
 C
 C  Open input/output units required by this Sirius calculation,
 C  as specified in command input.
-C  Mo integral files are opened in SIROPI
+C  Mo integral files are opened in SIR_INTOPEN
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(*)
 C   INFTAP : LU*
-C   INFPRI : NINFO, LUERR
+C   INFPRI : NINFO
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL FEXIST
 C
-C     ***** CALL SIROPI to open MO integral files
+C     ***** CALL SIR_INTOPEN to open MO integral files
 C
-      CALL SIROPI
+      CALL SIR_INTOPEN
 C
 C     ***** Open other files
 C
@@ -362,14 +353,15 @@ C           in common block /INFIND/
 C
 C           and max dimensions in /INFDIM/
 C
-#include <implicit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <r12int.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "r12int.h"
 C
 C
 C     (1) common /INFORB/
@@ -394,9 +386,13 @@ C
       N2ORBT = 0
       N2BAST = 0
       NCMOT  = 0
+
+      N_ERRORS = 0
+
       DO 100 I = 1,NSYM
          NOCC(I)  = NISH(I) + NASH(I)
          NSSH(I)  = NORB(I) - NOCC(I)
+         IF (NSSH(I) .LT. 0) N_ERRORS = N_ERRORS + 1
          NNORB(I) = (NORB(I)*(NORB(I)+1))/2
          NVIR(I)  = NORB(I) - NRHF(I)
          NNBAS(I) = (NBAS(I)*(NBAS(I)+1))/2
@@ -425,6 +421,20 @@ C
 C        For multiple basis sets (WK/UniKA/04-11-2002).
          NORB1(I) = NORB(I)       
   100 CONTINUE
+C
+      IF (N_ERRORS .GT. 0) THEN
+         WRITE(lupri,'(//A)') 'SETORB FATAL ERROR'//
+     &      ' Number of occupied orbitals bigger than total number'//
+     &      ' of orbitals !'
+         WRITE(lupri,*) 'NISH ',NISH
+         WRITE(lupri,*) 'NASH ',NASH
+         WRITE(lupri,*) 'NOCC ',NOCC
+         WRITE(lupri,*) 'NSSH ',NSSH
+         WRITE(lupri,*) 'NORB ',NORB
+         WRITE(lupri,*) 'NBAS ',NBAS
+         CALL QENTER('SETORB')
+         CALL QUIT('No. of occ. orb. > total no. of orb.')
+      END IF
 C
       IISH(1)  = 0
       IASH(1)  = 0
@@ -600,29 +610,29 @@ C   2-Jan-1989 Hans Joergen Aa. Jensen
 C
 C  Purpose: set orbital rotation index vectors
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
 C
       DIMENSION KLWOP(NOCCT,NORBT)
 C
 C Used from common blocks:
 C   INFINP : ISTATE,MCTYPE,FLAG(*),?
-C   INFVAR : MAXOCC,NWOPT,JWOPSY,JWOP(2,*),NWOP(8)
+C   INFVAR : MAXOCC,NWOPT,JWOPSY,JWOP(2,*)
 C   INFORB : NISH(8),...
 C   INFIND : ICH(*),?
 C   INFDIM : NWOPMA,?
 C
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <gnrinf.h>
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "gnrinf.h"
 C -- local variables
 C
       LOGICAL ACTALL, MAKABS, FIRST
@@ -655,7 +665,6 @@ C
          NWOPA = 0
       END IF
       IACT  = 0
-      CALL IZERO(NWOP,8)
       IF (FLAG(23) .AND. NWOPA.GT.0) THEN
          INPERR = 0
          DO 3210 I = 1,NWOPA
@@ -669,7 +678,6 @@ C
             ELSE IF (NSM(K).NE.NSM(L)) THEN
                INPERR = INPERR + 10000
             END IF
-            NWOP( NSM(K) ) = NWOP( NSM(K) ) + 1
  3210    CONTINUE
          IF (INPERR.GT.0) THEN
             WRITE (LUERR,3212) INPERR
@@ -825,7 +833,6 @@ C           *** ACTIVE-SECONDARY ELEMENTS
  1280          CONTINUE
  1270       CONTINUE
  1260       CONTINUE
-            NWOP(ISYM) = NWOP(ISYM) + NWOPX-NWOPX1
             NWOPX1 = NWOPX
             IF (NWOPX .GT. MAXWOP) GOTO 2500
  1290    CONTINUE
@@ -883,10 +890,10 @@ C
      &  //' To run this calculation you must modify the Dalton source:'
      &   /'   Increase MAXWOP in include/infvar.h; make depend; make')
 C
-         IF (IPRERR.GE.5) WRITE (LUERR,'(/A,I3,A,I3,/A,2I5/)')
+         IF (IPRSTAT.GE.5) WRITE (LUERR,'(/A,I3,A,I3,/A,2I5/)')
      *      ' (SETWOP) orbital rotation operators, abs level',
      *      LVLABS,', symmetry',IOPSY,' NWOPT,NWOPH =',NWOPT,NWOPH
-         IF (IPRERR.GE.10) WRITE (LUERR,'(A//,(2I10,I5))')
+         IF (IPRSTAT.GE.10) WRITE (LUERR,'(A//,(2I10,I5))')
      *      ' I, JWOP(1,I), JWOP(2,I) for I = 1,NWOPH:',
      *      (I,JWOP(1,I),JWOP(2,I),I=1,NWOPH)
 C
@@ -913,7 +920,7 @@ C               if no orbital rotations!
             END IF
             WRITE (LUINDX) LAB123,ABSLBL(LVLABS)
          END IF
-         WRITE (LUINDX) NWOPT,NWOP,NWOPH,IOPSY,NKLWOP,(IDUMMY,I=1,7)
+         WRITE (LUINDX) NWOPT,NWOPH,IOPSY,NKLWOP,(IDUMMY,I=1,4)
          LENGTH = MAX(IRAT*4,2*NWOPH)
          CALL WRITI  (LUINDX,LENGTH,JWOP)
          LENGTH = MAX(IRAT*4,NKLWOP)
@@ -922,15 +929,13 @@ C               if no orbital rotations!
              LVLABS = LVLABS + 1
              IF (LVLABS .LE. 3) GO TO 1292
          END IF
-C        reinitialize NWOP(*) for next operator symmetry
-         CALL IZERO(NWOP,8)
  1295 CONTINUE
 C
 C     recover operator of symmetry JWOPSY
 C
       REWIND LUINDX
       CALL MOLLAB(OPLBL(JWOPSY),LUINDX,LUPRI)
-      READ (LUINDX) NWOPT, NWOP, NWOPH, JWOPSY1, NKLWOP
+      READ (LUINDX) NWOPT, NWOPH, JWOPSY1, NKLWOP
       IF (JWOPSY1 .NE. JWOPSY) CALL QUIT(
      &   'PROGRAM ERROR: JWOPSY on LUINDX does not correspond to label')
       CALL READI  (LUINDX,(2*NWOPH),JWOP)
@@ -958,7 +963,7 @@ C
 C     Set up RAS active to active orbital rotations
 C     from symmetry ISYM to JSYM.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER JWOP(2,*)
 C
 C Used from common blocks:
@@ -966,11 +971,11 @@ C  INFINP : MCTYPE,NELMN1,NELMX1,NELMN3,NELMX3,NACTEL
 C  INFORB : IORB(*),NISH(*),NAS1(*),NAS2(*),NAS3(*),NAS1T,NAS2T,NAS3T
 C  INFIND : ISSMO
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
 C
       LOGICAL CAS1, CAS2, CAS3
 C

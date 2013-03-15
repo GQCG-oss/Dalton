@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck odcvec */
       SUBROUTINE ODCVEC(COOR12,EXP12,FAC12,CONT1,CONT2,JMAX1,JMAX2,
@@ -43,16 +33,16 @@ C  /* Deck odcvec */
 C
 C     TUH Apr 11 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "iratdef.h"
       LOGICAL TPR12, TCON12, GEN12, EXPECT, DIRFCK, RPRI12, RCNT12
       DIMENSION NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*), COOR12(*),
      &          EXP12(*), FAC12(*), CONT1(*), CONT2(*), NUCS12(*),
      &          NUCT12(*), NORT12(*), NIND12(*), NPNT12(*), IXP12(*),
      &          WORK(LWORK)
-#include <twosta.h>
+#include "twosta.h"
       IF (TKTIME) TIMSTR = SECOND()
       IF (GEN12) THEN
          KPOINT = 1
@@ -106,18 +96,18 @@ C  /* Deck odcgen */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       LOGICAL TCON12, TPR12, ALLSYM, EXPECT, DIRFCK, RPRI12, RCNT12,
      &        DOTHIS
-#include <primit.h>
-#include <symmet.h>
+#include "primit.h"
+#include "symmet.h"
       COMMON /MAXOLD/ SRFMAX,OLDMAX
       DIMENSION NPCO1(NSET1,2,0:NODC12), NPCO2(NSET2,2,0:NODC12),
      &          JSTR1(*), JSTR2(*),
@@ -138,7 +128,7 @@ C
      &          NFTOR1(NUC1), NFTOR2(NUC2)
 C
 
-#include <ibtfun.h>
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -552,18 +542,18 @@ C  /* Deck odcseg */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
-#include <primit.h>
-#include <symmet.h>
-#include <expopt.h>
+#include "primit.h"
+#include "symmet.h"
+#include "expopt.h"
       COMMON /MAXOLD/ SRFMAX,OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),
@@ -573,7 +563,7 @@ C
      &          NIND12(NORB1*NORB2,2), NORT12(8),
      &          IXP12(NUC1*NUC2,2,NODC12)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -585,7 +575,9 @@ C
       IF (ITYPE .EQ. 12) THEN
          IELCTR = 1
          SRFMAX = D0
-         THRSH  = THRESH
+         THRSH  = 0.01D0*THRESH
+         ! some tests indicate that a factor 1/100 is needed in the ODC test
+         ! to get integrals of accuracy THRESH
       ELSE
          IELCTR = 2
 C
@@ -593,7 +585,7 @@ C     This adjustment of screening thresholds seems to lead to stalling and
 C     odd convergence behaviour. Disabled. kr-230106
 C     hjaaj-071017: reenabled; I think the problem was SRFMAX was not saved
 C
-         THRSH  = THRESH/OLDMAX
+         THRSH  = 0.01D0*THRESH/OLDMAX
 Chj      THRSH  = THRESH
       END IF
 Chj aug99: find max relevant isymop
@@ -832,15 +824,15 @@ C  /* Deck odcoef */
 C
 C     TUH Apr 11 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL SAM12X, SAM12Y, SAM12Z, ONECEN, DO1, DO2, BIGVEC, UNDIFF,
      &        SPNORB, DIA2SO, LONDON, DIA2UP, EL2CD, ZFS2EL
       DIMENSION COEF12(*), NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*),
      &          COOR12(*), EXP12(*), NUCS12(*), ORIGO(3), WORK(LWORK)
-#include <orgcom.h>
-#include <twosta.h>
+#include "orgcom.h"
+#include "twosta.h"
 C
       DIA2UP = DIA2SO .AND. ITYPE.EQ.12
       EL2CD  = DIA2SO .AND. ITYPE.EQ.34
@@ -915,10 +907,10 @@ C  /* Deck excoef */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       LOGICAL YEQX, ZEQX, ZEQY, ONECEN, DER1, DER2, DER12,
      &        DERECC, DERECD, BIGVEC, UNDIFF, SPNORB, DIA2UP, EL2CD,
@@ -926,10 +918,10 @@ C
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), HEXPPI(*), EXP12(NUC1*NUC2,3),
      &          COOR1(MXUC12),  ORIGO(3), WORK(LWORK)
-#include <twosta.h>
-#include <expopt.h>
-#include <drw2el.h>
-#include <r12int.h>
+#include "twosta.h"
+#include "expopt.h"
+#include "drw2el.h"
+#include "r12int.h"
 C
       LA = NHKT1 - 1
       LB = NHKT2 - 1
@@ -1241,15 +1233,14 @@ C  /* Deck twoodc */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 =0.00 D00, D1 =1.00 D00, D2 =2.00 D00)
       INTEGER T, A, B, AB
       CHARACTER WORD*4
       DIMENSION DIFPA(*), DIFPB(*), HEXPPI(*)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2)
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
 C
 C     ****************************
 C     ********** AB > 0 **********
@@ -1301,7 +1292,7 @@ C
 
   500          CONTINUE
                DO 510 T = 1, A - 2
-                  T1 = SIGN*SDPRE(T + 1)
+                  T1 = SIGN*(T + 1.0D0)
                   DO 520 I = 1, NUC12
                      COEF12(I,T,A,0) = HEXPPI(I)*COEF12(I,T-1,A-1,0)
      *                                + DIFPA(I)*COEF12(I,  T,A-1,0)
@@ -1361,7 +1352,7 @@ C
                      COEF12(I,  AB,A,B) = EXPPIH*COEF12(I,AB-1,A,B-1)
   900             CONTINUE
                   DO 910 T = 1, AB - 2
-                     T1 = SIGN*SDPRE(T + 1)
+                     T1 = SIGN*(T + 1.0D0)
                      DO 920 I = 1, NUC12
                         COEF12(I,T,A,B)=HEXPPI(I)*COEF12(I,T-1,A,B-1)
      &                                 + DIFPB(I)*COEF12(I,  T,A,B-1)
@@ -1419,7 +1410,7 @@ C
   506             CONTINUE
                END IF
                DO 515 T = 2 - IBTAND(1,A), A - 2, 2
-                  T1 = SIGN*SDPRE(T + 1)
+                  T1 = SIGN*(T + 1.0D0)
                   DO 525 I = 1, NUC12
                      COEF12(I,T,A,0) = HEXPPI(I)*COEF12(I,T-1,A-1,0)
      &                                      + T1*COEF12(I,T+1,A-1,0)
@@ -1462,7 +1453,7 @@ C
   906                CONTINUE
                   END IF
                   DO 915 T = 2 - IBTAND(1,AB), AB - 2, 2
-                     T1 = SIGN*SDPRE(T + 1)
+                     T1 = SIGN*(T + 1.0D0)
                      DO 925 I = 1, NUC12
                         COEF12(I,T,A,B) = HEXPPI(I)*COEF12(I,T-1,A,B-1)
      &                                         + T1*COEF12(I,T+1,A,B-1)
@@ -1506,8 +1497,8 @@ C
 C     TUH 84
 C     Rewritten Oct 91, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER WORDA*4, WORDB*4
       LOGICAL DER1, DER2
       INTEGER A, B, AB, T
@@ -1515,8 +1506,7 @@ C
      &          ACOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
 C
       DO 100 A = 0, MAX1
          DO 200 B = 0, MAX2
@@ -1534,7 +1524,7 @@ C
                   ELSE
                      DO 410 I = 1, NUC12
                         ACOEF(I,T,A,B) = AXP(I)*UCOEF(I,T,A+1,B)
-     &                               - SDPRE(A)*UCOEF(I,T,A-1,B)
+     &                                      - A*UCOEF(I,T,A-1,B)
   410                CONTINUE
                   END IF
                END IF
@@ -1550,7 +1540,7 @@ C
                   ELSE
                      DO 510 I = 1, NUC12
                         BCOEF(I,T,A,B) = BXP(I)*UCOEF(I,T,A,B+1)
-     &                               - SDPRE(B)*UCOEF(I,T,A,B-1)
+     &                                      - B*UCOEF(I,T,A,B-1)
   510                CONTINUE
                   END IF
                END IF
@@ -1591,8 +1581,8 @@ C  /* Deck dertwo */
 C
 C     Oct 91 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, AB, T
       CHARACTER WORD*1
       LOGICAL DER1, DER2, DER12, AGT0, BGT0
@@ -1601,13 +1591,14 @@ C
      &          XCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
 C
       DO 100 A = 0, MAX1
          AGT0 = A .GT. 0
+         XA_TRI = A*(A-1.0D0)
          DO 200 B = 0, MAX2
             BGT0 = B .GT. 0
+            XB_TRI = B*(B-1.0D0)
             AB = A + B
             DO 300 T = IBTAND(AB,I120), AB + 2, I120 + 1
 C
@@ -1618,13 +1609,13 @@ C
                   IF ((T .LE. AB - 2) .AND. (A .GT. 1)) THEN
                      DO 400 I = 1, NUC12
                        ACOEF(I,T,A,B) = AXP(I)*(AXP(I)*UCOEF(I,T,A+2,B)
-     &                                  - SDPRE(2*A+1)*UCOEF(I,T,A,  B))
-     &                                + SDPRE(A*(A-1))*UCOEF(I,T,A-2,B)
+     &                               - (2.0D0*A+1.0D0)*UCOEF(I,T,A,  B))
+     &                                + XA_TRI        *UCOEF(I,T,A-2,B)
   400                CONTINUE
                   ELSE IF (T .LE. AB) THEN
                      DO 410 I = 1, NUC12
                        ACOEF(I,T,A,B) = AXP(I)*(AXP(I)*UCOEF(I,T,A+2,B)
-     &                                  - SDPRE(2*A+1)*UCOEF(I,T,A,  B))
+     &                               - (2.0D0*A+1.0D0)*UCOEF(I,T,A,  B))
   410                CONTINUE
                   ELSE
                      DO 420 I = 1, NUC12
@@ -1640,13 +1631,13 @@ C
                   IF ((T .LE. AB - 2) .AND. (B .GT. 1)) THEN
                      DO 500 I = 1, NUC12
                        BCOEF(I,T,A,B) = BXP(I)*(BXP(I)*UCOEF(I,T,A,B+2)
-     &                                  - SDPRE(2*B+1)*UCOEF(I,T,A,B  ))
-     &                                + SDPRE(B*(B-1))*UCOEF(I,T,A,B-2)
+     &                               - (2.0D0*B+1.0D0)*UCOEF(I,T,A,B  ))
+     &                                + XB_TRI        *UCOEF(I,T,A,B-2)
   500                CONTINUE
                   ELSE IF (T .LE. AB) THEN
                      DO 510 I = 1, NUC12
                        BCOEF(I,T,A,B) = BXP(I)*(BXP(I)*UCOEF(I,T,A,B+2)
-     &                                  - SDPRE(2*B+1)*UCOEF(I,T,A,B  ))
+     &                               - (2.0D0*B+1.0D0)*UCOEF(I,T,A,B  ))
   510                CONTINUE
                   ELSE
                      DO 520 I = 1, NUC12
@@ -1662,25 +1653,25 @@ C
                   IF (AGT0 .AND. BGT0 .AND. T.LE.AB-2) THEN
                      DO 600 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - AXP(I)*SDPRE(B)*UCOEF(I,T,A+1,B-1)
-     &                              - BXP(I)*SDPRE(A)*UCOEF(I,T,A-1,B+1)
-     &                                   + SDPRE(A*B)*UCOEF(I,T,A-1,B-1)
+     &                              - AXP(I)*B*UCOEF(I,T,A+1,B-1)
+     &                              - BXP(I)*A*UCOEF(I,T,A-1,B+1)
+     &                              +    (A*B)*UCOEF(I,T,A-1,B-1)
   600                CONTINUE
                   ELSE IF (AGT0 .AND. BGT0 .AND. T.LE.AB) THEN
                      DO 610 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - AXP(I)*SDPRE(B)*UCOEF(I,T,A+1,B-1)
-     &                              - BXP(I)*SDPRE(A)*UCOEF(I,T,A-1,B+1)
+     &                                - AXP(I)*B     *UCOEF(I,T,A+1,B-1)
+     &                                - A     *BXP(I)*UCOEF(I,T,A-1,B+1)
   610                CONTINUE
                   ELSE IF (AGT0 .AND. T.LE.AB) THEN
                      DO 620 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - BXP(I)*SDPRE(A)*UCOEF(I,T,A-1,B+1)
+     &                                - A     *BXP(I)*UCOEF(I,T,A-1,B+1)
   620                CONTINUE
                   ELSE IF (BGT0 .AND. T.LE.AB) THEN
                      DO 630 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - AXP(I)*SDPRE(B)*UCOEF(I,T,A+1,B-1)
+     &                                - AXP(I)*B     *UCOEF(I,T,A+1,B-1)
   630                CONTINUE
                   ELSE
                      DO 640 I = 1, NUC12
@@ -1731,16 +1722,16 @@ C  /* Deck derlon */
 C
 C     tuh Sep 4 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       INTEGER A, B, ABM, T, X, IODD(3)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), COOR1(MXUC12), ORIGO(3)
-#include <abainf.h>
-#include <chrxyz.h>
-#include <orgcom.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "chrxyz.h"
+#include "orgcom.h"
+#include "ibtfun.h"
 C
       IODD(1) = I120X
       IODD(2) = I120Y
@@ -1839,15 +1830,14 @@ C
 C     TUH 84
 C     Rewritten Oct 91, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER WORD*4
       INTEGER A, B, AB, T
       DIMENSION UCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          ABCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
 C
       DO 100 A = 0, MAX1
          DO 200 B = 0, MAX2
@@ -1860,7 +1850,7 @@ C
                ELSE
                   DO 410 I = 1, NUC12
                      ABCOEF(I,T,A,B) = AXP(I)*UCOEF(I,T,A+1,B)
-     &                               - SDPRE(A)*UCOEF(I,T,A-1,B)
+     &                               - A     *UCOEF(I,T,A-1,B)
   410             CONTINUE
                END IF
                IF ((B .EQ. 0) .OR. (T .GE. AB)) THEN
@@ -1872,7 +1862,7 @@ C
                   DO 510 I = 1, NUC12
                      ABCOEF(I,T,A,B) = ABCOEF(I,T,A,B) 
      &                               + BXP(I)*UCOEF(I,T,A,B+1)
-     &                               - SDPRE(B)*UCOEF(I,T,A,B-1)
+     &                               - B     *UCOEF(I,T,A,B-1)
   510             CONTINUE
                END IF
   300       CONTINUE
@@ -1908,8 +1898,8 @@ C  /* Deck derexp */
 C
 C     TUH 92
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP25 =0.25 D00, DP5 = 0.50 D0, D2 = 2.0 D0)
       CHARACTER WORD*4
       INTEGER A, B, AB, T
@@ -1917,8 +1907,7 @@ C
      &          ACOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
 C
       DO A = 0, MAX1
       DO B = 0, MAX2
@@ -1965,23 +1954,23 @@ C  /* Deck excsgn */
 C
 C     tuh March 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER X, T, P
       LOGICAL DOCOMP(3), SPNORB, DIA2SO, LONDON, EXPGRA
       DIMENSION COEFCD(MXUCCD,0:JMAXC+JMAXD,0:JMAXC,0:JMAXD,3,*),
      &          SGNOLD(3), SGNNEW(3)
-#include <symmet.h>
-#include <drw2el.h>
-#include <r12int.h>
-#include <chrnos.h>
-#include <chrxyz.h>
+#include "symmet.h"
+#include "drw2el.h"
+#include "r12int.h"
+#include "chrnos.h"
+#include "chrxyz.h"
       SAVE SGNOLD, DOCOMP, MAXDIF
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))

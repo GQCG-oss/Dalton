@@ -29,7 +29,7 @@ H      1.6850730466   -1.4805134201   0.4999836950
 #  DALTON INPUT
 ####################################################################
 cat > mcdlaodir_h2o2.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
@@ -48,7 +48,7 @@ XYZ-ALL
 *SCF INPUT
 .THRESH
  5.0d-11
-.HF OCCUPATION
+.DOUBLY OCCUPIED
  5 4
 *CC INPUT
 .CCSD
@@ -98,8 +98,7 @@ XDIPLEN dh/dBZ  YDIPLEN
 YDIPLEN dh/dBX  ZDIPLEN
 ZDIPLEN dh/dBY  XDIPLEN
 .USEPL1
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -242,7 +241,7 @@ CTRL[14]=4
 ERROR[14]="EXCITATION ENERGIES AND TRANSITION STRENGTHS NOT CORRECT"
 
 # Dummy check that it was a direct calculation
-CRIT1=`$GREP "Direct calculation" $log | wc -l`
+CRIT1=`$GREP "AO-direct calculation" $log | wc -l`
 TEST[15]=`expr $CRIT1`
 CTRL[15]=1
 ERROR[15]="DIRECT MCD_LAO WAS NOT RUN DIRECT"
@@ -252,7 +251,7 @@ PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

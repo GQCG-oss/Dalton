@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c /* deck CC_OPA */
 *=====================================================================*
@@ -50,12 +40,12 @@ c /* deck CC_OPA */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
-#include <ccopainf.h>
-#include <ccsdinp.h>
-#include <dummy.h>
-#include <second.h>
+#include "priunit.h"
+#include "cclists.h"
+#include "ccopainf.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+#include "second.h"
 
 * local parameters:
       CHARACTER*(16) MSGDBG
@@ -279,15 +269,15 @@ c /* deck ccopaprt */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <pgroup.h>
-#include <ccroper.h>
-#include <ccopainf.h>
-#include <ccxopainf.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <codata.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "pgroup.h"
+#include "ccroper.h"
+#include "ccopainf.h"
+#include "ccxopainf.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "codata.h"
+#include "ccorb.h"
 
 
       CHARACTER*5  BLANKS
@@ -385,10 +375,10 @@ C-tbp:
         EIGV    = DABS(EIGVI-EIGVF)
 
         WRITE(LUPRI,'(//5X,A)') 'Transition from excited state:'
-        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
+        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,1X,I1)')
      &    'number, multiplicity, symmetry :',ISTATEI,IMULI,REP(ISYMI-1)
         WRITE(LUPRI,'(5X,A)') 'to state:'
-        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
+        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,1X,I1)')
      &    'number, multiplicity, symmetry :',ISTATEF,IMULF,REP(ISYMF-1)
         WRITE(LUPRI,'(5X,A,F15.10,A,F10.5,A,F10.1,A)')
      &    'transition frequency :',EIGV, ' a.u.  ',
@@ -404,7 +394,7 @@ C-tbp:
         EIGV   = EIGVAL(ISTATE)
         
         WRITE(LUPRI,'(//5X,A)') 'Transition from ground state to:'
-        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
+        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,1X,I1)')
      &    'number, multiplicity, symmetry :',ISTATE,IMULE,REP(ISYME-1)
         WRITE(LUPRI,'(5X,A,F15.10,A,F10.5,A,F10.1,A)')
      &    'frequency :',EIGV, ' a.u.  ',
@@ -448,7 +438,7 @@ C-tbp:
          STRN  = TM0F * TMF0
 
          WRITE(LUPRI,
-     &     '(5x,"| ",a8,2x,"|",2(x,f15.8,x,"|"),2x,f15.8,4x,"|")')
+     &     '(5x,"| ",a8,2x,"|",2(1x,f15.8,1x,"|"),2x,f15.8,4x,"|")')
      &      LABEL,TMF0,TM0F,STRN
 
          
@@ -605,7 +595,7 @@ C     Thomas Bondo Pedersen, January 2005.
 C
 C     Purpose: set up and print rotatory strength tensors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIPMOM(3,2), ANGMOM(3,2), QUAMOM(3,3,2)
       CHARACTER*(*) GAUGE
 
@@ -815,12 +805,12 @@ c /* deck ccopa_setup */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
-#include <ccopainf.h>
-#include <ccroper.h>
-#include <ccexci.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "cclists.h"
+#include "ccopainf.h"
+#include "ccroper.h"
+#include "ccexci.h"
+#include "ccsdinp.h"
 
 * local parameters:
       CHARACTER*(21) MSGDBG

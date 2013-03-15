@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef REV_LOG
 ===========================================================================
@@ -62,28 +52,28 @@ C     This routine based on TWOINT etc.
 C
 C     Written by T.Saue Oct 12 1996
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.00 D00)
 #ifdef PRG_DIRAC
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
-#include <ccom.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <blocks.h>
-#include <shells.h>
-#include <twosta.h>
-#include <twocom.h>
-#include <hertop.h>
-#include <infpar.h>
+#include "ccom.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "blocks.h"
+#include "shells.h"
+#include "twosta.h"
+#include "twocom.h"
+#include "hertop.h"
+#include "infpar.h"
 C
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
@@ -93,7 +83,7 @@ C
      &          NCONTS(MXSHEL,MXAOVC,2), WORK(LWORK)
 C
       CALL QENTER('GABDRV')
-#include <memint.h>
+#include "memint.h"
       IF (IPRINT .GT. 5) CALL TITLER('Output from GABDRV','*',103)
 C
       TKTIME = .FALSE.
@@ -414,13 +404,13 @@ C  /* Deck gabdr1 */
      &               NUCSAB,JSTRA,JSTRB,NINDAB,NPNTAB,NREDAB,
      &               COORCD,EXPCD,FACCD,CONTC,CONTD,NPCOC,NPCOD,
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, ONECEN,
      &        SOFOCK, SQ12EL, SUSCEP, TPRAB, TPRCD
@@ -446,16 +436,16 @@ C               Electron 2
      &          JSTRC(NSETC), JSTRD(NSETD),
      &          NINDCD(NORBC*NORBD,2), NORTCD(8),
      &          NPNTCD(*),NREDCD(*)
-#include <twocom.h>
-#include <blocks.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <twosta.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "blocks.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "twosta.h"
+#include "ibtfun.h"
 C
       CALL QENTER('GABDR1')
-#include <memint.h>
+#include "memint.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from GABDR1','*',103)
       CALL MEMGET('INTE',KCORBA,NORBA,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KCORBB,NORBB,WORK,KFREE,LFREE)      
@@ -595,28 +585,28 @@ C  /* Deck Gabdr2 */
      &                  IPNTAO,IPNTOP,IPNTNO,IPNTRP,IPNTLG,
      &                  JSTRSH,NPRIMS,NCONTS,IORBSH,
      &                  INDHSQ,IODDHR,INDHER,LMNVLS)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "dummy.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
 C
-#include <twocom.h>
-#include <blocks.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <twosta.h>
-#include <expopt.h>
+#include "twocom.h"
+#include "blocks.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "twosta.h"
+#include "expopt.h"
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
+#include "dcbgrd.h"
 #else
-#include <energy.h>
+#include "energy.h"
 #endif
-#include <doxyz.h>
+#include "doxyz.h"
 C
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
@@ -645,14 +635,14 @@ C
      &          IORBSH(MXSHEL,MXAOVC),JSTRSH(MXSHEL,MXAOVC,2), 
      &          NPRIMS(MXSHEL,MXAOVC,2), NCONTS(MXSHEL,MXAOVC,2)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
       XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
 C
       CALL QENTER('GABDR2')
-#include <memint.h>
+#include "memint.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from GABDR2','*',103)
 C
       IF (.NOT.DDFOCK.AND. NSOINT.EQ.0) GOTO 400
@@ -1024,22 +1014,22 @@ C
 C     Collect elements of GAB-matrix
 C     Written by T.Saue Oct 7 1996
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "nuclei.h"
       DIMENSION GABM(NBASIS,NBASIS),
      &          SO(*),IPNTNO(4,*),
      &          IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2),NINDCD(NORBC*NORBD,2)
-#include <twocom.h>
-#include <symmet.h>
+#include "twocom.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine GABPCK',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1101,33 +1091,33 @@ C/* Deck Gaogat */
      &                  IPRINT,NINDAB,NINDCD,SUSCEP,MAXDER)
 C*****************************************************************************
 C
-C  Gather AO-Cauchy-Schwartz-integrals
+C  Gather AO-Cauchy-Schwarz-integrals
 C
 C  Written by T.Saue Oct 10 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       INTEGER A,B,C,D
       LOGICAL SUSCEP
-#include <nuclei.h>
+#include "nuclei.h"
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),
      &          ICORBC(NORBC),ICORBD(NORBD),
      &          AOINT(NCCINT), GABM(NBASIS,NBASIS),
      &          AOINT2(NCCINT),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IEFFA(0:7),IEFFB(0:7),IORBSH(MXSHEL,MXAOVC)
-#include <twocom.h>
-#include <expcom.h>
-#include <symmet.h>
-#include <blocks.h>
+#include "twocom.h"
+#include "expcom.h"
+#include "symmet.h"
+#include "blocks.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 Chj/980617: changed ISYMA test from MULA to MULAB, we must
 C           include all different operations where at least one of
@@ -1239,22 +1229,22 @@ C
 C     Last revision: Oct 3 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
-#include <shells.h>
-#include <blocks.h>
-#include <nuclei.h>
+#include "shells.h"
+#include "blocks.h"
+#include "nuclei.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
      &          DRAO(NSYMBL,NSYMBL,NDMAT),WORK(LWORK)
 C
       CALL QENTER('MKDRAO')
-#include <memint.h>
+#include "memint.h"
 C
 C     Initialization
 C
@@ -1291,15 +1281,15 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
-#include <shells.h>
-#include <blocks.h>
-#include <nuclei.h>
+#include "shells.h"
+#include "blocks.h"
+#include "nuclei.h"
       DIMENSION DRAO(NSYMBL,NSYMBL,NDMAT),INDEX(NSYMBL)
       CHARACTER SPDCAR*1,COMP(2)*1
       COMP(1) = 'L'
@@ -1354,16 +1344,16 @@ C
 C     Written by T.Saue Oct 4 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
-#include <shells.h>
-#include <blocks.h>
-#include <nuclei.h>
+#include "shells.h"
+#include "blocks.h"
+#include "nuclei.h"
       DIMENSION INDRAO(NBASIS)
 C
       IOFF = 0
@@ -1394,22 +1384,22 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <symmet.h>
-#include <pincom.h>
-#include <blocks.h>
-#include <shells.h>
-#include <nuclei.h>
+#include "symmet.h"
+#include "pincom.h"
+#include "blocks.h"
+#include "shells.h"
+#include "nuclei.h"
       DIMENSION INDRSO(NBASIS)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       ISTRA = 1
       DO IREPA = 0, MAXREP
@@ -1435,23 +1425,23 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
-#include <shells.h>
-#include <blocks.h>
-#include <nuclei.h>
+#include "shells.h"
+#include "blocks.h"
+#include "nuclei.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
      &          DRSO(MAXSHL,MAXSHL,NDMAT),WORK(LWORK)
       CHARACTER SPDCAR*1,COMP(2)*1
 C
       CALL QENTER('MKDRSO')
-#include <memint.h>
+#include "memint.h"
 C
 C     Initialization
 C
@@ -1530,8 +1520,8 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DINTSKP(2,4),DSTEP(4)
       CHARACTER TEXT*(*)
@@ -1590,8 +1580,8 @@ C
 C     Written by J. Thyssen, Jan 16, 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DINTSKP(3,14,3)
       CHARACTER TEXT*6
@@ -1742,18 +1732,18 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
 C
-#include <blocks.h>
-#include <nuclei.h>
-#include <cbihr2.h>
+#include "blocks.h"
+#include "nuclei.h"
+#include "cbihr2.h"
       LOGICAL NOCONT
       DIMENSION GABM(NBASIS*NBASIS),WORK(LWORK)
-#include <memint.h>
+#include "memint.h"
 C
       NPAO = MXSHEL*MXAOVC
       CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)     
@@ -1781,10 +1771,10 @@ C
 C     Return MAXSHL ...make mini-version of PAOVEC
 C     T.Saue March 1997
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <shells.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "shells.h"
       NGAB = KMAX
       RETURN
       END
@@ -1795,30 +1785,30 @@ C/* Deck Gabgen */
 C***********************************************************************
 C
 C     This routine will generate the reduced matrix of 
-C     Cauchy-Schwartz integrals and write it to file AOPROPER
+C     Cauchy-Schwarz integrals and write it to file AOPROPER
 C
 C     Written by T.Saue Mar 19 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
 C Used from
 C  gnrinf.h: SRINTS
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <gnrinf.h>
-#include <nuclei.h>
-#include <blocks.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "mxcent.h"
+#include "gnrinf.h"
+#include "nuclei.h"
+#include "blocks.h"
+#include "inftap.h"
       LOGICAL FNDLAB,NOCONT
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
-#include <chrxyz.h>
+#include "chrxyz.h"
       CALL QENTER('GABGEN')
-#include <memint.h>
+#include "memint.h"
       IF(ITYPE.EQ.0) THEN
          NGAB = 1
          GABLAB(1) = 'GABXXXXX'
@@ -1950,13 +1940,13 @@ C
 C     Written by T.Saue Mar 20 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
       LOGICAL EXTST,FNDLAB
       CHARACTER GABLAB*8
       DIMENSION GABM(N2GAB), WORK(*)
-#include <inftap.h>
+#include "inftap.h"
 C
       CALL QENTER('GETGAB')
 C
@@ -1978,7 +1968,7 @@ C
       IF(FNDLAB(GABLAB,LUPROP)) THEN
          READ(LUPROP,ERR=10,END=20) GABM
       ELSE IF (GABLAB(6:8) .EQ. 'XXX') THEN
-         WRITE(LUPRI,'(/A,A8,A)') '*** WARNING  GETGAB: ',
+         WRITE(LUPRI,'(/A,A8,A)') '***  INFO  GETGAB: ',
      &        GABLAB,' not found on AOPROPER. Regenerating.'
          CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
          IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER',

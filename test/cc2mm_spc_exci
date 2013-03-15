@@ -205,15 +205,15 @@ CRIT6=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^\(QMclassic\)_a \]   \| * ( |
 CRIT7=`$GREP "E\(\"QM\"\/MM\) \= Eelec \+ Epol \+ Evdw                \| * (\-|\-0)\.00143016" $log | wc -l`
 CRIT8=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * ( |0)\.00000000" $log | wc -l`
 CRIT9=`$GREP "(\-|\-0)\.15553012.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.00143015.. \| * (\-|\-0)\.15696028.." $log | wc -l`
-CRIT10=`$GREP "\-317\.86855013.. \| \-318\.02551041.. \|    ( |0)\.00000000.. \|   ( |0)\.00000000.." $log | wc -l`
+CRIT10=`$GREP "\-317\.8685501... \| \-318\.02551041.. \|    ( |0)\.00000000.. \|   ( |0)\.00000000.." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
 CTRL[1]=13
 ERROR[1]="THE CLASSICAL OR QM/MM ENERGY TERMS ARE NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=` $GREP "x * 3\.45113314 * 8\.77190449" $log | wc -l`
-CRIT2=` $GREP "y * 1\.63839196 * 4\.16437653" $log | wc -l`
-CRIT3=` $GREP "z * \-2\.89031691 * \-7\.34645199" $log | wc -l`
+CRIT1=` $GREP "x * 3\.4511331. * 8\.7719048." $log | wc -l`
+CRIT2=` $GREP "y * 1\.6383919. * 4\.1643767." $log | wc -l`
+CRIT3=` $GREP "z * \-2\.8903169. * \-7\.3464523." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=4
 ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"

@@ -79,7 +79,7 @@ cat > prop_vibg1.dal <<%EOF%
 *ABALNR
 .THRESH
 1.0D-7
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

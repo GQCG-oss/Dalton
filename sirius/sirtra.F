@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef OLD_REV_OLG
 !===========================================================================
@@ -42,18 +32,18 @@ C
 !951219-hjaaj: TRACTL: defined DM1=-1.0D0 (was undefined); never
 !   modify input KTRLVL (was ITRLVL, which is abs(KTRLVL))
 !950830-hjaaj: LRECL in *4 words for direct access under IRIX
-!941115-hjaaj: SIROPI: included FLAG(34) in def. of OLDTRA
-!940927-hjaaj: SIROPI: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
+!941115-hjaaj: SIR_INTOPEN: included FLAG(34) in def. of OLDTRA
+!940927-hjaaj: SIR_INTOPEN: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
 !940909-hjaaj: added PARAGON define label (same code as AIX)
 !940517-hjaaj: Ide: gem integraler paa LUINTM uden labels (afhaengigt af ITRLVL)
 !   Brug ITRLVL til at bestemme LBINTM (ikke NMORBT men f.eks. NMOCCT + ...)
 !   Beregn ogsaa LBINTD v.hj.af LBMXSQ ??
 !MAERKE 930305: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
-!MAERKE 900111: reconsider in SIROPI (allow flag(14) also when flag(34?)
+!MAERKE 900111: reconsider in SIR_INTOPEN (allow flag(14) also when flag(34?)
 !-------- Revision n05 ends here ---------
 !940517-hjaaj
 !SORTA,SORTB: changed NTRI to NMBASX (was = NMBASX); removed old TAYLSPACE
-!SIROPI: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
+!SIR_INTOPEN: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
 !        true, irrespective of FLAG(34); fixed ICASE print error on Cray
 !        by extending IF (OPINTM) THEN to after ICASE print
 !TRAAB : removed unused DUMMY parameter statement
@@ -75,25 +65,17 @@ C
 !  distribution of distributions per chain.
 !TRACD,TRAAB: insert symmetry check in write-to-file loop, gprof showed
 !  for Neon that a lot of time was used in skipping zero integrals.
-!910130-hjaaj
-!TRACD,TRAAB,TRACTL: test print for IPRTRA.ge.100 (from Hinne)
 !901028-hjaaj
 ! TRACTL: new MFRO(1:NSYM) = 0 because wrong integral indices are
 !    written to LUINTM if MFRO(isym) .ne. 0
 !901025-hjaaj
 ! TRACTL: JTER=1 only if IPRTRA.gt.1, print TIME IN SORTA if iprtra.gt.0
-!901005-hjaaj
-! TRACTL: s/CMO(NCMOT)/(CMO(I),I=1,NCMOT)/ ; error in write (luintm)
-!   -- This wasn't discovered on Alliant because it didn't stop for end
-!   of record (a small test program showed that reading more than one
-!   variable read the label in the next record and so on; however, after
-!   the reading the pointer was at the beginning of next record!)
 !900801-hjaaj
 ! Moved writing of pre-MOLTWOEL information on LUINTM from TRAAB to TRACTL;
 !   added NSYM,NORB,NBAS and CMO to information.
 ! TRACTL: check ITRLVL,CMO against LUINTM information, abandon transformation
 !   if the needed mo integrals already available.
-! SIROPI: revised ITRLVL check against LUINTM for levels 2 and 3;
+! SIR_INTOPEN: revised ITRLVL check against LUINTM for levels 2 and 3;
 !   rationalized file openings for different computer types;
 !   write warning if flag(14) and integrals not found.
 !900307-hjaaj
@@ -106,13 +88,11 @@ C
 ! TRACTL: reset /CBGETD/ to tell any H2AC on disk now obsolete.
 !900226-hjaaj
 ! TRACTL: if (usedrc) then call DRCCTL
-!900221-hjaaj
-! added drcctl routines as module drcctl.u
 !900115-hjaaj
 ! NXTH2M,NXTH2D: needtp(ityp) .lt. 0 now means at least one distribution
 ! of that type needed, but not all (in that case needtp(ityp) .gt. 0)
 !900111-hjaaj
-! SIROPI: local logical variable OPINTM, added FLAG(8:9) [RESPONSE and
+! SIR_INTOPEN: local logical variable OPINTM, added FLAG(8:9) [RESPONSE and
 !   MP2] to cases when LUINTM is opened.
 !900108-hjaaj
 ! NXTH2D: read LBINTD,LVLDRC after label DRCINFO on LUINTD
@@ -120,8 +100,6 @@ C
 ! SORTA,TRACD,TRAAB: print threshold for discarding integrals
 ! TRACTL: if (thrp.le.0) thrp=1.d-12 (was 1.d-9)
 !         if (thrq.le.0) thrq=1.d-12 (was 1.d-8)
-!891117-hjaaj
-! TRAUTH added
 !891116-hjaaj
 ! NXTH2M,NXTH2D: more tests that buffers are allocated/have not been
 !   corrupted. Release buffer allocation when no more buffers.
@@ -130,8 +108,6 @@ C
 ! Write total time in tracd,sortb,traab in tractl if iprtra .gt.0
 !    and only write TRANSFORMATION level each time if iprtra .gt. 0
 !    and corrected 890615 tractl output error (wrt. ITRSAV) in TRACTL
-!890615-hjaaj
-! disabled FIRST=.FALSE. in TRACTL so it can be used in combination runs.
 !890220-hjaaj
 ! traab,tracd -- NOSYNC directive for read direct access to TRI(*)
 !===========================================================================
@@ -148,39 +124,55 @@ C
      *   T5,'Hans Joergen Aa. Jensen, University of Aarhus,  Denmark')
       RETURN
       END
-C  /* Deck siropi */
-      SUBROUTINE SIROPI
+C  /* Deck sir_intopen */
+      SUBROUTINE SIR_INTOPEN
 C
 C  3-Nov-1989 Hans Joergen Aa. Jensen
 C
 C  Open mo integral units required by this Sirius calculation,
 C  as specified in command input.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
-#include <iratdef.h>
-#include <lbmxsq.h>
+#include "iratdef.h"
+#include "lbmxsq.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(*),ITRLVL,ITRFIN,ICI0
 C   INFORB : NNORBT
 C   INFDIM : LBUFMA
-C   INFTRA : LSRTAO
+C   INFTRA : LSRTAO, THRP
+C   CCOM   : THRS ! from hermit
 C   INFTAP : LU*
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "maxaqn.h"
+#include "ccom.h"
+#include "inftap.h"
 C
       LOGICAL OPINTM, FNDLAB, OLDTRA, FEXIST
 C
+      IF (THRP .LT. THRS) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
+     &      ' INFO: Changed THRP threshold used in'//
+     &      ' integral transformation from',THRP,
+     &      ' to integral evaluation threshold',THRS
+         THRP = THRS
+      END IF
+      IF (NBAST .GT. 255 .AND. .NOT. NEWTRA) THEN
+         NEWTRA = .TRUE.
+         WRITE(LUPRI,'(/4X,A/4X,A)') 'INFORMATION: Switched to "new" '/
+     &     /'integral transformation (from 1988 ;-) )',
+     &      'because more than 255 basis functions.'
+      END IF
       IF (NEWTRA) THEN
-         CALL N_SIROPI
+         CALL SIR_INTOPEN_NEWTRA
          RETURN
       END IF
 C
@@ -243,19 +235,19 @@ C           no old luintm opened, then old integrals not available
          IF (OLDTRA .AND. ICASE .GT. 0) THEN
             NWARN = NWARN + 1
             WRITE (LUPRI,'(/A,I2,3(/A))')
-     *         ' WARNING SIROPI, old integral transformation not found'
-     *       //' as expected, ICASE =',ICASE,
-     *         ' if ICASE = 1: mo integral file LUINTM does not exist',
-     *         ' if ICASE = 2: no mo integrals on LUINTM',
-     *         ' if ICASE = 3: transformation level on LUINTM'
+     *         ' WARNING SIR_INTOPEN, old integral transformation not'
+     *       //' found as expected, ICASE =',ICASE,
+     *         ' - ICASE = 1: MO integral file MOTWOINT does not exist',
+     *         ' - ICASE = 2: no MO integrals on MOTWOINT',
+     *         ' - ICASE = 3: transformation level on MOTWOINT'
      *       //' not sufficient'
             IF (ICASE .EQ. 3) WRITE(LUPRI,'(A,2I5)')
-     *         ' ITRLVL requested, ITRLVL on LUINTM :',ITRLVL,JTRLVL
+     *         ' ITRLVL requested & ITRLVL on MOTWOINT :',ITRLVL,JTRLVL
          END IF
          LBUFMA = MAX(LBUFMA,NNORBT,LBINTM)
       END IF
 C
-C     END OF SIROPI (Open MO integral files)
+C     END OF SIR_INTOPEN (Open MO integral files)
 C
       RETURN
       END
@@ -283,22 +275,22 @@ C....       ISCR --  (AS SCR - ALLOWS INTEGER ADDRESSING)
 C....       MEMS --  LENGTH OF SCRATCH SORT AREA
 C....       MEMT --    **   *    **    TRANSFORMATION AREA
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*)
       INTEGER   IT(*)
-#include <iratdef.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "dummy.h"
 C
       PARAMETER (IBUFL = 500)
       INTEGER   IBUF(IBUFL), NAOS(8)
 C
       LOGICAL FEXIST, OLDDX
 C
-#include <priunit.h>
+#include "priunit.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
-#include <ibtdef.h>
+#include "inftra.h"
+#include "inftap.h"
+#include "ibtdef.h"
 C
       CALL QENTER('SORTA ')
 C
@@ -612,14 +604,14 @@ C
 C....    FORMAT STATEMENTS
 C
   200 FORMAT(/' FIRST HALF-SORT STATISTICS'
-     1       /'  NUMBER OF PASSES OVER AO FILE',T33,I4
-     2       /'  NUMBER OF BLOCKS PER CHAIN',T30,I7
-     3       /'  TOTAL NUMBER OF CHAINS',T30,I7
-     4       /'  NUMBER OF BUFFERS PER PASS',T30,I7/)
-  201 FORMAT('  NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER ',I4)
-  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I6
-     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I6
-     2       /'  PERCENT NON-ZERO AO INTEGRALS',F15.2)
+     1       /'  NUMBER OF PASSES OVER AO FILE',T30,I7
+     2       /'  NUMBER OF BLOCKS PER CHAIN',T27,I10
+     3       /'  TOTAL NUMBER OF CHAINS',T27,I10
+     4       /'  NUMBER OF BUFFERS PER PASS',T27,I10/)
+  201 FORMAT('  NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER',I10)
+  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I8
+     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I8
+     2       /'  PERCENT NON-ZERO AO INTEGRALS',F17.2)
   203 FORMAT(/'  THRESHOLD FOR DISCARDING INTEGRALS',1P,D10.2)
       END
 C  /* Deck sortb */
@@ -640,19 +632,19 @@ C....    FOR *SORTA* (Q.V.)
 C
 C....                        PETER R. TAYLOR   LUND   MAR *79
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (IBUFL = 500)
-#include <iratdef.h>
+#include "iratdef.h"
       DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*),IBUF(IBUFL)
       INTEGER   IT(*)
       LOGICAL FEXIST
-#include <lbmxsq.h>
+#include "lbmxsq.h"
 C
-#include <priunit.h>
+#include "priunit.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
-#include <ibtdef.h>
+#include "inftra.h"
+#include "inftap.h"
+#include "ibtdef.h"
 C
       CALL QENTER('SORTB ')
 C
@@ -898,17 +890,17 @@ C
 C....    FORMAT STATEMENTS
 C
   200 FORMAT(/,' SECOND HALF-SORT STATISTICS'/
-     1  '  NUMBER OF PASSES OVER FILE',T33,I4/
-     2  '  NUMBER OF BLOCKS PER CHAIN',T30,I7/
-     3  '  TOTAL NUMBER OF CHAINS',T30,I7/
-     4  '  NUMBER OF BUFFERS PER PASS',T30,I7/)
-  201 FORMAT(' NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER ',I4)
-  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I6
-     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I6
-     2       /'  PERCENT NON-ZERO INTEGRALS',F18.2)
+     1  '  NUMBER OF PASSES OVER FILE',T30,I7/
+     2  '  NUMBER OF BLOCKS PER CHAIN',T27,I10/
+     3  '  TOTAL NUMBER OF CHAINS',T27,I10/
+     4  '  NUMBER OF BUFFERS PER PASS',T27,I10/)
+  201 FORMAT(' NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER',I10)
+  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I8
+     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I8
+     2       /'  PERCENT NON-ZERO INTEGRALS',F20.2)
       END
 C  /* Deck tracd */
-#include <vdir.h>
+#include "vdir.h"
       SUBROUTINE TRACD(ITRLVL,LUHALF,LUDA,CMOT,BUF,IBUF,OUTB,IOUTB,PQCD,
      &                 PQRD,TRI,ITSMO,ITSAO,ITSX,IT)
 C
@@ -930,21 +922,21 @@ C     CMOT = CMO(transposed)
 C
 C          ********** RELEASE 79 03 28 **********
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMOT(*),BUF(*),IBUF(*),OUTB(*),IOUTB(*),
      *          PQCD(MORBT,*),PQRD(*),TRI(*)
       INTEGER   ITSMO(*), ITSAO(*), ITSX(*), IT(*)
-#include <iratdef.h>
-#include <lbmxsq.h>
+#include "iratdef.h"
+#include "lbmxsq.h"
 C
-#include <priunit.h>
+#include "priunit.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
+#include "inftra.h"
+#include "inftap.h"
 C
       LOGICAL SKIPR
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       CALL QENTER('TRACD ')
 CHJ-START-840726
@@ -1015,7 +1007,7 @@ C     ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
   103          CALL READDX(LUDA,IADR,LDA22,IBUF)
                   IADR   = IBUF(LDA21)
                   LENGTH = IBUF(LDA22)
-#include <nosync.h>
+#include "nosync.h"
                   DO 104 I = 1,LENGTH
                      LDAI = IDABUF + I
                      IBL  = IBUF(LDAI)
@@ -1281,7 +1273,7 @@ C
       RETURN
       END
 C  /* Deck traab */
-#include <vdir.h>
+#include "vdir.h"
       SUBROUTINE TRAAB(ITRLVL,LUDA2,CMOT,BUF,IBUF,OUTB,IOUTB,ABCD,PBCD,
      &                 TRI,ITSMO,ITSAO,ITSW,ITSX,IT)
 C
@@ -1321,21 +1313,21 @@ C                27-Jul-1984 hjaaj /
 C                23-Mar-1984 hjaaj /
 C                11-Dec-1983 ha/hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMOT(*),BUF(*),IBUF(*),OUTB(*),IOUTB(*),
      *          ABCD(MORBT,*),PBCD(*),TRI(*)
       INTEGER   ITSMO(*), ITSAO(*), ITSW(*), ITSX(*), IT(*)
-#include <iratdef.h>
+#include "iratdef.h"
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
+#include "inftra.h"
+#include "inftap.h"
 C
       CHARACTER*8 TABLE(2),LAB123(3)
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       DATA TABLE /'MOLTWOEL','END INTM'/
       DATA LAB123/'********','********','********'/
@@ -1438,7 +1430,7 @@ C           ***** FIND LAST ADDRESS OF NEW CHAIN AND START READ *****
                IADR=IBUF(LDA21)
                LENGTH=IBUF(LDA22)
             IF(LENGTH.EQ.0) GO TO 106
-#include <nosync.h>
+#include "nosync.h"
                DO 104 I=1,LENGTH
                   IBL=IBUF(IDABUG+I)
                   MPQ=IBTAND(IBTSHR(IBL,16),IBT16)
@@ -1652,6 +1644,7 @@ CHJ-E-841125
 C        ***** LOOP OVER ORBITALS B AND ADD CONTRIBUTION *****
 C        ***** TO INTEGRALS (AB/CD)                      *****
          DO 135 NBR = NBRS,NBRE
+!           that could be done with daxpy, could not it?
             ABCD(JORBB+NBR,NA) = ABCD(JORBB+NBR,NA) + CMOP*PBCD(NBR)
   135    CONTINUE
   140 CONTINUE
@@ -1758,22 +1751,22 @@ C  CMO,   mo coefficients
 C  WORK,  work array
 C  KWORK, actual length of work array
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*), WORK(KWORK)
-#include <iratdef.h>
-#include <thrzer.h>
-#include <lbmxsq.h>
+#include "iratdef.h"
+#include "thrzer.h"
+#include "lbmxsq.h"
 C
 C Used from common blocks:
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <exeinf.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "exeinf.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
-#include <gnrinf.h>
+#include "inftra.h"
+#include "inftap.h"
+#include "gnrinf.h"
 C
       DIMENSION MFRO(8)
       LOGICAL VFIRST, FOPEN, DELDA, FEXIST
@@ -1860,28 +1853,28 @@ C  Based on:
 C     CASSCF:TRANSFORMATION SECTION.CONTROL ROUTINE
 C      ********** RELEASE 79 04 20 **********
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       INTEGER   ITSMO(*), ITSAO(*), ITSW(*), ITSX(*), IT(*)
-      DIMENSION CMO(*), WORK(KWORK)
-#include <iratdef.h>
-#include <thrzer.h>
-#include <lbmxsq.h>
+      DIMENSION CMO(*), WORK(KWORK), MISH_TEST(8), MASH_TEST(8)
+#include "iratdef.h"
+#include "thrzer.h"
+#include "lbmxsq.h"
       PARAMETER (DM1 = -1.0D0)
 C
 C Used from common blocks:
 C CBGETDIS : IAD*
 C INFDIM   : MWORK
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <exeinf.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "exeinf.h"
 #include "infdim.h"
 #include "inttra.h"
-#include <inftra.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <cbgetdis.h>
+#include "inftra.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "cbgetdis.h"
 C
       DIMENSION MFRO(8)
       LOGICAL FOPEN, DELDA, FEXIST
@@ -1922,18 +1915,13 @@ C        ... force new integral sort and transformation
 C     ***** SET THRESHOLDS *****
 C     *********** THRP: THRESHOLD USED IN TRACD AND TRAAB
 C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
-      IF (THRP.LE.0.D0) THEN
+      IF (THRP.LE.1.D-16) THEN
          WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
-     &      ' INFO: Changed THRP threshold used in transformation from',
-     &      THRP,' to',1.D-15
-         THRP=1.D-15
+     &      ' INFO: Changed THRP threshold used in'//
+     &      ' integral transformation from',THRP,' to',1.D-14
+         THRP=1.D-14
       END IF
-      IF (THRQ.LE.0.D0) THEN
-         WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
-     &      ' INFO: Changed THRQ threshold used in AO sort from',THRP,
-     &      ' to',1.D-15
-         THRQ=1.D-15
-      END IF
+      THRQ = THRP * 0.1D0
 C
 C     ***** Reset /CBGETD/ because any H2AC on disk will be
 C           obsolete after transformation.
@@ -1982,6 +1970,14 @@ C     Note: index on LUITM are wrong if MFRO(ISYM) .ne. 0 !!
          MSSH(ISYM) = NSSH(ISYM)
          MBAS(ISYM) = NBAS(ISYM)
     5 CONTINUE
+      IF (IPRTRA .GE. 5) THEN
+         WRITE(LUPRI,*) 'MSYM',MSYM
+         WRITE(LUPRI,*) 'MFRO',MFRO(1:8)
+         WRITE(LUPRI,*) 'MISH',MISH(1:8)
+         WRITE(LUPRI,*) 'MASH',MASH(1:8)
+         WRITE(LUPRI,*) 'MSSH',MSSH(1:8)
+         WRITE(LUPRI,*) 'MBAS',MBAS(1:8)
+      END IF
 C
 C     If first call of TRACTL_1 set up orbital information in /INTTRA/
 C        ... 890615 - hjaaj: in new combination runs
@@ -2008,6 +2004,7 @@ C     ***** SET UP ORBITAL DATA *****
    10    CONTINUE
 C
          MORBT=MOCCT+MSSHT
+         IF (MORBT .GT. MBAST) CALL QUIT('MORBT .gt. MBAST :(')
 CHJ-S-841208
          IF (MORBT.GT.255 .OR. MBAST.GT.255) THEN
             WRITE (LUPRI,*)
@@ -2255,14 +2252,17 @@ C
    45 CONTINUE
 C
       DST = SECOND()
+      IF (IPRTRA .GE. 0) THEN
+         CALL GETTIM(TCPU0,TWALL0)
+      END IF
 C
 C     900801-hjaaj: check if transformation already done
 C     971201-hjaaj: code moved to here (was too late)
 C        LSRTAO .ne. 0 should cover all situations where
 C        it is possible that MO integrals already exist
-C        on LUINTM. NOTE: this requires that SIROPI has been
+C        on LUINTM. NOTE: this requires that SIR_INTOPEN has been
 C        called before first call to TRACTL_1 !!!!!!
-C        SIROPI will set LSRTAO = -1 if LUINTM exists with
+C        SIR_INTOPEN will set LSRTAO = -1 if LUINTM exists with
 C        a 'MOLTWOEL' label. Whenever TRACTL_1 has performed
 C        a transformation LSRTAO will be = +1.
 C     
@@ -2279,10 +2279,17 @@ C           and subtract from input CMO matrix
             READ  (LUINTM) (WORK(I),I=1,NCMOT)
             CALL DAXPY(NCMOT,DM1,CMO,1,WORK,1)
             I = IDAMAX(NCMOT,WORK,1)
-            IF (ABS(WORK(I)) .LE. THRZER) THEN
-               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
+            READ (LUINTM) MISH_TEST(1:8), MASH_TEST(1:8)
+            MISH_TEST(1:8) = MISH_TEST(1:8) - MISH(1:8)
+            MASH_TEST(1:8) = MASH_TEST(1:8) - MASH(1:8)
+            J = 0
+            DO ISYM = 1,8
+               J = J + ABS(MISH_TEST(ISYM)) + ABS(MASH_TEST(ISYM))
+            END DO
+            IF (ABS(WORK(I)) .LE. THRZER .AND. J .EQ. 0) THEN
+               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/T12,A)')
      *            ' TRACTL_1: Integral transformation abandoned,',
-     *            ' the required MO integrals are already available.'
+     *            'the required MO integrals are already available.'
                LBINTM = LBINT1
                GO TO 9999
             END IF
@@ -2326,7 +2333,8 @@ C        hjaaj 11-jan-2007: make sure AOTWOINT exists
          CALL MAKE_AOTWOINT(WORK,KWORK)
 
 C     HJ-840710 was: IF (JTER.EQ.1) THEN
-         CALL GPCLOSE(LUINTM,'DELETE')
+         CALL GPINQ(FNINTM,'EXIST',FEXIST)
+         if(FEXIST) CALL GPCLOSE(LUINTM,'DELETE')
          CALL GPOPEN(LUINTM,FNINTM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
 C        ... empty old mo integral file to save disk space during
@@ -2444,6 +2452,7 @@ C 831014-hjaaj: maybe here also save LUINTM buffer length
 C 860731-hjaaj: done
       WRITE (LUINTM) LBINTM,ITRLVL,NSYM,NORB,NBAS
       WRITE (LUINTM) (CMO(I),I=1,NCMOT)
+      WRITE (LUINTM) MISH(1:8), MASH(1:8)
 C
       CALL TRAAB(ITRLVL,LUDA2,WORK(LW1),WORK(LW2),WORK(LW2),
      &           WORK(LW3),WORK(LW3),WORK(LW4),WORK(LW5),WORK(LW6),
@@ -2454,6 +2463,14 @@ C
       DTIM = DFIN - DSTTRA
       IF (IPRTRA .GT. 0) WRITE (LUPRI,49) DTIM
    49 FORMAT(' TOTAL TIME IN TRACD,SORTB,TRAAB',F10.2)
+      IF (IPRTRA .GE. 0) THEN
+         CALL GETTIM(TCPU,TWALL)
+         TCPU  = TCPU -TCPU0
+         TWALL = TWALL-TWALL0
+         WRITE(LUPRI,2200) TCPU, TWALL
+      END IF
+ 2200 FORMAT(/' Integral transformation: Total CPU and WALL times (sec)'
+     &       ,2F12.3)
 C
 C set JTER to 2 to suppress printing on next call of TRACTL_1/hj-840710
       IF (IPRTRA .LT. 10) JTER = 2
@@ -2525,7 +2542,7 @@ C    DO NOT CHANGE IDIST or WRK(KFREE1:KFREE2-1) in calling routine
 C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
-C     define NEEDTP(1:6)
+C     define NEEDTP(-4:6)
 C 100 CALL NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
 C     IF (IDIST .GT. 0) THEN
 C        KW1 = KFREE
@@ -2536,16 +2553,16 @@ C        GO TO 100
 C     END IF
 C
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFTAP : LUINTM,LBINTM
 C
-#include <inftap.h>
-#include <inftra.h>
+#include "inftap.h"
+#include "inftra.h"
 C   
 C
       SAVE KBUF, KIBUF, KNEXT
@@ -2579,7 +2596,7 @@ C        distributions must be available (needtp .gt. 0).
      &         'NXTH2M error, LVLMOL on LUINTM too small'
             WRITE (LUPRI,*) 'LVLMOL =',LVLMOL
             WRITE (LUPRI,*) 'need   :',LVLMIN
-            WRITE (LUPRI,*) 'NEEDTP :',(NEEDTP(J),J=1,6)
+            WRITE (LUPRI,*) 'NEEDTP :',(NEEDTP(J),J=-4,6)
             CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2M error, LVLMOL too small')
          END IF
@@ -2647,7 +2664,7 @@ C    Read next Mulliken two-electron integral distribution (**|cd)
 C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Input:
-C       NEEDTP(6); non-zero for needed (cd) distribution types
+C       NEEDTP(-4:6); non-zero for needed (cd) distribution types
 C                  if .gt. 0 all distributions of that type needed
 C       IDIST; .eq. 0 first read
 C              .gt. 1 intermediate read
@@ -2662,12 +2679,12 @@ C       BUF, IBUF
 C
 C ****************************************************************
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "inftap.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(LBINTM), IBUF(LBINTM)
-#include <priunit.h>
-      DIMENSION NEEDTP(6)
+#include "priunit.h"
+      DIMENSION NEEDTP(-4:6)
 C
 C
 C Used from common blocks:
@@ -2675,16 +2692,16 @@ C   INFORB : NORBT
 C   INFIND : JTACT,JTSEC,ISW(*),...
 C   INFTAP : LUINTM,LBINTM
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
       SAVE INDCDN, LENGTH, JBUF
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
 C ****************************************************************
 C
@@ -2810,7 +2827,7 @@ C    DO NOT CHANGE IDIST or WRK(KFREE1:KFREE2-1) in calling routine
 C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
-C     define NEEDTP(1:6)
+C     define NEEDTP(-4:6)
 C 100 CALL NXTH2D(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
 C     IF (IDIST .GT. 0) THEN
 C        KW1 = KFREE
@@ -2821,16 +2838,16 @@ C        GO TO 100
 C     END IF
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFTAP : LUINTD,LBINTD
 C
-#include <inftap.h>
-#include <inftra.h>
+#include "inftap.h"
+#include "inftra.h"
 C
       SAVE KBUF, KIBUF, KNEXT
       DATA KNEXT /-1/
@@ -2913,7 +2930,7 @@ C    Read next Dirac two-electron integral distribution <**|cd>
 C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Input:
-C       NEEDTP(6); non-zero for needed (cd) distribution types
+C       NEEDTP(i); non-zero for needed (cd) distribution types
 C                  if .gt. 0 all distributions of that type needed
 C       IDIST; .eq. 0 first read
 C              .gt. 1 intermediate read
@@ -2928,10 +2945,10 @@ C       BUF, IBUF
 C
 C ****************************************************************
 C
-#include <implicit.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "inftap.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(LBINTD),IBUF(LBINTD)
-      DIMENSION NEEDTP(6)
+      DIMENSION NEEDTP(-4:6)
 C
 C
 C Used from common blocks:
@@ -2939,16 +2956,16 @@ C   INFORB : NORBT
 C   INFIND : JTACT,JTSEC,ISW(*),...
 C   INFTAP : LUINTD,LBINTD
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
       SAVE INDCDN, LENGTH
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
 C ****************************************************************
 C
@@ -2973,7 +2990,7 @@ C *** Initialize H2CD
 C
       CALL DZERO(H2CD,N2ORBX)
 C
-C *** Read next distribution which is needed according to NEEDTP(6)
+C *** Read next distribution which is needed according to NEEDTP(*)
 C     into H2CD
 C
 C  ITYPCD values:  1=i*i :  2=t*i : 3=t*t : 4=a*i : 5=a*t : 6=a*a

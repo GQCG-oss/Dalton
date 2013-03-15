@@ -29,7 +29,7 @@ O     0.0000000000000000  0.000000000000000   -0.1243090000000        *
 #  DALTON INPUT
 #######################################################################
 cat > cc_geopt_ccpt_h2o.dal <<%EOF%
-**GENERAL
+**DALTON
 .OPTIMIZE
 **INTEGRAL
 .DIPLEN
@@ -39,7 +39,7 @@ cat > cc_geopt_ccpt_h2o.dal <<%EOF%
 .TITLE
    test case for CCSD(T) geometry optimization
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-10
 *ORBITAL INPUT
@@ -58,7 +58,7 @@ cat > cc_geopt_ccpt_h2o.dal <<%EOF%
 1 0 0 0
 0 0 0 0
 .ETAPTI
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -124,7 +124,7 @@ PASSED=1
 for i in 1 2 3
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

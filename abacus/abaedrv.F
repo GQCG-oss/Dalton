@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c===========================================================================
 c/* old abaedrv_log */
@@ -47,27 +37,27 @@ c      END
 c===========================================================================
 C  /* Deck resinp */
       SUBROUTINE RESINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxash.h"
       PARAMETER (NTABLE = 16)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbires.h>
+#include "cbires.h"
 C
 C     Used from common blocks:
 C       GNRINF : THR_REDFAC
 C       ANRINF : THRNR, MAXNR
 C       NUCLEI : NDCORD
 C
-#include <gnrinf.h>
-#include <abainf.h>
-#include <anrinf.h>
-#include <dorps.h>
-#include <infind.h>
-#include <nuclei.h>
+#include "gnrinf.h"
+#include "abainf.h"
+#include "anrinf.h"
+#include "dorps.h"
+#include "infind.h"
+#include "nuclei.h"
       DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
      *            '.MAXSIM', '.NEWRD ','.NOTRIA','.RDVECS',
      *            '.NONEXT', '.NRREST','.NOAVER','.D1DIAG',
@@ -237,12 +227,12 @@ C  /* Deck resini */
 C
 C     Initialize /CBIRES/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <anrinf.h>
-#include <cbires.h>
-#include <abainf.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "anrinf.h"
+#include "cbires.h"
+#include "abainf.h"
+#include "nuclei.h"
 C
       IPRINT = IPRDEF
       MAXSIM = 15
@@ -284,11 +274,11 @@ C     Modified 14-jun-1985 TUH
 C
 C     Purpose: Solve response equations
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
 C
@@ -298,15 +288,15 @@ C        INFDIM : NVARMA
 C        NUCLEI : NUCDEP, DCORD(MXCENT,3)
 C        INFTAP : LUGDR,LURDR, LRGDR,LRRDR, NBGDR,NBRDR
 C
-#include <cbires.h>
-#include <abainf.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "cbires.h"
+#include "abainf.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       LOGICAL OLDDX
 C
@@ -383,13 +373,13 @@ C      If INGD is TRUE one set of linear equations are solved.
 C      The routine then assumes GD is the first NVAR elements in WRK
 C      and returns RD as the first NVAR elements in WRK.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <ibndxdef.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "ibndxdef.h"
+#include "iratdef.h"
       PARAMETER (D1 = 1.0D0)
 C
       DIMENSION WRK(*)
@@ -400,21 +390,21 @@ C   ABAINF : POLAR, DOSYM
 C   INFLIN : NCONRF,?
 C   INFDIM : LACIMX, LBCIMX, LCINDX, NVARMA,...
 C
-#include <abainf.h>
-#include <inflin.h>
-#include <linaba.h>
-#include <cbires.h>
-#include <cbisol.h>
-#include <gdvec.h>
-#include <energy.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <gnrinf.h>
+#include "abainf.h"
+#include "inflin.h"
+#include "linaba.h"
+#include "cbires.h"
+#include "cbisol.h"
+#include "gdvec.h"
+#include "energy.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "gnrinf.h"
 C
       CALL QENTER('RESMC')
 C
@@ -602,24 +592,24 @@ C Purpose:
 C   Read that MC information written by WRSIFC in SIRIUS which
 C   is needed for RESMC.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-      DIMENSION CMO(*),CREF(*),DV(*),PV(*),FC(*),FV(*),FCAC(*),
-     *          H2AC(*),GORB(*),WRK(*)
+      DIMENSION CMO(*),CREF(*),DV(*),PV(*),FOCK(*),
+     *          FC(*),FV(*),FCAC(*),H2AC(*),GORB(*),WRK(*)
 C
 C Used from common blocks:
 C  INFINP : LSYM,FLAG(1:NFLAG)
 C
-#include <infinp.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infopt.h>
-#include <inforb.h>
+#include "infinp.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infopt.h"
+#include "inforb.h"
 C
       LOGICAL FNDLAB
 C
@@ -711,26 +701,26 @@ C  Modified Jan 16 1988 tuh -  ENDRD introduced since Alliant
 C             sometimes aborts when trying to read DA record
 C             after end of file
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ibndxdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ibndxdef.h"
       PARAMETER ( VECTOL=1.0D-3 , THRLDP=1.0D-20 , DTEST = 1.D-3 )
       PARAMETER ( D0 = 0.0D0 )
       DIMENSION IBNDX(*),CREF(*),DIACI(*),DIAOR(*),WRK(*)
       LOGICAL INGD, FNDTRI, FINDDX, ENDRD
-#include <cbires.h>
+#include "cbires.h"
 C
-#include <inftap.h>
-#include <gdvec.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <inflin.h>
-#include <linaba.h>
+#include "inftap.h"
+#include "gdvec.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "inflin.h"
+#include "linaba.h"
 C
 C     Define maximum number of simultaneous vectors
 C

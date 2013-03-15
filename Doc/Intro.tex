@@ -13,36 +13,38 @@ available is the NEVPT2 approach
 (the $n$-electron valence second-order perturbation theory) for
 calculating  accurate energetics of
 multireference-based systems including also dynamic electron
-correlation, and highly accurate MP2-R12
+correlation, a parallel large-scale multireference CI program based on the concept of
+Generalized Active Spaces, and highly accurate MP2-R12
  methods are available for high-accuracy energetics of
 single-reference dominated closed-shell systems.
 
  The program consists
 of seven separate components, developed more or less independently.
 \her\ is the integral generator, generating ordinary
-atomic\index{atomic integrals} and molecular integrals appearing
-in the time-independent, non-relativistic Schr\"{o}dinger
-equation, as well as an extensive number of integrals related to
-different molecular properties. \eri\ is a vectorized and
-distribution-oriented integral generator that may be invoked in
-certain calculations, in particular in integral-direct coupled cluster
-calculations. \sir\ is the (MC)SCF wave function 
-optimization part, and is described comprehensively in the
-METECC-94 book~\cite{hjajhajomotecc}. \aba\ evaluates the
-second-order molecular properties of interest for SCF and MCSCF wave
-functions as well density-functional theory, in particular second-order static molecular properties in
-which the basis set depends on the applied perturbation. \resp\ is a
-general-purpose program for evaluating response functions, up to cubic
-response functions for (MC)SCF wave functions, quadratic response for DFT, and linear response for
-the Second-Order Polarization Propagator Approximation (SOPPA) and Second-Order
-Polarization Propagator Approximation with Coupled Cluster Singles and Doubles
-Amplitudes - SOPPA(CCSD). A new density functional theory module has
-been added in the 2.0 release of the program. Existing modules have
-been extended with the NEVPT2 and the MP2-R12 methodologies.
+atomic\index{atomic integrals} and molecular integrals appearing in the
+time-independent, non-relativistic Schr\"{o}dinger equation, as well as
+an extensive number of integrals related to different molecular
+properties. \eri\ is a vectorized and distribution-oriented integral
+generator that may be invoked in certain calculations, in particular in
+integral-direct coupled cluster calculations. \sir\ is the (MC)SCF wave
+function optimization part, and is described comprehensively in the
+METECC-94 book~\cite{hjajhajomotecc}. \aba\ evaluates the second-order
+molecular properties of interest for SCF and MCSCF wave functions as
+well density-functional theory, in particular second-order static
+molecular properties in which the basis set depends on the applied
+perturbation. \resp\ is a general-purpose program for evaluating
+response functions, up to cubic response functions for (MC)SCF wave
+functions, quadratic response for DFT, and linear response for the
+Second-Order Polarization Propagator Approximation (SOPPA) and
+Second-Order Polarization Propagator Approximation with Coupled Cluster
+Singles and Doubles Amplitudes - SOPPA(CCSD) or SOPPA(CC2). A new
+density functional theory module has been added in the 2.0 release of
+the program. Existing modules have been extended with the NEVPT2 and
+the MP2-R12 methodologies.
 %New for
 %this release is {\cc}, a coupled cluster program that can calculate
 %coupled cluster energies and response properties for a number of
-%coupled cluster approximations. 
+%coupled cluster approximations.
 
 Throughout this manual there will be references to articles
 describing the implementation of a specific molecular property or
@@ -107,7 +109,7 @@ calculational procedure, but is also our recommended reference in published
 work employing specific parts of the code.}
 
 \item The Reference Manual (Chapter \ref{ch:general}---\ref{ch:CC})
-will for most calculations be of 
+will for most calculations be of
 little use to the ordinary user apart from Chapter~\ref{ch:molinp},
 which describes
 the most important file in any quantum chemistry calculation: the
@@ -138,10 +140,9 @@ directed to the \dalton\ mailing list\index{mailing list},
 
 We are grateful to Prof. Bj\"{o}rn O. Roos and Dr. Per-Olof
 Widmark, University of Lund, for kindly allowing us to include in
-the distribution of the \dalton\ program routines for integral
-presorting\index{integral presorting} (BOR), two-electron integral
-transformation routines\index{integral transformation} (BOR) and
-routines for synchronous and asynchronous I/O (POW). 
+the distribution of the \dalton\ program routines for
+two-electron integral transformation routines\index{integral transformation}
+(BOR) and routines for synchronous and asynchronous I/O (POW).
 
 We are grateful to professor Knut F\ae gri (University of Oslo) who
 took the time to reoptimize the basis set of van Duijneveldt in order

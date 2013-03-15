@@ -1,36 +1,31 @@
 /*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+
+
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+
+!
+
 */
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* quad-fast.c:
@@ -62,6 +57,7 @@ C
 
 #if defined(VAR_MPI)
 #include <mpi.h>
+#include <our_extra_mpi.h>
 #endif
 
 #ifdef FAST_TEST
@@ -85,9 +81,9 @@ enum {
 /* Singleton objects */
 struct QuadFastData_ {
     /* pointers to external data (data is not owned) */
-    int symY, symZ;
+    integer symY, symZ;
     const real* kappaY, *kappaZ; 
-    int ispinY, ispinZ, addfock;
+    integer ispinY, ispinZ, addfock;
 
     /* temporary variables */
     real* dftcontr;
@@ -124,8 +120,8 @@ typedef struct QuadFastData_ QuadFastData;
    itself.
 */
 static QuadFastData*
-quadfast_data_new(const real* kY, int symY, int spinY, 
-                  const real *kZ, int symZ, int spinZ, int addfock)
+quadfast_data_new(const real* kY, integer symY, integer spinY, 
+                  const real *kZ, integer symZ, integer spinZ, integer addfock)
 {
     QuadFastData* res = malloc(sizeof(QuadFastData));
 
@@ -630,21 +626,22 @@ fast_callback(DftGrid* grid, QuadFastData* data)
 
 #if defined(VAR_MPI)
 #include <mpi.h>
+#include <our_extra_mpi.h>
 #define MASTER_NO 0
 /* dft_qr_resp_slave:
    this is a slave driver. It's task is to allocate memory needed by
    the main property evaluator (dftqrcf_ in this case) and call it.
 */
 void
-dft_qr_resp_slave(real* work, int* lwork, const int* iprint)
+dft_qr_resp_slave(real* work, integer* lwork, integer* iprint)
 {
     real* fi    = malloc(inforb_.n2basx*sizeof(real));              /* OUT */
     real *cmo   = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
     real *kappaY= malloc(inforb_.n2orbx*sizeof(real));              /* IN  */
     real *kappaZ= malloc(inforb_.n2orbx*sizeof(real));              /* IN  */
-    int addfock, symY, symZ, spinY, spinZ;                          /* IN  */
+    integer addfock, symY, symZ, spinY, spinZ;                      /* IN  */
     dftqrcf_(fi, cmo, kappaY, &symY, &spinY, kappaZ, &symZ, &spinZ, 
-	     &addfock, work, lwork);
+	     &addfock, work, lwork, iprint);
     free(kappaZ);
     free(kappaY);
     free(cmo);
@@ -652,31 +649,31 @@ dft_qr_resp_slave(real* work, int* lwork, const int* iprint)
 }
 
 static void
-dft_qr_resp_sync_slaves(real* cmo, real* kappaY, real* kappaZ, int* addfock,
-                        int* symY, int* symZ, int* spinY, int* spinZ)
+dft_qr_resp_sync_slaves(real* cmo, real* kappaY, real* kappaZ, integer* addfock,
+                        integer* symY, integer* symZ, integer* spinY, integer* spinZ)
 {
     static const SyncData sync_data[] = {
- 	{ inforb_.nocc,   8, MPI_INT },
- 	{ &inforb_.nocct, 1, MPI_INT },
- 	{ &inforb_.nvirt, 1, MPI_INT },
+ 	{ inforb_.nocc,   8, fortran_MPI_INT },
+ 	{ &inforb_.nocct, 1, fortran_MPI_INT },
+ 	{ &inforb_.nvirt, 1, fortran_MPI_INT },
     };
 #ifdef C99_COMPILER
     const SyncData data2[] = {
 	{ cmo,     inforb_.norbt*inforb_.nbast,MPI_DOUBLE },
 	{ kappaY,  inforb_.n2orbx,             MPI_DOUBLE },
 	{ kappaZ,  inforb_.n2orbx,             MPI_DOUBLE },
-	{ addfock, 1,                          MPI_INT    },
-	{ symY,    1,                          MPI_INT    },
-	{ symZ,    1,                          MPI_INT    },
-	{ spinY,   1,                          MPI_INT    },
-	{ spinZ,   1,                          MPI_INT    }
+	{ addfock, 1,                          fortran_MPI_INT    },
+	{ symY,    1,                          fortran_MPI_INT    },
+	{ symZ,    1,                          fortran_MPI_INT    },
+	{ spinY,   1,                          fortran_MPI_INT    },
+	{ spinZ,   1,                          fortran_MPI_INT    }
     };
 #else /* C99_COMPILER */
     /* this is more error-prone but some compilers (HP/UX)... */
     static SyncData data2[] = 
     { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, 
-      {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   },
-      {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   } };
+      {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   },
+      {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   } };
     data2[0].data = cmo;     data2[0].count = inforb_.norbt*inforb_.nbast;
     data2[1].data = kappaY;  data2[1].count = inforb_.n2orbx;
     data2[2].data = kappaZ;  data2[2].count = inforb_.n2orbx;
@@ -691,7 +688,7 @@ dft_qr_resp_sync_slaves(real* cmo, real* kappaY, real* kappaZ, int* addfock,
     mpi_sync_data(data2,     ELEMENTS(data2));
 }
 static __inline__ void
-dft_qr_resp_collect_info(real* fi, real*work, int lwork)
+dft_qr_resp_collect_info(real* fi, real*work, integer lwork)
 {
     int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
@@ -714,7 +711,7 @@ dft_qr_resp_collect_info(real* fi, real*work, int lwork)
 void
 dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY, 
          real* kappaZ, integer* symZ, integer* spinZ, integer* addfock, 
-         real* work, integer* lwork)
+         real* work, integer* lwork, integer* iprint)
 {
     static int msg_printed = 0;
     struct tms starttm, endtm; clock_t utm;
@@ -740,7 +737,7 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
     cbdata[0].cb_data  = data;
     times(&starttm);
 
-    electrons = dft_integrate(cmo, work, lwork, cbdata, ELEMENTS(cbdata));
+    electrons = dft_integrate(cmo, work, lwork, iprint, cbdata, ELEMENTS(cbdata));
     
     dft_qr_resp_collect_info(data->dftcontr, work,*lwork); /* NO-OP in serial */
     daxpy_(&inforb_.n2orbx, &ONER, data->dftcontr, &ONEI, fi, &ONEI);
@@ -752,7 +749,7 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
     quadfast_data_free(data);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %15.7f. Quadratic response time: %10.2f s\n", 
+    fort_print("      Electrons: %15.7f. Quadratic response time: %10.2f s\n", 
                electrons, utm/(double)sysconf(_SC_CLK_TCK));
 }
 

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef REV_LOG
 ===========================================================================
@@ -48,15 +38,15 @@ C
 C      Purpose:
 C      Outer driver routine for E[4] times three vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( DM1 = -1.0D0 , D2 = 2.0D0 , D6 = 6.0D0 )
 C
@@ -213,22 +203,22 @@ C
      *                 IGRSYM,ISYMV1,ISYMV2,ISYMV3,CMO,FC,MJWOP)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( DH= 0.5D0, D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( D2 = 2.0D0, D3 = 3.0D0, D6 = 6.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <infden.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "infden.h"
 C
 C
       DIMENSION VECA(KZYVR),VEC1(KZYV1),VEC2(KZYV2),VEC3(KZYV3)
@@ -379,20 +369,20 @@ C
      *                 IGRSYM,ISYMV1,ISYMV2,ISYMV3,CMO,FC,MJWOP)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( DH= 0.5D0, D0 = 0.0D0, D1 = 1.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
 C
       DIMENSION VECA(KZYVR),VEC1(KZYV1),VEC2(KZYV2),VEC3(KZYV3)
       DIMENSION E4TRS(KZYVR),MJWOP(2,MAXWOP,8),XINDX(*),H1(*)
@@ -640,21 +630,21 @@ C
      *                 E4TRS,XINDX,H1,ZYM1,ZYM2,ZYM3,DEN1,DEN2,
      *                 UDV,PV,WRK,LWRK,KZYVR,KZYV1,KZYV2,KZYV3,
      *                 IGRSYM,ISYMV1,ISYMV2,ISYMV3,CMO,FC,MJWOP)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
 C
       DIMENSION VECA(KZYVR),VEC1(KZYV1),VEC2(KZYV2),VEC3(KZYV3)
       DIMENSION E4TRS(KZYVR),MJWOP(2,MAXWOP,8),XINDX(*),H1(*)
@@ -792,20 +782,20 @@ C
      *                 E4TRS,XINDX,H1,ZYM1,ZYM2,ZYM3,DEN1,DEN2,
      *                 UDV,PV,WRK,LWRK,KZYVR,KZYV1,KZYV2,KZYV3,
      *                 IGRSYM,ISYMV1,ISYMV2,ISYMV3,CMO,FC,MJWOP)
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D6 = 6.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
 C
       DIMENSION VECA(KZYVR),VEC1(KZYV1),VEC2(KZYV2),VEC3(KZYV3)
       DIMENSION E4TRS(KZYVR),MJWOP(2,MAXWOP,8),XINDX(*),H1(*)
@@ -911,11 +901,11 @@ C
       END
       SUBROUTINE PRIRES(RESV,VECA,ISYMV,TEXT)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "qrinf.h"
 C
       CHARACTER*(*) TEXT
       DIMENSION RESV(*),VECA(*)

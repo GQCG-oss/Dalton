@@ -1,52 +1,36 @@
-!hjaaj 17. april 2006: husk at implementere ny ide til RSTEP,
-! nemlig ROSTEP = max(i) (sum(j) xkap(j,i)**2 ) i stedet for
-!        ROSTEP = 0.5 sum(j,i) xkap(j,i)**2
-! dette burde være OK, jvf. erfaring med Roothaan og Lea/Stinne/Jeppe
-!---
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C  FILE: sirius/sirsav.F
 C
-#include <single.h>
+C  Purpose:
 C
-#ifdef REVISION_LOG
-===========================================================================
-Revision 1.2  2001/01/17 10:41:34  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.2  2000/05/01 14:04:06  hjj
-removed obsolete KAVER code.
-===========================================================================
-#endif
+C     Save MCSCF/CI information on SIRIUS.RST
+C     For some KEYWRDs: update CI vector and rotate orbitals before saving.
+C     See comments in SIRSAV on ICTL for more information.
+C
 C  /* Deck sirsav */
       SUBROUTINE SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,
      *                   WRK,LFREE)
@@ -81,15 +65,15 @@ C        =4 save MC information, after SIRCAN
 C        =5 save CI information, after CICTL
 C        =6 save MC optimization information, when N-R used.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*(*) KEYWRD
       DIMENSION CMO(*),IBNDX(*),EVEC(*),REDL(*),XKAP(*),INDXCI(*)
       DIMENSION WRK(LFREE)
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
       PARAMETER (THRTT = 1.0D-4, D0 = 0.0D0, D1 = 1.0D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : ISTATE,FLAG(*),?
@@ -99,15 +83,15 @@ C   INFOPT : EMCOLD,DEPRED,BETA,GAMMA,RTRUST,ITMAC,NREDL,?
 C   INFDIM : NORBMA,NBASMA,IVEX4,INTOT, MAXRL
 C   INFTAP : LUIT1,?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL DOCNO, DOXKAP, FNDLAB
       CHARACTER*6 CNOLBL
@@ -127,10 +111,10 @@ C
          NWARN = NWARN + 1
          WRITE (LUPRI,'(//2A/A,I4)')
      *      ' WARNING from SIRSAV with keyword ',KEYWRD,
-     *      ' ------- ISTATE SET TO 1, WAS',ISTATE
+     *      ' ------- ISTATE set to 1, was',ISTATE
          WRITE (LUERR,'(//2A/A,I4)')
      *      ' WARNING from SIRSAV with keyword ',KEYWRD,
-     *      ' ------- ISTATE SET TO 1, WAS',ISTATE
+     *      ' ------- ISTATE set to 1, one',ISTATE
          ISTATE = 1
       END IF
       DOCNO = FLAG(15)
@@ -168,7 +152,7 @@ C
          JSTA = -ISTATE
       ELSE
          WRITE (LUPRI,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
-         WRITE (LUERR ,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
+         WRITE (LUERR,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
          CALL QTRACE(LUERR)
          CALL QUIT('*** ERROR (SIRSAV) KEYWRD illegal.')
       END IF
@@ -587,7 +571,7 @@ C Section 3:     Rotate orbitals and write the new rotated orbitals
 C                on LUIT1 with label NEWORB.
 C
  3000 CONTINUE
-      CALL ROTATE(XKAP,CMO,WRK,LFREE)
+      CALL MO_ROTATE(XKAP,CMO,WRK,LFREE)
       IF (NCONF .GT. 1) THEN
          LAB123(3) = '(MCOPT) '
       ELSE
@@ -653,11 +637,7 @@ C        write startvec with new vectors
             JCVECS = KCVECS + (I-1)*NCONF
             CALL WRITT(LUIT1,NC4,WRK(JCVECS))
  9022    CONTINUE
-C        write the natural orbitals to LUIT1 label NEWORB
-         CALL GETDAT(LAB123(2),LAB123(3))
-         LAB123(3) = '(CNOORB)'
-         WRITE (LUIT1) LAB123,TABLE(6)
-         CALL WRITT(LUIT1,NCMOT4,CMO)
+C        write nat. orb. occupation numbers, when available
          IF (NASHT.EQ.1 .OR.
      &      (CNOLBL.NE.'ONLYFD' .AND. NASHT.GT.0)) THEN
             IF (NASHT.EQ.1) WRK(KAOCC) = NACTEL
@@ -665,13 +645,18 @@ C        write the natural orbitals to LUIT1 label NEWORB
             NAT4 = MAX(NASHT,4)
             CALL WRITT(LUIT1,NAT4,WRK(KAOCC))
          END IF
+C        write the natural orbitals to LUIT1 label NEWORB
+         CALL GETDAT(LAB123(2),LAB123(3))
+         LAB123(3) = '(CNOORB)'
+         WRITE (LUIT1) LAB123,TABLE(6)
+         CALL WRITT(LUIT1,NCMOT4,CMO)
          IF (.NOT.FLAG(34)) FLAG(14) = .FALSE.
 C        if (int.transf. needed in optimization) then new transf. needed
       END IF
 C
 C *** End of subroutine SIRSAV
 C     Empty buffers to LUIT1 by rewinding
-C     (so we don't loose the restart information if for instance
+C     (so we do not loose the restart information if for instance
 C      the system crashes)
 C
  9000 CONTINUE
@@ -686,8 +671,8 @@ C
       RETURN
 C     end of SIRSAV
       END
-C  /* Deck rotate */
-      SUBROUTINE ROTATE(XKAP,CMO,WRK,LFRSAV)
+C  /* Deck MO_rotate */
+      SUBROUTINE MO_ROTATE(XKAP,CMO,WRK,LFRSAV)
 C
 C Written by Hans Agren 6-Apr-1984
 C Revisions:
@@ -706,7 +691,7 @@ C Output: CMO new orbitals
 C
 C Scratch:WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XKAP(*),CMO(*), WRK(*)
 C
 C local parameters:
@@ -717,25 +702,25 @@ C
 C Used from common blocks:
 C   INFINP : ??
 C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
-C   INFORB : NSYM,N2ORBT,NCMOT,...
+C   INFORB : NSYM,NCMOT,...
 C   INFDIM : NORBMA
 C   INFPRI : P6FLAG()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
 C
-      CALL QENTER('ROTATE')
+      CALL QENTER('MO_ROTATE')
       IF (NWOPT.EQ.0) GO TO 9999
       IF (JWOPSY .NE. 1) THEN
          CALL QTRACE(LUERR)
-         CALL QUIT('ERROR, ROTATE called with JWOPSY.ne.1')
+         CALL QUIT('ERROR, MO_ROTATE called with JWOPSY.ne.1')
       END IF
 C
 C Average rotation matrix.
@@ -746,7 +731,7 @@ C
 C Print XKAP, if so requested.
 C
       IF (P6FLAG(29) .AND. NWOPT .GT. 0) THEN
-         WRITE (LUPRI,'(/A/A)') ' ROTATE: Orbital rotation vector',
+         WRITE (LUPRI,'(/A/A)') ' MO_ROTATE: Orbital rotation vector',
      *                         ' -------------------------------'
          IF (IPRI6.GT.100) THEN
             PRFAC = 0.0D0
@@ -759,7 +744,7 @@ C
       KUXKAP = 1
       KWRK0  = KUXKAP + N2ORBX
       KNEED  = KWRK0  + 3*NORBMA*NBASMA
-      IF (KNEED .GT. LFRSAV) CALL ERRWRK('ROTATE_1',KNEED,LFRSAV)
+      IF (KNEED .GT. LFRSAV) CALL ERRWRK('MO_ROTATE_1',KNEED,LFRSAV)
 C
 C Unpack kappa vector and add unit matrix (giving 1+X)
 C
@@ -823,7 +808,7 @@ C
                CALL OUTPUT(WRK(KCPNEW),1,NORBI,1,NORBI,
      *                     NORBI,NORBI,1,LUPRI)
                CALL QUIT(
-     &            'ROTATE, divergence in symmetric orthonormalization')
+     &         'MO_ROTATE, divergence in symmetric orthonormalization')
             END IF
             IF (DMX .GT. THREQL) GO TO 100
 C        ^----------------------------------
@@ -836,13 +821,13 @@ C
             WRITE (LUPRI,3300)
             CALL OUTPUT(WRK(KCPNEW),1,NORBI,1,NORBI,NORBI,NORBI,1,LUPRI)
          END IF
- 2211 FORMAT(/' (ROTATE) Symmetric orthogonalization of symmetry',I2,
+ 2211 FORMAT(/' (MO_ROTATE) Symmetric orthogonalization of symmetry',I2,
      *        ' in',I3,' iterations.',
      *        /T11,'Max. error this and previous iteration',1P,2D15.2)
- 2212 FORMAT(/' (ROTATE) Symmetric orthogonalization of symmetry',I2,
+ 2212 FORMAT(/' (MO_ROTATE) Symmetric orthogonalization of symmetry',I2,
      *        ' diverging, iteration no.',I3,
      *        /T11,'Max. error this and previous iteration',1P,2D15.2)
- 3300 FORMAT(/' ROTATE: UXKAP, the symmetrically orthogonalized',
+ 3300 FORMAT(/' MO_ROTATE: UXKAP, the symmetrically orthogonalized',
      *        ' rotation matrix')
 C
 C        Rotate orbitals
@@ -864,7 +849,7 @@ C
       KSOVLP = 1
       KWRK2  = KSOVLP + NNBAST
       KNEED  = KWRK2  + 2*NBASMA
-      IF (KNEED .GT. LFRSAV) CALL ERRWRK('ROTATE_2',KNEED,LFRSAV)
+      IF (KNEED .GT. LFRSAV) CALL ERRWRK('MO_ROTATE_2',KNEED,LFRSAV)
       CALL RDONEL('OVERLAP ',.TRUE.,WRK(KSOVLP),NNBAST)
 C
 C Section 3 **********************
@@ -881,14 +866,15 @@ C
          IF(IRETUR.GE.1)GO TO 4000
   400 CONTINUE
 C
- 9999 CALL QEXIT('ROTATE')
+ 9999 CALL QEXIT('MO_ROTATE')
       RETURN
 C
  4000 WRITE(LUERR,4010)IRETUR
- 4010 FORMAT(/' ROTATE FATAL ERROR, linear dependency in norm',I5)
+ 4010 FORMAT(/' MO_ROTATE FATAL ERROR, linear dependency in norm',I5)
       CALL QTRACE(LUERR)
-      CALL QUIT('ERROR, linear dependency (ROTATE)')
+      CALL QUIT('ERROR, linear dependency (MO_ROTATE)')
 C
-C ** End of subroutine ROTATE
+C ** End of subroutine MO_ROTATE
 C
       END
+C --- end of sirius/sirsav.F ---

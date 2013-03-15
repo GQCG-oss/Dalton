@@ -1,46 +1,36 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C  /* Deck zfsdrv */
       SUBROUTINE ZFSDRV(WORK,LWORK)
 C
 C CALCULATE AVERAGE VALUE OF PROPERTIES
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <dummy.h>
+#include "dummy.h"
 C
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D8 = 8.0D0 )
       PARAMETER (DP5=0.5D0, D1P5=1.5D0)
@@ -49,25 +39,25 @@ C
       CHARACTER SPD(7)
       DATA SPD/'S','P','D','F','G','H','I'/
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infind.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infind.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
 #include "infave.h"
-#include <infpri.h>
-#include <inftap.h>
-#include <iratdef.h>
-#include <aovec.h>
-#include <codata.h>
-#include <gfac.h>
-#include <priunit.h>
-#include <blocks.h>
-#include <zfs.h>
+#include "infpri.h"
+#include "inftap.h"
+#include "iratdef.h"
+#include "aovec.h"
+#include "codata.h"
+#include "gfac.h"
+#include "priunit.h"
+#include "blocks.h"
+#include "zfs.h"
 #include "infesr.h"
-#include <infinp.h>
+#include "infinp.h"
 C
       LOGICAL ANTI, PANTI, NODPTR, NODV, NOPV, NOCONT, TTIME, 
      &   RETUR, NOBLK, DEBUG, DIA2SO, ZFS2EL
@@ -181,10 +171,10 @@ C
       END
 C  /* Deck zfsana */
       SUBROUTINE ZFSANA(WORK,LWORK,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
       INTEGER S
       CALL QENTER('ZFSANA')
 C
@@ -210,16 +200,16 @@ C
 C  /* Deck zfsan1 */
       SUBROUTINE ZFSAN1(MULT,HZFS,RZFS,CG,HEIG,RWORK,WORK,KFREE,LFREE,
      &   IPRINT)
-#include <implicit.h>
+#include "implicit.h"
       DOUBLE COMPLEX HZFS(MULT,MULT)
       DIMENSION RZFS(MULT,MULT)
       DIMENSION CG(MULT,MULT)
       DIMENSION HEIG(MULT)
       DIMENSION WORK(*), RWORK(*)
-#include <priunit.h>
-#include <zfs.h>
-#include <codata.h>
-#include <gfac.h>
+#include "priunit.h"
+#include "zfs.h"
+#include "codata.h"
+#include "gfac.h"
       DOUBLE COMPLEX U(-2:2)
       DIMENSION RU(-2:2)
       DIMENSION ZFSEIG(3)
@@ -442,3 +432,4 @@ C Clean up and exit
 C
       CALL QEXIT('ZFSAN1')
       END
+! --- end of DALTON/rsp/rspzfs.F ---

@@ -37,17 +37,15 @@ f   3    1
 #  DALTON INPUT
 #######################################################################
 cat > LIH1s1p_tmom.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
-.NOSUP
 .DIPLEN
 .DIPVEL
 .ANGMOM
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-12
 .NODIIS
@@ -76,7 +74,7 @@ cat > LIH1s1p_tmom.dal <<%EOF%
 *CCOPA
 .OPERATOR
 XDIPLEN
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -122,7 +120,7 @@ PASSED=1
 for i in 1 2 3
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

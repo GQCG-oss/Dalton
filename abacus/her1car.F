@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck oneprm */
       SUBROUTINE ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,
@@ -40,22 +30,22 @@ C  /* Deck oneprm */
      &                  TOLS,SECDER,DIFDIP,DIFQDP,FACINT,COORC,
      &                  GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER,PCM)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
-      LOGICAL PROPTY, SECDER, DIFDIP, NCLONE, DIFQDP, PCM
+      LOGICAL   PROPTY, SECDER, DIFDIP, NCLONE, DIFQDP, PCM
       DIMENSION WORK(LWORK)
       DIMENSION STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), SINT0(KCKTAB), SINT1(KCKTAB,3),
      &          DINT1(KCKTAB,3,3), QINT1(KCKTAB,3,6),
      &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), GNUEXP(*), EXPDER(*)
-#include <onecom.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <expopt.h>
+#include "onecom.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "expopt.h"
 C
       JMAXD = 2
       IF (PROPTY .AND. .NOT.ONECEN .AND. .NOT.EXPGRA) JMAXD = 4
@@ -69,17 +59,18 @@ C
       JMAXT = JMAXA + JMAXB + JMAXD
       JMAXM = 0
 C
-      KAHGTF = 1
-      KODC   = KAHGTF + (NATOMC + 1)*NAHGTF
+      KFRWRK = 1
+      KFREE  = KFRWRK
+      LFREE  = LWORK
+      CALL MEMGET('REAL',KAHGTF,NAHGTF*(NATOMC + 1),WORK,KFREE,LFREE)
+      LODC   = 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)
+      CALL MEMGET('REAL',KODC,  LODC,WORK,KFREE,LFREE)
       IF (PCM) THEN
-         KTSGTF = KODC   + 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)
-         KLAST = KTSGTF + (NTS + 1) * NAHGTF
+         LTSGTF = (NTS + 1) * NAHGTF
       ELSE
-         KLAST  = KODC   + 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)
-         KTSGTF = KLAST
+         LTSGTF = 0
       ENDIF
-      LWRK   = LWORK  - KLAST + 1
-      IF (KLAST .GT. LWORK) CALL STOPIT('ONEPRM',' ',KLAST,LWORK)
+      CALL MEMGET('REAL',KTSGTF,LTSGTF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KAHGTF),(NATOMC + 1)*NAHGTF)
       IF (PCM) CALL DZERO(WORK(KTSGTF),(NTS + 1)*NAHGTF)
       CALL ONEPR1(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,QINT1,
@@ -87,7 +78,8 @@ C
      &            WORK(KAHGTF),WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
      &            DIFQDP,FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
-     &            NCLONE,PCM,WORK(KTSGTF),EXPDER,WORK(KLAST),LWRK)
+     &            NCLONE,PCM,WORK(KTSGTF),EXPDER,WORK(KFREE),LFREE)
+      CALL MEMREL('ONEPRM',WORK,1,KFRWRK,KFREE,LFREE)
       RETURN
       END
 C  /* Deck onepr1 */
@@ -98,13 +90,13 @@ C  /* Deck onepr1 */
      &                  DIFQDP,FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
      &                  NCLONE,PCM,TSHGTF,EXPDER,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D3 = 3.0D0, THIRD = D1/D3,
      &           GNUTHR = 1.D-4)
 C
@@ -118,18 +110,18 @@ C
      &          EXPDER(KCKTAB,2,2,NUCA,NUCB)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
-#include <cbisol.h>
-#include <onecom.h>
-#include <ader.h>
-#include <clsfmm.h>
-#include <primit.h>
-#include <pcmdef.h>
-#include <pcm.h>
+#include "cbisol.h"
+#include "onecom.h"
+#include "ader.h"
+#include "clsfmm.h"
+#include "primit.h"
+#include "pcmdef.h"
+#include "pcm.h"
 Clf#include <pcmlog.h>
-#include <symmet.h>
-#include <ecpinf.h>
-#include <expopt.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "ecpinf.h"
+#include "expopt.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 4) CALL TITLER('Output from ONEPR1','*',103)
 C
@@ -348,8 +340,12 @@ C
      &                     EXPDER(1,1,1,IPRIMA,IPRIMB),SHGTF,AHGTF,
      &                     NATOMC)
             ELSE IF (PROPTY) THEN
+C...           modified by Bin Gao, Jan. 18, 2011
+C...           ECP will be computed through Gen1Int library
+C...#ifndef BUILD_GEN1INT
                IF (ECP) CALL QUIT(
      &            'ECP not implemented yet in ONEPR1 for "PROPTY" !')
+C...#endif
                IF (ONECEN) THEN
                   CALL CINT1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,ADER,
      &                       AHGTF,NCENTC,NATOMC,SECDER)
@@ -364,11 +360,16 @@ C
             ELSE
                CALL CINT0(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,STDER0,
      &                    SHGTF,ADER,AHGTF,NATOMC,IPRINT)
+C...           modified by Bin Gao, Jul. 8, 2011
+C...           also needs ECPINT to debug the results from Gen1Int
+C...           ECP in Gen1Int library is not efficient, backs to ECPINT temporarily
+C...#ifndef BUILD_GEN1INT
                IF (ECP) THEN
                   CALL ECPINT(CORAX,CORAY,CORAZ,CORBX,CORBY,CORBZ,
      &                 EXPA,EXPB,JMAXA,JMAXB,CONTA,CONTB,ADER,
      &                 WORK,LWORK,IPRINT)
                END IF
+C...#endif
             END IF
             IF (SOLVNT) THEN
                CALL SOLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
@@ -380,7 +381,8 @@ C
                   SIGNX = PT(IBTAND(ISYMAX(1,1),ISYM))
                   SIGNY = PT(IBTAND(ISYMAX(2,1),ISYM))
                   SIGNZ = PT(IBTAND(ISYMAX(3,1),ISYM))
-CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammenheng med loop i PCMGRI
+Ckr Parallelizable PCM loop, but not optimal, must considered simultaneously with loop
+Ckr in PCMGRI
                   DO 310 ITS = 1,NTSIRR
                      FACTOR = 1.0D0
                      DIFCPX = SIGNX * XTSCOR(ITS) - CORPX
@@ -413,7 +415,7 @@ C
 C  /* Deck hernai */
       SUBROUTINE HERNAI(AHGTF,JMAX,PVAL,CPX,CPY,CPZ,FACINT,IADR,
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
 C
 C     This subroutine calculates the R integrals as defined by
 C     McMurchie and Davidson in J. Comp. Phys. 26 (1978) 218.
@@ -430,14 +432,14 @@ C
 C     TUH spring 1984
 C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
-#include <priunit.h>
-#include <pi.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "priunit.h"
+#include "pi.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
-#include <gamcom.h>
-#include <ibtfun.h>
+#include "gamcom.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(/A/)') ' <<<<< Output from Hernai >>>>> '
          WRITE (LUPRI,'(A,I10)')   ' JMAX   ', JMAX
@@ -459,7 +461,7 @@ C
       CALL GAMFUN
       IF (IPRINT .GT. 20) THEN
          CALL HEADER ('FJW after GAMFUN',-1)
-         WRITE (LUPRI,'(6F12.6)') (FJW(I), I = 1, JMAX)
+         WRITE (LUPRI,'(10F12.6)') (FJW(I), I = 0, JMAX)
       END IF
 C
 C     **********************************
@@ -490,7 +492,7 @@ C
   100 CONTINUE
       IF (IPRINT .GT. 20) THEN
          CALL HEADER ('FJW after multiplication by FACTOR',-1)
-         WRITE (LUPRI,'(6F12.6)') (FJW(I), I = 1, JMAX)
+         WRITE (LUPRI,'(5F24.6)') (FJW(I), I = 0, JMAX)
       END IF
 C
 C     ***** JVAL = 0 *****
@@ -597,7 +599,7 @@ C
       END IF
       IF (IPRINT .GT. 20) THEN
          CALL HEADER ('Hermite integrals in HERNAI',-1)
-         WRITE (LUPRI,'(6F12.6)') (AHGTF(IADR + I - 1), I = 1, NRTUV)
+         WRITE (LUPRI,'(10F12.6)') (AHGTF(IADR + I - 1), I = 1, NRTUV)
       END IF
       RETURN
       END
@@ -607,15 +609,15 @@ C  /* Deck cint0 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0 D00, DP5 = 0.5 D00)
       DIMENSION STDER0(KCKTAB,2), AHGTF(*), ADER(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       SFAC = SHGTF**3
       TFAC = -DP5*SFAC
       INT = 0
@@ -686,15 +688,15 @@ C  /* Deck cint1 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <ader.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "ader.h"
+#include "lmns.h"
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -787,18 +789,18 @@ C  /* Deck cint2 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.5 D00)
       LOGICAL SECDER
       DIMENSION STDER0(KCKTAB,2),
      &          STDER1(KCKTAB,3,2), STDER2(KCKTAB,6,2),
      &          ADER(KCKTAB,NATOMC,*), AHGTF(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <ader.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "ader.h"
+#include "lmns.h"
       MAXADD = 1
       IF (SECDER) MAXADD = 2
       INT = 0
@@ -1014,18 +1016,18 @@ C  /* Deck dipint */
 C
 C     tuh 1985
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D2 = 2.0D0, DP5 = 0.50D0)
       LOGICAL DIFDIP, DIFQDP
       DIMENSION SINT0(KCKTAB), SINT1(KCKTAB,3), DINT1(KCKTAB,3,3),
      &          QINT1(KCKTAB,3,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <orgcom.h>
-#include <onecom.h>
-#include <lmns.h>
+#include "orgcom.h"
+#include "onecom.h"
+#include "lmns.h"
       INT1 = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -1112,15 +1114,15 @@ C  /* Deck cintab */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.5 D00, D1 = 1.0D00, DP75 = 0.75 D00)
       DIMENSION EXPDER(KCKTAB,2,2), AHGTF(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <ader.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "ader.h"
+#include "lmns.h"
 C
       AINV = D1/EXPA
       BINV = D1/EXPB
@@ -1243,17 +1245,17 @@ C/*DECK Pcmgri*/
      &                     PCMINT,CORPX,CORPY,CORPZ,
      &                     EXPPI,TSHGTF,WORK,LWORK,IPRINT)
 
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "mxcent.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       DIMENSION TSHGTF(*),PCMINT(KCKTAB,7,NTS)
-#include <onecom.h>
-#include <lmns.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 C
       INT = 1
       MAXADD = 0
@@ -1290,7 +1292,8 @@ C
                   IADR0U = IADR00 + ISTEPU
                   IADR0V = IADR00 + ISTEPV
                   IADD = - NAHGTF
-CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammheng med tidliger loop.
+Ckr Parallelizable PCM loop, but not optimal, has to be considered together with 
+Ckr previous loop
                   DO 500 ITS = 1, NTS
                      IADD = IADD + NAHGTF
                      AH00 = TSHGTF(IADR00 + IADD)

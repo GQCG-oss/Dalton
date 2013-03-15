@@ -157,7 +157,7 @@ cat > r12_loc.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12STG
@@ -190,7 +190,7 @@ cat > r12_loc.dal <<'%EOF%'
 .R12XXL
 .NO 2
 .NO 3
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

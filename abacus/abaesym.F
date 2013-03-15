@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -52,26 +42,26 @@ C If INGD true, then solve for the gradient vector in GD,
 C else solve for the gradient vectors on LUGDR.
 C Note: GD is only used if INGD true
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
 C
       DIMENSION REDH(*),REDGD(*),SOLEQ(*),IBNDX(*)
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION CREF(*),GORB(*),DIAOR(*),DIACI(*),INDXCI(*),WRK(*)
       DIMENSION GD(1)
 C
-#include <abainf.h>
-#include <cbires.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <gdvec.h>
-#include <infpri.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <inforb.h>
+#include "abainf.h"
+#include "cbires.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "gdvec.h"
+#include "infpri.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "inforb.h"
 C
 C     Declare logical external functions
 C
@@ -254,8 +244,8 @@ C
 C     Purpose: Construct residual RD(I) = H(2)*X(I) + GD
 C              Residual is returned in GD
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION SOLEQ(NREDH,*)
       DIMENSION GD(*),WRK(*)
       PARAMETER (  DM1=-1.0D0  )
@@ -266,12 +256,12 @@ C  INFLIN: NVARPT,NVARPT
 C  INFTAP: LUNR5
 C  LINABA: LOFFRD
 C
-#include <linaba.h>
-#include <infpri.h>
-#include <inflin.h>
-#include <inftap.h>
+#include "linaba.h"
+#include "infpri.h"
+#include "inflin.h"
+#include "inftap.h"
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C ADD  L[2]*X(I) to GD
 C
@@ -306,10 +296,10 @@ C  l.r. 900106
 C  Set variables and index arrays to perturbation symmetry JSYMPT
 C  970815sps+hjaaj: added TRPCLC, JPRINT parameters and soppa code
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
       LOGICAL TRPCLC
       DIMENSION WRK(LWRK)
@@ -324,14 +314,14 @@ C  LINABA : ABAHF, ABACI, LOFFRD
 C  ABAINF : ABASOP
 C  INFSOP : N2P2HS, N2P2HT, NS2P2H, NT2P2H, N12P2H, N22P2H, N32P2H
 C
-#include <inforb.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <linaba.h>
-#include <abainf.h>
-#include <infsop.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "linaba.h"
+#include "abainf.h"
+#include "infsop.h"
 C
       LOGICAL GETWOP, GOTWOP
 C
@@ -434,9 +424,9 @@ C
 C l.r. 901023 hjaaj
 C Calculate diagonal of MCSCF Hessian
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       LOGICAL NOH2
       PARAMETER (NOH2 = .FALSE.)
 C
@@ -449,11 +439,11 @@ C  INFOPT : EACTIV
 C  INFLIN : NCONST, NWOPPT
 C  LINABA : AVEODG
 C
-#include <inforb.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <inflin.h>
-#include <linaba.h>
+#include "inforb.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "inflin.h"
+#include "linaba.h"
 C
 C     ****************************************
 C     ***** Diagonal elements of Hessian *****
@@ -558,29 +548,29 @@ C       contributions then become UDV*(FC + FV)
 C
 C                ******************************
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C
       DIMENSION FC(*),FV(*),FOCK(*),UDV(NASHDI,NASHDI)
       DIMENSION EODIA(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D2 =2.0D0)
       PARAMETER (ORBSFT = 1.0D-6)
 C  ABAINF : NWNABA
 C  INFDIM : NASHDI
 C
-#include <abainf.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inflin.h>
-#include <linaba.h>
+#include "abainf.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inflin.h"
+#include "linaba.h"
 C
       IF (IPRLIN .GT. 140) THEN
          IF (NASHT.GT.0) THEN

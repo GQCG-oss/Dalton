@@ -1,40 +1,30 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck hsoctl */
-      SUBROUTINE HSOCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+      SUBROUTINE HSOCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM_GP,WRK,LWRK)
 C
 C Olav Vahtras
 C Jun 20, 1990
@@ -49,17 +39,17 @@ C        Index vector, XINDX
 C
 C Output: Spin-orbit property vector returned in first elements of WRK
 C
-#include <implicit.h>
-#include <dummy.h>
-      DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK),NEEDSO(6)
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER*8 WORD
-      DATA NEEDSO/1,1,1,1,1,0/
+      DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
 C
-      PARAMETER(D0=0D0, D1=1D0, DM1=-1D0)
-      LOGICAL SO2TRA, MOEXIS, FOPEN, DO1, DO2, LORB, LCON
+      PARAMETER (D0=0D0, D1=1D0, DM1=-1D0)
+      DIMENSION NEEDSO(-4:6)
+      LOGICAL   SO2TRA, MOEXIS, FOPEN, DO1, DO2, LORB, LCON
       CHARACTER*8 LABEL
-      LOGICAL FNDLAB
-      EXTERNAL FNDLAB
+      LOGICAL   FNDLAB
+      EXTERNAL  FNDLAB
 C
 C Used from common blocks:
 C  MULD2H,ISMO,ISW,IOBTYP,IDBTYP,NISHT,NORBT,NASHT,NNASHX
@@ -73,23 +63,23 @@ C  INFPP: EXMOM
 C  INFRSP: ???,SOPPA
 C
 C-- common blocks:
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <trhso.h>
-#include <infhso.h>
-#include <infhyp.h>
-#include <infsmo.h>
-#include <infpp.h>
-#include <iratdef.h>
-#include <codata.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "trhso.h"
+#include "infhso.h"
+#include "infhyp.h"
+#include "infsmo.h"
+#include "infpp.h"
+#include "iratdef.h"
+#include "codata.h"
 C
       CALL QENTER('HSOCTL')
 C
@@ -98,7 +88,7 @@ C
       CALL DZERO(GP,KZYVAR)
       HSOFAC = ALPHAC**2 / 4
       IF (WORD(2:2).EQ.'1') THEN
-         CALL PRPCTL(WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+         CALL PRPCTL(WORD,GP,CMO,UDV,PV,XINDX,ANTSYM_GP,WRK,LWRK)
          CALL DSCAL(KZYVAR,HSOFAC,GP,1)
          GO TO 9999
       ELSE IF (WORD(2:2).EQ.'2') THEN
@@ -111,7 +101,7 @@ C
          WRITE(LUPRI,*) 'Programming error: WORD is not valid: ',WORD
          CALL QUIT('Programming error: WORD is not valid')
       END IF
-      ANTSYM = 1.0D0
+      ANTSYM_GP = 1.0D0 ! imaginary operator GP_Z = ANTSYM_GP * GP_Y
 C
       IF (IPRHSO.GT.0) THEN
          CALL TIMER('START ',HSOSTA,HSOTIM)
@@ -216,7 +206,7 @@ C
       IF (DO1) THEN
          LABEL = WORD
          LABEL(2:2) = '1'
-         CALL PRPGET (LABEL,CMO,WRK(KH1),ANTSYM,WRK(KWRK1),LWRK1)
+         CALL PRPGET (LABEL,CMO,WRK(KH1),ANTSYM_GP,WRK(KWRK1),LWRK1)
       END IF
 C
 C Print atomic and molecular property integrals, if desired
@@ -274,6 +264,8 @@ C
 C
 C Read distributions
 C
+      NEEDSO(-4:6) = 0
+      NEEDSO( 1:5) = 1
       IDIST = 0
       KFREE = 1
       LFREE = LWRK1
@@ -375,10 +367,8 @@ C
       IF (LORB) THEN
          IF (IPRHSO.GT.0) CALL TIMER('START ',ORBSTA,ORBTIM)
          CALL RSPORB(.TRUE.,1,DUMMY1,
-     *    WRK(KFC),WRK(KFV),WRK(KQA),WRK(KQB),
-     *    UDV,GP,DUMMY2)
-C        CALL RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,
-C    *                  EVECS,ZYMAT)
+     *    WRK(KFC),WRK(KFV),WRK(KQA),WRK(KQB), UDV,GP)
+C        CALL RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,EVECS)
 C
 C
          IF (IPRHSO.GT.0) CALL TIMER('RSPORB',ORBSTA,ORBTIM)
@@ -460,15 +450,15 @@ C
 C  /* Deck hsoinp */
       SUBROUTINE HSOINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "trhso.h"
+#include "infhso.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE =  8 )
@@ -529,7 +519,7 @@ C
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' PROMPT "',WORD,
-     *            '" NOT RECOGNIZED IN RSPINP.'
+     *            '" NOT RECOGNIZED IN HSOINP.'
                CALL QUIT(' ILLEGAL PROMPT IN HSOINP ')
             END IF
          GO TO 100
@@ -576,7 +566,7 @@ C  FVSO(P,Q) = SUM (X,Y) (XY|P^Q) D(XY) - SUM (K) 3/2*(PX|Y^Q) D(XY)
 C                                     - SUM (K) 3/2*(XQ|P^Y) D(XY)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C
@@ -585,17 +575,17 @@ C   INFIND : ISMO,IOBTYP,ICH,ISMO,IASH,IORB,NISH,NASH,NOCC,NORB
 C   INFHSO :
 C   WRKRSP : KSYMOP
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
+#include "trhso.h"
+#include "infhso.h"
 C
       DIMENSION H2(NORBT,NORBT)
       DIMENSION FCSO(NORBT,NORBT),FVSO(NORBT,NORBT)
@@ -912,19 +902,19 @@ C
 C   where PV(++)(P,Q,R,S) = <0| e(+,+)(pqrs) |0>
 C    and  PV(--)(P,Q,R,S) = <0| e(-,-)(pqrs) |0>
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
+#include "trhso.h"
+#include "infhso.h"
 C
 C
       DIMENSION QASO(NORBT,NASHT),QBSO(NORBT,NASHT)
@@ -1236,25 +1226,25 @@ C triangularly packed form
 C
 C Olav Vahtras
 C Sep 14, 1990
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FC(NORBT,NORBT)
       DIMENSION H2AC(NNASHX,NNASHX)
       DIMENSION GP(KZYVAR),XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <cbgetdis.h>
-#include <trhso.h>
-#include <infhso.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "cbgetdis.h"
+#include "trhso.h"
+#include "infhso.h"
 C
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -1410,7 +1400,7 @@ C  /* Deck h2acso */
 C
 C 20-Jun-1990 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2ACPK(NNASHX,NNASHX), H2SOAC(N2ASHX,NASHT,NASHT)
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -1419,10 +1409,10 @@ C Used from common blocks:
 C  INFORB : NASHT,NNASHX,N2ASHX
 C  INFIND : IROW()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('H2ACSO')
 C

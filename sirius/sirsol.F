@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C===========================================================================
 C
@@ -61,7 +51,7 @@ hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
 Revision 1.2  2000/05/24 12:53:44  hjj
 SOLFCK: corrected sign error in FCSOL introduced with AO code;
         fixed AO code for open shell and for all information
-        needed for call WRSIFC in sirdiis.F
+        needed for call WR_SIRIFC in sirdiis.F
 
 980826-hjaaj: revised SOLLNC and SOLLNO for LSYMPT .ne. 1
 950829-hjaaj: (ver n07) fixed error in SOLLNC (/INFVAR/ with NWOPH was missing)
@@ -86,7 +76,7 @@ fall 1986 Minneapolis: original code
 900723: timing of SOLGRD (the following is removed from SIROPT)
       PARAMETER (IDTGRD = 1)
 C     ... note : IDTGRD = IDTIM in GRAD
-#include <inftim.h>
+#include "inftim.h"
 ...
          CALL GETTIM(T1,W1)
          ... call solgrd ...
@@ -133,21 +123,21 @@ C
 C Output:
 C   DIAG: diagonal part of Te(LM) Hessian matrix
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RLM(*),RLMAC(*), DV(*), DIAG(*), WRK(*)
       DIMENSION INDXCI(*)
 C
       PARAMETER (D2=2.0D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFORB : NASHT
 C   INFLIN : LSYMST,NCONST,NWOPPT
 C   INFPRI : IPRSOL
 C
-#include <inforb.h>
-#include <inflin.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "inflin.h"
+#include "infpri.h"
 C
       CALL QENTER('SOLDIA')
 C
@@ -180,7 +170,7 @@ C
 C   Copyright 30-Nov-1986 Hans Jorgen Aa. Jensen
 C   l.r. 6-May-1990 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*), RLMAC(*), RLM(*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -188,10 +178,10 @@ C Used from common blocks:
 C  INFORB: NISHT,NASHT
 C  INFIND: IROW(*), ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       IF (NASHT .GT. 0) THEN
          TELM = D2*DDOT(NNASHX,DV,1,RLMAC,1)
@@ -221,7 +211,7 @@ C   Purpose: Calculate FLVEC, the f(l) factors in the solvent
 C            energy expression for a surrounding medium,
 C            cavity radius = Rsol and dielectric constant = EPSLON
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FLVEC(*),RSOL(3)
 C
 C     Parameters: FLFAC = - 1 / (8 pi epsilon_null)   (S.I.)
@@ -261,8 +251,8 @@ C Input : FLVEC with optical f(l) values
 C Output: FLINR with inertial f(l) values
 C         TLMSI with initial state T(lm) values for inertial contr.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       PARAMETER (DM1 = -1.0D0)
 C
@@ -271,12 +261,12 @@ C   INFINP: NLMSOL, LSOLMX, EPSTAT, RSOL(3)
 C   INFORB: NSYM, NBAS(8)
 C   INFTAP: LUSIFC, FNSIFC
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       DIMENSION MBAS(8)
       LOGICAL FIRST
@@ -381,7 +371,7 @@ C
 C Scratch:
 C  WRK(LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*),RLMAC(*),GLMCI(*),INDXCI(*),WRK(LWRK)
 C
       PARAMETER ( D2 = 2.0D0 )
@@ -390,9 +380,9 @@ C Used from common blocks:
 C   INFORB : N2ASHX
 C   INFVAR : NCONF
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
 C
       CALL QENTER('SOLGC ')
       KURAC = 1
@@ -417,7 +407,7 @@ C
 C  Purpose: Add Te(l,m) orbital gradient contribution
 C           to GOLM.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*), RLM(*), GOLM(*)
 C
 C  Used from common blocks:
@@ -425,11 +415,11 @@ C    INFORB: NISHT,NASHT
 C    INFVAR: NWOPH,JWOP(2,*)
 C    INFIND: IROW(*),IOBTYP(*),ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infind.h"
 C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -512,13 +502,13 @@ C    ESOLT      total solvation energy
 C    ERLM(lm,1) contains Esol(l,m) contribution to ESOLT
 C    ERLM(lm,2) contains Tsol(l,m)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CREF(*), CMO(*), INDXCI(*)
       DIMENSION DV(*),   G(*),   ERLM(NLMSOL,2),  WRK(*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0, DCVAL = D2 )
-#include <thrzer.h>
-#include <iratdef.h>
+#include "thrzer.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP: NLMSOL, LSOLMX, EPSOL, RSOL(3)
@@ -528,15 +518,15 @@ C   INFIND: IROW(*)
 C   INFTAP: LUSOL,  LUIT2
 C   INFPRI: IPRSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL     FIRST, FNDLAB
       PARAMETER  (MXLMAX = 50)
@@ -929,26 +919,26 @@ C
 C   Output:
 C    FSOL     MCSCF gradient with solvation contribution added
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FSOL(*),CMO(*),TLM(NLMSOL,2),DCAO(*),DVAO(*),WRK(LFREE)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0)
-#include <thrzer.h>
-#include <iratdef.h>
+#include "thrzer.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP: NLMSOL, LSOLMX, EPSOL, RSOL(3)
 C   INFORB: NNASHX, NNBASX, NNORBX, etc.
 C   INFTAP: LUSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
 C
       LOGICAL     FIRST, MOBAS
       PARAMETER  (MXLMAX = 50)
@@ -1206,7 +1196,7 @@ C
 C Copyright 25-Apr-1990 Hans Joergen Aa. Jensen
 C Common driver for SOLLNC and SOLLNO
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       LOGICAL   ORBLIN
@@ -1215,9 +1205,9 @@ C Used from common blocks:
 C   INFINP : LSOLMX,NLMSOL, EPSOL, INERSF, RSOL
 C   INFLIN : NWOPPT,NVARPT
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inflin.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inflin.h"
 C
       CALL QENTER('SOLLIN')
       KFRSAV = 1
@@ -1279,16 +1269,16 @@ C  Purpose:  Calculate MCSCF Hessian contribution from a
 C            surrounding medium to a csf trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVEC(*),  CREF(*), CMO(*),  ISYRLM(*)
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       DIMENSION INDXCI(*), DV(*),   DTV(NNASHX,*)
       DIMENSION SVEC(NVARPT,*),     WRK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 )
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C
 C  Used from common blocks:
@@ -1297,17 +1287,16 @@ C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : NWOPH
 C    INFLIN : NCONST, NVARPT, NWOPPT
 C    INFTAP : LUSOL
-C    INFPRI : LUERR
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C     Statement functions
 C
@@ -1517,17 +1506,17 @@ C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
 C  NSVEC          may be NVAR or NWOPT, dependent on LINTRN
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BOVECS(NWOPPT,*), CREF(*), CMO(*)
       DIMENSION INDXCI(*),        DV(*),   ISYRLM(*)
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       DIMENSION SVEC(NSVEC,*),    WRK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 )
-#include <thrzer.h>
-#include <dummy.h>
+#include "thrzer.h"
+#include "dummy.h"
 C
 C
 C  Used from common blocks:
@@ -1536,17 +1525,17 @@ C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : JWOP
 C    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
 C    INFTAP : LUSOL
-C    INFPRI : LUERR,  IPRSOL
+C    INFPRI : IPRSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL FULHES
 C
@@ -1879,7 +1868,7 @@ C  Output:  New CI-part of sigma vector (SVECS)
 C
 C Scratch:  WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(NCONST,*),  SVECS(NVARPT,*)
       DIMENSION CREF(*),  RXAC(NNASHX,*),RYAC(NNASHX)
       DIMENSION TRXAC(*), XNDXCI(*), WRK(LWRK)
@@ -1891,12 +1880,11 @@ C
 C Used from common blocks:
 C   INFORB : NNASHX,N2ASHX,NASHT
 C   INFLIN : LSYMRF,LSYMST,LSYMPT,NCONRF,NCONST
-C   INFPRI : LUERR
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infpri.h"
 C
       CALL QENTER('SOLSC ')
 C

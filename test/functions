@@ -1,5 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 # test function definitions for dalton
+# Originally by Pawel Salek (2003)
+
+export LANG=C  # tests do not work if e.g. LANG=Da_DK, because of the decimal comma vs. decimal point issue !!!! /hjaaj Sep 2011
 
 # check_gen_input:
 # generate several input and description files.
@@ -17,6 +20,11 @@ elif [ -x /bin/bash ]; then
 else
    CHECK_SHELL='#!/bin/sh'
 fi
+
+# Make sure user is not using German (DE) or another European LOCALE
+# where "," and "." are switched in numbers (US 0.456 = DE 0,456).
+# Otherwise gawk will not work!!!
+export LANG=en_US
 
 # Prefer gawk - we know exactly what it can do.
 # awk on Sun does not support functions, need to use nawk for this
@@ -89,8 +97,19 @@ check_scf_energy() {
 [ "$3" = "" ] &&  echo "not enough parameters to check_scf_energy."
 $AWK 'function e(v,r){#print "scf_energy: checking ",v, r;
 return(v>r||v<-r)}
-/Final *'$1' *energy:/{c=1;exit (e($4-('$2'),'$3'))} END{if(!c) exit(1)}
-' $log || ERRLIST="$ERRLIST; SCF energy"
+/Final *'$1' *energy:/{c=1;exit (e($5-('$2'),'$3'))} END{if(!c) exit(1)}
+' $log || ERRLIST="$ERRLIST; $1 energy"
+}
+
+# check_MP2_energy:
+# $1 - expected energy
+# $2 - max deviation
+check_MP2_energy() {
+[ "$2" = "" ] &&  echo "not enough parameters to check_MP2_energy."
+$AWK 'function e(v,r){#print "MP2_energy: checking ",v, r;
+return(v>r||v<-r)}
+/MP2 second order energy/{c=1;exit (e($8-('$1'),'$2'))} END{if(!c) exit(1)}
+' $log || ERRLIST="$ERRLIST; $1 energy"
 }
 
 # check_dipole:
@@ -117,7 +136,7 @@ for(i=0;i<5;i++)getline;
 if (s=e($3,'$1,$4')) exit 1;getline;
 if (s=e($3,'$2,$4')) exit 1;getline;
 if (s=e($3,'$3,$4')) exit 1;exit 0}
-END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment"
+END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment components"
 }
 
 # check_polarizability:

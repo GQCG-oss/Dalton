@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c*DECK CC_GETGD
       SUBROUTINE CC_GETGD(GD,ILSTNR,ISIDE,LIST,WORK,LWORK)
@@ -52,36 +42,39 @@ C     changes for CCr12 response, Christof Haettig, Summer 2003
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER( ONE = 1.0D00 ,XMONE = -1.0D0 )
       DIMENSION GD(*),WORK(LWORK)
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-#include <dummy.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccexgr.h>
-#include <cclrmrsp.h>
-#include <ccr1rsp.h>
-#include <ccr3rsp.h>
-#include <ccr2rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccn2rsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <cccl2rsp.h>
-#include <leinf.h>
-#include <ccpl1rsp.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccexgr.h"
+#include "cclrmrsp.h"
+#include "ccr1rsp.h"
+#include "ccr3rsp.h"
+#include "ccr2rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccn2rsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "cccl2rsp.h"
+#include "leinf.h"
+#include "ccpl1rsp.h"
+Cholesky
+#include "ccdeco.h"
+Cholesky
 C
       CHARACTER MODEL*(10), LIST*(*)
 C
@@ -124,6 +117,12 @@ C     ---------------------------------------------------------------
         NTAMP = NTAMP + NTR12AM(ISYMGD) 
       END IF
  
+Cholesky
+      IF (CHOINT .AND. CC2) THEN
+         NTAMP = NT1AM(ISYMGD)
+      END IF
+Cholesky
+
 C----------------------------------------------------------------------
 C 'R3 ' third-order response t amplitudes:  --> 'O3 '
 C----------------------------------------------------------------------
@@ -188,11 +187,41 @@ C----------------------------------------------------------------------
          ILSTGD = IRHSR1(LRTLBL(ILSTNR),LORXLRT(ILSTNR),
      &                   FRQLRT(ILSTNR),ISYM1)
 
-         CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTRDG,MODEL,
-     &                  GD(IADR1),GD(IADR2))
-         IF (CCR12) THEN
-           CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTR12,MODEL,
-     &                   DUMMY,GD(IADR12))
+C       For Cholesky CC2 we need to add a frequency-dependent term to
+C       get the effective right-hand side. [Which is also why the
+C       solver only solves equations for 1 frequency at a time.]
+C       Try to read the eff. rhs from disk; if it fails, calculate
+C       the eff. rhs and write it to disk for later use.
+C       Conventional: simply read from disk.
+C       -------------------------------------------------------------
+
+        IF (CHOINT .AND. CC2) THEN
+           MODEL = 'CC2       '
+           IOPT = 33
+           CALL CC_RDRSP('eO1',ILSTNR,ISYMGD,IOPT,MODEL,
+     &                   GD,DUMMY)
+           IF (IOPT .EQ. 33) THEN
+              IF (IPRINT .GT. 2) THEN
+                 WRITE(LUPRI,'(1X,A,A)')
+     &           'Effective Cholesky gradient not found on file. ',
+     &           'Calculating gradient...'
+              ENDIF
+              IALG = 0
+              CALL CC_CHOXI1(GD,WORK,LWORK,ILSTGD,LRTLBL(ILSTNR),
+     &                       FRQLRT(ILSTNR),ISYMGD,IALG)
+              IOPT = 1
+              CALL CC_WRRSP('eO1',ILSTNR,ISYMGD,IOPT,MODEL,
+     &                      DUMMY,GD,DUMMY,WORK,LWORK)
+           ENDIF
+
+         ELSE         !Conventional
+
+           CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTRDG,MODEL,
+     &                    GD(IADR1),GD(IADR2))
+           IF (CCR12) THEN
+             CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTR12,MODEL,
+     &                     DUMMY,GD(IADR12))
+           END IF
          END IF
 
          IF (CCSLV) THEN
@@ -274,7 +303,13 @@ C----------------------------------------------------------------------
          IF (ISIDE .NE.-1)
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
 
-         CALL CC_ETA(GD,WORK,LWORK)
+Cholesky
+         IF (CHOINT .AND. CC2) THEN
+            CALL CC_CHOETA(GD,WORK,LWORK)
+            NTAMP = NT1AM(ISYMOP)
+         ELSE
+            CALL CC_ETA(GD,WORK,LWORK)
+         END IF
 
 C----------------------------------------------------------------------
 C 'N2 ' Lagrangian multipliers:
@@ -575,19 +610,19 @@ C     Adapted for CC-R12 response, Christian Neiss April 2005
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccroper.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccroper.h"
+#include "dummy.h"
 C
       PARAMETER( ONE = 1.0D00 )
       DIMENSION GD(*),WORK(LWORK)
@@ -722,15 +757,15 @@ C     Written by Ove Christiansen 8-dec.-1996
 C
 C-----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccrc1rsp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccrc1rsp.h"
 C
       PARAMETER( ONE = 1.0D00 )
       DIMENSION GD(*),WORK(LWORK)
@@ -789,14 +824,14 @@ c /* deck cc_r2gd */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <cco2rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "cco2rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -916,14 +951,14 @@ c /* deck CC_L2GD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccr2rsp.h>
-#include <ccl2rsp.h>
-#include <ccx2rsp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccr2rsp.h"
+#include "ccl2rsp.h"
+#include "ccx2rsp.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1065,13 +1100,13 @@ c /* deck CC_L3GD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccr3rsp.h>
-#include <ccl3rsp.h>
-#include <ccx3rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccr3rsp.h"
+#include "ccl3rsp.h"
+#include "ccx3rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1193,13 +1228,13 @@ c /* deck CC_LCGD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1334,18 +1369,18 @@ C     Transform eigen-vectors with F-matrix and write to file.
 C
 C     ISYMV is symmetry of vector and transformed vector.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccexci.h>
-#include <ccexgr.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccexci.h"
+#include "ccexgr.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
 C
       PARAMETER( TOLFRQ=1.0D-08 )
       PARAMETER( ONE = 1.0D00 , XMONE = -1.0D0)
@@ -1354,7 +1389,7 @@ C
       CHARACTER MODEL*10,RSLIST*2
       LOGICAL INCORE
 C
-#include <leinf.h>
+#include "leinf.h"
 C
       INCORE = .TRUE.
       MODEL           = '----------'
@@ -1362,7 +1397,7 @@ C
       IF (CCS)  MODEL = 'CCS       '
       IF (CCSD) MODEL = 'CCSD      '
       IF (CC3)  MODEL = 'CC3       '
-      IF (MODEL(1:1).EQ.'-') CALL QUIT('Unkown model in CC_FRE.')
+      IF (MODEL(1:1).EQ.'-') CALL QUIT('Unknown model in CC_FRE.')
 C
       NTAMP = NT1AMX + NT2AMX
       IF (CCS) NTAMP = NT1AMX
@@ -1417,12 +1452,12 @@ c /* deck CC_CR2GD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccrc1rsp.h>
-#include <cccr2rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccrc1rsp.h"
+#include "cccr2rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1615,11 +1650,11 @@ c /* deck CC_CL2GD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cccl2rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cccl2rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1825,17 +1860,17 @@ C             t-bar*P
 c    Ove Christiansen, 13-5-1998.
 c
 c=====================================================================*
-#include <implicit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccn2rsp.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccn2rsp.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
 
       PARAMETER( ONE = 1.0D00 , XMONE = -1.0D0)
@@ -1900,8 +1935,10 @@ C
              CALL CCMM_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
      *                   WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
           ELSE IF (NYQMMM) THEN
-             CALL CCMM_TGTBAR(GD(1),GD(1+NT1AM(ISY)),WORK(K1),WORK(K2),
-     *                       MODEL,ISY,LR,WORK(KWRK1),LWRK1)
+             CALL CCMM_TRANSFORMER(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
+     *                     WORK(K2),MODEL,ISY,LR,WORK(KWRK1),LWRK1)
+C             CALL CCMM_TGTBAR(GD(1),GD(1+NT1AM(ISY)),WORK(K1),WORK(K2),
+C     *                       MODEL,ISY,LR,WORK(KWRK1),LWRK1)
           END IF
        END IF
 C

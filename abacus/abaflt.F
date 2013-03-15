@@ -1,48 +1,38 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck fltinp */
       SUBROUTINE FLTINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 4)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbiflt.h>
+#include "abainf.h"
+#include "cbiflt.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.RESPON', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*FLOAT ')
@@ -117,10 +107,10 @@ C  /* Deck fltini */
 C
 C     Initialize /CBIFLT/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbiflt.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbiflt.h"
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
@@ -145,17 +135,17 @@ C     If no floating orbitals are used this arrays are set
 C     equal to HESMOL(MXCOOR,MXCOOR), DIP1(3,MXCOOR) and
 C     POLFLT(3,3)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
       LOGICAL POLDIP
       DIMENSION WORK(LWORK)
-#include <abainf.h>
-#include <cbiflt.h>
-#include <taymol.h>
-#include <moldip.h>
-#include <nuclei.h>
+#include "abainf.h"
+#include "cbiflt.h"
+#include "taymol.h"
+#include "moldip.h"
+#include "nuclei.h"
       IF (SKIP) RETURN
       IF (.NOT. (MOLHES .OR. DIPDER .OR. POLAR)) RETURN
       CALL QENTER('FLTORB')
@@ -248,14 +238,14 @@ C
       END
 C  /* Deck fltgmt */
       SUBROUTINE FLTGMT(GII,GID,GDI,GDD,IVIND,IVDEP,NIND,NDEP)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <cbiflt.h>
-#include <abainf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <moldip.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbiflt.h"
+#include "abainf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "moldip.h"
       DIMENSION GII(NIND,NIND), GID(NIND,NDEP), GDI(NDEP,NIND),
      *          GDD(NDEP,NDEP), IVIND(NIND), IVDEP(NDEP)
       LOGICAL DEPEND
@@ -337,11 +327,11 @@ C
       END
 C  /* Deck foldin */
       SUBROUTINE FOLDIN(GRED,GII,GID,GDI,GDD,KPVT,NIND,NDEP)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <cbiflt.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbiflt.h"
+#include "abainf.h"
       DIMENSION GII(NIND,NIND), GID(NIND,NDEP), GDI(NDEP,NIND),
      *          GDD(NDEP,NDEP), KPVT(NDEP),GRED(NIND,NIND)
 C
@@ -383,14 +373,14 @@ C
       END
 C  /* Deck flthdp */
       SUBROUTINE FLTHDP(GRED,NIND)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <cbiflt.h>
-#include <abainf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <moldip.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbiflt.h"
+#include "abainf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "moldip.h"
       DIMENSION GRED(NIND,NIND)
 C
       IF (IPRINT. GE .5) CALL TITLER('Output from FLTHDP','*',103)
@@ -428,13 +418,13 @@ C
       END
 C  /* Deck fltgdi */
       SUBROUTINE FLTGDI(RESPON,NIND,NDEP,POLDIP)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL POLDIP
       DIMENSION RESPON(NDEP,NIND)
       CHARACTER*6 LABEL(5), NAME
-#include <nuclei.h>
+#include "nuclei.h"
 C
       WRITE (LUPRI,'(//)')
       CALL HEADER('Orbital Center Responses',-1)
@@ -473,11 +463,11 @@ C
 C     The purpose of this subroutine is to calculate the contributions
 C     from each floating orbital to the polarizability corrections.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D00, D100 = 100.0D00, THRESH = 1.0D-04)
-#include <nuclei.h>
+#include "nuclei.h"
       DIMENSION GID(NIND,NDEP), GDI(NDEP,NIND), PCNT(6,NDEP)
 C
       WRITE (LUPRI,'()')

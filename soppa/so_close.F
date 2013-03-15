@@ -9,8 +9,8 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Close the file LUFILE.
 C
-#include <implicit.h>
-#include <soppinf.h>
+#include "implicit.h"
+#include "soppinf.h"
 C
       CHARACTER*7 FILENM
       CHARACTER*4 STATUS

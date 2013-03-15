@@ -1,131 +1,136 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Henrik Koch,              University of Trondheim,      Norway     
-    Andrea Ligabue,           University of Modena,         Italy      
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri May 27 08:10:00 2005
-     Host name              : kemove2.chem.au.dk                      
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
 
 
- Default print level:        0
+     Date and time (Linux)  : Wed Mar 16 18:31:03 2011 
+     Host name              : fe6                                     
 
-    Integral sections will be executed
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
-    Wave function sections will be executed
-
-Starting in Integral Section -
-
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
 
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
-
-
- Default print level:        1
-
- * Nuclear model: Point charge
-
- Calculation of one- and two-electron Hamiltonian integrals.
-
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - dipole length integrals
-          - traceless quadrupole moment integrals
-          - second moments integrals
-          - Electric field at the nucleus
-          - Potenial energy at the nuclei
-
-
- Changes of defaults for QM3INP:
- -------------------------------
+ Changes of defaults for *QM3   :
+ --------------------------------
 
  +------------------+
  |  WORD: | CHANGE: |
  +------------------+
  |    QM3 |       T |
- +------------------+
- | THDISC | 0.1E-10 |
- +------------------+
+ | THDISC | 1.0D-11 |
  |  OLDTG |       T |
+ |  PRINT |       0 |
  +------------------+
+  Settings for determination of induced dipoles:
+  Iterative Method is used
 
 
- ************************************************************************
- ****************** Output from RDPOT input processing ******************
- ************************************************************************
+    *************************************************************************
+    *************** Output from MM potential input processing ***************
+    *************************************************************************
 
 
 
@@ -175,58 +180,112 @@ Starting in Integral Section -
 
 
 
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: QM/MM H2O(QM)+ 5 H2O(MM)                                                
+ 2: ------------------------                                                
+    ------------------------------------------------------------------------
 
-  Title Cards
-  -----------
-
-  QM/MM H2O(QM)+ 5 H2O(MM)                                                
-  ------------------------                                                
-
-  Coordinates are entered in Angstroms and converted to atomic units.
+  Coordinates are entered in Angstrom and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
 
- For atomic type no.  1 the basis set
-     3-21G                                                                           
- from the basis set library will be used.
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "3-21G" from the basis set library.
+  Used basis set file for basis set for elements with Z =   8 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/3-21G"
 
- Huckel basis read for atomic type no.  1
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 3-21G                                                                           
 
- For atomic type no.  2 the basis set
-     3-21G                                                                           
- from the basis set library will be used.
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  The basis set is "3-21G" from the basis set library.
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/3-21G"
 
- Huckel basis read for atomic type no.  2
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 3-21G                                                                           
 
- Atomic type no.  3 is a MM point charge without basis functions.
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:  -0.66900
+  Number of symmetry independent centers:   12
 
- Atomic type no.  4 is a MM point charge without basis functions.
+
+ WARNING -- line in ".mol" file truncated, line   11
+ Line from file: O           -6.022295       -6.249876       -2.389355 1 1  # CORD(I,J), ISUBSY(I), ISUBSI(I)                            
+ Truncated line: O           -6.022295       -6.249876       -2.389355 1 1  # CORD(I,J), ISUBSY(I
 
 
-                      SYMGRP:Point group information
-                      ------------------------------
+ WARNING -- line in ".mol" file truncated, line   12
+ Line from file: O           -0.590747        4.825666       -1.709744 2 1  # coordinate, sub system, sub system site                    
+ Truncated line: O           -0.590747        4.825666       -1.709744 2 1  # coordinate, sub sys
+
+
+ WARNING -- line in ".mol" file truncated, line   15
+ Line from file: O           -5.696915       -2.203270        0.274131 5 1  #Subsystem 5, subsystem site 1                               
+ Truncated line: O           -5.696915       -2.203270        0.274131 5 1  #Subsystem 5, subsyst
+  Number of basis sets to read;    2
+  This is an MM atom without basis functions.
+
+  Atomic type no.    4
+  --------------------
+  Nuclear charge:   0.33450
+  Number of symmetry independent centers:   24
+
+
+ WARNING -- line in ".mol" file truncated, line   32
+ Line from file: H           -4.847884       -2.109424       -0.157695 5 2 #Subsystem 5, subsystem site 2                                
+ Truncated line: H           -4.847884       -2.109424       -0.157695 5 2 #Subsystem 5, subsyste
+
+
+ WARNING -- line in ".mol" file truncated, line   33
+ Line from file: H           -6.336813       -2.008951       -0.410639 5 3 #Subsystem 5, subsystem site 3                                
+ Truncated line: H           -6.336813       -2.008951       -0.410639 5 3 #Subsystem 5, subsyste
+
+
+ WARNING -- line in ".mol" file truncated, line   34
+ Line from file: H           -4.314395       -5.108436       -5.564490 6 2 #-----------------------------                                
+ Truncated line: H           -4.314395       -5.108436       -5.564490 6 2 #---------------------
+
+
+ WARNING -- line in ".mol" file truncated, line   35
+ Line from file: H           -3.655119       -4.101117       -6.481904 6 3 # Together with subsystem site 1                              
+ Truncated line: H           -3.655119       -4.101117       -6.481904 6 3 # Together with subsys
+
+
+ WARNING -- line in ".mol" file truncated, line   36
+ Line from file: H           -7.274548       -4.398536       -3.580814 7 2 # they form a water molecule,                                 
+ Truncated line: H           -7.274548       -4.398536       -3.580814 7 2 # they form a water mo
+
+
+ WARNING -- line in ".mol" file truncated, line   37
+ Line from file: H           -8.166766       -3.437216       -2.825307 7 3 # which is labeled subsystem 5!!!                             
+ Truncated line: H           -8.166766       -3.437216       -2.825307 7 3 # which is labeled sub
+  Number of basis sets to read;    2
+  This is an MM atom without basis functions.
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: C1 
 
-   * Character table
 
-        |  E 
-   -----+-----
-    A   |   1
-
-   * Direct product table
-
-        | A  
-   -----+-----
-    A   | A  
-
-
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            O          15.994915
                            H           1.007825
@@ -235,348 +294,33 @@ Point group: C1
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000    0.123934
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.123934
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     5
+  Number of atom types :    5
   Total number of atoms:   64
 
-  label    atoms   charge   prim    cont     basis
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  O           1  8.0000      15       9      [6s3p|3s2p]                                  
-  H           1  1.0000       3       2      [3s|2s]                                      
-  H           1  1.0000       3       2      [3s|2s]                                      
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  O           1 -0.6690       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  H           1  0.3345       0       0      Point Charge                                 
-  A  0        1  0.0000       0       0      Point Charge                                 
-  A  1        1  0.0000       0       0      Point Charge                                 
-  A  2        1  0.0000       0       0      Point Charge                                 
-  A  3        1  0.0000       0       0      Point Charge                                 
-  A  4        1  0.0000       0       0      Point Charge                                 
-  A  5        1  0.0000       0       0      Point Charge                                 
-  A  6        1  0.0000       0       0      Point Charge                                 
-  A  7        1  0.0000       0       0      Point Charge                                 
-  A  8        1  0.0000       0       0      Point Charge                                 
-  A  9        1  0.0000       0       0      Point Charge                                 
-  A 10        1  0.0000       0       0      Point Charge                                 
-  A 11        1  0.0000       0       0      Point Charge                                 
-  A 12        1  0.0000       0       0      Point Charge                                 
-  A 13        1  0.0000       0       0      Point Charge                                 
-  A 14        1  0.0000       0       0      Point Charge                                 
-  A 15        1  0.0000       0       0      Point Charge                                 
-  A 16        1  0.0000       0       0      Point Charge                                 
-  A 17        1  0.0000       0       0      Point Charge                                 
-  A 18        1  0.0000       0       0      Point Charge                                 
-  A 19        1  0.0000       0       0      Point Charge                                 
-  A 20        1  0.0000       0       0      Point Charge                                 
-  A 21        1  0.0000       0       0      Point Charge                                 
-  A 22        1  0.0000       0       0      Point Charge                                 
-  A 23        1  0.0000       0       0      Point Charge                                 
-  A 24        1  0.0000       0       0      Point Charge                                 
+  O           1    8.0000    15     9      [6s3p|3s2p]                                        
+  H           2    1.0000     3     2      [3s|2s]                                            
+  O          12   -0.6690     0     0      Point Charge                                       
+  H          24    0.3345     0     0      Point Charge                                       
+  a          25    0.0000     0     0      Point Charge                                       
   ----------------------------------------------------------------------
-  total:     64 10.0000      21      13
+  total:     64   10.0000    21    13
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
+  Max interatomic separation is    1.5136 Angstrom (    2.8603 Bohr)
+  between atoms    3 and    2, "H     " and "H     ".
 
-  Cartesian Coordinates
-  ---------------------
-
-  Total number of coordinates:192
-
-   1   O        x      0.0000000000
-   2            y      0.0000000000
-   3            z      0.0000000000
-
-   4   H        x     -1.4301428484
-   5            y      0.0000000000
-   6            z      1.1073927426
-
-   7   H        x      1.4301428484
-   8            y      0.0000000000
-   9            z      1.1073927426
-
-  10   O        x    -11.3804882477
-  11            y    -11.8105540110
-  12            z     -4.5152265867
-
-  13   O        x     -1.1163500444
-  14            y      9.1191871538
-  15            z     -3.2309479191
-
-  16   O        x      4.4693326978
-  17            y     -0.5037877592
-  18            z      2.2108775315
-
-  19   O        x    -16.9690131381
-  20            y     -3.6583529480
-  21            z    -10.7857139546
-
-  22   O        x    -10.7656091582
-  23            y     -4.1635768991
-  24            z      0.5180325148
-
-  25   O        x     -6.5542335263
-  26            y     -9.2029757208
-  27            z    -11.2312546852
-
-  28   O        x    -14.1671369863
-  29            y     -6.5581320313
-  30            z     -6.6295750175
-
-  31   O        x     -1.0123376283
-  32            y     -6.5373752795
-  33            z    -20.6322850432
-
-  34   O        x     -7.9737239885
-  35            y      4.3338166573
-  36            z      8.8586978548
-
-  37   O        x      1.6876803951
-  38            y    -11.2931640030
-  39            z     -2.8763672663
-
-  40   O        x      1.0918459657
-  41            y     -1.6981173526
-  42            z    -18.8171728559
-
-  43   O        x    -13.8525882918
-  44            y     -1.5131717456
-  45            z     -3.4284772124
-
-  46   H        x    -13.1047518510
-  47            y    -11.8376696913
-  48            z     -3.9695492683
-
-  49   H        x    -10.5108986418
-  50            y    -12.8533124506
-  51            z     -3.3201996844
-
-  52   H        x     -2.8227141619
-  53            y      9.7170341416
-  54            z     -3.1806320711
-
-  55   H        x     -0.1237884001
-  56            y     10.5381995153
-  57            z     -2.7086068287
-
-  58   H        x      4.2735759676
-  59            y     -2.0850898011
-  60            z      3.0668837859
-
-  61   H        x      5.9190738960
-  62            y     -0.7370177587
-  63            z      1.1547341617
-
-  64   H        x    -15.7082332149
-  65            y     -4.2399690780
-  66            z     -9.6264860242
-
-  67   H        x    -16.4781265391
-  68            y     -4.3608151746
-  69            z    -12.3785565539
-
-  70   H        x     -9.1611730890
-  71            y     -3.9862336603
-  72            z     -0.2980003627
-
-  73   H        x    -11.9748411319
-  74            y     -3.7963672065
-  75            z     -0.7759952499
-
-  76   H        x     -8.1530249836
-  77            y     -9.6535450127
-  78            z    -10.5153621749
-
-  79   H        x     -6.9071738969
-  80            y     -7.7499879732
-  81            z    -12.2490233864
-
-  82   H        x    -13.7469034681
-  83            y     -8.3120284302
-  84            z     -6.7667577965
-
-  85   H        x    -15.4329511398
-  86            y     -6.4953969031
-  87            z     -5.3390564743
-
-  88   H        x      0.5135803200
-  89            y     -7.0167383284
-  90            z    -19.7876681682
-
-  91   H        x     -2.2584608355
-  92            y     -6.4872200582
-  93            z    -19.3222210625
-
-  94   H        x     -7.3921040790
-  95            y      2.7170444559
-  96            z      9.4238091168
-
-  97   H        x     -7.3413290275
-  98            y      4.4777155230
-  99            z      7.1702086569
-
- 100   H        x      1.5200049953
- 101            y    -11.6599900812
- 102            z     -4.6395686766
-
- 103   H        x      0.9256369933
- 104            y     -9.6647813243
- 105            z     -2.6781614510
-
- 106   H        x      2.0721565154
- 107            y     -2.3432604061
- 108            z    -20.1935397678
-
- 109   H        x      0.1339948110
- 110            y     -3.1190421169
- 111            z    -18.2383062774
-
- 112   H        x    -13.3456163441
- 113            y     -1.9094756617
- 114            z     -5.1189033796
-
- 115   H        x    -15.3188645937
- 116            y     -2.5334518928
- 117            z     -3.1445288533
-
- 118   A  0     x      0.0000000000
- 119            y      0.0000000000
- 120            z      0.0000000000
-
- 121   A  1     x     -1.4301428484
- 122            y      0.0000000000
- 123            z      1.1073927426
-
- 124   A  2     x      1.4301428484
- 125            y      0.0000000000
- 126            z      1.1073927426
-
- 127   A  3     x    -11.4283136114
- 128            y    -11.8704214213
- 129            z     -4.4178212454
-
- 130   A  4     x     -1.1562925991
- 131            y      9.2320454274
- 132            z     -3.1989035064
-
- 133   A  5     x      4.4693326978
- 134            y     -0.5037877592
- 135            z      2.2108775315
-
- 136   A  6     x      4.2735759676
- 137            y     -2.0850898011
- 138            z      3.0668837859
-
- 139   A  7     x      5.9190738960
- 140            y     -0.7370177587
- 141            z      1.1547341617
-
- 142   A  8     x    -16.9690131381
- 143            y     -3.6583529480
- 144            z    -10.7857139546
-
- 145   A  9     x    -15.7082332149
- 146            y     -4.2399690780
- 147            z     -9.6264860242
-
- 148   A 10     x    -16.4781265391
- 149            y     -4.3608151746
- 150            z    -12.3785565539
-
- 151   A 11     x    -10.7434945512
- 152            y     -4.1331051144
- 153            z      0.3999589360
-
- 154   A 12     x     -6.6634474310
- 155            y     -9.1468829564
- 156            z    -11.2481469022
-
- 157   A 13     x    -14.1671369863
- 158            y     -6.5581320313
- 159            z     -6.6295750175
-
- 160   A 14     x    -13.7469034681
- 161            y     -8.3120284302
- 162            z     -6.7667577965
-
- 163   A 15     x    -15.4329511398
- 164            y     -6.4953969031
- 165            z     -5.3390564743
-
- 166   A 16     x     -1.0123376283
- 167            y     -6.5373752795
- 168            z    -20.6322850432
-
- 169   A 17     x      0.5135803200
- 170            y     -7.0167383284
- 171            z    -19.7876681682
-
- 172   A 18     x     -2.2584608355
- 173            y     -6.4872200582
- 174            z    -19.3222210625
-
- 175   A 19     x     -7.9737239885
- 176            y      4.3338166573
- 177            z      8.8586978548
-
- 178   A 20     x     -7.3921040790
- 179            y      2.7170444559
- 180            z      9.4238091168
-
- 181   A 21     x     -7.3413290275
- 182            y      4.4777155230
- 183            z      7.1702086569
-
- 184   A 22     x      1.6876803951
- 185            y    -11.2931640030
- 186            z     -2.8763672663
-
- 187   A 23     x      1.5200049953
- 188            y    -11.6599900812
- 189            z     -4.6395686766
-
- 190   A 24     x      0.9256369933
- 191            y     -9.6647813243
- 192            z     -2.6781614510
+  Max QM+MM interatomic separation is   17.0356 Angstrom (   32.1926 Bohr)
+  between the QM+MM centers    12 and   11, "O     " and "O     ".
 
 
 
@@ -584,9 +328,9 @@ Point group: C1
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    0.614717          1.000000    0.000000    0.000000
-   IB    1.154453          0.000000    0.000000    1.000000
-   IC    1.769170          0.000000    1.000000    0.000000
+   IA       0.614717          1.000000    0.000000    0.000000
+   IB       1.154453          0.000000    0.000000    1.000000
+   IC       1.769170          0.000000    1.000000    0.000000
 
 
  Rotational constants
@@ -596,55 +340,29 @@ Point group: C1
 
                A                   B                   C
 
-         822132.5945         437764.9381         285658.8056 MHz
+         822132.5951         437764.9384         285658.8058 MHz
            27.423392           14.602267            9.528552 cm-1
 
 
-  Nuclear repulsion energy :    9.195434939919
- Norm2 of dipole moment vector:    0.022976280512655
- Norm2 of dipole moment vector:    0.026906067388395
- Norm2 of dipole moment vector:    0.027508319258486
- Norm2 of dipole moment vector:    0.027594369256936
- Norm2 of dipole moment vector:    0.027606738389605
- Norm2 of dipole moment vector:    0.027608575903748
- Norm2 of dipole moment vector:    0.027608838072021
- Norm2 of dipole moment vector:    0.027608877497153
- Norm2 of dipole moment vector:    0.027608883111644
- Norm2 of dipole moment vector:    0.027608883958670
- Norm2 of dipole moment vector:    0.027608884079261
- Norm2 of dipole moment vector:    0.027608884097464
- Norm2 of dipole moment vector:    0.027608884100056
+@  Nuclear repulsion energy :    9.195434983361
+      QM3 induced dipole vector converged in  13 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.027608884704513
 
- Dipole vector converged in  13 iterations.
+      QM3 Epol is calculated according to scheme C3
 
- Epol is calculated according to scheme C3
-
- Norm2 of dipole moment vector:    0.014132127371440
- Norm2 of dipole moment vector:    0.016089460532048
- Norm2 of dipole moment vector:    0.016118825380916
- Norm2 of dipole moment vector:    0.016119737825150
- Norm2 of dipole moment vector:    0.016119740702621
- Norm2 of dipole moment vector:    0.016119741275918
- Norm2 of dipole moment vector:    0.016119741264682
- Norm2 of dipole moment vector:    0.016119741265217
-
- Dipole vector converged in   8 iterations.
+      QM3 induced dipole vector converged in   8 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.016119741600556
 
 
- **************************************************************************
- ***************** The MM/MM classical interaction energy *****************
- **************************************************************************
-
+    **************************************************************************
+    ***************** The MM/MM classical interaction energy *****************
+    **************************************************************************
 
 
  ------------------------------------------------------------------------
  |  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        |       -0.01171738 |
- ------------------------------------------------------------------------
  |  Epol  = - 1/2*Sum_a[ Pind_a*E^site_a ]          |       -0.00202295 |
- ------------------------------------------------------------------------
  |  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] |        0.00138687 |
- ------------------------------------------------------------------------
- |**************************************************|*******************|
  ------------------------------------------------------------------------
  |  E(MM/MM) = Eelec + Epol + Evdw                  |       -0.01235346 |
  ------------------------------------------------------------------------
@@ -652,95 +370,97 @@ Point group: C1
 
 
 
- ************************************************************************
- *************** The "QM"/MM classical interaction energy ***************
- ************************************************************************
-
+     ************************************************************************
+     *************** The "QM"/MM classical interaction energy ***************
+     ************************************************************************
 
 
  ------------------------------------------------------------------------
  |  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        |       -0.00705960 |
- ------------------------------------------------------------------------
  |  Epol  = - 1/2*Sum_a[ Pind_a*E^(QMclassic)_a ]   |       -0.00078717 |
- ------------------------------------------------------------------------
  |  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] |        0.00507155 |
  ------------------------------------------------------------------------
- |**************************************************|*******************|
- ------------------------------------------------------------------------
- |  E("QM"/MM) = Eelec + Epol + Evdw                |       -0.00277522 |
+ |  E("QM"/MM) = Eelec + Epol + Evdw                |       -0.00277521 |
  ------------------------------------------------------------------------
 
 
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in HUCKEL is   0.01 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+          - traceless quadrupole moment integrals
+          - second moment integrals
+          - Electric field at the nuclei
+          - Potential energy at the nuclei
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.123933711741
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
- >>> Time used in DIPLEN is   0.00 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
-
- >>> Time used in THETA  is   0.00 seconds
-
-
- >>> Time used in SECMOM is   0.00 seconds
-
-
- >>> Time used in NUCPOT is   0.00 seconds
-
-
- >>> Time used in NELFLD is   0.00 seconds
-
-
- >>> Time used in ONEDRV is   0.00 seconds
-
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:        2260 ( 54.0% )
  Megabytes written:                              0.027
 
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 
- >>> Time used in TWOINT is   0.00 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.04 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
-
-- End of Integral Section
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
 
- NCCEXCI for singlet: 1
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+ NCCEXCI for singlet:           1
 
  *** Output from Huckel module :
 
-     Using EWMO model:          T
-     Using EHT  model:          F
+     Using EWMO model:          F
+     Using EHT  model:          T
      Number of Huckel orbitals each symmetry:    7
 
- EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
- which normally is better than Extended Huckel Theory.
- Reference: Linderberg and Ohrm, Propagators in Quantum Chemistry (Wiley, 1973)
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.705641      -1.506569      -0.731292      -0.670540      -0.616200
+           -0.292149      -0.257509
 
- Huckel EWMO eigenvalues for symmetry :  1
-          -20.685274      -1.626668      -0.762431      -0.682431      -0.616200
-           -0.241623      -0.165273
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri May 27 08:10:00 2005
-     Host name              : kemove2.chem.au.dk                      
+     Date and time (Linux)  : Wed Mar 16 18:31:04 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      QM/MM H2O(QM)+ 5 H2O(MM)                                                
      ------------------------                                                
 
@@ -752,20 +472,21 @@ Starting in Wave Function Section -
 
      This is a combination run starting with
 
-               a RHF calculation
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART EWMO  " input option.
+ ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 13
 
      Spin multiplicity                         1
      Total number of symmetries                1
@@ -773,567 +494,519 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1
-                                       --
-     Total number of orbitals          13
-     Number of basis functions         13
+     Abelian symmetry species          All |    1
+                                       --- |  ---
+     Occupied SCF orbitals               5 |    5
+     Secondary orbitals                  8 |    8
+     Total number of orbitals           13 |   13
+     Number of basis functions          13 |   13
 
-      ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.                    
-      -- Initial occupation of symmetries is : --
-
-     Occupied SCF orbitals              5
+     Optimization information
+     ========================
+     Number of configurations                 1
+     Number of orbital rotations             40
+     ------------------------------------------
+     Total number of variables               41
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-11
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-11
 
 
  Changes of defaults for CC:
  ---------------------------
 
+ -Excitation energies calculated
+ -One-photon absorption strengths will be calculated
+ -Linear response properties calculated
+ -Oscillator strengths calculated
+ -Dipole moment calculated
+ -Traceless quadrupole moment calculated
+ -Electronic second moment of charge calculated
+  
 
- Excitation energies calculated
 
- One-photon absorption strengths will be calculated
+ Changes of defaults for CC:
+ ---------------------------
 
- Linear response properties calculated
-
- Oscillator strengths calculated
-
- Dipole moment calculated
-
- Traceless quadrupole moment calculated
-
- Electronic second moment of charge calculated
+ -Excitation energies calculated
+ -One-photon absorption strengths will be calculated
+ -Linear response properties calculated
+ -Oscillator strengths calculated
+ -Dipole moment calculated
+ -Traceless quadrupole moment calculated
+ -Electronic second moment of charge calculated
   
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
  C1-DIIS algorithm; max error vectors =   10
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.00 seconds
-
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.    1      -75.403822368168    1.60385E+00   -7.54E+01   -7    T
+ DIIS iter.    1    -75.3897473301        2.18975D+00   -7.54D+01  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =    1
 
 
- (DISRED) B matrix:
-
-               Column   1
-       1       2.57234635
-
- (DISRED) Solutions to C1-DIIS set of linear equations
+ (DIIS_RED) B matrix:
 
                Column   1
-       1       1.00000000
-       2      -2.57234635
+       1       4.79500104
 
- DIIS C vector; C2DIIS = F LAMBDA = -2.57E+00
+ DIIS C vector; C2DIIS = F LAMBDA = -4.80D+00
     1.000000
+      Virial theorem: -V/T =      1.996699
+      MULPOP  O      -0.39; H       0.19; H       0.19; 
 
  DIIS Fock eigenvalues in symmetry 1
-      -20.32082       -1.31141       -0.70635       -0.52238       -0.47402
-        0.23778        0.33414        1.79136        1.88319        2.02777
-        3.11794        1.24523        1.14045
+      -20.42739       -1.33907       -0.73603       -0.56775       -0.52026
+        0.22589        0.32818        1.13611        1.23835        1.74265
+        1.83593        1.98372        3.07444
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.    2      -75.578125699995    3.28836E-01   -1.74E-01   -7    T
+ DIIS iter.    2    -75.5787943288        2.72416D-01   -1.89D-01  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =    2
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2
-       1       2.57234635
-       2       0.18331209     0.10813282
+       1       4.79500104
+       2       0.37169106     0.07421034
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1      -0.03249092
-       2       1.03249092
-       3      -0.10569017
-
- DIIS C vector; C2DIIS = F LAMBDA = -1.06E-01
-   -0.032491    1.032491
+ DIIS C vector; C2DIIS = F LAMBDA = -5.28D-02
+   -0.072102    1.072102
+      Virial theorem: -V/T =      2.003094
+      MULPOP  O      -0.66; H       0.33; H       0.33; 
 
  DIIS Fock eigenvalues in symmetry 1
-      -20.50299       -1.35346       -0.71101       -0.56183       -0.50957
-        0.25533        0.35056        1.18125        1.29375        1.75155
-        1.83848        1.98516        3.08393
+      -20.43523       -1.33079       -0.69291       -0.54276       -0.48558
+        0.26246        0.35955        1.18985        1.30329        1.77602
+        1.86216        2.01142        3.11051
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.    3      -75.584648975691    1.29365E-01   -6.52E-03   -7    T
+ DIIS iter.    3    -75.5851900841        4.97921D-02   -6.40D-03  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =    3
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2     Column   3
-       1       2.57234635
-       2       0.18331209     0.10813282
-       3       0.13086047    -0.01168740     0.01673520
+       1       4.79500104
+       2       0.37169106     0.07421034
+       3       0.03152502     0.01209536     0.00247925
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1      -0.05677516
-       2       0.22270384
-       3       0.83407132
-       4      -0.00392589
-
- DIIS C vector; C2DIIS = F LAMBDA = -3.93E-03
-   -0.056775    0.222704    0.834071
+ DIIS C vector; C2DIIS = F LAMBDA = -3.44D-04
+    0.011873   -0.257922    1.246049
+      Virial theorem: -V/T =      2.001784
+      MULPOP  O      -0.72; H       0.36; H       0.36; 
 
  DIIS Fock eigenvalues in symmetry 1
-      -20.42114       -1.32732       -0.68543       -0.53498       -0.47791
-        0.26566        0.36276        1.19516        1.31065        1.78418
-        1.86930        2.01802        3.11646
+      -20.42590       -1.32834       -0.68487       -0.53717       -0.47905
+        0.26431        0.36277        1.19406        1.30957        1.78287
+        1.86736        2.01678        3.11475
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.    4      -75.585358542905    1.86305E-02   -7.10E-04   -7    T
+ DIIS iter.    4    -75.5853831338        4.93248D-03   -1.93D-04  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =    4
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2     Column   3     Column   4
-       1       2.57234635
-       2       0.18331209     0.10813282
-       3       0.13086047    -0.01168740     0.01673520
-       4      -0.00762383     0.00439120    -0.00128807     0.00034710
+       1       4.79500104
+       2       0.37169106     0.07421034
+       3       0.03152502     0.01209536     0.00247925
+       4      -0.00237234     0.00018349     0.00009369     0.00002433
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1       0.00861124
-       2      -0.05992661
-       3      -0.02222858
-       4       1.07354395
-       5      -0.00007246
-
- DIIS C vector; C2DIIS = F LAMBDA = -7.25E-05
-    0.008611   -0.059927   -0.022229    1.073544
+ DIIS C vector; C2DIIS = F LAMBDA = -1.92D-05
+    0.000362    0.009222   -0.082374    1.072791
+      Virial theorem: -V/T =      2.001615
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
 
  DIIS Fock eigenvalues in symmetry 1
-      -20.42868       -1.32968       -0.68604       -0.53756       -0.48011
-        0.26395        0.36200        1.19341        1.30893        1.78183
-        1.86652        2.01544        3.11329
+      -20.42908       -1.32973       -0.68583       -0.53800       -0.47996
+        0.26373        0.36216        1.19342        1.30877        1.78196
+        1.86636        2.01557        3.11338
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.    5      -75.585382516562    3.40149E-03   -2.40E-05   -7    T
+ DIIS iter.    5    -75.5853844062        1.83298D-03   -1.27D-06  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =    5
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2     Column   3     Column   4
-       1       2.57234635
-       2       0.18331209     0.10813282
-       3       0.13086047    -0.01168740     0.01673520
-       4      -0.00762383     0.00439120    -0.00128807     0.00034710
-       5       0.00121969    -0.00011783     0.00023335     0.00000892
+       1       4.79500104
+       2       0.37169106     0.07421034
+       3       0.03152502     0.01209536     0.00247925
+       4      -0.00237234     0.00018349     0.00009369     0.00002433
+       5       0.00083627     0.00005356     0.00001702    -0.00000333
 
                Column   5
-       5       0.00001157
+       5       0.00000336
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1      -0.00202006
-       2       0.01747623
-       3      -0.01822864
-       4      -0.35718777
-       5       1.35996024
-       6      -0.00000377
-
- DIIS C vector; C2DIIS = F LAMBDA = -3.77E-06
-   -0.002020    0.017476   -0.018229   -0.357188    1.359960
+ DIIS C vector; C2DIIS = F LAMBDA = -5.71D-07
+   -0.000711    0.016531   -0.087212    0.274330    0.797062
+      Virial theorem: -V/T =      2.001528
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
 
  DIIS Fock eigenvalues in symmetry 1
-      -20.42815       -1.32959       -0.68576       -0.53756       -0.47964
-        0.26381        0.36212        1.19346        1.30883        1.78232
-        1.86677        2.01584        3.11363
+      -20.42806       -1.32949       -0.68565       -0.53766       -0.47959
+        0.26378        0.36219        1.19346        1.30881        1.78236
+        1.86674        2.01592        3.11371
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.    6      -75.585384479964    7.82476E-04   -1.96E-06   -7    T
+ DIIS iter.    6    -75.5853845837        3.11639D-04   -1.78D-07  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =    6
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2     Column   3     Column   4
-       1       2.57234635
-       2       0.18331209     0.10813282
-       3       0.13086047    -0.01168740     0.01673520
-       4      -0.00762383     0.00439120    -0.00128807     0.00034710
-       5       0.00121969    -0.00011783     0.00023335     0.00000892
-       6       0.00000728     0.00000058     0.00000014     0.00000346
+       1       4.79500104
+       2       0.37169106     0.07421034
+       3       0.03152502     0.01209536     0.00247925
+       4      -0.00237234     0.00018349     0.00009369     0.00002433
+       5       0.00083627     0.00005356     0.00001702    -0.00000333
+       6      -0.00005929     0.00000214     0.00000137     0.00000093
 
                Column   5     Column   6
-       5       0.00001157
-       6       0.00000194     0.00000061
+       5       0.00000336
+       6      -0.00000006     0.00000010
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1       0.00046945
-       2      -0.00533815
-       3       0.01195802
-       4       0.12467847
-       5      -0.70077269
-       6       1.56900490
-       7      -0.00000004
-
- DIIS C vector; C2DIIS = F LAMBDA = -3.64E-08
-    0.000469   -0.005338    0.011958    0.124678   -0.700773    1.569005
+ DIIS C vector; C2DIIS = F LAMBDA = -3.57D-08
+    0.000228   -0.005667    0.030468   -0.130950   -0.217314    1.323235
+      Virial theorem: -V/T =      2.001560
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
 
  DIIS Fock eigenvalues in symmetry 1
-      -20.42814       -1.32953       -0.68569       -0.53767       -0.47963
-        0.26378        0.36216        1.19344        1.30881        1.78232
-        1.86670        2.01586        3.11366
+      -20.42812       -1.32953       -0.68568       -0.53767       -0.47962
+        0.26378        0.36217        1.19345        1.30881        1.78233
+        1.86671        2.01587        3.11367
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.    7      -75.585384601603    5.08089E-05   -1.22E-07   -7    T
+ DIIS iter.    7    -75.5853846004        7.25447D-05   -1.67D-08  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =    7
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2     Column   3     Column   4
-       1       2.57234635
-       2       0.18331209     0.10813282
-       3       0.13086047    -0.01168740     0.01673520
-       4      -0.00762383     0.00439120    -0.00128807     0.00034710
-       5       0.00121969    -0.00011783     0.00023335     0.00000892
-       6       0.00000728     0.00000058     0.00000014     0.00000346
-       7       0.00003198    -0.00000672     0.00000444    -0.00000058
+       1       4.79500104
+       2       0.37169106     0.07421034
+       3       0.03152502     0.01209536     0.00247925
+       4      -0.00237234     0.00018349     0.00009369     0.00002433
+       5       0.00083627     0.00005356     0.00001702    -0.00000333
+       6      -0.00005929     0.00000214     0.00000137     0.00000093
+       7      -0.00000361    -0.00000091    -0.00000014     0.00000005
 
                Column   5     Column   6     Column   7
-       5       0.00001157
-       6       0.00000194     0.00000061
-       7       0.00000007     0.00000001     0.00000000
+       5       0.00000336
+       6      -0.00000006     0.00000010
+       7       0.00000003     0.00000002     0.00000001
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1      -0.00004898
-       2       0.00061422
-       3      -0.00180721
-       4      -0.01365962
-       5       0.09059677
-       6      -0.23104735
-       7       1.15535217
-       8       0.00000000
-
- DIIS C vector; C2DIIS = F LAMBDA = -2.91E-10
-   -0.000049    0.000614   -0.001807   -0.013660    0.090597   -0.231047
-    1.155352
-
- DIIS Fock eigenvalues in symmetry 1
-      -20.42813       -1.32953       -0.68569       -0.53766       -0.47962
-        0.26379        0.36217        1.19345        1.30881        1.78233
-        1.86671        2.01587        3.11367
-
- ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.    8      -75.585384601755    3.84059E-06   -1.52E-10   -7    T
-
- AUTOCC: current HF occupation   5
-
-
- (DISRED) B matrix:
-
-               Column   1     Column   2     Column   3     Column   4
-       1       2.57234635
-       2       0.18331209     0.10813282
-       3       0.13086047    -0.01168740     0.01673520
-       4      -0.00762383     0.00439120    -0.00128807     0.00034710
-       5       0.00121969    -0.00011783     0.00023335     0.00000892
-       6       0.00000728     0.00000058     0.00000014     0.00000346
-       7       0.00003198    -0.00000672     0.00000444    -0.00000058
-       8      -0.00000161     0.00000026    -0.00000021     0.00000003
-
-               Column   5     Column   6     Column   7     Column   8
-       5       0.00001157
-       6       0.00000194     0.00000061
-       7       0.00000007     0.00000001     0.00000000
-       8       0.00000000     0.00000000     0.00000000     0.00000000
-
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1       0.00000154
-       2      -0.00002918
-       3       0.00015096
-       4       0.00059356
-       5      -0.00593258
-       6       0.01659669
-       7      -0.15270256
-       8       1.14132157
-       9       0.00000000
-
- DIIS C vector; C2DIIS = F LAMBDA = -3.82E-12
-    0.000002   -0.000029    0.000151    0.000594   -0.005933    0.016597
-   -0.152703    1.141322
+ DIIS C vector; C2DIIS = F LAMBDA = -6.41D-10
+   -0.000036    0.000957   -0.005115    0.028471    0.027267   -0.496871
+    1.445327
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
 
  DIIS Fock eigenvalues in symmetry 1
       -20.42813       -1.32953       -0.68569       -0.53766       -0.47962
         0.26378        0.36217        1.19345        1.30881        1.78233
         1.86671        2.01587        3.11367
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.    9      -75.585384601756    5.19134E-07   -1.55E-12   -7    T
+ DIIS iter.    8    -75.5853846015        6.03983D-06   -1.14D-09  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =    8
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2     Column   3     Column   4
-       1       2.57234635
-       2       0.18331209     0.10813282
-       3       0.13086047    -0.01168740     0.01673520
-       4      -0.00762383     0.00439120    -0.00128807     0.00034710
-       5       0.00121969    -0.00011783     0.00023335     0.00000892
-       6       0.00000728     0.00000058     0.00000014     0.00000346
-       7       0.00003198    -0.00000672     0.00000444    -0.00000058
-       8      -0.00000161     0.00000026    -0.00000021     0.00000003
-       9       0.00000015    -0.00000001     0.00000002     0.00000000
+       1       4.79500104
+       2       0.37169106     0.07421034
+       3       0.03152502     0.01209536     0.00247925
+       4      -0.00237234     0.00018349     0.00009369     0.00002433
+       5       0.00083627     0.00005356     0.00001702    -0.00000333
+       6      -0.00005929     0.00000214     0.00000137     0.00000093
+       7      -0.00000361    -0.00000091    -0.00000014     0.00000005
+       8       0.00000009     0.00000003     0.00000001     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
-       5       0.00001157
-       6       0.00000194     0.00000061
-       7       0.00000007     0.00000001     0.00000000
+       5       0.00000336
+       6      -0.00000006     0.00000010
+       7       0.00000003     0.00000002     0.00000001
        8       0.00000000     0.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
+
+ DIIS C vector; C2DIIS = F LAMBDA = -7.73D-12
+    0.000004   -0.000115    0.000605   -0.004125   -0.002159    0.090946
+   -0.324197    1.239040
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+
+ DIIS Fock eigenvalues in symmetry 1
+      -20.42813       -1.32953       -0.68569       -0.53766       -0.47962
+        0.26378        0.36217        1.19345        1.30881        1.78233
+        1.86671        2.01587        3.11367
+ -----------------------------------------------------------------------------
+
+ ITDIIS, energy, error norm, change in energy, scr.thr., difden:
+ DIIS iter.    9    -75.5853846015        6.48415D-07   -3.24D-12  -20    F
+
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =    9
+
+
+ (DIIS_RED) B matrix:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       4.79500104
+       2       0.37169106     0.07421034
+       3       0.03152502     0.01209536     0.00247925
+       4      -0.00237234     0.00018349     0.00009369     0.00002433
+       5       0.00083627     0.00005356     0.00001702    -0.00000333
+       6      -0.00005929     0.00000214     0.00000137     0.00000093
+       7      -0.00000361    -0.00000091    -0.00000014     0.00000005
+       8       0.00000009     0.00000003     0.00000001     0.00000000
+       9       0.00000002     0.00000001     0.00000000    -0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       5       0.00000336
+       6      -0.00000006     0.00000010
+       7       0.00000003     0.00000002     0.00000001
+       8       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     0.00000000
 
                Column   9
        9       0.00000000
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1      -0.00000016
-       2       0.00000471
-       3      -0.00003326
-       4      -0.00009027
-       5       0.00115058
-       6      -0.00333257
-       7       0.03418993
-       8      -0.33930254
-       9       1.30741359
-      10       0.00000000
-
- DIIS C vector; C2DIIS = F LAMBDA = -1.76E-14
-    0.000000    0.000005   -0.000033   -0.000090    0.001151   -0.003333
-    0.034190   -0.339303    1.307414
+ DIIS C vector; C2DIIS = F LAMBDA = -8.95D-14
+   -0.000001    0.000016   -0.000087    0.000619    0.000252   -0.014205
+    0.054981   -0.271899    1.230322
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
 
  DIIS Fock eigenvalues in symmetry 1
       -20.42813       -1.32953       -0.68569       -0.53766       -0.47962
         0.26378        0.36217        1.19345        1.30881        1.78233
         1.86671        2.01587        3.11367
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.   10      -75.585384601756    4.58943E-08   -2.84E-14   -7    T
+ DIIS iter.   10    -75.5853846015        7.39716D-08   -2.84D-14  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =   10
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2     Column   3     Column   4
-       1       2.57234635
-       2       0.18331209     0.10813282
-       3       0.13086047    -0.01168740     0.01673520
-       4      -0.00762383     0.00439120    -0.00128807     0.00034710
-       5       0.00121969    -0.00011783     0.00023335     0.00000892
-       6       0.00000728     0.00000058     0.00000014     0.00000346
-       7       0.00003198    -0.00000672     0.00000444    -0.00000058
-       8      -0.00000161     0.00000026    -0.00000021     0.00000003
-       9       0.00000015    -0.00000001     0.00000002     0.00000000
-      10      -0.00000003     0.00000000     0.00000000     0.00000000
+       1       4.79500104
+       2       0.37169106     0.07421034
+       3       0.03152502     0.01209536     0.00247925
+       4      -0.00237234     0.00018349     0.00009369     0.00002433
+       5       0.00083627     0.00005356     0.00001702    -0.00000333
+       6      -0.00005929     0.00000214     0.00000137     0.00000093
+       7      -0.00000361    -0.00000091    -0.00000014     0.00000005
+       8       0.00000009     0.00000003     0.00000001     0.00000000
+       9       0.00000002     0.00000001     0.00000000    -0.00000000
+      10      -0.00000003    -0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
-       5       0.00001157
-       6       0.00000194     0.00000061
-       7       0.00000007     0.00000001     0.00000000
+       5       0.00000336
+       6      -0.00000006     0.00000010
+       7       0.00000003     0.00000002     0.00000001
        8       0.00000000     0.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     0.00000000
+      10      -0.00000000     0.00000000     0.00000000     0.00000000
 
                Column   9     Column  10
        9       0.00000000
       10       0.00000000     0.00000000
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1       0.00000002
-       2      -0.00000086
-       3       0.00000710
-       4       0.00001508
-       5      -0.00022832
-       6       0.00067949
-       7      -0.00737994
-       8       0.07392018
-       9      -0.30700049
-      10       1.23998774
-      11       0.00000000
-
- DIIS C vector; C2DIIS = F LAMBDA = -3.16E-16
-    0.000000   -0.000001    0.000007    0.000015   -0.000228    0.000679
-   -0.007380    0.073920   -0.307000    1.239988
+ DIIS C vector; C2DIIS = F LAMBDA = -1.37D-15
+    0.000000   -0.000001    0.000007   -0.000051    0.000005    0.001066
+   -0.004372    0.022128   -0.150012    1.131230
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
 
  DIIS Fock eigenvalues in symmetry 1
       -20.42813       -1.32953       -0.68569       -0.53766       -0.47962
         0.26378        0.36217        1.19345        1.30881        1.78233
         1.86671        2.01587        3.11367
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.   11      -75.585384601756    6.35368E-09    0.00E+00   -7    T
+ DIIS iter.   11    -75.5853846015        1.48688D-08   -2.84D-14  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =   10
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2     Column   3     Column   4
        1       0.00000000
-       2       0.00000000     0.10813282
-       3       0.00000000    -0.01168740     0.01673520
-       4       0.00000000     0.00439120    -0.00128807     0.00034710
-       5       0.00000000    -0.00011783     0.00023335     0.00000892
-       6       0.00000000     0.00000058     0.00000014     0.00000346
-       7       0.00000000    -0.00000672     0.00000444    -0.00000058
-       8       0.00000000     0.00000026    -0.00000021     0.00000003
-       9       0.00000000    -0.00000001     0.00000002     0.00000000
-      10       0.00000000     0.00000000     0.00000000     0.00000000
+       2      -0.00000000     0.07421034
+       3      -0.00000000     0.01209536     0.00247925
+       4       0.00000000     0.00018349     0.00009369     0.00002433
+       5      -0.00000000     0.00005356     0.00001702    -0.00000333
+       6       0.00000000     0.00000214     0.00000137     0.00000093
+       7       0.00000000    -0.00000091    -0.00000014     0.00000005
+       8       0.00000000     0.00000003     0.00000001     0.00000000
+       9       0.00000000     0.00000001     0.00000000    -0.00000000
+      10       0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
-       5       0.00001157
-       6       0.00000194     0.00000061
-       7       0.00000007     0.00000001     0.00000000
+       5       0.00000336
+       6      -0.00000006     0.00000010
+       7       0.00000003     0.00000002     0.00000001
        8       0.00000000     0.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     0.00000000
+      10      -0.00000000     0.00000000     0.00000000     0.00000000
 
                Column   9     Column  10
        9       0.00000000
       10       0.00000000     0.00000000
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1       1.25229759
-       2       0.00000010
-       3      -0.00000117
-       4      -0.00000172
-       5       0.00003562
-       6      -0.00010875
-       7       0.00129218
-       8      -0.01371219
-       9       0.05838053
-      10      -0.29818219
-      11       0.00000000
-
- DIIS C vector; C2DIIS = F LAMBDA = -5.96E-18
-    1.252298    0.000000   -0.000001   -0.000002    0.000036   -0.000109
-    0.001292   -0.013712    0.058381   -0.298182
+ DIIS C vector; C2DIIS = F LAMBDA = -1.42D-17
+    1.356590    0.000000   -0.000000    0.000002   -0.000004   -0.000058
+    0.000339   -0.002766    0.031659   -0.385761
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
 
  DIIS Fock eigenvalues in symmetry 1
       -20.42813       -1.32953       -0.68569       -0.53766       -0.47962
         0.26378        0.36217        1.19345        1.30881        1.78233
         1.86671        2.01587        3.11367
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.   12      -75.585384601756    5.75273E-10    1.42E-14   -7    T
+ DIIS iter.   12    -75.5853846015        7.25053D-10    1.42D-14  -20    F
 
- AUTOCC: current HF occupation   5
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =   10
 
 
- (DISRED) B matrix:
+ (DIIS_RED) B matrix:
 
                Column   1     Column   2     Column   3     Column   4
        1       0.00000000
        2       0.00000000     0.00000000
-       3       0.00000000     0.00000000     0.01673520
-       4       0.00000000     0.00000000    -0.00128807     0.00034710
-       5       0.00000000     0.00000000     0.00023335     0.00000892
-       6       0.00000000     0.00000000     0.00000014     0.00000346
-       7       0.00000000     0.00000000     0.00000444    -0.00000058
-       8       0.00000000     0.00000000    -0.00000021     0.00000003
-       9       0.00000000     0.00000000     0.00000002     0.00000000
-      10       0.00000000     0.00000000     0.00000000     0.00000000
+       3      -0.00000000     0.00000000     0.00247925
+       4       0.00000000     0.00000000     0.00009369     0.00002433
+       5      -0.00000000     0.00000000     0.00001702    -0.00000333
+       6       0.00000000     0.00000000     0.00000137     0.00000093
+       7       0.00000000     0.00000000    -0.00000014     0.00000005
+       8       0.00000000     0.00000000     0.00000001     0.00000000
+       9       0.00000000     0.00000000     0.00000000    -0.00000000
+      10       0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
-       5       0.00001157
-       6       0.00000194     0.00000061
-       7       0.00000007     0.00000001     0.00000000
+       5       0.00000336
+       6      -0.00000006     0.00000010
+       7       0.00000003     0.00000002     0.00000001
        8       0.00000000     0.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000
-      10       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000    -0.00000000     0.00000000     0.00000000
+      10      -0.00000000     0.00000000     0.00000000     0.00000000
 
                Column   9     Column  10
        9       0.00000000
       10       0.00000000     0.00000000
 
- (DISRED) Solutions to C1-DIIS set of linear equations
-
-               Column   1
-       1      -0.18102367
-       2       1.16772408
-       3       0.00000002
-       4       0.00000002
-       5      -0.00000064
-       6       0.00000215
-       7      -0.00002715
-       8       0.00029914
-       9      -0.00123914
-      10       0.01426520
-      11       0.00000000
-
- DIIS C vector; C2DIIS = F LAMBDA = -1.97E-21
-   -0.181024    1.167724    0.000000    0.000000   -0.000001    0.000002
-   -0.000027    0.000299   -0.001239    0.014265
+ DIIS C vector; C2DIIS = F LAMBDA = -3.20D-20
+   -0.262927    1.202169    0.000000   -0.000000    0.000000    0.000005
+   -0.000034    0.000337   -0.004718    0.065168
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
 
  DIIS Fock eigenvalues in symmetry 1
       -20.42813       -1.32953       -0.68569       -0.53766       -0.47962
         0.26378        0.36217        1.19345        1.30881        1.78233
         1.86671        2.01587        3.11367
+ -----------------------------------------------------------------------------
 
  ITDIIS, energy, error norm, change in energy, scr.thr., difden:
- DIIS iter.   13      -75.585384601756    7.65772E-12   -1.42E-14   -7    T
+ DIIS iter.   13    -75.5853846015        3.00197D-11    0.00D+00  -20    F
 
- AUTOCC: current HF occupation   5
- DIIS converged in  13 iterations !
+ (DIIS_RED) CONTROL PARAMETERS C2DIIS =         F NEVC =   10
 
 
- *** RHF orbital energy analysis ***
+ (DIIS_RED) B matrix:
+
+               Column   1     Column   2     Column   3     Column   4
+       1     2.210818D-16
+       2     4.519699D-18   5.257013D-19
+       3    -2.799799D-19   7.390096D-21   9.011832D-22
+       4     3.393074D-11   3.189242D-14  -8.017536D-14   2.432938D-05
+       5    -1.618956D-11   1.403986D-13   4.571342D-14  -3.328115D-06
+       6     1.513416D-12   1.298933D-14  -2.606705D-15   9.263714D-07
+       7     9.320654D-14   4.938216D-15   1.674382D-16   5.284058D-08
+       8     1.090832D-14   3.355931D-16  -7.231001D-19   6.218628D-11
+       9     1.269437D-15   3.997634D-18  -1.790714D-18  -1.314675D-10
+      10     9.665164D-16   8.261767D-18  -1.573716D-18   1.566799D-10
+
+               Column   5     Column   6     Column   7     Column   8
+       5     3.359817D-06
+       6    -5.750432D-08   9.711913D-08
+       7     2.861224D-08   1.860183D-08   5.262738D-09
+       8     3.649556D-10   4.538999D-10   2.414040D-10   3.647956D-11
+       9     2.604103D-12  -2.325042D-11   8.656806D-13   2.547337D-12
+      10    -8.104023D-11   6.896892D-12   4.536209D-13   1.256591D-13
+
+               Column   9     Column  10
+       9     4.204424D-13
+      10     2.408134D-14   5.471790D-15
+
+ DIIS C vector; C2DIIS = F LAMBDA = -3.88D-23
+    0.007322   -0.048698    1.042832    0.000000   -0.000000   -0.000000
+    0.000001   -0.000008    0.000118   -0.001565
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+
+ DIIS Fock eigenvalues in symmetry 1
+      -20.42813       -1.32953       -0.68569       -0.53766       -0.47962
+        0.26378        0.36217        1.19345        1.30881        1.78233
+        1.86671        2.01587        3.11367
+ -----------------------------------------------------------------------------
+
+ ITDIIS, energy, error norm, change in energy, scr.thr., difden:
+ DIIS iter.   14    -75.5853846015        1.19927D-12   -1.42D-14  -20    F
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+    (incl. solvent contribution)
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    5
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -20.42812629    -1.32952766    -0.68568839    -0.53765979    -0.47962337
-         0.26378497     0.36216849     1.19345015     1.30881396     1.78232569
+  1    -20.42812629    -1.32952766    -0.68568839    -0.53765979    -0.47962337
+         0.26378497     0.36216849     1.19345016     1.30881396     1.78232569
 
     E(LUMO) :     0.26378497 au (symmetry 1)
   - E(HOMO) :    -0.47962337 au (symmetry 1)
@@ -1343,38 +1016,51 @@ Starting in Wave Function Section -
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -75.585384601756
-     Nuclear repulsion:             9.195434939919
-     Electronic energy:           -84.780819541675
+     QM/MM calculation converged :
 
-     Final gradient norm:           0.000000000008
+        Electrostatic energy:       0.000000000000
+        Polarization energy:        0.000000000000
+        van der Waals energy:       0.005071554785
+        Total QM/MM energy:         0.000000000000
+
+     Final HF energy:             -75.585384601544                 
+     Nuclear repulsion:             9.195434983361
+     Electronic energy:           -84.780819584905
+
+     Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Fri May 27 08:10:00 2005
-     Host name              : kemove2.chem.au.dk                      
+     Date and time (Linux)  : Wed Mar 16 18:31:04 2011 
+     Host name              : fe6                                     
 
-     Molecular orbitals for symmetry species   1
+ (Only coefficients >0.0100 are printed.)
 
- Orbital          1        2        3        4        5
-   1  O   1s    -0.9832   0.2291   0.0000  -0.0884   0.0000
-   2  O   1s    -0.0959  -0.2175   0.0000   0.0822   0.0000
-   3  O   1s     0.0380  -0.7061   0.0000   0.4051   0.0000
-   4  O   2px    0.0000   0.0000  -0.3986   0.0000   0.0000
-   5  O   2py    0.0000   0.0000   0.0000   0.0000   0.5213
-   6  O   2pz   -0.0035  -0.0836   0.0000  -0.4421   0.0000
-   7  O   2px    0.0000   0.0000  -0.3696   0.0000   0.0000
-   8  O   2py    0.0000   0.0000   0.0000   0.0000   0.6321
-   9  O   2pz    0.0068  -0.0935   0.0000  -0.5080   0.0000
-  10  H   1s    -0.0026  -0.1173   0.2340  -0.1309   0.0000
-  11  H   1s    -0.0069  -0.0190   0.1831  -0.1050   0.0000
-  12  H   1s    -0.0026  -0.1173  -0.2340  -0.1309   0.0000
-  13  H   1s    -0.0069  -0.0190  -0.1831  -0.1050   0.0000
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O   :1s     0.9832  -0.2291   0.0000   0.0884   0.0000   0.1093  -0.0000
+   2 O   :1s     0.0959   0.2175  -0.0000  -0.0822   0.0000  -0.0348  -0.0000
+   3 O   :1s    -0.0380   0.7061  -0.0000  -0.4051   0.0000  -1.0459   0.0000
+   4 O   :2px   -0.0000   0.0000   0.3986  -0.0000   0.0000  -0.0000  -0.3030
+   5 O   :2py    0.0000   0.0000   0.0000   0.0000   0.5213   0.0000   0.0000
+   6 O   :2pz    0.0035   0.0836   0.0000   0.4421   0.0000  -0.2090   0.0000
+   7 O   :2px    0.0000  -0.0000   0.3696  -0.0000   0.0000  -0.0000  -0.7749
+   8 O   :2py    0.0000   0.0000   0.0000   0.0000   0.6321   0.0000   0.0000
+   9 O   :2pz   -0.0068   0.0935   0.0000   0.5080   0.0000  -0.4658   0.0000
+  10 H   :1s     0.0026   0.1173  -0.2340   0.1309   0.0000   0.0463  -0.0359
+  11 H   :1s     0.0069   0.0190  -0.1831   0.1050   0.0000   0.8635  -1.1778
+  12 H   :1s     0.0026   0.1173   0.2340   0.1309   0.0000   0.0463   0.0359
+  13 H   :1s     0.0069   0.0190   0.1831   0.1050   0.0000   0.8635   1.1778
 
 
 
@@ -1382,16 +1068,22 @@ Starting in Wave Function Section -
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Fri May 27 08:10:00 2005
-     Host name              : kemove2.chem.au.dk                      
+     Date and time (Linux)  : Wed Mar 16 18:31:04 2011 
+     Host name              : fe6                                     
 
  NOTE:    1 warnings have been issued.
  Check output, result, and error files for "WARNING".
 
-- End of Wave Function Section
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
 
 
-Starting Coupled Cluster -
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
 
   
 
@@ -1404,6 +1096,12 @@ Starting Coupled Cluster -
  *                                                                             *
  *******************************************************************************
  *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
 
    
 
@@ -1424,26 +1122,27 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster MP2   energy :     -75.7077883071738995
- Iter.  1: Coupled cluster CCSD  energy :     -75.7109995617771574
- Iter.  2: Coupled cluster CCSD  energy :     -75.7142881157894152
- Iter.  3: Coupled cluster CCSD  energy :     -75.7146554972370751
- Iter.  4: Coupled cluster CCSD  energy :     -75.7146601123612584
+ Iter.  1: Coupled cluster MP2   energy :     -75.7077883066469468
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7109995612657229
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7142881152341971
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7146554966746521
+ Iter.  4: Coupled cluster CCSD  energy :     -75.7146601117978122
 
  CCSD energy will not be converged further
 
  right now in CCSLV calc.
  Accumulated inner iterations at this point are     4
 
- CCSD  energy converged to within   0.10E-10 is    -75.714660112
-  Change in norm^2 of T-amplitudes in this solvent it.:  0.0218544437
+ CCSD  energy converged to within   0.10D-10 is    -75.714660112
+ Final 2-norm of the CC vector function:  9.79996464D-04
+  Change in norm^2 of T-amplitudes in this solvent it.:  2.18544434674417219E-002
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -1467,24 +1166,22 @@ Starting Coupled Cluster -
 
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 9
-  Change in norm^2 of L-amplitudes in this ccmm it.:  0.121489187
-
- >>> Time used in LR=RCC is  -2.27 seconds
-
- Total <Lambda|H|CC> energy:  -75.7144024
+  Accumulated inner iterations are:           9
+  Change in norm^2 of L-amplitudes in this ccmm it.:  0.12148918645226910     
+ >>> Time used in LR=R is   0.12 seconds
+ Total <Lambda|H|CC> energy:   -75.714402353383605     
             The singles contribution is:             0.0003947624
             The doubles contribution is:            -0.0001370040
 
 
-                        +--------------------------+
-                        ! CCSD Natural Occupations !
-                        +--------------------------+
+                            +--------------------------+
+                            ! CCSD Natural Occupations !
+                            +--------------------------+
 
   
    Symmetry block number:  1
@@ -1507,23 +1204,16 @@ Starting Coupled Cluster -
  *****************************************************************
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
- Norm2 of dipole moment vector:    0.023735032992606
- Norm2 of dipole moment vector:    0.021328167442261
- Norm2 of dipole moment vector:    0.021324701691708
- Norm2 of dipole moment vector:    0.021324506487199
- Norm2 of dipole moment vector:    0.021324508113317
- Norm2 of dipole moment vector:    0.021324508081407
- Norm2 of dipole moment vector:    0.021324508082159
-
- Dipole vector converged in   7 iterations.
+      QM3 induced Dipole vector converged in   7 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.021324508580976
 
 
- E(QM/MM) contribution in iteration  0:           -0.0061729558
- CC energy in the  current CCMM iteration:       -75.7205753098
+ E(QM/MM) contribution in iteration  0:           -0.0061729556
+ CC energy in the  current CCMM iteration:       -75.7205753089
  CC energy in the previous CCMM iteration:         0.0000000000
  Change in Total energy in this CCMM it.:         -0.757206E+02
 
@@ -1534,60 +1224,57 @@ Starting Coupled Cluster -
   
 
 
-        +---------------------------------------------------------+
-        ! Unrelaxed CCSD    First-order one-electron properties:  !
-        +---------------------------------------------------------+
+             +--------------------------------------------------------+
+             ! Unrelaxed CCSD    First-order one-electron properties: !
+             +--------------------------------------------------------+
 
 
 
-                        +--------------------------+
-                        !  Electric Dipole Moment  !
-                        +--------------------------+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
 
 
 
-                      Total Molecular Dipole Moment
-                      -----------------------------
+                          Total Molecular Dipole Moment
+                          -----------------------------
 
-                               au             Debye
+                 au               Debye          C m (/(10**-30)
 
-                    x      0.07694029      0.19556270
-                    y      0.00330588      0.00840271
-                    z      0.93951448      2.38800736
-
-                        1 a.u. =   2.54175 Debye 
+      x      0.07694029         0.19556271         0.65232697
+      y      0.00330588         0.00840271         0.02802844
+      z      0.93951448         2.38800747         7.96553552
 
 
 
 
-
-                      +------------------------------+
-                      !  Electric Quadrupole Moment  !
-                      +------------------------------+
-
+                          +-----------------------------+
+                          !  Electric Quadrupole Moment !
+                          +-----------------------------+
 
 
-                    Total Molecular quadrupole moment
-                    ---------------------------------
+
+                        Total Molecular quadrupole moment
+                        ---------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       1.38362394     0.00064584     0.12121048
-       2       0.00064584    -1.55703991     0.00153553
-       3       0.12121048     0.00153553     0.17341597
+              Column   1    Column   2    Column   3
+       1      1.38362393    0.00064584    0.12121047
+       2      0.00064584   -1.55703990    0.00153553
+       3      0.12121047    0.00153553    0.17341597
 
 
-                  +--------------------------------------+
-                  !  Electronic second moment of charge  !
-                  +--------------------------------------+
+                      +-------------------------------------+
+                      !  Electronic second moment of charge !
+                      +-------------------------------------+
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       7.20197337    -0.00043056    -0.08080698
-       2      -0.00043056     5.07179881    -0.00102369
-       3      -0.08080698    -0.00102369     6.37079892
+              Column   1    Column   2    Column   3
+       1      7.20197334   -0.00043056   -0.08080698
+       2     -0.00043056    5.07179880   -0.00102369
+       3     -0.08080698   -0.00102369    6.37079890
 
  Alfa**2 Invariant:                         38.624448
  Beta**2 Invariant:                          3.477541
@@ -1613,26 +1300,27 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7146601123612584
- Iter.  1: Coupled cluster CCSD  energy :     -75.7146128179476676
- Iter.  2: Coupled cluster CCSD  energy :     -75.7145567096153229
- Iter.  3: Coupled cluster CCSD  energy :     -75.7145465870625713
- Iter.  4: Coupled cluster CCSD  energy :     -75.7145468113800462
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7146601117978122
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7146128173843636
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7145567090510667
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7145465864985709
+ Iter.  4: Coupled cluster CCSD  energy :     -75.7145468108160316
 
  CCSD energy will not be converged further
 
  right now in CCSLV calc.
  Accumulated inner iterations at this point are    13
 
- CCSD  energy converged to within   0.10E-10 is    -75.714546811
-  Change in norm^2 of T-amplitudes in this solvent it.:  8.96229E-05
+ CCSD  energy converged to within   0.10D-10 is    -75.714546811
+ Final 2-norm of the CC vector function:  8.59879613D-05
+  Change in norm^2 of T-amplitudes in this solvent it.:  8.96229037239057447E-005
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -1656,26 +1344,23 @@ Starting Coupled Cluster -
 
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 18
-  Change in norm^2 of L-amplitudes in this ccmm it.:  0.000191349066
-
- >>> Time used in LR=RCC is  -2.10 seconds
-
- Total <Lambda|H|CC> energy:  -75.7140887
+  Accumulated inner iterations are:          18
+  Change in norm^2 of L-amplitudes in this ccmm it.:  1.91349078618729962E-004
+ Total <Lambda|H|CC> energy:   -75.714088670135951     
             The singles contribution is:             0.0006402982
             The doubles contribution is:            -0.0001821575
 
 
-                        +--------------------------+
-                        ! CCSD Natural Occupations !
-                        +--------------------------+
+                            +--------------------------+
+                            ! CCSD Natural Occupations !
+                            +--------------------------+
 
   
    Symmetry block number:  1
@@ -1698,22 +1383,17 @@ Starting Coupled Cluster -
  *****************************************************************
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
- Norm2 of dipole moment vector:    0.021979187211719
- Norm2 of dipole moment vector:    0.021980328924069
- Norm2 of dipole moment vector:    0.021980381820300
- Norm2 of dipole moment vector:    0.021980381404267
- Norm2 of dipole moment vector:    0.021980381413150
-
- Dipole vector converged in   5 iterations.
+      QM3 induced Dipole vector converged in   5 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.021980381937251
 
 
- E(QM/MM) contribution in iteration  1:           -0.0065254842
- CC energy in the  current CCMM iteration:       -75.7206141549
- CC energy in the previous CCMM iteration:       -75.7205753098
+ E(QM/MM) contribution in iteration  1:           -0.0065254840
+ CC energy in the  current CCMM iteration:       -75.7206141541
+ CC energy in the previous CCMM iteration:       -75.7205753089
  Change in Total energy in this CCMM it.:         -0.388452E-04
 
 
@@ -1723,60 +1403,57 @@ Starting Coupled Cluster -
   
 
 
-        +---------------------------------------------------------+
-        ! Unrelaxed CCSD    First-order one-electron properties:  !
-        +---------------------------------------------------------+
+             +--------------------------------------------------------+
+             ! Unrelaxed CCSD    First-order one-electron properties: !
+             +--------------------------------------------------------+
 
 
 
-                        +--------------------------+
-                        !  Electric Dipole Moment  !
-                        +--------------------------+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
 
 
 
-                      Total Molecular Dipole Moment
-                      -----------------------------
+                          Total Molecular Dipole Moment
+                          -----------------------------
 
-                               au             Debye
+                 au               Debye          C m (/(10**-30)
 
-                    x      0.09333683      0.23723853
-                    y      0.00318832      0.00810389
-                    z      0.94727000      2.40771992
-
-                        1 a.u. =   2.54175 Debye 
+      x      0.09333683         0.23723854         0.79134260
+      y      0.00318832         0.00810389         0.02703168
+      z      0.94727000         2.40772003         8.03128955
 
 
 
 
-
-                      +------------------------------+
-                      !  Electric Quadrupole Moment  !
-                      +------------------------------+
-
+                          +-----------------------------+
+                          !  Electric Quadrupole Moment !
+                          +-----------------------------+
 
 
-                    Total Molecular quadrupole moment
-                    ---------------------------------
+
+                        Total Molecular quadrupole moment
+                        ---------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       1.39337038     0.00048685     0.14712261
-       2       0.00048685    -1.56784426     0.00140952
-       3       0.14712261     0.00140952     0.17447388
+              Column   1    Column   2    Column   3
+       1      1.39337037    0.00048685    0.14712261
+       2      0.00048685   -1.56784425    0.00140952
+       3      0.14712261    0.00140952    0.17447388
 
 
-                  +--------------------------------------+
-                  !  Electronic second moment of charge  !
-                  +--------------------------------------+
+                      +-------------------------------------+
+                      !  Electronic second moment of charge !
+                      +-------------------------------------+
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       7.18827535    -0.00032457    -0.09808174
-       2      -0.00032457     5.07180130    -0.00093968
-       3      -0.09808174    -0.00093968     6.36289325
+              Column   1    Column   2    Column   3
+       1      7.18827532   -0.00032457   -0.09808174
+       2     -0.00032457    5.07180130   -0.00093968
+       3     -0.09808174   -0.00093968    6.36289323
 
  Alfa**2 Invariant:                         38.535001
  Beta**2 Invariant:                          3.442681
@@ -1802,26 +1479,27 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7145468113800462
- Iter.  1: Coupled cluster CCSD  energy :     -75.7145459648790506
- Iter.  2: Coupled cluster CCSD  energy :     -75.7145447283693471
- Iter.  3: Coupled cluster CCSD  energy :     -75.7145444975466120
- Iter.  4: Coupled cluster CCSD  energy :     -75.7145444949274236
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7145468108160316
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7145459643149508
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7145447278055173
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7145444969824268
+ Iter.  4: Coupled cluster CCSD  energy :     -75.7145444943633805
 
  CCSD energy will not be converged further
 
  right now in CCSLV calc.
  Accumulated inner iterations at this point are    22
 
- CCSD  energy converged to within   0.10E-10 is    -75.714544495
-  Change in norm^2 of T-amplitudes in this solvent it.:  3.65130172E-06
+ CCSD  energy converged to within   0.10D-10 is    -75.714544494
+ Final 2-norm of the CC vector function:  2.47984347D-06
+  Change in norm^2 of T-amplitudes in this solvent it.:  3.65130188491671892E-006
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -1845,26 +1523,23 @@ Starting Coupled Cluster -
 
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 27
-  Change in norm^2 of L-amplitudes in this ccmm it.:  7.49452764E-06
-
- >>> Time used in LR=RCC is  -1.92 seconds
-
- Total <Lambda|H|CC> energy:  -75.7140786
+  Accumulated inner iterations are:          27
+  Change in norm^2 of L-amplitudes in this ccmm it.:  7.49452818801787934E-006
+ Total <Lambda|H|CC> energy:   -75.714078584128998     
             The singles contribution is:             0.0006480175
             The doubles contribution is:            -0.0001821073
 
 
-                        +--------------------------+
-                        ! CCSD Natural Occupations !
-                        +--------------------------+
+                            +--------------------------+
+                            ! CCSD Natural Occupations !
+                            +--------------------------+
 
   
    Symmetry block number:  1
@@ -1887,22 +1562,17 @@ Starting Coupled Cluster -
  *****************************************************************
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
- Norm2 of dipole moment vector:    0.021997655682256
- Norm2 of dipole moment vector:    0.021997685663860
- Norm2 of dipole moment vector:    0.021997687047245
- Norm2 of dipole moment vector:    0.021997687036411
- Norm2 of dipole moment vector:    0.021997687036644
-
- Dipole vector converged in   5 iterations.
+      QM3 induced Dipole vector converged in   5 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.021997687561619
 
 
- E(QM/MM) contribution in iteration  2:           -0.0065346945
- CC energy in the  current CCMM iteration:       -75.7206132792
- CC energy in the previous CCMM iteration:       -75.7206141549
+ E(QM/MM) contribution in iteration  2:           -0.0065346943
+ CC energy in the  current CCMM iteration:       -75.7206132784
+ CC energy in the previous CCMM iteration:       -75.7206141541
  Change in Total energy in this CCMM it.:          0.875728E-06
 
 
@@ -1912,62 +1582,59 @@ Starting Coupled Cluster -
   
 
 
-        +---------------------------------------------------------+
-        ! Unrelaxed CCSD    First-order one-electron properties:  !
-        +---------------------------------------------------------+
+             +--------------------------------------------------------+
+             ! Unrelaxed CCSD    First-order one-electron properties: !
+             +--------------------------------------------------------+
 
 
 
-                        +--------------------------+
-                        !  Electric Dipole Moment  !
-                        +--------------------------+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
 
 
 
-                      Total Molecular Dipole Moment
-                      -----------------------------
+                          Total Molecular Dipole Moment
+                          -----------------------------
 
-                               au             Debye
+                 au               Debye          C m (/(10**-30)
 
-                    x      0.09377745      0.23835846
-                    y      0.00318400      0.00809292
-                    z      0.94746688      2.40822032
-
-                        1 a.u. =   2.54175 Debye 
+      x      0.09377745         0.23835848         0.79507829
+      y      0.00318400         0.00809293         0.02699509
+      z      0.94746688         2.40822043         8.03295870
 
 
 
 
-
-                      +------------------------------+
-                      !  Electric Quadrupole Moment  !
-                      +------------------------------+
-
+                          +-----------------------------+
+                          !  Electric Quadrupole Moment !
+                          +-----------------------------+
 
 
-                    Total Molecular quadrupole moment
-                    ---------------------------------
+
+                        Total Molecular quadrupole moment
+                        ---------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       1.39360303     0.00048166     0.14780292
-       2       0.00048166    -1.56810510     0.00140581
-       3       0.14780292     0.00140581     0.17450207
+              Column   1    Column   2    Column   3
+       1      1.39360302    0.00048166    0.14780292
+       2      0.00048166   -1.56810509    0.00140581
+       3      0.14780292    0.00140581    0.17450206
 
 
-                  +--------------------------------------+
-                  !  Electronic second moment of charge  !
-                  +--------------------------------------+
+                      +-------------------------------------+
+                      !  Electronic second moment of charge !
+                      +-------------------------------------+
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       7.18794399    -0.00032111    -0.09853528
-       2      -0.00032111     5.07179894    -0.00093721
-       3      -0.09853528    -0.00093721     6.36269820
+              Column   1    Column   2    Column   3
+       1      7.18794395   -0.00032111   -0.09853528
+       2     -0.00032111    5.07179893   -0.00093721
+       3     -0.09853528   -0.00093721    6.36269818
 
- Alfa**2 Invariant:                         38.532813
+ Alfa**2 Invariant:                         38.532812
  Beta**2 Invariant:                          3.441891
 
  Isotropic Property:                         6.207480 a.u.
@@ -1991,26 +1658,27 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7145444949274236
- Iter.  1: Coupled cluster CCSD  energy :     -75.7145444695045455
- Iter.  2: Coupled cluster CCSD  energy :     -75.7145444353195529
- Iter.  3: Coupled cluster CCSD  energy :     -75.7145444282328128
- Iter.  4: Coupled cluster CCSD  energy :     -75.7145444279773159
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7145444943633805
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7145444689404883
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7145444347554815
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7145444276688693
+ Iter.  4: Coupled cluster CCSD  energy :     -75.7145444274135144
 
  CCSD energy will not be converged further
 
  right now in CCSLV calc.
  Accumulated inner iterations at this point are    31
 
- CCSD  energy converged to within   0.10E-10 is    -75.714544428
-  Change in norm^2 of T-amplitudes in this solvent it.:  7.7792107E-08
+ CCSD  energy converged to within   0.10D-10 is    -75.714544427
+ Final 2-norm of the CC vector function:  6.87939434D-08
+  Change in norm^2 of T-amplitudes in this solvent it.:  7.77921127965985892E-008
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -2034,26 +1702,23 @@ Starting Coupled Cluster -
 
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 36
-  Change in norm^2 of L-amplitudes in this ccmm it.:  1.76631672E-07
-
- >>> Time used in LR=RCC is  -1.74 seconds
-
- Total <Lambda|H|CC> energy:  -75.7140783
+  Accumulated inner iterations are:          36
+  Change in norm^2 of L-amplitudes in this ccmm it.:  1.76631688109107898E-007
+ Total <Lambda|H|CC> energy:   -75.714078348091846     
             The singles contribution is:             0.0006482026
             The doubles contribution is:            -0.0001821232
 
 
-                        +--------------------------+
-                        ! CCSD Natural Occupations !
-                        +--------------------------+
+                            +--------------------------+
+                            ! CCSD Natural Occupations !
+                            +--------------------------+
 
   
    Symmetry block number:  1
@@ -2076,22 +1741,18 @@ Starting Coupled Cluster -
  *****************************************************************
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
- Norm2 of dipole moment vector:    0.021998127348361
- Norm2 of dipole moment vector:    0.021998128109484
- Norm2 of dipole moment vector:    0.021998128144606
- Norm2 of dipole moment vector:    0.021998128144331
-
- Dipole vector converged in   4 iterations.
+      QM3 induced Dipole vector converged in   4 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.021998128669334
 
 
- E(QM/MM) contribution in iteration  3:           -0.0065349283
- CC energy in the  current CCMM iteration:       -75.7206132769
- CC energy in the previous CCMM iteration:       -75.7206132792
- Change in Total energy in this CCMM it.:          0.227308E-08
+ E(QM/MM) contribution in iteration  3:           -0.0065349280
+ CC energy in the  current CCMM iteration:       -75.7206132761
+ CC energy in the previous CCMM iteration:       -75.7206132784
+ Change in Total energy in this CCMM it.:          0.227283E-08
 
 
  *****************************************************************
@@ -2100,62 +1761,59 @@ Starting Coupled Cluster -
   
 
 
-        +---------------------------------------------------------+
-        ! Unrelaxed CCSD    First-order one-electron properties:  !
-        +---------------------------------------------------------+
+             +--------------------------------------------------------+
+             ! Unrelaxed CCSD    First-order one-electron properties: !
+             +--------------------------------------------------------+
 
 
 
-                        +--------------------------+
-                        !  Electric Dipole Moment  !
-                        +--------------------------+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
 
 
 
-                      Total Molecular Dipole Moment
-                      -----------------------------
+                          Total Molecular Dipole Moment
+                          -----------------------------
 
-                               au             Debye
+                 au               Debye          C m (/(10**-30)
 
-                    x      0.09378840      0.23838632
-                    y      0.00318384      0.00809253
-                    z      0.94747222      2.40823391
-
-                        1 a.u. =   2.54175 Debye 
+      x      0.09378840         0.23838633         0.79517121
+      y      0.00318384         0.00809253         0.02699376
+      z      0.94747222         2.40823403         8.03300404
 
 
 
 
-
-                      +------------------------------+
-                      !  Electric Quadrupole Moment  !
-                      +------------------------------+
-
+                          +-----------------------------+
+                          !  Electric Quadrupole Moment !
+                          +-----------------------------+
 
 
-                    Total Molecular quadrupole moment
-                    ---------------------------------
+
+                        Total Molecular quadrupole moment
+                        ---------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       1.39360920     0.00048152     0.14781985
-       2       0.00048152    -1.56811207     0.00140569
-       3       0.14781985     0.00140569     0.17450287
+              Column   1    Column   2    Column   3
+       1      1.39360920    0.00048152    0.14781985
+       2      0.00048152   -1.56811206    0.00140569
+       3      0.14781985    0.00140569    0.17450287
 
 
-                  +--------------------------------------+
-                  !  Electronic second moment of charge  !
-                  +--------------------------------------+
+                      +-------------------------------------+
+                      !  Electronic second moment of charge !
+                      +-------------------------------------+
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       7.18793511    -0.00032101    -0.09854657
-       2      -0.00032101     5.07179883    -0.00093713
-       3      -0.09854657    -0.00093713     6.36269291
+              Column   1    Column   2    Column   3
+       1      7.18793508   -0.00032101   -0.09854657
+       2     -0.00032101    5.07179882   -0.00093713
+       3     -0.09854657   -0.00093713    6.36269288
 
- Alfa**2 Invariant:                         38.532754
+ Alfa**2 Invariant:                         38.532753
  Beta**2 Invariant:                          3.441870
 
  Isotropic Property:                         6.207476 a.u.
@@ -2179,26 +1837,27 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7145444279773159
- Iter.  1: Coupled cluster CCSD  energy :     -75.7145444273266435
- Iter.  2: Coupled cluster CCSD  energy :     -75.7145444264511269
- Iter.  3: Coupled cluster CCSD  energy :     -75.7145444262574756
- Iter.  4: Coupled cluster CCSD  energy :     -75.7145444262479543
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7145444274135144
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7145444267626573
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7145444258868281
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7145444256935605
+ Iter.  4: Coupled cluster CCSD  energy :     -75.7145444256838829
 
  CCSD energy will not be converged further
 
  right now in CCSLV calc.
  Accumulated inner iterations at this point are    40
 
- CCSD  energy converged to within   0.10E-10 is    -75.714544426
-  Change in norm^2 of T-amplitudes in this solvent it.:  1.75769858E-09
+ CCSD  energy converged to within   0.10D-10 is    -75.714544426
+ Final 2-norm of the CC vector function:  1.85301942D-09
+  Change in norm^2 of T-amplitudes in this solvent it.:  1.75769878166254223E-009
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -2222,26 +1881,23 @@ Starting Coupled Cluster -
 
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 45
-  Change in norm^2 of L-amplitudes in this ccmm it.:  4.22406894E-09
-
- >>> Time used in LR=RCC is  -1.57 seconds
-
- Total <Lambda|H|CC> energy:  -75.7140783
+  Accumulated inner iterations are:          45
+  Change in norm^2 of L-amplitudes in this ccmm it.:  4.22407056555051952E-009
+ Total <Lambda|H|CC> energy:   -75.714078342445447     
             The singles contribution is:             0.0006482070
             The doubles contribution is:            -0.0001821238
 
 
-                        +--------------------------+
-                        ! CCSD Natural Occupations !
-                        +--------------------------+
+                            +--------------------------+
+                            ! CCSD Natural Occupations !
+                            +--------------------------+
 
   
    Symmetry block number:  1
@@ -2264,21 +1920,18 @@ Starting Coupled Cluster -
  *****************************************************************
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
- Norm2 of dipole moment vector:    0.021998139192770
- Norm2 of dipole moment vector:    0.021998139211850
- Norm2 of dipole moment vector:    0.021998139212730
-
- Dipole vector converged in   3 iterations.
+      QM3 induced Dipole vector converged in   3 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.021998139737733
 
 
- E(QM/MM) contribution in iteration  4:           -0.0065349341
- CC energy in the  current CCMM iteration:       -75.7206132771
- CC energy in the previous CCMM iteration:       -75.7206132769
- Change in Total energy in this CCMM it.:         -0.199378E-09
+ E(QM/MM) contribution in iteration  4:           -0.0065349339
+ CC energy in the  current CCMM iteration:       -75.7206132763
+ CC energy in the previous CCMM iteration:       -75.7206132761
+ Change in Total energy in this CCMM it.:         -0.199094E-09
 
 
  *****************************************************************
@@ -2287,66 +1940,63 @@ Starting Coupled Cluster -
   
 
 
-        +---------------------------------------------------------+
-        ! Unrelaxed CCSD    First-order one-electron properties:  !
-        +---------------------------------------------------------+
+             +--------------------------------------------------------+
+             ! Unrelaxed CCSD    First-order one-electron properties: !
+             +--------------------------------------------------------+
 
 
 
-                        +--------------------------+
-                        !  Electric Dipole Moment  !
-                        +--------------------------+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
 
 
 
-                      Total Molecular Dipole Moment
-                      -----------------------------
+                          Total Molecular Dipole Moment
+                          -----------------------------
 
-                               au             Debye
+                 au               Debye          C m (/(10**-30)
 
-                    x      0.09378868      0.23838701
-                    y      0.00318384      0.00809251
-                    z      0.94747236      2.40823426
-
-                        1 a.u. =   2.54175 Debye 
+      x      0.09378868         0.23838702         0.79517350
+      y      0.00318384         0.00809251         0.02699371
+      z      0.94747236         2.40823438         8.03300522
 
 
 
 
-
-                      +------------------------------+
-                      !  Electric Quadrupole Moment  !
-                      +------------------------------+
-
+                          +-----------------------------+
+                          !  Electric Quadrupole Moment !
+                          +-----------------------------+
 
 
-                    Total Molecular quadrupole moment
-                    ---------------------------------
+
+                        Total Molecular quadrupole moment
+                        ---------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       1.39360936     0.00048152     0.14782027
-       2       0.00048152    -1.56811225     0.00140569
-       3       0.14782027     0.00140569     0.17450289
+              Column   1    Column   2    Column   3
+       1      1.39360935    0.00048152    0.14782027
+       2      0.00048152   -1.56811224    0.00140569
+       3      0.14782027    0.00140569    0.17450289
 
 
-                  +--------------------------------------+
-                  !  Electronic second moment of charge  !
-                  +--------------------------------------+
+                      +-------------------------------------+
+                      !  Electronic second moment of charge !
+                      +-------------------------------------+
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       7.18793488    -0.00032101    -0.09854685
-       2      -0.00032101     5.07179882    -0.00093713
-       3      -0.09854685    -0.00093713     6.36269277
+              Column   1    Column   2    Column   3
+       1      7.18793485   -0.00032101   -0.09854685
+       2     -0.00032101    5.07179882   -0.00093713
+       3     -0.09854685   -0.00093713    6.36269274
 
  Alfa**2 Invariant:                         38.532752
  Beta**2 Invariant:                          3.441869
 
  Isotropic Property:                         6.207475 a.u.
- Property anisotropy invariant:              1.855228 a.u.
+ Property anisotropy invariant:              1.855227 a.u.
    
 
  *******************************************************************
@@ -2366,20 +2016,21 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7145444262479543
- Iter.  1: Coupled cluster CCSD  energy :     -75.7145444262318961
- Iter.  2: Coupled cluster CCSD  energy :     -75.7145444262099545
- Iter.  3: Coupled cluster CCSD  energy :     -75.7145444262049239
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7145444256838829
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7145444256677393
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7145444256458120
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7145444256411224
 
- CCSD  energy converged to within   0.10E-10 is    -75.714544426
-  Change in norm^2 of T-amplitudes in this solvent it.:  4.11509993E-11
+ CCSD  energy converged to within   0.10D-10 is    -75.714544426
+ Final 2-norm of the CC vector function:  1.71071677D-10
+  Change in norm^2 of T-amplitudes in this solvent it.:  4.11510409081827788E-011
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -2403,26 +2054,23 @@ Starting Coupled Cluster -
 
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 53
-  Change in norm^2 of L-amplitudes in this ccmm it.:  1.02204759E-10
-
- >>> Time used in LR=RCC is  -1.40 seconds
-
- Total <Lambda|H|CC> energy:  -75.7140783
-            The singles contribution is:             0.0006482071
+  Accumulated inner iterations are:          53
+  Change in norm^2 of L-amplitudes in this ccmm it.:  1.02203634444464342E-010
+ Total <Lambda|H|CC> energy:   -75.714078342314906     
+            The singles contribution is:             0.0006482072
             The doubles contribution is:            -0.0001821238
 
 
-                        +--------------------------+
-                        ! CCSD Natural Occupations !
-                        +--------------------------+
+                            +--------------------------+
+                            ! CCSD Natural Occupations !
+                            +--------------------------+
 
   
    Symmetry block number:  1
@@ -2445,20 +2093,18 @@ Starting Coupled Cluster -
  *****************************************************************
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
- Norm2 of dipole moment vector:    0.021998139484838
- Norm2 of dipole moment vector:    0.021998139485309
-
- Dipole vector converged in   2 iterations.
+      QM3 induced Dipole vector converged in   2 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.021998140010312
 
 
- E(QM/MM) contribution in iteration  5:           -0.0065349343
- CC energy in the  current CCMM iteration:       -75.7206132771
- CC energy in the previous CCMM iteration:       -75.7206132771
- Change in Total energy in this CCMM it.:         -0.126619E-10
+ E(QM/MM) contribution in iteration  5:           -0.0065349340
+ CC energy in the  current CCMM iteration:       -75.7206132763
+ CC energy in the previous CCMM iteration:       -75.7206132763
+ Change in Total energy in this CCMM it.:         -0.129603E-10
 
 
  *****************************************************************
@@ -2467,66 +2113,63 @@ Starting Coupled Cluster -
   
 
 
-        +---------------------------------------------------------+
-        ! Unrelaxed CCSD    First-order one-electron properties:  !
-        +---------------------------------------------------------+
+             +--------------------------------------------------------+
+             ! Unrelaxed CCSD    First-order one-electron properties: !
+             +--------------------------------------------------------+
 
 
 
-                        +--------------------------+
-                        !  Electric Dipole Moment  !
-                        +--------------------------+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
 
 
 
-                      Total Molecular Dipole Moment
-                      -----------------------------
+                          Total Molecular Dipole Moment
+                          -----------------------------
 
-                               au             Debye
+                 au               Debye          C m (/(10**-30)
 
-                    x      0.09378868      0.23838703
-                    y      0.00318384      0.00809251
-                    z      0.94747237      2.40823427
-
-                        1 a.u. =   2.54175 Debye 
+      x      0.09378868         0.23838704         0.79517356
+      y      0.00318384         0.00809251         0.02699371
+      z      0.94747237         2.40823439         8.03300525
 
 
 
 
-
-                      +------------------------------+
-                      !  Electric Quadrupole Moment  !
-                      +------------------------------+
-
+                          +-----------------------------+
+                          !  Electric Quadrupole Moment !
+                          +-----------------------------+
 
 
-                    Total Molecular quadrupole moment
-                    ---------------------------------
+
+                        Total Molecular quadrupole moment
+                        ---------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       1.39360936     0.00048152     0.14782028
-       2       0.00048152    -1.56811226     0.00140569
-       3       0.14782028     0.00140569     0.17450289
+              Column   1    Column   2    Column   3
+       1      1.39360936    0.00048152    0.14782028
+       2      0.00048152   -1.56811225    0.00140569
+       3      0.14782028    0.00140569    0.17450289
 
 
-                  +--------------------------------------+
-                  !  Electronic second moment of charge  !
-                  +--------------------------------------+
+                      +-------------------------------------+
+                      !  Electronic second moment of charge !
+                      +-------------------------------------+
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       7.18793488    -0.00032101    -0.09854685
-       2      -0.00032101     5.07179882    -0.00093713
-       3      -0.09854685    -0.00093713     6.36269276
+              Column   1    Column   2    Column   3
+       1      7.18793484   -0.00032101   -0.09854685
+       2     -0.00032101    5.07179882   -0.00093713
+       3     -0.09854685   -0.00093713    6.36269274
 
  Alfa**2 Invariant:                         38.532752
  Beta**2 Invariant:                          3.441869
 
  Isotropic Property:                         6.207475 a.u.
- Property anisotropy invariant:              1.855228 a.u.
+ Property anisotropy invariant:              1.855227 a.u.
    
 
  *******************************************************************
@@ -2546,18 +2189,19 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7145444262049239
- Iter.  1: Coupled cluster CCSD  energy :     -75.7145444262045260
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7145444256411224
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7145444256405966
 
- CCSD  energy converged to within   0.10E-10 is    -75.714544426
-  Change in norm^2 of T-amplitudes in this solvent it.:  2.93130104E-13
+ CCSD  energy converged to within   0.10D-10 is    -75.714544426
+ Final 2-norm of the CC vector function:  5.50369185D-11
+  Change in norm^2 of T-amplitudes in this solvent it.:  2.92925406153443646E-013
 
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -2581,24 +2225,21 @@ Starting Coupled Cluster -
 
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
-  Change in norm^2 of L-amplitudes in this ccmm it.:  2.75804379E-12
-
- >>> Time used in LR=RCC is  -1.28 seconds
-
- Total <Lambda|H|CC> energy:  -75.7140783
-            The singles contribution is:             0.0006482071
+  Change in norm^2 of L-amplitudes in this ccmm it.:  2.75851563813489520E-012
+ Total <Lambda|H|CC> energy:   -75.714078342311183     
+            The singles contribution is:             0.0006482072
             The doubles contribution is:            -0.0001821238
 
 
-                        +--------------------------+
-                        ! CCSD Natural Occupations !
-                        +--------------------------+
+                            +--------------------------+
+                            ! CCSD Natural Occupations !
+                            +--------------------------+
 
   
    Symmetry block number:  1
@@ -2621,35 +2262,24 @@ Starting Coupled Cluster -
  *****************************************************************
 
 
-                     +--------------------------------+
-                     ! Coupled Cluster model is: CCSD !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Coupled Cluster model is: CCSD !
+                         +--------------------------------+
 
- Norm2 of dipole moment vector:    0.021998139490590
- Norm2 of dipole moment vector:    0.021998139490599
-
- Dipole vector converged in   2 iterations.
+      QM3 induced Dipole vector converged in   2 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.021998140015602
 
 
- E(QM/MM) contribution in iteration  6:           -0.0065349343
- CC energy in the  current CCMM iteration:       -75.7206132771
- CC energy in the previous CCMM iteration:       -75.7206132771
- Change in Total energy in this CCMM it.:          0.824230E-12
+ E(QM/MM) contribution in iteration  6:           -0.0065349340
+ CC energy in the  current CCMM iteration:       -75.7206132763
+ CC energy in the previous CCMM iteration:       -75.7206132763
+ Change in Total energy in this CCMM it.:          0.980549E-12
 
 
  Perturbative correction to polarization energy is calculated
  (Model SPC_EC3)
-
-
- Norm2 of dipole moment vector:    0.038193370034429
- Norm2 of dipole moment vector:    0.038127979968607
- Norm2 of dipole moment vector:    0.038128319425438
- Norm2 of dipole moment vector:    0.038128270799216
- Norm2 of dipole moment vector:    0.038128272355709
- Norm2 of dipole moment vector:    0.038128272302051
- Norm2 of dipole moment vector:    0.038128272304639
-
- Dipole vector converged in   7 iterations.
+      QM3 induced Dipole vector converged in   7 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.038128273165118
 
 
  ------------------------------------------------------------------------
@@ -2663,7 +2293,7 @@ Starting Coupled Cluster -
  ------------------------------------------------------------------------
  |**************************************************|*******************|
  ------------------------------------------------------------------------
- |  E(MM/MM) = Eelec + Epol + Evdw                  |       -0.01235532 |
+ |  E(MM/MM) = Eelec + Epol + Evdw                  |       -0.01235531 |
  ------------------------------------------------------------------------
 
 
@@ -2672,13 +2302,13 @@ Starting Coupled Cluster -
  +======================================================================+
  |      Eelec      |      Epol       |      Evdw       |    E(QM/MM)    |
  +----------------------------------------------------------------------+
- |   -0.0101930838 |   -0.0014132324 |    0.0050715544 |  -0.0065349343 |
+ |   -0.0101930839 |   -0.0014132325 |    0.0050715548 |  -0.0065349340 |
  +----------------------------------------------------------------------+
  +======================================================================+
  +----------------------------------------------------------------------+
  |  <L|H(vac)|CC>  | <H(qm)+H(qmmm)> | Delta E(mm/mm)  | E_rep          |
  +----------------------------------------------------------------------+
- |  -75.7140783429 |  -75.7206132771 |   -0.0000018504 |   0.0000000000 |
+ |  -75.7140783423 |  -75.7206132763 |   -0.0000018504 |   0.0000000000 |
  +======================================================================+
 
 
@@ -2694,66 +2324,63 @@ Starting Coupled Cluster -
   
 
 
-        +---------------------------------------------------------+
-        ! Unrelaxed CCSD    First-order one-electron properties:  !
-        +---------------------------------------------------------+
+             +--------------------------------------------------------+
+             ! Unrelaxed CCSD    First-order one-electron properties: !
+             +--------------------------------------------------------+
 
 
 
-                        +--------------------------+
-                        !  Electric Dipole Moment  !
-                        +--------------------------+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
 
 
 
-                      Total Molecular Dipole Moment
-                      -----------------------------
+                          Total Molecular Dipole Moment
+                          -----------------------------
 
-                               au             Debye
+                 au               Debye          C m (/(10**-30)
 
-                    x      0.09378868      0.23838703
-                    y      0.00318384      0.00809251
-                    z      0.94747237      2.40823427
-
-                        1 a.u. =   2.54175 Debye 
+      x      0.09378868         0.23838704         0.79517356
+      y      0.00318384         0.00809251         0.02699371
+      z      0.94747237         2.40823439         8.03300525
 
 
 
 
-
-                      +------------------------------+
-                      !  Electric Quadrupole Moment  !
-                      +------------------------------+
-
+                          +-----------------------------+
+                          !  Electric Quadrupole Moment !
+                          +-----------------------------+
 
 
-                    Total Molecular quadrupole moment
-                    ---------------------------------
+
+                        Total Molecular quadrupole moment
+                        ---------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       1.39360936     0.00048152     0.14782028
-       2       0.00048152    -1.56811226     0.00140569
-       3       0.14782028     0.00140569     0.17450289
+              Column   1    Column   2    Column   3
+       1      1.39360936    0.00048152    0.14782028
+       2      0.00048152   -1.56811225    0.00140569
+       3      0.14782028    0.00140569    0.17450289
 
 
-                  +--------------------------------------+
-                  !  Electronic second moment of charge  !
-                  +--------------------------------------+
+                      +-------------------------------------+
+                      !  Electronic second moment of charge !
+                      +-------------------------------------+
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       7.18793488    -0.00032101    -0.09854685
-       2      -0.00032101     5.07179882    -0.00093713
-       3      -0.09854685    -0.00093713     6.36269276
+              Column   1    Column   2    Column   3
+       1      7.18793484   -0.00032101   -0.09854685
+       2     -0.00032101    5.07179882   -0.00093713
+       3     -0.09854685   -0.00093713    6.36269274
 
  Alfa**2 Invariant:                         38.532752
  Beta**2 Invariant:                          3.441869
 
  Isotropic Property:                         6.207475 a.u.
- Property anisotropy invariant:              1.855228 a.u.
+ Property anisotropy invariant:              1.855227 a.u.
    
 
  *******************************************************************
@@ -2766,9 +2393,9 @@ Starting Coupled Cluster -
 
 
 
-                       +----------------------------+
-                       !  CCSD Excitation Energies  !
-                       +----------------------------+
+                           +---------------------------+
+                           !  CCSD Excitation Energies !
+                           +---------------------------+
 
 
  --------------------------
@@ -2793,13 +2420,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3265166668        8.8849702182
+         1            0.3265166689        8.8849705293
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.387561676122175
+@@    1    1           -75.387561673377277
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2819,8 +2446,6 @@ Starting Coupled Cluster -
 
           ||T1||/||T2||                  :               5.0206
 
-          Tau1 diagnostic                :               0.3101
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -2831,10 +2456,10 @@ Starting Coupled Cluster -
  | 1   1   |   1       5     |       33          |              |    0.943763  |
  | 1   1   |   2       5     |       34          |              |   -0.258957  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   5   2 |       33        9 |          537 |    0.068014  |
- | 1 1 1 1 |   2   1   5   3 |       34       17 |          578 |    0.061688  |
- | 1 1 1 1 |   1   2   5   3 |       33       18 |          546 |    0.102999  |
- | 1 1 1 1 |   1   1   5   4 |       33       25 |          553 |    0.069168  |
+ | 1 1 1 1 |   1   1   5   2 |       33        9 |          537 |   -0.068014  |
+ | 1 1 1 1 |   2   1   5   3 |       34       17 |          578 |   -0.061688  |
+ | 1 1 1 1 |   1   2   5   3 |       33       18 |          546 |   -0.102999  |
+ | 1 1 1 1 |   1   1   5   4 |       33       25 |          553 |   -0.069168  |
  | 1 1 1 1 |   5   1   5   5 |       37       33 |          699 |    0.044595  |
  +=============================================================================+
 
@@ -2866,9 +2491,9 @@ Starting Coupled Cluster -
 
 
 
-                       +----------------------------+
-                       !  CCSD Excitation Energies  !
-                       +----------------------------+
+                           +---------------------------+
+                           !  CCSD Excitation Energies !
+                           +---------------------------+
 
 
  --------------------------
@@ -2879,7 +2504,7 @@ Starting Coupled Cluster -
  Length of Excitation vectors in this class is:       860
  Converging for  1 roots.
  Vector nr.  1 of type LE  and symmetry  1 was not found on file.
-Try to use right eigenvector as startfor a left eigenvector.
+Try to use right eigenvector as start for a left eigenvector.
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a  CCSD      RE vector
 
@@ -2894,13 +2519,13 @@ Try to use right eigenvector as startfor a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3265169289        8.8849773507
+         1            0.3265169311        8.8849776619
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.387561414005816
+@@    1    1           -75.387561411260933
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2920,8 +2545,6 @@ Try to use right eigenvector as startfor a left eigenvector.
 
           ||T1||/||T2||                  :               3.3108
 
-          Tau1 diagnostic                :               0.3027
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -2932,10 +2555,10 @@ Try to use right eigenvector as startfor a left eigenvector.
  | 1   1   |   1       5     |       33          |              |    0.921694  |
  | 1   1   |   2       5     |       34          |              |   -0.251755  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   5   2 |       33        9 |          537 |    0.069302  |
- | 1 1 1 1 |   1   2   5   3 |       33       18 |          546 |    0.182820  |
- | 1 1 1 1 |   1   3   5   3 |       33       19 |          547 |   -0.073373  |
- | 1 1 1 1 |   1   1   5   4 |       33       25 |          553 |    0.076961  |
+ | 1 1 1 1 |   1   1   5   2 |       33        9 |          537 |   -0.069302  |
+ | 1 1 1 1 |   1   2   5   3 |       33       18 |          546 |   -0.182820  |
+ | 1 1 1 1 |   1   3   5   3 |       33       19 |          547 |    0.073373  |
+ | 1 1 1 1 |   1   1   5   4 |       33       25 |          553 |   -0.076961  |
  | 1 1 1 1 |   1   6   5   4 |       33       30 |          558 |   -0.071884  |
  +=============================================================================+
 
@@ -2991,24 +2614,36 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED PROPERTY OPERATORS: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED PROPERTY OPERATORS: !
+                         +-------------------------------+
 
              Index   Oper. Label  Symmetry  Transp.  PDBS  Atom
              --------------------------------------------------
                 1     HAM0            1        1      T      0
                 2     XDIPLEN         1        1      F      0
-                3     YDIPLEN         1        1      F      0
-                4     ZDIPLEN         1        1      F      0
+                3     XXSECMOM        1        1      F      0
+                4     XXTHETA         1        1      F      0
+                5     XYSECMOM        1        1      F      0
+                6     XYTHETA         1        1      F      0
+                7     XZSECMOM        1        1      F      0
+                8     XZTHETA         1        1      F      0
+                9     YDIPLEN         1        1      F      0
+               10     YYSECMOM        1        1      F      0
+               11     YYTHETA         1        1      F      0
+               12     YZSECMOM        1        1      F      0
+               13     YZTHETA         1        1      F      0
+               14     ZDIPLEN         1        1      F      0
+               15     ZZSECMOM        1        1      F      0
+               16     ZZTHETA         1        1      F      0
              --------------------------------------------------
 
 
 
 
-                     +-------------------------------+
-                     ! REQUESTED EXPECTATION VALUES: !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! REQUESTED EXPECTATION VALUES: !
+                         +-------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -3017,9 +2652,9 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED EFFECTIVE FOCK MATRICES: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED EFFECTIVE FOCK MATRICES: !
+                       +------------------------------------+
 
                        Index   Oper. Label  Symmetry
                        -----------------------------
@@ -3028,69 +2663,69 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-                   +-----------------------------------+
-                   ! REQUESTED FIRST ORDER XI VECTORS: !
-                   +-----------------------------------+
+                       +-----------------------------------+
+                       ! REQUESTED FIRST ORDER XI VECTORS: !
+                       +-----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      YDIPLEN        F     1      0.000000E+00
-                3      ZDIPLEN        F     1      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      YDIPLEN        F     1      0.000000D+00
+                3      ZDIPLEN        F     1      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER T VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER T VECTORS: !
+                        +----------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      YDIPLEN        F     1      0.000000E+00
-                3      ZDIPLEN        F     1      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      YDIPLEN        F     1      0.000000D+00
+                3      ZDIPLEN        F     1      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                   +------------------------------------+
-                   ! REQUESTED FIRST ORDER ETA VECTORS: !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! REQUESTED FIRST ORDER ETA VECTORS: !
+                       +------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      YDIPLEN        F     1      0.000000E+00
-                3      ZDIPLEN        F     1      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      YDIPLEN        F     1      0.000000D+00
+                3      ZDIPLEN        F     1      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                  +-------------------------------------+
-                  ! REQUESTED FIRST ORDER ZETA VECTORS: !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! REQUESTED FIRST ORDER ZETA VECTORS: !
+                      +-------------------------------------+
 
              Index   Oper. Label  relaxed  Sym.     Frequency
              --------------------------------------------------
-                1      XDIPLEN        F     1      0.000000E+00
-                2      YDIPLEN        F     1      0.000000E+00
-                3      ZDIPLEN        F     1      0.000000E+00
+                1      XDIPLEN        F     1      0.000000D+00
+                2      YDIPLEN        F     1      0.000000D+00
+                3      ZDIPLEN        F     1      0.000000D+00
              --------------------------------------------------
 
 
 
 
-                    +----------------------------------+
-                    ! REQUESTED FIRST ORDER M-VECTORS: !
-                    +----------------------------------+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER M-VECTORS: !
+                        +----------------------------------+
 
                Index   State Symmetry  Frequency
                --------------------------------------------------
-                  1             1    1     3.265167E-01
+                  1             1    1     3.265167D-01
                --------------------------------------------------
 
 
@@ -3102,6 +2737,7 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
+ 
  +======================================================================+
  !                     RHS & ETA VECTORS TO COMPUTE:                    !
  +======================================================================+
@@ -3161,24 +2797,24 @@ Try to use right eigenvector as startfor a left eigenvector.
  Vector nr.  2 of type L1  and symmetry  1 was not found on file.
  Vector nr.  3 of type L1  and symmetry  1 was not found on file.
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 141
+  Accumulated inner iterations are:         141
 
 
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   2.4076525031   0.0731936470
-     2     YDIPLEN      1         0.0000000000   0.2194245709   0.0046551738
-     3     ZDIPLEN      1         0.0000000000   1.4670338932   0.0390384588
+     1     XDIPLEN      1         0.0000000000   2.4076524489   0.0731936445
+     2     YDIPLEN      1         0.0000000000   0.2194245735   0.0046551738
+     3     ZDIPLEN      1         0.0000000000   1.4670338681   0.0390384576
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   8.6558783692   0.4341953222
-     2     YDIPLEN      1         0.0000000000   0.8458646564   0.0626603571
-     3     ZDIPLEN      1         0.0000000000   5.0520407217   0.4040177619
-  Solvent 1-order response equations not converged in 1 solvent iterations
+     1     XDIPLEN      1         0.0000000000   8.6558781885   0.4341953107
+     2     YDIPLEN      1         0.0000000000   0.8458646667   0.0626603575
+     3     ZDIPLEN      1         0.0000000000   5.0520406480   0.4040177526
+  Solvent 1-order response equations not converged in           1  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      R1  vector
@@ -3193,24 +2829,24 @@ Try to use right eigenvector as startfor a left eigenvector.
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L1  vector
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 195
+  Accumulated inner iterations are:         195
 
 
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   2.4507882399   0.0744748273
-     2     YDIPLEN      1         0.0000000000   0.2195423622   0.0046576275
-     3     ZDIPLEN      1         0.0000000000   1.4751964765   0.0392455474
+     1     XDIPLEN      1         0.0000000000   2.4507881852   0.0744748248
+     2     YDIPLEN      1         0.0000000000   0.2195423648   0.0046576275
+     3     ZDIPLEN      1         0.0000000000   1.4751964514   0.0392455463
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   8.6438574034   0.4339961746
-     2     YDIPLEN      1         0.0000000000   0.8458443126   0.0626400395
-     3     ZDIPLEN      1         0.0000000000   5.0483524076   0.4038192192
-  Solvent 1-order response equations not converged in 2 solvent iterations
+     1     XDIPLEN      1         0.0000000000   8.6438572230   0.4339961631
+     2     YDIPLEN      1         0.0000000000   0.8458443229   0.0626400398
+     3     ZDIPLEN      1         0.0000000000   5.0483523340   0.4038192098
+  Solvent 1-order response equations not converged in           2  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      R1  vector
@@ -3225,24 +2861,24 @@ Try to use right eigenvector as startfor a left eigenvector.
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L1  vector
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 237
+  Accumulated inner iterations are:         237
 
 
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   2.4507341660   0.0744732231
-     2     YDIPLEN      1         0.0000000000   0.2195423343   0.0046576269
-     3     ZDIPLEN      1         0.0000000000   1.4751876090   0.0392453249
+     1     XDIPLEN      1         0.0000000000   2.4507341112   0.0744732205
+     2     YDIPLEN      1         0.0000000000   0.2195423369   0.0046576269
+     3     ZDIPLEN      1         0.0000000000   1.4751875839   0.0392453238
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   8.6438660191   0.4339981208
-     2     YDIPLEN      1         0.0000000000   0.8458484527   0.0626419586
-     3     ZDIPLEN      1         0.0000000000   5.0483581466   0.4038224830
-  Solvent 1-order response equations not converged in 3 solvent iterations
+     1     XDIPLEN      1         0.0000000000   8.6438658386   0.4339981093
+     2     YDIPLEN      1         0.0000000000   0.8458484630   0.0626419590
+     3     ZDIPLEN      1         0.0000000000   5.0483580730   0.4038224736
+  Solvent 1-order response equations not converged in           3  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      R1  vector
@@ -3257,24 +2893,24 @@ Try to use right eigenvector as startfor a left eigenvector.
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L1  vector
   CCSLV: We stop for now though not fully converged yet
-  Accumulated inner iterations are: 267
+  Accumulated inner iterations are:         267
 
 
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   2.4507342312   0.0744732250
-     2     YDIPLEN      1         0.0000000000   0.2195423341   0.0046576269
-     3     ZDIPLEN      1         0.0000000000   1.4751876157   0.0392453251
+     1     XDIPLEN      1         0.0000000000   2.4507341765   0.0744732225
+     2     YDIPLEN      1         0.0000000000   0.2195423368   0.0046576269
+     3     ZDIPLEN      1         0.0000000000   1.4751875906   0.0392453240
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   8.6438660044   0.4339981218
-     2     YDIPLEN      1         0.0000000000   0.8458484546   0.0626419592
-     3     ZDIPLEN      1         0.0000000000   5.0483581389   0.4038224857
-  Solvent 1-order response equations not converged in 4 solvent iterations
+     1     XDIPLEN      1         0.0000000000   8.6438658239   0.4339981103
+     2     YDIPLEN      1         0.0000000000   0.8458484649   0.0626419596
+     3     ZDIPLEN      1         0.0000000000   5.0483580652   0.4038224763
+  Solvent 1-order response equations not converged in           4  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      R1  vector
@@ -3293,18 +2929,18 @@ Try to use right eigenvector as startfor a left eigenvector.
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   2.4507342311   0.0744732250
-     2     YDIPLEN      1         0.0000000000   0.2195423341   0.0046576269
-     3     ZDIPLEN      1         0.0000000000   1.4751876156   0.0392453251
+     1     XDIPLEN      1         0.0000000000   2.4507341764   0.0744732225
+     2     YDIPLEN      1         0.0000000000   0.2195423368   0.0046576269
+     3     ZDIPLEN      1         0.0000000000   1.4751875905   0.0392453240
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   8.6438660044   0.4339981218
-     2     YDIPLEN      1         0.0000000000   0.8458484547   0.0626419592
-     3     ZDIPLEN      1         0.0000000000   5.0483581389   0.4038224858
-  Solvent 1-order response equations not converged in 5 solvent iterations
+     1     XDIPLEN      1         0.0000000000   8.6438658240   0.4339981103
+     2     YDIPLEN      1         0.0000000000   0.8458484650   0.0626419596
+     3     ZDIPLEN      1         0.0000000000   5.0483580653   0.4038224764
+  Solvent 1-order response equations not converged in           5  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      R1  vector
@@ -3323,37 +2959,36 @@ Try to use right eigenvector as startfor a left eigenvector.
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   2.4507342312   0.0744732250
-     2     YDIPLEN      1         0.0000000000   0.2195423341   0.0046576269
-     3     ZDIPLEN      1         0.0000000000   1.4751876156   0.0392453251
+     1     XDIPLEN      1         0.0000000000   2.4507341764   0.0744732225
+     2     YDIPLEN      1         0.0000000000   0.2195423368   0.0046576269
+     3     ZDIPLEN      1         0.0000000000   1.4751875905   0.0392453240
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1         0.0000000000   8.6438660044   0.4339981218
-     2     YDIPLEN      1         0.0000000000   0.8458484547   0.0626419592
-     3     ZDIPLEN      1         0.0000000000   5.0483581389   0.4038224858
-  Solvent 1-order response equations converged in 5 solvent iterations
+     1     XDIPLEN      1         0.0000000000   8.6438658240   0.4339981103
+     2     YDIPLEN      1         0.0000000000   0.8458484650   0.0626419596
+     3     ZDIPLEN      1         0.0000000000   5.0483580653   0.4038224764
+  Solvent 1-order response equations converged in           5  solvent iterations
  Vector nr.  1 of type M1  and symmetry  1 was not found on file.
 
  Solution of CC response equations completed.
 
-   
 
  *******************************************************************
  *                                                                 *
- *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *<<<<<<<<  OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE   >>>>>>>>>*
  *                                                                 *
- *<<<<<<<<<<      CALCULATION OF CC OSCILLATOR STRENGTHS  >>>>>>>>>>*
+ *<<<<<<<<      CALCULATION OF SECOND ORDER RESIDUES      >>>>>>>>>*
  *                                                                 *
  *******************************************************************
 
 
 
-                  +-------------------------------------+
-                  ! Calculation of CCSD       residues  !
-                  +-------------------------------------+
+                  +---------------------------------------------+
+                  ! CC_SOPR: Calculation of CCSD       Residues !
+                  +---------------------------------------------+
 
 
 
@@ -3361,13 +2996,7 @@ Try to use right eigenvector as startfor a left eigenvector.
  -----------------------------------------------
 
   1       0.326517  <XDIPLEN |f> =       0.00248595
-  1       0.326517  <XDIPLEN |f> =       0.00248595
-  1       0.326517  <XDIPLEN |f> =       0.00248595
-  1       0.326517  <YDIPLEN |f> =       0.22991898
-  1       0.326517  <YDIPLEN |f> =       0.22991898
-  1       0.326517  <YDIPLEN |f> =       0.22991898
-  1       0.326517  <ZDIPLEN |f> =      -0.00855803
-  1       0.326517  <ZDIPLEN |f> =      -0.00855803
+  1       0.326517  <YDIPLEN |f> =       0.22991899
   1       0.326517  <ZDIPLEN |f> =      -0.00855803
 
 
@@ -3377,99 +3006,73 @@ Try to use right eigenvector as startfor a left eigenvector.
   1       0.326517  <f|XDIPLEN > =       0.00134376
   1       0.326517  <f|YDIPLEN > =       0.11527386
   1       0.326517  <f|ZDIPLEN > =      -0.00420195
-  1       0.326517  <f|XDIPLEN > =       0.00134376
-  1       0.326517  <f|YDIPLEN > =       0.11527386
-  1       0.326517  <f|ZDIPLEN > =      -0.00420195
-  1       0.326517  <f|XDIPLEN > =       0.00134376
-  1       0.326517  <f|YDIPLEN > =       0.11527386
-  1       0.326517  <f|ZDIPLEN > =      -0.00420195
 
 
  CCSD  linear response residue property in atomic units:
  -------------------------------------------------------
 
  RES{<<XDIPLEN ,XDIPLEN >>( 0.326517)} =     0.00000334 (   0.00182771)
- RES{<<XDIPLEN ,YDIPLEN >>( 0.326517)} =     0.00028657 (   0.01692824)
- RES{<<XDIPLEN ,ZDIPLEN >>( 0.326517)} =    -0.00001045 (  -0.00323200)
- RES{<<YDIPLEN ,XDIPLEN >>( 0.326517)} =     0.00030896 (   0.01757715)
+ RES{<<XDIPLEN ,YDIPLEN >>( 0.326517)} =     0.00029776 (   0.01725574)
+ RES{<<XDIPLEN ,ZDIPLEN >>( 0.326517)} =    -0.00001097 (  -0.00331254)
+ RES{<<YDIPLEN ,XDIPLEN >>( 0.326517)} =     0.00029776 (   0.01725574)
  RES{<<YDIPLEN ,YDIPLEN >>( 0.326517)} =     0.02650365 (   0.16279941)
- RES{<<YDIPLEN ,ZDIPLEN >>( 0.326517)} =    -0.00096611 (  -0.03108227)
- RES{<<ZDIPLEN ,XDIPLEN >>( 0.326517)} =    -0.00001150 (  -0.00339116)
- RES{<<ZDIPLEN ,YDIPLEN >>( 0.326517)} =    -0.00098652 (  -0.03140886)
+ RES{<<YDIPLEN ,ZDIPLEN >>( 0.326517)} =    -0.00097631 (  -0.03124600)
+ RES{<<ZDIPLEN ,XDIPLEN >>( 0.326517)} =    -0.00001097 (  -0.00331254)
+ RES{<<ZDIPLEN ,YDIPLEN >>( 0.326517)} =    -0.00097631 (  -0.03124600)
  RES{<<ZDIPLEN ,ZDIPLEN >>( 0.326517)} =     0.00003596 (   0.00599670)
 
 
  CCSD  Transition strength matrix for state nr.  1 of symmetry 1
  CCSD  excitation energy: 0.32651667
 
- Dipole gauge
+ Gauge: length
 
-               Column   1     Column   2     Column   3
-       1       0.00000334     0.00028657    -0.00001045
-       2       0.00030896     0.02650365    -0.00096611
-       3      -0.00001150    -0.00098652     0.00003596
-
- Tensor is not symmetric on input in TNSRAN
- I will symmetrice it for you to get a real symmmetric 
- tensor according to:  2*AlfaXY(om) = <<X,Y>>(om)+<<X,Y>>(-om)
-                                    = <<X,Y>>(om)+<<Y,X>>(om) 
- Tensor is now: 
-
-               Column   1     Column   2     Column   3
-       1       0.00000334     0.00029776    -0.00001097
-       2       0.00029776     0.02650365    -0.00097631
-       3      -0.00001097    -0.00097631     0.00003596
+              Column   1    Column   2    Column   3
+       1      0.00000334    0.00029776   -0.00001097
+       2      0.00029776    0.02650365   -0.00097631
+       3     -0.00001097   -0.00097631    0.00003596
 
  Principal values of diagonalized transition strength matrix:
 
              a.u.               
  1      -0.00000001
- 2       0.00000000
+ 2      -0.00000000
  3       0.02654296
 
  Principal axis of diagonalized transition strength matrix:
 
 
-               Column   1     Column   2     Column   3
-       1       0.73934835    -0.67322952     0.01122639
-       2       0.01648933     0.03477184     0.99925924
-       3       0.67312118     0.73861555    -0.03680961
+              Column   1    Column   2    Column   3
+       1      0.73934838   -0.67322948    0.01122639
+       2      0.01648933    0.03477184    0.99925924
+       3      0.67312114    0.73861558   -0.03680961
 
 
- CCSD  oscillator strength matrix for state nr.  1 of symmetry 1
+ CCSD   oscillator strength matrix for state nr.  1 of symmetry 1
  CCSD  excitation energy: 0.32651667
 
 
-               Column   1     Column   2     Column   3
-       1       0.00000073     0.00006238    -0.00000227
-       2       0.00006725     0.00576926    -0.00021030
-       3      -0.00000250    -0.00021474     0.00000783
-
- Tensor is not symmetric on input in TNSRAN
- I will symmetrice it for you to get a real symmmetric 
- tensor according to:  2*AlfaXY(om) = <<X,Y>>(om)+<<X,Y>>(-om)
-                                    = <<X,Y>>(om)+<<Y,X>>(om) 
- Tensor is now: 
-
-               Column   1     Column   2     Column   3
-       1       0.00000073     0.00006482    -0.00000239
-       2       0.00006482     0.00576926    -0.00021252
-       3      -0.00000239    -0.00021252     0.00000783
+              Column   1    Column   2    Column   3
+       1      0.00000073    0.00006482   -0.00000239
+       2      0.00006482    0.00576926   -0.00021252
+       3     -0.00000239   -0.00021252    0.00000783
 
  Principal values of diagonalized oscillator strength matrix:
 
              a.u.               
- 1       0.00000000
- 2       0.00000000
+ 1      -0.00000000
+ 2      -0.00000000
  3       0.00577781
 
  Principal axis of diagonalized oscillator strength matrix:
 
 
-               Column   1     Column   2     Column   3
-       1       0.73934835    -0.67322952     0.01122639
-       2       0.01648933     0.03477184     0.99925924
-       3       0.67312118     0.73861555    -0.03680961
+              Column   1    Column   2    Column   3
+       1      0.73934838   -0.67322948    0.01122639
+       2      0.01648933    0.03477184    0.99925924
+       3      0.67312114    0.73861558   -0.03680961
+
+ >>> Total time for      9 linear response residues:       0.00 seconds.
    
 
  *******************************************************************
@@ -3482,16 +3085,16 @@ Try to use right eigenvector as startfor a left eigenvector.
 
 
 
-         +-------------------------------------------------------+
-         ! Calculation of CCSD       linear response properties  !
-         +-------------------------------------------------------+
+              +------------------------------------------------------+
+              ! Calculation of CCSD       linear response properties !
+              +------------------------------------------------------+
 
 
 
  CCSD  linear response properties in atomic units:
  -------------------------------------------------
 
- <<XDIPLEN ,XDIPLEN >>( 0.000000) =    -6.35553109
+ <<XDIPLEN ,XDIPLEN >>( 0.000000) =    -6.35553100
  <<XDIPLEN ,YDIPLEN >>( 0.000000) =     0.00086654
  <<XDIPLEN ,ZDIPLEN >>( 0.000000) =     0.25617562
  <<YDIPLEN ,XDIPLEN >>( 0.000000) =     0.00086654
@@ -3499,19 +3102,19 @@ Try to use right eigenvector as startfor a left eigenvector.
  <<YDIPLEN ,ZDIPLEN >>( 0.000000) =     0.00441926
  <<ZDIPLEN ,XDIPLEN >>( 0.000000) =     0.25617562
  <<ZDIPLEN ,YDIPLEN >>( 0.000000) =     0.00441926
- <<ZDIPLEN ,ZDIPLEN >>( 0.000000) =    -3.78149824
+ <<ZDIPLEN ,ZDIPLEN >>( 0.000000) =    -3.78149819
 
 
  CCSD  polarizability for frequency:   0.000000
 
 
-               Column   1     Column   2     Column   3
-       1       6.35553109    -0.00086654    -0.25617562
-       2      -0.00086654     0.81866265    -0.00441926
-       3      -0.25617562    -0.00441926     3.78149824
+              Column   1    Column   2    Column   3
+       1      6.35553100   -0.00086654   -0.25617562
+       2     -0.00086654    0.81866265   -0.00441926
+       3     -0.25617562   -0.00441926    3.78149819
 
  Alfa**2 Invariant:                         13.336354
- Beta**2 Invariant:                         23.227415
+ Beta**2 Invariant:                         23.227414
 
  Isotropic Polarizability:                   3.651897 a.u.
  Polarizability anisotropy invariant:        4.819483 a.u.
@@ -3526,10 +3129,10 @@ Try to use right eigenvector as startfor a left eigenvector.
  Principal axis of diagonalized Polarizability:
 
 
-               Column   1     Column   2     Column   3
-       1       6.35553109    -0.00086654    -0.25617562
-       2      -0.00086654     0.81866265    -0.00441926
-       3      -0.25617562    -0.00441926     3.78149824
+              Column   1    Column   2    Column   3
+       1      6.35553100   -0.00086654   -0.25617562
+       2     -0.00086654    0.81866265   -0.00441926
+       3     -0.25617562   -0.00441926    3.78149819
 
  Conversion factor (a.u. - S.I.):    0.16487780E-40 (C^2m^2J^-1)
 
@@ -3545,8 +3148,8 @@ Try to use right eigenvector as startfor a left eigenvector.
  *******************************************************************************
  *******************************************************************************
 
-            CCSD     Total energy:                 -75.7206132771               
-            CCSD     E(QM/MM):              -0.0065349343                       
+            CCSD Total  energy:                   -75.7206132763                
+            CCSD E(QM/MM)     :                    -0.0065349340                
                                                                                 
                                                                                 
                                                                                 
@@ -3560,19 +3163,19 @@ Try to use right eigenvector as startfor a left eigenvector.
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A        -75.3875616761                                        
+             1 ^1A        -75.3875616734                                        
                                                                                 
                                                                                 
  +=============================================================================+
- |  sym. | Exci.  |        CCSD       Transition properties                    |
+ |  sym. | Exci.  |        CCSD       Length   Gauge Oscillator Strength       |
  |(spin, |        +------------------------------------------------------------+
  | spat) |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
  +=============================================================================+
- | ^1A   |    1   |        0.0265429      |      0.0057778       | ø °/h,°     |
+ | ^1A   |    1   |        0.0265429      |      0.0057778       | unknown     |
  +=============================================================================+
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -3586,11 +3189,62 @@ Try to use right eigenvector as startfor a left eigenvector.
  *******************************************************************************
 
 
-- End of Coupled Cluster
 
- >>>> Total CPU  time used in DALTON:  13.12 seconds
- >>>> Total wall time used in DALTON:  18.00 seconds
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   6.50 seconds
+ >>>> Total wall time used in DALTON:  21.00 seconds
 
  
-     Date and time (Linux)  : Fri May 27 08:10:18 2005
-     Host name              : kemove2.chem.au.dk                      
+     Date and time (Linux)  : Wed Mar 16 18:31:24 2011 
+     Host name              : fe6                                     
+  
+
+ +---------------------------------------------------------+ 
+ | List of selected calculated molecular properties (a.u.) | 
+ +---------------------------------------------------------+ 
+
+  Properties are read from unit number            4
+
+ CCSD       properties :
+ #  1 1 CCSD/MM  Ground state Energy =     -75.7206132763
+ #  2 1 E_QM/MM  Ground state Energy =      -0.0065349340
+ #  3 1 <XDIPLEN > =      0.093788682043
+ #  4 1 <YDIPLEN > =      0.003183838694
+ #  5 1 <ZDIPLEN > =      0.947472366184
+ #  6 1 <XXTHETA > =      1.393609358045
+ #  7 1 <XYTHETA > =      0.000481516556
+ #  8 1 <XZTHETA > =      0.147820278083
+ #  9 1 <YYTHETA > =     -1.568112248069
+ # 10 1 <YZTHETA > =      0.001405688041
+ # 11 1 <ZZTHETA > =      0.174502890023
+ # 12 1 Sy: 1 Sp: 1 Exc:  1 E_tot:    -75.3875616734 w:      0.3265166689 E_grs:    -75.7140783423
+ # 13 1 Exctot   Excited state Energy =     -75.3875616734
+ # 14 1 |<O|XDIPLEN |i( 0.326517)>| =     0.00182771
+ # 16 1 |<O|YDIPLEN |i( 0.326517)>| =     0.16279941
+ # 18 1 |<O|ZDIPLEN |i( 0.326517)>| =     0.00599670
+ # 21 1 <<XDIPLEN ,XDIPLEN >>( 0.000000) =     -6.355530995131
+ # 22 1 <<XDIPLEN ,YDIPLEN >>( 0.000000) =      0.000866541506
+ # 23 1 <<XDIPLEN ,ZDIPLEN >>( 0.000000) =      0.256175623274
+ # 24 1 <<YDIPLEN ,XDIPLEN >>( 0.000000) =      0.000866541506
+ # 25 1 <<YDIPLEN ,YDIPLEN >>( 0.000000) =     -0.818662653816
+ # 26 1 <<YDIPLEN ,ZDIPLEN >>( 0.000000) =      0.004419259944
+ # 27 1 <<ZDIPLEN ,XDIPLEN >>( 0.000000) =      0.256175623274
+ # 28 1 <<ZDIPLEN ,YDIPLEN >>( 0.000000) =      0.004419259944
+ # 29 1 <<ZDIPLEN ,ZDIPLEN >>( 0.000000) =     -3.781498192611
+
+   CCSD     properties :
+ # 30 1 <<X_DIPLEN,X_DIPLEN>>( 0.000000) =      6.355530995131
+ # 31 1 <<X_DIPLEN,Y_DIPLEN>>( 0.000000) =     -0.000866541506
+ # 32 1 <<X_DIPLEN,Z_DIPLEN>>( 0.000000) =     -0.256175623274
+ # 33 1 <<Y_DIPLEN,Y_DIPLEN>>( 0.000000) =      0.818662653816
+ # 34 1 <<Y_DIPLEN,Z_DIPLEN>>( 0.000000) =     -0.004419259944
+ # 35 1 <<Z_DIPLEN,Z_DIPLEN>>( 0.000000) =      3.781498192611
+
+ CCSD       properties :
+ # 36 1 <<isoalpha,isoalpha>>( 0.000000) =      3.651897280519
+ # 37 1 <<anis_inv,anis_inv>>( 0.000000) =      4.819482737376
+
+ THE_END   

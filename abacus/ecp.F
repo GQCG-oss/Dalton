@@ -1,39 +1,29 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
-C
-      SUBROUTINE ECPINP(Q,QEFF,IATOM,IPRINT)
+      SUBROUTINE ECPINP(Q,QEFF,IATOM,IPRINT,ECPNAME)
 C
 C Purpose:
 C     Find the atom corresponding to charge Q in the ecp pseudo
@@ -42,15 +32,18 @@ C     Set QEFF to be the effective charge of the atom.
 C     Store the position IATOM in the list of all atoms to later
 C     identify the position of ECP atoms.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <ecpinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "ecpinf.h"
 C
       CHARACTER*80 STRING
       CHARACTER LAB
+C...  added by Bin Gao, for effective core potentials, Dec. 30, 2010
+      character*(*) ECPNAME
+C...
 C
 C     Slaves can return here.
 C
@@ -63,7 +56,9 @@ C
          ECP = .TRUE.
       END IF
 C
-      STRING = 'ecp-sdd-pseudo '
+C...  modified by Bin Gao, Dec. 30, 2010
+C...      STRING = 'ecp-sdd-pseudo '
+      STRING = "ecp_data/"//trim(ECPNAME)
       LEN_STRING = LNBLNK(STRING)
       LU = -1
       CALL FIND_BASFIL(STRING(1:LEN_STRING),LU,IPRINT)
@@ -182,15 +177,15 @@ C
 C
 C Purpose: Calculatate ECP integrals
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ecpinf.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <pi.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ecpinf.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "pi.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
 C
       COMMON /TRQ88/  KCRS,LCRU
       COMMON /TRQ77/  XI,YI,ZI,XJ,YJ,ZJ,XC,YC,ZC
@@ -211,7 +206,7 @@ C
      &            1,11,15,2,3,7,12,10,14,4,6,13,5,8,9/
       DATA IOFF/0,1,4,10,20/  
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (L1 .GT. MAX_L .OR. L2 .GT. MAX_L) THEN
          write(lupri,'(//A,3I8)')
@@ -328,7 +323,7 @@ c
 c*******************************************************
 c     ----- computes type 1 core potential integrals -----
       implicit double precision (a-h,o-z)
-#include <ecpinf.h>      
+#include "ecpinf.h"      
 c*
       dimension llt(5,2),crda(5,3),crdb(5,3),gout(225)
       data llt /1,2,5,11,21,1,4,10,20,35/
@@ -476,7 +471,7 @@ c
       subroutine pseud2(gout,lit,ljt,ai,aj)
 c     ----- COMPUTES TYPE 2 CORE POTENTIAL INTEGRALS -----
       implicit double precision (a-h,o-z)
-#include <ecpinf.h>
+#include "ecpinf.h"
       dimension llt(5,2),crda(5,3),crdb(5,3),gout(225)
       data llt /1,2,5,11,21,1,4,10,20,35/
 CMM   common /trq99/ lcr(50),ncr(1000),nkcrl(6,50),nkcru(6,50),
@@ -642,8 +637,9 @@ c     ----- estimate radial integrals and compare to threshold -----
      1   alpha,rc,rka,rkb,arc2,prd,qsum)
       go to 64
 c     ----- use partially asymptotic method -----
-   60 call qpasy(npi,l,lit,ljt,ltot1,lmalo,lmahi,lmblo,lmbhi,
-     1   alpha,rka,rkb,fctr2*ccr(kcr),dum+arc2,qsum)
+   60 prd_init = fctr2*ccr(kcr)
+      call qpasy(npi,l,lit,ljt,ltot1,lmalo,lmahi,lmblo,lmbhi,
+     1   alpha,rka,rkb,prd_init,dum+arc2,qsum)
    64 continue
 c*    CALL RAD2(CCR,KCRL,KCRU,L,LMAHI,LMALO,LMBHI,LMBLO,NCR,QSUM,
 c*   1   RKA,RKB,ZCR)

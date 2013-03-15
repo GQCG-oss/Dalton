@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck srestr */
       SUBROUTINE SRESTR
@@ -39,15 +29,15 @@ C
 C     Several SIRIUS-variables has to be restored, because they are overwritten
 C     by ABACUS in SIRSET module. Called from SIRRDI.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <siripc.h>
-#include <infinp.h>
-#include <inpbak.h>
-#include <infpri.h>
-#include <pribak.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "siripc.h"
+#include "infinp.h"
+#include "inpbak.h"
+#include "infpri.h"
+#include "pribak.h"
+#include "pcmlog.h"
 C
 C     Restoring should only be done if SIRIUS has been through its
 C     input processing.
@@ -186,14 +176,14 @@ C
 C     Several SIRIUS-variables has to be saved, because they are overwritten
 C     by ABACUS in SIRSET module. Called from SIRRDI.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <siripc.h>
-#include <infinp.h>
-#include <inpbak.h>
-#include <infpri.h>
-#include <pribak.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "siripc.h"
+#include "infinp.h"
+#include "inpbak.h"
+#include "infpri.h"
+#include "pribak.h"
+#include "pcmlog.h"
 C
 C        /INFINP/ values are saved
 C
@@ -323,9 +313,9 @@ C     ABACUS-variables concerning execution of modules are restored.
 C     Called from ABADRV. Necessary because modules should be run
 C     in each geometry iteration.
 C
-#include <implicit.h>
-#include <past.h>
-#include <pastbk.h>
+#include "implicit.h"
+#include "past.h"
+#include "pastbk.h"
          PASTWO = PSTWOB
          PASORT = PSORTB
          PASDIP = PSDIPB
@@ -352,9 +342,9 @@ C
 C     ABACUS-variables concerning execution of modules are saved.
 C     Called from ABADRV.
 C
-#include <implicit.h>
-#include <past.h>
-#include <pastbk.h>
+#include "implicit.h"
+#include "past.h"
+#include "pastbk.h"
          PSTWOB = PASTWO
          PSORTB = PASORT
          PSDIPB = PASDIP
@@ -377,18 +367,18 @@ C
       END
 C  /* Deck bndchk */
       SUBROUTINE BNDCHK(WORK, LMWORK2, WRKDLM, PROG)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LMWORK2)
-      CHARACTER*6 PROG
-#include <priunit.h>
+      CHARACTER*(*) PROG
+#include "priunit.h"
 C
 C     Check memory traps. Gives error message if any of the programs
 C     have been outside the declared memory area.
 C
       IF (WORK(1) .NE. WRKDLM .OR.
      &    WORK(LMWORK2) .NE. WRKDLM) THEN
-         WRITE (LUPRI,'(//A,A6,A)')
-     *      ' >>> WARNING, ',PROG,' has been out of bounds.'
+         WRITE (LUPRI,'(//3A)')
+     *      ' >>> WARNING, ',PROG,' module has been out of bounds.'
          IF (WORK(1) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
      *      ' >>> WORK(0) has been destroyed'
          IF (WORK(LMWORK2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
@@ -399,15 +389,15 @@ C
       END
 C  /* Deck exeher */
       SUBROUTINE EXEHER(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxaqn.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <gnrinf.h>
-#include <dftcom.h>
-#include <pcmlog.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "gnrinf.h"
+#include "dftcom.h"
+#include "pcmlog.h"
+#include "qm3.h"
 C
 C     Run Integral section
 C
@@ -429,15 +419,20 @@ C     ***************************************************************
 C
 C     If we use the Douglas-Kroll transformation, we first generate
 C     the necessary integrals in the primitive basis.
-C     See further notes in DKINTF routine.
+C     See further notes in DKH_INTF routine.
 C
       IF (DKTRAN .AND. RNHERM) THEN
-         CALL DKINTF(WORK(1),LMWORK)
+         CALL DKH_INTF(WORK(1),LMWORK)
          NEWPRP = .TRUE.
       END IF
 C
 C     Third parameter .TRUE. in call indicates that LUONEL will be written.
+C
       CALL READIN(WORK(1),LMWORK,.TRUE.)
+C
+C     Initialize Hermit variables, also when RNHERM false (e.g. for ABACUS)
+C
+      CALL HERINI
 C
 C     ***************************************************************
 C     Setup of MM information.
@@ -457,7 +452,7 @@ C
 C        ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
 C        for transformation control, old AO/MO files cannot be used any more.
 C     ***************************************************************
-         CALL BNDCHK(WORK, LMWORK+2, WRKDLM, 'HERMIT')
+         CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'HERMIT')
          CALL TITLER('End of Integral Section (HERMIT)',' ',200)
          CALL FLSHFO(LUPRI)
       END IF
@@ -466,16 +461,16 @@ C     ***************************************************************
       END
 C  /* Deck exesir */
       SUBROUTINE EXESIR(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <siripc.h>
-#include <inftra.h>
-#include <cbihr2.h>
-#include <inftap.h>
-#include <huckel.h>
-#include <gnrinf.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "siripc.h"
+#include "inftra.h"
+#include "cbihr2.h"
+#include "inftap.h"
+#include "huckel.h"
+#include "gnrinf.h"
 C
 C     Run SIRIUS
 C
@@ -483,13 +478,17 @@ C
 C
       CALL TITLER('Starting in Wave Function Section (SIRIUS)',' ',200)
 C
-C     SIRINI defines buffer lengths for I/O and IROW()
+C     SIRINI defines buffer lengths for I/O and the IROW() array
 C
-      CALL SIRINI
+      CALL SIRINI ! SIRius INItialization
+      WRINDX = .TRUE. ! new sirius call, make sure orbital rotation info is written to file in SETWOP
 C
-      WRINDX = .TRUE.
       CALL SIRCTL(ICONV,WORK(1),LMWORK)
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SIRIUS')
+      ! ICONV > 0: converged
+      !       = 0: not converged
+      !       < 0: convergence not requested (e.g. restart from old MCSCF)
+
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SIRIUS') ! boundary checks on WORK
 C
 C     If not numerical differentiation:
 C     We should now have MO's on file, no need for DOHUCKEL anymore
@@ -508,15 +507,14 @@ C
       IF (LUSUPM.LE.0) CALL GPOPEN(LUSUPM,
      &   FNSUPM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       CALL GPCLOSE(LUSUPM,'DELETE')
-      CALL GPCLOSE(LUIT2,'DELETE')
-      CALL GPCLOSE(LUIT3,'DELETE')
-      CALL GPCLOSE(LUIT5,'DELETE')
+      IF (LUIT2  .GT. 0) CALL GPCLOSE(LUIT2,'DELETE')
+      IF (LUIT3  .GT. 0) CALL GPCLOSE(LUIT3,'DELETE')
+      IF (LUIT5  .GT. 0) CALL GPCLOSE(LUIT5,'DELETE')
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
-      IF (.NOT. USRSCR) IFTHRS = 10
       CALL TITLER('End of Wave Function Section (SIRIUS)',' ',200)
-      IF (ICONV .LT. 1 .AND. .NOT.WLKREJ) THEN
+      IF (ICONV .EQ. 0 .AND. .NOT.WLKREJ) THEN
          WRITE(LUPRI, '(/A)')
-     &      '- DALTON aborted because wave function not converged!'
+     &      '@ - DALTON aborted because wave function not converged!'
          CALL QUIT('DALTON aborted because wave function not converged')
       END IF
       CALL FLSHFO(LUPRI)
@@ -525,14 +523,14 @@ C
       END
 C  /* Deck execc */
       SUBROUTINE EXECC(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <siripc.h>
-#include <inftra.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <optinf.h>
+#include "priunit.h"
+#include "siripc.h"
+#include "inftra.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "optinf.h"
 C
 C     Run Coupled Cluster program
 C
@@ -542,11 +540,7 @@ C
 C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
-#if defined (VAR_MPI) || defined (VAR_PVM)
-         CALL QUIT('No CC in parallel code')
-#else
          CALL ER2INI
-#endif
       END IF
 
       ! ITRNMR > 0 required for proper restart of CPHF solver
@@ -557,7 +551,8 @@ C
 
       ITRNMR = ISAVITR 
 
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC    ')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC')
+
       CALL TITLER('End of Coupled Cluster Section (CC)',' ',200)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('CC')
@@ -565,17 +560,17 @@ C
       END
 C  /* Deck exeaba */
       SUBROUTINE EXEABA(WORK, LMWORK, WRKDLM)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(0:LMWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <inftra.h>
-#include <inftap.h>
-#include <huckel.h>
-#include <gnrinf.h>
-#include <abainf.h>
-#include <pcmlog.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "huckel.h"
+#include "gnrinf.h"
+#include "abainf.h"
+#include "pcmlog.h"
 C
 C     Run ABACUS
 C
@@ -599,40 +594,56 @@ C
       CALL QEXIT('ABACUS')
       RETURN
       END
-C  /* Deck exedrv */
-      SUBROUTINE EXEDRV(WORK, LMWORK, WRKDLM)
+C  /* Deck dalton_exedrv */
+      SUBROUTINE DALTON_EXEDRV(WORK, LMWORK, WRKDLM)
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
 C     variables and allocating WORK memory.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <nuclei.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "nuclei.h"
+#include "infinp.h"
+#include "inftap.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
-#include <infpar.h>
-#include <inftra.h>
-#include <abainf.h>
-#include <molinp.h>
-#include <cbiwlk.h>
-#include <cbirea.h>
-#include <cbisol.h>
-#include <taymol.h>
-#include <pcmlog.h>
+#include "infpar.h"
+#include "inftra.h"
+#include "abainf.h"
+#include "molinp.h"
+#include "cbiwlk.h"
+#include "cbirea.h"
+#include "cbisol.h"
+#include "taymol.h"
+#include "pcmlog.h"
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
+C
+Cholesky
+#include "ccdeco.h"
+#include "center.h"
+Cholesky
+C
+!
+! Programmers please note:
+!   WORK(0) and WORK(LMOWRK+1) are allocated and contain the value
+!   WRKDLM (set in main program). This is a simple (not fool-proof) test
+!   that Dalton has not been out of bounds. Thus all subroutines called
+!   here needs to be called with WORK(1) (and not just WORK), __except__
+!   the subroutines EXE*. In these driver routines for some of the
+!   major modules in Dalton, the WRKDLM is checked with BNDCHK (which is
+!   in this file). /HJAaJ, Jan. 2011
+!
       DIMENSION WORK(0:LMWORK), CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
@@ -648,7 +659,7 @@ C
          RNHERM = .TRUE.
          RNABAC = .TRUE.
          DOWALK = .FALSE.
-         CALL OPTMIN(WORK,LMWORK,WRKDLM)
+         CALL OPTMIN(WORK(1),LMWORK,WRKDLM)
       ELSE IF (OPTWLK) THEN
          RNHERM = .TRUE.
          RNABAC = .TRUE.
@@ -727,9 +738,9 @@ C
                NAMDPX(3*NUCDEP  ) = 'cavity z'
                IF (NUCDEP .GT. MXCENT) THEN
                   WRITE (LUPRI,'(//2A,/A,I5)')
-     &         ' Too many atomic centers: MXCENT exceed in EXEDRV for',
+     &         ' Too many atomic centers: MXCENT exceeded for',
      &         ' solvent cavity,',' Current limit:',MXCENT
-                  CALL QUIT('*** ERROR *** MXCENT exceeded in EXEDRV')
+                  CALL QUIT('*** ERROR *** MXCENT exceeded')
                END IF
                CORD(1,NUCIND) = D0
                CORD(2,NUCIND) = D0
@@ -789,12 +800,12 @@ C
                IF (WORD .NE. '**NMDDR') GOTO 1100
                CALL NMDINP(WORD,IPRINT)
                CALL GPCLOSE(LUCMD,'KEEP')
-               CALL NUMDRV(WORK,LMWORK,0,IPRINT,WRKDLM)
+               CALL NUMDRV(WORK(1),LMWORK,IPRINT,WRKDLM)
                GEOCNV = .TRUE.
 c#if defined (VAR_MPI)
 c               IF (NODTOT .GE. 1 .AND. MYNUM .EQ. 0) THEN
 c                  IJOB = 0
-c                  CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
+c                  CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MASTER),
 c     &                           MPI_COMM_WORLD,IERR)
 c                  GOTO 87
 c               END IF
@@ -920,9 +931,9 @@ C
                NAMDPX(3*NUCDEP  ) = 'cavity z'
                IF (NUCDEP .GT. MXCENT) THEN
                   WRITE (LUPRI,'(//2A,/A,I5)')
-     &         ' Too many atomic centers: MXCENT exceed in EXEDRV for',
+     &         ' Too many atomic centers: MXCENT exceeded for',
      &         ' solvent cavity,',' Current limit:',MXCENT
-                  CALL QUIT('*** ERROR *** MXCENT exceeded in EXEDRV')
+                  CALL QUIT('*** ERROR *** MXCENT exceeded')
                END IF
                CORD(1,NUCIND) = D0
                CORD(2,NUCIND) = D0
@@ -975,7 +986,13 @@ Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
 Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
+Cholesky
+         IF (CHOINT) CALL EXECHO(WORK,LMWORK,WRKDLM)
+Cholesky
          IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
+Cact
+         IF (ACTIVE) CALL EXEACT(WORK,LMWORK,WRKDLM)
+Cact
          IF (DOCCSD) CALL EXECC (WORK,LMWORK,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
@@ -1000,9 +1017,9 @@ C
             NAMDPX(3*NUCDEP  ) = 'cavity z'
             IF (NUCDEP .GT. MXCENT) THEN
                WRITE (LUPRI,'(//2A,/A,I5)')
-     &          ' Too many atomic centers: MXCENT exceed in EXEDRV for',
+     &          ' Too many atomic centers: MXCENT exceeded for',
      &          ' solvent cavity,',' Current limit:',MXCENT
-               CALL QUIT('*** ERROR *** MXCENT exceeded in EXEDRV')
+               CALL QUIT('*** ERROR *** MXCENT exceeded')
             END IF
             CORD(1,NUCIND) = D0
             CORD(2,NUCIND) = D0
@@ -1048,13 +1065,13 @@ C
 C     We finally punch information for Gamess-US graphic packages
 C
       IF (SOLVNT) NUCIND = NUCIND - 1
-      IKIND = 1
-      IKOL  = IKIND + MXCENT
-      KLAST = IKOL  + MXCENT
+      KKIND = 1
+      KKOL  = KKIND + MXCENT
+      KLAST = KKOL  + MXCENT
       LLEFT = LMWORK - KLAST
 C
-      CALL MOLPLT(WORK(IKIND),WORK(IKOL),WORK(KLAST),LLEFT)
-      CALL PLTORB(WORK(IKIND),LMWORK)
+      CALL MOLPLT(WORK(KKIND),WORK(KKOL),TITMOL,WORK(KLAST),LLEFT)
+      CALL PLTORB(WORK(KKIND),LMWORK)
 C
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
@@ -1075,55 +1092,59 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <siripc.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "siripc.h"
 C
-#include <molde.h>
-#include <abainf.h>
-#include <exeinf.h>
-#include <inftra.h>
-#include <huckel.h>
-#include <orgcom.h>
-#include <clsfmm.h>
-#include <cbieri.h>
-#include <veclen.h>
-#include <numder.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "molde.h"
+#include "abainf.h"
+#include "exeinf.h"
+#include "inftra.h"
+#include "huckel.h"
+#include "orgcom.h"
+#include "clsfmm.h"
+#include "cbieri.h"
+#include "veclen.h"
+#include "numder.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 CSONIA
-#include <grdccpt.h>
-#include <infpar.h>
-      PARAMETER (NDIR = 9, NTABLE = 32, D0 = 0.D0)
+#include "grdccpt.h"
+#include "infpar.h"
+C
+Cholesky
+#include "ccdeco.h"
+#include "center.h"
+C
+      PARAMETER (NDIR = 10, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
       PARAMETER (IVECDF = 1)
 #endif
-Clf
+C
       LOGICAL ALLOPT
-Clf
+C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
-      DATA TABDIR /'*END OF', '*PARALL', '*WALK  ',
-     &             '*OPTIMI', '*NMDDRV', '*READIN',
-     &             '*PCM   ', '*QM3   ', '*QMMM  '/
-      DATA TABLE  /'.PRINT ', '.ITERAT', '.PRIERR',
-     &             '.INTEGR', '.WAVE F', '.PROPER',
-     &             '.INPTES', '.PARALL', '.DIRECT',
-     &             '.WALK  ', '.MAX IT', '.RESPON',
-     &             '.RUN PR', '.RUN RE', '.RUN WA',
-     &             '.PRESOR', '.WESTA ', '.XXXXXX',
-     &             '.XXXXXX', '.XXXXXX', '.XXXXXX',
-     &             '.XXXXXX', '.OPTIMI', '.TOTSYM',
-     &             '.VECLEN', '.RUNERI', '.XXXXXX',
-     &             '.RUN AL', '.NMDDRV', '.PARNMD',
-     &             'xXXXXXX', '.DOUGLA'/
+      DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
+     &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN'/
+      DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
+     &            '.INTEGR', '.WAVE F', '.PROPER', !  6
+     &            '.INPTES', '.PARALL', '.DIRECT',
+     &            '.WALK  ', '.MAX IT', '.RESPON', ! 12
+     &            '.RUN PR', '.RUN RE', '.RUN WA',
+     &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
+     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
+     &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
+     &            '.VECLEN', '.RUNERI', '.NEWTRA',
+     &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
+     &            '.THRRED', '.DOUGLA'/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1187,8 +1208,6 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
-         WRITE(LUPRI,'(/A,I5,A)')
-     &      " * PARALLEL: Using", NODTOT+1, " CPUs."
       END IF
 C
 C ...............
@@ -1243,6 +1262,11 @@ C
       CALL IZERO(NHUCAO,8)
       CALL IZERO(IHUCPT,MXSHEL)
 C
+Cholesky
+      CHOINT = .FALSE.
+      ACTIVE = .FALSE.
+Cholesky
+C
 C     Initialize /GRDCCPT/
 C
       IGRDCCPT = 1
@@ -1259,18 +1283,26 @@ C
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
+      J = 0
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
-      CALL UPCASE(WORD)
-      IF ((WORD .EQ. '**GENER') .OR. (WORD .EQ. '*GENERA') .OR.
-     &    (WORD .EQ. '**DALTO') .OR. (WORD .EQ. '*DALTON')) THEN
-         GO TO 930
-      ELSE
-         GO TO 900
-      END IF
+         J = J + 1
+         CALL UPCASE(WORD)
+         IF ((WORD .EQ. '**GENER') .OR. (WORD .EQ. '*GENERA') .OR.
+     &       (WORD .EQ. '**DALTO') .OR. (WORD .EQ. '*DALTON')) THEN
+            GO TO 930
+         ELSE
+            GO TO 900
+         END IF
   910 CONTINUE
-         CALL QUIT('End of file on LUCMD, no General input found')
+         WRITE (LUPRI,'(A,I10,A)') 
+     &   'End of file on DALTON.INP, no **DALTON input found in',
+     &   J,' lines.'
+         CALL QUIT('End of file on DALTON.INP, no **DALTON input found')
   920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no General input found')
+         WRITE (LUPRI,'(A,I10,A)') 
+     &   'Error reading line',J+1,' of DALTON.INP'//
+     &   ' before finding any **DALTON input.'
+         CALL QUIT('Error reading DALTON.INP, no **DALTON input found')
   930 CONTINUE
       WORD1 = WORD
 C
@@ -1280,12 +1312,12 @@ C Table(01:32) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.XXXXXX', '.XXXXXX', '.XXXXXX',
+C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-32: '.THRRED', '.DOUGLA'
 C
-      IPRERR = -10
+      IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
       CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
@@ -1295,7 +1327,7 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                111,112,113,114,115,116,117,118,119,112,
+     &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
      &                131,132), I
             END IF
@@ -1317,7 +1349,7 @@ C
             READ (LUCMD,*) ITERNR
             GO TO 100
   103    CONTINUE
-            READ (LUCMD,*) IPRERR
+            READ (LUCMD,*) IPRSTAT
             GO TO 100
   104    CONTINUE
             RNHERM = .TRUE.
@@ -1364,12 +1396,17 @@ C        ".WALK  "
             RNSIRI = .TRUE.
          GO TO 100
  116     CONTINUE
+            WRITE(LUPRI,'(//A/)') 'INFO: .PRESORT obsolete, use .NEWTRA'
             NEWTRA = .TRUE.
          GO TO 100
  117     CONTINUE
             WESTA = .TRUE.
          GO TO 100
  118     CONTINUE
+            RNHERM = .TRUE.
+            CHOINT = .TRUE.
+            DIRCAL = .TRUE.
+         GO TO 100
  119     CONTINUE
  120     CONTINUE
  121     CONTINUE
@@ -1388,7 +1425,9 @@ C        '.OPTIMI'
  126     CONTINUE
             RUNERI = .TRUE.
          GO TO 100
+C        .NEWTRA
  127     CONTINUE
+            NEWTRA = .TRUE.
          GO TO 100
  128     CONTINUE
             RNHERM = .TRUE.
@@ -1402,9 +1441,11 @@ C        '.NMDDRV' and '.PARNMD'
             NOMOVE = .TRUE.
             OPTWLK = .TRUE.
          GOTO 100
+C        '.THRRED'
  131     CONTINUE
             READ (LUCMD,*) THR_REDFAC
          GOTO 100
+C        '.DOUGLA'
  132     CONTINUE
             DKTRAN = .TRUE.
          GOTO 100
@@ -1420,9 +1461,10 @@ C
   999 CONTINUE
       WRITE (LUPRI,'(1X,A)') SEPARATOR
       WRITE (LUPRI,'(3X,A,I5)')  'Overall default print level:',IPRUSR
-      IF (IPRERR .EQ. -10)IPRERR = IPRUSR + 1
-      WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.ERR :',IPRERR
-      WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.ERR ',IPRERR
+      IF (IPRSTAT .EQ. -10) IPRSTAT = IPRUSR + 1
+      WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.STAT:',IPRSTAT
+!     WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.STAT',IPRSTAT
+      WRITE (LUSTAT,'(A,I5)')    ' Print level for DALTON.STAT',IPRSTAT
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
       IF (THR_REDFAC .GT. 0.0D0) THEN
@@ -1450,8 +1492,10 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (PARCAL) THEN
          WRITE (LUPRI,'(//4X,A/4X,A)')
      &      'Parallel calculation requested, but this is not a',
-     &      'parallel version. Please recompile for MPI or PVM'
-         CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
+     &      'parallel version. Please recompile for MPI'
+         CALL QUIT('Parallel calculation requested w/o MPI activated')
+!    &      'parallel version. Please recompile for MPI or PVM'
+!        CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
       END IF
 #endif
       IF (OPTWLK) THEN
@@ -1499,7 +1543,7 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (NEWTRA) THEN
          WRITE(LUPRI,'(4X,A)')
      &     '"New" (from 1988!) integral transformation used'
-      ELSE IF (.NOT. DIRCAL) THEN
+      ELSE
          WRITE(LUPRI,'(4X,A)') '"Old" integral transformation used'//
      &     ' (limited to max 255 basis functions)'
       END IF
@@ -1515,10 +1559,19 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
+C
+Cholesky
+      IF (CHOINT) WRITE (LUPRI,'(4X,A)')
+     &  'Cholesky decomposition-based calculation will be done'
+      IF (ACTIVE) WRITE (LUPRI,'(4X,A)')
+     &  'Selection of active atoms switched on'
+Cholesky
+C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
 C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-C              '*READIN', '*PCM   ', '*QM3   ', '*QMMM  '
+C              '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN',
+C              '*GEN1IN'
 C
 C     Initialize for REAINP and READIN (reading of .mol input file)
       IPREAD_ini = IPRUSR + 1
@@ -1532,7 +1585,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9), I
+               GOTO (1,2,3,4,5,6,7,8,9,10), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1579,7 +1632,7 @@ C
         IF (WORD(1:1) .NE. '*') GOTO 205        
       GO TO 200
 C
-C     "*READIN" input
+C     "*MOLBAS" input
     6 CONTINUE
         CALL REAINP(WORD,RELCAL,TSTINP)
       GO TO 200
@@ -1597,9 +1650,17 @@ C     "*QM3   " input
     8 CONTINUE
         CALL QM3INP(WORD)
       GO TO 200
+C
+C     "*QMMM  " input
     9 CONTINUE
         CALL QMMMIN(WORD)
       GO TO 200
+C
+C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
+   10 CONTINUE
+        WRITE(LUPRI,'(//A/)')
+     &    ' INFO : "*READIN" is deprecated, use instead "*MOLBAS"'
+      GO TO 6
 
 C     "*END OF" or "**something"
     1 CONTINUE
@@ -1626,7 +1687,8 @@ C         if reading input from a terminal
             IF (INDEX(WORD,'EWMO') .GT. 0) THEN
                EWMO = .TRUE.
                DOHUCKEL = .TRUE.
-            ELSE IF (INDEX(WORD,'HUCKEL') .GT. 0) THEN
+            ELSE IF (INDEX(WORD,'HUCKEL') .GT. 0
+     &          .OR. INDEX(WORD,'EHT')    .GT. 0) THEN
                EWMO = .FALSE.
                DOHUCKEL = .TRUE.
             ELSE
@@ -1653,30 +1715,30 @@ c      REWIND (LUCMD,IOSTAT=IOS)
 c 8100 READ (LUCMD,'(A7)') WORD
 c      IF (.NOT.((WORD.EQ.'**WAVE ').OR.(WORD.EQ.'**WAVEF')
 c     &                             .OR.(WORD.EQ.'**SIRIUS'))) GOTO 8100
-c      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
+c      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM,NORB)
 C
       CALL GPCLOSE(LUCMD,'KEEP')
       CALL QEXIT('DALTON_GNRLINP')
       RETURN
       END
-#if defined (VAR_MPI)
+#if defined (VAR_PARIO)
 C  /* Deck pariot */
       SUBROUTINE PARIOT
 C
 C     Master routine for checking whether we will do parallell I/O by 
 C     parallelizing over nuclear geometries
 C
-#include <implicit.h>
+#include "implicit.h"
       INCLUDE 'mpif.h'
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
       CHARACTER WORD*7
-#include <priunit.h>
-#include <inftap.h>
-#include <molinp.h>
-#include <infpar.h>
-#include <pario.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "molinp.h"
+#include "infpar.h"
+#include "pario.h"
 C
       PARIO = .FALSE.
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -1736,7 +1798,7 @@ C
  5030    READ (LUCMD,'(A8)',END=5010) MLINE(JLINE)
          JLINE = JLINE + 1
          GOTO 5030
- 5010    CALL MPI_BCAST(JLINE,1,MPI_INTEGER,NODEID(MASTER),
+ 5010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
@@ -1753,7 +1815,7 @@ C
  6030    READ (LUMOL,'(A80)',END=6010) MLINE(JLINE)
          JLINE = JLINE + 1
          GOTO 6030
- 6010    CALL MPI_BCAST(JLINE,1,MPI_INTEGER,NODEID(MASTER),
+ 6010    CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
@@ -1773,16 +1835,16 @@ C
 C     Slave routine for learning whether we are going to do parallell I/O
 C     by parallelizing over nuclear geometries
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INCLUDE 'mpif.h'
-#include <priunit.h>
-#include <inftap.h>
-#include <molinp.h>
-#include <infpar.h>
-#include <pario.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "molinp.h"
+#include "infpar.h"
+#include "pario.h"
 C
 C     We start by waiting for the master to tell us whether we will do
 C     parallel I/O or not
@@ -1809,7 +1871,7 @@ C
      &               .FALSE.)
          CALL GPOPEN(LUMOL,'MOLECULE.INP','NEW',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
-         CALL MPI_BCAST(JLINE,1,MPI_INTEGER,NODEID(MASTER),
+         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
@@ -1821,7 +1883,7 @@ C
 C
 C     We have written DALTON.INP. Now we collect and write MOLECULE.INP
 C
-         CALL MPI_BCAST(JLINE,1,MPI_INTEGER,NODEID(MASTER),
+         CALL MPI_BCAST(JLINE,1,my_MPI_INTEGER,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(MLINE,80*JLINE,MPI_CHARACTER,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
@@ -1833,4 +1895,66 @@ C
       END IF
       RETURN
       END
-#endif
+#endif /* VAR_PARIO WARNING: DO NOT activate VAR_PARIO without fixing the PARIO code */
+C
+Cholesky
+C  /* Deck execho */
+      SUBROUTINE EXECHO(WORK, LMWORK, WRKDLM)
+#include "implicit.h"
+#include "dummy.h"
+      DIMENSION WORK(0:LMWORK)
+#include "priunit.h"
+#include "gnrinf.h"
+#include "dftcom.h"
+C
+C     Run Cholesky stuff
+C
+      CALL QENTER('CHOLESKY')
+C
+      CALL TITLER('Starting in Cholesky Integral Section',
+     &  ' ',200)
+C
+      CALL CC_CHODRV(WORK(1),LMWORK)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOLESKY')
+C
+ctst  CLOSE(24)
+      CALL TITLER('End of Cholesky Integral Section',' ',200)
+C
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('CHOLESKY')
+      RETURN
+      END
+C
+C /* Deck exeact */
+C
+      SUBROUTINE EXEACT(WORK, LMWORK, WRKDLM)
+#include "implicit.h"
+#include "dummy.h"
+      DIMENSION WORK(0:LMWORK)
+#include "priunit.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "center.h"
+casm
+#include "ccorb.h"
+C
+C
+C     Select orbitals and basis fucntions for hybrid CC models.
+C
+      CALL QENTER('SELACT')
+C
+      CALL TITLER('Starting in Selact Section',' ',200)
+C
+C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
+      write(lupri,*) 'INFO: SELACT is not yet implemented. Skipped.'
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELECT_ACTIVE')
+C
+ctst  CLOSE(24)
+      CALL TITLER('End of Selact Section',' ',200)
+C
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('SELACT')
+      RETURN
+      END
+C --- end of dalgnr.F ---

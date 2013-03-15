@@ -9,19 +9,19 @@ c
 c VEC2 (OUTPUT)  : contribution to be added to perturbed Fock matrix
 c NCOMP (INPUT)  : number of independent perturbation (3)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <pcmdef.h>
-#include <orgcom.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "orgcom.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qm3.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT
@@ -81,20 +81,20 @@ c DENMAT (INPUT) : density matrix
 c POTPER (OUTPUT): perturbed potential. NOT used in ABAMAG
 c QSEPER (OUTPUT): perturbed charges. NOT used in ABAMAG
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <pcmdef.h>
-#include <orgcom.h>
-#include <pcmnuclei.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "orgcom.h"
+#include "pcmnuclei.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "inftap.h"
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT
@@ -264,18 +264,18 @@ c     into iduced electronic charges
 c     Based on V2Q 
 c     See ...
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION CINVMT(NTS*NTSIRR), TJ2PER(NTS),QSPER(NTS)
       LOGICAL QCHECK
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
 
       SQTNOP = DBLE(MAXREP + 1)
       DO ISYM = 0, MAXREP

@@ -19,7 +19,7 @@ BASIS
 STO-3G
 H2O , C1 symmetry
 stretched geometry
-    2    0            1.00D-25
+    2    0            1.00D-15
         8.0   1    2    2    1
 0     0.0000000000000000  0.0000000000000000  -0.13594222000
         1.0   2    1    1
@@ -31,7 +31,7 @@ H     0.0000000000000000 -1.4476145000000000   1.07875057000
 #  DALTON INPUT
 #######################################################################
 cat > alpha_deriv.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -81,8 +81,7 @@ ZDIPLEN ZDIPLEN 1DHAM001
 ZDIPLEN ZDIPLEN 1DHAM002
 ZDIPLEN ZDIPLEN 1DHAM003
 .STATIC
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -147,7 +146,7 @@ PASSED=1
 for i in 1 2 3 4
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

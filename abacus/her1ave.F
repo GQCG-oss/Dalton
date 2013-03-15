@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE AVENA1(ADER,NATOMC,SECDER,NCENTC,JCENTC,MAXCMP,JSYMC,
      &                  SIGNC,DSHELL,HESSNA)
 C
@@ -236,20 +226,20 @@ C     tuh 1984
 C
 C     modified for symmetry tuh Jul 5 1988
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB), STDER0(KCKTAB,2),
      &          STDER1(KCKTAB,3,2), STDER2(KCKTAB,6,2),
      &          HESSKE(MXCOOR,MXCOOR), HESFS2(MXCOOR,MXCOOR)
-#include <onecom.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <energy.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "energy.h"
+#include "ibtfun.h"
 C
 C     Multiply densities and Fock elements with integrals
 C
@@ -1100,7 +1090,7 @@ C        Expectation value of undifferentiated elements
 C
          SAVR0  = D0
 #if defined (SYS_HAL)
-#include <scalar.h>
+#include "scalar.h"
 #endif
          DO 200 ICOMP = 1, KHKTAB
             DENS  = DSHELL(ICOMP)
@@ -1209,16 +1199,16 @@ C  /* Deck aveexp */
 C
 C     tuh & fj feb 2002
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00)
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB), 
      &          EXPDER(KCKTAB,2,2,NUCA,NUCB)
-#include <onecom.h>
-#include <symmet.h>
-#include <expopt.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "expopt.h"
 C
       DO I = 1, NUCA
       DO J = 1, NUCB
@@ -1243,20 +1233,20 @@ C  /* Deck aveqdp */
 C
 C     K.Ruud, spring 2003
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.0D0)
       DIMENSION DSHELL(KHKTAB), SINT1(KCKTAB,3), QINT1(KCKTAB,3,6)
-#include <onecom.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <cbiqpg.h>
-#include <difsec.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "cbiqpg.h"
+#include "difsec.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
          NAX = 3*NCENTA - 2
          NAY = 3*NCENTA - 1
@@ -1274,7 +1264,7 @@ C
          SAVRY  = D0
          SAVRZ  = D0
 #if defined (SYS_CONVEX) || defined (SYS_HAL)
-#include <scalar.h>
+#include "scalar.h"
 #endif
          DO 200 ICOMP = 1, KHKTAB
             DENS  = DSHELL(ICOMP)
@@ -1506,11 +1496,11 @@ C
       END
 C  /* Deck avepcm */
       SUBROUTINE AVEPCM(PCMINT,MAXCMP,DSHELL,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       PARAMETER (DP5 = 0.5 D00)
 C
@@ -1518,17 +1508,17 @@ C Used from common blocks:
 C  ONECOM : ONECEN, ?
 C  CBISOL : NCNTCV
 C
-#include <onecom.h>
-#include <symmet.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <taysol.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "taysol.h"
 C
       LOGICAL DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(MAXCMP)
       DIMENSION PCMINT(KCKTAB,7,NTSIRR)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1

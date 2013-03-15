@@ -1,39 +1,46 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include "single.h"
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 #ifdef REV_LOG
+!
+! File: dalton/rsp/lagrang.F
+!
+! The routines in this file are generally related to
+! setup the Lagrangian for doublet reference states with
+! triplet property operators, and solving for the corresponding
+! response vector.
+!
+! This is what has been called the "restricted-unrestricted" approach
+! iin the literature.
+!
+! The driver RSPESR uses this for calculating expectation vaules of triplet
+! operators for non-singlet reference states.
+! This file also includes the input routine ESRINP for specification
+! of ESR calculations, using RSPESR here for the requested expectation values,
+! as well as routines in rspg.F and in rspzfs.F for g-tensor and ZFS,
+! depending on input.
+!
+!
 C===========================================================================
 CRevision 1.4  2000/05/24 18:45:09  hjj
 Cnew getref calls with appropriate NDREF (fixing CSF and triplet)
@@ -41,6 +48,9 @@ Cstop if solvent and CSF
 Cbugfix: too little was allocated for KGP2
 C===========================================================================
 #endif
+C
+#include "single.h"
+C
 C  /* Deck lagran */
       SUBROUTINE LAGRAN(WORD,FC,FV,CMO,UDV,PV,XINDX,WRK,LWRK)
 C
@@ -62,8 +72,8 @@ C-- common blocks:
 #include "wrkrsp.h"
 #include "infpri.h"
 #include "infinp.h"
-#include <dftcom.h>
-#include <pcmlog.h>
+#include "dftcom.h"
+#include "pcmlog.h"
 C
       PARAMETER (DHALF=0.5D0,D1=1.0D0,DM1=-1.0D0)
 C
@@ -338,12 +348,12 @@ C
 C  /* Deck esrinp */
       SUBROUTINE ESRINP(WORD)
 C
-C     Module for *ESR    input under **RESPONSE
+C     Module for reading "*ESR   " input under **RESPONSE
 C
 #include "implicit.h"
 C
 #include "priunit.h"
-#include <gnrinf.h>
+#include "gnrinf.h"
 #include "infrsp.h"
 #include "rspprp.h"
 #include "inflr.h"
@@ -402,33 +412,33 @@ C
      *            '" NOT RECOGNIZED IN ESRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT(' ILLEGAL KEYWORD IN LRINP ')
-    1          CONTINUE
+    1          CONTINUE ! .TRPPRP
                   READ(LUCMD,'( A )')LABEL
                   ESROPT( INDPRP(LABEL)) = .TRUE.
                GO TO 100
-    2          CONTINUE
+    2          CONTINUE ! .SNGPRP
                   READ(LUCMD,'( A )')LABEL
                   ESROPS( INDPRP(LABEL)) = .TRUE.
                GO TO 100
-    3          CONTINUE
+    3          CONTINUE ! .MAX IT
                   READ (LUCMD,*) MAXESR
                GO TO 100
-    4          CONTINUE
+    4          CONTINUE ! .THCESR
                   READ (LUCMD,*) THCESR
                GO TO 100
-    5          CONTINUE
+    5          CONTINUE ! .PRINT
                   READ (LUCMD,*) IPRESR
                GO TO 100
-    6          CONTINUE
-                  CALL GINP(WORD) !?
+    6          CONTINUE ! .G-TENSOR
+                  CALL GINP(WORD)
                GO TO 100
-    7          CONTINUE
+    7          CONTINUE ! .ZFS
                   ZFSCAL = .TRUE.
                GO TO 100 
-    8          CONTINUE
+    8          CONTINUE ! .FCCALC
                   FCFLG = .TRUE.
                GO TO 100
-    9          CONTINUE
+    9          CONTINUE ! .ATOMS
                   READ (LUCMD,*) ESRNUC
                   IF (ESRNUC .GT. ATMNUM) THEN
                      WRITE(LUPRI,'(/A,I4,A,I4/A)')
@@ -439,7 +449,7 @@ C
                   END IF
                   READ (LUCMD,*) (NUCINF(IG), IG = 1, ESRNUC)
                GO TO 100
-   10          CONTINUE
+   10          CONTINUE ! .SDCALC
                   SDFLG = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -462,29 +472,29 @@ C
 C FC labels generation
 C
       IF (FCFLG) THEN
-      DO 400 I = 1, ESRNUC
-         CALL FCOPER(NUCINF(I),LABEL)
-         ESROPT( INDPRP(LABEL)) = .TRUE.
- 400  CONTINUE
-      IF (.NOT. SDFLG) CALL SETDEG
+         DO I = 1, ESRNUC
+            CALL FCOPER(NUCINF(I),LABEL)
+            ESROPT( INDPRP(LABEL)) = .TRUE.
+         END DO
+         IF (.NOT. SDFLG) CALL SETDEG
       END IF
 C
 C SD labels generation
 C
       IF (SDFLG) THEN
-      DO 410 I = 1, ESRNUC
-         CALL SDOPER(NUCINF(I),LABDAT,INUM)
-         DO 420 IG = 1, INUM
-             ESROPT( INDPRP(LABDAT(IG))) = .TRUE.
- 420     CONTINUE
- 410  CONTINUE
+         DO I = 1, ESRNUC
+            CALL SDOPER(NUCINF(I),LABDAT,INUM)
+            DO IG = 1, INUM
+                ESROPT( INDPRP(LABDAT(IG))) = .TRUE.
+            END DO
+         END DO
       END IF
 C
 C  Check degen array
 C
-      DO 430 I = 1, ESRNUC
+      DO I = 1, ESRNUC
          IF (DEGEN(I) .LT. 1.0) DEGEN(I)=1.0
- 430  CONTINUE
+      END DO
 C
 C Setting isotopes data for HFC/pNMR printing
 C
@@ -494,10 +504,10 @@ C
 C
 C
       NTOESR = 0
-      DO 500 I = 1,NPRLBL
+      DO I = 1,NPRLBL
          IF (ESROPS(I)) NTOESR = NTOESR + 1
          IF (ESROPT(I)) NTOESR = NTOESR + 1
- 500  CONTINUE
+      END DO
       ESRCAL = NTOESR .GT. 0 .OR. FCFLG .OR. SDFLG
       IF (ESRCAL .OR. GCALC .OR. ZFSCAL) THEN
          CALL HEADER('Changes of defaults under *ESR   :',0)
@@ -540,19 +550,19 @@ C
             END IF
          END IF
       ELSE
-         WRITE (LUPRI,'(/A)')
-     *      ' *ESR   input ignored because no operators requested.'
+         WRITE (LUPRI,'(//A/)')
+     *   'INFO: "*ESR   " input ignored because no operators requested.'
       END IF
       IF (ISPIN .EQ. 1) THEN
-        NWARN = NWARN + 1
-         WRITE (LUPRI,'(/A/A)')
-     *      ' WARNING: *ESR   input ignored because',
+         NWARN = NWARN + 1
+         WRITE (LUPRI,'(//A/)')
+     *      ' WARNING: "*ESR   " input ignored because'//
      &      ' singlet reference state has no ESR properties !!!'
-        ESRCAL = .FALSE.
-        FCFLG  = .FALSE.
-        SDFLG  = .FALSE.
-        GCALC  = .FALSE.
-        ZFSCAL = .FALSE.
+         ESRCAL = .FALSE.
+         FCFLG  = .FALSE.
+         SDFLG  = .FALSE.
+         GCALC  = .FALSE.
+         ZFSCAL = .FALSE.
       END IF
 C
 C *** END OF ESRINP
@@ -577,8 +587,8 @@ C
       PARAMETER ( D0 = 0.0D0, DUMMY = 1.0D+20 )
       LOGICAL TRPSAVE
 C
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -593,12 +603,12 @@ C
 C
 C Common blocks for HFC/pNMR printing
 C
-#include <codata.h>
-#include <gfac.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <chrxyz.h>
-#include <parnmr.h>
+#include "codata.h"
+#include "gfac.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "chrxyz.h"
+#include "parnmr.h"
 C
 C Local variables for HFC values handling
 C
@@ -1288,13 +1298,13 @@ C     end of solgdt.
       END
 C  /* Deck FCOPER */
       SUBROUTINE FCOPER(ATMIND,LABINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       CHARACTER*8 LABINT
       INTEGER ATMIND
-#include <nuclei.h>
-#include <chrnos.h>
+#include "nuclei.h"
+#include "chrnos.h"
 C
        LABINT = 'FC '//NAMN(ATMIND)(1:3)//CHRNOS(ATMIND/10)
      *          //CHRNOS(MOD(ATMIND,10))
@@ -1303,18 +1313,18 @@ C
       END
 C  /* Deck SETDEG */
       SUBROUTINE SETDEG
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <parnmr.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "parnmr.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
 C
       DO 50 I = 1, ESRNUC
           DEGEN(I) = 0.0D0
@@ -1328,11 +1338,11 @@ C
       END
 C  /* Deck SETISO */
       SUBROUTINE SETISO
-#include <implicit.h>
-#include <priunit.h>
-#include <parnmr.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "parnmr.h"
+#include "mxcent.h"
+#include "nuclei.h"
 C
       DO 100 I=1,ESRNUC
          IF (ISODAT(1,NUCINF(I)) .EQ. 0) THEN
@@ -1351,20 +1361,20 @@ C
       END
 C  /* Deck SDOPER */
       SUBROUTINE SDOPER(ATMIND,LABINT,NCOOR)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <parnmr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "parnmr.h"
       INTEGER ATMIND, NCOOR
       CHARACTER LABINT(9*ATMNUM)*8
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
 C
       NCOOR=0
       DEGEN(ATMIND) = 0.0D0
@@ -1795,3 +1805,4 @@ C
       RETURN
 C     end of pcmgdt.
       END
+! --- end of DALTON/rsp/lagrang.F ---

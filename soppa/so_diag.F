@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_diag */
       SUBROUTINE SO_DIAG(FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
@@ -13,12 +13,12 @@ C     PURPOSE: Calculate diagonale parts of the SOPPA E[2] matrix
 C              (excluding first and second order contributions in
 C              the one-particle part) and of the S[2] matrix.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccsdsym.h>
-#include <soppinf.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "soppinf.h"
+#include "ccorb.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C    /* Deck cc3_aabmat_doub */ 
       SUBROUTINE CC3_AABMAT_DOUB(OMEGA2,LISTB,IDLSTB,LISTC,
@@ -107,9 +97,9 @@ c
       CHARACTER*8 FNTOC,FN3VI2
       CHARACTER*4 FNDKBC
 C        
-      PARAMETER (FNCKJD='CKJDEL', FNTOC   = 'CCSDT_OC' )
-      PARAMETER (FNDELD  = 'CKDELD'  , FNDKBC  = 'DKBC' )
-      PARAMETER (FN3VI   = 'CC3_VI'  , FN3VI2  = 'CC3_VI12')
+      PARAMETER (FNCKJD ='CKJDEL' , FNTOC   = 'CCSDT_OC' )
+      PARAMETER (FNDELD = 'CKDELD', FNDKBC  = 'DKBC' )
+      PARAMETER (FN3VI  = 'CC3_VI', FN3VI2  = 'CC3_VI12')
 C
       CHARACTER*12 FN3SRTR, FNCKJDR, FNDELDR, FNDKBCR, FNDKBCR4
       CHARACTER*13 FNCKJDR2, FNDKBCR2
@@ -118,16 +108,16 @@ C
       CHARACTER*3 LISTB, LISTC
       CHARACTER CDUMMY*1
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
 C
       PARAMETER(FN3SRTR  = 'CCSDT_FBMAT1', FNCKJDR  = 'CCSDT_FBMAT2', 
      *          FNDELDR  = 'CCSDT_FBMAT3', FNDKBCR  = 'CCSDT_FBMAT4',
@@ -286,7 +276,7 @@ C
          FREQB  = FRQLRT(IDLSTB)
          LABELB = LRTLBL(IDLSTB)
       ELSE 
-         CALL QUIT('Unkown list for LISTB in CC3_AABMAT_DOUB.')
+         CALL QUIT('Unknown list for LISTB in CC3_AABMAT_DOUB.')
       END IF
 C
       IF (LISTC(1:3).EQ.'R1 ') THEN
@@ -298,7 +288,7 @@ C
          FREQC  = EIGVAL(IDLSTC)
          LABELC = '- none -'
       ELSE
-         CALL QUIT('Unkown list for LISTC in CC3_AABMAT_DOUB.')
+         CALL QUIT('Unknown list for LISTC in CC3_AABMAT_DOUB.')
       END IF
 C
       ISYMWB   = MULD2H(ISYMT3,ISYMRB)

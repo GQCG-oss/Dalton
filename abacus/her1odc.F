@@ -1,44 +1,34 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck getodc */
       SUBROUTINE GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,KINODC,
      &                  ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,WORK,LWORK,
      &                  CORPX,CORPY,CORPZ,DONUC1,DOMOM1,ORIGIN,INTTYP)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL DIFODC, KINODC, ONECEN, DONUC1, DOMOM1
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          WORK(LWORK), ORIGIN(3)
@@ -82,8 +72,8 @@ C  /* Deck getod1 */
      &                  JMAXTP,ODCUND,DIFODC,KINODC,ONECEN,EXPA,EXPB,
      &                  IPRINT,SAAB13,EXPPI,CORPX,CORPY,CORPZ,DONUC1,
      &                  DOMOM1,ORIGIN,INTTYP)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL DIFODC, KINODC, ONECEN, DONUC1, DOMOM1
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &      ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,0:JMAXM,3)
@@ -158,7 +148,7 @@ C  /* Deck copodc */
 C
 C     Copy expansion coefficients from ODCUND to ODC
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -178,13 +168,12 @@ C  /* Deck oneodc */
 C
 C     TUH 91
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, A, B, AB
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <sdpre.h>
+#include "onecom.h"
 C
       PAX = CORPX - CORAX
       PAY = CORPY - CORAY
@@ -200,30 +189,32 @@ C
             ODCUND(0,0,0,0,0,3) = FAC
          ELSE
             DO 200 T = 0, A
+               X_TP1 = T + 1
                ODCUND(A,0,T,0,0,1) = EXPPIH*ODCUND(A-1,0,T-1,0,0,1)
-     *                            + PAX*ODCUND(A-1,0,T  ,0,0,1)
-     *                     + SDPRE(T+1)*ODCUND(A-1,0,T+1,0,0,1)
+     *                                + PAX*ODCUND(A-1,0,T  ,0,0,1)
+     *                              + X_TP1*ODCUND(A-1,0,T+1,0,0,1)
                ODCUND(A,0,T,0,0,2) = EXPPIH*ODCUND(A-1,0,T-1,0,0,2)
-     *                            + PAY*ODCUND(A-1,0,T  ,0,0,2)
-     *                     + SDPRE(T+1)*ODCUND(A-1,0,T+1,0,0,2)
+     *                                + PAY*ODCUND(A-1,0,T  ,0,0,2)
+     *                              + X_TP1*ODCUND(A-1,0,T+1,0,0,2)
                ODCUND(A,0,T,0,0,3) = EXPPIH*ODCUND(A-1,0,T-1,0,0,3)
-     *                            + PAZ*ODCUND(A-1,0,T  ,0,0,3)
-     *                     + SDPRE(T+1)*ODCUND(A-1,0,T+1,0,0,3)
+     *                                + PAZ*ODCUND(A-1,0,T  ,0,0,3)
+     *                              + X_TP1*ODCUND(A-1,0,T+1,0,0,3)
   200       CONTINUE
          END IF
          DO 300 B = 1, JMAXBP
             AB = A + B
 C
             DO 400 T = 0, AB
+               X_TP1 = T + 1
                ODCUND(A,B,T,0,0,1) = EXPPIH*ODCUND(A,B-1,T-1,0,0,1)
-     &                            + PBX*ODCUND(A,B-1,T  ,0,0,1)
-     &                     + SDPRE(T+1)*ODCUND(A,B-1,T+1,0,0,1)
+     &                                + PBX*ODCUND(A,B-1,T  ,0,0,1)
+     &                              + X_TP1*ODCUND(A,B-1,T+1,0,0,1)
                ODCUND(A,B,T,0,0,2) = EXPPIH*ODCUND(A,B-1,T-1,0,0,2)
-     &                            + PBY*ODCUND(A,B-1,T  ,0,0,2)
-     &                     + SDPRE(T+1)*ODCUND(A,B-1,T+1,0,0,2)
+     &                                + PBY*ODCUND(A,B-1,T  ,0,0,2)
+     &                              + X_TP1*ODCUND(A,B-1,T+1,0,0,2)
                ODCUND(A,B,T,0,0,3) = EXPPIH*ODCUND(A,B-1,T-1,0,0,3)
-     &                            + PBZ*ODCUND(A,B-1,T  ,0,0,3)
-     &                     + SDPRE(T+1)*ODCUND(A,B-1,T+1,0,0,3)
+     &                                + PBZ*ODCUND(A,B-1,T  ,0,0,3)
+     &                              + X_TP1*ODCUND(A,B-1,T+1,0,0,3)
   400          CONTINUE
   300    CONTINUE
   100 CONTINUE
@@ -252,18 +243,17 @@ C  /* Deck dodca */
 C
 C     TUH, Recursive calculation of coefficients implemented dec.91, KR
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, D, T, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <sdpre.h>
 C
       TEXPA1 = EXPA + EXPA
       DO 10 D = 1, JMAXD
          DO 20 A = 0, JMAXAP
-            FAC10A = SDPRE(A)
+            FAC10A = A
             DO 30 B = 0, JMAXBP
                DO 40 T = 0, A + B + D
                DO 40 X = 1, 3
@@ -301,19 +291,18 @@ C  /* Deck dodcb */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, D, T, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <sdpre.h>
 C
       TEXPB1 = EXPB + EXPB
       DO 10 D = 1, JMAXD
          DO 20 A = 0, JMAXAP
             DO 30 B = 0, JMAXBP
-               FAC10B = SDPRE(B)
+               FAC10B = B
                DO 40 T = 0, A + B + D
                DO 40 X = 1, 3
                   ODCUND(A,B,T,D,0,X) = TEXPB1*ODCUND(A,B + 1,T,D-1,0,X)
@@ -350,13 +339,13 @@ C  /* Deck modca */
 C
 C     K.Ruud Nov 1991
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T, D, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3), ORIGIN(3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
+#include "onecom.h"
       OAX = CORAX - ORIGIN(1)
       OAY = CORAY - ORIGIN(2)
       OAZ = CORAZ - ORIGIN(3)
@@ -406,13 +395,13 @@ C  /* Deck modcb */
 C
 C     K.Ruud, Aug 1992
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T, D, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),ORIGIN(3)
-#include <onecom.h>
+#include "onecom.h"
 C
       OBX = CORBX - ORIGIN(1)
       OBY = CORBY - ORIGIN(2)
@@ -463,13 +452,13 @@ C  /* Deck todc */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <sdpre.h>
+
       TEXPA1 = EXPA + EXPA
       TEXPA2 = TEXPA1*TEXPA1
       IF (JMAXD .LT. 2) THEN
@@ -479,7 +468,7 @@ C
          CALL QUIT('JMAXD too small in TODC')
       END IF
       DO 100 A = 0, JMAXA
-         FAC21A = TEXPA1*SDPRE(2*A + 1)
+         FAC21A = (2.0D0*A + 1.0D0) *  TEXPA1
          IF (A .LT. 2) THEN
             DO 200 B = 0, JMAXB
                ODC(A,B,0,2,0,1) = TEXPA2*ODCUND(A+2,B,0,0,0,1)
@@ -490,7 +479,7 @@ C
      &                          - FAC21A*ODCUND(A  ,B,0,0,0,3)
   200       CONTINUE
          ELSE
-            FAC20A = SDPRE(A*(A - 1))
+            FAC20A = (A*(A - 1.0D0))
             DO 300 B = 0, JMAXB
                ODC(A,B,0,2,0,1) = TEXPA2*ODCUND(A+2,B,0,0,0,1)
      &                        - FAC21A*ODCUND(A  ,B,0,0,0,1)
@@ -517,21 +506,20 @@ C     to store coeff. No moments involved.
 C
 C     H. Heiberg
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <pi.h>
+#include "pi.h"
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
-#include <onecom.h>
-#include <sdpre.h>
+#include "onecom.h"
 C
       DO 10 A = 0, JMAXA
-         FA = (D2*SDPRE(A) + 1)/(D2*EXPA)
+         FA = (D2*A + 1.0D0)/(D2*EXPA)
          DO 20 B = 0, JMAXB
-            FB = (D2*SDPRE(B) + 1)/(D2*EXPB)
+            FB = (D2*B + 1.0D0)/(D2*EXPB)
             DO 30 T = 0 , JMAXTP
                ODCUND(A,B,T,0,1,1) = FA*ODCUND(A + 1,B,T,0,0,1)
      &                             + FB*ODCUND(A,B + 1,T,0,0,1)
@@ -568,21 +556,20 @@ C  /* Deck defodc */
 C
 C     Modified differentiated coeffitions.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, D
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <pi.h>
+#include "pi.h"
       PARAMETER(D1=1.00 D00, D2=2.00 D00)
-#include <onecom.h>
-#include <sdpre.h>
+#include "onecom.h"
 C
       DO 10 A = 0, JMAXA
-         FA = (D2*SDPRE(A) + 1)/(D2*EXPA)
+         FA = (D2*A + 1.0D0)/(D2*EXPA)
          DO 20 B = 0, JMAXB
-            FB = (D2*SDPRE(B) + 1)/(D2*EXPB)
+            FB = (D2*B + 1.0D0)/(D2*EXPB)
                ODCUND(A,B,0,2,1,1) = FA*ODCUND(A + 1,B,0,2,0,1)
      &                             + FB*ODCUND(A,B + 1,0,2,0,1)
                ODCUND(A,B,0,2,1,2) = FA*ODCUND(A + 1,B,0,2,0,2)
@@ -620,21 +607,20 @@ C     K.Ruud, Sept 2000. Code for B-derivative integrals at the same
 C     time as we have A-derivative integrals. Needed for pVp integrals
 C     of the Douglas-Kroll transformation.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, T, D, X, M
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <sdpre.h>
+#include "onecom.h"
 C
       TEXPB1 = EXPB + EXPB
       DO 10 M = 1, JMAXM
          DO 20 A = 0, JMAXAP
             DO 30 B = 0, JMAXBP
                DO 40 D = 0, JMAXD
-               FAC10B = SDPRE(B)
+               FAC10B = B
                DO 40 T = 0, A + B + D + M
                DO 40 X = 1, 3
                   ODCUND(A,B,T,D,M,X) = TEXPB1*ODCUND(A,B + 1,T,D,M-1,X)

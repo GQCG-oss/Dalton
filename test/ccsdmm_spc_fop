@@ -89,7 +89,7 @@ cat > ccsdmm_spc_fop.pot <<%EOF%
  2
  45.21
  45.21
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################
@@ -166,25 +166,25 @@ CTRL[1]=2
 ERROR[1]="QM/MM ENERGY NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "x * ( |0)\.07705705 * ( |0)\.19585945" $log | wc -l`
-CRIT2=`$GREP "y * ( |0)\.01147275 * ( |0)\.02916082" $log | wc -l`
-CRIT3=`$GREP "z * ( |0)\.79906605 *  2\.03102309" $log | wc -l` 
+CRIT1=`$GREP "x * 0*\.07705705 * 0*\.19585946" $log | wc -l`
+CRIT2=`$GREP "y * 0*\.01147275 * 0*\.02916082" $log | wc -l`
+CRIT3=`$GREP "z * 0*\.79906605 *  2\.0310231." $log | wc -l` 
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=6
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 # Quadrupole moment components compared:
-CRIT1=`$GREP "1 * 1\.54238535 * ( |0)\.00245692 * ( |0)\.12061511" $log | wc -l`
-CRIT2=`$GREP "2 * ( |0)\.00245692 * -1\.66196666 * ( |0)\.00670710" $log | wc -l`
-CRIT3=`$GREP "3 * ( |0)\.12061511 * ( |0)\.00670710 * ( |0)\.11958131" $log | wc -l`
+CRIT1=`$GREP "1 *  1\.5423853. * 0*\.0024569. * 0*\.1206151." $log | wc -l`
+CRIT2=`$GREP "2 * 0*\.0024569. * -1\.6619666. * 0*\.0067071." $log | wc -l`
+CRIT3=`$GREP "3 * 0*\.1206151. * 0*\.0067071. * 0*\.1195813." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=5
 ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
 
 # Second order electric moment components compared:
-CRIT1=`$GREP "1 * 7\.21261290 * (\-|\-0)\.00163794 * (\-|\-0)\.08041008" $log | wc -l`
-CRIT2=`$GREP "2 * (\-|\-0)\.00163794 * 5\.25823044 * (\-|\-0)\.00447140" $log | wc -l`
-CRIT3=`$GREP "3 * (\-|\-0)\.08041008 * (\-|\-0)\.00447140 * 6\.52316916" $log | wc -l`
+CRIT1=`$GREP "1 *    7\.212612.. * \-0*\.0016379. * \-0*\.0804100." $log | wc -l`
+CRIT2=`$GREP "2 * \-0*\.0016379. *    5\.258230.. * \-0*\.0044714." $log | wc -l`
+CRIT3=`$GREP "3 * \-0*\.0804100. * \-0*\.0044714. *    6\.523169.." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=6
 ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"

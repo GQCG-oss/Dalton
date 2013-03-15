@@ -1,49 +1,28 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
-C
-#ifdef UNDEF
-c===========================================================================
-c/* Comdeck notes */
-c951129-hjaaj: force NEWTRA true if .INTSORT (later changed to .SORT Integrals)
-c950602-vebjorn:
-c  Added flag HRINPC to ensure that HERMIT input processing is done only once.
-c950505-hjaaj: let .NOTWO and .NOHAM imply .NOSUP
-c new option .SUPONLy for just SUPMAT .and. .NOT.HAMILT
-c    (for generating AOSUPINT file from existing AOTWOINT)
-c===========================================================================
-#endif
 C  /* Deck herctl */
 #ifndef PRG_DIRAC
       SUBROUTINE HERCTL(WORK,LWORK)
@@ -91,26 +70,33 @@ C
 C     Magnetic field derivative integrals of dipole length
 C     K.Ruud, Aug.-93
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "maxorb.h"
 C
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbihr2.h>
-#include <cbihrs.h>
-#include <cbisor.h>
-#include <cbieri.h>
-#include <gnrinf.h>
-#include <exeinf.h>
-#include <inftap.h>
-#include <huckel.h>
-#include <r12int.h>
-#include <nuclei.h>
-#include <pcmlog.h>
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbihr2.h"
+#include "cbihrs.h"
+#include "cbieri.h"
+#include "gnrinf.h"
+#include "exeinf.h"
+#include "inftap.h"
+#include "huckel.h"
+#include "r12int.h"
+#include "nuclei.h"
+#include "pcmlog.h"
+C
+Cholesky
+#include "ccdeco.h"
+Cholesky
+C
+C inftra : USE_INTSORT
+C
+#include "inftra.h"
 C
       LOGICAL SET, FEXIST
 C
@@ -143,8 +129,7 @@ C     ************************************
 C     ***** Calculation of Integrals *****
 C     ************************************
 C
-      IF (ONEPRP .OR. DOHUCKEL .OR. DKTRAN) CALL GPOPEN(LUPROP,
-     &     'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
       IF (QM3) THEN
          QM3LO1 = .TRUE.
@@ -167,29 +152,48 @@ C
 C
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12) THEN
-C        Delete old MO integrals and AOSUP integrals
-         IF (RNINTS) THEN
-            IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
-                               CALL DARMOV(LUORDA)
-            IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
-                               CALL DARMOV(LUMINT)
-         ELSE
-            CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
-            IF (FEXIST) THEN
-               CALL SYSTEM('rm -f AOSRTINT.DA*')
-            END IF
-            CALL GPINQ('MOTWOINT','EXIST',FEXIST)
-            IF (FEXIST) THEN
-               CALL GPOPEN(LUINTM,'MOTWOINT',
-     &              'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-               CALL GPCLOSE(LUINTM,'DELETE')
-            END IF
+
+C     Delete old MO integrals integrals
+      IF (USE_INTSORT) THEN
+         IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
+                            CALL DARMOV(LUORDA)
+         IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
+                            CALL DARMOV(LUMINT)
+      ELSE
+         CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
+         IF (FEXIST) THEN
+            CALL SYSTEM('rm -f AOSRTINT.DA*')
          END IF
-         CALL GPOPEN(LUSUPM,'AOSUPINT',
+         CALL GPINQ('MOTWOINT','EXIST',FEXIST)
+         IF (FEXIST) THEN
+            CALL GPOPEN(LUINTM,'MOTWOINT',
      &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-         CALL GPCLOSE(LUSUPM,'DELETE')
-C        Open LUINTA for new integrals
+            CALL GPCLOSE(LUINTM,'DELETE')
+         END IF
+      END IF
+
+C     Delete any existing old 2-el. AO integrals
+C     (they may have been generated with the MAKE_AOTWOINT routine,
+C      even if RUNTWO is .false. now ! This will for example be
+C      the case if DIRCAL and DOMP2))
+
+      IF (LUINTA  .LE. 0) CALL GPOPEN(LUINTA,'AOTWOINT',
+     &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      CALL GPCLOSE(LUINTA,'DELETE')
+      IF (DOSRIN) THEN
+         IF (LUSRINT .LE. 0) CALL GPOPEN(LUSRINT,'AO2SRINT',
+     &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         CALL GPCLOSE(LUSRINT,'DELETE')
+      END IF
+      IF (LUSUPM .LE. 0) CALL GPOPEN(LUSUPM,'AOSUPINT',
+     &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      CALL GPCLOSE(LUSUPM,'DELETE')
+
+C     IF (RUNTWO .or. RUNERI) :
+C        Open LUINTA and LUSRINT for new 2-el. integrals
+C        to be calculated in the CALL HERINT call below
+
+      IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12) THEN
          CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
          IF (DOSRIN) CALL
      &      GPOPEN(LUSRINT,'AOSR2INT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -198,6 +202,7 @@ C
       CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ',' ',IDUMMY,.FALSE.)
       CALL MOLLAB('INTEGRAL',LUONEL,LUPRI)
       CALL HERINT(WORK,LWORK)
+
       IF (PCM) THEN
          CALL IEFMAT(WORK,LWORK)
       END IF
@@ -219,6 +224,13 @@ C
         END IF
   753   CONTINUE
       END IF
+
+#if defined(BUILD_GEN1INT)
+C     test suite of Gen1Int interface, added by Bin Gao, Oct. 7, 2011
+      if (TEST_GEN1INT)
+     &  call gen1int_host_test(LWORK, WORK, LUPRI, IPRDEF)
+#endif
+
 C
 C     **********************************
 C     ***** P Supermatrix Elements *****
@@ -234,7 +246,12 @@ C     **********************************
 C
 C     Integrals on AOORDINT
 C
-      IF (RNINTS) THEN
+      IF (USE_INTSORT .AND. CHOINT) THEN
+         WRITE(LUPRI,'(/A)')
+     &      ' * INFO: .SORT INT ignored when .CHOLESKY'
+         USE_INTSORT = .FALSE.
+      END IF
+      IF (USE_INTSORT) THEN
          CALL GPINQ('AOTWOINT','EXIST',FEXIST)
          IF (FEXIST) THEN
             CALL TIMER('START ',TIMSTR,TIMEND)
@@ -254,10 +271,12 @@ C     ******************************
 C
       CALL GPCLOSE(LUONEL,'KEEP')
       IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
-      IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
       IF (LUQM3E .GT. 0) CALL GPCLOSE(LUQM3E,'KEEP')
       IF (LUQM3P .GT. 0) CALL GPCLOSE(LUQM3P,'KEEP')
       IF (LUSOL  .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP')
+C
+      IF (LUINTA  .GT. 0) CALL GPCLOSE(LUINTA ,'KEEP')
+      IF (LUSRINT .GT. 0) CALL GPCLOSE(LUSRINT,'KEEP')
 C
       IF (RUNTWO .OR. RUNERI) FTRCTL = .TRUE.
 C     ..transformation control, old AO/MO files cannot be used any more.
@@ -274,9 +293,12 @@ C
 C  /* Deck herinp */
       SUBROUTINE HERINP(WORK,LWORK)
 C
+C     <<< General Input for HERMIT >>>
+C
 C     Trygve Helgaker, extensively extended by others 
 C
-C <<< General Input for HERMIT >>>
+C     950602-vebjorn:
+C     Added flag HRINPC to ensure that HERMIT input processing is done only once.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -297,12 +319,15 @@ C
 #include "hrunit.h"
 #include "cbieri.h"
 #else
+C
+C inftra : USE_INTSORT
+C
 #include "dummy.h"
 #include "gnrinf.h"
-#include <cbihrs.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <inftra.h>
+#include "cbihrs.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "inftra.h"
 #endif
 C
 #include "cbiher.h"
@@ -311,22 +336,23 @@ C
 #include "ccom.h"
 #include "orgcom.h"
 
-#include <efield.h>
-#include <cbisol.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <huckel.h>
-#include <drw2el.h>
-#include <cbisor.h>
-#include <elweak.h>
-#include <r12int.h>
-#include <codata.h>
-#include <denfit.h>
+#include "efield.h"
+#include "cbisol.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "huckel.h"
+#include "drw2el.h"
+#include "elweak.h"
+#include "r12int.h"
+#include "codata.h"
+#include "denfit.h"
 C     Keywords for R12 have been added (WK/UniKA/04-11-2002).
 cLig <> added RANGMO and RPSO
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT',
      &             '*QM3INP'/
+C     adds test suite of Gen1Int interface as term 239
+C     Bin Gao, Oct. 3, 2011
 !                    101        102        103        104
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
 !                    105        106        107        108
@@ -396,26 +422,29 @@ cLig <> added RANGMO and RPSO
 !                    233        234        235        236
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
 !                    237        238        239        240
-     &             'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
+     &             '.NEWTRA', '.KINADI', '.GENINT', 'xxxxxxx'/
 C
-C     Check if input has been processed earlier.
 C
       CALL QENTER('HERINP')
+C
       IPRDEF = IPRUSR + 1
-      IF (HRINPC) THEN
-#ifndef PRG_DIRAC
-         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
-#endif
-         GOTO 1000
-      END IF
+      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+C
+C     Check if input has been processed earlier.
+C     HRINPC variable makes sure HERMIT input is only read once
+C
+      IF (HRINPC) GOTO 1000
       HRINPC = .TRUE.
 C
 C     *** Initialize ***
 C
-      CALL HERINI
+      ! CALL HERINI - Apr. 2011: HERINI now called in EXEHER /hjaaj
+      !               so Hermit variables are also initialized if only
+      !               ABACUS
+
       !Initialize defaults for density fitting
-      CALL DFIINI
+      CALL DENSFIT_INI
 C
 C     If WESTA - calculate integrals for WESTA program
 C
@@ -432,10 +461,6 @@ C
 C
 C     **** Find Hermit input *****
 C
-#ifndef PRG_DIRAC
-      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
-#endif
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
@@ -801,11 +826,11 @@ C
             CM2    = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
-  167    CONTINUE
+  167    CONTINUE ! .SQHDOL - Bra differentiated half-derivative overlap matrix
             SQHDOL = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
-  168    CONTINUE
+  168    CONTINUE ! .SQHDOR - Ket differentiated half-derivative overlap matrix
             SQHDOR = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
@@ -865,9 +890,10 @@ C&&& Nuclear model
               CALL QUIT('*** ERROR *** HERINP: Unknown nuclear model')
             ENDIF
             GO TO 100
+!      .SORT Integrals
   178    CONTINUE
             SUPMAT = .FALSE.
-            RNINTS = .TRUE.
+            USE_INTSORT = .TRUE.
             NEWTRA = .TRUE.
             GO TO 100
   179    CONTINUE
@@ -1008,7 +1034,7 @@ C           SLATER = .TRUE.
   205    CONTINUE
 C           Calculation with multiple basis sets requested (WK/UniKA/04-11-2002).
             CALL QUIT('ERROR, .AUXBAS has been renamed to .R12AUX'//
-     &        ' and moved to *READIN')
+     &        ' and moved to *MOLBAS')
             GOTO 100
   206    CONTINUE
 C           No calculation of 1/r12 integrals (WK/UniKA/04-11-2002).
@@ -1077,8 +1103,7 @@ cLig >> added what to do for RANGMO and RPSO options
             PSOOZ = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
-C        .SQH2DO
-  222    CONTINUE
+  222    CONTINUE ! .SQH2DO - Ket second differentiated half-derivative overlap matrix
             SQHD2O = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
@@ -1186,16 +1211,27 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             DIPANH = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
+!        .NEWTRA ("new transformation" from 1988 (!)
+!        this option is without calling SORTAO
   237    CONTINUE
+            NEWTRA = .TRUE.
+            GO TO 100
   238    CONTINUE
+            KINADI = .TRUE.
+            ONEPRP = .TRUE.
+            GOTO 100
   239    CONTINUE
+#if defined(BUILD_GEN1INT)
+            TEST_GEN1INT = .true.
+#endif
+            goto 100
   240    CONTINUE
             ONEPRP = .TRUE.
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
+         WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in HERINP.')
       END IF
@@ -1250,7 +1286,8 @@ cLig <>
      &    ' (perturbation parameter * c^{-2} = ',DPTFAC*ALPHAC**2,')'
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A)')
-     &  ' The following one-electron property integrals are calculated:'
+     &      ' The following one-electron property integrals are'
+     &    //' calculated as requested:'
                      WRITE (LUPRI,'(10X,A)') '- overlap integrals'
          IF (DIPLEN) WRITE (LUPRI,'(10X,A)') '- dipole length integrals'
          IF (DIPVEL) WRITE (LUPRI,'(10X,A)')
@@ -1289,6 +1326,8 @@ C
 C
          IF (KINENE) WRITE (LUPRI,'(10X,A)')
      &      '- electronic kinetic energy'
+         IF (KINADI) WRITE (LUPRI,'(10X,A)')
+     &      '- adiabatic kinetic energy from nuclear derivatives'
          IF (MASSVL) WRITE (LUPRI,'(10X,A)')
      &       '- mass velocity integrals'
          IF (DARWIN) WRITE (LUPRI,'(10X,A)')
@@ -1403,7 +1442,7 @@ cLig <<
          IF (HDOBRT) WRITE (LUPRI,'(10X,A)')
      &        '- Test of ket-diff. hdo-integrals with respect to B'
          IF (SQHDOL) WRITE (LUPRI,'(10X,A)')
-     &        '- Bra differentiated half-derivative overlap matrix'
+     &      '- Bra differentiated half-derivative overlap matrix'
          IF (SQHDOR) WRITE (LUPRI,'(10X,A)')
      &      '- Ket differentiated half-derivative overlap matrix'
          IF (SQHD2O) WRITE (LUPRI,'(10X,A)')
@@ -1441,8 +1480,8 @@ cLig <<
          IF (PXPINT) WRITE (LUPRI,'(10X,A)')
      &      '- small component dipole length integrals for DPT'
          IF (DKTRAN) WRITE (LUPRI,'(10X,A)')
-     &      '- The second order Douglas-Kroll transformation'//
-     &      ' will be applied'
+     &      '- The second order Douglas-Kroll-Hess transformation'//
+     &      ' will be applied (DKH2)'
          IF (CM1) THEN
             WRITE (LUPRI,'(10X,A)')
      &         '- First order magnetic derivative of electric field'
@@ -1569,9 +1608,11 @@ C
       CALL ER2INI
   301 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-         GO TO 300
+         READ (LUCMD, '(A7)') WORD
+         GO TO 301
       ELSE IF (PROMPT .EQ. '*') THEN
          IF (WORD(1:2) .EQ. '**') GO TO 399
+         CALL UPCASE(WORD)
          DO I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
                GO TO (399,302,303,304,305,306,307,308,309), I
@@ -1582,12 +1623,18 @@ C
          CALL QUIT('Illegal input directive in HERINP.')
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,
-     *      '" illegal or out of order.'
+     &      '" illegal or out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input modules',LUPRI)
          CALL QUIT('Program stopped in HERINP, error in prompt.')
       END IF
+
+!     DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',  ! TABDIR(1:4)
+!    &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT',  ! TABDIR(5:8)
+!    &             '*QM3INP'/                                   ! TABDIR(9)
+
 C 302   CALL REAINP(WORD,RELCAL,TSTINP)
-  302   CALL QUIT('ERROR, *READIN has been moved to **DALTON section')
+  302   CALL QUIT('Input ERROR, *READIN has been moved to **DALTON'//
+     &     ' section as *MOLBAS')
       GO TO 301
   303   CALL HR1INP(WORD)
       GO TO 301
@@ -1600,7 +1647,7 @@ C 302   CALL REAINP(WORD,RELCAL,TSTINP)
   307   CALL SRTINP(WORD)
       GO TO 301
         !Density-fitting input keywords
-  308   CALL DFIINP(WORD)
+  308   CALL DENSFIT_INP(WORD)
       GO TO 301
   309   CALL QUIT('ERROR, *QM3 has been moved to **DALTON section')
       GO TO 301
@@ -1634,17 +1681,17 @@ C
       END
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <orgcom.h>
-#include <cbiher.h>
-#include <cbihr1.h>
+#include "orgcom.h"
+#include "cbiher.h"
+#include "cbihr1.h"
 C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.SOLVEN', '.NOT AL', '.CAVORG',
@@ -1822,6 +1869,7 @@ C      ERFEXP = .FALSE.
 C
       NEWDEF = WORD .EQ. '*TWOINT'
       ICHANG = 0
+      IPRSUM = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
@@ -2023,9 +2071,9 @@ C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <gnrinf.h>
-#include <cbiher.h>
-#include <cbihrs.h>
+#include "gnrinf.h"
+#include "cbiher.h"
+#include "cbihrs.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', 'xxxxxxx', '.THRESH',
      &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
@@ -2136,37 +2184,37 @@ C
       END
 C  /* Deck herint */
       SUBROUTINE HERINT(WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <gnrinf.h>
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbihr2.h>
-#include <cbihrs.h>
-#include <cbieri.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <huckel.h>
+#include "gnrinf.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbihr2.h"
+#include "cbihrs.h"
+#include "cbieri.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "huckel.h"
 #include "inftap.h"
-#include <efield.h>
-#include <r12int.h>
-#include <drw2el.h>
+#include "efield.h"
+#include "r12int.h"
+#include "drw2el.h"
 #include "qm3.h"
-#include <pcmlog.h>
+#include "pcmlog.h"
 C
       DIMENSION   RLMORI(3)
       CHARACTER*8 LABELT(3), LABELS(6)
 C
       DIMENSION WORK(LWORK)
-#include <memint.h>
+#include "memint.h"
 C
 C     Control routine for calculation of undifferentiated one- and
 C     two-electron Hamiltonian integrals and transformation of
@@ -2209,7 +2257,7 @@ C
 C        Contract any primitive Douglas-Kroll integrals if necessary
 C     
          IF (DKTRAN .AND. .NOT. PVPINT) THEN
-            CALL DKCONT(PROPRI,IPRONE,WORK,LWORK)
+            CALL DKH_CONT(PROPRI,IPRONE,WORK,LWORK)
          END IF
 C
 C        *****************************************
@@ -2266,10 +2314,10 @@ C
             CALL TIMER('HUCKEL',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
          END IF
-         IF (ONEPRP) THEN
 C
 C           ***** Overlap integrals *****
 C
+! HJAaJ Jan 2011: Always calculate overlap integrals
             CALL TIMER('START ',TIMSTR,TIMEND)
             CALL PR1INT('OVERLAP ',WORK,LWORK,IDUMMY,
      &                  IDUMMY,TRIANG,PROPRI,IPRONE)
@@ -2280,15 +2328,62 @@ C
               CALL QUITMM('Overlap integrals calculated')
             END IF
 C
+C           ***** Modified overlap integrals *****
+C                 for population analysis /hjaaj Mar 2006
+C
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL PR1INT('POPOVLP',WORK,LWORK,IDUMMY,
+     &                  IDUMMY,TRIANG,PROPRI,IPRONE)
+            CALL TIMER('POPOVLP',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
+C
 C           ***** Dipole length integrals *****
 C
-            IF (DIPLEN) THEN
+! HJAaJ Jan 2011: Always calculate dipole and quadrupole integrals
+!                 and kinetic energy integrals
+!                 (For wave function analysis in sirpop.F and RESPONS)
+!           IF (DIPLEN) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL PR1INT('DIPLEN ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('DIPLEN',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
+!           END IF
+C
+C           ***** Quadrupole integrals *****
+C
+!           IF (QUADRU) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('QUADRUP',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('QUADRUP',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+!           END IF
+C
+C           ***** Kinetic energy integrals *****
+C
+!           IF (KINENE) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('KINENER',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('KINENE',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+!           END IF
+
+            IF (KINADI) THEN ! reduced mass diagonal correction
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('KINADIA',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('KINADI',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
             END IF
+
+C        ------------------------------------------------------
+
+         IF (ONEPRP) THEN
+
+C        ------------------------------------------------------
+
 C
 C           ***** Dipole velocity integrals *****
 C
@@ -2301,14 +2396,8 @@ C
             END IF
 C
 C           ***** Quadrupole integrals *****
+C                 (Other than 'QUADRUP'
 C
-            IF (QUADRU) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('QUADRUP',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('QUADRUP',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
             IF (THETA) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL PR1INT('THETA  ',WORK,LWORK,IDUMMY,
@@ -2337,16 +2426,6 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 C
-C           ***** Kinetic energy integrals *****
-C
-            IF (KINENE) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('KINENER',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('KINENE',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
 C           ***** Potential energy integrals *****
 C
             IF (POTENE) THEN
@@ -2357,7 +2436,7 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 C
-C           ***** Douglas-Kroll pVp integrals *****
+C           ***** Douglas-Kroll-Hess pVp integrals *****
 C
             IF (PVPINT) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
@@ -2484,7 +2563,7 @@ C
                CALL TIMER('HDO   ',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF
-            IF (SQHD2O) THEN
+            IF (SQHD2O) THEN ! second derivative
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL PR1INT('SQHD2OR',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
@@ -3130,7 +3209,7 @@ C
 C           ****Mean-field spin-orbit integrals                     ****
 C           
             IF (MNF_SO) THEN
-               CALL AMFIIN(PROPRI,IPRONE,WORK,LWORK)
+               CALL AMFIINTEGRALS(PROPRI,IPRONE,WORK,LWORK)
             END IF
 C
 C           ****   First electric derivative of overlap integrals    ****
@@ -3368,7 +3447,7 @@ C
      &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                  .FALSE.)
-            CALL TIMER('TWOINT',TIMSTR,TIMEND)
+            CALL TIMER('TWOINT short-range',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
             CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
             SRINTS = .FALSE.
@@ -3405,8 +3484,8 @@ C
             CALL GETTIM(SO2CPU,SO2WAL)
             SOCPU=SO2CPU-SO1CPU
             SOWAL=SO2WAL-SO1WAL
-            CALL TIMER('TWOINT',TIMSTR,TIMEND)
-            WRITE(LUPRI,'(2(/A),2(/A,F5.0,A))')
+            CALL TIMER('TWOINT 2-el spin-orbit',TIMSTR,TIMEND)
+            WRITE(LUPRI,'(2(/A),2(/A,F7.0,A))')
      &      '   Two-electron spin-orbit integrals',
      &      '   =================================',
      &      '   Spin-orbit 2-electron CPU  time ',SOCPU,' seconds',
@@ -3451,7 +3530,7 @@ C
             CALL GETTIM(DA2CPU,DA2WAL)
             DACPU=DA2CPU-DA1CPU
             DAWAL=DA2WAL-DA1WAL
-            CALL TIMER('TWOINT',TIMSTR,TIMEND)
+            CALL TIMER('TWOINT 2-el Darwin',TIMSTR,TIMEND)
             WRITE(LUPRI,'(2(/A),2(/A,F5.0,A))')
      &      '   Two-electron Darwin integrals',
      &      '   =================================',
@@ -3599,9 +3678,13 @@ C
       END
 C  /* Deck srtinp */
       SUBROUTINE SRTINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <cbisor.h>
+#include "implicit.h"
+#include "priunit.h"
+C
+C inftra : USE_INTSORT
+C
+#include "cbisor.h"
+#include "inftra.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
@@ -3701,7 +3784,7 @@ C
       END IF
   300 CONTINUE
       IF (ICHANG .EQ. 0) RETURN
-      IF (RNINTS. AND. NEWDEF) THEN
+      IF (USE_INTSORT .AND. NEWDEF) THEN
          CALL HEADER('Changes of defaults for SORTAO:',1)
          IF (THRQ2 .NE. 1.0D-15) WRITE (LUPRI,'(A,D12.2)')
      &        ' Threshold for sorted integrals:', THRQ2
@@ -3721,38 +3804,36 @@ C
       END
 C/* Deck herini */
       SUBROUTINE HERINI
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <gnrinf.h>
-#include <inftra.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "gnrinf.h"
+#include "inftra.h"
 #include "cbirea.h"
-#include <cbisol.h>
-#include <cbisor.h>
-#include <cbiher.h>      
-#include <drw2el.h>
-#include <orgcom.h>
-#include <elweak.h>
-#include <r12int.h>
-#include <infinp.h>
-#include <qm3.h>
+#include "cbisol.h"
+#include "cbiher.h"      
+#include "drw2el.h"
+#include "orgcom.h"
+#include "elweak.h"
+#include "r12int.h"
+#include "infinp.h"
+#include "qm3.h"
 C
-C     HJAaJ June 2009: force NEWTRA if more than 255 basis functions
+Cholesky
+#include "ccdeco.h"
+Cholesky
+      LOGICAL FIRST_CALL
+      SAVE    FIRST_CALL
+      DATA    FIRST_CALL /.TRUE./
 C
-      IF (NBASIS .GT. 255 .AND. .NOT.NEWTRA) THEN
-         NEWTRA = .TRUE.
-         WRITE(LUPRI,'(/4X,A/4X,A)') 'INFORMATION: Switched to "new" '/
-     &     /'integral transformation (from 1988 ;-) )',
-     &      'because more than 255 basis functions.'
-      END IF
-C
+      IF (.NOT. FIRST_CALL) RETURN
+      FIRST_CALL = .FALSE.
 C
 C     Initialize /CBIHER/
 C
-CTSAUE
-      RNINTS = NEWTRA .AND. .NOT. DIRCAL
+      USE_INTSORT = .FALSE. ! in inftra.h
       IF(RELCAL) THEN
         HAMILT = .FALSE.
         ONEPRP = .FALSE.
@@ -3764,11 +3845,7 @@ CTSAUE
         ONEPRP = .FALSE.
         DIPVEL = .FALSE.
         DIRAC_HER = .FALSE.
-C#ifdef VAR_INT64
-C        SUPMAT = .FALSE.
-C#else
-        SUPMAT = .NOT. DIRCAL .AND. .NOT. RNINTS
-C#endif
+        SUPMAT = .NOT. DIRCAL .AND. .NOT. USE_INTSORT
       ENDIF
       SKIP   = .FALSE.
       TSTINP = .FALSE.
@@ -3940,6 +4017,11 @@ chj may 09: GAGORG and DIPORG now initialized in READIN
 chj   CALL DZERO(GAGORG,3)
 chj   CALL DZERO(DIPORG,3)
       CALL DZERO(EXPKR ,3)
+C
+Cholesky
+      IF (CHOINT) NOTWO = .TRUE.
+Cholesky
+C
 CTSAUE
 C    Initialize nuclear model in NUCLEI
 C      1 - Point nucleus
@@ -3969,21 +4051,21 @@ C
       RETURN
       END
 C/* Deck amfiin */
-      SUBROUTINE AMFIIN(PROPRI,IPRINT,WORK,LWORK)
+      SUBROUTINE AMFIINTEGRALS(PROPRI,IPRINT,WORK,LWORK)
 C
 C     Interface to B.Schimmelpfennig's atomic mean-field integral code
 C     Written by K.Ruud in northern Norway in January 2001.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
 C
       LOGICAL BREIT, PROPRI
       DIMENSION WORK(LWORK)
-#include <gnrinf.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <cbirea.h>
+#include "gnrinf.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "cbirea.h"
 C
 C     Open Mean-field input file generate in READIN
 C
@@ -4017,796 +4099,12 @@ C
       CALL GPCLOSE(LUMNFPRP,'DELETE')
       RETURN
       END
-C  /* Deck dkint */
-      SUBROUTINE DKINTF(WORK,LWORK)
-C
-C     Driver for calculating Douglas-Kroll integrals in the primitive
-C     basis and transforming them to the appropriate form before 
-C     writing them to file
-C
-C     K.Ruud, September-00
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-C
-      DIMENSION WORK(LWORK)
-      LOGICAL HUCKELBKP
-C
-#include <inftap.h>
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbihr2.h>
-#include <cbieri.h>
-#include <cbihrs.h>
-#include <gnrinf.h>
-#include <huckel.h>
-C
-      CALL QENTER('DKINTF')
-      CALL GETTIM(TIMHER,WALHER)
-C
-      CALL HERINI
-      HAMILT = .FALSE.
-      PVPINT = .TRUE.
-      POTENE = .TRUE.
-      KINENE = .TRUE.
-      PROPRI = .FALSE.
-      HUCKELBKP = DOHUCKEL
-      DOHUCKEL = .FALSE.
-      ONEPRP = .TRUE.
-      RUNONE = .TRUE.
-      RUNSUP = .FALSE.
-      RUNTWO = .FALSE.
-C
-C     Process basis set, although now as a decontracted set without
-C     normalization of the primitive orbitals (UNCONT .true.)
-C     (READIN will be called again in HERINP and generate the
-C     proper contracted basis and the info necessary to
-C     transform Douglas-Kroll integrals to contracted basis)
-C      
-      CALL DKREIN(WORK,LWORK)
-C
-      TIMSTR = SECOND()
-      TIMINP = SECOND() - TIMSTR
-      CALL FLSHFO(LUPRI)
-      CALL GPOPEN(LUPROP,'DKINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      CALL HERINT(WORK,LWORK)
-      CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
-      CALL GPCLOSE(LUONEL,'DELETE')
-      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
-C
-C     We now calculate all the Douglas-Kroll quantities in the primitive
-C     basis
-C
-      CALL DKDRIV(WORK,LWORK,IPRDEF)
-C
-      DOHUCKEL = HUCKELBKP
-      RDINPC = .FALSE.
-      RUNSUP = SUPMAT
-      PVPINT = .FALSE.
-      RUNTWO = .NOT.NOTWO
-      HAMILT = .TRUE.
-      CALL GETTIM(TEND,WEND)
-      TIMHER = TEND - TIMHER
-      WALHER = WEND - WALHER
-      CALL TIMTXT('>>>> Total CPU  time used in DKINT:',TIMHER,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in DKINT:',WALHER,LUPRI)
-      CALL QEXIT('DKINTF')
-      RETURN
-      END
-C/* Deck dkrein */
-      SUBROUTINE DKREIN(WORK,LWORK)
-C
-C     Read specification of primitive basis (i.e. decontracted)
-C     for calculation of Douglas-Kroll integrals.
-C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-
-#include <priunit.h>
-      DIMENSION WORK(LWORK)
-      LOGICAL UNCONTBKP
-      CHARACTER*7 WORD
-#include <ccom.h>
-#include <mxsymm.h>
-#include <cbirea.h>
-C
-      CALL QENTER('DKREIN')
-C
-C     Define cbirea.h for call of READIN below
-C
-      THRS = 1.0D-15
-C
-      LUMLCL = -1
-      MAXPRI = MAXPRD
-      BIGVC  = .FALSE.
-      DIRAC  = .FALSE.
-      GENCON = .TRUE.
-      BASIS  = .FALSE.
-      ATOMBA = .FALSE.
-      TOLLRN = 0.0D0
-      ZCMVAL = 1.0D0
-      LCMMAX = -1
-C
-C     We also need two variables from cbiher.h
-C
-      CALL READ_CBIHER(IPREAD, INPTST)
-C
-C     An important input for the READIN procedure is the number of primitives
-C     per block in the input file. First check if this has been reset.
-C
-      MAXPRI = MAXPRD
-      LUTMP = LUCMD
-      IF (LUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ',
-     &     'FORMATTED',IDUMMY,.FALSE.)
-      REWIND (LUCMD,IOSTAT=IOS)
- 5000 READ (LUCMD,'(A7)',END=5010) WORD
-      CALL UPCASE(WORD)
-      IF (WORD .EQ. '.MAXPRI') THEN
-         READ (LUCMD,*) MAXPRI
-         GOTO 5010
-      ELSE
-         GOTO 5000
-      END IF
- 5010 CONTINUE
-      IF (LUTMP .LE.0) CALL GPCLOSE(LUCMD,'KEEP')
-C
-C     Now call READIN to get the specification of the primitive basis.
-C     Note that UNCONT = .true., to force decontracted specification
-C     for Douglas-Kroll integrals.
-C
-      UNCONTBKP = UNCONT
-      UNCONT = .TRUE.
-      CALL READIN(WORK,LWORK,.TRUE.)
-      UNCONT = UNCONTBKP
-      CALL SETDCH
-      CALL QEXIT('DKREIN')
-      RETURN
-      END
-C/* Deck dkdriv */
-      SUBROUTINE DKDRIV(WORK,LWORK,IPRINT)
-C
-C     Driver routine for calculation of the various Douglas-Kroll matrices
-C     in the primitive basis
-C
-C     K.Ruud, September 2000
-C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-      DIMENSION WORK(LWORK)
-#include <shells.h>
-#include <symmet.h>
-#include <inftap.h>
-#include <ibtfun.h>
-C
-      CALL QENTER('DKDRIV')
-C
-      CALL GPOPEN(LUPROP,'DKINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-C
-      NBAST = 0
-      DO 400 ISHELL = 1, KMAX
-         DO 410 KB = 0,MAXREP
-            IF (IBTAND(KB,ISTBAO(ISHELL)) .EQ. 0)
-     *            NBAST = NBAST + KHKT(ISHELL)
-  410    CONTINUE
-  400 CONTINUE
-      NNBASX = NBAST*(NBAST + 1)/2
-      N2BASX = NBAST*NBAST
-C
-C     Memory allocation
-C
-      KOVERL = 1
-      KXMAT  = KOVERL + NNBASX
-      KEIGVC = KXMAT  + N2BASX
-      KSQMT1 = KEIGVC + N2BASX
-      KSQMT2 = KSQMT1 + N2BASX
-      KTRMT1 = KSQMT2 + N2BASX
-      KTRMT2 = KTRMT1 + NNBASX
-      KE1    = KTRMT2 + NNBASX
-      KA1    = KE1    + NBAST
-      KEK    = KA1    + NBAST
-      KD1    = KEK    + NBAST
-      KWEWMT = KD1    + NBAST
-      KVMAT  = KWEWMT + N2BASX
-      KPVPMT = KVMAT  + NNBASX
-      KLAST  = KPVPMT + NNBASX
-      IF (KLAST .GT. LWORK) CALL STOPIT('DKDRIV','DKDRI1',KLAST,LWORK)
-      LWRK   = LWORK - KLAST + 1
-C
-C     Call the driver routine
-C     
-      CALL DKDRI1(WORK(KOVERL),WORK(KXMAT),WORK(KEIGVC),WORK(KSQMT1),
-     &            WORK(KSQMT2),WORK(KTRMT1),WORK(KTRMT2),WORK(KWEWMT),
-     *            WORK(KE1),WORK(KA1),WORK(KEK),WORK(KD1),WORK(KVMAT),
-     &            WORK(KPVPMT),WORK(KLAST),LWRK,NBAST,NNBASX,N2BASX,
-     &            IPRINT)
-C
-      CALL QEXIT('DKDRIV')
-      RETURN
-      END
-C/* Deck dkdri1 */
-      SUBROUTINE DKDRI1(OVERLP,XMAT,EIGVEC,SQMAT1,SQMAT2,TRMAT1,TRMAT2,
-     &                  WEWMAT,E1DIAG,A1DIAG,EKDIAG,D1DIAG,VMAT,PVPMAT,
-     &                  WORK,LWORK,NBAST,NNBASX,N2BASX,IPRINT)
-C
-C     K.Ruud, Sept.-2000
-C
-#include <implicit.h>
-#include <codata.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, CVEL2 = CVEL*CVEL, DM1 = -D1)
-      CHARACTER*8 RTNLBL(2)
-      LOGICAL FNDLAB
-      DIMENSION OVERLP(NNBASX), XMAT(NBAST,NBAST), EIGVEC(NBAST,NBAST),
-     &          SQMAT1(NBAST,NBAST), SQMAT2(NBAST,NBAST),
-     &          TRMAT1(NNBASX), TRMAT2(NNBASX), E1DIAG(NBAST),
-     &          A1DIAG(NBAST), EKDIAG(NBAST), D1DIAG(NBAST),
-     &          WEWMAT(N2BASX), VMAT(NNBASX), PVPMAT(NNBASX)
-      DIMENSION WORK(LWORK)
-#include <dkinf.h>      
-#include <priunit.h>
-#include <inftap.h>
-#include <aosotr.h>
-#include <symmet.h>
-C
-C     Allocate temporary storage
-C
-      KSCR1 = 1
-      KSCR2 = KSCR1 + N2BASX
-      KLAST = KSCR2 + N2BASX
-      IF (KLAST .GT. LWORK) CALL STOPIT('DKDRI1','START ',KLAST,LWORK)
-C
-C     Read in overlap matrix
-C
-      IF (FNDLAB('OVERLAP ',LUPROP)) THEN
-         CALL READT(LUPROP,NNBASX,OVERLP)
-         IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Overlap matrix read from LUPROP in DKDRI1',-1)
-            CALL OUTPAK(OVERLP,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKDRI1 error: Overlap matrix'//
-     *      ' not found on LUPROP.'
-         CALL QUIT('HUCDR1 error: property not found on LUPROP')
-      END IF
-C
-C     Diagonalize the overlap matrix
-C
-      CALL DCOPY(NNBASX,OVERLP,1,TRMAT1,1)
-      CALL DUNIT(EIGVEC,NBAST)
-      CALL JACO(TRMAT1,EIGVEC,NBAST,NBAST,NBAST,WORK(KSCR1),WORK(KSCR2))
-C
-      CALL DZERO(XMAT,N2BASX)
-      DO I = 1, NBAST
-         II = I*(I + 1)/2
-         IF (TRMAT1(II) .LT. 1.0D-6) THEN
-            WRITE (LUPRI,*) ' >>> ERROR DKDRIV: Linear dependency in '//
-     &           'primitive basis used in Douglas-Kroll ', I, TRMAT1(II)
-            write (lupri,*) 'The corresponding eigenvector:'
-            call output(eigvec(1,i),1,1,1,nbast,1,nbast,-1,lupri)
-            DO J = 1,NBAST
-               II = J*(J + 1)/2
-               E1DIAG(J) = TRMAT1(II)
-            END DO
-            write (lupri,*) 'All eigenvalues of the overlap matrix:'
-            call output(E1DIAG,1,1,1,nbast,1,nbast,-1,lupri)
-            CALL QUIT('Linear dependency in primitive Douglas-Kroll'//
-     &           ' basis')
-         END IF
-         E1DIAG(I) = D1/SQRT(TRMAT1(II))
-      END DO
-      DO I = 1, NBAST
-         CONST =E1DIAG(I)
-         DO J = 1, NBAST
-            XMAT(J,I) = EIGVEC(J,I)*CONST
-         END DO
-      END DO
-C
-C     Read in the kinetic energy and transform to orthonormal basis
-C     Note that we reuse OVERLP to save memory
-C     
-      REWIND (LUPROP)
-      IF (FNDLAB('KINENERG',LUPROP)) THEN
-         CALL READT(LUPROP,NNBASX,OVERLP)
-         IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Kinetic energy matrix read from LUPROP '//
-     &                  'in DKDRI1',-1)
-            CALL OUTPAK(OVERLP,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKDRI1 error: Kinetic energy'//
-     *      ' matrix not found on LUPROP.'
-         CALL QUIT('HUCDR1 error: property not found on LUPROP')
-      END IF
-C     
-      CALL UTHU(OVERLP,TRMAT1,XMAT,WORK(KSCR1),NBAST,NBAST)
-C
-C     Diagonalize the kinetic energy matrix in orthonormal basis
-C
-      CALL DUNIT(EIGVEC,NBAST)
-      CALL JACO(TRMAT1,EIGVEC,NBAST,NBAST,NBAST,WORK(KSCR1),WORK(KSCR2))
-C
-C     Extract kinetic energy and construct Epi, Api and Dpi
-C     
-      DO I = 1, NBAST
-         II = I*(I + 1)/2
-         DIAG = D2*TRMAT1(II)
-         EKDIAG(I) = DIAG
-         E1DIAG(I) = CVEL*SQRT(DIAG + CVEL2)
-         A1DIAG(I) = SQRT((CVEL2 + E1DIAG(I))/(D2*E1DIAG(I)))
-         D1DIAG(I) = CVEL*A1DIAG(I)/(CVEL2 + E1DIAG(I))
-         E1DIAG(I) = E1DIAG(I) - CVEL2
-      END DO
-      IF (IPRINT .GT. 3) THEN
-         CALL HEADER('Diagonal E1 matrix',-1)
-         CALL OUTPUT(E1DIAG,1,NBAST,1,1,NBAST,1,-1,LUPRI)
-         CALL HEADER('Diagonal A1 matrix',-1)
-         CALL OUTPUT(A1DIAG,1,NBAST,1,1,NBAST,1,-1,LUPRI)
-         CALL HEADER('Diagonal Ek matrix',-1)
-         CALL OUTPUT(EKDIAG,1,NBAST,1,1,NBAST,1,-1,LUPRI)
-         CALL HEADER('Diagonal D1 matrix',-1)
-         CALL OUTPUT(D1DIAG,1,NBAST,1,1,NBAST,1,-1,LUPRI)
-      END IF
-C
-C
-C     Read in nuclear attraction and pVp integrals from file LUPROP (DKINT)
-C     and transform to orthonormal basis. Then we transform them to the 
-C     diagonal basis of the kinetic operator.
-C
-      REWIND (LUPROP)
-      IF (FNDLAB('POTENERG',LUPROP)) THEN
-         CALL READT(LUPROP,NNBASX,VMAT)
-         IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Potential energy matrix read from LUPROP '//
-     &                  'in DKDRI1',-1)
-            CALL OUTPAK(VMAT,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKDRI1 error: potential energy'//
-     *      ' matrix not found on LUPROP.'
-         CALL QUIT('DKDRI1 error: property not found on LUPROP')
-      END IF
-      CALL UTHU(VMAT,OVERLP,XMAT,WORK(KSCR1),NBAST,NBAST)
-      CALL UTHU(OVERLP,VMAT,EIGVEC,WORK(KSCR1),NBAST,NBAST)
-C     
-      REWIND (LUPROP)
-      IF (FNDLAB('pVpINTEG',LUPROP)) THEN
-         CALL READT(LUPROP,NNBASX,PVPMAT)
-         IF (IPRINT .GT. 6) THEN
-            CALL HEADER('pVp integrals read from LUPROP '//
-     &                  'in DKDRI1',-1)
-            CALL OUTPAK(PVPMAT,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKDRI1 error: pVp integral'//
-     *      ' matrix not found on LUPROP.'
-         CALL QUIT('DKDRI1 error: property not found on LUPROP')
-      END IF
-C
-      CALL UTHU(PVPMAT,WORK(KSCR2),XMAT,WORK(KSCR1),NBAST,NBAST)
-      CALL UTHU(WORK(KSCR2),PVPMAT,EIGVEC,WORK(KSCR1),NBAST,NBAST)
-C
-C     Create second-order Douglas-Kroll contributions
-C
-      CALL DZERO(WEWMAT,N2BASX)
-      CALL WWEWEW(VMAT,PVPMAT,E1DIAG,A1DIAG,EKDIAG,TRMAT1,TRMAT2,
-     &            SQMAT1,SQMAT2,WEWMAT,WORK(KSCR1),NBAST,NNBASX,N2BASX,
-     &            IPRINT)
-C
-C     Backtransform the second-order Douglas-Kroll matrix to 
-C     orthonormal basis and make it square
-C
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,1.D0,
-     &           EIGVEC,NBAST,
-     &           WEWMAT,NBAST,0.D0,
-     &           SQMAT1,NBAST)
-      CALL DGEMM('N','T',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT1,NBAST,
-     &           EIGVEC,NBAST,0.D0,
-     &           WEWMAT,NBAST)
-      CALL DSCAL(N2BASX,-1.0D0,WEWMAT,1)
-C
-C     -1/2WWE - 1/2 EWW - WEW
-C
-C
-C     We now backtransform the various matrices to primitive basis
-C     and construct the full effective Douglas-Kroll Hamiltonian
-C
-      CALL DZERO(SQMAT1,N2BASX)
-      DO I = 1, NBAST
-         SQMAT1(I,I) = E1DIAG(I) - CVEL2
-      END DO
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,1.D0,
-     &           EIGVEC,NBAST,
-     &           SQMAT1,NBAST,0.D0,
-     &           SQMAT2,NBAST)
-      CALL DGEMM('N','T',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT2,NBAST,
-     &           EIGVEC,NBAST,1.D0,
-     &           WEWMAT,NBAST)
-C
-C     AHA
-C
-      CALL DZERO(SQMAT1,N2BASX)
-      DO I = 1, NBAST
-         SQMAT1(I,I) = A1DIAG(I)
-      END DO
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,1.D0,
-     &           EIGVEC,NBAST,
-     &           SQMAT1,NBAST,0.D0,
-     &           SQMAT2,NBAST)
-      CALL DGEMM('N','T',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT2,NBAST,
-     &           EIGVEC,NBAST,0.D0,
-     &           SQMAT1,NBAST)
-      CALL DSPTSI(NBAST,OVERLP,WORK(KSCR1))
-      CALL DGEMM('T','N',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT1,NBAST,
-     &           WORK(KSCR1),NBAST,0.D0,
-     &           SQMAT2,NBAST)
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,-1.D0,
-     &           SQMAT2,NBAST,
-     &           SQMAT1,NBAST,1.D0,
-     &           WEWMAT,NBAST)
-C
-C     DWD
-C
-      CALL DZERO(SQMAT1,N2BASX)
-      DO I = 1, NBAST
-         SQMAT1(I,I) = D1DIAG(I)
-      END DO
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,1.D0,
-     &           EIGVEC,NBAST,
-     &           SQMAT1,NBAST,0.D0,
-     &           SQMAT2,NBAST)
-      CALL DGEMM('N','T',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT2,NBAST,
-     &           EIGVEC,NBAST,0.D0,
-     &           SQMAT1,NBAST)
-      CALL DSPTSI(NBAST,WORK(KSCR2),WORK(KSCR1))
-      CALL DGEMM('T','N',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT1,NBAST,
-     &           WORK(KSCR1),NBAST,0.D0,
-     &           SQMAT2,NBAST)
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,-1.D0,
-     &           SQMAT2,NBAST,
-     &           SQMAT1,NBAST,1.D0,
-     &           WEWMAT,NBAST)
-C
-C     Pack and backtransform the final effect Hamiltonian to primitive basis
-C
-      CALL DSITSP(NBAST,WEWMAT,TRMAT1)
-      CALL DGEINV(NBAST,XMAT,SQMAT1,WORK(KSCR1),WORK(KSCR2),INFO)
-      CALL UTHU(TRMAT1,TRMAT2,SQMAT1,WORK(KSCR1),NBAST,NBAST)
-C
-C     Write the final effective Hamiltonian to DKINT and keep until we
-C     know what kind of contraction coefficients we have
-C
-      IF (IPRINT .GT. 1) THEN
-         CALL HEADER('Final Douglas-Kroll effective one-electron'//
-     &               ' potential (SO basis)',-1)
-         CALL OUTPAK(TRMAT2,NBAST,1,LUPRI)
-      END IF
-C
-C     We transform to AO basis in order to more easily contract it
-C
-      IF (MAXREP .GT. 0) THEN
-         IATOM = 0
-         CALL TRSOAO(TRMAT2,WORK,LWORK,NBAST,IATOM,IPRINT)
-         CALL DCOPY(NNBASX,WORK,1,TRMAT2,1)
-         IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Final Douglas-Kroll effective one-electron'//
-     &                 ' potential (AO basis)',-1)
-            CALL OUTPAK(TRMAT2,NBAST,1,LUPRI)
-         END IF
-      END IF
-      NPRIM  = NBAST
-      NNPRMX = NNBASX
-      REWIND(LUPROP)
-      CALL WRTPRO(TRMAT2,NNBASX,'DKINTPRI',RTNLBL)
-      CALL GPCLOSE(LUPROP,'KEEP')
-C
-C     End of DKDRIV
-C     
-      RETURN
-      END
-C/* Deck wwewew */
-      SUBROUTINE WWEWEW(VMAT,PVPMAT,E1DIAG,A1DIAG,EKDIAG,VTMP,GTMP,
-     &                  SQMAT1,SQMAT2,WEWMAT,RDIAG,NBAST,NNBASX,N2BASX,
-     &                  IPRINT)
-C
-C     Subroutine for calculating second-order Douglas-Kroll contributions
-C
-#include <implicit.h>
-#include <codata.h>
-      PARAMETER (CVEL2 = CVEL*CVEL, DP5 = 0.50D0)
-#include <priunit.h>
-      DIMENSION VMAT(NNBASX), PVPMAT(NNBASX), E1DIAG(NBAST),
-     &          A1DIAG(NBAST), EKDIAG(NBAST), WEWMAT(NBAST,NBAST),
-     &          SQMAT1(NBAST,NBAST), SQMAT2(NBAST,NBAST),
-     &          VTMP(NNBASX), GTMP(NNBASX), RDIAG(NBAST)
-C
-      DO I = 1, NBAST
-         E1DIAG(I) = E1DIAG(I) + CVEL2
-         RDIAG(I) = CVEL/(CVEL2 + E1DIAG(I))
-      END DO
-C
-      IJ = 1
-      DO I = 1, NBAST
-         DO J = 1, I
-            VTMP(IJ) = VMAT(IJ)/(E1DIAG(I) + E1DIAG(J))
-            GTMP(IJ) = PVPMAT(IJ)/(E1DIAG(I) + E1DIAG(J))
-            SQMAT1(I,J) = A1DIAG(I)*RDIAG(I)*GTMP(IJ)*A1DIAG(J)
-     &                   *A1DIAG(J)
-            SQMAT1(J,I) = A1DIAG(J)*RDIAG(J)*GTMP(IJ)*A1DIAG(I)
-     &                   *A1DIAG(I)
-            SQMAT2(I,J) = RDIAG(I)*VTMP(IJ)*A1DIAG(J)
-     &                  - GTMP(IJ)*A1DIAG(J)*RDIAG(J)/EKDIAG(I)
-            SQMAT2(J,I) = RDIAG(J)*VTMP(IJ)*A1DIAG(I)
-     &                  - GTMP(IJ)*A1DIAG(I)*RDIAG(I)/EKDIAG(J)
-            IJ = IJ + 1
-         END DO
-      END DO
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT1,NBAST,
-     &           SQMAT2,NBAST,0.D0,
-     &           WEWMAT,NBAST)
-      IF (IPRINT .GT. 6) THEN
-         CALL AROUND('1. transformation of W-matrix')
-         CALL OUTPUT(WEWMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-      END IF
-C
-      IJ = 1
-      DO I = 1, NBAST
-         DO J = 1, I
-           SQMAT1(I,J) = A1DIAG(I)*VTMP(IJ)*A1DIAG(J)*A1DIAG(J)*RDIAG(J)
-           SQMAT1(J,I) = A1DIAG(J)*VTMP(IJ)*A1DIAG(I)*A1DIAG(I)*RDIAG(I)
-           SQMAT2(I,J) = -EKDIAG(I)*RDIAG(I)*VTMP(IJ)*A1DIAG(J)
-     &                 + GTMP(IJ)*A1DIAG(J)*RDIAG(J)
-           SQMAT2(J,I) = -EKDIAG(J)*RDIAG(J)*VTMP(IJ)*A1DIAG(I)
-     &                 + GTMP(IJ)*A1DIAG(I)*RDIAG(I)
-           IJ = IJ + 1
-        END DO
-      END DO
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT1,NBAST,
-     &           SQMAT2,NBAST,1.D0,
-     &           WEWMAT,NBAST)
-      IF (IPRINT .GT. 6) THEN
-         CALL AROUND('2. transformation of W-matrix')
-         CALL OUTPUT(WEWMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-      END IF
-C
-C     Make 1/2 EW*W + 1/2 W*WE
-C
-      DO I = 1, NBAST
-         DO J = 1, NBAST
-            WEWMAT(I,J) = DP5*WEWMAT(I,J)*(E1DIAG(I)+E1DIAG(J))
-         END DO
-      END DO
-      IF (IPRINT .GT. 6) THEN
-         CALL AROUND('3. transformation of W-matrix')
-         CALL OUTPUT(WEWMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-      END IF
-C
-C     Start constructing WEW
-C
-      IJ = 1
-      DO I = 1, NBAST
-         DO J = 1, I
-           SQMAT1(I,J) = A1DIAG(I)*RDIAG(I)*GTMP(IJ)*A1DIAG(J)
-     &                  *A1DIAG(J)*E1DIAG(J)
-           SQMAT1(J,I) = A1DIAG(J)*RDIAG(J)*GTMP(IJ)*A1DIAG(I)
-     &                  *A1DIAG(I)*E1DIAG(I)
-           SQMAT2(I,J) = RDIAG(I)*VTMP(IJ)*A1DIAG(J)
-     &                 - GTMP(IJ)*A1DIAG(J)*RDIAG(J)/EKDIAG(I)
-           SQMAT2(J,I) = RDIAG(J)*VTMP(IJ)*A1DIAG(I)
-     &                 - GTMP(IJ)*A1DIAG(I)*RDIAG(I)/EKDIAG(J)
-           IJ = IJ + 1
-        END DO
-      END DO
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT1,NBAST,
-     &           SQMAT2,NBAST,1.D0,
-     &           WEWMAT,NBAST)
-C
-      IJ = 1
-      DO I = 1, NBAST
-         DO J = 1, I
-            SQMAT1(I,J) = A1DIAG(I)*VTMP(IJ)*A1DIAG(J)*A1DIAG(J)
-     &                   *RDIAG(J)*E1DIAG(J)
-            SQMAT1(J,I) = A1DIAG(J)*VTMP(IJ)*A1DIAG(I)*A1DIAG(I)
-     &                   *RDIAG(I)*E1DIAG(I)
-            SQMAT2(I,J) = -EKDIAG(I)*RDIAG(I)*VTMP(IJ)*A1DIAG(J)
-     &                  + GTMP(IJ)*A1DIAG(J)*RDIAG(J)
-            SQMAT2(J,I) = -EKDIAG(J)*RDIAG(J)*VTMP(IJ)*A1DIAG(I)
-     &                  + GTMP(IJ)*A1DIAG(I)*RDIAG(I)
-            IJ = IJ + 1
-         END DO
-      END DO
-      CALL DGEMM('N','N',NBAST,NBAST,NBAST,1.D0,
-     &           SQMAT1,NBAST,
-     &           SQMAT2,NBAST,1.D0,
-     &           WEWMAT,NBAST)
-C
-C     The entire matrix is now constructed in the diagonal T basis
-C
-      RETURN
-      END
-C/* Deck dkcont */
-      SUBROUTINE DKCONT(PROPRI,IPRINT,WORK,LWORK)
-C
-C     This subroutine reads in the Douglas-Kroll potential in the primitive
-C     basis and contracts it with the contraction coefficients of the 
-C     basis set used in the calculation
-C
-C     K.Ruud, September 2000
-C     
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <dkinf.h>      
-      LOGICAL FNDLAB, ANTI, PROPRI
-      CHARACTER*8 LABINT
-      DIMENSION WORK(LWORK)
-#include <shells.h>
-#include <symmet.h>
-C
-C     
-      NBAST = ISUM(MAXREP+1,NAOS,1)
-      NNBASX = NBAST*(NBAST + 1)/2
-C
-      KWMAT  = 1
-      KCONTC = KWMAT + NPRIM*NPRIM 
-      KLAST  = KCONTC + NPRIM*NBAST
-      KTMP   = KLAST + NPRIM*NPRIM
-      LWRK   = LWORK - KLAST + 1
-      IF (KTMP .GT. LWORK) CALL STOPIT('DKCONT','PRI2CN',KLAST,LWORK)
-      LUDKIN = -9000
-      CALL GPOPEN(LUDKIN,'DKINT','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
-      IF (FNDLAB('DKINTPRI',LUDKIN)) THEN
-         IF (NNPRMX .GT. LWORK) CALL STOPIT('DKCONT','WMAT  ',
-     &                                      NNPRMX,LWORK)
-         CALL READT(LUDKIN,NNPRMX,WORK(KWMAT))
-         IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Primitive Douglas-Kroll integrals read from '//
-     &                  'LUDKIN in DKCONT',-1)
-            CALL OUTPAK(WORK(KWMAT),NPRIM,1,LUPRI)
-         END IF
-         CALL DCOPY(NNPRMX,WORK(KWMAT),1,WORK(KLAST),1)
-         CALL DSPTSI(NPRIM,WORK(KLAST),WORK(KWMAT))
-         NOPTYP = 1
-         LABINT = 'DKPOTINT'
-         ANTI   = .FALSE.
-         INTREP = 0
-         CALL PRI2CN(WORK(KWMAT),WORK(KCONTC),WORK(KLAST),
-     &               LWRK,ANTI,NOPTYP,NBAST,NPRIM,LABINT,
-     &               INTREP,PROPRI,IPRINT)
-      ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKCONT error: Primitive Douglas'//
-     &      '-Kroll integrals not found on DKINT file.'
-         CALL QUIT('DKCONT error: Integrals not found on DKINT file')
-      END IF
-      CALL GPCLOSE(LUDKIN,'DELETE')
-      RETURN
-      END
-C/* Deck pri2cn */
-      SUBROUTINE PRI2CN(AOINT,CONTC,WORK,LWORK,ANTI,
-     &                  NOPTYP,NBAST,NPRIM,LABINT,INTREP,PROPRI,IPRINT)
-C
-C     Subroutine to transform primitive AO's to contracted SO basis
-C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <pi.h>
-      PARAMETER (D2 = 2.0D0, DP5 = 0.50D0, DP75 = 0.75D0, D4 = 4.0D0)
-#include <priunit.h>
-      LOGICAL ANTI, PROPRI
-      CHARACTER*8 RTNLBL(2), LABINT(NOPTYP)
-      DIMENSION AOINT(NPRIM,NPRIM), CONTC(NPRIM,NBAST), WORK(LWORK)
-      DIMENSION INTREP(NOPTYP)
-#include <pgroup.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <ibtfun.h>
-C
-      ICNT   = 0
-      IADR   = 0
-      IORBA  = 0
-      IF (NOPTYP.GT. 1) CALL QUIT('More than one integral type in'//
-     &                            'PRI2CN')
-      NELMNT = NBAST*(NBAST + 1)/2
-C
-      LUCNMT = -9000
-      CALL GPOPEN(LUCNMT,'CNTMAT','OLD',' ','FORMATTED',IDUMMY,.FALSE.)
-      READ (LUCNMT,*) ((CONTC(I,J),I=1,NPRIM),J=1,NBAST)
-      CALL GPCLOSE(LUCNMT,'DELETE')
-      IF (IPRINT .GT. 6) THEN
-         CALL HEADER('Contraction matrix read from '//
-     &               'LUCNMT in PRI2CN',-1)
-         CALL OUTPUT(CONTC,1,NPRIM,1,NBAST,NPRIM,NBAST,-1,LUPRI)
-      END IF
-      CALL DGEMM('T','N',NBAST,NPRIM,NPRIM,1.0D0,CONTC,NPRIM,
-     &           AOINT,NPRIM,0.0D0,WORK,NBAST)
-      CALL DGEMM('N','N',NBAST,NPRIM,NPRIM,1.0D0,WORK,NBAST,
-     &           CONTC,NPRIM,0.0D0,AOINT,NBAST)
-      CALL DSITSP(NBAST,AOINT,WORK)
-      CALL DCOPY(NELMNT,WORK,1,AOINT,1)
-C
-C     First we transform to SO basis, then for consistency with WRTUND,
-C     we need to symmetry pack the integrals
-C
-      IF (IPRINT .GE. 6) THEN
-         CALL AROUND('Contracted Douglas-Kroll '//
-     &               'integrals in AO basis')
-         CALL OUTPAK(AOINT,NBAST,1,LUPRI)
-      END IF
-      IF (MAXREP .GT. 0) THEN
-         IATOM = -1
-         CALL TRAOSO(AOINT,WORK,LWORK,NBAST,IATOM,IPRINT)
-         CALL DCOPY(NELMNT,WORK,1,AOINT,1)
-         CALL PKSYM1(AOINT,AOINT,NAOS,MAXREP+1,2)
-      END IF
-C
-C     Write integrals to file AOPROPER and print them if people are
-C     interested
-C     
-      CALL GETDAT(RTNLBL(1),RTNLBL(2))
-      IF (ANTI) THEN
-         RTNLBL(2)='ANTISYMM'
-      ELSE
-         RTNLBL(2)='SYMMETRI'
-      END IF
-C     
-      DO 600 I = 1, NOPTYP
-         IF (PROPRI .OR. IPRINT .GE. 4) THEN
-            CALL AROUND('Integrals of operator: '//LABINT(I))
-            WRITE (LUPRI,'(A,2X,A3,A1,I2,A1)')
-     &           ' Symmetry of operator:',
-     &           REP(INTREP(I)),'(',(INTREP(I) + 1),')'
-            CALL OUTPAK(AOINT,NBAST,1,LUPRI)
-         END IF
-         CALL WRTPRO(AOINT,NELMNT,LABINT(I),RTNLBL)
- 600  CONTINUE
-C     
-      RETURN
-      END
-C/* Deck READ_CBIHER */
-      SUBROUTINE READ_CBIHER(IPDF, INTST)
-C
-C Fetch two definitions from cbiher.h
-C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbiher.h>
-      LOGICAL INTST
-      IPDF  = IPRDEF
-      INTST = TSTINP
-      RETURN
-      END
 C/* Deck rstgft */
       subroutine rstgft(alpha,i,ggan,ggas)
 C
 C R12 calculation requested with fitted "r12-times-Slater" geminal (WK/UniKA/03-24-2005).
 C
-#include <implicit.h>
+#include "implicit.h"
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
       data ggax /
@@ -4887,7 +4185,7 @@ C/* Deck stgfit */
 C
 C R12 calculation requested with fitted Slater-type geminal (WK/UniKA/03-24-2005).
 C
-#include <implicit.h>
+#include "implicit.h"
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
       data ggax /
@@ -4951,7 +4249,7 @@ C/* Deck erffit */
 C
 C R12 calculation requested with fitted ERFC-type geminal (WK/UniKA/03-29-2005).
 C
-#include <implicit.h>
+#include "implicit.h"
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
       data ggax /
@@ -5015,7 +4313,7 @@ C/* Deck rrffit */
 C
 C  R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/UniKA/03-29-2005).
 C
-#include <implicit.h>
+#include "implicit.h"
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
       data ggax /

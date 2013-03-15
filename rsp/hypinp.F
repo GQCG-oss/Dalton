@@ -1,55 +1,45 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <infhyp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "inflr.h"
+#include "infhyp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
 ! gnrinf.h: QM3, THR_REDFAC
-#include <gnrinf.h>
+#include "gnrinf.h"
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
       PARAMETER ( NTABLE = 29, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
@@ -581,27 +571,27 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <infsmo.h>
-#include <inflr.h>
-#include <infpp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <inflin.h>
-#include <infhso.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "infsmo.h"
+#include "inflr.h"
+#include "infpp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "inflin.h"
+#include "infhso.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
 ! gnrinf.h: QM3, THR_REDFAC
-#include <gnrinf.h>
+#include "gnrinf.h"
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 26)
+      PARAMETER ( NTABLE = 27)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -611,7 +601,7 @@ C
      *            '.ISPABC', '.TPCD  ', '.X2TEST', '.A2TEST',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
      *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH',
-     *            '.MCDBTE', '.MCDPRJ'/
+     *            '.MCDBTE', '.MCDPRJ', '.ECPHOS'/
 C
 C READ IN  INPUT
 C
@@ -631,7 +621,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-     &                      17,18,19,20,21,22,23,24,25,26), I
+     &                      17,18,19,20,21,22,23,24,25,26,27), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -799,6 +789,21 @@ C                 B operators
                   LABEL='Z1MNF-SO'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
+ 27            CONTINUE
+                  ECPHOS = .TRUE.
+                  LABEL='XDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='X1SPNSCA'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='Y1SPNSCA'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='Z1SPNSCA'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
  24            CONTINUE
                   TWOPHO = .TRUE.
                   LABEL='XDIPLEN'
@@ -912,7 +917,11 @@ C
            WRITE(LUPRI,'(/A)') ' Phosphorescence calculation requested'
      &     //' with atomic mean-field spin-orbit operator (AMFI).'
          END IF
-         IF (PHOSPH .OR. MNFPHO) THEN
+         IF (ECPHOS) THEN
+           WRITE(LUPRI,'(/A)') ' Phosphorescence calculation requested'
+     &     //' with effective charge spin-orbit operator.'
+         END IF
+         IF (PHOSPH .OR. MNFPHO .OR. ECPHOS) THEN
             IF (JSPABC .GT. 0 .AND. ISPINA .NE. 0 .AND.
      &          ISPINB .NE. 1 .AND. ISPINC .NE. 1) THEN
                NWARN = NWARN + 1
@@ -1024,13 +1033,13 @@ C
 C SET UP A LIST WITH THE NUMBER OF EIGENVECTORS THAT HAS
 C TO BE SOLVED
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <indqr.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infsmo.h>
+#include "indqr.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infsmo.h"
 C
       DIMENSION NEVAL(*)
 C
@@ -1069,13 +1078,13 @@ C
 C FIND THE NUMBER THAT HAS BEEN GIVEN TO THE INUM EXCITATION OF
 C SYMMETRY ISYM
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
+#include "indqr.h"
+#include "infpri.h"
 C
       DO 100 I=1,NEXLBL
          IF ( (ISYM .EQ. ISEXQR(I) ) .AND. ( IROOT.EQ.JEXQR(I))) THEN
@@ -1108,14 +1117,14 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
 C IN A HYPERPOLARIZABILITY CALCULATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <infhyp.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DO 300 ICSYM = 1,NSYM
          DO 400 IBSYM = 1,NSYM
@@ -1206,15 +1215,15 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C LINEAR RESPONSE EQUATIONS THAT ARE USED IN A
 C A CALCULATION OF SECOND ORDER TRANSITION MOMENTS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <infsmo.h>
-#include <indqr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infsmo.h"
+#include "indqr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
 C
 C If two-photon calculation and .BFREQ is not specified
 C we only compute a restricted number of response vectors
@@ -1297,17 +1306,17 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT LINEAR
 C RESPONSE EQUATIONS THAT ARE USED IN A CALCULATION OF
 C TRANSITION MOMENTS BETWEEN EXCITED STATES
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <infrsp.h>
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infpp.h>
-#include <infsmo.h>
-#include <indqr.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <priunit.h>
+#include "infpp.h"
+#include "infsmo.h"
+#include "indqr.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "priunit.h"
 C
 C panor:
 C     DOESA=.TRUE.
@@ -1366,12 +1375,12 @@ C IF SO INDQR GIVES ITS NUMBER IN THE LIST
 C IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
 C LIST AND INDQR GIVES THE ADDED NUMBER
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indqr.h>
+#include "indqr.h"
 C
       PARAMETER ( DIFFR = 1.0D-8 )
       CHARACTER*8 NEWLBL
@@ -1408,16 +1417,16 @@ C SORT THE LINEAR RESPONSE EQUATIONS AFTER SYMMETRY
 C THE NUMBER OF LINEAR EQUATIONS OF A GIVEN SYMMETRY ARE
 C STORED IN NLRQR WITH OFSET IN ILRQR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*8 LABEL
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
-#include <infrsp.h>
+#include "indqr.h"
+#include "infpri.h"
+#include "infrsp.h"
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,2X,A)')
@@ -1485,14 +1494,14 @@ C SORT THE EXCITATION ENERGIES  AFTER SYMMETRY
 C THE NUMBER OF EXCITATION ENERGIES OF A GIVEN SYMMETRY ARE
 C STORED IN NEXQR WITH OFFSET IN IEXQR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
+#include "indqr.h"
+#include "infpri.h"
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,2X,A)')
@@ -1556,13 +1565,13 @@ C HAS OCCURED IF SO INQRTR GIVES ITS NUMBER IN THE
 C LIST IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
 C LIST AND INQRTR GIVES THE ADDED NUMBER
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
+#include "indqr.h"
+#include "infpri.h"
 C
       PARAMETER ( DIFFR = 1.0D-8 )
       CHARACTER*8 NEWLBL
@@ -1599,16 +1608,16 @@ C SORT THE TRIPLET LINEAR RESPONSE EQUATIONS AFTER SYMMETRY
 C THE NUMBER OF LINEAR EQUATIONS OF A GIVEN SYMMETRY ARE
 C STORED IN NTRQR WITH OFSET IN ITRQR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*8 LABEL
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
-#include <infrsp.h>
+#include "indqr.h"
+#include "infpri.h"
+#include "infrsp.h"
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,2X,A)')

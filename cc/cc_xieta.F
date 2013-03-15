@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *=====================================================================*
        SUBROUTINE CC_XIETA( IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL, 
@@ -53,11 +43,14 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "maxorb.h"
 #include "cclists.h"
-#include <ccsdinp.h>
-#include <ccnoddy.h>
+#include "ccsdinp.h"
+#include "ccnoddy.h"
+Cholesky
+#include "ccdeco.h"
+Cholesky
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -121,6 +114,20 @@ C
 *               to the dot products are computed in CCSDT_XIETA_CONT
 *               (see below).
 *---------------------------------------------------------------------*
+
+
+Cholesky
+C
+      IF (CHOINT .AND. CC2) THEN
+         CALL CC_CHOXIETA(IXETRAN,NXETRAN,IOPTRES,IORDER,LISTL,
+     &                    FILXI,IXDOTS,XCONS,FILETA,IEDOTS,ECONS,
+     &                    MXVEC,WORK,LWORK)
+         GOTO 1234
+      ENDIF
+C
+Cholesky
+C
+
       NBATCH = (NXETRAN+MAXXETRAN-1)/MAXXETRAN
 
       IF (LOCDBG) THEN
@@ -235,9 +242,6 @@ C
 *     in CC_XIETA_DENPREP.
 *---------------------------------------------------------------------*
       IF (IOPTRES.EQ.5 .AND. CCSDT) THEN
-#if !defined CC_AARHUS
-        CALL QUIT('No triples (yet) in CC_XIETA')
-#else
 
         MXXIDEN  = MXVEC
         MXEALEFT = NXETRAN
@@ -298,8 +302,9 @@ C
      &                        FNDELD,FNCKJD,FNDKBC,FNTOC,
      &                        FN3VI,FNDKBC3,FN3FOPX,FN3FOP2X)
         END IF
-#endif
       END IF
+
+ 1234 CONTINUE      ! From Cholesky
 
       CALL QEXIT('CC_XIETA')
 
@@ -430,39 +435,39 @@ c /* deck cc_xieta1 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <blocks.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccfield.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <distcl.h>
-#include <eribuf.h>
-#include <ccisao.h>
-#include <ccroper.h>
-#include <ccfro.h>
-#include <cco1rsp.h>
-#include <ccx1rsp.h>
-#include <ccr1rsp.h>
-#include <cclists.h>
-#include <chrxyz.h>
-#include <dummy.h>
-#include <ccsections.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "blocks.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccfield.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "distcl.h"
+#include "eribuf.h"
+#include "ccisao.h"
+#include "ccroper.h"
+#include "ccfro.h"
+#include "cco1rsp.h"
+#include "ccx1rsp.h"
+#include "ccr1rsp.h"
+#include "cclists.h"
+#include "chrxyz.h"
+#include "dummy.h"
+#include "ccsections.h"
+#include "qm3.h"
 !#include <qmmm.h>
-#include <ccnoddy.h>
-#include <cch2d.h>
-#include <ccrc1rsp.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccnoddy.h"
+#include "cch2d.h"
+#include "ccrc1rsp.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -609,7 +614,7 @@ C     END IF
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE (LUPRI,'(/1x,a)') 'CC_XIETA Called for a Coupled Cluster '
      &          //'method not implemented in CC_XIETA...'
-        CALL QUIT('Unkown CC method in CC_XIETA.')
+        CALL QUIT('Unk own CC method in CC_XIETA.')
       END IF
 
       CALL FLSHFO(LUPRI)
@@ -680,7 +685,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_XIETA.')
+         CALL QUIT('Unk own coupled cluster model in CC_XIETA.')
       END IF
 
 
@@ -762,7 +767,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
         MSCRATCH0 = MAX(MT2SQ,MGAMMA,MT2BGD,6*MT2BCD) + 2*MDISAO + 
      &        MAX(MT2SQ,2*MT2ORT) + NEMAT1(ISYM0) + 10*N2BASX
       ELSE
-        CALL QUIT('Unkown CC model in CC_XIETA.')
+        CALL QUIT('Unk own CC model in CC_XIETA.')
       END IF
 
 * requirements per simultaneous transformation:
@@ -773,7 +778,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
       ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         MSCRATCH1 = MAX(2*MT2ORT,MT2AM) + MEMAT1 + 2*M2BST
       ELSE
-        CALL QUIT('Unkown CC model in CC_XIETA.')
+        CALL QUIT('Unk own CC model in CC_XIETA.')
       END IF
 
       IF (LOCDBG) THEN
@@ -969,7 +974,11 @@ C
          IF (.NOT. NYQMMM) THEN
             CALL CCMM_RHSTG(WORK(KONEH0),WORK(KEND0),LWRK0)
          ELSE IF (NYQMMM) THEN
-            CALL CCMM_TGT(WORK(KONEH0),WORK(KEND0),LWRK0)
+            IF (HFFLD) THEN 
+              CALL CCMM_ADDGHF(WORK(KONEH0),WORK(KEND0),LWRK0)
+            ELSE 
+              CALL CCMM_ADDG(WORK(KONEH0),WORK(KEND0),LWRK0)
+            END IF
          END IF
       ENDIF
 C
@@ -1769,8 +1778,8 @@ C             END IF
               END IF
            END DO
         ELSE IF (LTWOEL) THEN
-           WRITE (LUPRI,*) 'Unkown 2el operator label in CC_XIETA.'
-           CALL QUIT('Unkown 2el operator label in CC_XIETA.')
+           WRITE (LUPRI,*) 'Unk own 2el operator label in CC_XIETA.'
+           CALL QUIT('Unk own 2el operator label in CC_XIETA.')
         END IF
 
         IF (LOCDBG) THEN
@@ -2163,8 +2172,8 @@ C              WRITE (LUPRI,*) 'IOPER,LABELH:',IOPER,LABELH
 C              WRITE (LUPRI,*) 'LTWOEL,IRELAX:',LTWOEL,IRELAX
 C              IF ( LTWOEL .OR. (IRELAX.GE.1)) THEN
 C                 WRITE (LUPRI,*) 'RBIM matrix:'
-C                 CALL OUTPUT(WORK(KRBIM(ITRAN)),1,NVIR,1,NBAS,
-C    &                        NVIR,NBAS,1,LUPRI)
+C                 CALL OUTPUT(WORK(KRBIM(ITRAN)),1,NVIRT,1,NBAST,
+C    &                        NVIRT,NBAST,1,LUPRI)
 C              END IF
 C           END DO
 
@@ -2377,11 +2386,11 @@ C                ----------------------------------------------------
                   WRITE (LUPRI,*) 'LTWOEL,IRELAX :',LTWOEL,IRELAX
                   WRITE (LUPRI,*) 'IDLSTL,SKIPETA:',IDLSTL,SKIPETA
                   WRITE (LUPRI,*) 'RZeta0 matrix:',KRZ0I(ITRAN)
-                  CALL OUTPUT(WORK(KRZ0I(ITRAN)),1,NVIR,1,NBAS,
-     &                        NVIR,NBAS,1,LUPRI)
+                  CALL OUTPUT(WORK(KRZ0I(ITRAN)),1,NVIRT,1,NBAST,
+     &                        NVIRT,NBAST,1,LUPRI)
                   WRITE (LUPRI,*) 'RZetaB matrix:',KRZBI(ITRAN)
-                  CALL OUTPUT(WORK(KRZBI(ITRAN)),1,NVIR,1,NBAS,
-     &                        NVIR,NBAS,1,LUPRI)
+                  CALL OUTPUT(WORK(KRZBI(ITRAN)),1,NVIRT,1,NBAST,
+     &                        NVIRT,NBAST,1,LUPRI)
                END IF
             END DO
          END IF
@@ -2669,9 +2678,6 @@ C----------------------------------
 
 
         IF (CCSDT .AND. (.NOT.SKIPXI)) THEN
-#if !defined CC_AARHUS
-          CALL QUIT('No triples (yet) in CC_XIETA')
-#else
 
           ! allocate extra memory for the 'effective' CC3 rhs vector
           KXI1EFF = KEND2
@@ -2742,7 +2748,6 @@ C
      &                          NXETRAN,MXVEC,WORK(KEND2),LWRK2)
           END IF
 c
-#endif
         END IF
 
 *---------------------------------------------------------------------*
@@ -2755,11 +2760,9 @@ c
 
           IF (.NOT.CCS) THEN
             CALL CCLR_DIASCL(WORK(KXI2),HALF,ISYRES)
-#if defined CC_AARHUS
             IF (CCSDT) THEN
               CALL CCLR_DIASCL(WORK(KXI2EFF),HALF,ISYRES)
             END IF
-#endif
           END IF
 
           IF (IOPTRES.EQ.0 .OR. IOPTRES.EQ.1) THEN
@@ -2790,12 +2793,10 @@ c
               CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)
             END IF
-#if defined CC_AARHUS
             IF (CCSDT) THEN
               CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                   WORK(KXI1EFF),WORK(KXI2EFF),WORK(KEND2),LWRK2)
             END IF
-#endif
           ELSE IF (IOPTRES.EQ.4) THEN
             IFILE  = IXETRAN(3,ITRAN)
             IF (LCAUCHY) IFILE = ILRCAMP(LABELH,ICAU,ISYRES)
@@ -2810,12 +2811,10 @@ c
               CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)
             END IF
-#if defined CC_AARHUS
             IF (CCSDT) THEN
               CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                   WORK(KXI1EFF),WORK(KXI2EFF),WORK(KEND2),LWRK2)
             END IF
-#endif
           ELSE IF (IOPTRES.EQ.5) THEN
 
             IF (LOCDBG.AND.CCSDT) THEN
@@ -3052,9 +3051,6 @@ C-------------------------------------
           END IF
   
           IF (CCSDT) THEN
-#if !defined CC_AARHUS
-            CALL QUIT('No triples (yet) in CC_XIETA')
-#else
             ! allocate extra memory for the 'effective' CC3 rhs vector
             KETA1EFF = KEND2
             KETA2EFF = KETA1EFF + NT1AM(ISYRES)
@@ -3135,7 +3131,6 @@ C             ------------
 
             END IF
 
-#endif
           END IF
 
 
@@ -3166,12 +3161,10 @@ C             ------------
              CALL CC_WRRSP(FILETA,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                  DUMMY,WORK(KETAR12),WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WRRSP(FILETA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                 WORK(KETA1EFF),WORK(KETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
           ELSE IF (IOPTRES.EQ.4) THEN
            IFILE  = IXETRAN(4,ITRAN)
            IF (ILSTSYM(FILETA,IFILE).NE.ISYRES) THEN
@@ -3183,12 +3176,10 @@ C             ------------
              CALL CC_WARSP(FILETA,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                  DUMMY,WORK(KETAR12),WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
             CALL CC_WARSP(FILETA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                 WORK(KETA1EFF),WORK(KETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
           ELSE IF (IOPTRES.EQ.5) THEN
            IF (LOCDBG) THEN
              IVEC = 1
@@ -3255,7 +3246,6 @@ C
      &          DDOT(NT2AM(ISYRES),WORK(KETA2),1,WORK(KETA2),1) +
      &          DDOT(NTR12AM(ISYRES),WORK(KETAR12),1,WORK(KETAR12),1)
             END IF
-#if defined CC_AARHUS
             IF (CCSDT.AND.IOPTRES.LT.5) THEN
               XNORM = DDOT(NT1AM(ISYRES),WORK(KETA1EFF),1,
      &                                   WORK(KETA1EFF),1)
@@ -3264,7 +3254,6 @@ C
               WRITE (LUPRI,*) 'effective Eta vector:',XNORM
               CALL CC_PRP(WORK(KETA1EFF),WORK(KETA2EFF),ISYRES,1,I)
             END IF
-#endif
             CALL FLSHFO(LUPRI)
           END IF
 
@@ -3368,12 +3357,12 @@ C          END IF
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3536,11 +3525,11 @@ C          END IF
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3834,12 +3823,12 @@ CCH
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccisao.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -4189,12 +4178,12 @@ c /* deck ccxiintao */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccisao.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -4625,12 +4614,12 @@ C     --------------------------------------------
 *
 *---------------------------------------------------------------------*
        IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
 
 
       LOGICAL LOCDBG
@@ -5437,14 +5426,14 @@ c /* deck cceta2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccisao.h>
-#include <ccfield.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccisao.h"
+#include "ccfield.h"
+#include "dummy.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -6415,9 +6404,9 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       INTEGER ISYMTR, ISYDEL, ISYLDM, IDEL
 
@@ -6502,15 +6491,15 @@ C
 *
 *---------------------------------------------------------------------*
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
       DIMENSION OMEGA1(*),ONEHAM(*)
       DIMENSION RAIM(*),RBIM(*),GAIM(*),GBIM(*)
       DIMENSION XLAMDHA(*),XLAMDHB(*),XLAMDPA(*),XLAMDPB(*)
       LOGICAL ONHCON, LRCON, LGCON, LRELAX, TRSPOH
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER IOPT
 C
@@ -6679,10 +6668,10 @@ C     ISYLAM : symmetry of XLAMDH
 C
 C     Christof Haettig, October 1998
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDH(*),YPS(*),YI(*)
@@ -6761,9 +6750,9 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -6890,9 +6879,9 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

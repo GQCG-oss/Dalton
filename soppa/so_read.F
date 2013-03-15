@@ -10,8 +10,8 @@ C
 C     PURPOSE: Read array from LUFILE. Notice that it is assumed
 C              that the file is open and positioned correctly.
 C
-#include <implicit.h>
-#include <soppinf.h>
+#include "implicit.h"
+#include "soppinf.h"
 C
       DIMENSION   ARRAY(LARRAY)
       CHARACTER*7 FILENM

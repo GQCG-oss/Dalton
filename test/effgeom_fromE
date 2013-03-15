@@ -59,7 +59,7 @@ cat > effgeom_fromE.dal <<'%EOF%'
 *SCF INP
 .THRESH
  1.0D-12
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -82,11 +82,11 @@ fi
 
 # Initial geometry and energy.
 CRIT1=`$GREP "bond distance\: * O * C * 1\.145481" $log | wc -l`
-CRIT2=`$GREP "Final * HF energy\: * \-111\.2254495141[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "Nuclear repulsion\: * 22\.174535444365" $log | wc -l`
-CRIT4=`$GREP "Electronic energy\: * \-133\.3999849585[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "Final * HF energy\: * \-111\.2254495137" $log | wc -l`
+CRIT3=`$GREP "Nuclear repulsion\: *    22\.17429882833" $log | wc -l`
+CRIT4=`$GREP "Electronic energy\: * \-133\.3997483420" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[1]=20
+CTRL[1]=13
 ERROR[1]="INITIAL ENERGY/GEOMETRY NOT CORRECT"
 
 # Symmetry input
@@ -162,10 +162,10 @@ ERROR[4]="CUBIC FORCE FIELD NOT CORRECT"
 
 # Frequencies, normal coordinates and effective geometry.
 CRIT1=`$GREP "Number of energy * calculations done\: * 53" $log | wc -l`
-CRIT2=`$GREP "C * (0| )\.000000[0-9][0-9][0-9][0-9] * (0| )\.000000[0-9][0-9][0-9][0-9] * (\-0| \-)\.003376[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "O * (0| )\.000000[0-9][0-9][0-9][0-9] * (0| )\.000000[0-9][0-9][0-9][0-9] * (0| )\.002533[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "C * (0| )\.000000[0-9][0-9][0-9][0-9] * (0| )\.000000[0-9][0-9][0-9][0-9] * \-1\.085699[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "O * (0| )\.000000[0-9][0-9][0-9][0-9] * (0| )\.000000[0-9][0-9][0-9][0-9] * 1\.084856[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "C * 0*\.0000000* * 0*\.0000000* * \-0*\.00337" $log | wc -l`
+CRIT3=`$GREP "O * 0*\.0000000* * 0*\.0000000* *   0*\.00253" $log | wc -l`
+CRIT4=`$GREP "C * 0*\.0000000* * 0*\.0000000* *  \-1\.24014" $log | wc -l`
+CRIT5=`$GREP "O * 0*\.0000000* * 0*\.0000000* *   0*\.93040" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[5]=5
 ERROR[5]="EFFECTIVE GEOMETRY NOT CORRECT"

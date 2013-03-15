@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck sircan */
       SUBROUTINE SIRCAN (IPRCAN,CREF,CMO,OCC,WRK,KFRSAV,LFRSAV)
@@ -48,13 +38,13 @@ C   CREF : CI-vector in natural orbitals
 C   CMO  : canonical/natural orbitals
 C   OCC  : occupation numbers for natural orbitals
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*), CMO(*), OCC(*), WRK(*)
 C
 C -- local variables and constants
 C
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : ISTATE,NROOTS,THRGRD,FLAG(*),LSYM,?
@@ -63,14 +53,14 @@ C   INFVAR : NCONF,?
 C   INFDIM : NBASMA,LCINDX,?
 C   INFTAP : LUIT1,?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CHARACTER STAR8*8, KEYCNO*6, RTNLBL(2)*8, LAB123(3)*8
       LOGICAL REDOCI, ONLYNO, ONLYFD
@@ -257,8 +247,8 @@ C   CMO   : canonical/natural orbitals
 C   AOCC  : occupation of natural active orbitals
 C
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       CHARACTER*6 KEYCNO
       DIMENSION CVECS(NCONF,*),  CMO(*), AOCC(*), INDXCI(*), WRK(*)
 C
@@ -277,17 +267,17 @@ C   INFIND : IROW(*),ISSMO(*),...
 C   INFDIM : NBASMA,?
 C   INFTAP : 
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <dftcom.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "dftcom.h"
 C
       DIMENSION DVZRAS(3)
       LOGICAL TRTONO, GETOCC, TRTOFC, TRTOCO, TRCVEC, TSTFLG
@@ -760,7 +750,7 @@ C Zero blocks in one-electron density matrix DV
 C connecting different RAS spaces (RAS1, RAS2, RAS3).
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(NNASHX),DVZRAS(3)
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -768,10 +758,10 @@ C Used from common blocks:
 C   INFORB : NASHT, NNASHX
 C   INFIND : IROW(*),IACTYP(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       DIMENSION DVZTMP(3,3)
 C
@@ -803,12 +793,12 @@ C Purpose:
 C  Calculate natural orbital occupation numbers and, if NATORB is true,
 C  transform orbitals to natural orbitals.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CVEC(*), OCCNO(*), UNO(NASHT,*), CMO(*), INDXCI(*),
      *          WRK(*)
       LOGICAL   ORDER, NATORB, MOISNO, NOAVER
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0)
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C Used from common blocks:
 C  GNRINF: WRINDX
@@ -816,18 +806,18 @@ C  INFINP: LSYM
 C  INFORB: ICMO(*),...
 C  INFIND: ISSMO()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('GETNO ')
       KFREE  = KFRSAV
       LFREE  = LFRSAV
-      IF (IPRINT .GE. 2) THEN
-         WRITE (LUPRI,'(//A//A,I2/)')
+      IF (IPRINT .GE. 4) THEN
+         WRITE (LUPRI,'(//A//A,I2)')
      *      ' <<< output from getno >>>',
      *      ' Symmetry of state vector :',ICSYM
       END IF
@@ -840,7 +830,7 @@ C
       CALL MEMGET('INTE',KJBIG,NASHT ,WRK,KFREE,LFREE)
       CALL MEMGET('WORK',KWRK1,LWRK1 ,WRK,KFREE,LFREE)
       IF (NASHT .EQ. 1) THEN
-         WRK(KDV) = D1
+         WRK(KDV) = NACTEL
       ELSE IF (HSROHF) THEN
          CALL DZERO(WRK(KDV),NNASHX)
          DO I = 1, NASHT
@@ -941,7 +931,7 @@ C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
         END IF
       END IF
       IF (IPRINT .GE. 1) THEN
-         WRITE (LUPRI,'(//A/A)')
+         WRITE (LUPRI,'(/A/A)')
      *      ' Occupancies of natural orbitals',
      *      ' -------------------------------'
          IF (SUPSYM .AND. .NOT. NOAVER) WRITE (LUPRI,'(/A)')
@@ -992,7 +982,7 @@ C
      *      ' GETNO: the orbital coefficients are NOT transformed to'//
      *      ' natural orbitals.'
       ELSE
-         IF (IPRINT .GE. 5) WRITE (LUPRI,'(/A)')
+         IF (IPRINT .GE. 3) WRITE (LUPRI,'(/A)')
      *      ' GETNO: the orbital coefficients are transformed to'//
      *      ' natural orbitals.'
          IF (LWRK1 .LT. NCMOT) CALL ERRWRK('GETNO.NATORB',NCMOT,LWRK1)

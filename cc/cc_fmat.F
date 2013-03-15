@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_FMATRIX */
@@ -54,9 +44,12 @@ c/* Deck CC_FMATRIX */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdinp.h"
 #include "maxorb.h"
+Cholesky
+#include "ccdeco.h"
+Cholesky
 #include "ccsdio.h"
 #include "ccnoddy.h"
 
@@ -112,6 +105,19 @@ COMMENT COMMENT
 *               the remaining contributions <L2|[...,R3]|HF> are
 *               calculated in CCSDT_FMAT_CONT (see below).
 *---------------------------------------------------------------------*
+*
+Cholesky
+C
+      IF (CHOINT .AND. CC2) THEN
+
+         CALL CC_CHOFMAT(IFTRAN, NFTRAN, LISTL, LISTR, IOPTRES,
+     &                   FILFMA, IFDOTS, FCONS, MXVEC, WORK, LWORK)
+
+         GOTO 9999
+      END IF
+C
+Cholesky
+*
       MAXFTRAN = MAXSIM
 
       NBATCH = (NFTRAN+MAXFTRAN-1)/MAXFTRAN
@@ -180,9 +186,6 @@ COMMENT COMMENT
 *               F matrix contractions 
 *---------------------------------------------------------------------*
       IF (IOPTRES.EQ.5 .AND. CCSDT .AND. CCSDT_F_ALTER) THEN
-#if !defined CC_AARHUS
-         CALL QUIT('No triples (yet) in CC_FMATRIX')
-#else
          MXRAMP  = MAX(NFTRAN,MXVEC)
          MXLAMP  = NFTRAN
          MXBTRAN = MXRAMP*MXRAMP
@@ -295,11 +298,11 @@ COMMENT COMMENT
      &                        WORK(KB2CON),NB2TRAN,MXLAMP,
      &                        LISTL,LISTR,FILFMA,MXBTRAN,MXBTRAN)
 
-#endif
       END IF
 
       IF (LOCDBG) WRITE(LUPRI,*) 'Leave CC_FMATRIX...'
 
+ 9999 CONTINUE
       CALL QEXIT('CC_FMATRIX')
 
       RETURN
@@ -326,7 +329,7 @@ c/* Deck CC_FTRAN */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "maxorb.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
@@ -345,11 +348,7 @@ c/* Deck CC_FTRAN */
       
       INTEGER ILSTSYM
 
-#if defined (SYS_CRAY) 
-      REAL WORK(LWORK), RDUM
-#else 
-      DOUBLE PRECISION WORK(LWORK), RDUM
-#endif 
+      REAL*8  WORK(LWORK), RDUM
 
       CALL QENTER('CC_FTRAN')
 
@@ -498,29 +497,29 @@ c/* Deck CC_FMATNEW */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <ccsdio.h>
-#include <ccorb.h>
-#include <cciccset.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <iratdef.h>
-#include <eribuf.h>
-#include <ccisao.h>
-#include <ccfield.h>
-#include <aovec.h>
-#include <blocks.h>
-#include <ccslvinf.h>
-#include <ccnoddy.h>
-#include <second.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "ccsdio.h"
+#include "ccorb.h"
+#include "cciccset.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "iratdef.h"
+#include "eribuf.h"
+#include "ccisao.h"
+#include "ccfield.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "ccslvinf.h"
+#include "ccnoddy.h"
+#include "second.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "qm3.h"
 !#include <qmmm.h>
 
 * local parameters:
@@ -553,6 +552,7 @@ c/* Deck CC_FMATNEW */
       CHARACTER*(6) FNCKJD, FN3VI, FN3FOP2, FNDELD, FN3FOPX
       CHARACTER*(5) FNDKBC3, FN3FOP
       CHARACTER*(4) FNDKBC
+      CHARACTER RSPTYP(1)
       PARAMETER (BFFIL ='CCFM_BFI', FNBFD ='CCBFDENS',
      &           CBAFIL='CCFM_CBA', DBAFIL='CCFM_DBA',
      &           CTFIL ='CCFM_CIM', DTFIL ='CCFM_DIM', 
@@ -668,7 +668,7 @@ C     DOUBLE PRECISION ECURRSAV
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE (LUPRI,'(/1x,2a)')'CC_FMAT called for a Coupled Cluster ',
      &          'method not implemented in CC_FMAT...'
-        CALL QUIT('Unkown CC method in CC_FMAT.')
+        CALL QUIT('Unknown CC method in CC_FMAT.')
       END IF
 
       IF (.NOT. DUMPCD) THEN
@@ -748,7 +748,7 @@ C     DOUBLE PRECISION ECURRSAV
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_FMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_FMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '
@@ -864,7 +864,7 @@ C     DOUBLE PRECISION ECURRSAV
       ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         NSECMAR = 10 * MT2BGD
       ELSE
-          CALL QUIT('Unkown CC model in CC_FMAT.')
+          CALL QUIT('Unknown CC model in CC_FMAT.')
       END IF
 
       IRHGH(0) = 0
@@ -915,7 +915,7 @@ C     DOUBLE PRECISION ECURRSAV
           NNWORK = 2*NGLMDT(ISYMR) + 
      &               NT1AO(ISYRES) + NT1AM(ISYRES) + NT2AOIJ(ISYRES)
         ELSE
-          CALL QUIT('Unkown CC model in CC_FMAT.')
+          CALL QUIT('Unknown CC model in CC_FMAT.')
         END IF
 
         IF( (NWORK+NNWORK+NSECMAR).GT.MEMAVAIL ) THEN
@@ -1011,14 +1011,18 @@ C     DOUBLE PRECISION ECURRSAV
       END DO
  
 * Solvent contribution to one-electron integrals. 
-* T^g contribution to transformation. SLV98,OC, CCMM JK
+* T^g contribution to transformation. SLV98,OC, CCMM JK, NYQMMM KS
       IF (CCSLV) THEN
          IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
          IF (CCMM) THEN
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              IF (HFFLD) THEN
+                CALL CCMM_ADDGHF(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              ELSE
+                CALL CCMM_ADDG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              END IF
             END IF
          END IF
       ENDIF
@@ -2148,7 +2152,7 @@ C
        ENDIF
 C
 C-------------------------------------------
-C     SLV98,OC, CCMM JK
+C     SLV98,OC, CCMM JK, NYQMMM KS 10
 C     Calculate T^{gB} solvent contribution.
 C     Unsquared T2 is required!
 C-------------------------------------------
@@ -2176,8 +2180,8 @@ C
                  CALL CCMM_LTRB(WORK(KTHETA1),WORK(KTHETA2),
      *                    WORK(KT1AMPA),WORK(KT2AMPA),ISYAMP,'F',
      *                    WORK(KEND3),LWRK3)
-              ELSE IF (NYQMMM) THEN
-                 CALL CCMM_TGTBAR(WORK(KTHETA1),WORK(KTHETA2),
+              ELSE IF (NYQMMM .AND. (.NOT. HFFLD)) THEN
+                 CALL CCMM_TRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),
      *                         WORK(KT1AMPA),WORK(KT2AMPA),MODEL,ISYAMP,
      *                         'F',WORK(KEND3),LWRK3)
               END IF
@@ -2190,13 +2194,24 @@ C
      *                                    LISTR,IDLSTR, WORK(KT1AMPA),
      *                                    ISYAMP,MODEL,
      *                                    WORK(KEND2),LWRK2)
-           IF (CCMM) CALL CCMM_PBTR(WORK(KTHETA1),WORK(KTHETA2),
+           IF (CCMM) THEN
+             IF (.NOT. NYQMMM) THEN
+               CALL CCMM_PBTR(WORK(KTHETA1),WORK(KTHETA2),
      *                              ISYRES,
      *                              LISTL,IDLSTL, WORK(KZETA1),
      *                              ISYCTR,
      *                              LISTR,IDLSTR, WORK(KT1AMPA),
      *                              ISYAMP,MODEL,
      *                              WORK(KEND2),LWRK2)
+             ELSE IF (NYQMMM .AND. (.NOT. HFFLD ) ) THEN
+               RSPTYP='F'
+               CALL CCMM_QRTRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),
+     *                              ISYRES,
+     *                              LISTL,IDLSTL,ISYCTR,
+     *                              LISTR,IDLSTR,ISYAMP,
+     *                              MODEL,RSPTYP,WORK(KEND2),LWRK2)
+             END IF
+           END IF 
          END IF
       ENDIF
 C
@@ -2204,9 +2219,6 @@ C----------------------------------------------------------
 C
         
         IF (CCSDT) THEN
-#if !defined CC_AARHUS
-           CALL QUIT('No triples (yet) in CC_FMATNEW')
-#else
 
            ! allocate memory for effective rhs vector
            IF ( IOPTRES.GE.0 .AND. IOPTRES.LE.4 ) THEN
@@ -2340,7 +2352,6 @@ C            ------------------------------------------
               CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),1,1,1)
            ENDIF
 
-#endif
         END IF
 
 
@@ -2415,13 +2426,11 @@ C
      &                     MODELW,DUMMY,DUMMY,WORK(KTHETAR12),
      &                     WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WRRSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
          ELSE IF (IOPTRES.EQ.4) THEN
            CALL CC_WARSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
@@ -2431,13 +2440,11 @@ C
      &                     MODELW,DUMMY,DUMMY,WORK(KTHETAR12),
      &                     WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WARSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
          END IF
 
          IF (LOCDBG) THEN
@@ -2456,7 +2463,6 @@ C
            WRITE (LUPRI,*) 'norm^2 of result vector:',XNORM
            CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYRES,1,1)
            IF (CCR12) CALL CC_PRPR12(WORK(KTHETAR12),ISYRES,1,.TRUE.)
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              WRITE(LUPRI,*) 'CCSDT effective vector:'
              XNORM = DDOT(NT1AM(ISYRES),WORK(KTHETA1EFF),1,
@@ -2465,7 +2471,6 @@ C
              WRITE (LUPRI,*) 'norm^2:',XNORM
              CALL CC_PRP(WORK(KTHETA1EFF),WORK(KTHETA2EFF),ISYRES,1,1)
            END IF
-#endif
          END IF
       ELSE IF (IOPTRES.EQ.5) THEN
          IF (LOCDBG.AND.CCSDT) THEN
@@ -2689,14 +2694,14 @@ C  /* Deck ccfpreint */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cciccset.h>
-#include <ccfield.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cciccset.h"
+#include "ccfield.h"
+#include "second.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -3102,10 +3107,10 @@ c/* Deck CCFOPEN*/
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3288,11 +3293,11 @@ c/* Deck CCFSAVE*/
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cciccset.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cciccset.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3451,11 +3456,11 @@ c/* Deck CCFPRE2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cciccset.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cciccset.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3652,12 +3657,12 @@ c/* Deck CCFINT2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "second.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3845,16 +3850,16 @@ c/* Deck CCFMAT2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsections.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccfield.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsections.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccfield.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
 
 * local parameters:
@@ -3975,7 +3980,7 @@ C
 C---------------------------------------------------------------------------
 C     Solvent contribution to one-electron integrals. 
 C     T^g contribution to transformation.
-C    SLV98,OC
+C    SLV98,OC, NYQMMM10 KS
 C------------------------------------------------------------------------------
 C
          IF (CCSLV .AND. (.NOT. CCMM)) THEN             
@@ -3986,7 +3991,11 @@ C
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KONEH),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KONEH),WORK(KEND0),LWRK0)
+              IF (HFFLD) THEN
+                 CALL CCMM_ADDGHF(WORK(KONEH),WORK(KEND0),LWRK0)
+              ELSE
+                CALL CCMM_ADDG(WORK(KONEH),WORK(KEND0),LWRK0)
+              END IF
             END IF
          ENDIF
 C-----------------------------------------------------------------
@@ -4020,7 +4029,7 @@ C
 C-----------------------------------------------------------------------------------------
 C     Solvent contribution to one-electron integrals. 
 C     T^g contribution to transformation.
-C     SLV98,OC
+C     SLV98,OC, NYQMMM10 KS
 C------------------------------------------------------------------------------
 C
          IF (CCSLV .AND. (.NOT. CCMM)) THEN
@@ -4031,7 +4040,11 @@ C
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KFIELD),WORK(KEND0),LWRK0)
+              IF (HFFLD) THEN
+                CALL CCMM_ADDGHF(WORK(KFIELD),WORK(KEND0),LWRK0)
+              ELSE
+                CALL CCMM_ADDG(WORK(KFIELD),WORK(KEND0),LWRK0)
+              END IF
             END IF
          ENDIF
 C------------------------------------------------------------------------------
@@ -4656,9 +4669,9 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
 * Christof Haettig, November 1998
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       CHARACTER*(*) FILPQMO
       INTEGER LWORK, ISYRES, ISYINT, ISYPQI, LUPQMO, IADRPQMO(*)
@@ -4748,7 +4761,7 @@ c/* Deck CC_ZETADEN */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "ccsdsym.h"
 #include "ccorb.h"
 
@@ -4874,10 +4887,10 @@ C     Christof Haettig, September 1998
 C     based on Asger Halkiers CCLT_CT1AO routine 
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDP(*),CHI(*),XI(*)
@@ -4949,10 +4962,10 @@ C  /* Deck cc_bfif */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
       CHARACTER*(*) FNBFI
       INTEGER LWORK, ISYMGD, ISYRHF, IADR, IDEL, LUBFI, IADRBF(*)
@@ -5034,10 +5047,10 @@ C  /* Deck cc_bfifsort */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -5196,10 +5209,10 @@ C
 *
 * Christof Haettig, November 1998
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
       DIMENSION DSRHF(*),XMGD(*),GIM(*),WORK(LWORK)
 C
@@ -5263,10 +5276,10 @@ C
 *
 * Christof Haettig, November 1998
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER(TWO=2.0D0,ONE=1.0D0)
       DIMENSION XMGD(*),WORK(LWORK)
@@ -5338,9 +5351,9 @@ C
 * Christof Haettig, May 2002
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       CHARACTER*(25) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCSDT_F2B_SETUP> ')  
@@ -5514,14 +5527,14 @@ c/* Deck CC_R12FMAT */
 *        
 *=====================================================================*
        implicit none
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccfield.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

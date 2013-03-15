@@ -1,52 +1,42 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
       SUBROUTINE CRINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <infhyp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infcr.h>
-#include <inftap.h>
+#include "inflr.h"
+#include "infhyp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infcr.h"
+#include "inftap.h"
 C
       LOGICAL NEWDEF, BCDFRQ, STATIC
       PARAMETER ( NTABLE = 24 , ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
@@ -403,14 +393,14 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C ONE-INDEX LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
 C IN A SECOND HYPERPOLARIZABILITY CALCULATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <infcr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infcr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       PARAMETER ( ZERO = 0.0D0 )
 C
@@ -505,14 +495,14 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C TWO-INDEX LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
 C IN A SECOND HYPERPOLARIZABILITY CALCULATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <infcr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infcr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       PARAMETER ( ZERO = 0.0D0 )
 C
@@ -618,12 +608,12 @@ C
       END
       SUBROUTINE AN2SYM(NAOPNU,NBOPNU,NCOPNU,NDOPNU,IWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
 C THIS ROUTINE ANALYZE IF OPERATORS THAT ARE SPECIFIED IN CUBIC
 C RESPONSE CALCULATIONS HAVE NO MATCHING PARTNERS DUE TO SYMMETRY.
@@ -730,14 +720,14 @@ C IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
 C LIST AND INCRLR GIVES THE ADDED NUMBER
 C
 C BASED ON INQRLR
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indcr.h>
-#include <indqr.h>
-#include <infpri.h>
+#include "indcr.h"
+#include "indqr.h"
+#include "infpri.h"
 C
       PARAMETER ( DIFFR = 1.0D-8 )
       CHARACTER*8 NEWLBL
@@ -814,15 +804,15 @@ C IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
 C LIST AND INCR2 GIVES THE ADDED NUMBER
 C
 C BASED ON INCRLR
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indcr.h>
-#include <indqr.h>
-#include <infpri.h>
-#include <inforb.h>
+#include "indcr.h"
+#include "indqr.h"
+#include "infpri.h"
+#include "inforb.h"
 C
       PARAMETER ( DIFFR = 1.0D-8 )
       CHARACTER*8 NEWLB1,NEWLB2
@@ -889,8 +879,8 @@ C
       SUBROUTINE CRCALC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                  XINDX,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
 C PURPOSE:
 C DRIVER ROUTINE FOR CUBIC RESPONSE
@@ -898,23 +888,24 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <dummy.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
+#include "dummy.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
 #include "rspprp.h"
-#include <qrinf.h>
-#include <infpp.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsmo.h>
-#include <infrsp.h>
-#include <infcr.h>
-#include <inftap.h>
-#include <indcr.h>
-#include <infdim.h>
-#include <inftmo.h>
-#include <inftpa.h>
+#include "qrinf.h"
+#include "infpp.h"
+#include "infpri.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infsmo.h"
+#include "infrsp.h"
+#include "infcr.h"
+#include "inftap.h"
+#include "indcr.h"
+#include "infdim.h"
+#include "inftmo.h"
+#include "inftpa.h"
 C
       CALL QENTER('CRCALC')
       IF (SOPPA) THEN
@@ -922,6 +913,12 @@ C
      &   'CRCALC ERROR: cubic response not implemented for SOPPA'
          CALL QUIT(
      &   'CRCALC ERROR: cubic response not implemented for SOPPA')
+      END IF
+      IF (DODFT .AND. NASHT.GT.0) THEN
+         WRITE (LUPRI,*) 'CRCALC ERROR: '//
+     &      'cubic response not implemented for open shell DFT'
+         CALL QUIT('CRCALC ERROR: '//
+     &      'cubic response not implemented for open shell DFT')
       END IF
 C
 C Determine solution vectors; first one-index and then two-index
@@ -1001,8 +998,8 @@ C  CREATE THE SOLUTION VECTORS THAT ARE REQUIRED TO DO
 C  CUBIC RESPONSE
 C  SOLUTION OF LINEAR EQUATIONS ARE DETERMINED IN CRLRV1.
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
       CHARACTER*8 BLANK
       PARAMETER (BLANK = '        ', D1 = 1.0D0, D0 = 0.0D0)
@@ -1010,27 +1007,27 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <qrinf.h>
+#include "indqr.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <infsmo.h>
-#include <infhyp.h>
-#include <infpp.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infcr.h>
-#include <indcr.h>
-#include <inftmo.h>
-#include <inftpa.h>
+#include "infsmo.h"
+#include "infhyp.h"
+#include "infpp.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infcr.h"
+#include "indcr.h"
+#include "inftmo.h"
+#include "inftpa.h"
 C
 C INITIALIZE VARIABLES
 C
@@ -1086,14 +1083,15 @@ C
      &                  NEXCR(KSYMOP),THCPP,FOUND,CONV,ANTSYM)
             IF (FOUND .AND. CONV) THEN
                WRITE (LUPRI,'(A,I3,A)') 'We seem to have all '//
-     &              'excitation vectors of symmetry',KSYMOP,' on file'
+     &             'excitation vectors of symmetry',KSYMOP,
+     &             ' on file RSPVEC'
                GOTO 100
             END IF
 C
             IF ( KZVAR.EQ.0 ) THEN
-               NWARN = NWARN + 1
-               WRITE(LUPRI,'(/2A)')' ****WARNING******',
-     *            ' NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO'
+               NINFO = NINFO + 1
+               WRITE(LUPRI,'(/2A,I3,A)')' **** INFO ******',
+     *            ' NUMBER OF VARIABLES IN SYMMETRY',KSYMOP,' IS ZERO'
                GO TO 100
             END IF
 C
@@ -1145,9 +1143,9 @@ C
             IF ( NLRCR(KSYMOP).EQ.0 ) GO TO 200
 C
             IF ( KZVAR.EQ.0 ) THEN
-               NWARN = NWARN + 1
-               WRITE(LUPRI,'(/2A)')' ****WARNING******',
-     *            ' NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO'
+               NINFO = NINFO + 1
+               WRITE(LUPRI,'(/2A,I3,A)')' **** INFO ******',
+     *            ' NUMBER OF VARIABLES IN SYMMETRY',KSYMOP,' IS ZERO'
                GO TO 200
             END IF
             CALL CRLRV1(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
@@ -1164,17 +1162,17 @@ C SORT THE LINEAR RESPONSE EQUATIONS AFTER SYMMETRY
 C THE NUMBER OF LINEAR EQUATIONS OF A GIVEN SYMMETRY ARE
 C STORED IN NLRCR WITH OFSET IN ILRCR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*8 LABEL
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <indcr.h>
-#include <infpri.h>
-#include <infrsp.h>
+#include "indqr.h"
+#include "indcr.h"
+#include "infpri.h"
+#include "infrsp.h"
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,2X,A)')

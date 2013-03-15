@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef OLD_REVISION_OLG
 c===========================================================================
@@ -46,23 +36,22 @@ C/*deck  trahso*/
 C
 C Copyright Mar 1990 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),WRK(KWORK)
 C
-#include <dummy.h>
-#include <maxorb.h>
+#include "dummy.h"
+#include "maxorb.h"
 C
 C Used from common blocks:
-C   INFDIM : MWORK
 C   INFTRA : IPRTRA
+C   INFTAP : LUAHSO, LUMHSO
 C   TRUNIT : LUORDA, LUMINT
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <inftra.h>
-#include <infdim.h>
-#include <trhso.h>
-#include <trunit.h>
+#include "priunit.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "trhso.h"
+#include "trunit.h"
 C
 C
       LOGICAL NOCOUL,NOEXCH,NOTUVX,MCOPT, FOPEN
@@ -73,7 +62,6 @@ C
       NOEXCH = .TRUE.
       NOTUVX = .TRUE.
       MCOPT  = .FALSE.
-      MEMX   = KWORK
       IF (ITRLSO .EQ. 0) THEN
          ITRLVL = 200
       ELSE IF (ITRLSO .EQ. 1) THEN
@@ -89,10 +77,6 @@ C     Set TRINP and TRUNIT
 C     JRDAO = 2 is code for reading spin-orbit integrals
 C
       JRDAO = 2
-      MWRKSV = MWORK
-      MWORK = MIN(MWORK, KWORK)
-C     ... available memory may be less than MWORK here !!!
-      MWORK = MWRKSV
 C
 C
       IPRFIO = IPRTRA
@@ -111,7 +95,7 @@ C     save LUORDA, LUMINT (may point to normal integrals)
       LUMINTSV = LUMINT
       LUMINT   = LUMHSO
 C
-      CALL TRASET(JRDAO)
+      CALL TRASET(JRDAO,KWORK)
       IF (IPRFIO .GE. 3) CALL FASTIO('STATUS')
 C
       IF (IPRTRA .GE. 2) THEN
@@ -144,27 +128,27 @@ C     restore LUORDA, LUMINT (may point to normal integrals)
       RETURN
       END
 C/*deck  traset_2*/
-      SUBROUTINE TRASET_2(LX2X3)
+      SUBROUTINE TRASET_2( LX2X3,LWORK )
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
 C Define KEEP and IDATA for spin-orbit transformation
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
-C  INFDIM : MWORK,N2BASM
+C  INFDIM : N2BASM
 C  INFTRA : IPRTRA
 C  TRINP  : MSYM, MBAS(), INTSYM
 C  TRHSO  : KSYMSO
 C  TRUNIT : KEEP,IDATA
 C
-#include <priunit.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <trinp.h>
-#include <trhso.h>
-#include <trunit.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "trinp.h"
+#include "trhso.h"
+#include "trunit.h"
 C
       CALL QENTER('TRASET_2')
 C
@@ -184,13 +168,13 @@ C
 C     980820-hjaaj: reserve NWRK*N2BASM memory for other
 C     buffers in integral transformation.
 C
-      NWRK = (MWORK/3) / N2BASM
+      NWRK = (LWORK/3) / N2BASM
 C     allocate 1/3 of memory for other buffers of size N2BASM
       NWRK = MAX(6+NORBMA,NWRK)
 C     We need at least ca. this number of buffers (as far as I can count
 C     today!) for the integral transformation to work.
 C
-      NPQ = MAX( MWORK / N2BASM - NWRK , 1 )
+      NPQ = MAX( LWORK / N2BASM - NWRK , 1 )
       NPQ = MIN( NPQ , N2BASM )
       DO 200 I = 1,LIDATA
          IDATA(I,1) = 0
@@ -213,10 +197,10 @@ C IBUF  : Points to start element in label buffer.
 C HSOPQ : HSOPQ(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C MPQOFF: Offset of last element returned to calling routine
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION HSOPQ(*), BUF(*), IBUF(4,600)
 C
 C Used from common blocsk:
@@ -225,20 +209,20 @@ C   INFIND : IROW(*),ISAO(*)
 C   TRHSO  : ILXYZ
 C   TRINFO : ISP,ISQ,ISR,ISS,NBQ,NPQ,NBRS
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <infind.h>
-#include <trhso.h>
-#include <trinfo.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "infind.h"
+#include "trhso.h"
+#include "trinfo.h"
 C
 C     Local variables:
 C
       CHARACTER*8 KEY
       LOGICAL DOCOOR
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IBASP = IBAS(ISP)
       IBASQ = IBAS(ISQ)
@@ -285,20 +269,20 @@ C
                   ICOOR = IBUF(3,I)
                   DOCOOR = ICOOR.EQ.ILXYZ
                ELSE IF (DOCOOR) THEN
-                  JP = IBUF(1,I)
+                  JP  = IBUF(1,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 100
-                  JQ = IBUF(2,I)
+                  JQ  = IBUF(2,I)
                   JSQ = ISAO(JQ)
                IF (JSQ .NE. ISQ) GO TO 100
-                  JR = IBUF(3,I)
+                  JR  = IBUF(3,I)
                   JSR = ISAO(JR)
                IF (JSR .NE. ISR) GO TO 100
-                  JSS = ISAO(JS)
+                  JSS  = ISAO(JS)
                IF (JSS .NE. ISS) GO TO 100
 C
-                  MP = JP - IBASP
-                  MQ = JQ - IBASQ
+                  MP  = JP - IBASP
+                  MQ  = JQ - IBASQ
                   IF (ISP .EQ. ISQ) THEN
                      MPQ = IROW(MP) + MQ - MPQOFF
                   ELSE
@@ -344,7 +328,7 @@ C    DO NOT CHANGE IDIST or WRK(KFREE1:KFREE2-1) in calling routine
 C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
-C     define NEEDTP(1:6)
+C     define NEEDTP(-4:6)
 C 100 CALL NXTHSO(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
 C     IF (IDIST .GT. 0) THEN
 C        KW1 = KFREE
@@ -355,9 +339,9 @@ C        GO TO 100
 C     END IF
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-      DIMENSION H2CD(*),NEEDTP(6),WRK(*)
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(*)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
 C     last 3 elements are used for 1) first free address,
@@ -367,8 +351,8 @@ C Used from common blocks:
 C   INFORB : NNORBX
 C   INFDIM : NORBMA
 C
-#include <inforb.h>
-#include <infdim.h>
+#include "inforb.h"
+#include "infdim.h"
 C
       SAVE KFRSAV, KNEXT, KIADRM, KICDTR
       DATA KNEXT /-1/
@@ -438,7 +422,7 @@ C    Read next Mulliken two-electron integral distribution (**|cd)
 C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Input:
-C       NEEDTP(6); positive for needed (cd) distribution types
+C       NEEDTP(i); positive for needed (cd) distribution types
 C                  negative if not all distributions needed
 C                  zero if no distributions needed for this type
 C       IDIST; .eq. 0 first read
@@ -456,30 +440,30 @@ C       BUF(NORBMA,NORBMA,2)
 C
 C ****************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(*)
-      INTEGER   IADRM(3,36,37), NEEDTP(6), ICDTRA(NNORBX)
+      INTEGER   IADRM(3,36,37), NEEDTP(-4:6), ICDTRA(NNORBX)
 C     ... actual dimension: IARDM(3, (36,36) + 1)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 c#include <dacodes.h>
-#include <dalistgs.h>
+#include "dalistgs.h"
 C
 C Used from common blocks:
 C   INFORB : NORBX,NORBT,NSYM
 C   INFIND : IROW(*)
 C   INFPRI : IPRSIR
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <trhso.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "trhso.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
       DIMENSION IADCD(8)
       SAVE      IADCD,INTSY1, JSUM, ICFRST,ICLAST,IDFRST,IDLAST
@@ -551,7 +535,7 @@ C *** Initialize H2CD
 C
       CALL DZERO(H2CD,N2ORBX)
 C
-C *** Read next distribution which is needed according to NEEDTP(6)
+C *** Read next distribution which is needed according to NEEDTP(*)
 C     into H2CD
 C
 C  ITYPCD values:  1=i*i :  2=t*i : 3=t*t : 4=a*i : 5=a*t : 6=a*a

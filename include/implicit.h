@@ -1,5 +1,3 @@
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#endif
+! --- implicit.h ---
+      IMPLICIT REAL*8 (A-H,O-Z)
+! --- end of implicit.h ---

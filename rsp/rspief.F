@@ -7,20 +7,20 @@ C LF BM RC 24 oct 01 based on PCMLIN
 C
 C Common driver for PCMLNC and PCMLNO
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 
       DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION UDV(*),DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       DIMENSION UDVTR(*),DVTR(*),DTVTR(*)
 C
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <inftap.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
 C
       CALL QENTER('PCMLTR')
 C
@@ -70,13 +70,13 @@ C
 C  Purpose:  Calculate MCSCF E2  contribution from a
 C            pcm-ief surrounding medium to a csf trial vector.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVEC(*),  CREF(*), CMO(*)
       DIMENSION INDXCI(*), UDV(*), DV(*),   DTV(N2ASHX,*)
       DIMENSION SVEC(KZYVAR,*),     WRK(*)
       DIMENSION UDVTR(*),DVTR(*),DTVTR(N2ASHX,*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 , THRZER = 1.0D-14 )
       LOGICAL FNDLAB
@@ -86,23 +86,21 @@ C  Used from common blocks:
 C    INFINP : NLMSOL, LSOLMX, INERSI
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFTAP : LUSOL, LBSYMB
-C    INFPRI : LUERR
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <priunit.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include "sdpre.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "priunit.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "pcm.h"
+#include "pcmlog.h"
 
 C
 Clf this is wrong!!! Must be fixed!!!!!11
@@ -359,17 +357,17 @@ C  Purpose:  Calculate MCSCF E2 contribution from a
 C            surrounding ief-pcm medium to an orbital trial vector.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BOVECS(*), CREF(*), CMO(*)
       DIMENSION INDXCI(*),   UDV(*),   DV(*)
       DIMENSION SVEC(KZYVAR,*),    WRK(*)
       DIMENSION UDVTR(*),DVTR(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.50D0)
       LOGICAL FNDLAB, TOFILE, EXP1VL, TRIMAT
-#include <dummy.h>
+#include "dummy.h"
 C
 C
 C  Used from common blocks:
@@ -379,26 +377,27 @@ C    INFVAR : JWOP
 C    INFRSP :
 C    WRKRSP :
 C    INFTAP : LUSOL,  LBSYMB
-C    INFPRI : LUERR
 C
-#include <pcmdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "pcmdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+Ckr     VTEX and QTEX should be brought into this subroutine through
+Ckr     the call
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL FILE_EXIST
 #include "orgcom.h"
-#include <priunit.h>
-#include <infinp.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infinp.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 #include "infpar.h"
 #include "qm3.h"
 C

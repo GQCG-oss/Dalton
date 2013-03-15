@@ -51,7 +51,6 @@ cat > rsp_soppa1excinosymm.dal <<'%EOF%'
 .HF
 .MP2
 **RESPONSE
-.NOITRA
 .SOPPA
 *LINEAR
 .SINGLE

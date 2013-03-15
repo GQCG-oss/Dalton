@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef REV_LOG
 c===========================================================================
@@ -95,22 +85,27 @@ C        (VAX gives integer overflow on e.g. LABEL = NS*2**24, when NS .gt. 127)
 C        9-Jan-1990 tuh+hjaaj: NOSYM parameter;
 C          Dec 1991 - work space in call, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL NOSYM
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('FORMSUP')
 C
-      WRITE (LUPRI,'(/A)') ' Precalculated two-electron integrals'
-     &   //' are transformed to P-supermatrix elements.'
       IF (IPRINT .GT. 1) THEN
          CALL TITLER('Output from FORMSUP','*',125)
-         WRITE (LUPRI,'(A,L10)') ' NOSYM : ',NOSYM
+         WRITE (LUPRI,'(A/A,1P,D10.2/A,L10)')
+     &   '    Precalculated two-electron integrals'
+     &   //' are transformed to P-supermatrix elements.',
+     &   '    Threshold for discarding integrals            :',THRESH,
+     &   '    Include integrals for general density matrices:',NOSYM
+      ELSE
+         WRITE (LUPRI,'(A/A,1P,D10.2,A)')
+     &   '     (Precalculated two-electron integrals'
+     &   //' are transformed to P-supermatrix elements.',
+     &   '      Threshold for discarding integrals :',THRESH,' )'
       END IF
-      IF (IPRINT .GT. 0) WRITE (LUPRI,'(A,1P,D10.2)')
-     *   ' Threshold for discarding integrals :',THRESH
 C
 C*** Allocate memory for IT vector in IWORK
 C
@@ -133,10 +128,10 @@ C and allocate memory for IBIT vector in IWORK
 C  /* Deck supdrv */
       SUBROUTINE SUPDRV(NOSYM,WORK,LWORK,IWORK,LIWORK,THRESH,
      &                  IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION WORK(LWORK), IWORK(LIWORK)
       LOGICAL   NOSYM, OPTST
@@ -146,7 +141,7 @@ C  /* Deck supdrv */
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-#include <inftap.h>
+#include "inftap.h"
 C
 C*** DEFAULTS
 C
@@ -355,15 +350,15 @@ C
       END
 C  /* Deck suprdi */
       SUBROUTINE SUPRDI(NOSYM)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-#include <inftap.h>
+#include "inftap.h"
       CHARACTER*8 LAB123(3), OLDLBL, NEWLBL
       DATA LAB123 /'********','        ','        '/
       DATA OLDLBL, NEWLBL /'TWOELSUP','PSUPMAT '/
@@ -395,9 +390,9 @@ C
       END
 C  /* Deck supsrt */
       SUBROUTINE SUP_SORT(NOSYM,RINT,INT,SCR,ISCR,LSORT,IT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
@@ -408,9 +403,9 @@ C  /* Deck supsrt */
       LOGICAL NOSYM, OLDDX 
       DIMENSION NSOINT(255), NAOS(8)
 C
-#include <iratdef.h>
-#include <inftap.h>
-#include <ibtfun.h>
+#include "iratdef.h"
+#include "inftap.h"
+#include "ibtfun.h"
 C
       CALL QENTER('SUP_SORT')
 C
@@ -695,9 +690,9 @@ C
 C  /* Deck sup1 */
       SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IT,IBIT,
      &                JBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
@@ -705,12 +700,12 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-#include <inftap.h>
+#include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*),IT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 #if defined (VAR_DUPLCHCK)
       JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
@@ -942,12 +937,12 @@ C
 C  /* Deck sup */
       SUBROUTINE SUP(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
      &               IBEF,NP,IPRINT,JBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
-#include <inftap.h>
+#include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IT(*),IBIT(*)
 C
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
@@ -957,7 +952,7 @@ C
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 #if defined (VAR_DUPLCHCK)
       JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
@@ -1250,9 +1245,9 @@ C
 C  /* Deck sup1d */
       SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,
      &                 IT,IBIT,JBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
@@ -1260,12 +1255,12 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-#include <inftap.h>
+#include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*),IT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 #if defined (VAR_DUPLCHCK)
       JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
@@ -1544,21 +1539,21 @@ C
 C  /* Deck supd */
       SUBROUTINE SUPD(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
      &               IBEF,NP,JBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-#include <inftap.h>
+#include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IT(*),IBIT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 #if defined (VAR_DUPLCHCK)
       JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
@@ -1913,13 +1908,13 @@ C
 C     note: IBEF=IT(NPQF),       NPQF = IT(NPF) + NQF
 C           NPQRS=IT(NPQL)-IOFF, NPQL = IT(NPL) + NQL
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION P(1), INDP(1), IT(1)
 C
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER ( ITYP1 = 1, ITYP2 = 2)
 C
-#include <inftap.h>
+#include "inftap.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
@@ -2015,15 +2010,15 @@ C
 C  /* Deck wrsup1 */
       SUBROUTINE WRSUP1(LUSUPM,P,NPQRS,ITYP1,NPF,NQF,NPL,NQL,IOFF,
      &                  NPQL,JBUF)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION P(NPQRS)
 #if defined (VAR_SPLITFILES)
-#include <dummy.h>
-#include <iratdef.h>
-#include <2gbdef.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
+#include "chrnos.h"
 C
       IPASS = 1
  5    CONTINUE
@@ -2080,15 +2075,15 @@ C  /* Deck wrsup2 */
 C
 C 900319-hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION P(NRSOUT), INDP(NRSOUT)
 #if defined (VAR_SPLITFILES)
-#include <dummy.h>
-#include <iratdef.h>
-#include <2gbdef.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
+#include "chrnos.h"
 C
       IPASS = 1
  5    CONTINUE

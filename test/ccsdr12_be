@@ -46,7 +46,7 @@ Be       0.0000000000000     0.0000000000000     0.0000000000000       *
 cat > ccsdr12_be.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -79,7 +79,7 @@ cat > ccsdr12_be.dal <<'%EOF%'
  1B
 .NATVIR
 .CCVABKL
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -103,7 +103,7 @@ cat > prop_exci.dal <<'%EOF%'
 .FREQUE
 3
 0.0 0.05 0.1
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

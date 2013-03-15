@@ -105,16 +105,16 @@ fi
 # General and Energy Tests 
 #
 CRIT1=`$GREP "Anisotropic polarization" $log | wc -l`
-CRIT2=`$GREP "QM/MM calculation converged" $log | wc -l`
-CRIT3=`$GREP "Charge contribution: * ( \-|\-0)\.014925" $log | wc -l`
-CRIT4=`$GREP "Dipole contribution: * ( |0)\.005066" $log | wc -l`
-CRIT5=`$GREP "Quadrupole contribution: * ( \-|\-0)\.007672" $log | wc -l`
+CRIT2=`$GREP 'QM/MM "QMMM" calculation converged' $log | wc -l`
+CRIT3=`$GREP "Charge contribution: * ( \-|\-0)\.014924" $log | wc -l`
+CRIT4=`$GREP "Dipole contribution: * ( |0)\.005065" $log | wc -l`
+CRIT5=`$GREP "Quadrupole contribution: * ( \-|\-0)\.007670" $log | wc -l`
 CRIT6=`$GREP "Octuple contribution: * ( |0)\.000000" $log | wc -l`
-CRIT7=`$GREP "Electronic Pol. energy: * ( \-|\-0)\.062271" $log | wc -l`
-CRIT8=`$GREP "Nuclear pol. energy: * ( |0)\.058836" $log | wc -l`
-CRIT9=`$GREP "Multipole Pol. energy: * ( \-|\-0)\.005443" $log | wc -l`
-CRIT10=`$GREP "Total QM/MM energy: * ( \-|\-0)\.026409" $log | wc -l`
-CRIT11=`$GREP "Final DFT energy: * \-114\.470500" $log | wc -l`
+CRIT7=`$GREP "Electronic Pol. energy: * ( \-|\-0)\.062585" $log | wc -l`
+CRIT8=`$GREP "Nuclear pol. energy: * ( |0)\.059153" $log | wc -l`
+CRIT9=`$GREP "Multipole Pol. energy: * ( \-|\-0)\.005373" $log | wc -l`
+CRIT10=`$GREP "Total QM/MM energy: * ( \-|\-0)\.026334" $log | wc -l`
+CRIT11=`$GREP "Final DFT energy: * \-114\.470427" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 `
 CTRL[1]=11
 ERROR[1]="GENERAL QMMM or QMMM ENERGY CONTRIBUTIONS NOT CORRECT"
@@ -122,9 +122,9 @@ ERROR[1]="GENERAL QMMM or QMMM ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Test of QMMM dipole moment
 #
-CRIT1=`$GREP "x * ( |0)\.12636" $log | wc -l`
-CRIT2=`$GREP "y * \-1\.10932" $log | wc -l`
-CRIT3=`$GREP "z * ( |0)\.03096" $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.12613" $log | wc -l`
+CRIT2=`$GREP "y * \-1\.10925" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.03044" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[2]=3
 ERROR[2]="QMMM DIPOLE MOMENT NOT CORRECT"
@@ -132,8 +132,8 @@ ERROR[2]="QMMM DIPOLE MOMENT NOT CORRECT"
 #
 # Test of QMMM excitation energies
 #
-CRIT1=`$GREP "1        1  *  ( |0)\.1542" $log | wc -l`
-CRIT2=`$GREP "1        2  *  ( |0)\.3215" $log | wc -l`
+CRIT1=`$GREP " 1  * 1  * 0*\.1542" $log | wc -l`
+CRIT2=`$GREP " 1  * 2  * 0*\.3215" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[3]=4
 ERROR[3]="QMMM EXCITATION ENERGIES NOT CORRECT"

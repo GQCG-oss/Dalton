@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_BMATRIX */
@@ -53,9 +43,9 @@ c/* Deck CC_BMATRIX */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -231,6 +221,7 @@ c/* Deck CC_BMAT */
      &           FNAIBJ='CCB_AIBJ', RFIL  ='CCCR_RIM')
 
 
+      CHARACTER*(1) RSPTYP
       CHARACTER*(*) LISTA, LISTB, FILBMA
       LOGICAL DO_O2
       INTEGER IOPTRES
@@ -333,7 +324,7 @@ c/* Deck CC_BMAT */
       IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_BMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_BMAT...'
-        CALL QUIT('Unkown CC method in CC_BMAT.')
+        CALL QUIT('Unknown CC method in CC_BMAT.')
       END IF
 
       IF (LISTA(1:1).NE.'R' .OR. LISTB(1:1).NE.'R') THEN
@@ -420,7 +411,7 @@ c/* Deck CC_BMAT */
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_BMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_BMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '
@@ -532,7 +523,7 @@ c/* Deck CC_BMAT */
       ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         NSECMAR = 10 * MT2BGD
       ELSE
-          CALL QUIT('Unkown CC model in CC_BMAT.')
+          CALL QUIT('Unknown CC model in CC_BMAT.')
       END IF
 
       I1HGH(0) = 0
@@ -584,7 +575,7 @@ c/* Deck CC_BMAT */
         ELSE IF (CCSD.OR.CCSDT) THEN
           NNWORK = 2*NGLMDT(ISYMA) + 2*NGLMDT(ISYMB)
         ELSE
-          CALL QUIT('Unkown CC model in CC_BMAT.')
+          CALL QUIT('Unknown CC model in CC_BMAT.')
         END IF
 
         IF( (NWORK+NNWORK+NSECMAR).GT.MEMAVAIL ) THEN
@@ -695,7 +686,13 @@ C
             IF (.NOT. NYQMMM) THEN
             CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              IF (HFFLD) THEN
+                WRITE(LUPRI,*) 'Is it justified to do B transfor with
+     &  with a HFFLD?'
+                CALL QUIT('HFFLD not implemented for QR')
+              ELSE
+                CALL CCMM_ADDG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              END IF
             END IF
          ENDIF
       ENDIF
@@ -1997,10 +1994,20 @@ C     initialize R12 part of result:
      *                                LISTB,IDLSTB,ISYMB,
      *                                MODEL,WORK(KEND2),LWRK2)
 C
-        IF (CCMM) CALL CCMM_BTR(WORK(KTHETA1),WORK(KTHETA2),
+        IF (CCMM) THEN
+          IF (.NOT. NYQMMM) THEN
+            CALL CCMM_BTR(WORK(KTHETA1),WORK(KTHETA2),
      *                          ISYMAB,LISTA,IDLSTA,ISYMA,
      *                          LISTB,IDLSTB,ISYMB,
      *                          MODEL,WORK(KEND2),LWRK2)
+          ELSE IF (NYQMMM) THEN
+            RSPTYP='B'
+            CALL CCMM_QRTRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),ISYMAB,
+     *                          LISTA,IDLSTA,ISYMA,
+     *                          LISTB,IDLSTB,ISYMB,
+     *                          MODEL,RSPTYP,WORK(KEND2),LWRK2)
+          END IF
+        END IF
       END IF
 *---------------------------------------------------------------------*
 * if DO_O2 flag is set include A{x} t^y + A{y} t^x contribution
@@ -2067,9 +2074,6 @@ C
 * add CC3 contribution
 *---------------------------------------------------------------------*
       IF (CCSDT) THEN
-#if !defined CC_AARHUS
-         CALL QUIT('No triples (yet) in CC_BMAT')
-#else
         IF (IOPTRES.LT.5) THEN
            KTHETA1EFF = KEND2
            KTHETA2EFF = KTHETA1EFF + NT1AM(ISYMAB)
@@ -2163,7 +2167,6 @@ c
 
         END IF
 
-#endif
       END IF
 
 *---------------------------------------------------------------------*
@@ -2222,21 +2225,17 @@ c
      &                     MODELW,DUMMY,DUMMY,WORK(KTHETAR12),
      &                     WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WRRSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
          ELSE IF (IOPTRES.EQ.4) THEN
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
            CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LWRK2)
@@ -2266,14 +2265,12 @@ c
            WRITE (LUPRI,*) 'Listing of the result vector:'
            CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYMAB,1,NVEC2)
            IF (CCR12) CALL CC_PRPR12(WORK(KTHETAR12),ISYMAB,1,.TRUE.)
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              XNORM = DDOT(LEN,WORK(KTHETA1EFF),1,WORK(KTHETA1EFF),1)
              WRITE (LUPRI,*) 'norm^2 of eff. result vector:',XNORM
              WRITE (LUPRI,*) 'Listing of the eff. result vector:'
              CALL CC_PRP(WORK(KTHETA1EFF),WORK(KTHETA2EFF),ISYMAB,1,1)
            END IF
-#endif
          END IF
       ELSE IF (IOPTRES.EQ.5) THEN
          CALL CCDOTRSP(IBDOTS,BCONS,IOPTW,FILBMA,ITRAN,NBTRAN,MXVEC,
@@ -2449,15 +2446,15 @@ c/* Deck CCBMAT2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccfield.h>
-#include <second.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccfield.h"
+#include "second.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
 
 
@@ -2654,9 +2651,15 @@ C
          IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
          IF (CCMM) THEN
              IF (.NOT. NYQMMM) THEN
-            CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
+               CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
              ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KONEHR),WORK(KEND1),LWRK1)
+               IF (HFFLD) THEN
+                 WRITE(LUPRI,*) 'Is it justified to do B transfor with
+     &  with a HFFLD?'
+                 CALL QUIT('HFFLD not implemented for QR')
+               ELSE
+                 CALL CCMM_ADDG(WORK(KONEHR),WORK(KEND1),LWRK1)
+               END IF
              END IF
          END IF
       ENDIF
@@ -2815,7 +2818,13 @@ C
                IF(.NOT. NYQMMM) THEN
               CALL CCMM_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
                ELSE IF (NYQMMM) THEN
-                 CALL CCMM_TGT(WORK(KPERT),WORK(KEND1),LWRK1)
+                 IF (HFFLD) THEN
+                   WRITE(LUPRI,*) 'Is it justified to do B transfor with
+     &  with a HFFLD?'
+                   CALL QUIT('HFFLD not implemented for QR')
+                 ELSE
+                   CALL CCMM_ADDG(WORK(KPERT),WORK(KEND1),LWRK1)
+                 END IF
                END IF  
            END IF
          ENDIF
@@ -3025,11 +3034,11 @@ c/* Deck CCBPRE1 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <cciccset.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "cciccset.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3097,7 +3106,7 @@ c/* Deck CCBPRE1 */
           KDENS(IDX)  = KDUM
           KFOCK(IDX)  = KDUM
         ELSE
-          CALL QUIT('Unkown CC model in CCBPRE1.')
+          CALL QUIT('Unknown CC model in CCBPRE1.')
         END IF
 
         IF ( (LWORK-KENDOUT) .LE. NT1AM(ISYM) ) THEN
@@ -3190,11 +3199,11 @@ c/* Deck CCBPRE2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cciccset.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cciccset.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3347,11 +3356,11 @@ c/* Deck CCBINT1 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "second.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3524,10 +3533,10 @@ c/* Deck CCBINT2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3633,7 +3642,7 @@ c/* Deck CCBINT2 */
 
 *---------------------------------------------------------------------*
       ELSE 
-        CALL QUIT('UNKOWN COUPLED CLUSTER MODEL IN CCBINT2.')
+        CALL QUIT('Unknown Coupled Cluster model in CCBINT2.')
       END IF
 
       CALL QEXIT('CCBINT2')
@@ -3671,11 +3680,11 @@ c/* Deck CCBINT3 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "second.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3835,10 +3844,10 @@ c/* Deck CCBOPEN*/
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3998,11 +4007,11 @@ c/* Deck CCBSAVE*/
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cciccset.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cciccset.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -4140,9 +4149,9 @@ c/* Deck CCB_22CD */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
 #if defined (SYS_CRAY)
       REAL ZERO, HALF, ONE, TWO
@@ -4327,10 +4336,10 @@ c/* Deck CCB_CDBAR */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -4500,20 +4509,20 @@ c/* Deck CCB_CDBAR */
 * adapted for CC-R12
 * Christian Neiss, november 2005
 *---------------------------------------------------------------------
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
+#include "r12int.h"
+#include "ccr12int.h"
 C
       DIMENSION WORK(LWORK),ITADR(2),RESULT(*)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-07)
@@ -5293,10 +5302,10 @@ c /* deck CCDOTRSP */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -5443,7 +5452,7 @@ c/* Deck CC_BTST */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 #include "ccorb.h"
@@ -5498,8 +5507,8 @@ c/* Deck CC_BTST */
 *---------------------------------------------------------------------*
       LISTA = 'R1 '
       LISTB = 'R1 '
-      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,ISYMA)
-      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,ISYMB)
+      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,ISYMA)
+      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,ISYMB)
       IBTRAN(1,1) = IDLSTA
       IBTRAN(2,1) = IDLSTB
       NBTRAN = 1
@@ -5656,7 +5665,7 @@ C     This part is NOT adapted for CC-R12 yet!
 
       LABELA = 'ZDIPLEN '
       LISTC  = 'L1 '
-      IDLSTC = IL1ZETA('ZDIPLEN ',.FALSE.,0.0,1)
+      IDLSTC = IL1ZETA('ZDIPLEN ',.FALSE.,0.0D0,1)
       ISYMC  = ILSTSYM(LISTC,IDLSTC)
 
       KRESLT1 = 1
@@ -5745,11 +5754,11 @@ C  /* Deck ccb_cdsort */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 
       INTEGER ISYALP, ISYBET, ISYGAM, ISYRHF, ISYDIS, ISYXLP, LWORK
       INTEGER ISYMAB, ISYMBK, ISYMGK, NRHFK, NBASA, KSCR1, KSCR2
@@ -5866,11 +5875,11 @@ C  /* Deck cc_cdb */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
 
       CHARACTER*(*) DFIL
       INTEGER LWORK, ISYXLC, ISYRHF, LUD, IV, IOPTR, IDEL, ISYDEL
@@ -6113,11 +6122,11 @@ c /* deck cc_aibj */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccisao.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -6271,12 +6280,12 @@ C  /* Deck ccbpre1int */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cciccset.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cciccset.h"
+#include "second.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -6451,14 +6460,14 @@ c/* Deck CC_R12BMAT */
 *
 *=====================================================================*
        implicit none
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccfield.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

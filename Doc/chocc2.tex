@@ -1,0 +1,98 @@
+~%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Cholesky based CC2: \Sec{CHOCC2}}
+\label{sec:chocc2}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\index{CC2}
+\index{Cholesky decomposition-based methods}
+
+In this Section, we describe the keywords controlling the algorithm to 
+calculate CC2 energies as well as first  and  second order properties using Cholesky 
+decomposed two-electron integrals. The Cholesky CC2 algorithm will be
+automatically employed if the keyword \Key{CHOLES} was activated in the
+\Sec{*DALTON} input module.  Calculation details such as, for instance, the
+frequency at which the dipole polarizability is computed, are specified
+in the \Sec{CCLR} section.
+
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item H.~Koch, {A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s}, and T.~B. Pedersen \newblock {\em J.~Chem.~Phys.}, {\bf 118},\hspace{0.25em}9481, (2003).
+\item T.~B. Pedersen, {A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s}, and H.~Koch 
+\newblock {\em J.~Chem.~Phys.}, {\bf 120},\hspace{0.25em}8887, (2004).
+`
+\end{list}
+}}
+\end{center}
+
+\begin{description}
+\item[\Key{ALGORI}]\verb| |\newline
+\verb|READ (LUCMD,*) IALGO|\newline
+        Set algorithm: 1 for single virtual batch or 2 for 
+        double. (Default: 2).
+%
+\item[\Key{CHOMO}] 
+        Decompose the (ia$\mid$jb) integrals. Implies no decomposition
+        of the CC2 $t_{2}$ amplitudes.
+%
+\item[\Key{CHOT2}] 
+        Decompose the CC2 $t_{2}$ amplitudes. Implies no decomposition
+        of the (ia$\mid$jb) integrals.
+%
+\item[\Key{MXDECM}] \verb| |\newline
+\verb|READ (LUCMD,*) MXDECM|\newline
+        Read in the maximum number of qualified diagonals in a 
+        batch of the decomposition. (Default: 50).
+%
+\item[\Key{NCHORD}] \verb| |\newline
+\verb|READ (LUCMD,*) NCHORD|\newline
+        Read in the the maximum number of previous vectors
+        to be read in each batch. (Default: 200).
+%
+\item[\Key{NOCHOM}] 
+        No decompositions in CC2 section. But, of course,
+        the previously calculated decomposed two-electron integrals
+        will be used. This is the default.
+%
+\item[\Key{SPACC2}] \verb| |\newline
+\verb|READ (LUCMD,*) SPACC2|\newline
+        Span factor for decomposition. (Default: 
+        The span factor used in the decomposition of
+        the two-electron integrals).
+%
+\item[\Key{SPACCC}] \verb| |\newline
+\verb|READ (LUCMD,*) SPACCC|\newline
+        Span factor to use in amplitude decomposition for
+        response intermediates and right-hand sides. (Default: 
+        The span factor used in the decomposition of
+        the two-electron integrals).
+%
+\item[\Key{SPLITM}] \verb| |\newline
+\verb|READ (LUCMD,*) SPLITM|\newline
+        Weight factor for Cholesky part in memory split for
+        batching over virtuals. (Default: 1.0D0).
+%
+\item[\Key{THRCC2}] \verb| |\newline
+\verb|READ (LUCMD,*) THRCC2|\newline
+        Threshold for decomposition. (Default: 
+        The threshold used in the decomposition of
+        the two-electron integrals).
+%
+\item[\Key{THRCCC}] \verb| |\newline
+\verb|READ (LUCMD,*) THRCCC|\newline
+        Threshold to use in amplitude decomposition for
+        response intermediates and right-hand sides. (Default: 
+        The threshold used in the decomposition of
+        the two-electron integrals).
+%
+\item[\Key{ZERO}] \verb| |\newline
+\verb|READ (LUCMD,*) THZCC2|\newline
+        Threshold for diagonal zeroing in decompositions. (Default: 
+        The same used in the decomposition of
+        the two-electron integrals).
+%
+\end{description}

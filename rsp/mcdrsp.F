@@ -18,8 +18,8 @@
 !
 ! MAXRIT: MAXIMUM NUMBER OF MICROITERATIONS
 !
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 !
       PARAMETER ( MAXVEC = 12, DM1 = -1.0D0 )
       DIMENSION CMO(*),UDV(NASHDI,*),PV(*),FC(*),FV(*)
@@ -29,20 +29,20 @@
       !Sonia: the excitation vector X_f and its  S[2]X_f transformation
       DIMENSION Xf(*),S2Xf(*)
 !
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 !
 ! Used from common blocks:
 !  /WRKRSP/: ??
-!  /INFPRI/: LUERR
+!  priunit.h: LUERR
 !
-#include <priunit.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infsop.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infsop.h"
 !
       LOGICAL BINMEM, LINEQ, OPTSAV, LMAXIT
       CHARACTER*8 LAB123(3),RESTAR, LAB1, LAB2
@@ -490,7 +490,7 @@ C
          !iprrsp = 25
          CALL RSPREDMCD(ICTL,LINEQ,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *               EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
-     *               UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2,Xf,S2Xf)
+     *               UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2)
          !iprrsp = iprsav
 
          !write(lupri,*)'RSPCTLMCD: at exit REDMCD, KZYRED=', KZYRED
@@ -599,8 +599,8 @@ C     ^-----------------
 !
 !          IF NTYPE.EQ.1 USE OLD TRIAL VECTORS
 !
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER*8 LAB1, LAB2
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GD(*),REDGD(*)
       DIMENSION REDS(*),REDE(*),UDV(*),FCAC(*),H2AC(*),XINDX(*),WRK(*)
@@ -609,20 +609,20 @@ C     ^-----------------
       DIMENSION CMO(*),PV(*),FC(*),FV(*)
       PARAMETER ( DTEST = 1.0D-4, D0=0.0D0, D1=1.0D0, D1TEST = 1.0D-6)
       PARAMETER ( DM1 = -1.0D0 )
-#include <thrldp.h>
-#include <ibndxdef.h>
+#include "thrldp.h"
+#include "ibndxdef.h"
 C
 C Used from common blocks:
 C   INFRSP : ???,SOPPA
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <phpinf.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "phpinf.h"
 C
       LOGICAL BinMem   !is output in this context
       LOGICAL FNDLAB, FOUND, CONV
@@ -897,7 +897,7 @@ C
          !Orthonormalize 
          nold=1
          CALL RSPORTmcd(WRK(KBCVEC),NLSIM,NOLD,IBTYP,
-     *               THRLDV,WRK(KWRK1),Xf,S2Xf,LURSP3,WRK(KWRK1),LWRK1)
+     *               THRLDV,WRK(KWRK1),Xf,S2Xf,LURSP3)
          IF (IPRRSP.GT.80) THEN
             WRITE(LUPRI,'(/A)')' AFTER RSPORTMCD IN LRSTMCD'
             WRITE(LUPRI,'(/A,I5)')
@@ -993,11 +993,11 @@ C
 ! Scratch:
 !  OLDVEC(KZYVAR), scratch array for old b-vectors on LU3
 !
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION BVECS(*), IBTYP(*), OLDVEC(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C    Change value of ZEQLY for problem with linear equation
 C    95-02-08
@@ -1010,9 +1010,9 @@ C Used from common blocks:
 C  INFRSP: RSPSUP
 C  WRKRSP: KZCONF,KZWOPT,KSYMOP
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C     Local arrays:
 C
@@ -1038,7 +1038,7 @@ C
 !           -- Configuration trial vector; shift the starting point
                IBVEC = IBVEC + KZCONF
             ELSE IF (IBTYP(NBPREV+IRX) .EQ. JBONDX) THEN
-               WRITE (LUPRI,*) 'RSPNOR: Supersymmetry????'
+               WRITE (LUPRI,*) 'RSPNOR: Supersymmetry\?'
 !           -- Orbital trial vector; do the averaging
                CALL RSPAVE(BVECS(IBVEC),KZWOPT,2)
                IBVEC = IBVEC + KZYWOP
@@ -1194,10 +1194,10 @@ C
             ELSE
                T1 =  DDOT(LBZY,BVECS(JBVEC),1,BVECS(JBVEC),1)
                TT = -DDOT(LBZY,BVECS(JBVEC),1,BVECS(IBVEC),1)/T1
-               write(lupri,*)'RSPNOR: should I enter here???'
+               write(lupri,*)'RSPNOR: should I enter here\?'
                CALL DAXPY(LBZY,TT,BVECS(JBVEC),1,BVECS(IBVEC),1)
                IF (IBTYPI.EQ.JBONDX) THEN
-               write(lupri,*)'RSPNOR: and should I enter here???'
+               write(lupri,*)'RSPNOR: and should I enter here\?'
                   TT=(-DDOT(LBZ,BVECS(JBVEC+LBZ),1,BVECS(IBVEC),1)
      *                -DDOT(LBZ,BVECS(JBVEC),1,BVECS(IBVEC+LBZ),1))/T1
                   CALL DAXPY(LBZ,TT,BVECS(JBVEC+LBZ),1,BVECS(IBVEC),1)
@@ -1399,11 +1399,11 @@ C--
 ! Scratch:
 !  OLDVEC(KZYVAR), scratch array for old b-vectors on LU3
 !
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION BVECS(*), IBTYP(*), OLDVEC(*), Xf(*), S2Xf(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C    Change value of ZEQLY for problem with linear equation
 C    95-02-08
@@ -1416,9 +1416,9 @@ C Used from common blocks:
 C  INFRSP: RSPSUP
 C  WRKRSP: KZCONF,KZWOPT,KSYMOP
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C     Local arrays:
 C
@@ -1808,9 +1808,9 @@ C    *         CALL DCOPY(LBZY,BVECS(IBVEC),1,BVECS(IBVECX),1)
 ! LAST REV 12 NOV 1984, 22 APR 1988, 28 Oct 93 hjaaj
 ! SONIA'S SPECIAL VERSION FOR MCD projection, Jan. 2010
 !
-#include <implicit.h>
-#include <mxcent.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "dummy.h"
       PARAMETER ( MAXVEC = 120 )
       DIMENSION THCORP(MAXVEC),EOVAL(MAXVEC)
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(KZYRED,*)
@@ -1818,7 +1818,7 @@ C    *         CALL DCOPY(LBZY,BVECS(IBVEC),1,BVECS(IBVECX),1)
       DIMENSION CMO(*),UDV(*),PVX(*),FC(*),FV(*),FCAC(*)
       DIMENSION XINDX(*),H2AC(*)
       DIMENSION Xf(*),S2Xf(*)
-#include <ibndxdef.h>
+#include "ibndxdef.h"
       PARAMETER ( D0=0.0D0 , D1=1.0D0 , DM1=-1.0D0 )
       PARAMETER ( REDFAC = 0.3D0 , DTEST=1.0D-4  )
 C
@@ -1828,14 +1828,14 @@ C  WRKRSP: KZVAR,KZYVAR,KEXSIM,KEXCNV,
 C          LURSP5
 C  INFOPT: EACTIV
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <abares.h>
-#include <thrldp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "abares.h"
+#include "thrldp.h"
 C
       LOGICAL LINEQ,OLSEN1,LMAXIT
       DIMENSION KEX(MAXVEC), TEST(*)
@@ -2511,14 +2511,14 @@ C
 ! Scratch:
 !  WRK, real scratch array dimension kzyvar
 !  bcvec ( in second part) dimension 3*kzyred**2+2*kzyred
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION IBTYP(*),GD(*),REDGD(*),REDE(*),REDS(*),
      *          UDV(*),BOVEC(*),BCVEC(*),EVECS(KZYVAR,*)
       DIMENSION EIVEC(KZYRED,*),EIVAL(*),XINDX(*),WRK(*)
 !
-#include <infrsp.h>
-#include <ibndxdef.h>
+#include "infrsp.h"
+#include "ibndxdef.h"
 !
       PARAMETER (D0 = 0.0D0 , D1 = 1.0D0 , DRTEST = 1.0D-5)
       PARAMETER (MAXNVE = 200 )
@@ -2528,14 +2528,14 @@ C
 !  /INFIND/: IROW(*). ?
 !  /INFPRI/: ??
 !
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <wrkrsp.h>
-#include <infind.h>
-#include <infpri.h>
-#include <absorp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "infind.h"
+#include "infpri.h"
+#include "absorp.h"
       DIMENSION IVENU(MAXNVE)
 !
       LOGICAL LINEQ

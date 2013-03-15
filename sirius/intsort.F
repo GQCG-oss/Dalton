@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C     FILE : intsort.F
 C
@@ -135,8 +125,6 @@ C     THE MAXIMUM NUMBER OF SYMMETRY BLOCKS IS 666 (D2H SYMMETRY)
 C     AT MOST 106 OF THEM CORRESPOND HOWEVER TO NON-ZERO INTEGRALS.
 C
 C     EXTERNAL REFERENCES: DAFILE - DIRECT ACCESS FILE I/O ROUTINE
-C                          SETTIM - SET THE CLOCK TO ZERO
-C                          TIMING - TIMING ROUTINE
 C
 C          ********** IBM-3090 RELEASE 86 11 28 **********
 C
@@ -144,10 +132,10 @@ C                     general version for IBM, Alliant, ...
 C                     Release May 89 -- hjaaj
 C
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <n_sort.h>
-#include <inftra.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "n_sort.h"
+#include "inftra.h"
 C
       DIMENSION SCR(LSORT)
 C
@@ -166,12 +154,12 @@ C
       EQUIVALENCE (XLABEL, XI4LAB, XI2LAB)
       COMMON /UNITAR/ IUNTAB(1:99)
 C
-#include <cbisor.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <dacodes.h>
+#include "cbisor.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "dacodes.h"
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       WRITE(LUPRI,1000)
  1000 FORMAT(10X,'AO INTEGRAL SORT PROGRAM ACTIVE - RELEASE 86 12 01',
@@ -196,10 +184,7 @@ C
 C
 C     Read input
 C
-#ifdef TIMING
-! hjaaj: SETTIM/TIMING is not working on unix /Oct. 2004
-      CALL SETTIM
-#endif
+      CALL GETTIM(TCPU0,TWALL0)
 C
 C     MINUS ONE AS A R*8 PACKED NUMBER
       XLABEL = D0
@@ -283,9 +268,9 @@ C
       WRITE(LUPRI,1151) (NBAS(I),I = 1,NSYM)
       WRITE(LUPRI,1152) (KEEP(I),I = 1,NSYM)
  1150 FORMAT(//' NUMBER OF SYMMETRIES',I4,
-     *        /' SYMMETRY SPECIES',20X,8I4)
- 1151 FORMAT(  ' NUMBER OF BASIS FUNCTIONS',11X,8I4)
- 1152 FORMAT(  ' SYMMETRIES DELETED',18X,8I4)
+     *        /' SYMMETRY SPECIES',10X,8I6)
+ 1151 FORMAT(  ' NUMBER OF BASIS FUNCTIONS ',8I6)
+ 1152 FORMAT(  ' SYMMETRIES DELETED',8X,8I6)
 C
       WRITE(LUPRI,'(/A,1P,D10.2)')
      *   ' Threshold for omitting integrals            :',THRQ2
@@ -679,14 +664,12 @@ C
       IF (IPRFIO .GE. 1) CALL FASTIO('STATUS')
       CALL DARMOV(LUSORT)
 C
-#ifdef TIMING
-      CALL TIMING(TCP,ECP,TIO,EIO)
-      TCP=TCP/60
-      TIO=TIO/60
-      WRITE(LUPRI,1300) TCP,TIO
- 1300 FORMAT(/' CPU TIME USED (MINUTES)',F9.3,
-     *       /' I/O TIME USED (MINUTES)',F9.3)
-#endif
+      CALL GETTIM(TCPU,TWALL)
+      TCPU  = (TCPU -TCPU0 )/60.0D0
+      TWALL = (TWALL-TWALL0)/60.0D0
+      WRITE(LUPRI,1300) TCPU,TWALL
+ 1300 FORMAT(/' CPU  TIME USED (MINUTES)',F9.3,
+     *       /' WALL TIME USED (MINUTES)',F9.3)
       RETURN
 C
 C     ERROR MESSAGE
@@ -706,9 +689,9 @@ C              SYMMETRY PAIRS INDEPENDENTLY.
 C
 C     IBM-3090 RELEASE 86 11 28
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X(LWORK)
-#include <n_sort.h>
+#include "n_sort.h"
       PARAMETER (LBUFM=LRECAO, D0 = 0.0D0)
 C     *********** MAXIMUM SIZE OF OUTPUT BUFFER CORRESPONDS TO 28K BYTES
       REAL*8    XLABEL
@@ -716,7 +699,7 @@ C     *********** MAXIMUM SIZE OF OUTPUT BUFFER CORRESPONDS TO 28K BYTES
       INTEGER*2 XI2LAB(4)
       EQUIVALENCE (XLABEL, XI4LAB, XI2LAB)
       COMMON /UNITAR/ IUNTAB(1:99)
-#include <priunit.h>
+#include "priunit.h"
 #if defined (VAR_RELADR3)
       PARAMETER ( LIADUT = 176)
 #else

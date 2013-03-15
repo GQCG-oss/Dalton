@@ -50,7 +50,7 @@ N        0.0000000000000     0.0000000000000     1.0371572000000       *
 cat > ccsdr12_n2_gamma2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -89,7 +89,7 @@ cat > ccsdr12_n2_gamma2.dal <<'%EOF%'
  1B
 .BASSCL
  3.0 5.0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

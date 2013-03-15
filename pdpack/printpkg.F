@@ -1,10 +1,12 @@
+C FILE    : printpkg.F
 C
-C...   Dalton, Release 2.0, pdpack/printpkg.F
+C...   Dalton, Release DALTON2011, pdpack/printpkg.F
 C...
 C...   These routines are in the public domain and can be
 C...   used freely in other programs.
 C...
 C
+C  /* Deck outpak */
       SUBROUTINE OUTPAK (AMATRX,NROW,NCTL,LUPRI)
 C.......................................................................
 C Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
@@ -45,13 +47,14 @@ C          FLORIDA, GAINESVILLE
 C..........VERSION = 09/05/73/03
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMATRX(*)
       INTEGER BEGIN
       CHARACTER*1 ASA(3),BLANK,CTL
       CHARACTER   PFMT*20, COLUMN*8
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      LOGICAL IS_NAN
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
 C
       IF (NCTL .LT. 0) THEN
@@ -68,9 +71,21 @@ C
 C
       J = NROW*(NROW+1)/2
       AMAX = ZERO
-      DO 5 I=1,J
-         AMAX = MAX( AMAX, ABS(AMATRX(I)) )
-    5 CONTINUE
+      BMAX = ZERO
+      CMAX = ZERO
+      N_NAN = 0
+      DO I = 1,J
+!        IF (AMATRX(I) .ne. AMATRX(I)) THEN
+         IF (IS_NAN(AMATRX(I),AMATRX(I))) THEN
+            N_NAN = N_NAN + 1
+         ELSE
+            AMAX = MAX( AMAX, ABS(AMATRX(I)) )
+            BMAX = MAX( BMAX, AMATRX(I))
+            CMAX = MIN( CMAX, AMATRX(I))
+         END IF
+      END DO
+      IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)')
+     &   'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX .EQ. ZERO) THEN
          WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
          GO TO 200
@@ -106,11 +121,10 @@ C.....BEGIN NON STANDARD DO LOOP.
          BEGIN= BEGIN + NCOL
       IF (BEGIN.LE.NROW) GO TO 1050
   200 CONTINUE
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
 C
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
-C2000 FORMAT (A1,'Row',I4,2X,1P,8D15.6)
-C2000 FORMAT (A1,I7,2X,1P,8D15.6)
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck outpkb */
       SUBROUTINE OUTPKB (AMATRX,NDIM,NBLK,NCTL,LUPRI)
@@ -157,11 +171,12 @@ C          FLORIDA, GAINESVILLE
 C..........OUTPAK VERSION = 09/05/73/03
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER NDIM(NBLK),BEGIN
       DIMENSION AMATRX(*)
       CHARACTER*1 ASA(3),BLANK,CTL
       CHARACTER   PFMT*20, COLUMN*8
+      LOGICAL     IS_NAN
       PARAMETER (ZERO = 0.0D0, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
@@ -184,9 +199,16 @@ C
   200 CONTINUE
 C
       AMAX = ZERO
-      DO 205 I=1,MATLN
-         AMAX = MAX( AMAX, ABS(AMATRX(I)) )
-  205 CONTINUE
+      N_NAN = 0
+      DO I=1,MATLN
+         IF ( IS_NAN(AMATRX(I),AMATRX(I)) ) THEN
+            N_NAN = N_NAN + 1
+         ELSE
+            AMAX = MAX( AMAX, ABS(AMATRX(I)) )
+         END IF
+      END DO
+      IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)')
+     &   'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX .EQ. ZERO) THEN
          WRITE (LUPRI,3000) NBLK
          GO TO 800
@@ -241,13 +263,12 @@ C
   100 CONTINUE
 C
   800 CONTINUE
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
  1200 FORMAT (/5X,'*** Block',I3,' ***')
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
-C2000 FORMAT (A1,'Row',I4,2X,1P,8D15.6)
-C2000 FORMAT (A1,I7,2X,1P,8D15.6)
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck outpks */
       SUBROUTINE OUTPKS (AMATRX,NDIM,NBLK,IREPO,NCTL,LUPRI)
@@ -295,7 +316,7 @@ C          FLORIDA, GAINESVILLE
 C..........OUTPAK VERSION = 09/05/73/03
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER NDIM(NBLK),BEGIN
       DIMENSION AMATRX(*)
       CHARACTER*1 ASA(3),BLANK,CTL
@@ -303,7 +324,7 @@ C
       PARAMETER (D0 = 0.0D0, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IREPO .NE. 1) THEN
          IBLK = 1
@@ -398,11 +419,12 @@ C
   100 CONTINUE
 C
   800 CONTINUE
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
  1200 FORMAT (/5X,'*** Block',I3,' ***')
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck outptb */
       SUBROUTINE OUTPTB (AMATRX,NDIM,NBLK,NCTL,LUPRI)
@@ -426,7 +448,7 @@ C        NCTL................CARRIAGE CONTROL FLAG; 1 FOR SINGLE SPACE
 C                                                   2 FOR DOUBLE SPACE
 C                                                   3 FOR TRIPLE SPACE
 C
-C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER*4.  THE
+C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER.  THE
 C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
 C FOR 1THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
 C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
@@ -438,11 +460,12 @@ C REVISED; FEBRUARY 26, 1971
 C
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMATRX(*)
       INTEGER NDIM(NBLK), BEGIN, KCOL
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
+      LOGICAL     IS_NAN
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
@@ -465,9 +488,16 @@ C
   200 CONTINUE
 C
       AMAX = ZERO
-      DO 205 I=1,MATDIM
-         AMAX = MAX( AMAX, ABS(AMATRX(I)) )
-  205 CONTINUE
+      N_NAN = 0
+      DO I=1,J
+         IF ( IS_NAN(AMATRX(I),AMATRX(I)) ) THEN
+            N_NAN = N_NAN + 1
+         ELSE
+            AMAX = MAX( AMAX, ABS(AMATRX(I)) )
+         END IF
+      END DO
+      IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)')
+     &   'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX .EQ. ZERO) THEN
          WRITE (LUPRI,3000) NBLK
          GO TO 800
@@ -509,13 +539,12 @@ C
   100   CONTINUE
 C
   800 CONTINUE
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
  1200 FORMAT (/5X,'*** Block',I3,' ***')
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
-C2000 FORMAT (A1,'Row',I4,2X,1P,8D15.6)
-C2000 FORMAT (A1,I7,2X,1P,8D15.6)
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck output */
       SUBROUTINE OUTPUT (AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,
@@ -546,7 +575,7 @@ C                                                   2 FOR DOUBLE SPACE
 C                                                   3 FOR TRIPLE SPACE
 C                            hjaaj: negative for 132 col width
 C
-C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER*4.  THE
+C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER.  THE
 C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
 C FOR THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
 C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
@@ -558,11 +587,12 @@ C REVISED; FEBRUARY 26, 1971
 C
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
       DIMENSION AMATRX(ROWDIM,COLDIM)
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
+      LOGICAL     IS_NAN
       PARAMETER (ZERO=0.D00, KCOLP=5, KCOLN=8)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
@@ -571,21 +601,28 @@ C
       IF (COLHI.LT.COLLOW) GO TO 3
 C
       AMAX = ZERO
+      N_NAN = 0
       DO 10 J = COLLOW,COLHI
          DO 10 I = ROWLOW,ROWHI
-            AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
+            IF ( IS_NAN(AMATRX(I,J),AMATRX(I,J)) ) THEN
+               N_NAN = N_NAN + 1
+            ELSE
+               AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
+            END IF
    10 CONTINUE
+      IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)')
+     &   'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX .EQ. ZERO) THEN
          WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
          GO TO 3
       END IF
-      IF (FFMIN .LE. AMAX .AND. AMAX .LT. FFMAX) THEN
+      IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
 C        use F output format
-         PFMT = '(A1,I7,2X,8F14.8)'
+         PFMT = '(A1,I7,2X,8F15.8)'
          thrpri = 0.5D-8
       ELSE
 C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,8D14.6)'
+         PFMT = '(A1,I7,2X,1P,8D15.6)'
          thrpri = 1.0D-8*AMAX
       END IF
 C
@@ -612,109 +649,9 @@ C
     5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
-    3 RETURN
- 1000 FORMAT (/10X,8(4X,A6,I4))
-C2000 FORMAT (A1,'Row',I4,2X,1P,8D14.6)
-C2000 FORMAT (A1,I7,2X,1P,8D14.6)
-      END
-      SUBROUTINE OUTPUTx(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,
-     *                   NCTL,LUPRI)
-C.......................................................................
-C Revised 15-Dec-1983 by Hans Jorgen Aa. Jensen.
-C         16-Jun-1986 hjaaj ( removed Hollerith )
-C OUTPUTx based on OUTPUT 2007, Hans Jorgen Aa. Jensen
-C         prints 7F10.3/D10.3 instead of 5F14.6/D14.6
-C
-C OUTPUT PRINTS A REAL MATRIX IN FORMATTED FORM WITH NUMBERED ROWS
-C AND COLUMNS.  THE INPUT IS AS FOLLOWS;
-C
-C        AMATRX(',').........MATRIX TO BE OUTPUT
-C
-C        ROWLOW..............ROW NUMBER AT WHICH OUTPUT IS TO BEGIN
-C
-C        ROWHI...............ROW NUMBER AT WHICH OUTPUT IS TO END
-C
-C        COLLOW..............COLUMN NUMBER AT WHICH OUTPUT IS TO BEGIN
-C
-C        COLHI...............COLUMN NUMBER AT WHICH OUTPUT IS TO END
-C
-C        ROWDIM..............ROW DIMENSION OF AMATRX(',')
-C
-C        COLDIM..............COLUMN DIMENSION OF AMATRX(',')
-C
-C        NCTL................CARRIAGE CONTROL FLAG; 1 FOR SINGLE SPACE
-C                                                   2 FOR DOUBLE SPACE
-C                                                   3 FOR TRIPLE SPACE
-C                            hjaaj: negative for 132 col width
-C
-C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER*4.  THE
-C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
-C FOR THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
-C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
-C OF COLUMNS.
-C
-C AUTHOR;  NELSON H.F. BEEBE, QUANTUM THEORY PROJECT, UNIVERSITY OF
-C          FLORIDA, GAINESVILLE
-C REVISED; FEBRUARY 26, 1971
-C
-C.......................................................................
-C
-#include <implicit.h>
-      INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
-      DIMENSION AMATRX(ROWDIM,COLDIM)
-      CHARACTER*1 ASA(3), BLANK, CTL
-      CHARACTER   PFMT*20, COLUMN*8
-      PARAMETER (ZERO=0.D00, KCOLP=7, KCOLN=10)
-      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
-      DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
-C
-      IF (ROWHI.LT.ROWLOW) GO TO 3
-      IF (COLHI.LT.COLLOW) GO TO 3
-C
-      AMAX = ZERO
-      DO 10 J = COLLOW,COLHI
-         DO 10 I = ROWLOW,ROWHI
-            AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
-   10 CONTINUE
-      IF (AMAX .EQ. ZERO) THEN
-         WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
-         GO TO 3
-      END IF
-      IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
-C        use F output format
-         PFMT = '(A1,I5,2X,10F10.3)'
-      ELSE
-C        use 1PD output format
-         PFMT = '(A1,I5,2X,1P,10D10.3)'
-      END IF
-C
-      IF (NCTL .LT. 0) THEN
-         KCOL = KCOLN
-      ELSE
-         KCOL = KCOLP
-      END IF
-      MCTL = ABS(NCTL)
-      IF ((MCTL.LE.3).AND.(MCTL.GT.0)) THEN
-         CTL = ASA(MCTL)
-      ELSE
-         CTL = BLANK
-      END IF
-C
-      LAST = MIN(COLHI,COLLOW+KCOL-1)
-      DO 2 BEGIN = COLLOW,COLHI,KCOL
-         WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
-         DO 1 K = ROWLOW,ROWHI
-            DO 4 I = BEGIN,LAST
-               IF (abs(AMATRX(K,I)).GT.0.5D-3) GO TO 5
-    4       CONTINUE
-         GO TO 1
-    5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
-    1    CONTINUE
-    2 LAST = MIN(LAST+KCOL,COLHI)
-    3 RETURN
- 1000 FORMAT (/9X,10(A6,I3,1X),(3X,A6,I4))
-C2000 FORMAT (A1,'Row',I4,2X,1P,8D15.6)
-C2000 FORMAT (A1,I7,2X,1P,8D15.6)
+    3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
+      RETURN
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck prtab */
       SUBROUTINE PRTAB(NTABLE,TABLE,TEXT,LUPRI)
@@ -752,7 +689,7 @@ C   MAXLIN    : max. lines of output with vector elements
 C   LUOUT     : output unit
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       PARAMETER (D1LOW = D1 - 1.0D-10, D1HGH = D1 + 1.0D-10)
@@ -853,7 +790,7 @@ C   NPOT      : IBASE**-NPOT is lowest magnitude considered
 C   LUOUT     : output unit
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       PARAMETER (IBASE = 10)
@@ -880,18 +817,27 @@ C
       C2NRM = DNORM2(NDIM,VEC,INCVEC)
       IZER  = 0
       NLAST = NDIM*INCVEC
+      VECMAX = D0
       DO 100 NA = 1, NLAST, INCVEC
-         IF (VEC(NA) .EQ. D0) IZER = IZER + 1
+         IF (VEC(NA) .EQ. D0) THEN
+            IZER = IZER + 1
+         ELSE
+            VECMAX = MAX(VECMAX, ABS(VEC(NA)) )
+         END IF
   100 CONTINUE
 C
 C.... SIZE OF COEFFICIENTS
 C
-      WRITE(LUOUT,'(/A)')  '  Magnitude of coefficients '
-      WRITE(LUOUT,'( A)')  ' ==========================='
+      WRITE(LUOUT,'(/A/A//A,2I12)')
+     &  '  Magnitude of coefficients ',
+     &  ' ===========================',
+     &  '  Number of elements and increment:',NDIM,INCVEC
       IF (IZER .EQ. NDIM) THEN
-         WRITE(LUOUT,'(/A)') ' All elements are zero.'
+         WRITE(LUOUT,'(/A)') '  All elements are zero.'
          GO TO 9999
       END IF
+      WRITE(LUOUT,'(/A,1P,2E23.12)')
+     &   '  Maximum abs value and vector norm:',VECMAX,C2NRM
 C
       IF (C2NRM .GT. (D1 + 1.0 D-10) ) THEN
          WRITE (LUOUT,'(/A,1P,E23.12,A,/A)')
@@ -974,9 +920,9 @@ C   INCVEC    : Increment between each element in vector VEC
 C   THRZER    : Threshold for zero elements
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(*)
-#include <priunit.h>
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
 C
 C     Test input
@@ -1036,8 +982,9 @@ C
 C        NCTL................CARRIAGE CONTROL FLAG; 1 FOR SINGLE SPACE
 C                                                   2 FOR DOUBLE SPACE
 C                                                   3 FOR TRIPLE SPACE
+C                            hjaaj: negative for 132 col width
 C
-C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER*4.  THE
+C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER.  THE
 C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
 C FOR THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
 C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
@@ -1052,8 +999,10 @@ C
       IMPLICIT DOUBLE COMPLEX (A-H,O-Z)
       INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
       DIMENSION AMATRX(ROWDIM,COLDIM)
+      COMPLEX   C4_test           ! hjaaj: for testing elements for print
+      REAL*4    R4_test,R4_thrpri !        because no double complex absolute value :-(
       CHARACTER*1 ASA(3), BLANK, CTL
-      CHARACTER   PFMT*20, COLUMN*8
+      CHARACTER   PFMT*30, COLUMN*8
       DOUBLE PRECISION ZERO, FFMIN, FFMAX
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
@@ -1074,10 +1023,12 @@ C
       END IF
       IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
 C        use F output format
-         PFMT = '(A1,I3,2X,4(2F10.6))'
+         PFMT = '(A1,I7,2X,6(F17.8,F13.8))'
+         thrpri = 0.5D-6
       ELSE
 C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,4(2D12.6))'
+         PFMT = '(A1,I7,2X,1P,6(D17.6,D13.6))'
+         thrpri = 1.0D-6*AMAX
       END IF
 C
       IF (NCTL .LT. 0) THEN
@@ -1092,20 +1043,59 @@ C
          CTL = BLANK
       END IF
 C
+      R4_thrpri = thrpri
       LAST = MIN(COLHI,COLLOW+KCOL-1)
       DO 2 BEGIN = COLLOW,COLHI,KCOL
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
          DO 1 K = ROWLOW,ROWHI
             DO 4 I = BEGIN,LAST
-               IF (AMATRX(K,I).NE.ZERO) GO TO 5
+               C4_test = AMATRX(K,I)   ! hjaaj: all this because no intrinsic routine to
+               R4_test = cabs(C4_test) !        calculate absolute value of double complex number
+               IF (R4_test .gt. R4_thrpri) GO TO 5
     4       CONTINUE
          GO TO 1
     5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
-    3 RETURN
- 1000 FORMAT (/5X,6(3X,A6,I4,7X),(3X,A6,I4))
-C2000 FORMAT (A1,'Row',I4,2X,1P,8D15.6)
-C2000 FORMAT (A1,I7,2X,1P,8D15.6)
+    3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
+      RETURN
+ 1000 FORMAT (/10X,6('      real < ',A6,I4,' > imag'))
       END
-C --- end of printpkg.F ---
+C === Deck is_nan ===============
+      LOGICAL FUNCTION IS_NAN(XA,XB)
+C
+C     May 2010, Hans Joergen Aa. Jensen
+C     Purpose: IS_NAN(X,X) is true iff X is NAN
+C
+      REAL*8 XA, XB
+      IS_NAN = XA .NE. XB
+      RETURN
+      END
+C === Deck n_nan ===============
+      INTEGER FUNCTION N_NAN(N,AVEC)
+C
+C     May 2010, Hans Joergen Aa. Jensen
+C     Purpose: N_NAN returns number of NAN entries in AVEC(1:N)
+C
+      REAL*8 AVEC(N)
+      N_NAN  = N_NOT_EQUAL(N,AVEC,AVEC)
+      RETURN
+      END
+C === Deck n_not_equal ===============
+      INTEGER FUNCTION N_NOT_EQUAL(N,AVEC,BVEC)
+C
+C     May 2010, Hans Joergen Aa. Jensen
+C     Purpose: Number of not equal elements in AVEC and BVEC
+C
+C     NOTE: N_NOT_EQUAL(N,DA,DA) is number of NAN elements in DA(1:N)
+C
+      INTEGER N, I, J
+      REAL*8  AVEC(N), BVEC(N)
+      J = 0
+      DO I = 1,N
+         IF ( AVEC(I) .NE. BVEC(I) ) J = J + 1
+      END DO
+      N_NOT_EQUAL = J
+      RETURN
+      END
+C -------- end of printpkg.F -----------

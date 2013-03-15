@@ -74,7 +74,7 @@ cat > rsp_soppapolar.dal <<'%EOF%'
  1
  0.000
 .DIPLEN
-*END OF DALTON
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -151,9 +151,9 @@ CTRL[5]=4
 ERROR[5]="SOPPA SETUP NOT CORRECT"
 
 # Polarizabilities
-CRIT1=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 1\.1645464.....(D|E)\+01" $log | wc -l`
-CRIT2=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 1\.1645464.....(D|E)\+01" $log | wc -l`
-CRIT3=`$GREP "\@.*ZDIPLEN .* ZDIPLEN .* 1\.1645464.....(D|E)\+01" $log | wc -l`
+CRIT1=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 1\.164546......(D|E)\+01" $log | wc -l`
+CRIT2=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 1\.164546......(D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "\@.*ZDIPLEN .* ZDIPLEN .* 1\.164546......(D|E)\+01" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="SOPPA POLARIZABILITIES NOT CORRECT"

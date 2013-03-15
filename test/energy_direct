@@ -51,6 +51,10 @@ cat > energy_direct.dal <<'%EOF%'
 .DiRECT
 **WAVE FUNCTIONS
 .HF
+*POPULA
+.PRINT
+   3
+.GROSSA
 **end of input
 %EOF%
 #######################################################################
@@ -92,7 +96,7 @@ CTRL[2]=2
 ERROR[2]="NOT A DIRECT CALCULATION"
 
 # Huckel guess:
-CRIT1=`$GREP "Initial occupation of symmetries is determined from Huckel guess." $log | wc -l`
+CRIT1=`$GREP "Initial occupation of symmetries is determined from extended Huckel guess." $log | wc -l`
 CRIT2=`$GREP "Occupied SCF orbitals .* 3 * 1 * 1 * 0" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2`
 CTRL[3]=2

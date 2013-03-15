@@ -62,12 +62,14 @@ cat > prop_or.dal <<'%EOF%'
 **PROPERTIES
 .OPTROT
 *ABALNR
+.PRINT
+ 5
 .DAMPING
 0.0091133
 .FREQUENCIES
  1
  0.07318
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -89,7 +91,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * HF energy\: * \-190\.8250190990" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-190\.825019099" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT"

@@ -1,41 +1,31 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE DFTEXPGRAD(WORK,LFREE,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "priunit.h"
       EXTERNAL DEXPGC
       DIMENSION WORK(LFREE)
       KDMAT = 1
@@ -52,9 +42,9 @@ C
 C /* Deck dftexp */
       SUBROUTINE DEXPGC(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
      &                  RHOA,GRADA,COORD,WGHT,DMAT)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
@@ -94,16 +84,16 @@ C     Exchange-correlation contribution to orbital-exponent gradient
 C
 C     T. Helgaker dec 02 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
 C
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0, D3=3.D0, D4=4.D0, D7=7.D0)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       LOGICAL DOGGA 
       DIMENSION DMAT(NBAST,NBAST), 
@@ -112,21 +102,20 @@ C
       DIMENSION GA10(MXAQN), GB00VC(MXAQN), 
      &          GA11(MXAQN), GB00VB(MXAQN), GB01VB(MXAQN)
 C
-#include <energy.h>
-#include <symmet.h>
-#include <shells.h>
-#include <onecom.h>
-#include <lmns.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <sphtrm.h>
-#include <orgcom.h>
-#include <dftinf.h>
-#include <dftcom.h>
-#include <expopt.h>
+#include "energy.h"
+#include "symmet.h"
+#include "shells.h"
+#include "onecom.h"
+#include "lmns.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "sphtrm.h"
+#include "orgcom.h"
+#include "dftinf.h"
+#include "dftcom.h"
+#include "expopt.h"
 C
-#include <sdpre.h>
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO IREPA = 0, MAXREP
       DO IBL = 1, NBLCNT(IREPA+1)
@@ -188,7 +177,7 @@ C
                      L = LVALUA(ICOMPA)
                      M = MVALUA(ICOMPA)
                      N = NVALUA(ICOMPA)
-                     C1 = (D2*SDPRE(L+M+N) + D3)/(D4*ALPHA) - PA2
+                     C1 = (D2*(L+M+N) + D3)/(D4*ALPHA) - PA2
                      CI = (PAX**L)*(PAY**M)*(PAZ**N)*C1*GA
                      IF (SPHRA) THEN
                         IOFF = ISPADR(NHKTA) + (ICOMPA-1)*KHKTA - 1 
@@ -209,24 +198,24 @@ C
                         L = LVALUA(ICOMPA)
                         M = MVALUA(ICOMPA)
                         N = NVALUA(ICOMPA)
-                        TR = GA*((D2*SDPRE(L+M+N) + D3)/(D4*ALPHA)-PA2)
+                        TR = GA*((D2*(L+M+N) + D3)/(D4*ALPHA)-PA2)
                         TS = -D2*(ALPHA*TR + GA)
                         IF (L.EQ.0) THEN
                            TX = TS*PAX*(PAY**M)*(PAZ**N)
                         ELSE
-                           TX = (PX2*TS + SDPRE(L)*TR)
+                           TX = (PX2*TS + L*TR)
      &                         *(PAX**(L-1))*(PAY**M)*(PAZ**N)
                         END IF
                         IF (M.EQ.0) THEN
                            TY = TS*(PAX**L)*PAY*(PAZ**N)
                         ELSE
-                           TY = (PY2*TS + SDPRE(M)*TR)
+                           TY = (PY2*TS + M*TR)
      &                         *(PAX**L)*(PAY**(M-1))*(PAZ**N)
                         END IF
                         IF (N.EQ.0) THEN
                            TZ = TS*(PAX**L)*(PAY**M)*PAZ
                         ELSE
-                           TZ = (PZ2*TS + SDPRE(N)*TR)
+                           TZ = (PZ2*TS + N*TR)
      &                         *(PAX**L)*(PAY**M)*(PAZ**(N-1))
                         END IF
                         CI = RHX*TX + RHY*TY + RHZ*TZ

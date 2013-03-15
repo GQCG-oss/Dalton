@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck sirneo */
       SUBROUTINE SIRNEO(CREF,G,CMO,INDXCI,DV,PV,
@@ -75,13 +65,13 @@ C          for in core simultaneously.
 C  BINMEM, .true. if all NROOTS b-vectors in memory simultaneously
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*),G(*),CMO(*),DV(*),PV(*)
       DIMENSION FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION INDXCI(*),IBNDX(*),WRK(*)
 C
-#include <iratdef.h>
-#include <ibndxdef.h>
+#include "iratdef.h"
+#include "ibndxdef.h"
 C
 C -- local variables and constants:
 C
@@ -103,17 +93,17 @@ C   ITINFO : DINFO(*),IINFO(*)
 C   INFTAP : LUIT3,LUIT5,?
 C   INFPRI : P6FLAG,...
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <itinfo.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "itinfo.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       SAVE NCONSV,NWOPSV,MXRLSV,LFRESV, LA,LB,LC,LBC,MAXSIM
       SAVE IGORB,KREDL,KEVEC,KEVAL,KWRK1,LWRK1,KWRK2
@@ -159,10 +149,10 @@ C        CALL LINMEM(NCSIM,NOSIM,LNEED)
          MAXSIM = (LWRK1 - LA) / (2 + LBC)
          I      = 2*ABS(LROOTS)
          MAXSIM = MIN(MAXSIM,I,NVAR)
-         IF (IPRERR .GT. 1) WRITE (LUERR,9011) NCONF,NWOPT,MAXRL,
+         IF (IPRSTAT .GT. 1) WRITE (LUSTAT,9011) NCONF,NWOPT,MAXRL,
      *      LA,LB,LC,LBC,LFREE,LWRK1,MAXSIM
          IF (FLAG(62)) THEN
-            IF (IPRERR .GT. 0) WRITE (LUERR,'(/A)')
+            IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A)')
      *         ' INFO: MAXSIM reduced to 1 by request (flag(62))'
             MAXSIM = MIN(MAXSIM,1)
          END IF
@@ -530,7 +520,6 @@ C
   900 CONTINUE
 C
       WRITE (LUPRI,9020) ITMAC,ITMIC
-      WRITE (LUERR,9020) ITMAC,ITMIC
       GO TO 9000
  9020 FORMAT (/' (SIRNEO) iteration (',I3,',',I3,')',
      *        /' microiterations stopped because of linear dependence')
@@ -540,7 +529,6 @@ C     reached
 C
   910 CONTINUE
       WRITE (LUPRI,9030) ITMAC,ITMIC
-      WRITE (LUERR,9030) ITMAC,ITMIC
       GO TO 9000
  9030 FORMAT (/' (SIRNEO) iteration (',I3,',',I3,')',
      *        /' maximum number of microiterations reached')
@@ -557,7 +545,6 @@ C
   940 CONTINUE
       BETUPD = .FALSE.
       WRITE (LUPRI,9400) ITMAC,ITMIC,MAXRL,NREDL
-      WRITE (LUERR,9400) ITMAC,ITMIC,MAXRL,NREDL
       GO TO 9000
  9400 FORMAT (/' (SIRNEO) iteration (',I3,',',I3,')',
      *        /' Microiterations stopped because maximum dimension',
@@ -705,7 +692,7 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*), CMO(*), DV(*), PV(*), FC(*), FV(*)
       DIMENSION G(*), EVAL(*), EVEC(NREDL,*), IBNDX(*), WRK(*)
 C
@@ -714,12 +701,12 @@ C
 C     (extensive testing by PJ for reasonable convergence in
 C      NEXKAP (850301) has been rationalized into FKAP* factors)
 C
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER (QCNRAT = 0.80D0, QCNFAC = 1.70D0, ABSCNV = 0.70D0)
       PARAMETER (FKAPC  = 0.20D0, FKAPO  = 0.01D0)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DHALF = 0.5D0, DP1 = 0.1D0)
       PARAMETER ( THRSIM = 1.D-6 , DTEST  = 0.01D0 )
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C Common blocks:
 C   INFOPT: NROOTC, number of residual vectors to construct
@@ -732,19 +719,19 @@ C   INFDIM : LPHPMX
 C   INFTAP : LUIT2,LUIT3,LUIT5
 C   INFPRI : LUERR
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C-----------------------
 C CBN+JK 03.01.06
 C----------------------
-#include <gnrinf.h>
+#include "gnrinf.h"
 C-----------------------
 C CBN+JK 03.01.06
 C----------------------
@@ -757,7 +744,7 @@ C
 C
       SAVE QCNOLD
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
 C     data statements:
 C
@@ -871,11 +858,11 @@ C
       IF (FLAG(62)) THEN
          NSIMC = MIN(NSIMC, 1)
       END IF
-      IF (IPRERR .GT. 7) THEN
-         WRITE (LUERR,'(/,(A,I10))')
+      IF (IPRSTAT .GT. 7) THEN
+         WRITE (LUSTAT,'(/,(A,I10))')
      *      ' (NEONEX) number of non-conv. vectors',NROOTC,
      *      '          number of residuals/batch  ',NSIMC
-         WRITE (LUERR,'(A,10I5/,(T29,10I5))')
+         WRITE (LUSTAT,'(A,10I5/,(T29,10I5))')
      *      ' Index of non-conv. vectors:',
      *      (JROOT(I),I=1,NROOTC)
       END IF
@@ -1613,7 +1600,7 @@ C  parameters and this is used to estimate when the quadratic region
 C  has been traversed and any further accuracy in the solution vector
 C  will be a waste of effort.
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL LINCNV
 C
       PARAMETER (THQCXX = 0.10D0, RTTHRG = 4.00D0)
@@ -1623,9 +1610,9 @@ C Used from common blocks:
 C   INFINP : THRGRD
 C   INFOPT : GRDNRM,GNORM(*),THQLIN,THQKVA
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infopt.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infopt.h"
 C
 C      CNVTHR  = qa) dynamic threshold from 8-Apr-1984 /hj
 C                    idea: need to converge down below GRDNRM squared
@@ -1707,27 +1694,27 @@ C  BVECS, is used for B vectors from unit LUIT3 (section 1)
 C         and for the reduced L-matrix (section 2)
 C         dimension: NVAR and NREDL*(NREDL+1)/2+2*NREDL, rsp.
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION BVECS(*),SVECS(NVAR,*), REDL(*),IBNDX(*),G(*)
       DIMENSION EVEC(NREDL,*),EVAL(*)
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C Used from common blocks:
 C   INFVAR : NCONF,NWOPT
 C   INFIND : IROW(*)
 C   INFTAP : LUIT3
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infind.h>
-#include <inftap.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infind.h"
+#include "inftap.h"
 C
 C local:
 C
       LOGICAL EXTEND,SOLVE
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       CALL QENTER('NEORED')
 C
@@ -1876,14 +1863,14 @@ C *** Construct the starting vectors for the first micro iteration
 C     by orthogonalizing the CI vectors written on LUIT1 to the
 C     normalized gradient fragments and to each other.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CREF(*),G(*),BVECS(*),IBNDX(*),DIAGL(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
-#include <dummy.h>
-#include <thrldp.h>
+#include "dummy.h"
+#include "thrldp.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 )
       PARAMETER ( GLIM = 0.4D0 , DLIM = 0.01D0 , GTRLIM = 0.8D0 )
 C
@@ -1893,16 +1880,15 @@ C   INFVAR : NCONF,NWOPT,NVAR
 C   INFOPT : NROOTC,JROOT(*)
 C   INFDIM : MAXPHP,LPHPMX
 C   INFTAP : LUIT1,LUIT3
-C   INFPRI : LUERR
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
       LOGICAL BINMEM, OTRIAL, FIRST, GTRIAL, GETBVC, GETBVO
@@ -2194,15 +2180,15 @@ C
 C Scratch:
 C  BPREV(nvar), scratch array for old b-vectors on LUBVC
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(NDMBC,*),BOVECS(NDMBO,*)
       DIMENSION IBNDX(*),TT0(*),BPREV(*)
-#include <ibndxdef.h>
+#include "ibndxdef.h"
       PARAMETER (THRRND = 1.D-2, THRTT = 1.D-4)
       PARAMETER (D1 = 1.0D0)
 C
-#include <priunit.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
 C
       CALL QENTER('ORTBVC')
 C
@@ -2418,7 +2404,7 @@ C            "The Dynamical Update of the Damping Factor"
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION REDL(*),EVEC(NREDL,*),EVAL(*)
       PARAMETER (ITBMAX = 100)
@@ -2427,9 +2413,9 @@ C
       PARAMETER (BETINC = 0.2D0, SECFAC = 0.1D0)
       PARAMETER (DHALF=0.5D0, D0=0.0D0, D1=1.0D0, D2=2.0D0)
       PARAMETER (DP1 = 0.1D0, DP9 = 0.9D0)
-#include <priunit.h>
-#include <dummy.h>
-#include <thrzer.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "thrzer.h"
 C
 C Used from common blocks:
 C   INFINP : ISTATE
@@ -2437,11 +2423,11 @@ C   INFVAR : NWOPT
 C   INFOPT : BETA,BETMIN,(BETMAX,)RTRUST,RTTOL,RBETA,GRDNRM,NREDL
 C   INFPRI : P6FLAG(*)
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "infpri.h"
 C
 C local:
 C
@@ -2714,21 +2700,21 @@ C Purpose:
 C   Calculate full reduced Hessian for symmetry check;
 C   asymmetry would indicate probable bug in LINTRN module.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IBNDX(*), WRK(LFREE)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DIFTST = 1.0D-8)
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C  Used from common blocks:
 C   INFVAR : NCONF,NWOPT,NVAR
 C   INFOPT : NREDL
 C   INFTAP : LUIT3, LUIT5
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "inftap.h"
 C
       LOGICAL CITYPE
 C

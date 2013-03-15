@@ -74,7 +74,7 @@ cat > rsp_mcdbterm.dal <<'%EOF%'
 .ROOTS
 2 2 0 0
 .MCDBTE
-*END OF RESPONSE
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -34,7 +34,7 @@ ATOMBASIS
 ECP test on H2O
 ----------------
 Atomtypes=2 Generators=2 X Y
-Charge=8.0 Atoms=1 Basis=ecp-sdd-DZ
+Charge=8.0 Atoms=1 Basis=ecp-sdd-DZ ECP=ecp-sdd-DZ
 O       0.000000000000           0.0000000000           -0.1161156955
 Charge=1.0 Atoms=1 Basis=6-31G*
 H       0.000000000000           1.3457079896            0.9214202268
@@ -121,7 +121,7 @@ CTRL[4]=2
 ERROR[4]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final * HF energy\: * \-16\.8806549694.." $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-16\.880654969" $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="SCF ENERGY NOT CORRECT"
@@ -151,18 +151,18 @@ CRIT7=`$GREP "\@ gamma\(X\;Z\,X\,Z\) * 12\.220" $log | wc -l`
 CRIT8=`$GREP "\@ gamma\(Y\;Y\,X\,X\) * 15\.199" $log | wc -l`
 CRIT9=`$GREP "\@ gamma\(Y\;X\,X\,Y\) * 15\.199" $log | wc -l`
 CRIT10=`$GREP "\@ gamma\(Y\;X\,Y\,X\) * 15\.199" $log | wc -l`
-CRIT11=`$GREP "\@ gamma\(Y\;Y\,Y\,Y\) * 173\.238" $log | wc -l`
-CRIT12=`$GREP "\@ gamma\(Y\;Y\,Z\,Z\) * 124\.657" $log | wc -l`
-CRIT13=`$GREP "\@ gamma\(Y\;Z\,Z\,Y\) * 124\.657" $log | wc -l`
-CRIT14=`$GREP "\@ gamma\(Y\;Z\,Y\,Z\) * 124\.657" $log | wc -l`
+CRIT11=`$GREP "\@ gamma\(Y\;Y\,Y\,Y\) * 173\.23[78]" $log | wc -l`
+CRIT12=`$GREP "\@ gamma\(Y\;Y\,Z\,Z\) * 124\.65[67]" $log | wc -l`
+CRIT13=`$GREP "\@ gamma\(Y\;Z\,Z\,Y\) * 124\.65[67]" $log | wc -l`
+CRIT14=`$GREP "\@ gamma\(Y\;Z\,Y\,Z\) * 124\.65[67]" $log | wc -l`
 CRIT15=`$GREP "\@ gamma\(Z\;Z\,X\,X\) * 12\.220" $log | wc -l`
 CRIT16=`$GREP "\@ gamma\(Z\;X\,X\,Z\) * 12\.220" $log | wc -l`
 CRIT17=`$GREP "\@ gamma\(Z\;X\,Z\,X\) * 12\.220" $log | wc -l`
-CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) * 124\.657" $log | wc -l`
-CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) * 124\.657" $log | wc -l`
-CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) * 124\.657" $log | wc -l`
-CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) *  97\.91(3|4)" $log | wc -l`
-CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 116\.609" $log | wc -l`
+CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) * 124\.65[67]" $log | wc -l`
+CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) * 124\.65[67]" $log | wc -l`
+CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) * 124\.65[67]" $log | wc -l`
+CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) *  97\.91[34]" $log | wc -l`
+CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 116\.60[89]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \

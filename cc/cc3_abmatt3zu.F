@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C Deck /* cc3_abmatt3zu */
       SUBROUTINE CC3_ABMATT3ZU(LISTX,IDLSTX,LISTZU,IDLSTZU,
      &                                OMEGA2,
@@ -39,7 +29,7 @@ C Deck /* cc3_abmatt3zu */
      *                                ISYRES,WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
 C
       CHARACTER*3 LISTX,LISTZU
       INTEGER IDLSTX,IDLSTZU
@@ -79,10 +69,10 @@ C /* Deck cc3_amatt3zu */
      *                                ISYRES,WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER LUCKJD, LUDELD, LU3VI, LUTOC,LU3VI2, LUDKBC, LU3FOP
 C
@@ -206,16 +196,16 @@ C
 
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FNDKBC,FN3VI2,FN3VI
       INTEGER LUCKJD,LUTOC,LUDELD,LUDKBC,LU3VI2,LU3VI
@@ -434,7 +424,7 @@ C
         IF (LORXRU) CALL QUIT('NO ORBITAL RELAX. IN CC3_AMATT3ZUVIR')
 C
       ELSE 
-         CALL QUIT('Unkown list for LISTZU in CC3_AMATT3ZUVIR.')
+         CALL QUIT('Unknown list for LISTZU in CC3_AMATT3ZUVIR.')
       END IF
 C
       FREQZU = FREQRZ + FREQRU
@@ -1518,15 +1508,15 @@ C  /* Deck cc3_amatt3zuocc */
 **************************************************************
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FN3FOP,FN3VI
       INTEGER LUCKJD,LUTOC,LUDELD,LU3FOP,LU3VI
@@ -1683,7 +1673,7 @@ C
         IF (LORXRU) CALL QUIT('NO ORBITAL RELAX. IN CC3_AMATT3ZUOCC')
 C
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_AMATT3ZUOCC.')
+         CALL QUIT('Unknown list for LISTZU in CC3_AMATT3ZUOCC.')
       END IF
 C
       FREQZU = FREQRZ + FREQRU
@@ -2190,14 +2180,14 @@ C    /* Deck cc3_bmatt3zu */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccr1rsp.h>
-#include <ccinftap.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <dummy.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccr1rsp.h"
+#include "ccinftap.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+#include "ccorb.h"
 C
       CHARACTER*6 FN3VI
       CHARACTER*8 FNTOC,FN3VI2
@@ -2311,7 +2301,7 @@ C
         IF (LORXRU) CALL QUIT('NO ORBITAL RELAX. IN CC3_BMATT3ZU')
 C
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_BMATT3ZU.')
+         CALL QUIT('Unknown list for LISTZU in CC3_BMATT3ZU.')
       END IF
 C
       ISYMZU   = MULD2H(ISYMRZ,ISYMRU)
@@ -2322,7 +2312,7 @@ C
          ! below as the sum of "first-order" frequencies
          !LABELZU = LRTLBL(IDLSTZU) not needed for LISTZU
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_BMATT3ZU')
+         CALL QUIT('Unknown list for LISTZU in CC3_BMATT3ZU')
       END IF
 C
       !Symmetry check

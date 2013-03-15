@@ -18,7 +18,7 @@ BASIS
 6-31G**
 H3+ 
 ...test example...
-    1  1 0  X  Y      1.00D-25
+    1  1 0  X  Y      1.00D-15
         1.0   3
 H     0.0000000000000000  0.0000000000000000  -1.00000000000
 H     0.0000000000000000  1.4476145000000000   0.50000000000
@@ -29,7 +29,7 @@ H     0.0000000000000000 -1.4476145000000000   0.50000000000
 #  INTEGRAL INPUT
 #######################################################################
 cat > shield.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -64,16 +64,16 @@ ZDIPLEN
 .OLD_LR
 .RELAXED
 .OPERATOR
-PSO 01  dh/dBX   
-PSO 02  dh/dBX
-PSO 03  dh/dBX
-PSO 01  dh/dBY
-PSO 02  dh/dBY
-PSO 03  dh/dBY
-PSO 01  dh/dBZ
-PSO 02  dh/dBZ
-PSO 03  dh/dBZ
-*END OF
+PSO 001 dh/dBX   
+PSO 002 dh/dBX
+PSO 003 dh/dBX
+PSO 001 dh/dBY
+PSO 002 dh/dBY
+PSO 003 dh/dBY
+PSO 001 dh/dBZ
+PSO 002 dh/dBZ
+PSO 003 dh/dBZ
+**END OF DALTON
 %EOF%
 
 ############################################################
@@ -104,27 +104,27 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # SCF shieldings
-CRIT1=`$GREP "<<PSO 01  ,dh/dBX  >>\( (0| ).000000\) = * ..4096282." $log | wc -l`
-CRIT2=`$GREP "<<PSO 02  ,dh/dBY  >>\( (0| ).000000\) = * ..5309353." $log | wc -l`
-CRIT3=`$GREP "<<PSO 03  ,dh/dBZ  >>\( (0| ).000000\) = * ..3677086." $log | wc -l`
+CRIT1=`$GREP "<<PSO 001 ,dh/dBX  >>\( (0| ).000000\) = * ..4096282." $log | wc -l`
+CRIT2=`$GREP "<<PSO 002 ,dh/dBY  >>\( (0| ).000000\) = * ..5309353." $log | wc -l`
+CRIT3=`$GREP "<<PSO 003 ,dh/dBZ  >>\( (0| ).000000\) = * ..3677086." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[2]=3
 ERROR[2]="SCF SHIELDINGS NOT CORRECT"
 
 # CCSD shieldings
-CRIT1=`$GREP "<<PSO 01  ,dh/dBX  >>\( (0| ).000000\) = * ..3889442.      20.7118095." $log | wc -l`
-CRIT2=`$GREP "<<PSO 02  ,dh/dBY  >>\( (0| ).000000\) = * ..3630439.      19.3325859." $log | wc -l`
-CRIT3=`$GREP "<<PSO 03  ,dh/dBZ  >>\( (0| ).000000\) = * ..4260690.      22.6887582." $log | wc -l`
+CRIT1=`$GREP "<<PSO 001 ,dh/dBX  >>\( (0| ).000000\) = * 0*.3889442.  * 20.71180" $log | wc -l`
+CRIT2=`$GREP "<<PSO 002 ,dh/dBY  >>\( (0| ).000000\) = * 0*.3630439.  * 19.33258" $log | wc -l`
+CRIT3=`$GREP "<<PSO 003 ,dh/dBZ  >>\( (0| ).000000\) = * 0*.4260690.  * 22.68875" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="CCSD SHIELDINGS NOT CORRECT"
 
 
 # SCF and CCSD shieldings
-CRIT1=`$GREP "<<PSO 02  ,dh/dBX  >>\( (0| ).000000\) = * (\-0|\-| |0)\.0000000." $log | wc -l`
-CRIT2=`$GREP "<<PSO 03  ,dh/dBY  >>\( (0| ).000000\) = * (\-0|\-| |0)\.0000000." $log | wc -l`
+CRIT1=`$GREP "<<PSO 002 ,dh/dBX  >>\( (0| ).000000\) = * (\-0|\-| |0)\.0000000." $log | wc -l`
+CRIT2=`$GREP "<<PSO 003 ,dh/dBY  >>\( (0| ).000000\) = * (\-0|\-| |0)\.0000000." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2`
-CTRL[4]=6
+CTRL[4]=4
 ERROR[4]="SYMMETRY IN SCF AND CCSD SHIELDINGS NOT CORRECT"
 
 
@@ -132,7 +132,7 @@ PASSED=1
 for i in 1 2 3 4
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

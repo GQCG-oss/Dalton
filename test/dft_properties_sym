@@ -65,7 +65,7 @@ cat > dft_properties_sym.dal <<'%EOF%'
 *EXCITA
 .NEXCIT
  2 0 0 0
-**END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -86,23 +86,22 @@ else
    GREP="egrep"
 fi
 
-# Energy                             -76.383051647416
-CRIT1=`$GREP "Final DFT energy\: * -76\.3830516....." $log | wc -l`
-CRIT2=`$GREP "Nuclear repulsion\: * 9\.218170507..." $log | wc -l`
-CRIT3=`$GREP "Electronic energy\: * \-85\.6012221...." $log | wc -l`
+CRIT1=`$GREP "Final DFT energy\:  * \-76\.383051" $log | wc -l`
+CRIT2=`$GREP "Nuclear repulsion\: *    9\.218170507" $log | wc -l`
+CRIT3=`$GREP "Electronic energy\: * \-85\.601222" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=3
 ERROR[1]="DFT/B3LYP ENERGY NOT CORRECT"
 
 # Relativistic prop.
-CRIT1=`$GREP "Darwin correction\: * (0| )\.198757248. au" $log | wc -l`
-CRIT2=`$GREP "Mass\-velocity correction\: * (\-0| \-)\.250296922. au" $log | wc -l`
+CRIT1=`$GREP "Darwin correction\:         *    0*\.1987572" $log | wc -l`
+CRIT2=`$GREP "Mass\-velocity correction\: * \-*0*\.2502969" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[2]=2
-ERROR[2]="RELATIVISTIC PROPERTIES NOT CORRECT"
+ERROR[2]="RELATIVISTIC ENERGY CORRECTIONS NOT CORRECT"
 
 # Dipole moment
-CRIT1=`$GREP "(0| )\.748785 * 1\.903221" $log | wc -l`
+CRIT1=`$GREP "(0| )\.748785 * 1\.90322" $log | wc -l`
 TEST[3]=`expr	$CRIT1`
 CTRL[3]=1
 ERROR[3]="DIPOLE MOMENT NOT CORRECT"
@@ -125,17 +124,17 @@ CTRL[5]=3
 ERROR[5]="SHIELDINGS O NOT CORRECT"
 
 # H1 shieldings
-CRIT1=`$GREP "H * 1 *x * 25\.0155....  * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "H * 1 *y * (0| )\.00000000 * 39\.5312.... * 9\.0775...." $log | wc -l`
-CRIT3=`$GREP "H * 1 *z * (0| )\.00000000 * 6\.5836.... * 31\.4199...." $log | wc -l`
+CRIT1=`$GREP "H *_1 *x * 25\.0155....  * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H *_1 *y * (0| )\.00000000 * 39\.5312.... * 9\.0775...." $log | wc -l`
+CRIT3=`$GREP "H *_1 *z * (0| )\.00000000 * 6\.5836.... * 31\.4199...." $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="SHIELDINGS H1 NOT CORRECT"
 
 # H2 shieldings
-CRIT1=`$GREP "H * 2 *x * 25\.0155....  * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "H * 2 *y * (0| )\.00000000 * 39\.5312.... * \-9\.0775...." $log | wc -l`
-CRIT3=`$GREP "H * 2 *z * (0| )\.00000000 * \-6\.5836.... * 31\.4199...." $log | wc -l`
+CRIT1=`$GREP "H *_2 *x * 25\.0155....  * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H *_2 *y * (0| )\.00000000 * 39\.5312.... * \-9\.0775...." $log | wc -l`
+CRIT3=`$GREP "H *_2 *z * (0| )\.00000000 * \-6\.5836.... * 31\.4199...." $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="SHIELDINGS H2 NOT CORRECT"
@@ -153,7 +152,7 @@ CRIT9=`$GREP "Isotropic FC contribution \: * \-3\.7986 Hz" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[8]=9
-ERROR[8]="SPIN-SPIN NOT CORRECT"
+ERROR[8]="H-H SPIN-SPIN COUPLING NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6 7 8

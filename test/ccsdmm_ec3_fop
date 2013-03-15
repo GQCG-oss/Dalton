@@ -95,7 +95,7 @@ cat > ccsdmm_ec3_fop.pot <<%EOF%
  2        # polarization is not included in the optimization of the
  45.21    # wave function! Note, that SPC optimization of the wave function
  45.21    # is much faster than including polarization!!!
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################
@@ -165,32 +165,32 @@ else
 fi
 
 # QM/MM interaction energy compared:
-CRIT1=`$GREP "\| * (\-|\-0)\.0102935015 \| * (\-|\-0)\.0017514318 \| * ( |0)\.0051109721 \| * (\-|\-0)\.0070784206 \|" $log | wc -l`
-CRIT2=`$GREP "\| * \-76\.2394332153 \| * \-76\.2465116359 \| * ( |0)\.0000079260 \|" $log | wc -l`
+CRIT1=`$GREP "\| * (\-|\-0)\.010293501. \| * (\-|\-0)\.001751431. \| * ( |0)\.005110972. \| * (\-|\-0)\.007078420. \|" $log | wc -l`
+CRIT2=`$GREP "\| * \-76\.239433215. \| * \-76\.246511635. \| * ( |0)\.000007926. \|" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2`
 CTRL[1]=2
 ERROR[1]="QM/MM ENERGY NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "x * ( |0)\.07705705 * ( |0)\.19585945" $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.07705705 * ( |0)\.19585946" $log | wc -l`
 CRIT2=`$GREP "y * ( |0)\.01147275 * ( |0)\.02916082" $log | wc -l`
-CRIT3=`$GREP "z * ( |0)\.79906605 * 2\.03102309" $log | wc -l` 
+CRIT3=`$GREP "z * ( |0)\.79906605 * 2\.03102319" $log | wc -l` 
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=10
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 # Quadrupole moment components compared:
-CRIT1=`$GREP "1 * 1\.54238535 * ( |0)\.00245691 * ( |0)\.12061511" $log | wc -l`
-CRIT2=`$GREP "2 * ( |0)\.00245691 * -1\.66196666 * ( |0)\.00670711" $log | wc -l`
-CRIT3=`$GREP "3 * ( |0)\.12061511 * ( |0)\.00670711 * ( |0)\.11958131" $log | wc -l`
+CRIT1=`$GREP "1 * 1\.5423853. * ( |0)\.00245691 * ( |0)\.12061511" $log | wc -l`
+CRIT2=`$GREP "2 * ( |0)\.00245691 * -1\.6619666. * ( |0)\.00670711" $log | wc -l`
+CRIT3=`$GREP "3 * ( |0)\.12061511 * ( |0)\.00670711 * ( |0)\.1195813." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=9
 ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
 
 # Second order electric moment components compared:
-CRIT1=`$GREP "1 *  7\.21261290 * (\-|\-0)\.00163794 * (\-|\-0)\.08041007" $log | wc -l`
-CRIT2=`$GREP "2 * (\-|\-0)\.00163794 * 5\.25823044 * (\-|\-0)\.00447140" $log | wc -l`
-CRIT3=`$GREP "3 * (\-|\-0)\.08041007 * (\-|\-0)\.00447140 * 6\.52316916" $log | wc -l`
+CRIT1=`$GREP "1 *  7\.212612.. * (\-|\-0)\.00163794 * (\-|\-0)\.08041007" $log | wc -l`
+CRIT2=`$GREP "2 * (\-|\-0)\.00163794 * 5\.2582304. * (\-|\-0)\.00447140" $log | wc -l`
+CRIT3=`$GREP "3 * (\-|\-0)\.08041007 * (\-|\-0)\.00447140 * 6\.5231691." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=10
 ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"

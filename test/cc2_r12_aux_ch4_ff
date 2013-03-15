@@ -57,7 +57,7 @@ cat > cc2_r12_aux_ch4_ff.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -97,7 +97,7 @@ XDIPLEN XDIPLEN XDIPLEN
  1A
 .BASSCL
  0.5 2.0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################
@@ -131,7 +131,7 @@ CRIT2=`$GREP "Total CC2-R12/A energy: *-40\.39368825" $log | wc -l`
 TEST[2]=`expr   $CRIT2`
 CTRL[2]=2
 ERROR[2]="CC2-R12/A ENERGY NOT CORRECT"
-CRIT3=`$GREP "x *( |0)\.15519992 *( |0)\.39447881" $log | wc -l`
+CRIT3=`$GREP "x *( |0)\.15519992 *( |0)\.3944788" $log | wc -l`
 TEST[3]=`expr   $CRIT3`
 CTRL[3]=1
 ERROR[3]="DIPOLE MOMENT NOT CORRECT"

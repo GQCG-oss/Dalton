@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck oneinp */
       SUBROUTINE ONEINP(WORD)
@@ -142,11 +132,11 @@ C     Initialize /CBIONE/
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include <maxorb.h>
+#include "maxorb.h"
 
 #include "abainf.h"
 #include "cbione.h"
-#include <infinp.h>
+#include "infinp.h"
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
@@ -218,8 +208,8 @@ C
       LOGICAL    FINDPT
       PARAMETER (FINDPT = .FALSE.)
 #else
-#include <drw2el.h>
-#include <inforb.h>
+#include "drw2el.h"
+#include "inforb.h"
 #endif
 
 C
@@ -333,9 +323,9 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "iratdef.h"
-#include <dummy.h>
-#include <drw2el.h>
-#include <codata.h>
+#include "dummy.h"
+#include "drw2el.h"
+#include "codata.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00D00)
 C
@@ -359,7 +349,7 @@ C
 #else
 #include "gnrinf.h"
 #include "energy.h"
-#include <inftap.h>
+#include "inftap.h"
 #endif
 #include "onecom.h"
 #include "lmns.h"
@@ -372,21 +362,27 @@ C
 #include "symind.h"
 #include "csym1.h"
 #include "cbisol.h"
-#include <difsec.h>
-#include <dftcom.h>
+#include "difsec.h"
+#include "dftcom.h"
 #include "expopt.h"
-#include <rspprp.h>
-#include <esg.h>
+#include "rspprp.h"
+#include "esg.h"
 C
 #include "ibtfun.h"
+C... added by Bin Gao, Feb. 16, 2011
+C... for ECP
+#include "ecpinf.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
       TIMINT = D0
       FRSDER = MAXDIF .GE. 1
       SECDER = MAXDIF .EQ. 2
-      IF(THRS.EQ.0D0) THRS = 1.D-15 ! to avoid log(0.0d0) below
-      TOLS   = THRS*THRS
+      IF (THRS.LE.0.0D0) THEN
+         TOLS   = 1.0D-30 ! to avoid log(0.0d0) below
+      ELSE
+         TOLS   = THRS*THRS
+      END IF
       TOLOG  = - LOG(TOLS)
       IF (PROPTY .AND. (SECDER .OR. DIFDIP .OR. DIFQDP)) THEN
          CALL GPOPEN(LUITMP,' ','NEW',' ','UNFORMATTED',IDUMMY,.FALSE.)
@@ -532,7 +528,7 @@ C
          CALL MEMGET('REAL',KTLM, LMTOT,WORK,KFREE,LFREE)
          LWRK  = LWORK - KFREE + 1
          CALL SOLFL(WORK(KGLM),EPDIEL,RCAV,LCAVMX)
-         CALL RDSIFC('SOLTLM',FOUND,WORK(KTLM),WORK(KFREE),LWRK)
+         CALL RD_SIRIFC('SOLTLM',FOUND,WORK(KTLM),WORK(KFREE),LWRK)
          IF (.NOT. FOUND)
      &    CALL QUIT('ONEDR1 ERROR: "SOLTLM" not found on SIRIFC.')
          CALL FCMFAC(LCAVMX,LMNTOT,LMTOT,WORK(KGLM),WORK(KTLM),
@@ -559,6 +555,56 @@ C
       END IF
       CALL DZERO(STHMAT,N_STHMA*NNBASX)
       CALL IZERO(ISOFRA, 8)
+
+C-Bin Gao: disabled temporarily before F77 driver implemented
+C-#if defined(BUILD_GEN1INT)
+C-C...  added by Bin Gao, Feb. 15, 2011
+C-      if (ECP) then
+C-C...    computes expectation values
+C-        if (PROPTY) then
+C-C...      expectation values from ECP integrals
+C-          call gen1int_ifc_main("ECP", .false., 0, 0, 0, .true.,
+C-     &                          .false., .false., NNBASX,
+C-     &                          WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
+C-     &                          .true., .false., .false.,
+C-     &                          WORK(KLAST:KLAST), LUPRI, IPRINT)
+C-          ENERNA = ENERNA+WORK(KLAST)
+C-C...      expectation values and writing the integrals of first-order geometric derivatives
+C-          if (SECDER .OR. DIFDIP .OR. DIFQDP) then
+C-            call gen1int_ifc_main("ECP", .false., 0, 1, MAXDIF, .true.,
+C-     &                            .false., .true., NNBASX,
+C-     &                            WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
+C-     &                            .true., .false., .false., GRADNA,
+C-     &                            LUPRI, IPRINT)
+C-C...      expectation values of first-order geometric derivatives
+C-          else
+C-            call gen1int_ifc_main("ECP", .false., 0, 1, MAXDIF, .true.,
+C-     &                            .false., .false., NNBASX,
+C-     &                            WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
+C-     &                            .true., .false., .false., GRADNA,
+C-     &                            LUPRI, IPRINT)
+C-          end if
+C-C...      expectation values of second-order geometric derivatives
+C-          if (SECDER) then
+C-            call gen1int_ifc_main("ECP", .false., 0, 2, MAXDIF, .true.,
+C-     &                            .false., .false., NNBASX,
+C-     &                            WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
+C-     &                            .true., .true., .false., HESSNA,
+C-     &                            LUPRI, IPRINT)
+C-          end if
+C-C...    ECP in Gen1Int is not efficient, backs to ECPINT temporarily,
+C-C...    also needs ECPINT to debug the results from Gen1Int
+C-C...    ECP integrals, do not write the integrals (FIXME)?
+C-C...        else
+C-C...          call gen1int_ifc_main("ECP", .false., 0, 0, 0, .true.,
+C-C...     &                          .true., .false., NNBASX,
+C-C...     &                          STHMAT(:,2), 1, NNBASX, 1, DENMAT,
+C-C...     &                          .false., .false., .false., (/DUMMY/),
+C-C...     &                          LUPRI, IPRINT)
+C-        end if
+C-      end if
+C-#endif
+
       IDENA = 0
       DO 100 ISHELA = 1,KMAX
          NHKTA = NHKT(ISHELA)
@@ -981,10 +1027,10 @@ C
 C Used from common blocks:
 C  INFRSP : CCPPA
 C
-#include <abainf.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infrsp.h>
+#include "abainf.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infrsp.h"
       INTEGER R, S, RS, U, V, UV
 C
 C
@@ -994,7 +1040,7 @@ C
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
       READ (LUSIFC)
       READ (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
-     *            NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
+     *              NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
       NSSHT  = NORBT - NOCCT
       CALL READI(LUSIFC,IRAT*NCMOT,CMO)
       READ (LUSIFC)
@@ -1235,13 +1281,13 @@ C
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
       DIMENSION CSTRA(*), SCTRA(*)
-#include <orgcom.h>
-#include <abainf.h>
-#include <nuclei.h>
-#include <dipole.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <ibtfun.h>
+#include "orgcom.h"
+#include "abainf.h"
+#include "nuclei.h"
+#include "dipole.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "ibtfun.h"
 C
 C     Dipole moment
 C
@@ -1298,20 +1344,20 @@ C     Calculates nuclear contributions to electric second moment gradient
 C
 C     2003 hs
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       DIMENSION CSTRA(*), SCTRA(*)
-#include <orgcom.h>
-#include <abainf.h>
-#include <nuclei.h>
-#include <difsec.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <ibtfun.h>
+#include "orgcom.h"
+#include "abainf.h"
+#include "nuclei.h"
+#include "difsec.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "ibtfun.h"
 C
 C     Second moment gradient
 C
@@ -1382,7 +1428,7 @@ C  /* Deck tlmwr1 */
 #include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
-      LOGICAL ERRORE, ERRORN
+      LOGICAL ERRORE, ERRORN, OLDDX
 #include "nuclei.h"
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
@@ -1513,52 +1559,25 @@ C
   100 CONTINUE
       RETURN
       END
-C /* Deck dktrf */
-      SUBROUTINE DKTRF(STDER0,NBAST,NNBAST,IPRINT)
-C
-C     Read in Douglas-Kroll and overlap integrals and transfer to standard
-C     arrays
-C
-#include <implicit.h>
-#include <priunit.h>
-      LOGICAL FNDLAB
-#include <inftap.h>
-      DIMENSION STDER0(NNBAST)
-C
-      REWIND (LUPROP)
-      IF (FNDLAB('DKPOTINT',LUPROP)) THEN
-         CALL READT(LUPROP,NNBAST,STDER0)
-         IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Douglas-Kroll matrix read from LUPROP '//
-     &                  'in DKTRF',-1)
-            CALL OUTPAK(STDER0,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKTRF error: Douglas-Kroll'//
-     &      ' integrals not found on LUPROP.'
-         CALL QUIT('DKTRF error: Integrals not found on LUPROP')
-      END IF
-      RETURN
-      END
 C /* Deck PCMNUC */
       SUBROUTINE PCMNUC
 C
 C     Purpose: calculate nuclear contributions to PCM
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0)
-#include <pi.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <taysol.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "pi.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "taysol.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "ibtfun.h"
 
       FACT = 4.0D0 * PI * EPS/(EPS - D1)
       ISPP = 1
@@ -1605,16 +1624,16 @@ C
 C/*DECK PCMNUC_OVER*/
       SUBROUTINE PCMNUC_OVER(NSJ,IC,SESE,SNSN,SESN)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0)
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       DO ISYM = 0, MAXREP
          MTS = NTSIRR * ISYM

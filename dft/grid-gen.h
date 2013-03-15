@@ -44,7 +44,7 @@ struct RhoEvalData {
 real rho_grid_func(real x, real y, real z, void* arg);
 
 int grid_gen_save(const char* filename, GridGenMolGrid* mgrid);
-int grid_gen_generate(const char* filename, int atom_cnt, 
+int grid_gen_generate(const char* filename, integer atom_cnt, 
                       const GridGenAtom* atom_arr, real threshold,
                       GridGeneratingFunc generating_function, void* data,
                       int minang, int maxang, real* work, integer *lwork);
@@ -52,12 +52,12 @@ void grid_gen_set_part_scheme(GridGenPartScheme scheme);
 
 typedef struct DftGridReader_ DftGridReader;
 
-DftGridReader* grid_open(int nbast, real *dmat, real *work, integer *lwork);
-DftGridReader* grid_open_cmo(int nbast, const real *cmo, 
-                             real *work, integer *lwork);
+DftGridReader* grid_open(integer nbast, real *dmat, real *work, integer *lwork, integer iprint);
+DftGridReader* grid_open_cmo(integer nbast, const real *cmo, 
+                             real *work, integer *lwork, integer iprint);
 
 int
-grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
+grid_getchunk_blocked(DftGridReader* rawgrid, integer maxlen,
                       integer *nblocks, integer (*shlblocks)[2], 
                       real (*coor)[3], real *weight);
 

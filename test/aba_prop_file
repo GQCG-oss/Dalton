@@ -79,7 +79,7 @@ fi
 #
 # Test of energy
 #
-CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy =    * \-112\.3536975097" $log | wc -l`
+CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy =    * \-112\.353697509" $log | wc -l`
 TEST[1]=`expr $CRIT1 `
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
@@ -87,9 +87,9 @@ ERROR[1]="ENERGY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
 #
 # Test of HF dipole moment
 #
-CRIT1=`$GREP "#  2 1 * <XDIPLEN > =   *   ( |0)\.00450794" $log | wc -l`
-CRIT2=`$GREP "#  3 1 * <YDIPLEN > =   *   ( |0)\.00003997" $log | wc -l`
-CRIT3=`$GREP "#  4 1 * <ZDIPLEN > =   *  ( \-|\-0)\.59806372" $log | wc -l`
+CRIT1=`$GREP "#  2 1 * <XDIPLEN > =  * \-0*\.0000104" $log | wc -l`
+CRIT2=`$GREP "#  3 1 * <YDIPLEN > =  *   0*\.0039526" $log | wc -l`
+CRIT3=`$GREP "#  4 1 * <ZDIPLEN > =  * \-0*\.5980676" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[2]=3
 ERROR[2]="HF DIPOLE MOMENT NOT CORRECTLY WRITTEN TO PROPERTY FILE"

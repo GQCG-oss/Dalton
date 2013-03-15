@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 *======================================================================*
       subroutine ccsdr12cd(ccsdr12,
      &                     omegar12,isymom,t2am,isymt2,isymim,
@@ -11,22 +34,18 @@
 * C. Haettig, C. Neiss, spring 2006
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <dummy.h>     
-#include <ccorb.h>     
-#include <ccsdsym.h>     
-#include <r12int.h>     
-#include <ccr12int.h>     
+#include "priunit.h"
+#include "dummy.h"     
+#include "ccorb.h"     
+#include "ccsdsym.h"     
+#include "r12int.h"     
+#include "ccr12int.h"     
 
       logical locdbg
       parameter (locdbg = .FALSE.)
       integer isym0
       parameter ( isym0 = 1)
-#if defined (SYS_CRAY)
-      real zero,one
-#else
-      double precision zero,one
-#endif
+      real*8  zero,one
       parameter ( zero=0.0d0, one=1.0d0 )
 
 * input:
@@ -34,11 +53,7 @@
       character fnijda*8, fniadj*8
       integer isymlam, ilamdx(8,8), luijda, luiadj, isymom, isymt2,
      &        it2del(*), lwork, isymim
-#if defined (SYS_CRAY)
-      real xlamdah(*),omegar12(*),t2am(*),cmox(*),work(*)
-#else
-      double precision xlamdah(*),omegar12(*),t2am(*),cmox(*),work(*)
-#endif
+      real*8  xlamdah(*),omegar12(*),t2am(*),cmox(*),work(*)
 
 * local:
       logical lcbs, ldum
@@ -51,11 +66,7 @@
      &        nvirc, koffe1, koffcx, nbasd, norbp, kcdint, iopt, 
      &        komegpk, isym1, isym2, igdp(8,8), ngdp(8), iopttcme,
      &        ioptr12, idum, mtotbas
-#if defined (SYS_CRAY)
-      real fac, ddot
-#else
-      double precision fac, ddot
-#endif
+      real*8  fac, ddot
 
 *----------------------------------------------------------------------*
 * precompute non-standard symmetry offsets and dimensions:

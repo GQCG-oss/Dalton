@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef REV_LOG
 ===========================================================================
@@ -44,18 +34,18 @@ new getref calls with appropriate NDREF instead of NCREF
 C
 C CALCULATE AVERAGE VALUE OF ONE ELECTRON OPERATOR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*(*)PRPLBL
 C
       DIMENSION PRPMO(NORBT,*),DEN1(NASHDI,*)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       PARAMETER ( D2 = 2.0D0 , D0 = 0.0D0 )
       PARAMETER ( BIGLIM = 100000.0D0, SMLLIM = 0.01D0 )
@@ -113,17 +103,17 @@ C Calculation of the two-electron matrix element <L|K|R>.
 C The generalized hamiltonian K can be one-index transformed 0, 1 or 2
 C times according to IKLVL. (0 gives the ordinary untransformed hamiltonian.)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infind.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infind.h"
 C
       PARAMETER (D1=1.0D0, D2=2.0D0)
       DIMENSION WRK(*)
@@ -161,12 +151,6 @@ C
          CALL PRIAC2(DEN2,NASHT,LUPRI)
       END IF
 C
-C  KONE = 1 is needed in the call to RSPFX. Putting the constant 1
-C  in that call gives a MEMGET error in NXTH2X.
-C  28/3-1996-ekd
-C
-      KONE   = 1
-C
       KH2AX  = 1
       LH2AX  = N2ASHX * N2ASHX
       IF (DIROIT) THEN
@@ -180,9 +164,9 @@ C
       KPVD   = KQB    + NORBT  * NASHDI
       KH2    = KPVD   + N2ASHX * N2ASHX
       KH2X   = KH2    + N2ORBX
-      KFREE  = KH2X   + N2ORBX
-      LFREE  = LWRK   - KFREE
-      IF (LFREE.LT.0) CALL ERRWRK('MELTWO',KFREE-1,LWRK)
+      KWRK1  = KH2X   + N2ORBX
+      LWRK1  = LWRK   - KWRK1
+      IF (LWRK1.LT.0) CALL ERRWRK('MELTWO',KWRK1-1,LWRK)
 C
       CALL DCOPY(N2ORBX,H1,1,WRK(KFI),1)
       CALL DZERO(WRK(KFA),N2ORBX)
@@ -206,16 +190,18 @@ C     floating point exception on DEC alpha. /July 2001 HJAaJ
 C
       LCON = .TRUE.
       LORB = .FALSE.
+      KFREE = 1
+      LFREE = LWRK1
       IF (DIROIT) THEN
          CALL RSPFXD(WRK(KFI),WRK(KFA),WRK(KQA),WRK(KQB),WRK(KH2AX),
      *                  IDAX,INTSYM,ISYMDN,DEN1,DEN2,WRK(KPVD),
-     *                  WRK(KH2),WRK(KH2X),WRK(KFREE),KONE,LFREE,
+     *                  WRK(KH2),WRK(KH2X),WRK(KWRK1),KFREE,LFREE,
      *                  LCON,LORB,IPRRSP,IGRSPI,ISPIN1,ISPIN2,ISPIN3,
      *                  IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2,ZYMAT3,ISYM3)
       ELSE
          CALL RSPFX(WRK(KFI),WRK(KFA),WRK(KQA),WRK(KQB),WRK(KH2AX),IDAX,
      *              INTSYM,ISYMDN,DEN1,DEN2,WRK(KPVD),WRK(KH2X),
-     *              WRK(KFREE),KONE,LFREE,LCON,LORB,IPRRSP) 
+     *              WRK(KWRK1),KFREE,LFREE,LCON,LORB,IPRRSP) 
       END IF
 C     
 C     The transformed two-electron integrals do not have the factor 1/2
@@ -243,17 +229,17 @@ C
 C RES = OVLAP * sum(i) [FI(i,i) + H1(i,i)] + sum(x,y) FI(x,y) DEN1(x,y)
 C         + 1/2 * sum(x,y,u,v) H2A(x,y,u,v) DEN2(x,y,u,v)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infind.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infind.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.5D0 )
 C
@@ -324,19 +310,19 @@ C
 C
 C     Drive the computation of S[4] times three vectors
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "qrinf.h"
 C
       PARAMETER( D1= 1.0D0, D6=6.0D0, DH=0.5D0 )
 C
@@ -529,19 +515,19 @@ C     |  <01L| qj+|0> + <0| qj+|01R>  |
 C     \               0               /
 C      
 C      
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "qrinf.h"
 C
       PARAMETER( D2=2.0D0, D3=3.0D0 )
 C
@@ -621,19 +607,19 @@ C
      *                 UDV,ZYMAT,DEN1,XINDX,MJWOP,WRK,LWRK)
 C
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "qrinf.h"
 C
       PARAMETER( DH=0.5D0, D0=0.0D0, D1=1.0D0, D6=6.0D0 )
 C
@@ -768,19 +754,19 @@ C     |   <j| K(k1,k3) |02R>                                  |*1/2
 C     |   <0| [qj+,K(k1,k3)] |02R> + <02L| [qj+,K(k1,k3)] |0> |
 C     \  -<02L| K(k1,k3) |j>                                  /
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "qrinf.h"
 C
       PARAMETER( DH=0.5D0 )
 C

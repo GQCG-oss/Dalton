@@ -1,8 +1,12 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_excit1 */
-      SUBROUTINE SO_EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,SECMAT,EXENG,
-     &                     WORK,LWORK)
+CSPAS:23/5-11: second and third moment sum rules
+C     SUBROUTINE SO_EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,SECMAT,EXENG,
+C    &                     WORK,LWORK)
+      SUBROUTINE SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
+     &                     BSRLON,SECMAT,EXENG,WORK,LWORK)
+CKeinSPASmehr
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -15,34 +19,38 @@ C     PURPOSE: Main driver routine for the calculation of excitation
 C              energies and transition moments with the atomic integral
 C              direct SOPPA program.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 CSPAS:15/03-2006: merge with Dalton-2.0  
 C#include <cbilrs.h>
 CKeinSPASmehr
-#include <cbiexc.h>
-#include <ccsdsym.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "cbiexc.h"
+#include "ccsdsym.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 CSPAS:10/11-2003: is merged with maxorb.h
 C#include <mxorb.h>
 CKeinSPASmehr
-#include <nuclei.h>
+#include "nuclei.h"
 CSPAS:10/11-2003: I cannot find the corresponding include file
 C#include <nuctap.h>
 CKeinSPASmehr
-#include <soppinf.h>
-#include <symmet.h>
-#include <wrkrsp.h>
+#include "soppinf.h"
+#include "symmet.h"
+#include "wrkrsp.h"
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
       DIMENSION TRLEN(3,NSYM,MXNEXI,4),  TRVEL(3,NSYM,MXNEXI,4)
+CSPAS:23/5-11: second and third moment sum rules
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI,4),  TQVEL(3,3,NSYM,MXNEXI,4)
+      DIMENSION TTLEN(10,NSYM,MXNEXI,4)
+CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI,4),  TRMAG(3,NSYM,MXNEXI,4)
       DIMENSION BSRLON(3,NSYM,MXNEXI,4), EXENG(NSYM,MXNEXI,4)
       DIMENSION SECMAT(3,MXNEXI,NSYM)
@@ -144,6 +152,11 @@ C---------------------------------------------------------------------
 C
       CALL DZERO(TRLEN, 3*NSYM*MXNEXI*4)
       CALL DZERO(TRVEL, 3*NSYM*MXNEXI*4)
+CSPAS:23/5-11: second and third moment sum rules
+      CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*4)
+      CALL DZERO(TQVEL, 3*3*NSYM*MXNEXI*4)
+      CALL DZERO(TTLEN, 10*NSYM*MXNEXI*4)
+CKeinSPASmehr
       CALL DZERO(TRLON, 3*NSYM*MXNEXI*4)
       CALL DZERO(TRMAG, 3*NSYM*MXNEXI*4)
       CALL DZERO(BSRLON,3*NSYM*MXNEXI*4)
@@ -251,9 +264,16 @@ C              Determine RPA transition moments.
 C-----------------------------------------------
 C
                CALL RP_TRMOM(ISYMTR,NLBTOT,NEXCI,TRLEN(1,1,1,1),
-     &                       TRVEL(1,1,1,1),TRLON(1,1,1,1),
-     &                       TRMAG(1,1,1,1),BSRLON(1,1,1,1),
-     &                       EXENG(1,1,1),WORK(KEND2),LWORK2)
+CSPAS:23/5-11: second and third moment sum rules
+C    &                       TRVEL(1,1,1,1),TRLON(1,1,1,1),
+C    &                       TRMAG(1,1,1,1),BSRLON(1,1,1,1),
+C    &                       EXENG(1,1,1),WORK(KEND2),LWORK2)
+     &                       TRVEL(1,1,1,1),TQLEN(1,1,1,1,1),
+     &                       TQVEL(1,1,1,1,1),TTLEN(1,1,1,1),
+     &                       TRLON(1,1,1,1),TRMAG(1,1,1,1),
+     &                       BSRLON(1,1,1,1),EXENG(1,1,1),
+     &                       WORK(KEND2),LWORK2)
+CKeinSPASmehr
 C
 C--------------------------------------------------------
 C              Determine charge radius of excited states.
@@ -337,6 +357,10 @@ C
      &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
      &                       TRLEN(1,1,1,2),TRVEL(1,1,1,2),
+CSPAS:23/5-11: second and third moment sum rules
+     &                       TQLEN(1,1,1,1,2),TQVEL(1,1,1,1,2),
+     &                       TTLEN(1,1,1,2),
+CKeinSPASmehr
      &                       TRLON(1,1,1,2),TRMAG(1,1,1,2),
      &                       BSRLON(1,1,1,2),EXENG(1,1,2),
      &                       WORK(KEND2),LWORK2)
@@ -418,6 +442,10 @@ C
      &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
      &                       TRLEN(1,1,1,3),TRVEL(1,1,1,3),
+CSPAS:23/5-11: second and third moment sum rules
+     &                       TQLEN(1,1,1,1,3),TQVEL(1,1,1,1,3),
+     &                       TTLEN(1,1,1,3),
+CKeinSPASmehr
      &                       TRLON(1,1,1,3),TRMAG(1,1,1,3),
      &                       BSRLON(1,1,1,3),EXENG(1,1,3),
      &                       WORK(KEND2),LWORK2)
@@ -493,6 +521,10 @@ C
      &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
      &                       TRLEN(1,1,1,4),TRVEL(1,1,1,4),
+CSPAS:23/5-11: second and third moment sum rules
+     &                       TQLEN(1,1,1,1,4),TQVEL(1,1,1,1,4),
+     &                       TTLEN(1,1,1,4),
+CKeinSPASmehr
      &                       TRLON(1,1,1,4),TRMAG(1,1,1,4),
      &                       BSRLON(1,1,1,4),EXENG(1,1,4),
      &                       WORK(KEND2),LWORK2)

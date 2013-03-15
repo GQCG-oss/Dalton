@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_HMAT */
@@ -108,11 +98,11 @@ c/* Deck CC_HMAT */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccnoddy.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -181,9 +171,9 @@ c/* Deck CC_HMAT */
       END IF
 
       IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
-        WRITE(LUPRI,'(/1x,a)') 'CC_HMAT called for a Coupled Cluster '
+        WRITE(LUPRI,'(/a)') ' CC_HMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_HMAT...'
-        CALL QUIT('Unkown CC method in CC_HMAT.')
+        CALL QUIT('Unknown CC method in CC_HMAT.')
       END IF
 
 * check list combination:
@@ -350,9 +340,6 @@ c/* Deck CC_HMAT */
 * add CC3 contributions:
 *---------------------------------------------------------------------*
         IF (CCSDT) THEN
-#if !defined CC_AARHUS
-          CALL QUIT('No triples (yet) in CC_HMAT.')
-#else
           ! allocate and initialize doubles result vector:
           KEPSI1 = KSTART
           KEPSI2 = KEPSI1 + NT1AM(ISYRES)
@@ -381,7 +368,6 @@ c/* Deck CC_HMAT */
 
           END IF
 
-#endif
         ELSE
           KEPSI2 = KSTART
 C         ! to not get undefined address in calls below /hjaaj Aug 07
@@ -477,9 +463,9 @@ c/* Deck CC_HCD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 * local parameters:
       CHARACTER MSGDBG*(16)
@@ -644,11 +630,11 @@ C----------------------------------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccqrinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccqrinf.h"
 
       INTEGER MXHTRAN, MXVEC
       PARAMETER ( MXHTRAN = 5, MXVEC = 1)
@@ -685,9 +671,9 @@ C----------------------------------------------------------------------
       LISTD = 'R1'
 
       IDLSTL = 0
-      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTD = IR1TAMP('XDIPLEN ',.FALSE.,0.0,1)
+      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTD = IR1TAMP('XDIPLEN ',.FALSE.,0.0D0,1)
 
       IHTRAN(1,1) = IDLSTL
       IHTRAN(2,1) = IDLSTB
@@ -794,18 +780,18 @@ C     C.Haettig and Ove Christiansen oktober 1996, februar 1997
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
 C
       DIMENSION WORK(LWORK),ITADR(2)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-07)
@@ -1205,7 +1191,6 @@ C
       RETURN
       END
 *=====================================================================*
-#if defined CC_AARHUS
 *=====================================================================*
       SUBROUTINE CCSDT_HMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
      &                            LISTC,IDLSTC,LISTD,IDLSTD,
@@ -1226,13 +1211,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.false.)
@@ -1698,4 +1683,3 @@ C           ----------------------------------------------
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_HMAT_NODDY                     *
 *---------------------------------------------------------------------*
-#endif

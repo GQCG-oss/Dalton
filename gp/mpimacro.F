@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C-------------------------------------------------------------
 C    Paal Dahle Jan-2001
@@ -41,17 +31,17 @@ C    easier and more transparent because:
 C
 C    a) Less arguments to MPIX... calls than to MPI_... calls
 C    b) No need to specify the mpif.h include file or array
-C       ISTAT(MPI_SOURCE) in the calling subroutine.
+C       my_STATUS(MPI_SOURCE) in the calling subroutine.
 C    c) Error handling is automatically taken care of.
 C-------------------------------------------------------------
 C
 C  /* Deck mpixinit */
       SUBROUTINE MPIXINIT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
 C
 #if !defined (VAR_MPI)
       MYNUM  = 0
@@ -100,8 +90,8 @@ C
 C  /* Deck mpifinalize */
       SUBROUTINE MPIXFINALIZE
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 C
@@ -114,16 +104,18 @@ C
 C  /* Deck mpixbcast */
       SUBROUTINE MPIXBCAST(BUFFER,COUNT,TYPE,ROOT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_MPI)
+#include "maxorb.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, ROOT
       DIMENSION BUFFER(*)
 C
       IF      (TYPE .EQ. 'INTEGE') THEN
-         DATATYPE = MPI_INTEGER
+         DATATYPE = my_MPI_INTEGER
       ELSE IF (TYPE .EQ. 'LOGICA') THEN
          DATATYPE = MPI_LOGICAL
       ELSE IF (TYPE .EQ. 'DOUBLE') THEN
@@ -143,17 +135,19 @@ C
 C  /* Deck mpixrecv */
       SUBROUTINE MPIXRECV(BUFFER,COUNT,TYPE,SOURCE,TAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_MPI)
+#include "maxorb.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, SOURCE, TAG
       DIMENSION BUFFER(*)
 C
       IF      (TYPE .EQ. 'INTEGE') THEN
-         DATATYPE = MPI_INTEGER
+         DATATYPE = my_MPI_INTEGER
       ELSE IF (TYPE .EQ. 'LOGICA') THEN
          DATATYPE = MPI_LOGICAL
       ELSE IF (TYPE .EQ. 'DOUBLE') THEN
@@ -166,11 +160,11 @@ C
       END IF
       IF (SOURCE.EQ.-1) THEN
          CALL MPI_RECV(BUFFER,COUNT,DATATYPE,MPI_ANY_SOURCE,TAG,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-         SOURCE = ISTAT(MPI_SOURCE)
+     &                 MPI_COMM_WORLD,my_STATUS,IERR)
+         SOURCE = my_STATUS(MPI_SOURCE)
       ELSE
          CALL MPI_RECV(BUFFER,COUNT,DATATYPE,SOURCE,TAG,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
+     &                 MPI_COMM_WORLD,my_STATUS,IERR)
       END IF
       IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
 #endif
@@ -180,16 +174,18 @@ C
 C  /* Deck mpixsend */
       SUBROUTINE MPIXSEND(BUFFER,COUNT,TYPE,DEST,TAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_MPI)
+#include "maxorb.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, DEST, TAG
       DIMENSION BUFFER(*)
 C
       IF      (TYPE .EQ. 'INTEGE') THEN
-         DATATYPE = MPI_INTEGER
+         DATATYPE = my_MPI_INTEGER
       ELSE IF (TYPE .EQ. 'LOGICA') THEN
          DATATYPE = MPI_LOGICAL
       ELSE IF (TYPE .EQ. 'DOUBLE') THEN
@@ -211,12 +207,25 @@ C
 C
       RETURN
       END
+
+      subroutine mpixprocname(process_name,process_name_length)
+C
+      implicit none
+      character*(*) process_name
+      integer process_name_length, ierr
+#ifdef VAR_MPI
+      include 'mpif.h'
+C
+      call mpi_get_processor_name(process_name,process_name_length,ierr)
+#endif
+      END
+
 #if defined (VAR_MPI)
 C  /* Deck mpi_myfail */
       SUBROUTINE MPI_MYFAIL(IERR)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INCLUDE 'mpif.h'
       CHARACTER ERRBUF*40
 C

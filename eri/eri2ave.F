@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck eriave */
       SUBROUTINE ERIAVE(SO,PMAT,DMAT,D2MAT,ID2MAT,IPNTCR,IODDCC,IPNTUV,
@@ -39,14 +29,14 @@ C  /* Deck eriave */
 C
 C     tuh march 99 - april 01
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       DIMENSION SO(*), PMAT(*), DMAT(*), D2MAT(*), ID2MAT(*),
      &          IPNTCR(*), IPNTUV(*), IODDCC(*),
      &          INDXBT(*), WORK(*)
-#include <ericom.h>
+#include "ericom.h"
 C
 C     Allocations
 C
@@ -60,13 +50,13 @@ C
 C  /* Deck eriav1 */
       SUBROUTINE ERIAV1(SO,DMAT,D2MAT,ID2MAT,IPNTCR,IODDCC,IPNTUV,
      &                  INDXBT,IPOINT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D1=1.0D0, DP5=0.5D0)
       INTEGER A, B, C, D, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, DAB, DCD
@@ -79,17 +69,17 @@ C  /* Deck eriav1 */
      &          DMAT(NBASE,NBASE),
      &          D2MAT(NBASE,NBASE,NPDIMB,NPDIMA),
      &          ID2MAT(MXCORB,2)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <energy.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "energy.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIAV1',-1)
@@ -201,25 +191,25 @@ C
 C  /* Deck erifrc */
       SUBROUTINE ERIFRC(IA,IB,IC,ID,SO,IPOINT,DMAT,D2MAT,ID2MAT,
      &                  DFAC,IODDCD,IODXYZ,DAB,DCD)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D4=4.0D0, D2=2.0D0, D1=1.0D0, DP5=0.5D0, DP25=0.25D0)
       LOGICAL DAB, DCD, NOTRAS
       DIMENSION SO(NAOINT,3,4), IPOINT(NCCS,5), DMAT(NBASE,NBASE), 
      &          D2MAT(NBASE,NBASE,NPDIMB,NPDIMA), ID2MAT(MXCORB,2),
      &          IODXYZ(3)
-#include <cbieri.h>
-#include <ericom.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <energy.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "energy.h"
 C    
       NOTRAS = .TRUE.
       DO I = 1, NCCS

@@ -1,0 +1,103 @@
+~%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Decomposition of two-electron integrals : \Sec{*CHOLES}}\label{sec:choles}
+%
+% Should this be a chapter after HERMIT?
+%
+%\chapter{\label{sec:choles} Decomposition of two-electron integrals, {\choles}}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\index{Cholesky decomposition-based integrals}
+
+In this Section, we describe the keywords controlling the algorithm to 
+decompose the two-electron integrals, which is activated by the 
+keyword \Key{CHOLES} in the \Sec{*DALTON} input module.
+Note that apart from
+the options related to restart and, sometimes, to the decompostion
+threshold, the following keywords are very seldom needed,
+except for pathological cases. The same is the case for the sections
+\Sec{CHOMP2}~\ref{sec:chomp2} and \Sec{CHOCC2}~\ref{sec:chocc2} 
+of the coupled cluster input.
+
+Note that two types of Cholesky decomposition are implemented in Dalton.
+The other type, the Cholesky decomposition of energy denominators in CCSD(T) \index{CCSD(T)} is
+invoked with keyword \Key{CHO(T)} (or \Sec{CHO(T)}~\ref{sec:chopt} if 
+closer control is needed) in \Sec{CC INP}.
+
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item H.~Koch, {A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s}, and T.~B. Pedersen \newblock {\em J.~Chem.~Phys.}, {\bf 118},\hspace{0.25em}9481, (2003).
+\end{list}
+}}
+\end{center}
+
+\begin{description}
+%
+\item[\Key{COMPLE}] 
+        Do not use the reduced set to store the vectors, but keep them in
+        full dimension. Mainly for debugging purposes.
+%
+\item[\Key{DENDEC}] \verb| |\newline
+\verb|READ (LUCMD,*) THRDC|\newline
+        Decompose the density matrix in DIIS SCF. In the next line, the
+        threshold for that decomposition is read. The default is not to
+        decompose the density matrix.
+%
+\item[\Key{LENBUF}] \verb| |\newline
+\verb|READ (LUCMD,*) LENBUF|\newline
+        Buffer length used in the decompostion. Mainly for debugging purposes.
+%
+\item[\Key{NOSCDI}] 
+        Do not screen  the initial diagonal 
+        $D^{(0)}_{\alpha \beta}=
+         M^{(0)}_{\alpha \beta,\alpha \beta}=(\alpha \beta \mid \alpha \beta)$
+        of the two-electron integral matrix $(\alpha \beta \mid \gamma \delta)$.
+        (Default: screen the diagonal).
+%
+\item[\Key{REDUCE}] 
+        Use the reduced set to store the Cholesky vectors in disk, that is, keep
+        only the elements corresponding to those not screened in the initial
+        diagonal. This is the default.
+%
+\item[\Key{RSTCHO}]
+        Restart the decompostion. File CHOLESKY.RST must be available.
+%
+\item[\Key{RSTDIA}]
+        Use the diagonal computed in a previous calculation. File CHODIAG
+        must be available.
+%
+\item[\Key{SPANDI}] \verb| |\newline
+\verb|READ (LUCMD,*) SPAN|\newline
+        Span factor ($s$) used in the decompostion. Only diagonals elements 
+        \newline 
+        \begin{center}
+        $D^{(J)}_{\alpha \beta} \geq s \times (D^{(J)}_{\alpha \beta})_{max}$
+        \end{center}
+        are decomposed. (Default: 1.0D-3).
+%
+\item[\Key{THRCOM}] \verb| |\newline
+\verb|READ (LUCMD,*) THRCOM|\newline
+        Threshold ($\Delta$) for the decomposition. Convergence is achieved 
+        when all the diagonal elements $D^{(J)}_{\alpha \beta} < \Delta$.
+        (Default: 1.0D-8)
+%
+\item[\Key{THINDI}] \verb| |\newline
+\verb|READ (LUCMD,*) THINDI|\newline
+       Threshold ($\tau_0$) to zero out elements in the initial diagonal. 
+        Diagonal elements are zeroed when 
+       $D^{(0)}_{\alpha \beta} \times (D^{(0)}_{\alpha \beta})_{max} < \Delta^2/\tau_0$.
+        (Default: 1.0D0).
+%
+\item[\Key{THSUDI}] \verb| |\newline
+\verb|READ (LUCMD,*) THRCC2|\newline
+       Threshold ($\tau_1$) to zero out elements in the subsequent diagonals along 
+       the decomposition. Diagonal elements are zeroed when 
+       $D^{(J)}_{\alpha \beta} \times (D^{(J)}_{\alpha \beta})_{max} < \Delta^2/\tau_1$.
+        (Default: 1.0D3).
+%
+\end{description}

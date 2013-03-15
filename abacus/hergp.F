@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C 
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C
 C FILE    : hergp.F
 #include "single.h"
@@ -160,12 +150,12 @@ C
 #include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
-      DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR),
-     &          CSTRA(*), SCTRA(*)
+      DIMENSION SHESS(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
       INTEGER BEGIN
+      real(8), allocatable :: CHESS(:,:)
 C
       IF (KEY .EQ. 'CENTERS') THEN
          NROW = 3*NUCDEP
@@ -232,9 +222,11 @@ C        Print in non-symmetry basis
 C
          WRITE (LUPRI,'(//)')
          NCOOR = 3*NUCDEP
+         allocate( CHESS(NCOOR,NCOOR) )
          CALL DZERO(CHESS,NCOOR*NCOOR)
-         CALL TRAHES(SHESS,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,ITYPE)
-         CALL PR2DER(CHESS,NCOOR,MXCOOR,LUPRI)
+         CALL TRAHES(SHESS,MXCOOR,CHESS,CSTRA,SCTRA,NCOOR,NCOOR,ITYPE)
+         CALL PR2DER(CHESS,NCOOR,NCOOR,LUPRI)
+         deallocate( CHESS )
       END IF
       WRITE (LUPRI,'()')
       CALL FLSHFO(LUPRI)
@@ -244,6 +236,10 @@ C
       END
 C  /* Deck tragrd */
       SUBROUTINE TRAGRD(SGRAD,CGRAD,CSTRA,SCTRA,NCR0,NCOOR)
+C
+C     Transform molecular gradient from symmetry nuclear coordinates
+C     to cartesian nuclear coordinates
+C
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION SGRAD(MXCOOR), CGRAD(MXCOOR)
@@ -257,12 +253,17 @@ C  /* Deck tragrd */
       END
 C  /* Deck trahes */
       SUBROUTINE TRAHES(SHESS,NDIMS,CHESS,CSTRA,SCTRA,NDIMC,NCOOR,ITYPE)
+C
+C     Transform molecular Hessian from symmetry nuclear coordinates
+C     to cartesian nuclear coordinates
+C
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC),
-     &          AMAT(MXCOOR,MXCOOR), CSTRA(NCOOR,NCOOR),
-     &          SCTRA(NCOOR,NCOOR)
+     &          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
+      real(8), allocatable :: AMAT(:,:)
 C
+      allocate( AMAT(NCOOR,NCOOR) )
       CALL TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,0)
       DO 100 I = 1, NCOOR
          DO 200 J = 1, I - 1
@@ -272,11 +273,12 @@ C
       CALL DGEMM('N','N',NCOOR,NCOOR,NCOOR,1.D0,
      &           SCTRA(1,1),NCOOR,
      &           SHESS,NDIMS,0.D0,
-     &           AMAT,MXCOOR)
+     &           AMAT,NCOOR)
       CALL DGEMM('N','T',NCOOR,NCOOR,NCOOR,1.D0,
-     &           AMAT,MXCOOR,
+     &           AMAT,NCOOR,
      &           SCTRA(1,1),NCOOR,0.D0,
      &           CHESS,NDIMC)
+      deallocate( AMAT )
       RETURN
       END
 C  /* Deck prigeolu */
@@ -331,7 +333,7 @@ C
          DO 400 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
-               WRITE (LU,'(A))') NAMDEP(IATOM)
+               WRITE (LU,'(A)') NAMDEP(IATOM)
             END IF
   400    CONTINUE
   300 CONTINUE
@@ -1662,6 +1664,8 @@ C        or an auxiliary basis set /Mar 2004 hjaaj
          DISOTP = D0
       ELSE IF (TYPE .EQ. 'MASS') THEN
          DISOTP = DATNUC(1,ISOTOP,IATOM)
+      ELSE IF (TYPE .EQ. 'MASS_in_AU') THEN
+         DISOTP = DATNUC(1,ISOTOP,IATOM) * XFAMU
       ELSE IF (TYPE .EQ. 'A') THEN
          DISOTP = NINT(DATNUC(1,ISOTOP,IATOM))
       ELSE IF (TYPE .EQ. 'ABUNDANCE') THEN
@@ -1687,7 +1691,8 @@ C        or an auxiliary basis set /Mar 2004 hjaaj
       ELSE IF (TYPE .EQ. 'QMOM') THEN
          DISOTP = DATNUC(5,ISOTOP,IATOM)
       ELSE IF (TYPE .EQ. 'NEUTRONS') THEN
-         DISOTP = FLOAT(NINT(DATNUC(1,ISOTOP,IATOM)-IATOM))
+         No_of_NEUTRONS = NINT(DATNUC(1,ISOTOP,IATOM)) - IATOM
+         DISOTP = No_of_NEUTRONS
       ELSE
          WRITE (LUPRI,'(//,3A,/,A)')
      &         ' Keyword ',TYPE,' unknown in DISOTP.',
@@ -1848,6 +1853,36 @@ C
          END IF
          IOFFAX = IOFFAX + NAXIS
   100 CONTINUE
+cmbh write dipole moment gradients here
+         LUMIDAS=-1
+      IF(DONE .AND. ITYPEF.EQ.1 .AND. ITYPEC.EQ.1 
+     &   .AND. FIELD.EQ.'E') THEN
+c        x component
+         CALL GPOPEN(LUMIDAS,'midasifc.muXder','UNKNOWN',' ',
+     &         'FORMATTED', IDUMMY,.FALSE.)
+         WRITE(LUMIDAS,*)' ',3*NUCDEP
+         DO ICOOR = 1, 3*NUCDEP
+            WRITE(LUMIDAS,'(E22.16)')AMAT(1,ICOOR)
+         ENDDO
+         CALL GPCLOSE(LUMIDAS,'KEEP')
+c        y component
+         CALL GPOPEN(LUMIDAS,'midasifc.muYder','UNKNOWN',' ',
+     &         'FORMATTED', IDUMMY,.FALSE.)
+         WRITE(LUMIDAS,*)' ',3*NUCDEP
+         DO ICOOR = 1, 3*NUCDEP
+            WRITE(LUMIDAS,'(E22.16)')AMAT(2,ICOOR)
+         ENDDO
+         CALL GPCLOSE(LUMIDAS,'KEEP')
+c        z component
+         CALL GPOPEN(LUMIDAS,'midasifc.muZder','UNKNOWN',' ',
+     &         'FORMATTED', IDUMMY,.FALSE.)
+         WRITE(LUMIDAS,*)' ',3*NUCDEP
+         DO ICOOR = 1, 3*NUCDEP
+            WRITE(LUMIDAS,'(E22.16)')AMAT(3,ICOOR)
+         ENDDO
+         CALL GPCLOSE(LUMIDAS,'KEEP')
+      ENDIF
+cmbh end
       IF (.NOT.DONE) THEN
          WRITE (LUPRI,'(2X,A)') ' No elements calculated - '//
      &                         ' appropriate symmetries not requested.'
@@ -1909,7 +1944,8 @@ C
 #include "symmet.h"
       DIMENSION DIPOLE(3)
       IF (NAXREP(0,1) .EQ. 0) THEN
-         WRITE (LUPRI,'(20X,A)') ' All components are zero by symmetry'
+         WRITE (LUPRI,'(20X,A)')
+     &      'All dipole components are zero by symmetry'
       ELSE
             WRITE (LUPRI,'(17X,A,15X,A,10X,A/)') 
      *             'au','Debye','C m (/(10**-30)'
@@ -1935,6 +1971,7 @@ C     Determine center of mass from information in common blocks
 C     K.Ruud, June-94
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1971,6 +2008,12 @@ C
             END IF
  20      CONTINUE
  10   CONTINUE
+C
+      IF (JATOM .EQ. 0) THEN
+         WRITE (LUPRI,'(//A)')
+     &      ' ERROR: No real atoms, cannot proceed'
+         CALL QUIT('No real atoms, cannot proceed !')
+      END IF
 C
       CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT)
       TELCMAS = ICHTOT/XFAMU

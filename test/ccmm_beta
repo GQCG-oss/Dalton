@@ -168,8 +168,8 @@ else
    GREP="egrep"
 fi
 
-CRIT1=`$GREP "CC2 Total energy: *\-76.1208243315" $log | wc -l`
-CRIT2=`$GREP "CCSD Total energy: *\-76.1264845200" $log | wc -l`
+CRIT1=`$GREP " CC2 Total  *energy: *\-76.12082433.." $log | wc -l`
+CRIT2=`$GREP "CCSD Total  *energy: *\-76.1264845[12].." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 ` 
 CTRL[1]=2
 ERROR[1]="ENERGIES NOT CORRECT"
@@ -177,11 +177,11 @@ ERROR[1]="ENERGIES NOT CORRECT"
 #
 # Test of CC2 hyperpolarizabilities
 #
-CRIT1=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * 2\.8444996" $log | wc -l`
-CRIT2=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * -25\.448279" $log | wc -l`
-CRIT3=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * -25\.448279" $log | wc -l`
-CRIT4=`$GREP "ZDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * -25\.449508" $log | wc -l`
-CRIT5=`$GREP "ZDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * -18\.325224" $log | wc -l`
+CRIT1=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * 2\.844499." $log | wc -l`
+CRIT2=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * -25\.44827." $log | wc -l`
+CRIT3=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * -25\.44827." $log | wc -l`
+CRIT4=`$GREP "ZDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * -25\.44950." $log | wc -l`
+CRIT5=`$GREP "ZDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * -18\.32522." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
 CTRL[2]=5
 ERROR[2]="CC2 FIRST HYPERPOLARIZABILITY NOT CORRECT"
@@ -189,11 +189,11 @@ ERROR[2]="CC2 FIRST HYPERPOLARIZABILITY NOT CORRECT"
 #
 # Test of CCSD hyperpolarizabilities
 #
-CRIT1=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * 2\.6631474" $log | wc -l`
-CRIT2=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * -23\.699455" $log | wc -l`
-CRIT3=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * -23\.699455" $log | wc -l`
-CRIT4=`$GREP "ZDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * -23\.700544" $log | wc -l`
-CRIT5=`$GREP "ZDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * -17\.393995" $log | wc -l`
+CRIT1=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * 2\.663147." $log | wc -l`
+CRIT2=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * -23\.69945." $log | wc -l`
+CRIT3=`$GREP "XDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * -23\.69945." $log | wc -l`
+CRIT4=`$GREP "ZDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * XDIPLEN * \(unrel\.\) * ( |0)\.0040 * -23\.70054." $log | wc -l`
+CRIT5=`$GREP "ZDIPLEN * \(unrel\.\) * ( \-|\-0)\.0080 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * ZDIPLEN * \(unrel\.\) * ( |0)\.0040 * -17\.39399." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
 CTRL[3]=5
 ERROR[3]="CCSD FIRST HYPERPOLARIZABILITY NOT CORRECT"

@@ -1,70 +1,44 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef OLD_LOG
 !===========================================================================
-!Revision 1.4  2000/05/01 12:02:22  hjj
-!removed obsolete KAVER,KSYM(4) from READ(LUSIFC)
 !
-!revision 1.3 2000/05/01 09:38:59 hjj
-!added (work,lfree) to CALL SETWOP (work space for new "local" KLWOP)
-!----------------------------
-!revision 1.2
-!11:47:09 hjj
-!now no parameters to CALL SIRINI
 !=============================================================================
-!891108-hjaaj: do not open LUONEL (done in RDONEL)
 !900105-hjaaj: flag(27) true se MAERKE, to do: transfer flags from Sirius
-!900216-hjaaj: call siropi to open luintm, revised check if luintm ok.
-!900221-hjaaj: removed *CALL CBESPN from NSETUP -- was not used.
-!900229-hjaaj: NSETUP: +,NUMRUN in CALL PRTINP(IWUNIT,NUMRUN)
+!900216-hjaaj: call sir_intopen to open luintm, revised check if luintm ok.
 !900402-tuh:   H2MO defined according to info from LUSIFC
 !900418-hjaaj: NSETUP: call sirini
 !901203-hjaaj: SETSIR: FLAG now read from SIRIUS
-!910214-hjaaj: SETSIR: IPRERR = MAX(IPRIN4,IPRIN6), var altid = 1
+!910214-hjaaj: SETSIR: IPRSTAT = MAX(IPRIN4,IPRIN6), var altid = 1
 !              SETSIR: THRP/THRQ = 1.0D-12, var = 1.0D-10
 !              SETSIR: print RAS parameters after reading LUSIFC
 !920113-hjaaj: SETSIR: IPRDNS=IPRCIX=...=IPRSIR=MAX(IPRIN4,IPRIN6)
 !920226-hjaaj: NSETUP: check if NCONF from SETCI same as NCONF from LUSIFC
 !921014-hjaaj: SETSIR: CBISOL added, get SOLVNT information
 !921216-hjaaj: SETSIR: read solvent information; check SUPSYM
-!931126-hjaaj: SETSIR: use IPRINT instead of IPRNTR for local print.
-!931209-hjaaj: NSETUP: IPRNTR in param.list; define /INFTRA/ for abarsp
-!  moved all set /INFDIM/ to NSETUP from SETSIR
-!950824-hjaaj: SETSIR: removed initialization of obsolete ORICAV(3)
-!  s/H1VORB/FCVORB/
 !===========================================================================
 #endif
 C  /* Deck setsir */
@@ -75,11 +49,11 @@ C     Modified for symmetry tuh 060988
 C     Solvent added dec 92
 C     l.r. aug. 98 hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxmom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxmom.h"
       PARAMETER (D0 = 0.0D0)
 C
       LOGICAL DIPOK, FNDLAB, MCSSYM
@@ -94,18 +68,18 @@ C   INFOPT : EMCSCF,EPOT,EMY,EACTIV,ESOLT
 C   PAST   : PASDIP, PASORT, PASRES
 C   CBISOL : SOLVNT, ...
 C
-#include <gnrinf.h>
-#include <abainf.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infpri.h>
-#include <cbdtra.h>
-#include <inftap.h>
-#include <past.h>
-#include <cbisol.h>
-#include <cbirhs.h>
+#include "gnrinf.h"
+#include "abainf.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infpri.h"
+#include "cbdtra.h"
+#include "inftap.h"
+#include "past.h"
+#include "cbisol.h"
+#include "cbirhs.h"
 C
       CALL QENTER('SETSIR  ')
       DST = SECOND( )
@@ -306,7 +280,7 @@ C
 C     Set some MC parameters
 C
       NWOPT  = 0
-      IPRERR = 1
+      IPRSTAT = 1
       DO 100 I = 1,NPFLAG
          P4FLAG(I) = .FALSE.
          P6FLAG(I) = .FALSE.
@@ -320,7 +294,7 @@ C
          P6FLAG(I) = .TRUE.
   102 CONTINUE
       IPRSIR = MAX(IPRIN4,IPRIN6)
-      IPRERR = IPRSIR
+      IPRSTAT = IPRSIR
       IPRCIX = IPRSIR
       IPRSIG = IPRSIR
       IPRDNS = IPRSIR
@@ -411,39 +385,42 @@ C                      TRIANGULARIZED OR SQUARED.
 C  SUFFIX  Y           EXAMPLE: NASHY = NASHX*(NASHX + 1)/2
 C  SUFFIX  (K)         SYMMETRY NUMBER
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "mxcent.h"
 C -- local constants
       PARAMETER (D1=1.0D0, D2=2.0D0)
-#include <dummy.h>
+#include "dummy.h"
       DIMENSION WORK(LFREE)
-#include <litinfo.h>
+#include "litinfo.h"
 C
 C Used from common blocks:
 C   INFINP : ISTATE,LSYM,MCTYPE,?
 C   INFORB : NISH(8),...
-C   INFVAR : NCONF,NWOPT,NVAR,JWOPSY,JWOP(2,*),NWOP(8)
+C   INFVAR : NCONF,NWOPT,NVAR,JWOPSY,JWOP(2,*)
 C   INFDIM : NCONMA,NWOPMA,NVARMA,NWOPDI,MAXRL
 C   INFOPT : ?
 C   INFTRA : ITRLVL,THRP,THRQ
-C   INFTAP : LUINP,LUINDX,...
-C   INFPRI : LUERR,...
+C   INFTAP : LUSIFC
+C   priunit.h : LUERR,...
 C
-#include <abainf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <inftra.h>
-#include <infpri.h>
-#include <inflin.h>
-#include <linaba.h>
+#include "abainf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "inflin.h"
+#include "linaba.h"
+C
+      CHARACTER*8 RTNLBL(2)
 C
 C PART 1 : ******* I/O buffer sizes, initialize IROW()
 C
@@ -523,13 +500,21 @@ C     USEDRC must be set to false, kr-nov.95
 C
       USEDRC = .FALSE.
       IPRTRA = IPRNTR
-      IF (NASHT.GT.1 .OR. H2MO) THEN
-         KTRLVL = 4
-         ITRLVL = KTRLVL
+      IF ((NASHT.GT.1 .AND. .NOT.HSROHF) .OR. H2MO) THEN
          FLAG(14) = .TRUE.
          FLAG(34) = .FALSE.
-         CALL SIROPI
-C        ... SIROPI returns FLAG(14) false if no mo integral file
+         IF (NEWTRA) THEN
+C            ... we need (ia/ (inactive-secondary) Mulliken distributions;
+C            they are only calculated for level 5 in "NEWTRA"
+C            transformation  /hjaaj June 09
+            KTRLVL = 5
+            ITRLVL = KTRLVL
+         ELSE
+            KTRLVL = 4
+            ITRLVL = KTRLVL
+         END IF
+         CALL SIR_INTOPEN
+C        ... SIR_INTOPEN returns FLAG(14) false if no mo integral file
 C        or if ITRLVL on file too small.
       ELSE IF (ABASOP) THEN
 C        ... SOPPA requires full integral transformation
@@ -537,7 +522,7 @@ C        ... SOPPA requires full integral transformation
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE.
          FLAG(34) = .FALSE.
-         CALL SIROPI
+         CALL SIR_INTOPEN
       ELSE
 C        ... Hartree-Fock, MO integral file will normally
 C        not exist, but open to define name 'MOTWOINT' instead
@@ -547,7 +532,22 @@ C        does exist. /980529-hjaaj
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE.
          FLAG(34) = .TRUE.
-         CALL SIROPI
+         CALL SIR_INTOPEN
+      END IF
+
+      IF (.NOT. FLAG(14)) THEN
+      ! ... needed integrals not available
+         WRITE (LUPRI,1020)
+         KCMO  = 1
+         KWTRA = KCMO + NCMOT
+         LWTRA = LFREE - KWTRA
+         REWIND (LUSIFC)
+         CALL MOLLAB(LBSIFC,LUSIFC,LUERR)
+         READ (LUSIFC)
+         READ (LUSIFC)
+         CALL READT (LUSIFC,NCMOT,WORK(KCMO))
+         CALL TRACTL(KTRLVL,WORK(KCMO),WORK(KWTRA),LWTRA)
+         FLAG(14) = .TRUE.
       END IF
 C
 C
@@ -556,12 +556,6 @@ C
 C     Test for inconsistencies:
 C
       NUMERR = 0
-      IF (((NASHT.GT.1 .OR. H2MO) .AND. .NOT.FLAG(14)) 
-     &      .AND. .NOT. HSROHF) THEN
-         WRITE (LUPRI,1020)
-         WRITE (LUERR,1020)
-         NUMERR = NUMERR + 1
-      END IF
       IF (NCONF.LE.0 .AND. IORTO.NE.1) THEN
          WRITE (LUPRI,1610) NCONF
          WRITE (LUERR,1610) NCONF
@@ -582,8 +576,9 @@ C
          WRITE (LUERR,1731)
          NUMERR = NUMERR + 1
       END IF
- 1020 FORMAT(/,' NSETUP-ERROR, mo transformation level too low',
-     *       /,' or no mo integral file found.')
+ 1020 FORMAT(/,' NSETUP: MO transformation level too low'
+     &        ,' or no MO integral file found.',
+     &       /,' NSETUP: generating MO 2-el. integral file.'/)
  1610 FORMAT(/,' NSETUP-ERROR, NCONF =',I10)
  1620 FORMAT(/,' NSETUP-ERROR, NCONF from interface file',I12,
      *       /,'               NCONF from SETCI         ',I12)
@@ -597,7 +592,7 @@ C
       IF (NUMERR .GT. 0) THEN
          WRITE (LUPRI,'(///A/)')
      *      ' NSETUP - FATAL ERRORS DETECTED, SEE :'
-         CALL PRTINP(LUPRI,0,0)
+         CALL SIR_PRTINP(LUPRI,0,0)
          WRITE (LUPRI,'(///A/)')
      *      ' NSETUP - FATAL ERRORS DETECTED, SEE ABOVE'
          CALL QUIT('*** ERROR *** input inconsistent (NSETUP)')

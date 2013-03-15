@@ -1,48 +1,43 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE DFTKSMb(DMAT,FKSM,EDFTY,WORK,LWORK,IPRFCK)
 C
 C     P. Salek and T. Helgaker October 2003
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infpar.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST),FKSM(NBAST,NBAST),WORK(LWORK)
       EXTERNAL DFTKSMGGA,DFTKSMLDA
       LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
+#ifdef MOD_XCFUN
+      external xcfun_KSMLDA
+      external xcfun_KSMGGA
+#endif
       COMMON /DKSMPRIV/ ENERGY_DFTKSM
 C      
       CALL QENTER('DFTKSMb')
@@ -51,14 +46,24 @@ C
       DOGGA = DFT_ISGGA()
       ENERGY_DFTKSM = 0.D0
       IF(DOGGA) THEN
+#ifdef MOD_XCFUN
+         CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
+     &               xcfun_KSMGGA,FKSM,ELE)
+#else
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMGGA,FKSM,ELE)
+#endif
       ELSE
          DO I = 1, NBAST
             FKSM(I,I) = FKSM(I,I)*2.0D0
          END DO
+#ifdef MOD_XCFUN
+         CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
+     &               xcfun_KSMLDA,FKSM,ELE)
+#else
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMLDA,FKSM,ELE)
+#endif
 C
       END IF
       IF (NODTOT.gt.0) CALL KSMCOLLECT(FKSM,ENERGY_DFTKSM,WORK,LWORK)
@@ -73,7 +78,7 @@ C
       EDFTY = ENERGY_DFTKSM
       ELE_ERROR = ELE - 2.0D0*NRHFT
       IF (ABS(ELE_ERROR) .gt. 1.0D-8 .or. IPRFCK .ge. 0)
-     &   WRITE(LUPRI,'(A,F20.12,F15.10,1P,D12.2)')
+     &   WRITE(LUPRI,'(T7,A,F20.12,F15.10,1P,D12.2)')
      &     'K-S energy, electrons, error :', EDFTY, ELE, ELE_ERROR
       CALL QEXIT('DFTKSMb')
       RETURN
@@ -84,9 +89,9 @@ C
 C
 C     P. Salek and T. Helgaker oct 2003
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2.0D0)
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
@@ -118,8 +123,8 @@ c
 C
 C     P. Salek and T. Helgaker oct 2003
 C
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
@@ -161,13 +166,13 @@ c     given set of rho-dependent coefficients.
 c
       SUBROUTINE DISTLDAI(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,EXCMAT)
-#include <implicit.h>
 c
 c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
       DIMENSION GAOS(NBLEN,NBAST), COEF(NBLEN)
@@ -200,13 +205,13 @@ c     given set of rho and grad-dependent coefficients.
 c
       SUBROUTINE DISTGGAI(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,GRAD,EXCMAT)
-#include <implicit.h>
 c
 c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
       DIMENSION GAOS(NBLEN,NBAST,4), COEF(2,NBLEN),GRAD(3,NBLEN)
@@ -244,13 +249,13 @@ c     for the call overhead.
 c     
       SUBROUTINE DISTLDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,EXCMAT)
-#include <implicit.h>
 c
 c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
       DIMENSION GAOS(NBLEN,NBAST), COEF(NBLEN)
@@ -297,13 +302,13 @@ c     given set of rho and grad-dependent coefficients.
 c
       SUBROUTINE DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,GRAD,EXCMAT)
-#include <implicit.h>
 c
 c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
       DIMENSION GAOS(NBLEN,NBAST,4), COEF(2,NBLEN),GRAD(3,NBLEN)
@@ -344,19 +349,22 @@ c     Parallelization-related part of the exchange-correlation
 c     evaluation module.
 c
       SUBROUTINE KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRINT)
-#include <implicit.h>
 c     do nothing when running serial code.
-#ifdef VAR_MPI
-#include <maxorb.h>
-#include <infpar.h>
-#include <mpif.h>
+#include "implicit.h"
       DIMENSION DMAT(NBAST,NBAST)
+C
+#ifdef VAR_MPI
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
       IF(MYNUM.EQ.MASTER) THEN
-c        IPRTYP=4 is registered for KSM Slave driver.
-         IPRTYP = 4
-         CALL MPI_Bcast(iprtyp,1, MPI_INTEGER,
+c        DFT_KSM_WORK is registered for KSM Slave driver.
+         IPRTYP = DFT_KSM_WORK
+         CALL MPI_Bcast(iprtyp,1, my_MPI_INTEGER,
      &                  MASTER, MPI_COMM_WORLD,IERR)
-         CALL MPI_Bcast(iprint,1, MPI_INTEGER,
+         CALL MPI_Bcast(iprint,1, my_MPI_INTEGER,
      &                  MASTER, MPI_COMM_WORLD,IERR)
          CALL DFTINTBCAST
          CALL KSMSYNC(DMAT)
@@ -366,10 +374,10 @@ c        IPRTYP=4 is registered for KSM Slave driver.
 c
 #ifdef VAR_MPI
       SUBROUTINE DFT_KSMSLAVE(WRK,LWRK,IPRINT)
-#include <implicit.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
       DIMENSION WRK(LWRK)
       CALL QENTER('DFT_KSMSLAVE')
 c
@@ -387,24 +395,24 @@ c
       END
 c      
       SUBROUTINE KSMSYNC(DMAT)
-#include <implicit.h>
-#include <mpif.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "mpif.h"
+#include "priunit.h"
+#include "inforb.h"
       CALL MPI_Bcast(DMAT,NBAST*NBAST,MPI_DOUBLE_PRECISION,
      &               0, MPI_COMM_WORLD,ierr)
       END
 #endif
       SUBROUTINE KSMCOLLECT(FMAT,ENERGY,WRK,LFREE)
+c
+#include "implicit.h"
+      DIMENSION FMAT(*), WRK(LFREE)
 #ifdef VAR_MPI
 c
-#include <implicit.h>
-#include <mpif.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <inforb.h>
-      DIMENSION FMAT(N2BASX)
-      DIMENSION WRK(LFREE)
+#include "mpif.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
       IF(LFREE.LE.N2BASX) CALL STOPIT('KSMCOLLECT',' ',LFREE,N2BASX)
       ETMP = ENERGY
       CALL MPI_Reduce(ETMP,ENERGY,1,MPI_DOUBLE_PRECISION,MPI_SUM,

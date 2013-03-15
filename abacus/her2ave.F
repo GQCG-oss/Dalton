@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck intexp */
       SUBROUTINE INTEXP(HESSEE,AOINT,DMAT,NDMAT,PSO,PSA,FT,FV,
@@ -40,17 +30,17 @@ C  /* Deck intexp */
      &                  THRESH,SYMFAC,
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,
      &                  ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, DIA2SO,
      &        ZFS2EL, SPNORB
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          WORK(LWORK), NINDAB(*), NINDCD(*), FT(*), FV(*),
      &          HESSEE(*), IXPAB(*), IXPCD(*), IFCTYP(*)
-#include <twocom.h>
-#include <twosta.h>
+#include "twocom.h"
+#include "twosta.h"
 C
 C     Allocations
 C
@@ -99,12 +89,12 @@ C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00,
      &           D1 = 1.0 D00, D1P5 = 1.5 D00, D2 = 2.0 D00, 
      &           ZERADD = 1.D-15,
@@ -112,7 +102,7 @@ C
       INTEGER A, B, C, D, X, Y, Z, Y2, Z2
       LOGICAL NODER, DCMPAB, DCMPCD, NOPMAT, NODV, DV, SUSCEP, DDFOCK,
      &        EXPECT, LONDON, DIA2SO, ZFS2EL, SPNORB
-#include <nuclei.h>
+#include "nuclei.h"
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          DERIV(NINTYP), PSO(*), PSA(*),
      &          PAO(NORBA,NORBB,NORBC,NORBD),
@@ -125,16 +115,16 @@ C
      &          DIFAB(3), DIFCD(3), HESSEE(*),
      &          IXPAB(NUCA*NUCB,2), IXPCD(NUCC*NUCD,2),
      &          IFCTYP(NDMAT)
-#include <twocom.h>
-#include <dftcom.h>
-#include <symmet.h>
-#include <expcom.h>
-#include <expopt.h>
-#include <dirprt.h>
-#include <infinp.h>
-#include <rspprp.h>
-#include <esg.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "dftcom.h"
+#include "symmet.h"
+#include "expcom.h"
+#include "expopt.h"
+#include "dirprt.h"
+#include "infinp.h"
+#include "rspprp.h"
+#include "esg.h"
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -776,16 +766,16 @@ C    &                           (AOINT(INT,I),I=1,NINTYP)
       END
 C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,HESSEE,NINTYP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), HESSEE(MXCOOR,MXCOOR)
 C
-#include <nuclei.h>
-#include <expcom.h>
-#include <energy.h>
+#include "nuclei.h"
+#include "expcom.h"
+#include "energy.h"
 C
       IF (IPRINT .GE.10) THEN
          WRITE (LUPRI, 1000)
@@ -1271,14 +1261,14 @@ C  /* Deck so2out */
 C
 C     O.Vahtras and K.Ruud, May 1998
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>      
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"      
       DIMENSION DERIV(*)
-#include <symmet.h>
-#include <gtensor.h>
+#include "symmet.h"
+#include "gtensor.h"
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Subroutine SO2OUT',-1)
@@ -1317,18 +1307,18 @@ C  /* Deck lndout */
 C
 C     tuh Nov 24 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3)
-#include <twocom.h>
-#include <symmet.h>
-#include <suscpt.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "symmet.h"
+#include "suscpt.h"
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -1432,14 +1422,14 @@ C  /* Deck zfsout */
 C
 C     K.Ruud, September 2000
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>      
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"      
       DIMENSION DERIV(*)
-#include <symmet.h>
-#include <zfs.h>
+#include "symmet.h"
+#include "zfs.h"
       PARAMETER (D2=2.0D0)
 C
       IF (IPRINT .GT. 5) THEN
@@ -1485,7 +1475,7 @@ C  /* Deck pblock */
      &                  NHKTA,NHKTB,NHKTC,NHKTD,
      &                  KHKTA,KHKTB,KHKTC,MULA,MULB,MULC,MULD,
      &                  NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,ISYMT)
-#include <implicit.h>
+#include "implicit.h"
 C
 C     *********************************************************
 C     ***  Transform a block of the P-matrix from SO basis  ***
@@ -1493,12 +1483,12 @@ C     ***  to AO basis.  This is done for fixed component   ***
 C     ***  indices ICOMPx and fixed symmetry operations.    ***
 C     *********************************************************
 C
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "symmet.h"
       DIMENSION PSO(*), PAO(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
       IAR(I,J,K,L) = KHKTA*(KHKTB*(KHKTC*(L-1)+K-1)+J-1)+I
       IRR(I,J,K,L) = MULTA*(MULTB*(MULTC*L+K)+J)+I+1
       ISYMTS = IBTXOR(ISYMT,ISYMS)

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
@@ -39,10 +29,10 @@ C  /* Deck pardrv */
      &                  NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME
       DIMENSION FMAT(*),DMAT(*),ISYMDM(*),IFCTYP(*),WORK(LWORK),
      &          NSTAT(NODTOT), HESSEE(*)
@@ -56,13 +46,14 @@ C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : MASTER, NODTOT, IPRPAR,  NCODE, DEBUG
 C GNRINF : BASDIR, LENBAS
 C
-#include <infpar.h>
-#include <gnrinf.h>
+#include "infpar.h"
+#include "gnrinf.h"
       DATA TOTWAL /0./
       SAVE TOTWAL
 C
       CALL QENTER('PARDRV')
 C
+!     IPRPAR = 11
       IPRINT = MAX(IPRINT,IPRPAR)
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from PARDRV','*',103)
@@ -139,9 +130,9 @@ C
 C  /* Deck rvtim */
       SUBROUTINE RVTIM(NSTAT,CPUS,WALLS,NODNAM,NODTOT,IPRPAR,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mtags.h"
       CHARACTER*20 NAME, NODNAM(NODTOT)
       DIMENSION NSTAT(NODTOT),CPUS(NODTOT),WALLS(NODTOT)
       DIMENSION TMGARR(2)
@@ -151,6 +142,7 @@ C
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from RVTIM','*',103)
 C
+
       DO 100 I = 1,NODTOT
 #if defined (VAR_MPI)
          NWHO = -1
@@ -223,10 +215,10 @@ C      70 - Receive fock matrix from nodes if MEMOK
 C      80 - Receive overall timings
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
 C
       LOGICAL FIRST
       DIMENSION FMAT(*), DMAT(*), ISYMDM(*), IFCTYP(*),
@@ -240,10 +232,10 @@ C SIRIPC : NEWGEO
 C INFORB : N2BASX
 C INFPAR : NODEID(), NODTOT, NCODE, NTASK
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       SAVE FIRST
       DATA FIRST/.TRUE./
@@ -276,13 +268,13 @@ C     Number of (class|class) integrals
 C
       MXCLS2 = NODCLS*(NODCLS + 1)/2
 C
-      IF (MXCLS2 .GT. MAXCL2) THEN
+      IF (MXCLS2 .GT. MAXTSK) THEN
          WRITE(LUPRI,'(/1X,A,/1X,A,/1X,2(A,I5))')
      &      'Number of actual (class1|class2) integrals too large.',
      &      'Recompilation necessary!',
-     &      'MXCLS2 =',MXCLS2,' MAXCL2 =',MAXCL2
+     &      'MXCLS2 =',MXCLS2,' MAXTSK =',MAXTSK
          CALL RECOMPI
-         CALL QUIT('ERROR: MXCLS2 greater than MAXCL2 in ERI_PARDRV')
+         CALL QUIT('ERROR: MXCLS2 greater than MAXTSK in ERI_PARDRV')
       END IF
 C
 C     Dimension of array INDEX
@@ -315,8 +307,8 @@ C
 C  /* Deck eri_conchk */
       SUBROUTINE ERI_CONCHK(NDMAT,ISYMDM,IFCTYP)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT)
 C
@@ -347,11 +339,11 @@ C
 C  /* Deck eri_sdinit */
       SUBROUTINE ERI_SDINIT(DMAT,ISYMDM,NDMT,IFCTYP,FIRST,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
       LOGICAL FIRST
       DIMENSION DMAT(*), ISYMDM(NDMT), IFCTYP(NDMT)
@@ -368,12 +360,12 @@ C INFORB : *
 C INFPAR : *
 C CBIERI : *
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <molinp.h>
-#include <inforb.h>
-#include <infpar.h>
-#include <r12int.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "molinp.h"
+#include "inforb.h"
+#include "infpar.h"
+#include "r12int.h"
 #if defined (SYS_T3D)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER on
@@ -382,7 +374,7 @@ C
       DIMENSION ITMP(4000)
       EQUIVALENCE (ITMP,MLINE)
 #endif
-#include <cbieri.h>
+#include "cbieri.h"
 C
       NDMAT = NDMT
 C
@@ -467,16 +459,16 @@ C
 C  /* Deck eri_rvcls */
       SUBROUTINE ERI_RVCLS(NODCLS,IPRINT)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
 C Used from common blocks
 C
 C  MXORB : MXSHEL (for INFPAR)
 C  INFPAR: NODEID(1), NTASK
 C
-#include <infpar.h>
+#include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_RVCLS','*',103)
 C
@@ -497,10 +489,10 @@ C  /* Deck eri_pardr1 */
      &                      IWHICH,CLSCPU,WORK,LWORK,NINDEX,
      &                      MXCLS2,FIRST,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
       LOGICAL FIRST
@@ -513,18 +505,18 @@ C
 C MXORB  : MXSHEL (for INFPAR)
 C GNRINF : NEWBAS
 C SIRIPC : NEWGEO
-C INFPAR : NODTOT, NTASK, TIMING, MAXCL2
+C INFPAR : NODTOT, NTASK, TIMING, MAXTSK
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <infpar.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "infpar.h"
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
 C
 C     NPOS must be saved and therefore statically allocated.
 C
-      DIMENSION NPOS(0:MAXCL2+1)
+      DIMENSION NPOS(0:MAXTSK+1)
       SAVE NPOS
 C
       CALL QENTER('ERI_PARDR1')
@@ -572,11 +564,11 @@ C     /* Deck dopar */
 Cef begin 
       SUBROUTINE DOPAR(INDEX,MXBTCH,NBATCH,NSTAT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
-#include <incore.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
+#include "incore.h"
 C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -592,7 +584,7 @@ C
 C  MXORB  : MXSHEL (for INFPAR)
 C  INFPAR : NODTOT, NODEID(), NTASK, NCODE
 C
-#include <infpar.h>
+#include "infpar.h"
 C   
 C For MPE event logging
 C      evIDb1 = MPE_Log_get_event_number()
@@ -668,9 +660,8 @@ C
 C     
                IPLACQ = IPLACQ - 1  
             ELSE IF ((INDEX(3,IPLACE) .EQ. 1 
-     &              .AND. INDEX(2,IPLACE) .EQ. NWHO)
-     &              .OR. (INDEX(3,IPLACE) .EQ. 0)) THEN
-            
+     &          .AND. INDEX(2,IPLACE) .EQ. NWHO)
+     &          .OR. (INDEX(3,IPLACE) .EQ. 0)) THEN
 C
                CALL MPIXSEND(INDEX(1,IPLACE),NTASK,'INTEGER',NWHO,
      &              MTAG61)
@@ -756,8 +747,8 @@ C
 #endif
  210  CONTINUE
 C
-      IF (MXBTCH .GT. MIN(MXTSK,IEIR)) THEN
-          CALL QUIT('INDX_C must be enlarged.')
+      IF (MXBTCH .GT. MXTSK) THEN
+          CALL QUIT('INDX_C in incore.h must be enlarged.')
        END IF
        CALL ICOPY((3*MXBTCH),INDEX(1,1),1,INDX_C(1,1),1)
 C      write(lupri,*) 'INDX_C'
@@ -838,10 +829,10 @@ C  /* Deck eri_rvres */
       SUBROUTINE ERI_RVRES(FMAT,TMPMAT,MXCLS2,TIMES,IWHICH,CLSCPU,
      &                     IPRINT)
 C
-#include <implicit.h>
-#include <mtags.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "mtags.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER (D0=0.0D0,D1 = 1.0D0)
       LOGICAL NOTMEM
       DIMENSION FMAT(N2BASX), TMPMAT(N2BASX), TIMES(MXCLS2),
@@ -854,9 +845,9 @@ C INFPAR : NODTOT
 C INFORB : N2BASX
 C ERIMEM : *
 C
-#include <infpar.h>
-#include <inforb.h>
-#include <erimem.h>
+#include "infpar.h"
+#include "inforb.h"
+#include "erimem.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_RVRES','*',103)
 C
@@ -961,13 +952,16 @@ C  /* Deck nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mtags.h"
 C infpar.h: MASTER,MYNUM
-#include <maxorb.h>
-#include <infpar.h>
-      DIMENSION WORK(MWORK)
+#include "maxorb.h"
+#include "infpar.h"
+C defined parallel calculation types
+#include "iprtyp.h"
+!     DIMENSION WORK(MWORK)
+      DIMENSION WORK(0:MWORK)
 C
       CALL QENTER('NODEDRIVER')
 C
@@ -977,87 +971,99 @@ C
 C
       IF (IPRTYP.GT.0) THEN
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
-C
-         IF      (IPRTYP.EQ.1) THEN
-            CALL HER_NODSTR(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.2) THEN
-            CALL ERI_NODSTR(WORK,MWORK,IPRINT)
-C        ELSE IF (IPRTYP.EQ.3) THEN
-C           CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
-         ELSE IF (IPRTYP.EQ.4) THEN
-            CALL DFT_KSMSLAVE(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.5) THEN
-            CALL DFT_CSLAVE(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.6) THEN
-            CALL DFT_GRAD_SLAVE(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.7) THEN
-            CALL DFT_BRHS_SLAVE(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.8) THEN
-            CALL DFT_HESSTAT_SLAVE(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.9) THEN
-            CALL DFTHED_SLAVE(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.10) THEN
-             CALL DFT_SUSCEP_SLAVE(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 11 .OR. IPRTYP .EQ. 13) THEN
-            CALL J1INTS(WORK,MWORK,IPRTYP,IPRINT)
-         ELSE IF (IPRTYP .EQ. 12) THEN
-            CALL J1XS(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 14) THEN
-            CALL J2XS(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 15) THEN
-            CALL DFT_MOMO_SLAVE(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 16) THEN
-            CALL QM3_NSPS(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 17) THEN
-            CALL QM3LNO_S(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 18) THEN
-            CALL QM3QRO_S(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 19) THEN
-            CALL QM3FIRST_S1(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 20) THEN
-            CALL QM3FIRST_S2(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 21) THEN
-            CALL QMMM_POLARI_S1(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 22) THEN
-            CALL QMMM_POLARI_S2(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 23) THEN
-            CALL QMMM_POLARI_S3(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 24) THEN
-            CALL QMMM_CHARGE_S(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 25) THEN
-            CALL QMMM_DIPOLE_S(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 26) THEN
-            CALL QMMM_QUADPOLE_S(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 27) THEN
-            CALL QMMM_OCTUPOLE_S(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 28) THEN
-            CALL QMMMLNO_S1(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 29) THEN
-            CALL QMMMLNO_S2(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 30) THEN
-            CALL QMMMQRO_S1(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 31) THEN
-            CALL QMMMQRO_S2(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 32) THEN
-            CALL QMMMCRO_S1(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 33) THEN
-            CALL QMMMCRO_S2(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 34) THEN
-            CALL QMMMFIRST_S1(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 35) THEN
-            CALL QMMMFIRST_S2(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 36) THEN
-            CALL QMMMFIRST_S3(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 37) THEN
-            CALL QMMMFIRST_S4(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 38) THEN
-            CALL QMMMB2_S1(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 39) THEN
-            CALL QMMMB2_S2(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 40) THEN
-            CALL QMMMB2_S3(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP .EQ. 41) THEN
-            CALL QMMMB2_S4(WORK,MWORK,IPRINT)
+C  new calculation type needs to be added in include/iprtyp.h
+         IF      (IPRTYP.EQ.HER_WORK) THEN
+            CALL HER_NODSTR(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.ERI_WORK) THEN
+            CALL ERI_NODSTR(WORK(1),MWORK,IPRINT)
+C        ELSE IF (IPRTYP.EQ.GEM_WORK) THEN
+C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFT_KSM_WORK) THEN
+            CALL DFT_KSMSLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFT_C_WORK) THEN
+            CALL DFT_CSLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFT_GRAD_WORK) THEN
+            CALL DFT_GRAD_SLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFT_BRHS_WORK) THEN
+            CALL DFT_BRHS_SLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFT_HESSTAT_WORK) THEN
+            CALL DFT_HESSTAT_SLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFTHED_WORK) THEN
+            CALL DFTHED_SLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFT_SUSCEP_WORK) THEN
+             CALL DFT_SUSCEP_SLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.NPETES2_WORK .OR. 
+     &            IPRTYP.EQ.PCMBSOL_WORK) THEN
+            CALL J1INTS(WORK(1),MWORK,IPRTYP,IPRINT)
+         ELSE IF (IPRTYP.EQ.J1XP_WORK) THEN
+            CALL J1XS(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.J2XP_WORK) THEN
+            CALL J2XS(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.DFT_MOMO_WORK) THEN
+            CALL DFT_MOMO_SLAVE(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QM3_NSP_WORK) THEN
+            CALL QM3_NSPS(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QM3LNO_WORK) THEN
+            CALL QM3LNO_S(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QM3QRO_WORK) THEN
+            CALL QM3QRO_S(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QM3FIRST_1_WORK) THEN
+            CALL QM3FIRST_S1(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QM3FIRST_2_WORK) THEN
+            CALL QM3FIRST_S2(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.PARQMMM__WORK) THEN
+            CALL PARQMMM_S(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.MM_FIELD_1_WORK) THEN
+            CALL MM_FIELD_S1(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.MM_FIELD_2_WORK) THEN
+            CALL MM_FIELD_S2(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.MM_POLAR_CONTR_WORK) THEN
+            CALL MM_POLAR_CONTR_S(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.MMITER_INDDIP_WORK) THEN
+            CALL MMITER_INDDIP_S(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMLNO_1_WORK) THEN
+            CALL QMMMLNO_S1(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMLNO_2_WORK) THEN
+            CALL QMMMLNO_S2(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMQRO_1_WORK) THEN
+            CALL QMMMQRO_S1(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMQRO_2_WORK) THEN
+            CALL QMMMQRO_S2(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMCRO_1_WORK) THEN
+            CALL QMMMCRO_S1(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMCRO_2_WORK) THEN
+            CALL QMMMCRO_S2(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMFIRST_1_WORK) THEN
+            CALL QMMMFIRST_S1(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMFIRST_2_WORK) THEN
+            CALL QMMMFIRST_S2(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMFIRST_3_WORK) THEN
+            CALL QMMMFIRST_S3(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMFIRST_4_WORK) THEN
+            CALL QMMMFIRST_S4(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMB2_1_WORK) THEN
+            CALL QMMMB2_S1(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMB2_2_WORK) THEN
+            CALL QMMMB2_S2(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMB2_3_WORK) THEN
+            CALL QMMMB2_S3(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.QMMMB2_4_WORK) THEN
+            CALL QMMMB2_S4(WORK(1),MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.LUCITA_WORK) THEN
+            call lucita_coworker_main(work(1),mwork)
+         ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
+            CALL MEP_SLAVE(WORK(1),MWORK)
+#if defined(BUILD_GEN1INT)
+C added by Bin Gao, May 12, 2012
+         ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
+            CALL gen1int_worker_init()
+         ELSE IF (IPRTYP.EQ.GEN1INT_GET_INT) THEN
+            CALL gen1int_worker_get_int(MWORK,WORK(1),LUPRI,IPRINT)
+         ELSE IF (IPRTYP.EQ.GEN1INT_GET_EXPT) THEN
+            CALL gen1int_worker_get_expt(MWORK,WORK(1),LUPRI,IPRINT)
+         ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
+            CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
+#endif
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(NODEDRIVER) ERROR on slave',MYTID,
@@ -1075,12 +1081,12 @@ C
 C  /* Deck sendname */
       SUBROUTINE SENDNAME(NASTER,NYTID)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
-#include <infpar.h>
+#include "infpar.h"
 C
       MASTER = NASTER
       MYTID  = NYTID
@@ -1113,12 +1119,12 @@ C
 C  /* Deck recvnames */
       SUBROUTINE RECVNAMES
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
       CHARACTER NAME*20
-#include <infpar.h>
+#include "infpar.h"
 C
 #if defined (VAR_PVM)
 C
@@ -1161,11 +1167,11 @@ C
 C  /* Deck eri_nodstr */
       SUBROUTINE ERI_NODSTR(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
       PARAMETER (MXDMAT = 100)
       DIMENSION WORK(LWORK), ISYMDM(MXDMAT), IFCTYP(MXDMAT)
@@ -1176,11 +1182,11 @@ C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : SLAVE
 C INFORB : N2BASX
 C
-#include <infpar.h>
-#include <inforb.h>
-#include <veclen.h>
+#include "infpar.h"
+#include "inforb.h"
+#include "veclen.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('ERI_NODSTR')
 C
@@ -1246,11 +1252,11 @@ C  /* Deck eri_rvinit */
       SUBROUTINE ERI_RVINIT(JSTRSH,NPRIMS,NCONTS,IORBSH,JORBSH,KORBSH,
      &                      ISYMDM,IFCTYP,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
       LOGICAL FIRST, TSTINP
       DIMENSION JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(*),
@@ -1269,13 +1275,13 @@ C INFORB : *
 C INFPAR : *
 C CBIERI : *
 C
-#include <gnrinf.h>
-#include <siripc.h>
-#include <molinp.h>
-#include <infpar.h>
-#include <inforb.h>
-#include <r12int.h>
-#include <cbieri.h>
+#include "gnrinf.h"
+#include "siripc.h"
+#include "molinp.h"
+#include "infpar.h"
+#include "inforb.h"
+#include "r12int.h"
+#include "cbieri.h"
 #if defined (SYS_T3D)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER
@@ -1407,11 +1413,11 @@ C
 C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : MASTER, MYNUM, NCODE
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mtags.h"
       DIMENSION TMGARR(2)
-#include <infpar.h>
+#include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from SDTIM','*',103)
 C
@@ -1443,33 +1449,33 @@ C  /* Deck eri_noddrv */
      &                      BUF,IBUF,
      &                      CLSCPU,IWHICH,IJS,MXCLS2,
      &                      CCFBT,INDXBT,NCOUNT,CSQ,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <eribuf.h>
-#include <dummy.h>
-#include <mtags.h>
-#include <cbieri.h>
-#include <erithr.h>
-#include <odclss.h>
-#include <ccom.h>
-#include <aobtch.h>
-#include <doxyz.h>
-#include <ericom.h>
-#include <erimem.h>
-#include <erista.h>
-#include <hertop.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eribuf.h"
+#include "dummy.h"
+#include "mtags.h"
+#include "cbieri.h"
+#include "erithr.h"
+#include "odclss.h"
+#include "ccom.h"
+#include "aobtch.h"
+#include "doxyz.h"
+#include "ericom.h"
+#include "erimem.h"
+#include "erista.h"
+#include "hertop.h"
+#include "symmet.h"
 C
 C Used from common blocks
 C
 C INFPAR: MYNUM, NTASK, TIMING
 C
-#include <infpar.h>
+#include "infpar.h"
       LOGICAL DONE
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -1487,7 +1493,7 @@ C
      &          CCFBT(*), INDXBT(*),
      &          CLSCPU(MXCLS2), IWHICH(MXCLS2), IJS(NTASK),
      &          NCOUNT(*), CSQ(NCSQ1,NCSQ2), WORK(LWORK)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('ERI_NODDRV')
 C
@@ -1886,16 +1892,16 @@ C
 C  /* Deck eri_sdcls */
       SUBROUTINE ERI_SDCLS(NODCLS,IPRINT)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
 C Used from common blocks
 C
 C  MXORB : MXSHEL (for INFPAR)
 C  INFPAR: MASTER
 C
-#include <infpar.h>
+#include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_SDCLS','*',103)
 C
@@ -1916,10 +1922,10 @@ C  /* Deck sdres */
       SUBROUTINE ERI_SDRES(DMAT,FMAT,NBASE,CLSCPU,IWHICH,IJSTOT,
      &                     LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mtags.h"
 C
       DIMENSION DMAT(*), FMAT(*), CLSCPU(IJSTOT), IWHICH(IJSTOT)
 C
@@ -1930,9 +1936,9 @@ C  INFPAR : NCODE, MASTER, MYNUM, TIMING
 C  ERIMEM : *
 C  CBIERI : NDMAT
 C
-#include <infpar.h>
-#include <erimem.h>
-#include <cbieri.h>
+#include "infpar.h"
+#include "erimem.h"
+#include "cbieri.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_SDRES','*',103)
 C

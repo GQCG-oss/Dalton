@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c /* deck ccrspsym */
 *=====================================================================*
@@ -49,55 +39,58 @@ c /* deck ccrspsym */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccorb.h>
-#include <ccrspprp.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <cclrmrsp.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <ccx1rsp.h>  
-#include <ccx2rsp.h>  
-#include <ccx3rsp.h>  
-#include <ccx4rsp.h>  
-#include <cco1rsp.h>  
-#include <cco2rsp.h>  
-#include <cco3rsp.h>  
-#include <cco4rsp.h>  
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccl2rsp.h>
-#include <cccx2rsp.h>
-#include <ccexgr.h>  
-#include <ccn2rsp.h>  
-#include <cclres.h>  
-#include <ccpl1rsp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccorb.h"
+#include "ccrspprp.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "cclrmrsp.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "ccx1rsp.h"  
+#include "ccx2rsp.h"  
+#include "ccx3rsp.h"  
+#include "ccx4rsp.h"  
+#include "cco1rsp.h"  
+#include "cco2rsp.h"  
+#include "cco3rsp.h"  
+#include "cco4rsp.h"  
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccl2rsp.h"
+#include "cccx2rsp.h"
+#include "ccexgr.h"  
+#include "ccn2rsp.h"  
+#include "cclres.h"  
+#include "ccpl1rsp.h"
+#include "ccexci.h"
+Cholesky
+#include "cclrcho.h"
+Cholesky
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -108,15 +101,9 @@ c /* deck ccrspsym */
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
   
-#if defined (SYS_CRAY)
-      REAL ZERO, ONE, TWO, EIGHT
-      REAL TINY
-      REAL CKMXPR
-#else
-      DOUBLE PRECISION ZERO, ONE, TWO, EIGHT
-      DOUBLE PRECISION TINY
-      DOUBLE PRECISION CKMXPR
-#endif
+      REAL*8  ZERO, ONE, TWO, EIGHT
+      REAL*8  TINY
+      REAL*8  CKMXPR
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0, EIGHT = 8.0d0)
       PARAMETER (TINY = 1.0d-5, CKMXPR = 1.0d-12)
 
@@ -129,15 +116,11 @@ c /* deck ccrspsym */
       INTEGER KEND1,LEND1,KPROPAO,JSCOOR,ISCOOR,ICORSY,ICOOR,IATOM
       INTEGER ISYM0
 
-#if defined (SYS_CRAY)
-      REAL WORK(LWRK),RDUM
-#else
-      DOUBLE PRECISION WORK(LWRK),RDUM
-#endif
+      REAL*8  WORK(LWRK),RDUM
 
 * external functions:
       INTEGER ILSTSYM
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
       INTEGER IROPER
       INTEGER IROPER2
       INTEGER IETA1
@@ -202,6 +185,10 @@ c /* deck ccrspsym */
 * init number of response operators:
       NRSOLBL  = 0
       NRSO2LBL = 0
+Cholesky
+* number of unique operators for Cholesky CC2-LR
+      CALL IZERO(NCHOPLR,NSYM)
+Cholesky
       LOPROPN  = .TRUE.  ! open list for extension
       LOPR2OPN = .TRUE.  ! open list for extension
 
@@ -256,7 +243,7 @@ c /* deck ccrspsym */
 
 * make sure that the zeroth-order Hamiltonian 'HAM0    ' is on our
 * operator list (might be needed for analytic derivatives):
-      INUM = INDPRPCC('HAM0    ')
+      INUM = INDPRP_CC('HAM0    ')
 
 * allocate work space for one set of property AO integrals
       KPROPAO = 1
@@ -268,10 +255,10 @@ c /* deck ccrspsym */
       END IF
 
 *---------------------------------------------------------------------*
-* loop over property labels in the PRPLBL list:
+* loop over property labels in the PRPLBL_CC list:
 *---------------------------------------------------------------------*
-      DO IPRP = 1, NPRLBL
-        LABEL = PRPLBL(IPRP)
+      DO IPRP = 1, NPRLBL_CC
+        LABEL = PRPLBL_CC(IPRP)
         
         IF (LABEL(1:5).EQ.'HAM0 ') THEN 
            IERR    = 0
@@ -1030,6 +1017,9 @@ C          ----------------------------------------------------
          DO I = 1, NO1LBL
            WRITE(LUPRI,'(13X,I4,6X,A8,5X,L3,I6,3X,1P,D15.6)') 
      &            I, LBLO1(I), LORXO1(I), ISYO1(I), FRQO1(I)
+Cholesky
+           NCHOPLR(ISYO1(I)) = NCHOPLR(ISYO1(I)) + 1
+Cholesky
          END DO
          WRITE(LUPRI,'(13X,50("-"),//)')
        END IF
@@ -1389,25 +1379,21 @@ c /* deck cc_exgrind */
 *    OC April 1997
 *
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>  
-#include <ccexgr.h>  
-#include <ccsdinp.h>  
-#include <ccsdsym.h>  
-#include <cclr.h>  
-#include <ccroper.h>  
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"  
+#include "ccexgr.h"  
+#include "ccsdinp.h"  
+#include "ccsdsym.h"  
+#include "cclr.h"  
+#include "ccroper.h"  
       CHARACTER*8 LABEL,LABELA
       INTEGER ISYMA, INUM, IOP, ISYME
 
-#if defined (SYS_CRAY)
-      REAL EIGV
-#else
-      DOUBLE PRECISION EIGV
-#endif
+      REAL*8  EIGV
 C
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
@@ -1415,12 +1401,12 @@ C
 C
 *------------------------------------------------------------------
 * test if operators are available and translate IAXGRO, 
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NAXGRO)
-        LABELA = PRPLBL(IAXGRO(IOPER))
+        LABELA = PRPLBL_CC(IAXGRO(IOPER))
         IF (DEBUG) THEN
           WRITE(LUPRI,'(/2X,A,1X,A)')
      &     'CHECK EXGR OPERATOR:',LABELA
@@ -1517,18 +1503,18 @@ c /* deck cc_opaind */
 *
 *=====================================================================*
       IMPLICIT NONE
-C#include <implicit.h>
-C#include <cclrinf.h>
-C#include <cclr.h>  
-C#include <ccsdsym.h>  
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccexci.h>  
-#include <ccexcinf.h>  
-#include <ccrspprp.h>
-#include <ccopainf.h>  
-#include <ccsdinp.h>  
-#include <ccroper.h>  
+C#include "implicit.h"
+C#include "cclrinf.h"
+C#include "cclr.h"  
+C#include "ccsdsym.h"  
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccexci.h"  
+#include "ccexcinf.h"  
+#include "ccrspprp.h"
+#include "ccopainf.h"  
+#include "ccsdinp.h"  
+#include "ccroper.h"  
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1537,11 +1523,7 @@ C#include <ccsdsym.h>
       LOGICAL TAKE_STATE
       INTEGER ISYMO, INUM, ISTATE, ISYME, IOPER, IDX, IEX
 
-#if defined (SYS_CRAY)
-      REAL EIGV
-#else
-      DOUBLE PRECISION EIGV
-#endif
+      REAL*8  EIGV
 * functions:
       INTEGER IR1TAMP,ILRMAMP,IROPER
 C
@@ -1551,12 +1533,12 @@ C
 
 *------------------------------------------------------------------
 * test if operators are available and translate ILRSOP array
-* from the PRPLBL list to the new list maintained by IROPER:
+* from the PRPLBL_CC list to the new list maintained by IROPER:
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NLRSOP)
-        LABEL = PRPLBL(ILRSOP(IOPER))
+        LABEL = PRPLBL_CC(ILRSOP(IOPER))
         IF (DEBUG) WRITE(LUPRI,'(/2X,2A)') 'CHECK OPERATOR: ',LABEL
         IF (IROPER(LABEL,ISYMO) .LT. 0) THEN
           WRITE(LUPRI,'(/2X,3A,/2X,2A)')
@@ -1650,14 +1632,14 @@ c /* deck cc_xopaind */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccexci.h>  
-#include <ccexcinf.h>  
-#include <ccrspprp.h>
-#include <ccxopainf.h>  
-#include <ccsdinp.h>  
-#include <ccroper.h>  
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccexci.h"  
+#include "ccexcinf.h"  
+#include "ccrspprp.h"
+#include "ccxopainf.h"  
+#include "ccsdinp.h"  
+#include "ccroper.h"  
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1667,11 +1649,7 @@ c /* deck cc_xopaind */
       INTEGER ISYMO, INUM, ISYMI, ISYMF, ISTATEI, ISTATEF, IEXI, IEXF,
      &        IDX, ISYMFI, IOPER, I, NSYMF, NEXF
 
-#if defined (SYS_CRAY)
-      REAL EIGVI, EIGVF
-#else
-      DOUBLE PRECISION EIGVI, EIGVF
-#endif
+      REAL*8  EIGVI, EIGVF
 * functions:
       INTEGER IROPER, IR1TAMP, IN2AMP
 
@@ -1681,12 +1659,12 @@ c /* deck cc_xopaind */
 
 *------------------------------------------------------------------
 * test if operators are available and translate IQR2OP array
-* from the PRPLBL list to the new list maintained by IROPER:
+* from the PRPLBL_CC list to the new list maintained by IROPER:
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NQR2OP)
-        LABEL = PRPLBL(IQR2OP(IOPER))
+        LABEL = PRPLBL_CC(IQR2OP(IOPER))
         IF (DEBUG) WRITE(LUPRI,'(/2X,2A)') 'CHECK OPERATOR: ',LABEL
         IF (IROPER(LABEL,ISYMO) .LT. 0) THEN
           WRITE(LUPRI,'(/2X,3A,/2X,2A)')
@@ -1811,25 +1789,21 @@ c /* deck cc_lrsind */
 *    OC 8-11-1996/Modified April 1997
 *
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>  
-#include <cclres.h>  
-#include <ccsdinp.h>  
-#include <ccsdsym.h>  
-#include <cclr.h>  
-#include <ccroper.h>  
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"  
+#include "cclres.h"  
+#include "ccsdinp.h"  
+#include "ccsdsym.h"  
+#include "cclr.h"  
+#include "ccroper.h"  
       CHARACTER*8 LABEL,LABELA,LABELB
       INTEGER ISYMB, ISYMA, IFRB, IFRA, INUM, IOP, ISYME
 
-#if defined (SYS_CRAY)
-      REAL EIGV
-#else
-      DOUBLE PRECISION EIGV
-#endif
+      REAL*8  EIGV
 * functions:
       INTEGER IR1TAMP,ILRMAMP
 C
@@ -1843,13 +1817,13 @@ C------------------------------------------------------------------
 C
 *------------------------------------------------------------------
 * test if operators are available and translate IALROP, IBLROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NLRSOP)
-        LABELA = PRPLBL(IALRSOP(IOPER))
-        LABELB = PRPLBL(IBLRSOP(IOPER))
+        LABELA = PRPLBL_CC(IALRSOP(IOPER))
+        LABELB = PRPLBL_CC(IBLRSOP(IOPER))
         IF (DEBUG) THEN
           WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
      &     'CHECK LRSD DOUBLE:',LABELA, LABELB
@@ -1965,27 +1939,24 @@ c /* deck cc_qr2ind */
 *    Ove Christiansen April 1997
 *
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>  
-#include <cclres.h>  
-#include <ccqr2r.h>  
-#include <ccn2rsp.h>
-#include <ccsdinp.h>  
-#include <ccsdsym.h>  
-#include <cclr.h>  
-#include <ccroper.h>  
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"  
+#include "cclres.h"  
+#include "ccqr2r.h"  
+#include "ccn2rsp.h"
+#include "ccsdinp.h"  
+#include "ccsdsym.h"  
+#include "cclr.h"  
+#include "ccroper.h"  
       CHARACTER*8 LABEL,LABELA,LABELB
       INTEGER ISYMB, ISYMA, IFRB, IFRA, INUM, IOP, ISYMI, ISYMF
 
-#if defined (SYS_CRAY)
-      REAL EIGV
-#else
-      DOUBLE PRECISION EIGV
-#endif
+      REAL*8  EIGV
+
 * functions:
       INTEGER IR1TAMP,IN2AMP
 C
@@ -1999,13 +1970,13 @@ C------------------------------------------------------------------
 C
 *------------------------------------------------------------------
 * test if operators are available and translate IALROP, IBLROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
        IOPER = 1
        DO WHILE (IOPER .LE. NQR2OP)
-        LABELA = PRPLBL(IAQR2OP(IOPER))
-        LABELB = PRPLBL(IBQR2OP(IOPER))
+        LABELA = PRPLBL_CC(IAQR2OP(IOPER))
+        LABELB = PRPLBL_CC(IBQR2OP(IOPER))
         IF (DEBUG) THEN
           WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
      &     'CHECK QR2R DOUBLE:',LABELA, LABELB
@@ -2152,16 +2123,16 @@ c /* deck cc_lrind */
 *    CH  apr. 2002: changes for CC3 freq.-dep. polarizabilities
 *
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccroper.h>
-#include <mxcent.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccroper.h"
+#include "mxcent.h"
+#include "cclr.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2175,12 +2146,7 @@ c /* deck cc_lrind */
       INTEGER ISYMB,ISYMA,IFRB,IFRA,INUM,IOP,ICAUCH,ISYH0,IR1A,IR1B
       INTEGER ISYM0, ISYSOP, ISGNSOP
       
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK), FREQ
-#else
-      DOUBLE PRECISION WORK(LWORK), FREQ
-#endif
-
+      REAL*8  WORK(LWORK), FREQ
 
 * functions:
       INTEGER IR1TAMP
@@ -2196,15 +2162,15 @@ c /* deck cc_lrind */
 
 *------------------------------------------------------------------
 * test if operators are available and translate IALROP, IBLROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *------------------------------------------------------------------
       IF (FIRSTCALL) THEN
 
         IOPER = 1
         DO WHILE (IOPER .LE. NLROP)
           SKIP_IT = .FALSE.
-          LABELA  = PRPLBL(IALROP(IOPER))
-          LABELB  = PRPLBL(IBLROP(IOPER))
+          LABELA  = PRPLBL_CC(IALROP(IOPER))
+          LABELB  = PRPLBL_CC(IBLROP(IOPER))
           IOPA    = IROPER(LABELA,ISYMA)
           IOPB    = IROPER(LABELB,ISYMB)
 
@@ -2326,7 +2292,7 @@ c /* deck cc_lrind */
                 CONTINUE
               ELSE IF (LABSOP(2:6).EQ.'-CM1 ') THEN
                 CONTINUE
-              ELSE IF (LABSOP(3:7).EQ.' NST ') THEN
+              ELSE IF (LABSOP(4:7).EQ.' NST') THEN
                 CONTINUE
               ELSE
                 WRITE (LUPRI,*) 
@@ -2426,14 +2392,14 @@ c /* deck cc_qrind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccqrinf.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccqrinf.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
+#include "ccsdinp.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2447,14 +2413,8 @@ c /* deck cc_qrind */
       INTEGER ICA,ICB,ICC,ICTOT,ISACAU,ISAMA,ISAMB,ISAMC,ISAPROP
       INTEGER IOPA, IOPB, IOPC, NLORX, ISYSOP, LWORK, ISGNSOP
       
-#if defined (SYS_CRAY)
-      REAL WORK
-      REAL FREQA, FREQB, FREQC
-#else
-      DOUBLE PRECISION WORK
-      DOUBLE PRECISION FREQA, FREQB, FREQC
-#endif
-
+      REAL*8  WORK
+      REAL*8  FREQA, FREQB, FREQC
 
 * external functions:
       INTEGER IR1TAMP
@@ -2475,7 +2435,7 @@ c /* deck cc_qrind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IAQROP, IBQROP, ICQROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
 
@@ -2483,9 +2443,9 @@ c /* deck cc_qrind */
        DO WHILE (IOPER .LE. NQROPER)
 
         SKIP_IT = .FALSE.
-        LABELA  = PRPLBL(IAQROP(IOPER))
-        LABELB  = PRPLBL(IBQROP(IOPER))
-        LABELC  = PRPLBL(ICQROP(IOPER))
+        LABELA  = PRPLBL_CC(IAQROP(IOPER))
+        LABELB  = PRPLBL_CC(IBQROP(IOPER))
+        LABELC  = PRPLBL_CC(ICQROP(IOPER))
         IOPA    = IROPER(LABELA,ISYMA)
         IOPB    = IROPER(LABELB,ISYMB)
         IOPC    = IROPER(LABELC,ISYMC)
@@ -2772,15 +2732,15 @@ c /* deck cc_crind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cccrinf.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
-#include <cccperm.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cccrinf.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
+#include "cccperm.h"
+#include "ccsdinp.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2793,12 +2753,7 @@ c /* deck cc_crind */
       INTEGER ICAUA, ICAUB, ICAUC, ICAUD, IDISP, ISYM1, ISYM2
       INTEGER ICAU1, ICAU2, ICAU3, ICAU4, ISYM3, ISYM4, P
       
-#if defined (SYS_CRAY)
-      REAL FREQA, FREQB, FREQC, FREQD
-#else
-      DOUBLE PRECISION FREQA, FREQB, FREQC, FREQD
-#endif
-
+      REAL*8  FREQA, FREQB, FREQC, FREQD
 
 * external functions:
       INTEGER IR2TAMP
@@ -2829,7 +2784,7 @@ c /* deck cc_crind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IACROP, IBCROP, ICCROP
-* and IDCROP arrays from the PRPLBL list to the new list maintained 
+* and IDCROP arrays from the PRPLBL_CC list to the new list maintained 
 * by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
@@ -2837,10 +2792,10 @@ c /* deck cc_crind */
        IOPER = 1
        DO WHILE (IOPER .LE. NCROPER)
 
-        LABELA = PRPLBL(IACROP(IOPER))
-        LABELB = PRPLBL(IBCROP(IOPER))
-        LABELC = PRPLBL(ICCROP(IOPER))
-        LABELD = PRPLBL(IDCROP(IOPER))
+        LABELA = PRPLBL_CC(IACROP(IOPER))
+        LABELB = PRPLBL_CC(IBCROP(IOPER))
+        LABELC = PRPLBL_CC(ICCROP(IOPER))
+        LABELD = PRPLBL_CC(IDCROP(IOPER))
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
      &       .OR. (IROPER(LABELB,ISYMB) .LT. 0)
@@ -3342,14 +3297,14 @@ c /* deck CC_4RIND */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cc4rinf.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
-#include <ccl2rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cc4rinf.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
+#include "ccl2rsp.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3360,12 +3315,7 @@ c /* deck CC_4RIND */
       INTEGER ISYMB, ISYMC, ISYMA, ISYMD, ISYME
       INTEGER IFREQ, INUM, IOPER, IDX
       
-#if defined (SYS_CRAY)
-      REAL FREQA, FREQB, FREQC, FREQD, FREQE
-#else
-      DOUBLE PRECISION FREQA, FREQB, FREQC, FREQD, FREQE
-#endif
-
+      REAL*8  FREQA, FREQB, FREQC, FREQD, FREQE
 
 * external functions:
       INTEGER IR2TAMP
@@ -3388,18 +3338,18 @@ c /* deck CC_4RIND */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IA4ROP, IB4ROP, etc.
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
 
        IOPER = 1
        DO WHILE (IOPER .LE. N4ROPER)
 
-        LABELA = PRPLBL(IA4ROP(IOPER))
-        LABELB = PRPLBL(IB4ROP(IOPER))
-        LABELC = PRPLBL(IC4ROP(IOPER))
-        LABELD = PRPLBL(ID4ROP(IOPER))
-        LABELE = PRPLBL(IE4ROP(IOPER))
+        LABELA = PRPLBL_CC(IA4ROP(IOPER))
+        LABELB = PRPLBL_CC(IB4ROP(IOPER))
+        LABELC = PRPLBL_CC(IC4ROP(IOPER))
+        LABELD = PRPLBL_CC(ID4ROP(IOPER))
+        LABELE = PRPLBL_CC(IE4ROP(IOPER))
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
      &       .OR. (IROPER(LABELB,ISYMB) .LT. 0)
@@ -3643,14 +3593,14 @@ c /* deck CC_5RIND */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cc5rinf.h>
-#include <cc5perm.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cc5rinf.h"
+#include "cc5perm.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3661,12 +3611,7 @@ c /* deck CC_5RIND */
       INTEGER ISYM(6)
       INTEGER IFREQ, INUM, IOPER, IDX, IDXA, IDXB, IDXC, JDX, ISYMTOT
       
-#if defined (SYS_CRAY)
-      REAL FREQ(6)
-#else
-      DOUBLE PRECISION FREQ(6)
-#endif
-
+      REAL*8  FREQ(6)
 
 * external functions:
       INTEGER IR3TAMP
@@ -3681,7 +3626,7 @@ c /* deck CC_5RIND */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate I5ROP array
-* from the PRPLBL list to the new list maintained by IROPER.
+* from the PRPLBL_CC list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
 
@@ -3689,7 +3634,7 @@ c /* deck CC_5RIND */
        DO WHILE (IOPER .LE. N5ROPER)
 
         DO IDX = 1, 6
-          LABEL(IDX) = PRPLBL(I5ROP(IOPER,IDX))
+          LABEL(IDX) = PRPLBL_CC(I5ROP(IOPER,IDX))
         END DO
 
         IF (      IROPER(LABEL(A),ISYM(A)) .LT. 0
@@ -3800,18 +3745,18 @@ c /* deck cc_tpaind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cctpainf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccexcinf.h>
-#include <ccroper.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cctpainf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccexcinf.h"
+#include "ccroper.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3822,11 +3767,7 @@ c /* deck cc_tpaind */
       INTEGER ISYMB, ISYMA, ISYMAB, ISYME
       INTEGER INUM, IOPPAIR, IDX, ISTATE, IEXCI, IRSD
       
-#if defined (SYS_CRAY)
-      REAL FREQA, FREQB, EIGV 
-#else
-      DOUBLE PRECISION FREQA, FREQB, EIGV
-#endif
+      REAL*8  FREQA, FREQB, EIGV 
 
 * external functions:
       INTEGER IROPER
@@ -3848,7 +3789,7 @@ c /* deck cc_tpaind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IASMOP, IBSMOP, ICSMOP
-* and IDSMOP arrays from the PRPLBL list to the new list maintained 
+* and IDSMOP arrays from the PRPLBL_CC list to the new list maintained 
 * by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
@@ -3856,8 +3797,8 @@ c /* deck cc_tpaind */
        IOPPAIR = 1
        DO WHILE (IOPPAIR .LE. NSMOPER)
 
-        LABELA = PRPLBL(IASMOP(IOPPAIR))
-        LABELB = PRPLBL(IBSMOP(IOPPAIR))
+        LABELA = PRPLBL_CC(IASMOP(IOPPAIR))
+        LABELB = PRPLBL_CC(IBSMOP(IOPPAIR))
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
      &       .OR. (IROPER(LABELB,ISYMB) .LT. 0) ) THEN
@@ -4012,15 +3953,15 @@ c /* deck cc_tmind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cctm.h>
-#include <cctminf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cctm.h"
+#include "cctminf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccroper.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -4032,11 +3973,7 @@ c /* deck cc_tmind */
       INTEGER ISYMB, ISYMC, ISYMA, ISYMD, ISYME, ISYMF, ISYMABC
       INTEGER IFREQ, INUM, IOPER, IDX, IOFFST, I
       
-#if defined (SYS_CRAY)
-      REAL FREQEX, FREQB, FREQC, EIGV 
-#else
-      DOUBLE PRECISION FREQEX, FREQB, FREQC, EIGV
-#endif
+      REAL*8  FREQEX, FREQB, FREQC, EIGV 
 
 * external functions:
       INTEGER IROPER
@@ -4058,18 +3995,18 @@ c /* deck cc_tmind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IATMOP, IBTMOP, ICTMOP
-* IDTMOP, IETMOP and IFTMOP arrays from the PRPLBL 
+* IDTMOP, IETMOP and IFTMOP arrays from the PRPLBL_CC 
 * list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
        IOPER = 1
        DO WHILE (IOPER .LE. NTMOPER)
 
-        LABELA = PRPLBL(IATMOP(IOPER))
-        LABELB = PRPLBL(IBTMOP(IOPER))
-        LABELC = PRPLBL(ICTMOP(IOPER))
-        LABELD = PRPLBL(IDTMOP(IOPER))
-        LABELE = PRPLBL(IETMOP(IOPER))
-        LABELF = PRPLBL(IFTMOP(IOPER))
+        LABELA = PRPLBL_CC(IATMOP(IOPER))
+        LABELB = PRPLBL_CC(IBTMOP(IOPER))
+        LABELC = PRPLBL_CC(ICTMOP(IOPER))
+        LABELD = PRPLBL_CC(IDTMOP(IOPER))
+        LABELE = PRPLBL_CC(IETMOP(IOPER))
+        LABELF = PRPLBL_CC(IFTMOP(IOPER))
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
      &       .OR. (IROPER(LABELB,ISYMB) .LT. 0)
@@ -4213,15 +4150,15 @@ c /* deck cc_mcdind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccmcdinf.h>
-#include <ccrspprp.h>
-#include <ccexcinf.h>
-#include <ccexci.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccmcdinf.h"
+#include "ccrspprp.h"
+#include "ccexcinf.h"
+#include "ccexci.h"
+#include "ccroper.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -4236,11 +4173,8 @@ c /* deck cc_mcdind */
       INTEGER ISGNSOP,ISYSOP,NLORX,LWORK
       LOGICAL LPROJ
       
-#if defined (SYS_CRAY)
-      REAL EIGVA_F, ZERO, WORK(LWORK) 
-#else
-      DOUBLE PRECISION EIGVA_F, ZERO, WORK(LWORK)
-#endif
+      REAL*8  EIGVA_F, ZERO, WORK(LWORK) 
+
       PARAMETER ( ZERO = 0.0d0 )
 
 * external functions:
@@ -4270,7 +4204,7 @@ c /* deck cc_mcdind */
 
 *----------------------------------------------------------------------*
 * test if operators are available and translate IAMCDOP,IBMCDOP,ICMCDOP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 * Note that NMCDOPER is the number of operator-triples (r,L,r)
 *----------------------------------------------------------------------*
   
@@ -4282,9 +4216,9 @@ c /* deck cc_mcdind */
         DO WHILE (IOPER .LE. NMCDOPER)
 
           SKIP_IT = .FALSE.
-          LABELA = PRPLBL(IAMCDOP(IOPER))
-          LABELB = PRPLBL(IBMCDOP(IOPER))
-          LABELC = PRPLBL(ICMCDOP(IOPER))
+          LABELA = PRPLBL_CC(IAMCDOP(IOPER))
+          LABELB = PRPLBL_CC(IBMCDOP(IOPER))
+          LABELC = PRPLBL_CC(ICMCDOP(IOPER))
           LORXA  = LAMCDRX(IOPER)
           LORXB  = LBMCDRX(IOPER)
           LORXC  = LCMCDRX(IOPER)
@@ -4523,16 +4457,16 @@ c /* deck cc_exlrind */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccexlrinf.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
-#include <cclr.h>
-#include <ccexci.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccexlrinf.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
+#include "cclr.h"
+#include "ccexci.h"
+#include "ccsdinp.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -4544,11 +4478,8 @@ c /* deck cc_exlrind */
       INTEGER ISYMB, ISYMA, IFREQ, INUM, IOPER, ISYMS, ISTATE
       INTEGER IDX, IEXCII, ISTATI, IEXCIF, ISTATF, IDXS, ISYMSI, ISYMSF
       
-#if defined (SYS_CRAY)
-      REAL HALF, FREQA, FREQB, EIGVI, EIGVF
-#else
-      DOUBLE PRECISION HALF, FREQA, FREQB, EIGVI, EIGVF
-#endif
+      REAL*8  HALF, FREQA, FREQB, EIGVI, EIGVF
+
       PARAMETER ( HALF = 0.5d0 )
 
 
@@ -4566,7 +4497,7 @@ c /* deck cc_exlrind */
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IAQROP, IBQROP, ICQROP
-* arrays from the PRPLBL list to the new list maintained by IROPER.
+* arrays from the PRPLBL_CC list to the new list maintained by IROPER.
 *---------------------------------------------------------------------*
       IF (FIRSTCALL) THEN
        WRITE (LUPRI,*) 'CC_EXLRIND> NEXLROPER = ',NEXLROPER
@@ -4576,8 +4507,8 @@ c /* deck cc_exlrind */
 
           WRITE(LUPRI,'(/2X,A,3I5)') 
      & 'IOPER,IAEXLROP,IBEXLROP:',IOPER,IAEXLROP(IOPER),IBEXLROP(IOPER)
-        LABELA = PRPLBL(IAEXLROP(IOPER))
-        LABELB = PRPLBL(IBEXLROP(IOPER))
+        LABELA = PRPLBL_CC(IAEXLROP(IOPER))
+        LABELB = PRPLBL_CC(IBEXLROP(IOPER))
           WRITE(LUPRI,'(/2X,A,2(1X,A),A)') 'CHECK PAIR:',LABELA, LABELB
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
@@ -4771,7 +4702,7 @@ C  /* Deck iroper */
 * maintain the list of operators labels for the response calculations
 * the operators are specified by a character*8 label (NEWLBL) 
 *
-* in difference to the list maintained by the INDPRPCC function,
+* in difference to the list maintained by the INDPRP_CC function,
 * the list maintained by IROPER is ordered (see routine CCLSTSORT).
 *
 * Christof Haettig, November 1996, modified Januar 97: 
@@ -4783,8 +4714,8 @@ C  /* Deck iroper */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <ccroper.h>
-#include <priunit.h>
+#include "ccroper.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -4856,16 +4787,13 @@ C Christof Haettig, Februar 97
 C LORXA, LORXB flags introduced in July 1999
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr2rsp.h>
-#include <priunit.h>
+#include "ccr2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LORXA, LORXB
       INTEGER ISYMA, ISYMB
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -4949,16 +4877,13 @@ C LORX flag introduced and some clean up in Juni 1998
 C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr1rsp.h>
-#include <priunit.h>
+#include "ccr1rsp.h"
+#include "priunit.h"
  
       LOGICAL LORX, LORXI
       INTEGER ISYM
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL
-#else
-      DOUBLE PRECISION FRQNEW,TOL
-#endif
+      REAL*8  FRQNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBL
@@ -5031,15 +4956,12 @@ C Christof Haettig, July 2003
 C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr1rsp.h>
-#include <priunit.h>
+#include "ccr1rsp.h"
+#include "priunit.h"
  
       INTEGER ISYM
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL
-#else
-      DOUBLE PRECISION FRQNEW,TOL
-#endif
+      REAL*8  FRQNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBL
@@ -5099,8 +5021,8 @@ C
 C Christof Haettig, october 1997 
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccrc1rsp.h>
-#include <priunit.h>
+#include "ccrc1rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYM,ICAUCH
 
@@ -5155,8 +5077,8 @@ C
 C Christof Haettig, october 1997 
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cclc1rsp.h>
-#include <priunit.h>
+#include "cclc1rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYM,ICAUCH
 
@@ -5217,17 +5139,14 @@ C LORX flag introduced and some clean up in Juni 1998
 C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccl1rsp.h>
-#include <priunit.h>
+#include "ccl1rsp.h"
+#include "priunit.h"
 C
 
       LOGICAL LORX
       INTEGER ISYM, I
-#if defined (SYS_CRAY)
-      REAL FRQNEW, TOL
-#else
-      DOUBLE PRECISION FRQNEW, TOL
-#endif
+      REAL*8  FRQNEW, TOL
+
       PARAMETER(TOL=1.0D-12)
 
 
@@ -5276,15 +5195,12 @@ C
 C Ove Christiansen April 1997
 C
       IMPLICIT NONE
-#include <cclrmrsp.h>
-#include <priunit.h>
+#include "cclrmrsp.h"
+#include "priunit.h"
 C
       INTEGER ISYM,IEXCI,I
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL
-#else
-      DOUBLE PRECISION FRQNEW,TOL
-#endif
+      REAL*8  FRQNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       DO I = 1,NLRM
@@ -5357,6 +5273,7 @@ C  /* Deck cclstsort */
 *                       ER1, ER2
 *                       EL1, EL2
 *                       PL1
+*                       QL (Lanczos)
 *
 *          not tested for RE, LE, E0
 *
@@ -5366,9 +5283,17 @@ C  /* Deck cclstsort */
 * projection flag 1998
 * orbital relaxation flag 1999
 * PL1 vectors, Sonia march 2000
+* QL (Lanczos), Sonia 2010-2012
+*
+Cholesky
+* Swapped sorting order so that LABEL sort is done
+* after FREQ sort by modifying CCLSTCMP
+* tbp 2003. Only tested for linear response!
+Cholesky
+*
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
@@ -5379,13 +5304,8 @@ C  /* Deck cclstsort */
       INTEGER ISYMS(MAXVEC,*), ICAU(MAXVEC,*)
       CHARACTER*(*) TYPE
 
-#if defined (SYS_CRAY)
-      REAL FREQ(MAXVEC,*)
-      REAL EIGVAL(MAXVEC,*)
-#else
-      DOUBLE PRECISION FREQ(MAXVEC,*)
-      DOUBLE PRECISION EIGVAL(MAXVEC,*)
-#endif
+      REAL*8  FREQ(MAXVEC,*)
+      REAL*8  EIGVAL(MAXVEC,*)
       
       LOGICAL CHANGES
       INTEGER IVEC
@@ -5398,6 +5318,7 @@ C  /* Deck cclstsort */
       IF      (     TYPE(1:2).EQ.'R1' .OR. TYPE(1:2).EQ.'L1' 
      &         .OR. TYPE(1:3).EQ.'O1 '.OR. TYPE(1:3).EQ.'X1 '
      &         .OR. TYPE(1:2).EQ.'RC' .OR. TYPE(1:2).EQ.'LC'
+     &         .or. TYPE(1:2).EQ.'QL'
      &         .OR. TYPE(1:2).EQ.'o1'                        ) THEN
         NSTAT = 0
         ORDER = 1
@@ -5496,7 +5417,7 @@ C  /* Deck cclstcmp */
       LOGICAL FUNCTION CCLSTCMP(TYPE,NSTAT,ORDER,IVEC,ISYMS,ISTAT,
      &                        ISYMO,LABEL,FREQ,ICAU,LORX,MAXVEC,LPROJ) 
 *---------------------------------------------------------------------*
-* PURPOSE: do comparision for CCLSTSORT according:
+* PURPOSE: do comparison for CCLSTSORT according to:
 *   
 *          1.)  over-all symmetry
 *          2.)  individual symmetries of the states  (ISYMS)
@@ -5524,7 +5445,11 @@ C  /* Deck cclstcmp */
 * PL1 vectors, LORX in EL1 ... Sonia Coriani  2000
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
@@ -5535,11 +5460,7 @@ C  /* Deck cclstcmp */
       INTEGER ISYMO(MAXVEC,ORDER), ICAU(MAXVEC,ORDER)
       CHARACTER*(*) TYPE
 
-#if defined (SYS_CRAY)
-      REAL FREQ(MAXVEC,ORDER)
-#else
-      DOUBLE PRECISION FREQ(MAXVEC,ORDER)
-#endif
+      REAL*8  FREQ(MAXVEC,ORDER)
 
 * external function:
       INTEGER ILSTSYM
@@ -5647,6 +5568,10 @@ C  /* Deck cclstcmp */
         END IF
       END DO
 
+* If Cholesky, sort before after frequencies
+
+      IF (.NOT. CHOINT) THEN
+
 *---------------------------------------------------------------------*
 * compare the labels
 *---------------------------------------------------------------------*
@@ -5664,6 +5589,8 @@ C  /* Deck cclstcmp */
           END IF
         END DO
       END DO
+
+      END IF      ! Cholesky
 
 *---------------------------------------------------------------------*
 * compare the frequencies
@@ -5685,6 +5612,30 @@ C  /* Deck cclstcmp */
         END DO
 
       END IF
+
+* If Cholesky, sort now after frequencies
+
+      IF (CHOINT) THEN
+
+*---------------------------------------------------------------------*
+* compare the labels
+*---------------------------------------------------------------------*
+      DO IDX = 1, ORDER
+        DO I = 1, 8
+          IF ( LGT(LABEL(IVEC,IDX)(I:I),LABEL(IVEC+1,IDX)(I:I)) ) THEN
+            IF (LOCDBG) WRITE (LUPRI,*)
+     &            'swap because of operator labels.'
+            CCLSTCMP = .TRUE.
+            RETURN
+          END IF
+          IF ( LLT(LABEL(IVEC,IDX)(I:I),LABEL(IVEC+1,IDX)(I:I)) ) THEN
+            CCLSTCMP = .FALSE.
+            RETURN
+          END IF
+        END DO
+      END DO
+
+      END IF     ! Cholesky
 
 *---------------------------------------------------------------------*
 * compare the cauchy orders:
@@ -5773,8 +5724,8 @@ C  /* Deck cclstswap */
 * Sonia Coriani: PL1 and LORX for EL1
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccroper.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -5788,11 +5739,7 @@ C  /* Deck cclstswap */
       INTEGER ISTAT(MXVEC,NSTAT)
       CHARACTER*(*) TYPE
 
-#if defined (SYS_CRAY)
-      REAL FREQ(MXVEC,ORDER), EIGVAL(MXVEC,NSTAT), RSWAP
-#else
-      DOUBLE PRECISION FREQ(MXVEC,ORDER), EIGVAL(MXVEC,NSTAT), RSWAP
-#endif
+      REAL*8  FREQ(MXVEC,ORDER), EIGVAL(MXVEC,NSTAT), RSWAP
 
 *---------------------------------------------------------------------*
 * swap symmetries:
@@ -5921,41 +5868,44 @@ C  /* Deck ilstsym */
 *
 * Christof Haettig, November 1996
 * PL1 introduced Sonia
+* QL (Lanczos) introduced Sonia 2010
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccroper.h>
-#include <cclrmrsp.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <ccx1rsp.h>
-#include <ccx2rsp.h>
-#include <ccx3rsp.h>
-#include <ccx4rsp.h>
-#include <cco1rsp.h>
-#include <cco2rsp.h>
-#include <cco3rsp.h>
-#include <cco4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <ccn2rsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccx2rsp.h>
-#include <cccl2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccroper.h"
+#include "cclrmrsp.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "ccx1rsp.h"
+#include "ccx2rsp.h"
+#include "ccx3rsp.h"
+#include "ccx4rsp.h"
+#include "cco1rsp.h"
+#include "cco2rsp.h"
+#include "cco3rsp.h"
+#include "cco4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "ccn2rsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccx2rsp.h"
+#include "cccl2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
+!Lanczos
+#include "ccqlrlcz.h"
 
       CHARACTER*(3) LIST
       INTEGER INDEX
@@ -6003,6 +5953,14 @@ C  /* Deck ilstsym */
       ELSE IF (LIST(1:3).EQ.'CX2') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NCX2LBL) LEOOR = .TRUE.
          ILSTSYM = MULD2H(ISYCX2(INDEX,1),ISYCX2(INDEX,2))
+C
+Cholesky
+C
+      ELSE IF (LIST(1:3).EQ.'d00') THEN
+         ILSTSYM = 1
+C
+Cholesky
+C
       ELSE IF (LIST(1:2).EQ.'L0' .OR. LIST(1:2).EQ.'R0') THEN
          ILSTSYM = 1
       ELSE IF (LIST(1:2).EQ.'D0') THEN
@@ -6031,7 +5989,12 @@ C  /* Deck ilstsym */
       ELSE IF (LIST(1:2).EQ.'M1'.OR.LIST(1:2).EQ.'FR') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NLRM   ) LEOOR = .TRUE.
          ILSTSYM = ISYLRM(INDEX)
-      ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+Cholesky
+Chol  ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+      ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1' .OR.
+     &         LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'d01' .OR.
+     &         LIST(1:3).EQ.'eO1') THEN
+Cholesky
          IF (INDEX.LE.0 .OR. INDEX.GT.NLRTLBL) LEOOR = .TRUE.
          ILSTSYM = ISYLRT(INDEX)
       ELSE IF ((LIST(1:2).EQ.'RC').OR.(LIST(1:2).EQ.'FC')) THEN
@@ -6076,6 +6039,10 @@ C  /* Deck ilstsym */
       ELSE IF (LIST(1:3).EQ.'PL1') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NPL1LBL) LEOOR = .TRUE.
          ILSTSYM = ISYPL1(INDEX)
+!Lanczos (Sonia): QL and FQL vectors
+      ELSE IF (LIST(1:2).EQ.'QL'.OR. LIST(1:2).EQ.'FQ') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NQLLBL) LEOOR = .TRUE.
+         ILSTSYM = ISYQL(INDEX)
       ELSE
          WRITE(LUPRI,*) 'Unknown LIST in ILSTSYM:"',LIST(1:3),'"'
 C to force a core dump:
@@ -6114,9 +6081,9 @@ C  /* Deck ilstsymrlx */
 * PL1 introduced Sonia
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccr1rsp.h"
 
       CHARACTER*(3) LIST
       INTEGER INDEX
@@ -6159,11 +6126,7 @@ C        WRITE (LUPRI,*) LIST(-999999:-999999)
 *=====================================================================*
 C  /* Deck freqlst */
 *=====================================================================*
-#if defined (SYS_CRAY)
-      REAL FUNCTION FREQLST(LIST, INDEX)
-#else
-      DOUBLE PRECISION FUNCTION FREQLST(LIST, INDEX)
-#endif
+      REAL*8  FUNCTION FREQLST(LIST, INDEX)
 *---------------------------------------------------------------------*
 * PURPOSE: return frequency for vector on list
 *
@@ -6173,39 +6136,39 @@ C  /* Deck freqlst */
 * Christof Haettig, April 2002
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccroper.h>
-#include <cclrmrsp.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <ccx1rsp.h>
-#include <ccx2rsp.h>
-#include <ccx3rsp.h>
-#include <ccx4rsp.h>
-#include <cco1rsp.h>
-#include <cco2rsp.h>
-#include <cco3rsp.h>
-#include <cco4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <ccn2rsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccx2rsp.h>
-#include <cccl2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccroper.h"
+#include "cclrmrsp.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "ccx1rsp.h"
+#include "ccx2rsp.h"
+#include "ccx3rsp.h"
+#include "ccx4rsp.h"
+#include "cco1rsp.h"
+#include "cco2rsp.h"
+#include "cco3rsp.h"
+#include "cco4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "ccn2rsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccx2rsp.h"
+#include "cccl2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
 
       CHARACTER*(3) LIST
       INTEGER INDEX
@@ -6358,41 +6321,45 @@ C  /* Deck idxsym */
 *
 * Christof Haettig, November 1996(ILSTSYM), Ove Christiansen Feb. 1997
 * PL1 vectors, Sonia 2000
+* Cholesky CC2 vectors, tbp 2003
+* Lanczos QL vectors, Sonia 2010
 *=====================================================================*
       IMPLICIT NONE
-#include <ccorb.h>
-#include <ccroper.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <ccx1rsp.h>
-#include <ccx2rsp.h>
-#include <ccx3rsp.h>
-#include <ccx4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <cco1rsp.h>
-#include <cco2rsp.h>
-#include <cco3rsp.h>
-#include <cco4rsp.h>
-#include <ccn2rsp.h>
-#include <cclrmrsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccl2rsp.h>
-#include <cccx2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccroper.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "ccx1rsp.h"
+#include "ccx2rsp.h"
+#include "ccx3rsp.h"
+#include "ccx4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "cco1rsp.h"
+#include "cco2rsp.h"
+#include "cco3rsp.h"
+#include "cco4rsp.h"
+#include "ccn2rsp.h"
+#include "cclrmrsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccl2rsp.h"
+#include "cccx2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
+#include "priunit.h"
+!Lanczos
+#include "ccqlrlcz.h"
 
       CHARACTER*(*) LIST
       INTEGER INDEX,ISYM
@@ -6405,7 +6372,14 @@ C  /* Deck idxsym */
          IDXSYM  = 1
       ELSE IF (LIST(1:2).EQ.'D0') THEN
          IDXSYM  = 1
-      ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+Cholesky
+      ELSE IF (LIST(1:3).EQ.'d00') THEN
+         IDXSYM = 1
+Chol  ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+      ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1' .OR.
+     &         LIST(1:3).EQ.'XF1' .OR. LIST(1:3).EQ.'d01' .OR.
+     &         LIST(1:3).EQ.'eO1') THEN
+Cholesky
          IF (INDEX.LT.0 .OR. INDEX.GT.NLRTLBL) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFT(ISYM) 
       ELSE IF (LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'F2') THEN
@@ -6494,10 +6468,14 @@ C  /* Deck idxsym */
       ELSE IF (LIST(1:2).EQ.'N2'.OR.LIST(1:2).EQ.'BR') THEN
          IF (INDEX.LT.0 .OR. INDEX.GT.NQRN2 ) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFN2(ISYM)
-      !PL1 vectors indices within symmetry class (Sonia)
+!PL1 vectors indices within symmetry class (Sonia)
       ELSE IF (LIST(1:3).EQ.'PL1') THEN
          IF (INDEX.LT.0 .OR. INDEX.GT.NPL1LBL) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFPL1(ISYM)
+!Lanczos QL/FQL vectors indices within symmetry class (Sonia)
+      ELSE IF (LIST(1:2).EQ.'QL' .OR. LIST(1:2).EQ.'FQ') THEN
+         IF (INDEX.LT.0 .OR. INDEX.GT.NQLLBL) LEOOR = .TRUE.
+         IDXSYM  = INDEX - ISYOFQL(ISYM)
       ELSE
          WRITE (LUPRI,*) 'Unknown LIST in IDXSYM:"',LIST(1:3),'".'
 C to force a core dump:
@@ -6538,15 +6516,12 @@ C Christof Haettig, April 97
 C LORXA, LORXB flags introduced in July 1999
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cco2rsp.h>
-#include <priunit.h>
+#include "cco2rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYMA, ISYMB
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -6626,16 +6601,13 @@ C
 C Christof Haettig, April 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccx2rsp.h>
-#include <priunit.h>
+#include "ccx2rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYMA, ISYMB
       LOGICAL LORXA, LORXB
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -6714,15 +6686,12 @@ C
 C Christof Haettig, April 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccl2rsp.h>
-#include <priunit.h>
+#include "ccl2rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYMA, ISYMB
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -6797,17 +6766,13 @@ C
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
 C
       LOGICAL LOPEN, CHANGES, SWAP, NOSWAP, LFOUND
       CHARACTER*(*) TYPE
       INTEGER ORDER, MAXLIST, NLIST, IERR, ILIST, ISY, IOP
       INTEGER ISYMN(ORDER), ISYML(MAXLIST,ORDER)
-#if defined (SYS_CRAY)
-      REAL FREQN(ORDER), FREQL(MAXLIST,ORDER), FRQ
-#else
-      DOUBLE PRECISION FREQN(ORDER), FREQL(MAXLIST,ORDER), FRQ
-#endif
+      REAL*8  FREQN(ORDER), FREQL(MAXLIST,ORDER), FRQ
 
       CHARACTER*8 LABELN(ORDER), LABELL(MAXLIST,ORDER), LBL
       INTEGER I
@@ -6923,20 +6888,15 @@ C maintain the list of fourth-order lagrangian multiplier vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccl4rsp.h>
+#include "ccl4rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='L4', ORDER=4)
  
       INTEGER ISYA, ISYB, ISYC, ISYD
       INTEGER ISYM(4)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC,FRQD
-      REAL FREQ(4)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC, FRQD
-      DOUBLE PRECISION FREQ(4)
-#endif
+      REAL*8  FRQA,FRQB,FRQC,FRQD
+      REAL*8  FREQ(4)
       CHARACTER*8 LBLA, LBLB, LBLC, LBLD
       CHARACTER*8 LABEL(4)
      
@@ -6973,20 +6933,15 @@ C maintain the list of fourth-order amplitude response vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr4rsp.h>
+#include "ccr4rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='R4',ORDER=4)
  
       INTEGER ISYA, ISYB, ISYC, ISYD
       INTEGER ISYM(4)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC,FRQD
-      REAL FREQ(4)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC, FRQD
-      DOUBLE PRECISION FREQ(4)
-#endif
+      REAL*8  FRQA,FRQB,FRQC,FRQD
+      REAL*8  FREQ(4)
       CHARACTER*8 LBLA, LBLB, LBLC, LBLD
       CHARACTER*8 LABEL(4)
 
@@ -7023,20 +6978,15 @@ C maintain the list of fourth-order amplitude right hand side vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cco4rsp.h>
+#include "cco4rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='O4',ORDER=4)
  
       INTEGER ISYA, ISYB, ISYC, ISYD
       INTEGER ISYM(4)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC,FRQD
-      REAL FREQ(4)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC, FRQD
-      DOUBLE PRECISION FREQ(4)
-#endif
+      REAL*8  FRQA,FRQB,FRQC,FRQD
+      REAL*8  FREQ(4)
       CHARACTER*8 LBLA, LBLB, LBLC, LBLD
       CHARACTER*8 LABEL(4)
 
@@ -7073,20 +7023,15 @@ C maintain the list of fourth-order chi vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccx4rsp.h>
+#include "ccx4rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='X4',ORDER=4)
  
       INTEGER ISYA, ISYB, ISYC, ISYD
       INTEGER ISYM(4)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC,FRQD
-      REAL FREQ(4)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC, FRQD
-      DOUBLE PRECISION FREQ(4)
-#endif
+      REAL*8  FRQA,FRQB,FRQC,FRQD
+      REAL*8  FREQ(4)
       CHARACTER*8 LBLA, LBLB, LBLC, LBLD
       CHARACTER*8 LABEL(4)
 
@@ -7123,20 +7068,15 @@ C maintain the list of third-order lagrangian multiplier vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccl3rsp.h>
+#include "ccl3rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='L3', ORDER=3)
  
       INTEGER ISYA, ISYB, ISYC
       INTEGER ISYM(ORDER)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC
-      REAL FREQ(ORDER)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC
-      DOUBLE PRECISION FREQ(ORDER)
-#endif
+      REAL*8  FRQA,FRQB,FRQC
+      REAL*8  FREQ(ORDER)
       CHARACTER*8 LBLA, LBLB, LBLC
       CHARACTER*8 LABEL(ORDER)
 
@@ -7170,20 +7110,15 @@ C maintain the list of fourth-order amplitude response vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr3rsp.h>
+#include "ccr3rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='R3',ORDER=3)
  
       INTEGER ISYA, ISYB, ISYC
       INTEGER ISYM(ORDER)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC
-      REAL FREQ(ORDER)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC
-      DOUBLE PRECISION FREQ(ORDER)
-#endif
+      REAL*8  FRQA,FRQB,FRQC
+      REAL*8  FREQ(ORDER)
       CHARACTER*8 LBLA, LBLB, LBLC
       CHARACTER*8 LABEL(ORDER)
 
@@ -7217,20 +7152,15 @@ C maintain the list of third-order amplitude right hand side vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cco3rsp.h>
+#include "cco3rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='O3',ORDER=3)
  
       INTEGER ISYA, ISYB, ISYC
       INTEGER ISYM(ORDER)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC
-      REAL FREQ(ORDER)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC
-      DOUBLE PRECISION FREQ(ORDER)
-#endif
+      REAL*8  FRQA,FRQB,FRQC
+      REAL*8  FREQ(ORDER)
       CHARACTER*8 LBLA, LBLB, LBLC
       CHARACTER*8 LABEL(ORDER)
 
@@ -7264,20 +7194,15 @@ C maintain the list of fourth-order chi vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccx3rsp.h>
+#include "ccx3rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='X3',ORDER=3)
  
       INTEGER ISYA, ISYB, ISYC
       INTEGER ISYM(ORDER)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC
-      REAL FREQ(ORDER)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC
-      DOUBLE PRECISION FREQ(ORDER)
-#endif
+      REAL*8  FRQA,FRQB,FRQC
+      REAL*8  FREQ(ORDER)
       CHARACTER*8 LBLA, LBLB, LBLC
       CHARACTER*8 LABEL(ORDER)
 
@@ -7318,16 +7243,13 @@ C
 C Christof Haettig, july 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccer1rsp.h>
-#include <priunit.h>
+#include "ccer1rsp.h"
+#include "priunit.h"
 C
       LOGICAL LPROJ, LPROJ1
       INTEGER ISYMA, ISYMS, IEXCI
-#if defined (SYS_CRAY)
-      REAL FRQANEW,EIGVNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,EIGVNEW,TOL
-#endif
+      REAL*8  FRQANEW,EIGVNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA
@@ -7398,16 +7320,13 @@ C
 C Christof Haettig, july 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccer2rsp.h>
-#include <priunit.h>
+#include "ccer2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LPROJ, LPROJ1
       INTEGER ISYMA, ISYMB, ISYMS, IEXCI
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,EIGVNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,EIGVNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,EIGVNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -7499,16 +7418,13 @@ C Christof Haettig, july 97
 C LORXA flag introduced, Sonia Coriani april 2000
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccel1rsp.h>
-#include <priunit.h>
+#include "ccel1rsp.h"
+#include "priunit.h"
 C
       LOGICAL LPROJ, LPROJ1, LORXA
       INTEGER ISYMA, ISYMS, IEXCI
-#if defined (SYS_CRAY)
-      REAL FRQANEW,EIGVNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,EIGVNEW,TOL
-#endif
+      REAL*8  FRQANEW,EIGVNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA
@@ -7581,16 +7497,13 @@ C
 C Christof Haettig, july 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccel2rsp.h>
-#include <priunit.h>
+#include "ccel2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LPROJ, LPROJ1
       INTEGER ISYMA, ISYMB, ISYMS, IEXCI
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,EIGVNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,EIGVNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,EIGVNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -7681,15 +7594,12 @@ C
 C Ove Christiansen, April 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccn2rsp.h>
-#include <priunit.h>
+#include "ccn2rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYMI, ISYMF
-#if defined (SYS_CRAY)
-      REAL FRQINEW,FRQFNEW,TOL
-#else
-      DOUBLE PRECISION FRQINEW,FRQFNEW,TOL
-#endif
+      REAL*8  FRQINEW,FRQFNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       INTEGER I,IIEX,IFEX
@@ -7758,16 +7668,12 @@ C
 C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cccl2rsp.h>
-#include <priunit.h>
+#include "cccl2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 C
-#if defined (SYS_CRAY)
-#else
-#endif
-
       CHARACTER*8 NEWLBLA, NEWLBLB
       INTEGER ICAUA, ICAUB, I
       INTEGER ISYMA, ISYMB
@@ -7859,16 +7765,12 @@ C
 C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cccr2rsp.h>
-#include <priunit.h>
+#include "cccr2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 C
-#if defined (SYS_CRAY)
-#else
-#endif
-
       CHARACTER*8 NEWLBLA, NEWLBLB
       INTEGER ICAUA, ICAUB, I
       INTEGER ISYMA, ISYMB
@@ -7960,16 +7862,12 @@ C
 C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cccx2rsp.h>
-#include <priunit.h>
+#include "cccx2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 C
-#if defined (SYS_CRAY)
-#else
-#endif
-
       CHARACTER*8 NEWLBLA, NEWLBLB
       INTEGER ICAUA, ICAUB, I
       INTEGER ISYMA, ISYMB
@@ -8062,16 +7960,12 @@ C
 C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccco2rsp.h>
-#include <priunit.h>
+#include "ccco2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 C
-#if defined (SYS_CRAY)
-#else
-#endif
-
       CHARACTER*8 NEWLBLA, NEWLBLB
       INTEGER ICAUA, ICAUB, I
       INTEGER ISYMA, ISYMB
@@ -8168,18 +8062,15 @@ C
 C Christof Haettig, Juni 1998
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cco1rsp.h>
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "cco1rsp.h"
+#include "priunit.h"
+#include "ccsdinp.h"
  
       LOGICAL LORX
       INTEGER ISYM
 
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL, FRQINP
-#else
-      DOUBLE PRECISION FRQNEW,TOL, FRQINP
-#endif
+      REAL*8  FRQNEW,TOL, FRQINP
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBL
@@ -8248,18 +8139,15 @@ C
 C Christof Haettig, Juni 1998
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccx1rsp.h>
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "ccx1rsp.h"
+#include "priunit.h"
+#include "ccsdinp.h"
  
       LOGICAL LORX, LORX1
       INTEGER ISYM
 
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL, FRQINP
-#else
-      DOUBLE PRECISION FRQNEW,TOL, FRQINP
-#endif
+      REAL*8  FRQNEW,TOL, FRQINP
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBL
@@ -8276,7 +8164,7 @@ C Christof Haettig, Juni 1998
 
       DO I = 1,NX1LBL
          ! the following crappy comparison of LORX with LORXX1 was
-         ! necessary to get it through the G77 and the XLF compilers
+         ! necessary to get it through the XLF compilers
          LORX1 = (LORX.AND.LORXX1(I)) .OR.
      &           ((.NOT.LORX).AND.(.NOT.LORXX1(I)))
          IF ( (NEWLBL .EQ. LBLX1(I)) .AND. LORX1 .AND. 
@@ -8342,16 +8230,13 @@ C Sonia Coriani, March 2000
 C based of IL1ZETA and IEL1AMP
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccpl1rsp.h>
-#include <priunit.h>
+#include "ccpl1rsp.h"
+#include "priunit.h"
 
       LOGICAL LORXA, LPROJ, LPROJ1
       INTEGER ISYMA, ISYMS, IEXCI, I
-#if defined (SYS_CRAY)
-      REAL FRQANEW, EIGVNEW, TOL
-#else
-      DOUBLE PRECISION FRQANEW, EIGVNEW, TOL
-#endif
+      REAL*8  FRQANEW, EIGVNEW, TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA
@@ -8414,3 +8299,91 @@ C based of IL1ZETA and IEL1AMP
       RETURN
       END
 *=====================================================================*
+C  /* Deck iqllist */
+      INTEGER FUNCTION IQLLIST(NEWLBL,LORX,ICHAIN,FRQINP,ISYM)
+*---------------------------------------------------------------------*
+C
+C maintain the list of Q vectors in Lanczos chain (aka 'QL')
+C
+C   if vector is on the list return list index and set ISYM
+C   if vector is NOT on the list:
+C        LQLOPN=.true.  --> extend list, and return index
+C        LQLOPN=.false. --> return -1
+C
+C        NEWLBL -- operator label
+C        LORX   -- flag for orbital relaxation
+C        FRQINP -- frequency (ignored for unrelaxed orbitals)
+C        ISYM   -- symmetry
+C        ICHAIN -- index of given Q vector in the chain
+C Sonia & Kristian, August 2010
+*---------------------------------------------------------------------*
+      IMPLICIT NONE
+#include "ccqlrlcz.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+      LOGICAL LORX, LOCDBG
+      PARAMETER (LOCDBG=.false.)
+      INTEGER ISYM, ICHAIN
+
+#if defined (SYS_CRAY)
+      REAL FRQNEW,TOL, FRQINP
+#else
+      DOUBLE PRECISION FRQNEW,TOL, FRQINP
+#endif
+      PARAMETER(TOL=1.0D-12)
+
+      CHARACTER*8 NEWLBL
+      INTEGER I
+
+* if LORX false ignore frequency (set to zero internally):
+      IF (LORX.OR.CCSDT) THEN
+        FRQNEW = FRQINP
+      ELSE
+        FRQNEW = 0.0d0
+      END IF
+
+      if (locdbg) then
+       write(lupri,*)'FUNCTION IQLLST at entry'
+       write(lupri,*)'NQLLBL: ', NQLLBL
+       write(lupri,*)'NEWLBL: ', NEWLBL, ' ? LBLQL:', LBLQL(1)
+       write(lupri,*)'LORX: ', LORX, ' ? LORXQL:', LORXQL(1)
+       write(lupri,*)'ABS(FRQNEW-FRQQL(1)): ', ABS(FRQNEW-FRQQL(1))
+       write(lupri,*)'ICHAIN: ', ICHAIN, 'IDXQL(1):', IDXQL(1)
+      end if
+      DO I = 1,NQLLBL
+         IF ( (NEWLBL .EQ. LBLQL(I)) .AND. (LORX .EQV. LORXQL(I)) .AND.
+     &        (ABS(FRQNEW-FRQQL(I)).LT.TOL) .AND.
+     &      (ICHAIN .EQ. IDXQL(I))) THEN
+            IQLLIST = I
+            ISYM    = ISYQL(IQLLIST)
+            RETURN
+         END IF
+      END DO
+      IF (LQLOPN) THEN
+        NQLLBL = NQLLBL + 1
+        IF (NQLLBL.GT.MAXQLLBL) THEN
+          WRITE(LUPRI,'(A,/A,I5,A,I5)')
+     *    '@ NUMBER OF SPECIFIED QL  EXCEED THE MAXIMUM ALLOWED',
+     *    '@ MAXQLLBL =',MAXQLLBL,' NQLLBL= ',NQLLBL
+          CALL QUIT(' IQLLIST: TOO MANY EQUATIONS SPECIFIED')
+        END IF
+
+        LBLQL(NQLLBL)  = NEWLBL
+        ISYQL(NQLLBL)  = ISYM
+        LORXQL(NQLLBL) = LORX
+        FRQQL(NQLLBL)  = FRQNEW
+        IDXQL(NQLLBL)  = ICHAIN
+        IQLLIST        = NQLLBL
+
+      ELSE
+        WRITE(LUPRI,'(3A,L2,A,1P,D12.5,2A)')
+     *   '@ WARNING: Q VECTOR FOR ',NEWLBL,
+     *   '(',LORX,',',FRQNEW,')',
+     *                  ' IS NOT AVAILABLE.'
+        IQLLIST = -1
+      END IF
+
+      RETURN
+      END
+
+

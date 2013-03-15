@@ -1,62 +1,52 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck r12aux */  
       SUBROUTINE R12AUX(WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>   
+#include "implicit.h"
+#include "priunit.h"   
 C
       PARAMETER (D0 = 0D0, D1 = 1D0)
       DIMENSION WORK(LWORK)
-#include <iratdef.h>
-#include <dummy.h>
-#include <thrldp.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <gnrinf.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "thrldp.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "gnrinf.h"
+#include "cbirea.h"
+#include "r12int.h"
 #include "incore.h"
       LOGICAL DELEMO, FOUND, LDUMMY, TEMP_DIRFCK
       INTEGER NBASF(8)
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('R12AUX')
       TEMP_DIRFCK = DIRFCK
@@ -102,11 +92,12 @@ c      NMOCCT = 2 * NOCCT * NOCCT
       NMOCCT = 2 * NOCCT_R12 * NOCCT_R12
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFVAO,0,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO , NCMOT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFVAO,     0,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDCAO,N2BOYX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDVAO,0,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAUX,N2BOYX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDVAO,     0,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDV  ,     0,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KAUX ,N2BOYX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT,MAX(NNBOYT,N2BOYX),WORK,KFREE,LFREE)
       IF (R12PRP) THEN
          CALL MEMGET('REAL',KSMO,MAX(7*NMORBT,NNBOYT),WORK,KFREE,LFREE)
@@ -187,7 +178,7 @@ C
          END IF
       END IF
       CALL FCKMAO(.TRUE.,EMCMY,WORK(KFCAO),WORK(KFVAO),
-     *     WORK(KDCAO),WORK(KDVAO),WORK(KCMO),DV_DUMMY,WORK(KWRK),LWRK)
+     *     WORK(KDCAO),WORK(KDVAO),WORK(KDV),WORK(KCMO),WORK(KWRK),LWRK)
 
       WRITE(LUPRI,'(/A,I1,A)') ' Computation of exchange matrix'//
      *                         ' done [',MBSMAX,']'
@@ -353,118 +344,16 @@ C
   111 FORMAT(10I5)
   112 FORMAT(4E30.20)
       END
-#ifdef NOT_USED
- hjaaj Oct 2003: disabled this unused test code
-   IF it is ever activated again, note that NEF labels have a new format!
-C  /* Deck dsori*/  
-      SUBROUTINE DSORI(WORK,LWORK,UU,ZZ,NBAST,NOCCT)
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
-      DIMENSION WORK(LWORK),UU(*),ZZ(*)                    
-      LOGICAL FOUND
-      KDSO = 1 + NBAST*NBAST
-      KDRI = KDSO + NBAST*NBAST
-      KEF1 = KDRI + NBAST*NBAST  
-      KEF2 = KEF1 + NBAST*NBAST  
-      KEND = KEF2 + NBAST*NBAST*2
-      LWRK = LWORK - KEND
-C
-      CALL RDPROP('DSO 0603',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KDSO),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL AROUND('DSO 0603')
-      CALL OUTPUT(WORK(KDSO),1,MBAS1(1),1,MBAS1(1),NBAST,NBAST,1,LUPRI)
-C
-      CALL DZERO(WORK(KDRI),NBAST*NBAST)
-C
-      CALL RDPROP('NEF 05  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF1),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL RDPROP('NEF 02  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF2),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL DSORI2(WORK(KEF1),WORK(KEF2),WORK(KDRI),NBAST)
-C
-      CALL RDPROP('NEF 04  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF1),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL RDPROP('NEF 01  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF2),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL DSORI2(WORK(KEF1),WORK(KEF2),WORK(KDRI),NBAST) 
-C
-      CALL AROUND('DRI 0603')
-      CALL OUTPUT(WORK(KDRI),1,MBAS1(1),1,MBAS1(1),NBAST,NBAST,1,LUPRI)
-C
-      CALL RDPROP('DSO 0502',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KDSO),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL AROUND('DSO 0502')
-      CALL OUTPUT(WORK(KDSO),1,MBAS1(1),1,MBAS1(1),NBAST,NBAST,1,LUPRI)
-C
-      CALL DZERO(WORK(KDRI),NBAST*NBAST)
-C
-      CALL RDPROP('NEF 06  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF1),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL RDPROP('NEF 03  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF2),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL DSORI2(WORK(KEF1),WORK(KEF2),WORK(KDRI),NBAST)
-C
-      CALL RDPROP('NEF 04  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF1),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL RDPROP('NEF 01  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF2),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL DSORI2(WORK(KEF1),WORK(KEF2),WORK(KDRI),NBAST)
-C
-      CALL AROUND('DRI 0502')
-      CALL OUTPUT(WORK(KDRI),1,MBAS1(1),1,MBAS1(1),NBAST,NBAST,1,LUPRI)
-C
-      CALL RDPROP('DSO 0401',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KDSO),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL AROUND('DSO 0401')
-      CALL OUTPUT(WORK(KDSO),1,MBAS1(1),1,MBAS1(1),NBAST,NBAST,1,LUPRI)
-C
-      CALL DZERO(WORK(KDRI),NBAST*NBAST)
-C
-      CALL RDPROP('NEF 05  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF1),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL RDPROP('NEF 02  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF2),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL DSORI2(WORK(KEF1),WORK(KEF2),WORK(KDRI),NBAST)
-C
-      CALL RDPROP('NEF 06  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF1),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL RDPROP('NEF 03  ',WORK,FOUND)
-      CALL UTHZ(WORK,UU,ZZ,WORK(KEF2),WORK(KEND),LWRK,NBAST,NBAST)
-      CALL DSORI2(WORK(KEF1),WORK(KEF2),WORK(KDRI),NBAST)
-C
-      CALL AROUND('DRI 0401')
-      CALL OUTPUT(WORK(KDRI),1,MBAS1(1),1,MBAS1(1),NBAST,NBAST,1,LUPRI)
-      RETURN
-      END
-C  /* Deck dsori2*/  
-      SUBROUTINE DSORI2(X1,X2,XX,N)
-#include <implicit.h>
-#include <priunit.h>
-      PARAMETER (HALF = 0.5D0)
-      DIMENSION X1(N,N), X2(N,N), XX(N,N)
-#include <r12int.h>
-      DO I = 1, MBAS1(1)
-        DO J = 1, MBAS1(1)
-          DO K = MBAS1(1) + 1, N
-            XX(I,J) = XX(I,J) 
-     *              + HALF*(X1(K,I)*X2(K,J) + X2(K,I)*X1(K,J))
-          ENDDO
-        ENDDO
-      ENDDO
-      RETURN
-      END
-#endif  /*  NOT_USED */
 C  /* Deck auxort */
       SUBROUTINE AUXORT(CMO,AUX,SCRA,LSCRA)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CMO(*), AUX(*), SCRA(*)
       PARAMETER (D1 = 1.0D0)
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <r12int.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "r12int.h"
       KOVLP = 1
       KSMOS = KOVLP + NNBAST
       KSCR1 = KSMOS
@@ -503,7 +392,7 @@ C  /* Deck auxnrm */
 C
 C     PROJECT OUT M1 VECTORS
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION S(*), VC(*), W(*)
       PARAMETER ( D0 = 0D0, D1 = 1D0)
       IF (M1. LE. 0 .OR. M2 .LE. 0) RETURN
@@ -529,23 +418,23 @@ C
 C     The matrix <ij|r12**2|kl> must be recomputed if canonical virtual
 C     orbitals have been replaced by natural orbitals (WK/UniKA/22-11-2005).
 C
-#include <implicit.h>
-#include <priunit.h>   
+#include "implicit.h"
+#include "priunit.h"   
       LOGICAL FOUND
       DIMENSION WORK(LWORK), CMO(*), NBASF(8)
-#include <iratdef.h>
-#include <dummy.h>
-#include <thrldp.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <gnrinf.h>
-#include <r12int.h>
-#include <memint.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "thrldp.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "gnrinf.h"
+#include "r12int.h"
+#include "memint.h"
 C
       CALL QENTER('R12AUX1')
 C
@@ -639,3 +528,4 @@ C
       CALL QEXIT('R12AUX1')
       RETURN
       END
+!  --- end of r12aux.F ---

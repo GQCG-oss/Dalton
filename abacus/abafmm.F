@@ -1,48 +1,38 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck fmminp */
       SUBROUTINE FMMINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 4)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbifmm.h>
-#include <abainf.h>
+#include "cbifmm.h"
+#include "abainf.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  ','.LMAX  '/
 C
       NEWDEF = (WORD .EQ. '*FMM   ')
@@ -120,10 +110,10 @@ C  /* Deck fmmini */
       SUBROUTINE FMMINI
 C     Initialize /CBIFMM/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbifmm.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbifmm.h"
 C     CHARACTER OUTCEN*60                          !maw
 C     PARAMETER (OUTCEN =                         !maw
 C    &     "/people/mark/desktop/code/data/FMM_g-data.out")
@@ -146,16 +136,16 @@ C  /* Deck fmmdrv */
 C
 C     M. Watson & T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <maxmom.h>
-#include <iratdef.h>
-#include <inforb.h>
-#include <cbifmm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "maxmom.h"
+#include "iratdef.h"
+#include "inforb.h"
+#include "cbifmm.h"
       DIMENSION WORK(LWORK)
 C
       IF (SKIP) RETURN
@@ -191,26 +181,26 @@ C  /* Deck fmmdr1 */
 C
 C     M. Watson & T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
       DIMENSION SPHINT(NNBASX,NCOMP), DENMAT(NNBASX),
      &          AOCOOR(NBAST,3), AOEXP(NBAST),
      &          WORK(LWORK)
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <cbieri.h>
-#include <clsfmm.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "cbieri.h"
+#include "clsfmm.h"
 C
       IF (IPRINT .GT. 2) CALL TITLER('Output from FMMDR1','*',103)
 C
@@ -249,25 +239,25 @@ C  /* Deck fmmncl */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
       PARAMETER (D0 = 0.0D0, D100 = 1.0D2)
       DIMENSION WORK(LWORK)
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <cbieri.h>
-#include <clsfmm.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "cbieri.h"
+#include "clsfmm.h"
 C
       IF (IPRINT .GT. 2) CALL TITLER('Output from FMMNCL','*',103)
 C
@@ -384,13 +374,13 @@ C  /* Deck fmmdns */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
       LOGICAL NODC, NODV
       DIMENSION DENMAT(NNBASX), WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       IF (IPRINT .GT. 2) CALL TITLER('Output from FMMDNS','*',103)
 C
@@ -415,25 +405,25 @@ C  /* Deck fmmint */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxmom.h>
-      LOGICAL TOFILE, TRIMAT, DOINT(2,2)
-      DIMENSION SPHINT(NNBASX,*), WORK(LWORK)
-#include <inforb.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxmom.h"
+      LOGICAL      TOFILE, TRIMAT, DOINT(2,2)
+      DIMENSION    SPHINT(NNBASX,*), WORK(LWORK)
+      CHARACTER*10 LABINT(2*LMAX+1)
+#include "inforb.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "orgcom.h"
 C
       IF (IPRINT .GT. 2) CALL TITLER('Output from FMMINT','*',103)
 C
       NCMPS = (LMAX + 1)**2
 C
-      KLABL = 1
-      KINTR = KLABL + NCMPS
+      KINTR = 1
       KINTA = KINTR + (NCMPS + IRAT - 1)/IRAT
       KLAST = KINTA + (NCMPS + IRAT - 1)/IRAT
       IF (KLAST .GT. LWORK) CALL STOPIT('FMMINT',' ',KLAST,LWORK)
@@ -454,11 +444,11 @@ C
       DO IORDER = 0, LMAX
          NCOMPS = 2*IORDER + 1
          CALL PR1IN1(WORK(KLAST),KFREE,LFREE,WORK(KINTR),WORK(KINTA),
-     &               WORK(KLABL),'SPHMOML',IORDER,MPQUAD,TRIANG,PROPRI,
+     &               LABINT,'SPHMOML',IORDER,MPQUAD,TRIANG,PROPRI,
      &               IPRINT,SPHINT(1,IOFF+1),NCOMP,TOFILE,'TRIANG',
      &               DOINT,DUMMY,.FALSE.,DUMMY)
-         IF (IPRINT .GT. 5) CALL FMMSPR(SPHINT(1,IOFF+1),
-     &                                  WORK(KLABL),WORK(KINTR),NCOMPS)
+         IF (IPRINT .GT. 5)
+     &      CALL FMMSPR(SPHINT(1,IOFF+1),LABINT,WORK(KINTR),NCOMPS)
          IOFF = IOFF + NCOMPS
       END DO
       RETURN
@@ -469,12 +459,12 @@ C  /* Deck fmmspr */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
       CHARACTER LABINT(*)*8
       DIMENSION SPHINT(NNBASX,*), INTREP(*)
-#include <inforb.h>
+#include "inforb.h"
 C
       DO ICOMP = 1, NCOMPS
          CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
@@ -487,23 +477,23 @@ C
 C  /* Deck sphave */
       SUBROUTINE SPHAVE(SPHINT,DENMAT,LMAX,DIS,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       DIMENSION SPHINT(NNBASX,*), DENMAT(NNBASX), DIS(*)
-#include <ccom.h>
-#include <primit.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <inforb.h>
-#include <clsfmm.h>
+#include "ccom.h"
+#include "primit.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "clsfmm.h"
 C
       CALL HEADER('Output from SPHAVE',-1)
 C
@@ -580,24 +570,24 @@ C
       END
 C  /* Deck fmmorb */
       SUBROUTINE FMMORB(AOCOOR,AOEXP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
       DIMENSION AOCOOR(NBAST,3), AOEXP(NBAST)
 C
-#include <ccom.h>
-#include <primit.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <inforb.h>
+#include "ccom.h"
+#include "primit.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "inforb.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IORBA = 0
       DO ISHELA = 1,KMAX
@@ -627,18 +617,18 @@ C  /* Deck geterg */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.0D0, D4 = 4.0D0)
       DIMENSION DMAT(N2BASX), WORK(LWORK), MBAS(8)
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       ERGTOT = D0
       ERGCOU = D0
@@ -678,13 +668,13 @@ C    &    ' Two-electron total and Coulomb energies: ',ERGTOT,ERGCOU
 C  /* Deck adderg */
       SUBROUTINE ADDERG(ERGTOT,ERGCOU,DMAT,BUF,IBUF,LENGTH)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.50D00, DP25 = 0.25D0)
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST), BUF(LENGTH), IBUF(4,LENGTH)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)
@@ -706,11 +696,11 @@ C
 C  /* Deck get1el */
       SUBROUTINE GET1EL(ERGONE,DMAT,HMAT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.D0, D2 = 2.0D0)
       DIMENSION DMAT(NBAST,NBAST), HMAT(NNBAST)
-#include <inforb.h>
+#include "inforb.h"
       ERGONE = D0
       IJ = 0
       DO I = 1, NBAST
@@ -725,9 +715,9 @@ C
       END
 C  /* Deck fmmzer */
       SUBROUTINE FMMZER(DIS,NDIM,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION DIS(NDIM,8)
@@ -753,10 +743,10 @@ C
       CALL HEADER('Electronic information',-1)
       READ (LUINTM) NBAST, LMAX, THRCLS, ERFAC
 C
-      WRITE (LUPRI,'(2X,A,I12)')    ' NBAST  ', NBAST
-      WRITE (LUPRI,'(2X,A,I12)')    ' LMAX   ', LMAX
-      WRITE (LUPRI,'(2X,A,E12.6)') ' THRCLS ', THRCLS
-      WRITE (LUPRI,'(2X,A,F12.6)') ' ERFAC  ', ERFAC
+      WRITE (LUPRI,'(2X,A,I12)')      ' NBAST  ', NBAST
+      WRITE (LUPRI,'(2X,A,I12)')      ' LMAX   ', LMAX
+      WRITE (LUPRI,'(2X,A,1P,E13.6)') ' THRCLS', THRCLS
+      WRITE (LUPRI,'(2X,A,1P,F13.6)') ' ERFAC ', ERFAC
 C
       DO L =  0, LMAX
       DO M = -L, L
@@ -813,13 +803,13 @@ C
       END DO
       ERG0 = DP5*ERG0
       ERG1 = DP5*ERGP + DP5*ERGQ
-      WRITE (LUPRI,'(/2X,A,3F13.8)')
+      WRITE (LUPRI,'(/2X,A,3F15.8)')
      &      ' First-order classical interaction:',ERG0,ERG1,ERG0+ERG1
       RETURN
       END
 C  /* Deck erfciv */
       FUNCTION ERFCIV(THR)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, THRMAX = 1.0D-15)
       DIMENSION ERFCI(0:15)
       DATA (ERFCI(I),I=0,15)/0.00000D0, 1.16309D0, 1.82139D0, 2.32675D0,

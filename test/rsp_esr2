@@ -229,7 +229,7 @@ SD 009 x
 SD 009 y
 .TRPPRP
 SD 009 z
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -252,7 +252,7 @@ fi
 
 # Integral setup
 CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
-CRIT2=`$GREP "The following one\-electron property integrals are calculated\:" $log | wc -l`
+CRIT2=`$GREP "The following one\-electron property integrals are calculated" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- Fermi contact integrals" $log | wc -l`
 CRIT5=`$GREP "\(Dirac delta function integrals\)" $log | wc -l`

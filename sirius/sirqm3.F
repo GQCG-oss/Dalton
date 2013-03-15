@@ -1,61 +1,52 @@
 
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C      CBN+JK
 C*************************************************************************
 C  /* Deck qm3fck */
       SUBROUTINE QM3FCK(DCAO,DVAO,FSOL,EQM3T,ENSEL,EPOL,EELEL,
      *                  WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <thrzer.h>
-#include <iratdef.h>
-#include <codata.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "thrzer.h"
+#include "iratdef.h"
+#include "codata.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infpar.h"
 
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
@@ -118,22 +109,22 @@ C ***********************************************************************
 C  /* Deck qm3_rra */
       SUBROUTINE QM3_RRA(DCAO,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
 #include "nuclei.h"
 
 
@@ -362,21 +353,21 @@ C*********************************************************************
 C  /* Deck qm3_ns */
       SUBROUTINE QM3_NS(DCAO,DFTNS,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
 #include "nuclei.h"
 
 
@@ -544,21 +535,21 @@ C  /* Deck qm3_nsp */
 C
 C     The parallel version of the routine QM3_NS, Arnfinn nov. -08
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "mtags.h"
 #include "infpar.h"
@@ -569,8 +560,10 @@ C
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
-#include <ibtfun.h>
-      IPRTYP = 16
+#include "ibtfun.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
+      IPRTYP = QM3_NSP_WORK
       
       CALL QENTER('QM3_NSP')
 
@@ -602,6 +595,8 @@ CHJAaJ-e
       OBKPX = DIPORG(1)
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
+
+      CALL DZERO(DFTNS,MXQM3)
 
       DO 525 I = 1, ISYTP
          IF (MDLWRD(I)(1:3) .EQ. 'SPC') THEN
@@ -649,29 +644,29 @@ C
 C*********************************************************************
       SUBROUTINE QM3_NSPM(IPRTYP,DCAO,DFTNS,WRK,LWRK,IPRINT,
      &                     EXP1VL,TOFILE,ENSEL,FAC1,LNUM,INUM)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
-#include <cbiher.h>
+#include "cbiher.h"
 
 C     The master routine
 
@@ -684,8 +679,9 @@ C     The master routine
      &     'for storing NS-integrals on disk')
 
       KDCAO=1
-      KDFTNS=KDCAO+NNBASX
-      KLAST=KDFTNS+MXQM3
+      KDFTNS1=KDCAO+NNBASX
+      KDFTNS2=KDFTNS1+MXQM3
+      KLAST=KDFTNS2+MXQM3
       LWRK1=LWRK-KLAST+1
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IQM3PR,1,'INTEGER',MASTER)
@@ -705,8 +701,6 @@ C
       CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NPATOM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPATOM,MXCENT,'INTEGER',MASTER)
-
-      CALL DZERO(DFTNS,MXQM3)
 
 C     Loop over all MM nuclei
 
@@ -732,40 +726,45 @@ C     Send end message to all slaves
       END DO
 
 C     Collect data from all slaves      
-      CALL DZERO(WRK(KDFTNS),MXQM3)
-      CALL MPI_REDUCE(WRK(KDFTNS),DFTNS,MXQM3,
+      CALL DZERO(WRK(KDFTNS1),MXQM3)
+      CALL DZERO(WRK(KDFTNS2),MXQM3)
+      CALL MPI_REDUCE(WRK(KDFTNS1),WRK(KDFTNS2),MXQM3,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+      DO I = 1, MXQM3
+        DFTNS(I) = DFTNS(I) + WRK(KDFTNS2 + I - 1)
+      END DO
+
       RETURN
       END
 
 C*********************************************************************
 
       SUBROUTINE QM3_NSPS(WRK,LWRK,IPRTMP)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <gnrinf.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "gnrinf.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
-#include <cbiher.h>
+#include "cbiher.h"
 
 C     The slave routine
 
@@ -839,7 +838,6 @@ C Run loop over MM nuclear charges
       END IF
 
 C     No more Ns to calculate
-
       CALL MPI_REDUCE(WRK(KDFTNS),WRK(KDFTNS),MXQM3,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
@@ -851,22 +849,22 @@ C*********************************************************************
 C  /* Deck qm3_fmo */
       SUBROUTINE QM3_FMO(FSOL,WRK,LWRK,IPRINT)   
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
 #include "nuclei.h"
 
 
@@ -1156,22 +1154,22 @@ C*********************************************************************
 C  /* Deck qm3_energy */
       SUBROUTINE QM3_ENERGY(DFTNS,EEL,EPOL,EELEL,EQM3T,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION FFJ(3), DFTNS(*)
@@ -1223,18 +1221,17 @@ C-------------------------------------
      *                WRK(KRAx),WRK(KRAy),WRK(KRAz))
 
         KS = 0
-
         DO 110 I = 1, ISYTP
           IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
             DO 120 J = NSYSBG(I), NSYSED(I)
               DO 121 K = 1, NUALIS(I)
                 KS = KS+1
                 RAT = 0.0D0
-                RAT =  0.5D0 * ALPIMM(I,K) * WRK(KRAx + KS - 1) *
+                RAT = 0.5D0 * ALPIMM(I,K) * WRK(KRAx + KS - 1) *
      &                (WRK(KRAx + KS - 1) + WRK(KOMMSx + KS - 1))
-     &               + 0.5D0 * ALPIMM(I,K) * WRK(KRAy + KS - 1) *
+     &              + 0.5D0 * ALPIMM(I,K) * WRK(KRAy + KS - 1) *
      &                (WRK(KRAy + KS - 1) + WRK(KOMMSy + KS - 1))
-     &               + 0.5D0 * ALPIMM(I,K) * WRK(KRAz + KS - 1) *
+     &              + 0.5D0 * ALPIMM(I,K) * WRK(KRAz + KS - 1) *
      &                (WRK(KRAz + KS - 1) + WRK(KOMMSz + KS - 1))
                 EQM3T = EQM3T - RAT
   121         CONTINUE
@@ -1249,13 +1246,12 @@ C-------------------------------------
       ELSE
 
         OTILDE = 0.0D0
-        TEMP1 = 0.0D0
+        TEMP1  = 0.0D0
 
       END IF
 
       EQM3T = EQM3T + OTILDE
       EPOL = EQM3T
-
 C--------
 C 2) Eel:
 C--------
@@ -1332,20 +1328,20 @@ C*************************************************************************
 C  /* Deck qm3grad */
       SUBROUTINE QM3GRAD(CREF,CMO,INDXCI,G,EQM3T,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <inflin.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "inflin.h"
 
       DIMENSION CREF(*),CMO(*),INDXCI(*)
       DIMENSION G(*),WRK(LWRK)
@@ -1437,12 +1433,12 @@ C  /* Deck qm3lin */
       SUBROUTINE QM3LIN(NOSIM,BOVECS,CREF,CMO,INDXCI,
      &                  SOVECS,ORBLIN,WRK,LWRK)
 C
-#include <implicit.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "infpri.h"
 
       DIMENSION BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION SOVECS(*),WRK(LWRK)
@@ -1488,20 +1484,20 @@ C  /* Deck qm3hess */
       SUBROUTINE QM3HESS(NOSIM,BOVECS,CREF,CMO,INDXCI,
      &                   DV,SVEC,NSVEC,WRK,LWRK)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <maxash.h>
-#include <infind.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <orgcom.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "maxash.h"
+#include "infind.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "orgcom.h"
+#include "infinp.h"
 #include "nuclei.h"
 C
       DIMENSION BOVECS(NWOPPT,*),CREF(*),CMO(*),INDXCI(*)
@@ -1796,12 +1792,12 @@ C  /* Deck qm3fck */
 C
 C     Construct the QM/MM contribution to the Fock-matrix in MO basis
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <infopt.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "infopt.h"
 C
       DIMENSION CMO(*), FSOL(*), WRK(LWRK)
 C

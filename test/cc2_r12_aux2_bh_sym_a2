@@ -51,7 +51,7 @@ cat > cc2_r12_aux2_bh_sym_a2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12

@@ -1,49 +1,39 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck erigam */
       SUBROUTINE ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
 C     Two-electron Dirac delta added (WK/UniKA/22-11-2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION RJ000(NPPX,0:JMAX), FACINT(NPPX),
      &          ALPHA(NPPX), COORPQ(NPPX,3),
      &          WORK(LWORK)
-#include <ericom.h>
-#include <drw2el.h>
+#include "ericom.h"
+#include "drw2el.h"
 C-----------------------------------------------------------------------
 C
 C     Allocate ERIGAM
@@ -71,17 +61,16 @@ C  /* Deck eriga1 */
       SUBROUTINE ERIGA1(RJ000,FACINT,ALPHA,COORPQ,
      &                  WVALU,INDADR,WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0)
 C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
-#include <ericom.h>
-#include <erithr.h>
-#include <sdpre.h>
+#include "ericom.h"
+#include "erithr.h"
 C-----------------------------------------------------------------------
 C
 C     One-center Integrals
@@ -96,7 +85,7 @@ C
          IF (JMAX .GT. 0) THEN
             CALL DCOPY(NPPX,ALPHA,1,FACINT,1)
             DO 500 J = 1, JMAX
-               FAC = D1/SDPRE(2*J + 1)
+               FAC = D1/(2.0D0*J + 1.0D0)
                DO 510 I = 1, NPPX
                   RJ000(I,J) = FAC*FACINT(I)*RJ000(I,0)
                   FACINT(I)  = ALPHA(I)*FACINT(I)
@@ -176,19 +165,18 @@ C     See also: J. Comput. Chem. 18, 20 (1997), Eq. (31).
 C
 C     Wim Klopper, University of Karlsruhe, 22 November 2002.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0, DP25 = 0.25D0)
 C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
-#include <codata.h>
-#include <drw2el.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <sdpre.h>
+#include "codata.h"
+#include "drw2el.h"
+#include "ericom.h"
+#include "erithr.h"
 C
       DRWFAC=DP25*ALPHA2*DARFAC
 C
@@ -201,7 +189,7 @@ C     numerical instabilities for large exponents.
 C
       IF (IPQXYZ.EQ.7) THEN
          DO 500 J = 0, JMAX
-            FAC = D1/SDPRE(2*J + 1)
+            FAC = D1/(2.0D0*J + 1.0D0)
             DO 510 I = 1, NPPX
                RJ000(I,J) = (FAC + DRWFAC*ALPHA(I))*FACINT(I)
                FACINT(I)  = ALPHA(I)*FACINT(I)
@@ -278,19 +266,18 @@ C     See also: J. Comput. Chem. 18, 20 (1997), Eq. (31).
 C
 C     Wim Klopper, University of Karlsruhe, 22 November 2002.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0, DP25 = 0.25D0)
 C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
-#include <drw2el.h>
-#include <codata.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <sdpre.h>
+#include "drw2el.h"
+#include "codata.h"
+#include "ericom.h"
+#include "erithr.h"
 C
       IF (DO2DAR) DRWFAC=DP25*ALPHA2
       IF (S4CENT) DRWFAC=-DP25/PI
@@ -353,14 +340,14 @@ C  /* Deck erituv */
       SUBROUTINE ERITUV(HERINT,RJ000,COORPQ,INDHER,IODDHR,
      &                  WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, U, V, TUV
       DIMENSION HERINT(NPPX,NTUV), RJ000(NPPX,0:JMAX), COORPQ(NPPX,3),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), IODDHR(NRTOP),
      &          WORK(LWORK)
-#include <ericom.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "hertop.h"
 C
 C     The final R(T,U,V) integrals are arranged as follows:
 C
@@ -437,18 +424,17 @@ C  /* Deck erihrc */
       SUBROUTINE ERIHRC(CUR,OLD,JVAL,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                  MAXDER,NPPX,NTUV,IPQX,IPQY,IPQZ)
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
       DIMENSION CUR(NPPX,NTUV), OLD(NPPX,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          PQX(NPPX), PQY(NPPX), PQZ(NPPX),
      &          RJ000(NPPX,0:JMAX)
-#include <doxyz.h>
-#include <hertop.h>
+#include "doxyz.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -497,7 +483,7 @@ C
                CUR(I,2) = PQX(I)*OLD(I,1)
   200       CONTINUE
             DO 300 T = 2, MIN(MAXT,JVAL)
-               TMIN1 = SDPRE(T - 1)
+               TMIN1 = T - 1.0D0
                TUV   = INDHER(T  ,0,0)
                M1T   = INDHER(T-1,0,0)
                M2T   = INDHER(T-2,0,0)
@@ -507,7 +493,7 @@ C
   300       CONTINUE
          ELSE
             DO 400 T = 2, MIN(MAXT,JVAL), 2
-               TMIN1 = SDPRE(T - 1)
+               TMIN1 = T - 1.0D0
                TUV   = INDHER(T  ,0,0)
                M2T   = INDHER(T-2,0,0)
                DO 410 I = 1, NPPX
@@ -527,7 +513,7 @@ C
   510          CONTINUE
   500       CONTINUE
             DO 600 U = 2, MIN(MAXU,JVAL)
-               UMIN1  = SDPRE(U - 1)
+               UMIN1  = U - 1.0D0
                DO 610 T = 0, MIN(MAXT,JVAL - U), IPQX
                   TUV = INDHER(T,U  ,0)
                   M1U = INDHER(T,U-1,0)
@@ -539,7 +525,7 @@ C
   600       CONTINUE
          ELSE
             DO 700 U = 2, MIN(MAXU,JVAL), 2
-               UMIN1  = SDPRE(U - 1)
+               UMIN1  = U - 1.0D0
                DO 710 T = 0, MIN(MAXT,JVAL - U), IPQX
                   TUV = INDHER(T,U  ,0)
                   M2U = INDHER(T,U-2,0)
@@ -564,7 +550,7 @@ C
   810          CONTINUE
   800       CONTINUE
             DO 900 V = 2, MIN(MAXV,JVAL)
-               VMIN1  = SDPRE(V - 1)
+               VMIN1  = V - 1.0D0
                IUMAX  = JVAL - V
                DO 910 U = 0, MIN(MAXU,IUMAX), IPQY
                   DO 920 T = 0, MIN(MAXT,IUMAX - U), IPQX
@@ -579,7 +565,7 @@ C
   900       CONTINUE
          ELSE
             DO 1000 V = 2, MIN(MAXV,JVAL), 2
-               VMIN1  = SDPRE(V - 1)
+               VMIN1  = V - 1.0D0
                IUMAX  = JVAL - V
                DO 1010 U = 0, MIN(MAXU,IUMAX), IPQY
                   DO 1020 T = 0, MIN(MAXT,IUMAX - U), IPQX
@@ -598,14 +584,14 @@ C
 C  /* Deck eriswp */
       SUBROUTINE ERISWP(HEROLD,HERNEW,INDHER,IODDHR,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, U, V, TUV
       DIMENSION INDHER(0:JTOP,0:JTOP,0:JTOP), IODDHR(NRTOP)
       DIMENSION HEROLD(NPQBCX,NPRFAB,NPRFCD,NTUV),
      &          HERNEW(NPQBCX,NPRFCD,NPRFAB,NTUV)
-#include <ericom.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "hertop.h"
 C
       DO 100 J = 0, JMAX
          DO 110 T = J, 0, -1

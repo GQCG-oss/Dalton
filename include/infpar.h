@@ -11,9 +11,13 @@
 #endif
 
 #if defined(__CVERSION__)
-#define MAXNOD 200
-#define MAXCL2 10000
+#ifdef COMMENT
+! NOTE : MXSHEL should have value of MXSHEL in maxorb.h
+#endif
+#define MXSHEL 750
+#define MAXNOD 999
 #define NPARI  ((MAXNOD + 1) + 6)
+#define MAXTSK ( MXSHEL * (MXSHEL + 1) / 2 )
 extern struct common_infpar {
 #if defined (VAR_INT64)
     long iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
@@ -27,18 +31,18 @@ extern struct common_infpar {
     char nodnam[MAXNOD][20], myname[20];
 } daltoninfpar_;
 #else
-C File: infpar.h for Dalton; special information for parallel calculations
-C
-C     Parameters NPARI must be updated after changes (for parallelization)
-C
-C     NOTE: Integers  (IPRPAR,...,MASTER,...,MYTID)
-C           Logicals  (TIMING,SLAVE)
-C           Character (NODNAM,MYNAME) should NOT be sent to slaves
-C     THUS: NPARI is length from NODTOT,...,PARIO
-C
-      INTEGER MAXNOD, MAXCL2
-      PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
-      PARAMETER (NPARI = (MAXNOD + 1) + 6)
+! File: infpar.h for Dalton; special information for parallel calculations
+!
+!     Parameters NPARI must be updated after changes (for parallelization)
+!
+!     NOTE: Integers  (IPRPAR,...,MASTER,...,MYTID)
+!           Logicals  (TIMING,SLAVE)
+!           Character (NODNAM,MYNAME) should NOT be sent to slaves
+!     THUS: NPARI is length from NODTOT,...,PARIO
+!
+      INTEGER   MAXNOD, NPARI, MAXTSK
+      PARAMETER ( MAXNOD = 999, NPARI = (MAXNOD + 1) + 6 )
+      PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
       INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK
       LOGICAL PARHER, PARIO, DEBUG,     TIMING, SLAVE
@@ -55,15 +59,15 @@ C
 #endif
 
 #if defined (VAR_INT64)
-!     integer array ISTAT contains MPI_SOURCE information.
-!     Proper use of ISTAT on 64-bit machines in 
+!     integer array my_STATUS contains MPI_SOURCE information.
+!     Proper use of my_STATUS on 64-bit machines in 
 !     combination with VAR_INT64 requires explicit declaration 
 !     as INTEGER*4 /March-2007 sk - This is only true for 
 !     32-bit MPI libraries.
-!     64-bit MPI libraries require INTEGER ISTAT (which will then be INTEGER*8)
+!     64-bit MPI libraries require INTEGER my_STATUS (which will then be INTEGER*8)
 !
-      INTEGER*4 ISTAT
 #endif
+      INTEGER my_STATUS
 
 ! -- end of infpar.h --
 #endif

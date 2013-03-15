@@ -51,7 +51,7 @@ cat > cc2_r12_aux_ch4_sym_fop.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -92,7 +92,7 @@ YYSECMOM
 #.NO 2
 .BASSCL
  0.5 2.0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

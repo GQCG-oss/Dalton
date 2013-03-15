@@ -10,17 +10,17 @@ C                                    implemented
 C
 C     PURPOSE: Calculate MO-property matrix for a one-electron operator
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION PRP1(LPRP1)
       DIMENSION WORK(LWORK)
 C
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <soppinf.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "soppinf.h"
 C
       CHARACTER*8 LABEL,RTNLBL(2)
 C

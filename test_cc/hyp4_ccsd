@@ -17,7 +17,7 @@ cat > hyp4_ccsd.mol <<%EOF%
 BASIS
 6-31G**
 Hydrogen flourid
-small test basis
+small test basis (6-31G**)
     2    1  Y  X      1.00D-15
         9.0   1    
 F     0.0000000000000000  0.0000000000000000 1.76320000000000000      
@@ -29,14 +29,14 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > hyp4_ccsd.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 **WAVE FUNCTIONS
 .TITLE
-  third & fourth hyperpolarizability for the HF molecule
-  for a CCSD wavefunction compute
+  Compute third & fourth hyperpolarizability for the HF molecule
+  for a CCSD wavefunction
 .CC
 *ORBITALS 
 .NOSUPSYM
@@ -68,8 +68,7 @@ ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN
 ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN XDIPLEN XDIPLEN
 ZDIPLEN ZDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN
 XDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -90,28 +89,28 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final *HF energy:" $log | $GREP "\-100.00891992" | wc -l`
-CRIT2=`$GREP "Total SCF   energy:                  \-100.00891992" $log | wc -l`
-CRIT3=`$GREP "Total MP2   energy:                  \-100.19366261" $log | wc -l`
-CRIT4=`$GREP "Total CCSD  energy:                  \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Final *HF energy:" $log | $GREP "\-100.00891989" | wc -l`
+CRIT2=`$GREP "Total SCF   energy:                  \-100.00891989" $log | wc -l`
+CRIT3=`$GREP "Total MP2   energy:                  \-100.19366257" $log | wc -l`
+CRIT4=`$GREP "Total CCSD  energy:                  \-100.19779090" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=7
 ERROR[1]="ENERGIES NOT CORRECT"
 
 # CCS freq.-dep. third hyperpolarizabilities:
-CRIT1=`$GREP "ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000    \-615\.9284" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000    \-83\.07076" $log | wc -l`
-CRIT3=`$GREP "XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000     4\.035336" $log | wc -l`
+CRIT1=`$GREP "ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000    \-615\.928" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000    \-83\.0707" $log | wc -l`
+CRIT3=`$GREP "XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000     4\.03533" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="CCS 3. HYPERPOLARIZABILITIES NOT CORRECT"
 
 
 # CCS freq.-dep. fourth hyperpolarizabilities:
-CRIT1=`$GREP "ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000    2784\.191" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000   \-1035\.483" $log | wc -l`
-CRIT3=`$GREP "XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000    79\.50435" $log | wc -l`
-CRIT4=`$GREP "XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000   \-8\.965086" $log | wc -l`
+CRIT1=`$GREP "ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000    2784\.19" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000   \-1035\.48" $log | wc -l`
+CRIT3=`$GREP "XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000    79\.5043" $log | wc -l`
+CRIT4=`$GREP "XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000   \-8\.96508" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[3]=4
 ERROR[3]="CCS 4. HYPERPOLARIZABILITIES NOT CORRECT"
@@ -121,7 +120,7 @@ PASSED=1
 for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

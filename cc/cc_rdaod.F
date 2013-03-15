@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *======================================================================*
 C  /* Deck cc_rdaod */
@@ -58,21 +48,21 @@ C     based on Henrik Kochs CC_RDAO routine
 C     magnetic derivatives introduced 20-Sep-1999
 C
 *----------------------------------------------------------------------*
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <iratdef.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "iratdef.h"
+#include "ccorb.h"
 CCN #include <infind.h> replaced by #include <ccisao.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <nuclei.h>
-#include <chrnos.h>
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "nuclei.h"
+#include "chrnos.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -298,25 +288,16 @@ C
 C
          LBFINP = LBUF
 C
-#if defined (SYS_CRAY) || defined (SYS_T90)
+#if defined (VAR_INT64)
          LRECL = LBFINP + LBFINP + 1
-#endif
-#if defined (SYS_AIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
-         IF (NBASIS .LE. 255) THEN
-            LRECL = 2*LBFINP + LBFINP + 1
-         ELSE
-            LRECL = 2*LBFINP + 2*LBFINP + 1
-         END IF
-#endif
-#if defined (SYS_IRIX) || defined (SYS_DEC)
-         IF (NBASIS .LE. 255) THEN
-            LRECL = 2*LBFINP + LBFINP + 1
-         ELSE
-            LRECL = 2*LBFINP + 2*LBFINP + 1
-         END IF
-#endif
-#if defined (SYS_NEC)
+#elif defined (SYS_NEC)
          LRECL = LBFINP + LBFINP/IRAT + 1
+#else
+         IF (NBASIS .LE. 255) THEN
+            LRECL = 2*LBFINP + LBFINP + 1
+         ELSE
+            LRECL = 2*LBFINP + 2*LBFINP + 1
+         END IF
 #endif
 C
          IF (LOCDBG) THEN
@@ -423,14 +404,14 @@ C     based on Henrik Kochs CC_RDAO routine
 C     magnetic derivatives introduced 20-Sep-1999
 C
 *----------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <eribuf.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "eribuf.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ibtpar.h"
 C
       LOGICAL LOCDBG
       PARAMETER ( LOCDBG = .FALSE. )
@@ -444,7 +425,7 @@ C
       INTEGER NDIMPQ(NSYM)
 C
 C functions:
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'entered CCRDAOD1'
@@ -657,11 +638,11 @@ C  into array IRECNR
 *----------------------------------------------------------------------*
       IMPLICIT NONE
 
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <eribuf.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "eribuf.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

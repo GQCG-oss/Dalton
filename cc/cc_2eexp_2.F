@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE CC_2EEXP_2(WORK,LWORK,IOPREL)
 C
 C     Written by S. Coriani 05/04/2003, based on CC_2EEXP
@@ -47,19 +37,22 @@ C
 C     CC2 (without frozen core) by A. Halkier & S. Coriani 20/01-2000.
 C     CCSD(T) by S. Coriani 05/04/2003. 
 C     OBS: CCSD(T) is treated as an addition to CCSD 
+C     CORRONLY option introduced: it yields the correlation-only
+C     contribution to the property (no Hartree-Fock part)
+C     for CCD, CCSD
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "eridst.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       LOGICAL SAVDIR, LEX, SAVHER, OLDDX
@@ -74,22 +67,29 @@ C
       logical LCCSD_SAV, LOCDBG
       PARAMETER (LOCDBG =.FALSE.)
 !
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <drw2el.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "drw2el.h"
 C
       CALL QENTER('CC_2EEXP_2')
+C
+C-------------------------------------------------------------
+C corronly option disabled for FROZEN core as not fully tested
+C-------------------------------------------------------------
+      IF (FROIMP) THEN
+        CORRONLY = .FALSE.
+      END IF
 C
 C-----------------------------
 C     Trick for CCSD(T)
@@ -279,7 +279,7 @@ C
 C
          LUCCK = -987
          CALL GPOPEN(LUCCK,'CCKABAR0','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,FALSE)
+     *               IDUMMY,.FALSE.)
          REWIND(LUCCK)
          READ(LUCCK) (WORK(KKABAR+I-1), I = 1,LENBAR)
          CALL GPCLOSE(LUCCK,'KEEP')
@@ -317,6 +317,10 @@ C-----------------------------------
 C     Initial work space allocation.
 C-----------------------------------
 C
+        if (corronly) then
+          WRITE(LUPRI,*)'WARNING: only CORRELATION PART computed'
+        end if
+
          N2BSTM = 0
          DO ISYM = 1, NSYM
            N2BSTM = MAX(N2BSTM,N2BST(ISYM))
@@ -533,6 +537,12 @@ C        Add orbital relaxation for effective density matrix.
 C------------------------------------------------------------
 C
          CALL DCOPY(N2BST(1),WORK(KKABAO),1,WORK(KAODEN),1)
+         if (corronly) then
+!           remove HF contribution from the density
+            write(lupri,*)'Warning: HF density removed from D_1e'
+            CALL DAXPY(N2BST(1),-ONE,WORK(KDHFAO),1,WORK(KAODEN),1)
+         end if
+
 C
 C------------------------------------------------------
 C        Add frozen core contributions to AO densities.
@@ -987,7 +997,7 @@ C           Work space allocation two.
 C-------------------------------------
 C
 C
-            IF (CCSD .OR. CC2 .or. CCPT) THEN
+            IF (CCSD .OR. CCD .OR. CC2 .or. CCPT) THEN
                KD2IJG = KEND1
                KD2AIG = KD2IJG + ND2IJG(ISYDEN)
                KD2IAG = KD2AIG + ND2AIG(ISYDEN)
@@ -1003,6 +1013,21 @@ C
                  KEND2     = KD2ABG_PT + ND2ABG(ISYDEN)
                  LWRK2     = LWORK  - KEND2
                END IF
+               if (corronly) then
+                 !write(lupri,*)'WRNG: allocating for the HF 2-e density'
+                 !call flshfo(lupri)
+                 !Sonia: frozen core not tested
+                 !if (SkipFCT) then
+                   !lenijkHF = ND2IJG(ISYDEN)
+                 !else
+                   lenijkHF = NF2IJG(ISYDEN)
+                 !end if
+
+                 kd2IJgHF = kend2
+                 kend2  = kd2IJgHF + lenijkHF
+                 LWRK2  = LWORK  - KEND2
+               end if
+
 !
             ELSE IF (MP2) THEN
                KD2IJG = KEND1
@@ -1030,7 +1055,7 @@ C
             CALL DZERO(WORK(KD2IJG),NF2IJG(ISYDEN))
             IF (.NOT. CCS) THEN
                CALL DZERO(WORK(KD2IAG),ND2AIG(ISYDEN))
-               IF (CCSD .OR. CC2 .or. CCPT) THEN
+               IF (CCSD .or. CCD .OR. CC2 .or. CCPT) THEN
                   CALL DZERO(WORK(KD2AIG),ND2AIG(ISYDEN))
                   CALL DZERO(WORK(KD2ABG),ND2ABG(ISYDEN))
                   CALL DZERO(WORK(KD2IJG),ND2IJG(ISYDEN))
@@ -1041,6 +1066,10 @@ C
                     CALL DZERO(WORK(KD2ABG_PT),ND2ABG(ISYDEN))
                     CALL DZERO(WORK(KD2IJG_PT),ND2IJG(ISYDEN))
                   END IF
+                  if (corronly) then
+                     !write(lupri,*)'OBS: dzero d2ijgHF blck ', lenijkHF
+                     CALL DZERO(WORK(kd2ijgHF),lenijkHF)
+                  end if
 C
                ENDIF
             ENDIF
@@ -1049,7 +1078,21 @@ C----------------------------------------------------------------
 C           Calculate the two electron density d(pq,gamma;delta).
 C----------------------------------------------------------------
 C
-            IF (CCSD .or. CCPT) THEN
+            IF (CCSD .or. CCD .or. CCPT) THEN
+               if (corronly) then
+                  !warning: frozen core not correct yet, disabled
+                  !at the beginning
+                  if (froimp) then
+                        kcmoall = kcmof
+                  else
+                        kcmoall = kcmo
+                  end if
+                  !write(lupri,*)'Compute HF 2electron density'
+                  CALL CCS_DEN2(WORK(kd2ijgHF),WORK(kcmoall),
+     &                      WORK(KEND2), LWRK2,IDEL,ISYMD)
+                  !write(lupri,*)'out of CCS_DEN2()'
+               end if
+
                CALL CC_DEN2(WORK(KD2IJG),WORK(KD2AIG),WORK(KD2IAG),
      &                      WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
      &                      WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
@@ -1135,7 +1178,7 @@ C                 Set addresses for 2-electron densities.
 C--------------------------------------------------------
 C
                   AUTIME = SECOND()
-                  IF (CCSD .OR. CC2 .or. CCPT) THEN
+                  IF (CCSD .or. CCD .OR. CC2 .or. CCPT) THEN
                      KD2GIJ = KD2IJG + ID2IJG(ISYMPQ,ISYMG)
      *                      + NMATIJ(ISYMPQ)*(G - 1) 
                      KD2GAI = KD2AIG + ID2AIG(ISYMPQ,ISYMG)
@@ -1156,6 +1199,14 @@ C
                         KD2GIA_PT = KD2IAG_PT + ID2AIG(ISYMPQ,ISYMG)
      &                      + NT1AM(ISYMPQ)*(G - 1)
                      END IF
+                     if (corronly) then
+!                          KD2GIJHF = KD2IJGHF
+!     &                              + ID2IJG(ISYMPQ,ISYMG)
+!     &                              + NMATIJ(ISYMPQ)*(G - 1)
+                          KD2GIJHF = KD2IJGHF
+     &                             + IF2IJG(ISYMPQ,ISYMG)
+     &                             + NFROIJ(ISYMPQ)*(G - 1)
+                     end if
 C
                   ELSE IF (MP2) THEN
                      KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
@@ -1277,7 +1328,7 @@ C                 Backtransform density fully to AO basis.
 C---------------------------------------------------------
 C
                   AUTIM1 = SECOND()
-                  IF (CCSD .OR. CC2 .or. CCPT) THEN
+                  IF (CCSD .OR. CCD .or. CC2 .or. CCPT) THEN
                      CALL CC_DENAO(WORK(KAODEN),ISYMPQ,
      *                             WORK(KD2GAI),WORK(KD2GAB),
      *                             WORK(KD2GIJ),WORK(KD2GIA),ISYMPQ,
@@ -1292,6 +1343,28 @@ C
      &                             WORK(KCMO),1,WORK(KCMO),1,
      &                             WORK(KEND5),LWRK5)
                      END IF
+                     if (corronly) then
+                        !Removes the Hartree-Fock 2e terms from the 2e Density
+!                        if (SkipFCT) then
+!                           !remove the active-only contribution from HF
+!                           KCMOALL = KCMO
+!                           CALL CC_D2HFCAO(WORK(KAODEN),WORK(KD2GIJHF),
+!     &                             WORK(KCMOALL),WORK(KEND5),
+!     &                             LWRK5,ISYMPQ)
+!                        else
+                           !remove whole HF gradient in fully correlated case
+                           !SONIA: redundant but different addressing.....
+                           if (froimp) then
+                              KCMOALL = KCMOF
+                           else
+                              KCMOALL = KCMO
+                           end if
+                           CALL CC_D2HFAO(WORK(KAODEN),WORK(KD2GIJHF),
+     &                             WORK(KCMOALL),WORK(KEND5),
+     &                             LWRK5,ISYMPQ)
+!                        end if
+                     end if
+
 C
                   ELSE
                      CALL CCMP_DAO(WORK(KAODEN),WORK(KD2GIJ),

@@ -1,74 +1,64 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE CTOABA(WORK,LWORK)
 C...
 C...  This subroutine was written by Andrea Ligabue using
 C...  the subroutine LNRABA as a model (1999)
 C...
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <trkoor.h>
-#include <sigma.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cbilnr.h>
-#include <suscpt.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "trkoor.h"
+#include "sigma.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cbilnr.h"
+#include "suscpt.h"
+#include "infpri.h"
       LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL1, LABEL2, LABINT(4*MXCOOR+9)
       PARAMETER (D05=0.5D0,D025=0.25)
       LOGICAL TODOINT
 C
-#include <cbiexc.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <infsop.h>
-#include <ibtfun.h>
+#include "cbiexc.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "infsop.h"
+#include "ibtfun.h"
 C
       CALL QENTER('CTOABA')
       CALL TIMER('START ',TIMEIN,TIMOUT)
@@ -100,10 +90,10 @@ C
       KWORK1 = KFREE
       LWORK1 = LFREE
 C
-      CALL RDSIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
+      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
       IF (.NOT.FOUND) CALL QUIT('CTOABA error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
-         CALL RDSIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
+         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
          IF (.NOT.FOUND)
      &      CALL QUIT('CTOABA error: DV not found on SIRIFC')
          CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
@@ -550,16 +540,16 @@ C     to have the result of the proprerty with the origin
 C     on the atom under examinations and store it in
 C     SFTP
 C   
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "orgcom.h"
       DIMENSION SFTP(3,3,MXCENT),SFTM(3,3,MXCENT),
      &          SSFT(3,MXCENT)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C     ... compute the (R_cm - R_I) for each atom ...
       JATOM = 0
       DO 100 ICENT = 1, NUCIND
@@ -607,13 +597,13 @@ C
 C     At present it look always in the AOPROPER files but it will be 
 C     easy to generalize this subroutine.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <trkoor.h>
-#include <chrxyz.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "trkoor.h"
+#include "chrxyz.h"
+#include "chrnos.h"
 cLig DEBUG <>
-#include <priunit.h>
+#include "priunit.h"
       CHARACTER*8 LABEL,LABEL1
       CHARACTER LABINT(*)*8
       DIMENSION INTREP(*)
@@ -666,12 +656,12 @@ C
 C     It could be necessary to correct the PSO part for molecules with 
 C     more then 33 atoms
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <trkoor.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "trkoor.h"
+#include "chrnos.h"
 cLig DEBUG <>
-#include <priunit.h>
+#include "priunit.h"
       CHARACTER*8 LABEL,LABEL1
       LOGICAL FNDLAB
 C

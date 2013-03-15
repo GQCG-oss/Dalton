@@ -30,16 +30,14 @@ H     0.0000000000000000   0.000000000  -1.64558444
 #  DALTON INPUT
 #######################################################################
 cat > HF_631G_asym_pol.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
-.NOSUP
 .DIPLEN
 .THETA
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-12
 .NODIIS
@@ -64,7 +62,7 @@ YDIPLEN YDIPLEN
 .FREQUE
  2
 0.00 0.50
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -85,17 +83,17 @@ else
 fi
 
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -99\.9834089624" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -100\.1121032100" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -100\.1153427965" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * -99\.9834089353" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -100\.1121031642" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -100\.1153427592" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 polarizability :
-CRIT1=`$GREP  "YDIPLEN  \(unrel\.\)  ( |0)\.0000   YDIPLEN  \(unrel\.\)  ( |0)\.0000     ( |0)\.68743748" $log | wc -l`
-CRIT2=`$GREP  "                   ( -|-0)\.5000                      ( |0)\.5000     ( |0)\.19660244" $log | wc -l`
+CRIT1=`$GREP  "YDIPLEN  \(unrel\.\)  ( |0)\.0000   YDIPLEN  \(unrel\.\)  ( |0)\.0000     ( |0)\.68743753" $log | wc -l`
+CRIT2=`$GREP  "                   ( -|-0)\.5000                      ( |0)\.5000     ( |0)\.19660267" $log | wc -l`
 
 TEST[2]=`expr $CRIT1  \+ $CRIT2`
 CTRL[2]=2
@@ -105,7 +103,7 @@ PASSED=1
 for i in 1 2
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

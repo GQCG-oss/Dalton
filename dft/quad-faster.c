@@ -49,11 +49,11 @@ static const real HALFR =  0.5;
  * where the blocks sizes are determined by the occupied/virtual split.
  */
 static void
-commute_d_x(real * RESTRICT kappaY, int symY,
+commute_d_x(real * RESTRICT kappaY, integer symY,
             real * RESTRICT commuted_mat)
 {
     int isym, i, j;
-    int norbt = inforb_.norbt;
+    integer norbt = inforb_.norbt;
 #if 0
     int nocc = inforb_.nocct;
     /* occupied columns */
@@ -108,9 +108,9 @@ commute_matrices(integer sz, const real* a, const real* b,
 
 int FSYM(isetksymop)(const integer *new_ksymop);
 static void
-qrbl_data_init(QuadBlData *d, real *cmo, int is_gga, int max_block_len,
-	      real *kappaY, integer symY, int spinY, 
-	      real *kappaZ, integer symZ, int spinZ,
+qrbl_data_init(QuadBlData *d, real *cmo, integer is_gga, int max_block_len,
+	      real *kappaY, integer symY, integer spinY, 
+	      real *kappaZ, integer symZ, integer spinZ,
 	      real *dmat,
 	      real *work, integer *lwork)
 {
@@ -601,21 +601,22 @@ qrbl_gga_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
 
 #if defined(VAR_MPI)
 #include <mpi.h>
+#include <our_extra_mpi.h>
 #define MASTER_NO 0
 /* dft_qr_faster_slave:
    this is a slave driver. It's task is to allocate memory needed by
    the main property evaluator (dftqrcf_ in this case) and call it.
 */
 void
-dft_qrbl_slave(real* work, int* lwork, const int* iprint)
+dft_qrbl_slave(real* work, integer* lwork, integer* iprint)
 {
     real* fi    = malloc(inforb_.n2basx*sizeof(real));              /* OUT */
     real *cmo   = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
     real *kappaY= malloc(inforb_.n2orbx*sizeof(real));              /* IN  */
     real *kappaZ= malloc(inforb_.n2orbx*sizeof(real));              /* IN  */
-    int addfock, symY, symZ, spinY, spinZ;                          /* IN  */
+    integer addfock, symY, symZ, spinY, spinZ;                      /* IN  */
     FSYM2(dft_qr_respons)(fi, cmo, kappaY, &symY, &spinY, kappaZ, &symZ, &spinZ, 
-			  &addfock, work, lwork);
+			  &addfock, work, lwork, iprint);
     free(kappaZ);
     free(kappaY);
     free(cmo);
@@ -623,31 +624,31 @@ dft_qrbl_slave(real* work, int* lwork, const int* iprint)
 }
 
 static void
-qrbl_sync_slaves(real* cmo, real* kappaY, real* kappaZ, int* addfock,
-		 int* symY, int* symZ, int* spinY, int* spinZ)
+qrbl_sync_slaves(real* cmo, real* kappaY, real* kappaZ, integer* addfock,
+		 integer* symY, integer* symZ, integer* spinY, integer* spinZ)
 {
     static const SyncData sync_data[] = {
- 	{ inforb_.nocc,   8, MPI_INT },
- 	{ &inforb_.nocct, 1, MPI_INT },
- 	{ &inforb_.nvirt, 1, MPI_INT },
+ 	{ inforb_.nocc,   8, fortran_MPI_INT },
+ 	{ &inforb_.nocct, 1, fortran_MPI_INT },
+ 	{ &inforb_.nvirt, 1, fortran_MPI_INT },
     };
 #ifdef C99_COMPILER
     const SyncData data2[] = {
 	{ cmo,     inforb_.norbt*inforb_.nbast,MPI_DOUBLE },
 	{ kappaY,  inforb_.n2orbx,             MPI_DOUBLE },
 	{ kappaZ,  inforb_.n2orbx,             MPI_DOUBLE },
-	{ addfock, 1,                          MPI_INT    },
-	{ symY,    1,                          MPI_INT    },
-	{ symZ,    1,                          MPI_INT    },
-	{ spinY,   1,                          MPI_INT    },
-	{ spinZ,   1,                          MPI_INT    }
+	{ addfock, 1,                          fortran_MPI_INT    },
+	{ symY,    1,                          fortran_MPI_INT    },
+	{ symZ,    1,                          fortran_MPI_INT    },
+	{ spinY,   1,                          fortran_MPI_INT    },
+	{ spinZ,   1,                          fortran_MPI_INT    }
     };
 #else /* C99_COMPILER */
     /* this is more error-prone but some compilers (HP/UX)... */
     static SyncData data2[] = 
     { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, 
-      {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   },
-      {NULL, 0, MPI_INT   }, {NULL, 0, MPI_INT   } };
+      {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   },
+      {NULL, 0, fortran_MPI_INT   }, {NULL, 0, fortran_MPI_INT   } };
     data2[0].data = cmo;     data2[0].count = inforb_.norbt*inforb_.nbast;
     data2[1].data = kappaY;  data2[1].count = inforb_.n2orbx;
     data2[2].data = kappaZ;  data2[2].count = inforb_.n2orbx;
@@ -662,7 +663,7 @@ qrbl_sync_slaves(real* cmo, real* kappaY, real* kappaZ, int* addfock,
     mpi_sync_data(data2,     ELEMENTS(data2));
 }
 static __inline__ void
-qrbl_collect_info(real* fi, real*work, int lwork)
+qrbl_collect_info(real* fi, real*work, integer lwork)
 {
     int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
@@ -670,7 +671,8 @@ qrbl_collect_info(real* fi, real*work, int lwork)
 
     CHECK_WRKMEM(inforb_.n2orbx,lwork);
     dcopy_(&inforb_.n2orbx, fi, &ONEI, work, &ONEI);
-    MPI_Reduce(work, fi, inforb_.n2orbx, MPI_DOUBLE, MPI_SUM, 
+    int n2orbx_int = inforb_.n2orbx;
+    MPI_Reduce(work, fi, n2orbx_int, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
 }
 #else /* VAR_MPI */
@@ -685,7 +687,7 @@ void
 FSYM2(dft_qr_respons)(real *fi, real *cmo,
                       real *kappaY, integer *symY, integer *spinY, 
                       real *kappaZ, integer *symZ, integer *spinZ,
-                      integer *addfock, real *work, integer *lwork)
+                      integer *addfock, real *work, integer *lwork, integer *iprint)
 {
     static int msg_printed = 0;
     struct tms starttm, endtm; clock_t utm;
@@ -699,7 +701,7 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_qr_respons)); /* NO-OP in serial */
     qrbl_sync_slaves(cmo,kappaY,kappaZ,addfock,
-		     symY,symZ, spinY,spinZ);
+		         symY,symZ, spinY,spinZ);
     if(*addfock) {/* call the old, slow version here */
 #ifdef VAR_MPI
 	fort_print("This was supposed not to be called.");
@@ -707,7 +709,7 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
 #endif
         dftqrcf_(fi, cmo, kappaY, symY, spinY, 
                  kappaZ, symZ, spinZ, addfock, 
-                 work, lwork);
+                 work, lwork, iprint);
         return;
     }
     dmat = dal_malloc(inforb_.n2basx*sizeof(real));
@@ -723,7 +725,7 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
 		   dmat, work, lwork);
     cb = (DftBlockCallback)
         (qr_data.is_gga ? qrbl_gga_cb : qrbl_lda_cb );
-    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, 0, 
+    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, iprint, 0, 
                                     cb, &qr_data);
     free(dmat);
     if(DFTQR_DEBUG) {
@@ -772,7 +774,7 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
     qrbl_data_free(&qr_data);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %f(%9.3g): QR-DFT/b evaluation time: %9.1f s", 
+    fort_print("      Electrons: %f(%9.3g): QR-DFT/b evaluation time: %9.1f s", 
                electrons, (double)(electrons-(int)(electrons+0.5)),
                utm/(double)sysconf(_SC_CLK_TCK));
 }

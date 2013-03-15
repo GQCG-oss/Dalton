@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       subroutine koopro4(WRK,LWRK)
 C-----------------------------------------------------------------------
 C
@@ -54,48 +44,30 @@ C        Spin free version of NEVPT
 C
 C
 C-----------------------------------------------------------------------
-#include <single.h>
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxpdim.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpt2.h>
-#include <strnum.h>
-#include <dummy.h>
-#include <csfbas.h>
-#if !defined (SYS_LINUX) && defined (NO_F90)
-      write(lupri,*)' '
-      write(lupri,*)'<<<<<<<<<<<===========>>>>>>>>>>>>'
-      write(lupri,*)'ATTENTION ATTENTION ATTENTION ATTENTION'
-      write(lupri,*)'sorry, NEVPT2 at present works only with Linux'
-      CALL QUIT('NEVPT2 not available for this platform')
-      return
-#endif
-#if !(defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77)||defined(VAR_GFORTRAN)) && defined (NO_F90)
-      write(lupri,'(A)') ' ',
-     &   '<<<<<<<<<<<===========>>>>>>>>>>>>',
-     &   'ATTENTION ATTENTION ATTENTION ATTENTION', ' ',
-     &   'Sorry, NEVPT2 at present needs the INTEL FORTRAN COMPILER',
-     &   ' or the Portland Group FORTRAN Compiler',
-     &   ' or g77 FORTRAN Compiler or gfortran FORTRAN compiler'
-      CALL QUIT('NEVPT2 not available for this compiler')
-      return
-      end
-#else
+#include "single.h"
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxpdim.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpt2.h"
+#include "strnum.h"
+#include "dummy.h"
+#include "csfbas.h"
+
+! ** The nevpt2 code was not compiled unless PGF90, GFORTRAN or IFORT compiler.
+! ** Now code is compiled for all compilers, if your compiler cannot handle
+! ** the code then do NOT #define GO_ON_COMP in dalcip.F and koopro4.F (below) /Jan. 2011
+
 #define GO_ON_COMP
-#endif      
+
 #ifdef GO_ON_COMP
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
-#else
-      DOUBLE PRECISION koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
-#endif
+      REAL*8  koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
       logical*1 zseg
       COMMON /CIP/NORBFE,NOCB,NCF,ZSEG
       common /actspace/mact,nact2,nact3,nact4
@@ -104,7 +76,6 @@ c      real*4 tarray(2)
       logical zcapos,zion
       integer*1 ioccfe
       integer*2 icomp,iconf,isegno
-#if !defined(VAR_G77)
       allocatable coopipa(:,:),coopeaa(:,:)
       allocatable dal(:,:),koopaa(:,:,:,:),koopeaa(:,:,:,:)
       allocatable koopbb(:,:,:,:),koopab(:,:)
@@ -122,23 +93,6 @@ c      real*4 tarray(2)
       allocatable f(:),aj(:),ak(:),num(:),indic(:),jndic(:),lndic(:)
       allocatable ioccfe(:,:)
       allocatable icomp(:),iconf(:),isegno(:),zcapos(:)
-#else
-      dimension coopipa(1),coopeaa(1)
-      dimension dal(1),koopaa(1),koopeaa(1)
-      dimension koopbb(1),koopab(1)
-      dimension daaa(1),dbbb(1),daab(1),dbba(1)
-      dimension taa(1),tbb(1),tab(1)
-      dimension amat(1),bmat(1),cmat(1),dmat(1)
-      dimension atmat(1),btmat(1),ctmat(1),dtmat(1)
-      dimension ro4(1)
-      dimension atwo(1)
-      dimension ne(1),nd(1),ispinfe(1),iorbfe(1),itsym(1)
-      dimension cvec(1)
-      dimension trou(1),part(1)
-      dimension f(1),aj(1),ak(1),num(1),indic(1),jndic(1),lndic(1)
-      dimension ioccfe(1)
-      dimension icomp(1),iconf(1),isegno(1),zcapos(1)
-#endif
 
       INTEGER*2 ispinfe,IORBFE
       INTEGER*2 NE,TROU,PART
@@ -146,17 +100,10 @@ c      real*4 tarray(2)
       dimension WRK(LWRK),its(8,8)
       character*8 RTNLBL(2)
       integer*1 flip
-#if !defined(VAR_G77)
       allocatable istr(:),jstr(:),onel(:),zgel(:)
       allocatable in2d(:),id2n(:)
       allocatable detvec(:)
       allocatable iocca(:),ioccb(:),flip(:)
-#else
-      dimension istr(1),jstr(1),onel(1),zgel(1)
-      dimension in2d(1),id2n(1)
-      dimension detvec(1)
-      dimension iocca(1),ioccb(1),flip(1)
-#endif
 C--- Cele  Debug
 c      character*1 nexc(13)
 c      allocatable sppm(:),orbfe(:)
@@ -189,7 +136,7 @@ c       do i=1,norbt
 c       sppm(i)='-'
 c       orbfe(i)=i
 c       sppm(i+norbt)='+'
-c       orbfe(i+norbt)=i  
+c       orbfe(i+norbt)=i
 c       enddo
 c       sppm(norbt+norbt+1)='+'
 c       orbfe(norbt+norbt+1)=norbt+1
@@ -199,9 +146,8 @@ C--- Cele  Debug
          write(lupri,*)' '
          write(lupri,*)'<<<<<<<<<<<===========>>>>>>>>>>>>'
          write(lupri,*)'ATTENTION ATTENTION ATTENTION ATTENTION'
-         write(lupri,'(a,$)'
-     $        )'Number of state is required with .CI keyword'
-         write(lupri,*)
+         write(lupri,'(a)')
+     $        'Number of state is required with .CI keyword'
          write(lupri,*)'Please restart'
          CALL QUIT('NEVPT2 error: .CI but .STATE not defined')
       endif
@@ -219,6 +165,7 @@ C--- Cele  Debug
       END IF
       write (lupri,'(A///)')' ***************************************'//
      * '*******************************'
+      call flshfo(lupri)
 
        do i=1,8
         do j=1,8
@@ -228,29 +175,18 @@ C--- Cele  Debug
 
 C
 C     First of all we prepare a vector (in2d) which converts the OM indices
-C     from the NEVPT order to the DALTON order 
-C     
+C     from the NEVPT order to the DALTON order
+C
       call nwadd(nwall,2*norbt*4+norbt)
-#if !defined(VAR_G77)
       allocate (in2d(norbt))
       allocate (id2n(norbt))
       allocate (zgel(norbt))
-#else
-      i_in2d=ialloi4(in2d,norbt)
-      i_id2n=ialloi4(id2n,norbt)
-      i_zgel=ialloi1(zgel,norbt)
-#endif
 
 C
 C     Getting the coefficients of the determinants
 C
       call nwadd(nwall,ncdets*8)
-#if !defined(VAR_G77)
       allocate (cvec(ncdets))
-      i_cvec=1
-#else
-      i_cvec=iallor8(cvec,ncdets)
-#endif
       rewind (luit1)
       CALL MOLLB2 ('STARTVEC',RTNLBL,LUIT1,LUERR)
       if (.not.doci) then
@@ -279,14 +215,14 @@ C
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KDETVEC,NCDETS,WRK,KFREE,LFREE)
          CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-         CALL READT(LUIT1,NCONF,CVEC(i_CVEC))
-         call csdtvc(cvec(i_cvec),WRK(KDETVEC),1,WRK(KCINDX+KDTOC-1)
+         CALL READT(LUIT1,NCONF,CVEC)
+         call csdtvc(cvec,WRK(KDETVEC),1,WRK(KCINDX+KDTOC-1)
      $        ,WRK(KCINDX+KICTS(1)-1),lsym,1,0)
          CALL MEMREL('after csdtvc',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       else
-         CALL READT(LUIT1,NCDETS,CVEC(i_cvec))
+         CALL READT(LUIT1,NCDETS,CVEC)
       endif
-C     CALL WRTMAT(CVEC(i_cvec),1,NCDETS,1,NCDETS,0)
+C     CALL WRTMAT(CVEC,1,NCDETS,1,NCDETS,0)
 
 C
 C     Getting the one-particle density matrix
@@ -294,48 +230,56 @@ C     (Not used for the moment!)
 C
 C Manu April 2009: now it is used in the NEVPT2-srDFT :-)
 
-      
+
       do i=1,norbt
-#if !defined(VAR_G77)
-      zgel(i)=.false.
-#else
-      zgel(i_zgel+i-1)=.false.
-#endif
+       zgel(i)=.false. ! is this orbital frozen ?
       enddo
+
+! hjaaj Jan 2012: make sure orbitals frozen in MCSCF are also frozen in NEVPT2
+      indom = 0
+      do is=1,NSYM
+         if (NFRO(is) .gt. NFRNEVPT2(is)) then
+            if (indom .eq. 0) then
+               write(lupri,'(/a)')
+     & ' INFO: orbitals frozen in MCSCF are also frozen in NEVPT2'
+               write(lupri,'(a,8I5)')
+     & ' .FROZEN in MCSCF  input  :',(NFRO(i),i=1,nsym)
+               write(lupri,'(a,8I5)')
+     & ' .FROZEN in NEVPT2 input  :',(NFRNEVPT2(i),i=1,nsym)
+            end if
+            NFRNEVPT2(is) = NFRO(is)
+            indom = indom + 1
+         end if
+      end do
+      if (indom .gt. 0) then
+               write(lupri,'(a,8I5)')
+     & ' .FROZEN in NEVPT2 revised:',(NFRNEVPT2(i),i=1,nsym)
+      end if
+C
+C     in2d(jorb_nevpt2) = jorb_dalton : from nevpt2 to dalton orbital order
+C     nevpt2: loop type, symmetry; dalton: loop symmetry, type
+C
       indom=0
 C     Core
       do is=1,nsym
        do i=1,nish(is)
        indom=indom+1
-#if !defined(VAR_G77)
        in2d(indom)=iorb(is)+i
        if (i.le.NFRNEVPT2(is)) zgel(indom)=.true.
-#else
-       in2d(i_in2d+indom-1)=iorb(is)+i
-       if (i.le.NFRNEVPT2(is)) zgel(i_zgel+indom-1)=.true.
-#endif
        enddo
       enddo
 C     Active
       do is=1,nsym
        do i=1,nash(is)
        indom=indom+1
-#if !defined(VAR_G77)
        in2d(indom)=iorb(is)+nish(is)+i
-#else
-       in2d(i_in2d+indom-1)=iorb(is)+nish(is)+i
-#endif
        enddo
       enddo
 C     Virtual
       do is=1,nsym
        do i=1,norb(is)-nish(is)-nash(is)
        indom=indom+1
-#if !defined(VAR_G77)
        in2d(indom)=iorb(is)+nish(is)+nash(is)+i
-#else
-       in2d(i_in2d+indom-1)=iorb(is)+nish(is)+nash(is)+i
-#endif
        enddo
       enddo
 
@@ -345,7 +289,7 @@ C
 C--- Cele Next Work
 C
 C      Questo pezzo e' da rivedere: l'ordinamento viene fatto bene,
-C      ma con il nuovo ordinamento la sub rofour non fornisce la buona 
+C      ma con il nuovo ordinamento la sub rofour non fornisce la buona
 C      matrice densita' : approfondire.
 C
 C      do ia=1,nasht
@@ -368,20 +312,14 @@ C
 C     Defining the inverse of in2d (id2n) and in2da (id2na)
 C
       do i=1,norbt
-#if !defined(VAR_G77)
        id2n(in2d(i))=i
-#else
-       id2n(i_id2n+in2d(i_in2d+i-1)-1)=i
-#endif
       enddo
-c      do i=1,nasht
-c      enddo
 
 
       thr=thrnevpt
       NCF=NCDETS
 
-      lfermi=nactel/2 
+      lfermi=nactel/2
       zion=mod(nactel,2).eq.1
       if(zion)lfermi=(nactel+1)/2
 
@@ -395,41 +333,22 @@ C
       CALL GPOPEN(LUN31,'SCR31','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *           .FALSE.)
       call nwadd(nwall,2*nael*4)
-#if !defined(VAR_G77)
       allocate (istr(NAEL))
       allocate (jstr(NBEL))
-#else
-      i_istr=ialloi4(istr,NAEL)
-      i_jstr=ialloi4(jstr,NBEL)
-#endif
-#if !defined(VAR_G77)
       do id=1,ncf
          read(LUN98) dum,(istr(i),i=1,nael),(jstr(i),i=1,nbel)
          do ia=1,nael
 c            istr(ia)=istr(ia)
-            if (istr(ia).gt.lfermi) ntothp=ntothp+1 
+            if (istr(ia).gt.lfermi) ntothp=ntothp+1
          enddo
          do ib=1,nbel
 c            jstr(ib)=jstr(ib)
-            if (jstr(ib).gt.lfermi) ntothp=ntothp+1 
+            if (jstr(ib).gt.lfermi) ntothp=ntothp+1
          enddo
-#else
-      do id=1,ncf
-         read(LUN98) dum,(istr(i_istr+i-1),i=1,nael),(jstr(i_jstr+i-1),i
-     $        =1,nbel)
-         do ia=1,nael
-c            istr(ia)=istr(ia)
-          if (istr(i_istr+ia-1).gt.lfermi) ntothp =ntothp+1 
-         enddo
-         do ib=1,nbel
-c            jstr(ib)=jstr(ib)
-          if (jstr(i_jstr+ib-1).gt.lfermi) ntothp =ntothp+1 
-         enddo
-#endif
 C--- Cele Next Work
-C       write (lupri,*) 
+C       write (lupri,*)
 C       write (lupri,*) 'Determ umber',id
-C       write (lupri,*) 
+C       write (lupri,*)
 C       write (lupri,*) 'Original'
 C       write (LUPRI,'(20I3)') (istr(i),i=1,nael)
 C       write (LUPRI,'(20I3)') (jstr(i),i=1,nbel)
@@ -443,64 +362,31 @@ C--- Cele Next Work
 
 
       call nwdel(nwall,2*nael*4)
-#if !defined(VAR_G77)
       deallocate (istr)
       deallocate (jstr)
-#else
-      call memreli4(istr(i_istr))
-      call memreli4(jstr(i_jstr))
-#endif
       call nwadd(nwall,(ncf+1000)*(2+4+2+2+2+4))
-#if !defined(VAR_G77)
       allocate(ne(ncf+1000))
       allocate(nd(ncf+1000))
       allocate(icomp(ncf+1000))
       allocate(iconf(ncf+1000))
       allocate(isegno(ncf+1000))
       allocate(zcapos(ncf+1000))
-#else
-      i_ne=ialloi2(ne,ncf+1000)
-      i_nd=ialloi4(nd,ncf+1000)
-      i_icomp=ialloi2(icomp,ncf+1000)
-      i_iconf=ialloi2(iconf,ncf+1000)
-      i_isegno=ialloi2(isegno,ncf+1000)
-      i_zcapos=ialloi4(zcapos,ncf+1000)
-#endif
       call nwadd(nwall,2*(ntothp+1000)*2)
-#if !defined(VAR_G77)
       allocate(trou(ntothp+1000))
       allocate(part(ntothp+1000))
-#else
-      i_trou=ialloi2(trou,ntothp+1000)
-      i_part=ialloi2(part,ntothp+1000)
-
-#endif
 c      call nwadd(nwall,2*(nbel*ncf)*4)
-#if !defined(VAR_G77)
 c      allocate (istr(nael*ncf))
 c      allocate (jstr(nbel*ncf))
       call dalcip(nael,nbel,ncf,cvec,ne,trou,part,nd,norbt,
-     *           nish,nash,nasht,lfermi,nisht,nsym,LUN98,ispin)
-#else
-c      i_istr=ialloi4(istr,nael*ncf)
-c      i_jstr=ialloi4(jstr,nbel*ncf)
-      call dalcip(nael,nbel,ncf,cvec(i_cvec),
-     $     ne(i_ne),trou(i_trou),part(i_part),nd(i_nd),norbt,nish,nash
-     $     ,nasht,lfermi,nisht,nsym,LUN98,ispin)
-#endif
+     *            nish,nash,nasht,lfermi,nisht,nsym,LUN98,ispin)
       tdal=second()
       write(lupri,'(a,f8.2,a)')
      &   ' Elapsed time after dalcip ',tdal-t,' sec.'
       call flshfo(lupri)
       CALL GPCLOSE(LUN98,'KEEP')
       call nwdel(nwall,2*(nbel*ncf)*4)
-#if !defined(VAR_G77)
 c      deallocate (istr)
 c      deallocate (jstr)
-#else
-c      call memreli4(istr(i_istr))
-c      call memreli4(jstr(i_jstr))
-#endif
 
 C--- Cele debug
 C
@@ -521,41 +407,22 @@ C
 C     Getting itsym
 C
       call nwadd(nwall,(norbt+norbt+1)*4)
-#if !defined(VAR_G77)
       allocate(itsym(norbt+norbt+1))
-#else
-      i_itsym=ialloi4(itsym,norbt+norbt+1)
-#endif
       io=0
       do is=1,nsym
        do i=1,norb(is)
         io=io+1
-#if !defined(VAR_G77)
         itsym(id2n(io))=is
         itsym(id2n(io)+norbt)=is
-#else
-        itsym(i_itsym+id2n(i_id2n+io-1)-1)=is
-        itsym(i_itsym+id2n(i_id2n+io-1)+norbt-1)=is
-#endif
        enddo
       enddo
 
       call nwadd(nwall,2*(norbt+norbt+1)*2)
-#if !defined(VAR_G77)
       allocate(ispinfe(norbt+norbt+1))
       allocate(iorbfe(norbt+norbt+1))
-#else
-      i_ispinfe=ialloi2(ispinfe,norbt+norbt+1)
-      i_iorbfe=ialloi2(iorbfe,norbt+norbt+1)
-#endif
       call nwadd(nwall,2*nnorbx*8)
-#if !defined(VAR_G77)
       allocate(f(nnorbx))
       allocate(aj(nnorbx))
-#else
-      i_f=iallor8(f,nnorbx)
-      i_aj=iallor8(aj,nnorbx)
-#endif
       NOCB=nisht+lfermi
 
       if (DOCI) then
@@ -566,24 +433,24 @@ C
         escf=emcscf
       endif
 
-      write (lupri,'(/1x,a,i7)')  'NORB   =',norbt
-      write (lupri,'(1x,a,i7)')   'NOCB   =',NOCB
-      write (lupri,'(1x,a,i7)')   'NCF    =',ncf
-      write (lupri,'(1x,a,i7)')   'NTOTHP =',ntothp
-      write (lupri,'(1x,a,8I3)')  'FROZEN =',(NFRNEVPT2(i),i=1,nsym)
+      write (lupri,'(/1x,a,i8)')      'NORB   =',norbt
+      write (lupri,'(1x,a,i8)')       'NOCB   =',NOCB
+      write (lupri,'(1x,a,i8)')       'NCF    =',ncf
+      write (lupri,'(1x,a,i8)')       'NTOTHP =',ntothp
+      write (lupri,'(1x,a,8I4)')      'FROZEN =',(NFRNEVPT2(i),i=1,nsym)
       if(doci)then
-         write(lupri,'(1x,a,i7)') 'STATE  =',ISTNEVCI
-         write (lupri,'(1x,a,f14.8)')'E-CASCI= ',escf
+         write (lupri,'(1x,a,i8)')    'STATE  =',ISTNEVCI
+         write (lupri,'(1x,a,f16.8)') 'E-CASCI=',escf
       else
-         write (lupri,'(1x,a,f14.8)')'E-MCSCF= ',escf
+         write (lupri,'(1x,a,f16.8)') 'E-MCSCF=',escf
       endif
-      write (lupri,'(1x,a,d8.2)') 'THR    = ',thr
+      write (lupri,'(1x,a,1p,d16.2)') 'THR    =',thr
       call flshfo(lupri)
       mact=nasht
       nact2=nasht**2
       nact3=nasht**3
       nact4=nasht**4
-      nele=nactel           
+      nele=nactel
 c      if(zion)nele=nele-1
       ndim2=nasht*(nasht+1)/2
       ndim3=ndim2*(ndim2+1)/2
@@ -594,23 +461,22 @@ c      if(zion)nele=nele-1
          CALL QUIT('nevpt2 error: nact greater than "max_act" ')
       endif
       do i=1,nasht
-      lindi(i)=(i-1)*i*(i+1)*(i+2)/24
-      lindj(i)=(i-1)*i*(i+1)/6
-      lindk(i)=i*(i-1)/2
+        lindi(i)=(i-1)*i*(i+1)*(i+2)/24
+        lindj(i)=(i-1)*i*(i+1)/6
+        lindk(i)=i*(i-1)/2
       enddo
-      do i=1,nasht
-      do j=1,nasht
-      do k=1,nasht
       do l=1,nasht
-      call getnorm(i,j,k,l,norm)
-      normind(i,j,k,l)=norm
-      enddo
-      enddo
-      enddo
+       do k=1,nasht
+        do j=1,nasht
+         do i=1,nasht
+          call getnorm(i,j,k,l,norm)
+          normind(i,j,k,l)=norm
+         enddo
+        enddo
+       enddo
       enddo
       nwords=nasht*(nasht+1)*(nasht+2)*(nasht+3)/24
       call nwadd(nwall,nasht**6*8)
-#if !defined(VAR_G77)
       allocate(daaa(1:nasht,1:nasht,1:nasht,1:nasht,1:nasht,1:nasht))
       call nwadd(nwall,nasht**2*8)
       allocate(dal(1:nasht,1:nasht))
@@ -622,120 +488,56 @@ c      if(zion)nele=nele-1
       allocate(atwo(1:nasht,1:nasht,1:nasht,1:nasht))
       call nwadd(nwall,nwords*nasht**4*8)
       allocate(ro4(1:nwords,1:nasht,1:nasht,1:nasht,1:nasht))
-#else
-      i_daaa=iallor8(daaa,nasht**6)
-      call nwadd(nwall,nasht**2*8)
-      i_dal=iallor8(dal,nasht**2)
-      call nwadd(nwall,nasht**4*8)
-      i_taa=iallor8(taa,nasht**4)
-      call nwadd(nwall,nasht**6*8)
-      i_amat=iallor8(amat,nasht**6)
-      call nwadd(nwall,nasht**4*8)
-      i_atwo=iallor8(atwo,nasht**4)
-      call nwadd(nwall,nwords*nasht**4*8)
-      i_ro4=iallor8(ro4,nwords*(nasht**4))
-#endif
       do  i=1,norbt
-#if !defined(VAR_G77)
          ispinfe(i)=0
          ispinfe(i+norbt)=1
          iorbfe(i)=i
          iorbfe(i+norbt)=i
-#else
-         ispinfe(i_ispinfe+i-1)=0
-         ispinfe(i_ispinfe+i+norbt-1)=1
-         iorbfe(i_iorbfe+i-1)=i
-         iorbfe(i_iorbfe+i+norbt-1)=i
-#endif
       enddo
       if(zion)then
-#if !defined(VAR_G77)
          iorbfe(norbt+norbt+1)=norbt+1
          ispinfe(norbt+norbt+1)=1
-#else
-         iorbfe(i_iorbfe+norbt+norbt)=norbt+1
-         ispinfe(i_ispinfe+norbt+norbt)=1
-#endif
       endif
 C
 C Manu comment: the one-electron part of the Hamiltonian is built here !
 C
       call nwadd(nwall,NNORBX*8)
-#if !defined(VAR_G77)
       ALLOCATE (onel(NNORBX))
-C      
+C
 C ***********************************************************
 C Manu b
       IF (DOMCSRDFT) THEN
-C        Build active density matrix wrk(dv) with ro1 ... 
+C        Build active density matrix wrk(dv) with ro1 ...
 
          CALL MEMGET('REAL',KDV,NNASHX,WRK,KFREE,LFREE)
          call dzero(dal,n2ashx)
          call ro1(cvec,dal,nisht,nasht,thr,trou
      $        ,part,ne,nd,ispinfe
      $        ,iorbfe,itsym)
-         CALL DGETSP(NASHT,dal,wrk(kdv)) 
+         CALL DGETSP(NASHT,dal,wrk(kdv))
       ELSE
          CALL MEMGET('REAL',KDV,0,WRK,KFREE,LFREE)
       END IF
       call readint(onel,atwo,aj,wrk(kdv),
      &     wrk(kfree),lfree,id2n,in2d,lupri)
-#else
-      i_onel=iallor8(onel,NNORBX)
-C    
-C ***********************************************************
-C Manu b
-C Manu b: added wrk(kdv) as argument to readint in order to add
-C         the srHxc potential to the Hamiltonian
-      IF (DOMCSRDFT) THEN
-C        Build active density matrix wrk(dv) with ro1 ... 
-
-         CALL MEMGET('REAL',KDV,NNASHX,WRK,KFREE,LFREE)
-         call dzero(dal(i_dal),n2ashx)
-         call ro1(cvec(i_cvec),dal(i_dal),nisht,nasht,thr,trou(i_trou)
-     $        ,part(i_part),ne(i_ne),nd(i_nd),ispinfe(i_ispinfe)
-     $        ,iorbfe(i_iorbfe),itsym(i_itsym))
-         CALL DGETSP(NASHT,dal(i_dal),wrk(kdv)) 
-      ELSE
-         CALL MEMGET('REAL',KDV,0,WRK,KFREE,LFREE)
-      END IF
-      call readint(onel(i_onel),atwo(i_atwo),aj(i_aj),wrk(kdv),
-     $     wrk(kfree),lfree,id2n(i_id2n),in2d(i_in2d),lupri)
-C Manu e      
-
-#endif
+C Manu e
 
       CALL MEMREL('DV',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
-      
+
 !     write (lupri,'(/A)') 'Done with readint'
 !     call flshfo(lupri)
 
-#if !defined(VAR_G77)
       call dzero(ro4,nwords*nasht**4)
       call dzero(daaa,nasht**6)
       call dzero(taa,nasht**4)
       call dzero(dal,nasht**2)
-#else
-      call dzero(ro4(i_ro4),nwords*nasht**4)
-      call dzero(daaa(i_daaa),nasht**6)
-      call dzero(taa(i_taa),nasht**4)
-      call dzero(dal(i_dal),nasht**2)
-#endif
 
       write (lupri,'(/A,I5)') ' Spin multiplicity is',ispin
 c      if(ispin.eq.1.or.ispin.eq.2.or.ispin.eq.3)then
-#if !defined(VAR_G77)
       allocate(ioccfe(norbt,1))
       call esclass(nd,ne,trou,part,icomp,iconf,isegno,ncf,NOCB,norbt
      $     ,ispin,ioccfe)
       deallocate(ioccfe)
-#else
-      i_ioccfe=ialloi1(ioccfe,norbt)
-      call esclass(nd(i_nd),ne(i_ne),trou(i_trou),part(i_part)
-     $,icomp(i_icomp),iconf(i_iconf),isegno(i_isegno),ncf,NOCB,norbt
-     $,ispin,ioccfe(i_ioccfe))
-      call memreli1(ioccfe(i_ioccfe))
-#endif
 c      else
 c         do i=1,ncf
 c            icomp(i)=1
@@ -745,50 +547,27 @@ c      endif
       inext=1
       do i=1,ncf
          if(i.eq.inext)then
-#if !defined(VAR_G77)
             zcapos(i)=.true.
             inext=i+icomp(i)
          else
             zcapos(i)=.false.
          endif
          if(zcapos(i))ncapos=ncapos+1
-#else
-            zcapos(i_zcapos+i-1)=.true.
-            inext=i+icomp(i_icomp+i-1)
-         else
-            zcapos(i_zcapos+i-1)=.false.
-         endif
-         if(zcapos(i_zcapos+i-1))ncapos=ncapos+1
-#endif
       enddo
       write (lupri,'(a,i7,2a)') ' There are',ncapos,' different orbital'
      $     ,' occupation patterns'
       call flshfo(lupri)
       call nwadd(nwall,norbt*ncapos*2)
-#if !defined(VAR_G77)
       allocate(ioccfe(1:norbt,1:ncapos))
-#else
-      i_ioccfe=ialloi1(ioccfe,norbt*ncapos)
-#endif
       icapos=0
       do i=1,ncf
-#if !defined(VAR_G77)
          if(zcapos(i))then
-#else
-         if(zcapos(i_zcapos+i-1))then
-#endif
             icapos=icapos+1
-#if !defined(VAR_G77)
             call giveocc(ioccfe(1,icapos),i,nd,ne,trou,part,NOCB,norbt)
-#else
-      call giveocc(ioccfe(i_ioccfe+(icapos-1)*norbt),i,nd(i_nd),ne(i_ne)
-     $,trou(i_trou),part(i_part),NOCB,norbt)
-#endif
          endif
       enddo
 !     write(lupri,'(/A)) ' Density matrices calculation'
 !     call flshfo(lupri)
-#if !defined(VAR_G77)
       allocate(iocca(norbfe+1))
       allocate(ioccb(norbfe+1))
       allocate(flip(ncf+1000))
@@ -813,78 +592,16 @@ c      endif
          write(lupri,*) 'just one active electron: are you kidding?'
          call ro1(cvec,dal,nisht,nasht,thr,trou,part,ne,nd,
      *        ispinfe,iorbfe,itsym)
-#else
-C Manu b
-C     print *, 'var_G77 not defined ...'
-C Manu e
-      i_iocca=ialloi4(iocca,norbfe+1)
-      i_ioccb=ialloi4(ioccb,norbfe+1)
-      i_flip=ialloi1(flip,ncf+1000)
-      if(nele.ge.4)then
-         call rofour(cvec(i_cvec),ro4(i_ro4),nisht,nasht,thr
-     $        ,icomp(i_icomp),iconf(i_iconf),ioccfe(i_ioccfe)
-     $        ,zcapos(i_zcapos),ncapos,trou(i_trou),part(i_part),ne(i_ne
-     $        ),nd(i_nd),ispinfe(i_ispinfe),iorbfe(i_iorbfe)
-     $        ,itsym(i_itsym),iocca(i_iocca),ioccb(i_ioccb),flip(i_flip)
-     $        )
-         call bro3(ro4(i_ro4),daaa(i_daaa),nasht,nele)
-         call bro2(daaa(i_daaa),taa(i_taa),nasht,nele)
-         call bro1(taa(i_taa),dal(i_dal),nasht,nele)
-      elseif(nele.eq.3)then
-         i_dbbb=iallor8(dbbb,nasht**6)
-         i_daab=iallor8(daab,nasht**6)
-         i_dbba=iallor8(dbba,nasht**6)
-         call ro3(cvec(i_cvec),daaa(i_daaa),dbbb(i_dbbb),daab(i_daab)
-     $        ,dbba(i_dbba),nisht,nasht,thr,icomp(i_icomp),iconf(i_iconf
-     $        ),ioccfe(i_ioccfe),zcapos(i_zcapos),ncapos,trou(i_trou)
-     $        ,part(i_part),ne(i_ne),nd(i_nd),ispinfe(i_ispinfe)
-     $        ,iorbfe(i_iorbfe),itsym(i_itsym),iocca(i_iocca)
-     $        ,ioccb(i_ioccb),flip(i_flip))
-         call memrelr8(dbbb(i_dbbb))
-         call memrelr8(daab(i_daab))
-         call memrelr8(dbba(i_dbba))
-         call bro2(daaa(i_daaa),taa(i_taa),nasht,nele)
-         call bro1(taa(i_taa),dal(i_dal),nasht,nele)
-      elseif(nele.eq.2)then
-         i_tbb=iallor8(tbb,nasht**4)
-         i_tab=iallor8(tab,nasht**4)
-         call ro2(cvec(i_cvec),taa(i_taa),tbb(i_tbb),tab(i_tab),nisht
-     $        ,nasht,thr,trou(i_trou),part(i_part),ne(i_ne),nd(i_nd)
-     $        ,ispinfe(i_ispinfe),iorbfe(i_iorbfe),itsym(i_itsym)
-     $        ,iocca(i_iocca),ioccb(i_ioccb),flip(i_flip))
-         call memrelr8(tbb(i_tbb))
-         call memrelr8(tab(i_tab))
-         call bro1(taa(i_taa),dal(i_dal),nasht,nele)
-C
-C
-C Manu b 
-      elseif(nele.eq.1)then
-         write(lupri,*) 'just one active electron: are you kidding?'
-         call ro1(cvec(i_cvec),dal(i_dal),nisht,nasht,thr,trou(i_trou)
-     $        ,part(i_part),ne(i_ne),nd(i_nd),ispinfe(i_ispinfe)
-     $        ,iorbfe(i_iorbfe),itsym(i_itsym))
-#endif
       endif
-#if !defined(VAR_G77)
       deallocate(iocca)
       deallocate(ioccb)
       deallocate(flip)
-#else
-      call memreli4(iocca(i_iocca))
-      call memreli4(ioccb(i_ioccb))
-      call memreli4(flip(i_flip))
-#endif
 !     write(lupri,'(/A)') ' Done with density matrices calculation'
 !     call flshfo(lupri)
 
       call nwdel(nwall,ncdets*8)
-#if !defined(VAR_G77)
       deallocate (cvec)
-#else
-      call memrelr8(cvec(i_cvec))
-#endif
       call nwdel(nwall,(ncf+1000)*(2+4+2+2+2+1))
-#if !defined(VAR_G77)
       deallocate (ne)
       deallocate (nd)
       deallocate (trou)
@@ -898,29 +615,13 @@ C Manu b
       deallocate (iorbfe)
       call nwdel(nwall,norbt*ncapos*2)
       deallocate (ioccfe)
-#else
-      call memreli2(ne(i_ne))
-      call memreli4(nd(i_nd))
-      call memreli2 (trou(i_trou))
-      call memreli2 (part(i_part))
-      call memreli2 (icomp(i_icomp))
-      call memreli2 (iconf(i_iconf))
-      call memreli2 (isegno(i_isegno))
-      call memreli4 (zcapos(i_zcapos))
-      call nwdel(nwall,2*(norbt+norbt+1)*2)
-      call memreli2 (ispinfe(i_ispinfe))
-      call memreli2 (iorbfe(i_iorbfe))
-      call nwdel(nwall,norbt*ncapos*2)
-      call memreli1 (ioccfe(i_ioccfe))
-#endif
       t2=second()
-      write(lupri,'(a,f8.2,a)')
-     &   ' Elapsed time after density matrices ',t2-tdal,' sec.'
+      write(lupri,'(a,f10.2,a)')
+     &   ' Elapsed time after density matrices',t2-tdal,' seconds'
       n=nasht
       nstop=(n+n*n)/2
 c---calcolo Koopmans esteso doppie ionizzazioni---------------------
       call nwadd(nwall,2*nasht**2*8)
-#if !defined(VAR_G77)
       allocate(coopipa(1:nasht,1:nasht))
       allocate(coopeaa(1:nasht,1:nasht))
       call nwadd(nwall,2*nasht**4*8)
@@ -930,23 +631,8 @@ c---calcolo Koopmans esteso doppie ionizzazioni---------------------
       allocate(koopab(1:nasht,1:nasht))
       call nwadd(nwall,nasht**4*8)
       allocate(koopeaa(1:nasht,1:nasht,1:nasht,1:nasht))
-#else
-      i_coopipa=iallor8(coopipa,nasht**2)
-      i_coopeaa=iallor8(coopeaa,nasht**2)
-      call nwadd(nwall,2*nasht**4*8)
-      i_koopaa=iallor8(koopaa,nasht**4)
-      i_koopbb=iallor8(koopbb,nasht**4)
-      call nwadd(nwall,nasht**2*8)
-      i_koopab=iallor8(koopab,nasht**2)
-      call nwadd(nwall,nasht**4*8)
-      i_koopeaa=iallor8(koopeaa,nasht**4)
-#endif
-#if !defined(VAR_G77)
+
       call koopE(atwo,coopipa,coopeaa,taa,dal,nasht,nisht,f,aj)
-#else
-      call koopE(atwo(i_atwo),coopipa(i_coopipa),coopeaa(i_coopeaa)
-     $,taa(i_taa),dal(i_dal),nasht,nisht,f(i_f),aj(i_aj))
-#endif
 c         write (lupri,*) 'Koopipa'
 c         do i=1,6
 c          write (lupri,*) i,(coopipa(i,j),j=1,6)
@@ -955,78 +641,40 @@ c         write (lupri,*) 'Koopeaa'
 c         do i=1,6
 c          write (lupri,*) i,(coopeaa(i,j),j=1,6)
 c         enddo
-#if !defined(VAR_G77)
       call wr1(dal,coopeaa,coopipa,nasht,lun31)
-#else
-      call wr1(dal(i_dal),coopeaa(i_coopeaa),coopipa(i_coopipa),nasht
-     $,lun31)
-#endif
       call nwdel(nwall,2*nasht**2*8)
-#if !defined(VAR_G77)
       deallocate (coopipa)
       deallocate (coopeaa)
-#else
-      call memrelr8 (coopipa(i_coopipa))
-      call memrelr8 (coopeaa(i_coopeaa))
-#endif
-#if !defined(VAR_G77)
       call wr2(koopaa,taa,dal,nasht,lun31)
-#else
-      call wr2(koopaa(i_koopaa),taa(i_taa),dal(i_dal),nasht,lun31)
-#endif
 !     write(lupri,*)
 !     write(lupri,*) 'Done with one part/hole Koopmans'' matrices'
-#if !defined(VAR_G77)
       call koop2E(atwo,daaa,taa,dal,koopaa,koopeaa,nasht,nisht
      $     ,f,aj,itsym,its)
-#else
-      call koop2E(atwo(i_atwo),daaa(i_daaa),taa(i_taa),dal(i_dal)
-     $,koopaa(i_koopaa),koopeaa(i_koopeaa),nasht,nisht,f(i_f),aj(i_aj)
-     $,itsym(i_itsym),its)
-#endif
 !     write(lupri,*)
 !     write(lupri,*) 'Done with two part/hole Koopmans'' matrices'
       t3=second()
-      write(lupri,'(a,f10.2,a)')' KoopE and KoopE2 have taken ',t3-t2,
-     * ' seconds'
-#if !defined(VAR_G77)
+      write(lupri,'(a,f10.2,a)')
+     &   ' KoopE and KoopE2 have taken        ',t3-t2,' seconds'
       call wr3(koopeaa,taa,koopaa,nasht,lun31)
       call koopman0pE(atwo,daaa,taa,dal,koopaa,koopbb,koopab,
      $ nasht,nisht,f,aj,itsym,its)
-#else
-      call wr3(koopeaa(i_koopeaa),taa(i_taa),koopaa(i_koopaa),nasht
-     $,lun31)
-      call koopman0pE(atwo(i_atwo),daaa(i_daaa),taa(i_taa),dal(i_dal)
-     $     ,koopaa(i_koopaa),koopbb(i_koopbb),koopab(i_koopab),nasht
-     $     ,nisht,f(i_f),aj(i_aj),itsym(i_itsym),its)
-#endif
 !     write(lupri,*)
 !     write(lupri,*) 'Done with excitation Koopmans'' matrix'
       t4=second()
-      write(lupri,'(a,f10.2,a)')' Koopman0pE has taken ',t4-t3,
-     *                 ' seconds'
+      write(lupri,'(a,f10.2,a)')
+     &   ' Koopman0pE has taken               ',t4-t3,' seconds'
       fmax=0.d0
-      do i=1,nasht
-         do j=1,nasht
-#if !defined(VAR_G77)
+      do j=1,nasht
+         do i=1,nasht
             fprov=abs(koopab(i,j))
-#else
-            fprov=abs(vald2r8(koopab(i_koopab),i,j,nasht))
-#endif
             if(fprov.gt.fmax)fmax=fprov
          enddo
       enddo
-      write(lupri,'(/a,d10.3)') ' Maximum value of F matrix is:',fmax
-#if !defined(VAR_G77)
+      write(lupri,'(/a,1p,d10.3)') ' Maximum value of F matrix is:',fmax
       call wr4(koopaa,koopbb,koopab,nasht,lun31)
-#else
-      call wr4(koopaa(i_koopaa),koopbb(i_koopbb),koopab(i_koopab),nasht
-     $,lun31)
-#endif
 c-----scrittura matrici A e D-----------------------------------
 
       call nwdel(nwall,2*nasht**4*8)
-#if !defined(VAR_G77)
       deallocate(koopaa)
       deallocate(koopbb)
       call nwdel(nwall,nasht**2*8)
@@ -1044,88 +692,35 @@ c-----scrittura matrici A e D-----------------------------------
       call nwadd(nwall,2*nasht**2*8)
       allocate(dmat(1:nasht,1:nasht))
       allocate(dtmat(1:nasht,1:nasht))
-#else
-      call memrelr8(koopaa(i_koopaa))
-      call memrelr8(koopbb(i_koopbb))
-      call nwdel(nwall,nasht**2*8)
-      call memrelr8(koopab(i_koopab))
-      call nwdel(nwall,nasht**4*8)
-      call memrelr8(koopeaa(i_koopeaa))
 
-      call nwadd(nwall,nasht**6*8)
-      i_atmat=iallor8(atmat,nasht**6)
-      call nwadd(nwall,4*nasht**4*8)
-      i_bmat=iallor8(bmat,nasht**4)
-      i_cmat=iallor8(cmat,nasht**4)
-      i_btmat=iallor8(btmat,nasht**4)
-      i_ctmat=iallor8(ctmat,nasht**4)
-      call nwadd(nwall,2*nasht**2*8)
-      i_dmat=iallor8(dmat,nasht**2)
-      i_dtmat=iallor8(dtmat,nasht**2)
-#endif
-#if !defined(VAR_G77)
       call dzero(amat,nasht**6)
       call dzero(atmat,nasht**6)
       call bamat(amat,atmat,atwo,ro4,daaa,taa,dal,nasht,nisht,f,aj,itsym
      $     ,its,norbt)
-#else
-      call dzero(amat(i_amat),nasht**6)
-      call dzero(atmat(i_atmat),nasht**6)
-      call bamat(amat(i_amat),atmat(i_atmat),atwo(i_atwo),ro4(i_ro4)
-     $     ,daaa(i_daaa),taa(i_taa),dal(i_dal),nasht,nisht,f(i_f)
-     $     ,aj(i_aj),itsym(i_itsym),its,norbt)
-#endif
+
       call nwdel(nwall,nwords*nasht**4*8)
-#if !defined(VAR_G77)
       deallocate (ro4)
-#else
-      call memrelr8 (ro4(i_ro4))
-#endif
       t6=second()
       write(lupri,'(a,f10.2,a)')' BAMAT has taken ',t6-t4,
      * ' seconds'
-#if !defined(VAR_G77)
       call bbmat(atwo,bmat,btmat,daaa,taa,dal,nasht,nisht,f,aj)
-#else
-      call bbmat(atwo(i_atwo),bmat(i_bmat),btmat(i_btmat),daaa(i_daaa)
-     $,taa(i_taa),dal(i_dal),nasht,nisht,f(i_f),aj(i_aj))
-#endif
       t7=second()
       write(lupri,'(a,f10.2,a)')' BBMAT has taken ',t7-t6,' seconds'
-#if !defined(VAR_G77)
       call bcmat(atwo,cmat,ctmat,daaa,taa,dal,nasht,nisht,f,aj)
-#else
-      call bcmat(atwo(i_atwo),cmat(i_cmat),ctmat(i_ctmat),daaa(i_daaa)
-     $,taa(i_taa),dal(i_dal),nasht,nisht,f(i_f),aj(i_aj))
-#endif
       t8=second()
       write(lupri,'(a,f10.2,a)')' BCMAT has taken ',t8-t7,' seconds'
-#if !defined(VAR_G77)
       call fdiff(bmat,cmat,btmat,ctmat,nasht)
       call bdmat(atwo,dmat,dtmat,taa,dal,nasht,nisht,f,aj)
-#else
-      call fdiff(bmat(i_bmat),cmat(i_cmat),btmat(i_btmat),ctmat(i_ctmat)
-     $,nasht)
-      call bdmat(atwo(i_atwo),dmat(i_dmat),dtmat(i_dtmat),taa(i_taa)
-     $     ,dal(i_dal),nasht,nisht,f(i_f),aj(i_aj))
-#endif
       t9=second()
       write(lupri,'(a,f10.2,a)')' BDMAT has taken ',t9-t8,' seconds'
-#if !defined(VAR_G77)
       call wr5(daaa,amat,atmat,bmat,btmat,cmat,ctmat,dmat,dtmat,nasht
      $     ,lun31)
-#else
-      call wr5(daaa(i_daaa),amat(i_amat),atmat(i_atmat),bmat(i_bmat)
-     $,btmat(i_btmat),cmat(i_cmat),ctmat(i_ctmat),dmat(i_dmat)
-     $,dtmat(i_dtmat),nasht,lun31)
-#endif
 
       write(lupri,'(/a,f8.2,a)')' Total elapsed time in Koopro4',t9-t,
      * ' seconds'
       call flshfo(lupri)
 
       call nwdel(nwall,nasht**6*8)
-#if !defined(VAR_G77)
       deallocate (daaa)
       call nwdel(nwall,nasht**2*8)
       deallocate (dal)
@@ -1147,42 +742,13 @@ c-----scrittura matrici A e D-----------------------------------
       call nwdel(nwall,2*nasht**2*8)
       deallocate(dmat)
       deallocate(dtmat)
-#else
-      call memrelr8 (daaa(i_daaa))
-      call nwdel(nwall,nasht**2*8)
-      call memrelr8 (dal(i_dal))
-      call nwdel(nwall,nasht**4*8)
-      call memrelr8 (taa(i_taa))
-      call nwdel(nwall,nasht**6*8)
-      call memrelr8 (amat(i_amat))
-      call nwdel(nwall,nasht**4*8)
-      call memrelr8 (atwo(i_atwo))
-      call nwdel(nwall,(norbt+norbt+1)*4)
-      call memrelr8 (f(i_f))
-      call nwdel(nwall,nasht**6*8)
-      call memrelr8(atmat(i_atmat))
-      call nwdel(nwall,4*nasht**4*8)
-      call memrelr8(bmat(i_bmat))
-      call memrelr8(cmat(i_cmat))
-      call memrelr8(btmat(i_btmat))
-      call memrelr8(ctmat(i_ctmat))
-      call nwdel(nwall,2*nasht**2*8)
-      call memrelr8(dmat(i_dmat))
-      call memrelr8(dtmat(i_dtmat))
-#endif
 
-#if !defined(VAR_G77)
       call dypc(escf,onel,id2n,in2d,WRK,LWRK,
      $           norbt,nisht,nasht,its,itsym,NOCB,
      $           LUPRI,LUN98,LUN31,zgel)
-#else
-      call dypc(escf,onel(i_onel),id2n(i_id2n),in2d(i_in2d),WRK,LWRK,
-     $           norbt,nisht,nasht,its,itsym(i_itsym),NOCB,
-     $           LUPRI,LUN98,LUN31,zgel(i_zgel))
-#endif
+
       CALL GPCLOSE(LUN31,'DELETE')
       call nwdel(nwall,2*norbt*4+norbt)
-#if !defined(VAR_G77)
       deallocate (id2n)
       deallocate (in2d)
       deallocate (zgel)
@@ -1192,18 +758,6 @@ c-----scrittura matrici A e D-----------------------------------
       deallocate (aj)
       call nwdel(nwall,NNORBX*8)
       deallocate (onel)
-#else
-      call memreli4 (id2n(i_id2n))
-      call memreli4 (in2d(i_in2d))
-      call memreli1 (zgel(i_zgel))
-      call nwdel(nwall,(norbt+norbt+1)*4)
-      call memreli4 (itsym(i_itsym))
-      call nwdel(nwall,(norbt+norbt+1)*4)
-      call memrelr8 (aj(i_aj))
-      call nwdel(nwall,NNORBX*8)
-      call memrelr8 (onel(i_onel))
-      call nwdel(nwall,2*nasht*4)
-#endif
 c----that's all folks
       CALL QEXIT('koopro4')
       return
@@ -1212,12 +766,8 @@ c-------------------------------------------------------------------
       subroutine rofour(c,amat,nisht,nasht,thr,icomp,iconf,ioccfe,
      $     zcapos,ncaptot,trou,part,ne,nd,ispinfe,iorbfe,itsym,iocca
      $     ,ioccb,flip)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
-#include <priunit.h>
+      IMPLICIT REAL*8  (A-H,O-Y), LOGICAL*1 (Z)
+#include "priunit.h"
       dimension amat(nwords,nasht,nasht,nasht,nasht)
 #include "nevpt2.h"
       dimension c(*),zcapos(*)
@@ -1286,7 +836,7 @@ c           if(znocalc)nhitsd=nhitsd+1
                nec=ne(m)
                ndm=nd(m)
                call giveocc2(m,iocca,ioccb,nasht,nisht,nocca,noccb,nocc
-     $              ,nec,ndm,trou,part,iorbfe,ispinfe) 
+     $              ,nec,ndm,trou,part,iorbfe,ispinfe)
                if(abs(c(m)).lt.thr) goto 3
                if(flip(m).eq.2)goto 3
                if(mcap.eq.ncap)then
@@ -1573,7 +1123,7 @@ c                     call case20
                      endif
                      cij=valcm*c(n)*segno
                      val=cij
-c---  n1l,n2l a sinistra 
+c---  n1l,n2l a sinistra
                      if((n1+n2).ge.(n3+n4))then
                         n1l=n1
                         n2l=n2
@@ -1694,7 +1244,7 @@ c---- daabb
      $                                ,val,amat,nasht,m,n)
                               endif
                            enddo
-                        enddo    
+                        enddo
                      endif
 c     goto 2
                   elseif(nbdif.eq.3)then
@@ -1727,7 +1277,7 @@ c                     call case30
                      endif
                      cij=valcm*c(n)*segno
                      val=cij
-c---  n1l,n2l,n3l a sinistra 
+c---  n1l,n2l,n3l a sinistra
                      if((n1+n2+n3).ge.(n4+n5+n6))then
                         n1l=n1
                         n2l=n2
@@ -1821,7 +1371,7 @@ c     goto 2
                   else          !nbdif.eq.4
 c---  renzo debug
                      nfours=nfours+1
-c---- 
+c----
                      call ord4(nv,nw,zseg,segno) !prima gli alfa, poi i beta
                      n1=iorbfe(nv(1))
                      ns1=ispinfe(nv(1))
@@ -1856,7 +1406,7 @@ c                  call case40
                      endif
                      cij=valcm*c(n)*segno
                      val=cij
-c---  n1l,n2l,n3l a sinistra 
+c---  n1l,n2l,n3l a sinistra
                      if((n1+n2+n3+n4).ge.(n5+n6+n7+n8))then
                         n1l=n1
                         n2l=n2
@@ -1917,33 +1467,17 @@ c---renzo debug
       write(lupri,*)'number of double    differences=',ndoubs
       write(lupri,*)'number of triple    differences=',ntrips
       write(lupri,*)'number of quadruple differences=',nfours
-      write(lupri,*)'number of jdifgen calls',ijcal
+      write(lupri,*)'number of jdifgen calls         ',ijcal
 c---contributi diagonali
       return
       end
 c--------------------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine ro3(c,daaa,nisht,nasht,thr,icomp,iconf,ioccfe,zcapos
      $,ncaptot,trou,part,ne,nd,ispinfe,iorbfe,itsym,iocca,ioccb,flip)
-#else
-      subroutine ro3(c,daaa,dbbb,daab,dbba,nisht,nasht,thr,icomp,iconf
-     $,ioccfe,zcapos,ncaptot,trou,part,ne,nd,ispinfe,iorbfe,itsym,iocca
-     $,ioccb,flip)
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
-#include <priunit.h>
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
+#include "priunit.h"
 c      include 'rotwo.par'
-#if !defined(VAR_G77)
       allocatable dbbb(:,:,:,:,:,:),daab(:,:,:,:,:,:),dbba(:,:,:,:,:,:)
-#else
-      dimension dbbb(nasht,nasht,nasht,nasht,nasht,nasht)
-      dimension daab(nasht,nasht,nasht,nasht,nasht,nasht)
-      dimension dbba(nasht,nasht,nasht,nasht,nasht,nasht)
-#endif
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
       dimension c(*),zcapos(*)
       COMMON /CIP/NORB,NOCB,NCF,ZSEG
@@ -1962,28 +1496,17 @@ c      include 'rotwo.par'
       write(lupri,*)'subr. ro3'
       write(lupri,*)'nocc,NOCB',nocc,NOCB
       write(lupri,*)'nasht=',nasht,' nocc=',nocc,' ncf=',ncf
-#if !defined(VAR_G77)
+
       allocate(dbbb(1:nasht,1:nasht,1:nasht,1:nasht,1:nasht,1:nasht))
       allocate(daab(1:nasht,1:nasht,1:nasht,1:nasht,1:nasht,1:nasht))
       allocate(dbba(1:nasht,1:nasht,1:nasht,1:nasht,1:nasht,1:nasht))
-#endif
 c---azzeramento
-      do i=1,nasht
-         do j=1,nasht
-            do k=1,nasht
-               do l=1,nasht
-                  do m=1,nasht
-                     do n=1,nasht
-                        daaa(i,j,k,l,m,n)=0.d0
-                        dbbb(i,j,k,l,m,n)=0.d0
-                        daab(i,j,k,l,m,n)=0.d0
-                        dbba(i,j,k,l,m,n)=0.d0
-                     enddo
-                  enddo
-               enddo
-            enddo
-         enddo
-      enddo
+      L_dxxx = nasht**6
+      call dzero(daaa, L_dxxx)
+      call dzero(dbbb, L_dxxx)
+      call dzero(daab, L_dxxx)
+      call dzero(dbba, L_dxxx)
+
       do i=1,ncf
        flip(i)=0
       enddo
@@ -2028,14 +1551,14 @@ c           if(znocalc)nhitsd=nhitsd+1
                nec=ne(m)
                ndm=nd(m)
                call giveocc2(m,iocca,ioccb,nasht,nisht,nocca,noccb,nocc
-     $              ,nec,ndm,trou,part,iorbfe,ispinfe) 
+     $              ,nec,ndm,trou,part,iorbfe,ispinfe)
                if(abs(c(m)).lt.thr) goto 3
                if(flip(m).eq.2)goto 3
                if(mcap.eq.ncap)then
                   nbeg=minit
                   nend=m-1
 c     call case0
-c---- renzo 
+c---- renzo
                   if(flip(m).eq.1)then
                      valcm=2.d0*c(m)
                   else
@@ -2056,7 +1579,7 @@ c     costruzione di daaa
                         enddo
                      enddo
                   enddo
-c     costruzione di dbbb            
+c     costruzione di dbbb
                   do i=1,noccb
                      ib=ioccb(i)
                      do j=i+1,noccb
@@ -2082,7 +1605,7 @@ c     costruzione di daab
                         enddo
                      enddo
                   enddo
-c     costruzione di dbba            
+c     costruzione di dbba
                   do i=1,noccb
                      ib=ioccb(i)
                      do j=i+1,noccb
@@ -2249,7 +1772,7 @@ c---- contributo a dbba
      $                          ,ib)+val
                            call perm2(daab,n1,n2,ib,n3,n4,ib,nasht)
                         enddo
-                        
+
                      elseif(ns1.eq.0.and.ns2.eq.0)then
                         do i=1,noccb
                            ib=ioccb(i)
@@ -2363,34 +1886,18 @@ c--costruzione matrice ro3 spinless
             enddo
          enddo
       enddo
-#if !defined(VAR_G77)
       deallocate(dbbb)
       deallocate(daab)
       deallocate(dbba)
-#endif
       return
       end
 c-------------------------------------------------------
-#if !defined(VAR_G77)
       subroutine ro2(c,d2alal,nisht,nasht,thr,trou,part,ne,nd,
      $               ispinfe,iorbfe,itsym,iocca,ioccb,flip)
-#else
-      subroutine ro2(c,d2alal,d2bebe,d2albe,nisht,nasht,thr,trou,part,ne
-     $,nd,ispinfe,iorbfe,itsym,iocca,ioccb,flip)
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
-#include <priunit.h>
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
+#include "priunit.h"
       dimension d2alal(nasht,nasht,nasht,nasht)
-#if !defined(VAR_G77)
       allocatable d2bebe(:,:,:,:),d2albe(:,:,:,:)
-#else
-      dimension d2bebe(nasht,nasht,nasht,nasht)
-      dimension d2albe(nasht,nasht,nasht,nasht)
-#endif
       dimension c(*)
       COMMON /CIP/NORB,NOCB,NCF,ZSEG
       INTEGER*2 ispinfe,iorbfe
@@ -2407,10 +1914,8 @@ c-------------------------------------------------------
       parameter (pt5=0.5d0)
 c     indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 c common e dimensionamenti mettere dopo
-#if !defined(VAR_G77)
       allocate(d2bebe(1:nasht,1:nasht,1:nasht,1:nasht))
       allocate(d2albe(1:nasht,1:nasht,1:nasht,1:nasht))
-#endif
       n=nasht
       nocc=NOCB-nisht
       nbig=(n*n+n)/2
@@ -2562,21 +2067,17 @@ c--costruzione ro2 spinless
                enddo
             enddo
          enddo
-#if !defined(VAR_G77)
          deallocate(d2bebe)
          deallocate(d2albe)
-#endif
          return
          end
 c-----------------------------------------------------
       subroutine ro1(c,d1,nisht,nasht,thr,trou,part,ne,nd,ispinfe,iorbfe
      $     ,itsym)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
-#include <priunit.h>
+
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
+
+#include "priunit.h"
       dimension d1(nasht,nasht)
       integer segno
       dimension c(*)
@@ -2636,7 +2137,7 @@ C     note: NOCB = nisht + lfermie
 c-------------------------------------------------
       subroutine ord2(nv,nw,zseg,segno)
 c--prima gli alfa poi i beta
-#include <priunit.h>
+#include "priunit.h"
       logical*1 zseg
       integer segno
       dimension nv(*),nw(*)
@@ -2662,7 +2163,7 @@ c--prima gli alfa poi i beta
 c----------------------------------------------------------------
       subroutine ord3(nv,nw,zseg,segno)
 c--prima gli alfa poi i beta
-#include <priunit.h>
+#include "priunit.h"
       logical*1 zseg
       integer segno
       dimension nv(*),nw(*)
@@ -2712,7 +2213,7 @@ c--prima gli alfa poi i beta
 c----------------------------------------------------------------
       subroutine ord4(nv,nw,zseg,segno)
 c--prima gli alfa poi i beta
-#include <priunit.h>
+#include "priunit.h"
       logical*1 zseg
       integer segno
       dimension nv(*),nw(*)
@@ -2749,13 +2250,9 @@ c--prima gli alfa poi i beta
       end
 c----------------------------------------------------------------
       subroutine giveocc2(m,iocca,ioccb,nasht,nisht,nocca,noccb,nocc,nec
-     $     ,ndm,trou,part,iorbfe,ispinfe) 
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
-#include <priunit.h>
+     $     ,ndm,trou,part,iorbfe,ispinfe)
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
+#include "priunit.h"
       dimension iocca(*),ioccb(*),trou(*),part(*),iorbfe(*),ispinfe(*)
       integer*2 trou,part,iorbfe,ispinfe
       do i=1,nasht
@@ -2801,12 +2298,9 @@ c----------------------------------------------------------------
       end
 c--------------------------------------------------------------------
       subroutine perm3(d,i,j,k,l,m,n,nasht)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
-#include <priunit.h>
+
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
+#include "priunit.h"
       dimension d(nasht,nasht,nasht,nasht,nasht,nasht)
 c--block 1
       a=d(i,j,k,l,m,n)
@@ -2854,8 +2348,8 @@ c--block 6
       end
 c-----------------------------------------------------------
       subroutine perm2(d,i,j,k,l,m,n,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension d(nasht,nasht,nasht,nasht,nasht,nasht)
 c--block 1
       a=d(i,j,k,l,m,n)
@@ -2871,8 +2365,8 @@ c--block 2
       end
 c--------------------------------------------------------------------
       subroutine permbis(d,i,j,k,l,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension d(nasht,nasht,nasht,nasht)
 c--block 1
       a=d(i,j,k,l)
@@ -2888,8 +2382,8 @@ c--block 2
       end
 c--------------------------------------------------------------------
       subroutine permut123(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2929,8 +2423,8 @@ c---permutazioni dispari
       end
 c----------------------------------------------------------
       subroutine permut124(i,j,l,k,ip,jp,lp,kp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2970,8 +2464,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut134(i,l,j,k,ip,lp,jp,kp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -3011,8 +2505,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut234(l,i,j,k,lp,ip,jp,kp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -3052,8 +2546,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut1234(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
 c--permutazioni pari
       if(ivolte.eq.1)then
@@ -3086,8 +2580,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut1324(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
 c--permutazioni pari
       if(ivolte.eq.1)then
@@ -3120,8 +2614,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut1423(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
 c--permutazioni pari
       if(ivolte.eq.1)then
@@ -3154,11 +2648,11 @@ c---permutazioni dispari
       end
 c----------------------------------------------------------------------
       subroutine permut4(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       if(ivolte.eq.1)then
-c--permutazioni pari      
+c--permutazioni pari
          ip=i
          jp=j
          kp=k
@@ -3308,15 +2802,12 @@ c---permutazioni dispari
       end
 c---------------------------------------------------------------------
       FUNCTION Jdifgen(ne,nd,trou,part,II,JJ,nv1,nv2,nma,zsig)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
-C     
+C
 C     SSP DE RECHERCHE DES ELEMENTS D'INTERACTION
 C     ENTRE DEUX DETERMINANTS, NUMEROTES II ET JJ
-C     
+C
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
+#include "priunit.h"
       parameter (nmax=4)
       dimension ne(*),nd(*),trou(*),part(*)
       INTEGER*2 NE,TROU,PART
@@ -3325,10 +2816,10 @@ C
       common/diff/n1,n2,n3,n4,ns1,ns2,ns3,ns4,nbdif
       KR=II
       KL=JJ
-C     
+C
 C     LE DETERMINANT - 1 - EST CHOISI COMME LE
 C     DETERMINANT AYANT LE PLUS D'O.M. EXCITEES
-C     
+C
       IF (NE(KR) .lt. NE(KL)) then
         KKKK=KR
         KR=KL
@@ -3348,14 +2839,14 @@ C     DIFFERENTES
 C     CONSTRUCTION POUR LE DETERMINANT -1- ET -2-
 C     DE IT ET NS, QUI CONTIENNENT LES NUMEROS
 C     DES ORBITALES ET LEURS SPINS
-C     
+C
       ND1=ND(KR)
       ND2=ND(KL)
       DO 15 J=1,NE1
          ITA(J)=TROU(J+ND1)
          ITA(J+NE1)=PART(J+ND1)
  15   CONTINUE
-C     
+C
 C     ZSIG :  EST LA PARITE DU  NOMBRE DE CROISEMENTS
 C     DANS LE DIAGRAMME D INTERACTION
       ZSIG=.FALSE.
@@ -3389,7 +2880,7 @@ C     SI NE2=0 LE DETERMINANT -2- EST LE FONDAMENTAL
  10         CONTINUE
  8       CONTINUE
  125     IF (NBDIF.LE.0) GOTO 44
-C     
+C
 C     NAR : EXCITATION SUPLEMENTAIRE DU DETERMINANT -1-
 C     PAR RAPPORT AU DETERMINANT -2-
  26      NAR=NE1-NE2
@@ -3426,19 +2917,19 @@ C     CALCUL DE L ELEMENT DE MATRICE
          RETURN
  24      Jdifgen=0
          RETURN
- 44      WRITE (6,1006) II,JJ,NE1,NE2
+ 44      WRITE (lupri,1006) II,JJ,NE1,NE2
  1006    FORMAT (//5X,'IDENTITE DANS HNTD'/' II,JJ,NE1,NE2 =',4I4)
-         WRITE (6,1007) (ITA(K),K=1,NE1)
-         WRITE (6,1008) (ITA(K+NE1),K=1,NE1)
-         WRITE (6,1007) (ITB(K),K=1,NE2)
-         WRITE (6,1008) (ITB(K+NE2),K=1,NE2)
+         WRITE (lupri,1007) (ITA(K),K=1,NE1)
+         WRITE (lupri,1008) (ITA(K+NE1),K=1,NE1)
+         WRITE (lupri,1007) (ITB(K),K=1,NE2)
+         WRITE (lupri,1008) (ITB(K+NE2),K=1,NE2)
  1007    FORMAT (' TROU',8I4)
  1008    FORMAT (' PART',8I4)
          STOP
          END
 c------------------------------------------------------------------
       integer function index(i,j,k,l)
-#include <implicit.h>
+#include "implicit.h"
       if(i.ge.k)then
          ik=(i*i-i)/2+k
       else
@@ -3458,8 +2949,8 @@ c------------------------------------------------------------------
       end
 c------------------------------------------------------------------
       subroutine accum(amat,ip,jp,kp,lp,mp,np,op,pp,val,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "nevpt2.h"
       dimension amat(nwords,nasht,nasht,nasht,nasht)
       integer op,pp
@@ -3471,18 +2962,18 @@ c------------------------------------------------------------------
       end
 c-----------------------------------------------------------------
       SUBROUTINE MATOUT(N,N2,A,NN)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c     CHARACTER*3 SYMB(NN)
 c     integer symb(*)
       DIMENSION A(NN,*)
-C 
+C
    20 FORMAT(//,8X,11(5X,I3,3X))
    30 FORMAT(1X,I4,4X,11(F11.6))
    35 FORMAT(8X,11(5X,I3,3X))
    37 FORMAT(8X,11(4X,A4,3X))
    36 FORMAT(/)
-C 
+C
 c      DO 40 M=1,N2,11
       DO 40 M=1,N2,6
 c      K=M+10
@@ -3491,8 +2982,8 @@ c      K=M+10
       K=N2
    10 WRITE(lupri,20) (J,J=M,K)
       WRITE(lupri,36)
-c     WRITE(6,35) (ME(I),I=M,K)
-c     WRITE(6,37) (SYMB(I),I=M,K)
+c     WRITE(lupri,35) (ME(I),I=M,K)
+c     WRITE(lupri,37) (SYMB(I),I=M,K)
       WRITE(lupri,36)
       DO 40 I=1,N
       WRITE(lupri,30) I,(A(I,J),J=M,K)
@@ -3503,20 +2994,16 @@ c     WRITE(6,37) (SYMB(I),I=M,K)
 c-------------------------------------------------------------------
       subroutine koop2E(atwo,daaa,taa,dal,koopaa,koopeaa,nasht
      $     ,nisht,f,aj,itsym,its)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),
      $ taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       dimension atwo(nasht,nasht,nasht,nasht)
       dimension koopaa(nasht,nasht,nasht,nasht),
      $ koopeaa(nasht,nasht,nasht,nasht)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
-#else
-      DOUBLE PRECISION koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
-#endif
-      
+      REAL*8  koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
+
       dimension itsym(*),its(8,8)
       dimension f(*),aj(*)
       integer a,b,c,d,ac,bc,cc,dc,ap,bp,apc,bpc
@@ -3540,20 +3027,20 @@ c--in AJ is heff
 c-------------------
       do a=1,nasht
          ac=a+nisht
-	 isa=itsym(ac)
+         isa=itsym(ac)
          do b=1,nasht
             bc=b+nisht
-	    isb=itsym(bc)
-	    isab=its(isa,isb)
+            isb=itsym(bc)
+            isab=its(isa,isb)
             do ap=1,nasht
                apc=ap+nisht
-	       isd=itsym(apc)
+               isd=itsym(apc)
                do bp=1,nasht
                   bpc=bp+nisht
-		  isc=itsym(bpc)
-		  iscd=its(isc,isd)
+                  isc=itsym(bpc)
+                  iscd=its(isc,isd)
                   koopaa(ap,bp,a,b)=0.d0
-		  if (its(isab,iscd).ne.1) goto 1
+                  if (its(isab,iscd).ne.1) goto 1
                   do d=1,nasht
                      dc=d+nisht
                      jad=indice(ac,dc)
@@ -3582,20 +3069,20 @@ c-------------------
       enddo
       do a=1,nasht
          ac=a+nisht
-	 isa=itsym(ac)
+         isa=itsym(ac)
          do b=1,nasht
             bc=b+nisht
-	    isb=itsym(bc)
-	    isab=its(isa,isb)
+            isb=itsym(bc)
+            isab=its(isa,isb)
             do ap=1,nasht
                apc=ap+nisht
-	       isd=itsym(apc)
+               isd=itsym(apc)
                do bp=1,nasht
                   bpc=bp+nisht
-		  isc=itsym(bpc)
-		  iscd=its(isc,isd)
+                  isc=itsym(bpc)
+                  iscd=its(isc,isd)
                   koopeaa(ap,bp,a,b)=0.d0
-		  if (its(isab,iscd).ne.1) goto 2
+                  if (its(isab,iscd).ne.1) goto 2
                   do c=1,nasht
                      cc=c+nisht
                      jac=indice(ac,cc)
@@ -3639,19 +3126,15 @@ c-------------------
 c-------------------------------------------------------------------
       subroutine koopman0pE(atwo,daaa,taa,dal,koopaa,koopbb,koopab
      $     ,nasht,nisht,f,aj,itsym,its)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),atwo(nasht,nasht,nasht,nasht),dal(nasht
      $     ,nasht)
       dimension koopaa(nasht,nasht,nasht,nasht),koopbb(nasht,nasht,nasht
      $     ,nasht),koopab(nasht,nasht)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL koopaa,koopbb,koopab
-#else
-      DOUBLE PRECISION koopaa,koopbb,koopab
-#endif
+      REAL*8  koopaa,koopbb,koopab
       dimension itsym(*),its(8,8)
       dimension f(*),aj(*)
       integer a,b,c,d,ac,bc,cc,dc,ap,bp,apc,bpc
@@ -3786,8 +3269,8 @@ c---F e' la matrice dei monoelettronici!
 c-------------------------------------------------------------------
       subroutine bamat(amat,atmat,atwo,ro4,daaa,taa,dal,nasht,nisht,f,aj
      $     ,itsym,its,norb)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3800,21 +3283,12 @@ c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension f(*),aj(*)
       integer a,b,c,d,ac,bc,cc,dc,ap,bp,cp,apc,bpc,cpc
       parameter (two=2.d0)
-#if !defined(VAR_G77)
       allocatable indice(:,:)
       allocate(indice(norb,norb))
-#else
-      dimension indice(1)
-      i_indice=ialloi4(indice,norb**2)
-#endif
 c-------------------
       do i=1,norb
        do j=1,norb
-#if !defined(VAR_G77)
        indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
-#else
-       indice(i_indice+(j-1)*norb+i-1)=max(i,j)*(max(i,j)-1)/2+min(i,j)
-#endif
        enddo
       enddo
 c--building heff'
@@ -3823,11 +3297,7 @@ c--in AJ is heff
          ac=a+nisht
          do b=a,nasht
             bc=b+nisht
-#if !defined(VAR_G77)
             jab=indice(ac,bc)
-#else
-            jab=indice(i_indice+(bc-1)*norb+ac-1)
-#endif
             f(jab)=aj(jab)
             do c=1,nasht
                cc=c+nisht
@@ -3839,44 +3309,38 @@ c--in AJ is heff
 c-------------------
       do a=1,nasht
          ac=a+nisht
-	 isa=itsym(ac)
+         isa=itsym(ac)
          do b=1,nasht
             bc=b+nisht
-	    isb=itsym(bc)
-	    isab=its(isa,isb)
+            isb=itsym(bc)
+            isab=its(isa,isb)
             do c=1,nasht
                cc=c+nisht
-	       isc=itsym(cc)
-	       isabc=its(isab,isc)
+               isc=itsym(cc)
+               isabc=its(isab,isc)
                isbc=its(isb,isc)
                isac=its(isa,isc)
                do ap=1,nasht
                   apc=ap+nisht
-		  isap=itsym(apc)
+                  isap=itsym(apc)
                   do bp=1,nasht
                      bpc=bp+nisht
-		     isbp=itsym(bpc)
-		     isabp=its(isap,isbp)
+                     isbp=itsym(bpc)
+                     isabp=its(isap,isbp)
                      do cp=1,nasht
                         cpc=cp+nisht
-			iscp=itsym(cpc)
-			isabcp=its(isabp,iscp)
-			isatot=its(isabc,isabcp)
-			if (isatot.ne.1) then
-			goto 1
-			endif
+                        iscp=itsym(cpc)
+                        isabcp=its(isabp,iscp)
+                        isatot=its(isabc,isabcp)
+                        if (isatot.ne.1) then
+                           goto 1
+                        endif
                         do d=1,nasht
                            dc=d+nisht
-			   isd=itsym(dc)
-#if !defined(VAR_G77)
+                           isd=itsym(dc)
                            ida=indice(dc,ac)
                            icd=indice(cc,dc)
                            ibd=indice(bc,dc)
-#else
-                           ida=indice(i_indice+(ac-1)*norb+dc-1)
-                           icd=indice(i_indice+(dc-1)*norb+cc-1)
-                           ibd=indice(i_indice+(dc-1)*norb+bc-1)
-#endif
                            amat(ap,bp,cp,a,b,c)=amat(ap,bp,cp,a,b
      $                          ,c)+f(ida)*eee2(cp,ap,bp,b,d,c,daaa,taa
      $                          ,dal,nasht)-f(icd)*eee2(cp,ap,bp,b,a,d
@@ -3889,7 +3353,7 @@ c-------------------
      $                          ,bp,d,a,c,daaa,taa,dal,nasht)
                            do ie=1,nasht
                               iec=ie+nisht
-			      ise=itsym(iec)
+                              ise=itsym(iec)
                               dint1=atwo(c,ie,d,a)
                               dint2=atwo(d,ie,ie,a)
                               dint3=atwo(c,d,d,ie)
@@ -3925,11 +3389,11 @@ c-------------------
      $                             )+0.5d0*dum4t*dint4
                               do ief=1,nasht
                                  iefc=ief+nisht
-				 isf=itsym(iefc)
-				 isfd=its(isf,isd)
-				 isfde=its(isfd,ise)
+                                 isf=itsym(iefc)
+                                 isfd=its(isf,isd)
+                                 isfde=its(isfd,ise)
                                  istot=its(isabcp,isfde)
-				 if (its(isfde,isa).eq.1.and.its(istot
+                                 if (its(isfde,isa).eq.1.and.its(istot
      $                                ,isbc).eq.1) then
                                  dum1=eeee(cp,ap,bp,b,d,ief,ie,c,daaa
      $                                   ,taa,dal,ro4,nasht)
@@ -3941,8 +3405,8 @@ c-------------------
      $                                ,c)+dum1*dint1
                                  atmat(ap,b,cp,a,bp,c)=atmat(ap,b,cp,a
      $                                ,bp,c)+dum1t*dint1
-				 endif
-				 if (its(isfde,isc).eq.1.and.its(istot
+                                 endif
+                                 if (its(isfde,isc).eq.1.and.its(istot
      $                                ,isab).eq.1) then
                                  dum2=eeee(cp,ap,bp,b,d,ief,a,ie,daaa
      $                                   ,taa,dal,ro4,nasht)
@@ -3954,8 +3418,8 @@ c-------------------
      $                                ,c)-dum2*dint2
                                  atmat(ap,b,cp,a,bp,c)=atmat(ap,b,cp,a
      $                                ,bp,c)-dum2t*dint2
-				 endif
-				 if (its(isfde,isb).eq.1.and.its(istot
+                                 endif
+                                 if (its(isfde,isb).eq.1.and.its(istot
      $                                ,isac).eq.1) then
                                  dum3=eeee(cp,ap,bp,ie,d,ief,a,c,daaa
      $                                ,taa,dal,ro4,nasht)
@@ -3977,17 +3441,13 @@ c-------------------
             enddo
          enddo
       enddo
-#if !defined(VAR_G77)
       deallocate(indice)
-#else
-      call memreli4(indice(i_indice))
-#endif
       return
       end
 c-------------------------------------------------------------------
       subroutine bbmat(atwo,bmat,btmat,daaa,taa,dal,nasht,nisht,f,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -4054,8 +3514,8 @@ c-------------------------------------
       end
 c-------------------------------------------------------------------
       subroutine bcmat(atwo,cmat,ctmat,daaa,taa,dal,nasht,nisht,f,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -4153,8 +3613,8 @@ c-------------------
       end
 c-------------------------------------------------------------------
       subroutine bdmat(atwo,dmat,dtmat,taa,dal,nasht,nisht,f,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       dimension dmat(nasht,nasht)
@@ -4210,7 +3670,7 @@ c---------------------------
       end
 c-------------------------------------------------------------------
       function eeee(a,b,c,d,e,f,g,h,d3,d2,d1,ro4,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f,g,h
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
@@ -4242,7 +3702,7 @@ c--a,c,e,g    b,d,f,h
       end
 c-------------------------------------------------------------------
       function eeeet(a,b,c,d,e,f,g,h,d3,d2,d1,ro4,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f,g,h
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
@@ -4254,7 +3714,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function eee2(a,b,c,d,e,f,daaa,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -4268,7 +3728,7 @@ c--the same as eee but with the spinless density matrices as input
       end
 c-------------------------------------------------------------------
       function eee2t(a,b,c,d,e,f,daaa,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -4278,7 +3738,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function eee2tl(a,b,c,d,e,f,daaa,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -4288,7 +3748,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ee2(a,b,c,d,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       ee2=taa(a,c,b,d)
@@ -4297,7 +3757,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ee2t(a,b,c,d,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       ee2t=-ee2(b,a,c,d,taa,dal,nasht)
@@ -4306,7 +3766,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ee2tr(a,b,c,d,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       ee2tr=-ee2(a,b,d,c,taa,dal,nasht)
@@ -4315,7 +3775,7 @@ c-------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function daaat(i,j,k,l,m,n,daaa,daa,da,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),daa(nasht
      $     ,nasht,nasht,nasht),da(nasht,nasht)
       v=-daaa(i,j,k,l,m,n)
@@ -4345,7 +3805,7 @@ c----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function dbbbt(i,j,k,l,m,n,dbbb,dbb,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension dbbb(nasht,nasht,nasht,nasht,nasht,nasht),dbb(nasht
      $     ,nasht,nasht,nasht),db(nasht,nasht)
       v=-dbbb(i,j,k,l,m,n)
@@ -4375,7 +3835,7 @@ c----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function daabt(i,j,k,l,m,n,daab,daa,dab,da,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension daab(nasht,nasht,nasht,nasht,nasht,nasht),dab(nasht
      $     ,nasht,nasht,nasht),daa(nasht,nasht,nasht,nasht),da(nasht
      $     ,nasht),db(nasht,nasht)
@@ -4392,7 +3852,7 @@ c----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function dbbat(i,j,k,l,m,n,dbba,dbb,dab,da,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension dbba(nasht,nasht,nasht,nasht,nasht,nasht),dab(nasht
      $     ,nasht,nasht,nasht),dbb(nasht,nasht,nasht,nasht),da(nasht
      $     ,nasht),db(nasht,nasht)
@@ -4409,7 +3869,7 @@ c----------------------------------------------------------------------
       end
 c--------------------------------------------------------------------------
       function daat(a,b,c,d,daa,da,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension daa(nasht,nasht,nasht,nasht),da(nasht,nasht)
       v=daa(a,b,c,d)
@@ -4422,7 +3882,7 @@ c--------------------------------------------------------------------------
       end
 c--------------------------------------------------------------------------
       function dbbt(a,b,c,d,dbb,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension dbb(nasht,nasht,nasht,nasht),db(nasht,nasht)
       v=dbb(a,b,c,d)
@@ -4435,7 +3895,7 @@ c--------------------------------------------------------------------------
       end
 c--------------------------------------------------------------------------
       function dabt(a,b,c,d,dab,da,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension dab(nasht,nasht,nasht,nasht),da(nasht,nasht),db(nasht
      $     ,nasht)
@@ -4447,7 +3907,7 @@ c--------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       function dat(a,b,da,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b
       dimension da(nasht,nasht)
       v=-da(a,b)
@@ -4457,7 +3917,7 @@ c------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       function dbt(a,b,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b
       dimension db(nasht,nasht)
       v=-db(a,b)
@@ -4468,16 +3928,12 @@ c------------------------------------------------------------------------
 c------------------------------------------------------------------------
       subroutine koopE(atwo,koopipa,koopeaa,taa,dal,nasht,nisht,f
      $     ,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       dimension koopipa(nasht,nasht),koopeaa(nasht,nasht)
       dimension atwo(nasht,nasht,nasht,nasht)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL koopipa,koopipb,koopeaa,koopeab
-#else
-      DOUBLE PRECISION koopipa,koopipb,koopeaa,koopeab
-#endif
+      REAL*8  koopipa,koopipb,koopeaa,koopeab
       dimension f(*),aj(*)
       integer a,b,ac,bc,c,ap,apc,cc,d,dc
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
@@ -4510,7 +3966,7 @@ cele
                irind=indice(ac,cc)
                dum=f(irind)
                koopipa(ap,a)=koopipa(ap,a)-dum*dal(ap,c)
-c	       write (lupri,*) 'mono',a,ap,c,dum,dal(ap,c)
+c               write (lupri,*) 'mono',a,ap,c,dum,dal(ap,c)
                do d=1,nasht
                   do ie=1,nasht
                      koopipa(ap,a)=koopipa(ap,a)-atwo(c,ie,a,d)*taa(ap,c
@@ -4541,7 +3997,7 @@ c     $          ,atwo(c,ie,a,d),taa(ap,c,d,ie)
 c------------------------------------------------------
       subroutine ord31(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
-#include <implicit.h>
+#include "implicit.h"
       integer segno,segno2,op,pp,op2,pp2,m,n,mp2,np2,mp,np
       integer ia,ic,ie,ig,ia2,ic2,ie2,ig2,nasht,ivolte,jvolte
       integer i1,i2,i3,i4,i5,i6,i7,i8,norm1,norm2,nwords,normind
@@ -4574,7 +4030,7 @@ c------------------------------------------------------
       do ivolte=1,6  !aaab
       call permut123(i1,i2,i3,i4,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut123(i5,i6,i7,i8,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4585,7 +4041,7 @@ c------------------------------------------------------
       do ivolte=1,6  !aaba
       call permut124(i1,i2,i4,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut124(i5,i6,i8,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4597,7 +4053,7 @@ c------------------------------------------------------
       call permut134(i1,i4,i2,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
 c      write (6,'(''ord31 3'',8I3)') mp,np,op,pp
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut134(i5,i8,i6,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4609,7 +4065,7 @@ c      write (6,'(''ord31 3'',8I3)') mp,np,op,pp
       call permut234(i4,i1,i2,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
 c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut234(i8,i5,i6,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4632,7 +4088,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
       do ivolte=1,6  !aaab
       call permut123(i1,i2,i3,i4,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut123(i5,i6,i7,i8,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4643,7 +4099,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
       do ivolte=1,6  !aaba
       call permut124(i1,i2,i4,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut124(i5,i6,i8,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4654,7 +4110,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
       do ivolte=1,6  !abaa
       call permut134(i1,i4,i2,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut134(i5,i8,i6,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4665,7 +4121,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
       do ivolte=1,6  !baaa
       call permut234(i4,i1,i2,i3,mp,np,op,pp,segno,ivolte)
       if (mp.ge.np.and.np.ge.op.and.op.ge.pp) then
-        do jvolte=1,6   
+        do jvolte=1,6
         call permut234(i8,i5,i6,i7,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
@@ -4678,7 +4134,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
 c-----------------------------------------------------------
       subroutine ord22(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
-#include <implicit.h>
+#include "implicit.h"
 #include "nevpt2.h"
       DIMENSION amat(nwords,nasht,nasht,nasht,nasht)
       integer segno,segno2,op,pp,op2,pp2,m,n
@@ -4868,7 +4324,7 @@ c      write (6,'(''ord22 6'',8I3)') mp,np,op,pp
 c------------------------------------------------------
       subroutine ordsame(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
-#include <implicit.h>
+#include "implicit.h"
 #include "nevpt2.h"
       DIMENSION amat(nwords,nasht,nasht,nasht,nasht)
       integer segno,segno2,op,pp,op2,pp2,n,m
@@ -4905,7 +4361,7 @@ c      write (6,*) 'calling ordsame'
         call permut4(i5,i6,i7,i8,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
-	enddo
+        enddo
       endif
       enddo
 
@@ -4928,7 +4384,7 @@ c      write (6,*) 'calling ordsame'
         call permut4(i5,i6,i7,i8,mp2,np2,op2,pp2,segno2,jvolte)
         vals=val*segno*segno2
         call accum(amat,mp,np,op,pp,mp2,np2,op2,pp2,vals,nasht)
-	enddo
+        enddo
       endif
       enddo
 
@@ -4938,7 +4394,7 @@ c      write (6,*) 'calling ordsame'
 c-----------------------------------------------------
       subroutine ord9(ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2,
      * i1,i2,i3,i4,i5,i6,i7,i8)
-#include <implicit.h>
+#include "implicit.h"
 c---  ordina in maniera decrescente ia1, ic1, ie1, ig1 in i1 i2 i3 i4
 c---  ed fa la stessa perm anche su ia2, ic2, ie2, ig2 in i5 i6 i7 i8
       dimension nv1(4),nv2(4)
@@ -4978,9 +4434,9 @@ c      call getnorm(ia2,ic2,ie2,ig2,norm2)
                n=imax
                imax=nv1(j)
                nv1(j)=n
-	       n=nv2(i)
-	       nv2(i)=nv2(j)
-	       nv2(j)=n
+               n=nv2(i)
+               nv2(i)=nv2(j)
+               nv2(j)=n
             endif
             nv1(i)=imax
          enddo
@@ -4993,13 +4449,13 @@ c      call getnorm(ia2,ic2,ie2,ig2,norm2)
       i6=nv2(2)
       i7=nv2(3)
       i8=nv2(4)
-c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8         
+c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8
       return
       end
 c-----------------------------------------------------
       subroutine ord8(ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2,
      * i1,i2,i3,i4,i5,i6,i7,i8)
-#include <implicit.h>
+#include "implicit.h"
 c---  ordina in maniera decrescente ia1, ic1, ie1, ig1 in i1 i2 i3 i4
 c---  ed fa la stessa perm anche su ia2, ic2, ie2, ig2 in i5 i6 i7 i8
       dimension nv1(4),nv2(4)
@@ -5034,11 +4490,11 @@ c      call getnorm(ia2,ic2,ie2,ig2,norm2)
       endif
       do i=1,4
          imax=nv1(i)
-	 jmax=i
+         jmax=i
          do j=i+1,4
             if(nv1(j).gt.imax)then
                imax=nv1(j)
-               jmax=j  
+               jmax=j
             endif
          enddo
          if (jmax.ne.i) then
@@ -5060,12 +4516,12 @@ c     *                                      nv2(1),nv2(2),nv2(3),nv2(4)
       i6=nv2(2)
       i7=nv2(3)
       i8=nv2(4)
-c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8         
+c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8
       return
       end
 c-------------------------------------------------------------------
       function ro3t(a,b,c,ap,bp,cp,d3,d2,d1,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,ap,bp,cp
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
@@ -5107,7 +4563,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ro2t(ap,bp,a,b,d2,d1,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,ap,bp,cp
       dimension d2(nasht,nasht,nasht,nasht),d1(nasht,nasht)
       ro2t=d2(a,b,ap,bp)
@@ -5121,8 +4577,8 @@ c-------------------------------------------------------------------
       end
 c-----------------------------------------------------------------
       subroutine bro3(ro4,daaa,nasht,nele)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
 #include "nevpt2.h"
       dimension ro4(nwords,nasht,nasht,nasht,nasht)
@@ -5136,9 +4592,9 @@ cc---controllo su contrazione della ro4
                      do kk=1,nasht
                         dum4=0.d0
                         do ll=1,nasht
-			call ord8(i,j,k,ll,ii,jj,kk,ll,
+                        call ord8(i,j,k,ll,ii,jj,kk,ll,
      $                            i1,i2,i3,i4,i5,i6,i7,i8)
-			ind=lindice(i1,i2,i3,i4)
+                        ind=lindice(i1,i2,i3,i4)
                         dum4=dum4+ro4(ind,i5,i6,i7,i8)
                         enddo
                         daaa(i,j,k,ii,jj,kk)=dum4/(nele-3)
@@ -5152,8 +4608,8 @@ cc---controllo su contrazione della ro4
       end
 c-----------------------------------------------------------------
       subroutine bro2(daaa,taa,nasht,nele)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
       dimension taa(nasht,nasht,nasht,nasht)
       do i=1,nasht
@@ -5173,7 +4629,7 @@ c-----------------------------------------------------------------
       end
 c-----------------------------------------------------------------
       subroutine bro1(taa,dal,nasht,nele)
-#include <implicit.h>
+#include "implicit.h"
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       do i=1,nasht
          do j=1,nasht
@@ -5188,7 +4644,7 @@ c-----------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       subroutine wr1(dal,coopeaa,coopipa,nasht,lun31)
-#include <implicit.h>
+#include "implicit.h"
       dimension dal(nasht,nasht),coopeaa(nasht,nasht)
      $     ,coopipa(nasht,nasht)
       write(lun31) nasht
@@ -5199,13 +4655,9 @@ c------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       subroutine wr2(koopaa,taa,dal,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL KOOPAA
-#else
-      DOUBLE PRECISION KOOPAA
-#endif
+#include "implicit.h"
+#include "priunit.h"
+      REAL*8  KOOPAA
       DIMENSION dal(nasht,nasht),koopaa(nasht,nasht,nasht,nasht
      $     ),taa(nasht,nasht,nasht,nasht)
       do i=1,nasht
@@ -5227,15 +4679,11 @@ c------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       subroutine wr3(koopeaa,taa,koopaa,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL (A-H,O-Z) KOOPAA, KOOPEAA
-#else
-      DOUBLE PRECISION KOOPAA, KOOPEAA
-#endif
-      DIMENSION koopaa(nasht,nasht,nasht,nasht),
-     * taa(nasht,nasht,nasht,nasht),koopeaa(nasht,nasht,nasht,nasht)
+#include "implicit.h"
+#include "priunit.h"
+      REAL*8  koopaa(nasht,nasht,nasht,nasht),
+     &           taa(nasht,nasht,nasht,nasht),
+     &       koopeaa(nasht,nasht,nasht,nasht)
       do i=1,nasht
          do j=1,nasht
             write(lun31)((koopeaa(i,j,k,l),k=1,nasht),l=1,nasht)
@@ -5257,13 +4705,9 @@ c-------scrittura matrici koopman doppia ionizzazione
       end
 c----------------------------------------------------------------------
       subroutine wr4(koopaa,koopbb,koopab,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL KOOPAA, KOOPBB, KOOPAB
-#else
-      DOUBLE PRECISION KOOPAA, KOOPBB, KOOPAB
-#endif
+#include "implicit.h"
+#include "priunit.h"
+      REAL*8  KOOPAA, KOOPBB, KOOPAB
       DIMENSION koopaa(nasht,nasht,nasht,nasht
      $     ),koopbb(nasht,nasht,nasht,nasht),koopab(nasht,nasht)
       do i=1,nasht
@@ -5277,8 +4721,8 @@ c----------------------------------------------------------------------
       end
 c------------------------------------------------------------------
       subroutine fdiff(bmat,cmat,btmat,ctmat,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension bmat(nasht,nasht,nasht,nasht),cmat(nasht,nasht,nasht
      $     ,nasht)
       dimension btmat(nasht,nasht,nasht,nasht),ctmat(nasht,nasht,nasht
@@ -5296,9 +4740,8 @@ c------------------------------------------------------------------
             enddo
          enddo
       enddo
-      write (lupri,*)
-      write (lupri,'(a,a,d10.3)')' Largest difference between bmat ',
-     * 'and cmat  =',bigdiff
+      write (lupri,'(/a,1P,d10.2)')
+     & ' Largest difference between bmat  and cmat  =',bigdiff
       bigdiff=0.d0
       do i =1,nasht
          do j=1,nasht
@@ -5312,16 +4755,16 @@ c------------------------------------------------------------------
             enddo
          enddo
       enddo
-      write(lupri,'(a,a,d10.3)')' Largest difference between ', 
-     $ 'btmat and ctmat=',bigdiff
+      write (lupri,'(/a,1P,d10.2)')
+     & ' Largest difference between btmat and ctmat =',bigdiff
       call flshfo(lupri)
       return
       end
 c------------------------------------------------------------------------------
       subroutine wr5(daaa,amat,atmat,bmat,btmat,cmat,ctmat,dmat,dtmat
      $     ,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension bmat(nasht,nasht,nasht,nasht),cmat(nasht,nasht,nasht
      $     ,nasht)
       dimension amat(nasht,nasht,nasht,nasht,nasht,nasht),dmat(nasht
@@ -5377,8 +4820,8 @@ c----scrittura matrice dtmat
       end
 c-----------------------------------------------------------
       subroutine giveocc(ioccfe,m,nd,ne,trou,part,nocc,norb)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer*2 ne(*),trou(*),part(*)
       integer*1 ioccfe(*)
       integer nd(*)
@@ -5395,15 +4838,15 @@ c-----------------------------------------------------------
          if(ib.gt.norb)ib=ib-norb
          if(ip.gt.norb)ip=ip-norb
          ioccfe(ib)=ioccfe(ib)-1
-	 if (ip.le.norb) then
+         if (ip.le.norb) then
          ioccfe(ip)=ioccfe(ip)+1
-	 endif
+         endif
       enddo
       return
       end
 c------------------------------------------------------------------
       integer function ndiff(ioccfe,jocc,norb)
-#include <implicit.h>
+#include "implicit.h"
       integer*1 ioccfe(*),jocc(*)
       ndiff=0
       do i=1,norb
@@ -5416,8 +4859,8 @@ c------------------------------------------------------------------
 c--------------------------------------------------------
       subroutine esclass(nd,ne,trou,part,icomp,iconf,isegno,ncf,nocc
      $     ,norb,ispin,iocc)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer*2 ne,trou,part,icomp,iconf,isegno
       dimension nd(*),ne(*),trou(*),part(*),icomp(*),iconf(*),isegno(*)
       equivalence (ip1,ib1),(ip2,ib2)
@@ -5452,13 +4895,10 @@ c      call flshfo(lupri)
       end
 c------------------------------------------------------------------------
       SUBROUTINE ESAME(flip,ne,nd,trou,part,ispinfe,iorbfe,ncf)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
 
-#include <priunit.h>
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
+
+#include "priunit.h"
       integer*2 ne,trou,part,ispinfe,iorbfe
       integer*1 flip
       dimension flip(*),ne(*),nd(*),trou(*),part(*),ispinfe(*),iorbfe(*)
@@ -5512,62 +4952,46 @@ C Manu april 2009: DV (active density matrix in the MO basis) added as argument 
 C the density of the MCSCF wave function in case we need it (for
 C computing the srHxc potential in a NEVPT2-srDFT calculation for example)
 C
-               
+
       subroutine readint(onel,atwo,aj,dv,wrk,lfree,id2n,in2d,lupri)
-C      
-C      
-#include <implicit.h>
-#include <maxorb.h>
-#include <inforb.h>
+C
+C
+#include "implicit.h"
+#include "maxorb.h"
+#include "inforb.h"
 C Manu: for NEVPT2-srDFT
-#include <inftap.h>
-#include <infinp.h>
+#include "inftap.h"
+#include "infinp.h"
 C#include <priunit.h>
-      DIMENSION NEEDTP(6)
-c      DATA NEEDTP /0,0,1,0,0,0/
-#if !defined(VAR_G77)
+      DIMENSION NEEDTP(-4:6) ! for NXTH2M
       allocatable h2m(:,:)
       ALLOCATABLE CMO(:)
       ALLOCATABLE H1AO(:)
       ALLOCATABLE H1MO(:)
-#else
-      dimension h2m(1),cmo(1),h1ao(1),h1mo(1)
-      
-#endif
       dimension id2n(*),in2d(*),aj(*),wrk(*),onel(*)
       dimension atwo(nasht,nasht,nasht,nasht)
       integer a,b,ac,bc,acd,bcd
-C Manu: needed for the NEVPT2-srDFT ...      
+C Manu: needed for the NEVPT2-srDFT ...
 C
       DIMENSION DV(*)
-      DOUBLE PRECISION EDFT 
+      DOUBLE PRECISION EDFT
       INTEGER LFREE
-      PARAMETER (D1 = 1.0D0) 
+      PARAMETER (D1 = 1.0D0)
 C
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
 
 C
       call dzero(aj,nnorbx)
       call dzero(atwo,n2ashx*n2ashx)
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
       needtp(3)=1
       KFRSAV = 1
       KFREE = KFRSAV
       IDIST = 0
-#if !defined(VAR_G77)
       allocate (h2m(norbt,norbt))
-#else
-      i_h2m=iallor8(h2m,norbt**2)
-#endif
 c      write (lupri,*) 'Starting reading the integrals'
 c      call flshfo(lupri)
-#if !defined(VAR_G77)
   100 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
-#else
-  100 CALL NXTH2M(IC,ID,H2M(i_h2m),NEEDTP,WRK,KFREE,LFREE,IDIST)
-#endif
 c      write (lupri,*) 'read',ic,id
 c      call flshfo(lupri)
       IF (IDIST .LT. 0) GO TO 800
@@ -5578,14 +5002,14 @@ C
        write (lupri,*) 'Error IC not active'
        write (lupri,*) 'IC,ICN',ic,icn
        call quit('Error IC not active')
-      endif 
+      endif
       k=icn-nisht
       idn=id2n(id)
       if (idn.le.nisht.or.idn.gt.(nisht+nasht)) then
        write (lupri,*) 'Error ID not active'
        write (lupri,*) 'ID,IDN',id,idn
        call quit('Error ID not active')
-      endif 
+      endif
       l=idn-nisht
 c      write (lupri,*) 'tranformed to nevpt',k,l
 
@@ -5597,13 +5021,8 @@ c---building matrix atwo
            jd=in2d(j+nisht)
 c           write (lupri,*) 'nevpt index',i,j
 c           write (lupri,*) 'dalt  index',id,jd
-#if !defined(VAR_G77)
            atwo(i,j,k,l)=h2m(id,jd)
            atwo(i,j,l,k)=h2m(id,jd)
-#else
-           atwo(i,j,k,l)=h2m(i_h2m+(jd-1)*norbt+id-1)
-           atwo(i,j,l,k)=h2m(i_h2m+(jd-1)*norbt+id-1)
-#endif
          enddo
       enddo
 
@@ -5612,29 +5031,21 @@ c----building the two el part of Dyall's h eff in aj (J contr)----------
       aj(jab)=0.d0
       do j=1,nisht
         jd=in2d(j)
-#if !defined(VAR_G77)
         aj(jab)=aj(jab)+2.d0*h2m(jd,jd)
-#else
-        aj(jab)=aj(jab)+2.d0*h2m(i_h2m+(jd-1)*norbt+jd-1)
-#endif
-c	write (lupri,*) 'j',icn,idn,j,2.d0*h2m(jd,jd)
+c        write (lupri,*) 'j',icn,idn,j,2.d0*h2m(jd,jd)
       enddo
-       
+
 C
       GO TO 100
 
   800 continue
 
-c----Reading again the integrals: we need K for Heff 
+c----Reading again the integrals: we need K for Heff
       needtp(3)=0
       needtp(2)=1
       KFREE=1
       IDIST = 0
-#if !defined(VAR_G77)
   200 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
-#else
-  200 CALL NXTH2M(IC,ID,H2M(i_h2m),NEEDTP,WRK,KFREE,LFREE,IDIST)
-#endif
       IF (IDIST .LT. 0) GO TO 900
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -5654,16 +5065,12 @@ c----building the two el part of Dyall's h eff in aj (K contr.)----------
       do bc=nisht+1,nisht+nasht
       jab=indice(bc,ac)
         bcd=in2d(bc)
-#if !defined(VAR_G77)
         dum=h2m(bcd,icord)
-#else
-        dum=h2m(i_h2m+(icord-1)*norbt+bcd-1)
-#endif
         if (ac.ne.bc) dum=dum*.5d0
         aj(jab)=aj(jab)-dum
-c	write (lupri,*) 'k',bc,ac,jn,dum
+c        write (lupri,*) 'k',bc,ac,jn,dum
       enddo
-       
+
 C
       GO TO 200
 
@@ -5681,34 +5088,20 @@ c      enddo
 C
 C     Generate 1-electron Hamiltonian matrix in MO basis
 C
-#if !defined(VAR_G77)
       ALLOCATE (CMO(NCMOT))
       ALLOCATE (H1AO(NNBAST))
       ALLOCATE (H1MO(NNORBT))
-#else
-      i_cmo=iallor8(cmo,ncmot)
-      i_h1ao=iallor8(h1ao,nnbast)
-      i_h1mo=iallor8(h1mo,nnorbt)
-#endif
 C
 C     We read from LUIT1 using NEWORB label
 C
       JRDMO =9
-#if !defined(VAR_G77)
       CALL READMO(CMO,JRDMO,WRK(KFREE),LFREE)
 c      CALL PRORB(CMO,.FALSE.,LUPRI) ! Write MO sym packed
 C
 C
       CALL SIRH1(H1AO,WRK(KFREE),LFREE)
 C
-
-C Manu b
-      write(lupri,*) 'VAR_G77 is NOT defined !' 
-C Manu e
-
-C
-C
-c      CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
+c     CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed
 
 C
 C************ NEVPT2-srDFT -- start ***************
@@ -5716,8 +5109,8 @@ C
 C March 2009 Emmanuel Fromager
 
 C Purpose: add the frozen srHXC potential calculated
-C for the MCSCF-srDFT density to the one-electron part of the 
-C Hamiltonian. 
+C for the MCSCF-srDFT density to the one-electron part of the
+C Hamiltonian.
 C
 
       IF (DOMCSRDFT) THEN
@@ -5725,28 +5118,28 @@ C
          call quit('srdft not implemented in this version')
 #else
 
-C        Allocation of memory for ...       
+C        Allocation of memory for ...
 
-C        full (inactive+active) DM in the AO basis             
-         CALL MEMGET('REAL',KDAO,N2BASX,WRK,KFREE,LFREE) 
-C        sr H or xc potential in the AO basis          
-         CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE) 
-C        active part of the DM in the AO basis         
-         CALL MEMGET('REAL',KDVAO,N2BASX,WRK,KFREE,LFREE) 
+C        full (inactive+active) DM in the AO basis
+         CALL MEMGET('REAL',KDAO,N2BASX,WRK,KFREE,LFREE)
+C        sr H or xc potential in the AO basis
+         CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE)
+C        active part of the DM in the AO basis
+         CALL MEMGET('REAL',KDVAO,N2BASX,WRK,KFREE,LFREE)
 
 C Manu b
 !        write(lupri,*) 'print DV before calling FCKDEN'
 !        call outpak(dv,nasht,1,lupri)
 C Manu e
 
-C        Backtransform the inactive and active MCSCF-srDFT density matrix to the AO
-C        basis       
+C        Backtransform the inactive and active MCSCF-srDFT density matrix
+C        to the AO basis
 
          CALL FCKDEN(.TRUE.,.TRUE.,WRK(KDAO),WRK(KDVAO),CMO,DV,
      &               WRK(KFREE),LFREE)
 
 C Manu b
-         
+
 !        write(lupri,*) 'print DVAO just after calling FCKDEN'
 !        CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
 !        write(lupri,*) 'print DCAO just after calling FCKDEN'
@@ -5758,18 +5151,20 @@ C        make total density matrix (in the AO basis) in WORK(KDAO)
          CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDAO),1)
 C
 
-C        Release memory allocated for DVAO 
+C        Release memory allocated for DVAO
 C
          CALL MEMREL('Releasing mem. used for DVAO',
-     &             WRK,KFRSAV,KDVAO,KFREE,LFREE)  
+     &               WRK,KFRSAV,KDVAO,KFREE,LFREE)
 
-C        calculate the srH potential (for the MCSCF-srDFT density) 
+C        calculate the srH potential (for the MCSCF-srDFT density)
 
          CALL DZERO(WRK(KVSRAO),N2BASX)
 
-         IFCTMP = 11 ! sr Hartree term only
+         IFCTMP = 13 ! sr Hartree + sr exact exchange
+                     ! (exchange term is removed for inside SIRFCK2 if
+                     ! HFXFAC = 0.0D0)
          NSRDMAT = 1 ! only one density matrix (the MCSCF-srDFT one)
-         ISYMDM = 1  ! DMAT of symmetry 1 
+         ISYMDM  = 1 ! DMAT of symmetry 1
 
          CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KVSRAO),
      &                WRK(KDAO),NSRDMAT,ISYMDM,IFCTMP,WRK(KFREE),LFREE)
@@ -5779,20 +5174,20 @@ C manu b
 !        write(lupri,*) 'print VSRAO after calling sirfck2'
 !        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
 !        write(lupri,*) 'print H1AO after calling sirfck2'
-!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-       
+!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed
+
 C manu e
 
 C        Add the srH potential to the one-electron part of the Hamiltonian
 
-         CALL ADDSUSP(WRK(KVSRAO),H1AO)
+         CALL ADD_SU_SP(WRK(KVSRAO),H1AO)
 C manu b
-!        write(lupri,*) 'print H1AO after 1st call to addsusp'
-!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-       
+!        write(lupri,*) 'print H1AO after 1st call to ADD_SU_SP'
+!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed
+
 C manu e
 
-C        Calculate the srxc potential for the MCSCF-srDFT density  
+C        Calculate the srxc potential for the MCSCF-srDFT density
 
          CALL DZERO(WRK(KVSRAO),N2BASX)
 
@@ -5808,191 +5203,30 @@ C manu b
 !        write(lupri,*) 'print VSRAO after calling srdft'
 !        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
 !        write(lupri,*) 'print H1AO after calling srdft'
-!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-       
+!        CALL OUTPKB(H1AO,NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed
+
 C manu e
 
 C        Add the srxc potential to the one-electron part of the Hamiltonian
 
-         CALL ADDSUSP(WRK(KVSRAO),H1AO)
+         CALL ADD_SU_SP(WRK(KVSRAO),H1AO)
 
 C        Release memory
 
          CALL MEMREL('Releasing mem. used for DAO and VSRAO',
-     &             WRK,KFRSAV,KDAO,KFREE,LFREE)  
-         
+     &             WRK,KFRSAV,KDAO,KFREE,LFREE)
 
-#endif
-      END IF 
-
-C Manu b       
-C     write(lupri,*) 'print H1AO before calling UTHUB'
-C     CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-C Manu e       
-
+C
 C************ NEVPT2-srDFT -- end ***************
 C
-
+#endif
+      END IF
 
       CALL UTHUB(H1AO,H1MO,CMO,WRK(KFREE),NSYM,NBAS,NORB)
       CALL PKSYM1(onel,H1MO,NORB,NSYM,-1) ! Unpack H1MO in low tri onel
-c      CALL OUTPKB(H1MO,NORB,NSYM,1,LUPRI)
-c      CALL OUTPAK(onel,NORBT,1,LUPRI)
-#else
-      CALL READMO(CMO(i_cmo),JRDMO,WRK(KFREE),LFREE)
-
-C Manu b
-!     write(lupri,*) 'print CMO before call sirh1'
-!     CALL OUTPUT(CMO(i_cmo),1,nbast,1,norbt,nbast,norbt,-1,LUPRI)
-C Manu e
-C Manu b: just want to be sure ....
-!     write(lupri,*) '!!!! initialize h1ao to zero !!!!' 
-      CALL DZERO(H1AO(i_h1ao),NNBAST)
-C Manu e
-
-      CALL SIRH1(H1AO(i_h1ao),WRK(KFREE),LFREE)
-C
-C************ NEVPT2-srDFT -- start ***************
-C
-C March 2009 Emmanuel Fromager
-
-C Purpose: add the frozen srHXC potential calculated
-C for the MCSCF-srDFT density to the one-electron part of the 
-C Hamiltonian. 
-C
-
-      IF (DOMCSRDFT) THEN
-#ifndef MOD_SRDFT
-         call quit('srdft not implemented in this version')
-#else
-
-C        Allocation of memory for ...       
-
-C        full (inactive+active) DM in the AO basis             
-         CALL MEMGET('REAL',KDAO,N2BASX,WRK,KFREE,LFREE) 
-C        sr H or xc potential in the AO basis          
-         CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE) 
-C        active part of the DM in the AO basis         
-         CALL MEMGET('REAL',KDVAO,N2BASX,WRK,KFREE,LFREE) 
-C----------------------------------------------------------------------
-
-C Manu b
-!        write(lupri,*) 'print DV before calling FCKDEN'
-!        call outpak(dv,nasht,1,lupri)
-C Manu e
-
-
-
-C        Backtransform the inactive and active MCSCF-srDFT density matrix to the AO
-C        basis       
-
-         CALL FCKDEN(.TRUE.,.TRUE.,WRK(KDAO),WRK(KDVAO),CMO(i_cmo),DV
-     &               ,WRK(KFREE),LFREE)
-
-C Manu b
-         
-!        write(lupri,*) 'print DVAO just after calling FCKDEN'
-!        CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-!        write(lupri,*) 'print DCAO just after calling FCKDEN'
-!        CALL OUTPUT(WRK(KDAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-C Manu e
-C        Release memory allocated for DV
-
-C        CALL MEMREL('Releasing mem. used for DV',
-C    &             WRK,KFRSAV,KDV,KFREE,LFREE)  
-
-C        make total density matrix (in the AO basis) in WORK(KDAO)
-
-         CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDAO),1)
-C
-
-C        Release memory allocated for DVAO 
-C
-         CALL MEMREL('Releasing mem. used for DVAO',
-     &             WRK,KFRSAV,KDVAO,KFREE,LFREE)  
-
-C        calculate the srH potential (for the MCSCF-srDFT density) 
-
-         CALL DZERO(WRK(KVSRAO),N2BASX)
-
-         IFCTMP = 11 ! sr Hartree term only
-         NSRDMAT = 1 ! only one density matrix (the MCSCF-srDFT one)
-         ISYMDM = 1  ! DMAT of symmetry 1 
-
-         CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KVSRAO),
-     &                WRK(KDAO),NSRDMAT,ISYMDM,IFCTMP,WRK(KFREE),LFREE)
-
-
-C manu b
-!        write(lupri,*) 'print VSRAO after calling sirfck2'
-!        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-!        write(lupri,*) 'print H1AO after calling sirfck2'
-!        CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-       
-C manu e
-
-C        Add the srH potential to the one-electron part of the Hamiltonian
-
-         CALL ADDSUSP(WRK(KVSRAO),H1AO(i_h1ao))
-C manu b
-!        write(lupri,*) 'print H1AO after 1st call to addsusp'
-!        CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-       
-C manu e
-
-C        Calculate the srxc potential for the MCSCF-srDFT density  
-
-         CALL DZERO(WRK(KVSRAO),N2BASX)
-
-         IPRFCK = 0
-
-         CALL SRDFT(1,WRK(KVSRAO),WRK(KDAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
-     &              WRK(KFREE),LFREE,IPRFCK)
-
-C Comment Manu: we do not care about the energy contribution EDFT. It
-C is just that it is calculated with the srxc potential ...
-
-C manu b
-!        write(lupri,*) 'print VSRAO after calling srdft'
-!        CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-!        write(lupri,*) 'print H1AO after calling srdft'
-!        CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-       
-C manu e
-
-C        Add the srxc potential to the one-electron part of the Hamiltonian
-
-         CALL ADDSUSP(WRK(KVSRAO),H1AO(i_h1ao))
-
-C        Release memory
-
-         CALL MEMREL('Releasing mem. used for DAO and VSRAO',
-     &             WRK,KFRSAV,KDAO,KFREE,LFREE)  
-         
-
-#endif
-      END IF 
-
-C Manu b       
-C     write(lupri,*) 'print H1AO before calling UTHUB'
-C        CALL OUTPKB(H1AO(i_h1ao),NBAS,NSYM,1,LUPRI) ! Write H1AO sym packed 
-C Manu e       
-
-C************ NEVPT2-srDFT -- end ***************
-C
-C
-      CALL UTHUB(H1AO(i_h1ao),H1MO(i_h1mo),CMO(i_cmo),WRK(KFREE),NSYM
-     $     ,NBAS,NORB)
-
-
-      CALL PKSYM1(onel,H1MO(i_h1mo),NORB,NSYM,-1) ! Unpack H1MO in low tri onel
-
-C Manu b
+c     CALL OUTPKB(H1MO,NORB,NSYM,1,LUPRI)
 !     write(lupri,*) 'print onel (unpacked H1MO)'
-!     CALL OUTPAK(onel,NORBT,1,LUPRI)
-C Manu e
-
-#endif
+c     CALL OUTPAK(onel,NORBT,1,LUPRI)
 
 c----building Dyall's h eff in aj----------
       do a=1,nasht
@@ -6004,67 +5238,62 @@ c----building Dyall's h eff in aj----------
             jab=indice(ac,bc)
             jabd=indice(acd,bcd)
 c           write (lupri,*) ac,bc,onel(jabd),acd,bcd
-c	    call flshfo(lupri)
+c           call flshfo(lupri)
             aj(jab)=aj(jab)+onel(jabd)
 c           write (lupri,*) 'one',ac,bc,aj(jab)
-c	    call flshfo(lupri)
+c           call flshfo(lupri)
          enddo
       enddo
-#if !defined(VAR_G77)
+
       deallocate (CMO)
       deallocate (H1AO)
       deallocate (H1MO)
-#else
-      call memrelr8(cmo(i_cmo))
-      call memrelr8(h1ao(i_h1ao))
-      call memrelr8(h1mo(i_h1mo))
-#endif
 
       return
       end
 
 c-----------------------------------------------------
-C  /* Deck addsusp */
-      SUBROUTINE ADDSUSP(VSRAO,H1AO)
+C  /* Deck ADD_SU_SP */
+      SUBROUTINE ADD_SU_SP(VSRAO,H1AO)
 C
-C April-2009 Emmanuel Fromager 
+C April-2009 Emmanuel Fromager
 C
 C This subroutine adds the symmetric UNPACKED matrix VSRAO to the
-C symmetry PACKED H1AO matrix 
+C symmetry PACKED H1AO matrix
 C
-#include <implicit.h>
-      DIMENSION VSRAO(NBAST,NBAST),H1AO(*)   
-C 
-#include <inforb.h>
-#include <priunit.h>
-C 
+#include "implicit.h"
+      DIMENSION VSRAO(NBAST,NBAST),H1AO(*)
+C
+#include "inforb.h"
+#include "priunit.h"
+C
 
-         IH1AO = 0 
+         IH1AO = 0
          IVSRAO = 0
          DO 2500 ISYM = 1,NSYM
             NBASI  = NBAS(ISYM)
 C ***** initial code - assuming packed wrt column ... ******
-C           DO 2600 J = 1,NBASI 
+C           DO 2600 J = 1,NBASI
 C              DO 2700 I = J,NBASI
-C***********************************************************     
-            DO 2600 I = 1,NBASI 
+C***********************************************************
+            DO 2600 I = 1,NBASI
                DO 2700 J = 1,I
 C Manu b
-C        write(lupri,*) 'debug printing in addsusp ...'
+C        write(lupri,*) 'debug printing in ADD_SU_SP ...'
 C        write(lupri,*) 'H1AO(',
 C    &   IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2),') =',
 C    &   H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2))
 C        write(lupri,*) 'VSRAO(', IVSRAO+I,',',IVSRAO+J,
-C    &   ')=', VSRAO(IVSRAO+I,IVSRAO+J) 
+C    &   ')=', VSRAO(IVSRAO+I,IVSRAO+J)
 C Manu e
 C ***** initial code - assuming packed wrt column ... ******
 C                 H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2)) =
 C    &            H1AO(IH1AO+(I-J+1)+(J-1)*NBASI-((J-1)*(J-2)/2)) +
-C    &            VSRAO(IVSRAO+I,IVSRAO+J)    
-C***********************************************************     
+C    &            VSRAO(IVSRAO+I,IVSRAO+J)
+C***********************************************************
                   H1AO(IH1AO+J+(I*(I-1)/2)) =
      &            H1AO(IH1AO+J+(I*(I-1)/2)) +
-     &            VSRAO(IVSRAO+I,IVSRAO+J)    
+     &            VSRAO(IVSRAO+I,IVSRAO+J)
  2700          CONTINUE
  2600       CONTINUE
             IVSRAO = IVSRAO + NBASI
@@ -6076,8 +5305,8 @@ C
 C
 c-----------------------------------------------------
       subroutine getnorm(ia,ic,ie,ig,norm)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension nv(4)
       integer ia,ic,ie,ig,norm,nv,i,j,jmax,imax,ndum
 
@@ -6088,7 +5317,7 @@ c      return
       nv(2)=ic
       nv(3)=ie
       nv(4)=ig
-      
+
 
 c      write (6,'(''norm in'',8I3)') ia,ic,ie,ig
 
@@ -6096,16 +5325,16 @@ c      write (6,'(''norm in'',8I3)') ia,ic,ie,ig
        imax=nv(i)
        jmax=i
         do j=i+1,4
-	if(nv(j).gt.imax) then
-	imax=nv(j)
-	jmax=j
-	endif
-	enddo
-	if(jmax.ne.i) then
-	ndum=nv(i)
-	nv(i)=nv(jmax)
-	nv(jmax)=ndum
-	endif
+        if(nv(j).gt.imax) then
+         imax=nv(j)
+         jmax=j
+        endif
+        enddo
+        if(jmax.ne.i) then
+         ndum=nv(i)
+         nv(i)=nv(jmax)
+         nv(jmax)=ndum
+        endif
       enddo
 c      write (6,'(''norm ou'',8I3)') nv(1),nv(2),nv(3),nv(4)
 
@@ -6117,9 +5346,9 @@ c      write (6,'(''norm ou'',8I3)') nv(1),nv(2),nv(3),nv(4)
       end
 c-----------------------------------------------------
       subroutine nwadd(nwall,nadd)
-#include <single.h>
-#include <implicit.h>
-#include <priunit.h>
+#include "single.h"
+#include "implicit.h"
+#include "priunit.h"
       nwall=nwall+nadd
 c      write (lupri,*) 'Alloc  :',nadd/8,nwall/8
 c      write (lupri,*) 'Alloc  :',nadd,nwall
@@ -6128,21 +5357,20 @@ c      call flshfo(lupri)
       end
 c-----------------------------------------------------
       subroutine nwdel(nwall,ndel)
-#include <single.h>
-#include <implicit.h>
-#include <priunit.h>
+#include "single.h"
+#include "implicit.h"
+#include "priunit.h"
       nwall=nwall-ndel
 c      write (lupri,*) 'Dealloc:',ndel/8,nwall/8
 c      write (lupri,*) 'Dealloc:',ndel,nwall
 c      call flshfo(lupri)
       return
       end
-#if defined(VAR_G77)
       function vald2r8(a,i,j,n)
-#include <implicit.h>
+#include "implicit.h"
       dimension a(n,n)
       vald2r8 = a(i,j)
       return
       end
 #endif
-#endif
+! --- end of koopro4.F ---

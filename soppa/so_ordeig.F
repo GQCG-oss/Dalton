@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_ordeig */
       SUBROUTINE SO_ORDEIG(NTRIAL,rede,REDS,LREDS,ALFAR,LALFAR,ALFAI,
@@ -33,10 +33,10 @@ C LWORK           dimension of WORK
 C
 C23456789012345678901234567890123456789012345678901234567890123456789012
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
+#include "soppinf.h"
 C
 C--------------------------------
 C     dimensions of the arguments

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck u2driv */
       SUBROUTINE U2DRIV(AOINT,HCINT,HCRNT,
@@ -39,17 +29,17 @@ C  /* Deck u2driv */
      &                  LWORK,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,LMNV34,
      &                  IODD12,IODD34,NPNT34,NRED34,R12EIN)
 C     Copy of C2DRIV for [r12,T1+T2] integrals (WK/UniKA/15-11-2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
       LOGICAL R12EIN
       DIMENSION AOINT(*), HCINT(*), WORK(LWORK), COEF34(*), CONT3(*),
      &          CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*),
      &          LMNV12(*), LMNV34(*), IODD12(*), IODD34(*),
      &          NPNT34(*), NRED34(*), HCRNT(*)
-#include <twoao.h>
-#include <twosta.h>
+#include "twoao.h"
+#include "twosta.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from U2DRIV','*',103)
 C
@@ -90,15 +80,15 @@ C
       LWTOT  = LWTOT - KLAST
 C
       RETURN
- 1005 FORMAT (1X,'DC2H    ',L7)
- 1006 FORMAT (1X,'DC2E    ',L7)
- 1010 FORMAT (1X,'NHKT3/4 ',2I7)
- 1020 FORMAT (1X,'KCKT3/4 ',2I7)
- 1025 FORMAT (1X,'KHKT3/4 ',2I7)
- 1030 FORMAT (1X,'KCKT34  ',I7)
- 1040 FORMAT (1X,'DIAG34  ',L7)
- 1060 FORMAT (1X,'NUC34   ',I7)
- 1070 FORMAT (1X,'I340:   ',3I7)
+ 1005 FORMAT (' DC2H    ',L7)
+ 1006 FORMAT (' DC2E    ',L7)
+ 1010 FORMAT (' NHKT3/4 ',2I7)
+ 1020 FORMAT (' KCKT3/4 ',2I7)
+ 1025 FORMAT (' KHKT3/4 ',2I7)
+ 1030 FORMAT (' KCKT34  ',I7)
+ 1040 FORMAT (' DIAG34  ',L7)
+ 1060 FORMAT (' NUC34   ',I7)
+ 1070 FORMAT (' I340:   ',3I7)
       END
 C  /* Deck u2hint */
       SUBROUTINE U2HINT(AOINT,IODD12,IODD34,HCINT,HCRNT,
@@ -106,10 +96,10 @@ C  /* Deck u2hint */
      &                  WORK,LWORK,LMNV34,NPCO3,NPCO4,NUCS34,IPRINT,
      &                  NHCC,INDHER,NPNT34,NRED34,R12EIN)
 C     Copy of C2HINT for [r12,T1+T2] integrals (WK/UniKA/15-11-2002).
-#include <implicit.h>
-#include <priunit.h>
-      PARAMETER (D1 = 1.00 D00)
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D1 = 1.00D0)
+#include "maxaqn.h"
       LOGICAL DORDER(2), DHOVEC, R12EIN
       DIMENSION IXDER(6), IYDER(6), IZDER(6), IDHO(2,2), LMNV34(*)
       DIMENSION AOINT(*), IODD12(KCKT12,2), IODD34(KCKT34,2),
@@ -117,9 +107,9 @@ C     Copy of C2HINT for [r12,T1+T2] integrals (WK/UniKA/15-11-2002).
      &          COEF34(*),NHCC(KCKT34,2), CONT3(*), CONT4(*),
      &          NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*), NPNT34(*),
      &          NRED34(*), HCRNT(*)
-#include <twoao.h>
-#include <twosta.h>
-#include <derzer.h>
+#include "twoao.h"
+#include "twosta.h"
+#include "derzer.h"
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
       COMMON /DHCINF/ IDHC(10)
@@ -143,7 +133,7 @@ C     4   XQ00 YQ00 ZQ00
 C     7   XXPP XYPP XZPP YYPP YZPP ZZPP
 C     13  XXQQ XYQQ XZQQ YYQQ YZQQ ZZQQ
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from U2HINT','*',103)
 C
@@ -303,10 +293,10 @@ C     W.Klopper, R.Roehse, Theor Chim Acta (1992) 83:441, Eq.(21).
 C     ------------------------------------------------------------
 C     (WK/UniKA/15-11-2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
-#include <maxaqn.h>
+#include "maxaqn.h"
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
@@ -322,12 +312,12 @@ C
      &          CONT3(*), CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), NPNT34(*), NRED34(*)
       LOGICAL R12EIN
-#include <hertop.h>
-#include <twoao.h>
-#include <twocom.h>
-#include <sphtrm.h>
-#include <codata.h>
-#include <ibtfun.h>
+#include "hertop.h"
+#include "twoao.h"
+#include "twocom.h"
+#include "sphtrm.h"
+#include "codata.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from U2HIN1','*',103)
 C
@@ -774,10 +764,10 @@ C     according to permutation of ia,ib,ic,id.
 C
 C     WK-02/25/1995-IPS/ETHZ
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.00D0)
-#include <r12int.h>
+#include "r12int.h"
       LOGICAL GTTHRS
       INTEGER*4 M(2)
       DIMENSION SO(N,*)

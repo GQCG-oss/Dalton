@@ -104,7 +104,6 @@ cat > dftmm_1.dal <<'%EOF%'
 .DIPLEN
 .NUCPOT
 .NELFLD
-.NOSUP
 .PRINT
  2
 **WAVE FUNCTIONS
@@ -120,7 +119,7 @@ B3LYP
  2
 .THRESH
 1.0D-9
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################
@@ -140,11 +139,11 @@ fi
 #
 # Test of energy
 #
-CRIT1=`$GREP "QM/MM calculation converged" $log | wc -l`
-CRIT2=`$GREP "Electrostatic energy: * ( \-|\-0)\.007810375" $log | wc -l`
-CRIT3=`$GREP "Polarization energy: * ( \-|\-0)\.000517001" $log | wc -l`
-CRIT4=`$GREP "Total QM/MM energy: * ( \-|\-0)\.008327376" $log | wc -l`
-CRIT5=`$GREP "Final DFT energy:    *       \-112\.900658911" $log | wc -l`
+CRIT1=`$GREP 'QM/MM "QM3" calculation converged' $log | wc -l`
+CRIT2=`$GREP "Electrostatic energy: * ( \-|\-0)\.00781037" $log | wc -l`
+CRIT3=`$GREP "Polarization energy:  * ( \-|\-0)\.00051700" $log | wc -l`
+CRIT4=`$GREP "Total QM/MM energy:   * ( \-|\-0)\.00832737" $log | wc -l`
+CRIT5=`$GREP "Final DFT energy:     *     \-112\.90065891" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
 CTRL[1]=5
 ERROR[1]="DFT/MM ENERGY CONTRIBUTIONS NOT CORRECT"
@@ -162,8 +161,8 @@ ERROR[2]="DFT/MM DIPOLE MOMENT NOT CORRECT"
 #
 # Test of DFT/MM excitation energies
 #
-CRIT1=`$GREP "1        1  *  ( |0)\.15023" $log | wc -l`
-CRIT2=`$GREP "1        2  *  ( |0)\.34927" $log | wc -l`
+CRIT1=`$GREP " 1  * 1  * 0*\.15023" $log | wc -l`
+CRIT2=`$GREP " 1  * 2  * 0*\.34927" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[3]=2
 ERROR[3]="DFT/MM EXCITATION ENERGIES NOT CORRECT"

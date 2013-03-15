@@ -1,56 +1,38 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C FILE: rspvec.F
 C
-#include <single.h>
+C Contains: routines primarily related to Quadratic Response calculations
 C
-#ifdef REVLOG
-===========================================================================
-Revision 1.3  2000/05/24 19:13:28  hjj
-Inserted @ in output of final results
-Polish
-
-960301-hjaaj: modify MULSP for ISPINA=ISPINB=ISPINC=1
-930705-hjaaj: lowered IPRRSP from 5 to 2 in QRVEC for print of lr sym.
-910411-hjaaj: RSPPRC and RSPPRO use wrong symmetries in QRSMO,
-QRHYP, and QREXM (it uses the last KSYMOP from QRLRVE). TODO
-===========================================================================
-#endif
 C  /* Deck qrcalc */
       SUBROUTINE QRCALC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                  XINDX,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
 C PURPOSE:
 C DRIVER ROUTINE FOR QUADRATIC RESPONSE
@@ -58,20 +40,21 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <mxcent.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <qrinf.h>
-#include <rspprp.h>
-#include <infpp.h>
-#include <infhyp.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsmo.h>
-#include <infspi.h>
-#include <inftap.h>
+#include "mxcent.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "qrinf.h"
+#include "rspprp.h"
+#include "infpp.h"
+#include "infhyp.h"
+#include "infpri.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infsmo.h"
+#include "infspi.h"
+#include "inftap.h"
 C
       CALL QENTER('QRCALC')
       IF (SOPPA) THEN
@@ -79,6 +62,12 @@ C
      &   'QRCALC ERROR: quadratic response not implemented for SOPPA'
          CALL QUIT(
      &   'QRCALC ERROR: quadratic response not implemented for SOPPA')
+      END IF
+      IF (DODFT .AND. NASHT.GT.0) THEN
+         WRITE (LUPRI,*) 'QRCALC ERROR: '//
+     &      'quadratic response not implemented for open shell DFT'
+         CALL QUIT('QRCALC ERROR: '//
+     &      ' quadratic response not implemented for open shell DFT')
       END IF
 C
 C DETERMINE SOLUTION VECTORS FOR EIGENVALUE AND LINEAR EQUATIONS
@@ -163,8 +152,8 @@ C  QUADRATIC RESPONSE
 C  SOLUTION OF LINEAR EQUATIONS ARE DETERMINED IN QRLRVE.
 C  EIGENVECTORS ARE DETERMINED IN QRPPVE
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
@@ -175,23 +164,23 @@ C
 C Used from common blocks:
 C   INFRSP : LURSP*
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <indqr.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "indqr.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <qrinf.h>
-#include <infsmo.h>
-#include <infhyp.h>
-#include <infpp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <inftap.h>
+#include "qrinf.h"
+#include "infsmo.h"
+#include "infhyp.h"
+#include "infpp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "inftap.h"
 C
 C OPEN FILE FOR SOLUTION VECTORS
 C
@@ -265,7 +254,13 @@ C
      *         ' QRVEC EXCITATIONS: NO VARIABLES IN SYMMETRY',KSYMOP
             GO TO 100
          END IF
-         IF (QRREST) GO TO 100
+         IF (QRREST) THEN
+            ! GO TO 100   ! hjaaj aug 2012: does not work, stop instead
+            WRITE(LUPRI,'(//A)')
+     &      'FATAL ERROR: .QRREST is not possible for quadratic '//
+     &      'properties involving residues (i.e. excitation energies)'
+            CALL QUIT('.QRREST not possible for QR excitation energies')
+         END IF
 C
 C        ... FIND EXCITATION ENERGIES AND TRANSITION MOMENTS
 C
@@ -403,9 +398,9 @@ C  Purpose:
 C     CALCULATION OF EXCITATION ENERGIES AND EIGENVECTORS
 C     FOR QUADRATIC RESPONSE
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
       CHARACTER*8 BLANK
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
@@ -418,18 +413,18 @@ C                         the response calculation(s) )
 C  /WRKRSP/ :
 C
 C  /INFORB/ : MULD2H
-#include <priunit.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infpp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <indqr.h>
-#include <infpri.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infpp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "indqr.h"
+#include "infpri.h"
+#include "inforb.h"
 C
       CALL QENTER('QRPPVE')
 C     space allocation for reduced E(2) and reduced S(2)
@@ -511,8 +506,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
          DO 750 IVEC = 1,NBX
             IBV    = (IVEC-1)*KZYVAR + KBVECS
             NVEC   = IOFFSP + INQREX(KSYMOP,ISIM-1+IVEC)
-            !IF (IPRRSP.GT.10) THEN
-            IF (IPRRSP.GE.0) THEN
+            IF (IPRRSP.GT.10) THEN
                IF ( TRPLET ) THEN
                   WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,1P,D14.6)')
      *            '@ QRPPVE: TRIPLET EXCITATION VECTOR',ISIM-1+IVEC,
@@ -525,10 +519,8 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
      *            EXCITA(KSYMOP,ISIM-1+IVEC,ISPN)
                END IF
             END IF
-            !IF (IPRRSP.GE.3) THEN
-            IF (IPRRSP.GE.0) THEN
-               CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,-LUPRI)
-               !CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
+            IF (IPRRSP.GE.3) THEN
+               CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
                CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
      *                  MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                IF (IPRRSP.GT.200)
@@ -552,9 +544,9 @@ C  /* Deck qrlrve */
 C
 C Revised 28-Feb-1990 HJAaJ
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
@@ -563,20 +555,20 @@ C
       CHARACTER*8 BLANK
       PARAMETER ( THRSML = 1.0D-9, D0 = 0.0D0, BLANK='        ')
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <indqr.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "indqr.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "inforb.h"
+#include "inftap.h"
 !SONIA: MCDPRJ
-#include <infsmo.h>
+#include "infsmo.h"
 C
 C Local variables
 C
@@ -684,9 +676,9 @@ C
      &                     FOUND,CONV,ANTSYM)
                IF (FOUND .AND. CONV) THEN
                   WRITE(LUPRI,'(/A,/A12,A10,/A42)')
-     *                 ' Converged solution vector already on file',
-     *                 QRLBL(IOPVEC),'freq',
-     *                 ' -----------------------------------------'
+     *              ' Converged solution vector already on file RSPVEC',
+     *              QRLBL(IOPVEC),'freq',
+     *              ' -----------------------------------------'
                   WRITE(LUPRI,'(F22.6)') QRFREQ(IOPVEC)
                ELSE
                   DO IJ = 0, NFREQ
@@ -765,8 +757,7 @@ CTODO        IF (IPRRSP.GE.5) THEN
      &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
                END DO
 CTODO        END IF
-               !IF (IPRRSP.GT.100) THEN
-               IF (IPRRSP.GT.0) THEN
+               IF (IPRRSP.GT.100) THEN
                   WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
                   CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                END IF
@@ -890,7 +881,7 @@ CTODO        END IF
             WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
             CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
           END IF
-          !sonia: I dump the solution vector on file LURSP
+          !sonia: I dump the solution vector on file RSPVEC
           CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
      &                  BLANK,WRK(KEIVAL-1+JFREQ),D0,KSYMOP,0,
      &                  WRK(KRESID - 1 + JFREQ),ANTSYM)
@@ -907,20 +898,20 @@ C
       RETURN
       END
       SUBROUTINE RIOERR(FOUND,LABEL,FREQ,MSYM)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL FOUND, CONV
       CHARACTER*8 LABEL
       IF (.NOT. FOUND) THEN
          WRITE (LUPRI,'(/3A,F12.8,A,I3/A)') 
      &        ' Response label ',LABEL,' with frequency ',
-     &        FREQ, ' and symmetry',MSYM,' not found on file LURSP'
-         CALL QUIT('Response vector not found on file')
+     &        FREQ, ' and symmetry',MSYM,' not found on file RSPVEC'
+         CALL QUIT('Response vector not found on file RSPVEC')
       ELSE
          WRITE (LUPRI,'(/3A,F12.8/A,I3,A)') 
      &        ' @WARNING>>>>'//
      &        ' Response label ',LABEL,' with frequency ', FREQ,
-     &        ' and symmetry',MSYM,' not converged on file LURSP'
+     &        ' and symmetry',MSYM,' not converged on file RSPVEC'
       END IF
       END
 C  /* Deck qrhyp */
@@ -928,11 +919,11 @@ C  /* Deck qrhyp */
      *                 XINDX,VECB,VECC,MJWOP,SPNFC1,SPNFC2,SPNFC,SPNSD1,
      *                 SPNSD2,SPNSD,SPNSU1,SPNSU2,SPNSU,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <dftcom.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "dftcom.h"
+#include "mxcent.h"
 C
 C PURPOSE:
 C CALCULATION OF FIRST HYPERPOLARIZABILITIES AND RELATED PROPERTIES
@@ -946,22 +937,22 @@ C
 C
       PARAMETER ( D0 = 0.0D0, THRFRQ = 1.0D-14, BLANK = '        ')
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <rspprp.h>
-#include <indqr.h>
-#include <infhyp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <tstjep.h>
-#include <infhso.h>
-#include <inftap.h>
-#include <inflr.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "rspprp.h"
+#include "indqr.h"
+#include "infhyp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "tstjep.h"
+#include "infhso.h"
+#include "inftap.h"
+#include "inflr.h"
 C
 C     Local variables:
 C
@@ -1668,7 +1659,7 @@ C
 C Modified 980722-sonia: MCD. Included common block WRKRSP and
 C call to GETGPV.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 BLANK, LABEL
@@ -1679,32 +1670,33 @@ C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D4D3 = 4.0D0/3.0D0,
      &            IMXEXC=20, D30 = 30.0D0)
       PARAMETER ( DP5 = 0.5D0 , D3 = 3.0D0)
-      PARAMETER (AU_TO_GM=80*3.1415926D0**3 / 137.036**2 * 
-     &     0.591177**4 *2.418884)
       DIMENSION RESSOM(3,3,IMXEXC,8), RESFRE(IMXEXC,8)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
-#include <rspprp.h>
-#include <infrsp.h>
-#include <infsmo.h>
-#include <indqr.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <qrinf.h>
+#include "rspprp.h"
+#include "infrsp.h"
+#include "infsmo.h"
+#include "indqr.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <infpp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <codata.h>
-#include <infhso.h>
-#include <inftap.h>
-#include <inflr.h>
+#include "infpp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "codata.h"
+#include "infhso.h"
+#include "inftap.h"
+#include "inflr.h"
 C Sonia: MCD variables
-#include <wrkrsp.h>
+#include "wrkrsp.h"
 C
+      PARAMETER (AU_TO_GM=1.0D50*8*PI**2*ALPHAC*
+     &     (XTANGM10*1.0D2)**5 /(CCM*1.0D2*0.0036749326))
+
       DIMENSION JWOPSV(2,MAXWOP)
       CHARACTER A1*1, B1*1, CLABEL*8
       LOGICAL LYESGP
@@ -1730,6 +1722,7 @@ C
          MSYMCX = MULD2H(IREFSY,MSYMC)
          IF (PHOSPH) CALL DZERO(PHOSMAT,9*NSMCNV(MSYMC))
          IF (MNFPHO) CALL DZERO(PHOSMN,9*NSMCNV(MSYMC))
+         IF (ECPHOS) CALL DZERO(PHOSEC,9*NSMCNV(MSYMC))
          DO 400 MSYMB = 1,NSYM
             MSYMA = MULD2H(MSYMC,MSYMB)
             IF ( (NSMCNV(MSYMC) .GT. 0) .AND. (NBSMOP(MSYMB) .GT. 0)
@@ -2085,6 +2078,13 @@ C
                                 IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
                                 PHOSMN(IDIP,IHSO,IC)=SMOM
                                END IF
+                              IF (ECPHOS .AND.
+     &                        ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.
+     &                        BSMLB(MSYMB,IBOP)(2:8).EQ.'1SPNSCA' ) THEN
+                                IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
+                                IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
+                                PHOSEC(IDIP,IHSO,IC)=SMOM
+                               END IF
                            IF (TWOPHO) THEN
                               IF (IC.LE.IMXEXC) THEN
                                  IA=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
@@ -2198,7 +2198,7 @@ C ---------------------------------------------------------------endofmcd-------
  500           CONTINUE
             END IF
  400     CONTINUE
-         IF (PHOSPH .OR. MNFPHO) THEN
+         IF (PHOSPH .OR. MNFPHO .OR. ECPHOS) THEN
             WRITE (LUPRI,'(/A/A,I3/A,I3/A/)')
      &         ' Phosphorescence electric dipole transition rates',
      &         ' from excited states of symmetry',MULD2H(MSYMC,IREFSY),
@@ -2207,7 +2207,9 @@ C ---------------------------------------------------------------endofmcd-------
             IF (PHOSPH) WRITE(LUPRI,'(A)')
      &        ' (H_SO: Full spin-orbit integrals used.)'
             IF (MNFPHO) WRITE(LUPRI,'(A)')
-     &        ' (AMFI: Atomic Mean field spin-orbit Integrals used.)'
+     &        ' (AMFI: Atomic Mean field spin-orbit integrals used.)'
+            IF (ECPHOS) WRITE(LUPRI,'(A)')
+     &        ' (Effective charge spin-orbit integrals used.)'
             IF (NSMCNV(MSYMC) .LE. 0) WRITE(LUPRI,'(/A)')
      &        ' No excited states calculated of this symmetry.'
             DO IC = 1,NSMCNV(MSYMC)
@@ -2215,36 +2217,63 @@ C ---------------------------------------------------------------endofmcd-------
      &  ' Phosphorescence transition rate from excited state no.',IC,
      &  ' (Triplet->singlet transition, high-temperature limit)'
                W=EXCITA(MSYMC,IC,ISPINC+1)
+               WRITE(LUPRI,'(/A,F7.3,A/)') 
+     &  ' Transition energy:',W*XTEV,' eV'
                RATE =D0
                RATEA=D0
+               RATEE=D0
+               DIP=D0
+               DIPA=D0
+               DIPE=D0
                DO I=1,3
                   XDIP=D0
                   XDIPA=D0
+                  XDIPE=D0
                   DO J=1,3
                      IF (PHOSPH) XDIP =XDIP +PHOSMAT(I,J,IC)**2
                      IF (MNFPHO) XDIPA=XDIPA+ PHOSMN(I,J,IC)**2
+                     IF (ECPHOS) XDIPE=XDIPE+ PHOSEC(I,J,IC)**2
                   END DO
                   IF (PHOSPH) THEN
                      XRATE=D4D3*(ALPHAC*W)**3*XDIP/XFSEC
-                     WRITE(LUPRI,'(2A,1P,G17.5)')
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
      &               ' Partial rates (H_SO): ',
-     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATE
+     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATE,
+     &               ' Transition moment : ',SQRT(XDIP)
                      RATE=RATE+XRATE
+                     DIP = DIP + XDIP
                    END IF
                    IF (MNFPHO) THEN
                      XRATEA=D4D3*(ALPHAC*W)**3*XDIPA/XFSEC
-                     WRITE(LUPRI,'(2A,1P,G17.5)')
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
      &               ' Partial rates (AMFI): ',
-     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA
+     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA,
+     &               ' Transition moment : ',SQRT(XDIPA)
                      RATEA=RATEA+XRATEA
+                     DIPA = DIPA + XDIPA
+                   END IF
+                   IF (ECPHOS) THEN
+                     XRATEE=D4D3*(ALPHAC*W)**3*XDIPE/XFSEC
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
+     &               ' Partial rates (ECSO): ',
+     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEE,
+     &               ' Transition moment : ',SQRT(XDIPE)
+                     RATEE=RATEE+XRATEE
+                     DIPE = DIPE + XDIPE
                    END IF
                END DO
-               IF (PHOSPH) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
+               IF (PHOSPH) WRITE(LUPRI,'(1P,3(/A,E12.3,A))')
+     &        ' Oscillator strength            (H_SO)', 2*W*DIP/D3,'',
      &        ' Total transition       rate    (H_SO)', RATE/D3,' s-1',
      &        ' Total phosphorescence lifetime (H_SO)', D3/RATE,' s'
-               IF (MNFPHO) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
-     &        ' Total transition       rate    (AMFI)', RATEA/D3,' s-1',
-     &        ' Total phosphorescence lifetime (AMFI)', D3/RATEA,' s'
+               IF (MNFPHO) WRITE(LUPRI,'(1P,3(/A,E12.3,A))')
+     &        ' Oscillator strength            (AMFI)', 2*W*DIPA/D3,'',
+     &        ' Total transition       rate    (AMFI)',RATEA/D3,' s-1',
+     &        ' Total phosphorescence lifetime (AMFI)',D3/RATEA,' s'
+               IF (ECPHOS) WRITE(LUPRI,'(1P,3(/A,E12.3,A))')
+     &        ' Oscillator strength            (ECSO)', 2*W*DIPE/D3,'',
+     &        ' Total transition       rate    (ECSO)', RATEE/D3,' s-1',
+     &        ' Total phosphorescence lifetime (ECSO)', D3/RATEE,' s'
             END DO
          END IF
  300  CONTINUE
@@ -2406,7 +2435,7 @@ C PURPOSE:
 C CALCULATION OF TRANSITION MOMENTS BETWEEN EXCITED STATES
 C < B | A | C>
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 BLANK, LABEL
@@ -2414,23 +2443,23 @@ C
       DIMENSION XINDX(*),VECB(*),VECC(*),WRK(*)
 C
       PARAMETER ( D0 = 0.0D0, BLANK = '        ' )
-#include <iratdef.h>
+#include "iratdef.h"
 C
-#include <priunit.h>
-#include <rspprp.h>
-#include <infrsp.h>
-#include <infpp.h>
-#include <infsmo.h>
-#include <indqr.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "rspprp.h"
+#include "infrsp.h"
+#include "infpp.h"
+#include "infsmo.h"
+#include "indqr.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <infpri.h>
-#include <infspi.h>
-#include <inftap.h>
-#include <inflr.h>
+#include "infpri.h"
+#include "infspi.h"
+#include "inftap.h"
+#include "inflr.h"
 C
 CTODO? HJ-910405: exchange 400 and 900 loop
 C In 900 loop, if NGPPP(MSYMC).GT.0 calculate <0/C/i> moments
@@ -2730,7 +2759,7 @@ C
      *                     ' E3+A2B+A2C CONTRIBUTION TO XMOM', VAL,XMOM
                         END IF
                         WRITE(LUPRI,'(//A/A,5X,A,2I5,2(/A,5X,I8,2I5))')
-     *   '@Transition moment <B | A | C> in a.u. for',
+     *   '@Transition moment <B | A - <A> | C> in a.u. for',
      *   '@A operator label,    symmetry, spin: ',
      *      LBLPP(MSYMA,IAOP),MSYMA,ISPINA,
      *   '@B excited state no., symmetry, spin: ',IB,MSYMBX,ISPINB,
@@ -2751,12 +2780,12 @@ C
 C  /* Deck setzy */
       SUBROUTINE SETZY(MJWOP)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <wrkrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
+#include "wrkrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
 C
 C SET VARIABLES FOR SYMMETRY KSYMOP
@@ -2777,9 +2806,9 @@ C  /* Deck qrtrve */
       SUBROUTINE QRTRVE(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
      &                  WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
 C
       CHARACTER*8 BLANK
       LOGICAL FOUND, CONV
@@ -2788,18 +2817,18 @@ C
 C
       PARAMETER ( THRSML = 1.0D-9, D0 = 0.0D0, BLANK = '        ' )
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <indqr.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "indqr.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "inforb.h"
+#include "inftap.h"
 C
 C Local variables
 C
@@ -2941,9 +2970,9 @@ C
             DO 560 JFREQ = IFREQ,IFREQ-1+NBX
                IF (IPRRSP.GE.3) THEN
                   WRITE(LUPRI,'(/A,3X,A,3X,A,1P,D14.6,/A,I5)')
-     *            '@QRTRVE: TRIPLET SOLUTION   LABEL',LRLAB(ILRLAB),
-     *            ' FREQUENCY ',WRK(KEIVAL-1+JFREQ),
-     *            ' SYMMETRY',KSYMOP
+     *            '@QRTRVE: TRIPLET solution.  Label',LRLAB(ILRLAB),
+     *            ' Frequency ',WRK(KEIVAL-1+JFREQ),
+     *            ' Symmetry',KSYMOP
                   JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
                   VAL = DDOT(KZYRED,WRK(KREDGP),1,WRK(JEIVEC),1)
                   WRITE(LUPRI,'(/A,1P,G20.12)')
@@ -2970,8 +2999,8 @@ C
      &                 FREQC,BLAB,CLAB,SPNFC1,SPNFC2,SPNFC,SPNSD1,
      *                 SPNSD2,SPNSD,SPNSU1,SPNSU2,SPNSU)
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
 C PURPOSE:
 C Check if this is a unique beta calculation or equal to an already
@@ -2987,18 +3016,18 @@ C
       DIMENSION FRQ(MXCALC,3), ISYM(MXCALC,3)
       DIMENSION SPNFC1(*), SPNFC2(*), SPNFC(*), SPNSD1(*),
      *          SPNSD2(*), SPNSD(*), SPNSU1(*), SPNSU2(*), SPNSU(*)
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <qrinf.h>
-#include <rspprp.h>
-#include <infpp.h>
-#include <infhyp.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsmo.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "qrinf.h"
+#include "rspprp.h"
+#include "infpp.h"
+#include "infhyp.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infsmo.h"
+#include "infspi.h"
 C
       SAVE LAB, FRQ, N, ISYM
       DATA N/0/
@@ -3044,7 +3073,7 @@ C
                      IF (DIPLEN) THEN
                         WRITE(LUPRI,'(2(A,F9.6),2(A,6(A1)))')
      &              '@ B-freq =',FREQB,'  C-freq =',FREQC,
-     &                   '     beta(',ALAB(1:1),';',BLAB(1:1),',',
+     &              '     beta(',ALAB(1:1),';',BLAB(1:1),',',
      &                        CLAB(1:1),')',' = beta(',
      &                       LAB(I,1)(1:1),',',LAB(I,2)(1:1),',',
      &                       LAB(I,3)(1:1),')'
@@ -3131,8 +3160,8 @@ C
              END IF
              GOTO 346
  347         CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
-             BACKSPACE LURSPRES
+#if defined (VAR_MFDS)
+             BACKSPACE (LURSPRES)
 #endif
           END IF
 C
@@ -3176,9 +3205,9 @@ C
       SUBROUTINE LRHYP(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                 XINDX,VECA,VECB,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
 C
 C PURPOSE:
 C CALCULATION OF LINEAR POLARIZABILITIES IN A QR CALCULATION
@@ -3189,21 +3218,21 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),VECA(*),VECB(*),MJWOP(*),WRK(*)
 C
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <priunit.h>
-#include <rspprp.h>
-#include <indqr.h>
-#include <infhyp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <infhso.h>
-#include <inftap.h>
-#include <inflr.h>
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "priunit.h"
+#include "rspprp.h"
+#include "indqr.h"
+#include "infhyp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "infhso.h"
+#include "inftap.h"
+#include "inflr.h"
 C
       IPRRSP = IPRHYP
       KFREE = 1
@@ -3315,18 +3344,18 @@ C
 C     This routine collects contributions to the SO-corrected shielding 
 C     tensor in suitable arrays. K.Ruud, July-03
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <codata.h>
-#include <gfac.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "codata.h"
+#include "gfac.h"
       LOGICAL ONESO, TWOSO, SUMSO, FRMONL, SDONL, FCSD
       CHARACTER*8 AOPLAB, BOPLAB, COPLAB
       CHARACTER DIRB*1, DIRSO*1, NUMNUC*2, NUCDIR*3, DIR2*1
-#include <nuclei.h>
-#include <symmet.h>
-#include <sigmaso.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "sigmaso.h"
 C
       ONESO = .FALSE.
       TWOSO = .FALSE.
@@ -3442,9 +3471,9 @@ C
       END
 C  /* Deck soinit */
       SUBROUTINE SOINIT
-#include <implicit.h>
-#include <mxcent.h>
-#include <sigmaso.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "sigmaso.h"
 C
       CALL DZERO(SIGFC1,3*MXCOOR)
       CALL DZERO(SIGFC2,3*MXCOOR)
@@ -3463,19 +3492,19 @@ C
 C     Collects and prints the final results of the SO-corrections to the
 C     shielding constants. K.Ruud, July-03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <thrzer.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "thrzer.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "codata.h"
       DIMENSION SMAT1(3,3,MXCENT), SMAT2(3,3,MXCENT), CSTRA(*), SCTRA(*)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <sigmaso.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "sigmaso.h"
+#include "ibtfun.h"
 C
       FC1SUM = DNORM2(3*MXCOOR,SIGFC1,1)
       FC2SUM = DNORM2(3*MXCOOR,SIGFC2,1)
@@ -3620,12 +3649,12 @@ C
 C     This routine collects contributions to the SO-corrected shielding 
 C     tensor in suitable arrays. K.Ruud, July-03
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <codata.h>
-#include <gfac.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "codata.h"
+#include "gfac.h"
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2*XTHZ/(XFAMU*XFAMU))
       DIMENSION SPNFC1(MXCOOR,MXCOOR), SPNFC2(MXCOOR,MXCOOR),
      &          SPNFC (MXCOOR,MXCOOR), SPNSD1(MXCOOR,MXCOOR),
@@ -3635,9 +3664,9 @@ C
       LOGICAL ONESO, TWOSO, SUMSO, FRMONL, SDONL, FCSD
       CHARACTER*8 AOPLAB, BOPLAB, COPLAB
       CHARACTER DIRSO*1, NUMNUC*2, NUCDIR*3, DIR2*1
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       ONESO = .FALSE.
       TWOSO = .FALSE.
@@ -3758,8 +3787,8 @@ C
 C  /* Deck ssinit */
       SUBROUTINE SSINIT(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,SPNSU1,
      &                  SPNSU2,SPNSU)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION SPNFC1(*), SPNFC2(*), SPNFC(*), SPNSD1(*), SPNSD2(*),
      &          SPNSD(*), SPNSU1(*), SPNSU2(*), SPNSU(*)
 C
@@ -3782,24 +3811,24 @@ C
 C     Collects and prints the final results of the SO-corrections to the
 C     shielding constants. K.Ruud, July-03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <thrzer.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "thrzer.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "codata.h"
       DIMENSION CSTRA(*), SCTRA(*)
       DIMENSION SPNFC1(MXCOOR,MXCOOR), SPNFC2(MXCOOR,MXCOOR),
      &          SPNFC(MXCOOR,MXCOOR), SPNSD1(MXCOOR,MXCOOR),
      &          SPNSD2(MXCOOR,MXCOOR), SPNSD(MXCOOR,MXCOOR),
      &          SPNSU1(MXCOOR,MXCOOR), SPNSU2(MXCOOR,MXCOOR),
      &          SPNSU(MXCOOR,MXCOOR)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <sigmaso.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "sigmaso.h"
+#include "ibtfun.h"
 C
       FC1SUM = DNORM2(MXCOOR**2,SPNFC1,1)
       FC2SUM = DNORM2(MXCOOR**2,SPNFC2,1)
@@ -3877,3 +3906,4 @@ C
 C
       RETURN
       END
+C -- end of rspvec.F --

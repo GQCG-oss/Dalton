@@ -11,17 +11,17 @@ C
 C     PURPOSE: Calculate diagonale one-particle part of the
 C              SOPPA S[2] matrix.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION DIAG1(LDIAG1), DENSIJ(LDENSIJ), DENSAB(LDENSAB)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

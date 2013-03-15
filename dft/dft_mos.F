@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE DFTMOMO(CMO2,WORK,LFREE,IPRINT)
 C
 C     June 2008; PBHT MO overlap diagnostic
@@ -40,10 +30,10 @@ C       and a diagnostic test
 C       Michael J. G. Peach, Peter Benfield, Trygve Helgaker, and David J. Tozer,
 C       J.  Chem. Phys. 128, 044118 (2008), DOI:10.1063/1.2831900
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0)
       EXTERNAL DFTMO2
       DIMENSION WORK(LFREE), CMO2(NORBT,NORBT,2)
@@ -90,57 +80,51 @@ C /* Deck dftgmo */
 C
 C     T. Helgaker 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "inftap.h"
 C 
-      DIMENSION CMO(NBAST,NORBT)
-C
-#include <inftap.h>
-#include <infvar.h>
-#include <nuclei.h>
-#include <dftcom.h>
+      DIMENSION CMO(NCMOT)
 C
       REWIND LUSIFC
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
       READ (LUSIFC)
       READ (LUSIFC) 
-      CALL READI(LUSIFC,IRAT*NCMOT,CMO)
+      CALL READT(LUSIFC,NCMOT,CMO)
       IF (IPRINT.GT.100) THEN
          CALL HEADER('MOS in DFTGMO ',-1)
-         CALL OUTPUT(CMO,1,NBAST,1,NORBT,NBAST,NORBT,1,LUPRI)
+         CALL OUTPUT(CMO,1,NBAST,1,NORBT,NBAST,NORBT,-1,LUPRI)
       END IF
       RETURN
       END
 C /* Deck dftmo2 */
       SUBROUTINE DFTMO2(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
      &                  RHOA,GRADA,COORD,WGHT,WORK)
-#include <implicit.h>
-#include <inforb.h>
-      DIMENSION WORK(*)
-      K1 = 1
-      K2 = K1 + NBAST*NORBT
-      CALL DFTMOX(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,WGHT,WORK(K1),WORK(K2))
+#include "implicit.h"
+#include "inforb.h"
+      DIMENSION NBLCNT(*), NBLOCKS(*), GAO(*), WGHT(*), WORK(*)
+      KCMOS = 1
+      KCMO2 = KCMOS + N2BASX ! must be same off-set as in DFTMOMO
+      CALL DFTMOX(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,WGHT,
+     &   WORK(KCMOS),WORK(KCMO2))
       RETURN
       END
 C /* Deck dftmoX */
       SUBROUTINE DFTMOX(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,WGHT,CMO,CMO2)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       INTEGER P, Q
       DIMENSION GAO(NBLEN,NBAST), WGHT(NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
      &          CMOAO(NBLEN,NORBT),
      &          CMO(NCMOT),
      &          CMO2(NORBT,NORBT,2)
-C     
+C
       CALL DZERO(CMOAO,NBLEN*NORBT)
-      IEND = 0
       DO ISYM = 1, NSYM
-         IENDI = IEND
+         IENDI = ICMO(ISYM) - IBAS(ISYM)
          DO P = IORB(ISYM) + 1, IORB(ISYM) + NORB(ISYM)
             DO JBL = 1, NBLCNT(ISYM)
             DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
@@ -151,7 +135,6 @@ C
             END DO
             IENDI = IENDI + NBAS(ISYM)
          END DO
-         IEND = IEND + NORB(ISYM)*NBAS(ISYM)
       END DO
 C
       DO Q = 1, NORBT
@@ -159,8 +142,15 @@ C
          DO I = 1, NBLEN 
             CMO2(P,Q,1) = CMO2(P,Q,1) 
      &                  + WGHT(I)*ABS(CMOAO(I,P))*ABS(CMOAO(I,Q))
+#ifdef DFTMOS_DEBUG
+! The following two lines produce the MO overlap matrix, that is a unit matrix,
+! in CMO2(:,:,2), if the code is correct.
+            CMO2(P,Q,2) = CMO2(P,Q,2) 
+     &                  + WGHT(I)*CMOAO(I,P)*CMOAO(I,Q)
+#else
             CMO2(P,Q,2) = CMO2(P,Q,2) 
      &                  + WGHT(I)*(CMOAO(I,P)**2)*(CMOAO(I,Q)**2)
+#endif
          END DO
       END DO
       END DO 
@@ -173,13 +163,17 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C     
       DIMENSION DMAT(NBAST,NBAST), CMOS(NBAST,NORBT)
 C
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 15
-         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         IPRTYP = DFT_MOMO_WORK
+         CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL DFTINTBCAST
          CALL MPI_BCAST(DMAT,NBAST*NBAST,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)

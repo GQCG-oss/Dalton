@@ -1,37 +1,30 @@
-/*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
-/*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+/*-*-mode: 
+
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+
+!
+
 */
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-gga.c:
@@ -139,88 +132,86 @@ static void gga_second(FunSecondFuncDrv *ds, real fac, const FunDensProp* dp);
 static void gga_third(FunThirdFuncDrv *ds,   real fac, const FunDensProp* dp);
 static void gga_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp* dp);
 
-#define LDA_FUNCTIONAL(name,read) { (name), \
-    fun_false, (read), NULL, lda_energy, lda_first, lda_second, \
+#define LDA_FUNCTIONAL(name,resp_order,read) { (name), \
+    fun_false, (resp_order), (read), NULL, lda_energy, lda_first, lda_second, \
     lda_third, lda_fourth }
 
-#define GGA_FUNCTIONAL(name,read) { (name), \
-    gga_isgga, (read), gga_report, gga_energy, gga_first, gga_second, \
+#define GGA_FUNCTIONAL(name,resp_order,read) { (name), \
+    gga_isgga, (resp_order), (read), gga_report, gga_energy, gga_first, gga_second, \
     gga_third, gga_fourth }
 
-Functional XAlphaFunctional = GGA_FUNCTIONAL("XAlpha",   xalpha_read);
-Functional LDAFunctional =    LDA_FUNCTIONAL("LDA",      lda_read);
-/* SVWN5 aliases LDA */
-Functional SVWN5Functional =   LDA_FUNCTIONAL("SVWN5",   lda_read);
-Functional SVWN3Functional =   GGA_FUNCTIONAL("SVWN3",   ldagauss_read);
-Functional B2PLYPFunctional =  GGA_FUNCTIONAL("B2PLYP",  b2plyp_read);
-Functional B3LYPFunctional =   GGA_FUNCTIONAL("B3LYP",   b3lyp_read);
-Functional B3LYPgFunctional =  GGA_FUNCTIONAL("B3LYPg",  b3lypg_read);
-Functional B3LYPGaussFunctional = GGA_FUNCTIONAL("B3LYPGauss", b3lypg_read);
-Functional B3P86Functional =   GGA_FUNCTIONAL("B3P86",   b3p86_read);
-Functional B3P86gFunctional =  GGA_FUNCTIONAL("B3P86g",  b3p86g_read);
-Functional B3PW91Functional =  GGA_FUNCTIONAL("B3PW91",  b3pw91_read);
-Functional BHandHFunctional =  GGA_FUNCTIONAL("BHandH",  bhandh_read);
-Functional BHandHLYPFunctional = GGA_FUNCTIONAL("BHandHLYP", bhandhlyp_read);
-Functional B86VWNFunctional =  GGA_FUNCTIONAL("B86VWN",  b86vwn_read);
-Functional B86LYPFunctional =  GGA_FUNCTIONAL("B86LYP",  b86lyp_read);
-Functional B86P86Functional =  GGA_FUNCTIONAL("B86P86",  b86p86_read);
-Functional B86PW91Functional = GGA_FUNCTIONAL("B86PW91", b86pw91_read);
-Functional BVWNFunctional =    GGA_FUNCTIONAL("BVWN",    bvwn_read);
-Functional BLYPFunctional =    GGA_FUNCTIONAL("BLYP",    blyp_read);
-Functional B1LYPFunctional =   GGA_FUNCTIONAL("B1LYP",   b1lyp_read);
-Functional BP86Functional =    GGA_FUNCTIONAL("BP86",    bp86_read);
-Functional BPW91Functional =   GGA_FUNCTIONAL("BPW91",   bpw91_read);
-Functional B1PW91Functional =  GGA_FUNCTIONAL("B1PW91",  b1pw91_read);
-Functional BWFunctional =      GGA_FUNCTIONAL("BW",      bw_read);
-Functional BFWFunctional =     GGA_FUNCTIONAL("BFW",     bfw_read);
-Functional CombineFunctional = GGA_FUNCTIONAL("Combine", gga_key_read);
-Functional DBLYPFunctional =   GGA_FUNCTIONAL("DBLYP",   dblyp_read);
-Functional DBP86Functional =   GGA_FUNCTIONAL("DBP86",   dbp86_read);
-Functional DBPW91Functional =  GGA_FUNCTIONAL("DBPW91",  dbpw91_read);
-Functional EDF1Functional =    GGA_FUNCTIONAL("EDF1",    edf1_read);
-Functional EDF2Functional =    GGA_FUNCTIONAL("EDF2",    edf2_read);
-Functional GGAKeyFunctional =  GGA_FUNCTIONAL("GGAKey",  gga_key_read);
-Functional G96VWNFunctional =  GGA_FUNCTIONAL("G96VWN",  g96vwn_read);
-Functional G96LYPFunctional =  GGA_FUNCTIONAL("G96LYP",  g96lyp_read);
-Functional G96P86Functional =  GGA_FUNCTIONAL("G96P86",  g96p86_read);
-Functional G96PW91Functional = GGA_FUNCTIONAL("G96PW91", g96pw91_read);
-Functional G961LYPFunctional = GGA_FUNCTIONAL("G961LYP", g961lyp_read);
-Functional HCTHFunctional =    GGA_FUNCTIONAL("HCTH",    hcth_read);
-Functional KMLYPFunctional =   GGA_FUNCTIONAL("KMLYP",   kmlyp_read);
-Functional KT1Functional =     GGA_FUNCTIONAL("KT1",     kt1_read);
-Functional KT2Functional =     GGA_FUNCTIONAL("KT2",     kt2_read);
-Functional KT3Functional =     GGA_FUNCTIONAL("KT3",     kt3_read);
-Functional LG1LYPFunctional =  GGA_FUNCTIONAL("LG1LYP",  lg1lyp_read);
-Functional mPWVWNFunctional =  GGA_FUNCTIONAL("mPWVWN" , mpwvwn_read);
-Functional mPWLYPFunctional =  GGA_FUNCTIONAL("mPWLYP" , mpwlyp_read);
-Functional mPWP86Functional =  GGA_FUNCTIONAL("mPWP86" , mpwp86_read);
-Functional mPWPW91Functional = GGA_FUNCTIONAL("mPWPW91", mpwpw91_read);
-Functional mPW91Functional    =GGA_FUNCTIONAL("mPW91",   mpwpw91_read);
-/* mPW91 aliases mPWPW91 */
-Functional mPW3PW91Functional =GGA_FUNCTIONAL("mPW3PW91",mpw3pw91_read);
-Functional mPW1PW91Functional =GGA_FUNCTIONAL("mPW1PW91",mpw1pw91_read);
-Functional mPW1KFunctional =   GGA_FUNCTIONAL("mPW1K",   mpw1k_read);
-Functional mPW1NFunctional =   GGA_FUNCTIONAL("mPW1N",   mpw1n_read);
-Functional mPW1SFunctional =   GGA_FUNCTIONAL("mPW1S",   mpw1s_read);
-Functional OVWNFunctional =    GGA_FUNCTIONAL("OVWN" ,   ovwn_read);
-Functional OLYPFunctional =    GGA_FUNCTIONAL("OLYP" ,   olyp_read);
-Functional OP86Functional =    GGA_FUNCTIONAL("OP86" ,   op86_read);
-Functional OPW91Functional =   GGA_FUNCTIONAL("OPW91" ,  opw91_read);
-Functional PBE0Functional =    GGA_FUNCTIONAL("PBE0",    pbe0_read);
-Functional PBE1PBEFunctional = GGA_FUNCTIONAL("PBE1PBE", pbe0_read);
-Functional PBE0PBEFunctional = GGA_FUNCTIONAL("PBE0PBE", pbe0_read);
-Functional PBEFunctional =     GGA_FUNCTIONAL("PBE",     pbe_read); 
-Functional PBEPBEFunctional =  GGA_FUNCTIONAL("PBEPBE",  pbe_read);
-Functional revPBEFunctional =  GGA_FUNCTIONAL("revPBE",  revpbe_read); 
-Functional RPBEFunctional =    GGA_FUNCTIONAL("RPBE",    rpbe_read); 
-Functional mPBEFunctional =    GGA_FUNCTIONAL("mPBE",    mpbe_read); 
-Functional PW91Functional =    GGA_FUNCTIONAL("PW91",    pw91_read); 
-Functional PW91VWNFunctional = GGA_FUNCTIONAL("PW91VWN", pw91vwn_read); 
-Functional PW91LYPFunctional = GGA_FUNCTIONAL("PW91LYP", pw91lyp_read); 
-Functional PW91P86Functional = GGA_FUNCTIONAL("PW91P86", pw91p86_read); 
-Functional PW91PW91Functional =GGA_FUNCTIONAL("PW91PW91",pw91_read); 
-Functional XLYPFunctional =    GGA_FUNCTIONAL("XLYP",    xlyp_read); 
-Functional X3LYPFunctional =   GGA_FUNCTIONAL("X3LYP",   x3lyp_read); 
+Functional XAlphaFunctional     = GGA_FUNCTIONAL("XAlpha",     3, xalpha_read);
+Functional LDAFunctional        = LDA_FUNCTIONAL("LDA",        3, lda_read);
+Functional SVWN5Functional      = LDA_FUNCTIONAL("SVWN5",      3, lda_read);       // SVWN5 aliases LDA
+Functional SVWN3Functional      = GGA_FUNCTIONAL("SVWN3",      1, ldagauss_read);
+Functional B2PLYPFunctional     = GGA_FUNCTIONAL("B2PLYP",     3, b2plyp_read);
+Functional B3LYPFunctional      = GGA_FUNCTIONAL("B3LYP",      3, b3lyp_read);
+Functional B3LYPgFunctional     = GGA_FUNCTIONAL("B3LYPg",     1, b3lypg_read);
+Functional B3LYPGaussFunctional = GGA_FUNCTIONAL("B3LYPGauss", 1, b3lypg_read);
+Functional B3P86Functional      = GGA_FUNCTIONAL("B3P86",      1, b3p86_read);
+Functional B3P86gFunctional     = GGA_FUNCTIONAL("B3P86g",     1, b3p86g_read);
+Functional B3PW91Functional     = GGA_FUNCTIONAL("B3PW91",     1, b3pw91_read);
+Functional BHandHFunctional     = GGA_FUNCTIONAL("BHandH",     3, bhandh_read);
+Functional BHandHLYPFunctional  = GGA_FUNCTIONAL("BHandHLYP",  3, bhandhlyp_read);
+Functional B86VWNFunctional     = GGA_FUNCTIONAL("B86VWN",     1, b86vwn_read);
+Functional B86LYPFunctional     = GGA_FUNCTIONAL("B86LYP",     1, b86lyp_read);
+Functional B86P86Functional     = GGA_FUNCTIONAL("B86P86",     1, b86p86_read);
+Functional B86PW91Functional    = GGA_FUNCTIONAL("B86PW91",    1, b86pw91_read);
+Functional BVWNFunctional       = GGA_FUNCTIONAL("BVWN",       3, bvwn_read);
+Functional BLYPFunctional       = GGA_FUNCTIONAL("BLYP",       3, blyp_read);
+Functional B1LYPFunctional      = GGA_FUNCTIONAL("B1LYP",      3, b1lyp_read);
+Functional BP86Functional       = GGA_FUNCTIONAL("BP86",       1, bp86_read);
+Functional BPW91Functional      = GGA_FUNCTIONAL("BPW91",      1, bpw91_read);
+Functional B1PW91Functional     = GGA_FUNCTIONAL("B1PW91",     1, b1pw91_read);
+Functional BWFunctional         = GGA_FUNCTIONAL("BW",         1, bw_read);
+Functional BFWFunctional        = GGA_FUNCTIONAL("BFW",        1, bfw_read);
+Functional CombineFunctional    = GGA_FUNCTIONAL("Combine",    1, gga_key_read);
+Functional DBLYPFunctional      = GGA_FUNCTIONAL("DBLYP",      1, dblyp_read);
+Functional DBP86Functional      = GGA_FUNCTIONAL("DBP86",      1, dbp86_read);
+Functional DBPW91Functional     = GGA_FUNCTIONAL("DBPW91",     1, dbpw91_read);
+Functional EDF1Functional       = GGA_FUNCTIONAL("EDF1",       1, edf1_read);
+Functional EDF2Functional       = GGA_FUNCTIONAL("EDF2",       1, edf2_read);
+Functional GGAKeyFunctional     = GGA_FUNCTIONAL("GGAKey",     1, gga_key_read);
+Functional G96VWNFunctional     = GGA_FUNCTIONAL("G96VWN",     1, g96vwn_read);
+Functional G96LYPFunctional     = GGA_FUNCTIONAL("G96LYP",     1, g96lyp_read);
+Functional G96P86Functional     = GGA_FUNCTIONAL("G96P86",     1, g96p86_read);
+Functional G96PW91Functional    = GGA_FUNCTIONAL("G96PW91",    1, g96pw91_read);
+Functional G961LYPFunctional    = GGA_FUNCTIONAL("G961LYP",    1, g961lyp_read);
+Functional HCTHFunctional       = GGA_FUNCTIONAL("HCTH",       1, hcth_read);
+Functional KMLYPFunctional      = GGA_FUNCTIONAL("KMLYP",      3, kmlyp_read);
+Functional KT1Functional        = GGA_FUNCTIONAL("KT1",        1, kt1_read);
+Functional KT2Functional        = GGA_FUNCTIONAL("KT2",        1, kt2_read);
+Functional KT3Functional        = GGA_FUNCTIONAL("KT3",        1, kt3_read);
+Functional LG1LYPFunctional     = GGA_FUNCTIONAL("LG1LYP",     1, lg1lyp_read);
+Functional mPWVWNFunctional     = GGA_FUNCTIONAL("mPWVWN",     1, mpwvwn_read);
+Functional mPWLYPFunctional     = GGA_FUNCTIONAL("mPWLYP",     1, mpwlyp_read);
+Functional mPWP86Functional     = GGA_FUNCTIONAL("mPWP86",     1, mpwp86_read);
+Functional mPWPW91Functional    = GGA_FUNCTIONAL("mPWPW91",    1, mpwpw91_read);
+Functional mPW91Functional      = GGA_FUNCTIONAL("mPW91",      1, mpwpw91_read);   // mPW91 aliases mPWPW91
+Functional mPW3PW91Functional   = GGA_FUNCTIONAL("mPW3PW91",   1, mpw3pw91_read);
+Functional mPW1PW91Functional   = GGA_FUNCTIONAL("mPW1PW91",   1, mpw1pw91_read);
+Functional mPW1KFunctional      = GGA_FUNCTIONAL("mPW1K",      1, mpw1k_read);
+Functional mPW1NFunctional      = GGA_FUNCTIONAL("mPW1N",      1, mpw1n_read);
+Functional mPW1SFunctional      = GGA_FUNCTIONAL("mPW1S",      1, mpw1s_read);
+Functional OVWNFunctional       = GGA_FUNCTIONAL("OVWN",       1, ovwn_read);
+Functional OLYPFunctional       = GGA_FUNCTIONAL("OLYP",       1, olyp_read);
+Functional OP86Functional       = GGA_FUNCTIONAL("OP86",       1, op86_read);
+Functional OPW91Functional      = GGA_FUNCTIONAL("OPW91",      1, opw91_read);
+Functional PBE0Functional       = GGA_FUNCTIONAL("PBE0",       1, pbe0_read);
+Functional PBE1PBEFunctional    = GGA_FUNCTIONAL("PBE1PBE",    1, pbe0_read);
+Functional PBE0PBEFunctional    = GGA_FUNCTIONAL("PBE0PBE",    1, pbe0_read);
+Functional PBEFunctional        = GGA_FUNCTIONAL("PBE",        1, pbe_read);
+Functional PBEPBEFunctional     = GGA_FUNCTIONAL("PBEPBE",     1, pbe_read);
+Functional revPBEFunctional     = GGA_FUNCTIONAL("revPBE",     1, revpbe_read);
+Functional RPBEFunctional       = GGA_FUNCTIONAL("RPBE",       1, rpbe_read);
+Functional mPBEFunctional       = GGA_FUNCTIONAL("mPBE",       1, mpbe_read);
+Functional PW91Functional       = GGA_FUNCTIONAL("PW91",       1, pw91_read);
+Functional PW91VWNFunctional    = GGA_FUNCTIONAL("PW91VWN",    1, pw91vwn_read);
+Functional PW91LYPFunctional    = GGA_FUNCTIONAL("PW91LYP",    1, pw91lyp_read);
+Functional PW91P86Functional    = GGA_FUNCTIONAL("PW91P86",    1, pw91p86_read);
+Functional PW91PW91Functional   = GGA_FUNCTIONAL("PW91PW91",   1, pw91_read);
+Functional XLYPFunctional       = GGA_FUNCTIONAL("XLYP",       1, xlyp_read);
+Functional X3LYPFunctional      = GGA_FUNCTIONAL("X3LYP",      1, x3lyp_read);
 
 /* MIXED FUNCTIONALS */
 typedef struct FuncList_ FuncList;

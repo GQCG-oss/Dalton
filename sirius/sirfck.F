@@ -1,39 +1,29 @@
-
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
-#include <single.h>
-C
-!  #define SIRFCK_DEBUG
+!  #undef SIRFCK_DEBUG
 C  /* Deck sirfck */
       SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRECT,
      &                  WRK,LWORK)
@@ -72,7 +62,9 @@ C       - sign: alpha - beta matrix (triplet)
 C
 C     DIRECT = .TRUE.   Direct calculation using hermit.
 C              .FALSE.  Read integrals from AOTWOINT.
-#include <implicit.h>
+Cholesky       Overriden by the CHOINT flag
+C
+#include "implicit.h"
       LOGICAL   DIRECT, DOERG, DOATR, LSRHYBR
       LOGICAL   DO_SPINDNS, DFT_SPINDNS_SAVE
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,*)
@@ -80,7 +72,7 @@ C              .FALSE.  Read integrals from AOTWOINT.
       DIMENSION WRK(*), IFCTMP_SR(3)
       DIMENSION DFCOEFF(NBAST) !density-fitting coefficients
 C
-#include <dummy.h>
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D4 = 4.0D0, 
      &           DMP5 = -0.5D0)
 C
@@ -91,38 +83,64 @@ C   INFTAP: LUINTA
 C   INFPRI: IPRFCK
 C   CBIREA: ATOMDF, NODDYDF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <dftcom.h>
-#include <dfterg.h>
-#include <cbirea.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "dftcom.h"
+#include "dfterg.h"
+#include "cbirea.h"
 C
-#include <ibtfun.h>
+Cholesky
+#include "ccdeco.h"
+#include "sirftim.h"
+#include "choscf.h"
+Cholesky
 C
-      LOGICAL SFIRST,PREHF
+#include "ibtfun.h"
+C
+      LOGICAL SFIRST, PREHF, IOPTVP, DO_CHOINT
       SAVE SFIRST
       DATA SFIRST  /.TRUE./
 C
 C
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('SIRFCK')
+      CALL GETTIM(T0,W0)
 C
       iprsrdft = iprfck
       IF (NDMAT.EQ.0) GO TO 9999
 C
 C     Find out if we have spin-density terms
+C     Find out if we shall and can use Cholesky
 C
       DO_SPINDNS = .FALSE.
+      DO_CHOINT = CHOINT .and. CHIVAL .lt. 0.0D0 ! no Cholesky for short-range integrals (yet)
       DO I = 1,NDMAT
+         IF (MOD(IFCTYP(I),10) .EQ. 0) IFCTYP(I) = 0 ! "X" does not matter if no contribution
          IF (IFCTYP(I) .LT. 0) DO_SPINDNS = .TRUE.
+         IF (IFCTYP(I) .ne. 13 .and. IFCTYP(I) .ne. 12 .and.
+     &       IFCTYP(I) .ne.  3 .and. IFCTYP(I) .ne.  2 .and.
+     &       IFCTYP(I) .ne. 22 .and. IFCTYP(I) .ne. 11 .and.
+     &       IFCTYP(I) .ne.  1 .and. IFCTYP(I) .ne.  0)
+     &       DO_CHOINT = .FALSE.     ! actually all types are OK now ! /hjaaj Mar 2012
       END DO
       IF (DO_SPINDNS .AND. .NOT. ADDSRI) THEN
          CALL QUIT('SIRFCK can only do spin dens. for srDFT')
+      END IF
+      IF (CHOINT .AND. .NOT. DO_CHOINT) THEN
+         NINFO = NINFO + 1
+         WRITE(LUPRI,'(A,(10I5))')
+     &   ' INFO: IFCTYP(1:NDMAT) =',(IFCTYP(I),I=1,NDMAT)
+         WRITE(LUPRI,'(/A/A//A)')
+     &   ' INFO: Cholesky decomposed two-electron integrals can'//
+     &   ' only be applied for IFCTYP equal to 2-3, 11-13 or 22.',
+     &   ' You may have to implement the request yourself !',
+     &   ' Proceeding with standard AO-integral direct '//
+     &     'Fock matrix construction.'
       END IF
 C
 #ifdef SIRFCK_DEBUG
@@ -180,7 +198,6 @@ C        DC, DV or DXC, DXV
          NDCandDV = NDMAT
          IF (NSR_DMAT*2 .ne. NDMAT) THEN
             write(lupri,*)'Inconsistency(2), NSR_DMAT*2 ne NDMAT'
-CFRAN JUST TO UNDERSTAND END
             write(lupri,*)'SIRFCK: NDMAT,NSR_DMAT=', NDMAT,NSR_DMAT
             write(lupri,*)'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
             CALL QUIT('Inconsistency(2), NSR_DMAT*2 ne NDMAT')
@@ -195,16 +212,88 @@ C        a Multiconfigurational SR-DFT calculation.
 C
 #ifdef SIRFCK_DEBUG
 CFRAN 17/02/2010
-      WRITE(LUPRI,*) 'PREHF = ', PREHF
+      WRITE(LUPRI,*) 'PREHF   = ', PREHF
       WRITE(LUPRI,*) 'LSRHYBR = ', LSRHYBR
 CFRAN 17/02/2010 END
 #endif
       HFXFACSAVE = HFXFAC
       CHIVALSAVE = CHIVAL
+      IF (DO_CHOINT) THEN
+         DTIME  = SECOND()
+         ICOUN3 = 0
+C
+C        *************** Cholesky section *************** 
+C
+C        ... Outermost loop over density matrices in order
+C            to maximize work space for batches of Cholesky
+C            vectors. We may want to change this to avoid
+C            reading through the Cholesky file(s) NDMAT times.
+C
+         DO I = 1,NDMAT
+C
+           JSYMDM = ISYMDM(I)
+           IFCTYP_CHO = IFCTYP(I)
+
+           HFXFAC_SAVE = HFXFAC
+           IF (MOD(IFCTYP_CHO,10) .EQ. 1) THEN       ! No exchange
+              ITSLDA = .TRUE. ! flag in Cholesky for no exchange
+              HFXFAC = 0.0D0
+           ELSE
+              ITSLDA = .FALSE.
+           END IF
+C
+C          hjaaj note 120327:
+C            NOTE that CHO_FCKDS1 normally does not use the DMAT in input for the exchange part,
+C            but rather the wave function density from CMO
+C            (i.e. not DXCAO, DXVAO, DTVAO even if they are given in input!!!)
+C
+           IF (IFCTYP_CHO .EQ. 13 .OR. IFCTYP_CHO .EQ. 11) THEN
+               IOPTVP = .TRUE.                ! Coulomb included
+C           ... singlet, (tot.) symmetric density matrices
+               CALL CHO_FCKDS1(FMAT(1,I),DMAT(1,I),WRK,LWORK,
+     &                         JSYMDM,IOPTVP)
+C
+           ELSE IF (IFCTYP_CHO .EQ. 12) THEN
+               IOPTVP = .FALSE.
+C           ... singlet, (tot.) symmetric density matrices (exchange only)
+               CALL CHO_FCKDS1(FMAT(1,I),DMAT(1,I),WRK,LWORK,
+     &                         JSYMDM,IOPTVP)
+C
+           ELSE IF (IFCTYP_CHO .EQ.  3 .OR. IFCTYP_CHO .EQ. 1) THEN
+               IOPTVP = .TRUE.
+C           ...  singlet, non-symmetric (general) density matrices
+               ICOUN3 = ICOUN3 + 1
+               CALL CHO_FCKDS3(FMAT(1,I),DMAT(1,I),WRK,LWORK,
+     &                         JSYMDM,IOPTVP)
+C
+           ELSE IF ((IFCTYP_CHO .EQ. 2) .OR. (IFCTYP_CHO .EQ.  22)) THEN
+               IOPTVP = .FALSE.
+C           ...  singlet, non-symmetric density matrices (exchange only)
+               ICOUN3 = ICOUN3 + 1
+               CALL CHO_FCKDS3(FMAT(1,I),DMAT(1,I),WRK,LWORK,
+     &                         JSYMDM,IOPTVP)
+C
+           ELSE IF (IFCTYP_CHO .NE.  0) THEN
+               GO TO 8000
+           END IF
+C
+           HFXFAC = HFXFAC_SAVE
+
+         ENDDO ! I = 1,NDMAT
+         DTIME = SECOND() - DTIME
+         TSIRF = TSIRF    + DTIME
+         IF (IPRFCK .GT. 0 .AND. ICOUN3 .EQ. NDMAT) THEN
+            WRITE(LUPRI,'(/,A,I3,A,F10.2,A,/)')
+     &     ' >>> SIRFCK Cholesky: ',NDMAT,
+     &     ' non-symmetric Fock matrices calculated in',DTIME,' seconds'
+         ENDIF
+
+      ELSE IF (DIRECT) THEN ! not Cholesky, AO-direct?
+C
 C
 C     ****************** AO direct Fock matrices ***************
 C
-      IF (DIRECT) THEN
+C
          IF (SFIRST) THEN
             IPRHER = 2*IPRFCK
             CALL SETHER(IPRHER,.FALSE.,WRK,LWORK)
@@ -234,6 +323,8 @@ C           this is e.g. PREHF, i.e. standard HF
             CHIVAL = -1.0D0
          END IF
 #ifdef SIRFCK_DEBUG
+         write(lupri,*) 'sirfck: before calling herfck ...'
+         write(lupri,*) 'SIRFCK: ADDSRI =', ADDSRI
          write(lupri,*) 'SIRFCK: calling HERFCK with CHIVAL ',CHIVAL
          write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
          write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
@@ -279,6 +370,9 @@ C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
 C
 C        Add Short-range integrals (HF/MC-SRDFT hybrid model)
 C
+#ifdef SIRFCK_DEBUG
+         write(lupri,*) 'add direct sr integrals ? ADDSRI = ', ADDSRI 
+#endif 
          IF (ADDSRI .AND. (DOHFSRDFT.OR.DOMCSRDFT)) THEN
             IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT))THEN
 C              ... get total DMAT = DC + DV if NASHT.gt.0
@@ -289,8 +383,18 @@ C                  for Hartree SR term
                   JFMAT = 2
                END IF
                DO I = 1,NSR_DMAT
-                  CALL DAXPY(N2BASX,D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
+!!! new code !!!
+C
+                  CALL DAXPY(N2BASX,D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
 C                 ... add DV(I) to DC(I)
+!
+! Manu: the core one-index transformed and transition density matrices
+!       now contains the total ones 
+
+!!!!! inital code !!!
+!                 CALL DAXPY(N2BASX,D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
+C                 ... add DV(I) to DC(I)
+!!!!!!!!!!!!!!!!!!!!!
                END DO
             ELSE
 C              ... total DMAT = DC when NASHT.eq.0 or CISRDFT
@@ -329,34 +433,107 @@ C              remove any "do exchange" bits
          end do
 #endif
             IF (NSYM.GT.1) THEN
+
+!!!! start new code for symmetry !!!
+                KDMAT = KLAST
+                KLAST = KDMAT + NSR_DMAT*N2BASX
+                LWRK  = LWORK - KLAST + 1
+                IF (KLAST.GT.LWORK)
+     &             CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
+C
+                DO ISRMAT = 1, NSR_DMAT
+                   IDMAT = JFMAT*(ISRMAT-1) +1
+                   KIDMAT = KDMAT +(ISRMAT-1)*N2BASX 
+                   CALL DCOPY(N2BASX,DMAT(1,IDMAT),1,WRK(KIDMAT),1)
+!                  CALL DAXPY(N2BASX,D1,DMAT(1,IDMAT+1),1,
+!    &                              WRK(KIDMAT),1)
+                END DO 
+C
+                if (atomdf .AND. CHIVAL .LT. D0) then
+C                  hjaaj mar 2006: dens_fit not for short range integrals (yet)
+                   call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
+     &                         ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+                else
+                   CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
+     &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+                end if
+
+!!!! end new code for symmetry !!!
+
+!!!!! start initial code !!!!!!!
 C              HERFCK destroys DMAT when called with symmetry
 C              We need DMAT for the "CALL SRDFT" below
-               KDMAT = KLAST
-               KLAST = KDMAT + NSR_DMAT*N2BASX
-               LWRK  = LWORK - KLAST + 1
-               IF (KLAST.GT.LWORK)
-     &         CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
-               CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,WRK(KDMAT),1)
-               if (atomdf .AND. CHIVAL .LT. D0) then
+!*             KDMAT = KLAST
+!*             KLAST = KDMAT + NSR_DMAT*N2BASX
+!*             LWRK  = LWORK - KLAST + 1
+!*             IF (KLAST.GT.LWORK)
+!*   &         CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
+!*             CALL DCOPY(NSR_DMAT*N2BASX,DMAT,1,WRK(KDMAT),1)
+!*             if (atomdf .AND. CHIVAL .LT. D0) then
 C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
-                 call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
-     &                         ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-               else
-                 CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
-     &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
-               end if
+!*               call dens_fit(wrk(KFSRAO),wrk(kdmat),NSR_DMAT,
+!*   &                         ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+!*             else
+!*               CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
+!*   &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+!*             end if
+!!!!! end initial code !!!!!!!
             ELSE
+C
+C Manu - march 2011: allocation of additional memory 
+C                    for total one-index transformed 
+C                    and transition density matrices 
+C                    in order to calculate the corresponding 
+C                    srH Kernel contributions to the hessian. 
+C                    The initial implementation, that used 
+C                    directly DMAT, did not work when the two
+C                    matrices were non-zero (which happens in the linear
+C                    response when the trial vector has both an orbital AND a
+C                    configuration part) because they were not ordered
+C                    one after the other (DTVAO "stands" in between)
+C
+C
+#ifdef SIRFCK_DEBUG
+                write(lupri,*) 'JFMAT =', JFMAT
+#endif 
+                   KDMAT = KLAST
+                   KLAST = KDMAT + NSR_DMAT*N2BASX
+                   LWRK  = LWORK - KLAST + 1
+                   IF (KLAST.GT.LWORK)
+     &             CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
+C
+                   DO ISRMAT = 1, NSR_DMAT
+                      IDMAT = JFMAT*(ISRMAT-1) +1
+                      KIDMAT = KDMAT +(ISRMAT-1)*N2BASX 
+                      CALL DCOPY(N2BASX,DMAT(1,IDMAT),1,WRK(KIDMAT),1)
+!                     CALL DAXPY(N2BASX,D1,DMAT(1,IDMAT+1),1,
+!    &                              WRK(KIDMAT),1)
+                   END DO 
+
+C
                if (atomdf .AND. CHIVAL .LT. D0) then
 C               hjaaj mar 2006: dens_fit not for short range integrals (yet)
                  call dens_fit(wrk(KFSRAO),dmat,NSR_DMAT,
      &                         ISYMDM,IFCTYP,IPRHER,wrk(KLAST),LWRK)
                else
-                 CALL HERFCK(WRK(KFSRAO),DMAT,NSR_DMAT,
+#ifdef SIRFCK_DEBUG
+                   write(lupri,*) 'calling herfck with no symmetry!'
+                   write(lupri,*) 'NSR_DMAT = ', NSR_DMAT
+#endif
+C
+C 
+                 CALL HERFCK(WRK(KFSRAO),WRK(KDMAT),NSR_DMAT,
      &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
+
+! initial code (DMAT was used instead of WRK(KDMAT))
+!
+!*               CALL HERFCK(WRK(KFSRAO),DMAT,NSR_DMAT,
+!*   &                       ISYMDM,IFCTYP,IPRHER,WRK(KLAST),LWRK)
                end if
             END IF
 C
             EJSR = DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KFSRAO),1)
+            EKSR = D0
             IF (NASHT.GT.0) THEN
              EJKVSR =-DP5*
      &                DDOT(N2BASX,DMAT(1,NSR_DMAT+1),1,WRK(KFSRAO),1)
@@ -367,6 +544,7 @@ C
             IF (JFMAT .EQ. 1) THEN
                CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(KFSRAO),1,FMAT,1)
             ELSE
+C
                DO I = 1,NSR_DMAT
                   JFSRAO = KFSRAO + (I-1)*N2BASX
                   JF = JFMAT*(I-1)+ 1
@@ -376,8 +554,17 @@ C
             SRINTS = .FALSE.
             IF (NASHT.GT.0) THEN
                DO I = 1,NSR_DMAT
-                 CALL DAXPY(N2BASX,-D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
+!!!! new code !!!!!!
+                 CALL DAXPY(N2BASX,-D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
 C                 ... restore DC(I) = DTOT(I) -  DV(I)
+!
+! Manu: the core one-index transformed and transition density matrices
+!       are now restored. 
+!
+!!!! initial code !!!
+C                CALL DAXPY(N2BASX,-D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
+C                 ... restore DC(I) = DTOT(I) -  DV(I)
+!!!!!!!!!!!!!!!!!!!!!!!
                END DO
             END IF
          ENDIF
@@ -385,18 +572,21 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
             ISYMDM(I) = ISYMDM(I) + 1
          END DO
 #ifdef SIRFCK_DEBUG
-           write(lupri,*)
-     &     'SIRFCK: direct short-range contribution to FMAT'
-           call output(WRK(KFSRAO),1,nbast,1,nbast,nbast,nbast,-1,lupri)
+           do i = 1,nsr_dmat
+              write(lupri,*)
+     &        'SIRFCK: direct short-range contribution to FMAT no.', i
+           call output(WRK(KFSRAO+n2basx*(i-1)),1,nbast,1,nbast,
+     &                 nbast,nbast,-1,lupri)
+           end do
            write(lupri,*) 'SIRFCK: FMAT (lr + sr)'
            call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
 C
+      ELSE ! not Cholesky and not AO-direct
+C
 C     ****************** "conventional" AO Fock matrices ***************
 C                        (from AO integrals or supermatrix integrals on file)
 C
-      ELSE
-C     ... not DIRECT
          IF (HFXMU .NE. D0) CALL QUIT(
      &       'SIRFCK2: nonzero HFXMU requires .DIRECT calculation.') 
 C
@@ -461,7 +651,7 @@ C                 ... add DV(I) to DC(I)
 C
             IFCTMP_SR(1) = IFCTYP(1)
             IF (HFXFAC.NE.D0) THEN
-C           ... for normal/presceding HF and for SRDFT with exact exch.
+C           ... for normal/preceding HF and for SRDFT with exact exch.
 C               (add SR coul. and exch. to LR to give full 2-el part)
                 IFCTYP(1) = 13
             ELSE 
@@ -518,6 +708,12 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
          END IF
       END IF
       HFXFAC = HFXFACSAVE
+      IF (IPRFCK .GT. 0) THEN 
+         CALL GETTIM(T1,W1)
+         WRITE(LUPRI,'(/A,2F10.3)')
+     &   ' SIRFCK: CPU and WALL time used in Fock matrix constructions',
+     &   T1-T0,W1-W0
+      END IF
 C
 #ifdef OLD_DFT_CODE
 !hjaaj: can probably be deleted, but want to be sure about srdft first. March 2006.
@@ -604,6 +800,10 @@ C        ... one more EXCMAT from SRDFT when LSRHYBR
             NDOFF  = 2
          END IF
          LWRK  = LWORK - KLAST + 1
+
+         JDAO   = 0 ! initialize JD*AO to avoid compiler warnings
+         JDXAO  = 0
+         JDXSAO = 0
          IF (DOATR) THEN
             JDAO = NDMAT + 1
 C           ... DTOTAO is in DMAT(1,NDMAT+1) from TR1FCK or RSPOLI
@@ -620,7 +820,7 @@ C              DT, DXT, DS, DXS
             ELSE
 C              DT, DXT
             END IF
-         END IF
+         END IF   ! IF (DOATR)
 C
 C        loop over NSRMAT output matrices (later do the loop inside SRDFT for
 C        efficiency!!!!!) /hjaaj June 2009
@@ -628,6 +828,17 @@ C
          DO JSRMAT = 1, NSR_DMAT
           JDMAT = NDOFF*(JSRMAT-1) + 1
           IF (DOATR) THEN
+#ifdef SIRFCK_DEBUG
+              write(lupri,*) 'DOATR in sirfck: ndoff =', ndoff
+              write(lupri,*) 'JDMAT = ', JDMAT
+              write(lupri,*) 'JDXAO = ', JDXAO
+              WRITE(LUPRI,*) 'DMAT(1,JDMAT)'
+              call output(DMAT(1,JDMAT),1,NBAST,1,NBAST,NBAST,
+     &                    NBAST,-1,lupri)
+              WRITE(LUPRI,*) 'DMAT(1,JDMAT+1)'
+              call output(DMAT(1,JDMAT+1),1,NBAST,1,NBAST,NBAST,
+     &                NBAST,-1,lupri)
+#endif
 C           we need the symmetric part of DXTOTAO in DMAT(1,JDXAO) for SRDFT :
             IF (NDOFF .EQ. 1) THEN
 C              closed shell SCF case
@@ -659,8 +870,11 @@ C           ... get total DMAT = DC + DV if NASHT .gt. 0
 C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 #ifdef SIRFCK_DEBUG
           WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG',DOERG  !JT
-!         WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
-!         call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,lupri)
+          WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
+          call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,lupri)
+          WRITE(LUPRI,*) 'DMAT(1,JDAO+1), JDAO+1 =',JDAO+1
+          call output(DMAT(1,JDAO+1),1,NBAST,1,NBAST,NBAST,
+     &                NBAST,-1,lupri)
           WRITE(LUPRI,*) 'SIRFCK: DFT_SPINDNS = ', DFT_SPINDNS, 
      &                   'BEFORE SRDFT'
 #endif
@@ -744,7 +958,7 @@ C
          CALL DENFIT_COEFFS_NODDY(NBAST,NBAST,DMAT(1,1),DFCOEFF)
 c
          WRITE (LUPRI,'(//,1X,A,I3)') ' Noddy fitting coeffs'
-         CALL OUTPUT(DFCOEFF,1,NBAST,1,1,NBAST,1,1,LUPRI)
+         CALL OUTPUT(DFCOEFF,1,NBAST,1,1,NBAST,1,-1,LUPRI)
 c
          !...and use them to build the (fitted) Fock matrix
          CALL JAB_DENFIT_NODDY(NBAST,NBAST,DFCOEFF,FMAT(1,1))
@@ -762,15 +976,25 @@ C
          CALL HEADER('Density and Fock matrices in SIRFCK',-1)
          DO 300 I = 1, NDMAT
             WRITE (LUPRI,'(//A,I3)') ' Density matrix No.',I
-            CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
             WRITE (LUPRI,'(//A,I3)') ' Fock matrix No.',I
-            CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
   300    CONTINUE
       END IF
 #endif
 C
+C
  9999 CALL QEXIT('SIRFCK')
       RETURN
+C
+C
+ 8000 CONTINUE
+      WRITE (LUPRI,'(/A/,(8I10))')
+     &   ' FATAL ERROR SIRFCK: Unknown IFCTYP; dump of IFCTYP:',
+     &   (IFCTYP(I),I=1,NDMAT)
+C
+      CALL QTRACE(LUPRI)
+      CALL QUIT('SIRFCK ERROR: Unknown IFCTYP')
 C
       END
 C  /* Deck sirfck2 */
@@ -801,30 +1025,33 @@ C         Y = 1 Coulomb
 C         Y = 2 Exchange
 C         Y = 3 Coulomb + Exchange
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) FN2INT
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT)
       DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT), MBAS(8)
       DIMENSION WRK(LWORK)
 C
-#include <iratdef.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, DMP5 = -0.5D0)
 C
 C Used from common blocks
 C   INFORB: NSYM, NBAS(:), N2BASX
 C   INFPRI: IPRFCK
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
-C
-#include <dftcom.h>
-#include <memint.h>
+C for HFXFAC:
+#include "dftcom.h"
+#include "ibtfun.h"
+
       CALL QENTER('SIRFCK2')
+
+#include "memint.h"
 #ifdef SIRFCK_DEBUG
       write(lupri,*)'SIRFCK2: NDMAT=', NDMAT
       write(lupri,*)'SIRFCK2: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
@@ -838,6 +1065,11 @@ C     IFCTYP 11,13: factor  2 (see note in FCKD11/FCKD13)
 C     IFCTYP 12,22: factor  0.5 from exchange integral
 C     IFCTYP 02   : factor -0.5 from exchange integral
       DO I = 1,NDMAT
+         IF (HFXFAC .EQ. D0) THEN
+C           remove any "do exchange" bits
+            J = MOD(IFCTYP(I),10)
+            IF (IBTAND(J,2) .ne. 0) IFCTYP(I) = IFCTYP(I) - 2
+         END IF
          IF (IFCTYP(I) .EQ. 11 .OR. IFCTYP(I) .EQ. 13) THEN
             CALL DSCAL(N2BASX,D4,DMAT(1,I),1)
          ELSE IF (IFCTYP(I) .EQ. 2) THEN
@@ -848,6 +1080,7 @@ C              This exchange-only matrix is zero
                CALL DSCAL(N2BASX,HFXFAC*DMP5,DMAT(1,I),1)
             END IF
          END IF
+         IF (MOD(IFCTYP(I),10) .EQ. 0) IFCTYP(I) = 0 ! no contribution, X value does not matter
       END DO
 C
 C
@@ -890,7 +1123,7 @@ C
 C
     1 CONTINUE
 C
-#if defined (VAR_SPLITFILES)         
+#if defined (VAR_SPLITFILES)
          CALL READSI(LU2INT,LENINT,WRK(KINT),JBUF)
 #else
          CALL READI(LU2INT,LENINT,WRK(KINT))
@@ -904,7 +1137,7 @@ C
 C           ... e.g. singlet, symmetric density matrix
               CALL FCKD13(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
             ELSE IF (IFCTYP(I) .EQ. 22
-     &          .OR. IFCTYP(I) .EQ. 23      
+     &          .OR. IFCTYP(I) .EQ. 23
      &          .OR. IFCTYP(I) .EQ. 12) THEN
 C           ... Symmetric or antisymmetric, Only Exchange
 C               (type 23: Coulomb term is zero because antisymmetric)
@@ -993,12 +1226,12 @@ C     only non-zero integrals are considered.  The symmetry of DMAT
 C     is not taken into account.
 C DFT modifications T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP25 = 0.25D0)
       INTEGER P, Q, R, S
-#include <inforb.h>
-#include <dftcom.h>
+#include "inforb.h"
+#include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -1054,11 +1287,11 @@ C     FMAT(P,R)  = - 0.5 SUM(q,s) (p q | r s) X(s,q)
 C                = + 0.5 SUM(q,s) (p q | r s) X(q,s)
 C     Note that X(q,s) = -X(s,q)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
-#include <dftcom.h>
+#include "inforb.h"
+#include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), XMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -1102,10 +1335,10 @@ C     Symmetry is implicitly taken into account by the fact that
 C     only non-zero integrals are considered.  The symmetry of DMAT
 C     is not taken into account.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -1139,14 +1372,14 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
-#include <dftcom.h>
+#include "inforb.h"
+#include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       EFAC = HFXFAC / 2
       DO 100 INT = 1, LENGTH
@@ -1191,13 +1424,13 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO 100 INT = 1, LENGTH
 C        factor "-0.5" is multiplied on DMAT in SIRFCK
@@ -1232,9 +1465,9 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -1268,8 +1501,8 @@ C
 C     Note: 0.5 factor is required in order to preserve
 C     symmetric content of FMAT from before SIRFCK call.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FMAT(NBAST,NBAST)
       INTEGER   P, Q
 C
@@ -1293,8 +1526,8 @@ C
 C     Note: 0.5 factor is required in order to preserve
 C     symmetric content of FMAT from before SIRFCK call.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FMAT(NBAST,NBAST)
       INTEGER   P, Q
 C
@@ -1307,3 +1540,1279 @@ C
       END DO
       RETURN
       END
+C
+C  /* Deck cho_fckds1 */
+      SUBROUTINE CHO_FCKDS1(FOCK,DEN,WORK,LWORK,ISYDEN,IOPTVP)
+C
+C     Thomas Bondo Pedersen, May 2002.
+C
+C     Purpose:
+C        Calculate two-electron integral contribution to
+C        FOCK matrix using Cholesky decomposition of
+C        (1) two-electron integrals, AND
+C        if CMO not available on disk,
+C        (2) density matrix DEN (decomposed locally).
+C
+C     Notes:
+C        (a) The density matrix *must* be tot. sym. (ISYDEN = 1).
+C        (b) FOCK and DEN are assumed stored as full square
+C            without symmetry reduction.
+C
+#include "implicit.h"
+      DIMENSION FOCK(*), DEN(*), WORK(LWORK)
+#include "infpri.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "choscf.h"
+#include "priunit.h"
+#include "ccdeco.h"
+
+      INTEGER NVECD(8), IVECD(8,8)
+
+      PARAMETER (HALF = 0.50D0, ONE = 1.00D0)
+
+      CHARACTER*10 SECNAM
+      PARAMETER (SECNAM = 'CHO_FCKDS1')
+
+      LOGICAL LOCDBG, TINFO
+      PARAMETER (LOCDBG = .FALSE., TINFO = .FALSE.)
+
+      LOGICAL IOPTVP
+C
+C
+C     Start timing.
+C     -------------
+
+      TIMT = SECOND()
+
+C     Debug: Print matrices.
+C     ----------------------
+
+      IF (LOCDBG) THEN
+         CALL AROUND(SECNAM//': Density Matrix on Entry')
+         CALL OUTPUT(DEN,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL AROUND(SECNAM//': Fock Matrix on Entry')
+         CALL OUTPUT(FOCK,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+
+C     Check ISYDEN.
+C     -------------
+
+      IF (ISYDEN .NE. 1) THEN
+         WRITE(LUPRI,'(//,A,A)')
+     &   SECNAM,': FATAL ERROR: Density *must* be tot. symmetric !'
+         WRITE(LUPRI,'(A,I10,/)')
+     &   'Symmetry of DEN on input: ',ISYDEN
+         CALL QUIT('SYMMETRY MISMATCH IN '//SECNAM)
+      ENDIF
+
+C     Allocation.
+C     -----------
+
+      KFOCK = 1
+      KDEN  = KFOCK + N2BST(ISYDEN)
+      KEND1 = KDEN  + N2BST(ISYDEN)
+      LWRK1 = LWORK - KEND1 + 1
+
+      IF (LWRK1 .LT. 0) THEN
+         WRITE(LUPRI,'(//,5X,A,A,A,/,8X,A)')
+     &   'Insufficient memory in ',SECNAM,':',
+     &   'Allocation: Symmetry pack'
+         WRITE(LUPRI,'(8X,A,I10,/,8X,A,I10,/)')
+     &   'Need      : ',KEND1-1,
+     &   'Available : ',LWORK
+         CALL QUIT('Insufficient memory in '//SECNAM)
+      ENDIF
+
+C     Symmetry pack DEN and scale.
+C     ----------------------------
+
+      TIMPK = SECOND()
+      CALL CHO_DENPK(DEN,WORK(KDEN),ISYDEN)
+      CALL DSCAL(N2BST(ISYDEN),HALF,WORK(KDEN),1)
+      TIMPK = SECOND() - TIMPK
+
+C     Cholesky decompose symmetry blocks of DEN if necessary;
+C     else read occupied part of CMO from disk.
+C     Set up index array for the CMO 'vectors'.
+C     -------------------------------------------------------
+
+      TIMDC = SECOND()
+
+!     IF (NEWSCF) CCMODSK = .FALSE.   ! hjaaj: NEWSCF is never defined in this version of Dalton /120327-hjaaj
+      IF (.NOT. CCMODSK) THEN
+
+         CALL DCOPY(N2BST(ISYDEN),WORK(KDEN),1,WORK(KFOCK),1)
+
+         KVECD  = KEND1
+         ICOUNT = 0
+
+         DO ISYM = 1,NSYM
+
+            IVECD(ISYM,ISYM) = ICOUNT
+
+            KEND2 = KVECD + IVECD(ISYM,ISYM)
+            LWRK2 = LWORK - KEND2 + 1
+            IF (LWRK2 .LT. 0) THEN
+               WRITE(LUPRI,'(//,5X,A,A,A,/,8X,A,I1)')
+     &         'Insufficient memory in ',SECNAM,':',
+     &         'Allocation: Density decomposition, sym. block: ',ISYM
+               WRITE(LUPRI,'(8X,A,I10,/,8X,A,I10,/)')
+     &         'Need      : ',KEND2-1,
+     &         'Available : ',LWORK
+               CALL QUIT('Insufficient memory in '//SECNAM)
+            ENDIF
+
+            KOFFD = KFOCK + IAODIS(ISYM,ISYM)
+            CALL SIR_CHODECO(WORK(KOFFD),NBAS(ISYM),WORK(KEND2),LWRK2,
+     &                       THRDC,NVECD(ISYM))
+
+            ICOUNT = ICOUNT + NBAS(ISYM)*NVECD(ISYM)
+
+         ENDDO
+
+         KEND2 = KVECD + ICOUNT
+         LWRK2 = LWORK - KEND2
+
+      ELSE
+
+         ICOUNT = 0
+         DO ISYM = 1,NSYM
+            IVECD(ISYM,ISYM) = ICOUNT
+            NVECD(ISYM) = NDVCS(ISYM)
+            ICOUNT = ICOUNT + NBAS(ISYM)*NVECD(ISYM)
+         ENDDO
+         LEN  = ICOUNT
+
+         KVECD = KEND1
+         KEND2 = KVECD + LEN
+         LWRK2 = LWORK - KEND2 + 1
+
+         IF (LWRK2 .LT. 0) THEN
+            WRITE(LUPRI,'(//,5X,A,A,A,/,8X,A)')
+     &      'Insufficient memory in ',SECNAM,':',
+     &      'Allocation: occ. CMO read'
+            WRITE(LUPRI,'(8X,A,I10,/,8X,A,I10,/)')
+     &      'Need      : ',KEND2-1,
+     &      'Available : ',LWORK
+            CALL QUIT('Insufficient memory in '//SECNAM)
+         ENDIF
+
+         CALL WOPEN2(LUCCMO,FCCMO,64,0)
+         IADR = 1
+         CALL GETWA2(LUCCMO,FCCMO,WORK(KVECD),IADR,LEN)
+         CALL WCLOSE2(LUCCMO,FCCMO,'KEEP')
+
+      ENDIF
+
+      TIMDC = SECOND() - TIMDC
+
+C     Debug: Print number of vectors.
+C     Debug: Check decomposition/CMO read.
+C     ------------------------------------
+
+      IF (LOCDBG) THEN
+         IF (.NOT. CCMODSK) THEN
+            WRITE(LUPRI,'(/,2X,A,A,/)')
+     &      SECNAM,': Cholesky decomposition of density:'
+         ELSE
+            WRITE(LUPRI,'(/,2X,A,A,/)')
+     &      SECNAM,': occ. CMO read:'
+         ENDIF
+         WRITE(LUPRI,'(2X,A,/,2X,A)')
+     &   'Sym.  No. vectors  Offset',
+     &   '-------------------------'
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(3X,I1,4X,I6,7X,I6)')
+     &      ISYM,NVECD(ISYM),IVECD(ISYM,ISYM)
+         ENDDO
+         WRITE(LUPRI,'(2X,A,/)')
+     &   '-------------------------'
+      ENDIF
+
+C     Calculate contributions.
+C     ------------------------
+
+      TIMCL = SECOND()
+      CALL DZERO(WORK(KFOCK),N2BST(ISYDEN))
+      CALL SCF_CHOFCK1(WORK(KDEN),WORK(KVECD),WORK(KFOCK),
+     &                 WORK(KEND2),LWRK2,NVECD,IVECD,TINFO,IOPTVP)
+      TIMCL = SECOND() - TIMCL
+
+C     Add result to FOCK matrix.
+C     --------------------------
+
+      TIMAD = SECOND()
+      DO ISYMB = 1,NSYM
+         ISYMA = MULD2H(ISYMB,ISYDEN)
+         DO IB = 1,NBAS(ISYMB)
+            B = IBAS(ISYMB) + IB
+            KOFF1 = KFOCK + IAODIS(ISYMA,ISYMB)
+     &            + NBAS(ISYMA)*(IB - 1)
+            KOFF2 = NBAST*(B - 1) + IBAS(ISYMA) + 1
+            CALL DAXPY(NBAS(ISYMA),ONE,WORK(KOFF1),1,FOCK(KOFF2),1)
+         ENDDO
+      ENDDO
+      TIMAD = SECOND() - TIMAD
+
+C     Debug: Print matrices.
+C     ----------------------
+
+      IF (LOCDBG) THEN
+         CALL AROUND(SECNAM//': Density Matrix on Exit')
+         CALL OUTPUT(DEN,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL AROUND(SECNAM//': Fock Matrix on Exit')
+         CALL OUTPUT(FOCK,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+
+C     Print timing.
+C     -------------
+
+      IF (TINFO .OR. LOCDBG) THEN
+         TIMT = SECOND() - TIMT
+         WRITE(LUPRI,'(/,5X,A,A,A)')
+     &   ' - exiting ',SECNAM,':'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for sym. packing density : ',TIMPK,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for decomposing density  : ',TIMDC,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for calculating contr.   : ',TIMCL,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for adding to Fock matr. : ',TIMAD,' seconds'
+         WRITE(LUPRI,'(5X,A)')
+     &   '-------------------------------------------------------'
+         WRITE(LUPRI,'(5X,A,F10.2,A,/)')
+     &   'Total time                         : ',TIMT,' seconds'
+      ENDIF
+
+      RETURN
+      END
+C  /* Deck scf_chofck1 */
+      SUBROUTINE SCF_CHOFCK1(DEN,CMO,FOCK,WORK,LWORK,NVECD,IVECD,
+     &                       TINFO,IOPTVP)
+C
+C     Written by Thomas Bondo Pedersen, May 2002.
+C
+C     Purpose:
+C        Calculate two-electron integral contributions to the AO Fock
+C        matrix based on Cholesky decomposed integrals.
+C        Result is added into Fock matrix which is assumed allocated
+C        as symmetry packed (!) full square.
+C        The density matrix is used for the Coulomb part
+C        and the MO coefficient matrix (or the Cholesky vector
+C        representing the density matrix) for the exchange part.
+C
+C     Version 1:
+C        The density and the MO coefficients are assumed
+C        TOTAL SYMMETRIC, as appropriate for an SCF ground state
+C        closed-shell optimization.
+C
+C     NB: NO SPARSITY IS USED WHATSOEVER !!!!!
+C
+#include "implicit.h"
+      DIMENSION DEN(*), CMO(*), FOCK(*), WORK(LWORK)
+      INTEGER IVECD(8,8), NVECD(8)
+      LOGICAL TINFO
+#include "iratdef.h"
+#include "infpri.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "sirftim.h"
+#include "priunit.h"
+Casm
+#include "dftcom.h"
+#include "choscf.h"
+Casm
+
+      INTEGER IHOLE(8,8), NACHH(8), IALPHK(8,8), NALPHK(8)
+
+      PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER (ISTORE = 2)
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+
+      CHARACTER*11 SECNAM
+      PARAMETER (SECNAM = 'SCF_CHOFCK1')
+
+      LOGICAL IOPTVP
+
+
+C     Initialize timings.
+C     -------------------
+
+      TIMT = SECOND()
+      TIMR = ZERO
+      TIMO = ZERO
+      TIMS = ZERO
+      TIMC = ZERO
+      TIMX = ZERO
+
+C     Read reduce index array.
+C     ------------------------
+
+      KIND1 = 1
+      CALL CC_GETIND1(WORK(KIND1),LWORK,LIND1)
+      KEND0 = KIND1 + LIND1
+      LWRK0 = LWORK - KEND0 + 1
+
+      IF (LWRK0 .LT. 0) THEN
+         WRITE(LUPRI,'(//,5X,A,A,A)')
+     &   'Insufficient memory in ',SECNAM,' - allocation: index'
+         WRITE(LUPRI,'(5X,A,I10,/,5X,A,I10,/)')
+     &   'Need (more than): ',KEND0-1,
+     &   'Available       : ',LWORK
+         CALL QUIT('Insufficient memory in '//SECNAM)
+      ENDIF
+
+C     Debug: Print matrices.
+C     ----------------------
+
+      IF (LOCDBG) THEN
+         CALL AROUND(SECNAM//': Density Matrix on Entry')
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(/,20X,A,I1)')
+     &      'Symmetry Block: ',ISYM
+            KOFF = IAODIS(ISYM,ISYM) + 1
+            NUMB = NBAS(ISYM)
+            CALL OUTPUT(DEN(KOFF),1,NUMB,1,NUMB,NUMB,NUMB,1,LUPRI)
+         ENDDO
+         CALL AROUND(SECNAM//': MO Coefficient Matrix on Entry')
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(/,20X,A,I1)')
+     &      'Symmetry Block: ',ISYM
+            KOFF = IVECD(ISYM,ISYM) + 1
+            NUMB = NBAS(ISYM)
+            NUMK = NVECD(ISYM)
+            CALL OUTPUT(CMO(KOFF),1,NUMB,1,NUMK,NUMB,NUMK,1,LUPRI)
+         ENDDO
+         CALL AROUND(SECNAM//': Fock Matrix on Entry')
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(/,20X,A,I1)')
+     &      'Symmetry Block: ',ISYM
+            KOFF = IAODIS(ISYM,ISYM) + 1
+            NUMB = NBAS(ISYM)
+            CALL OUTPUT(FOCK(KOFF),1,NUMB,1,NUMB,NUMB,NUMB,1,LUPRI)
+         ENDDO
+      ENDIF
+
+C     Set up local index arrays.
+C     --------------------------
+
+      DO ISYCHO = 1,NSYM
+
+         ICOUNT = 0
+
+         DO ISYMK = 1,NSYM
+
+            ISYMA = MULD2H(ISYMK,ISYCHO)
+
+            IALPHK(ISYMA,ISYMK) = ICOUNT
+
+            ICOUNT = ICOUNT + NBAS(ISYMA)*NVECD(ISYMK)
+
+         ENDDO
+
+         NALPHK(ISYCHO) = ICOUNT
+
+      ENDDO
+
+C     Start of Cholesky loop.
+C     -----------------------
+
+      DO ISYCHO = 1,NSYM
+
+         IF (N2BST(ISYCHO)  .LE. 0)  GO TO 999
+         IF (NUMCHO(ISYCHO) .LE. 0)  GO TO 999
+         IF (NALPHK(ISYCHO) .LE. 0)  GO TO 999
+
+C        Allocation: Cholesky.
+C        ---------------------
+
+         LREAD = MEMRD(1,ISYCHO,ISTORE)
+         LSCR1 = MAX(LREAD,NALPHK(ISYCHO))
+
+         KCHOL = KEND0
+         KSCR1 = KCHOL + N2BST(ISYCHO)
+         KEND1 = KSCR1 + LSCR1
+         LWRK1 = LWORK - KEND1 + 1
+
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,'(//,5X,A,A,A)')
+     &      'Insufficient memory in ',SECNAM,
+     &      ' - allocation: Cholesky'
+            WRITE(LUPRI,'(5X,A,I10,/,A,I10,/)')
+     &      'Need     : ',KEND1,
+     &      'Available: ',LWORK
+            CALL QUIT('INSUFFICIENT MEMORY IN '//SECNAM)
+         ENDIF
+
+C        Set up batch.
+C        -------------
+
+         MINMEM = NALPHK(ISYCHO)
+         NVEC   = MIN(LWRK1/MINMEM,NUMCHO(ISYCHO))
+
+         IF (NVEC .LE. 0) THEN
+            WRITE(LUPRI,'(//,5X,A,A,A)')
+     &      'Insufficient memory in ',SECNAM,
+     &      ' - Allocation: Batch'
+            WRITE(LUPRI,'(5X,A,I10)')
+     &      'Need per vector    : ',MINMEM
+            WRITE(LUPRI,'(5X,A,I10,/)')
+     &      'Available for batch: ',LWRK1
+            CALL QUIT('INSUFFICIENT MEMORY IN '//SECNAM)
+         ENDIF
+
+         KHOLE = KEND1
+         KEND2 = KHOLE + NVEC*NALPHK(ISYCHO)
+         LWRK2 = LWORK - KEND2 + 1
+
+         NBATCH = (NUMCHO(ISYCHO) - 1)/NVEC + 1
+
+         IF (LOCDBG) THEN
+            WRITE(LUPRI,'(//,5X,A,A,A)')
+     &      'BATCH INFO FROM ',SECNAM,':'
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Cholesky symmetry                : ',ISYCHO
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Total number of vectors          : ',NUMCHO(ISYCHO)
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'AO vector dimension              : ',N2BST(ISYCHO)
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Total memory                     : ',LWORK
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Memory used for AO vectors       : ',KEND1-1
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Memory left for (alpha,k) vectors: ',LWRK1
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Min. memory for (alpha,k) vectors: ',MINMEM
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Number of batches                : ',NBATCH
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Number of vectors per batch      : ',NVEC
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Memory remainder                 : ',LWRK2
+         ENDIF
+
+         DO IBATCH = 1,NBATCH
+
+            NUMV = NVEC
+            IF (IBATCH .EQ. NBATCH) THEN
+               NUMV = NUMCHO(ISYCHO) - NVEC*(NBATCH - 1)
+            ENDIF
+
+C           Set up index arrays for HOLE.
+C           -----------------------------
+
+            ICOUNH = 0
+            DO ISYMK = 1,NSYM
+
+               ISYMA = MULD2H(ISYMK,ISYCHO)
+
+               IHOLE(ISYMA,ISYMK) = ICOUNH
+
+               NACHH(ISYMA) = NBAS(ISYMA)*NUMV
+
+               ICOUNH = ICOUNH + NACHH(ISYMA)*NVECD(ISYMK)
+
+            ENDDO
+
+            JCHOL1 = NVEC*(IBATCH - 1) + 1
+
+            DO JVEC = 1,NUMV
+
+               JCHOL = JCHOL1 + JVEC - 1
+
+C              Read vector.
+C              ------------
+
+               DTIME = SECOND()
+               CALL CHO_READN(WORK(KCHOL),JCHOL,1,WORK(KIND1),IDUM2,
+     &                        ISYCHO,ISTORE,WORK(KSCR1),LSCR1)
+c              xnorm = ddot(nnbst(isycho),work(kchol),1,work(kchol),1)
+c              write(lupri,'(a,i4,a,i2,a,d12.4)') 'Vector',jchol,
+c    &               ' of symmetry',isycho,'. Norm: ',xnorm 
+               DTIME = SECOND() - DTIME
+               TIMR  = TIMR     + DTIME
+
+C              Coulomb part.
+C              -------------
+
+               IF ((ISYCHO .EQ. 1) .AND. IOPTVP) THEN
+                  DTIME = SECOND()
+                  CONST = TWO*DDOT(N2BST(ISYCHO),DEN,1,WORK(KCHOL),1)
+                  CALL DAXPY(N2BST(ISYCHO),CONST,WORK(KCHOL),1,
+     &                       FOCK,1)
+                  DTIME = SECOND() - DTIME
+                  TIMC  = TIMC     + DTIME
+               ENDIF
+
+Casm
+C              No exchange for LDA. Thus, no transformation
+C
+               IF (ITSLDA .OR. HFXFAC .EQ. 0.0D0) GOTO 788
+Casm
+
+C              Hole transformation.
+C              --------------------
+
+               DTIME = SECOND()
+               DO ISYMD = 1,NSYM
+
+                  ISYMA = MULD2H(ISYMD,ISYCHO)
+                  ISYMK = ISYMD
+
+                  NA    = NBAS(ISYMA)
+                  NTOTA = MAX(NA,1)
+                  ND    = NBAS(ISYMD)
+                  NTOTD = MAX(ND,1)
+                  NK    = NVECD(ISYMK)
+
+                  KOFFC = KCHOL + IAODIS(ISYMD,ISYMA)
+                  KOFFH = IVECD(ISYMD,ISYMK) + 1
+                  KOFFS = KSCR1 + IALPHK(ISYMA,ISYMK)
+
+                  CALL DGEMM('T','N',NA,NK,ND,ONE,
+     &                       WORK(KOFFC),NTOTD,CMO(KOFFH),NTOTD,
+     &                       ZERO,WORK(KOFFS),NTOTA)
+
+               ENDDO
+               DTIME = SECOND() - DTIME
+               TIMO  = TIMO     + DTIME
+
+C              Copy into HOLE array.
+C              ---------------------
+
+               DTIME = SECOND()
+               DO ISYMK = 1,NSYM
+
+                  ISYMA = MULD2H(ISYMK,ISYCHO)
+
+                  DO K = 1,NVECD(ISYMK)
+
+                     KOFFS = KSCR1 + IALPHK(ISYMA,ISYMK)
+     &                     + NBAS(ISYMA)*(K - 1)
+                     KOFFH = KHOLE + IHOLE(ISYMA,ISYMK)
+     &                     + NACHH(ISYMA)*(K - 1)
+     &                     + NBAS(ISYMA)*(JVEC - 1)
+
+                     CALL DCOPY(NBAS(ISYMA),WORK(KOFFS),1,
+     &                          WORK(KOFFH),1)
+
+                  ENDDO
+
+               ENDDO
+
+  788          CONTINUE
+
+               DTIME = SECOND() - DTIME
+               TIMS  = TIMS     + DTIME
+
+            ENDDO
+Casm
+C           Do not include exchange for DFT/LDA
+C
+            IF (ITSLDA .OR. HFXFAC .EQ. 0.0D0) GOTO 789
+Casm
+
+C           Exchange part.
+C           --------------
+
+            DTIME = SECOND()
+            DO ISYMK = 1,NSYM
+
+               ISYMA = MULD2H(ISYMK,ISYCHO)
+               ISYMB = ISYMA
+
+               NA    = NBAS(ISYMA)
+               NTOTA = MAX(NA,1)
+               NB    = NBAS(ISYMB)
+               NTOTB = MAX(NB,1)
+               NVK   = NUMV*NVECD(ISYMK)
+
+               KOFFF = IAODIS(ISYMA,ISYMB) + 1
+               KOFFH = KHOLE + IHOLE(ISYMA,ISYMK)
+Casm
+C              Very dirty hack to solve weird bug when linking
+C              against some ATLAS libraries.
+C              See the end of cc_cholesky.F for more info
+Casm
+               CALL OTHER_DGEMM('N','T',NA,NB,NVK,
+     &                    HFXFAC*XMONE,WORK(KOFFH),NTOTA,WORK(KOFFH),
+     &                    NTOTB,ONE,FOCK(KOFFF),NTOTA)
+
+            ENDDO
+            DTIME = SECOND() - DTIME
+            TIMX  = TIMX     + DTIME
+ 
+  789       CONTINUE
+
+         ENDDO
+
+  999    CONTINUE
+
+      ENDDO
+
+C     Debug: Print matrices.
+C     ----------------------
+
+      IF (LOCDBG) THEN
+         CALL AROUND(SECNAM//': Density Matrix on Exit')
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(/,20X,A,I1)')
+     &      'Symmetry Block: ',ISYM
+            KOFF = IAODIS(ISYM,ISYM) + 1
+            NUMB = NBAS(ISYM)
+            CALL OUTPUT(DEN(KOFF),1,NUMB,1,NUMB,NUMB,NUMB,1,LUPRI)
+         ENDDO
+         CALL AROUND(SECNAM//': MO Coefficient Matrix on Exit')
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(/,20X,A,I1)')
+     &      'Symmetry Block: ',ISYM
+            KOFF = IVECD(ISYM,ISYM) + 1
+            NUMB = NBAS(ISYM)
+            NUMK = NVECD(ISYM)
+            CALL OUTPUT(CMO(KOFF),1,NUMB,1,NUMK,NUMB,NUMK,1,LUPRI)
+         ENDDO
+         CALL AROUND(SECNAM//': Fock Matrix on Exit')
+         DO ISYM = 1,NSYM
+            WRITE(LUPRI,'(/,20X,A,I1)')
+     &      'Symmetry Block: ',ISYM
+            KOFF = IAODIS(ISYM,ISYM) + 1
+            NUMB = NBAS(ISYM)
+            CALL OUTPUT(FOCK(KOFF),1,NUMB,1,NUMB,NUMB,NUMB,1,LUPRI)
+         ENDDO
+      ENDIF
+
+C     Print timing.
+C     -------------
+
+      CSIRF = CSIRF + TIMC
+      XSIRF = XSIRF + TIMX
+      RSIRF = RSIRF + TIMR
+      OSIRF = OSIRF + TIMO
+      SSIRF = SSIRF + TIMS
+
+      IF (TINFO .OR. LOCDBG) THEN
+c      IF (.true.) THEN
+         TIMT = SECOND() - TIMT
+         WRITE(LUPRI,'(/,5X,A,A,A)')
+     &   ' - exiting ',SECNAM,':'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for I/O and squaring     : ',TIMR,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for Coulomb  part        : ',TIMC,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for partial MO transform.: ',TIMO,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for sorting (copy)       : ',TIMS,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for exchange part        : ',TIMX,' seconds'
+         WRITE(LUPRI,'(5X,A)')
+     &   '-------------------------------------------------------'
+         WRITE(LUPRI,'(5X,A,F10.2,A,/)')
+     &   'Total time                         : ',TIMT,' seconds'
+      ENDIF
+
+      RETURN
+      END
+C  /* Deck cho_denpk */
+      SUBROUTINE CHO_DENPK(DEN,DENPK,ISYDEN)
+C
+C     Thomas Bondo Pedersen, May 2002.
+C
+C     Purpose:
+C        Symmetry pack DEN.
+C
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+
+      DIMENSION DEN(*), DENPK(*)
+
+      DO ISYMB = 1,NSYM
+         ISYMA = MULD2H(ISYMB,ISYDEN)
+         DO IB = 1,NBAS(ISYMB)
+            B = IBAS(ISYMB) + IB
+            DO IA = 1,NBAS(ISYMA)
+               A = IBAS(ISYMA) + IA
+               KABPK = IAODIS(ISYMA,ISYMB) + NBAS(ISYMA)*(IB - 1) + IA
+               KABFL = NBAST*(B - 1) + A
+               DENPK(KABPK) = DEN(KABFL)
+            ENDDO
+         ENDDO
+      ENDDO
+
+      RETURN
+      END
+C  /* Deck sir_chodeco */
+      SUBROUTINE SIR_CHODECO(XMAT,NDIM,WORK,LWORK,THRS,NVECS)
+C
+C     Henrik Koch   10-may-2002
+C
+#include "implicit.h"
+#include "infpri.h"
+#include "priunit.h"
+C
+      DIMENSION XMAT(NDIM,NDIM),WORK(NDIM,*)
+C
+      CHARACTER*11 SECNAM
+      PARAMETER (SECNAM = 'SIR_CHODECO')
+      PARAMETER (TOL = 5.00D-13)
+C
+c     DO I = 1,NDIM
+c        WRITE(LUPRI,*) 'Diagonal :',I,XMAT(I,I)
+c     ENDDO
+C
+      IF (LWORK .LT. NDIM*NDIM) CALL QUIT('Not enough memory')
+C
+      DO I = 1,NDIM
+C
+         XMAX = XMAT(1,1)
+         IMAX = 1
+         DO J = 2,NDIM
+            IF (ABS(XMAT(J,J)) .GT. XMAX) THEN
+               XMAX = XMAT(J,J)
+               IMAX = J
+            ENDIF
+         ENDDO
+C 
+         IF (XMAX .LT. 0.0D0) THEN
+            WRITE(LUPRI,'(A,A,A)')
+     &      '*** ',SECNAM,': NOTICE ***'
+            WRITE(LUPRI,'(A,1P,D30.15)')
+     &      '    Negative diagonal encountered: ',XMAX
+            IF (ABS(XMAX) .GT. TOL) THEN
+               WRITE(LUPRI,'(A,/)')
+     &         '    - unable to continue!'
+               CALL QUIT('ERROR IN '//SECNAM)
+            ELSE
+               WRITE(LUPRI,'(A)')
+     &         '    - program continues nevertheless....'
+            ENDIF
+         ENDIF
+C
+         IF (ABS(XMAX) .LT. THRS) THEN
+            NVECS = I-1
+            RETURN
+         ENDIF
+C
+c        WRITE(LUPRI,*)  'Largest diagonal  : ',NDIM,I,IMAX,XMAX
+C
+         DO J = 1,NDIM
+            WORK(J,I) = XMAT(J,IMAX)/SQRT(XMAX)
+         ENDDO
+C
+         DO J = 1,NDIM
+            DO K = 1,NDIM
+               XMAT(K,J) = XMAT(K,J) - WORK(K,I)*WORK(J,I)
+            ENDDO
+         ENDDO
+C
+         DO J = 1,NDIM
+            XMAT(J,IMAX) = 0.0D0
+            XMAT(IMAX,J) = 0.0D0
+         ENDDO
+C
+      ENDDO
+C
+      RETURN
+      END
+C  /* Deck cho_fckds3 */
+      SUBROUTINE CHO_FCKDS3(FOCK,DEN,WORK,LWORK,ISYDEN,IOPTVP)
+C
+C     Thomas Bondo Pedersen, July 2002.
+C
+C     Purpose:
+C        Calculate two-electron integral contribution to
+C        FOCK matrix using Cholesky decomposition of
+C        the two-electron integrals.
+C
+C     Notes:
+C        (a) FOCK and DEN are assumed stored as full square
+C            without symmetry reduction.
+C        (b) This is a pilot version: density driven but
+C            with use of neither sparsity of the Cholesky vectors
+C            nor screening.
+C
+#include "implicit.h"
+      DIMENSION FOCK(*), DEN(*), WORK(LWORK)
+#include "infpri.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+
+      PARAMETER (HALF = 0.50D0, ONE = 1.00D0)
+
+      CHARACTER*10 SECNAM
+      PARAMETER (SECNAM = 'CHO_FCKDS3')
+
+      LOGICAL LOCDBG, TINFO, IOPTVP
+      PARAMETER (LOCDBG = .FALSE., TINFO = .FALSE.)
+
+C     Start timing.
+C     -------------
+
+      TIMT = SECOND()
+
+C     Debug: Print matrices.
+C     ----------------------
+
+      IF (LOCDBG) THEN
+         CALL AROUND(SECNAM//': Density Matrix on Entry')
+         CALL OUTPUT(DEN,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL AROUND(SECNAM//': Fock Matrix on Entry')
+         CALL OUTPUT(FOCK,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+
+C     Allocation.
+C     -----------
+
+      KFOCK = 1
+      KDEN  = KFOCK + N2BST(ISYDEN)
+      KEND1 = KDEN  + N2BST(ISYDEN)
+      LWRK1 = LWORK - KEND1 + 1
+
+      IF (LWRK1 .LT. 0) THEN
+         WRITE(LUPRI,'(//,5X,A,A,A,/,8X,A)')
+     &   'Insufficient memory in ',SECNAM,':',
+     &   'Allocation: Symmetry pack'
+         WRITE(LUPRI,'(8X,A,I10,/,8X,A,I10,/)')
+     &   'Need      : ',KEND1-1,
+     &   'Available : ',LWORK
+         CALL QUIT('Insufficient memory in '//SECNAM)
+      ENDIF
+
+C     Symmetry pack DEN and scale.
+C     ----------------------------
+
+      TIMPK = SECOND()
+      CALL CHO_DENPK(DEN,WORK(KDEN),ISYDEN)
+      CALL DSCAL(N2BST(ISYDEN),HALF,WORK(KDEN),1)
+      TIMPK = SECOND() - TIMPK
+
+C     Calculate contributions.
+C     ------------------------
+
+      TIMCL = SECOND()
+      CALL DZERO(WORK(KFOCK),N2BST(ISYDEN))
+      CALL SCF_CHOFCK3(WORK(KDEN),WORK(KFOCK),WORK(KEND1),LWRK1,
+     &                 ISYDEN,TINFO,IOPTVP)
+      TIMCL = SECOND() - TIMCL
+
+C     Add result to FOCK matrix.
+C     --------------------------
+
+      TIMAD = SECOND()
+      DO ISYMB = 1,NSYM
+         ISYMA = MULD2H(ISYMB,ISYDEN)
+         DO IB = 1,NBAS(ISYMB)
+            B = IBAS(ISYMB) + IB
+            KOFF1 = KFOCK + IAODIS(ISYMA,ISYMB)
+     &            + NBAS(ISYMA)*(IB - 1)
+            KOFF2 = NBAST*(B - 1) + IBAS(ISYMA) + 1
+            CALL DAXPY(NBAS(ISYMA),ONE,WORK(KOFF1),1,FOCK(KOFF2),1)
+         ENDDO
+      ENDDO
+      TIMAD = SECOND() - TIMAD
+
+C     Debug: Print matrices.
+C     ----------------------
+
+      IF (LOCDBG) THEN
+         CALL AROUND(SECNAM//': Density Matrix on Exit')
+         CALL OUTPUT(DEN,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL AROUND(SECNAM//': Fock Matrix on Exit')
+         CALL OUTPUT(FOCK,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+
+C     Print timing.
+C     -------------
+
+      IF (TINFO .OR. LOCDBG) THEN
+         TIMT = SECOND() - TIMT
+         WRITE(LUPRI,'(/,5X,A,A,A)')
+     &   ' - exiting ',SECNAM,':'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for sym. packing density : ',TIMPK,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for calculating contr.   : ',TIMCL,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for adding to Fock matrix: ',TIMAD,' seconds'
+         WRITE(LUPRI,'(5X,A)')
+     &   '-------------------------------------------------------'
+         WRITE(LUPRI,'(5X,A,F10.2,A,/)')
+     &   'Total time                         : ',TIMT,' seconds'
+      ENDIF
+
+      RETURN
+      END
+C  /* Deck scf_chofck3 */
+      SUBROUTINE SCF_CHOFCK3(DEN,FOCK,WORK,LWORK,ISYDEN,TINFO,IOPTVP)
+C
+C     Written by Thomas Bondo Pedersen, May 2002.
+C
+C     Purpose:
+C        Calculate two-electron integral contributions to the AO Fock
+C        matrix based on Cholesky decomposed integrals.
+C        Result is added into Fock matrix which is assumed allocated
+C        as symmetry packed (!) full square.
+C        The density matrix is used for both Coulomb and exchange part.
+C
+C     Formula used:
+C        F(ab) = F(ab) +   2    * Sum(gd) D(dg) (ab|dg)
+C                      - HFXFAC * Sum(gd) D(dg) (ad|bg)
+C
+C     NB: NO SPARSITY IS USED WHATSOEVER !!!!!
+C
+#include "implicit.h"
+      DIMENSION DEN(*), FOCK(*), WORK(LWORK)
+      LOGICAL TINFO
+#include "iratdef.h"
+#include "infpri.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "priunit.h"
+#include "dftcom.h"
+
+      INTEGER IOFFC(8)
+
+      PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+
+      CHARACTER*11 SECNAM
+      PARAMETER (SECNAM = 'SCF_CHOFCK3')
+
+      LOGICAL IOPTVP
+
+C     Initialize timings.
+C     -------------------
+
+      TIMT = SECOND()
+      TIMR = ZERO
+      TIMS = ZERO
+      TIMC = ZERO
+      TIMX = ZERO
+
+C     Read reduce index array.
+C     ------------------------
+
+      KIND1 = 1
+      CALL CC_GETIND1(WORK(KIND1),LWORK,LIND1)
+      KEND0 = KIND1 + LIND1
+      LWRK0 = LWORK - KEND0 + 1
+
+      IF (LWRK0 .LT. 0) THEN
+         WRITE(LUPRI,'(//,5X,A,A,A)')
+     &   'Insufficient memory in ',SECNAM,' - allocation: index'
+         WRITE(LUPRI,'(5X,A,I10,/,5X,A,I10,/)')
+     &   'Need (more than): ',KEND0-1,
+     &   'Available       : ',LWORK
+         CALL QUIT('Insufficient memory in '//SECNAM)
+      ENDIF
+
+C     Debug: Print matrices.
+C     ----------------------
+
+      IF (LOCDBG) THEN
+         CALL AROUND(SECNAM//': Density Matrix on Entry')
+         DO ISYMB = 1,NSYM
+            ISYMA = MULD2H(ISYMB,ISYDEN)
+            WRITE(LUPRI,'(/,15X,A,I1,1X,I1)')
+     &      'Symmetry Block (alpha,beta): ',ISYMA,ISYMB
+            KOFF = IAODIS(ISYMA,ISYMB) + 1
+            NUMB = NBAS(ISYMB)
+            NUMA = NBAS(ISYMA)
+            CALL OUTPUT(DEN(KOFF),1,NUMA,1,NUMB,NUMA,NUMB,1,LUPRI)
+         ENDDO
+         CALL AROUND(SECNAM//': Fock Matrix on Entry')
+         DO ISYMB = 1,NSYM
+            ISYMA = MULD2H(ISYMB,ISYDEN)
+            WRITE(LUPRI,'(/,15X,A,I1,1X,I1)')
+     &      'Symmetry Block (alpha,beta): ',ISYMA,ISYMB
+            KOFF = IAODIS(ISYMA,ISYMB) + 1
+            NUMB = NBAS(ISYMB)
+            NUMA = NBAS(ISYMA)
+            CALL OUTPUT(FOCK(KOFF),1,NUMA,1,NUMB,NUMA,NUMB,1,LUPRI)
+         ENDDO
+      ENDIF
+
+C     Start Cholesky loop.
+C     --------------------
+
+      DO ISYCHO = 1,NSYM
+
+         IF (N2BST(ISYCHO)  .LE. 0) GO TO 999
+         IF (NUMCHO(ISYCHO) .LE. 0) GO TO 999
+
+         ISYMX = MULD2H(ISYCHO,ISYDEN)
+
+C        Allocation: Cholesky.
+C        ---------------------
+
+         LREAD = 2*NNBST(ISYCHO) + (NNBST(ISYCHO) - 1)/2 + 2
+
+         KCSCR = KEND0
+         KREAD = KCSCR + N2BST(ISYCHO)
+         KEND1 = KREAD + LREAD
+         LWRK1 = LWORK - KEND1 + 1
+
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,'(//,5X,A,A,A)')
+     &      'Insufficient memory in ',SECNAM,
+     &      ' - allocation: Cholesky'
+            WRITE(LUPRI,'(5X,A,I10,/,A,I10,/)')
+     &      'Need     : ',KEND1-1,
+     &      'Available: ',LWORK
+            CALL QUIT('INSUFFICIENT MEMORY IN '//SECNAM)
+         ENDIF
+
+C        Set up batch.
+C        -------------
+
+         MAXAG = -1
+         DO ISYMG = 1,NSYM
+            ISYMA = MULD2H(ISYMG,ISYMX)
+            MAXAG = MAX(MAXAG,NBAS(ISYMA)*NBAS(ISYMG))
+         ENDDO
+
+         MINMEM = N2BST(ISYCHO) + MAXAG
+         NVEC   = MIN(LWRK1/MINMEM,NUMCHO(ISYCHO))
+
+         IF (NVEC .LE. 0) THEN
+            WRITE(LUPRI,'(//,5X,A,A,A)')
+     &      'Insufficient memory in ',SECNAM,
+     &      ' - Allocation: Batch'
+            WRITE(LUPRI,'(5X,A,I10)')
+     &      'Need per vector    : ',MINMEM
+            WRITE(LUPRI,'(5X,A,I10,/)')
+     &      'Available for batch: ',LWRK1
+            CALL QUIT('INSUFFICIENT MEMORY IN '//SECNAM)
+         ENDIF
+
+         NBATCH = (NUMCHO(ISYCHO) - 1)/NVEC + 1
+
+         IF (LOCDBG) THEN
+            WRITE(LUPRI,'(//,5X,A,A,A)')
+     &      'BATCH INFO FROM ',SECNAM,':'
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Cholesky symmetry                : ',ISYCHO
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Total number of vectors          : ',NUMCHO(ISYCHO)
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'AO Cholesky vector dimension     : ',N2BST(ISYCHO)
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'AO intermediate vector dimension : ',MAXAG
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Total memory                     : ',LWORK
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Min. memory needed for batch     : ',MINMEM
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Number of batches                : ',NBATCH
+            WRITE(LUPRI,'(8X,A,I10)')
+     &      'Number of vectors per batch      : ',NVEC
+         ENDIF
+
+         DO IBATCH = 1,NBATCH
+
+            NUMV = NVEC
+            IF (IBATCH .EQ. NBATCH) THEN
+               NUMV = NUMCHO(ISYCHO) - NVEC*(NBATCH - 1)
+            ENDIF
+
+            JCHOL1 = NVEC*(IBATCH - 1) + 1
+
+C           Complete allocation.
+C           --------------------
+
+            KCHOL = KEND1
+            KXMAT = KCHOL + N2BST(ISYCHO)*NUMV
+
+C           Set up index array IOFFC.
+C           -------------------------
+
+            ICOUNT = 0
+            DO ISYMG = 1,NSYM
+               ISYMB = MULD2H(ISYMG,ISYCHO)
+               IOFFC(ISYMG) = ICOUNT
+               ICOUNT = ICOUNT + NBAS(ISYMB)*NUMV*NBAS(ISYMG)
+            ENDDO
+
+            DO JVEC = 1,NUMV
+
+               JCHOL = JCHOL1 + JVEC - 1
+
+C              Read vector.
+C              ------------
+
+               DTIME = SECOND()
+               IOPT  = 2
+               CALL CHO_READN(WORK(KCSCR),JCHOL,1,WORK(KIND1),IDUM2,
+     &                        ISYCHO,IOPT,WORK(KREAD),LREAD)
+               DTIME = SECOND() - DTIME
+               TIMR  = TIMR     + DTIME
+
+C              Coulomb part.
+C              -------------
+
+               IF (IOPTVP .AND. (ISYCHO .EQ. ISYDEN)) THEN
+                  DTIME = SECOND()
+                  CONST = TWO*DDOT(N2BST(ISYDEN),DEN,1,WORK(KCSCR),1)
+                  CALL DAXPY(N2BST(ISYDEN),CONST,WORK(KCSCR),1,
+     &                       FOCK,1)
+                  DTIME = SECOND() - DTIME
+                  TIMC  = TIMC     + DTIME
+               ENDIF
+
+C              Prepare for exchange part.
+C              --------------------------
+
+             IF (HFXFAC .ne. 0.0d0) THEN
+
+C              Reorder: L(bg,J) -> L(b,J,g).
+C              -----------------------------
+
+               DTIME = SECOND()
+               DO ISYMG = 1,NSYM
+
+                  ISYMB = MULD2H(ISYMG,ISYCHO)
+
+                  IF (NBAS(ISYMB) .GT. 0) THEN
+
+                     DO G = 1,NBAS(ISYMG)
+
+                        KOFF1 = KCSCR + IAODIS(ISYMB,ISYMG)
+     &                        + NBAS(ISYMB)*(G - 1)
+                        KOFF2 = KCHOL + IOFFC(ISYMG)
+     &                        + NBAS(ISYMB)*NUMV*(G - 1)
+     &                        + NBAS(ISYMB)*(JVEC - 1)
+
+                        CALL DCOPY(NBAS(ISYMB),WORK(KOFF1),1,
+     &                                         WORK(KOFF2),1)
+
+                     ENDDO
+
+                  ENDIF
+
+               ENDDO
+               DTIME = SECOND() - DTIME
+               TIMS  = TIMS     + DTIME
+
+             END IF   ! (HFXFAC .ne. 0.0d0)
+
+            ENDDO   ! JVEC = 1, NUMV
+
+           IF (HFXFAC .NE. 0.0D0) THEN
+
+            DTIME = SECOND()
+            DO ISYMG = 1,NSYM
+
+               ISYMB = MULD2H(ISYMG,ISYCHO)
+               ISYMD = MULD2H(ISYMG,ISYDEN)
+               ISYMA = MULD2H(ISYMB,ISYDEN)
+
+C              Calculate intermediate:
+C              X(aJ,g) = Sum(d) L(aJ,d) * D(g,d).
+C              ----------------------------------
+
+               NTOAJ = MAX(NBAS(ISYMA)*NUMV,1)
+               NTOTD = MAX(NBAS(ISYMD),1)
+
+               KOFF1 = KCHOL + IOFFC(ISYMD)
+               KOFF2 = IAODIS(ISYMD,ISYMG) + 1
+
+               CALL DGEMM('N','N',
+     &                    NBAS(ISYMA)*NUMV,NBAS(ISYMG),NBAS(ISYMD),
+     &                    ONE,WORK(KOFF1),NTOAJ,DEN(KOFF2),NTOTD,
+     &                    ZERO,WORK(KXMAT),NTOAJ)
+
+C              Calculate exchange contribution:
+C              F(a,b) = F(a,b) - Sum(g) X(a,Jg) * L(b,Jg).
+C              -------------------------------------------
+
+               NTOTA = MAX(NBAS(ISYMA),1)
+               NTOTB = MAX(NBAS(ISYMB),1)
+
+               KOFF3 = KCHOL + IOFFC(ISYMG)
+               KOFF4 = IAODIS(ISYMA,ISYMB) + 1
+
+               CALL DGEMM('N','T',
+     &                    NBAS(ISYMA),NBAS(ISYMB),NUMV*NBAS(ISYMG),
+     &                    HFXFAC*XMONE,WORK(KXMAT),NTOTA,WORK(KOFF3),
+     &                    NTOTB,ONE,FOCK(KOFF4),NTOTA)
+
+            ENDDO
+            DTIME = SECOND() - DTIME
+            TIMX  = TIMX     + DTIME
+           END IF   ! (HFXFAC .ne. 0.0d0)
+
+         ENDDO
+
+
+  999    CONTINUE
+
+      ENDDO
+
+C     Debug: Print matrices.
+C     ----------------------
+
+      IF (LOCDBG) THEN
+         CALL AROUND(SECNAM//': Density Matrix on Exit')
+         DO ISYMB = 1,NSYM
+            ISYMA = MULD2H(ISYMB,ISYDEN)
+            WRITE(LUPRI,'(/,15X,A,I1,1X,I1)')
+     &      'Symmetry Block (alpha,beta): ',ISYMA,ISYMB
+            KOFF = IAODIS(ISYMA,ISYMB) + 1
+            NUMB = NBAS(ISYMB)
+            NUMA = NBAS(ISYMA)
+            CALL OUTPUT(DEN(KOFF),1,NUMA,1,NUMB,NUMA,NUMB,1,LUPRI)
+         ENDDO
+         CALL AROUND(SECNAM//': Fock Matrix on Exit')
+         DO ISYMB = 1,NSYM
+            ISYMA = MULD2H(ISYMB,ISYDEN)
+            WRITE(LUPRI,'(/,15X,A,I1,1X,I1)')
+     &      'Symmetry Block (alpha,beta): ',ISYMA,ISYMB
+            KOFF = IAODIS(ISYMA,ISYMB) + 1
+            NUMB = NBAS(ISYMB)
+            NUMA = NBAS(ISYMA)
+            CALL OUTPUT(FOCK(KOFF),1,NUMA,1,NUMB,NUMA,NUMB,1,LUPRI)
+         ENDDO
+      ENDIF
+
+C     Print timing.
+C     -------------
+
+      IF (TINFO .OR. LOCDBG) THEN
+         TIMT = SECOND() - TIMT
+         WRITE(LUPRI,'(/,5X,A,A,A)')
+     &   ' - exiting ',SECNAM,':'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for I/O and squaring     : ',TIMR,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for Coulomb  part        : ',TIMC,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for sorting (copy)       : ',TIMS,' seconds'
+         WRITE(LUPRI,'(5X,A,F10.2,A)')
+     &   'Time used for exchange part        : ',TIMX,' seconds'
+         WRITE(LUPRI,'(5X,A)')
+     &   '-------------------------------------------------------'
+         WRITE(LUPRI,'(5X,A,F10.2,A,/)')
+     &   'Total time                         : ',TIMT,' seconds'
+      ENDIF
+
+      RETURN
+      END
+

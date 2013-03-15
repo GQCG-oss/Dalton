@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 *======================================================================*
       subroutine cc_r12vunpack(vijkl,isymv,vsing,vtrip,lprojv,
      &                         nr12orb,nrhforb)
@@ -11,9 +34,9 @@ c
 c     modified by C. Neiss, summer 2005
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccsdsym.h>     
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"     
+#include "ccorb.h"
 
       logical locdbg,lprojv
       parameter(locdbg = .false.)
@@ -176,9 +199,9 @@ c     modified by C. Neiss, summer 2005
 c     see CCR12PCK for further comments
 c---------------------------------------------------------------------
       implicit none
-#include <ccsdsym.h>     
-#include <priunit.h>
-#include <ccorb.h>
+#include "ccsdsym.h"     
+#include "priunit.h"
+#include "ccorb.h"
       integer idxkl,idxlk,idxij,idxijkl,idxijlk,nrhftria,idxjikl,idxjilk
       integer isymkl,isymij,isyml,isymk,isymi,isymj,idxji
       integer it,jt,kt,lt,index,kl,ij,klij,isymv,isym,icoun1,icoun2
@@ -347,13 +370,13 @@ c
 c     NOTE: Does NOT work with .R12ORB
 c---------------------------------------------------------------------
       implicit none
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical lprojv,ldum,lcont
       integer lwork,isymv,nrhftria,ksing,ktrip,kend1,lwrk1     
@@ -641,8 +664,8 @@ c
 c     H. Fliegl, (WK/UniKA/02-05-2003)
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "r12int.h"
       integer n,ij,kl,mn
 #if defined (SYS_CRAY)
       real e(n),vsing(n),vtrip(n),csing(n),ctrip(n),
@@ -710,13 +733,13 @@ c
 c     Christian Neiss,  April. 2005,  based on old ccrhs_ep
 c---------------------------------------------------------------------
       implicit none
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical ldum,lcont,lbmat
       integer lwork,isymv,kend1,lwrk1,kend2,lwrk2,kevl,kekl,keij     
@@ -1010,14 +1033,14 @@ c     H. Fliegl, C. Haettig, (WK/UniKA/08-05-2003)
 c     modified by C. Neiss  April 2005, September 2005
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccsdinp.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccsdinp.h"
+#include "second.h"
 
       logical locdbg,ldum,lcceq 
       parameter (locdbg = .false.)
@@ -1405,12 +1428,12 @@ c     basscl2 = ketscl for right hand transf.
 c             = 2*brascl for left hand transf.
 c---------------------------------------------------------------------
       implicit none
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical ldum,locdbg,lprojv
       parameter (locdbg = .false.)
@@ -1614,7 +1637,7 @@ c
 c     H. Fliegl, C. Haettig summer 2003 
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
+#include "priunit.h"
       integer n,ij,kl,mn
 #if defined (SYS_CRAY)
       real rsing(n),rtrip(n),xsing(n,n),xtrip(n,n),srsing(n),srtrip(n) 
@@ -1662,12 +1685,12 @@ c     vec      input vector
 c     dimension(vec): nt1am(isymr)+nt2am(isymr)+ntr12am(isymr)
 c---------------------------------------------------------------------
       implicit none
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical locdbg
       parameter (locdbg=.FALSE.)
@@ -1833,14 +1856,14 @@ c     H. Fliegl, C. Haettig spring 2005
 c     C. Neiss, 07.07.2005: modified, see cc_r12metric
 *---------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 c
-#include <ccsdinp.h>
-#include <ccorb.h>
+#include "ccsdinp.h"
+#include "ccorb.h"
 c
-#include <r12int.h>
-#include <ccr12int.h>
+#include "r12int.h"
+#include "ccr12int.h"
       logical locdbg,lnoread
       parameter (locdbg = .false.)
 
@@ -1928,12 +1951,12 @@ c
 c     Christian Neiss,  April 2005, restructured September 2005
 c---------------------------------------------------------------------
       implicit none
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical locdbg
       parameter (locdbg=.false.)
@@ -2000,14 +2023,14 @@ c
 c     C. Neiss,  december 2005
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "second.h"
 
       logical locdbg,ldum,lcceq,etest 
       parameter (locdbg = .false., etest = .false.)
@@ -2280,11 +2303,11 @@ c
 c     C. Neiss september 2005
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccsdinp.h"
 
       logical locdbg
       parameter (locdbg = .false.)

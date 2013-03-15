@@ -94,7 +94,7 @@ cat > rsp_excipolar.dal <<'%EOF%'
  100
 .MAXITP
  100
-*END OF RESPONS
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -146,19 +146,19 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # SCF energy
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-223\.92150423[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-223\.92150423" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy
-CRIT1=`$GREP "\= MP2 second order energy \: * \-224\.40263572[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\= MP2 second order energy \: * \-224\.4026357" $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="MP2 ENERGY NOT CORRECT"
 
 # MCSCF energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-224\.1625475153[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-224\.1625475153" $log | wc -l`
 TEST[6]=`expr	$CRIT1`
 CTRL[6]=1
 ERROR[6]="MCSCF ENERGY NOT CORRECT"

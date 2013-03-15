@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cc_FHF   */
       SUBROUTINE CC_FHF(C1AM,RHO1,ISYMV,WORK,LWORK)
@@ -44,14 +34,14 @@ C
 C     RHO1(ai)  = sum(bj)[c1am(bj)*L(ia,jb)]
 C                                  (is packed ai,bj)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*),C1AM(*),WORK(LWORK)
@@ -126,15 +116,15 @@ C            +sum(bk)[VLTR1(bk)*Lamp(alfa,b)*LamHC(beta,k)]
 C
 C     For IOPT=1 is the third term omitted. 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XLAMDH(*),XLAMDP(*),XLMPC(*),XLMHC(*)
       DIMENSION C1T2C(*),VLTR1(*),RTR2(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -545,13 +535,13 @@ C     rho2(ai,bj) = Paibj(2L1am(ai)FCKMO(jb)-L1am(aj)*FCKMO(ib)
 C
 C     Ove Christiansen 13-6-1966
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO2(*),C1AM(*),FCKMO(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -760,15 +750,15 @@ C     IOPT controls if both 21B and 12 C are calculated:
 C     if IOPT = 2 both are calculated if IOPT = 1 only
 C     21B is calculated.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*),RHO2(*),CTR1(*),XLAMDH(*),WORK(LWORK),XMAT(*)
       CHARACTER O3FIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -981,16 +971,16 @@ C     thus lamda is not total symmetric.
 C
 C     Ove Christiansen 13-6-1996
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION X3OINT(*),DSRHF(*),WORK(LWORK)
       DIMENSION XLAMDH(*),XLAMDP(*)
       CHARACTER O3FIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cclr.h"
       LOGICAL LWTD
 C
       CALL QENTER('CC_INT3O')
@@ -1109,13 +1099,13 @@ C     ISYMLP = symmetry of general Lambdamatrix.
 C     Ove Christiansen 14-6-1996
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDP(*),CT1AO(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCLL_LAMTRA')
 C
@@ -1192,12 +1182,12 @@ C
 C        rho1(b,j) = -sum(del)[t(dl,ej)*(eb|dl-bar)]
 C                             (calculate by making (alf, beta|l-bar delta))
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cclr.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*),CTR2(*),SCRM(*),SCRCM(*),XINT(*), 
      *          XLMH1(*),XLMP1(*),XLMH2(*),XLMP2(*),
@@ -1800,14 +1790,14 @@ C              Input symmtery of FOCK matrix: ISYMFG
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION RHO1(*),FOCKG(*)
       DIMENSION XLAMDH(*),XLAMDP(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CC_11A')
 C
@@ -1880,13 +1870,13 @@ C     Ove Christiansen 7-10-1996:
 C
 C     Very small generalization to input symmetry of C1AO.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO2(*), DSRHF(*), C1AO(*), XLAMDH(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2145,8 +2135,8 @@ C
 C
 C#include <implicit.h>
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccorb.h"
 C#include <ccsdsym.h>
 
       INTEGER LWORK,ISYINT
@@ -2210,13 +2200,13 @@ C     Purpose: To calculate the contraction of the trialvector CTR1
 C              with the lampda-matrix XLAMDP to give zeta(Alfa,J)!
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDP(*),CT1AO(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCLT_CT1AO')
 C
@@ -2259,13 +2249,13 @@ C     Purpose: To resort and add together 2 21-block-
 C              intermediates!
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINTS(*), XINT1(*), XINT2(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCLT_S21I')
 C
@@ -2323,13 +2313,13 @@ C     Purpose: To resort integral batch (il|jdel) to
 C              (jl|idel)!
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION X3OTR(*), X3OINT(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCLT_PI3O')
 C
@@ -2383,13 +2373,13 @@ C
 C     Purpose: To resort integrals (aj,e del) to (a,ej del)!
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RES(*), SUB(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCPINAJE')
 C
@@ -2421,13 +2411,13 @@ C
 C     Purpose: To resort integrals (ae,j del) to (a,ej del)!
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RES(*), SUB(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCRINAEJ')
 C
@@ -2456,17 +2446,17 @@ C     Written by Asger Halkier & Henrik Koch 19/6-1995
 C
 C     Purpose: To calculate the 11B and 11C contributions to rho1.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RHO1(*),CTR1(*),FCKMO(*)
       DIMENSION WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCLT_11BC')
 C
@@ -2555,13 +2545,13 @@ C
 C     Purpose: To transpose the indices of the two E-intermediate-
 C              matrices!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION E1INT(*), E2INT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CC_EITR')
 C
@@ -2625,7 +2615,7 @@ C     Ove Christiansen - march 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION OMEGA2(*),T2AM(*),WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMDH(*),XLPC1(*),XLHC1(*)
@@ -2634,15 +2624,15 @@ C
 C
       LOGICAL ETRAN,FCKCON
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "qm3.h"
 !#include <qmmm.h>
-#include <ccfield.h>
-#include <leinf.h>
+#include "ccfield.h"
+#include "leinf.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2696,7 +2686,11 @@ C
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFOCK2),WORK(KEND1),LWRK1)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KFOCK2),WORK(KEND1),LWRK1)
+              IF (HFFLD) THEN
+                CALL CCMM_ADDGHF(WORK(KFOCK2),WORK(KEND1),LWRK1)
+              ELSE 
+                CALL CCMM_ADDG(WORK(KFOCK2),WORK(KEND1),LWRK1)
+              END IF
             END IF
             IF (IPRINT .GT. 5) THEN
               WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
@@ -2747,19 +2741,19 @@ C     Ove Christiansen - march 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION RHO1(*),WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMDH(*),XI(*),YI(*),XLPC1(*),XLHC1(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccfield.h>
-#include <leinf.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccfield.h"
+#include "leinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2809,7 +2803,11 @@ C
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KFOCK1),WORK(KEND1),LWRK1)
+              IF (HFFLD) THEN
+                CALL CCMM_ADDGHF(WORK(KFOCK1),WORK(KEND1),LWRK1)
+              ELSE
+               CALL CCMM_ADDG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+              END IF
             END IF
             IF (IPRINT .GT. 5) THEN
               WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
@@ -2844,19 +2842,19 @@ C     Ove Christiansen - march 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION OMEGA2(*),C2AM(*),WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMDH(*),XLPC1(*),XLHC1(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccfield.h>
-#include <leinf.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccfield.h"
+#include "leinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
 C
       LOGICAL ETRAN,FCKCON
@@ -2915,7 +2913,11 @@ C
          IF (.NOT. NYQMMM ) THEN
             CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
          ELSE IF (NYQMMM) THEN
-            CALL CCMM_TGT(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            IF (HFFLD) THEN
+              CALL CCMM_ADDGHF(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            ELSE
+              CALL CCMM_ADDG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            END IF
          END IF
          IF (IPRINT .GT. 5) THEN
            WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_FCC2FF) 1',

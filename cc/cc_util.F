@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ccrhs_cio */
       SUBROUTINE CCRHS_CIO2(OMEGA2,T2AM,XLAMDH,WORK,LWORK,
@@ -74,12 +64,12 @@ C
 C#include <implicit.h>
       implicit none
 
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
+#include "r12int.h"
 
       integer lwork, isyvec, isycim, luc, iv, iopt,ioptb, lucb,
      &        ioffb, iopte
@@ -98,7 +88,7 @@ C#include <implicit.h>
       LOGICAL   R12CON
       INTEGER   NC(8), NT1CK(8), IT1CK(8,8), NMATAC(8), IMATAC(8,8),
      &          IBASX(8), ILAMDX(8), NT1AO2(8), IT1AO2(8,8), IT2SQP(8,8)
-      integer isaibj, mbas1t, icoun1, icoun2, isym, isym1, isym2,
+      integer isaibj, icoun1, icoun2, isym, isym1, isym2,
      &        isymbj, isymck, isymdk, nt1ai, lenai, lenmin, ndisai,
      &        nbatai, ilstai, ibatai, ifstai, kscr1, kscr2,
      &        kscr3, kend, lwrk1, koff1, isymk, idelta, id, ioff, klen,
@@ -136,7 +126,6 @@ C     Define offsets/dimensions:
         CALL ICOPY(64,IT1AM,1,IT1CK,1)
         CALL ICOPY(64,IT2SQ,1,IT2SQP,1)
       END IF
-      MBAS1T = 0
       ICOUN1 = 0
       ICOUN2 = 0
       DO ISYM = 1, NSYM
@@ -158,7 +147,6 @@ C     Define offsets/dimensions:
           NT1AO2(ISYM) = NT1AO2(ISYM) + MBAS2(ISYM1)*NRHF(ISYM2)
         END DO
 
-        MBAS1T = MBAS1T + MBAS1(ISYM)
         IBASX(ISYM) = ICOUN1
         ILAMDX(ISYM) = ICOUN2
         ICOUN1 = ICOUN1 + MBAS2(ISYM)
@@ -569,7 +557,7 @@ C
 C     PURPOSE:
 C             Calculate the D-term 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
       DIMENSION WORK(LWORK)
@@ -577,12 +565,12 @@ C
       LOGICAL   R12CON
       INTEGER   NC(8), NT1CK(8), IT1CK(8,8), NMATAC(8), IMATAC(8,8),
      &          IBASX(8), ILAMDX(8), NT1AO2(8), IT1AO2(8,8), IT2SQP(8,8)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
+#include "r12int.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -611,7 +599,6 @@ C     Define offsets/dimensions:
         CALL ICOPY(64,IT1AM,1,IT1CK,1)
         CALL ICOPY(64,IT2SQ,1,IT2SQP,1)
       END IF
-      MBAS1T = 0
       ICOUN1 = 0
       ICOUN2 = 0
       DO ISYM = 1, NSYM
@@ -633,7 +620,6 @@ C     Define offsets/dimensions:
           NT1AO2(ISYM) = NT1AO2(ISYM) + MBAS2(ISYM1)*NRHF(ISYM2)
         END DO
 
-        MBAS1T = MBAS1T + MBAS1(ISYM)
         IBASX(ISYM) = ICOUN1
         ILAMDX(ISYM) = ICOUN2
         ICOUN1 = ICOUN1 + MBAS2(ISYM)
@@ -1033,15 +1019,15 @@ C
 *     Christof Haettig 20-6-1998
 *
 *---------------------------------------------------------------------*
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
       DIMENSION EMAT1(*),EMAT2(*),FOCK(*),ONEHAM(*)
       DIMENSION RAIM(*),RBIM(*),GAIM(*),GBIM(*)
       DIMENSION XLAMDHA(*),XLAMDHB(*), XLAMDPA(*), XLAMDPB(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1264,10 +1250,10 @@ C
 *
 * C. Haettig August 1998
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       PARAMETER(DMONE=-1.0D0)
       DIMENSION GAMMA(*),EMAT2(*)
 C
@@ -1350,12 +1336,12 @@ c /* deck cc_iajb2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccisao.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccisao.h"
+#include "r12int.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -1377,7 +1363,7 @@ c /* deck cc_iajb2 */
       
       INTEGER ISYMB0, ISYMBB, ISYDEL, ISY0IAJ, ISYBIAJ, IRECORD
       INTEGER LEN0,IADR0,LENB,IADRB,KEND1,LWRK1,KX0IAJ,KXBIAJ,
-     &        IBASTYP, IBASTYPST, IBASTYPND, MBAS1T, IBASX(8), ISYM, 
+     &        IBASTYP, IBASTYPST, IBASTYPND, IBASX(8), ISYM, 
      &        IDST, IDND
 
 *---------------------------------------------------------------------*
@@ -1388,10 +1374,8 @@ c /* deck cc_iajb2 */
         IBASTYPND = 2 
 
         IBASX(1) = 0
-        MBAS1T = 0
         DO ISYM = 1,NSYM
           IF (ISYM.GT.1) IBASX(ISYM) = IBASX(ISYM-1)+MBAS2(ISYM-1)
-          MBAS1T = MBAS1T + MBAS1(ISYM) ! # primary. AOs in total
         END DO
   
       ELSE ! default: delta runs over orbital basis 1...nbas
@@ -1542,10 +1526,10 @@ c /* deck cc_iajb3 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C#include <maxorb.h>
 C#include <ccisao.h>
 
@@ -1677,9 +1661,9 @@ C            T2PK(ia,jb) = T2SQ(ia,jb) + T2SQ(jb,ia)
 C
 C     Ch. Haettig, August 1998
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ONE = 1.0D0)
       DIMENSION T2PK(*), T2SQ(*)
@@ -1776,16 +1760,16 @@ C
 C     PURPOSE:
 C             Calculate the C-term 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
       DIMENSION WORK(LWORK)
       CHARACTER CFIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2115,16 +2099,16 @@ C
 C     PURPOSE:
 C             Calculate the D-term 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
       DIMENSION WORK(LWORK)
       CHARACTER DFIL*(*), DBFIL*(*), CFIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2428,11 +2412,11 @@ c/* deck cc_cd */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "r12int.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2725,13 +2709,13 @@ c           CALL CC_PRP(WORK(NI),WORK,ISYMBJ,1,0)
 #else
 #  include <implicit.h>
 #endif
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <second.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "second.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3028,10 +3012,10 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
 
       LOGICAL LOCDBG
@@ -3187,15 +3171,15 @@ C     Calculate in place two exchange plus coulomb of Z2 amplitudes.
 C
 C     Ch. Haettig, August 1998
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION Z2AM(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -3307,7 +3291,7 @@ C
 C    C. Haettig, 1999, restructured for R12 in 2006
 C
       IMPLICIT NONE
-#include <ccorb.h>
+#include "ccorb.h"
       INTEGER ISYZIN,ISYMC2,ISYTIN,IOPT,LWORK
 #if defined (SYS_CRAY)
       REAL ZINT(*), CTR2(*), TINT(*), WORK(LWORK)
@@ -3414,13 +3398,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "second.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3739,11 +3723,11 @@ C     Extended for generalized symmetry.         ch  15-01-99
 C     Extended for CMOP different from CMOH.     ch  01-11-99
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0)
       DIMENSION XLAMDH(*), XLAMDP(*), T1AM(*), CMOH(*), CMOP(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('LAMDA2')
 C
@@ -3801,11 +3785,11 @@ C
 C     revised and extended for general symmetry of CMO 
 C     by Christof Haettig, Jan '99
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), XLAMDA(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3893,16 +3877,16 @@ C     Christof Haettig                       22-Jan-1999
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XLAMDP0(*), XLAMDH0(*), XLAMDP1(*), XLAMDH1(*)
       DIMENSION DENS(*), WORK(LWORK)
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 C
       IF (IOPT.GE.1) THEN
          ISYDEN = MULD2H(ISYLM0,ISYLM1)
@@ -4044,10 +4028,10 @@ C
 *
 * C. Haettig August 1998
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
       DIMENSION CDBAR(*),EMAT1(*)
       LOGICAL LCBS
@@ -4207,17 +4191,17 @@ C                  + XLAMPB(alpha,d) XLAMDPC(beta,k) BF(alpha i beta j)
 C
 C     NOTE: Linear response options only valid and debugged for OMEGOR!
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*), CTR2(*), OMEGA2(*), RHO2(*), GAMMA(*),
      *          XLAMPC(*), XLAMPB(*), WORK(*), GIMB(*), GIMC(*)
       LOGICAL LGAMMA, LO3BF, LBFZETA
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C

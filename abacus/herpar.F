@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C File: herpar.F
 C
@@ -46,16 +36,16 @@ C  /* Deck her_pardrv */
      &                      DINTSKP,RELCAL)
 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
 C
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), WORK(LWORK)
 CTROND
@@ -72,12 +62,11 @@ C BLOCKS: MAXSHL
 C NUCLEI: NUCDEG
 C INFORB: NNBASX,N2BASX
 C
-#include <infpar.h>
-      PARAMETER (MAXTSK = MXSHEL*(MXSHEL+1)/2)
-#include <blocks.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <memint.h>
+#include "infpar.h"
+#include "blocks.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "memint.h"
 C
       CALL QENTER('HER_PARDRV')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_PARDRV','*',103)
@@ -150,27 +139,26 @@ C
       CALL MEMGET('REAL',KTKCPU,MTOTTK,WORK,KFREE,LFREE)     
       CALL MEMGET('INTE',KWHICH,MTOTTK,WORK,KFREE,LFREE)     
 C
-      CALL HER_PARDR1(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
+      CALL HER_PARDRV_1(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                WORK(KTMPMT),WORK(KINDEX),WORK(KTIMES),
      &                WORK(KTKCPU),WORK(KWHICH),WORK(KFREE),LFREE,
      &                NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
-     &                ITYPE,MAXDER,IATOM,NODV,NOPV,NOCONT,
-     &                TKTIME,RETUR,IPRINT,
-     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                DINTSKP)
+     &                ITYPE,MAXDER,IATOM,NODV,NOPV,
+     &                NOCONT,TKTIME,RETUR,IPRINT,
+     &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP)
       CALL MEMREL('HER_PARDRV',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('HER_PARDRV')
       RETURN
       END
 C  /* Deck her_pardr1 */
-      SUBROUTINE HER_PARDR1(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
-     &                      TMPMAT,INDEX,TIMES,TSKCPU,IWHICH,WORK,LWORK,
-     &                      NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
-     &                      ITYPE,MAXDIF,IATOM,NODV,NOPV,
-     &                      NOCONT,TKTIME,RETUR,IPRINT,
-     &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                      DINTSKP)
+      SUBROUTINE HER_PARDRV_1(
+     &   FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
+     &   TMPMAT,INDEX,TIMES,TSKCPU,IWHICH,WORK,LWORK,
+     &   NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
+     &   ITYPE,MAXDIF,IATOM,NODV,NOPV,
+     &   NOCONT,TKTIME,RETUR,IPRINT,
+     &   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO, DINTSKP)
 C
 C
 C     **************************************************************
@@ -214,8 +202,8 @@ C           MAXREP -
 C           ISYMDM - Symmetries of density matrices
 C           IFCTYP - Fock matrix types (see twoint).
 C           IATOM  -
-C           NODV   - Density matrix neglected in TWOEXP
-C           NOPV   -           -   "   -
+C           NODV   - 1-el. Density matrix neglected in TWOEXP
+C           NOPV   - 2-el.           -   "   -
 C           NOCONT -           -   "   -
 C           RETUR  - Program will exit after spec. shells
 C           TKTIME - Take time in TWOINT
@@ -262,7 +250,6 @@ Cef end
 C
 Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
       LOGICAL   FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
-      PARAMETER (MAXTSK = MXSHEL*(MXSHEL+1)/2)
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), TMPMAT(NTMPMT), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
@@ -276,8 +263,8 @@ C
       SAVE FIRST,NPOS
       DATA FIRST/.TRUE./
 C
-      CALL QENTER('HER_PARDR1')
-      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_PARDR1','*',103)
+      CALL QENTER('HER_PARDRV_1')
+      IF (IPRINT .GT. 3) CALL TITLER('Output from HER_PARDRV_1','*',103)
 C
 C     Take calculation time of each IJ pair?
 C
@@ -338,7 +325,7 @@ C
       IF (NEWGEO) NEWGEO = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
-      CALL QEXIT('HER_PARDR1')
+      CALL QEXIT('HER_PARDRV_1')
       RETURN
       END
 C  /* Deck her_indeks */
@@ -361,8 +348,8 @@ C
 C
 C     This subroutine determines in which order integrals will be calculated.
 C
-      IF (AOSAVE .AND. NINDEX .GT. (MIN(MXTSK,IEIR))) THEN
-         CALL QUIT('INDX_C must be enlarged.')
+      IF (AOSAVE .AND. NINDEX .GT. MXTSK) THEN
+         CALL QUIT('INDX_C in incore.h must be enlarged.')
       END IF
 C     Avoid reinitialization of INDEX when it has been initialized in
 C     a previous iteration
@@ -466,7 +453,7 @@ CTROND
 CKR      DIMENSION GABRAO(*), DMRAO(*), DMRSO(*), DINTSKP(*)
       DIMENSION GABRAO(*), DMRAO(*), DMRSO(*)
 CTROND
-#include <infpar.h>
+#include "infpar.h"
 C
 C Used from common blocks:
 C
@@ -500,20 +487,10 @@ C
 #include "blocks.h"
 #include "r12int.h"
 C
-C
-#if defined (SYS_T3e)
-C
-C     This kludge fixes the current non-implementation of MPI_CHARACTER on
-C     the Cray-T3E, K.Ruud-Nov.96
-C
-      DIMENSION ITMP(4000)
-      EQUIVALENCE (ITMP,MLINE)
-#endif
-C
-#include <cbisol.h>
+#include "cbisol.h"
 C
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
       CALL QENTER('HER_SDINIT')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDINIT','*',103)
@@ -578,8 +555,8 @@ C
 C
 Cef begin 
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
-C      IF (AOSAVE .AND. NEWGEO) THEN
-C         CALL IZERO(INDX_SHL,MXSHL_KEEP)
+C     IF (AOSAVE .AND. NEWGEO) THEN
+C         CALL IZERO(INDX_SHL,MXTSK)
          LINTSV = .FALSE.
          LINTMP = .FALSE.
          INITX = .FALSE.
@@ -607,11 +584,7 @@ C Arnfinn, nov -08: Sending NONTYP_QM, numbers of atomtypes except MM
          CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
          CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-#if defined (SYS_T3e)
-         CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
-#else
          CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
-#endif
 C  /cbirea/
          CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
@@ -748,7 +721,12 @@ C
 #endif
       ELSE IF (ITYPE .EQ. -5) THEN
          CALL DZERO(FMAT,3*N2BASX)
-         CALL DZERO(SUS2EL,NUMSUS)
+COBL/AMT
+C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
+         IF (.NOT. DONETWOLOP)THEN
+             DONETWOLOP = .TRUE.
+             CALL DZERO(SUS2EL,NUMSUS)
+         END IF
       ELSE IF (ITYPE .EQ. 8) THEN
          CALL DZERO(FMAT,NTMPMT)
       END IF
@@ -1092,14 +1070,6 @@ C
 #include "parint.h"
 #include "r12int.h"
 C
-#if defined (SYS_T3E)
-C
-C     This kludge fixes the current non-implementation of MPI_CHARACTER on
-C     the Cray-T3E, K.Ruud-Nov.96
-C
-      DIMENSION ITMP(4000)
-      EQUIVALENCE (ITMP,MLINE)
-#endif
 #include "cbisol.h"
 Cef begin
 #include "incore.h"
@@ -1142,7 +1112,7 @@ C
 Cef begin
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
 C     IF (AOSAVE .AND. NEWGEO) THEN
-C     CALL IZERO(INDX_SHL,MXSHL_KEEP)
+C     CALL IZERO(INDX_SHL,MXTSK)
          LINTSV = .FALSE.
          LINTMP = .FALSE.
          INITX = .FALSE.
@@ -1172,11 +1142,7 @@ C Arnfinn nov -08: Receiving number of QM atom types:
             CALL MPIXBCAST(NONTYP_QM,1,'INTEGER',MASTER)
             CALL MPIXBCAST(NMLAU,1,'INTEGER',MASTER)
 C  /molinc/
-#if defined (SYS_T3e)
-            CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
-#else
             CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
-#endif
 C  /cbirea/
             CALL MPIXBCAST(UNCONT,1,'LOGICAL',MASTER)
 C  /inforb/
@@ -1246,6 +1212,7 @@ C     (only # of QM atom types, not # of MM atom types)
      &           KASYM,ID3,DOCART,DOOWN)
       AUTOSY = .FALSE.
       NOSYM  = NSYMOP.EQ.0
+!
       CALL LINE4W(MLINE(NMLAU),NONTYP_QM,NSYMOP,KCHARG,THRS,AUTOSY,
      &            NOSYM,KASYM,ID3,DOCART,DOOWN)
 C
@@ -1376,14 +1343,14 @@ Cef begin
 C     
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h> 
-#include <dummy.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h" 
+#include "dummy.h"
+#include "mtags.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DIA2SO, ZFS2EL,
      &        DISTRI, NOCONT, SPNORB,
@@ -1394,19 +1361,19 @@ C
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK), IJS(NTASK),
      &          GABRAO(*), DMRAO(*),DMRSO(*),DINTSKP(2,4), HESSEE(*)
-#include <cbisol.h>
-#include <twocom.h>
-#include <nuclei.h>
-#include <energy.h>
-#include <taymol.h>
-#include <taysol.h>
-#include <suscpt.h>
-#include <blocks.h>
-#include <symmet.h>
-#include <infpar.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <incore.h>
+#include "cbisol.h"
+#include "twocom.h"
+#include "nuclei.h"
+#include "energy.h"
+#include "taymol.h"
+#include "taysol.h"
+#include "suscpt.h"
+#include "blocks.h"
+#include "symmet.h"
+#include "infpar.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "incore.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
@@ -1431,7 +1398,12 @@ C
       IF (SUSCEP) THEN
          IF (.NOT.NOPV) CALL REWSPL(LUPAO)
          IF (.NOT.NOPV) CALL REWSPL(LUPAS)
-         CALL DZERO(SUS2EL,9)
+COBL/AMT
+C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
+         IF (.NOT. DONETWOLOP)THEN
+             DONETWOLOP = .TRUE.
+             CALL DZERO(SUS2EL,9)
+         END IF
       END IF
 C
 C
@@ -1902,10 +1874,10 @@ C  /* Deck her_sdres */
       SUBROUTINE HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,
      &                     ICOUNT,ITYPE,IPRINT)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mtags.h"
       DIMENSION FMAT(NFMAT*N2BASX), TSKCPU(ICOUNT), IWHICH(ICOUNT),
      &          DINTSKP(8), HESSEE(*)
 C
@@ -1918,10 +1890,10 @@ C SUSCPT: SUS2EL
 C INFORB: N2BASX
 C INFPAR: MTOTTK, MASTER, TIMING
 C
-#include <energy.h>
-#include <suscpt.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "energy.h"
+#include "suscpt.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDRES','*',103)
 C
@@ -1991,8 +1963,8 @@ C
 C  /* Deck recompi */
       SUBROUTINE RECOMPI
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       WRITE(LUPRI,'(//4(/5X,A))')
      &  'FOR RECOMPILATION:',
@@ -2004,18 +1976,18 @@ C
       END
 C  /* Deck prlinp */
       SUBROUTINE PRLINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mtags.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
       PARAMETER (NTABLE = 5)
       LOGICAL FIRST, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <infpar.h>
+#include "infpar.h"
       SAVE FIRST
       DATA TABLE /'.NODES ', '.DEGREE', '.PRINT ', '.ENCODE', '.DEBUG '/
       DATA FIRST /.TRUE./
@@ -2495,13 +2467,15 @@ C
 #include "infpar.h"
 #include "wrkrsp.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       IF (TOFILE) CALL QUIT('Parallel calculations do not allow for '//
      &     'storing PCM-integrals on disk')
 C     
 C     Wake up the slaves
 C     
-      IPRTYP = 12
+      IPRTYP = J1XP_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
 C
@@ -2777,10 +2751,12 @@ C
 #include "mtags.h"
 #include "pcm.h"
 #include "mpif.h"      
+C defined parallel calculation types  
+#include "iprtyp.h"
 C     
 C     Wake up the slaves
 C     
-      IPRTYP = 14
+      IPRTYP = J2XP_WORK
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
 C

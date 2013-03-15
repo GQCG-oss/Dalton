@@ -41,11 +41,11 @@ dalton='**DALTON INPUT
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*END OF INPUT
+**END OF DALTON INPUT
 '
 
 test='
-check_scf_energy DFT  -73.176324747907 1e-13
+check_scf_energy DFT  -73.176324747907 1e-10
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }

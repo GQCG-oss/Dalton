@@ -13,8 +13,8 @@ C     LABEL      property label
 C     FREQ       frequency of the solution/residual
 C     LU         file where we have to write the property
 C
-#include<implicit.h>
-#include<priunit.h>
+#include"implicit.h"
+#include"priunit.h"
 C
       DATA EPSI /1.0D-8/
       CHARACTER*8 LABEL,LSTARS,LB

@@ -1,52 +1,42 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
  
  
 C  /* Deck sirloc */
       SUBROUTINE SIRLOC(CMO,WORK,LWORK)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
  
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (THRES = 1.0D-10)
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h> 
-#include <infvar.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h" 
+#include "infvar.h"
+#include "r12int.h"
       DIMENSION CMO(*), WORK(LWORK)
       LOGICAL ANTIS
  
@@ -204,8 +194,8 @@ CWMK  END IF
 C  /* Deck diapao  */
       SUBROUTINE DIAPAO(FCMO,FPAO,VEC,NTFMO,NB1T,NB1,NOC)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FCMO(NTFMO),FPAO(NB1T),VEC(NB1,NB1)
 
       NOBL = NOC + NB1
@@ -240,9 +230,9 @@ C  /* Deck numloc  */
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
 C     Revised by hjaaj Aug 2004: set NOC = NISHT instead of NOC = NOCCT
 
-#include <implicit.h>
-#include <inforb.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "r12int.h"
 
 C INFORMATION ON CANONICAL OCCUPIED ORBITALS
 C Symmetry is switched off
@@ -275,9 +265,9 @@ C     This will also work for MCSCF.
 C
 C     Revised by wmk Aug 2005 to use LOCFRO(ISYM).
 C
-#include <implicit.h>
-#include <inforb.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "r12int.h"
 
 C     LGLO = .TRUE.
 C     hjaaj aug 2004: is in ccorb.h but is never used in cc/, thus
@@ -300,7 +290,7 @@ C     Adapted from the GAMESS-UK code
 C
 C     Written by Claire C.M. Samson (University of Utrecht, 30 November 2002).
  
-#include <implicit.h>
+#include "implicit.h"
        PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &            D1M = -1.0D0, D2M = -2.0D0, DP4 = 0.25D0,
      &            THR10 = 1.0D-10, THR8 = 1.0D-8, THR6= 1.0D-6,
@@ -308,7 +298,7 @@ C     Written by Claire C.M. Samson (University of Utrecht, 30 November 2002).
        DIMENSION WORK(LWORK),CMO(NCMO),DIPXYZ(NDIP,3),ILIFQ(NOC),
      &           IKY(NBA),MAXI0(NBA,NBA),MINI0(NBA,NBA),RI(NBA,NBA),
      &           RIJ(NTR,3),CL(NOC,NOC),QPIX(NOC),QPJX(NOC),B(NBA,NOC)
-#include <priunit.h>
+#include "priunit.h"
  
 C PRINT THE DIPOLE MOMENT MATRICES
  
@@ -569,7 +559,7 @@ C End of the Localization
 C  /* Deck proao  */
       SUBROUTINE PROAO(PAO,EVC,CMO,OMOC,OVLAT,OVLA,NOC,NBA,NB1,NNBA)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D1M = -1.0D0 )
       DIMENSION CMO(NBA,NOC),OMOC(NB1,NOC)
       DIMENSION OVLAT(NNBA),OVLA(NB1,NB1)
@@ -610,8 +600,8 @@ C      CALL DGEMM('N','N',NB1,NOC,NB1,D1,EVC,NB1,OMOC,NB1,D0,OMOC,NB1)
 C  /* Deck wrlocmo  */
       SUBROUTINE WRLOCMO(CMO,FKMAT,NOC,NCO,NBA,NB1)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FKMAT(*), CMO(*)
 
       IJ = 0
@@ -632,12 +622,12 @@ C
 C  /* Deck printorb  */
       SUBROUTINE PRINTORB(NENDI,NBASI,ARRA)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
       DIMENSION ARRA(*)
 C
       ISTBAS = 0

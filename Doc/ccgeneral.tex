@@ -43,6 +43,14 @@ model(s) and other parameters common to all submodules are specified.
         \index{CI!Singles}
         \index{CIS}
 %
+\item[\Key{CHO(T)}]  
+        Run calculation for CCSD(T) (Coupled Cluster Singles and 
+        Doubles with perturbational treatment of triples) model
+        using Cholesky-decomposed orbital energies denominators.
+        Directives to control the calculation can be specifed in the
+        \Sec{CHO(T)} input module.
+        \index{CCSD(T)}
+%
 \item[\Key{CCR(3)}] 
         Run calculation for CCSDR(3) excitation energy model.
 %
@@ -155,7 +163,7 @@ model(s) and other parameters common to all submodules are specified.
        using {\her}
        (Default is to run the program only AO integral direct
        if the \verb+DIRECT+ keyword was set in the general
-       input section of \siraba . If \verb+HERDIR+ is not specified the \eri\
+       input section of \dalton . If \verb+HERDIR+ is not specified the \eri\
        program is used as integral generator.) 
 %
 \item[\Key{IMSKIP}] 

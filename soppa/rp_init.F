@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck rp_init */
       SUBROUTINE RP_INIT(WORK,LWORK)
@@ -11,22 +11,22 @@ C
 C     PURPOSE: Initialize some pointers and sort AO-integrals
 C     into distributions. Based on CC_INP and ???
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 CSPAS:10/11-2003: replaced with new version from CC_INP
-#include <ccsections.h>
-#include <maxorb.h>
-#include <ccpack.h>
-#include <ccroper.h>
+#include "ccsections.h"
+#include "maxorb.h"
+#include "ccpack.h"
+#include "ccroper.h"
 CKeinSPASmehr
-#include <gnrinf.h>
-#include <ccfield.h>
-#include <r12int.h>
+#include "gnrinf.h"
+#include "ccfield.h"
+#include "r12int.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL OPENED
@@ -263,7 +263,6 @@ C
 C
       CALL CC_NODINP(WORD,.TRUE.)
 C
-      MSYMS = MSYM 
 C----------------------------------------------------------------
 C Initialize additional labels for CCSD(T)-gradient optimization
 C and FOP

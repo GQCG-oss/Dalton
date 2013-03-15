@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2001 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 1.2
-C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-C...   and O. Vahtras"
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck rxr */
       SUBROUTINE RXR(R2AM,V2AM,SF,TF,Q11,NOCDIM,NSPAIR)
@@ -56,8 +46,8 @@ C     It is assumed that this matrix is diagonal in the secondary space.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>  
+#include "implicit.h"
+#include "priunit.h"  
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0,
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
       PARAMETER (THRDIA = 1D-9)
@@ -66,10 +56,10 @@ C
      *        RR, VV, XBD, XAC, SFAC
       LOGICAL AVIRT, BVIRT, LDUM
       INTEGER IDUM
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       ISB(1) = 0
       DO 100 ISYM = 2, NSYM
@@ -366,15 +356,15 @@ C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
 C     Modified for natural virtual orbitals NATVIR (WK/UniKA/22-11-2005).
 C
-#include <implicit.h>
-#include <priunit.h>    
+#include "implicit.h"
+#include "priunit.h"    
       DIMENSION V2AM(*), GX(*), F2AM(*), WORK(*)
       integer   iv1fro(8,8),it1vm(8,8),it2vm(8,8),iv2fro(8,8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfro.h>
-#include <r12int.h> 
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfro.h"
+#include "r12int.h" 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       IF (NATVIR) THEN
@@ -679,14 +669,14 @@ C     contain the matrices computed in the subroutine RXR.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>  
-#include <maxorb.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"  
+#include "maxorb.h"
+#include "infinp.h"
       DIMENSION R2AM(*), V2AM(*), U2AM(*), EV(*), WRK(*),
      *          RXRS(*), RXRT(*), S2AM(*), T2AM(*),
      *          QQ2(*), QQ4(*), QQ6(*),ISB(8)
@@ -875,8 +865,8 @@ C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C     Modified by Claire C.M. Samson (University of Karlsruhe, 28 April 2003)
 C                                                          for local orbitals.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0,
      *           THRES = 1.0D-10)
@@ -917,11 +907,11 @@ C
       CHARACTER*11 CFN
       CHARACTER*3 APPROX(0:7,2), IPCC
       INTEGER NKILJ(8)
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
       DATA APPROX
      &/"0  ","A  ","A  ","A' ","B  ","B  ","xxx","xxx", 
      & "0  ","A  ","A  ","A' ","B' ","B' ","B  ","B  "/
@@ -2414,8 +2404,8 @@ C     solving sets of linear equations.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
       PARAMETER (QNIL = 1D-12, QTHR = 1D-10, D0 = 0D0,
      *           D1 = 1D0, D2 = 2D0, DP5 = 0.5D0, D99 = 1D99)
       DIMENSION VS(NSPAIR), VT(NSPAIR), EV(NSPAIR)
@@ -2630,11 +2620,11 @@ C
       END
 C  /* Deck iq */
       INTEGER FUNCTION IQ(I)
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h> 
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h" 
       J = 0
       K = 0
       DO 100 ISYM = 1, NSYM
@@ -2659,13 +2649,13 @@ C     on U2AM without this triangular constraint.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION U2AM(*), R2AM(*)
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       DO 101 ISYMIA = 1, NSYM
          ISYMJB = ISYMIA
          NAIBJ = IT2AM(ISYMIA,ISYMJB)
@@ -2693,16 +2683,16 @@ C     of one-particle matrices.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION GX(*), UG(*), WORK(*), QQ(*),QV(*)
       CHARACTER*7 GUNAM
       INTEGER IDUM
       LOGICAL LDUM
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J    
 C
 celena
@@ -3010,8 +3000,8 @@ C     This subroutine computes the integrals (i'k|r12**2|jl).
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION QQ(*),X1(*),Y1(*),Z1(*),X2(*),Y2(*),Z2(*),
      *          UU(*),ZZ(*),WORK(LWORK),S0(*)
       LOGICAL FOUND
@@ -3046,8 +3036,8 @@ C     square matrix.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AA(*),UU(NBAST,NOCCT),ZZ(NBAST,NOCCT),
      *          WORK(NBAST,NOCCT),BB(NOCCT,NOCCT,2)
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J    
@@ -3078,9 +3068,9 @@ C     This subroutine computes the integrals (i'k|r12**2|jl).
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION X1(NOCCT,NOCCT,2),Y1(NOCCT,NOCCT,2),
      *          Z1(NOCCT,NOCCT,2),X2(NOCCT,NOCCT,2),
      *          Y2(NOCCT,NOCCT,2),Z2(NOCCT,NOCCT,2),
@@ -3110,11 +3100,11 @@ C     of R12/B theory.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       DIMENSION R2AM(*), U2AM(*), WORK(*), QQ(*)
 C
       NOCDIM = NRHFT
@@ -3146,8 +3136,8 @@ C     Note that i' refers to the orbital |i'> = Sum_p' X(p'i) |p'>
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
       DIMENSION R2AM(*), U2AM(*)
@@ -3159,10 +3149,10 @@ C
       DIMENSION QQ11(NOCDIM,NOCDIM,NOCDIM,NOCDIM)
       INTEGER IDUM
       LOGICAL LDUM
-#include <r12int.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       IF (R12NOB) THEN
@@ -3480,20 +3470,20 @@ C     R12 driver.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccsdio.h>
-#include <cclr.h>
-#include <ccfdgeo.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccsdio.h"
+#include "cclr.h"
+#include "ccfdgeo.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "ccr12int.h"
       PARAMETER (D0 = 0D0)
       CHARACTER*6 TIMLAB, LABINT
       CHARACTER*10 APPROX
@@ -3619,7 +3609,7 @@ C
      *     'Level-shift in local-MP2-R12 solver        =',R12LEV
          WRITE(LUPRI,'(1X,78A1)') ('*',I=1,78)
          IF (R12HYB) THEN
-         WRITE(LUPRI,'(1X,A,4(/1X,A))')
+            WRITE(LUPRI,'(1X,A,4(/1X,A))')
      *       'The MP2-R12/A and MP2-R12/B energies'//
      *       ' are computed as described in:',
      *       'W. Klopper,'//
@@ -4473,13 +4463,13 @@ C     This subroutine collects the (ik|jl) MO-integrals.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XX(*),QQ(NOCDIM,NOCDIM,NOCDIM,NOCDIM)
-#include <r12int.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J 
       CALL DZERO(QQ,NOCDIM**4)
       DO ISYMIK = 1, NSYM
@@ -4541,8 +4531,8 @@ C     This subroutine removes small matrix elements.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0)
       DIMENSION A(N,N)
       DO 100 I = 1, N
@@ -4561,9 +4551,9 @@ C     singular value decomposition.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h> 
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h" 
+#include "r12int.h"
       PARAMETER (D0 = 0D0, DP5 = 5D-1, D2 = 2D0, D99 = 1D99)
       DIMENSION VS(NSPAIR), VT(NSPAIR), EV(NSPAIR)
       DIMENSION SS(NSPAIR,NSPAIR), ST(NSPAIR,NSPAIR)
@@ -4668,8 +4658,8 @@ C
 C  /* Deck r12fxl */
       SUBROUTINE R12FXL(XS,XT,FLM,SS,ST,NIND,II,JJ,NOCDIM,NSPAIR)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER ( DP5 = 0.5D0, D1 = 1.0D0, D1M = -1.0D0, D2 = 2.0D0 )
       PARAMETER ( SYMTHR = 1.0D-10 )
       DIMENSION FLM(*)
@@ -4789,8 +4779,8 @@ C  /* Deck r12fcl */
       SUBROUTINE R12FCL(ZS,ZT,WS,WT,VS,VT,YS,YT,SS,ST,CCS,CCT,FLM,NIND,
      &                                       II,JJ,NOCDIM,NSPAIR,DELTA)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D1M = -1.0D0 , D2 = 2D0 )
       DIMENSION FLM(*)
       DIMENSION II(NSPAIR), JJ(NSPAIR), NIND(NOCDIM,NOCDIM)
@@ -4870,7 +4860,7 @@ C
 C  /* Deck svbksb */
       SUBROUTINE SVBKSB(U,W,V,M,N,MP,NP,B,X,TMP)
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0D0)
       DIMENSION U(MP,NP),W(NP),V(NP,NP),B(MP),X(NP),TMP(N)
       DO 12 J=1,N
@@ -4903,8 +4893,8 @@ C     matrices and evaluates the MP2-R12 energies.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0, DELTA=0.0d0)
       PARAMETER (THRDIA = 1D-9)
@@ -4924,10 +4914,10 @@ C
       DIMENSION ISB(8)
       INTEGER IDUM
       LOGICAL LDUM
-#include <r12int.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       FF = D1 / SQRT(D2)
       ISB(1) = 0
@@ -5175,11 +5165,11 @@ C     Driver for computation of basis-set profiles.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>  
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"  
       DIMENSION R2AM(*), V2AM(*), EV(*), WRK(*)
       NOCDIM = NRHFT 
       NICDIM = NRHFTS
@@ -5204,17 +5194,17 @@ C
 C  /* Deck prfevr */
       SUBROUTINE PRFEVR(V2AM,R2AM,VS,VT,NICDIM,NOCDIM,NSPAIR,NTPAIR)
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
       DIMENSION R2AM(*), V2AM(*)
       DIMENSION VS(NOCDIM,NOCDIM), VT(NOCDIM,NOCDIM)
       INTEGER IDUM
       LOGICAL LDUM
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -5293,7 +5283,7 @@ C MATRIX PRODUCT A TIMES B = C.
 C  Written by George D. Purvis 1983
 C  Revised 6-Nov-1984 Hans Joergen Aa. Jensen
 C-------------------------------------------------------------
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(NRDIMA,NCDIMA),B(NRDIMB,NCDIMB),C(NRDIMC,NCDIMC)
       PARAMETER (ZERO=0.D00)
 C
@@ -5320,7 +5310,7 @@ C
 C=====================================================================*
 C  /* Deck vshrnk */
       SUBROUTINE VSHRNK(VS11,NSPAIR,NRHF,NRHFA,NSYM)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VS11(NSPAIR,NSPAIR),NRHF(NSYM),NRHFA(NSYM)
       IJ = 0
       JI = 0

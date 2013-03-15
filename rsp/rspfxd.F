@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck rspfxd */
       SUBROUTINE RSPFXD (FI,FA,QA,QB,H2AX,
@@ -48,28 +38,28 @@ C     type matrices FI, FA, QA, and QB with transformed ("X")
 C     integrals.  In addition, If LCON true then the H2AX matrix
 C     with transformed integrals is extracted for the CI routines.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.50D0 )
 C
 C Used from common blocks:
 C  ?
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infspi.h>
-#include <cbgetdis.h>
-#include <infdis.h>
+#include "infhyp.h"
+#include "infspi.h"
+#include "cbgetdis.h"
+#include "infdis.h"
 C
  
       DIMENSION FI(NORBT,NORBT),FA(NORBT,NORBT)
@@ -81,8 +71,7 @@ C
       DIMENSION ZYMAT1(NORBT,NORBT),ZYMAT2(NORBT,NORBT)
       DIMENSION ZYMAT3(NORBT,NORBT)
       DIMENSION WRK(*)
-      DIMENSION NEEDED(6)
-      DATA NEEDED /1,1,1,1,1,0/
+      DIMENSION NEEDED(-4:6)
 C
       LOGICAL LCON, LORB
 C
@@ -98,7 +87,12 @@ C
       ID1 = 1
       ID2 = N2ASHX*N2ASHX + 1
       CALL DZERO(H2,N2ORBX)
-      IF (IKLVL.GE.2) NEEDED(6) = 1
+      NEEDED(-4:6) = 0
+      IF (IKLVL.GE.2) THEN
+         NEEDED(1:6) = 1
+      ELSE
+         NEEDED(1:5) = 1
+      END IF
       IF (IPRFX.GT.200) THEN
          WRITE(LUPRI,'(/A)')   '>>>>>> ENTERING RSPFXD <<<<<<'
          WRITE(LUPRI,'(A,I5)') 'IDAX =',IDAX
@@ -573,19 +567,19 @@ C
 C Olav Vahtras
 C Dec 9 1991
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "infspi.h"
       LOGICAL LORB,LCON
       DIMENSION FI(*),FA(*),QA(*),QB(*),H2X(*),H2XAC(*),H2ACAC(*)
       DIMENSION DEN1(*),DEN2A(*),DEN2B(*),PVDEN(*)
@@ -648,19 +642,19 @@ C
 C Olav Vahtras
 C Dec 9 1991
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "infspi.h"
       LOGICAL LORB,LCON
       DIMENSION FI(*),FA(*),QA(*),QB(*)
       DIMENSION H2X(*),H2XAC(*),H2ACAC(*),ZYMAT(*)
@@ -755,23 +749,23 @@ C Case 3)
 C        F(p,q) = F(p,q) - (j q|p j)     D inactive
 C        F(C,q) = F(C,q) - (D q|C D)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D2= 2.0D0, DM1 = -1.0D0 )
 C
-#include <dftcom.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "dftcom.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infdim.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "infdim.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION FI(NORBT,NORBT), H2X(NORBT,NORBT)
       CALL QENTER('FIXAD1')
@@ -948,23 +942,23 @@ C         Restrictions: IPSYM = ICSYM X IZYSYM
 C                       IQSYM = ICSYM X INTSYM
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0, DM1 = -1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infdim.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <dftcom.h>
+#include "infhyp.h"
+#include "infdim.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "dftcom.h"
 C
       DIMENSION FI(NORBT,NORBT), H2X(NORBT,NORBT)
       DIMENSION ZYMAT(NORBT,NORBT)
@@ -1193,22 +1187,22 @@ C Case 3)
 C        F(p,q) = F(p,q) - (x q|p y) D(x,y)     D active
 C        F(C,q) = F(C,q) - (x q|C D) D(x,D)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D2= 2.0D0, DM1 = -1.0D0 , DMH = -.5D0)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infdim.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "infdim.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION DEN1(NASHT,NASHT),FA(NORBT,NORBT), H2X(NORBT,NORBT)
       DIMENSION H2XAC(NASHT,NASHT)
@@ -1411,22 +1405,22 @@ C         Restrictions: IPSYM = ICSYM X IZYSYM
 C                       IQSYM = ICSYM X INTSYM
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D2= 2.0D0, DM1 = -1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infrsp.h>
-#include <infdim.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION FA(NORBT,NORBT), H2X(NORBT,NORBT)
       DIMENSION ZYMAT(NORBT,NORBT)
@@ -1724,18 +1718,18 @@ C     where d2a=<e(SA*S1,S2> and d2b = <e(S1,SA*S2)>
 C     The sum over x and v is taken by reading in all active contribu-
 C     tions.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infhyp.h>
+#include "infhyp.h"
 C
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
       DIMENSION DEN2A(NASHT,NASHT,NASHT,NASHT)
@@ -1931,18 +1925,18 @@ C     where d2a=<e(SA*S1,S2> and d2 = <e(S1,SA*S2)>
 C     The sum over x and v is taken by reading in all active contribu-
 C     tions.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infhyp.h>
+#include "infhyp.h"
 C
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
       DIMENSION DEN2A(NASHT,NASHT,NASHT,NASHT)
@@ -2230,11 +2224,11 @@ C  /* Deck extrac */
 C
 C Extract the active part of H into HAC
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
       DIMENSION H(NORBT,NORBT), HAC(NASHT,NASHT)
       DO 110 JW = 1, NASHT
          JX = ISX(NISHT + JW)
@@ -2247,11 +2241,11 @@ C
       END
 C  /* Deck disac1 */
       SUBROUTINE DISAC1(IC,ID,H2XAC,H2ACAC)
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
       DIMENSION H2XAC(N2ASHX)
       DIMENSION H2ACAC(N2ASHX,NASHT,NASHT)
       PARAMETER (D1 = 1.0D0)
@@ -2263,16 +2257,16 @@ C  /* Deck disac1 */
       END
 C  /* Deck disac2 */
       SUBROUTINE DISAC2(IC,ID,H2XAC,H2ACAC,ZYMAT,IZYSYM)
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infind.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infind.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infpri.h>
+#include "infhyp.h"
+#include "infpri.h"
       DIMENSION H2XAC(N2ASHX)
       DIMENSION H2ACAC(N2ASHX,NASHT,NASHT)
       DIMENSION ZYMAT(NORBT,NORBT)
@@ -2346,7 +2340,7 @@ C
       END
 C  /* Deck priac2 */
       SUBROUTINE PRIAC2(AC2,N,LU)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AC2(N*N,N,N)
       DO 10 I=1,N
          DO 20 J=1,I

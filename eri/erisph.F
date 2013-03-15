@@ -1,53 +1,43 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C FILE : erisph.F
 C
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck sphmat */
       SUBROUTINE SPHMAT(CSQ,NROWS,NCOLS,NDER,GDER,WORK,LWORK,IPRINT)
 C
 C     T. Helgaker
 C 
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       INTEGER C, D, E, F, G, X, Y, Z
       LOGICAL GDER
-#include <nuclei.h>
-#include <ccom.h>
+#include "nuclei.h"
+#include "ccom.h"
       DIMENSION CSQ(NROWS,NCOLS), WORK(LWORK)
 C
       IF (DOCART) THEN
@@ -136,22 +126,22 @@ C     Order of spherical harmonics:         L, M
 C     Order of geometry derivatives:        I, J, K
 C     Order of magnetic field derivatives:  E, F, G 
 C       
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (DM1 = -1.0D0, D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-#include <ccom.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "ccom.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "nuclei.h"
       INTEGER A, B, C, E, F, G, EE, FF, GG, P, Q, R,
      &        T, U, V, X, Y, Z, V0, ALPHA, TOT, POS, PX, PY, PZ,
      &        BX, BY, BZ
       DIMENSION CSQ(NROWS,NCOLS)
       PWD(I,J)   = FACULT(I)/FACULT(I-J)
       HCF(I,J,K) = FACULT(I)/(FACULT(J)*FACULT(K/2)*FACULT(I-J-K))
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       M = M1 - L
       IF (L.EQ.1) THEN
@@ -262,9 +252,9 @@ C
       END
 C  /* Deck nspher */
       INTEGER FUNCTION NSPHER(L,X,Y,Z)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <ccom.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "ccom.h"
       INTEGER D, L, X, Y, Z 
 C
       D = X + Y + Z 
@@ -288,11 +278,11 @@ C  /* Deck lspher */
       END 
 C  /* Deck sphdim */
       SUBROUTINE SPHDIM
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <ericom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "ericom.h"
       NCSQ1 = NSPHER(0,MAXDER+1,0,0) - 1
       IF (BDER) THEN
          NCSQ2 = NATOMS
@@ -303,7 +293,7 @@ C  /* Deck sphdim */
       END
 C  /* Deck nsphad */
       INTEGER FUNCTION NSPHAD(L,LEVEL,NDER)
-#include <implicit.h>
+#include "implicit.h"
       NSPHAD = ((LEVEL + NDER)*(1 + 2*L)*(2 + LEVEL**2 
      &        + NDER**2 + 6*L + 3*L**2 - 3*NDER*(1 + L) 
      &        + LEVEL*(3 - NDER + 3*L)))/6
@@ -311,25 +301,25 @@ C  /* Deck nsphad */
       END
 C  /* Deck ncrt */
       INTEGER FUNCTION NCRT(I,J,K)
-#include <implicit.h>
+#include "implicit.h"
       NCRT = 1 + J + 2*K + (J + K)*(J + K - 1)/2
       RETURN
       END 
 C  /* Deck lmcrt */
       INTEGER FUNCTION LMCRT(L,M,I,J,K)
-#include <implicit.h>
+#include "implicit.h"
       LMCRT = (2*L+1)*(NCRT(I,J,K) - 1) + L + M + 1
       RETURN
       END 
 C  /* Deck sphadr */
       INTEGER FUNCTION KSQADR(L,X,Y,Z,C)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxdr.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxdr.h"
       LOGICAL FIRST
       INTEGER A, B, C, D, X, Y, Z
       INTEGER ACOEF(0:MXQN-1,0:MXDR), BCOEF(0:MXQN-1,0:MXDR)
-#include <ccom.h>
+#include "ccom.h"
 C
       SAVE FIRST, ACOEF, BCOEF, NHOLD
       DATA FIRST,NHOLD /.TRUE.,0/
@@ -352,10 +342,10 @@ C
       END
 C  /* Deck sphab */
       SUBROUTINE SPHAB(L,D,A,B)
-#include <implicit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "maxaqn.h"
       INTEGER D, A, B
-#include <ccom.h>
+#include "ccom.h"
       LX = NHTYP - 1
       A = 24 +  2*(1+2*D)*L*(-2+(3+2*D+2*D**2)*L+8*L**2+3*L**3)
      &       +  (D*(2+3*D + D**2)*(1+LX)*

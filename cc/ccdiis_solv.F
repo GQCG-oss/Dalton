@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ccdiis_sol */
       SUBROUTINE CCDIIS_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
@@ -63,11 +53,11 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "leinf.h"
       PARAMETER (D0 = 0.0D0 )
 C
       CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
@@ -343,12 +333,12 @@ C 1. set up reduced jacobian and overlap matrix
 C 2. determine NREDH solution vectors, returned in SOLEQ,
 C    and eigenvalues, returned in EIVAL.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <leinf.h>
-#include <ccrc1rsp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "leinf.h"
+#include "ccrc1rsp.h"
 C
       PARAMETER (D1 = 1.0D0 , D0 = 0.0D0 , THRZER = 1.0D-99)
 C
@@ -513,16 +503,16 @@ C                                   trial vectors.
 C
 C RMXNORM : maximum norm of residuals
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccfro.h>
-#include <leinf.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccfro.h"
+#include "leinf.h"
+#include "inftap.h"
       PARAMETER (  THRLDP = 1.D-20 )
       PARAMETER ( DTEST = 1.0D-04 )
       PARAMETER ( DM1=-1.0D0,D1 =1.0D0, D0=0.0D0 )
@@ -733,8 +723,8 @@ C     CPERT : Perturbative estimate for the R amplitudes.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 C
       INTEGER NCCVAR, NITER, MXDIIS, LWORK
       INTEGER KCVEC, MXSIZE, KBVEC, KAMAT, KSCR1, KSCR2, KEND

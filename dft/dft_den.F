@@ -1,56 +1,46 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C /* Deck dftdns */
       SUBROUTINE DFTDNS(DMAT,WORK,LWORK,IPRINT)
 C
 C     T. Helgaker Feb 01 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "inforb.h"
 C 
       DIMENSION DMAT(NBAST,NBAST), WORK(LWORK)
 C
-#include <inftap.h>
-#include <infvar.h>
-#include <nuclei.h>
-#include <dftcom.h>
+#include "inftap.h"
+#include "infvar.h"
+#include "nuclei.h"
+#include "dftcom.h"
 C
       IF (NCMOT .GT. LWORK) CALL STOPIT('DFTDNS',' ',NCMOT,LWORK)
       REWIND LUSIFC
@@ -73,12 +63,12 @@ C  /* Deck getden */
 C
 C     T. Helgaker Sep 1999
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (DP5 = 0.50D0, D1 = 1.0D0)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       LOGICAL NODC, NODV
       DIMENSION DMAT(NBAST,NBAST), WORK(LWORK)
@@ -111,9 +101,9 @@ C
 C
 C  /* Deck qdrdso */
       SUBROUTINE QDRDSO(DSO,WORK,LWORK,IPRINT,NODC,NODV)
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
       LOGICAL NODC, NODV
       DIMENSION DSO(NNBAST), WORK(LWORK)
 C
@@ -127,18 +117,18 @@ C
 C  /* Deck qdrds1 */
       SUBROUTINE QDRDS1(CMO,DV,DSO,IPRINT,NODC,NODV)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
-#include <maxorb.h>
-#include <inforb.h>
+#include "maxorb.h"
+#include "inforb.h"
       LOGICAL NODC, NODV
       DIMENSION CMO(*), DV(*), DSO(NNBAST)
-#include <iratdef.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "iratdef.h"
+#include "mxcent.h"
+#include "priunit.h"
 C
-#include <abainf.h>
-#include <inftap.h>
+#include "abainf.h"
+#include "inftap.h"
       INTEGER R, S, RS, U, V, UV
 C
 C
@@ -269,16 +259,16 @@ C
 C  /* Deck qdrdao */
       SUBROUTINE QDRDAO(DENMAT,DSO,NBAST,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION DSO(*), DENMAT(*)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine QDRDAO',-1)
 C
@@ -338,16 +328,19 @@ C /* Deck dftdnsab */
 C
 C     DFTDNS adaptation for open shell case ZR
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DMATA(*), DMATB(*)
       DIMENSION WORK(LWORK)
       INTEGER IPRINT
-#include <inforb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "priunit.h"
       PARAMETER ( D1 = 1.0D0, DP5 =0.5D0)
       LOGICAL CLOSED
+C
+C used from infvar.h: JWOPSY
+#include "infvar.h"
 C
       CALL QENTER('DFTDNSAB')
 C
@@ -358,8 +351,7 @@ C
 C    
       CLOSED=LUSIFC.LT.0
       IF (CLOSED) CALL GPOPEN(
-     &   LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.
-     &   )
+     &   LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LUSIFC)
       CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
       READ(LUSIFC)
@@ -397,4 +389,4 @@ C
 C      
       END
 
-
+C -- end of dft_den.F --

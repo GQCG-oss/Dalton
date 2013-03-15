@@ -56,7 +56,6 @@ cat > cc2dc_energy.dal <<%EOF%
 *ONEINT
 .SOLVENT
  10
-*END OF HERMIT
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -89,7 +88,7 @@ cat > cc2dc_energy.dal <<%EOF%
 .QUADRU
 .SECMOM
 .NONREL
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
@@ -112,23 +111,23 @@ CTRL[1]=2
 ERROR[1]="ENERGY TERMS NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "z * ( |0)\.84596085 * 2\.15021775 * 7\.17235440" $log | wc -l`
+CRIT1=`$GREP "z * ( |0)\.8459608. * 2\.150217.. * 7\.172354.." $log | wc -l`
 TEST[2]=`expr $CRIT1`
 CTRL[2]=1
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 # Quadrupole moment components compared:
-CRIT1=`$GREP "1 * 1\.56200408 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
-CRIT2=`$GREP "2 * (  | 0| \-|\-0)\.00000000 * -1\.70619161 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
-CRIT3=`$GREP "3 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000 * ( |0)\.14418753" $log | wc -l`
+CRIT1=`$GREP "1 * 1\.5620040. * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
+CRIT2=`$GREP "2 * (  | 0| \-|\-0)\.00000000 * -1\.706191.. * (  | 0| \-|\-0)\.00000000" $log | wc -l`
+CRIT3=`$GREP "3 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000 * ( |0)\.1441875." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
 
 # Second order electric moment components compared:
-CRIT1=`$GREP "1 * 7\.18394658 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
-CRIT2=`$GREP "2 * (  | 0| \-|\-0)\.00000000 * 5\.27212657 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
-CRIT3=`$GREP "3 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000 * 6\.49117785" $log | wc -l`
+CRIT1=`$GREP "1 * 7\.1839465. * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
+CRIT2=`$GREP "2 * (  | 0| \-|\-0)\.00000000 * 5\.2721265. * (  | 0| \-|\-0)\.00000000" $log | wc -l`
+CRIT3=`$GREP "3 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000 * 6\.4911778." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"

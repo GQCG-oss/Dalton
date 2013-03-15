@@ -94,7 +94,7 @@ cat > prop_ctocd.dal <<%EOF%
 .CTOCD
 .MAGNET
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -148,7 +148,7 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Final * HF energy\: * \-76\.060784218[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-76\.06078421[89]" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -176,97 +176,97 @@ CTRL[6]=6
 ERROR[6]="CTOCD-DZ MAGNETIZABILITIES NOT CORRECT"
 
 # Total magnetizability tensor
-CRIT1=`$GREP "Bx * \-2\.474594....[0-9][0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.3031855....[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-2\.421095.....[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * \-2\.47459[0-9]* * (\-0| \-| 0|  )\.0* * (\-0| \-| 0|  )\.0*" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.0* * \-2\.30318[0-9]* * (\-0| \-| 0|  )\.0*" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.0* * (\-0| \-| 0|  )\.0* * \-2\.42109" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="TOTAL CTOCD-DZ MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Diamagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * \-2\.912805.....[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.4229626....[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-2\.6541125....[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * \-2\.91280[0-9]* * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.42296[0-9]* * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-2\.65411" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="CTOCD-DZ DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Paramagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * (0| )\.438211.....[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.1197771....[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * (0| )\.233016.....[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * (0| )\.43821[0-9]* * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.11977[0-9]* * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * (0| )\.2330" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=6
 ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Shielding tensors (symmetry coordinates)
-CRIT1=`$GREP "O * y * 6\.241603.[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * y * 1\.232636.[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * z * (\-0|\-)\.4551983[0-9]" $log | wc -l`
-CRIT4=`$GREP "O * x * 6\.357938.[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * x * (0| )\.463524.[0-9]" $log | wc -l`
-CRIT6=`$GREP "O * z * 6\.327062.[0-9]" $log | wc -l`
-CRIT7=`$GREP "H * y * (\-0|\-)\.6177392[0-9]" $log | wc -l`
-CRIT8=`$GREP "H * z * (0| )\.777154.[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * y * 6\.24160" $log | wc -l`
+CRIT2=`$GREP "H * y * 1\.23263" $log | wc -l`
+CRIT3=`$GREP "H * z * (\-0|\-)\.45519" $log | wc -l`
+CRIT4=`$GREP "O * x * 6\.35793" $log | wc -l`
+CRIT5=`$GREP "H * x * (0| )\.46352" $log | wc -l`
+CRIT6=`$GREP "O * z * 6\.32706" $log | wc -l`
+CRIT7=`$GREP "H * y * (\-0|\-)\.61773" $log | wc -l`
+CRIT8=`$GREP "H * z * (0| )\.77715" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[10]=16
 ERROR[10]="CTOCD-DZ SHIELDING TENSORS IN SYMMETRY COORDINATES NOT CORRECT ${TEST[10]}"
 
 # Chemical shielding for O
-CRIT1=`$GREP "Shielding constant\: * 234\.194[0-9] ppm" $log | wc -l`
-CRIT2=`$GREP "Anisotropy\: * 58\.475[0-9] ppm" $log | wc -l`
-CRIT3=`$GREP "Asymmetry\: * (0| )\.088[0-9]" $log | wc -l`
-CRIT4=`$GREP "S parameter\: * 58\.550[0-9] ppm" $log | wc -l`
+CRIT1=`$GREP "Shielding constant\: * 234\.19" $log | wc -l`
+CRIT2=`$GREP "Anisotropy\: * 58\.47" $log | wc -l`
+CRIT3=`$GREP "Asymmetry\: * (0| )\.088" $log | wc -l`
+CRIT4=`$GREP "S parameter\: * 58\.5[45]" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[11]=8
 ERROR[11]=" CTOCD-DZ CHEMICAL SHIELDING FOR OXYGEN NOT CORRECT"
 
 # Total shielding tensor for O
-CRIT1=`$GREP "O * x * 212\.9843...[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "O * y * (0| )\.00000000 * 273\.1779...[0-9] * (0| )\.00000000" $log | wc -l`
-CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 *  216\.4210...[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * x * 212\.984....[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "O * y * (0| )\.00000000 * 273\.17.....[0-9] * (0| )\.00000000" $log | wc -l`
+CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 *  216\.42.....[0-9]" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[12]=6
 ERROR[12]="TOTAL CTOCD-DZ SHIELDING TENSOR FOR OXYGEN NOT CORRECT"
 
 # Diamagnetic and paramagnetic contributions
-CRIT1=`$GREP "Diamagnetic contribution\: *  337\.74211[0-9] * Paramagnetic\: * \-103\.5476.[0-9]" $log | wc -l`
+CRIT1=`$GREP "Diamagnetic contribution\: *  337\.7421[0-9]* * Paramagnetic\: * \-103\.54" $log | wc -l`
 TEST[13]=`expr	$CRIT1`
 CTRL[13]=1
 ERROR[13]="CTOCD-DZ DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR OXYGEN, GAUGE ORIG ON ATOM, NOT CORRECT"
 
 # Chemical shielding for H
-CRIT1=`$GREP "Shielding constant\: * 28\.168[0-9] ppm" $log | wc -l`
-CRIT2=`$GREP "Anisotropy\: * 16\.716[0-9] ppm" $log | wc -l`
-CRIT3=`$GREP "Asymmetry\: * (0| )\.058[0-9]" $log | wc -l`
-CRIT4=`$GREP "S parameter\: *  16\.725[0-9] ppm" $log | wc -l`
+CRIT1=`$GREP "Shielding constant\: * 28\.168" $log | wc -l`
+CRIT2=`$GREP "Anisotropy\: * 16\.716" $log | wc -l`
+CRIT3=`$GREP "Asymmetry\: * (0| )\.058" $log | wc -l`
+CRIT4=`$GREP "S parameter\: *  16\.725" $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[14]=18
 ERROR[14]="CTOCD-DZ CHEMICAL SHIELDING FOR HYDROGEN NOT CORRECT ${TEST[14]}"
 
 # Total shielding tensor for H1 and H2
-CRIT1=`$GREP "H * 1 x *  22\.269(5|6)...[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "H * 1 y * (0| )\.00000000 * 34\.9920...[0-9] * \-8\.5077...[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 1 z * (0| )\.00000000 * \-5\.9340...[0-9] *  27\.2424...[0-9]" $log | wc -l`
+CRIT1=`$GREP "H * _1 x *  22\.269(5|6)...[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H * _1 y * (0| )\.00000000 * 34\.9920...[0-9] * \-8\.5077...[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * _1 z * (0| )\.00000000 * \-5\.93(39|40)...[0-9] *  27\.2424...[0-9]" $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[15]=6
 ERROR[15]="TOTAL CTOCD-DZ SHIELDING TENSOR FOR HYDROGEN NOT CORRECT"
 
 # Diamagnetic and paramagnetic contributions H1 and H2
-CRIT1=`$GREP "Diamagnetic contribution\: * 94\.8432.[0-9] * Paramagnetic\: * \-66\.6752(7|8)[0-9]" $log | wc -l`
+CRIT1=`$GREP "Diamagnetic contribution\: * 94\.843[0-9]* * Paramagnetic\: * \-66\.6752" $log | wc -l`
 TEST[16]=`expr	$CRIT1`
 CTRL[16]=2
 ERROR[16]="CTOCD-DZ DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR HYDROGEN NOT CORRECT"
 
 # Diamagnetic and paramagnetic contributions O
-CRIT1=`$GREP "Diamagnetic contribution\: * 335\.9557(8|9)[0-9] * Paramagnetic\: * \-101\.7613.[0-9]" $log | wc -l`
+CRIT1=`$GREP "Diamagnetic contribution\: * 335\.9557[0-9]* * Paramagnetic\: * \-101\.76[12]" $log | wc -l`
 TEST[17]=`expr	$CRIT1`
 CTRL[17]=1
 ERROR[17]="CTOCD-DZ DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR OXYGEN NOT CORRECT"
 
 # Diamagnetic and paramagnetic contributions
-CRIT1=`$GREP "Diamagnetic contribution\: * 21\.95124[0-9] * Paramagnetic\: * 6\.2167(7|8)[0-9]" $log | wc -l`
+CRIT1=`$GREP "Diamagnetic contribution\: * 21\.9512[0-9]* * Paramagnetic\: * 6\.2167(7|8)" $log | wc -l`
 TEST[18]=`expr	$CRIT1`
 CTRL[18]=2
 ERROR[18]="CTOCD-DZ DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR HYDROGEN, GAUGE ORIG ON ATOM, NOT CORRECT"

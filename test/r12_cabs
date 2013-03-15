@@ -96,7 +96,7 @@ cat > r12_cabs.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12RSG
@@ -122,7 +122,7 @@ cat > r12_cabs.dal <<'%EOF%'
 *R12
 .CABS
 .R12XXL
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

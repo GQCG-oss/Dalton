@@ -52,7 +52,6 @@ cat > cc2dc_resp.dal <<%EOF%
 *ONEINT
 .SOLVENT
  10
-*END OF HERMIT
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -86,7 +85,7 @@ cat > cc2dc_resp.dal <<%EOF%
 *CCLR
 .DIPOLE
 .OLD_LR
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
@@ -109,18 +108,18 @@ CTRL[1]=2
 ERROR[1]="ENERGY TERMS NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "z * ( |0)\.84595673 * 2\.15020731" $log | wc -l`
+CRIT1=`$GREP "z * ( |0)\.84595673 * 2\.15020740" $log | wc -l`
 TEST[2]=`expr $CRIT1`
 CTRL[2]=1
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 
 # The component of the static polarizability tensor compared:
-CRIT1=`$GREP "1 * 7\.1400573. * ( |0|\-0|\-)\.0000000. * ( |0|\-0|\-)\.0000000." $log | wc -l`
-CRIT2=`$GREP "2 * ( |0|\-0|\-)\.0000000. * 3\.2131716. * ( |0)\.0000000." $log | wc -l`
-CRIT3=`$GREP "3 * ( |0|\-0|\-)\.0000000. * ( |0)\.0000000. * 5\.3202736." $log | wc -l`
-TEST[3]=`expr $CRIT1`
-CTRL[3]=1
+CRIT1=`$GREP "1 * 7\.140057.. * \-*0*\.0000000. * \-*0*\.0000000." $log | wc -l`
+CRIT2=`$GREP "2 * \-*0*\.0000000. *  3\.213171.. * \-*0*\.0000000." $log | wc -l`
+CRIT3=`$GREP "3 * \-*0*\.0000000. * \-*0*\.0000000. * 5\.320273.." $log | wc -l`
+TEST[3]=`expr $CRIT1 + $CRIT2 + $CRIT3`
+CTRL[3]=3
 ERROR[3]="STATIC POLARIZABILITY NOT CORRECT"
 
 PASSED=1

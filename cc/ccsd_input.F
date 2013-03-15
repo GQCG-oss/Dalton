@@ -1,40 +1,30 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
-C
-C  /* Deck cc_inp */
-      SUBROUTINE CC_INP(WORD,IREST,MSYM)
+C  /* Deck cc_input */
+      SUBROUTINE CC_INPUT(WORD,IREST,MSYM)
 C 
 C-------------------------------------------------
 C
@@ -80,29 +70,39 @@ C     MINSCR, MINMEM
 C
 C-------------------------------------------------------------
 C            
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <inftap.h>
-#include <ccfield.h>
-#include <cclr.h>
-#include <ccfop.h>
-#include <leinf.h>
-#include <gnrinf.h>
-#include <ccrspprp.h>
-#include <ccpack.h>
-#include <eribuf.h>
-#include <cbieri.h>
-#include <ccroper.h>
-#include <cch2d.h>
-      PARAMETER (NTABLE = 110)
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "inftap.h"
+#include "ccfield.h"
+#include "cclr.h"
+#include "ccfop.h"
+#include "leinf.h"
+#include "gnrinf.h"
+#include "ccrspprp.h"
+#include "ccpack.h"
+#include "eribuf.h"
+#include "cbieri.h"
+#include "ccroper.h"
+#include "cch2d.h"
+Cholesky
+#include "cc_cho.h"
+#include "ccdeco.h"
+#include "chodbg.h"
+#include "chomp2.h"
+#include "chocc2.h"
+C
+#include "center.h"
+Cholesky  
+C
+      PARAMETER (NTABLE = 120)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -122,7 +122,7 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '*CCFOP ','.SOPPA(','.CCR(3)','.CCR(T)','.FIELD ',
      &            '.DEBUG ','*CCQR2R','.HERDIR','.BUFLEN','*CCLR  ',
      &            '*CCEXLR','.NSIMLE','.THRLEQ','.MXLRV ','*CCTM  ',
-     &            '.XXXXXX','*CC5R  ','*CC4R  ','*CCQR  ','*CCCR  ',
+     &            '*CCLRLA','*CC5R  ','*CC4R  ','*CCQR  ','*CCCR  ',
      &            '.O2SKIP','.R2SKIP','.X2SKIP','.F2SKIP','.L2SKIP',
      &            '*CCMCD ','.ANAAOD','.PACK  ','.CONNEC','.THRLDP',
      &            '.RCSKIP','.FCSKIP','.LCSKIP','.CO2SKI','.CX2SKI',
@@ -130,7 +130,9 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
      &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
      &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
-     &            '.THRVEC','.MTRIP ','.SOPPA2','.AO-SOP','.XXXXXX'/
+     &            '.THRVEC','.MTRIP ','.SOPPA2','.AO-SOP','.NOSORT',
+     &            '.KEPAOI','*CHO(T)','*CHOCC2','*CHOMP2','*CHODBG',
+     &            '.D01SKI','*ACTIVE','.CHO(T)','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -181,7 +183,17 @@ C
       CCTPA  = .FALSE.
       CCEXLR = .FALSE.
       CCDERI = .FALSE.
-
+!     Lanczos
+      CCLRLCZ = .FALSE.
+C     
+Cholesky
+C 
+      CHOPT  = .FALSE.
+      CALL CC_CHOPTINIT
+      CHODBG = .FALSE.
+C     
+Cholesky
+C 
       LVVVV  = .FALSE.
 
       L0SKIP = .FALSE.
@@ -225,6 +237,8 @@ C
 
       HERDIR = .FALSE.
 
+      NOSORT = .FALSE.
+
       ANAAOD   = .FALSE.
       MAXRED   = 200
       MXLRV    = MAXRED - 1
@@ -264,6 +278,13 @@ C----------------------------------------------------------------
       ETACCPT = .FALSE.
       DIRKAPB = .FALSE.
 C
+C-----------------------------
+C     Cholesky initializations
+C-----------------------------
+C
+      CALL CC_CHOMP2INIT
+      CALL CC_CHOCC2INIT
+C
 C---------------------------------------------------------------------
 C     CCSAVE is true for all case, but can be turned of in *ccexci
 C     Only used for linear response - mandatory for oscstr and 
@@ -274,7 +295,7 @@ C
 C
 C     Initialize the length of the list of response operator labels
 C
-      NPRLBL = 0
+      NPRLBL_CC = 0
 C
 C     Default for evaluation of first derivative integrals
 C
@@ -371,7 +392,8 @@ C
      *                62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
      *                92,93,94,95,96,97,98,99,100,101,102,103,104,
-     *                105,106,107,108,109,110), I
+     *                105,106,107,108,109,110,111,112,113,114,115,
+     *                116,117,118,119,120), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -655,6 +677,9 @@ CKeinSPASmehr
                   CALL CC_TMINP(WORD)
                GO TO 1000
    66          CONTINUE
+               !Lanczos linear response 
+               !*CCLRLANCZOS
+                  CALL CC_LANCZOS_LRINP(WORD)
                GO TO 1000
    67          CONTINUE
                   CALL CC_5RINP(WORD)
@@ -822,6 +847,47 @@ C                '.AO-SOPPA'
                   KEEPAOIN = .TRUE.
                GO TO 1000
  110           CONTINUE 
+C                 'NOSORT'
+                  NOSORT = .TRUE.
+               GO TO 1000
+ 111           CONTINUE 
+C                 'KEPAOI'
+                  KEEPAOIN = .TRUE.
+               GO TO 1000
+ 112           CONTINUE 
+C                '*CHO(T)'
+                  CHOPT = .TRUE.
+                  CCPT  = .TRUE.
+                  CALL CC_CHOPTINP(WORD)
+               GO TO 1000
+ 113           CONTINUE 
+C                '*CHOCC2'
+                 CALL CC_CHOCC2INP(WORD)
+               GO TO 1000
+ 114           CONTINUE 
+C                '*CHOMP2'
+                 CALL CC_CHOMP2INP(WORD)
+               GO TO 1000
+ 115           CONTINUE 
+C                '*CHODBG'
+                 CALL CC_CHODBINP(WORD)
+               GO TO 1000
+ 116           CONTINUE 
+C                '.D01SKI'
+                 D01SKIP = .TRUE.
+               GO TO 1000
+ 117           CONTINUE 
+C                '*ACTIVE'
+                 ACTIVE = .TRUE.
+                 CALL CC_ACTINP(WORD,MSYM)
+               GO TO 1000
+ 118           CONTINUE 
+C                '.CHO(T)'
+                  CHOPT = .TRUE.
+                  CCPT  = .TRUE.
+               GO TO 1000
+ 119           CONTINUE 
+ 120           CONTINUE 
                GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
@@ -850,69 +916,79 @@ C
       !Sonia: replace ETAPTI keyword....
       ETACCPT = ( (OPTNEW.OR.CCDERI).AND.(CCPT) )
 
+Cho
+      IF (CHOINT) IPRINT = MAX(IPRINT,1)
+      IF (CHOINT) THRVEC = THRENR*1.0D2
+Cho
       RETURN
       END
-C  /* Deck CC_PRTI */
-      SUBROUTINE CC_PRTI
+C  /* Deck CC_PRTINP */
+      SUBROUTINE CC_PRTINP(IWUNIT)
 C
-C     K.Ruud, Jan.-96. Split from CC_INP in order to place CC output more 
+C     K.Ruud, Jan.-96. Split from CC_INPUT in order to place CC output more 
 C     adequatly in SIRIUS Print of input processing
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclrinf.h>
-#include <cclr.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cclres.h>
-#include <ccqr2r.h>
-#include <ccfield.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclrinf.h"
+#include "cclr.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cclres.h"
+#include "ccqr2r.h"
+#include "ccfield.h"
+#include "ccsdsym.h"
 C
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for CC:',0)
+         IF (IWUNIT .eq. LUPRI) THEN
+            CALL HEADER('Changes of defaults for CC:',0)
+         ELSE
+            WRITE(IWUNIT,'(//10X,A/10X,A/)')
+     &         'Changes of defaults for CC:',
+     &         '---------------------------'
+         END IF
          IF (SKIP) THEN
-            WRITE (LUPRI,'(A)') ' -CCSD skipped in this run.'
+            WRITE (IWUNIT,'(A)') ' -CCSD skipped in this run.'
          ELSE
 C
-            IF (DIRECT) WRITE (LUPRI,'(/A/A)')
+            IF (DIRECT) WRITE (IWUNIT,'(/A/A)')
      *         ' -This is a direct atomic orbital integral based',
      *         '  calculation for coupled cluster wave function'
 C
-            IF (CCSDT) WRITE (LUPRI,'(/A)')
+            IF (CCSDT) WRITE (IWUNIT,'(/A)')
      *         ' -Iterative triple excitations included '
 C
-            IF (FROIMP) WRITE(LUPRI,'(/A)')
+            IF (FROIMP) WRITE(IWUNIT,'(/A)')
      *         ' -Implicit frozen core calculation'
 C
-            IF (FROEXP) WRITE(LUPRI,'(/A)')
+            IF (FROEXP) WRITE(IWUNIT,'(/A)')
      *         ' -Explicit frozen core calculation'
 C
-            IF (.NOT. T2TCOR) WRITE(LUPRI,'(/A)')
+            IF (.NOT. T2TCOR) WRITE(IWUNIT,'(/A)')
      *         ' -Transposed t2-amplitudes not hold in core'
 C
             IF (NFIELD.GT.0) THEN
-               WRITE(LUPRI,'(A)') ' -Calculation with finite fields:'
+               WRITE(IWUNIT,'(A)') ' -Calculation with finite fields:'
                DO IF = 1, NFIELD
-                  WRITE(LUPRI,'(A,F10.6,A,A8)')
+                  WRITE(IWUNIT,'(A,F10.6,A,A8)')
      *               '    Field strength: ',EFIELD(IF),
      *               'Field Label:  ',LFIELD(IF)
                END DO
-               CALL FLDINP
+               CALL CC_FIELD_PRTINP(IWUNIT)
                IF (CCSDT.AND.NONHF) THEN
                   IF (.NOT. CC3) THEN
-                    WRITE(LUPRI,*) 'No triples unrelaxed FF possibility'
+                    WRITE(IWUNIT,*)'No triples unrelaxed FF possibility'
                     CALL QUIT('No triples unrelaxed FF possibility')
                   ENDIF
                ENDIF
                IF (CCS.AND.NONHF) THEN
-                  WRITE(LUPRI,*) 'No CCS unrelaxed FF possibility '
-                  WRITE(LUPRI,*) 'Use instead CC2 with CCSTST option.'
+                  WRITE(IWUNIT,*) 'No CCS unrelaxed FF possibility '
+                  WRITE(IWUNIT,*) 'Use instead CC2 with CCSTST option.'
                   CALL QUIT('No CCS unrelaxed FF possibility')
                ENDIF                                             
                IF (NONHF .AND. RELORB) THEN
-                  WRITE(LUPRI,*) 'Inconsistency: Non HF reference and '
+                  WRITE(IWUNIT,*) 'Inconsistency: Non HF reference and '
      *                        //'relaxed derivative requested'
                   CALL QUIT('Inconsistency: in FF '//
      &                 'and relaxed derivative')
@@ -921,7 +997,7 @@ C
                ! (needed for CCR12 with unrelaxed finite fields)
                IF (NONHF) THEN
                   DO IFIELD = 1, NFIELD
-                     IDX = INDPRPCC(LFIELD(IFIELD))
+                     IDX = INDPRP_CC(LFIELD(IFIELD))
                   END DO
                END IF
             END IF 
@@ -929,75 +1005,77 @@ C
             IF (LHTR.AND.((CCLRSD).OR.
      *         (CCR3.OR.CCRT.OR.CCR1A.OR.CC1B.OR.CC1A.OR.CC1B)))
      *      THEN
-               WRITE(LUPRI,*) 'Input inconsistent due to LHTR '
+               WRITE(IWUNIT,*) 'Input inconsistent due to LHTR '
                CALL QUIT('Do not use LHTR for this '//
      &              'type of calculation ')
             ENDIF
 C
 C
-            IF ( DEBUG ) WRITE(LUPRI,'(A)')
+            IF ( DEBUG ) WRITE(IWUNIT,'(A)')
      *         ' -Debug printout activated '
-            IF ( CCEXCI ) WRITE(LUPRI,'(A)')
+            IF ( CCEXCI ) WRITE(IWUNIT,'(A)')
      *         ' -Excitation energies calculated'
-            IF ( CCLRSD .OR. CCOPA) WRITE(LUPRI,'(A)')
+            IF ( CCLRSD .OR. CCOPA) WRITE(IWUNIT,'(A)')
      *         ' -One-photon absorption strengths will be calculated'
-            IF ( CCTPA ) WRITE(LUPRI,'(A)')
+            IF ( CCTPA ) WRITE(IWUNIT,'(A)')
      *         ' -Two-photon absorption strengths will be calculated'
-            IF ( JACTST ) WRITE(LUPRI,'(A)')
+            IF ( JACTST ) WRITE(IWUNIT,'(A)')
      *         ' -Jacobian tested agains finite difference Jacobian'
-            IF ( JACEXP ) WRITE(LUPRI,'(A)')
+            IF ( JACEXP ) WRITE(IWUNIT,'(A)')
      *         ' -Jacobian constructed explicit'
-            IF ( FDEXCI ) WRITE(LUPRI,'(A)')
+            IF ( FDEXCI ) WRITE(IWUNIT,'(A)')
      *         ' -Excitation energies of finite diff. Jacobian calc.'
-            IF ( CCLR  ) WRITE(LUPRI,'(A)')
+            IF ( CCLR  ) WRITE(IWUNIT,'(A)')
      *         ' -Linear response properties calculated'
-            IF ( CAUCHY) WRITE(LUPRI,'(A)')
+            IF ( CAUCHY) WRITE(IWUNIT,'(A)')
      *         ' -Dispersion coefficients for linear response calc.'
-            IF ( CCQR  ) WRITE(LUPRI,'(A)')
+            IF ( CCLRLCZ ) WRITE(IWUNIT,'(A)')
+     *         ' -Damped Linear Response via Lanczos algorithm'
+            IF ( CCQR  ) WRITE(IWUNIT,'(A)')
      *         ' -Quadratic response properties calculated'
-            IF ( CCCR  ) WRITE(LUPRI,'(A)')
+            IF ( CCCR  ) WRITE(IWUNIT,'(A)')
      *         ' -Cubic response properties calculated'
-            IF ( OSCSTR) WRITE(LUPRI,'(A)')
+            IF ( OSCSTR) WRITE(IWUNIT,'(A)')
      *         ' -Oscillator strengths calculated'
-            IF ( CCQR2R .OR. CCXOPA) WRITE(LUPRI,'(A)')
+            IF ( CCQR2R .OR. CCXOPA) WRITE(IWUNIT,'(A)')
      *         ' -Transition strengths between two excited states '//
      *         'calculated.'
-            IF (CCEXGR) WRITE(LUPRI,'(A)')
+            IF (CCEXGR) WRITE(IWUNIT,'(A)')
      *         ' -Excited state properties calculated'
-            IF ( CCMCD  ) WRITE(LUPRI,'(A)')
+            IF ( CCMCD  ) WRITE(IWUNIT,'(A)')
      *         ' -Magnetic circular dichroism B calculated'
-            IF (DIPMOM) WRITE(LUPRI,'(A)')
+            IF (DIPMOM) WRITE(IWUNIT,'(A)')
      *         ' -Dipole moment calculated'
-            IF (QUADRU) WRITE(LUPRI,'(A)')
+            IF (QUADRU) WRITE(IWUNIT,'(A)')
      *         ' -Traceless quadrupole moment calculated'
-            IF (NQCC) WRITE(LUPRI,'(A)')
+            IF (NQCC) WRITE(IWUNIT,'(A)')
      *         ' -Electric field gradient calculated'
-            IF (RELCOR) WRITE(LUPRI,'(A)')
+            IF (RELCOR) WRITE(IWUNIT,'(A)')
      *         ' -Relativistic corrections to energy calculated'
-            IF (SECMOM) WRITE(LUPRI,'(A)')
+            IF (SECMOM) WRITE(IWUNIT,'(A)')
      *         ' -Electronic second moment of charge calculated'
-            IF (DAR2EL) WRITE(LUPRI,'(A)')
+            IF (DAR2EL) WRITE(IWUNIT,'(A)')
      *         ' -Relativistic two-electron Darwin term calculated'
-            IF (DPTECO) WRITE(LUPRI,'(A)')
+            IF (DPTECO) WRITE(IWUNIT,'(A)')
      *         ' -First-order DPT energy corrections calculated'
-            IF (SIRSOP .AND. CCSD) WRITE (LUPRI,'(A)')
+            IF (SIRSOP .AND. CCSD) WRITE (IWUNIT,'(A)')
      *         ' -CCSD Amplitudes appended to Sirius interface'//
      *         ' for SOPPA(CCSD)'
-            IF (SIRSOP .AND. CC2) WRITE (LUPRI,'(A)')
+            IF (SIRSOP .AND. CC2) WRITE (IWUNIT,'(A)')
      *         ' -CC2 Amplitudes appended to Sirius interface'//
      *         ' for SOPPA(CC2)'
-            IF (AOSOPPA) WRITE (LUPRI,'(/A,A)')
+            IF (AOSOPPA) WRITE (IWUNIT,'(/A,A)')
      *         ' MP2 Amplitudes written for atom integral direct',
      *         ' SOPPA calculations'
 C
          END IF
-         WRITE (LUPRI,'(A)') '  '
+         WRITE (IWUNIT,'(A)') '  '
       END IF
 C
       RETURN
       END
-c /* deck fldinp */
-      SUBROUTINE FLDINP
+c /* deck CC_FIELD_PRTINP */
+      SUBROUTINE CC_FIELD_PRTINP(IWUNIT)
 C
 C     Calculate nuclear contribution to energy in electric field
 C
@@ -1006,15 +1084,15 @@ C     It is assumed that the molecule is properly oriented.
 C
 C     ASM & JCh  February 1996
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccfield.h"
+#include "ccorb.h"
 C
       PARAMETER (ZERO = 0.0D0)
 C
@@ -1023,7 +1101,7 @@ C
       CHARACTER*6 FLDTYP
       CHARACTER*1 FLDDIR
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C----------------------------------------------
 C     Calculate total electric field.
@@ -1056,7 +1134,7 @@ C
 C
       IF (ELFLNR .NE. 0.0D0) THEN
 C
-         WRITE(LUPRI,'(/A,3F14.8/A,F14.8)')
+         WRITE(IWUNIT,'(/A,3F14.8/A,F14.8)')
      &      ' Electric field:  ',(ELEFLD(I),I=1,3),
      &      ' Total norm:      ',ELFLNR
 C
@@ -1135,10 +1213,10 @@ C
 C     QTOT = DFLOAT(NRHFTS*2)
 C     CORR = -QTOT*(XCQ*ELEFLD(1) + YCQ*ELEFLD(2) + ZCQ*ELEFLD(3))
 C
-      WRITE(LUPRI,'(A,3F14.8)') 'Center of charge:',XCQ,YCQ,ZCQ
-      WRITE(LUPRI,'(2A,F14.8)') 'Charge correction to interaction ',
+      WRITE(IWUNIT,'(A,3F14.8)') 'Center of charge:',XCQ,YCQ,ZCQ
+      WRITE(IWUNIT,'(2A,F14.8)') 'Charge correction to interaction ',
      *                      'with electric field:', CORR
-      WRITE(LUPRI,*)
+      WRITE(IWUNIT,*)
 C
       RETURN
       END
@@ -1148,10 +1226,10 @@ C     If field was set in Hartree-Fock transfer to CC.
 C
 C     Ove Christiansen 11-6-1996
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
 C
       DIMENSION EFIEL(MXFEL)
       CHARACTER*8 LFIEL(MXFEL)
@@ -1187,17 +1265,17 @@ C    Ove Christiansen 24-10 1996
 C    Kasper Hald & Christof Haettig 12-08-99, changes for triplet
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <cclres.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "cclres.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -1703,17 +1781,17 @@ C
 C    Ove Christiansen 24-10 1996
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <cclres.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "cclres.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -1736,7 +1814,7 @@ C=====================================================================*
       DATA TABLE /'.DIPOLE','.ECDLEN','.DIPLEN','.NO2N+1','.OPERAT',
      *            '.SELEXC','.DIPVEL','.DIPMIX','.ECDVEL','.OECDLE',
      *            '.OECDVE','.OLD_LR','.BOTHLR','.NEW_LR','.ECD   ',
-     *            '.OECD  ','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     *            '.OECD  ','.SUMRUL','.XXXXXX','.XXXXXX','.XXXXXX'/
 
 *--------------------------------------------------------------------*
 * begin:
@@ -1759,6 +1837,7 @@ C
       SELLRS = .FALSE.
       OLDLRS = .FALSE.
       BOTHLRS = .FALSE.
+      SUMRULES = .false.
 C
       NSELRS = 0
       NLRSOP = 0
@@ -1812,9 +1891,9 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NLRSOP + (IDXA-1)*3+IDXB
@@ -1838,12 +1917,12 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
-              IANG(1) = INDPRPCC('XANGMOM ')
-              IANG(2) = INDPRPCC('YANGMOM ')
-              IANG(3) = INDPRPCC('ZANGMOM ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IANG(1) = INDPRP_CC('XANGMOM ')
+              IANG(2) = INDPRP_CC('YANGMOM ')
+              IANG(3) = INDPRP_CC('ZANGMOM ')
               DO IDXAB=1,3
                 IDX = NLRSOP + IDXAB
                 IALRSOP(IDX) = IDIP(IDXAB)
@@ -1879,8 +1958,8 @@ C
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NLRSOP.LT.MXLRSO) THEN
                     NLRSOP = NLRSOP + 1
-                    IALRSOP(NLRSOP) = INDPRPCC(LABELA)
-                    IBLRSOP(NLRSOP) = INDPRPCC(LABELB)
+                    IALRSOP(NLRSOP) = INDPRP_CC(LABELA)
+                    IBLRSOP(NLRSOP) = INDPRP_CC(LABELB)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATOR DOUBLES SPECIFIED',
@@ -1932,9 +2011,9 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPVEL ')
-              IDIP(2) = INDPRPCC('YDIPVEL ')
-              IDIP(3) = INDPRPCC('ZDIPVEL ')
+              IDIP(1) = INDPRP_CC('XDIPVEL ')
+              IDIP(2) = INDPRP_CC('YDIPVEL ')
+              IDIP(3) = INDPRP_CC('ZDIPVEL ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NLRSOP + (IDXA-1)*3+IDXB
@@ -1958,12 +2037,12 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
-              IANG(1) = INDPRPCC('XDIPVEL ')
-              IANG(2) = INDPRPCC('YDIPVEL ')
-              IANG(3) = INDPRPCC('ZDIPVEL ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IANG(1) = INDPRP_CC('XDIPVEL ')
+              IANG(2) = INDPRP_CC('YDIPVEL ')
+              IANG(3) = INDPRP_CC('ZDIPVEL ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NLRSOP + (IDXA-1)*3+IDXB
@@ -1987,12 +2066,12 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPVEL ')
-              IDIP(2) = INDPRPCC('YDIPVEL ')
-              IDIP(3) = INDPRPCC('ZDIPVEL ')
-              IANG(1) = INDPRPCC('XANGMOM ')
-              IANG(2) = INDPRPCC('YANGMOM ')
-              IANG(3) = INDPRPCC('ZANGMOM ')
+              IDIP(1) = INDPRP_CC('XDIPVEL ')
+              IDIP(2) = INDPRP_CC('YDIPVEL ')
+              IDIP(3) = INDPRP_CC('ZDIPVEL ')
+              IANG(1) = INDPRP_CC('XANGMOM ')
+              IANG(2) = INDPRP_CC('YANGMOM ')
+              IANG(3) = INDPRP_CC('ZANGMOM ')
               DO IDXAB=1,3
                 IDX = NLRSOP + IDXAB
                 IALRSOP(IDX) = IDIP(IDXAB)
@@ -2015,18 +2094,18 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
-              IQUA(1) = INDPRPCC('XXSECMOM')
-              IQUA(2) = INDPRPCC('XYSECMOM')
-              IQUA(3) = INDPRPCC('XZSECMOM')
-              IQUA(4) = INDPRPCC('YYSECMOM')
-              IQUA(5) = INDPRPCC('YZSECMOM')
-              IQUA(6) = INDPRPCC('ZZSECMOM')
-              IANG(1) = INDPRPCC('XANGMOM ')
-              IANG(2) = INDPRPCC('YANGMOM ')
-              IANG(3) = INDPRPCC('ZANGMOM ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IQUA(1) = INDPRP_CC('XXSECMOM')
+              IQUA(2) = INDPRP_CC('XYSECMOM')
+              IQUA(3) = INDPRP_CC('XZSECMOM')
+              IQUA(4) = INDPRP_CC('YYSECMOM')
+              IQUA(5) = INDPRP_CC('YZSECMOM')
+              IQUA(6) = INDPRP_CC('ZZSECMOM')
+              IANG(1) = INDPRP_CC('XANGMOM ')
+              IANG(2) = INDPRP_CC('YANGMOM ')
+              IANG(3) = INDPRP_CC('ZANGMOM ')
               DO IDXA=1,3
                  DO IDXB=1,6
                    IDX = NLRSOP + (IDXA-1)*6+IDXB
@@ -2059,18 +2138,18 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPVEL ')
-              IDIP(2) = INDPRPCC('YDIPVEL ')
-              IDIP(3) = INDPRPCC('ZDIPVEL ')
-              IQUA(1) = INDPRPCC('XXROTSTR')
-              IQUA(2) = INDPRPCC('XYROTSTR')
-              IQUA(3) = INDPRPCC('XZROTSTR')
-              IQUA(4) = INDPRPCC('YYROTSTR')
-              IQUA(5) = INDPRPCC('YZROTSTR')
-              IQUA(6) = INDPRPCC('ZZROTSTR')
-              IANG(1) = INDPRPCC('XANGMOM ')
-              IANG(2) = INDPRPCC('YANGMOM ')
-              IANG(3) = INDPRPCC('ZANGMOM ')
+              IDIP(1) = INDPRP_CC('XDIPVEL ')
+              IDIP(2) = INDPRP_CC('YDIPVEL ')
+              IDIP(3) = INDPRP_CC('ZDIPVEL ')
+              IQUA(1) = INDPRP_CC('XXROTSTR')
+              IQUA(2) = INDPRP_CC('XYROTSTR')
+              IQUA(3) = INDPRP_CC('XZROTSTR')
+              IQUA(4) = INDPRP_CC('YYROTSTR')
+              IQUA(5) = INDPRP_CC('YZROTSTR')
+              IQUA(6) = INDPRP_CC('ZZROTSTR')
+              IANG(1) = INDPRP_CC('XANGMOM ')
+              IANG(2) = INDPRP_CC('YANGMOM ')
+              IANG(3) = INDPRP_CC('ZANGMOM ')
               DO IDXA=1,3
                  DO IDXB=1,6
                    IDX = NLRSOP + (IDXA-1)*6+IDXB
@@ -2133,12 +2212,12 @@ C
      &             ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                    CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
                  END IF
-                 IDIP(1) = INDPRPCC('XDIPLEN ')
-                 IDIP(2) = INDPRPCC('YDIPLEN ')
-                 IDIP(3) = INDPRPCC('ZDIPLEN ')
-                 IANG(1) = INDPRPCC('XANGMOM ')
-                 IANG(2) = INDPRPCC('YANGMOM ')
-                 IANG(3) = INDPRPCC('ZANGMOM ')
+                 IDIP(1) = INDPRP_CC('XDIPLEN ')
+                 IDIP(2) = INDPRP_CC('YDIPLEN ')
+                 IDIP(3) = INDPRP_CC('ZDIPLEN ')
+                 IANG(1) = INDPRP_CC('XANGMOM ')
+                 IANG(2) = INDPRP_CC('YANGMOM ')
+                 IANG(3) = INDPRP_CC('ZANGMOM ')
                  DO IDXAB=1,3
                    IDX = NLRSOP + IDXAB
                    IALRSOP(IDX) = IDIP(IDXAB)
@@ -2154,12 +2233,12 @@ C
      &             ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                    CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
                  END IF
-                 IDIP(1) = INDPRPCC('XDIPVEL ')
-                 IDIP(2) = INDPRPCC('YDIPVEL ')
-                 IDIP(3) = INDPRPCC('ZDIPVEL ')
-                 IANG(1) = INDPRPCC('XANGMOM ')
-                 IANG(2) = INDPRPCC('YANGMOM ')
-                 IANG(3) = INDPRPCC('ZANGMOM ')
+                 IDIP(1) = INDPRP_CC('XDIPVEL ')
+                 IDIP(2) = INDPRP_CC('YDIPVEL ')
+                 IDIP(3) = INDPRP_CC('ZDIPVEL ')
+                 IANG(1) = INDPRP_CC('XANGMOM ')
+                 IANG(2) = INDPRP_CC('YANGMOM ')
+                 IANG(3) = INDPRP_CC('ZANGMOM ')
                  DO IDXAB=1,3
                    IDX = NLRSOP + IDXAB
                    IALRSOP(IDX) = IDIP(IDXAB)
@@ -2184,18 +2263,18 @@ C
      &              ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                     CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
                   END IF
-                  IDIP(1) = INDPRPCC('XDIPLEN ')
-                  IDIP(2) = INDPRPCC('YDIPLEN ')
-                  IDIP(3) = INDPRPCC('ZDIPLEN ')
-                  IQUA(1) = INDPRPCC('XXSECMOM')
-                  IQUA(2) = INDPRPCC('XYSECMOM')
-                  IQUA(3) = INDPRPCC('XZSECMOM')
-                  IQUA(4) = INDPRPCC('YYSECMOM')
-                  IQUA(5) = INDPRPCC('YZSECMOM')
-                  IQUA(6) = INDPRPCC('ZZSECMOM')
-                  IANG(1) = INDPRPCC('XANGMOM ')
-                  IANG(2) = INDPRPCC('YANGMOM ')
-                  IANG(3) = INDPRPCC('ZANGMOM ')
+                  IDIP(1) = INDPRP_CC('XDIPLEN ')
+                  IDIP(2) = INDPRP_CC('YDIPLEN ')
+                  IDIP(3) = INDPRP_CC('ZDIPLEN ')
+                  IQUA(1) = INDPRP_CC('XXSECMOM')
+                  IQUA(2) = INDPRP_CC('XYSECMOM')
+                  IQUA(3) = INDPRP_CC('XZSECMOM')
+                  IQUA(4) = INDPRP_CC('YYSECMOM')
+                  IQUA(5) = INDPRP_CC('YZSECMOM')
+                  IQUA(6) = INDPRP_CC('ZZSECMOM')
+                  IANG(1) = INDPRP_CC('XANGMOM ')
+                  IANG(2) = INDPRP_CC('YANGMOM ')
+                  IANG(3) = INDPRP_CC('ZANGMOM ')
                   DO IDXA=1,3
                      DO IDXB=1,6
                        IDX = NLRSOP + (IDXA-1)*6+IDXB
@@ -2222,18 +2301,18 @@ C
      &              ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                     CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
                   END IF
-                  IDIP(1) = INDPRPCC('XDIPVEL ')
-                  IDIP(2) = INDPRPCC('YDIPVEL ')
-                  IDIP(3) = INDPRPCC('ZDIPVEL ')
-                  IQUA(1) = INDPRPCC('XXROTSTR')
-                  IQUA(2) = INDPRPCC('XYROTSTR')
-                  IQUA(3) = INDPRPCC('XZROTSTR')
-                  IQUA(4) = INDPRPCC('YYROTSTR')
-                  IQUA(5) = INDPRPCC('YZROTSTR')
-                  IQUA(6) = INDPRPCC('ZZROTSTR')
-                  IANG(1) = INDPRPCC('XANGMOM ')
-                  IANG(2) = INDPRPCC('YANGMOM ')
-                  IANG(3) = INDPRPCC('ZANGMOM ')
+                  IDIP(1) = INDPRP_CC('XDIPVEL ')
+                  IDIP(2) = INDPRP_CC('YDIPVEL ')
+                  IDIP(3) = INDPRP_CC('ZDIPVEL ')
+                  IQUA(1) = INDPRP_CC('XXROTSTR')
+                  IQUA(2) = INDPRP_CC('XYROTSTR')
+                  IQUA(3) = INDPRP_CC('XZROTSTR')
+                  IQUA(4) = INDPRP_CC('YYROTSTR')
+                  IQUA(5) = INDPRP_CC('YZROTSTR')
+                  IQUA(6) = INDPRP_CC('ZZROTSTR')
+                  IANG(1) = INDPRP_CC('XANGMOM ')
+                  IANG(2) = INDPRP_CC('YANGMOM ')
+                  IANG(3) = INDPRP_CC('ZANGMOM ')
                   DO IDXA=1,3
                      DO IDXB=1,6
                        IDX = NLRSOP + (IDXA-1)*6+IDXB
@@ -2254,10 +2333,18 @@ C
             GO TO 100
 C
 C------------------------------------
-C           .XXXXXX: unused keywords.
+C           .SUMRULES (stopping power)
 C------------------------------------
 C
 17          CONTINUE
+            !oscstr   = .true.
+            sumrules = .true.
+            GO TO 100
+C
+C------------------------------------
+C           .XXXXXX: unused keywords.
+C------------------------------------
+C
 18          CONTINUE
 19          CONTINUE
 20          CONTINUE
@@ -2313,12 +2400,12 @@ C    Christof Haettig, Dec 2002 / Oct 2003
 C
 C=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsections.h>
-#include <ccrspprp.h>
-#include <ccopainf.h>
-#include <cctpainf.h>
-#include <ccxopainf.h>
+#include "priunit.h"
+#include "ccsections.h"
+#include "ccrspprp.h"
+#include "ccopainf.h"
+#include "cctpainf.h"
+#include "ccxopainf.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -2337,7 +2424,7 @@ C=====================================================================*
 
       LOGICAL GSTOPA, GSTTPA, XSTOPA
       INTEGER IXSYM, IXSTATE, IXSYM2, IXSTATE2, IJUMP
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 #if defined (SYS_CRAY)
       REAL SMFREQ
@@ -2539,7 +2626,7 @@ C           ------------------------
                  IF (GSTOPA) THEN
                   IF (NLRSOP.LT.MXLRSO) THEN
                     NLRSOP = NLRSOP + 1
-                    ILRSOP(NLRSOP) = INDPRPCC(LABEL)
+                    ILRSOP(NLRSOP) = INDPRP_CC(LABEL)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATORS SPECIFIED',
@@ -2549,7 +2636,7 @@ C           ------------------------
                  ELSE IF (XSTOPA) THEN
                   IF (NQR2OP.LT.MXQR2O) THEN
                     NQR2OP = NQR2OP + 1
-                    IQR2OP(NQR2OP) = INDPRPCC(LABEL)
+                    IQR2OP(NQR2OP) = INDPRP_CC(LABEL)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATORS SPECIFIED',
@@ -2567,8 +2654,8 @@ C           ------------------------
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NSMOPER.LT.MXSMOP) THEN
                     NSMOPER = NSMOPER + 1
-                    IASMOP(NSMOPER) = INDPRPCC(LABELA)
-                    IBSMOP(NSMOPER) = INDPRPCC(LABELB)
+                    IASMOP(NSMOPER) = INDPRP_CC(LABELA)
+                    IBSMOP(NSMOPER) = INDPRP_CC(LABELB)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)') 
      &               ' NO. OF OPERATOR PAIRS SPECIFIED',
@@ -2801,8 +2888,8 @@ C    Christof Haettig, Jan 2003
 C
 C=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "ccnoddy.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -3212,18 +3299,18 @@ C
 C    Ove Christiansen April 1997
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <cclres.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccqr2r.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "cclres.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccqr2r.h"
 
 * local parameters:
       CHARACTER SECNAM*(10)
@@ -3309,9 +3396,9 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQR2O
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCQR2R.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NQR2OP + (IDXA-1)*3+IDXB
@@ -3341,8 +3428,8 @@ C
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NQR2OP.LT.MXQR2O) THEN
                     NQR2OP = NQR2OP + 1
-                    IAQR2OP(NQR2OP) = INDPRPCC(LABELA)
-                    IBQR2OP(NQR2OP) = INDPRPCC(LABELB)
+                    IAQR2OP(NQR2OP) = INDPRP_CC(LABELA)
+                    IBQR2OP(NQR2OP) = INDPRP_CC(LABELB)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATOR DOUBLES SPECIFIED',
@@ -3394,9 +3481,9 @@ C
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQR2O
                 CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCQR2R.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPVEL ')
-              IDIP(2) = INDPRPCC('YDIPVEL ')
-              IDIP(3) = INDPRPCC('ZDIPVEL ')
+              IDIP(1) = INDPRP_CC('XDIPVEL ')
+              IDIP(2) = INDPRP_CC('YDIPVEL ')
+              IDIP(3) = INDPRP_CC('ZDIPVEL ')
               DO IDXA=1,3
                  DO IDXB=1,3
                    IDX = NQR2OP + (IDXA-1)*3+IDXB
@@ -3459,18 +3546,18 @@ C
 C    Ove Christiansen august-1997
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccgr.h>
-#include <ccfdgeo.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccgr.h"
+#include "ccfdgeo.h"
 
 * local parameters:
       CHARACTER SECNAM*(7)
@@ -3603,17 +3690,17 @@ C
 C    Ove Christiansen 4-2-1997
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccexgr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccexgr.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -3630,7 +3717,7 @@ C=====================================================================*
       CHARACTER LABEL*(8), LABHELP*(70)
       CHARACTER TABLE(NTABLE)*(8)
 
-      INTEGER IJUMP, INDPRPCC
+      INTEGER IJUMP, INDPRP_CC
 * data:
       DATA SET /.FALSE./
       DATA TABLE /'.DIPOLE','.QUADRU','.NQCC  ','.OPERAT','XXXXXXX',
@@ -3727,7 +3814,7 @@ C
                 IF (LABEL(1:1).NE.'!') THEN
                   IF (NAXGRO .LT.MXGROP) THEN
                     NAXGRO  = NAXGRO  + 1
-                    IAXGRO(NAXGRO) = INDPRPCC(LABEL)
+                    IAXGRO(NAXGRO) = INDPRP_CC(LABEL)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)') 
      &               ' NO. OF OPERATORS SPECIFIED',
@@ -3867,22 +3954,22 @@ C  Asger Halkier ultimo Nov. 1999: First-order Direct Perturbation
 C                                  Theory (DPT) energy corrections.
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <ccfop.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "ccfop.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_FOPINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 13)
+      PARAMETER (NTABLE = 14)
 
 * variables:
       LOGICAL SET
@@ -3895,13 +3982,13 @@ C=====================================================================*
       INTEGER IJUMP
 
 * external function:
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 * data:
       DATA SET /.FALSE./
       DATA TABLE /'.DIPMOM','.QUADRU','.NQCC  ','.TSTDEN','.ALLONE',
      *            '.NONREL','.RELCOR','.OPERAT','.SECMOM','.2ELDAR',
-     *            '.DPTECO','.BPH2OO','.BPH2SS'/
+     *            '.DPTECO','.BPH2OO','.BPH2SS','.CRONLY'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -3924,6 +4011,7 @@ C
       DAR2EL = .FALSE.
       DPTECO = .FALSE.
       BP2EOO = .FALSE.
+      CORRONLY = .FALSE.
 C
 *---------------------------------------------------------------------*
 * read input:
@@ -3951,7 +4039,7 @@ c         table look up:
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_FOPINP.')
       
 C
@@ -3963,9 +4051,9 @@ C
 1           CONTINUE
                DIPMOM = .TRUE.
 CCN         Added for CC-R12:
-               IDUM = INDPRPCC('XDIPLEN ')
-               IDUM = INDPRPCC('YDIPLEN ')
-               IDUM = INDPRPCC('ZDIPLEN ')
+               IDUM = INDPRP_CC('XDIPLEN ')
+               IDUM = INDPRP_CC('YDIPLEN ')
+               IDUM = INDPRP_CC('ZDIPLEN ')
             GO TO 100
 
 C
@@ -3977,12 +4065,12 @@ C
 2           CONTINUE
                QUADRU = .TRUE.
 CCN         Added for CC-R12:
-               IDUM = INDPRPCC('XXTHETA ')
-               IDUM = INDPRPCC('XYTHETA ')
-               IDUM = INDPRPCC('XZTHETA ')
-               IDUM = INDPRPCC('YYTHETA ')
-               IDUM = INDPRPCC('YZTHETA ')
-               IDUM = INDPRPCC('ZZTHETA ')               
+               IDUM = INDPRP_CC('XXTHETA ')
+               IDUM = INDPRP_CC('XYTHETA ')
+               IDUM = INDPRP_CC('XZTHETA ')
+               IDUM = INDPRP_CC('YYTHETA ')
+               IDUM = INDPRP_CC('YZTHETA ')
+               IDUM = INDPRP_CC('ZZTHETA ')               
             GO TO 100
 
 C
@@ -4049,7 +4137,7 @@ C
                 IF (LABEL(1:1).NE.'!') THEN
                   IF (NAFOP .LT.MAFOP) THEN
                     NAFOP  = NAFOP + 1
-                    IAFOP(NAFOP) = INDPRPCC(LABEL)
+                    IAFOP(NAFOP) = INDPRP_CC(LABEL)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)')
      &               ' NO. OF OPERATORS SPECIFIED',
@@ -4070,12 +4158,12 @@ C
 9          CONTINUE
                SECMOM = .TRUE.
 CCN         Added for CC-R12:
-               IDUM = INDPRPCC('XXSECMOM')
-               IDUM = INDPRPCC('XYSECMOM')
-               IDUM = INDPRPCC('XZSECMOM')
-               IDUM = INDPRPCC('YYSECMOM')
-               IDUM = INDPRPCC('YZSECMOM')
-               IDUM = INDPRPCC('ZZSECMOM')
+               IDUM = INDPRP_CC('XXSECMOM')
+               IDUM = INDPRP_CC('XYSECMOM')
+               IDUM = INDPRP_CC('XZSECMOM')
+               IDUM = INDPRP_CC('YYSECMOM')
+               IDUM = INDPRP_CC('YZSECMOM')
+               IDUM = INDPRP_CC('ZZSECMOM')
             GO TO 100
 C
 C-------------------------------------------------
@@ -4115,8 +4203,14 @@ C
 
 13         CONTINUE
                DAR2EL = .TRUE.
+           GO TO 100
+C
+14         CONTINUE
+               !removes Hartree-Fock part of densities 
+               !yields correlation only contribution to
+               !FOP properties
+               CORRONLY  = .TRUE.
             GO TO 100
-
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
@@ -4170,15 +4264,23 @@ C      IMPLICIT NONE
 C#else
 #  include <implicit.h>
 C#endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "codata.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
+CTOCD  
+#include "ctocdcc.h"
+CTOCD  
+
 
 * local parameters:
       CHARACTER SECNAM*(8)
@@ -4207,8 +4309,11 @@ C#endif
       LOGICAL LRELAX, LRELAS, LOCSTAT
       INTEGER IDX, IJUMP, IDIP(3), IGRA(MXCOOR)
 
+!     LOGICAL EXCLRL
+      INTEGER IGNCHO(4)
+
 * external function:
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 * data:
       DATA LABDIP /'XDIPLEN ','YDIPLEN ','ZDIPLEN '/
@@ -4220,7 +4325,7 @@ C#endif
      *            '.OLD_LR','.ASYMSD','.DISPCF','.OPERAT','.AVERAG',
      *            '.PRINT ','.STATIC','.DIPGRA','.OR LEN','.OR VEL', 
      *            '.OR    ','.OR MVE','.ORGANL','.ORIGIN','.WAVELE', 
-     *            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/ 
+     *            '.INCLRL','.EXCLRL','.CTOSUS','.CTOSHI','.XXXXXX'/ 
 
 *---------------------------------------------------------------------*
 * begin:
@@ -4250,6 +4355,14 @@ C
       ORVEL  = .FALSE.
       ORMVE  = .FALSE.
       ORGANL = .FALSE.
+C
+Cmodvel
+C
+!     INCLRL = .FALSE.
+!     EXCLRL = .FALSE.
+C
+Cmodvel
+C
       ASYMSD = .FALSE.
       LRELAX = .FALSE.
       DIPGRA = .FALSE.
@@ -4257,9 +4370,15 @@ C
 
       OLDLR  = .FALSE.
 
+      CALL IZERO(IGNCHO,4)
       CALL DZERO(ORGIN,MORGIN+1)
 
       LOCSTAT = .FALSE.
+
+CTOCD
+      CTOSHI = .FALSE.
+      CTOSUS = .FALSE.
+CTOCD
 
 *---------------------------------------------------------------------*
 * read input:
@@ -4297,6 +4416,10 @@ C-----------------------
 C
 1           CONTINUE
                LRELAX    = .TRUE.
+               IF (CHOINT) THEN
+                  IGNCHO(4) = 1
+                  LRELAX = .FALSE.
+               ENDIF
             GO TO 100
 C
 C-----------------------
@@ -4350,6 +4473,10 @@ C           -----------------------------------
 C
 6           CONTINUE
               OLDLR = .TRUE.
+              IF (CHOINT) THEN
+                 IGNCHO(3) = 1
+                 OLDLR = .FALSE.
+              ENDIF
             GO TO 100
 
 C
@@ -4361,6 +4488,11 @@ C           -------------------------------------------------
 C
 7           CONTINUE
               ASYMSD =.TRUE.
+              ASYMSD =.TRUE.
+              IF (CHOINT) THEN
+                 IGNCHO(1) = 1
+                 ASYMSD = .FALSE.
+              ENDIF
             GO TO 100
 C
 C           ---------------------------------
@@ -4373,6 +4505,9 @@ C           ---------------------------------
                 CALL QUIT('NLRDISP < 0 not allowed '//
      &                'for .DISPCF in *CCLR')
               END IF
+              IF (CHOINT) THEN
+                 IGNCHO(2) = 1
+              ENDIF
             GO TO 100
 
 C           -------------------------------------------
@@ -4434,9 +4569,9 @@ C           -------------------------------------------------------
               END IF
           
               IF (ALPHA_ISO .OR. ALPHA_ANI) THEN
-                IDIP(1) = INDPRPCC('XDIPLEN ')
-                IDIP(2) = INDPRPCC('YDIPLEN ')
-                IDIP(3) = INDPRPCC('ZDIPLEN ')
+                IDIP(1) = INDPRP_CC('XDIPLEN ')
+                IDIP(2) = INDPRP_CC('YDIPLEN ')
+                IDIP(3) = INDPRP_CC('ZDIPLEN ')
                 DO IDX = 1, 2
                   IALROP(NLROP+1)           = IDIP(3)   !cmp 1: alph_zz
                   IBLROP(NLROP+1)           = IDIP(3)
@@ -4529,11 +4664,11 @@ C
                   DO J = 6,8
                      IF (LABELA(J:J) .EQ. ' ') LABELA(J:J) = '0'
                   ENDDO
-                  IGRA(I) = INDPRPCC(LABELA)
+                  IGRA(I) = INDPRP_CC(LABELA)
                ENDDO
-               IDIP(1) = INDPRPCC('XDIPLEN ')
-               IDIP(2) = INDPRPCC('YDIPLEN ')
-               IDIP(3) = INDPRPCC('ZDIPLEN ')
+               IDIP(1) = INDPRP_CC('XDIPLEN ')
+               IDIP(2) = INDPRP_CC('YDIPLEN ')
+               IDIP(3) = INDPRP_CC('ZDIPLEN ')
                DO IDXB = 1,NDIP
                   DO IDXA = 1,NCOOR
                      IDX = NLROP + NCOOR*(IDXB - 1) + IDXA
@@ -4692,17 +4827,47 @@ C
               ENDDO
               NBLRFR = NBLRFR + NWAVEL
             GO TO 100
-C                                                                     
+C
+C---------------------------------------------------------
+C           '.INCLRL': Include commutator terms in OR VEL.
+C---------------------------------------------------------
+C
+21          CONTINUE
+              call quit('.INCLRL not implemented in this version')
+!             INCLRL = .TRUE.
+            GO TO 100
+C
+C---------------------------------------------------------
+C           '.EXCLRL': Exclude commutator terms in OR VEL.
+C---------------------------------------------------------
+C
+22          CONTINUE
+              call quit('.EXCLRL not implemented in this version')
+!             EXCLRL = .TRUE.
+            GO TO 100
+C
+C-------------------------------------------
+C           '.CTOSUS': CTOCD susceptibility.
+C-------------------------------------------
+C
+23          CONTINUE
+              CTOSUS = .TRUE.
+            GO TO 100
+C
+C--------------------------------------
+C           '.CTOSHI': CTOCD shielding.
+C--------------------------------------
+C
+24          CONTINUE
+              CTOSHI = .TRUE.
+            GO TO 100
+C
 C           -------------------------------------------------
 C           .XXXXXXX unused keywords
 C           -------------------------------------------------
 C
-21          CONTINUE
-22          CONTINUE
-23          CONTINUE
-24          CONTINUE
 25          CONTINUE
-            GO TO 100                 
+            GO TO 100
 C
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
@@ -4725,6 +4890,52 @@ C
 
 200   CONTINUE
 C
+C------------------------------------------------
+C     Do some checking for Cholesky calculations:
+C------------------------------------------------
+C
+      IGNSUM = 0
+      DO I = 1,4
+         IGNSUM = IGNSUM + ABS(IGNCHO(I))
+      ENDDO
+      IF (CHOINT .AND. (IGNSUM.NE.0)) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(A,A)')
+     &   SECNAM,
+     &   ': WARNING: *CCLR options not implemented for Cholesky job:'
+         IF (IGNCHO(1) .NE. 0) THEN
+            WRITE(LUPRI,'(A)')
+     &      '.ASYMSD ignored (default 2n+2 expression will be used).'
+         ENDIF
+         IF (IGNCHO(2) .NE. 0) THEN
+            WRITE(LUPRI,'(A)')
+     &      'FATAL ERROR: No Cauchy for Cholesky job! (.DISPCF option)'
+         ENDIF
+         IF (IGNCHO(3) .NE. 0) THEN
+            WRITE(LUPRI,'(A)')
+     &      '.OLD_LR ignored (default code will be used).'
+         ENDIF
+         IF (IGNCHO(4) .NE. 0) THEN
+            WRITE(LUPRI,'(A)')
+     &      '.RELAXE ignored (unrelaxed properties will be calculated).'
+         ENDIF
+         WRITE(LUPRI,*)
+         IF (IGNCHO(2) .NE. 0) CALL QUIT('Error in '//SECNAM)
+      ENDIF
+C
+C--------------------------------------
+C     Include operator pairs for CTOCD.
+C--------------------------------------
+C
+      CTOMAG = CTOSUS .OR. CTOSHI
+      IF (CTOMAG) CALL CC_CTOMAG
+C
+C------------------------------------------------------------
+C     Check if commutator terms are to be included in OR VEL:
+C------------------------------------------------------------
+C
+!     IF (EXCLRL) INCLRL = .FALSE.
+C
 C-----------------------------------------------
 C check, if operators and frequencies specified:
 C-----------------------------------------------
@@ -4738,6 +4949,7 @@ C
         IF (NLROP .EQ.0) WRITE(LUPRI,'(/A)')
      &     '(*CCLR   input ignored, because no operators requested.)'
       END IF
+C
 C----------------------------
 C     Make wa frequency list. 
 C----------------------------
@@ -4768,11 +4980,11 @@ C
 C              LRELAX is the flag that will be associated with
 C              each perturbation operator for relaxation.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 LABELA(NA), LABELB(NB)
       LOGICAL     LDIAGO, LRELAX
-#include <cclrinf.h>
-#include <priunit.h>
+#include "cclrinf.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_LRINPREQ')
@@ -4807,8 +5019,8 @@ C
          ENDIF
 
          DO I = 1,NA
-            IOPA(I) = INDPRPCC(LABELA(I))
-            IOPB(I) = INDPRPCC(LABELB(I))
+            IOPA(I) = INDPRP_CC(LABELA(I))
+            IOPB(I) = INDPRP_CC(LABELB(I))
          ENDDO
 
          DO IDXAB = 1,NA
@@ -4833,10 +5045,10 @@ C
          ENDIF
 
          DO I = 1,NA
-            IOPA(I) = INDPRPCC(LABELA(I))
+            IOPA(I) = INDPRP_CC(LABELA(I))
          ENDDO
          DO I = 1,NB
-            IOPB(I) = INDPRPCC(LABELB(I))
+            IOPB(I) = INDPRP_CC(LABELB(I))
          ENDDO
 
          DO IDXA=1,NA
@@ -4873,12 +5085,12 @@ c /* deck cc_qrinp */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#include <implicit.h>
+#include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccqrinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccqrinf.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -4917,7 +5129,7 @@ c /* deck cc_qrinp */
      &            '.DISPCF','.ALLDSP','.XYDEGE','.NOBMAT','.USE R2',
      &            '.RELAXE','.UNRELA','.USE AA','.AVANEW','.XXXXXX' /
 
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -5005,9 +5217,9 @@ C           ------------------------------------------
                 ELSE
                   IF (NQROPER.LT.MXQROP) THEN
                     NQROPER = NQROPER + 1
-                    IAQROP(NQROPER) = INDPRPCC(LABELA)
-                    IBQROP(NQROPER) = INDPRPCC(LABELB)
-                    ICQROP(NQROPER) = INDPRPCC(LABELC)
+                    IAQROP(NQROPER) = INDPRP_CC(LABELA)
+                    IBQROP(NQROPER) = INDPRP_CC(LABELB)
+                    ICQROP(NQROPER) = INDPRP_CC(LABELC)
                     LAQLRX(NQROPER) = LALRX
                     LBQLRX(NQROPER) = LBLRX
                     LCQLRX(NQROPER) = LCLRX
@@ -5033,9 +5245,9 @@ C           -------------------------------------------------------
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQROP
                 CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCQR.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -5108,9 +5320,9 @@ C           -------------------------------------------------------
      &             '@ IN *CCQR SECTION WILL BE IGNORED.'
                   NQROPER = 0
                 END IF
-                IDIP(1) = INDPRPCC('XDIPLEN ')
-                IDIP(2) = INDPRPCC('YDIPLEN ')
-                IDIP(3) = INDPRPCC('ZDIPLEN ')
+                IDIP(1) = INDPRP_CC('XDIPLEN ')
+                IDIP(2) = INDPRP_CC('YDIPLEN ')
+                IDIP(3) = INDPRP_CC('ZDIPLEN ')
                 DO IDX=1,2
                   IAQROP(1)     = IDIP(3)    ! component 1: beta_{zzz}
                   IBQROP(1)     = IDIP(3)
@@ -5148,9 +5360,9 @@ C           -------------------------------------------------------
                 END IF
               ELSE
                 NWARN = NWARN + 1
-                WRITE(LUPRI,'(/4A/A/)') '@ WARNING: LABEL "',
-     &           LINE(1:8),'" UNKOWN FOR .AVERAG KEYWORD',
-     &           'IN *CCQR SECTION.','@ WARNING: INPUT IS IGNORED...'
+                WRITE(LUPRI,'(/4A/A/)') '@ WARNING: Label "',
+     &           LINE(1:8),'" unknown for .AVERAG keyword',
+     &           'in *CCQR section.','@ WARNING: INPUT IS IGNORED...'
               ENDIF 
             GO TO 100
 
@@ -5401,9 +5613,9 @@ C           -----------------------
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQROP
             CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCQR.')
           END IF
-          IDIP(1) = INDPRPCC('XDIPLEN ')
-          IDIP(2) = INDPRPCC('YDIPLEN ')
-          IDIP(3) = INDPRPCC('ZDIPLEN ')
+          IDIP(1) = INDPRP_CC('XDIPLEN ')
+          IDIP(2) = INDPRP_CC('YDIPLEN ')
+          IDIP(3) = INDPRP_CC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -5459,10 +5671,10 @@ c /* deck cc_crinp */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cccrinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cccrinf.h"
 C#include <ccrspprp.h>
 
 * local parameters:
@@ -5500,7 +5712,7 @@ C#include <ccrspprp.h>
      &            '.USEXKS','.EXPCOF','.AVERAG','.DISPCF','.ODDISP',
      &            '.NO2NP1','.L2 BCD','.L2 BC ','.XXXXXX','.XXXXXX'/
 
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -5569,10 +5781,10 @@ C           ------------
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NCROPER.LT.MXCROP) THEN
                     NCROPER = NCROPER + 1
-                    IACROP(NCROPER) = INDPRPCC(LABELA)
-                    IBCROP(NCROPER) = INDPRPCC(LABELB)
-                    ICCROP(NCROPER) = INDPRPCC(LABELC)
-                    IDCROP(NCROPER) = INDPRPCC(LABELD)
+                    IACROP(NCROPER) = INDPRP_CC(LABELA)
+                    IBCROP(NCROPER) = INDPRP_CC(LABELB)
+                    ICCROP(NCROPER) = INDPRP_CC(LABELC)
+                    IDCROP(NCROPER) = INDPRP_CC(LABELD)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5/)')
      &               ' NO. OF OPERATOR QUADRUPLES SPECIFIED',
@@ -5595,9 +5807,9 @@ C           -------------------------------------------------------
      &           ' IS GREATER THAN THE ALLOWED NUMBER : ',MXCROP
                 CALL QUIT('TOO MANY OPERATOR QUADRUPLES IN CCCR.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -5884,9 +6096,9 @@ C           ------------------------------------------------
                 END IF
 
 *               set operators quadruples for gamma components:
-                IDIP(1) = INDPRPCC('XDIPLEN ')
-                IDIP(2) = INDPRPCC('YDIPLEN ')
-                IDIP(3) = INDPRPCC('ZDIPLEN ')
+                IDIP(1) = INDPRP_CC('XDIPLEN ')
+                IDIP(2) = INDPRP_CC('YDIPLEN ')
+                IDIP(3) = INDPRP_CC('ZDIPLEN ')
                 DO IDX=1,3
                   IF (IDX.EQ.1) THEN
                     IDXA = 1 ! X \  XXZZ 
@@ -6098,9 +6310,9 @@ C           -------------
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MXCROP
             CALL QUIT('TOO MANY OPERATOR QUADRUPLES IN CCQR.')
           END IF
-          IDIP(1) = INDPRPCC('XDIPLEN ')
-          IDIP(2) = INDPRPCC('YDIPLEN ')
-          IDIP(3) = INDPRPCC('ZDIPLEN ')
+          IDIP(1) = INDPRP_CC('XDIPLEN ')
+          IDIP(2) = INDPRP_CC('YDIPLEN ')
+          IDIP(3) = INDPRP_CC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -6159,10 +6371,10 @@ c /* deck CC_4RINP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cc4rinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cc4rinf.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -6197,7 +6409,7 @@ c /* deck CC_4RINP */
       DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.STATIC','.MIXFRE',
      &            '.4HGFRE','.USECHI','.XXXXXX','.XXXXXX','.XXXXXX'/
 
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -6255,11 +6467,11 @@ C           ------------
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (N4ROPER.LT.MX4ROP) THEN
                     N4ROPER = N4ROPER + 1
-                    IA4ROP(N4ROPER) = INDPRPCC(LABELA)
-                    IB4ROP(N4ROPER) = INDPRPCC(LABELB)
-                    IC4ROP(N4ROPER) = INDPRPCC(LABELC)
-                    ID4ROP(N4ROPER) = INDPRPCC(LABELD)
-                    IE4ROP(N4ROPER) = INDPRPCC(LABELE)
+                    IA4ROP(N4ROPER) = INDPRP_CC(LABELA)
+                    IB4ROP(N4ROPER) = INDPRP_CC(LABELB)
+                    IC4ROP(N4ROPER) = INDPRP_CC(LABELC)
+                    ID4ROP(N4ROPER) = INDPRP_CC(LABELD)
+                    IE4ROP(N4ROPER) = INDPRP_CC(LABELE)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5/)')
      &               ' NO. OF OPERATOR QUADRUPLES SPECIFIED',
@@ -6282,9 +6494,9 @@ C           -----------------------------------------------------------
      &           ' IS GREATER THAN THE ALLOWED NUMBER : ',MX4ROP
                 CALL QUIT('TOO MANY OPERATOR QUINTUPLES IN CC4R.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -6425,9 +6637,9 @@ C           -------------
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MX4ROP
             CALL QUIT('TOO MANY OPERATOR QUINTUPLES IN CC4R.')
           END IF
-          IDIP(1) = INDPRPCC('XDIPLEN ')
-          IDIP(2) = INDPRPCC('YDIPLEN ')
-          IDIP(3) = INDPRPCC('ZDIPLEN ')
+          IDIP(1) = INDPRP_CC('XDIPLEN ')
+          IDIP(2) = INDPRP_CC('YDIPLEN ')
+          IDIP(3) = INDPRP_CC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -6492,11 +6704,11 @@ c /* deck CC_5RINP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cc5rinf.h>
-#include <cc5perm.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cc5rinf.h"
+#include "cc5perm.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -6531,7 +6743,7 @@ c /* deck CC_5RINP */
       DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.STATIC','.MIXFRE',
      &            '.5HGFRE','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -6588,7 +6800,7 @@ C           ------------
                   IF (N5ROPER.LT.MX5ROP) THEN
                     N5ROPER = N5ROPER + 1
                     DO IDX = 1, 6
-                      I5ROP(N5ROPER,IDX) = INDPRPCC(LABEL(IDX))
+                      I5ROP(N5ROPER,IDX) = INDPRP_CC(LABEL(IDX))
                     END DO
                     WRITE (LUPRI,*) 'CC_5RINP>',N5ROPER,LABEL
                   ELSE
@@ -6613,9 +6825,9 @@ C           -----------------------------------------------------------
      &           ' IS GREATER THAN THE ALLOWED NUMBER : ',MX5ROP
                 CALL QUIT('TOO MANY OPERATOR HEXTUPLES IN CC5R.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -6757,9 +6969,9 @@ C           -------------
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MX5ROP
             CALL QUIT('TOO MANY OPERATOR QUINTUPLES IN CC5R.')
           END IF
-          IDIP(1) = INDPRPCC('XDIPLEN ')
-          IDIP(2) = INDPRPCC('YDIPLEN ')
-          IDIP(3) = INDPRPCC('ZDIPLEN ')
+          IDIP(1) = INDPRP_CC('XDIPLEN ')
+          IDIP(2) = INDPRP_CC('YDIPLEN ')
+          IDIP(3) = INDPRP_CC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -6813,39 +7025,40 @@ C           -------------
 *=====================================================================*
 *---------------------------------------------------------------------*
 C  /* Deck indprpcc */
-      INTEGER FUNCTION INDPRPCC(NEWLBL)
+      INTEGER FUNCTION INDPRP_CC(NEWLBL_CC)
 C
-#include <ccrspprp.h>
-#include <priunit.h>
+#include "ccrspprp.h"
+#include "priunit.h"
 C
-      CHARACTER*8 NEWLBL
+      CHARACTER*8 NEWLBL_CC
       INTEGER I
 
-      DO 100 I = 1,NPRLBL
-         IF ( NEWLBL.EQ.PRPLBL(I) ) THEN
-            INDPRPCC = I
+      DO 100 I = 1,NPRLBL_CC
+         IF ( NEWLBL_CC.EQ.PRPLBL_CC(I) ) THEN
+            INDPRP_CC = I
             RETURN
          END IF
  100  CONTINUE
 
-      NPRLBL = NPRLBL + 1
+      NPRLBL_CC = NPRLBL_CC + 1
 
-      IF (NPRLBL.GT.MAXLBL) THEN
-         WRITE(LUPRI,'(A/A,I5,A,I5)')
-     *   '@ NUMBER OF SPECIFIED PROPERTIES EXCEED THE MAXIMUM ALLOWED',
-     *   '@ MAXPRP =',MAXLBL,' NPRLBL= ',NPRLBL
-         CALL QUIT(' INDPRPCC: TOO MANY PROPERTIES SPECIFIED')
+      IF (NPRLBL_CC.GT.MAXLBL_CC) THEN
+         WRITE(LUPRI,'(/A/A,I5,A,I5/A/)')
+     &'@ Number of specified CC properties exceeds the maximum allowed',
+     &'@ MAXPRP =',MAXLBL_CC,' NPRLBL_CC= ',NPRLBL_CC,
+     &'@ Increase MAXLBL_CC in include/ccrsprp.h and recompile.'
+         CALL QUIT(' INDPRP_CC: TOO MANY PROPERTIES SPECIFIED')
       END IF
 
-      PRPLBL(NPRLBL) = NEWLBL
-      INDPRPCC       = NPRLBL
+      PRPLBL_CC(NPRLBL_CC) = NEWLBL_CC
+      INDPRP_CC            = NPRLBL_CC
 
       RETURN
       END
 *---------------------------------------------------------------------*
       SUBROUTINE CC_PUT1OP(INDOP,NOP,MAXOP,OPERATOR,ROUTINE)
 C
-#include <priunit.h>
+#include "priunit.h"
       CHARACTER*(*) ROUTINE
       CHARACTER*(*) OPERATOR
       CHARACTER*80 MESSAGE
@@ -6854,59 +7067,60 @@ C
       INTEGER INDOP(MAXOP)
 
       FAILED = .FALSE.
+      NEWOP  = -1 ! to avoid compiler warning
       IF (OPERATOR(1:6).EQ.'DIPLEN') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRPCC('XDIPLEN ')
-          INDOP(NOP+2) = INDPRPCC('YDIPLEN ')
-          INDOP(NOP+3) = INDPRPCC('ZDIPLEN ')
+          INDOP(NOP+1) = INDPRP_CC('XDIPLEN ')
+          INDOP(NOP+2) = INDPRP_CC('YDIPLEN ')
+          INDOP(NOP+3) = INDPRP_CC('ZDIPLEN ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'DIPVEL') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRPCC('XDIPVEL ')
-          INDOP(NOP+2) = INDPRPCC('YDIPVEL ')
-          INDOP(NOP+3) = INDPRPCC('ZDIPVEL ')
+          INDOP(NOP+1) = INDPRP_CC('XDIPVEL ')
+          INDOP(NOP+2) = INDPRP_CC('YDIPVEL ')
+          INDOP(NOP+3) = INDPRP_CC('ZDIPVEL ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'ANGMOM') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRPCC('XANGMOM ')
-          INDOP(NOP+2) = INDPRPCC('YANGMOM ')
-          INDOP(NOP+3) = INDPRPCC('ZANGMOM ')
+          INDOP(NOP+1) = INDPRP_CC('XANGMOM ')
+          INDOP(NOP+2) = INDPRP_CC('YANGMOM ')
+          INDOP(NOP+3) = INDPRP_CC('ZANGMOM ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'SECMOM') THEN
         NEWOP = 6
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRPCC('XXSECMOM')
-          INDOP(NOP+2) = INDPRPCC('XYSECMOM')
-          INDOP(NOP+3) = INDPRPCC('XZSECMOM')
-          INDOP(NOP+4) = INDPRPCC('YYSECMOM')
-          INDOP(NOP+5) = INDPRPCC('YZSECMOM')
-          INDOP(NOP+6) = INDPRPCC('ZZSECMOM')
+          INDOP(NOP+1) = INDPRP_CC('XXSECMOM')
+          INDOP(NOP+2) = INDPRP_CC('XYSECMOM')
+          INDOP(NOP+3) = INDPRP_CC('XZSECMOM')
+          INDOP(NOP+4) = INDPRP_CC('YYSECMOM')
+          INDOP(NOP+5) = INDPRP_CC('YZSECMOM')
+          INDOP(NOP+6) = INDPRP_CC('ZZSECMOM')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'ROTSTR') THEN
         NEWOP = 6
         IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          INDOP(NOP+1) = INDPRPCC('XXROTSTR')
-          INDOP(NOP+2) = INDPRPCC('XYROTSTR')
-          INDOP(NOP+3) = INDPRPCC('XZROTSTR')
-          INDOP(NOP+4) = INDPRPCC('YYROTSTR')
-          INDOP(NOP+5) = INDPRPCC('YZROTSTR')
-          INDOP(NOP+6) = INDPRPCC('ZZROTSTR')
+          INDOP(NOP+1) = INDPRP_CC('XXROTSTR')
+          INDOP(NOP+2) = INDPRP_CC('XYROTSTR')
+          INDOP(NOP+3) = INDPRP_CC('XZROTSTR')
+          INDOP(NOP+4) = INDPRP_CC('YYROTSTR')
+          INDOP(NOP+5) = INDPRP_CC('YZROTSTR')
+          INDOP(NOP+6) = INDPRP_CC('ZZROTSTR')
         END IF
       ELSE
-        CALL QUIT('Unkown OPERATOR in CC_PUT1OP')
+        CALL QUIT('Unknown OPERATOR in CC_PUT1OP')
       END IF
 
       IF (FAILED) THEN
@@ -6925,7 +7139,7 @@ C
 *---------------------------------------------------------------------*
       SUBROUTINE CC_PUT2OP(INDOP1,INDOP2,NOP,MAXOP,OPERATOR,ROUTINE)
 C
-#include <priunit.h>
+#include "priunit.h"
       CHARACTER*(*) ROUTINE
       CHARACTER*(*) OPERATOR
       CHARACTER*80 MESSAGE
@@ -6939,30 +7153,30 @@ C
         IF ( (NOP+NEWOP*NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          IOP(1) = INDPRPCC('XDIPLEN ')
-          IOP(2) = INDPRPCC('YDIPLEN ')
-          IOP(3) = INDPRPCC('ZDIPLEN ')
+          IOP(1) = INDPRP_CC('XDIPLEN ')
+          IOP(2) = INDPRP_CC('YDIPLEN ')
+          IOP(3) = INDPRP_CC('ZDIPLEN ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'DIPVEL') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP*NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          IOP(1) = INDPRPCC('XDIPVEL ')
-          IOP(2) = INDPRPCC('YDIPVEL ')
-          IOP(3) = INDPRPCC('ZDIPVEL ')
+          IOP(1) = INDPRP_CC('XDIPVEL ')
+          IOP(2) = INDPRP_CC('YDIPVEL ')
+          IOP(3) = INDPRP_CC('ZDIPVEL ')
         END IF
       ELSE IF (OPERATOR(1:6).EQ.'ANGMOM') THEN
         NEWOP = 3
         IF ( (NOP+NEWOP*NEWOP) .GT. MAXOP ) THEN
           FAILED = .TRUE.
         ELSE
-          IOP(1) = INDPRPCC('XANGMOM ')
-          IOP(2) = INDPRPCC('YANGMOM ')
-          IOP(3) = INDPRPCC('ZANGMOM ')
+          IOP(1) = INDPRP_CC('XANGMOM ')
+          IOP(2) = INDPRP_CC('YANGMOM ')
+          IOP(3) = INDPRP_CC('ZANGMOM ')
         END IF
       ELSE
-        CALL QUIT('Unkown OPERATOR in CC_PUT2OP')
+        CALL QUIT('Unknown OPERATOR in CC_PUT2OP')
       END IF
 
       IF (FAILED) THEN
@@ -7004,10 +7218,10 @@ c /* deck cc_exlrinp */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccexlrinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccexlrinf.h"
 
 * local parameters:
       CHARACTER MSGDBG*(20)
@@ -7044,7 +7258,7 @@ c /* deck cc_exlrinp */
      &            '.HALFFR','.USELEF','.FREQ  ','.FREQUE','.STATIC',
      &            '.USE O2','.NOPROJ'/
 
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -7109,8 +7323,8 @@ C           --------------------------------------
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NEXLROPER.LT.MXEXLROP) THEN
                     NEXLROPER = NEXLROPER + 1
-                    IAEXLROP(NEXLROPER) = INDPRPCC(LABELA)
-                    IBEXLROP(NEXLROPER) = INDPRPCC(LABELB)
+                    IAEXLROP(NEXLROPER) = INDPRP_CC(LABELA)
+                    IBEXLROP(NEXLROPER) = INDPRP_CC(LABELB)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5/)') 
      &               ' NO. OF OPERATOR PAIRS SPECIFIED',
@@ -7133,9 +7347,9 @@ C           ------------------------------------------------
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXEXLROP
                 CALL QUIT('TOO MANY OPERATOR PAIRS IN CCEXLR.')
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
                 IDX = NEXLROPER + (IDXA-1)*3+IDXB
@@ -7320,8 +7534,8 @@ C           -----------------------------------------------------------
      &    ' IS GREATER THAN THE ALLOWED NUMBER : ',MXEXLROP
           CALL QUIT('TOO MANY OPERATOR PAIRS IN CCEXLR.')
         END IF
-        IDIP(1) = INDPRPCC('XDIPLEN ')
-        IDIP(2) = INDPRPCC('YDIPLEN ')
+        IDIP(1) = INDPRP_CC('XDIPLEN ')
+        IDIP(2) = INDPRP_CC('YDIPLEN ')
         DO IDXA=1,3
         DO IDXB=1,3
           IDX = NEXLROPER + (IDXA-1)*3+IDXB
@@ -7370,11 +7584,11 @@ C      IMPLICIT NONE
 C#else
 #  include <implicit.h>
 C#endif
-#include <priunit.h>
-#include <cctm.h>
-#include <cctminf.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
+#include "priunit.h"
+#include "cctm.h"
+#include "cctminf.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
 
 * local parameters:
       CHARACTER SECNAM*(8)
@@ -7417,7 +7631,7 @@ C#endif
       DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.XXXXXX','.XXXXXX',
      &            '.SELSTA','.THIRDF','.XXXXXX','.XXXXXX','.XXXXXX'/
 
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -7479,17 +7693,17 @@ C           .OPERAT : hexuples of operator lables A,B,C,D,E,F
 C           -------------------------------------------------
 1           CONTINUE
               READ (LUCMD,'(6A)') LABELA, LABELB, LABELC,
-     &                            LABELD, LABELE, LABELF 		
+     &                            LABELD, LABELE, LABELF
               DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NTMOPER.LT.MXTMOP) THEN
                     NTMOPER = NTMOPER + 1
-                    IATMOP(NTMOPER) = INDPRPCC(LABELA)
-                    IBTMOP(NTMOPER) = INDPRPCC(LABELB)
-                    ICTMOP(NTMOPER) = INDPRPCC(LABELC)
-                    IDTMOP(NTMOPER) = INDPRPCC(LABELD)
-                    IETMOP(NTMOPER) = INDPRPCC(LABELE)
-                    IFTMOP(NTMOPER) = INDPRPCC(LABELF)
+                    IATMOP(NTMOPER) = INDPRP_CC(LABELA)
+                    IBTMOP(NTMOPER) = INDPRP_CC(LABELB)
+                    ICTMOP(NTMOPER) = INDPRP_CC(LABELC)
+                    IDTMOP(NTMOPER) = INDPRP_CC(LABELD)
+                    IETMOP(NTMOPER) = INDPRP_CC(LABELE)
+                    IFTMOP(NTMOPER) = INDPRP_CC(LABELF)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5)') 
      &               ' NO. OF OPERATOR QUADRUPLES SPECIFIED',
@@ -7498,7 +7712,7 @@ C           -------------------------------------------------
                   END IF
                 END IF
                 READ (LUCMD,'(6A)') LABELA, LABELB, LABELC,
-     &                              LABELD, LABELE, LABELF 		
+     &                              LABELD, LABELE, LABELF
               END DO
               BACKSPACE(LUCMD)
             GO TO 100
@@ -7515,9 +7729,9 @@ C           -------------------------------------------------------
                 CALL QUIT('TOO MANY OPERATOR QUADRUPLES IN CCTM.')
 
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
               DO IDXA=1,3
               DO IDXB=1,3
               DO IDXC=1,3
@@ -7648,9 +7862,9 @@ C           _______________________________________________
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MXTMOP
             CALL QUIT('TOO MANY OPERATOR SIXTUPLES IN CCTM.')
           END IF
-          IDIP(1) = INDPRPCC('XDIPLEN ')
-          IDIP(2) = INDPRPCC('YDIPLEN ')
-          IDIP(3) = INDPRPCC('ZDIPLEN ')
+          IDIP(1) = INDPRP_CC('XDIPLEN ')
+          IDIP(2) = INDPRP_CC('YDIPLEN ')
+          IDIP(3) = INDPRP_CC('ZDIPLEN ')
           DO IDXA=1,3
           DO IDXB=1,3
           DO IDXC=1,3
@@ -7710,10 +7924,10 @@ C           _______________________________________________
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccmcdinf.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
+#include "priunit.h"
+#include "ccmcdinf.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -7755,7 +7969,7 @@ C           _______________________________________________
       DATA IDB / 2, 1, 3, 2, 1, 3 /
       DATA IDC / 3, 3, 1, 1, 2, 2 /
 * external function:
-      INTEGER INDPRPCC
+      INTEGER INDPRP_CC
 
 *---------------------------------------------------------------------*
 * begin:
@@ -7833,9 +8047,9 @@ C                      RELORB1   = .TRUE.
                 ELSE 
                    IF (NMCDOPER.LT.MXMCDOP) THEN
                       NMCDOPER = NMCDOPER + 1
-                      IAMCDOP(NMCDOPER) = INDPRPCC(LABELA)
-                      IBMCDOP(NMCDOPER) = INDPRPCC(LABELB)
-                      ICMCDOP(NMCDOPER) = INDPRPCC(LABELC)
+                      IAMCDOP(NMCDOPER) = INDPRP_CC(LABELA)
+                      IBMCDOP(NMCDOPER) = INDPRP_CC(LABELB)
+                      ICMCDOP(NMCDOPER) = INDPRP_CC(LABELC)
                       LAMCDRX(NMCDOPER) = LARLX
                       LBMCDRX(NMCDOPER) = LBRLX
                       LCMCDRX(NMCDOPER) = LCRLX     
@@ -7862,12 +8076,12 @@ C                      RELORB1   = .TRUE.
                 CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCMCD.')
 
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
-              IANG(1) = INDPRPCC('XANGMOM ')
-              IANG(2) = INDPRPCC('YANGMOM ')
-              IANG(3) = INDPRPCC('ZANGMOM ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IANG(1) = INDPRP_CC('XANGMOM ')
+              IANG(2) = INDPRP_CC('YANGMOM ')
+              IANG(3) = INDPRP_CC('ZANGMOM ')
               DO IJ = 1,6
                 IAMCDOP(IJ+NMCDOPER) = IDIP(IDA(IJ))
                 IBMCDOP(IJ+NMCDOPER) = IANG(IDB(IJ))
@@ -7891,12 +8105,12 @@ C                      RELORB1   = .TRUE.
                 CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCMCD.')
 
               END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
-              IANG(1) = INDPRPCC('dh/dBX  ')
-              IANG(2) = INDPRPCC('dh/dBY  ')
-              IANG(3) = INDPRPCC('dh/dBZ  ')
+              IDIP(1) = INDPRP_CC('XDIPLEN ')
+              IDIP(2) = INDPRP_CC('YDIPLEN ')
+              IDIP(3) = INDPRP_CC('ZDIPLEN ')
+              IANG(1) = INDPRP_CC('dh/dBX  ')
+              IANG(2) = INDPRP_CC('dh/dBY  ')
+              IANG(3) = INDPRP_CC('dh/dBZ  ')
               DO IJ = 1,6
                 IAMCDOP(IJ+NMCDOPER) = IDIP(IDA(IJ))
                 IBMCDOP(IJ+NMCDOPER) = IANG(IDB(IJ))
@@ -8021,12 +8235,12 @@ C                      RELORB1   = .TRUE.
      &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MXMCDOP
             CALL QUIT('TOO MANY OPERATOR TRIPLES IN CCMCD.')
          END IF
-         IDIP(1) = INDPRPCC('XDIPLEN ')
-         IDIP(2) = INDPRPCC('YDIPLEN ')
-         IDIP(3) = INDPRPCC('ZDIPLEN ')
-         IANG(1) = INDPRPCC('XANGMOM ')
-         IANG(2) = INDPRPCC('YANGMOM ')
-         IANG(3) = INDPRPCC('ZANGMOM ')
+         IDIP(1) = INDPRP_CC('XDIPLEN ')
+         IDIP(2) = INDPRP_CC('YDIPLEN ')
+         IDIP(3) = INDPRP_CC('ZDIPLEN ')
+         IANG(1) = INDPRP_CC('XANGMOM ')
+         IANG(2) = INDPRP_CC('YANGMOM ')
+         IANG(3) = INDPRP_CC('ZANGMOM ')
          DO ITOT=1,6
             IAMCDOP(ITOT+NMCDOPER) = IDIP(IDA(ITOT))
             IBMCDOP(ITOT+NMCDOPER) = IANG(IDB(ITOT))
@@ -8060,14 +8274,14 @@ C    SLV98,OC
 C    Ove Christiansen April 1998
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 
       CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_SLVINP')
@@ -8084,7 +8298,7 @@ C=====================================================================*
       DATA SET /.FALSE./
       DATA TABLE /'.SOLVAT','.MXSLIT','.ETOLSL','.TTOLSL','.LTOLSL',
      *            '.PTSOLV','.CCMM','.DISCEX','.REPTST','.RELMOM',
-     *            '.SLOTH '  ,'.MXINIT','.SKIPNC','.XXXXXX','.XXXXXX'/
+     *            '.SLOTH '  ,'.MXINIT','.SKIPNC','.HFFLD ','.CCFIXF'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -8117,6 +8331,9 @@ C=====================================================================*
       RELMOM = .FALSE.
       SLOTH = .FALSE.
       SKIPNC = .FALSE.
+      HFFLD   = .FALSE. ! Do polarization based on fixed HF/MM reaction field - in doi:10.1039/C0C901075H denoted model 1
+      FFIRST   = .TRUE.   ! Dumps Ghf to file in first cc iteration
+      CCFIXF   = .FALSE.   ! Do polarization based on fixed CC/MM reaction field neglecting resp terms - ie only static polarization. Model 2 in doi:10.1039/C0C901075H 
 
 *---------------------------------------------------------------------*
 * read input:
@@ -8143,7 +8360,7 @@ C=====================================================================*
 
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15) ,IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_SLVINP.')
 C
 C-----------------------
@@ -8265,15 +8482,15 @@ C
 C-----------------------
 C
 14          CONTINUE
+              HFFLD  = .TRUE.
             GO TO 100
 C
 C-----------------------
 C
-C-----------------------
-C
-15           CONTINUE
+15          CONTINUE
+              CCFIXF = .TRUE.
             GO TO 100
-C
+
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
@@ -8301,7 +8518,14 @@ C-------------------------------------------------------------------
 C
       CCSLV  = (ICHANG.GT.0)
       IF (CCSLV) RSPIM = .TRUE.
-      IF (CC2) NONHF = .TRUE.
+C 
+      IF (CC2 ) NONHF = .TRUE.
+
+      IF ( (HFFLD) .AND. (CCFIXF) ) THEN
+        WRITE(LUPRI,*) 'You have specified both CCFIXF and HFFLD. 
+     &       Make a choice!'
+        CALL QUIT('Error in PECC input')
+      ENDIF
 C
       RETURN
       END
@@ -8310,12 +8534,12 @@ c/* deck cc_r12in */
       SUBROUTINE CC_R12IN(WORD)
 C     Purpose: Read input for R12 calculations.
 C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "r12int.h"
 CCN
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
 CCN
       LOGICAL SET
       CHARACTER SECNAM*(8)
@@ -8427,7 +8651,7 @@ celena
             GO TO 100
    20       CONTINUE
             DO I = 1, 120
-	      CC2LAB(I:I) = ' '
+              CC2LAB(I:I) = ' '
             ENDDO
             READ (LUCMD,'(A)') CC2LAB
             DO I = 1, 120
@@ -8436,21 +8660,20 @@ celena
                 GOTO 201 
               END IF
             ENDDO
-	    GOTO 300
+            GOTO 300
   201       CONTINUE
             DO I = 120, 1, -1
               IF (CC2LAB(I:I) .NE. ' ') THEN
-	        IF (CC2LAB(I:I) .EQ. 'A') THEN
+                IF (CC2LAB(I:I) .EQ. 'A') THEN
                   IAPCC2 = 1
-		  GOTO 100
-	        ELSE IF (CC2LAB(I:I) .EQ. 'B') THEN
+                  GOTO 100
+                ELSE IF (CC2LAB(I:I) .EQ. 'B') THEN
                   IAPCC2 = 2
-		  GOTO 100
+                  GOTO 100
                 ELSE
-		  GOTO 300
-	        END IF
-c               GOTO 100 
-	      END IF
+                  GOTO 300
+                END IF
+              END IF
             END DO
             GO TO 300
    21       CONTINUE ! .NATVIR
@@ -8501,7 +8724,7 @@ c               GOTO 100
                   R12NOA = .TRUE. 
                   R12NOB = .FALSE.
                END IF
-	       IF (NORXR) THEN
+               IF (NORXR) THEN
                   IAP = 5
                ELSE
                   IAP = 7
@@ -8514,7 +8737,7 @@ c               GOTO 100
      *         CALL QUIT('Sorry, NATVIR for Ansatz 2 not implemented')
             NOTONE = .TRUE.
             NOTTRE = .TRUE.
-	    IF (IAPCC2 .NE. 2) GOTO 300 
+            IF (IAPCC2 .NE. 2) GOTO 300 
             IF (NORXR) THEN
                IAP = 8
             ELSE
@@ -8525,14 +8748,14 @@ c               GOTO 100
      *         CALL QUIT('Sorry, NATVIR for Ansatz 3 not implemented')
             NOTONE = .TRUE.
             NOTTWO = .TRUE.
-	    IF (IAPCC2 .NE. 2) GOTO 300 
+            IF (IAPCC2 .NE. 2) GOTO 300 
             IF (NORXR) THEN
                IAP = 8
             ELSE
                IAP = 10
             END IF
          ELSE
-	    GOTO 300
+            GOTO 300
          END IF
          IAPCC2 = IAP
       END IF
@@ -8549,4 +8772,1250 @@ CCN
       RETURN
   300 write (lupri,*) 'WRONG CC2LAB: ',CC2LAB
       CALL QUIT('WRONG CC2LAB')
+      END
+C
+C  /* Deck cc_chodbinp */
+      SUBROUTINE CC_CHODBINP(WORD)
+C
+C     Thomas Bondo Pedersen, May 2002.
+C
+C     Purpose: Read input for CC Cholesky debug input section.
+C
+#include "implicit.h"
+      CHARACTER*7 WORD
+#include "priunit.h"
+#include "chodbg.h"
+
+      CHARACTER*11 SECNAM
+      PARAMETER (SECNAM = 'CC_CHODBINP')
+
+      PARAMETER (NTABLE = 4)
+
+      LOGICAL SET
+      SAVE SET
+
+      CHARACTER*7 TABLE(NTABLE)
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.DBIAJB','.STIAJB','.DBAOIN','.STAOIN'/
+
+C     Test SET.
+C     ---------
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+C     Initializations and defaults.
+C     -----------------------------
+
+      DBAOIN = .FALSE.
+      STAOIN = .FALSE.
+      DBIAJB = .FALSE.
+      STIAJB = .FALSE.
+      ICHANG  = 0
+
+C     Process input section.
+C     ----------------------
+
+      IF (WORD(1:7) .EQ. '*CHODBG') THEN
+
+  100    CONTINUE
+
+C           Read new input line.
+C           --------------------
+
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+
+            IF (WORD(1:1) .EQ. '.') THEN
+
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+
+               IF (IJUMP .LE. NTABLE) THEN
+
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4), IJUMP
+
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+
+    1             CONTINUE
+C                    '.DBIAJB'
+C                    Test Cholesky (ia|jb) integrals.
+                     DBIAJB = .TRUE.
+                  GOTO 100   
+
+    2             CONTINUE
+C                    '.STIAJB'
+C                    Stop after (ia|jb) test.
+                     STIAJB = .TRUE.
+                  GOTO 100   
+
+    3             CONTINUE
+C                    '.DBAOIN'
+C                    Test Cholesky AO integrals.
+                     DBAOIN = .TRUE.
+                  GOTO 100
+
+    4             CONTINUE
+C                    '.STAOIN'
+C                    Stop after AO integral test.
+                     STAOIN = .TRUE.
+                  GOTO 100
+
+               ELSE
+
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+
+               ENDIF
+
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+
+               BACKSPACE (LUCMD)
+               GO TO 200
+
+            ENDIF
+
+      ENDIF
+
+  200 CONTINUE
+
+C     Finally, set overall Cholesky debug flag.
+C     -----------------------------------------
+
+      CHODBG = DBIAJB .OR. DBAOIN
+
+      RETURN
+      END
+C  /* Deck cc_chomp2inp */
+      SUBROUTINE CC_CHOMP2INP(WORD)
+C
+C     Thomas Bondo Pedersen, July 2002.
+C
+C     Purpose: Read input for Cholesky based MP2 calculation.
+C
+#include "implicit.h"
+      CHARACTER*7 WORD
+#include "priunit.h"
+#include "chomp2.h"
+Casm
+#include "chomp2_b.h"
+Casm
+
+      CHARACTER*12 SECNAM
+      PARAMETER (SECNAM = 'CC_CHOMP2INP')
+
+      PARAMETER (NTABLE = 20)
+
+      LOGICAL SET
+      SAVE SET
+
+      CHARACTER*8 TABLE(NTABLE)
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.NOCHOM','.THRMP2','.SPAMP2','.MXDECM','.NCHORD',
+     &            '.MP2SAV','.SKIPTR','.SKIPCH','.CHOMO ','.ALGORI',
+     &            '.SPRMP2','.SCRMP2','.SPLITM','.ZERO  ','.RSTMP2',
+     &            '.OLDEN2','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+
+C     Test SET.
+C     ---------
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+C     Initializations and defaults.
+C     Negative values of THRMP2 and SPAMP2 prompt the use of
+C     corresponding AO decomposition values.
+C     ------------------------------------------------------
+
+      CALL CC_CHOMP2INIT
+
+C     Process input section.
+C     ----------------------
+
+      IF (WORD(1:7) .EQ. '*CHOMP2') THEN
+
+  100    CONTINUE
+
+C           Read new input line.
+C           --------------------
+
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+
+            IF (WORD(1:1) .EQ. '.') THEN
+
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+
+               IF (IJUMP .LE. NTABLE) THEN
+
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+     &                  16,17,18,19,20), IJUMP
+
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+
+    1             CONTINUE
+C                 '.NOCHOM'
+C                 Do not decompose (ai|bj).
+                  CHOMO = .FALSE.
+                  GOTO 100
+
+    2             CONTINUE
+C                 '.THRMP2'
+C                 Threshold for (ai|bj) decomposition.
+                  READ(LUCMD,*) THRMP2
+                  GOTO 100
+
+    3             CONTINUE
+C                 '.SPAMP2'
+C                 Span factor for (ai|bj) decomposition.
+                  READ(LUCMD,*) SPAMP2
+                  GOTO 100
+
+    4             CONTINUE
+C                 '.MXDECM'
+C                 Max. qualified diagonals in (ai|bj) decomposition.
+                  READ(LUCMD,*) MXDECM
+COLD              IF (MXDECM .GT. MAXMOD) THEN
+COLD                 WRITE(LUPRI,'(//,5X,A,A,I10)')
+COLD &               SECNAM,': MXDECM too large. Max. allowed: ',MAXMOD
+COLD                 CALL QUIT('Input error in '//SECNAM)
+COLD              ELSE IF (MXDECM .LE. 0) THEN
+                  IF (MXDECM .LE. 0) THEN
+                     WRITE(LUPRI,'(5X,A,A,I10)')
+     &               SECNAM,': MXDECM must be positive!'
+                     CALL QUIT('Input error in '//SECNAM)
+                  ENDIF
+                  GOTO 100
+
+    5             CONTINUE
+C                 '.NCHORD'
+C                 Max. prev. vectors in (ai|bj) decomposition.
+                  READ(LUCMD,*) NCHORD
+                  IF (NCHORD .LE. 0) THEN
+                     WRITE(LUPRI,'(5X,A,A,I10)')
+     &               SECNAM,': NCHORD must be positive!'
+                     CALL QUIT('Input error in '//SECNAM)
+                  ENDIF
+                  GOTO 100
+
+    6             CONTINUE
+C                 '.MP2SAV'
+C                 Save MP2 amplitudes on disk.
+                  MP2SAV = .TRUE.
+                  GOTO 100
+
+    7             CONTINUE
+C                 '.SKIPTR'
+C                 Skip MO transformation; use old vectors.
+                  SKIPTR = .TRUE.
+                  GOTO 100
+
+    8             CONTINUE
+C                 '.SKIPCH'
+C                 Skip (ai|bj) decompositon; read info from disk
+                  SKIPCH = .TRUE.
+                  GOTO 100
+
+    9             CONTINUE
+C                 '.CHOMO '
+C                 (ai|bj) decompositon
+                  CHOMO = .TRUE.
+                  GOTO 100
+
+   10             CONTINUE
+C                 '.ALGORI'
+C                 algorithm:
+C                 <1: decided by MP2 routine (default, IALMP2=0)
+C                  1: force storage of full-square (ia|jb) in core
+C                  2: batch over one virtual index
+C                  3: batch over two virtual indices
+C                 >3: same as <1.
+                  READ(LUCMD,*) IALMP2
+                  GOTO 100
+
+   11             CONTINUE
+C                 '.SPRMP2'
+C                 Use sparse representation of Cholesky vector.
+                  SPRMP2 = .TRUE.
+                  GOTO 100
+
+   12             CONTINUE
+C                 '.SCRMP2'
+C                 Screening threshold for sparse representation.
+                  READ(LUCMD,*) SCRMP2
+                  GOTO 100
+
+   13             CONTINUE
+C                 '.SPLITM'
+C                 Weight factor for Cholesky part in memory split for
+C                 virtual batch algorithms.
+                  READ(LUCMD,*) TMP
+                  IF (TMP .GT. 0.0D0) SPLITM = TMP
+                  GOTO 100
+
+   14             CONTINUE
+C                 '.ZERO  '
+C                 Threshold for diagonal zeroing in decompositions.
+                  READ(LUCMD,*) THZMP2
+                  GOTO 100
+
+   15             CONTINUE
+C                 '.RSTMP2'
+C                 Restart MP2
+                  RSTMP2 = .TRUE.
+                  READ(LUCMD,*)  IFSYMB, IFVIRB
+                  GOTO 100
+
+   16             CONTINUE
+C                 '.OLDEN2'
+C                 Old MP2 energy (if desided)
+                  OLDKNO = .TRUE.
+                  READ(LUCMD,*)  OLDEN2
+                  GOTO 100
+
+   17             CONTINUE
+   18             CONTINUE
+   19             CONTINUE
+   20             CONTINUE
+C                 '.XXXXXX'
+C                 Not used
+                  GOTO 100
+
+               ELSE
+
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+
+               ENDIF
+
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+
+               BACKSPACE (LUCMD)
+               GO TO 200
+
+            ENDIF
+
+      ENDIF
+
+  200 CONTINUE
+
+
+      RETURN
+      END
+C  /* Deck cc_chocc2inp */
+      SUBROUTINE CC_CHOCC2INP(WORD)
+C
+C     Thomas Bondo Pedersen, August 2002.
+C
+C     Purpose: Read input for Cholesky based CC2 calculation.
+C
+#include "implicit.h"
+      CHARACTER*7 WORD
+#include "priunit.h"
+#include "chocc2.h"
+
+      CHARACTER*12 SECNAM
+      PARAMETER (SECNAM = 'CC_CHOCC2INP')
+
+      PARAMETER (NTABLE = 15)
+
+      LOGICAL SET
+      SAVE SET
+
+      CHARACTER*8 TABLE(NTABLE)
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.CHOMO ','.THRCC2','.SPACC2','.MXDECM','.NCHORD',
+     &            '.XXXXXX','.CHOT2 ','.NOCHOM','.ALGORI','.THRCCC',
+     &            '.SPACCC','.SPLITM','.ZERO  ','.XXXXXX','.XXXXXX'/
+
+C     Test SET.
+C     ---------
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+C     Initializations and defaults.
+C     Negative values of THRCC2 and SPACC2 prompt the use of
+C     corresponding AO decomposition values.
+C     ------------------------------------------------------
+
+      CALL CC_CHOCC2INIT
+
+C     Process input section.
+C     ----------------------
+
+      IF (WORD(1:7) .EQ. '*CHOCC2') THEN
+
+  100    CONTINUE
+
+C           Read new input line.
+C           --------------------
+
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+
+            IF (WORD(1:1) .EQ. '.') THEN
+
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+
+               IF (IJUMP .LE. NTABLE) THEN
+
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+
+    1             CONTINUE
+C                 '.CHOMO '
+C                 Decompose (ai|bj) (=> CHOT2 = .FALSE.).
+                  CHOT2  = .FALSE.
+                  CHOMO2 = .TRUE.
+                  GOTO 100
+
+    2             CONTINUE
+C                 '.THRCC2'
+C                 Threshold for decomposition.
+                  READ(LUCMD,*) THRCC2
+                  GOTO 100
+
+    3             CONTINUE
+C                 '.SPACC2'
+C                 Span factor for decomposition.
+                  READ(LUCMD,*) SPACC2
+                  GOTO 100
+
+    4             CONTINUE
+C                 '.MXDECM'
+C                 Max. qualified diagonals in decomposition.
+                  READ(LUCMD,*) MXDEC2
+                  IF (MXDEC2 .LE. 0) THEN
+                     WRITE(LUPRI,'(5X,A,A,I10)')
+     &               SECNAM,': .MXDECM input must be positive!'
+                     CALL QUIT('Input error in '//SECNAM)
+                  ENDIF
+                  GOTO 100
+
+    5             CONTINUE
+C                 '.NCHORD'
+C                 Max. prev. vectors in decomposition.
+                  READ(LUCMD,*) NCHRD2
+                  IF (NCHRD2 .LE. 0) THEN
+                     WRITE(LUPRI,'(5X,A,A,I10)')
+     &               SECNAM,': .NCHORD input must be positive!'
+                     CALL QUIT('Input error in '//SECNAM)
+                  ENDIF
+                  GOTO 100
+
+    6             CONTINUE
+C                 '.XXXXXX'
+                  GOTO 100
+
+    7             CONTINUE
+C                 '.CHOT2 '
+C                 Decompose CC2 T2 amplitudes. (=> CHOMO2 = .FALSE.)
+                  CHOT2  = .TRUE.
+                  CHOMO2 = .FALSE.
+                  GOTO 100
+
+    8             CONTINUE
+C                 '.NOCHOM'
+C                 No decompositions in CC2 section.
+                  CHOT2  = .FALSE.
+                  CHOMO2 = .FALSE.
+                  GOTO 100
+
+    9             CONTINUE
+C                 '.ALGORI'
+C                 Set algorithm (=1 for single virtual batch, =2 for double)
+                  READ(LUCMD,*) IALGO
+                  IF (IALGO .LE. 1) THEN
+                     IALCC2 = 1
+                  ELSE
+                     IALCC2 = 2
+                  ENDIF
+                  GOTO 100
+
+   10             CONTINUE
+C                 '.THRCCC'
+C                 Threshold to use in amplitude decomposition for
+C                 response intermediates and right-hand sides.
+                  READ(LUCMD,*) THRCCC
+                  GOTO 100
+
+   11             CONTINUE
+C                 '.SPACCC'
+C                 Span factor to use in amplitude decomposition for
+C                 response intermediates and right-hand sides.
+                  READ(LUCMD,*) SPACCC
+                  GOTO 100
+
+   12             CONTINUE
+C                 '.SPLITM'
+C                 Weight factor for Cholesky part in memory split for
+C                 batching over virtuals.
+                  READ(LUCMD,*) TMP
+                  IF (TMP .GT. 0.0D0) SPLITC = TMP
+                  GOTO 100
+
+   13             CONTINUE
+C                 '.ZERO  '
+C                 Threshold for diagonal zeroing in decompositions.
+                  READ(LUCMD,*) THZCC2
+                  GOTO 100
+
+   14             CONTINUE
+C                 '.XXXXXX'
+C                 Not used.
+                  GOTO 100
+
+   15             CONTINUE
+C                 '.XXXXXX'
+C                 Not used.
+                  GOTO 100
+
+               ELSE
+
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+
+               ENDIF
+
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+
+               BACKSPACE (LUCMD)
+               GO TO 200
+
+            ENDIF
+
+      ENDIF
+
+  200 CONTINUE
+
+      RETURN
+      END
+C  /* Deck cc_chomp2init */
+      SUBROUTINE CC_CHOMP2INIT
+C
+C     Thomas Bondo Pedersen, October 2002.
+C
+C     Initialize chomp2.h
+#include "implicit.h"
+#include "chomp2.h"
+
+      MP2SAV = .FALSE.
+      CHOMO  = .FALSE.
+      SKIPTR = .FALSE.
+      SKIPCH = .FALSE.
+      THRMP2 = -1.0D8
+      SPAMP2 = -1.0D8
+      MXDECM = 50
+      NCHORD = 200
+      THZMP2 = -1.0D8
+      IALMP2 = 0
+      SPRMP2 = .FALSE.
+      SCRMP2 = -1.0D8
+      SPLITM = 1.0D0
+
+      RETURN
+      END
+C  /* Deck cc_chocc2init */
+      SUBROUTINE CC_CHOCC2INIT
+C
+C     Thomas Bondo Pedersen, October 2002.
+C
+C     Initialize chocc2.h
+#include "implicit.h"
+#include "chocc2.h"
+Casm
+#include "chomp2_b.h"
+C
+      LOGICAL SET
+      SAVE SET
+      DATA SET /.FALSE./
+
+C
+      IF (SET) THEN
+         RETURN
+      ELSE
+         SET = .TRUE.
+      END IF
+Casm
+      IALCC2 = 2
+      CHOT2  = .FALSE.
+      CHOMO2 = .FALSE.
+      CHOT2C = .FALSE.
+      DSKETA = .FALSE.
+      DSKFY2 = .FALSE.
+      THRCC2 = -1.0D8
+      SPACC2 = -1.0D8
+      MXDEC2 = 50
+      NCHRD2 = 200
+      THZCC2 = -1.0D8
+      THRCCC = THRCC2
+      SPACCC = SPACC2
+      MXDECC = MXDEC2
+      NCHRDC = NCHRD2
+      SPLITC = 1.0D0
+
+Casm
+      RSTMP2 = .FALSE.
+      OLDKNO = .FALSE.
+      OLDEN2 = 0.0D0
+Casm
+      RETURN
+      END
+C  /* Deck cc_choptinit */
+      SUBROUTINE CC_CHOPTINIT
+C
+C     TBP, JLC, BFR, AS, and HK,  May 2003.
+C
+C     Purpose: Set defaults for Cholesky denominator CCSD(T) program.
+C
+#include "implicit.h"
+      PARAMETER (ZERO = 0.0D0)
+#include "cc_cho.h"
+
+      MXCHVE = MIN(MAXCHO,10)
+      THRCHO = -1.0D10
+Casm
+C
+C     Virtual part
+C
+      RSTVIR = .FALSE.
+      IFVISY = 1
+      IFVIOR = 1
+C
+C     Occupied part
+C
+      RSTH  = .FALSE.
+      RSTH1 = .FALSE.
+      RSTF1 = .FALSE.
+      RSTC1 = .FALSE.
+      RSTC2 = .FALSE.
+C
+C     Files
+C
+      SKIVI1 = .FALSE.
+      SKIVI2 = .FALSE.
+C
+C     Previous values
+C
+      UKNE4V = .TRUE.
+      UKNE5V = .TRUE.
+      UKNE4O = .TRUE.
+      UKNE5O = .TRUE.
+C
+      OLD4V = ZERO
+      OLD5V = ZERO
+      OLD4O = ZERO
+      OLD5O = ZERO
+Casm
+      RETURN
+      END
+C  /* Deck cc_choptinp */
+      SUBROUTINE CC_CHOPTINP(WORD)
+C
+C     TBP, JLC, BFR, AS, and HK,  May 2003.
+C
+C     Purpose: Process input for changing defaults for the Cholesky denominator
+C              CCSD(T) program.
+C
+#include "implicit.h"
+      CHARACTER*7 WORD
+#include "priunit.h"
+#include "cc_cho.h"
+
+      CHARACTER*11 SECNAM
+      PARAMETER (SECNAM = 'CC_CHOPTINP')
+
+      PARAMETER (NTABLE = 15)
+
+      LOGICAL SET
+      SAVE SET
+
+      CHARACTER*8 TABLE(NTABLE)
+
+      DATA SET /.FALSE./
+      DATA TABLE /'.MXCHVE','.THRCHO','.RSTVIR','.RSTH  ','.RSTH1 ',
+     &            '.RSTF1 ','.RSTC1 ','.RSTC2 ','.SKIVI1','.SKIVI2',
+     &            '.OLD4V ','.OLD5V ','.OLD4O ','.OLD5O ','.XXXXXX'/
+
+C     Test SET.
+C     ---------
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+C     Set defaults.
+C     -------------
+
+      CALL CC_CHOPTINIT
+
+C     Process input section.
+C     ----------------------
+
+      IF (WORD(1:7) .EQ. '*CHO(T)') THEN
+
+  100    CONTINUE
+
+C           Read new input line.
+C           --------------------
+
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+
+            IF (WORD(1:1) .EQ. '.') THEN
+
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+
+               IF (IJUMP .LE. NTABLE) THEN
+
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+
+    1             CONTINUE
+C                 '.MXCHVE'
+C                 Maximum number of Cholesky vectors used.
+                  NCHDEF = MXCHVE
+                  READ(LUCMD,*) MXCHVE
+                  IF (MXCHVE .LE. 0) THEN
+                     WRITE(LUPRI,'(/,1X,A,A,A,I10,A,/,1X,A,I10,/)')
+     &               SECNAM,': NOTICE: Number of Cholesky vectors ',
+     &               'specified (',MXCHVE,')',
+     &               'is reset to the default value ',NCHDEF
+                     MXCHVE = NCHDEF
+                  ELSE IF (MXCHVE .GT. MAXCHO) THEN
+                     WRITE(LUPRI,'(/,1X,A,A,A,I10,A,/,1X,A,I10,/)')
+     &               SECNAM,': NOTICE: Number of Cholesky vectors ',
+     &               'specified (',MXCHVE,')',
+     &               'is reset to the maximum value ',MAXCHO
+                     MXCHVE = MAXCHO
+                  ENDIF
+                  GOTO 100
+
+    2             CONTINUE
+C                 '.THRCHO'
+C                 Threshold for skipping remaining Cholesky vectors in each
+C                 term.
+                  READ(LUCMD,*) THRCHO
+                  GO TO 100
+
+    3             CONTINUE
+                     RSTVIR = .TRUE.
+                     READ(LUCMD,*) IFVISY,IFVIOR
+                  GO TO 100
+
+    4             CONTINUE
+                     RSTH = .TRUE.
+                  GO TO 100
+C
+    5             CONTINUE
+                     RSTH1 = .TRUE.
+                  GO TO 100
+C
+    6             CONTINUE
+                     RSTF1 = .TRUE.
+                  GO TO 100
+C
+    7             CONTINUE
+                     RSTC1 = .TRUE.
+                  GO TO 100
+C
+    8             CONTINUE
+                     RSTC2 = .TRUE.
+                  GO TO 100
+C
+    9             CONTINUE
+                     SKIVI1 = .TRUE.
+                  GO TO 100
+C
+   10             CONTINUE
+                     SKIVI2 = .TRUE.
+                  GO TO 100
+
+   11             CONTINUE
+                     UKNE4V = .FALSE.
+                     READ(LUCMD,*) OLD4V
+                  GO TO 100
+
+   12             CONTINUE
+                     UKNE5V = .FALSE.
+                     READ(LUCMD,*) OLD5V
+                  GO TO 100
+
+   13             CONTINUE
+                     UKNE4O = .FALSE.
+                     READ(LUCMD,*) OLD4O
+                  GO TO 100
+
+   14             CONTINUE
+                     UKNE5O = .FALSE.
+                     READ(LUCMD,*) OLD5O
+                  GO TO 100
+
+   15             CONTINUE
+C                    Not used
+                  GO TO 100
+
+               ELSE
+
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+
+               ENDIF
+
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+
+               BACKSPACE (LUCMD)
+               GO TO 200
+
+            ENDIF
+
+      ENDIF
+
+  200 CONTINUE
+
+      RETURN
+C
+C
+      END
+C  /* Deck cc_ctomag */
+      SUBROUTINE CC_CTOMAG
+C
+C     asm September 2005
+C
+C     Purpose: Set up operator list for CTOCD calculations
+C
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "cclrinf.h"
+#include "ctocdcc.h"
+C
+      PARAMETER (MAXOPR = 10 * MXLROP)
+C
+      CHARACTER*8 RECORD(4), STARS, LABEL, LABELA, LABELB
+      PARAMETER (STARS = '********')
+C
+      CHARACTER*8 LSTLBL(MAXOPR)
+      INTEGER     SYMLBL(MAXOPR)
+C
+      LOGICAL SET,LF
+      SAVE  SET
+      DATA  SET /.FALSE./
+      DATA  LF /.FALSE./
+C
+C
+      IF (SET) RETURN
+      SET = .TRUE.
+C
+      LUPROP = -1
+      CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+      REWIND(LUPROP)
+C
+C     Read labels in AOPROPER and sort
+C
+      NOPER = 0
+  100 CONTINUE
+         READ(LUPROP, END=200, ERR=300) RECORD
+         IF (RECORD(1) .NE. STARS) THEN
+            GOTO 100
+         ELSE
+            LABEL = RECORD(4)
+            IF ((LABEL .EQ. 'HUCKOVLP') .OR. (LABEL .EQ. 'HUCKEL  ')
+     &          .OR. (LABEL .EQ. 'OVERLAP ')) GOTO 100
+C
+            NOPER = NOPER + 1
+            IF (NOPER .GT. MAXOPR) STOP 
+     &                             'Too many label found by CC_CTOMAG'
+C
+            READ(RECORD(2),'(I1)') SYMLBL(NOPER)
+            LSTLBL(NOPER) = LABEL
+         END IF
+      GOTO  100
+C
+  200 CONTINUE
+C
+C     Select pairs of operators to compute
+C
+      DO I = 1,NOPER
+C
+         LABELA = LSTLBL(I)
+         ISYMA  = SYMLBL(I)
+C
+         IF (LABELA(2:7) .EQ. 'DIPVEL') THEN     ! Most of ctocd properties
+C
+            DO J = 1,NOPER
+C
+               LABELB = LSTLBL(J)
+               ISYMB  = SYMLBL(J)
+C
+               IF (ISYMA .EQ. ISYMB) THEN        ! Otherwise, sop is zero
+C
+                  IF (LABELB(3:6) .EQ. 'RANG') THEN          !Dia suscep
+                     IF (CTOSUS)
+     &                  CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  ELSE IF (LABELB(4:7) .EQ. 'RPSO') THEN     !Dia shield
+                     IF (CTOSHI)
+     &                  CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  ELSE IF (LABELB(1:3) .EQ. 'PSO') THEN      !Shift shield
+                     IF (CTOSHI)
+     &                  CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  END IF
+C
+               END IF
+C
+            END DO
+C
+         ELSE IF (CTOSUS .AND. (LABELA(2:7) .EQ. 'ANGMOM')) THEN   !Para suscep
+C
+            DO J = 1,NOPER
+C
+               LABELB = LSTLBL(J)
+               ISYMB  = SYMLBL(J)
+C
+               IF (ISYMA .EQ. ISYMB) THEN        ! Otherwise, sop is zero
+C
+                  IF (LABELB(2:7) .EQ. 'ANGMOM') THEN    
+                     CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  END IF
+C
+               END IF
+C
+            END DO
+C
+         ELSE IF (CTOSHI .AND. (LABELA(1:3) .EQ. 'PSO')) THEN      !Para shield
+C
+            DO J = 1,NOPER
+C
+               LABELB = LSTLBL(J)
+               ISYMB  = SYMLBL(J)
+C
+               IF (ISYMA .EQ. ISYMB) THEN        ! Otherwise, sop is zero
+C
+                  IF (LABELB(2:7) .EQ. 'ANGMOM') THEN
+                     CALL CC_LRINPREQ(LABELA,LABELB,1,1,LF,LF)
+                  END IF
+C
+               END IF
+C
+            END DO
+C
+         END IF
+C
+      END DO
+      GOTO 999
+C
+  300 STOP 'Error when reading in CC_CTOMAG'
+C
+  999 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck cc_actinp */
+      SUBROUTINE CC_ACTINP(WORD,MSYM)
+C
+C     Alfredo Sanchez de Meras. May 2008
+C
+C     Purpose: Read input for CC Active section
+C
+#include "implicit.h"
+      CHARACTER*7 WORD
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "center.h"
+
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CC_ACTINP')
+C
+      PARAMETER (NTABLE = 15)
+      CHARACTER*7 TABLE(NTABLE)
+      DATA TABLE /'.ATOMIC','.BOXDEF','.ACTFRE','.DIFADD','.NBOEXP',
+     &            '.SELDIR','.THACOC','.THACVI','.SELDIA','.ORDER ',
+     &            '.FULDEC','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+C
+      LOGICAL SET, CHKACT
+      SAVE SET
+      DATA SET /.FALSE./
+      DATA CHKACT /.FALSE./
+C
+C
+      IF (SET) RETURN
+      SET = .TRUE.
+C
+C     Initializations
+C
+      ATOMIC = .FALSE.
+      ACTFRE = .FALSE.
+      DIFADD = .FALSE.
+      NBOEXP = .FALSE.
+      SELDIR = .FALSE.
+      ACTIVE = .TRUE.
+C
+      THACOC = 1.0D-4
+      THACVI = 1.0D-4
+C
+ctmp  DO I = 1,NUCIND
+ctmp     IORDEC(I) = I
+ctmp  END DO
+C
+      ICHANG  = 0
+C
+C     Process input section.
+C
+      IF (WORD(1:7) .EQ. '*ACTIVE') THEN
+C
+  100    CONTINUE
+C
+C           Read new input line.
+C
+            READ(LUCMD,'(A7)') WORD
+            DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+               READ (LUCMD,'(A7)') WORD
+            END DO
+C
+            IF (WORD(1:1) .EQ. '.') THEN
+C
+               IJUMP = 1
+               DO WHILE ((IJUMP.LE.NTABLE) .AND. (TABLE(IJUMP).NE.WORD))
+                  IJUMP = IJUMP + 1
+               END DO
+C
+               IF (IJUMP .LE. NTABLE) THEN
+C
+                  ICHANG = ICHANG + 1
+                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+C
+                  CALL QUIT
+     &            ('Illegal address in computed GOTO in '//SECNAM)
+C
+    1             CONTINUE
+C                    '.ATOMIC'
+C                    Select active atoms (no boxes)
+                     ATOMIC = .TRUE.
+                     CHKACT = .TRUE.
+                     READ(LUCMD,*) NACINP
+                     IF (NACINP .GT. MXACAT) THEN
+                        WRITE(LUPRI,*) 'ERROR: From center.h, ' ,
+     &                                 'maximum number of active ',
+     &                                 'atoms is',MXACAT
+                        STOP 'Too many active atoms'
+                     END IF
+                     READ(LUCMD,*) (LACINP(I), I=1,NACINP)
+C
+                     DO I = 1,NACINP
+                        DO J = 1,I-1
+                           IF (LACINP(J) .EQ. LACINP(I)) THEN
+                              WRITE(LUPRI,*) 'ERROR : ',
+     &                                       'One atom declared ',
+     &                                       'twice as active'
+                              STOP 'One atom is hyperactive'
+                           ELSE IF (LACINP(J) .GT. LACINP(I)) THEN
+                              ITMP = LACINP(J)          ! Not needed,
+                              LACINP(J) = LACINP(I)     ! but output
+                              LACINP(I) = ITMP          ! looks nicer
+                           END IF
+                        END DO
+                     END DO
+                  GOTO 100   
+C
+    2             CONTINUE
+C                    '.BOXDEF'
+C                    Boxes definition.           
+                     CHKACT = .TRUE.
+C_to_do              copy & paste from mkinp.f
+                  GOTO 100   
+C
+    3             CONTINUE
+C                    '.ACTFRE'
+C                    Freeze orbitals in active atomic space
+                     ACTFRE = .TRUE.
+                     READ(LUCMD,*) NACTFR
+                  GOTO 100
+C
+    4             CONTINUE
+C                    '.DIFADD'
+C                    Include in active space selected (diffuse) basis
+                     DIFADD = .TRUE.
+                     CHKACT = .TRUE.
+                     DO ISYM = 1,MSYM
+                        READ(LUCMD,*) NEXTBS(ISYM)
+                        READ(LUCMD,*) (IEXTBS(I,ISYM), I=1,NEXTBS(ISYM))
+                     END DO
+                  GOTO 100
+C
+    5             CONTINUE
+C                    '.NBOEXP'
+C                    n-body interactions among boxes
+                     NBOEXP = .TRUE.
+C_to_do              copy & paste from mkinp.f
+                  GOTO 100
+    6             CONTINUE
+C                    '.SELDIR'
+C                    Decompose only selected centers
+                     SELDIR = .TRUE.
+                  GOTO 100
+    7             CONTINUE
+C                    '.THACOC'
+C                    Threshold for decomposition of active occupied block
+                     READ(LUCMD,*) THACOC
+                  GOTO 100
+    8             CONTINUE
+C                    '.THACVI'
+C                    Threshold for decomposition of virtual occupied block
+                     READ(LUCMD,*) THACVI
+                  GOTO 100
+    9             CONTINUE
+C                    '.SELDIA'
+C                    Select which diagonals to decompose in one atom
+                     READ(LUCMD,*) IAT1,NSLTMP
+                     NSELD(IAT1) = NSLTMP
+                     READ(LUCMD,*) (ISELD(I,IAT1),I=1,NSELD(IAT1))
+                     DIASEL(IAT1) = .TRUE.
+                  GOTO 100
+   10             CONTINUE
+C                    '.ORDER'
+C                    Order to decompose atoms
+ctmp                 READ(LUCMD,*) (IORDEC(I), I=1,NUCIND)
+                  GOTO 100
+   11             CONTINUE             
+C                    '.FULDEC'
+C                    Select all the atoms
+                     FULDEC = .TRUE.
+                     SELDIR = .TRUE.
+                  GOTO 100
+C                    '.XXXXXX'
+   12             CONTINUE             
+   13             CONTINUE             
+   14             CONTINUE             
+   15             CONTINUE             
+                  GOTO 100
+
+C
+               ELSE
+                  WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &                '" not recognized in ',SECNAM,'.'
+                  CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',
+     &                       LUPRI)
+                  CALL QUIT('Illegal Keyword in '//SECNAM)
+               END IF
+C
+            ELSE IF (WORD(1:1) .NE. '*') THEN
+               WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+               CALL QUIT('Illegal prompt in '//SECNAM)
+            ELSE IF (WORD(1:1) .EQ.'*') THEN
+               BACKSPACE (LUCMD)
+               GO TO 200
+            END IF
+C
+      END IF
+C
+  200 CONTINUE
+C
+C     Check that input makes sense
+C
+      WRITE(LUPRI,'(//,A)') '       ----------------------------'
+      WRITE(LUPRI,'(A)') '          Info from Selact input'
+      WRITE(LUPRI,'(A,/)') '       ----------------------------'
+C
+      IF (ACTIVE .AND. (.NOT.  CHKACT)) THEN
+         WRITE(LUPRI,'(//,A,/,3A,/,A,//)') '>>> ERROR :',
+     &                '>>> *ACTIVE was specified, but no definition',
+     &                ' of active atoms, boxes or basis',
+     &                ' functions was given',
+     &                '    Program will stop'
+         CALL QUIT(SECNAM//' called but no selection data given')
+      END IF
+C
+      IF (ATOMIC) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(I5,A)') NACINP, ' centers declared as active :'
+         WRITE(LUPRI,'(14I5)') (LACINP(I), I=1,NACINP)
+      END IF
+C
+      IF (SELDIR) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Density decomposition only in active space'
+      ELSE
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Decompose in atom-by-atom basis and ',
+     &                  'select afterwards'
+      END IF
+C
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,*)
+C
+      RETURN
       END

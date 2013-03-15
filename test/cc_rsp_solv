@@ -53,7 +53,6 @@ cat > cc_rsp_solv.dal <<'%EOF%'
 *ONEINT
 .SOLVENT
  10
-*END OF HERMIT
 **WAVE FUNCTIONS
 .CC
 *SCF INP
@@ -101,7 +100,7 @@ cat > cc_rsp_solv.dal <<'%EOF%'
  1.0D-7
 *CCLRSD
 .DIPOLE
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

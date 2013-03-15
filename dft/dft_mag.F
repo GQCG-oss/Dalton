@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 
 c /* Deck dftlnd */
@@ -39,13 +29,13 @@ c /* Deck dftlnd */
 C
 C     T. Helgaker Jan 2004 
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, DP5 = 0.5D0)
-#include <inforb.h>
+#include "inforb.h"
 #include "dftbrhs.h"
       DIMENSION FD(N2BASX,3), WORK(LWORK)
-#include <dftcom.h>
+#include "dftcom.h"
       EXTERNAL DFTBRHS1
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
@@ -99,14 +89,14 @@ C
 C
       SUBROUTINE DFTBRHS1(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
      &                    COORD,WGHT,FMAT)
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
      &          FMAT(NBAST,NBAST,3)
-#include <dftinf.h>
+#include "dftinf.h"
 C
       CALL DFTBRHS2(NBLEN,NBLCNT,NBLOCKS,LDAIB,
      &              GAO(1,1,1),GAO(1,1,2),GAO(1,1,NSOB),GAO(1,1,NSOB1),
@@ -121,23 +111,23 @@ C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C     differentiated with respect to magnetic field
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 C
 #include "dftbrhs.h"
-#include <inforb.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <dftinf.h>
-#include <orgcom.h>
-#include <symmet.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "dftinf.h"
+#include "orgcom.h"
+#include "symmet.h"
 C
       DIMENSION COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
@@ -249,22 +239,22 @@ C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C     differentiated with respect to magnetic field
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       PARAMETER (D2 = 2.0D0)
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <dftinf.h>
-#include <orgcom.h>
-#include <symmet.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "dftinf.h"
+#include "orgcom.h"
+#include "symmet.h"
 C
       LOGICAL FROMVX, DOGGA
       DIMENSION GAO(NBAST), GAO1(NBAST,3), 
@@ -376,10 +366,10 @@ C     with respect to the magnetic field).
 C     
 C     D.J. Wilson, T. Helgaker  May 2004
 C     
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SUSCP(3,3)
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
       DIMENSION WORK(LWORK)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       EXTERNAL DFTBHES1
@@ -420,13 +410,13 @@ C /* Deck dftbhes1 */
 C
 C     D.J.Wilson May 04
 C
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8), NBLOCKS(2,LDAIB,8),
      &          BDATA(9 + N2BASX)
-#include <dftinf.h>
+#include "dftinf.h"
       KDMAT  = 1
       KSUSDF = KDMAT  + N2BASX
       KLAST  = KSUSDF + 9
@@ -439,17 +429,17 @@ C /* Deck dftbhes2 */
       SUBROUTINE DFTBHES2(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,GAO1,
      &                    RHOA,GRADA,COORD,WGHT,DMAT,SUSDFT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, DP5 = 0.5D0, D2 = 2.0D0)
-#include <inforb.h>
-#include <orgcom.h>
-#include <symmet.h>
-#include <shells.h>
-#include <dftcom.h>
+#include "inforb.h"
+#include "orgcom.h"
+#include "symmet.h"
+#include "shells.h"
+#include "dftcom.h"
 #include "dftbrhs.h"
 C
       DIMENSION NBLOCKS(2,LDAIB,8), COORD(3,NBLEN), NBLCNT(8),
@@ -573,17 +563,21 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       LOGICAL DOVB
       DIMENSION DMAT(NBAST,NBAST)
 C
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 7
-         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         IPRTYP = DFT_BRHS_WORK
+         CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(DOVB,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NGEODRV,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,
-     &                  IERR)
+         CALL MPI_BCAST(NGEODRV,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL DFTINTBCAST
          CALL KSMSYNC(DMAT)
       END IF
@@ -614,7 +608,8 @@ C
       LWRK  = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) CALL QUIT('Out of memory in DFT_BRHS_SLAVE')
       CALL MPI_BCAST(DOVB,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NGEODRV,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NGEODRV,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
       CALL DFTINTBCAST
       CALL KSMSYNC(WORK(KDMAT))
       CALL DZERO(WORK(KFMAT),3*N2BASX)
@@ -644,12 +639,16 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       DIMENSION DMAT(N2BASX)
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 10
-         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         IPRTYP = DFT_SUSCEP_WORK
+         CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL DFTINTBCAST
          CALL KSMSYNC(DMAT)
       END IF

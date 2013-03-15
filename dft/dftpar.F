@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C     Parallel-routines, by Alf Christian Hennum 
 C 
@@ -43,28 +33,30 @@ C
 C     
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-9) 
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dftinf.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <orgcom.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dftinf.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "orgcom.h"
+#include "maxaqn.h"
+#include "symmet.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       INTEGER A, B
       LOGICAL DOERG, DOGRD, DODRC, DOVWN, DOBCK, DOLYP, DOKT, 
@@ -78,34 +70,34 @@ C
 C
 C     start up the nodes:  
 C
-      IPRTYP = 4
+      IPRTYP = DFT_KSM_WORK
       FINNISH = .FALSE.      
 #if defined (VAR_MPI)
-      CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
      &     MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
      &     MPI_COMM_WORLD,IERR)
 C
 C     transfer data for memory allocation
 C           
-      CALL MPI_BCAST(NBAST,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(NBAST,1,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)      
-      CALL MPI_BCAST(NBUF,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(NBUF,1,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)      
-      CALL MPI_BCAST(NATOMS,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(NATOMS,1,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)      
-      CALL MPI_BCAST(NXCMAT,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(NXCMAT,1,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)      
 C
 C     Some hessian stuff that's not used. 
 C
-      CALL MPI_BCAST(NOCCT,1,MPI_INTEGER,
+      CALL MPI_BCAST(NOCCT,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NVIRT,1,MPI_INTEGER,
+      CALL MPI_BCAST(NVIRT,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOHES,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NORBT,1,MPI_INTEGER,
+      CALL MPI_BCAST(NORBT,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
 C
 C     DFT constants : 
@@ -123,7 +115,7 @@ C
 C      
 C     Some other nedeed variables :  
 C
-      CALL MPI_BCAST(NSYM,1,MPI_INTEGER,
+      CALL MPI_BCAST(NSYM,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOLND,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
@@ -158,24 +150,24 @@ C
 C     ACH 
 C     Takes info from master and allocate memory. 
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <maxorb.h>
-#include <infpar.h>
-#include <priunit.h>
-#include <inforb.h>      
-#include <mxcent.h>
+#include "maxorb.h"
+#include "infpar.h"
+#include "priunit.h"
+#include "inforb.h"      
+#include "mxcent.h"
 C
-#include <nuclei.h>
-#include <dfterg.h>
-#include <dftinf.h>
-#include <energy.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dftcom.h>
-#include <orgcom.h>
+#include "nuclei.h"
+#include "dfterg.h"
+#include "dftinf.h"
+#include "energy.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dftcom.h"
+#include "orgcom.h"
 
       PARAMETER (FACTHR = 1.0D-8)
 C
@@ -185,24 +177,24 @@ C
      &        DOGGA, DOVWN, DODRC, DOBCK, DOLYP, DOKT
 C     
 #if defined (VAR_MPI)
-      CALL MPI_BCAST(NBAST,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(NBAST,1,my_MPI_INTEGER,MASTER,
      &     MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NBUF,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(NBUF,1,my_MPI_INTEGER,MASTER,
      &     MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NATOMS,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(NATOMS,1,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)      
-      CALL MPI_BCAST(NXCMAT,1,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(NXCMAT,1,my_MPI_INTEGER,MASTER,
      &     MPI_COMM_WORLD,IERR)      
 C     
 C     hessian stuff
 C     
-      CALL MPI_BCAST(NOCCT,1,MPI_INTEGER,
+      CALL MPI_BCAST(NOCCT,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NVIRT,1,MPI_INTEGER,
+      CALL MPI_BCAST(NVIRT,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOHES,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NORBT,1,MPI_INTEGER,
+      CALL MPI_BCAST(NORBT,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
 C
 C     some needed constants and other things 
@@ -217,7 +209,7 @@ C
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(WDFTK,1,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NSYM,1,MPI_INTEGER,
+      CALL MPI_BCAST(NSYM,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOLND,1,MPI_LOGICAL,
      &     MASTER,MPI_COMM_WORLD,IERR)
@@ -329,30 +321,30 @@ C
 C     Moves everything that is needed. Something that is not needed is also 
 C     moved, but what ? 
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <infpar.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <orgcom.h>
-#include <onecom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <primit.h>
-#include <maxmom.h>
-#include <xyzpow.h>
-#include <pincom.h>
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "orgcom.h"
+#include "onecom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "primit.h"
+#include "maxmom.h"
+#include "xyzpow.h"
+#include "pincom.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-9) 
@@ -364,30 +356,30 @@ C
      &          C0(NORBT), C1(NORBT,3), C2(NORBT),
      &          HES(NOCCT,NVIRT,NOCCT,NVIRT)
 C
-#include <wrkrsp.h>
-#include <lmns.h>
-#include <sphtrm.h>
+#include "wrkrsp.h"
+#include "lmns.h"
+#include "sphtrm.h"
 C
 C     Things needed by dftgrd: 
 C
 C     NBASIS, CHARGE(NATOMS),CORD(MXCENT), NUCIND, MAXOPR
 C     ISYMAX,PT      
 C
-      CALL MPI_BCAST(NBASIS,1,MPI_INTEGER,
+      CALL MPI_BCAST(NBASIS,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NUCIND,1,MPI_INTEGER,
+      CALL MPI_BCAST(NUCIND,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ISTBNU,MXCENT,MPI_INTEGER,
+      CALL MPI_BCAST(ISTBNU,MXCENT,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(MAXOPR,1,MPI_INTEGER,
+      CALL MPI_BCAST(MAXOPR,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ISYMAX,3*2,MPI_INTEGER,
+      CALL MPI_BCAST(ISYMAX,3*2,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(PT,8,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(FMULT,8,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(MULT,8,MPI_INTEGER,
+      CALL MPI_BCAST(MULT,8,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
 C
       CALL MPI_BCAST(CHARGE,NATOMS,MPI_DOUBLE_PRECISION,
@@ -410,46 +402,46 @@ C
 C     INFORMATIONS FOR DIFFERENT DFT-ROUTINES
 C     I have lost the overview.
 C     
-      CALL MPI_BCAST(KSYMOP,1,MPI_INTEGER,
+      CALL MPI_BCAST(KSYMOP,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ISTEP,MXAQNM,MPI_INTEGER,
+      CALL MPI_BCAST(ISTEP,MXAQNM,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ISYMAO,MXQN*MXAQN,MPI_INTEGER,
+      CALL MPI_BCAST(ISYMAO,MXQN*MXAQN,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(MAXREP,1,MPI_INTEGER,
+      CALL MPI_BCAST(MAXREP,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ISTBAO,MXSHEL,MPI_INTEGER,
+      CALL MPI_BCAST(ISTBAO,MXSHEL,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NBAS,8,MPI_INTEGER,
+      CALL MPI_BCAST(NBAS,8,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IBAS,8,MPI_INTEGER,
+      CALL MPI_BCAST(IBAS,8,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IPIND,MXCORB,MPI_INTEGER,
+      CALL MPI_BCAST(IPIND,MXCORB,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)      
-      CALL MPI_BCAST(NAOS,8,MPI_INTEGER,
+      CALL MPI_BCAST(NAOS,8,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(KSTRT,MXSHEL,MPI_INTEGER,
+      CALL MPI_BCAST(KSTRT,MXSHEL,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
 C
       CALL MPI_BCAST(CSP,NCSP,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(ISPADR,MXQN,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)     
-      CALL MPI_BCAST(KMAX,1,MPI_INTEGER,
+      CALL MPI_BCAST(KMAX,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NHKT,MXSHEL,MPI_INTEGER,
+      CALL MPI_BCAST(NHKT,MXSHEL,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(KHKT,MXSHEL,MPI_INTEGER,
+      CALL MPI_BCAST(KHKT,MXSHEL,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(KCKT,MXSHEL,MPI_INTEGER,
+      CALL MPI_BCAST(KCKT,MXSHEL,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)      
-      CALL MPI_BCAST(SPHR,MXSHEL,MPI_INTEGER,
+      CALL MPI_BCAST(SPHR,MXSHEL,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)      
-      CALL MPI_BCAST(NUCO,MXSHEL,MPI_INTEGER,
+      CALL MPI_BCAST(NUCO,MXSHEL,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)      
-      CALL MPI_BCAST(NUMCF,MXSHEL,MPI_INTEGER,
+      CALL MPI_BCAST(NUMCF,MXSHEL,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)      
-      CALL MPI_BCAST(JSTRT,MXSHEL,MPI_INTEGER,
+      CALL MPI_BCAST(JSTRT,MXSHEL,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)      
       CALL MPI_BCAST(CENT,2*3*MXSHEL,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)            
@@ -462,35 +454,35 @@ C
       CALL MPI_BCAST(PRIEXP,MXPRIM,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
 C
-C     Some symmetry ralated things
+C     Some symmetry related things
 C     
 C     GETGA1
-C     JSTA,NUCA,LMNVALUA,SDPRE 
+C     JSTA,NUCA,LMNVALUA
 c     IPTCNT(3*MXCENT,0:7,2)
 C     IPTSYM(MXCORB,0:7)
 C     MULD2H(8,8)
 C
-      CALL MPI_BCAST(MVAL,MXAQNM,MPI_INTEGER,
+      CALL MPI_BCAST(MVAL,MXAQNM,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NVAL,MXAQNM,MPI_INTEGER,
+      CALL MPI_BCAST(NVAL,MXAQNM,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
 
-      CALL MPI_BCAST(LVALUA,MXAQN,MPI_INTEGER,
+      CALL MPI_BCAST(LVALUA,MXAQN,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(MVALUA,MXAQN,MPI_INTEGER,
+      CALL MPI_BCAST(MVALUA,MXAQN,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NVALUA,MXAQN,MPI_INTEGER,
+      CALL MPI_BCAST(NVALUA,MXAQN,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
 C
-      CALL MPI_BCAST(MULD2H,8*8,MPI_INTEGER,
+      CALL MPI_BCAST(MULD2H,8*8,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IPTSYM,MXCORB*8,MPI_INTEGER,
+      CALL MPI_BCAST(IPTSYM,MXCORB*8,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IPTCNT,3*MXCENT*8*2,MPI_INTEGER,
+      CALL MPI_BCAST(IPTCNT,3*MXCENT*8*2,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(JSTA,1,MPI_INTEGER,
+      CALL MPI_BCAST(JSTA,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NUCA,1,MPI_INTEGER,
+      CALL MPI_BCAST(NUCA,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
 C
 C     The arrays: 
@@ -501,7 +493,7 @@ C
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DST,NATOMS,MPI_DOUBLE_PRECISION,MASTER,
      &     MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(NCENT,MXSHEL,MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(NCENT,MXSHEL,my_MPI_INTEGER,MASTER,
      &     MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(C0,NORBT,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
@@ -546,9 +538,9 @@ C     All of it is prob not nescecary
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(RADINT,1,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ANGINT,1,MPI_INTEGER,
+      CALL MPI_BCAST(ANGINT,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ANGMIN,1,MPI_INTEGER,
+      CALL MPI_BCAST(ANGMIN,1,my_MPI_INTEGER,
      &     MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(HFXFAC,1,MPI_DOUBLE_PRECISION,
      &     MASTER,MPI_COMM_WORLD,IERR)
@@ -578,12 +570,12 @@ C
 C     Ach 
 C     Updates the different energies and the exchange mat: 
 C     
-#include <implicit.h>       
+#include "implicit.h"       
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <maxorb.h>
-#include <infpar.h>
+#include "maxorb.h"
+#include "infpar.h"
 Ca
       DIMENSION EXCMAT(NBAST*NBAST*NXCMAT),WORK(LWORK)
 C
@@ -625,15 +617,15 @@ C
 C     Update gradient 
 C     Ach 
 C
-#include <implicit.h>       
+#include "implicit.h"       
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <maxorb.h> 
-#include <mxcent.h>
-#include <nuclei.h>
-#include <energy.h>
-#include <infpar.h>
+#include "maxorb.h" 
+#include "mxcent.h"
+#include "nuclei.h"
+#include "energy.h"
+#include "infpar.h"
       DIMENSION WORK(LWORK)
 C     
 #if defined (VAR_MPI)      

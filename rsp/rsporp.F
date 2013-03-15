@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0"
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -70,7 +60,7 @@ C
 C KORPST:  NUMBER OF START VECTORS
 C MAXPIT: MAXIMUM NUMBER OF MICROITERATIONS
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A1(*),REDOE(*),REDOS(*),REDA1(*)
       DIMENSION OBVEC(KZYWOP,*),OEVEC(KZYWOP,*),OSVEC(KZYWOP,*)
       DIMENSION SOLEQ(*),ORBDIA(*),XINDX(*),WRK(*)
@@ -79,10 +69,10 @@ C
 C Used from common blocks:
 C  /WRKRSP/: AFREQ,??
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 C
       ITMIC  = 0
 C
@@ -204,17 +194,17 @@ C
 C  THE FIRST KZYWOP VARIABLES IN WRK IN EVECS
 C  THE NEXT  KZYWOP VARIABLES IN WRK IN SVECS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION ZYOVEC(*),CMO(*),UDV(NASHDI,*),PVX(*)
       DIMENSION FC(*),FV(*),FCAC(*),XINDX(*),WRK(*)
 C
 C  INFDIM : NASHDI
 C
-#include <inforb.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <wrkrsp.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( DUMMY = 1.0D20 )
 C
@@ -289,18 +279,18 @@ C            NEXT GUESS OF TRIAL VECTORS
 C
 C PJ JUL-1986
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A1(*),SOLEQ(*),ORBDIN(*)
       DIMENSION OBVEC(KZYWOP,*),OEVEC(KZYWOP,*),OSVEC(KZYWOP,*)
-#include <thrldp.h>
+#include "thrldp.h"
 C
 C Used from common blocks:
 C  /INFRSP/:
 C  /WRKRSP/: KZWOPT,KZYWOP
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C
 C CONSTRUCT  (OE(2))X(I) WHERE X(I) THE SOLUTION OF THE
@@ -460,7 +450,7 @@ C
 C Scratch:
 C  OLDVEC(KZYWOP), scratch array for old b-vectors on LU3
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BVECS(KZYWOP,*),OLDVEC(*)
 C
       PARAMETER (ZEQLY=1.D-10, THRRND=1.D-4)
@@ -470,9 +460,9 @@ C Used from common blocks:
 C  /INFRSP/: RSPSUP
 C  /WRKRSP/: KZWOPT,KZYWOP,JEX(20),LU3
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C
 C     For zero frequency linear response, the result will
@@ -606,7 +596,7 @@ C  A1, GRADIENT CONTAINING COUPLING ELEMENTS FOR FIXED CSF COEFFICIENTS.
 C OUTPUT:
 C  A1, OPTIMAL ORBITAL TRIAL VECTOR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION THCORP(*),EOVAL(*),IBTYP(*)
       DIMENSION CMO(*),UDV(*),PVX(*),FC(*),FV(*),FCAC(*)
@@ -615,13 +605,13 @@ C
       PARAMETER ( DTEST = 1.0D-4 , DE4 = 1.0D4  )
       PARAMETER ( D1 = 1.0D0 )
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infpri.h"
 C
 C ALLOCATE WORK SPACE
 C
@@ -769,7 +759,7 @@ C  SOLEQ, the solution to the REDUCed set of linear equations
 C
 C Scratch:
 C  WRK, real scratch array dimension KZYWOP
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION REDOE(*),REDOS(*),REDA1(*),A1(*),SOLEQ(*),
      *          OBVEC(KZYWOP,*),OEVEC(KZYWOP,*),OSVEC(KZYWOP,*), WRK(*)
 C
@@ -778,13 +768,13 @@ C  /WRKRSP/: KZWOPT,KOZYRE,KOZRED,KZYWOP,AFREQ,?
 C  /INFIND/: IROW(*). ?
 C  /INFPRI/: ??
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infind.h"
+#include "infpri.h"
 C
       KOZYRE = 2*KOZRED
 CSPAS:01.05.2009 bug fix for large number of  excitation energies
@@ -914,14 +904,14 @@ C          USE GRADIENT VECTOR MULTIPLIED WITH INVERSE
 C          DIAGONAL HESSIAN MATRIX ELEMENTS
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OBVEC(KZYWOP,*),OEVEC(KZYWOP,*),A1(*),ORBDIN(*)
-#include <thrldp.h>
+#include "thrldp.h"
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       DO 100 I=1,KZYWOP
             OBVEC(I,KOZRED+1) = A1(I)*ORBDIN(I)
@@ -959,18 +949,18 @@ C
 C PURPOSE: CREATE START VECTOR(S) FROM ORBITAL PART OF TRIAL VECTORS
 C          FOR SOLUTION OF AN ORBITAL LINEAR SET OF RESPONSE EQUATIONS
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION IBTYP(*),GD(*),REDGD(*),REDOE(*),REDOS(*)
       DIMENSION OBVEC(KZYWOP,*),OEVEC(KZYWOP,*),OSVEC(KZYWOP,*)
       DIMENSION UDV(*),XINDX(*),WRK(*)
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C WORK space check (ov-920923)
 C revised 930920-pj+hjaaj, LNDSLI = work space needed for RSPSLI

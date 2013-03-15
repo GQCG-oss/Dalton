@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck sirorb */
       SUBROUTINE SIRORB(MAXITO,NITORB,CMO,GORB,DV,PV,FC,FV,FQ,
@@ -42,7 +32,7 @@ C DFT modification tuh
 C
 C Purpose:
 C  Carry out intermediate optimization of orbitals for fixed
-C  CSF coefficients.
+C  CSF coefficients ("absorption")
 C
 C MOTECC-90: The purpose of this module, SIRORB, and the algorithms used
 C            are described in Chapter 8 Section E.5 of MOTECC-90
@@ -50,7 +40,7 @@ C            "Intermediate Optimization of Orbitals for Fixed
 C            Configuration Coefficients"
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*),FQ(*),
      &          WRK(*)
@@ -58,26 +48,25 @@ C
       PARAMETER ( TKFAC=0.1D0, LUDMMY=-1)
       PARAMETER ( MAXBCK=5, CVOFAC=0.8D0 )
       PARAMETER ( D0=0.0D0, D1=1.0D0, DP5=0.5D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C  INFINP : FLAG(*),ISTATE,ITRLVL,?
 C  INFTAP : ?
 C  INFOPT : ITMAC, RTRUST
 C  INFDIM : NWOPMA
 C  INFORB : N2BAST,..
-C  INFPRI : LUERR,?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infopt.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftra.h>
-#include <dfterg.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infopt.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftra.h"
+#include "dfterg.h"
 C
       LOGICAL GETWOP, ACTROT, RHFCLC, NEWLVL
       CHARACTER*8 TABLE(4)
@@ -85,7 +74,7 @@ C
 C
 C
       CALL QENTER('SIRORB')
-      WRITE (LUW4,'(//A/)')
+      WRITE (LUPRI,'(//A/)')
      *    ' <<<< OUTPUT FROM ORBITAL ABSORPTION (SIRORB) >>>>'
       ACTROT   = FLAG(23)
       FLAG(23) = .TRUE.
@@ -107,25 +96,30 @@ C            = 3 : + act-sec rotations
 C
       IF (FLAG(51)) THEN
          LVLABS = 1
-         JTRLVL = 0
+!        JTRLVL = 0 ! Mar2011: TR1H2M sets NEEDMU(5) = 1 and we
+!                     must therefore include secondary orbitals in the
+!                     integral transformation although we will not need
+!                     the integrals. There is no transparent way of
+!                     transferring this information to TR1H2M, and as
+!                     the CPU time saved will be a small fraction of
+!                     the total CPU time, it is not worth doing more.
+!                     With this change, all levels of absorption
+!                     should work again. /hjaaj
+         JTRLVL = ITRLVL
       ELSE IF (FLAG(52)) THEN
          LVLABS = 2
-         JTRLVL = 0
+!        JTRLVL = 0 ! see comment under FLAG(51) above.
+         JTRLVL = ITRLVL
       ELSE IF (FLAG(53)) THEN
          LVLABS = 3
          JTRLVL = ITRLVL
       ELSE
-         WRITE (LUW4,'(//A/)') '*** ERROR, SIRORB called but no'//
+         WRITE (LUPRI,'(//A/)') '*** ERROR, SIRORB called but no'//
      *      ' absorption level specified.'
-         CALL QTRACE(LUW4)
+         CALL QTRACE(LUPRI)
          CALL QUIT('*** ERROR (SIRORB) - SOFTWARE ERROR, PLEASE REPORT')
       END IF
-#if defined (VAR_NOITRABS)
-C --- 851216 -- EXPLICIT ORBITAL HESSIAN DIAGONAL IS WRONG
-C               IF KTRLVL = 0 !
-      JTRLVL   = ITRLVL
-#endif
-      WRITE (LUW4,'(/A,I3)') ' *** ORBITAL ABSORPTION LEVEL =',LVLABS
+      WRITE (LUPRI,'(/A,I3)') ' *** ORBITAL ABSORPTION LEVEL =',LVLABS
 C
 C     START-UP SECTION:
 C     =================
@@ -134,16 +128,16 @@ C     LEVEL USING LOGICAL FUNCTION GETWOP(XLABEL,LUNIT):
 C
       IF ( .NOT. GETWOP(TABLE(LVLABS)) ) THEN
 C        NWARN = NWARN + 1
-C        WRITE (LUW4,'(//A,A8,A/A/)')
+C        WRITE (LUPRI,'(//A,A8,A/A/)')
 C    *      ' *** WARNING (SIRORB), label "',
 C    *      TABLE(LVLABS),'" not found on file LUINDF',
 C    *      '     Continuation without absorption will be attempted.'
-         WRITE (LUW4,'(//A,A8,A/A/)') ' *** ERROR (SIRORB), label "',
+         WRITE (LUPRI,'(//A,A8,A/A/)') ' *** ERROR (SIRORB), label "',
      *      TABLE(LVLABS),'" not found on file LUINDF'
-         CALL QTRACE(LUW4)
+         CALL QTRACE(LUPRI)
          CALL QUIT('*** ERROR (SIRORB) label not found on LUINDF')
       END IF
-      WRITE (LUW4,'(/T6,A,I5)') 'Number of orbital rotations =',NWOPT
+      WRITE (LUPRI,'(/T6,A,I5)') 'Number of orbital rotations =',NWOPT
       NEWLVL = .FALSE.
 C
       CALL UPDGRD (3,DUMMY,CMO,DV,PV,GORB,EMCMY,EMCACT,FC,FV,FQ,
@@ -158,8 +152,8 @@ C
 C     Write orbital gradient which probably is greater than before
 C     because of active-active rotations
 C
-      WRITE (LUW4,1020) GNORM(3)
-      IF (LUPRI.NE.LUW4) WRITE (LUPRI,1020) GNORM(3)
+      WRITE (LUPRI,1020) GNORM(3)
+      IF (LUPRI.NE.LUW4) WRITE (LUW4,1020) GNORM(3)
 C
       ITORB  = 0
       ITBCK  = 0
@@ -173,13 +167,13 @@ C REPEAT OUTER LOOP UNTIL (converged or ITORB .gt. MAXITO or error)
 C
  1000 CONTINUE
          ITORB = ITORB + 1
-         WRITE (LUW4,21000) ITMAC,ITORB
-         IF (LUPRI .NE. LUW4) WRITE (LUPRI,21000) ITMAC,ITORB
+         WRITE (LUPRI,21000) ITMAC,ITORB
+         IF (LUPRI .NE. LUW4) WRITE (LUW4,21000) ITMAC,ITORB
 21000    FORMAT(//,' <<< ORBITAL ABSORPTION ITERATION NO. (',I3,',',
      *          I3,') >>>'/)
 C
-         CALL FLSHFO(LUW4)
-         IF (LUPRI .NE. LUW4) CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUPRI)
+         IF (LUPRI .NE. LUW4) CALL FLSHFO(LUW4)
 C
          EMCOLD = EMCSCF
          CALL DCOPY(NCMOT,CMO,1,WRK(KCMOOL),1)
@@ -201,17 +195,17 @@ C    *               CMO,GORB,DV,PV,FC,FV,WRK,LFREE)
          OSTP0  = DNORM2(NWOPT,WRK(KXKAP),1)
          XKAPN2 = OSTP0**2
          DEPRED = DP5*EVAL*(XKAPN2 + D1/(DAMP*DAMP))
-         WRITE (LUW4,'(/A,F15.10)')
+         WRITE (LUPRI,'(/A,F15.10)')
      *      ' Orbital rotation step length =',OSTP0
 C
  1100    CONTINUE
-            CALL ROTATE(WRK(KXKAP),CMO,WRK(KWRK0),LWRK0)
-C           CALL ROTATE(XKAP,CMO,WRK,LFREE)
+            CALL MO_ROTATE(WRK(KXKAP),CMO,WRK(KWRK0),LWRK0)
+C           CALL MO_ROTATE(XKAP,CMO,WRK,LFREE)
             CALL NEWORB('(ABSORP)',CMO,.FALSE.)
             FLAG(14) = FLAG(34)
 C           ... new orbitals, integral transformation may be needed.
             IF ( ITORB .GE. MAXITO ) THEN
-               WRITE (LUW4,'(//A/A/)')
+               WRITE (LUPRI,'(//A/A/)')
      *           ' *** Orbital absorption discontinued,',
      *           '     maximum number of absorption iterations reached.'
                GO TO 9000
@@ -223,7 +217,7 @@ C                 converged (861016 - hjaaj)
                END IF
  1200          LVLABS = LVLABS + 1
                IF (LVLABS .GT. 3) THEN
-                  WRITE (LUW4,'(//A)')
+                  WRITE (LUPRI,'(//A)')
      *               ' *** Orbital absorption converged.'
 C                 Low level absorption is only useful in first
 C                 macro iteration
@@ -248,24 +242,24 @@ C              always last absorption at highest level
                END IF
             END IF
             IF (NEWLVL) THEN
-               WRITE (LUW4,'(/A,I3)')
+               WRITE (LUPRI,'(/A,I3)')
      *            ' *** NEW ORBITAL ABSORPTION LEVEL =',LVLABS
                IF ( .NOT. GETWOP(TABLE(LVLABS)) ) THEN
-                  WRITE (LUW4,'(//A,A8,A/)')
+                  WRITE (LUPRI,'(//A,A8,A/)')
      *               ' *** ERROR (SIRORB), label "',TABLE(LVLABS),
      *               '" not found on file LUINDF'
-                  CALL QTRACE(LUW4)
+                  CALL QTRACE(LUPRI)
                   CALL QUIT('*ERROR (SIRORB) label not found on LUINDF')
                END IF
-               WRITE (LUW4,'(/T6,A,I5)')
+               WRITE (LUPRI,'(/T6,A,I5)')
      *            'Number of orbital rotations =',NWOPT
                IF (LVLABS .EQ. 3) JTRLVL = ITRLVL
                ROTRST = RTRUST
                NEWLVL = .FALSE.
             END IF
 C
-            CALL FLSHFO(LUW4)
-            IF (LUPRI .NE. LUW4) CALL FLSHFO(LUPRI)
+            CALL FLSHFO(LUPRI)
+            IF (LUPRI .NE. LUW4) CALL FLSHFO(LUW4)
 C
 C
 C           Transform integrals
@@ -273,13 +267,6 @@ C
             IF (.NOT. FLAG(14)) THEN
                CALL TRACTL(JTRLVL,CMO,WRK(KWRK0),LWRK0)
 C              CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
-C
-C              Tell SIROPT to skip integral transformation
-C              (if transformation level is sufficient),
-C              FLAG(14) will be reset if orbitals changed before
-C              returning.
-C
-               IF (JTRLVL .EQ. ITRLVL) FLAG(14) = .TRUE.
 C
             END IF
 C
@@ -292,7 +279,7 @@ C    *                   DIAOR,INDXCI,WRK,LFREE)
             CALL GRDINF(GNORM,GORB)
             NCONF  = MCONF
             EMCSCF = POTNUC + EMCMY + EMCACT + EDFTY
-            WRITE (LUW4,1010) EMCSCF,ITORB
+            WRITE (LUPRI,1010) EMCSCF,ITORB
             IF ( P4FLAG(2) .OR. (LUPRI.EQ.LUW4 .AND. P6FLAG(1)) )
      *         WRITE (LUW4,1015) POTNUC,EMCMY,EMCACT
             WRITE (LUW4,1020) GNORM(3)
@@ -338,7 +325,7 @@ C           CALL ORBSTP(ISTEP,DAMP,EVAL,OSTP0,CMO,CMOOL,XKAP,ROTRST)
                WRITE (LUW4,21100) ITBCK
                IF (LUPRI .NE. LUW4) WRITE (LUPRI,21100) ITBCK
                IF (ITBCK .GT. MAXBCK) THEN
-                  WRITE (LUW4,'(//A/A)')
+                  WRITE (LUPRI,'(//A/A)')
      *               ' *** Orbital absorption discontinued,'//
      *               ' maximum number of absorption backsteps reached.',
      *               ' Old orbitals restored.'
@@ -365,9 +352,9 @@ C
  9000 CONTINUE
       FLAG(23) = ACTROT
       IF ( .NOT. GETWOP(TABLE(4)) ) THEN
-         WRITE (LUW4,'(//A,A8,A/)')' *** ERROR (SIRORB), label "',
+         WRITE (LUPRI,'(//A,A8,A/)')' *** ERROR (SIRORB), label "',
      *      TABLE(4),'" not found on file LUINDF'
-         CALL QTRACE(LUW4)
+         CALL QTRACE(LUPRI)
          CALL QUIT('*** ERROR (SIRORB) label not found on LUINDF')
       END IF
       NITORB = ITORB
@@ -402,20 +389,20 @@ C Output:
 C  ISTEP, =0 if step is OK
 C         =1 if step is too large
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*),CMOOLD(*),XKAP(*)
 C
       PARAMETER (DP1=0.1D0, DP5=0.5D0, D1=1.0D0, D2=2.0D0)
       PARAMETER (THDE = 1.D-10)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infopt.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infopt.h"
 C
 C
       CALL QENTER('ORBSTP')
@@ -429,10 +416,10 @@ C
       DEACT = EMCSCF - EMCOLD
       IF (ABS(DEPRED).GT.THDE) THEN
          RATIO = DEACT / DEPRED
-         WRITE (LUW4,1100) DEACT,DEPRED,RATIO
+         WRITE (LUPRI,1100) DEACT,DEPRED,RATIO
       ELSE
          RATIO = D1
-         WRITE (LUW4,1110) DEACT,DEPRED
+         WRITE (LUPRI,1110) DEACT,DEPRED
       END IF
  1100 FORMAT (/' (ORBSTP) Energy difference;',
      *         ' actual, predicted and ratio:',/5X,3F15.10)
@@ -469,7 +456,7 @@ C
 C *****************************************************************
 C *** Step is too large:
 C
-      WRITE (LUW4,'(/A,F10.5)')
+      WRITE (LUPRI,'(/A,F10.5)')
      *   ' (ORBSTP) step is too large -- STEP IS SCALED TO',ROTRST
 C
 C     PUT OLD MOLECULAR ORBITALS IN CMO
@@ -492,7 +479,7 @@ C *****************************************************************
 C *** End of subroutine ORBSTP
 C
  9000 CONTINUE
-      WRITE (LUW4,'(/A,2F15.10)')
+      WRITE (LUPRI,'(/A,2F15.10)')
      *   ' (ORBSTP) Old and new trust radius:',RTSAVE,ROTRST
       CALL QEXIT('ORBSTP')
       RETURN
@@ -503,13 +490,13 @@ C
 C  CHECK IF THE CSF PART OF THE HESSIAN CONTAINS THE DESIRED NUMBER
 C  OF NEGATIVE EIGENVALUES. ORBABS IS THEN .TRUE. ELSE .FALSE.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IBNDX(*),WRK(*)
 C
-#include <priunit.h>
+#include "priunit.h"
       PARAMETER ( D0=0.0D0 )
 C
-#include <inftap.h>
+#include "inftap.h"
 C
       LOGICAL FNDLAB
 C
@@ -589,16 +576,16 @@ C  IF DESIRED NUMBER OF NEGATIVE EIGENVALUES IN THE
 C  HESSIAN IS IN THE CSF SPACE, THEN ROTFLP IS FALSE,
 C  ELSE ROTFLP IS TRUE
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL ROTFLP
       DIMENSION IBNDX(*),REDL(*),WRK(*)
       PARAMETER ( TOLFLP = 0.75D0 )
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C INFPRI: IPRI6
 C
-#include <priunit.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
 C
 C ALLOCATE WORK SPACE
 C

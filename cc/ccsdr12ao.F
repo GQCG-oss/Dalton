@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 *======================================================================*
       subroutine ccsdr12ao(ccsdr12,
      &                     t2am,xlambdap,xlambdah,
@@ -8,39 +31,35 @@
      &                     work,lwork)
 *----------------------------------------------------------------------*
 *  Purpose: compute contributions to CCSDR12 requiring the calculation
-*           of integrals with auxiliary basis function indeces
+*           of integrals with auxiliary basis function indices
 *
 * C. Haettig, C. Neiss, spring 2006
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <dummy.h>     
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <eribuf.h>
-#include <r12int.h>
-#include <ccsdio.h>
-#include <second.h>
+#include "priunit.h"
+#include "dummy.h"     
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "eribuf.h"
+#include "r12int.h"
+#include "ccsdio.h"
+#include "second.h"
       logical locdbg
       parameter (locdbg = .false.)
 
       integer isym0
       parameter (isym0 = 1)
 
-#if defined (SYS_CRAY)
-      real zero,half,one,two,xmhalf,xmone
-#else
-      double precision zero,half,one,two,xmhalf,xmone
-#endif
+      real*8  zero,half,one,two,xmhalf,xmone
       parameter (zero = 0.0d0, half = 0.5d0, one = 1.0d0, two = 2.0d0)
       parameter (xmhalf = -0.5d0, xmone= -1.0d0 )
 
@@ -48,18 +67,13 @@
       logical ccsdr12
       integer lwork, lucp, ludp, luiadj, luijda
       character*(*) cpfil, dpfil, fniadj, fnijda
-#if defined (SYS_CRAY)
-      real work(*), xlambdap(*), xlambdah(*), t2am(*), e1pim(*),
+      real*8  work(*), xlambdap(*), xlambdah(*), t2am(*), e1pim(*),
      &     timintr12, timrdao, timtrbt, timc, timd, timt2tr, timt2bt
-#else
-      double precision work(*),xlambdap(*),xlambdah(*),t2am(*),e1pim(*),
-     &     timintr12, timrdao, timtrbt, timc, timd, timt2tr, timt2bt
-#endif
 
 * local
       logical lauxg, temp_direct
       integer indexa(mxcorb)
-      integer ioff, ibasx(8), mbas1t, kend1, lwrk1, kendsv, lwrksv,
+      integer ioff, ibasx(8), kend1, lwrk1, kendsv, lwrksv,
      &        icdel1, isymd1, ntot, illl, numdis, idel2, idel, isymd,
      &        isydis, irecord, leniaj, isygam, isyalbe, igam, iadr,
      &        icon, iv, isym, nviraop(8), iviraop(8,8), isym1, isym2,
@@ -68,11 +82,7 @@
       integer kccfb1,kindxb,kfree,lfree,ntosym,icount,ibasd, iopte,
      &        kodcl1,kodcl2,kodbc1,kodbc2,krdbc1,krdbc2,
      &        kodpp1,kodpp2,krdpp1,krdpp2,krecnr
-#if defined (SYS_CRAY)
-      real dtime, factc, factd, ddot
-#else
-      double precision dtime, factc, factd, ddot
-#endif
+      real*8  dtime, factc, factd, ddot
 
       call qenter('ccsdr12ao')
       if (.not.dumpcd) call quit('CCSDR12AO requires DUMPCD=.TRUE.')
@@ -94,7 +104,6 @@
 
       ioff    = 0
       ibasx(1) = 0
-      mbas1t = 0
       do isym = 1,nsym
         if (isym.gt.1) ibasx(isym) = ibasx(isym-1)+mbas2(isym-1)
         if(ioff+mbas1(isym)+mbas2(isym).gt.mxcorb)call quit('CCSDR12AO')
@@ -102,7 +111,6 @@
           ioff = ioff + 1
           isao(ioff) = isym
         end do
-        mbas1t = mbas1t + mbas1(isym) ! # primary. AOs in total
       end do
 
       kend1 = 1
@@ -132,7 +140,7 @@
       call dzero(work(kfckvaop),nviraop(isyfck))
 
 *----------------------------------------------------------------------*
-*     prepare cluster amplutides with transposed occupied indeces:
+*     prepare cluster amplutides with transposed occupied indices:
 *----------------------------------------------------------------------*
       if ((.not. direct) .and. t2tcor) then
          kt2amt = kend1

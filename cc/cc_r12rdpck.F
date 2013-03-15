@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 *=====================================================================*
       subroutine ccr12pck(vpck,isymv,sing,trip,nr12orb,nrhforb,nkilj)
 c----------------------------------------------------------------------
@@ -17,9 +40,9 @@ c   different definitions for "nrhf", thus we cannot use the
 c   dimensions from the common block in general.        
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       integer isymv,isymi,isymj,isymk,isyml,isymij
       integer kt,lt, it,jt,isymki,isymlj,idxki,idxlj,idxkj,idxli,klij
@@ -28,11 +51,8 @@ c----------------------------------------------------------------------
       integer nr12orb(8),nrhforb(8),irhforb(8),ir12orb(8),
      &        nkj(8),ikj(8,8),nkilj(8),ikilj(8,8),nr12t
 
-#if defined (SYS_CRAY)
-      real sing(*),trip(*),vpck(*),ffkl,ff,half
-#else
-      double precision sing(*),trip(*),vpck(*),ffkl,ff,half
-#endif
+      real*8 sing(*),trip(*),vpck(*),ffkl,ff,half
+
       logical locdbg
       parameter (locdbg = .false.)
       parameter (half = 0.5D0)
@@ -224,9 +244,9 @@ c
 c   modified by C. Neiss summer 2005
 c----------------------------------------------------------------------
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       integer isymv,isymi,isymj,isymk,isyml,isymij
       integer kt,lt, it,jt,isymki,isymlj,idxki,idxlj,idxkj,idxli,klij
@@ -237,11 +257,8 @@ c----------------------------------------------------------------------
       integer nr12orb(8),ir12orb(8),nr12t
       logical locdbg 
       parameter (locdbg = .false.)
-#if defined (SYS_CRAY)
-      real sing(*),trip(*),vpck(*),ffkl,ff,vklij,vlkij
-#else
-      double precision sing(*),trip(*),vpck(*),ffkl,ff,vklij,vlkij
-#endif
+
+      real*8 sing(*),trip(*),vpck(*),ffkl,ff,vklij,vlkij
 
       integer index 
       index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j  
@@ -406,14 +423,11 @@ c
 c     H. Fliegl, C. Haettig spring 2003 
 c---------------------------------------------------------------------
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
-#if defined (SYS_CRAY)
-      real tampr12(*),fac
-#else
-      double precision tampr12(*),fac
-#endif
+      real*8 tampr12(*),fac
+
       integer isymt,isymlj,idxlj,idxljlj
  
       if (isymt.eq.1) then
@@ -458,9 +472,9 @@ c     H. Fliegl, C. Haettig, winter 2004
 c     modified by C. Neiss, 2005/2006
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       logical lidxtf1,locdbg
       parameter (locdbg = .false.)
@@ -469,12 +483,9 @@ c----------------------------------------------------------------------
      &        ixtf1(8,8),igamxtf(8,8),lwork,isyma,isymkl,isymm,nkl,nm,
      &        koff1,koff2,ntotkl,ntota,ntotm,krtf,isymn,isymmn,idxmn,
      &        idxdn,nb1(8),na,m,n 
-#if defined (SYS_CRAY)
-      real xint(*),xtf(*),lam1(*),lam2(*),work(*),ddot,one,zero
-#else
-      double precision xint(*),xtf(*),lam1(*),lam2(*),work(*),ddot,
-     &                 one,zero
-#endif
+
+      real*8 xint(*),xtf(*),lam1(*),lam2(*),work(*),ddot,one,zero
+
       parameter(one = 1.0d0, zero = 0.0d0)
       call qenter('generaltf')
 
@@ -570,9 +581,9 @@ C  C. Neiss autumn 2004
 C----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       integer isymv,isymi,isymj,isymk,isyml
       integer isymij,isymkl
@@ -588,11 +599,8 @@ C----------------------------------------------------------------------
       logical lproj, locdbg
       PARAMETER (locdbg = .FALSE.)      
 
-#if defined (SYS_CRAY)
-      real precision vpck(*), vunpck(*)
-#else
-      double precision vpck(*), vunpck(*)
-#endif
+      real*8 vpck(*), vunpck(*)
+
       integer index 
       index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j  
       
@@ -742,9 +750,9 @@ C  C. Neiss   04. Feb. 2005
 C----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       integer isymv,isymi,isymj,isymk,isyml
       integer isymij,isymkl
@@ -761,11 +769,8 @@ C----------------------------------------------------------------------
       logical locdbg
       PARAMETER (locdbg = .false.)      
 
-#if defined (SYS_CRAY)
-      real precision vpck(*), vunpck(*)
-#else
-      double precision vpck(*), vunpck(*)
-#endif
+      real*8 vpck(*), vunpck(*)
+
       integer index 
       index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j  
       
@@ -931,14 +936,11 @@ c
 c     C. Neiss spring 2005 
 c---------------------------------------------------------------------
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
-#if defined (SYS_CRAY)
-      real tampr12(*),fac
-#else
-      double precision tampr12(*),fac
-#endif
+      real*8 tampr12(*),fac
+
       integer isymt,isymki,isymlj,idxki,idxlj,idxkilj
       integer index
 

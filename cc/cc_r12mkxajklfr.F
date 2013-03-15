@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 *=====================================================================*
       subroutine cc_r12mkxijkl(kvajkl,cmo,work,lwork,fel)
 c---------------------------------------------------------------------
@@ -7,11 +30,11 @@ c     MP2-R12 gradient
 c---------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       logical ldum
 #if defined (SYS_CRAY)
       real zero,one
@@ -175,13 +198,13 @@ C  /* Deck cc_r12gradfr */
       subroutine cc_r12gradfr(ipdd,orb,v2am,work,lwork)
 C     Calculate MP2-R12 contributions for frozen core gradients 
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       logical locdbg,ldum
       parameter (locdbg = .false.)
       character*10 CCR12YIJIJ
@@ -588,12 +611,12 @@ C=====================================================================*
 C  /* Deck r12gradapfr */
       subroutine r12gradapfr(ipdd,res,orb,work,v2am,lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       integer kccr12,krsing,krtrip,kctil,kend1,lwrk1,nrhftria,n2 
       integer lwork,lu43,idxkl,isymv,isymi,isymj,isymk,idxij
       integer isyml,isymkl,isymij,idxji,idxklij,idxijkl,idxklji
@@ -1038,12 +1061,12 @@ C  /* Deck r12gradaxd */
       subroutine r12gradaxdfr(ipdd,kccr12,kctil,dklij,work,v2am,res,
      &                      lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       character*8 CCR12YIJ
       integer krsing,krtrip,kend1,lwrk1,nrhftria,n2
       integer lwork,lu43,idxkl,isymv,isymi,isymj,isymk,idxij
@@ -1275,12 +1298,12 @@ C=====================================================================*
 C  /* Deck r12gradbfr */
       subroutine r12gradbfr(res,dklij,work,ntklaj,ncvai,lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       logical locdbg
       parameter (locdbg = .false.)
       integer kqajkl,kqijal,kuijal,krajkl,kend1
@@ -1292,7 +1315,7 @@ C  /* Deck r12gradbfr */
       integer idxjikl,idxijkl,idxijlk,koff,ntota,ntoti
       integer kuajkl,ktajkl,ktijal,kcuia,kcuai,lcuai,lcuia
       integer kssijal,ksrajkl,kstijal,idxklji,koff1,kdjikl
-      integer kcmo,dens,nrhffrt,kuijals,kqijals,kssajkl,mbas1t
+      integer kcmo,dens,nrhffrt,kuijals,kqijals,kssajkl
 
       integer kccr12,krsing,krtrip,kctil,lccr12,lctil
       integer lusifc,nrhftria,n2,lu43,ntotk
@@ -1312,10 +1335,8 @@ C  /* Deck r12gradbfr */
 
 
       nrhffrt = 0
-      mbas1t  = 0
       do isym = 1, nsym
-         nrhffrt     = nrhffrt+ nrhffr(isym)
-         mbas1t      = mbas1t + mbas1(isym)
+         nrhffrt = nrhffrt + nrhffr(isym)
       end do
 
       icou3 = 0

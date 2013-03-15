@@ -13,10 +13,10 @@ C              correctnes of the linear transformed vectors
 C              which are generated as linear combinations of
 C              previously calculated linear transformed vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <soppinf.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "soppinf.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D+00, ONE = 1.0D0)
 C

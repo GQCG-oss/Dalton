@@ -1,53 +1,43 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck setaob */
       SUBROUTINE SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       DIMENSION CCFBT(MXPRIM*MXCONT), INDXBT(MXSHEL*MXCONT,0:7),
      &          WORK(LWORK)
-#include <shells.h>
-#include <symmet.h>
-#include <aobtch.h>
-#include <veclen.h> 
-#include <ibtfun.h>
+#include "shells.h"
+#include "symmet.h"
+#include "aobtch.h"
+#include "veclen.h" 
+#include "ibtfun.h"
 C
 C     Number of basis functions
 C
@@ -171,11 +161,11 @@ C
       END
 C  /* Deck aobch */
       SUBROUTINE AOBCH(NB,ISHELL,CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
-#include <shells.h>
+#include "shells.h"
 C
       NUCA  = NUCO(ISHELL)
       NRCA  = NRCO(ISHELL)
@@ -199,23 +189,23 @@ C
 C  /* Deck aobch1 */
       SUBROUTINE AOBCH1(NB,NMAT,MAT,NUCA,NRCA,JSTRA,IDONE,NDIMP,NDIMC,
      &                  IPNTC,IPNTP,ISHELL,CCFBT,INDXBT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
       PARAMETER (THR = 1.0D-17)
 C
       DIMENSION MAT(NUCA,NRCA), IDONE(NUCA), NDIMP(NUCA), NDIMC(NUCA),
      &          IPNTC(NUCA,NRCA),IPNTP(NUCA,NUCA)
       DIMENSION CCFBT(MXPRIM*MXCONT), INDXBT(MXSHEL*MXCONT,0:7)
 C
-#include <symmet.h>
-#include <aobtch.h>
-#include <shells.h>
-#include <primit.h>
-#include <erisel.h>
+#include "symmet.h"
+#include "aobtch.h"
+#include "shells.h"
+#include "primit.h"
+#include "erisel.h"
 C
       SAVE IADRP, IADRC, IADRO, NBTCH
 C
@@ -372,7 +362,7 @@ C
       END
 C  /* Deck inprd */
       FUNCTION INPRD(IVEC1,IVEC2,NDIM)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IVEC1(NDIM), IVEC2(NDIM)
       INNER = 0
       DO 100 I = 1, NDIM
@@ -383,14 +373,14 @@ C  /* Deck inprd */
       END
 C  /* Deck aobsrt */
       SUBROUTINE AOBSRT(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       LOGICAL AOBTGT
-#include <aobtch.h>
+#include "aobtch.h"
 C
       DO 100 I = 1, NAOBCH
          KAOSRT(I) = I
@@ -421,13 +411,13 @@ C
       END
 C  /* Deck aobtgt */
       LOGICAL FUNCTION AOBTGT(IAO,JAO)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aobtch.h"
 C
 C     Sorts by...
 C
@@ -466,12 +456,12 @@ C
       END
 C  /* Deck mltcmp */
       FUNCTION MLTCMP(NHKTA,KHKTA,MULA,IREPA)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       MLTCMP = 0
       DO ICMPA = 1, KHKTA
@@ -486,15 +476,15 @@ C  /* Deck cnttyp */
 C
 C     T. Helgaker Jan 2001
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (THR = 1.0D-17)
       LOGICAL SAMCOF
       DIMENSION CCFBT(*)
-#include <aobtch.h>
+#include "aobtch.h"
 C
       ITYPE = 0
       CALL IZERO(KCMTBT,NAOBCH)

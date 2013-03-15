@@ -20,7 +20,7 @@ BASIS
 4-31G
 blubber
 blubber
-    2    2  X  Y      1.00D-18
+    2    2  X  Y      1.00D-15
         3.0   1    1    1
 Li    0.0000000000000000   0.000000000   1.30000000
         1.0   1    1    1
@@ -31,17 +31,15 @@ H     0.0000000000000000   0.000000000   0.00000000
 #  DALTON INPUT
 #######################################################################
 cat > LIH_431G_tmom_no2np1.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
-.NOSUP
 .DIPLEN
 .DIPVEL
 .ANGMOM
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-12
 .NODIIS
@@ -74,7 +72,7 @@ cat > LIH_431G_tmom_no2np1.dal <<%EOF%
 .OPERATOR
 ZDIPLEN
 .NO2N+1
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -95,16 +93,16 @@ else
 fi
 
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -7\.5755889298" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -7\.5941367749" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -7\.6021077782" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * -7\.5755889529" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -7\.5941367951" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -7\.6021077986" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
-# CC3 polarizability :
-CRIT1=`$GREP  "     \| *ZDIPLEN *\| *( -?|-?0)\.48586700 *\| *( -?|-?0)\.94072329 *\| *( |0)\.45706641 *\|" $log | wc -l`
+# CC3 transition moments:
+CRIT1=`$GREP  "     \| *ZDIPLEN *\| *( -?|-?0)\.48586718 *\| *( -?|-?0)\.94072362 *\| *( |0)\.45706673 *\|" $log | wc -l`
 
 TEST[2]=$CRIT1
 CTRL[2]=1
@@ -120,7 +118,7 @@ PASSED=1
 for i in 1 2 3
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

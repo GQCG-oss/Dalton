@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCEFFFOCK1(I1DXORD,AODENCC,AODENHF,WORK,LWORK)
@@ -52,16 +42,16 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccfro.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccfro.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccr1rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -454,15 +444,15 @@ c            CALL CC_PRONELAO(WORK(K1INT),ISYFCK)
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccr1rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -996,17 +986,17 @@ C  /* Deck cc_expfck_init */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccexpfck.h>
-#include <ccroper.h>
-#include <ccorb.h>
-#include <ccsections.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
+#include "priunit.h"
+#include "ccexpfck.h"
+#include "ccroper.h"
+#include "ccorb.h"
+#include "ccsections.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
  
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1147,9 +1137,9 @@ C  /* Deck iefffock */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
 
-#include <ccexpfck.h>
+#include "ccexpfck.h"
  
       INTEGER ISYM, IORD
       CHARACTER NEWLBL*(8)
@@ -1232,8 +1222,8 @@ C  /* Deck iexpect */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccexpfck.h>
+#include "priunit.h"
+#include "ccexpfck.h"
  
       INTEGER ISYM, IORD
       CHARACTER NEWLBL*(8)
@@ -1311,8 +1301,8 @@ C  /* Deck i1dxfck */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <cc1dxfck.h>
+#include "priunit.h"
+#include "cc1dxfck.h"
  
       INTEGER ISYMX
       CHARACTER NEWLBL*(8), LSTRLX*(3), LABELX*(8)
@@ -1360,7 +1350,7 @@ C  /* Deck i1dxfck */
         IF (LST1DXFCK(N1DXFLBL)(1:2).EQ.'R1') THEN
            IRELAX1DX(N1DXFLBL) = IR1KAPPA(LABELX,FREQX,ISYMX)
         ELSE
-           CALL QUIT('Unkown list in I1DXFCK.')
+           CALL QUIT('Unknown list in I1DXFCK.')
         END IF
 
         ISYMO = 0
@@ -1396,11 +1386,11 @@ C  /* Deck ccefffockhlp1 */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <cc1dxfck.h>
-#include <ccexpfck.h>
-#include <ccroper.h>
-#include <ccropr2.h>
+#include "priunit.h"
+#include "cc1dxfck.h"
+#include "ccexpfck.h"
+#include "ccroper.h"
+#include "ccropr2.h"
  
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1515,18 +1505,18 @@ C  /* Deck ccefffockhlp2 */
 *
 *======================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <cc1dxfck.h>
-#include <ccroper.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <chrxyz.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "priunit.h"
+#include "cc1dxfck.h"
+#include "ccroper.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "chrxyz.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1727,19 +1717,19 @@ C  /* Deck ccefffockhlp3 */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccr1rsp.h>
-#include <chrxyz.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "priunit.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccr1rsp.h"
+#include "chrxyz.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef REVLOG
 C===========================================================================
@@ -57,20 +47,20 @@ C
 C   Used from common blocks:
 C     INFORB : ...,N2ORBX,N2ASHX,....
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION IBTYP(*),REDS(*),REDE(*),UDV(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "inforb.h"
 C
       LOGICAL FNDLAB
 C
@@ -314,17 +304,17 @@ C  OUTPUT: CONFIGURATION PART OF GP VECTOR
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION PRPMO(NORBT,*),GP(KZYVAR,*),XINDX(*),WRK(*)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infdim.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infdim.h"
 C
       LOGICAL NOH2, IH8SM
 C
@@ -360,16 +350,13 @@ C
             NASHI = NASH(ISYM)
             NISHI = NISH(ISYM)
             IORBI = IORB(ISYM)
-            IASHI = IASH(ISYM)
             NASHJ = NASH(JSYM)
             NISHJ = NISH(JSYM)
             IORBJ = IORB(JSYM)
-            IASHJ = IASH(JSYM)
             DO 70 JA = 1,NASHJ
                DO 60 IA = 1,NASHI
-                  IJ = (IA+IASHI-1) * NASHT + JA + IASHJ
-                  WRK(KUPRP-1+IJ) =
-     *                  PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
+                  WRK(KUPRP-1+(IA+IASH(ISYM)-1)*NASHT+JA+IASH(JSYM)) =
+     &                PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
  60            CONTINUE
  70         CONTINUE
  50      CONTINUE
@@ -419,16 +406,14 @@ C
             NASHI = NASH(ISYM)
             NISHI = NISH(ISYM)
             IORBI = IORB(ISYM)
-            IASHI = IASH(ISYM)
             NASHJ = NASH(JSYM)
             NISHJ = NISH(JSYM)
             IORBJ = IORB(JSYM)
             IASHJ = IASH(JSYM)
             DO 170 JA = 1,NASHJ
                DO 160 IA = 1,NASHI
-                  IJ = (JA+IASHJ-1) * NASHT + IA + IASHI
-                  WRK(KUPRP-1+IJ) =
-     *                  PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
+                  WRK(KUPRP-1+(JA+IASH(JSYM)-1)*NASHT+IA+IASH(ISYM)) =
+     *                PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
  160           CONTINUE
  170        CONTINUE
  150     CONTINUE
@@ -477,19 +462,19 @@ C
       RETURN
       END
 C  /* Deck getgpv */
-      SUBROUTINE GETGPV(WORD,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+      SUBROUTINE GETGPV(WORD,FC,FV,CMO,UDV,PV,XINDX,ANTSYM_GP,WRK,LWRK)
 C
 C PURPOSE
 C  CALCULATE GP VECTOR AND RETURN AS FIRST ELEMENTS IN WRK
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
       DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
       CHARACTER*8 WORD
 C
-#include <infvar.h>
-#include <wrkrsp.h>
+#include "infvar.h"
+#include "wrkrsp.h"
 C
       CALL QENTER('GETGPV')
       IF (WORD(3:8).EQ.'SPNORB' .OR. WORD(3:8) .EQ. 'MNF-SO' .OR. 
@@ -498,38 +483,38 @@ C
          KWRK1 = KGP + KZYVAR
          LWRK1 = LWRK + 1 - KWRK1
          CALL HSOCTL(WORD,WRK(KGP),CMO,UDV,PV,XINDX,
-     &               ANTSYM,WRK(KWRK1),LWRK1)
+     &               ANTSYM_GP,WRK(KWRK1),LWRK1)
       ELSE IF (WORD(5:8).EQ.'LAGR') THEN
          CALL LAGRAN(WORD,FC,FV,CMO,UDV,PV,XINDX,WRK,LWRK)
-         ANTSYM = -1.0D0
+         ANTSYM_GP = -1.0D0 ! real operator, GP_Z = ANTSYM_GP * GP_Y
       ELSE IF (WORD(2:7).EQ.'LONMAG') THEN
          CALL PRPABA(WORD,WRK,LWRK)
       ELSE
          KGP   = 1
          KWRK1 = KGP + KZYVAR
          LWRK1 = LWRK + 1 - KWRK1
-         CALL PRPCTL(WORD,WRK(KGP),CMO,UDV,PV,XINDX,ANTSYM,
+         CALL PRPCTL(WORD,WRK(KGP),CMO,UDV,PV,XINDX,ANTSYM_GP,
      &               WRK(KWRK1),LWRK1)
       ENDIF
       CALL QEXIT('GETGPV')
       RETURN
       END
 C  /* Deck prpctl */
-      SUBROUTINE PRPCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+      SUBROUTINE PRPCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM_GP,WRK,LWRK)
 C
 C 18-Feb-1987
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
       CHARACTER*8 WORD
 C-- common blocks:
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <infsop.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "infsop.h"
 C
       CALL QENTER('PRPCTL')
       IF (IPRRSP .GT. 10) WRITE (LUPRI,7010) WORD
@@ -557,12 +542,18 @@ C
       CALL PRPGET (WORD,CMO,WRK(KPRPMO),KSYMP,ANTSYM,
      &             WRK(KFREE),LFREE,IPRRSP)
 C     CALL PRPGET (WORD,CMO,PRPMO,KSYMP,ANTSYM,WRK,LWRK,IPRINT)
+C
+C     Whereas ANTSYM from PRPGET refers to matrix symmetry, ANTSYM_GP will
+C     from here on refer to the antisymmetry of the response vector, thus we
+C     change sign on it. K.Ruud, July 10 2000, moved and revised hjaaj Aug 2011.
+C
+      ANTSYM_GP = -ANTSYM
       IF (KSYMP.NE.KSYMOP) THEN
          WRITE (LUPRI,'(/A/2A/A,2I5/A,F10.2)')
      &      'FATAL ERROR: KSYMOP .ne. KSYMP from PRPGET',
      &      '   Property label  : ',WORD,
      &      '   KSYMOP and KSYMP:',KSYMOP,KSYMP,
-     &      '   ANTSYM          :',ANTSYM
+     &      '   ANTSYM_GP       :',ANTSYM_GP
          CALL QUIT('KSYMOP .ne. KSYMP from PRPGET')
       END IF
 C
@@ -639,9 +630,13 @@ C Revised Sep. 2003 hjaaj:  IPRINT in param.list,
 C  if KSYMP .le. 0 then return symmetry in KSYMP, otherwise use
 C  user-specified KSYMP
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+C KSYMP  : point group symmetry of PRPMO matrix
+C ANTSYM : matrix symmetry of PRPMO matrix
+C          (1: symmetric, -1: antisymmetric, 0: unknown)
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       CHARACTER*8 WORD, RTNLBL(2)
       DIMENSION PRPMO(NORBT,*), CMO(*), WRK(*)
@@ -650,11 +645,11 @@ C -- common blocks:
 C inforb.h : N2BASX, ...
 C infind.h : ISAO(*)
 C inftap.h : LUPROP
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inftap.h"
 C -- local constants:
       PARAMETER (DM1 = -1.0D0, D0 = 0.0D0, D1 =1.0D0 )
 C
@@ -765,11 +760,6 @@ C
          CALL OUTPUT(PRPMO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
 C
-C     Whereas ANTSYM above has referred matrix symmetry, it will from here on
-C     refer to the antisymmetry of the response vector, thus we change sign
-C     on it. K.Ruud, July 10 2000.
-C
-      ANTSYM = -ANTSYM
       CALL MEMREL('PRPGET',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPGET')
       RETURN
@@ -785,23 +775,23 @@ C
 C List of updates
 C 21-Jul-1992 Hinne Hettema Average orbital part if necessary.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION PRPMO(NORBT,NORBT)
       DIMENSION UDV(NASHDI,NASHDI),GP(KZYVAR)
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -904,15 +894,15 @@ C
 C Scratch
 C  WRK  dimension: NBAS(ISYM)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION U(NBASI,*), V(NBASJ,*)
       DIMENSION PRPAO(NBAST,*),PRPMO(NORBT,*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       PARAMETER (D0 = 0.0D0)
 C

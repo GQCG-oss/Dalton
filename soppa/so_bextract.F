@@ -13,15 +13,15 @@ C     PURPOSE: Extract 2*b(a i b j) - b(b i a j) for given j
 C              in EXTBE (and EXTBD) for excitations (and de-excitations)
 C              respectively.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION EXTBE(LEXTBE), EXTBD(LEXTBD), TR2E(LTR2E), TR2D(LTR2D)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------------------
 C     Statement function INDEX.

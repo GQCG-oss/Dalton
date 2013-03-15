@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef OLD_LOG
 ===========================================================================
@@ -40,7 +30,7 @@ Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 
 Revision 1.3  2000/05/24 19:00:24  hjj
 new GETREF and CREF allocation (fix of triplet problem for CSF:s)
-Do not read S(2) CI diagonal but use ilicit that itit is D1
+Do not read S(2) CI diagonal but use implicit that it is 1.0D0
 
 961011-hjaaj
 merged with SOPPA changes by ekd
@@ -84,7 +74,7 @@ C  /* Deck e2sym */
       SUBROUTINE E2SYM(IBTYP,CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
      &                 WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE THAT
 C  1)  READ LINEAR TRANSFORMED VECTORS FOR (Z,Y) VECTORS FROM LURSP3 AND
@@ -94,11 +84,11 @@ C
 C  2)  SET UP REDUCED E(2) AND S(2) AS SQUARE MATRICES
 C      AND CHECK THE STRUCTURE
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , DM1=-1.0D0 , D1 = 1.0D0 , DTOL = 1.0D-6 )
       PARAMETER ( DUMMY = 1.0D20 )
@@ -106,12 +96,9 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-C Manu debug
-C     IPRRSP=201
-C Manu debug
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
-      WRITE (LUPRI,'(//A/)') ' Test output requested with .ABSYM'
+      CALL HEADER('Test output requested with .ABSYM',-1)
 C
 C DETERMINE NUMBER OF ORBITAL AND CSF TRIAL VECTORS
 C
@@ -603,21 +590,21 @@ C                 (PR,YQ)*DENA(R,Y)*0.5 - (PY,RQ)*DENB(R,Y)*0.5 )
 C
 C THE ROUTINE IS CALLED FOR EACH INTEGRAL DENSITY (CD,**) (C<D)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2(NORBT,*),         ZYMAT(NORBT,NORBT,*)
       DIMENSION FCONE(NORBT,NORBT,*),FVONE(NORBT,NORBT,*)
       DIMENSION DENA(NORBT,NASHDI,*),DENB(NORBT,NASHDI,*)
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -804,21 +791,21 @@ C PURPOSE:
 C    ADD CONTRIBUTION TO ONE-INDEX TRANSFORMED FOCK MATRICES WHICH
 C    ORIGINATE FROM TRANSFORMING THE FOCK MATRICES
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FC(*),FV(*),ZYMAT(NORBT,NORBT,*)
       DIMENSION FCONE(NORBT,NORBT,*),FVONE(NORBT,NORBT,*)
 C
-#include <thrzer.h>
+#include "thrzer.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
       IF (IPRRSP.GT.90) THEN
          DO 3000 ISIM = 1,NSIM
             WRITE(LUPRI,*) ISIM,
@@ -926,19 +913,19 @@ C    FVTD(P,Q) = SUM(X,Y) [(PQ,XY)-0.5*(PY,XQ)] * DVT(X,Y)
 C
 C THE ROUTINE IS CALLED FOR EACH INTEGRAL DENSITY (CD,AB) (C<D)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FVTD(NORBT,NORBT,*),H2(NORBT,*),DVT(NASHDI,NASHDI,*)
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
 C
 C -- local constants
 C
@@ -1038,23 +1025,23 @@ C
 C H2XAC CONTAIN HALF TRANSFORMED INTEGRALS. THE ONE INDEX TRANSFORMED
 C INTEGRALS ARE OBTAINED FROM H2XAC IN GETINT.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FCONE(NORBT,NORBT,*),ZYMAT(NORBT,NORBT,*)
       DIMENSION H2XAC(N2ASHX,NNASHX,*)
       DIMENSION EVECS(KZYVAR,*),XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <cbgetdis.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "cbgetdis.h"
 C
       LOGICAL NOH2
 C
@@ -1185,27 +1172,27 @@ C          DIAGONAL HESSIAN MATRIX ELEMENTS
 C
 C          IF NTYPE.EQ.1 USE OLD TRIAL VECTORS
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER*8 LAB1, LAB2
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GD(*),REDGD(*)
       DIMENSION REDS(*),REDE(*),UDV(*),FCAC(*),H2AC(*),XINDX(*),WRK(*)
       PARAMETER ( DTEST = 1.0D-4, D0=0.0D0, D1=1.0D0, D1TEST = 1.0D-6)
       PARAMETER ( DM1 = -1.0D0 )
-#include <thrldp.h>
-#include <ibndxdef.h>
+#include "thrldp.h"
+#include "ibndxdef.h"
 C
 C Used from common blocks:
 C   INFRSP : ???,SOPPA
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <phpinf.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "phpinf.h"
 C
       LOGICAL BINMEM
       LOGICAL FNDLAB, FOUND, CONV
@@ -1214,7 +1201,7 @@ C
       IF ( RESTLR ) THEN
 C
          IF (RSPSUP .AND. (KSYMOP.EQ.1)) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      *      'LRST: RSPAVE necessary for RESTLR but not yet implemented'
             CALL QUIT('LRST error: Implement RSPAVE for RESTLR')
          END IF
@@ -1526,7 +1513,7 @@ C
                END IF
                CALL NEXCI(.FALSE.,WVAL,KZCONF,WRK(ISTBC),DUMMY,
      *                    GD(KGDC),WRK(KDIAE),IPRRSP,WRK(KWRK1),LWRK1)
-               NCSIM  = NCSIM  + 1
+               NCSIM = NCSIM + 1
                ISTBC = ISTBC + KZCONF
             ENDIF
             IF (KZWOPT.GE.1) THEN
@@ -1585,12 +1572,12 @@ C
                WRK(ISTBO-1+I) = WRK(KBOVEC-1+I)
             END DO
          END IF
-         CALL RSPORT(WRK(KBCVEC),NLSIM,(KOFFTY+KZRED+NTSIM),IBTYP,
+         NBPREV_here = KOFFTY + KZRED + NTSIM
+         CALL RSPORT(WRK(KBCVEC),NLSIM,NBPREV_here,IBTYP,
      *               THRLDV,WRK(KWRK1),LURSP3)
 C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
          IF (IPRRSP.GT.80) THEN
-            WRITE(LUPRI,'(/A)')' AFTER RSPORT IN LRST'
-            WRITE(LUPRI,'(/A,I5)')
+            WRITE(LUPRI,'(/A//A,I5)')' AFTER RSPORT IN LRST',
      *         '    I       IBTYP(I)          I=1,NLSIM NLSIM=',NLSIM
             DO 3008 I=1+KOFFTY,NLSIM+KOFFTY
                WRITE(LUPRI,'(I5,I10)')I,IBTYP(I)
@@ -1656,22 +1643,22 @@ C SOL(I)    : SOLUTION VECTOR
 C RES(I)    : RESIDUE
 C SOPR(I,J) : SECOND ORDER PROPERTY FOR PROPERTY I,J
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
-#include <codata.h>
+#include "codata.h"
       PARAMETER ( DTOL   = 1.0D-10 )
 C
-#include <priunit.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <mxcent.h>
-#include <gtensor.h>
-#include <elweak.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "mxcent.h"
+#include "gtensor.h"
+#include "elweak.h"
+#include "dummy.h"
 C
       DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
       DIMENSION SOPR(NFREQ,NOP,*)
@@ -1824,7 +1811,7 @@ C                UDV(*,*)*(FC(*,*)+FV(*,*))
 C
 C                ******************************
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
       DIMENSION FC(*),FV(*),FOCK(*),UDV(NASHDI,NASHDI)
@@ -1833,16 +1820,16 @@ C
       PARAMETER ( D0 = 0.0D0 )
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -1958,20 +1945,20 @@ C  ARE DETERMINED FROM ACTIVE-ACTIVE DIRAC INTEGRAL DISTRIBUTION
 C  <AB,CD> C>D (DIRAC NOTATION).
 C  CONTRIBUTIONS FROM MULLIKEN DISTRIBUTION ARE CALCULATED IN QONEMU
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION QAONE(NORBT,NASHDI,*),QBONE(NORBT,NASHDI,*)
       DIMENSION ZYMAT(NORBT,NORBT,*),H2(NORBT,*),H2X(NORBT,*)
       DIMENSION PVX(*),PVCD2(NASHDI,*),PVCD3(NASHDI,*),PVDC2(NASHDI,*)
       DIMENSION PVDC3(NASHDI,*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( DM1 = -1.0D0 )
 C
@@ -2219,23 +2206,23 @@ C  ARE DETERMINED FROM ACTIVE-ACTIVE MULLIKEN INTEGRAL DISTRIBUTION
 C  (**,CD) C>D .
 C  CONTRIBUTIONS FROM DIRAC DISTRIBUTION XY CALCULATED IN QONEDI
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       DIMENSION QAONE(NORBT,NASHT,*),QBONE(NORBT,NASHT,*)
       DIMENSION ZYMAT(NORBT,NORBT,*),PVX(*),PVCD(NASHT,*),H2(NORBT,*)
       DIMENSION H2X(NORBT,*),H2XAC(N2ASHX,NNASHX,*),WRK(*)
       IF (SOPPA) THEN
          WRITE(LUPRI,'(/A)') 'ERROR: QONEMU called in SOPPA'
-         CALL QTRACE(LUERR)
+         CALL QTRACE(LUPRI)
          CALL QUIT('ERROR: QONEMU called in SOPPA')
       END IF
       DO 1000 IOSIM = 1,NOSIM
@@ -2359,14 +2346,14 @@ C  CALCULATE THE CONTRIBUTIONS TO QATD AND QBTD MATRICES WHICH
 C  ARE DETERMINED FROM INTEGRAL DISTRIBUTION  (AB,CD) ,D>=C
 C  (MULLIKEN NOTATION)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "wrkrsp.h"
 C
       DIMENSION QATD(NORBT,NASHDI,*),QBTD(NORBT,NASHDI,*)
       DIMENSION PVTD(N2ASHX,N2ASHX,*),PVDEN(NASHT,*)
@@ -2424,19 +2411,19 @@ C     |0(L)> =  SUM(N) S'(N)*|N>
 C
 C MODIFIED 5-5-1988 : ASSUME |0(L)> = 0 i.e. S' = 0 AND
 C                     NOT STORED'
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION ZYCVEC(KZCONF,*),FCAC(*),H2AC(*)
       DIMENSION EVECS(KZYVAR,*),XINDX(*),WRK(*)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <cbgetdis.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "cbgetdis.h"
 C
       LOGICAL NOH2, IH8SM
 C
@@ -2564,8 +2551,8 @@ C    LINEAR DEPENDENCE IS REMOVED)
 C
 C MAXRIT: MAXIMUM NUMBER OF MICROITERATIONS
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( MAXVEC = 12, DM1 = -1.0D0 )
       DIMENSION CMO(*),UDV(NASHDI,*),PV(*),FC(*),FV(*)
@@ -2573,21 +2560,21 @@ C
       DIMENSION REDE(*),REDS(*),IBTYP(*),EIVAL(*),RESID(*),EIVEC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C Used from common blocks:
 C  /WRKRSP/: ??
 C  /INFPRI/: LUERR
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infsop.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infsop.h"
+#include "qm3.h"
 C
       LOGICAL BINMEM, LINEQ, OPTSAV, LMAXIT
       CHARACTER*8 LAB123(3),RESTAR, LAB1, LAB2
@@ -2670,7 +2657,7 @@ C     SOPCLI reads 2p-2h diagonal (D(0) matrix)
      *     ' MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS:',MAXSIM
 C
       IF (MAXSIM.LE.0) THEN
-         WRITE (LUPRI ,8000) LWRK,(100+KMAXVE-KTOUSE)
+         WRITE (LUPRI,8000) LWRK,(100+KMAXVE-KTOUSE)
          WRITE (LUERR,8000) LWRK,(100+KMAXVE-KTOUSE)
          CALL QTRACE(LUERR)
          CALL QUIT('RSPCTL: INSUFFICIENT MEMORY ALLOCATION')
@@ -2712,7 +2699,7 @@ C RSPNEX reads SOPPA 2p-2h diagonal of length KZCONF
       IF(IPRRSP.GE.10 .OR. NSIM3 .LE. 0)  WRITE(LUPRI,'(/A,I8)')
      *' MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:',NSIM3
       IF (NSIM3.LE.0) THEN
-         WRITE (LUPRI ,8000) LWRK,(100+KLEFT+KNEX)
+         WRITE (LUPRI,8000) LWRK,(100+KLEFT+KNEX)
          WRITE (LUERR,8000) LWRK,(100+KLEFT+KNEX)
          CALL QTRACE(LUERR)
          CALL QUIT('RSPCTL: INSUFFICIENT SPACE')
@@ -2738,8 +2725,10 @@ C
 C
 C     SET UP INITIAL TRIAL VECTORS
 C
-      IF (IPRRSP.GT.15)
-     *   WRITE(LUPRI,*)' LINEQ,RESTPP,ORBSPC',LINEQ,RESTPP,ORBSPC
+      IF (IPRRSP.GT.15) THEN
+         WRITE(LUPRI,*)' LINEQ,RESTPP,ORBSPC',LINEQ,RESTPP,ORBSPC
+         IF (LINEQ) WRITE(LUPRI,*) ' FREQ =',(EIVAL(I),I=1,MAXSIM)
+      END IF
 C
       IF (LINEQ) THEN
          CALL LRST(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GD,
@@ -3048,24 +3037,18 @@ C        RSPPP if no previous orbital trial vectors.
          LMAXIT = (ITMIC .GE. MAXIT)
          CALL RSPNEX(LINEQ,LMAXIT,NSIM3,IBTYP,EIVAL,RESID,EIVEC,GD,
      *               CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
-C        CALL RSPNEX(LINEQ,LMAXIT,NSIM,IBTYP,EIVAL,EIVEC,GD,
+C        CALL RSPNEX(LINEQ,LMAXIT,NSIM,IBTYP,EIVAL,RESID,EIVEC,GD,
 C    *               CMO,UDV,PVX,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
          OPTORB = OPTSAV
          IF (KCONV.EQ.-2) THEN
 C           (MAXIMUM DIMENSION OF REDUCED SPACE EXCEEDED)
             NWARN = NWARN + 1
-            WRITE (LUERR,'(/A/A)')
-     *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
-     *          '     MAXIMUM DIMENSION OF REDUCED SPACE EXCEEDED.'
             WRITE (LUPRI,'(/A/A)')
      *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
      *          '     MAXIMUM DIMENSION OF REDUCED SPACE EXCEEDED.'
          ELSE IF (KCONV.LT.0) THEN
 C           (LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTOR )
             NWARN = NWARN + 1
-            WRITE (LUERR,'(/A/A)')
-     *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
-     *          '     OF LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTORS'
             WRITE (LUPRI,'(/A/A)')
      *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
      *          '     OF LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTORS'
@@ -3078,9 +3061,6 @@ C           (NOT CONVERGED)
             IF (ITMIC.GE.MAXIT) THEN
 C              (MAX NO OF MICROITERATIONS REACHED)
                NWARN = NWARN + 1
-               WRITE(LUERR,'(/A,I4,A)')
-     *         ' *** RSPCTL WARNING-MAXIMUM NUMBER OF MICROITERATIONS,',
-     *         ITMIC,', REACHED'
                WRITE(LUPRI,'(/A,I4,A)')
      *         ' *** RSPCTL WARNING-MAXIMUM NUMBER OF MICROITERATIONS,',
      *         ITMIC,', REACHED'
@@ -3103,15 +3083,15 @@ C  /* Deck rspdia */
 C
 C CONSTRUCT DIAGONAL OF E(2) + SHIFT* S(2)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
       PARAMETER ( DMP5 = -0.5D0, D1 = 1.0D0 , DM2=-2.0D0 )
       PARAMETER ( D0 = 0.0D0 )
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL REWSPL(LURSP4)
 #if defined (VAR_SPLITFILES)
@@ -3175,13 +3155,13 @@ C  /* Deck rspedg */
 C
 C CONSTRUCT DIAGONAL OF E(2) (z part)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL REWSPL(LURSP4)
 #if defined (VAR_SPLITFILES)
@@ -3224,14 +3204,14 @@ C  /* Deck rspsod */
 C
 C READ DIAGONAL OF ORBITAL PART OF S(2)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION A(*)
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL REWSPL(LURSP4)
       JRSP4 = 0
@@ -3277,9 +3257,9 @@ C     CONTROL CALCULATION OF EXCITATION ENERGIES AND TRANSITION
 C     MOMENTS
 C     (PP for Polarization Propagator)
 C
-#include <implicit.h>
+#include "implicit.h"
 #include "maxorb.h"
-#include <dummy.h>
+#include "dummy.h"
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
       CHARACTER BLANK*8, PRI_LINE*80
@@ -3298,7 +3278,7 @@ C
       PARAMETER ( D2R3 = (2.0D0/3.0D0))
 C
 C
-#include <codata.h>
+#include "codata.h"
       PARAMETER (RAU2CGS = ECHARGE*ECHARGE*XTANG*CCM*1D36*HBAR/EMASS)
       PARAMETER (ESUECD = RAU2CGS)
 C
@@ -3308,19 +3288,19 @@ C  /INFRSP/ : most items (/INFRSP/ gives control information for
 C                         the response calculation(s) )
 C  /WRKRSP/ :
 C
-#include <priunit.h>
-#include <infopt.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infpp.h>
-#include <inflr.h>
-#include <inforb.h>
-#include <infdim.h>
+#include "priunit.h"
+#include "infopt.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infpp.h"
+#include "inflr.h"
+#include "inforb.h"
+#include "infdim.h"
 #include "infinp.h"
-#include <infpri.h>
-#include <inftap.h>
-#include <esg.h>
+#include "infpri.h"
+#include "inftap.h"
+#include "esg.h"
 C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
 !     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
@@ -4183,25 +4163,25 @@ C
 C     Driver Routine for Linear Response:
 C     DETERMINE SECOND ORDER MOLECULAR PROPERTIES
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "thrzer.h"
 C
       CHARACTER*8 BLANK
       PARAMETER (D0 = 0.0D0, BLANK = '        ')
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <infdim.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "infdim.h"
+#include "inforb.h"
 C
 C Local variables
 C
@@ -4212,7 +4192,7 @@ C
 C
 C     NOSEL is activated if we have a converged response vector on file,
 C     but then obviously no residuals. We calculate in this case the
-C     property without the use of Sellers' formula.
+C     property without the use of Sellers formula.
 C
       KREDE  = 1
       KREDS  = KREDE  + MAXRM*MAXRM
@@ -4276,12 +4256,12 @@ C
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      *               WRK(KGD),LWRK1)
          DNORM = DNRM2(KZYVAR,WRK(KGD),1)
+         write(lupri,*) 'FREQ 2 ',FREQ(1:NFREQ)
          IF (IPRRSP .GT. 30) THEN
             CALL HEADER('Gradient vectors in RSPLR for operator '//
      &                  LBLLR(KSYMOP,IOP)//':',-1)
+            WRITE (LUPRI,'(/A,1P,D12.4)') ' Norm : ', DNORM
             CALL OUTPUT(WRK(KGD),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-            DNORM = DNRM2(KZYVAR,WRK(KGD),1)
-            WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM
          END IF
          JFREQ  = 0
          CALL DZERO(WRK(KEIVAL),NFREQ)
@@ -4291,21 +4271,21 @@ C
      &                  BLANK,FREQ(I),D0,KSYMOP,0,THCLR,
      &                  FOUND,CONV,ANTSYM)
             IF (FOUND .AND. CONV) THEN
-               WRITE(LUPRI,'(/A,/A12,A10,/A42)')
+               WRITE(LUPRI,'(/A,/A12,A10,F22.6,/A42)')
      *              ' Converged solution vector already on file',
-     *              LBLLR(KSYMOP,IOP),'freq',
+     *               LBLLR(KSYMOP,IOP),' freq',FREQ(I),
      *              ' -----------------------------------------'
-               WRITE(LUPRI,'(F22.6)') FREQ(I)
             ELSE
-               DO IJ = 0, NFREQ
-                  IF (ABS(WRK(KEIVAL+IJ)-AFRQ) .LT. THRZER .AND.
-     &                 .NOT. AFRQ .LT. THRZER) GOTO 410
+C              ! Remove duplicates, they will cause linear dependency
+               DO IJ = 0, JFREQ-1
+                  IF (ABS(WRK(KEIVAL+IJ)-AFRQ) .LT. THRZER) GOTO 410
                END DO
                WRK(KEIVAL+JFREQ) = FREQ(I)
                JFREQ = JFREQ + 1
             END IF
  410     CONTINUE
          IF (JFREQ .EQ. 0) THEN
+            ! Found converged solution vectors, Sellers formula not possible
             NOSEL = .TRUE.
             GOTO 600
          END IF
@@ -4315,7 +4295,7 @@ C
             WRITE (LUPRI,*) '     property vector '//LBLLR(KSYMOP,IOP)//
      &                      ' is only',DNORM
             CALL DZERO(WRK(KBVECS),KZYVAR)
-            DO 450 IFREQ = 1,NFREQ
+            DO 450 IFREQ = 1,JFREQ
                CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LBLLR(KSYMOP,IOP),
      *                     BLANK,WRK(KEIVAL-1+IFREQ),D0,KSYMOP,0,D0,
      *                     ANTSYM)
@@ -4327,8 +4307,8 @@ C
             GO TO 600
          END IF
 C
-         KEXSIM = NFREQ
-         KEXCNV = NFREQ
+         KEXSIM = JFREQ
+         KEXCNV = JFREQ
 C
          CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               .TRUE.,LBLLR(KSYMOP,IOP),BLANK,WRK(KGD),
@@ -4339,8 +4319,8 @@ C        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C                    LINEQ,GD,REDGD,REDE,REDS,
 C    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
-         DO 700 IFREQ = 1,NFREQ,MXFREQ
-            NBX = MIN(MXFREQ,(NFREQ+1-IFREQ))
+         DO 700 IFREQ = 1,JFREQ,MXFREQ
+            NBX = MIN(MXFREQ,(JFREQ+1-IFREQ))
             IBOFF = IFREQ - 1
             CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
      *                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
@@ -4421,8 +4401,8 @@ C
 C  /* Deck rds2 */
       SUBROUTINE RDS2(LABEL,UDV,XINDX,WRK,LWRK)
 C 28-Jun-1991 PJ+HJJ
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       CHARACTER*8 LABEL
       DIMENSION XINDX(*),UDV(*),WRK(*)
       PARAMETER ( D1 = 1.0D0 )
@@ -4430,11 +4410,11 @@ C
 C Used from common blocks:
 C   INFDIM : NVARMA
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       LOGICAL OLDDX
 C
@@ -4479,19 +4459,19 @@ C     Calculate S[2] * RD where we use RD_Y = -RD_Z
 C  /* Deck rds2x */
       SUBROUTINE RDS2X(NLAB,UDV,XINDX,WRK,LWRK)
 C Made from RDS2 by klb feb. 1997.
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       DIMENSION XINDX(*),UDV(*),WRK(*)
       PARAMETER ( D1 = 1.0D0 )
 C
 C Used from common blocks:
 C   INFDIM : NVARMA
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       LOGICAL OLDDX
 C
@@ -4542,8 +4522,8 @@ C On input, vector X(I) is placed in RD(I+1), I = 1,NBX.
 C On output, vector RD(I) is placed in RD(I), I = 1,NBX.
 C LWRK is available work space in RD.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(KZYRED,*)
       DIMENSION GD(*),UDV(*),RD(*),XINDX(*)
       PARAMETER (  D0 = 0.0D0 , DM1=-1.0D0)
@@ -4553,12 +4533,12 @@ C  INFRSP: ?
 C  WRKRSP: KZVAR,KZYVAR
 C          LURSP5
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C CONSTRUCT -W(I) * S[2]*X(I) IN FIRST NBX ELEMENTS OF RD
 C
@@ -4712,18 +4692,18 @@ C
 C PURPOSE:
 C   CALCULATION OF EIGENVECTORS FROM REDUCED SPACE
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION BVECS(KZYVAR,*),WRK(*)
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(KZYRED,*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <inftap.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 C
       NTOT= NBX*KZYVAR
       CALL DZERO(BVECS,NTOT)
@@ -4793,17 +4773,17 @@ C  /* Deck rspes2 */
      *                  CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
      *                  WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE THAT
 C  1)  CALCULATE THE E(2) AND S(2) MATRICES EXPLICITLY BY CARRYING
 C      OUT LINEAR TRANSFORMATIONS ON UNIT VECTORS
 C  2)  DIAGONALIZE THE E(2) AND S(2)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DTOL = 1.0D-8 )
       DIMENSION GD(*),REDGD(*),REDE(*),REDS(*),EIVAL(*),EIVEC(*)
@@ -5091,15 +5071,15 @@ C  /* Deck oropti */
 C
 C PURPOSE SOLVE ORBITAL PART OF LINEAR SET OF EQUATIONS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION EIVAL(*),IBTYP(*),A1(*)
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FCAC(*),XINDX(*),WRK(*)
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DM1 = -1.0D0 )
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C PUT DIAGONAL ORBITAL PART OF E(2) AND S(2) IN WRK(1) AND
 C AND WRK(1+KZYCON)
@@ -5141,7 +5121,7 @@ C  /* Deck e2osym */
       SUBROUTINE E2OSYM(KOZRED,OBVEC,OEVEC,OSVEC,
      *           CMO,UDV,PV,FC,FV,FCAC,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE TO CHECK THE ORBITAL PART OF THE
 C  RESPONSE MATRICES
@@ -5151,10 +5131,10 @@ C      AS SQUARE MATRICES AND CHECK THE STRUCTURE
 C
 C  2)  CHECK ORTHOGONALITY OF TRIAL VECTORS
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DTOL = 1.0D-6 )
       DIMENSION OBVEC(KZYWOP,*),OEVEC(KZYWOP,*),OSVEC(KZYWOP,*)
@@ -5494,7 +5474,7 @@ C  /* Deck e2ochk */
       SUBROUTINE E2OCHK(OBVEC,OEVEC,OSVEC,CMO,UDV,PV,FC,FV,FCAC,XINDX,
      *                  WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE TO CHECK THE ORBITAL PART OF THE
 C  RESPONSE MATRICES
@@ -5505,10 +5485,10 @@ C      THE BLOCK IS FORMED USING UNIT VECTORS AS TRIAL
 C      VECTORS. TOTALLY MAXCHK VECTORS ARE USED WITH ONE IN
 C      ELEMENTS ISTCHK TO ISTCHK+MAXCHK-1
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DTOL = 1.0D-6 )
       DIMENSION OBVEC(KZYWOP,*),OEVEC(KZYWOP,*),OSVEC(KZYWOP,*)
@@ -5854,12 +5834,12 @@ C
 C  /* Deck lrnsl */
       SUBROUTINE LRNSL(CMO,UDV,PV,FC,XINDX,VECB,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
 C PURPOSE:
 C CALCULATION OF LINEAR POLARIZABILITIES WITHOUT USING
-C SELLERS' FORMULA.
+C SELLERS FORMULA.
 C
 C Modified version of LRHYP, done by K.Ruud on the plane from SLC to SAN
 C on July 1, 2000
@@ -5870,16 +5850,16 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*)
       DIMENSION XINDX(*),VECB(*), WRK(LWRK)
 C
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <wrkrsp.h>
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "wrkrsp.h"
 C
 C
       WRITE(LUPRI,'(A)') ' '
@@ -5929,15 +5909,15 @@ C
       END
 
       subroutine printelweak(nop,sopr,ksymop)
-#include <implicit.h>
-#include <priunit.h>
-#include <codata.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <mxcent.h>
-#include <elweak.h>
-#include <nuclei.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "mxcent.h"
+#include "elweak.h"
+#include "nuclei.h"
+#include "chrnos.h"
 
       dimension sopr(1,nop,nop),pvodd(mxcent)
       character*8 lab1, lab2
@@ -6068,46 +6048,51 @@ C       J.  Chem. Phys. 128, 044118 (2008), DOI:10.1063/1.2831900
 C
 C     (subroutine based on RSPPRO tuh)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(PTHRS = 1.D-08)
       DIMENSION WOP(*)
       DIMENSION CMO2(NORBT,NORBT,2)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infvar.h"
  
+      IPRINT_local = 0
       CALL HEADER('PBHT MO Overlap Diagnostic',-1)
       WRITE(LUPRI,'(A/A/)')
      &  '  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
      &  '             J Chem Phys 128, 044118 (2008)'
       IF (NWOPT.GT.0) THEN 
-C        WRITE (LUPRI,1010) JWOPSY
-C        WRITE (LUPRI, '(2X,2A,/)')  '            I    A       ',
-C    &       'K_IA           K_AI         <|I|*|A|>      <I^2*A^2>'
+         WRITE (LUPRI,'(/2X,A)') 'The dominant contributions:'
+         WRITE (LUPRI,'(/2X,A/)')
+     &      '    I    A    '//
+     &      'K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib'
          CMOTOT=0.d0
          WOPTOT=0.d0
          DO IG = 1,NWOPT
             K  = JWOP(1,IG)
             L  = JWOP(2,IG)
-            KS = ISMO(K)
-            LS = ISMO(L)
             WOP1 = WOP(IG)
             WOP2 = WOP(IOFFY+IG)
             IF (ABS(WOP1).GT.PTHRS .OR. ABS(WOP2).GT.PTHRS) THEN
-C              WRITE (LUPRI,'(2X,A,3I5,4F15.10)') 
-C    &            '@@@', IG,K,L,WOP1,WOP2,CMO2(K,L,1),CMO2(K,L,2)
-                  WMJGP=(WOP1-WOP2)**2.0d0
-                  CMOMJGP=WMJGP*CMO2(K,L,1)
-                  CMOTOT=CMOTOT+CMOMJGP
-                  WOPTOT=WOPTOT+WMJGP
+               WMJGP=(WOP1-WOP2)**2
+               CMOMJGP=WMJGP*CMO2(K,L,1)
+               CMOTOT=CMOTOT+CMOMJGP
+               WOPTOT=WOPTOT+WMJGP
+               IF (IPRINT_local .GT. 1 .OR. WMJGP .GT. 0.01D0) THEN
+                  WRITE (LUPRI,'(2X,2I5,6F10.6)') K,L,
+     &            WOP1,WOP2,CMO2(K,L,1),CMO2(K,L,2),WMJGP,CMOMJGP
+               END IF
             END IF
          END DO
          ALAMBDA=CMOTOT/WOPTOT
-         WRITE(LUPRI,'(25X,"Lambda:",2X,F15.10)')ALAMBDA
+         IF (IPRINT_local .GT. 0) THEN
+            WRITE(LUPRI,*) '   CMOTOT, WOPTOT:',CMOTOT,WOPTOT
+         END IF
+         WRITE(LUPRI,'(/"@ Overlap diagnostic LAMBDA =",F10.4)') ALAMBDA
       END IF
       RETURN
- 1010 FORMAT(5X,'Response orbital operator symmetry =',I2,/)
       END
+! -- end of rspe2c.F --

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -67,12 +57,12 @@ C
 C     PURPOSE : Driver routine for the test calculation of the
 C               two-electron part of the fock matrices.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (MAXDIS=500)
       DIMENSION DMAT(*), FMAT(*), WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
       KGMAT = 1
@@ -110,9 +100,9 @@ C
          DO 300 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
             WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-            CALL OUTPUT(DMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(DMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
             WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-            CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
   300    CONTINUE
       END IF
       CALL TIMER('GETDIS',TIMSTR,TIMEND)
@@ -126,14 +116,14 @@ C
 C
 C     PURPOSE : Calculate fock matrices using distributions.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (ONE=1.0D00, HALF=0.5D00, FOURTH=0.25D00)
       INTEGER   P,Q,R,S
       DIMENSION FMAT(NBAST,NBAST,NDMAT), DMAT(NBAST,NBAST,NDMAT)
       DIMENSION GMAT(NBAST,NBAST,NUMDIS), INDEX(NUMDIS)
-#include <inforb.h>
+#include "inforb.h"
 C
       DO 100 I = 1,NUMDIS
 C
@@ -190,19 +180,20 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
       DIMENSION WORK(LWORK)
-#include <inforb.h>
-#include <cbitwo.h>
-#include <dorps.h>
+#include "infinp.h"
+#include "inforb.h"
+#include "cbitwo.h"
+#include "dorps.h"
 C
       CALL ABARUN(ABA)
 C
@@ -215,8 +206,8 @@ C
       IF (.NOT.ABA) THEN
          NODV = .FALSE.
          NOPV = .FALSE.
-         IF (NASHT .EQ. 0) NODV = .TRUE.
-         IF (NASHT .LT. 2) NOPV = .TRUE.
+         IF (NACTEL .EQ. 0) NODV = .TRUE.
+         IF (NACTEL .LE. 1 .OR. HSROHF) NOPV = .TRUE.
          IPRALL =  0
          DO 100 I = 0,7
             DOREPS(I) = .TRUE.
@@ -270,13 +261,13 @@ C     Write out integral distributions
 C--------------------------------------
 C
       IF (IPRINT.GT.3) THEN
-         CALL HEADER('Distribution matrices in GETDIS',-1)
-         DO 300 I = 1, NUMDIS
-            CALL UNPKIJ(INDXAB(I),IA,IB)
-            WRITE(LUPRI,'(//A,2I5)')' Distribution matrix No.',I,NUMDIS
-            WRITE(LUPRI,'(A,2I5)')  ' Orbital indices:       ',IA,IB
-            CALL OUTPUT(GMAT(1,1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-  300    CONTINUE
+        CALL HEADER('Distribution matrices in GETDIS',-1)
+        DO, I = 1, NUMDIS
+          CALL UNPKIJ(INDXAB(I),IA,IB)
+          WRITE(LUPRI,'(//A,2I5)')' Distribution matrix No.',I,NUMDIS
+          WRITE(LUPRI,'(A,2I5)')  ' Orbital indices:       ',IA,IB
+          CALL OUTPUT(GMAT(1,1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
+        END DO
       END IF
 C
       RETURN
@@ -292,12 +283,12 @@ C     routines instead of GETFCK.
 #else
       SUBROUTINE FCKTES(WORK,LWORK,MAXDIF,NODV,NOPV,NOCONT,TKTIME,
      &                  IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0)
       LOGICAL NODV, NOPV, NOCONT, TKTIME, RETUR, DIRECT
       DIMENSION WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       IF (NODV) THEN
          NDMAT = 1
@@ -354,10 +345,10 @@ C
 C  /* Deck sqdens */
       SUBROUTINE SQDENS(DTSO,DMAT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL DZERO(DMAT,NBAST*NBAST)
       ISOFF = 0
@@ -374,26 +365,26 @@ C
  100  CONTINUE
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output of squared matrix from SQDENS','*',103)
-         CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION WORK(LWORK)
 C
 C Used from common blocks:
 C  SYMMET: MAXREP,NAOS(8))
 C  INFORB: NSYM,NBAS(8)
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <cbirea.h>
-#include <symmet.h>
-#include <inforb.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "cbirea.h"
+#include "symmet.h"
+#include "inforb.h"
 C
       LOGICAL SFIRST, RELCAL, TSTINP, HERMIT, NEWGEO
       SAVE    SFIRST
@@ -451,13 +442,13 @@ C
 C     10-Apr-1996-hjaaj: select if we want to use HRFCK1 or ERIFCK
 C     (old integral routines or new ERI integral routines)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       LOGICAL USEERI, LDUMMY
       PARAMETER (D0 = 0.0D0)
 C
@@ -468,16 +459,18 @@ C Used from common blocks:
 C   gnrinf: SEGBAS, PARCAL
 C   infpar: NODTOT
 C
-#include <infpar.h>
-#include <inforb.h>
-#include <gnrinf.h>
-#include <abainf.h>
-#include <blocks.h>
-#include <cbihr2.h>
-#include <cbieri.h>
-#include <veclen.h>
+#include "infpar.h"
+#include "inforb.h"
+#include "gnrinf.h"
+#include "abainf.h"
+#include "blocks.h"
+#include "cbihr2.h"
+#include "cbieri.h"
+#include "veclen.h"
 C
-#include <memint.h>
+#include "memint.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       CALL QENTER('HERFCK')
 C
@@ -513,7 +506,7 @@ C
          IF (PARCAL) THEN
             if (iprfck .gt. 1) write (lupri,*) '- using parallel ERI'
             CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)           
-            IPRTYP = 2
+            IPRTYP = ERI_WORK
             CALL PARDRV(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,WORK(KFREE),
      &                  WORK(KNSTAT),DUMMY,LFREE,IDUMMY,IDUMMY,IDUMMY,
      &                  LDUMMY,LDUMMY,LDUMMY,LDUMMY,LDUMMY,
@@ -570,14 +563,14 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
       LOGICAL   ABA
       PARAMETER (D0 = 0.D0)
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT),
@@ -590,17 +583,20 @@ C  CBITWO: IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,?
 C  GNRINF: PARCAL
 C  INFPAR: NODTOT
 C
-#include <abainf.h>
-#include <dftcom.h>
-#include <inforb.h>
-#include <cbitwo.h>
-#include <dorps.h>
-#include <symmet.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <blocks.h>
+#include "abainf.h"
+#include "dftcom.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "cbitwo.h"
+#include "dorps.h"
+#include "symmet.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "blocks.h"
 C
-#include <memint.h> 
+#include "memint.h" 
+C defined parallel calculation types  
+#include "iprtyp.h"
       IF (NDMAT .LE. 0) RETURN  
       CALL QENTER('HRFCK1')
       I2TYP = 0
@@ -615,8 +611,8 @@ C     Setup information for the two-electron integral routines.
 C----------------------------------------------------------------
 C
       IF (.NOT.ABA) THEN
-         NODV = (NASHT .EQ. 0)
-         NOPV = (NASHT .LT. 2)
+         NODV = (NACTEL .EQ. 0)
+         NOPV = (NACTEL .LE. 1 .OR. HSROHF)
 C
 C        Remember to change this!!!!!!!
 C
@@ -675,7 +671,7 @@ C
       CALL MEMGET('REAL',KDRAO,N2DRAO,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDSKP,8     ,WORK,KFREE,LFREE)
 C     
-C     Get GAB-matrix (Cauchy-Schwartz)
+C     Get GAB-matrix (Cauchy-Schwarz)
 C
       IF (SRINTS) THEN
          CALL GETGAB(WORK(KGAB),'GABSRXXX',N2GAB,
@@ -700,7 +696,7 @@ C
          IATOM = 0
          CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
 C
-         IPRTYP = 1
+         IPRTYP = HER_WORK
          HFXM0 = HFXMU
          HFXMU = D0
          CALL PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,
@@ -719,7 +715,7 @@ C
 C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
 C
          IF (HFXMU.NE.D0) THEN
-            IPRTYP = 1
+            IPRTYP = HER_WORK
             IATOM  = 1
             HFXFC0 = HFXFAC
             HFXFAC = HFXATT 
@@ -806,10 +802,10 @@ C
          DO 300 I = 1, NDMAT
             WRITE (LUPRI,'(//A,I3,A,I3)')
      &         ' Density matrix No.',I,' of',NDMAT
-            CALL OUTPUTx(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
             WRITE (LUPRI,'(//A,I3,A,I3)')
      &         ' Fock matrix No.',I,' of',NDMAT
-            CALL OUTPUTx(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
   300    CONTINUE
       END IF
 C
@@ -819,17 +815,17 @@ C
       END
 C  /* Deck aindex */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
       LOGICAL DOINDX
       DIMENSION INDEXA(*), IORBSH(MXSHEL,MXAOVC)
-#include <blocks.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "blocks.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IORB = 0
       MULA   = ISTBSH(ISHELA)
@@ -861,7 +857,7 @@ C
       END
 C  /* Deck abarun */
       SUBROUTINE ABARUN(RUNABA)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL ABA, RUNABA
       SAVE ABA
       DATA ABA /.FALSE./

@@ -54,7 +54,6 @@ cat > rsp_soppapolarsymm.dal <<'%EOF%'
 .MP2
 **RESPONSE
 .S0MIX
-.NOITRA
 .SOPPA
 *LINEAR
 .DIPLEN
@@ -63,8 +62,12 @@ cat > rsp_soppapolarsymm.dal <<'%EOF%'
 0.0 0.0592
 *C6
 .DIPLEN
+.PRINT
+  5
 .MAXMOM
   6
+.THCC6
+ 1.0D-4
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
@@ -140,26 +143,26 @@ CTRL[6]=21
 ERROR[6]="STATIC C6/C8 POLARIZABILITIES NOT CORRECT"
 
 # Cauchy moments
-CRIT1=`$GREP " 0 * 3\.206925.*(D|E)\+00" $log | wc -l`
-CRIT2=`$GREP " 2 * 1\.228879.*(D|E)\+01" $log | wc -l`
-CRIT3=`$GREP " 4 * 1\.405207.*(D|E)\+02" $log | wc -l`
-CRIT4=`$GREP " 6 * 1\.722463.*(D|E)\+03" $log | wc -l`
-CRIT5=`$GREP " 8 * 2\.12013.*(D|E)\+04" $log | wc -l`
-CRIT6=`$GREP "10 * 2\.6106.*(D|E)\+05" $log | wc -l`
-CRIT7=`$GREP "12 * 3\.2146.*(D|E)\+06" $log | wc -l`
-CRIT8=`$GREP "14 * 3\.9585.*(D|E)\+07" $log | wc -l`
-CRIT9=`$GREP "16 * 4\.8744.*(D|E)\+08" $log | wc -l`
-CRIT10=`$GREP "18 * 6\.0024.*(D|E)\+09" $log | wc -l`
-CRIT11=`$GREP "20 * 7\.3913.*(D|E)\+10" $log | wc -l`
-CRIT12=`$GREP "22 * 9\.1016.*(D|E)\+11" $log | wc -l`
-CRIT13=`$GREP "24 * 1\.1207.*(D|E)\+13" $log | wc -l`
-CRIT14=`$GREP "26 * 1\.3801.*(D|E)\+14" $log | wc -l`
-CRIT15=`$GREP "28 * 1\.6994.*(D|E)\+15" $log | wc -l`
-CRIT16=`$GREP "30 * 2\.0926.*(D|E)\+16" $log | wc -l`
-CRIT17=`$GREP "32 * 2\.5769.*(D|E)\+17" $log | wc -l`
-CRIT18=`$GREP "34 * 3\.1732.*(D|E)\+18" $log | wc -l`
-CRIT19=`$GREP "36 * 3\.9074.*(D|E)\+19" $log | wc -l`
-CRIT20=`$GREP "38 * 4\.8116.*(D|E)\+20" $log | wc -l`
+CRIT1=`$GREP " 0 * 3\.20692..*(D|E)\+00" $log | wc -l`
+CRIT2=`$GREP " 2 * 1\.22887..*(D|E)\+01" $log | wc -l`
+CRIT3=`$GREP " 4 * 1\.40520..*(D|E)\+02" $log | wc -l`
+CRIT4=`$GREP " 6 * 1\.72246..*(D|E)\+03" $log | wc -l`
+CRIT5=`$GREP " 8 * 2\.1201..*(D|E)\+04" $log | wc -l`
+CRIT6=`$GREP "10 * 2\.610..*(D|E)\+05" $log | wc -l`
+CRIT7=`$GREP "12 * 3\.214..*(D|E)\+06" $log | wc -l`
+CRIT8=`$GREP "14 * 3\.958..*(D|E)\+07" $log | wc -l`
+CRIT9=`$GREP "16 * 4\.874..*(D|E)\+08" $log | wc -l`
+CRIT10=`$GREP "18 * 6\.002..*(D|E)\+09" $log | wc -l`
+CRIT11=`$GREP "20 * 7\.391..*(D|E)\+10" $log | wc -l`
+CRIT12=`$GREP "22 * 9\.10[12]..*(D|E)\+11" $log | wc -l`
+CRIT13=`$GREP "24 * 1\.120..*(D|E)\+13" $log | wc -l`
+CRIT14=`$GREP "26 * 1\.380..*(D|E)\+14" $log | wc -l`
+CRIT15=`$GREP "28 * 1\.699..*(D|E)\+15" $log | wc -l`
+CRIT16=`$GREP "30 * 2\.092..*(D|E)\+16" $log | wc -l`
+CRIT17=`$GREP "32 * 2\.57[67]..*(D|E)\+17" $log | wc -l`
+CRIT18=`$GREP "34 * 3\.173..*(D|E)\+18" $log | wc -l`
+CRIT19=`$GREP "36 * 3\.907..*(D|E)\+19" $log | wc -l`
+CRIT20=`$GREP "38 * 4\.81[12]..*(D|E)\+20" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \

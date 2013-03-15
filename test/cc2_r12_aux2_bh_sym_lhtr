@@ -51,7 +51,7 @@ cat > cc2_r12_aux2_bh_sym_lhtr.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -89,7 +89,7 @@ cat > cc2_r12_aux2_bh_sym_lhtr.dal <<'%EOF%'
 #.NO 2
 .CC2
  1A
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################
@@ -126,76 +126,70 @@ TEST[2]=`expr	$CRIT2`
 CTRL[2]=2
 ERROR[2]="CC2-R12/A ENERGY NOT CORRECT"
 #
-CRIT3=`$GREP " *1 *( |0)\.28439575.. *7\.73880186.." $log | wc -l`
+CRIT3=`$GREP " 1 .*( |0)\.2843958 .*7\.73880 " $log | wc -l`
 TEST[3]=`expr	$CRIT3`
 CTRL[3]=1
 ERROR[3]="CC2-R12/A 1A1 EXCITATION ENERGY NOT CORRECT"
-CRIT4=`$GREP " *2 *( |0)\.38487396.. *10\.47295304.." $log | wc -l`
+CRIT4=`$GREP " 2 .*( |0)\.3848740 .*10\.47295 " $log | wc -l`
 TEST[4]=`expr	$CRIT4`
 CTRL[4]=1
 ERROR[4]="CC2-R12/A 2A1 EXCITATION ENERGY NOT CORRECT"
-CRIT5=`$GREP " *3 *( |0)\.53130111.. *14\.45743837.." $log | wc -l`
+CRIT5=`$GREP " 3 .*( |0)\.5313011 .*14\.45744 " $log | wc -l`
 TEST[5]=`expr	$CRIT5`
 CTRL[5]=1
 ERROR[5]="CC2-R12/A 3A1 EXCITATION ENERGY NOT CORRECT"
-CRIT6=`$GREP " *4 *( |0)\.60876122.. *16\.56523507.." $log | wc -l`
+CRIT6=`$GREP " 4 .*( |0)\.6087612 .*16\.56524 " $log | wc -l`
 TEST[6]=`expr	$CRIT6`
 CTRL[6]=1
 ERROR[6]="CC2-R12/A 4A1 EXCITATION ENERGY NOT CORRECT"
-CRIT7=`$GREP " *1 *(-|-0)\.06002367.. *-1\.63332720.." $log | wc -l`
+CRIT7=`$GREP " 1 .*(-|-0)\.0600237 .*-1\.63333 " $log | wc -l`
 TEST[7]=`expr   $CRIT7`
 CTRL[7]=1
 ERROR[7]="CC2-R12/A 1B1 EXCITATION ENERGY NOT CORRECT"
-CRIT8=`$GREP " *2 *( |0)\.29982305.. *8\.15860012.." $log | wc -l`
+CRIT8=`$GREP " 2 .*( |0)\.2998231 .*8\.15860 " $log | wc -l`
 TEST[8]=`expr   $CRIT8`
 CTRL[8]=1
 ERROR[8]="CC2-R12/A 2B1 EXCITATION ENERGY NOT CORRECT"
-CRIT9=`$GREP " *3 *( |0)\.36065226.. *9\.81384708.." $log | wc -l`
+CRIT9=`$GREP " 3 .*( |0)\.3606523 .*9\.81385 " $log | wc -l`
 TEST[9]=`expr   $CRIT9`
 CTRL[9]=1
 ERROR[9]="CC2-R12/A 3B1 EXCITATION ENERGY NOT CORRECT"
-CRIT10=`$GREP " *4 *( |0)\.40677812.. *11\.068995...." $log | wc -l`
+CRIT10=`$GREP " 4 .*( |0)\.4067781 .*11\.06900 " $log | wc -l`
 TEST[10]=`expr   $CRIT10`
 CTRL[10]=1
 ERROR[10]="CC2-R12/A 4B1 EXCITATION ENERGY NOT CORRECT"
-CRIT11=`$GREP " *1 *( |0)\.40858931.. *11\.11828043.." $log | wc -l`
+CRIT11=`$GREP " 1 .*( |0)\.4085893 .*11\.11828 " $log | wc -l`
 TEST[11]=`expr   $CRIT11`
 CTRL[11]=1
 ERROR[11]="CC2-R12/A 1B2 EXCITATION ENERGY NOT CORRECT"
-CRIT12=`$GREP " *2 *( |0)\.49694300.. *13\.52250654.." $log | wc -l`
+CRIT12=`$GREP " 2 .*( |0)\.4969430 .*13\.52251 " $log | wc -l`
 TEST[12]=`expr   $CRIT12`
 CTRL[12]=1
 ERROR[12]="CC2-R12/A 2B2 EXCITATION ENERGY NOT CORRECT"
-CRIT13=`$GREP " *3 *( |0)\.78318503.. *21\.31154836.." $log | wc -l`
+CRIT13=`$GREP " 3 .*( |0)\.7831850 .*21\.31155 " $log | wc -l`
 TEST[13]=`expr   $CRIT13`
 CTRL[13]=1
 ERROR[13]="CC2-R12/A 3B2 EXCITATION ENERGY NOT CORRECT"
-CRIT14=`$GREP " *4 *( |0)\.80882931.. *22\.00936466.." $log | wc -l`
+CRIT14=`$GREP " 4 .*( |0)\.8088293 .*22\.00937 " $log | wc -l`
 TEST[14]=`expr   $CRIT14`
 CTRL[14]=1
 ERROR[14]="CC2-R12/A 4B2 EXCITATION ENERGY NOT CORRECT"
-CRIT15=`$GREP " *1 *( |0)\.04918762.. *1\.33846325.." $log | wc -l`
+CRIT15=`$GREP " 1 .*( |0)\.0491876 .*1\.33846 " $log | wc -l`
 TEST[15]=`expr   $CRIT15`
 CTRL[15]=1
 ERROR[15]="CC2-R12/A 1A2 EXCITATION ENERGY NOT CORRECT"
-CRIT16=`$GREP " *2 *( |0)\.45051495.. *12\.25913505.." $log | wc -l`
+CRIT16=`$GREP " 2 .*( |0)\.4505150 .*12\.25914 " $log | wc -l`
 TEST[16]=`expr   $CRIT16`
 CTRL[16]=1
 ERROR[16]="CC2-R12/A 2A2 EXCITATION ENERGY NOT CORRECT"
-CRIT17=`$GREP " *3 *( |0)\.85300756.. *23\.21151579.." $log | wc -l`
+CRIT17=`$GREP " 3 .*( |0)\.8530076 .*23\.21152 " $log | wc -l`
 TEST[17]=`expr   $CRIT17`
 CTRL[17]=1
 ERROR[17]="CC2-R12/A 3A2 EXCITATION ENERGY NOT CORRECT"
-CRIT18=`$GREP " *4 *( |0)\.85369673.. *23\.23026915.." $log | wc -l`
+CRIT18=`$GREP " 4 .*( |0)\.8536967 .*23\.23027 " $log | wc -l`
 TEST[18]=`expr   $CRIT18`
 CTRL[18]=1
 ERROR[18]="CC2-R12/A 4A2 EXCITATION ENERGY NOT CORRECT"
-
-
-
-
-
-
 
 
 PASSED=1

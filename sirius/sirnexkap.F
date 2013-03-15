@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck kapbet */
       SUBROUTINE KAPBET (NHORED,RTRUST,BETA,HORED,EVAL,EVEC,WRK,LFREE)
@@ -46,25 +36,25 @@ C
 C  This version is only for ground state optimization.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION HORED(*),EVEC(NHORED,*),EVAL(*)
       PARAMETER (ITBMAX = 50)
       DIMENSION WRK(ITBMAX,4)
 C
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER (ISTATE = 1,     BETMIN = 0.1D0, RTTOL = 1.1D0)
       PARAMETER (SECFAC = 0.1D0)
       PARAMETER (DHALF=0.5D0, D0=0.0D0, D1=1.0D0, D2=2.0D0)
       PARAMETER (DP1 = 0.1D0, DP9 = 0.9D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C
 C Used from common blocks:
 C  INFPRI: IPRKAP
 C
-#include <priunit.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
 C
 C Local variable declarations:
 C
@@ -253,21 +243,21 @@ C Input:
 C
 C Output:
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION REDO(*),REDGO(*),EOVEC(*),SOVEC(NWOPT,*),BOVEC(NWOPT,*)
       DIMENSION GDM(*),DIAOR(*), CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*)
       DIMENSION WRK(*), EOVAL(*)
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, MINMIC = 2)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFVAR : NWOPT
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
 C
       LOGICAL DONEO
 C
@@ -447,21 +437,21 @@ C  BOVEC(*,NBOVEC+1) the new trial vectors
 C
 C
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION EOVEC(*),GDM(*),REDGO(*),DIAOR(*)
       DIMENSION BOVEC(NWOPT,*),SOVEC(NWOPT,*)
       LOGICAL   DONEO
 C
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER ( DTEST = 1.D-3, D0 = 0.0D0, D1 = 1.0D0 )
 C
 C Used from common blocks:
 C  INFVAR: NWOPT,?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
 C
 C
       LOGICAL CHKCNV
@@ -663,8 +653,8 @@ C  REDGO, the new, extended reduced orbital gradient
 C  EOVEC :.not.doneo SOLUTION TO LINEAR SET OF EQUATIONS
 C        :     doneo LOWEST EIGENVECTOR (NEO)
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION REDO(*),REDGO(*),EOVEC(*)
       DIMENSION GDM(*),BOVEC(NWOPT,*),SOVEC(NWOPT,*)
       DIMENSION WRK(*)
@@ -676,11 +666,11 @@ C Used from common blocks:
 C   INFVAR : NWOPT
 C   INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infind.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('KAPRED')
@@ -834,24 +824,24 @@ C THE NORMALIZED MODIFIED GRADIENT VECTOR IS PLACED IN BOVEC(1,1)
 C THE RESULTING NBOVEC VECTORS ARE CONSTRUCTED FROM LUFIL3 AND
 C LUFIL5 WHEN IGDM=1 AND FROM PREVIOUS ITERATIONS OTHERWISE
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION REDO(*),REDGO(*),IBNDX(*),GDM(*),DIAOR(*)
       DIMENSION CMO(*), GORB(*), DV(*),   PV(*), FC(*),FV(*)
       DIMENSION BOVEC(NWOPT,*),  SOVEC(NWOPT,*), WRK(*)
       LOGICAL   DONEO
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER ( DTEST = 1.D-3, D0 = 0.0D0, D1=1.D0, DM8=1.0D-8 )
-#include <dummy.h>
+#include "dummy.h"
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C Used from common blocks:
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       CALL QENTER('KAPST ')
       IF (IPRKAP.GE.9) WRITE (LUPRI,'(/A,3I5)')
@@ -987,15 +977,15 @@ C         ARE SOLVED.
 C DAMP    INITAL DAMPING FACTOR FOR SIMULTANEOUS ROOT OPTIMIZATION
 C         (MAX(DAMP,D1) WILL BE USED) .
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION GDM(NWOPT,*),IBNDX(*),THRKAP(*),EVAL(*),DIAOR(*)
       DIMENSION CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*), 
      &          WRK(*)
 C
 C Global parameters:
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C Local parameters:
 C
@@ -1003,13 +993,13 @@ C
 C
 C Common blocks:
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       LOGICAL DONEO
 C
@@ -1256,7 +1246,7 @@ C
 C 15-Mar-1985 hjaaj
 C l.r. 4-May-1994 hjaaj (only elim. new vector if norm < THRLDP)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(NVDIM,*)
       LOGICAL   LINDEP(*)
 C
@@ -1264,8 +1254,8 @@ C
 C
 C     Used from common blocks:
 C
-#include <priunit.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
 C
       CALL QENTER('ORTVEC')
 C

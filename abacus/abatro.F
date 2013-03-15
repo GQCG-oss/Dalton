@@ -1,47 +1,37 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 9)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbitro.h>
+#include "abainf.h"
+#include "cbitro.h"
       LOGICAL NEWDEF
 C
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  ', '.THRESH', '.COMPAR',
@@ -142,14 +132,14 @@ C  /* Deck troini */
 C
 C     Initialize /CBITRO/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
 ! nuclei.h needed for NUCDEP
-#include <abainf.h>
-#include <cbitro.h>
-#include <infinp.h>
+#include "abainf.h"
+#include "cbitro.h"
+#include "infinp.h"
 C
       IPRINT = IPRDEF
       THRESH = 0.1D00
@@ -181,23 +171,23 @@ C     Dipole derivatives added June 1985 tuh
 C     Fully analytic expression for Hessian December 1986 tuh
 C     Rewritten for symmetry Nov/Dec 1988 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
       DIMENSION WORK(LWORK)
 C
-#include <cbitro.h>
-#include <abainf.h>
-#include <energy.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <dorps.h>
-#include <infdim.h>
-#include <infvar.h>
-#include <exeinf.h>
-#include <trkoor.h>
+#include "cbitro.h"
+#include "abainf.h"
+#include "energy.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "dorps.h"
+#include "infdim.h"
+#include "infvar.h"
+#include "exeinf.h"
+#include "trkoor.h"
 C
 C     The variable FIRST has been replaced with FTRONV in /EXEINF/,
 C     which can be controlled from outside. This is necessary because
@@ -310,23 +300,23 @@ C  /* Deck setper */
 C
 C     Sets DCORD, DCORGD, NGDVEC, IGDREC, IGDCOR, NGDTOT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <cbitrp.h>
-#include <spnout.h>
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <gdvec.h>
+#include "cbitrp.h"
+#include "spnout.h"
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "gdvec.h"
 C
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "chrnos.h"
+#include "ibtfun.h"
 C
 C     Some initialization for spin-spin couplings
 C
@@ -576,20 +566,20 @@ C     rotations, and a corresponding set of Cartesian coordinates.
 C
 C     tuh Dec/Nov 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL TRCORD(MXCENT,3)
       DIMENSION TMAT(6,NCOOR), WORK(LWORK)
 C
-#include <abainf.h>
-#include <cbitro.h>
-#include <nuclei.h>
-#include <dorps.h>
-#include <symmet.h>
-#include <trkoor.h>
+#include "abainf.h"
+#include "cbitro.h"
+#include "nuclei.h"
+#include "dorps.h"
+#include "symmet.h"
+#include "trkoor.h"
 C
 C     *************************************************
 C     ***** Determine trarot coordinates and TMAT *****
@@ -658,20 +648,20 @@ C     symmetry.
 C
 C     Dec 1988 tuh
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL OK, OKALL, ONCE, DONE(NCOOR)
       DIMENSION TMAT(6,NCOOR), AMAT(6,NCOOR), NPREF(NCOOR),
      *          ITBDEP(NCOOR)
 C
-#include <cbitro.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <trkoor.h>
+#include "cbitro.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "trkoor.h"
 C
       IF (IPRINT .GE. 5) THEN
          CALL TITLER('Output from SETDEP','*',103)
@@ -915,20 +905,20 @@ C
 C     This subroutine determines the full molecular gradient and
 C     Hessian using translational and rotational symmetry.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
-#include <abainf.h>
-#include <cbitro.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <moldip.h>
-#include <trkoor.h>
-#include <symmet.h>
-#include <chrxyz.h>
+#include "abainf.h"
+#include "cbitro.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "moldip.h"
+#include "trkoor.h"
+#include "symmet.h"
+#include "chrxyz.h"
       IF (HESTRO) THEN
          CALL DZERO(HESTR,MXCOOR*MXCOOR)
          DO 50 I = 1, NCOOR
@@ -1315,18 +1305,18 @@ C     directly.
 C
 C     tuh 071288
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       DIMENSION FD(NDEP)
       LOGICAL   LPRINT
-#include <abainf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <trkoor.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "trkoor.h"
+#include "symmet.h"
       PARAMETER (D0 = 0.0D0)
       IF (IPRINT .GT. 0) THEN
          LPRINT = .TRUE.
@@ -1381,13 +1371,13 @@ C     directly.
 C
 C     tuh 071288
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION HESTR(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
-#include <abainf.h>
-#include <taymol.h>
-#include <trkoor.h>
+#include "abainf.h"
+#include "taymol.h"
+#include "trkoor.h"
       PARAMETER (D0 = 0.0D0)
       DIFMAX = D0
       DO 100 I = 1, NCOOR
@@ -1428,14 +1418,14 @@ C     directly.
 C
 C     tuh 171289
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION DIPTR(3,MXCOOR), CSTRA(*), SCTRA(*)
-#include <abainf.h>
-#include <moldip.h>
-#include <trkoor.h>
+#include "abainf.h"
+#include "moldip.h"
+#include "trkoor.h"
       DIFMAX = D0
       DO 100 I = 1, 3
          DO 200 J = 1, NCOOR
@@ -1480,24 +1470,23 @@ C
 C     tuh 071288
 C     tuh 171289 - modified to include dipole moment derivatives
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DEPMAT, BOTH, DOTMAT, DOHMAT, DOORTH, TC, DODMAT
       CHARACTER*(*) KEY1, KEY2, KEY3
       DIMENSION AMAT(NROW,NCOL), IPTCOL(NCOOR)
 C
-#include <taymol.h>
-#include <moldip.h>
-#include <nuclei.h>
-#include <trkoor.h>
-#include <symmet.h>
+#include "taymol.h"
+#include "moldip.h"
+#include "nuclei.h"
+#include "trkoor.h"
+#include "symmet.h"
 C
-#include <sdpre.h>
       IF (IPRINT.GE.5) THEN
          CALL TITLER('Output from GETTRO','*',103)
          WRITE (LUPRI,'(/A,2I5)') ' NROW, NCOL ', NROW, NCOL
@@ -1627,9 +1616,9 @@ C
                ELSE IF (DODMAT) THEN
                   IF (ISYMAX(ITRO,1) .EQ. IREP) THEN
                      IF (TC) THEN
-                        AMAT(ITR,IPTCOL(IPTAX(ITRO,1))) = SDPRE(ICHRGE)
+                        AMAT(ITR,IPTCOL(IPTAX(ITRO,1))) = ICHRGE
                      ELSE
-                        AMAT(IPTCOL(IPTAX(ITRO,1)),ITR) = SDPRE(ICHRGE)
+                        AMAT(IPTCOL(IPTAX(ITRO,1)),ITR) = ICHRGE
                      END IF
                   END IF
                END IF
@@ -1708,11 +1697,11 @@ C
 C     This subroutine determines the dependent differentiated gradients
 C     or CP SCF solutions using translational symmetry.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.D00)
 C
       LOGICAL OLDDX, INDCOR
@@ -1721,14 +1710,14 @@ C
 C Used from common blocks:
 C  NUCLEI: DCORGD, DCORD
 C
-#include <abainf.h>
-#include <cbitro.h>
-#include <nuclei.h>
-#include <dorps.h>
-#include <infvar.h>
-#include <inftap.h>
+#include "abainf.h"
+#include "cbitro.h"
+#include "nuclei.h"
+#include "dorps.h"
+#include "infvar.h"
+#include "inftap.h"
 C
-#include <chrxyz.h>
+#include "chrxyz.h"
 C
 C     Run over vector types (gradient or solution vector)
 C
@@ -1837,22 +1826,22 @@ C     Independent translations and rotations are identified.
 C
 C     tuh 071288
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.D00)
 C
       LOGICAL OK, DONE
       DIMENSION TMAT(6,NCOOR), TVEC(NCOOR), AMAT(NCOOR,6)
 C
-#include <cbitro.h>
-#include <nuclei.h>
-#include <trkoor.h>
-#include <symmet.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "cbitro.h"
+#include "nuclei.h"
+#include "trkoor.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
 C
 C     (I) Set up TMAT for 6 trarot coordinates
 C
@@ -1958,8 +1947,8 @@ C     and adds input vector to old ones if independent.
 C
 C     tuh Nov 1988
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL OK
       DIMENSION AMAT(NROW,NCOL)
@@ -1999,19 +1988,19 @@ C  /* Deck setgd */
 C
 C     Set DCORGD, indicating which GD vectors to calculate
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
 C Used from common blocks:
 C  ABAINF: GDALL
 C  CBITRO: COMPAR
 C  NUCLEI: DCORD, DCORGD, NTRACO, ITRACO
 C
-#include <abainf.h>
-#include <cbitro.h>
-#include <nuclei.h>
-#include <dorps.h>
+#include "abainf.h"
+#include "cbitro.h"
+#include "nuclei.h"
+#include "dorps.h"
 C
 C     DCORGD is initialized to all .true. in HESINP subroutine/
 C
@@ -2043,20 +2032,20 @@ C     DOCOOR(IXYZ,IATOM) is false if the corresponding symmetry independent
 C     atom IATOM and Cartesian direction IXYX does not contribute to any
 C     symmetry coordinate.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
       CHARACTER*(*) KEY
 C
-#include <abainf.h>
-#include <cbitro.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <trkoor.h>
+#include "abainf.h"
+#include "cbitro.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "trkoor.h"
 C
       IF (KEY .EQ. 'HERMIT') THEN
          DO 100 IREP = 0, MAXREP

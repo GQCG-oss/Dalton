@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c /* deck cc_cphf */
 *=====================================================================*
@@ -52,27 +42,30 @@ c /* deck cc_cphf */
       INTEGER IPRLIN, LSYMRF, LSYMPT, LSYMST,
      &        NCONRF, NCONST, NWOPPT, NVARPT
 #else
-#include <implicit.h>
+#include "implicit.h"
 #endif
-#include <priunit.h>
-#include <dummy.h>
-#include <exeinf.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <iratdef.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <inflin.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "exeinf.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "iratdef.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "inflin.h"
+Cholesky
+#include "ccdeco.h"
+Cholesky
 
 * local parameters:
       CHARACTER*(18) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_CPHF>  ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE. )
+      PARAMETER (LOCDBG = .true. )
       CHARACTER*8 FNGDVE, FNSOVE, FNREVE, FILCPHF
       PARAMETER(FNGDVE='CCPHFRHS',FNSOVE='CCPHFSOL')
       PARAMETER(FNREVE='CCPHFRES')
@@ -88,20 +81,15 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 
       CHARACTER*8 LABEL(MAXVEC,*)
 
-#if defined (SYS_CRAY)
-      REAL FREQS(MAXVEC,*), EIGV(MAXVEC,*)
-      REAL WORK(LWORK)
-      REAL ZERO, RDUM
-      REAL XNORM, DDOT, DSQRT, GDNORM
-#else
-      DOUBLE PRECISION FREQS(MAXVEC,*), EIGV(MAXVEC,*)
-      DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION ZERO, RDUM
-      DOUBLE PRECISION XNORM, DDOT, DSQRT, GDNORM
-#endif
+      REAL*8  FREQS(MAXVEC,*), EIGV(MAXVEC,*)
+      REAL*8  WORK(LWORK)
+      REAL*8  ZERO, RDUM
+      REAL*8  XNORM, DDOT, DSQRT, GDNORM
+
       PARAMETER (ZERO = 0.0d0)
 
       CHARACTER MODEL*(10), MODWR*(10)
+
       LOGICAL MAYBE_MORE, RELAX, CICLC, HFCLC, TRPCLC,OOTV
       LOGICAL EXCLC, FASAVE, OPTST, EX
       INTEGER IOPT, ISYM, IVEC, NSTAT, ORDER, IDUM, IPERT,LWRK0,LWRK1
@@ -116,15 +104,16 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 *---------------------------------------------------------------------*
 * do some checks:
 *---------------------------------------------------------------------*
-      CALL QENTER('CCCPHF')
+      CALL QENTER('CC_CPHF')
 
       IF (NVEC.LT.1) THEN
-        CALL QEXIT('CCCPHF')
+        CALL QEXIT('CC_CPHF')
         RETURN
       END IF
 
       IF (LOCDBG) THEN
-         WRITE(LUPRI,*) 'Entered CC_CPHF.'
+         WRITE(LUPRI,*) 'Entered CC_CPHF. NVEC =',NVEC
+         WRITE(LUPRI,*) 'TYPE ',TYPE
          CALL FLSHFO(LUPRI)
       END IF
 
@@ -137,6 +126,16 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
         WRITE (LUPRI,*) 'CPHF vectors ',TYPE(1:3),' not implemented.'
         CALL QUIT('required CPHF vectors not implemented.')
       END IF
+
+* Refuse to do anything for Cholesky.
+      IF (CHOINT) THEN
+         NWARN = NWARN + 1
+         WRITE(LUPRI,'(/A/A/A/A/)') '*** WARNING from CC_CPHF:',
+     &      ' WARNING: Refusing to do CPHF for Cholesky, because',
+     &      ' WARNING: ABACUS has not been modified yet!',
+     &      ' WARNING: Program continues nevertheless...'
+         RETURN
+      ENDIF
 
 * get some variables from SIRIUS common blocks
       CALL CC_SIRINF(NCMOT,NASHT,N2ASHX,LCINDX)
@@ -161,6 +160,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 * print some debug/info output
       IF (IPRINT .GT. 10 .OR. LOCDBG) THEN
         WRITE(LUPRI,*) 'CC_CPHF Workspace:',LWORK
+        WRITE(LUPRI,*) '1 MODWR ',MODWR
       END IF
   
       CALL FLSHFO(LUPRI)
@@ -267,6 +267,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
         IF (LOCDBG) THEN
           WRITE (LUPRI,*) 'CC_CPHF> GP vector, label, symmetry:',
      &                     LABEL(IVEC,1), ISYM
+          WRITE(LUPRI,*) '2 MODWR ',MODWR
           CALL FLSHFO(LUPRI)
         END IF
 
@@ -281,6 +282,7 @@ C       ---------------------------
         IF (LOCDBG) THEN
           WRITE (LUPRI,'(5X,I5,F12.8)') (I,WORK(KEND0-1+I),
      &                     I=1,NALLAI(ISYM))
+          WRITE(LUPRI,*) '3 MODWR ',MODWR
         END IF
 
 
@@ -296,6 +298,7 @@ C       check norm of the gradient vector:
 C       ----------------------------------
         GDNORM=DSQRT(DDOT(NALLAI(ISYM),WORK(KEND0),1,WORK(KEND0),1))
         IF (LOCDBG) WRITE (LUPRI,*) 'GDNORM:',GDNORM
+        IF (LOCDBG) WRITE (LUPRI,*) '4 MODWR ',MODWR
 
 
 C       --------------------------------------------------------
@@ -321,6 +324,7 @@ C
           CALL SETSIR(WORK(KEND0),LWRK0)
 
           IF (LOCDBG) WRITE (LUPRI,*) 'going to call ABARSP'
+          IF (LOCDBG) WRITE (LUPRI,*) '5 MODWR ',MODWR
 C         -----------------------
 C         solve CPHF equation(s):
 C         -----------------------
@@ -333,6 +337,7 @@ C         -----------------------
      &                MAXITE,IPRABA,MXRM,MXPHP,WORK(KEND0),LWRK0)
 
           IF (LOCDBG) WRITE (LUPRI,*) 'returned from ABARSP'
+          IF (LOCDBG) WRITE (LUPRI,*) '6 MODWR ',MODWR
 
 C         --------------------------------------------
 C         clean up `left overs' from ABARSP:
@@ -373,6 +378,8 @@ C         --------------------------------------------
            IF (TYPE(1:3).EQ.'R1 ') THEN
             INUM=IR1TAMP(LABEL(IDX,1),.TRUE.,WORK(KFRVAL-1+IFRVAL),ISYM)
            END IF
+           IF (LOCDBG) WRITE (LUPRI,*) 'IFRVAL, TYPE, MODWR ',
+     &         IFRVAL,TYPE,MODWR
 
            ! if yes put the CPHF also on the CC vector file
            IF (INUM.GT.0) THEN
@@ -390,6 +397,7 @@ C         --------------------------------------------
      &           'CC_CPHF> saved CPHF solution for ',TYPE,
      &           ' equation nb. ',IDX,INUM
            END IF
+           IF (LOCDBG) WRITE (LUPRI,*) '7 MODWR ',MODWR
 
         END DO
 
@@ -416,8 +424,9 @@ C         --------------------------------------------
          WRITE(LUPRI,*) 'leave CC_CPHF'
          CALL FLSHFO(LUPRI)
       END IF
+           IF (LOCDBG) WRITE (LUPRI,*) '8 MODWR ',MODWR
 
-      CALL QEXIT('CCCPHF')
+      CALL QEXIT('CC_CPHF')
       RETURN
       END
 *=====================================================================*
@@ -429,10 +438,10 @@ c /* deck cc_sirinf */
 *---------------------------------------------------------------------*
 *   Purpose: read some variables from SIRIUS common blocks
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infdim.h"
 
       NCMOT1  = NCMOT
       NASHT1  = NASHT
@@ -452,11 +461,11 @@ C
 C  Christof Haettig, summer 2003         
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>    
-#include <ccfro.h>    
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"    
+#include "ccfro.h"    
 
 #if defined (SYS_CRAY)
       REAL XKAPPA(*)

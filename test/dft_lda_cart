@@ -30,7 +30,7 @@ LDA
 '
 
 test='
-check_scf_energy DFT -91.339783336169 5e-12
+check_scf_energy DFT -91.339783326227 5e-10
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }

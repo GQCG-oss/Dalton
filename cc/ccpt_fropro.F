@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ccpt_fckd1 */
       SUBROUTINE CCPT_FCKD1(FOCK,ISYFCK,DEN1E,ISYDEN,
@@ -53,13 +43,13 @@ C  /* Deck ccpt_fckd1 */
 *    Sonia Coriani 02/05-2002
 *     
 ******************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, HALF= 0.5D0)
       DIMENSION FOCK(*),DEN1E(*),WORK(LWORK)
       DIMENSION ETAB(*),ETIJ(*),ETAI(*)
@@ -256,13 +246,13 @@ C     Purpose: To calculate eta^(T)_aI-0. ISYM is the symmetry of the
 C              integrals and densities. Densities and integrals refer
 C              d_pq and g_pq for given gamma and delta
 C
-#include <implicit.h>
-#include <priunit.h>      
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"      
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAAI(*), DSAB(*), DAI(*), DIA(*), DSIJ(*)
       DIMENSION XFIJ(*), XFJI(*)
@@ -337,13 +327,13 @@ C     Purpose: To calculate the only-frozen-integral contributions to
 C              eta^(T)_iJ-0. ISYM is the symmetry of the
 C              integrals and densities 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAIJ(*), DIJ(*), DAB(*), DAI(*), DIA(*)
       DIMENSION XFIJ(*), XFJI(*)
@@ -414,12 +404,12 @@ C     OBS: FACTOR 2 TO BE SETTLED!!!!!
 C
 
       IMPLICIT NONE
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 
       INTEGER LUN1, LWORK
       INTEGER IOFF, ISYMD, ISYJKI, ISYMA, ISYMJK, ISYMI, ISYDEN
@@ -582,14 +572,14 @@ C     Written by Sonia Coriani Halkier 2002.
 C
 C     To calculate D^(T)*P_integrals contributions to eta_aI
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0)
       PARAMETER (FOUR = 4.0D0)
@@ -745,13 +735,13 @@ C
 C     To calculate the integrals (cd|kJ) needed for frozen-core gradients.
 C     AO integrals are assumed totally symmetric.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XFRIN(*), XINT(*), CMO(*), WORK(LWORK)
@@ -914,11 +904,11 @@ C     Purpose: Calculate special MO Fock Matrix block F_mI
 C     \sum_\a\b CMO_\am F_\a\b CMO_\bI
 C     and contract with D^(T)_ma to get eta_aI
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
       PARAMETER (ONE = 1.0D0, HALF= 0.5D0, ZERO = 0.0D0)
       DIMENSION ETAAIF(*),ETAIJF(*) 
       DIMENSION FOCKAO(*), D1PTIA(*), CMOF(*),WORK(LWORK)
@@ -1077,11 +1067,11 @@ C
 C     Purpose: To calculate the contributions to d(T)(pq,gam;del) 
 C              where at least one of the two indices p & q is frozen.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2II(*), D2IJ(*), D2JI(*), D2AI(*), D2IA(*)
       DIMENSION D1IA(*), CMO(*), CMOF(*)
@@ -1266,10 +1256,10 @@ C
 C     Purpose: To calculate the contributions to d(T)(pq,gam;del) where
 C              gamma has been backtransformed from a frozen index.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2GIA(*), D1IA(*), CMOF(*)
 C
@@ -1309,13 +1299,13 @@ C              integrals and densities.
 C              IOPT controls the one
 C              and two electron contributions.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
       DIMENSION ETAFI(*), ETIFJ(*), DIA(*)
       DIMENSION XFIJ(*), XFJI(*)

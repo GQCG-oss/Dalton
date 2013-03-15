@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c*DECK CC_EXGR
        SUBROUTINE CC_EXGR(WORK,LWORK)
@@ -53,32 +43,31 @@ C     Written by Ove Christiansen April 1997.
 C
 C---------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <codata.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccfop.h>
-#include <ccexgr.h>
-#include <ccexci.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccrspprp.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccfield.h>
-#include <ccroper.h>
-#include <ccfro.h>
-#include <exeinf.h>
-#include <infvar.h>
-#include <dipole.h>
-#include <quadru.h>
-#include <nqcc.h>
+#include "codata.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccfop.h"
+#include "ccexgr.h"
+#include "ccexci.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccfield.h"
+#include "ccroper.h"
+#include "ccfro.h"
+#include "exeinf.h"
+#include "infvar.h"
+#include "dipole.h"
+#include "quadru.h"
+#include "nqcc.h"
 C
       LOGICAL LINQCC, LPROJECT, TRIPLET, LREDS,B0SKIP
       DIMENSION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
@@ -97,7 +86,7 @@ C
       PARAMETER(FNDPTIA='DPTIA', FNDPTIA2 = 'DPTIA2',
      *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  ) 
 C
-#include <leinf.h>
+#include "leinf.h"
 C
       CALL QENTER('CC_EXGR')
 C
@@ -483,9 +472,15 @@ C
             ENDIF
 C
             ILLNR = IX
+C
+Casm        ifort does not like LIST. Use 'E0' instead.
+C
             CALL CC_D1AO(IDUMMY,.FALSE.,WORK(KDENS),DUM,WORK(KWRK2),
-     &                   LWRK2,MODEL,LIST,ILLNR,.FALSE.,
+     &                   LWRK2,MODEL,'E0',ILLNR,.FALSE.,
      &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
+casm        CALL CC_D1AO(IDUMMY,.FALSE.,WORK(KDENS),DUM,WORK(KWRK2),
+casm &                   LWRK2,MODEL,LIST,ILLNR,.FALSE.,
+casm &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
             IF (FROIMP .OR. FROEXP) THEN
               CALL CC_FCD1AO(WORK(KDENS),WORK(KWRK2),LWRK2,MODELPRI)
             ENDIF
@@ -1041,6 +1036,8 @@ C  /* Deck ccx_d1ao */
      *                    LLIST,ILLNR,RLIST,ILRNR)
 C
 C     Ove Christiansen April 1997 inspired by CC_D1AO
+C     KS Aug 2010: minor modifications to share routines
+C     with CCMM_D2AO
 C
 C     Purpose: To calculate contributions to the excited state
 C              one electron density matrix and return it backtransformed
@@ -1049,27 +1046,27 @@ C
 C     Current models: CCS, CC2 and CCSD    
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION AODEN(*), WORK(LWORK)
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccexci.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccexci.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
 C
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*),RLIST*(*)
@@ -1239,9 +1236,13 @@ C
       KT2AM  = KEND0
       KEND3  = KT2AM  + NT2AM(ISYMOP) 
       LWRK3  = LWORK  - KEND3 
+
+C KS: Read amplitudes outside DXIA21 routine
+      IOPT = 2
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
 C
       IF (LWRK3 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND3
          CALL QUIT('Insufficient memory for 3. alloc. in CCX_D1AO')
       ENDIF
       CALL CC_DXIA21(WORK(KONEIA),WORK(KL2AM),ISYML,
@@ -1301,12 +1302,12 @@ C     Purpose: To add contributions from the L1 and R1 -amplitudes to
 C              the excited state CC one electron density in MO-basis.
 C              <L1|[Eij,R1]|HF>  
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIJ(*), XL1AM(*), XR1AM(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_DXIJ')
 C
@@ -1348,12 +1349,12 @@ C     Purpose: To add contributions from the L1 and R1 -amplitudes to
 C              the excited state CC one electron density in MO-basis.
 C              <L1|[Eab,R1]|HF>
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DAB(*), XL1AM(*), XR1AM(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_DXAB')
 C
@@ -1398,10 +1399,10 @@ C              NB - 2c-E XR2AM assumed
 C              and the Dia block is stored transposed, i.e. like a t1-amplitude!
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIA(*), XL1AM(*), XR2AM(*)
 C
@@ -1454,17 +1455,21 @@ C
 C     Purpose: Construct <L2|[[Eia,R1],T2]|HF> contribution to DXia, 
 C              the excited state CC one electron density in MO-basis.
 C              The Dia block is stored transposed, i.e. like a t1-amplitude.
+C     KS, Aug 10:
+C     Modified to calculate general <L2|[[Eia,R1],R2]|HF>
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIA(*), XL2AM(*), XR1AM(*), T2AM(*),WORK(LWORK)
       CHARACTER*10 MODEL
+      LOGICAL LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
 C
       CALL QENTER('CC_DXIA21')
 C
@@ -1478,12 +1483,23 @@ C
       IF (ISYRES .NE. ISYMT2)
      &     CALL QUIT('symmetry mismatch in CC_DXIA21.')
 C
+      IF (LOCDEB) THEN
+        TAL1 = DDOT(NT2AMX,XL2AM,1,XL2AM,1)
+        WRITE(LUPRI,*) 'CC_EXGR: Norm of L0_2: ', TAL1 
+        TAL1 = DDOT(NT1AMX,XR1AM,1,XR1AM,1)
+        WRITE(LUPRI,*) 'CC_EXGR: Norm of B_1: ', TAL1 
+        TAL1 = DDOT(NT2AMX,T2AM,1,T2AM,1)
+        WRITE(LUPRI,*) 'CC_EXGR: Norm of C_2: ', TAL1 
+      END IF
+C KS schedule delete next 6 lines
+C since they are now read outside routine and carried
+C in memory at this time
 C---------------------------------------------------
 C     Read zero'th order cluster doubles amplitudes.
 C---------------------------------------------------
 C
-      IOPT = 2
-      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,T2AM)
+C      IOPT = 2
+C      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,T2AM)
 C
 C----------------------------------------------------------
 C     Construct <L2|[[Eia,R1],T2]|HF> contribution to DXia.
@@ -1505,12 +1521,8 @@ C-----------------------------------------------------------
 C     Calculate X-intermediate of L2AM- and T2AM-amplitudes.
 C-----------------------------------------------------------
 C
-         XLV2 = DDOT(NT2AM(ISYMT2),T2AM,1,T2AM,1)
-         WRITE(LUPRI,*) 'Norm of Response vector: T2AM   .',XLV2
          CALL CC_XI(WORK(KXMAT),XL2AM,ISYML,T2AM,ISYMT2,
      *           WORK(KEND1),LWRK1)
-         XIJ = DDOT(NMATIJ(ISYML),WORK(KXMAT),1,WORK(KXMAT),1)
-         WRITE(LUPRI,*) 'Norms: XMAT',XIJ
 C
 C-----------------------------------------------------------
 C     Calculate Y-intermediate of L2AM- and T2AM-amplitudes.
@@ -1518,12 +1530,16 @@ C-----------------------------------------------------------
 C
          CALL CC_YI(WORK(KYMAT),XL2AM,ISYML,T2AM,ISYMT2,
      *           WORK(KEND1),LWRK1)
+C         TAL1 = DDOT(NMATIJ(ISYML),WORK(KXMAT),1,WORK(KXMAT),1)
+C         TAL2 = DDOT(NMATAB(ISYML),WORK(KYMAT),1,WORK(KYMAT),1)
+C         WRITE(LUPRI,*) 'CC_EXGR: X intermediate: ',TAL1
+C         WRITE(LUPRI,*) 'CC_EXGR: Y intermediate: ',TAL2
 C
       CALL DZERO(WORK(KONEIJ),NMATIJ(ISYML))
       CALL DCOPY(NMATAB(ISYML),WORK(KYMAT),1,WORK(KONEAB),1)
       CALL CC_EITR(WORK(KONEAB),WORK(KONEIJ),WORK(KEND1),LWRK1,ISYML)
       CALL DAXPY(NMATIJ(ISYML),XMONE,WORK(KXMAT),1,WORK(KONEIJ),1)
-      IF (DEBUG) THEN
+      IF (LOCDEB) THEN
          XIJ = DDOT(NMATIJ(ISYML),WORK(KONEIJ),1,WORK(KONEIJ),1)
          XAB = DDOT(NMATAB(ISYML),WORK(KONEAB),1,WORK(KONEAB),1)
          WRITE(LUPRI,*) 'Norms: DXIJ',XIJ
@@ -1545,12 +1561,12 @@ C
 C     Purpose: Contract DAB and DIJ with R1AM into DIA
 C              The Dia block is stored transposed, i.e. like a t1-amplitude!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, XMONE = -1.0D0)
       DIMENSION DIA(*),DAB(*),DIJ(*),XR1AM(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_IA21')
 C
@@ -1611,26 +1627,26 @@ C           <L1|Emn|HF>
 C
 C     Current models: CCS, CC2 and CCSD
 C
-#include <implicit.h>      
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"      
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION AODEN(*), WORK(LWORK)
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccexci.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccexci.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
 C
       CHARACTER MODEL*5,MODDUM*10
       CHARACTER LLIST*(*),RLIST*(*)
@@ -1741,12 +1757,12 @@ C     Call TNSRAN and write out selected info.
 C
 C------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "ccsdinp.h"
 C
       PARAMETER (THR = 1.0D-08)
       DIMENSION TNSR(3,3),PVAL(3),PAXIS(3,3)
@@ -1772,4 +1788,53 @@ C
       CALL QEXIT('CC_TNSRAN')
 C
       END 
+C  /* Deck ccmm_dia */
+      SUBROUTINE CCMM_DIA(DIA,DIJ,ISYML,XR1AM,ISYMR)
+C
+C     Purpose: Calculates DIA block of quadratic density to be use
+C     for a quadratic response CC/MM calculation. It takes as input 
+C     a pseudo-density of product coefficients \sum_a t^a_i b_p^a = Dij
+C     calculated in the CC_DXIJ routine.
+C             
+C     KS, Aug 2010       
+C
+#include "implicit.h"
+      PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
+      DIMENSION DIA(*), DIJ(*), XR1AM(*)
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+C
+      CALL QENTER('CCMM_DIA')
+C
+C---------------------------------------------------------
+C     Add contribution.
+C     Assume ISYMR = ISYML and density is total symmetric.
+C---------------------------------------------------------
+C
+      ISYRES = MULD2H(ISYMR,ISYML)
+      IF (ISYRES.NE.ISYMOP) CALL QUIT('CCMM_DIA require tot.sym Dens.')
+C
+
+      DO 100 ISYMA = 1,NSYM
+C
+         ISYMI = MULD2H(ISYMA,ISYRES)
+         ISYMK = MULD2H(ISYMA,ISYMR)
+C
+         KOFF1 = IT1AM(ISYMA,ISYMK)  + 1
+         KOFF2 = IMATIJ(ISYMI,ISYMK) + 1
+         KOFF3 = IT1AM(ISYMA,ISYMI)  + 1
+C
+         NTOTA = MAX(NVIR(ISYMA),1)
+         NTOTI = MAX(NRHF(ISYMI),1)
+
+         CALL DGEMM('N','T',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMK),
+     *              ONE,XR1AM(KOFF1),NTOTA,DIJ(KOFF2),NTOTI,ONE,
+     *              DIA(KOFF3),NTOTA)
+
+  100 CONTINUE
+C
+      CALL QEXIT('CCMM_DIA')
+C
+      END
 

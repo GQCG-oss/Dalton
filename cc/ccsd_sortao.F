@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ccsd_sortao */
       SUBROUTINE CCSD_SORTAO(WORK,LWORK)
@@ -41,9 +31,9 @@ C
 C     Purpose: Read destribution of AO integrals.
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
 C
       PARAMETER (LBUF = 600)
 C
@@ -59,13 +49,13 @@ C
       DATA NAME  /'CCAOIN_1','CCAOIN_2','CCAOIN_3','CCAOIN_4',
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
       COMMON/SORTIO/LUAOIN(8)
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccpack.h>
-#include <r12int.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccpack.h"
+#include "r12int.h"
 C
 C--------------------
 C     Only sort once.
@@ -94,6 +84,27 @@ C
          LUAOIN(ISYM) = NFILE
 C
    50 CONTINUE
+C
+C------------------------------
+C     Skip sorting if required.
+C------------------------------
+C     
+      IF (NOSORT) THEN
+C     
+          DO ISYMD = 1,NSYM
+             ISYDIS = MULD2H(ISYMD,ISYMOP)
+             LENGTH = NDISAO(ISYDIS)
+             IOFFID = 1
+             DO ID = 1,NBAS(ISYMD)
+                IDEL = ID + IBAS(ISYMD)
+                IOFFINT(IDEL) = IOFFID
+                IOFFID = IOFFID + LENGTH
+             END DO
+          END DO
+C
+          RETURN
+C     
+      END IF
 C
 C------------------------
 C     Buffer information.
@@ -267,15 +278,15 @@ C  /* Deck ccrda1 */
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ibtpar.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibtpar.h"
+#include "ccorb.h"
       DIMENSION XINT(LENGTH,*),IBUF(LBUF,NIBUF),RBUF(LBUF)
       DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ibtfun.h"
 C
 C     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -371,8 +382,8 @@ C  /* Deck ccsd_sort2 */
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XINT(*)
 C
       CHARACTER*8 NAME(8)
@@ -381,9 +392,9 @@ C
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
 
       COMMON/SORTIO/LUAOIN(8)
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccpack.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccpack.h"
 C
       NFILE = LUAOIN(ISYM)
       KOFF  = 1
@@ -426,11 +437,11 @@ C     Henrik Koch and Alfredo Sanchez.       29-Jun-1994
 C
 C     Set up indexing arrays
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
       DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
-#include <ccsdsym.h>
+#include "ccsdsym.h"
 C
 C
       DO 100 ISYMAB = 1,NSYM

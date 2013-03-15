@@ -11,11 +11,11 @@ C     PURPOSE: Set the pointer-arrays IIJDEN, IABDEN, and IAIDEN
 C              and the dimensions NIJDEN, NABDEN, and NAIDEN and
 C              NIJDET, NABDET, and NAIDET.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

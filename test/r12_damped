@@ -69,8 +69,8 @@ cat > r12_damped.dal <<'%EOF%'
  0 0 0 0 0 0 0 0
 *ORBITALS
 .MOSTART
- H1DIAG
-*END OF INPUT
+ EHT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

@@ -12,11 +12,11 @@ C
 C     PURPOSE: Calculate gradient property vector GPVEC for the
 C              property with label LABEL and symmetry ISYMTR.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccsdsym.h>
-#include <soppinf.h>
+#include "ccsdsym.h"
+#include "soppinf.h"
 C
       PARAMETER   (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION   GPVEC(LGPVEC)
@@ -38,7 +38,7 @@ C----------------------------------------------------------
 C
       IF ( (LABEL(3:8).EQ.'SPNORB') .OR. (LABEL(5:8).EQ.'LAGR') .OR.
      &     (LABEL(2:7).EQ.'LONMAG') ) THEN
-         WRITE(LUPRI,'()') LABEL,' is not implemented yet.'
+         WRITE(LUPRI,*) LABEL,' is not implemented yet.'
          CALL QUIT('ERROR, Program have to stop')
       END IF
 C

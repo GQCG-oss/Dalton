@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c*DECK CC_QR2RSD
        SUBROUTINE CC_QR2RSD(WORK,LWORK)
@@ -47,35 +37,35 @@ C     Ove Christiansen April 1997.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,THR=1.0D-08)
 C
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
-#include <cclrinf.h>
-#include <ccexci.h>
-#include <cclres.h>
-#include <ccroper.h>
-#include <ccqr2r.h>
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
+#include "cclrinf.h"
+#include "ccexci.h"
+#include "cclres.h"
+#include "ccroper.h"
+#include "ccqr2r.h"
 C
       LOGICAL LTST,LCALC,LDIP
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*10,MODELP*10,MODEL1*10,CHSYM*2,FILEX*10,FILOLD*10
       CHARACTER LABELA*8,LABELB*8
 C
-#include <leinf.h>
+#include "leinf.h"
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
 C
 C------------------------------------
 C     Header of Property calculation.
@@ -524,18 +514,18 @@ C     Written by Ove Christiansen 26-4-1996
 C
 C------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <ccqr2r.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "ccqr2r.h"
+#include "dummy.h"
 C
       PARAMETER( TWO = 2.0D00,TOLFRQ=1.0D-08 )
 
@@ -669,19 +659,19 @@ C     Written by Ove Christiansen April 1997 based on CC_OSCPRI
 C
 C------------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
       PARAMETER (TOLFRQ = 1.0D-08,ONE= 1.0D0,THR = 1.0D-08)
 C
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccqr2r.h>
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccqr2r.h"
 C
       DIMENSION OSC(*),PVAL(3),PAXIS(3,3)
       CHARACTER MODEL*10,CDIP*7
@@ -702,7 +692,7 @@ C
      *    MODEL(1:6),
      *    'Transition strength matrix for (',ISYMI,',',IEXI,') -> (', 
      *    ISYMF,',',IEXF,') transition',
-     *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI     
+     *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI
       IF (LDIP) THEN
          WRITE(LUPRI,'(1X,A)') 'Dipole gauge'
       ELSE
@@ -749,11 +739,11 @@ C
      *    MODEL(1:6),
      *    'Oscillator strength matrix for (',ISYMI,',',IEXI,') -> (', 
      *    ISYMF,',',IEXF,') transition',
-     *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI     
+     *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI
       CALL OUTPUT(OSC,1,3,1,3,3,3,1,LUPRI)
-      CALL  TNSRAN(OSC,PVAL,PAXIS,
-     *             ALFSQ,BETSQ,ITST,ITST2,
-     *             APAR2,APEN2,XKAPPA,IPAR)
+      CALL TNSRAN(OSC,PVAL,PAXIS,
+     *            ALFSQ,BETSQ,ITST,ITST2,
+     *            APAR2,APEN2,XKAPPA,IPAR)
       WRITE(LUPRI,'(/,1X,A,/)')
      *    'Principal values of diagonalized oscillator strength matrix:'
       WRITE(LUPRI,'(1X,A)') '            a.u.               '

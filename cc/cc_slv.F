@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cc_slv */
        SUBROUTINE CC_SLV(AODEN,ETLM,DIELCONV,WORK,LWORK)
@@ -47,22 +37,22 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       LOGICAL   DIELCONV
       DIMENSION WORK(LWORK),AODEN(*),ETLM(NLMCU,2)
@@ -242,23 +232,23 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
-#include <thrzer.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
+#include "thrzer.h"
 C
       DIMENSION WORK(LWORK),AODEN(*),ETLM(NLMCU,2)
       CHARACTER MODEL*10
@@ -467,7 +457,7 @@ C            Ove Christiansen, April 1998
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C     Parameters: FLFAC = - 1 / (8 pi epsilon_null)   (S.I.)
 C                       = - 1 / 2                     (a.u.)
@@ -488,7 +478,7 @@ C            Ove Christiansen, April 1998
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
+#include "implicit.h"
 C     
       EXTERNAL GL
       DOUBLE PRECISION GL
@@ -506,15 +496,15 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       DIMENSION AOUP(*),AOP(*),WORK(LWORK)
 C
@@ -550,22 +540,22 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),TLMAO(*)
 C
@@ -602,22 +592,22 @@ C     Ove Christiansen, April 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),FOCK(*)
 C
@@ -771,23 +761,23 @@ C     Ove Christiansen, April/mai 1998.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*),CTR1(*),CTR2(*) 
 C
@@ -1074,16 +1064,16 @@ C
       END
 C  /* Deck ccsl_tlmget*/
       SUBROUTINE CCSL_TLMGET
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       LUCTLM = -1
       CALL GPOPEN(LUCTLM,'CC_TL','UNKNOWN',' ','FORMATTED',IDUMMY,
@@ -1107,16 +1097,16 @@ C
 C
 C  /* Deck ccsl_tlmput*/
       SUBROUTINE CCSL_TLMPUT
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       LUCTLM = -1
       CALL GPOPEN(LUCTLM,'CC_TL','UNKNOWN',' ','FORMATTED',IDUMMY,
@@ -1146,23 +1136,23 @@ C and ^CT^gB operators.
 C JK+OC, 03
 C---------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*),CTR1(*),BTR1(*)
 C
@@ -1351,23 +1341,23 @@ C            t^C_my <bar my|[T_lm,Tau_sigma]|CC> t^B_sigma T_lm
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),BTR1(*),CTR1(*)
       DIMENSION TGB(*) 
@@ -1562,23 +1552,23 @@ C             t^B_sigma <bar sigma|T_lm|CC> T_lm
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),CTR1(*)
       DIMENSION TGB(*)
@@ -1805,23 +1795,23 @@ C
 C       The permutation creates 3 different contributions. 
 C
 C------------------------------------------------------------------
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*)
 C
@@ -1983,23 +1973,23 @@ C
 C    JK+OC, 03
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK)
       DIMENSION TGCB(*)
@@ -2164,23 +2154,23 @@ C
 C     JK+OC, 03
 C---------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*)
 C
@@ -2335,23 +2325,23 @@ C Calculates the CCSL ETA and XI vectors and write them to files.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK)
 C

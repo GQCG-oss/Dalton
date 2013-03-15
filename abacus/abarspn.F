@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck abarsp */
       SUBROUTINE ABARSP(CICLC,HFCLC,TRPCLC,OOTV,IOPSYM,EXCLC,
@@ -68,14 +58,14 @@ C      FABRHS - true : transform integrals to MO basis;
 C               normally true first time routine is called
 C               at a new geometry.
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "maxorb.h"
 C
       DIMENSION WRK(LWRK),EXVAL(NEXVAL),NABATY(NABAOP)
 C
-#include <mxcent.h>
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER*8 LABEL
 C
@@ -84,25 +74,26 @@ C ABAINF : DODRCT
 C INFLIN : NCONRF
 C INFTRA : USEDRC
 C
-#include <abainf.h>
-#include <exeinf.h>
-#include <inflin.h>
-#include <infinp.h>
-#include <cbisol.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <infpp.h>
-#include <infhyp.h>
-#include <priunit.h>
-#include <infsop.h>
-#include <qm3.h>
+#include "abainf.h"
+#include "exeinf.h"
+#include "inflin.h"
+#include "infinp.h"
+#include "cbisol.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "infpp.h"
+#include "infhyp.h"
+#include "priunit.h"
+#include "infsop.h"
+#include "abslrs.h"
+#include "qm3.h"
 C
       LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX
 C
@@ -204,9 +195,10 @@ C     PERFORM INTEGRAL TRANSFORMATION
 C
 cSPAS:29.11.2002 debugging newtra for SOPPA
 cSPAS IF (FABRHS) THEN
-      IF (FABRHS .AND. 
-     &    .NOT. (SOPPA .AND. NEWTRA .AND. .NOT. CCPPA)) THEN
+!     IF (FABRHS .AND. 
+!    &    .NOT. (SOPPA .AND. NEWTRA .AND. .NOT. CCPPA)) THEN
 cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
+      IF (FABRHS) THEN
          KCMO   = 1
          KWTRA  = KCMO   + NCMOT
          LWTRA  = LWRK   - KWTRA
@@ -228,16 +220,15 @@ cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
 cs
          IF (SOPPA .OR. NEXVAL.EQ.0) THEN
             JTRLVL = -10
+         ELSE IF (NEWTRA) THEN
+            JTRLVL = -5 ! level 5 needed for occ-sec distributions in NEWTRA
          ELSE
             JTRLVL = -4
          ENDIF
 cs
          FLAGSV = DORSP
          DORSP = .TRUE.
-cSPAS:29.11.2002 debugging newtra for SOPPA
-cSPAS    CALL SIROPI
-         IF (.NOT. NEWTRA) CALL SIROPI
-cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
+         CALL SIR_INTOPEN
          DORSP = FLAGSV
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA) 
       END IF
@@ -384,11 +375,22 @@ C
       IF (.NOT.EX) THEN
          CALL GPOPEN(LURSP,'RSPVEC','NEW',' ','UNFORMATTED',IDUMMY,
      &        .FALSE.)
+         WRITE (LURSP) NISH,NASH,NORB,NBAS,NSYM
          WRITE (LURSP) 'EOFLABEL'
       ELSE
          CALL GPOPEN(LURSP,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
      &        .FALSE.)
       END IF
+C
+      IF (ABSLRS) THEN
+        CALL GPINQ('ABSVECS','EXIST',EX)
+        IF (.NOT.EX) THEN
+          OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+          WRITE(LUABSVECS) 'EOFLABEL'
+        ELSE
+          OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+        END IF
+      ENDIF
 C
 C Open files for trial and sigma vectors
 C
@@ -476,8 +478,9 @@ C
       CALL GPCLOSE(LURSP3,'KEEP')
       CALL GPCLOSE(LURSP4,'DELETE')
       CALL GPCLOSE(LURSP5,'KEEP')
-      CALL GPCLOSE(LURSP,'KEEP')
+      CALL GPCLOSE(LURSP ,'KEEP')
       IF (LUSOL.GT.0) CALL GPCLOSE(LUSOL,'KEEP')
+      IF (ABSLRS) CLOSE(LUABSVECS,status='keep')
 C
       TIMRSP = SECOND() - TIMRSP
       IF (IPRRSP .GT. 0) WRITE (LUPRI,'(/A,F13.2,A)')
@@ -497,16 +500,16 @@ C  Purpose:
 C     CONTROL CALCULATION OF EXCITATION ENERGIES AND WRITE SOLUTION
 C     VECTORS ON DISK (LUSOVE)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER*8 BLANK
       DIMENSION EXVAL(*)
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(LWRK)
 C
       PARAMETER ( D100 = 100.0D0, D0 = 0.0D0, BLANK = '        ' )
-#include <codata.h>
-#include <priunit.h>
+#include "codata.h"
+#include "priunit.h"
 C
 C
 C Used from common blocks:
@@ -514,14 +517,14 @@ C  /INFRSP/ : most items (/INFRSP/ gives control information for
 C                         the response calculation(s) )
 C  /WRKRSP/ :
 C
-#include <infrsp.h>
-#include <inftap.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infpp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <qm3.h>
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infpp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "qm3.h"
 C
       CALL QENTER('RSPLEX')
 C     space allocation for reduced E(2) and reduced S(2)
@@ -612,7 +615,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
      &             ' EIGENVECTOR FOR STATE NO.',(ISIM-1+INUM)
                CALL RSPPRO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),KZVAR,
      *             LUPRI)
-C             CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
+C            CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *             MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
@@ -631,10 +634,10 @@ C  /* Deck rsplle */
       SUBROUTINE RSPLLE(LUGDVE,LUSOVE,LUREVE,NABAOP,NABATY,LABEL,CMO,
      *                  UDV,PV,FC,FV,FCAC,H2AC,XINDX,FOCK,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
 C
       CHARACTER*8 BLANK, LABEL
       PARAMETER (BLANK = '        ')
@@ -643,20 +646,21 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),FOCK(*),WRK(LWRK)
 C
-#include <priunit.h>
-#include <gdvec.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <abainf.h>
-#include <absorp.h>
-#include <infvar.h>
-#include <dftcom.h>
+#include "priunit.h"
+#include "gdvec.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "abainf.h"
+#include "absorp.h"
+#include "abslrs.h"
+#include "infvar.h"
+#include "dftcom.h"
 C
       PARAMETER ( DM1 = -1.0D0 )
 C
@@ -673,6 +677,23 @@ C
 C
       KFREE = 1
       LFREE = LWRK
+      IF (ABSLRS) THEN
+        CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,
+     &              LFREE)
+        CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
+        CALL MEMGET('REAL',KXSOL,2*NFREQ_ALPHA*KZYVAR,
+     &              WRK,KFREE,LFREE)
+        CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
+     &              KFREE,LFREE)
+        CALL ABS2INTER(WRK(KMJWOP),KZVAR)
+        CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
+     &              WRK(KFREE),LFREE)
+          CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
+          CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
+     &                 ABS_FREQ_ALPHA,
+     &                 WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
+     &                 WRK(KRES),WRK(KFREE),LFREE)
+      ELSE
       CALL MEMGET('REAL',KREDE,MAXRM*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDS,MAXRM*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDZ,2*MAXRM*MAXRM,WRK,KFREE,LFREE)
@@ -821,6 +842,7 @@ C     End loop over B operators
 C
          END DO
       END IF
+      END IF
 C
       CALL QEXIT('RSPLLE')
       RETURN
@@ -831,9 +853,9 @@ C
 C GET RIGHT HAND SIDE LONDON VECTOR in GPLON(1)
 C for RESPONSE module
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       CHARACTER*(*)WORD
       DIMENSION GPLON(LWRK)
@@ -842,17 +864,17 @@ C Used from common blocks:
 C   INFDIM : NVARMA
 C   INFLIN : NVARPT
 C
-#include <mxcent.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "mxcent.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
 C
-#include <infdim.h>
-#include <inflin.h>
+#include "infdim.h"
+#include "inflin.h"
 C
       LOGICAL OLDDX
 C

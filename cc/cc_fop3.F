@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ccsd_triple */
       SUBROUTINE CC_FOPTRIPLES(OMEGA1,DENAB,DENIJ,T1AM,T2AM,
@@ -53,12 +43,12 @@ C     order:
 C           T1AM(*), OMEGA1(*), OMEGA2(*), T2AM(*), SCR(*), WRK(*).
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION INDEXA(MXCORB)
@@ -67,23 +57,22 @@ C
 C
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
-#include <khaldtemp.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
 CCN #include <infind.h> not compatible with R12!
-#include <ccisao.h>
-#include <r12int.h>
-#include <blocks.h>
-#include <inftap.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
+#include "ccisao.h"
+#include "r12int.h"
+#include "blocks.h"
+#include "inftap.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
 COMMENT COMMENT
 COMMENT COMMENT
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccfield.h>
-#include <ccfop.h>
+#include "mxcent.h"
+#include "eribuf.h"
+#include "ccfield.h"
+#include "ccfop.h"
 COMMENT COMMENT
 COMMENT COMMENT
 C
@@ -103,15 +92,6 @@ COMMENT COMMENT
       write(lupri,*) 'NORBT  = ',norbt
       write(lupri,*) 'NORBTS = ',norbts
       call flshfo(lupri)
-COMMENT COMMENT
-COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT Initialise nnbast!!
-COMMENT COMMENT COMMENT
-      call init_khald(nnbast)
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
 C------------------------
 C     Dynamic Allocation.
 C------------------------
@@ -740,24 +720,23 @@ C  /* Deck ccsdt_tran1 */
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
       DIMENSION AOINT(NNBAST,NBAST)
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
-#include <khaldtemp.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 COMMENT COMMENT
 COMMENT COMMENT
       write(lupri,*) 'NRHFT, NVIRT, NT1AMX : ',nrhft,nvirt,nt1amx
-      write(lupri,*) 'NORBT, NBAST, NNBAST : ',norbt,nbast,nnbast
+      write(lupri,*) 'NORBT, NBAST         : ',norbt,nbast
 COMMENT COMMENT
 COMMENT COMMENT
 C
@@ -810,19 +789,18 @@ C  /* Deck ccsdt_tran2 */
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (TWO = 2.0D0)
       DIMENSION XIAJB(NT1AMX,NT1AMX), AOINT(NNBAST,NBAST)
       DIMENSION YIAJB(NT1AMX,NT1AMX)
       DIMENSION CMO(NBAST,NORBT)
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
-#include <khaldtemp.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -866,20 +844,20 @@ C  /* Deck ccsdt_t3am */
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(*)
       DIMENSION T3AM2(NT1AMX,NT1AMX,NT1AMX)
       DIMENSION T2AM(NT1AMX,NT1AMX)
       DIMENSION FCKFIELD(NORBT,NORBT)
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
 C
       PARAMETER(ONE = 1.0D0, HALF = 0.5D0)
 C
@@ -1092,17 +1070,17 @@ C  /* Deck ccsdt_omega1 */
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (TWO = 2.0D0)
       DIMENSION OMEGA1(NT1AMX),T2AM(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1162,18 +1140,17 @@ C  /* Deck ccsdt_tran3 */
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
       DIMENSION AOINT(NNBAST,NBAST)
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
-#include <khaldtemp.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       LOGICAL LDEBUG
 C
@@ -1253,15 +1230,14 @@ C  /* Deck ccsdt_tran3pt */
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
-#include <khaldtemp.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION CMO(NBAST,NORBT)
       DIMENSION AOINT(NNBAST,NBAST)
@@ -1318,7 +1294,7 @@ C  /* Deck ccsdt_t3bar */
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (TWO = 2.0D0)
 C
@@ -1327,13 +1303,13 @@ C
       DIMENSION T3BAR(NT1AMX, NT1AMX,NT1AMX), SCR1(NT1AMX), FOCKD(*)
       DIMENSION T1AM(NT1AMX), T2AM(NT1AMX,NT1AMX)
       LOGICAL LDBG1, LDBG2
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1665,11 +1641,11 @@ C
 C  /* Deck temppr */
       SUBROUTINE TEMPPR(T3AM,IOPT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL AROUND('ENTERED TEMPPR')
       WRITE(LUPRI,*) 'IOPT  = ',IOPT
@@ -1715,18 +1691,18 @@ C  /* Deck ccsdt_nonrelterm */
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (TWO = 2.0D0, THREE = 3.0D0, HALF = 0.5D0)
       DIMENSION DENAB(NVIRT,NVIRT), DENIJ(NRHFT,NRHFT)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
       DIMENSION T3BAR(NT1AMX,NT1AMX,NT1AMX)
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1781,16 +1757,16 @@ C
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (TWO=2.0d0)
       DIMENSION T2AM(NT1AMX,NT1AMX),OMEGA2(NT1AMX,NT1AMX)
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1820,20 +1796,20 @@ C  /* Deck ccsdt_omega2 */
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (TWO = 2.0D0)
       DIMENSION XINT1T(NT1AMX,NVIRT,NVIRT)
       DIMENSION XINT2T(NT1AMX,NRHFT,NRHFT)
       DIMENSION OMEGA2(NT1AMX,NT1AMX)
       DIMENSION FOCK(NORBT,NORBT)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1907,17 +1883,17 @@ C  /* Deck ccsdt_omega1old */
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (TWO = 2.0D0)
       DIMENSION OMEGA1(NT1AMX),XIAJB(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
-#include <priunit.h>
+#include "priunit.h"
 COMMENT COMMENT COMMENT
 C#include <inforb.h>
-#include <ccorb.h>
+#include "ccorb.h"
 COMMENT COMMENT COMMENT
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1954,7 +1930,7 @@ C     Calculate the doubles of the right hand side of the t1-bar and t2-bar
 C     equation.
 C     NOTE : OMEGA22 will be erased.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       INTEGER INDEX, NAI, NBJ, NBK, NAK, NCK, NCJ, NCI, NDJ, NDK, NDI
       INTEGER NBL, NCL, NAL, NAJ, NBI, AI
@@ -1980,11 +1956,11 @@ C
 #endif
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <priunit.h>
+#include "priunit.h"
 C#include <inforb.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2204,7 +2180,7 @@ C
 C     Calculate the doubles of the right hand side of the Kappa
 C     equation.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       INTEGER INDEX, NAI, NBJ, NBK, NAK, NCK, NCJ, NCI, NDJ, NDK, NDI
       INTEGER NBL, NCL, NAL, NAJ, NBI, AI
@@ -2235,11 +2211,11 @@ C
       LOGICAL LBARABCI, LBARAIJK, LDEBUG
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <priunit.h>
+#include "priunit.h"
 C#include <inforb.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2598,10 +2574,10 @@ C  /* Deck debug_kappadiag */
       SUBROUTINE DEBUG_KAPPADIAG(XKAPAA,XKAPII,T3AM,T3BAR)
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       DIMENSION XKAPAA(NVIRT), XKAPII(NRHFT)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
@@ -2653,16 +2629,16 @@ C
 C  /* Deck print_integrals */
       SUBROUTINE PRINT_INTEGRALS(XINT1,XINT2)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT)
       DIMENSION XINT2(NT1AMX,NRHFT,NRHFT)
       LOGICAL LDEBUG
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       LDEBUG = .FALSE.
 C
@@ -2698,10 +2674,10 @@ C
 C  /* Deck ccsdt_unre */
       SUBROUTINE CCSDT_UNRE(T2AM,T3AM,T3BAR,DENS,FCKFIELD)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DIMENSION T2AM(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
@@ -2778,16 +2754,4 @@ C
 C
       RETURN
       END
-C  /* Deck init_khald */
-      SUBROUTINE INIT_KHALD(NNBASTIN)
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-C
-      INTEGER NNBASTIN
-C
-      NNBASTIN = NNBAST
-C
-      RETURN
-      END
+C -- end of cc_fop3.F --

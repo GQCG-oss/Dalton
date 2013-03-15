@@ -9,8 +9,8 @@ C
 C     PURPOSE: Find the NR lowest values in the vector VEC 
 C              and leave pointers to them in PARRAY.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       INTEGER   POINT(NR), PARRAY(LVEC)
       DIMENSION VEC(LVEC)

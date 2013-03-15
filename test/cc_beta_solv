@@ -53,7 +53,6 @@ cat > cc_beta_solv.dal <<'%EOF%'
 *ONEINT
 .SOLVENT
  10
-*END OF HERMIT
 **WAVE FUNCTIONS
 .CC
 *SCF INP
@@ -92,7 +91,7 @@ cat > cc_beta_solv.dal <<'%EOF%'
 .SHGFRE
  1
  0.0040
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

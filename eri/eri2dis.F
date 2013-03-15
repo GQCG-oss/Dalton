@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck eridi1 */
       SUBROUTINE ERIDI1(KODCL1,KODCL2,
@@ -39,24 +29,24 @@ C  /* Deck eridi1 */
      &                  KODPP1,KODPP2,KRDPP1,KRDPP2,
      &                  KFREE,LFREE,KEND,CCFBT,INDXBT,
      &                  WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
-#include <ccom.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <iratdef.h>
-#include <inftap.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "iratdef.h"
+#include "inftap.h"
 C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
@@ -123,14 +113,14 @@ C  /* Deck eridi2 */
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
      &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <eridst.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eridst.h"
+#include "dummy.h"
       CHARACTER*8 FAODER
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -138,20 +128,21 @@ C  /* Deck eridi2 */
      &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          INDEXA(*), CCFBT(*), INDXBT(*), WORK(LWORK)
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <nuclei.h>
-#include <chrnos.h>
-#include <odclss.h>
-#include <symmet.h>
-#include <iratdef.h>
-#include <inftap.h>
+      LOGICAL   OLDDX
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "nuclei.h"
+#include "chrnos.h"
+#include "odclss.h"
+#include "symmet.h"
+#include "iratdef.h"
+#include "inftap.h"
 C
       IPRINT = IPRERI
 C
@@ -184,25 +175,16 @@ C     Open files
 C
       IF (LUINTR.LT.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
-#if defined (SYS_CRAY) || defined (SYS_T90) || (defined (SYS_AIX) && defined (VAR_INT64))
+#ifdef VAR_INT64
       LRECL = LBFINP + LBFINP + 1
-#endif
-#if (defined (SYS_AIX) && !defined (VAR_INT64)) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
-      IF (NBASIS .LE. 255) THEN
-         LRECL = 2*LBFINP + LBFINP + 1
-      ELSE
-         LRECL = 2*LBFINP + 2*LBFINP + 1
-      END IF
-#endif
-#if defined (SYS_IRIX) || defined (SYS_DEC)
-      IF (NBASIS .LE. 255) THEN
-         LRECL = 2*LBFINP + LBFINP + 1
-      ELSE
-         LRECL = 2*LBFINP + 2*LBFINP + 1
-      END IF
-#endif
-#if defined (SYS_NEC)
+#elif defined (SYS_NEC)
       LRECL = LBFINP + LBFINP/IRAT + 1
+#else
+      IF (NBASIS .LE. 255) THEN
+         LRECL = 2*LBFINP + LBFINP + 1
+      ELSE
+         LRECL = 2*LBFINP + 2*LBFINP + 1
+      END IF
 #endif
       NSCOOR = 0
       IF (GDER) NSCOOR = 3*NUCDEP
@@ -281,14 +263,14 @@ C  /* Deck eridid */
      &                  IODCL1,IODCL2,IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
      &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <eridst.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eridst.h"
+#include "dummy.h"
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
      &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
@@ -296,17 +278,17 @@ C  /* Deck eridid */
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          CCFBT(*), INDXBT(*), WORK(LWORK)
       DIMENSION D2MAT(*), ID2MAT(*)
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <odclss.h>
-#include <symmet.h>
-#include <eribuf.h>
-#include <iratdef.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "odclss.h"
+#include "symmet.h"
+#include "eribuf.h"
+#include "iratdef.h"
 C
       IPRINT = IPRERI
 C
@@ -377,17 +359,17 @@ C
 C  /* Deck eriact */
       SUBROUTINE ERIACT(NACTOD,SCREEN,RODBCH,IODBCH,NODBCH,IODCLS,
      &                  NODCLS,ODTRI,IELCTR,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL ODTRI
       DIMENSION NACTOD(NODCLS), IODCLS(NODCLS),
      &          SCREEN(NODBCH), RODBCH(NODBCH), IODBCH(NODBCH,*)
-#include <aobtch.h>
+#include "aobtch.h"
 C
       IF (IELCTR .EQ. 1) THEN
          IA = 1
@@ -445,17 +427,17 @@ C
       END
 C  /* Deck pickao */
       SUBROUTINE PICKAO(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <shells.h>
-#include <erisel.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "shells.h"
+#include "erisel.h"
+#include "aobtch.h"
 C
       DO J = 1, 4
       DO I = 1, NAOBCH
@@ -523,23 +505,23 @@ C
       END
 C  /* Deck eridsi */
       SUBROUTINE ERIDSI(INDXBT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
 C
       LOGICAL FIRST
       DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
 C
-#include <cbieri.h>
-#include <eridst.h>
-#include <erisel.h>
-#include <aobtch.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "eridst.h"
+#include "erisel.h"
+#include "aobtch.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (DODIST) THEN
          NCTDST = 0
@@ -635,20 +617,20 @@ C
       END
 C  /* Deck getdst */
       SUBROUTINE GETDST(ICLX1,ICLX2,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "eridst.h"
 C
       LOGICAL AOBTGT
 C
-#include <cbieri.h>
-#include <erisel.h>
-#include <distcl.h>
-#include <aobtch.h>
+#include "cbieri.h"
+#include "erisel.h"
+#include "distcl.h"
+#include "aobtch.h"
 C
 C
 C     ICLX .EQ. 0: initialization call
@@ -802,18 +784,18 @@ C
 C  /* Deck er2dis */
       SUBROUTINE ER2DIS(WORK,LWORK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
 C
       DIMENSION INDEXA(MXCORB), WORK(LWORK)
 C
-#include <cbieri.h>
-#include <distcl.h>
+#include "cbieri.h"
+#include "distcl.h"
 C
       KCCFB1 = 1
       KINDXB = KCCFB1 + MXPRIM*MXCONT
@@ -849,26 +831,26 @@ C
       END
 C  /* Deck eriidx */
       SUBROUTINE ERIIDX(ICALL,INDEXA,NUMDIS,INDXBT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <eridst.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eridst.h"
+#include "dummy.h"
       DIMENSION INDEXA(*), INDXBT(*)
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <odclss.h>
-#include <symmet.h>
-#include <eribuf.h>
-#include <iratdef.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "odclss.h"
+#include "symmet.h"
+#include "eribuf.h"
+#include "iratdef.h"
 C
       CALL GETDST(ICALL,0,IPRINT)
 C
@@ -887,12 +869,7 @@ C     Transfer information
 C     ====================
 C
       NUMDIS = NDISTR
-!fox
-!fox  25-04-2003
-!fox  CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
       IF (NUMDIS .GT. 0) CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
-!fox
-c      CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
       IF ( IPRINT .GT. 2 ) THEN
          CALL HEADER('Output from ERIIDX',2)
          WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')

@@ -79,10 +79,10 @@ else
    GREP="egrep"
 fi
 
-#             Total CCSD  energy:                 -2572.9818039510
-#             Total energy CCSD(T):               -2572.9839663793
+#             Total CCSD  energy:                 -2572.9818039497
+#             Total energy CCSD(T):               -2572.9839663780
 
-CRIT1=`$GREP "Total CCSD  energy:                 \-2572\.98180395" $log | wc -l`
+CRIT1=`$GREP "Total CCSD  energy:                 \-2572\.9818039[45]" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=4
 ERROR[1]="CCSD energy with finite DPT correction not correct"

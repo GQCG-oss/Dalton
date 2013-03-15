@@ -1,36 +1,31 @@
 /*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+
+
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+
+!
+
 */
 /* this is true spare-enabled code (well, mostly). 
  * This file contains property evaluators, that is, modules that
@@ -86,14 +81,14 @@ struct dso_data {
 #ifdef VAR_MPI
 #include <mpi.h>
 
-void FSYM(getdsosz)(int *dsodim);
+void FSYM(getdsosz)(integer *dsodim);
 void
-numdso_slave(real* work, integer* lwork, const integer* iprint)
+numdso_slave(real* work, integer* lwork, integer* iprint)
 {
-    int sz, new_lwork;
+    integer sz, new_lwork;
     integer dsodim;
-    int nucind;            /* IN: will be synced from master */
-    real *spndso;
+    integer nucind;            /* IN: will be synced from master */
+    real    *spndso;
     
     FSYM(getdsosz)(&dsodim); sz = dsodim*dsodim;
     if(*lwork < sz)
@@ -101,18 +96,19 @@ numdso_slave(real* work, integer* lwork, const integer* iprint)
 		    *lwork, sz);
     new_lwork = *lwork-sz;
     FSYM(dzero)(work, &sz);
-    FSYM(numdso)(work, &nucind, work+sz, &new_lwork);
+    FSYM(numdso)(work, &nucind, work+sz, &new_lwork, iprint);
 }
-void FSYM(dsosyncslaves)(real *dmat,int *nucind,real *work,int *lwork);
+void FSYM(dsosyncslaves)(real *dmat,integer *nucind,real *work,integer *lwork);
 #define numdso_sync_slaves(dmat,nucind,work,lwork) \
         FSYM(dsosyncslaves)(dmat,nucind,work,lwork)
 static void
-numdso_collect_info(real *spndso, real *work, int lwork)
+numdso_collect_info(real *spndso, real *work, integer lwork)
 {
-    int dsodim,sz;
+    integer dsodim, sz;
+    int     sz_mpi;
 
-    MPI_Comm_size(MPI_COMM_WORLD, &sz);
-    if(sz <=1) return;
+    MPI_Comm_size(MPI_COMM_WORLD, &sz_mpi);
+    if(sz_mpi <=1) return;
 
     FSYM(getdsosz)(&dsodim); sz = dsodim*dsodim;
     dcopy_(&sz, spndso, &ONEI, work, &ONEI);
@@ -129,11 +125,12 @@ static void
 dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
        int bllen, int blstart, int blend, struct dso_data* dso)
 {
-    extern void FSYM(dsocb)(real*, const int*, real (*coor)[3],
+    extern void FSYM(dsocb)(real*, const integer*, real (*coor)[3],
                             const real*rho,const real* wght,
                             real(*rvec)[3], real*r3i);
     int off = grid->curr_point;
-    FSYM(dsocb)(dso->dso, &bllen,
+    integer bllen_copy = bllen; /* conversion needed for VAR_INT64 */
+    FSYM(dsocb)(dso->dso, &bllen_copy,
            grid->coor+off, grid->r.rho,
            grid->weight+off, dso->rvec, dso->r3i);
 }
@@ -151,9 +148,9 @@ dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
  */
 extern void FSYM2(numdso_finish)(real* spndso);
 void
-FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork)
+FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork, integer* iprint)
 {
-    extern void dunfld_(const int* n, const real* dsp, real* dge);
+    extern void FSYM(dunfld)(const integer* n, const real* dsp, real* dge);
     struct tms starttm, endtm; clock_t utm;
     struct dso_data dso;
     real electrons, *dmat;
@@ -167,7 +164,7 @@ FSYM(numdso)(real* spndso, integer *nucind, real* work, integer* lwork)
     dso.r3i  = malloc(DFT_BLLEN*(*nucind)*sizeof(real));
     if(!dso.rvec || !dso.r3i) dalton_quit("Not enough memory in numdso.");
     times(&starttm);
-    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, 0,
+    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, iprint, 0,
                                     (DftBlockCallback)dso_cb, &dso);
     numdso_collect_info(spndso, work, *lwork);
 

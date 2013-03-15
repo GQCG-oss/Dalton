@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck un2out */
       SUBROUTINE UN2OUT(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
@@ -46,25 +36,25 @@ C
 C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST
       DIMENSION SO(*), BUF(LBUF), IBUF(LBUF,2),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
-#include <nuclei.h>
-#include <twocom.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "symmet.h"
       SAVE BUF, IBUF, ICOUNT
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine UN2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -247,7 +237,7 @@ C     ***** Last call to empty buffer *****
 C     *************************************
 C
       IF (LAST) THEN
-         WRITE (LUPRI,'(A,1P,D10.2)') ' Threshold for neglecting '//
+         WRITE (LUPRI,'(/A,1P,D10.2)') ' Threshold for neglecting '//
      &      'two-electron integrals:',THRESH
          CALL UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,1,NBITS,0,IPRINT)
       END IF
@@ -259,26 +249,26 @@ C  /* Deck un2wrt */
 C
 C     Write undifferentiated 2-electron integrals to disk file AOTWOINT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "ibtpar.h"
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
-#include <twosta.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "twosta.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
       SAVE NBUF, JBUF
 #if defined (VAR_SPLITFILES)
-#include <2gbdef.h>
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
+#include "chrnos.h"
 #endif
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (ITYPE .EQ. -1) THEN
          CALL REWSPL(LUINTA)
@@ -347,10 +337,10 @@ C
                   K = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
                   L = IBTAND(       IBUF(INT,1),         IBIT1)
                ELSE
-                  I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-                  J = IBTAND(       IBUF(INT,1),       IBIT1)
-                  K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-                  L = IBTAND(       IBUF(INT,2),       IBIT1)
+                  I = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
+                  J = IBTAND(       IBUF(INT,1),         IBIT1)
+                  K = IBTAND(IBTSHR(IBUF(INT,2),  NBITS),IBIT1)
+                  L = IBTAND(       IBUF(INT,2),         IBIT1)
                END IF
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                      ' ## ', I, J, K, L, BUF(INT)
@@ -415,7 +405,7 @@ Chjaaj:     FBYTES is calculed in four lines, to avoid integer overflows.
             FNALL  = (FNALL*(FNALL + 1.0D0))*0.5D0
             PERCNT = N2WRIT
             PERCNT = 100.0D0*PERCNT / FNALL
-            WRITE (LUPRI,'(/A,I12,A,F5.1,A,/A,F12.3/)')
+            WRITE (LUPRI,'(A,I12,A,F5.1,A,/A,F12.3/)')
      &         ' Number of two-electron integrals written:',N2WRIT,
      &         ' (',PERCNT,'% )',
      &         ' Megabytes written:                       ',FBYTES
@@ -437,23 +427,23 @@ C
 C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST
       DIMENSION SO(*), BUF(600), IBUF(4,600), IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          FMAT(*), DMAT(*)
-#include <twocom.h>
-#include <symmet.h>
+#include "twocom.h"
+#include "symmet.h"
       SAVE BUF, IBUF, ICOUNT
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine FCKOUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -588,14 +578,14 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.50D00)
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST,NDMAT), DMAT(NBAST,NBAST,NDMAT),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)
@@ -630,26 +620,50 @@ C  /* Deck dr2out */
 C
 C     tuh Sep 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+C     Write derivative integrals (IATOM .gt. 0), magnetic integrals
+C     (IATOM .eq. 0), or spin-orbit integrals (SPNORB .eqv. .TRUE.)
+C     to file (LU2DER).
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, SQ12EL, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
-#include <twocom.h>
-#include <dorps.h>
-#include <symmet.h>
-#include <doxyz.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "dorps.h"
+#include "symmet.h"
+#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)
+C
+#if defined (VAR_INT64)
+      NIBUF = 1
+      NBITS = 16
+#else
+      IF (NBASIS .LE. 255) THEN
+         NIBUF = 1
+         NBITS = 8
+      ELSE
+         NIBUF = 2
+         NBITS = 16
+         CALL QUIT('More than 255 basis functions is not'//
+     &   ' implemented for 32-bit integers, use 64-bit integers')
+!        hjaaj Feb 2011: the problem is that NIBUF=2 is not implemented
+!        here, see DS2OU1 for how to implement if you have the time ...
+      END IF
+#endif
+      IBIT1 = 2**NBITS     - 1
+      IBIT2 = 2**(2*NBITS) - 1
 C
       IF (FIRST) CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,-1,
      &                       SPNORB,IPRINT)
@@ -668,7 +682,7 @@ C
             CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,2,SPNORB,
      &                  IPRINT)
             NBUFCL = 0
-            IREPX = IPTREP(IREPE,2)
+            IREPX  = IPTREP(IREPE,2)
             NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
             DO 300 I = 1, NINTSR(IREPX)
                NSTRNA = IPNTNO(1,I,IREPX)
@@ -686,7 +700,7 @@ C
                      IB = KHKTB*(NINDAB(IAB,2) - 1)
                      INDA = IPTSYM(NSTRNA + IA,IREPA)
                      INDB = IPTSYM(NSTRNB + IB,IREPB)
-                     INDAB = MAX(INDA,INDB)*255 + INDA + INDB
+                     INDAB = MAX(INDA,INDB)*IBIT1 + INDA + INDB
                      DO 410 ICD = 1, NORBCD
                         INT = INT + 1
                         SOINT = SO(ISOFF+INT)
@@ -697,17 +711,17 @@ C
                            INDD = IPTSYM(NSTRND + ID,IREPD)
                            IF (SQ12EL) THEN
                               IF (INDC .GT. INDD) THEN
-                                 INDCD  = INDC*256 + INDD
+                                 INDCD  = INDC*(IBIT1+1) + INDD
                               ELSE IF (SPNORB) THEN
                                  SOINT = - SOINT
-                                 INDCD  = INDD*256 + INDC
+                                 INDCD  = INDD*(IBIT1+1) + INDC
                               ELSE
-                                 INDCD  = INDD*256 + INDC
+                                 INDCD  = INDD*(IBIT1+1) + INDC
                               END IF
-                              IABCD = INDAB*65536 + INDCD
+                              IABCD = INDAB*(IBIT2+1) + INDCD
                            ELSE
-                              INDCD  = MAX(INDC,INDD)*255 + INDC + INDD
-                              IABCD = MAX(INDAB,INDCD)*65535+INDAB+INDCD
+                              INDCD = MAX(INDC,INDD)*IBIT1 + INDC + INDD
+                              IABCD = MAX(INDAB,INDCD)*IBIT2+INDAB+INDCD
                            END IF
                            ICOUNT = ICOUNT + 1
                            BUF (ICOUNT) = SOINT
@@ -739,7 +753,7 @@ C
                      END IF
                      INDA = IPTSYM(NSTRNA + IA,IREPA)
                      INDB = IPTSYM(NSTRNB + IB,IREPB)
-                     INDAB = MAX(INDA,INDB)*255 + INDA + INDB
+                     INDAB = MAX(INDA,INDB)*IBIT1 + INDA + INDB
                      DO 510 ICD = 1,NORBCD
                         IC = KHKTC*(NINDCD(ICD,1) - 1)
                         ID = KHKTD*(NINDCD(ICD,2) - 1)
@@ -758,17 +772,17 @@ C
                            INDD = IPTSYM(NSTRND + ID,IREPD)
                            IF (SQ12EL) THEN
                               IF (INDC .GT. INDD) THEN
-                                 INDCD  = INDC*256 + INDD
+                                 INDCD  = INDC*(IBIT1+1) + INDD
                               ELSE IF (SPNORB) THEN
                                  SOINT = - SOINT
-                                 INDCD  = INDD*256 + INDC
+                                 INDCD  = INDD*(IBIT1+1) + INDC
                               ELSE
-                                 INDCD  = INDD*256 + INDC
+                                 INDCD  = INDD*(IBIT1+1) + INDC
                               END IF
-                              IABCD = INDAB*65536 + INDCD
+                              IABCD = INDAB*(IBIT2+1) + INDCD
                            ELSE
-                              INDCD  = MAX(INDC,INDD)*255 + INDC + INDD
-                              IABCD = MAX(INDAB,INDCD)*65535+INDAB+INDCD
+                              INDCD = MAX(INDC,INDD)*IBIT1 + INDC + INDD
+                              IABCD = MAX(INDAB,INDCD)*IBIT2+INDAB+INDCD
                            END IF
                            ICOUNT = ICOUNT + 1
                            BUF (ICOUNT) = SOINT
@@ -795,28 +809,28 @@ C  /* Deck dr2wrt */
       SUBROUTINE DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,ITYPE,SPNORB,
      &                  IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (TEN14 = 1.1D14, LBUF = 600)
       LOGICAL SPNORB
       DIMENSION BUF(600), IBUF(600)
-#include <inftap.h>
-#include <nodint.h>
-#include <symmet.h>
-#include <chrxyz.h>
+#include "inftap.h"
+#include "nodint.h"
+#include "symmet.h"
+#include "chrxyz.h"
 #if defined (VAR_SPLITFILES)
-#include <2gbdef.h>
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
+#include "chrnos.h"
 #endif
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD, JBUF
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Initialization
 C     ==============
@@ -836,10 +850,10 @@ C
             IF (LU2DER .LE. 0) THEN
                CALL QUIT('illegal unit number LU2DER in DR2WRT')
             ENDIF
-C
             CALL REWSPL(LU2DER)
          END IF
-         JBUF = 256
+C
+         JBUF   = 256
          ICOUNT =  0
          ICTOLD =  0
          NBUF   =  0
@@ -910,7 +924,11 @@ C
      &                       NDSINT(ICROLD,IRPOLD) + INTS
             ICOUNT = ICOUNT + 1
             BUF(ICOUNT)  = TEN14
+#ifdef VAR_INT64
+            IBUF(ICOUNT) = IATOM*2**48+IREPE*2**32+ICOOR*2**16
+#else
             IBUF(ICOUNT) = IATOM*2**24+IREPE*2**16+ICOOR*2**8
+#endif
             ICTOLD = ICOUNT
             NBFOLD = NBUF
             IRPOLD = IREPE
@@ -1050,13 +1068,13 @@ C
       END
 C  /* Deck dr2pri */
       SUBROUTINE DR2PRI(BUF,IBUF,ICOUNT,NBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibtpar.h"
       DIMENSION BUF(600), IBUF(600)
       SAVE IATOM, ICOOR, IREPE
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "chrxyz.h"
+#include "ibtfun.h"
       WRITE(LUPRI,'(2X,A,I5,A/)')
      &   'Integral buffer #',NBUF + 1,' has been written.'
       DO 100 INT = 1, ICOUNT
@@ -1081,26 +1099,46 @@ C  /* Deck mg2out */
 C
 C     tuh Sep 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
-#include <twocom.h>
-#include <dorps.h>
-#include <symmet.h>
-#include <doxyz.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "dorps.h"
+#include "symmet.h"
+#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
+
+#if defined (VAR_INT64)
+      NIBUF = 1
+      NBITS = 16
+#else
+      IF (NBASIS .LE. 255) THEN
+         NIBUF = 1
+         NBITS = 8
+      ELSE
+         NIBUF = 2
+         NBITS = 16
+         CALL QUIT('More than 255 basis functions and mag.der. not'//
+     &   ' implemented for 32-bit integers, use 64-bit integers')
+!        hjaaj Feb 2011: the problem is that NIBUF=2 is not implemented
+!        here, see DS2OU1 for how to implement if you have the time ...
+      END IF
+#endif
+      IBIT1 = 2**NBITS     - 1
+      IBIT2 = 2**(2*NBITS) - 1
 C
       IATOM = 0
       SPNORB = .FALSE.
@@ -1141,11 +1179,11 @@ C
                      INT = INT + 1
                      SOINT = SO(ISOFF1 + INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                        INDAB = INDA*256 + INDB
-                        INDCD = INDC*256 + INDD
+                        INDAB = INDA*(IBIT1+1) + INDB
+                        INDCD = INDC*(IBIT1+1) + INDD
                         ICOUNT = ICOUNT + 1
                         BUF (ICOUNT) = SOINT
-                        IBUF(ICOUNT) = INDAB*65536 + INDCD
+                        IBUF(ICOUNT) = INDAB*(IBIT2+1) + INDCD
                         IF (ICOUNT.EQ.600) THEN
                            NBUFCL = NBUFCL + 1
                            CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,
@@ -1154,11 +1192,11 @@ C
                      END IF
                      SOINT = SO(ISOFF2 + INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                        INDAB = INDA*256 + INDB
-                        INDCD = INDD*256 + INDC
+                        INDAB = INDA*(IBIT1+1) + INDB
+                        INDCD = INDD*(IBIT1+1) + INDC
                         ICOUNT = ICOUNT + 1
                         BUF (ICOUNT) = SOINT
-                        IBUF(ICOUNT) = INDAB*65536 + INDCD
+                        IBUF(ICOUNT) = INDAB*(IBIT2+1) + INDCD
                         IF (ICOUNT.EQ.600) THEN
                            NBUFCL = NBUFCL + 1
                            CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,
@@ -1186,7 +1224,7 @@ C
                   END IF
                   INDA = IPTSYM(NSTRNA + IA,IREPA)
                   INDB = IPTSYM(NSTRNB + IB,IREPB)
-                  INDAB = MAX(INDA,INDB)*256 + INDA + INDB
+                  INDAB = MAX(INDA,INDB)*(IBIT1+1) + INDA + INDB
                   DO 510 ICD = 1,NORBCD
                      IC   = KHKTC*(NINDCD(ICD,1) - 1)
                      ID   = KHKTD*(NINDCD(ICD,2) - 1)
@@ -1203,11 +1241,11 @@ C
                      END IF
                      SOINT = SO(ISOFF1 + INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                        INDAB = INDA*256 + INDB
-                        INDCD = INDC*256 + INDD
+                        INDAB = INDA*(IBIT1+1) + INDB
+                        INDCD = INDC*(IBIT1+1) + INDD
                         ICOUNT = ICOUNT + 1
                         BUF (ICOUNT) = SOINT
-                        IBUF(ICOUNT) = INDAB*65536 + INDCD
+                        IBUF(ICOUNT) = INDAB*(IBIT2+1) + INDCD
                         IF (ICOUNT.EQ.600) THEN
                            NBUFCL = NBUFCL + 1
                            CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,
@@ -1218,11 +1256,11 @@ C
                      IF (ABS(SOINT) .GT. THRESH) THEN
                      IF (INDA .EQ. INDB) GO TO 510
                      IF (INDC .EQ. INDD) GO TO 510
-                        INDAB = INDA*256 + INDB
-                        INDDC = INDD*256 + INDC
+                        INDAB = INDA*(IBIT1+1) + INDB
+                        INDDC = INDD*(IBIT1+1) + INDC
                         ICOUNT = ICOUNT + 1
                         BUF (ICOUNT) = SOINT
-                        IBUF(ICOUNT) = INDAB*65536 + INDDC
+                        IBUF(ICOUNT) = INDAB*(IBIT2+1) + INDDC
                         IF (ICOUNT.EQ.600) THEN
                            NBUFCL = NBUFCL + 1
                            CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,
@@ -1245,17 +1283,25 @@ C  /* Deck ds2out */
       SUBROUTINE DS2OUT(SO,WRKBUF,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
      &                  THRESH,NINDAB,NINDCD,IORBSH,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL FIRST, LAST, IPNTLG(*)
       DIMENSION SO(*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
      &          NINDCD(*), IORBSH(*)
-#include <disbuf.h>
+#include "disbuf.h"
+Cholesky
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
 C
 C---------------------------------
 C     Call sort and write routine.
 C---------------------------------
+C
+Cholesky
+      IF (CHOINT) THRESH = 1.0D-40
+Cholesky
 C
       CALL DS2OU1(SO,WRKBUF(KDSBF),WRKBUF(KDSIBF),WRKBUF(KDSNCT),
      &            WRKBUF(KDSORB),WRKBUF(KORBDS),IPNTNO,IPNTRP,IPNTLG,
@@ -1272,15 +1318,15 @@ C
 C     Write out blocks of symmetry integrals, eliminating duplicates
 C     Used when "ADISTR" distributions (all gabcd for fixed a)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <eribuf.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "eribuf.h"
+#include "nuclei.h"
 C
       INTEGER*8 NWRIT
       SAVE      NWRIT
@@ -1290,11 +1336,15 @@ C
      &          IPNTNO(4,*), IPNTRP(3,*), NCOUNT(NDIST),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IDSORB(NDIST), IORBDS(NBASIS), IORBSH(*)
-#include <twocom.h>
-#include <symmet.h>
-#include <drw2el.h>
+#include "twocom.h"
+#include "symmet.h"
+#include "drw2el.h"
 C
-#include <ibtfun.h>
+Cholesky
+#include "ccdeco.h"
+Cholesky
+C
+#include "ibtfun.h"
 C
       IF (LBUF .NE. LDSBUF) THEN
         WRITE (LUPRI,*) 'LBUF  :',LBUF
@@ -1367,18 +1417,32 @@ C
                   IA = KHKTA*(NINDAB(IAB,1) - 1)
                   IB = KHKTB*(NINDAB(IAB,2) - 1)
                   INDA = IPTSYM(NSTRNA + IA,IREPA)
+Cholesky
+                  INDB = IPTSYM(NSTRNB + IB,IREPB)
+Cholesky
                   INDAB = INDA*(IBIT1 + 1) + IPTSYM(NSTRNB + IB,IREPB)
                   IDIST = IORBDS(INDA)
+Cholesky
+                  IF (DIACAL .AND. CHOINT) THEN
+                     IDIST = 1
+                  ENDIF
+Cholesky
                   DO 210 ICD = 1, NORBCD
                      INT = INT + 1
                      SOINT = SO(ISOFF+INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
-                       ICOUNT = NCOUNT(IDIST)
                        IC = KHKTC*(NINDCD(ICD,1) - 1)
                        ID = KHKTD*(NINDCD(ICD,2) - 1)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
+Cholesky
+                       IF (DIACAL .AND. CHOINT) THEN
+                          IF (INDA .NE.  INDC) GOTO 210
+                          IF (INDB .NE.  INDD) GOTO 210
+                       ENDIF
+                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+                       ICOUNT = NCOUNT(IDIST)
+Cholesky
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
                        IF (BPH2OO.AND.INDD.GT.INDC) THEN 
                           BUF (ICOUNT,IDIST) = -SOINT
@@ -1388,8 +1452,15 @@ C
                        IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           NBUFCL = NBUFCL + 1
+Cholesky
+                          INDX = INDA
+                          IF (DIACAL .AND. CHOINT) THEN
+                             INDX = 1
+                          ENDIF
+Cholesky
                           CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                                ICOUNT,0,INDA,IPRINT)
+     &                                ICOUNT,0,INDX,IPRINT)
+Cho  &                                ICOUNT,0,INDA,IPRINT)
 C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
 C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NCOUNT(IDIST) = 0
@@ -1406,16 +1477,28 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                   INDB = IPTSYM(NSTRNB + IB,IREPB)
                   INDAB = INDA*(IBIT1 + 1) + INDB
                   IDIST = IORBDS(INDA)
+Cholesky
+                  IF (DIACAL .AND. CHOINT) THEN
+C                    IF (INDB .GT.  INDA) GOTO 205
+                     IDIST = 1
+                  ENDIF
+Cholesky
                   DO 215 ICD = 1, NORBCD
                      INT = INT + 1
                      SOINT = SO(ISOFF+INT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
-                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
-                       ICOUNT = NCOUNT(IDIST)
                        IC = KHKTC*(NINDCD(ICD,1) - 1)
                        ID = KHKTD*(NINDCD(ICD,2) - 1)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
+Cholesky
+                       IF (DIACAL .AND. CHOINT) THEN
+                          IF (INDA .NE.  INDC) GOTO 215
+                          IF (INDB .NE.  INDD) GOTO 215
+                       ENDIF
+                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+                       ICOUNT = NCOUNT(IDIST)
+Cholesky
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
                        IF (BPH2OO.AND.INDD.GT.INDC) THEN 
                           BUF (ICOUNT,IDIST) = -SOINT
@@ -1426,8 +1509,15 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                        IBUF(ICOUNT,2,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           NBUFCL = NBUFCL + 1
+Cholesky
+                          INDX = INDA
+                          IF (DIACAL .AND. CHOINT) THEN
+                             INDX = 1
+                          ENDIF
+Cholesky
                           CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                                ICOUNT,0,INDA,IPRINT)
+     &                                ICOUNT,0,INDX,IPRINT)
+Cho  &                                ICOUNT,0,INDA,IPRINT)
 C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
 C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NCOUNT(IDIST) = 0
@@ -1447,6 +1537,12 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                INDB = IPTSYM(NSTRNB + IB,IREPB)
                INDAB = INDA*(IBIT1 + 1) + INDB
                IDIST = IORBDS(INDA)
+Cholesky
+               IF (DIACAL .AND. CHOINT) THEN
+C                 IF (INDB .GT. INDA) GOTO 300
+                  IDIST = 1
+               ENDIF
+Cholesky
                DO 310 ICD = 1,NORBCD
                   IC = KHKTC*(NINDCD(ICD,1) - 1)
                   ID = KHKTD*(NINDCD(ICD,2) - 1)
@@ -1458,10 +1554,15 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                   SOINT = SO(ISOFF+INT)
                   IF (ABS(SOINT) .GT. THRESH) THEN
                      IF (NIBUF .EQ. 1) THEN
-                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
-                       ICOUNT = NCOUNT(IDIST)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
+Cholesky
+                       IF (DIACAL .AND. CHOINT) THEN
+                          IF (INDA .NE. INDC) GOTO 310
+                          IF (INDB .NE. INDD) GOTO 310
+                       ENDIF
+                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+                       ICOUNT = NCOUNT(IDIST)
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
                        IF (BPH2OO.AND.INDD.GT.INDC) THEN 
                           BUF (ICOUNT,IDIST) = -SOINT
@@ -1470,18 +1571,32 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                        END IF
                        IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
+Cholesky
+                       INDX = INDA
+                       IF (DIACAL .AND. CHOINT) THEN
+                          INDX = 1
+                       ENDIF
+Cholesky
                           CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                                ICOUNT,0,INDA,IPRINT)
+     &                                ICOUNT,0,INDX,IPRINT)
+Cho  &                                ICOUNT,0,INDA,IPRINT)
 C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
 C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NBUFCL = NBUFCL + 1
                           NCOUNT(IDIST) = 0
                        END IF
                      ELSE
-                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
-                       ICOUNT = NCOUNT(IDIST)
+Cholesky               NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+Cholesky               ICOUNT = NCOUNT(IDIST)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
+Cholesky
+                       IF (DIACAL .AND. CHOINT) THEN
+                          IF (INDA .NE. INDC) GOTO 310
+                          IF (INDB .NE. INDD) GOTO 310
+                       ENDIF
+                       NCOUNT(IDIST) = NCOUNT(IDIST) + 1
+                       ICOUNT = NCOUNT(IDIST)
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
                        IF (BPH2OO.AND.INDD.GT.INDC) THEN 
                           BUF (ICOUNT,IDIST) = -SOINT
@@ -1491,8 +1606,15 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                        IBUF(ICOUNT,1,IDIST) = INDAB
                        IBUF(ICOUNT,2,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
+Cholesky
+                       INDX = INDA
+                       IF (DIACAL .AND. CHOINT) THEN
+                          INDX = 1
+                       ENDIF
+Cholesky
                           CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                                ICOUNT,0,INDA,IPRINT)
+     &                                ICOUNT,0,INDX,IPRINT)
+Cho  &                                ICOUNT,0,INDA,IPRINT)
 C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
 C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NBUFCL = NBUFCL + 1
@@ -1512,10 +1634,24 @@ C     ***** Last call to empty buffer *****
 C     *************************************
 C
       IF (LAST) THEN
+Cholesky
+         NUMD = NDIST
+         IF (DIACAL .AND. CHOINT) THEN
+            NUMD = 1
+         ENDIF
+Cholesky
          DO 400 IDIST = 1, NDIST
             NWRIT = NWRIT + NCOUNT(IDIST)
+Cholesky
+            INDX = IDSORB(IDIST)
+            IF (DIACAL .AND. CHOINT) THEN
+               INDX = 1
+            ENDIF
             CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
-     &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
+     &                  NCOUNT(IDIST),1,INDX,IPRINT)
+Cholesky
+Chol        CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
+Chol &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
 C           CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
 C     &                 NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
   400    CONTINUE
@@ -1525,7 +1661,8 @@ C        NALL   = NDIST*(NBASIS + 1)*(NBASIS**2)/2
          FNALL  = NDIST*(FNBASIS+1.0D0)*FNBASIS*FNBASIS*0.5D0
          PERCNT = NWRIT
          PERCNT = 100.0D0*PERCNT / FNALL
-         IF (IPRINT.GE.0) WRITE (LUPRI,'(/A,I10,A,F4.1,A)')
+         IF ((.NOT. CHOINT) .AND. (IPRINT.GE.0)) 
+     &         WRITE (LUPRI,'(/A,I10,A,F4.1,A)')
      &         ' Number of two-electron spin-orbit integrals written:',
      &         NWRIT,' (',PERCNT,'%)'
       END IF
@@ -1534,21 +1671,21 @@ C
       END
 C  /* Deck un2wrn */
       SUBROUTINE UN2WRN(BUF,IBUF,ICOUNT,ITYPE,INDA,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <ibtpar.h>
-#include <eribuf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "ibtpar.h"
+#include "eribuf.h"
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
-#include <drw2el.h>
-#include <twosta.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "drw2el.h"
+#include "twosta.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       NBUFX(0) = NBUFX(0) + 1
 C
@@ -1662,25 +1799,25 @@ C                                   880412   PRT
 C        Rewritten to allow for triangular looping and to eliminate
 C        all duplicates by testing  880601 TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST
       DIMENSION SO(*), BUF(LBUF), IBUF(LBUF,2),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
-#include <nuclei.h>
-#include <twocom.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "symmet.h"
       SAVE BUF, IBUF, ICOUNT
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine SR2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1876,26 +2013,26 @@ C
 C     Write short-range integrals to disk file SRTWOINT
 C     (based on UN2WRT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "ibtpar.h"
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
-#include <twosta.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "twosta.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
       SAVE NBUF, JBUF
 #if defined (VAR_SPLITFILES)
-#include <2gbdef.h>
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
+#include "chrnos.h"
 #endif
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (ITYPE .EQ. -1) THEN
 C        ... First call

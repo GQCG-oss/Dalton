@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ccsd_energy */
       SUBROUTINE CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)
@@ -43,34 +33,42 @@ C     Ove juli-sept. 1995: RSP intermediates
 C                          noccit
 C     Ove februar    1997: CCS, FD gradient hacks and restart.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
       PARAMETER (XMONE = -1.0D0, IZERO = 0, TWO = 2.0D0, ZERO = 0.0D00)
       LOGICAL   CCSAV, CC1BSV, CC1ASV, CCPTSV, CCP3SV, LCCEQ
       LOGICAL   MP2R12TST,LRES
       DIMENSION WORK(LWORK)
       COMMON /LUDIIS/ LUTDIS, LUSDIS
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <cclr.h>
-#include <ccslvinf.h>
-#include <gnrinf.h>
-#include <ccfdgeo.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccorb.h"
+#include "iratdef.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "cclr.h"
+#include "ccslvinf.h"
+#include "gnrinf.h"
+#include "ccfdgeo.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "ccr12int.h"
 !Sonia
-#include <ccfop.h>
-#include <ccnoddy.h>
+#include "ccfop.h"
+#include "ccnoddy.h"
+Cholesky
+#include "ccdeco.h"
+#include "chodbg.h"
+#include "cc_cho.h"
+#include "chocc2.h"
+C
+      LOGICAL CPTDBG
+Cholesky
       LOGICAL LCONVG,RSPIM2,EX,LEXIST,LHTF,MKVABKL
       LOGICAL CCR12RSP, CCR12LIM
       LOGICAL LCONV1,LCONV2
@@ -92,7 +90,7 @@ C     -------------------------------------------------------------
 C     set model for which the current t-amplitudes were calculated:
 C     -------------------------------------------------------------
 C
-      MODEL = 'UNKOWN    '
+      MODEL = 'UNKNOWN   '
       IF (CIS)   MODEL = 'CIS       '
       IF (CCS)   MODEL = 'CCS       '
       IF (MP2)   MODEL = 'MP2       '
@@ -148,7 +146,7 @@ C
         CALL GETTIM(T0,W0)
         CALL CCSD_R12(WORK,LWORK,WORK,LWORK,CCR12RSP)
         CALL GETTIM(T1,W1)
-        WRITE(LUPRI,*)'Time for MP2-R12 part cpu:', T1-T0
+        WRITE(LUPRI,*)'Time for MP2-R12 part cpu :', T1-T0
         WRITE(LUPRI,*)'Time for MP2-R12 part wall:', W1-W0
         CALL FLSHFO(LUPRI)
         ! restore print level
@@ -246,6 +244,12 @@ C     IF (CCR12RSP) THEN
 C       call cc_r12vxint(work,lwork,.false.)
 C     END IF
 C
+C-------------------
+C     Cholesky debug
+C-------------------
+C
+      IF (CHODBG) CALL CC_CHODBG(WORK,LWORK)
+C
 C----------------------------------------------------------------------
 C     Save RSPIM flag to calculate response global intermediates later.
 C     If CCS or MP2 no intermediates is calculated.
@@ -338,6 +342,98 @@ C
 
          GO TO 9999
 C        ... exit this routine
+      ENDIF
+C
+C     
+C--------------------
+C     Cholesky stuff.
+C--------------------
+C        
+C     Cholesky MP2 section.
+C     ---------------------
+         
+      IF (MP2 .AND. CHOINT) THEN
+      
+         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.) 
+         REWIND LUSIFC
+         CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+         READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,
+     &              LSYM
+         ESCF = EMCSCF
+         CALL GPCLOSE(LUSIFC,'KEEP')
+         
+C        Calculate MP2 energy correction.
+C        --------------------------------
+
+         CALL CC_CHOMP2(WORK,LWORK,EMP2)
+C        
+C        Write SCF and MP2 energies to output and summary.
+C        -------------------------------------------------
+
+         ETY1   = 'MP2  '
+         ECCGRS = ESCF + EMP2
+         
+         CALL AROUND
+     &   ('Final results from the Coupled Cluster energy program')
+     
+         WRITE(LUPRI,'(/12X,A,A,A,F32.10)')
+     &               'Total ',ETY0,' energy: ',ESCF
+         WRITE(LUPRI,'(12X,A,A,A,F32.10)')
+     &               'Total ',ETY1,' energy: ',ECCGRS
+         WRITE(LURES,'(/12X,A,A,A,F32.10)')
+     &               'Total ',ETY0,' energy: ',ESCF
+         WRITE(LURES,'(12X,A,A,A,F32.10)')
+     &               'Total ',ETY1,' energy: ',ECCGRS
+
+         LABEL1 = 'ENERGY  '
+         MODREF = 'MP2/CHOLES'
+         CALL CC_PRPC(ECCGRS,MODREF,0,
+     *                LABEL1,LABEL1,LABEL1,LABEL1,
+     *                ZERO,ZERO,ZERO,1,0,0,0)
+         CALL WRIPRO(ECCGRS,MODREF,0,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
+
+         GOTO 9999
+
+      ENDIF
+C
+C     Cholesky CC2 section.
+C     ---------------------
+
+      IF (CC2 .AND. CHOINT) THEN
+
+         CALL CC_CHOECC2(WORK,LWORK,ESCF,ECC2,RSPIM2)
+
+         ETY1   = 'CC2  '
+         ECCGRS = ECC2
+
+         CALL AROUND
+     &   ('Final results from the Coupled Cluster energy program')
+
+         WRITE(LUPRI,'(/12X,A,A,A,F32.10)')
+     &               'Total ',ETY0,' energy: ',ESCF
+         WRITE(LUPRI,'(12X,A,A,A,F32.10)')
+     &               'Total ',ETY1,' energy: ',ECCGRS
+         WRITE(LURES,'(/12X,A,A,A,F32.10)')
+     &               'Total ',ETY0,' energy: ',ESCF
+         WRITE(LURES,'(12X,A,A,A,F32.10)')
+     &               'Total ',ETY1,' energy: ',ECCGRS
+
+
+         LABEL1 = 'ENERGY  '
+         MODREF = 'CC2/CHOLES'
+         CALL CC_PRPC(ECCGRS,MODREF,0,
+     *                LABEL1,LABEL1,LABEL1,LABEL1,
+     *                ZERO,ZERO,ZERO,1,0,0,0)
+         CALL WRIPRO(ECCGRS,MODREF,0,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
+
+
+         GOTO 9999
+
       ENDIF
 C
 C------------------------
@@ -501,6 +597,10 @@ C
       EN1R12 = 0.0d0
       EN2R12 = 0.0d0
       LCONVG=.FALSE.
+
+!radovan: otherwise er12 and en1r12 and en2r12 become undefined if lr12 = .false.
+      er12 = 0.0d0
+
       ITER=1
 C
 C
@@ -729,9 +829,9 @@ C          Save new R12 amplitudes on disk:
 C
          CALL FLSHFO(LUPRI)
 C
-         LCONV1 = DABS(EN2-EN1) .LT. THRENR .AND.
-     &        DABS(EN2R12-EN1R12).LT.THRENR
-         LCONV2 = OMNM .LT. THRVEC
+         LCONV1 = DABS(EN2-EN1)      .LT. THRENR .AND.
+     &            DABS(EN2R12-EN1R12).LT. THRENR
+         LCONV2 = OMNM    .LT. THRVEC
          LCONVG = LCONV1 .AND. LCONV2
 
          ITER = ITER+1
@@ -742,6 +842,7 @@ C
          ENDIF
 C
          NSLVINIT = NSLVINIT + 1
+
          IF (CCSLV.AND.((ITER-1).GE.MXTINIT)) THEN
            WRITE(LUPRI,241) ETY2
  241       FORMAT(/,1x,A5,
@@ -792,8 +893,7 @@ C
 #if defined (SYS_CRAY)
       CALL WCLOSE('CC_DIIS',IERR)
       INFO = ISHELL('rm CC_DIIS')
-#endif
-#if !defined (SYS_CRAY)
+#else
       CALL GPCLOSE(LUTDIS,'DELETE')
       CALL GPCLOSE(LUSDIS,'DELETE')
 #endif
@@ -964,28 +1064,66 @@ C--------------------------------------------------
 C
          CCSDT = .TRUE.
 C
-         IF (CCPT) THEN
-            CC1BSV = CC1B
-            CC1B   = .TRUE.
-            CC1ASV = CC1A
-            CC1A   = .TRUE.
-         ENDIF
+         IF (.NOT. CHOPT) THEN
 C
-         CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),
+            IF (CCPT) THEN
+               CC1BSV = CC1B
+               CC1B   = .TRUE.
+               CC1ASV = CC1A
+               CC1A   = .TRUE.
+            ENDIF
+C
+            CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),
      *               WORK(KT2AM),WORK(KEND1),LWRK1,APROXR12)
 C
-         IF (CCPT) THEN
-            CC1B   = CC1BSV
-            CC1A   = CC1ASV
-         ENDIF
+            IF (CCPT) THEN
+               CC1B   = CC1BSV
+               CC1A   = CC1ASV
+            ENDIF
 C
-         IOPTTCME = 1
-         CALL CCSD_TCMEPK(WORK(KT2AM),0.5d0,1,IOPTTCME)
-         ECCP1 = TWO*DDOT(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
-         ECCP2 = TWO*DDOT(NT2AMX,WORK(KT2AM),1,WORK(KOMEG2),1)
+            IOPTTCME = 1
+            CALL CCSD_TCMEPK(WORK(KT2AM),0.5d0,1,IOPTTCME)
+            ECCP1 = TWO*DDOT(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
+            ECCP2 = TWO*DDOT(NT2AMX,WORK(KT2AM),1,WORK(KOMEG2),1)
 C
-         IOPT = 3
-         CALL CC_RDRSP('R0',0,1,IOPT,MODELR,WORK(KT1AM),WORK(KT2AM))
+            IOPT = 3
+            CALL CC_RDRSP('R0',0,1,IOPT,MODELR,WORK(KT1AM),WORK(KT2AM))
+C
+         ELSE
+C
+C----------------------------
+C           Cholesky CCSD(T)
+C----------------------------
+C
+            INQUIRE(FILE='CC_CHOPT_DBG',EXIST=CPTDBG)
+            IF (CPTDBG) THEN
+               WRITE(LUPRI,'(//,15X,A,/,15X,A)')
+     &               '*** NOTICE ***',
+     &               'File CC_CHOPT_DBG found. Calling CC_CHOPT_DBG.'
+               CALL CC_CHOPT_DBG(WORK,LWORK)
+               GOTO 9999
+            ENDIF
+C
+C-----------------------------------------------------------------------
+C           NB! This assumes that the orbital energies and
+C           T1 amplitudes are in fact in these positions:
+C-----------------------------------------------------------------------
+C
+            KFOCKD  = 1
+            KT1AM   = KFOCKD + NORBTS
+            KEND1   = KT1AM  + NT1AMX
+            LWRK1   = LWORK  - KEND1
+C
+            CHOTIM = SECOND()
+            CALL CC_CHOPT(WORK(KFOCKD),WORK(KT1AM),WORK(KEND1),LWRK1)
+            CHOTIM = SECOND() - CHOTIM
+            WRITE(LUPRI,9998) 'CC_CHOPT',CHOTIM
+ 9998       FORMAT(7X,'Time used in',2X,A12,2X,': ',F10.2,' seconds')
+C
+            ECCP1 = XEN5
+            ECCP2 = XEN4
+C
+         END IF
 C
          IF ( CCR3 ) THEN
 C
@@ -1027,7 +1165,7 @@ C
                CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
                CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
 C
-               CALL CC_PRAM(WORK(KOMEG1),PT1,1,FALSE)
+               CALL CC_PRAM(WORK(KOMEG1),PT1,1,.FALSE.)
 C
             ENDIF
 C
@@ -1258,13 +1396,13 @@ C  /* Deck ccsd_guess */
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, TWO = 2.0D0, THREE = 3.0D0)
       DIMENSION T1AM(*),T2AM(*)
       DIMENSION FCDIAG(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1343,14 +1481,19 @@ C
 C     Written by Henrik Koch 27-Mar-1990.
 C     Brueckner bit by Rika Kobayashi 1992.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, TWO = 2.0D0, THREE = 3.0D0)
       DIMENSION T1AM(*),T2AM(*), T2AM2(*)
       DIMENSION OMEGA1(*),OMEGA2(*), OMEGA22(*)
       DIMENSION FCDIAG(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+Cholesky
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccdeco.h"
+Cholesky
 C
       LOGICAL TRIPLET
 C
@@ -1378,6 +1521,9 @@ C
 C
 c     ENDIF
 c     IF (LBRUK) CALL DCOPY(NVIRT*NRHFT,OMEGA1,1,T1AM,1)
+C
+C
+      IF (CC2 .AND. CHOINT) GOTO 1000  ! Skip doubles part for Cholesky CC2.
 C
       DO 200 ISYMBJ = 1,NSYM
          ISYMAI = MULD2H(ISYMBJ,ISYMT)
@@ -1473,6 +1619,7 @@ C
       END DO
       ENDIF
 C
+ 1000 CONTINUE
       CALL QEXIT('CCSD_NXTAM')
 C
       RETURN
@@ -1492,11 +1639,11 @@ C
 C  Bug fix for frozen core in finite field calculations, 
 C  C.Haettig, 23.3.05
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <iratdef.h>
+#include "iratdef.h"
       DIMENSION FCDIAG(*)
       DIMENSION T1AM(*),T2AM(*),TAMR12(*),WORK(*)
       CHARACTER ETY*5, ETYPE*24, MODEL*10
@@ -1504,13 +1651,13 @@ C
       LOGICAL LEXIST, LR12, LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
       INTEGER ICMO(8,8), NCMO(8), IGLMRHS(8,8), IGLMVIS(8,8), NGLMDS(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <ccinftap.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "ccinftap.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -1750,8 +1897,8 @@ C
       END
       SUBROUTINE CCSD_MODEL(MODELR12,LENMR12,LMAX,MODEL,LENM,APROXR12)
       IMPLICIT NONE
-#include <r12int.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "ccsdinp.h"
      
       INTEGER LENM,LENMR12,LMAX,I
       CHARACTER*(*) MODELR12, MODEL, APROXR12
@@ -1808,29 +1955,29 @@ C     integrals needed for R12 response (e.g. r12 integrals with
 C     two auxiliary basis functions): CCR12RSP
 C     C. Neiss, 10.12.2004
 C     
-#include <implicit.h>
-#include <ccr12int.h>
+#include "implicit.h"
+#include "ccr12int.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <eribuf.h>
-#include <ccfro.h>
-#include <ccfop.h>
-#include <ccsections.h>
-#include <ccfield.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "eribuf.h"
+#include "ccfro.h"
+#include "ccfop.h"
+#include "ccsections.h"
+#include "ccfield.h"
+#include "r12int.h"
       DIMENSION XAIBJ(*),T1AM(*),WORK(*),INDEXA(MXCORB)
       INTEGER IDUM,LUNITR12,LUNITR12_2
       LOGICAL LDUM,LHTF,MKVAJKL,CCR12RSP
@@ -2365,7 +2512,7 @@ C------------------------------------------------------------------
 C                 Transform integrals and add to the result vector.
 C------------------------------------------------------------------
 C
-                  IF (CCSDT .OR. CCPT .OR.
+                  IF (CCSDT .OR. CCPT .OR. CHOPT .OR.
      *                CCP3 .OR. (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B)) THEN
                       LUTOC = -1
                       FNTOC = 'CCSDT_OC'
@@ -2516,13 +2663,13 @@ C                  Construct I(kd,c) for fixed alpha.
 C                  Not needed for R12 integrals (WK/UniKA/04-11-2002).
 C----------------------------------------------------------------------
 C
-                  IF (CCSDT .OR. CCPT .OR.
+                  IF (CCSDT .OR. CCPT .OR. CHOPT .OR.
      *                CCP3 .OR. (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B)) THEN
                      CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
                   ENDIF
 C
                   IF (.NOT. R12TRA .AND. (CCSDT.OR.(CCPT.OR.CCP3).OR.
-     *                (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B))) THEN
+     *                (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B.OR.CHOPT))) THEN
 
                      KINT3 = KEND2
                      KINT4 = KINT3 + NT1AM(ISYMAB)*NVIR(ISYMG)
@@ -2715,7 +2862,7 @@ C
       ENDIF
 C
       IF (.NOT.R12TRA.AND.(CCSDT.OR.(CCPT.OR.CCP3).OR.
-     *    (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B))) THEN
+     *    (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B.OR.CHOPT))) THEN
 C
 C------------------------------------
 C        Sort integrals (kc,d alpha).
@@ -2775,18 +2922,18 @@ C  /* Deck ccsd_aibj2 */
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LU43,LUNITR12,LUNITR12_2
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),XAIBJ(*), SCR1(*),SCR2(*)
       DIMENSION XLAMDP(*),XLAMDH(*)
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <r12int.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfop.h>
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "r12int.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfop.h"
 C
       LOGICAL ANTISYM,LHTF,CCR12RSP
       CHARACTER*(*) FNFILE,FILER12,FILER12_2
@@ -2878,8 +3025,8 @@ C------------------------------------------
 C        Write out integrals used in CCSDT.
 C------------------------------------------
 C
-         IF (CCSDT.OR.CCPT.OR.CCP3.OR.CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B) 
-     *                                                            THEN
+         IF (CCSDT.OR.CCPT.OR.CCP3.OR.CCRT
+     *       .OR.CCR3.OR.CCR1A.OR.CCR1B .OR. CHOPT) THEN
 C       
             ISYMI  = ISYMJ
             ISYMCK = ISYMAB
@@ -2953,15 +3100,15 @@ C
 C     Written by Henrik Koch 27-Mar-1990.
 C     Modified asm
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),XINT3(*),XINT4(*),SCR1(*),SCR2(*),SCR3(*)
       DIMENSION XLAMDP(*),XLAMDH(*)
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       CHARACTER*(*) FNFILE
 C
@@ -3069,7 +3216,7 @@ C  /* Deck inidat */
 C
 C     Initialize MULD2H in common block /CCORB/
 C
-#include <ccorb.h>
+#include "ccorb.h"
 C
       DATA MULD2H/1,2,3,4,5,6,7,8,
      *            2,1,4,3,6,5,8,7,
@@ -3091,22 +3238,28 @@ C
 C     FREEZE OC230899
 C     Frozen orbital bug-fix, tbp July 2003.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       DIMENSION WORK(LWORK)
 C
       EXTERNAL INIDAT
 C
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <symsq.h>
-#include <ccisao.h>
-#include <r12int.h>
-#include <cc3t3d.h>
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "symsq.h"
+#include "ccisao.h"
+#include "r12int.h"
+#include "cc3t3d.h"
+Cholesky
+#include "dccorb.h"
+#include "dccsdsym.h"
+#include "ccisvi.h"
+Cholesky
+C
       INTEGER NMATAK(8)
       LOGICAL FIRST
       DATA FIRST /.TRUE./
@@ -3169,6 +3322,7 @@ C
       ICOUN1 = 0
       ICOUN2 = 0
       IOFF   = 0
+      JOFF   = 0  ! ALFREDO OK? JOFF was not initialized in your ccsd_energy.F
 C
       DO 5 ISYM = 1,NSYM
 C
@@ -3177,6 +3331,10 @@ C
          NRHF(ISYM)  = NRHFS(ISYM) - NRHFFR(ISYM)
          NVIR(ISYM)  = NVIRS(ISYM) - NVIRFR(ISYM)
          NORB(ISYM)  = NRHF(ISYM)  + NVIR(ISYM)
+C
+         XRHF(ISYM) = 1.0D0 * NRHF(ISYM)
+         XVIR(ISYM) = 1.0D0 * NVIR(ISYM)
+C
          IF (LABEL.EQ.'TRCCINT ') THEN
            NRHFA(ISYM)  = NRHF(ISYM) 
            NRHFSA(ISYM) = NRHFS(ISYM) 
@@ -3208,7 +3366,14 @@ C
              ISAO(IOFF) = ISYM
 C
     6   CONTINUE
-C
+Cholesky
+        DO I = 1,NVIR(ISYM)
+
+           JOFF = JOFF + 1
+           ISVI(JOFF) = ISYM
+
+        ENDDO
+Cholesky
     5 CONTINUE
 C
       NVIRT  = NORBT  - NRHFT
@@ -3272,6 +3437,10 @@ C
       DO 100 ISYMAI = 1,NSYM
          NT1AM(ISYMAI) = 0
          NT1AO(ISYMAI) = 0
+Chol
+         XT1AM(ISYMAI) = 0.0D0
+         XT1AO(ISYMAI) = 0.0D0
+Chol
          NH1AM(ISYMAI) = 0
          NG1AM(ISYMAI) = 0
 celena
@@ -3281,6 +3450,10 @@ celena
             ISYMA = MULD2H(ISYMAI,ISYMI)
             NT1AM(ISYMAI) = NT1AM(ISYMAI) + NVIR(ISYMA) * NRHF(ISYMI)
             NT1AO(ISYMAI) = NT1AO(ISYMAI) + NBAS(ISYMA) * NRHF(ISYMI)
+Chol
+            XT1AM(ISYMAI) = XT1AM(ISYMAI) + XVIR(ISYMA) * XRHF(ISYMI)
+            XT1AO(ISYMAI) = XT1AO(ISYMAI) + NBAS(ISYMA) * XRHF(ISYMI)
+Chol
             NH1AM(ISYMAI) = NH1AM(ISYMAI) + NORB1(ISYMA) * NRHF(ISYMI)
             NG1AM(ISYMAI) = NG1AM(ISYMAI) + NORB2(ISYMA) * NRHF(ISYMI)
 celena
@@ -3297,6 +3470,9 @@ C
          NT2AMT(ISAIBJ) = 0
          NH2AM(ISAIBJ)  = 0
          NU2AM(ISAIBJ)  = 0
+Chol
+         XT2AM(ISAIBJ) = 0.0D0
+Chol
          DO 400 ISYMBJ = 1,NSYM
             ISYMAI = MULD2H(ISYMBJ,ISAIBJ)
             IF (ISYMBJ .GT. ISYMAI) THEN
@@ -3306,6 +3482,10 @@ C
      &                         NT1AO(ISYMAI) * NT1AO(ISYMBJ)
                NT2AMA(ISAIBJ)= NT2AM(ISAIBJ)
                NT2AMT(ISAIBJ)= NT2AM(ISAIBJ) + NT2AMA(ISAIBJ)     
+Chol
+               XT2AM(ISAIBJ) = XT2AM(ISAIBJ) +
+     &                         XT1AM(ISYMAI) * XT1AM(ISYMBJ)
+Chol
                NH2AM(ISAIBJ) = NH2AM(ISAIBJ) +
      &                         NH1AM(ISYMAI) * NT1AM(ISYMBJ)
             ELSE IF (ISYMBJ .EQ. ISYMAI) THEN
@@ -3315,6 +3495,10 @@ C
      &                         NT1AO(ISYMAI) * (NT1AO(ISYMBJ)+1)/2
                NT2AMA(ISAIBJ)= NT2AM(ISAIBJ)
                NT2AMT(ISAIBJ)= NT2AM(ISAIBJ) + NT2AMA(ISAIBJ)  
+Chol
+               XT2AM(ISAIBJ) = XT2AM(ISAIBJ) +
+     &               XT1AM(ISYMAI) * (XT1AM(ISYMBJ)+1.0D0) / 2.0D0
+Chol
                NH2AM(ISAIBJ) = NH2AM(ISAIBJ) +
      &                         NH1AM(ISYMAI) * (NH1AM(ISYMBJ)+1)/2 +
      &                         NH1AM(ISYMAI) * NG1AM(ISYMBJ)
@@ -3410,6 +3594,9 @@ C
          ICOUN2 = 0
          ICOUN3 = 0
          ICOUN4 = 0
+Chol
+         XCOUN4 = 0.0D0
+Chol
          ICOUN5 = 0
          ICOUN6 = 0
          ICOUN7 = 0
@@ -3496,6 +3683,9 @@ C
 C
             ICOUN3 = ICOUN3 + NVIR(ISYMI)*NBAS(ISYMJ)
             ICOUN4 = ICOUN4 + NRHF(ISYMI)*NRHF(ISYMJ)
+Chol
+            XCOUN4 = XCOUN4 + XRHF(ISYMI)*XRHF(ISYMJ)
+Chol
             ICOU24 = ICOU24 + NRHFB(ISYMI)*NRHFB(ISYMJ)
             ICOU25 = ICOU25 + NRHFB(ISYMI)*NRHFA(ISYMJ)
             ICOU26 = ICOU26 + NVIR(ISYMI)*NRHFB(ISYMJ)
@@ -3517,6 +3707,9 @@ C
          NEMAT1(ISYMK) = ICOUN3
          NMATIJ(ISYMK) = ICOUN4
          NMATAV(ISYMK) = ICOU18
+Chol
+         XMATIJ(ISYMK) = XCOUN4
+Chol
          NMATKL(ISYMK) = ICOU24
          NMATKI(ISYMK) = ICOU25
          NMATAK(ISYMK) = ICOU26
@@ -3601,6 +3794,7 @@ C
          ICOUN8 = 0
          ICOUN9 = 0
          ICOUN10 = 0
+         ICOUN11 = 0
          DO 560 ISYMK = 1,NSYM
             ISYMIJ = MULD2H(ISYMK,ISYIJK)
             IMAIJK(ISYMIJ,ISYMK) = ICOUN1
@@ -3613,6 +3807,9 @@ C
             IMAABI(ISYMIJ,ISYMK) = ICOUN8
             IMAIAB(ISYMIJ,ISYMK) = ICOUN9
             IMAIAJ(ISYMIJ,ISYMK) = ICOUN10
+Cholesky
+            IT2VO(ISYMIJ,ISYMK)  = ICOUN11
+Cholesky
             ICOUN1 = ICOUN1 + NMATIJ(ISYMIJ)*NRHF(ISYMK)
             ICOUN2 = ICOUN2 + NVIR(ISYMIJ)*NMATIJ(ISYMK)
             ICOUN3 = ICOUN3 + NMATIJ(ISYMIJ)*NVIR(ISYMK)
@@ -3623,6 +3820,9 @@ C
             ICOUN8 = ICOUN8 + NMATAB(ISYMIJ)*NRHF(ISYMK)
             ICOUN9 = ICOUN9 + NT1AM(ISYMIJ)*NVIR(ISYMK)
             ICOUN10 = ICOUN10 + NRHF(ISYMIJ)*NT1AM(ISYMK)
+Cholesky
+            ICOUN11 = ICOUN11 + NMATAB(ISYMIJ)*NMATIJ(ISYMK)
+Cholesky
   560    CONTINUE
          NMAIJK(ISYIJK) = ICOUN1
          NT2AIJ(ISYIJK) = ICOUN2
@@ -3831,6 +4031,9 @@ C
          ICOUNT = 0
          ICOUN1 = 0
          ICOUN2 = 0
+C           
+         XCOUN1 = 0.0D0
+C
          DO 910 ISYMJ = 1,NSYM
 C
             ISYMI  = MULD2H(ISYMJ,ISYM)
@@ -3840,12 +4043,16 @@ C
             ICOUNT = ICOUNT + NT1AO(ISYMI)*NT1AO(ISYMJ)
             ICOUN1 = ICOUN1 + NT1AM(ISYMI)*NT1AM(ISYMJ)
             ICOUN2 = ICOUN2 + NT1AM(ISYMI)*NG1AM(ISYMJ)
+C           
+            XCOUN1 = XCOUN1 + XT1AM(ISYMI)*XT1AM(ISYMJ)
 C
   910    CONTINUE
 C
          NT2AOS(ISYM) = ICOUNT
          NT2SQ(ISYM)  = ICOUN1
          NTG2SQ(ISYM) = ICOUN2
+C
+         XT2SQ(ISYM)  = XCOUN1
 C
   900 CONTINUE
 C
@@ -3931,6 +4138,9 @@ C
          ICOUN2 = 0
          ICOUN3 = 0
          ICOUN4 = 0
+Chol
+         XCOUN2 = 0.0D0
+Chol
          DO 1050 ISYMA = 1,NSYM
 C
             ISYMCK = MULD2H(ISYMA,ISYCKA)
@@ -3946,12 +4156,16 @@ C
             ICOUN3 = ICOUN3 + NT1AM(ISYMCK)*NVIR(ISYMA)
             ICOUN4 = ICOUN4 + NMATAB(ISYMCK)*NRHF(ISYMA)
 C
+            XCOUN2 = XCOUN2 + XT1AM(ISYMCK)*XRHF(ISYMA)
+C
  1050    CONTINUE
 C
          NCKA(ISYCKA)   = ICOUN1
          NCKI(ISYCKA)   = ICOUN2
          NCKATR(ISYCKA) = ICOUN3
          NCKASR(ISYCKA) = ICOUN4
+C
+         XCKI(ISYCKA)   = XCOUN2
 C
  1040 CONTINUE
 C
@@ -4016,6 +4230,27 @@ C
             ICOUN9 = ICOUN9 + NRHF(ISYAIK)*NCKATR(ISYMJ)
             ICOUN10 = ICOUN10 + NVIR(ISYAIK)*NCKATR(ISYMJ)
             ICOUN11 = ICOUN11 + NCKATR(ISYAIK)*NRHF(ISYMJ)
+C
+            IF (CCSDT.OR.CCPT.OR.CCP3.OR.CCRT.OR.
+     *                CHOPT .OR. CCR3.OR.CCR1A.OR.CCR1B) THEN
+               IF (ICOUN1 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative ICKITR in CCSD_INIT1'
+               IF (ICOUN2 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative ICKID in CCSD_INIT1'
+               IF (ICOUN6 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative IT2SP in CCSD_INIT1'
+               IF (ICOUN9 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative ICKDAO in CCSD_INIT1'
+               IF (ICOUN11 .LT. 0) WRITE(LUPRI,*)
+     &                             'Negative IMAJBAIT in CCSD_INIT1'
+               IF ((ICOUN1 .LT. 0) .OR. (ICOUN2 .LT. 0) .OR.
+     &             (ICOUN6 .LT. 0) .OR. (ICOUN9 .LT. 0)) THEN
+                   WRITE(LUPRI,'(A,A)') 
+     &                  'Calculation too large for 32-bit integers',
+     &                  'Try rebuilding Dalton using 64-bit integers'
+                   STOP 'Negative index in CCSD_INIT1'
+               END IF
+            END IF
 C
  1080    CONTINUE
 C
@@ -4380,6 +4615,15 @@ C
          WRITE(LUPRI,1) 'NLRHSI :',NLRHSI
          WRITE(LUPRI,1) 'NLAMDT :',NLAMDT
          WRITE(LUPRI,1) 'NLMRHF :',NLMRHF
+C
+         CALL AROUND('Information from DCCSDSYM')
+         WRITE(LUPRI,2) 'XT1AM  :',(XT1AM(I), I=1,NSYM)
+         WRITE(LUPRI,2) 'XT2AM  :',(XT2AM(I), I=1,NSYM)
+         WRITE(LUPRI,2) 'XT2SQ  :',(XT2SQ(I), I=1,NSYM)
+         WRITE(LUPRI,2) 'XCKI   :',(XCKI(I),  I=1,NSYM)
+         WRITE(LUPRI,2) 'XMATIJ :',(XMATIJ(I), I=1,NSYM)
+         WRITE(LUPRI,2) 'XT1AO  :',(XT1AO(I),  I=1,NSYM)
+C
       END IF
 C
       CALL QEXIT('CCSD_INIT1')
@@ -4387,6 +4631,7 @@ C
       RETURN
 C
     1 FORMAT(3X,A8,8I8)
+    2 FORMAT(3X,A8,8D8.3)
 C
       END
 C  /* Deck fock_reorder */
@@ -4398,12 +4643,12 @@ C     Reorder the symmetry ordering of the fock matrix.
 C     First occupied orbitals in different symmetries and then
 C     the virtuals in different symmetries.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
       DIMENSION FOCK(NORBT),WORK(LWORK)
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('FOCK_REORDER')
 C
@@ -4458,12 +4703,12 @@ C     Reorder the symmetry ordering of the MO coefficient matrix.
 C     First occupied orbitals in different symmetries and then
 C     the virtuals in different symmetries.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       LOGICAL FRORHF, FROVIR
 C
@@ -4602,14 +4847,14 @@ C
 C
       RETURN
 C
-    1 FORMAT(/,/,7X,'Symmetry number :',I5)
-    2 FORMAT(/,/,7X,'Sirius ordering')
+    1 FORMAT(//,7X,'Symmetry number :',I5)
+    2 FORMAT(//,7X,'Sirius ordering')
     3 FORMAT(7X,'---------------')
-    4 FORMAT(/,/,7X,'CCSD ordering occupied part')
+    4 FORMAT(//,7X,'CCSD ordering occupied part')
     5 FORMAT(7X,'---------------------------')
-    6 FORMAT(/,/,7X,'CCSD ordering virtual part')
+    6 FORMAT(//,7X,'CCSD ordering virtual part')
     7 FORMAT(7X,'--------------------------')
-    8 FORMAT(/,/,7X,'This symmetry is empty')
+    8 FORMAT(//,7X,'This symmetry is empty')
 C
       END
 C  /* Deck ccsd_symsqo */
@@ -4619,11 +4864,11 @@ C     Henrik Koch and Alfredo Sanchez.       1-July-1994
 C
 C     Squareup the integral distribution.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DISTAB(*), SCR(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSD_SYMSQO')
 C
@@ -4677,13 +4922,13 @@ C     Henrik Koch and Alfredo Sanchez.       1-July-1994
 C
 C     Squareup the integral distribution.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DISTAB(*), SCR(*)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 C
       CALL QENTER('CCSD_SYMSQ')
 C
@@ -4697,9 +4942,10 @@ C
          SCR(IJSQ) = DISTAB(IJPK)
 C
   100 CONTINUE
-#endif
-C
-#if defined (SYS_CRAY)
+#else
+
+C     SYS_CRAY code
+
       KOFF = I2BST(ISYMAB) + 1
       CALL GATHER(N2BST(ISYMAB),SCR,DISTAB,IADRPK(KOFF))
 #endif
@@ -4710,28 +4956,27 @@ C
       END
       SUBROUTINE CCSD_SYMSQT(DISTAB1,ISYMAB,SCR)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DISTAB1(*), SCR(*)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 C
       CALL QENTER('CCSD_SYMSQT')
 C
+#if defined (SYS_CRAY)
+       WRITE(LUPRI,*) 'computation of Bijal on SYS_CRAY not implemented'
+       CALL QUIT('computation of Bijal on SYS_CRAY not implemented')
+#endif
 C
-#if !defined (SYS_CRAY)
        DO IJSQ = 1,N2BST(ISYMAB)
          KOFF = I2BST(ISYMAB) + IJSQ
          IJPK = IADRPK(KOFF)
          SCR(IJSQ) = -DISTAB1(IJPK) 
        END DO  
-#endif
 C
-#if defined (SYS_CRAY)
-       WRITE(LUPRI,*) 'computation of Bijal on SYS_CRAY not implemented'
-#endif
 C
       CALL QEXIT('CCSD_SYMSQT')
 C
@@ -4750,15 +4995,15 @@ C     FN3VI can be FN3VI or FNDELD
 C
 C     Sort virtual integrals for perturbative triples.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccinftap.h"
+#include "ccsdsym.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
 C
       PARAMETER (TWO = 2.0D0)
 C
@@ -4791,6 +5036,11 @@ C
 C
          LENMIN = NCKATR(ISYCKB) + MAXCK
          NDISTR = MIN(LWORK/LENMIN,NBAS(ISYMD))
+C
+Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
+C        
+         MXDALF = 268435455 / NCKATR(ISYCKB)
+         NDISTR = MIN(NDISTR,MXDALF)
 C
          IF (NDISTR .EQ. 0) THEN
             CALL QUIT('Insufficient work space in CC3_SORT1')
@@ -5101,12 +5351,12 @@ C
 C  /* Deck ccsd_delfro */
       SUBROUTINE CCSD_DELFRO(FOCDIA,WORK,LWORK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCDIA(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       LOGICAL FRORHF, FROVIR
 C
@@ -5152,15 +5402,15 @@ C
 C     Ove Christiansen 230899, Find and freeze NFC lowest-lying/NFV highest lying
 C     canonical orbitals in CC calculation.
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
       DIMENSION FOCDIA(NF),WORK(LWORK),NFCS(8),NFVS(8),IPLACE(MXCORB)
       CHARACTER*8 LABEL
-#include <ccorb.h>
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "ccorb.h"
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('CC_FREEZER')
 C
@@ -5288,11 +5538,11 @@ C  /* Deck CC_SYMHFO*/
 C
 C     OC 230899, find symmetry ISYMHFO of HF orbital nr. IHFO
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_SYMHFO(IHFO,ISYMHFO')
 C
@@ -5317,13 +5567,13 @@ C     Written by Wim Klopper (University of Karlsruhe, 21 November 2002).
 C
 C     MP2 pair energies and CBS scaling factors
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       PARAMETER (DP25 = 0.25D0, DP75 = 0.75D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION T2AM(*),FCDIAG(*),ES(*),ET(*),QS(*),QT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       N12 = NRHFT * (NRHFT + 1)/2
       CALL DZERO(ES,N12)
@@ -5406,20 +5656,20 @@ C     Written by Wim Klopper (University of Karlsruhe, 21 November 2002).
 C
 C     Coupled-cluster pair energies and CBS scaling factors
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (DP5 = 0.5D0, D1P5 = 1.5D0)
-#include <priunit.h>
-#include <iratdef.h>
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION T1AM(*),T2AM(*),WORK(*),
      *          ET1S(*),ET1T(*),ET2S(*),ET2T(*)
       CHARACTER*5 ETY
       LOGICAL LEXIST
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <ccinftap.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "ccinftap.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       N12 = NRHFT * (NRHFT + 1)/2 
       CALL DZERO(ET1S,N12)
@@ -5516,10 +5766,10 @@ C     Thomas Bondo Pedersen, July 2003.
 C
 C     Returns .TRUE. if occupied orbital I of symmetry ISYM is frozen.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -5561,10 +5811,10 @@ C     Thomas Bondo Pedersen, July 2003.
 C
 C     Returns .TRUE. if virtual orbital A of symmetry ISYM is frozen.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
       INTEGER A
       INTEGER AA

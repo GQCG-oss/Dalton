@@ -1,36 +1,31 @@
 /*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, 
-C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+
+
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+
+!
+
 */
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* general.c:
@@ -223,8 +218,8 @@ dftpot1_(SecondDrv *ds, const real* w, const FunDensProp* dp,
    to rho and zeta=|\nabla\rho|
 */
 void
-dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, int isgga,
-         int triplet)
+dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, integer isgga,
+         integer triplet)
 {
     FunThirdFuncDrv drvs;
 
@@ -533,6 +528,7 @@ dft_dens_unrestricted(DftDensity* dens, FunDensProp* dp, DftGrid* grid,
 
 #if defined(VAR_MPI)
 #include <mpi.h>
+#include <our_extra_mpi.h>
 #define MASTER_NO 0
 /* =================================================================== */
 /* General parallel routines.
@@ -582,12 +578,13 @@ mpi_sync_data(const SyncData* data, int count)
     }
 }
 
-
+/* defined parallel calculation types */
+#include "iprtyp.h"
 void
 dft_wake_slaves(DFTPropEvalMaster evaluator)
 {
-    static int iprtyp = 5; /* magic DFT/C number */
-    static int iprint = 0;
+    static integer iprtyp = DFT_C_WORK; /* magic DFT/C number */
+    static integer iprint = 0;
     int id, mynum;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
@@ -606,10 +603,25 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
         return;
     }
     /* ignore MPI errors */
-    MPI_Bcast(&iprtyp,1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&iprint,1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&id,    1, MPI_INT, 0, MPI_COMM_WORLD);
-    void FSYM(dftintbcast)();
+#ifdef VAR_INT64      
+/*        
+    printf("waking up slaves with iprtyp %lld and iprint %lld \n",iprtyp, iprint);
+    printf(" id is %lld \n",id);
+*/
+#else
+/*        
+    printf("waking up slaves with iprtyp %d and iprint %d \n",iprtyp, iprint);
+    printf(" id is %d \n",id);
+*/
+#endif
+      
+    MPI_Bcast(&iprtyp,1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    MPI_Bcast(&iprint,1, fortran_MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    MPI_Bcast(&id,    1, MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    /*
+    printf("id %d bcast",id);
+    */
+    FSYM(dftintbcast)();
 }
 
 /* dft_cslave:
@@ -627,7 +639,10 @@ FSYM2(dft_cslave)(real* work, integer*lwork,integer*iprint)
     else {
         int id;
         MPI_Bcast(&id,1,MPI_INT, MASTER_NO, MPI_COMM_WORLD);
-        void FSYM(dftintbcast)();
+/*        
+        printf("done id bcast: id = %i mynum = %i; size = %i .\n", id, rank, size);
+*/        
+        FSYM(dftintbcast)();
         (PropEvaluatorList[id].slave_func)(work, lwork, iprint);
     }
 }
@@ -689,13 +704,16 @@ FSYM(dftfuncsync)(integer *mynum, integer *nodes)
     if(done) return;
     MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
     if(len>0) {
-        int res;
+        integer res;
         char *line = malloc(len);
         if(*mynum == 0)
             strcpy(line, DftConfString);
         MPI_Bcast(line, len, MPI_CHAR, 0, MPI_COMM_WORLD);
+/*        
+        printf("my line is %s its length is %i",line, len);
+*/
         if(*mynum != 0) {
-            int res;
+            integer res;
             FSYM(dftsetfunc)(line, &res, len);
         }
         free(line);

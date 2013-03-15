@@ -1,136 +1,148 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Henrik Koch,              University of Trondheim,      Norway     
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Mar  3 21:02:03 2005
-     Host name              : pi.biotech.kth.se                       
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
 
 
- Default print level:        0
+     Date and time (Linux)  : Wed Mar 16 17:51:22 2011 
+     Host name              : fe6                                     
 
-    Integral sections will be executed
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
-    Wave function sections will be executed
-
-Starting in Integral Section -
-
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
 
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
- Default print level:        1
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: CC2 relaxed FOP                                                         
+ 2: test calculation                                                        
+    ------------------------------------------------------------------------
 
- * Nuclear model: Point charge
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   6 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/aug-cc-pVDZ"
 
- Calculation of one- and two-electron Hamiltonian integrals.
-
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - dipole length integrals
-          - traceless quadrupole moment integrals
-          - second moments integrals
-          - mass velocity integrals
-          - 1-electron Darwin integrals
-          - Cartesien electric field gradient integrals
-
-
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
-
-
-
-  Title Cards
-  -----------
-
-  CC2 relaxed FOP                                                         
-  test calculation                                                        
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   8 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/aug-cc-pVDZ"
 
 
-  Symmetry Operations
-  -------------------
-
-  Symmetry operations: 2
-
-
-
-                      SYMGRP:Point group information
-                      ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: C2v
 
@@ -143,9 +155,9 @@ Point group: C2v
 
         |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
     Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
@@ -161,14 +173,14 @@ Point group: C2v
 
         | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
     A2  | A2   B2   B1   A1 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            C          12.000000
                            O          15.994915
@@ -176,66 +188,60 @@ Point group: C2v
                        Total mass:    27.994915 amu
                        Natural abundance:  98.663 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000000
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    2
 
   Basis set used is "aug-cc-pVDZ" from the basis set library.
 
-  label    atoms   charge   prim    cont     basis
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  C           1       6      35      23      [10s5p2d|4s3p2d]                             
-  O           1       8      35      23      [10s5p2d|4s3p2d]                             
+  C           1    6.0000    35    23      [10s5p2d|4s3p2d]                                   
+  O           1    8.0000    35    23      [10s5p2d|4s3p2d]                                   
   ----------------------------------------------------------------------
-  total:      2      14      70      46
+  total:      2   14.0000    70    46
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates:  6
-
-   1   C        x      0.0000000000
-   2            y      0.0000000000
-   3            z      1.2182431300
-
-   4   O        x      0.0000000000
-   5            y      0.0000000000
-   6            z     -0.9139731000
+  Total number of coordinates:    6
+  C       :     1  x   0.0000000000    2  y   0.0000000000    3  z   1.2182431300
+  O       :     4  x   0.0000000000    5  y   0.0000000000    6  z  -0.9139731000
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   2  2  2  0
+  Number of coordinates in each symmetry:     2    2    2    0
 
   Symmetry  A1  ( 1)
 
-   1   C     z    3
-   2   O     z    6
+    1   C     z    3
+    2   O     z    6
 
   Symmetry  B1  ( 2)
 
-   3   C     x    1
-   4   O     x    4
+    3   C     x    1
+    4   O     x    4
 
   Symmetry  B2  ( 3)
 
-   5   C     y    2
-   6   O     y    5
+    5   C     y    2
+    6   O     y    5
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             C           O     
             ------      ------
@@ -243,12 +249,12 @@ Point group: C2v
  O     :    1.128320    0.000000
 
 
-  Max interatomic separation is    1.1283 Angstroms
-  between atoms "O     " and "C     ".
+  Max interatomic separation is    1.1283 Angstrom (    2.1322 Bohr)
+  between atoms    2 and    1, "O     " and "C     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -260,9 +266,9 @@ Point group: C2v
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    0.000000          0.000000    0.000000    1.000000
-   IB    8.728684          0.000000    1.000000    0.000000
-   IC    8.728684          1.000000    0.000000    0.000000
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB       8.728684          0.000000    1.000000    0.000000
+   IC       8.728684          1.000000    0.000000    0.000000
 
 
  Rotational constants
@@ -273,13 +279,13 @@ Point group: C2v
                B =        57898.65 MHz     (    1.931291 cm-1)
 
 
-  Nuclear repulsion energy :   22.511788121977
+@  Nuclear repulsion energy :   22.511788121977
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              22  10  10   4
+  Number of orbitals in each symmetry:          22   10   10    4
 
 
   Symmetry  A1 ( 1)
@@ -348,52 +354,60 @@ Point group: C2v
   Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in HUCKEL is   0.01 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+          - traceless quadrupole moment integrals
+          - second moment integrals
+          - mass velocity integrals
+          - 1-electron Darwin integrals
+          - Cartesien electric field gradient integrals
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.000000160271
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
- >>> Time used in DIPLEN is   0.00 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
-
- >>> Time used in THETA  is   0.01 seconds
-
-
- >>> Time used in SECMOM is   0.01 seconds
-
-
- >>> Time used in MASSVL is   0.03 seconds
-
-
- >>> Time used in DARWIN is   0.00 seconds
-
-
- >>> Time used in ELFGRD is   0.01 seconds
-
-
- >>> Time used in ONEDRV is   0.01 seconds
-
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:      129929 ( 22.2% )
  Megabytes written:                              1.491
 
+ >>>> Total CPU  time used in HERMIT:   0.14 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
- >>> Time used in TWOINT is   0.22 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.33 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
-
-- End of Integral Section
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
 
  *** Output from Huckel module :
@@ -403,27 +417,28 @@ Starting in Wave Function Section -
      Number of Huckel orbitals each symmetry:    6    2    2    0
 
  EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
- which normally is better than Extended Huckel Theory.
- Reference: Linderberg and Ohrm, Propagators in Quantum Chemistry (Wiley, 1973)
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
 
  Huckel EWMO eigenvalues for symmetry :  1
-          -20.679147     -11.341397      -1.563242      -0.797806      -0.467412
-           -0.140576
+          -20.685997     -11.349518      -1.578780      -0.796800      -0.456136
+           -0.137669
 
  Huckel EWMO eigenvalues for symmetry :  2
-           -0.734370      -0.320258
+           -0.717166      -0.305934
 
  Huckel EWMO eigenvalues for symmetry :  3
-           -0.734370      -0.320258
+           -0.717166      -0.305934
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Mar  3 21:02:04 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:51:22 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      CC2 relaxed FOP                                                         
      test calculation                                                        
 
@@ -435,7 +450,7 @@ Starting in Wave Function Section -
 
      This is a combination run starting with
 
-               a RHF calculation
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -443,12 +458,13 @@ Starting in Wave Function Section -
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 46
 
      Spin multiplicity                         1
      Total number of symmetries                4
@@ -456,39 +472,45 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2   3   4
-                                       --  --  --  --
-     Occupied SCF orbitals              5   1   1   0
-     Secondary orbitals                17   9   9   4
-     Total number of orbitals          22  10  10   4
-     Number of basis functions         22  10  10   4
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Occupied SCF orbitals               7 |    5    1    1    0
+     Secondary orbitals                 39 |   17    9    9    4
+     Total number of orbitals           46 |   22   10   10    4
+     Number of basis functions          46 |   22   10   10    4
 
      Optimization information
      ========================
-     Number of configurations              1
-     Number of orbital rotations         103
-     ---------------------------------------
-     Total number of variables           104
+     Number of configurations                 1
+     Number of orbital rotations            103
+     ------------------------------------------
+     Total number of variables              104
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-10
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-10
 
 
  Changes of defaults for CC:
  ---------------------------
 
+ -Dipole moment calculated
+ -Traceless quadrupole moment calculated
+ -Electric field gradient calculated
+ -Relativistic corrections to energy calculated
+ -Electronic second moment of charge calculated
+  
 
- Dipole moment calculated
 
- Traceless quadrupole moment calculated
+ Changes of defaults for CC:
+ ---------------------------
 
- Electric field gradient calculated
-
- Relativistic corrections to energy calculated
-
- Electronic second moment of charge calculated
+ -Dipole moment calculated
+ -Traceless quadrupole moment calculated
+ -Electric field gradient calculated
+ -Relativistic corrections to energy calculated
+ -Electronic second moment of charge calculated
   
 
 
@@ -497,58 +519,92 @@ Starting in Wave Function Section -
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -112.480399735        2.16231D+00   -1.12D+02    1
+      Virial theorem: -V/T =      2.006808
+      MULPOP  C       0.37; O      -0.37; 
+ -----------------------------------------------------------------------------
+   2    -112.741948953        4.70063D-01   -2.62D-01    2
+      Virial theorem: -V/T =      1.998075
+      MULPOP  C       0.22; O      -0.22; 
+ -----------------------------------------------------------------------------
+   3    -112.753693011        1.16680D-01   -1.17D-02    3
+      Virial theorem: -V/T =      2.001140
+      MULPOP  C       0.29; O      -0.29; 
+ -----------------------------------------------------------------------------
+   4    -112.754433788        7.00937D-02   -7.41D-04    4
+      Virial theorem: -V/T =      2.002221
+      MULPOP  C       0.24; O      -0.24; 
+ -----------------------------------------------------------------------------
+   5    -112.754678811        1.18661D-02   -2.45D-04    5
+      Virial theorem: -V/T =      2.001543
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+   6    -112.754690486        2.73734D-03   -1.17D-05    6
+      Virial theorem: -V/T =      2.001609
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+   7    -112.754691101        4.60855D-04   -6.16D-07    7
+      Virial theorem: -V/T =      2.001618
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+   8    -112.754691121        5.00809D-05   -1.93D-08    8
+      Virial theorem: -V/T =      2.001620
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+   9    -112.754691121        5.47937D-06   -3.87D-10    9
+      Virial theorem: -V/T =      2.001620
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+  10    -112.754691121        7.14785D-07   -4.66D-12   10
+      Virial theorem: -V/T =      2.001620
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+  11    -112.754691121        1.04850D-07   -1.99D-13   10
+      Virial theorem: -V/T =      2.001620
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+  12    -112.754691121        1.09904D-08    0.00D+00   10
+      Virial theorem: -V/T =      2.001620
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+  13    -112.754691121        1.32621D-09    5.68D-14   10
+      Virial theorem: -V/T =      2.001620
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+  14    -112.754691121        1.64958D-10    5.68D-14   10
+      Virial theorem: -V/T =      2.001620
+      MULPOP  C       0.26; O      -0.26; 
+ -----------------------------------------------------------------------------
+  15    -112.754691121        1.84087D-11    0.00D+00   10
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.02 seconds
-
-    1     -112.472734014606    2.17810E+00   -1.12E+02    1
-    2     -112.741149117189    5.23719E-01   -2.68E-01    2
-    3     -112.753437442073    1.27003E-01   -1.23E-02    3
-    4     -112.754360966626    8.23553E-02   -9.24E-04    4
-    5     -112.754677857697    1.11138E-02   -3.17E-04    5
-    6     -112.754690412931    3.04223E-03   -1.26E-05    6
-    7     -112.754691100241    4.75493E-04   -6.87E-07    7
-    8     -112.754691120608    5.13539E-05   -2.04E-08    8
-    9     -112.754691121001    5.43034E-06   -3.93E-10    9
-   10     -112.754691121006    6.99723E-07   -4.53E-12   10
-   11     -112.754691121006    1.07515E-07   -6.39E-14   10
-   12     -112.754691121006    1.08047E-08   -7.11E-15   10
-   13     -112.754691121006    1.30721E-09   -7.11E-15   10
-   14     -112.754691121006    1.74142E-10   -7.11E-15   10
-   15     -112.754691121006    1.92938E-11   -7.11E-15   10
- DIIS converged in  15 iterations !
+ *** DIIS converged in  15 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   14
  Orbital occupations :    5    1    1    0
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -20.67846452   -11.37381290    -1.52990942    -0.80830438    -0.55469059
+  1    -20.67846452   -11.37381290    -1.52990942    -0.80830438    -0.55469059
          0.08132473     0.10569535     0.22525041     0.33495984     0.43391281
 
- Hartree-Fock orbital energies, symmetry 2
-
-        -0.64098997     0.07903855     0.17092708     0.24793545     0.60312300
+  2     -0.64098997     0.07903855     0.17092708     0.24793545     0.60312300
          0.74604265
 
- Hartree-Fock orbital energies, symmetry 3
-
-        -0.64098997     0.07903855     0.17092708     0.24793545     0.60312300
+  3     -0.64098997     0.07903855     0.17092708     0.24793545     0.60312300
          0.74604265
 
- Hartree-Fock orbital energies, symmetry 4
+  4      0.43391281     1.05443041     1.65308723     3.54993388
 
-         0.43391281     1.05443041     1.65308723     3.54993388
-
-    E(LUMO) :     0.07903855 au (symmetry 2)
+    E(LUMO) :     0.07903855 au (symmetry 3)
   - E(HOMO) :    -0.55469059 au (symmetry 1)
   ------------------------------------------
     gap     :     0.63372913 au
@@ -556,89 +612,108 @@ Starting in Wave Function Section -
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -112.754691121006
+     Final HF energy:            -112.754691121006                 
      Nuclear repulsion:            22.511788121977
-     Electronic energy:          -135.266479242982
+     Electronic energy:          -135.266479242983
 
-     Final gradient norm:           0.000000000019
+     Final gradient norm:           0.000000000018
 
  
-     Date and time (Linux)  : Thu Mar  3 21:02:04 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:51:22 2011 
+     Host name              : fe6                                     
 
-     Molecular orbitals for symmetry species   1
+ (Only coefficients >0.0100 are printed.)
 
- Orbital          1        2        3        4        5
-   1  C   1s    -0.0003   1.0028  -0.0073   0.0077  -0.0086
-   2  C   1s    -0.0007   0.0115   0.4619   0.5963   0.5823
-   3  C   1s    -0.0052  -0.0053  -0.1669  -0.1005   0.1168
-   4  C   1s    -0.0012   0.0006   0.0132   0.0326   0.0218
-   5  C   2pz    0.0003  -0.0073  -0.3285  -0.2029   0.6944
-   6  C   2pz    0.0038   0.0035   0.1518   0.0840  -0.1329
-   7  C   2pz    0.0002   0.0001  -0.0015  -0.0064   0.0124
-   8  C   3d0    0.0006   0.0016   0.0455   0.0244  -0.0385
-   9  C   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
-  10  C   3d0   -0.0015  -0.0009  -0.0167   0.0002   0.0046
-  11  C   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
-  12  O   1s    -1.0012  -0.0001  -0.0096  -0.0022  -0.0027
-  13  O   1s    -0.0051   0.0023   0.8252  -0.4661  -0.0755
-  14  O   1s     0.0097  -0.0055  -0.1131  -0.1521   0.0642
-  15  O   1s     0.0025  -0.0007  -0.0415  -0.1188   0.0900
-  16  O   2pz   -0.0026   0.0009   0.2358   0.7252  -0.3687
-  17  O   2pz    0.0040  -0.0056  -0.1003  -0.1180   0.0719
-  18  O   2pz    0.0002   0.0001  -0.0227  -0.0096   0.0089
-  19  O   3d0   -0.0005   0.0005   0.0225   0.0222  -0.0155
-  20  O   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
-  21  O   3d0    0.0006  -0.0027  -0.0171  -0.0044   0.0178
-  22  O   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   2
+    Orbital         1        2        3        4        5        6        7
+   1 C   :1s    -0.0003   1.0028  -0.0073   0.0077  -0.0086   0.0157   0.0131
+   2 C   :1s    -0.0007   0.0115   0.4619   0.5963   0.5823   0.1447  -0.1310
+   3 C   :1s    -0.0052  -0.0053  -0.1669  -0.1005   0.1168  -0.9664   0.0741
+   4 C   :1s    -0.0012   0.0006   0.0132   0.0326   0.0218  -3.2724   0.9557
+   5 C   :2pz    0.0003  -0.0073  -0.3285  -0.2029   0.6944   0.1425  -0.1273
+   6 C   :2pz    0.0038   0.0035   0.1518   0.0840  -0.1329   0.7048  -0.3512
+   7 C   :2pz    0.0002   0.0001  -0.0015  -0.0064   0.0124   1.2127   1.2071
+   8 C   :3d0    0.0006   0.0016   0.0455   0.0244  -0.0385  -0.0202   0.0386
+  10 C   :3d0   -0.0015  -0.0009  -0.0167   0.0002   0.0046  -0.1626  -0.0238
+  12 O   :1s    -1.0012  -0.0001  -0.0096  -0.0022  -0.0027  -0.0116   0.0126
+  13 O   :1s    -0.0051   0.0023   0.8252  -0.4661  -0.0755   0.0690   0.0878
+  14 O   :1s     0.0097  -0.0055  -0.1131  -0.1521   0.0642   0.4222  -0.1863
+  15 O   :1s     0.0025  -0.0007  -0.0415  -0.1188   0.0900   3.4274  -0.3216
+  16 O   :2pz   -0.0026   0.0009   0.2358   0.7252  -0.3687  -0.0791   0.0330
+  17 O   :2pz    0.0040  -0.0056  -0.1003  -0.1180   0.0719   0.2623  -0.0887
+  18 O   :2pz    0.0002   0.0001  -0.0227  -0.0096   0.0089   0.7377  -0.5808
+  19 O   :3d0   -0.0005   0.0005   0.0225   0.0222  -0.0155   0.0018  -0.0006
+  21 O   :3d0    0.0006  -0.0027  -0.0171  -0.0044   0.0178   0.0418  -0.0247
 
- Orbital          1
-   1  C   2px   -0.4362
-   2  C   2px    0.1076
-   3  C   2px    0.0053
-   4  C   3d1+   0.0563
-   5  C   3d1+  -0.0104
-   6  O   2px   -0.7988
-   7  O   2px    0.0016
-   8  O   2px   -0.0375
-   9  O   3d1+  -0.0276
-  10  O   3d1+  -0.0226
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   3
+    Orbital         1        2        3
+   1 C   :2px   -0.4362  -0.2429   0.6714
+   2 C   :2px    0.1076  -0.0477   0.5727
+   3 C   :2px    0.0053  -1.3029  -0.4587
+   4 C   :3d1+   0.0563  -0.0266  -0.0146
+   5 C   :3d1+  -0.0104   0.0525   0.0365
+   6 O   :2px   -0.7988   0.2759  -0.3273
+   7 O   :2px    0.0016   0.0462  -0.1548
+   8 O   :2px   -0.0375   0.5921  -0.4418
+   9 O   :3d1+  -0.0276  -0.0037   0.0194
+  10 O   :3d1+  -0.0226   0.0022  -0.0278
 
- Orbital          1
-   1  C   2py   -0.4362
-   2  C   2py    0.1076
-   3  C   2py    0.0053
-   4  C   3d1-   0.0563
-   5  C   3d1-  -0.0104
-   6  O   2py   -0.7988
-   7  O   2py    0.0016
-   8  O   2py   -0.0375
-   9  O   3d1-  -0.0276
-  10  O   3d1-  -0.0226
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 C   :2py   -0.4362  -0.2429   0.6714
+   2 C   :2py    0.1076  -0.0477   0.5727
+   3 C   :2py    0.0053  -1.3029  -0.4587
+   4 C   :3d1-   0.0563  -0.0266  -0.0146
+   5 C   :3d1-  -0.0104   0.0525   0.0365
+   6 O   :2py   -0.7988   0.2759  -0.3273
+   7 O   :2py    0.0016   0.0462  -0.1548
+   8 O   :2py   -0.0375   0.5921  -0.4418
+   9 O   :3d1-  -0.0276  -0.0037   0.0194
+  10 O   :3d1-  -0.0226   0.0022  -0.0278
+
+ Molecular orbitals for symmetry species  4
+ ------------------------------------------
+
+    Orbital         1        2
+   1 C   :3d2-   0.0293  -0.0783
+   2 C   :3d2-  -1.0140   0.5839
+   3 O   :3d2-  -0.0227   0.0199
+   4 O   :3d2-   0.0047  -1.1372
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.08 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.05 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:02:04 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:51:22 2011 
+     Host name              : fe6                                     
 
 
-Starting Coupled Cluster -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
 
   
 
@@ -653,189 +728,14 @@ Starting Coupled Cluster -
  *******************************************************************************
 
 
- LWORK =        20000000
+ LWORK =       100000000
 
 
 
-                        +--------------------------+
-                        ! Information from CCSDSYM !
-                        +--------------------------+
+ CCR12 ANSATZ =   0
 
-   NNBST  :     373     260     260     188
-   NT1AM  :     103      66      66      38
-   NT2AM  :   10519    9306    9306    8270
-   NG1AM  :       0       0       0       0
-   NH1AM  :     103      66      66      38
-   NH2AM  :   10519    9306    9306    8270
-   NDISAO :   14158   12370   12370   10828
-   NDSRHF :    2385    1861    1861    1460
-   ILMRHF :       0     110     120     130
-   ILMVIR :     130     504     594     684
-   NT1AO  :     130      76      76      40
-   NT2AO  :   15187   12920   12920   10976
-   N2BST  :     700     520     520     376
-   NT2BCD :     647     471     471     322
-   NT2BGD :     802     550     550     352
-   NMATIJ :      27      10      10       2
-   NGAMMA :     491     290     290     154
-   NEMAT1 :     570     444     444     336
-   NMATAB :     467     378     378     298
-   NT2AOS :   30052   25840   25840   21952
-   NT2SQ  :   20765   18612   18612   16540
-   NMIJP  :      17       5       5       1
-   NT2ORT :    9129    7485    7485    6169
-   NGLMDT :     700     520     520     376
-   NGLMRH :     130      76      76      40
-   NLRHFR :     130      76      76      40
+ CCR12 APPROX =   0
 
-   IDSAOG :       0       0       0       0
-   IDSAOG :    8206    5720    5720    4136
-   IDSAOG :   10806    9450    7600    6736
-   IDSAOG :   13406   11330   11330    9336
-
-   IT1AM  :       0      45      49      38
-   IT1AM  :       0      85      29      66
-   IT1AM  :       0      20      94      66
-   IT1AM  :       0      45      62     103
-
-   IH1AM  :       0      45      49      38
-   IH1AM  :       0      85      29      66
-   IH1AM  :       0      20      94      66
-   IH1AM  :       0      45      62     103
-
-   IT2AM  :       0       0       0    4356
-   IT2AM  :       0    5356       0    6798
-   IT2AM  :       0       0    7567    6798
-   IT2AM  :    4356    6798    6798    9778
-
-   IT1AO  :       0      50      54      40
-   IT1AO  :       0     110      30      76
-   IT1AO  :       0      20     120      76
-   IT1AO  :       0      50      72     130
-
-   IT2AO  :       0       0       0    5776
-   IT2AO  :       0    8515       0    9880
-   IT2AO  :       0       0   11441    9880
-   IT2AO  :    5776    9880    9880   14367
-
-   IT2SQ  :       0    6798    9306   12626
-   IT2SQ  :       0   10609    8270   16104
-   IT2SQ  :       0    3914   14965   16104
-   IT2SQ  :       0    6798   13596   19321
-
-   IAODIS :       0     220     260     288
-   IAODIS :       0     484     188     480
-   IAODIS :       0      88     584     480
-   IAODIS :       0     220     440     684
-
-   IT2BCD :       0     330     368     322
-   IT2BCD :       0     515     256     471
-   IT2BCD :       0     190     581     471
-   IT2BCD :       0     330     433     647
-
-   IT2BGD :       0     380     420     352
-   IT2BGD :       0     650     276     550
-   IT2BGD :       0     200     726     550
-   IT2BGD :       0     380     510     802
-
-   IMATIJ :       0       5       5       2
-   IMATIJ :       0      25       1      10
-   IMATIJ :       0       0      26      10
-   IMATIJ :       0       5      10      27
-
-   IGAMMA :       0       0       0     100
-   IGAMMA :       0     378       0     270
-   IGAMMA :       0       0     433     270
-   IGAMMA :     100     270     270     488
-
-   IDSRHF :       0    1300    1488    1460
-   IDSRHF :       0    1865    1200    1861
-   IDSRHF :       0     940    2125    1861
-   IDSRHF :       0    1300    1673    2385
-
-   IT1AMT :       0      17      17      18
-   IT1AMT :       0      85       9      62
-   IT1AMT :       0       0      94      62
-   IT1AMT :       0      17      62     103
-
-   IT1AOT :       0      22      22      20
-   IT1AOT :       0     110      10      72
-   IT1AOT :       0       0     120      72
-   IT1AOT :       0      22      72     130
-
-   IT2BCT :       0     103     103     132
-   IT2BCT :       0     515      66     433
-   IT2BCT :       0       0     581     433
-   IT2BCT :       0     103     433     647
-
-   IT2BGT :       0     130     130     152
-   IT2BGT :       0     650      76     510
-   IT2BGT :       0       0     726     510
-   IT2BGT :       0     130     510     802
-
-   IFCRHF :       0      50      54      40
-   IFCRHF :       0     110      30      76
-   IFCRHF :       0      20     120      76
-   IFCRHF :       0      50      72     130
-
-   IFCVIR :     130     246     282     288
-   IFCVIR :      76     504     198     480
-   IFCVIR :      76     108     594     480
-   IFCVIR :      40     246     444     684
-
-   IEMAT1 :       0     198     238     268
-   IEMAT1 :       0     374     178     408
-   IEMAT1 :       0      88     464     408
-   IEMAT1 :       0     198     368     554
-
-   IMATAB :       0     153     189     230
-   IMATAB :       0     289     149     342
-   IMATAB :       0      68     370     342
-   IMATAB :       0     153     306     451
-
-   IT2AOS :       0    9880   12920   16752
-   IT2AOS :       0   16900   10976   22800
-   IT2AOS :       0    5200   22676   22800
-   IT2AOS :       0    9880   19760   28452
-
-   IMIJP  :       0       0       0       1
-   IMIJP  :       0      15       0       5
-   IMIJP  :       0       0      16       5
-   IMIJP  :       1       5       5      17
-
-   IT2ORT :       0    4420    5360    5796
-   IT2ORT :       0    6341    4496    7225
-   IT2ORT :       0    3196    7641    7225
-   IT2ORT :       0    4420    6285    8941
-
-   IGLMRH :       0      50      54      40
-   IGLMRH :       0     110      30      76
-   IGLMRH :       0      20     120      76
-   IGLMRH :       0      50      72     130
-
-   IGLMVI :     130     246     282     288
-   IGLMVI :      76     504     198     480
-   IGLMVI :      76     108     594     480
-   IGLMVI :      40     246     444     684
-
-   NT2MMO :     647     471     471     322
-   NT2MMO :     471     647     322     471
-   NT2MMO :     471     322     647     471
-   NT2MMO :     322     471     471     647
-
-   NT2MAO :     802     550     550     352
-   NT2MAO :     550     802     352     550
-   NT2MAO :     550     352     802     550
-   NT2MAO :     352     550     550     802
-   NDSGRH :    2385    1861    1861    1460
-   NDSGRH :    1861    2385    1460    1861
-   NDSGRH :    1861    1460    2385    1861
-   NDSGRH :    1460    1861    1861    2385
-
-   NLAMDS :     700
-   NLRHSI :     130
-   NLAMDT :     700
-   NLMRHF :     130
    
 
  *******************************************************************
@@ -870,65 +770,107 @@ Starting Coupled Cluster -
 
 
 
-                     +-------------------------------+
-                     ! Coupled Cluster model is: CCS !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! Coupled Cluster model is: CCS !
+                         +-------------------------------+
 
   
 
 
-        +---------------------------------------------------------+
-        !   Relaxed  CCS    First-order one-electron properties:  !
-        +---------------------------------------------------------+
+             +--------------------------------------------------------+
+             !   Relaxed  CCS    First-order one-electron properties: !
+             +--------------------------------------------------------+
 
 
 
-                        +--------------------------+
-                        !  Electric Dipole Moment  !
-                        +--------------------------+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
 
 
 
-                      Total Molecular Dipole Moment
-                      -----------------------------
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
 
-                               au             Debye
+                 au               Debye          C m (/(10**-30)
 
-                    z      0.10221637      0.25980806
-
-                        1 a.u. =   2.54175 Debye 
+      z     -0.00232602        -0.00591215        -0.01972082
 
 
 
 
+                     Electronic contribution to dipole moment
+                     ----------------------------------------
 
-                      +------------------------------+
-                      !  Electric Quadrupole Moment  !
-                      +------------------------------+
+                 au               Debye          C m (/(10**-30)
+
+      z      0.10454239         0.26572022         0.88634725
+
+
+ Electronic dipole moment (au):   0.000000000       0.000000000      0.1045423851    
 
 
 
-                    Total Molecular quadrupole moment
-                    ---------------------------------
+
+                          Total Molecular Dipole Moment
+                          -----------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      z      0.10221637         0.25980807         0.86662643
+
+
+
+
+                          +-----------------------------+
+                          !  Electric Quadrupole Moment !
+                          +-----------------------------+
+
+
+
+                       Nuclear contr. to quadrupole moment
+                       -----------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       0.79101074     0.00000000     0.00000000
-       2       0.00000000     0.79101074     0.00000000
-       3       0.00000000     0.00000000    -1.58202147
+              Column   1    Column   2    Column   3
+       1     -7.79373628    0.00000000    0.00000000
+       2      0.00000000   -7.79373628    0.00000000
+       3      0.00000000    0.00000000   15.58747256
 
 
-                  +--------------------------------------+
-                  !  Electronic second moment of charge  !
-                  +--------------------------------------+
+                      Electronic contr. to quadrupole moment
+                      --------------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       7.61982381     0.00000000     0.00000000
-       2       0.00000000     7.61982381     0.00000000
-       3       0.00000000     0.00000000    24.78931784
+              Column   1    Column   2    Column   3
+       1     -8.58474702    0.00000000    0.00000000
+       2      0.00000000   -8.58474702    0.00000000
+       3      0.00000000    0.00000000   17.16949404
+
+
+                        Total Molecular quadrupole moment
+                        ---------------------------------
+
+                    X              Y              Z
+
+              Column   1    Column   2    Column   3
+       1      0.79101074    0.00000000    0.00000000
+       2      0.00000000    0.79101074    0.00000000
+       3      0.00000000    0.00000000   -1.58202147
+
+
+                      +-------------------------------------+
+                      !  Electronic second moment of charge !
+                      +-------------------------------------+
+
+                    X              Y              Z
+
+              Column   1    Column   2    Column   3
+       1      7.61982381    0.00000000    0.00000000
+       2      0.00000000    7.61982381    0.00000000
+       3      0.00000000    0.00000000   24.78931784
 
  Alfa**2 Invariant:                        178.035342
  Beta**2 Invariant:                        294.791525
@@ -937,14 +879,14 @@ Starting Coupled Cluster -
  Property anisotropy invariant:             17.169494 a.u.
 
 
-                       +----------------------------+
-                       !  Electric Field Gradients  !
-                       +----------------------------+
+                           +---------------------------+
+                           !  Electric Field Gradients !
+                           +---------------------------+
 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            C          12.000000
                            O          15.994915
@@ -952,69 +894,73 @@ Starting Coupled Cluster -
                        Total mass:    27.994915 amu
                        Natural abundance:  98.663 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000000
 
 
-  *********************************************************************
-  **************** ABACUS - Nuclear Quadrupole moments ****************
-  *********************************************************************
+      *********************************************************************
+      **************** ABACUS - Nuclear Quadrupole moments ****************
+      *********************************************************************
 
 
 Total non-diagonalized EFG Tensor   C     
 
-               Column   1     Column   2     Column   3
-       1       0.51799495     0.00000000     0.00000000
-       2       0.00000000     0.51799495     0.00000000
-       3       0.00000000     0.00000000    -1.03598990
+              Column   1    Column   2    Column   3
+       1      0.51799495    0.00000000    0.00000000
+       2      0.00000000    0.51799495    0.00000000
+       3      0.00000000    0.00000000   -1.03598990
 
 Total non-diagonalized EFG Tensor   O     
 
-               Column   1     Column   2     Column   3
-       1       0.25986404     0.00000000     0.00000000
-       2       0.00000000     0.25986404     0.00000000
-       3       0.00000000     0.00000000    -0.51972808
+              Column   1    Column   2    Column   3
+       1      0.25986404    0.00000000    0.00000000
+       2      0.00000000    0.25986404    0.00000000
+       3      0.00000000    0.00000000   -0.51972808
+ String on input: "C       "
+ String on input: "C       "
+ String on input: "O       "
+ String on input: "O       "
 
 EFG Principal axis                  C     
 
-               Column   1     Column   2     Column   3
-       1       1.00000000     0.00000000     0.00000000
-       2       0.00000000     1.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000
+              Column   1    Column   2    Column   3
+       1      1.00000000    0.00000000    0.00000000
+       2      0.00000000    1.00000000    0.00000000
+       3      0.00000000    0.00000000    1.00000000
 
 EFG Principal axis                  O     
 
-               Column   1     Column   2     Column   3
-       1       1.00000000     0.00000000     0.00000000
-       2       0.00000000     1.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000
+              Column   1    Column   2    Column   3
+       1      1.00000000    0.00000000    0.00000000
+       2      0.00000000    1.00000000    0.00000000
+       3      0.00000000    0.00000000    1.00000000
 
 
-                  Nuclear quadrupole moment for   C     
-                  --------------------------------------
+                         Nuclear quadrupole moment for C
+                         -------------------------------
 
 
 
-                  Nuclear quadrupole moment for   O     
-                  --------------------------------------
+                         Nuclear quadrupole moment for O
+                         -------------------------------
 
           Spin     :  2.5          Quadrupole moment:-.02558000
                             au           MHz        Gauss
  O      17    Vx =       0.259864    -1.561887    -0.557966
  O      17    Vy =       0.259864    -1.561887    -0.557966
- O      17    Vz =      -0.519728     3.123773     1.115932
+ O      17    Vz =      -0.519728     3.123773     1.115933
                  Asymmetry constant eta:      0.000000
-                 Auxiliary value au  1/T  0.424194E-05
+                 Auxiliary value au  1/T  0.424194D-05
 
 
-      +-------------------------------------------------------------+
-      !  Pauli relativistic corrections to the ground-state energy  !
-      +-------------------------------------------------------------+
+           +------------------------------------------------------------+
+           !  Pauli relativistic corrections to the ground-state energy !
+           +------------------------------------------------------------+
 
   
-         1-elec. Darwin term:      0.260552168
+         1-elec. Darwin term:      0.260552166
          ------------------- 
   
-         Mass-Velocity term:      -0.327183853
+         Mass-Velocity term:      -0.327183850
          ------------------  
   
          Mass-Velocity + 1-elec. Darwin terms:      -0.066631684
@@ -1024,9 +970,15 @@ EFG Principal axis                  O
 
  Ground state energy is target 
 
- Ecorr =                   -112.75469112100557822487
+ Ecorr =                   -112.75469112100648771957
 
  *******************************************************************
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
    
 
  *******************************************************************
@@ -1048,9 +1000,9 @@ EFG Principal axis                  O
 
 
 
-                    +---------------------------------+
-                    ! Largest amplitudes in MP2 guess !
-                    +---------------------------------+
+                        +---------------------------------+
+                        ! Largest amplitudes in MP2 guess !
+                        +---------------------------------+
 
 
 
@@ -1064,8 +1016,6 @@ EFG Principal axis                  O
           Double Excitation Contribution :             100.0000 %
 
           ||T1||/||T2||                  :               0.0000
-
-          Tau1 diagnostic                :               0.0000
 
           Norm of Total Amplitude Vector :               0.2070
 
@@ -1105,169 +1055,170 @@ EFG Principal axis                  O
 
 
           Printed all double excitations greater than 0.016667
- Iter.  1: Coupled cluster MP2   energy :    -113.0587392087982437
-     Conventional correlation energy:    -0.3040480877926655
+ Iter.  1: Coupled cluster MP2   energy :    -113.0587392087982153
+     Conventional correlation energy:    -0.3040480877917275
 
        Iteration no.:  1
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.0000000000E+00
-       Norm of t2am   after ccvec:         0.4286742118E-01
-       Norm of omega1 after ccvec:         0.3865103260E-02
-       Norm of omega2 after ccvec:         0.3213156340E-30
- Iter.  1: Coupled cluster CC2   energy :    -113.0581279390776501
-     Conventional correlation energy:    -0.3034368180720719
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.0000000000D+00
+       Norm^2 of t2am   after ccvec:        0.4286742118D-01
+       Norm^2 of omega1 after ccvec:        0.3865103260D-02
+       Norm^2 of omega2 after ccvec:        0.1881708447D-26
+ Iter.  1: Coupled cluster CC2   energy :    -113.0581279390781617
+     Conventional correlation energy:    -0.3034368180716740
 
        Iteration no.:  2
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.2730826715E-02
-       Norm of t2am   after ccvec:         0.4286742118E-01
-       Norm of omega1 after ccvec:         0.2161316770E-03
-       Norm of omega2 after ccvec:         0.9113955481E-03
- Iter.  2: Coupled cluster CC2   energy :    -113.0639752308364763
-     Conventional correlation energy:    -0.3092841098308980
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.2730826715D-02
+       Norm^2 of t2am   after ccvec:        0.4286742118D-01
+       Norm^2 of omega1 after ccvec:        0.2161316770D-03
+       Norm^2 of omega2 after ccvec:        0.9113955481D-03
+ Iter.  2: Coupled cluster CC2   energy :    -113.0639752308384800
+     Conventional correlation energy:    -0.3092841098319923
 
        Iteration no.:  3
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.3332918262E-02
-       Norm of t2am   after ccvec:         0.4554171069E-01
-       Norm of omega1 after ccvec:         0.1038249414E-03
-       Norm of omega2 after ccvec:         0.1427400091E-04
- Iter.  3: Coupled cluster CC2   energy :    -113.0658978420939320
-     Conventional correlation energy:    -0.3112067210883538
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.3332918262D-02
+       Norm^2 of t2am   after ccvec:        0.4554171069D-01
+       Norm^2 of omega1 after ccvec:        0.1038249414D-03
+       Norm^2 of omega2 after ccvec:        0.1427400091D-04
+ Iter.  3: Coupled cluster CC2   energy :    -113.0658978420941025
+     Conventional correlation energy:    -0.3112067210876148
 
        Iteration no.:  4
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5373739376E-02
-       Norm of t2am   after ccvec:         0.4663306297E-01
-       Norm of omega1 after ccvec:         0.2108937293E-05
-       Norm of omega2 after ccvec:         0.2634593981E-05
- Iter.  4: Coupled cluster CC2   energy :    -113.0658058952697189
-     Conventional correlation energy:    -0.3111147742641407
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5373739376D-02
+       Norm^2 of t2am   after ccvec:        0.4663306297D-01
+       Norm^2 of omega1 after ccvec:        0.2108937293D-05
+       Norm^2 of omega2 after ccvec:        0.2634593981D-05
+ Iter.  4: Coupled cluster CC2   energy :    -113.0658058952706568
+     Conventional correlation energy:    -0.3111147742641691
 
        Iteration no.:  5
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5519517781E-02
-       Norm of t2am   after ccvec:         0.4664349017E-01
-       Norm of omega1 after ccvec:         0.1995024971E-06
-       Norm of omega2 after ccvec:         0.1211979949E-06
- Iter.  5: Coupled cluster CC2   energy :    -113.0657944058299194
-     Conventional correlation energy:    -0.3111032848243411
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5519517781D-02
+       Norm^2 of t2am   after ccvec:        0.4664349017D-01
+       Norm^2 of omega1 after ccvec:        0.1995024970D-06
+       Norm^2 of omega2 after ccvec:        0.1211979949D-06
+ Iter.  5: Coupled cluster CC2   energy :    -113.0657944058317526
+     Conventional correlation energy:    -0.3111032848252648
 
        Iteration no.:  6
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5531554876E-02
-       Norm of t2am   after ccvec:         0.4664045966E-01
-       Norm of omega1 after ccvec:         0.4704781958E-08
-       Norm of omega2 after ccvec:         0.4774687288E-08
- Iter.  6: Coupled cluster CC2   energy :    -113.0657988348765031
-     Conventional correlation energy:    -0.3111077138709248
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5531554876D-02
+       Norm^2 of t2am   after ccvec:        0.4664045966D-01
+       Norm^2 of omega1 after ccvec:        0.4704781962D-08
+       Norm^2 of omega2 after ccvec:        0.4774687286D-08
+ Iter.  6: Coupled cluster CC2   energy :    -113.0657988348775973
+     Conventional correlation energy:    -0.3111077138711096
 
        Iteration no.:  7
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5536807713E-02
-       Norm of t2am   after ccvec:         0.4664240399E-01
-       Norm of omega1 after ccvec:         0.2175044917E-09
-       Norm of omega2 after ccvec:         0.2782987471E-09
- Iter.  7: Coupled cluster CC2   energy :    -113.0657983844539558
-     Conventional correlation energy:    -0.3111072634483776
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5536807713D-02
+       Norm^2 of t2am   after ccvec:        0.4664240399D-01
+       Norm^2 of omega1 after ccvec:        0.2175044926D-09
+       Norm^2 of omega2 after ccvec:        0.2782987468D-09
+ Iter.  7: Coupled cluster CC2   energy :    -113.0657983844557748
+     Conventional correlation energy:    -0.3111072634492871
 
        Iteration no.:  8
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5536096219E-02
-       Norm of t2am   after ccvec:         0.4664213614E-01
-       Norm of omega1 after ccvec:         0.1371921190E-10
-       Norm of omega2 after ccvec:         0.1215741818E-10
- Iter.  8: Coupled cluster CC2   energy :    -113.0657981113080126
-     Conventional correlation energy:    -0.3111069903024344
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5536096220D-02
+       Norm^2 of t2am   after ccvec:        0.4664213614D-01
+       Norm^2 of omega1 after ccvec:        0.1371921197D-10
+       Norm^2 of omega2 after ccvec:        0.1215741821D-10
+ Iter.  8: Coupled cluster CC2   energy :    -113.0657981113085668
+     Conventional correlation energy:    -0.3111069903020791
 
        Iteration no.:  9
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5535818082E-02
-       Norm of t2am   after ccvec:         0.4664202173E-01
-       Norm of omega1 after ccvec:         0.1015155153E-11
-       Norm of omega2 after ccvec:         0.8202552276E-12
- Iter.  9: Coupled cluster CC2   energy :    -113.0657981326901904
-     Conventional correlation energy:    -0.3111070116846122
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5535818082D-02
+       Norm^2 of t2am   after ccvec:        0.4664202173D-01
+       Norm^2 of omega1 after ccvec:        0.1015155185D-11
+       Norm^2 of omega2 after ccvec:        0.8202552328D-12
+ Iter.  9: Coupled cluster CC2   energy :    -113.0657981326886983
+     Conventional correlation energy:    -0.3111070116822106
 
        Iteration no.: 10
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5535847215E-02
-       Norm of t2am   after ccvec:         0.4664202267E-01
-       Norm of omega1 after ccvec:         0.1070076955E-12
-       Norm of omega2 after ccvec:         0.1597902661E-12
- Iter. 10: Coupled cluster CC2   energy :    -113.0657981581259719
-     Conventional correlation energy:    -0.3111070371203937
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5535847215D-02
+       Norm^2 of t2am   after ccvec:        0.4664202267D-01
+       Norm^2 of omega1 after ccvec:        0.1070076974D-12
+       Norm^2 of omega2 after ccvec:        0.1597902689D-12
+ Iter. 10: Coupled cluster CC2   energy :    -113.0657981581254035
+     Conventional correlation energy:    -0.3111070371189157
 
        Iteration no.: 11
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5535852251E-02
-       Norm of t2am   after ccvec:         0.4664203314E-01
-       Norm of omega1 after ccvec:         0.1951577085E-13
-       Norm of omega2 after ccvec:         0.1919917901E-13
- Iter. 11: Coupled cluster CC2   energy :    -113.0657981662446900
-     Conventional correlation energy:    -0.3111070452391118
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5535852251D-02
+       Norm^2 of t2am   after ccvec:        0.4664203314D-01
+       Norm^2 of omega1 after ccvec:        0.1951577068D-13
+       Norm^2 of omega2 after ccvec:        0.1919917943D-13
+ Iter. 11: Coupled cluster CC2   energy :    -113.0657981662472054
+     Conventional correlation energy:    -0.3111070452407176
 
        Iteration no.: 12
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5535859615E-02
-       Norm of t2am   after ccvec:         0.4664203620E-01
-       Norm of omega1 after ccvec:         0.4094449849E-15
-       Norm of omega2 after ccvec:         0.5723244597E-15
- Iter. 12: Coupled cluster CC2   energy :    -113.0657981673134742
-     Conventional correlation energy:    -0.3111070463078960
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5535859615D-02
+       Norm^2 of t2am   after ccvec:        0.4664203620D-01
+       Norm^2 of omega1 after ccvec:        0.4094443828D-15
+       Norm^2 of omega2 after ccvec:        0.5723246261D-15
+ Iter. 12: Coupled cluster CC2   energy :    -113.0657981673152932
+     Conventional correlation energy:    -0.3111070463088055
 
        Iteration no.: 13
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5535860657E-02
-       Norm of t2am   after ccvec:         0.4664203673E-01
-       Norm of omega1 after ccvec:         0.6605848340E-16
-       Norm of omega2 after ccvec:         0.5877823208E-16
- Iter. 13: Coupled cluster CC2   energy :    -113.0657981674296906
-     Conventional correlation energy:    -0.3111070464241124
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5535860657D-02
+       Norm^2 of t2am   after ccvec:        0.4664203673D-01
+       Norm^2 of omega1 after ccvec:        0.6605841140D-16
+       Norm^2 of omega2 after ccvec:        0.5877821485D-16
+ Iter. 13: Coupled cluster CC2   energy :    -113.0657981674288237
+     Conventional correlation energy:    -0.3111070464223360
 
        Iteration no.: 14
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.07 seconds
-       Norm of t1am   after ccvec:         0.5535861064E-02
-       Norm of t2am   after ccvec:         0.4664203680E-01
-       Norm of omega1 after ccvec:         0.2297477011E-17
-       Norm of omega2 after ccvec:         0.2385786965E-17
- Iter. 14: Coupled cluster CC2   energy :    -113.0657981674583112
-     Conventional correlation energy:    -0.3111070464527330
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm^2 of t1am   after ccvec:        0.5535861064D-02
+       Norm^2 of t2am   after ccvec:        0.4664203680D-01
+       Norm^2 of omega1 after ccvec:        0.2297453843D-17
+       Norm^2 of omega2 after ccvec:        0.2385787061D-17
+ Iter. 14: Coupled cluster CC2   energy :    -113.0657981674605992
+     Conventional correlation energy:    -0.3111070464541115
 
- CC2   energy converged to within   0.10E-09 is   -113.065798167
+ CC2   energy converged to within   0.10D-09 is   -113.065798167
+ Final 2-norm of the CC vector function:  2.16407969D-09
 
 
-                +------------------------------------------+
-                ! Largest amplitudes in converged solution !
-                +------------------------------------------+
+                    +------------------------------------------+
+                    ! Largest amplitudes in converged solution !
+                    +------------------------------------------+
 
 
 
@@ -1339,9 +1290,9 @@ EFG Principal axis                  O
 
 
 
-         +-------------------------------------------------------+
-         ! Final results from the Coupled Cluster energy program !
-         +-------------------------------------------------------+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
 
 
 
@@ -1354,13 +1305,13 @@ EFG Principal axis                  O
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
-       Time used in   RHS - TOTAL  :       0.08 seconds
+       Time used in   RHS - TOTAL  :       0.02 seconds
 
 
             E-intermediates calculated 
@@ -1379,25 +1330,25 @@ EFG Principal axis                  O
 
 
 
-                     +-------------------------------+
-                     ! Coupled Cluster model is: CC2 !
-                     +-------------------------------+
+                         +-------------------------------+
+                         ! Coupled Cluster model is: CC2 !
+                         +-------------------------------+
 
 
  Solving   1 response equations:
  L0 :
      Start vector generated from gradient
- CCEQ_SOL: IPRLE   =     6
+ CCEQ_SOL: IPRLE   =               6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     T
- CCEQ_SOL: NREDH   =     1
- CCEQ_SOL: MAXRED  =     200
- CCEQ_SOL: MAXLE   =     40
- CCEQ_SOL: ISIDE   =     -1
- CCEQ_SOL: ISTRVE  =     1
- CCEQ_SOL: NVEC    =     1
- CCEQ_SOL: NUPVEC  =     1
- CCEQ_SOL: NCCVAR  =     10622
+ CCEQ_SOL: NREDH   =               1
+ CCEQ_SOL: MAXRED  =             200
+ CCEQ_SOL: MAXLE   =              40
+ CCEQ_SOL: ISIDE   =              -1
+ CCEQ_SOL: ISTRVE  =               1
+ CCEQ_SOL: NVEC    =               1
+ CCEQ_SOL: NUPVEC  =               1
+ CCEQ_SOL: NCCVAR  =           10622
 
 
 
@@ -1405,409 +1356,383 @@ EFG Principal axis                  O
 
     Iter  #Vectors  time (min)   residual
     --------------------------------------
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  0.0729880333
+ Time used in CC_LHTR :  2.39970088005065918E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   1
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH             1
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 2.16809E-01
+ ROOT:  1 RESIDUAL TOT: 2.16809D-01
       1       1         0.00     0.22E+00
-
  Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  0.072988987
+ Time used in CC_LHTR :  2.29960083961486816E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   2
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH             2
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 1.67015E-01
+ ROOT:  1 RESIDUAL TOT: 1.67015D-01
       2       1         0.00     0.17E+00
-
  Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  0.0739890337
+ Time used in CC_LHTR :  2.29960083961486816E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   3
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH             3
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 2.48577E-02
+ ROOT:  1 RESIDUAL TOT: 2.48577D-02
       3       1         0.00     0.25E-01
-
  Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  0.0759880543
+ Time used in CC_LHTR :  2.39959955215454102E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   4
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH             4
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 9.04638E-03
+ ROOT:  1 RESIDUAL TOT: 9.04638D-03
       4       1         0.00     0.90E-02
-
  Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  0.0739889145
+ Time used in CC_LHTR :  2.29969620704650879E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   5
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH             5
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 1.45743E-03
+ ROOT:  1 RESIDUAL TOT: 1.45743D-03
       5       1         0.00     0.15E-02
-
  Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   6
   
- Time used in CC_LHTR :  0.0749890804
+ Time used in CC_LHTR :  2.29970216751098633E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   6
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH             6
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 3.77464E-04
+ ROOT:  1 RESIDUAL TOT: 3.77464D-04
       6       1         0.00     0.38E-03
-
  Dimension of the reduced space:     7
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  0.0739889145
+ Time used in CC_LHTR :  2.39959955215454102E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   7
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH             7
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 8.30106E-05
+ ROOT:  1 RESIDUAL TOT: 8.30106D-05
       7       1         0.00     0.83E-04
-
  Dimension of the reduced space:     8
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   8
   
- Time used in CC_LHTR :  0.0739886761
+ Time used in CC_LHTR :  2.29970216751098633E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   8
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH             8
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 2.05271E-05
+ ROOT:  1 RESIDUAL TOT: 2.05271D-05
       8       1         0.00     0.21E-04
-
  Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   9
   
- Time used in CC_LHTR :  0.0739879608
+ Time used in CC_LHTR :  2.29960083961486816E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   9
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH             9
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 4.78920E-06
+ ROOT:  1 RESIDUAL TOT: 4.78920D-06
       9       1         0.00     0.48E-05
-
  Dimension of the reduced space:    10
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  10
   
- Time used in CC_LHTR :  0.0719892979
+ Time used in CC_LHTR :  2.29969620704650879E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   10
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH            10
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 1.53700E-06
+ ROOT:  1 RESIDUAL TOT: 1.53700D-06
      10       1         0.00     0.15E-05
-
  Dimension of the reduced space:    11
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
- >>> TIME USED IN THIS MICRO ITERATION        0.08
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  11
   
- Time used in CC_LHTR :  0.0739898682
+ Time used in CC_LHTR :  2.29960083961486816E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   11
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH            11
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 3.36828E-07
+ ROOT:  1 RESIDUAL TOT: 3.36828D-07
      11       1         0.00     0.34E-06
-
  Dimension of the reduced space:    12
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
- >>> TIME USED IN THIS MICRO ITERATION        0.09
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  12
   
- Time used in CC_LHTR :  0.0739879608
+ Time used in CC_LHTR :  2.39949822425842285E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   12
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH            12
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 1.03470E-07
+ ROOT:  1 RESIDUAL TOT: 1.03470D-07
      12       1         0.00     0.10E-06
-
  Dimension of the reduced space:    13
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
- >>> TIME USED IN THIS MICRO ITERATION        0.09
-
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F  2.54979655E-250
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.0000000000000000     
 
 
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
+                               +--------------------+
+                               !  START OF CC_TRDRV !
+                               +--------------------+
 
-  Workspace input:  19919399
+  Workspace input:     99919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  13
   
- Time used in CC_LHTR :  0.072988987
+ Time used in CC_LHTR :  2.29970216751098633E-002
   
   CCRED  
-  ISIDE   -1
+  ISIDE            -1
   LREDS   F
-  NREDH   13
-  ISTRVE  1
-  NUPVEC  1
-  NVEC    1
-  LWRK    19919399
+  NREDH            13
+  ISTRVE            1
+  NUPVEC            1
+  NVEC              1
+  LWRK       99919399
   
- ROOT:  1 RESIDUAL TOT: 2.34711E-08
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.34711E-08
+ ROOT:  1 RESIDUAL TOT: 2.34711D-08
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.34711D-08
      13       1         0.00     0.23E-07
-
  Dimension of the reduced space:    13
-
- >>> TIME USED IN THIS MICRO ITERATION        0.08
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
     --------------------------------------
     converged in 13 iterations
@@ -1816,14 +1741,14 @@ EFG Principal axis                  O
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.02
+         CC_TRDRV            0.01
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.02
+         Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.08 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.34 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -1845,8 +1770,6 @@ EFG Principal axis                  O
           Double Excitation Contribution :              96.6221 %
 
           ||T1||/||T2||                  :               0.1870
-
-          Tau1 diagnostic                :               0.0318
 
           Norm of Total Amplitude Vector :               0.6467
 
@@ -1880,55 +1803,65 @@ EFG Principal axis                  O
 
 
           Printed all double excitations greater than 0.081914
+            Norm of singles part:        0.1188499863E+00
+            Norm of doubles part:        0.6356435505E+00
 
 
-               Calculating diagonal blocks of zeta-kappa-0
-               -------------------------------------------
-
-  
- Norm of occupied-virtual block:  0.
-  
- Requested density dependent quantities calculated
- Total time used in CC2_DEN:  0.50692296
-
-
-                        +--------------------------+
-                        ! eta_ij and eta_ab blocks !
-                        +--------------------------+
+                   Calculating diagonal blocks of zeta-kappa-0
+                   -------------------------------------------
 
   
- Norm of occupied-occupied block:  0.0307943919
- Norm of virtual-virtual block:  0.106118688
-
-
-                      +------------------------------+
-                      ! Zeta-kappa-0 diagonal blocks !
-                      +------------------------------+
-
-  
- Norm of occupied-occupied block:  0.104302185
- Norm of virtual-virtual block:  0.0877303149
-  
- Diagonal blocks of Zeta-kappa-0 calculated
- Total time used in CC2_DEN:  2.74458194
-
-
-               Calculating right-hand-side for kappa-bar_ai
-               --------------------------------------------
-
-  
- Norm of occupied-virtual block:  0.00515091725
+ Norm of occupied-virtual block:   0.0000000000000000     
   
  Requested density dependent quantities calculated
- Total time used in CC2_DEN:  0.42393589
+ Total time used in CC2_DEN:  0.20596903562545776     
+ Time used for setting up 2 e- density      :           0.01
+ Time used for contraction with integrals   :           0.19
+ Time used for reading 2 e- AO-integrals    :           0.00
+ Time used for calculating 2 e- AO-integrals:           0.00
+
+
+                            +--------------------------+
+                            ! eta_ij and eta_ab blocks !
+                            +--------------------------+
+
+  
+ Norm of occupied-occupied block:  3.07943919106305961E-002
+ Norm of virtual-virtual block  :  0.10611868802989630     
+
+
+                          +------------------------------+
+                          ! Zeta-kappa-0 diagonal blocks !
+                          +------------------------------+
+
+  
+ Norm of occupied-occupied block:  0.10430218518019291     
+ Norm of virtual-virtual block  :  8.77303149395932264E-002
   
  Diagonal blocks of Zeta-kappa-0 calculated
- Total time used in CC2_DEN:  3.2515049
- CC_FOP> Norm of RHS vector:  0.00515091725
+ Total time used in CC2_DEN:  0.85686796903610229     
 
 
-                  Solving for orbital relaxation vector
-                  -------------------------------------
+                   Calculating right-hand-side for kappa-bar_ai
+                   --------------------------------------------
+
+  
+ Norm of occupied-virtual block:  5.15091724721847884E-003
+  
+ Requested density dependent quantities calculated
+ Total time used in CC2_DEN:  0.15797698497772217     
+ Time used for setting up 2 e- density      :           0.01
+ Time used for contraction with integrals   :           0.13
+ Time used for reading 2 e- AO-integrals    :           0.00
+ Time used for calculating 2 e- AO-integrals:           0.00
+  
+ Diagonal blocks of Zeta-kappa-0 calculated
+ Total time used in CC2_DEN:   1.0628370046615601     
+ CC_FOP> Norm of RHS vector:  5.15091724721847884E-003
+
+
+                      Solving for orbital relaxation vector
+                      -------------------------------------
 
 
 
@@ -1939,11 +1872,11 @@ EFG Principal axis                  O
  Symmetry of singlet property operator     1
  Number of operators for singlet linear response equations:     1
  Number of response frequencies:     1
- Convergence threshold:     1.00E-07
+ Convergence threshold:     1.00D-07
 
 
-   SCF energy         :     -112.754691121005578
- -- inactive part     :     -135.266479242982314
+   SCF energy         :     -112.754691121006488
+ -- inactive part     :     -135.266479242983223
  -- nuclear repulsion :       22.511788121976728
 
 
@@ -1973,130 +1906,120 @@ EFG Principal axis                  O
 
  ** RSPCTL MICROITERATION NUMBER    1
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER    1 LINEAR TRANSFORMATIONS IS      0.00247319
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    2    0    0
- DETERMINANT OF REDUCED MATRIX IS  3.81 * 10 **  0.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    1 linear transformations is      0.00247319
+ INERTIA (POS,ZER,NEG) of reduced matrix is    2    0    0
+ Determinant of reduced matrix is  3.81 * 10 **  0.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    2.61291E-02  0.00E+00  2.61E-02  2.69E-02    0.00000E+00
+         1    2.61291D-02  0.00D+00  2.61D-02  2.69D-02    0.00000D+00
 
  ** RSPCTL MICROITERATION NUMBER    2
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER    2 LINEAR TRANSFORMATIONS IS      0.00265716
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    4    0    0
- DETERMINANT OF REDUCED MATRIX IS  2.13 * 10 **  1.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    2 linear transformations is      0.00265716
+ INERTIA (POS,ZER,NEG) of reduced matrix is    4    0    0
+ Determinant of reduced matrix is  2.13 * 10 **  1.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    7.05013E-03  0.00E+00  7.05E-03  3.13E-02    0.00000E+00
+         1    7.05013D-03  0.00D+00  7.05D-03  3.13D-02    0.00000D+00
 
  ** RSPCTL MICROITERATION NUMBER    3
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER    3 LINEAR TRANSFORMATIONS IS      0.00267001
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    6    0    0
- DETERMINANT OF REDUCED MATRIX IS  1.59 * 10 **  2.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    3 linear transformations is      0.00267001
+ INERTIA (POS,ZER,NEG) of reduced matrix is    6    0    0
+ Determinant of reduced matrix is  1.59 * 10 **  2.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    1.35442E-03  0.00E+00  1.35E-03  3.19E-02    0.00000E+00
+         1    1.35442D-03  0.00D+00  1.35D-03  3.19D-02    0.00000D+00
 
  ** RSPCTL MICROITERATION NUMBER    4
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER    4 LINEAR TRANSFORMATIONS IS      0.00267047
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    8    0    0
- DETERMINANT OF REDUCED MATRIX IS  1.10 * 10 **  3.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    4 linear transformations is      0.00267047
+ INERTIA (POS,ZER,NEG) of reduced matrix is    8    0    0
+ Determinant of reduced matrix is  1.10 * 10 **  3.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    3.68013E-04  0.00E+00  3.68E-04  3.20E-02    0.00000E+00
+         1    3.68013D-04  0.00D+00  3.68D-04  3.20D-02    0.00000D+00
 
  ** RSPCTL MICROITERATION NUMBER    5
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER    5 LINEAR TRANSFORMATIONS IS      0.00267049
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   10    0    0
- DETERMINANT OF REDUCED MATRIX IS  1.07 * 10 **  4.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    5 linear transformations is      0.00267049
+ INERTIA (POS,ZER,NEG) of reduced matrix is   10    0    0
+ Determinant of reduced matrix is  1.07 * 10 **  4.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    5.32821E-05  0.00E+00  5.33E-05  3.20E-02    0.00000E+00
+         1    5.32821D-05  0.00D+00  5.33D-05  3.20D-02    0.00000D+00
 
  ** RSPCTL MICROITERATION NUMBER    6
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER    6 LINEAR TRANSFORMATIONS IS      0.00267049
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   12    0    0
- DETERMINANT OF REDUCED MATRIX IS  5.95 * 10 **  4.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    6 linear transformations is      0.00267049
+ INERTIA (POS,ZER,NEG) of reduced matrix is   12    0    0
+ Determinant of reduced matrix is  5.95 * 10 **  4.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    5.96356E-06  0.00E+00  5.96E-06  3.20E-02    0.00000E+00
+         1    5.96356D-06  0.00D+00  5.96D-06  3.20D-02    0.00000D+00
 
  ** RSPCTL MICROITERATION NUMBER    7
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER    7 LINEAR TRANSFORMATIONS IS      0.00267049
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   14    0    0
- DETERMINANT OF REDUCED MATRIX IS  4.76 * 10 **  5.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    7 linear transformations is      0.00267049
+ INERTIA (POS,ZER,NEG) of reduced matrix is   14    0    0
+ Determinant of reduced matrix is  4.76 * 10 **  5.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    7.28672E-07  0.00E+00  7.29E-07  3.20E-02    0.00000E+00
+         1    7.28672D-07  0.00D+00  7.29D-07  3.20D-02    0.00000D+00
 
  ** RSPCTL MICROITERATION NUMBER    8
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER    8 LINEAR TRANSFORMATIONS IS      0.00267049
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   16    0    0
- DETERMINANT OF REDUCED MATRIX IS  5.77 * 10 **  6.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    8 linear transformations is      0.00267049
+ INERTIA (POS,ZER,NEG) of reduced matrix is   16    0    0
+ Determinant of reduced matrix is  5.77 * 10 **  6.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    8.73384E-08  0.00E+00  8.73E-08  3.20E-02    0.00000E+00
+         1    8.73384D-08  0.00D+00  8.73D-08  3.20D-02    0.00000D+00
 
  ** RSPCTL MICROITERATION NUMBER    9
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER    9 LINEAR TRANSFORMATIONS IS      0.00267049
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   18    0    0
- DETERMINANT OF REDUCED MATRIX IS  9.64 * 10 **  7.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after    9 linear transformations is      0.00267049
+ INERTIA (POS,ZER,NEG) of reduced matrix is   18    0    0
+ Determinant of reduced matrix is  9.64 * 10 **  7.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    8.63117E-09  0.00E+00  8.63E-09  3.20E-02    0.00000E+00
+         1    8.63117D-09  0.00D+00  8.63D-09  3.20D-02    0.00000D+00
 
  ** RSPCTL MICROITERATION NUMBER   10
 
- GP * SOLUTION VECTOR AT FREQUENCY     0.00000 AU
- AFTER   10 LINEAR TRANSFORMATIONS IS      0.00267049
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   20    0    0
- DETERMINANT OF REDUCED MATRIX IS  1.11 * 10 **  9.0
+ GP * SOLUTION vector at frequency     0.00000 a.u.
+ after   10 linear transformations is      0.00267049
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    0
+ Determinant of reduced matrix is  1.11 * 10 **  9.0
 
        No.  Residual tot.,    conf., and orb.    Bnorm      Frequency 
-
       ----------------------------------------------------------------
-         1    1.00424E-09  0.00E+00  1.00E-09  3.20E-02    0.00000E+00
+         1    1.00424D-09  0.00D+00  1.00D-09  3.20D-02    0.00000D+00
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-07
+ Convergence of RSP solution vectors, threshold = 1.00D-07
  ---------------------------------------------------------------
  (dimension of paired reduced space:   20)
- RSP solution vector no.    1; norm of residual   3.14E-08
+ RSP solution vector no.    1; norm of residual   3.14D-08
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -2135,7 +2058,7 @@ EFG Principal axis                  O
          101        33(3)  40(3)       -0.0013971463        0.0013971463
          102        33(3)  41(3)       -0.0010633188        0.0010633188
 
-       76 elements with absolute value less than 1.06E-03 not printed.
+       76 elements with absolute value less than 1.06D-03 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -2143,68 +2066,110 @@ EFG Principal axis                  O
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.04 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.02 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.20 CPU seconds.
-  
+ >>> Total time used in response solver is         0.06 CPU seconds.
+
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  0.0195996302
+ Norm of zeta-kappa-0:  1.95996301555906444E-002
   
 
 
-        +---------------------------------------------------------+
-        !   Relaxed  CC2    First-order one-electron properties:  !
-        +---------------------------------------------------------+
+             +--------------------------------------------------------+
+             !   Relaxed  CC2    First-order one-electron properties: !
+             +--------------------------------------------------------+
 
 
 
-                        +--------------------------+
-                        !  Electric Dipole Moment  !
-                        +--------------------------+
+                            +-------------------------+
+                            !  Electric Dipole Moment !
+                            +-------------------------+
 
 
 
-                      Total Molecular Dipole Moment
-                      -----------------------------
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
 
-                               au             Debye
+                 au               Debye          C m (/(10**-30)
 
-                    z     -0.12782718     -0.32490425
-
-                        1 a.u. =   2.54175 Debye 
+      z     -0.00232602        -0.00591215        -0.01972082
 
 
 
 
+                     Electronic contribution to dipole moment
+                     ----------------------------------------
 
-                      +------------------------------+
-                      !  Electric Quadrupole Moment  !
-                      +------------------------------+
+                 au               Debye          C m (/(10**-30)
+
+      z     -0.12550116        -0.31899212        -1.06404317
+
+
+ Electronic dipole moment (au):   0.000000000       0.000000000     -0.1255011627    
 
 
 
-                    Total Molecular quadrupole moment
-                    ---------------------------------
+
+                          Total Molecular Dipole Moment
+                          -----------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      z     -0.12782718        -0.32490427        -1.08376399
+
+
+
+
+                          +-----------------------------+
+                          !  Electric Quadrupole Moment !
+                          +-----------------------------+
+
+
+
+                       Nuclear contr. to quadrupole moment
+                       -----------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       0.80177756     0.00000000     0.00000000
-       2       0.00000000     0.80177756     0.00000000
-       3       0.00000000     0.00000000    -1.60355512
+              Column   1    Column   2    Column   3
+       1     -7.79373628    0.00000000    0.00000000
+       2      0.00000000   -7.79373628    0.00000000
+       3      0.00000000    0.00000000   15.58747256
 
 
-                  +--------------------------------------+
-                  !  Electronic second moment of charge  !
-                  +--------------------------------------+
+                      Electronic contr. to quadrupole moment
+                      --------------------------------------
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
-       1       7.76340903     0.00000000     0.00000000
-       2       0.00000000     7.76340903     0.00000000
-       3       0.00000000     0.00000000    24.95443671
+              Column   1    Column   2    Column   3
+       1     -8.59551384    0.00000000    0.00000000
+       2      0.00000000   -8.59551384    0.00000000
+       3      0.00000000    0.00000000   17.19102768
+
+
+                        Total Molecular quadrupole moment
+                        ---------------------------------
+
+                    X              Y              Z
+
+              Column   1    Column   2    Column   3
+       1      0.80177756    0.00000000    0.00000000
+       2      0.00000000    0.80177756    0.00000000
+       3      0.00000000    0.00000000   -1.60355512
+
+
+                      +-------------------------------------+
+                      !  Electronic second moment of charge !
+                      +-------------------------------------+
+
+                    X              Y              Z
+
+              Column   1    Column   2    Column   3
+       1      7.76340903    0.00000000    0.00000000
+       2      0.00000000    7.76340903    0.00000000
+       3      0.00000000    0.00000000   24.95443671
 
  Alfa**2 Invariant:                        182.081332
  Beta**2 Invariant:                        295.531433
@@ -2213,14 +2178,14 @@ EFG Principal axis                  O
  Property anisotropy invariant:             17.191028 a.u.
 
 
-                       +----------------------------+
-                       !  Electric Field Gradients  !
-                       +----------------------------+
+                           +---------------------------+
+                           !  Electric Field Gradients !
+                           +---------------------------+
 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            C          12.000000
                            O          15.994915
@@ -2228,50 +2193,54 @@ EFG Principal axis                  O
                        Total mass:    27.994915 amu
                        Natural abundance:  98.663 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000000
 
 
-  *********************************************************************
-  **************** ABACUS - Nuclear Quadrupole moments ****************
-  *********************************************************************
+      *********************************************************************
+      **************** ABACUS - Nuclear Quadrupole moments ****************
+      *********************************************************************
 
 
 Total non-diagonalized EFG Tensor   C     
 
-               Column   1     Column   2     Column   3
-       1       0.39593102     0.00000000     0.00000000
-       2       0.00000000     0.39593102     0.00000000
-       3       0.00000000     0.00000000    -0.79186205
+              Column   1    Column   2    Column   3
+       1      0.39593102    0.00000000    0.00000000
+       2      0.00000000    0.39593102    0.00000000
+       3      0.00000000    0.00000000   -0.79186205
 
 Total non-diagonalized EFG Tensor   O     
 
-               Column   1     Column   2     Column   3
-       1       0.28063102     0.00000000     0.00000000
-       2       0.00000000     0.28063102     0.00000000
-       3       0.00000000     0.00000000    -0.56126204
+              Column   1    Column   2    Column   3
+       1      0.28063102    0.00000000    0.00000000
+       2      0.00000000    0.28063102    0.00000000
+       3      0.00000000    0.00000000   -0.56126204
+ String on input: "C       "
+ String on input: "C       "
+ String on input: "O       "
+ String on input: "O       "
 
 EFG Principal axis                  C     
 
-               Column   1     Column   2     Column   3
-       1       1.00000000     0.00000000     0.00000000
-       2       0.00000000     1.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000
+              Column   1    Column   2    Column   3
+       1      1.00000000    0.00000000    0.00000000
+       2      0.00000000    1.00000000    0.00000000
+       3      0.00000000    0.00000000    1.00000000
 
 EFG Principal axis                  O     
 
-               Column   1     Column   2     Column   3
-       1       1.00000000     0.00000000     0.00000000
-       2       0.00000000     1.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000
+              Column   1    Column   2    Column   3
+       1      1.00000000    0.00000000    0.00000000
+       2      0.00000000    1.00000000    0.00000000
+       3      0.00000000    0.00000000    1.00000000
 
 
-                  Nuclear quadrupole moment for   C     
-                  --------------------------------------
+                         Nuclear quadrupole moment for C
+                         -------------------------------
 
 
 
-                  Nuclear quadrupole moment for   O     
-                  --------------------------------------
+                         Nuclear quadrupole moment for O
+                         -------------------------------
 
           Spin     :  2.5          Quadrupole moment:-.02558000
                             au           MHz        Gauss
@@ -2279,28 +2248,28 @@ EFG Principal axis                  O
  O      17    Vy =       0.280631    -1.686704    -0.602556
  O      17    Vz =      -0.561262     3.373409     1.205112
                  Asymmetry constant eta:      0.000000
-                 Auxiliary value au  1/T  0.494702E-05
+                 Auxiliary value au  1/T  0.494702D-05
 
 
-      +-------------------------------------------------------------+
-      !  Pauli relativistic corrections to the ground-state energy  !
-      +-------------------------------------------------------------+
+           +------------------------------------------------------------+
+           !  Pauli relativistic corrections to the ground-state energy !
+           +------------------------------------------------------------+
 
   
-         1-elec. Darwin term:      0.260486551
+         1-elec. Darwin term:      0.260486549
          ------------------- 
   
-         Mass-Velocity term:      -0.327195527
+         Mass-Velocity term:      -0.327195524
          ------------------  
   
-         Mass-Velocity + 1-elec. Darwin terms:      -0.066708976
+         Mass-Velocity + 1-elec. Darwin terms:      -0.066708975
          ------------------------------------ 
 
  *******************************************************************
 
  Ground state energy is target 
 
- Ecorr =                   -113.06579816745831124081
+ Ecorr =                   -113.06579816746059918842
 
  *******************************************************************
   
@@ -2335,11 +2304,14 @@ EFG Principal axis                  O
  *******************************************************************************
 
 
-- End of Coupled Cluster
 
- >>>> Total CPU  time used in DALTON:   3.90 seconds
- >>>> Total wall time used in DALTON:   4.00 seconds
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   1.29 seconds
+ >>>> Total wall time used in DALTON:   3.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:02:07 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:51:25 2011 
+     Host name              : fe6                                     

@@ -52,7 +52,6 @@ cat > cc2dc_exci.dal <<%EOF%
 *ONEINT
 .SOLVENT
  10
-*END OF HERMIT
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -90,7 +89,7 @@ cat > cc2dc_exci.dal <<%EOF%
  1.0D-7
 *CCLRSD
 .DIPOLE
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
@@ -113,7 +112,7 @@ CTRL[1]=2
 ERROR[1]="ENERGY TERMS NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "z * ( |0)\.84595673 * 2\.15020731" $log | wc -l`
+CRIT1=`$GREP "z * ( |0)\.84595673 * 2\.150207.." $log | wc -l`
 TEST[2]=`expr $CRIT1`
 CTRL[2]=1
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"

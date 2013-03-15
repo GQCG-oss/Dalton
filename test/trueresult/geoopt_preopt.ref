@@ -1,89 +1,102 @@
 
 
-         ****************************************************************
-         *********** DALTON - An electronic structure program ***********
-         ****************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Jacob Kongsted,           Univ. of Southern Denmark,    Denmark    
-    Henrik Koch,              University of Trondheim,      Norway     
-    Andrea Ligabue,           University of Modena,         Italy      
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Anders Osted,             Copenhagen University,        Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- * Work memory size             :    50000000 =  381.47 megabytes.
- + memory for in-core integrals :    30000000
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
+
+
+     Date and time (Linux)  : Wed Mar 16 17:42:37 2011 
+     Host name              : fe6                                     
+
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /home/ruud/DaltonFix/dalton/test/2009-09-24T17_57-testjob-pid-26645
-   2) /home/ruud/DaltonFix/dalton/basis/
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
        *******************************************************************
@@ -105,14 +118,14 @@
  Optimization will be performed in redundant internal coordinates.
  Model Hessian will be used as initial Hessian.
  The model Hessian parameters of Roland Lindh will be used.
- 
- 
+
+
  Preoptimization will be performed with the basis set(s):
       STO-3G                                                      
       6-31G**                                                     
- 
+
  Trust region method will be used to control step (default).
- 
+
 
  Baker's convergence criteria will be used.
 
@@ -145,6 +158,7 @@
    *************** Output of molecule and basis set information ***************
    ****************************************************************************
 
+
     The two title cards from your ".mol" input:
     ------------------------------------------------------------------------
  1: Geometry optimization utilizing pre-optimization with smaller           
@@ -154,16 +168,18 @@
   Atomic type no.    1
   --------------------
   Nuclear charge:   8.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
   Used basis set file for basis set for elements with Z =   8 :
-     "/home/ruud/DaltonFix/dalton/basis/STO-3G"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
   Used basis set file for basis set for elements with Z =   1 :
-     "/home/ruud/DaltonFix/dalton/basis/STO-3G"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -180,9 +196,9 @@ Point group: C2v
 
         |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
     Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
@@ -198,9 +214,9 @@ Point group: C2v
 
         | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
     A2  | A2   B2   B1   A1 
 
 
@@ -208,19 +224,19 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
 
- Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000000
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    3
 
   Basis set used is "STO-3G" from the basis set library.
@@ -240,50 +256,50 @@ Point group: C2v
   ----------------------------
 
   Total number of coordinates:    9
-  O       :    1  x   0.0000000000   2  y   0.0000000000   3  z  -0.1342978413
-  H   / 1 :    4  x   0.0000000000   5  y   1.5000000000   6  z   1.0657021587
-  H   / 2 :    7  x   0.0000000000   8  y  -1.5000000000   9  z   1.0657021587
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z  -0.1342978413
+  H   / 1 :     4  x   0.0000000000    5  y   1.5000000000    6  z   1.0657021587
+  H   / 2 :     7  x   0.0000000000    8  y  -1.5000000000    9  z   1.0657021587
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:    3   2   3   1
+  Number of coordinates in each symmetry:     3    2    3    1
 
   Symmetry  A1  ( 1)
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
 
   Symmetry  B1  ( 2)
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
 
   Symmetry  B2  ( 3)
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
 
   Symmetry  A2  ( 4)
 
-   9   H     x    [  4  -   7 ]/2
+    9   H     x    [  4  -    7 ]/2
 
 
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    1.016516    0.000000
- H    2:    1.016516    1.587532    0.000000
+ H   _1:    1.016516    0.000000
+ H   _2:    1.016516    1.587532    0.000000
 
 
   Max interatomic separation is    1.5875 Angstrom (    3.0000 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -291,8 +307,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            1.016516
-  bond distance:  H    2     O            1.016516
+  bond distance:  H   _1     O            1.016516
+  bond distance:  H   _2     O            1.016516
 
 
   Bond angles (degrees):
@@ -300,7 +316,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       102.680
+  bond angle:     H   _1     O          H   _2       102.680
 
 
 
@@ -320,17 +336,17 @@ Point group: C2v
 
                A                   B                   C
 
-         700136.5022         397939.7236         253727.4914 MHz
+         700136.4961         397939.7202         253727.4892 MHz
            23.354040           13.273840            8.463438 cm-1
 
 
-  Nuclear repulsion energy :    8.662600634059
+@  Nuclear repulsion energy :    8.662600634059
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:               4   1   2   0
+  Number of orbitals in each symmetry:           4    1    2    0
 
 
   Symmetry  A1 ( 1)
@@ -338,7 +354,7 @@ Point group: C2v
     1     O        1s         1
     2     O        1s         2
     3     O        2pz        5
-    4     H        1s         6  +   7
+    4     H        1s         6 +    7
 
 
   Symmetry  B1 ( 2)
@@ -349,7 +365,7 @@ Point group: C2v
   Symmetry  B2 ( 3)
 
     6     O        2py        4
-    7     H        1s         6  -   7
+    7     H        1s         6 -    7
 
 
   No orbitals in symmetry  A2 ( 4)
@@ -380,7 +396,7 @@ Point group: C2v
  Number of two-electron integrals written:         138 ( 34.0% )
  Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -402,21 +418,21 @@ Point group: C2v
      Number of Huckel orbitals each symmetry:    4    1    2    0
 
  Huckel EHT eigenvalues for symmetry :  1
-          -20.787975      -2.061980      -0.685969       0.215157
+          -20.700451      -1.479250      -0.674767      -0.310147
 
  Huckel EHT eigenvalues for symmetry :  2
            -0.616200
 
  Huckel EHT eigenvalues for symmetry :  3
-           -0.917078       0.074145
+           -0.727050      -0.272035
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:37 2011 
+     Host name              : fe6                                     
 
  Title lines from ".mol" input file:
      Geometry optimization utilizing pre-optimization with smaller           
@@ -427,12 +443,12 @@ Point group: C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
- ".MOSTART HUCKEL" input option.
+ ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -443,16 +459,16 @@ Point group: C2v
 
      Orbital specifications
      ======================
-     Abelian symmetry species          All    1    2    3    4
-                                       --  --  --  --
-     Total number of orbitals            7    4    1    2    0
-     Number of basis functions           7    4    1    2    0
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals            7 |    4    1    2    0
+     Number of basis functions           7 |    4    1    2    0
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.                    
-      -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals               5    3    1    1    0
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -468,23 +484,36 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1  -74.8637109270       1.73D+00  -7.49D+01    3  1  1  0
+      Virial theorem: -V/T =      2.003902
+      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+ -----------------------------------------------------------------------------
+   2  -74.9582188315       2.34D-01  -9.45D-02    3  1  1  0
+      Virial theorem: -V/T =      2.008218
+      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
+   3  -74.9636005348       4.96D-02  -5.38D-03    3  1  1  0
+      Virial theorem: -V/T =      2.007095
+      MULPOP  O      -0.31; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   4  -74.9638639234       4.54D-03  -2.63D-04    3  1  1  0
+      Virial theorem: -V/T =      2.006736
+      MULPOP  O      -0.31; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   5  -74.9638680822       6.81D-04  -4.16D-06    3  1  1  0
+      Virial theorem: -V/T =      2.006710
+      MULPOP  O      -0.31; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   6  -74.9638681708       8.90D-05  -8.86D-08    3  1  1  0
+      Virial theorem: -V/T =      2.006714
+      MULPOP  O      -0.31; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   7  -74.9638681719       1.20D-07  -1.10D-09    3  1  1  0
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1  -74.7513034533       3.09D+00  -7.48D+01    3  1  1  0
- MULPOP O    55.16; H     2.18; 
-   2  -74.9490670941       3.44D-01  -1.98D-01    3  1  1  0
- MULPOP O    60.58; H     2.03; 
-   3  -74.9626435812       9.34D-02  -1.36D-02    3  1  1  0
- MULPOP O    61.71; H     2.02; 
-   4  -74.9638164093       1.55D-02  -1.17D-03    3  1  1  0
- MULPOP O    62.29; H     2.03; 
-   5  -74.9638620768       5.48D-03  -4.57D-05    3  1  1  0
- MULPOP O    62.16; H     2.04; 
-   6  -74.9638681652       2.42D-04  -6.09D-06    3  1  1  0
- MULPOP O    62.15; H     2.04; 
-   7  -74.9638681719       2.44D-06  -6.73D-09    3  1  1  0
- DIIS converged in   7 iterations !
+ *** DIIS converged in   7 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -496,42 +525,45 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.25203907    -1.24242385    -0.45018361     0.55212694
+  1    -20.25203941    -1.24242400    -0.45018372     0.55212689
 
-  2     -0.38970355
+  2     -0.38970375
 
-  3     -0.58488210     0.66978366
+  3     -0.58488213     0.66978359
 
-    E(LUMO) :     0.55212694 au (symmetry 1)
-  - E(HOMO) :    -0.38970355 au (symmetry 2)
+    E(LUMO) :     0.55212689 au (symmetry 1)
+  - E(HOMO) :    -0.38970375 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.94183049 au
+    gap     :     0.94183064 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -74.963868171900                 
+     Final HF energy:             -74.963868171899                 
      Nuclear repulsion:             8.662600634059
-     Electronic energy:           -83.626468805959
+     Electronic energy:           -83.626468805958
 
-     Final gradient norm:           0.000002443273
+     Final gradient norm:           0.000000120320
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:37 2011 
+     Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
 
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 O   :1s     0.9943  -0.2352   0.1007   0.1231
    2 O   :1s     0.0254   0.8552  -0.5201  -0.7835
    3 O   :2pz    0.0038   0.1115   0.7587  -0.7484
@@ -540,24 +572,24 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 O   :2px    1.0000
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :2py    0.6081  -0.9536
    2 H   :1s     0.4494   0.7903
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:37 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -568,7 +600,7 @@ Point group: C2v
      Order of analytical energy-derivatives available:   2
      This will be the default.
 
- Center of mass dipole origin  :    0.000000    0.000000    0.000000
+ Center of mass dipole origin  :    0.000000    0.000000   -0.000000
 
 
                  .------------------------------------------------.
@@ -577,8 +609,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:37 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -587,16 +619,16 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:37 2011 
+     Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
  O          0.0000000000            0.0000000000           -0.1342978413
- H    1     0.0000000000            1.5000000000            1.0657021587
- H    2     0.0000000000           -1.5000000000            1.0657021587
+ H   _1     0.0000000000            1.5000000000            1.0657021587
+ H   _2     0.0000000000           -1.5000000000            1.0657021587
 
 
 
@@ -608,18 +640,18 @@ Point group: C2v
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -74.9638681719 au (Hartrees)
-                         -2039.87056081 eV
-                           -196817.6076 kJ/mol
+                         -2039.87061869 eV
+                           -196817.6055 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1295075176 au
-     Mass-velocity correction:                  -0.1669907282 au
+     Darwin correction:                          0.1295075181 au
+     Mass-velocity correction:                  -0.1669907293 au
 
-     Total relativistic correction:             -0.0374832106 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0013513825 au
+     Total relativistic correction:             -0.0374832112 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0013513831 au
 
 
 
@@ -627,15 +659,15 @@ Point group: C2v
                              Molecular gradient (au)
                              -----------------------
 
-                         O    z    -0.0251354400
-                         H    y     0.0595663116
-                         H    z     0.0251354400
+                         O    z    -0.0251349374
+                         H    y     0.0595658737
+                         H    z     0.0251349374
 
 
 
- O          0.0000000000            0.0000000000           -0.0251354400
- H    1     0.0000000000            0.0297831558            0.0125677200
- H    2     0.0000000000           -0.0297831558            0.0125677200
+ O          0.0000000000            0.0000000000           -0.0251349374
+ H   _1     0.0000000000            0.0297829368            0.0125674687
+ H   _2     0.0000000000           -0.0297829368            0.0125674687
 
 
 
@@ -645,7 +677,7 @@ Point group: C2v
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.651725           1.656519           5.525551
+              0.651724           1.656516           5.525542
 
 
                              Dipole moment components
@@ -653,7 +685,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.65172465         1.65651865         5.52555143
+      z      0.65172351         1.65651582         5.52554200
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -665,15 +697,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    1.016516    0.000000
- H    2:    1.016516    1.587532    0.000000
+ H   _1:    1.016516    0.000000
+ H   _2:    1.016516    1.587532    0.000000
 
 
   Max interatomic separation is    1.5875 Angstrom (    3.0000 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -681,8 +713,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            1.016516
-  bond distance:  H    2     O            1.016516
+  bond distance:  H   _1     O            1.016516
+  bond distance:  H   _2     O            1.016516
 
 
   Bond angles (degrees):
@@ -690,7 +722,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       102.680
+  bond angle:     H   _1     O          H   _2       102.680
 
 
 
@@ -701,7 +733,7 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.02 seconds
+ >>>> Total CPU  time used in ABACUS:   0.01 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
@@ -720,9 +752,9 @@ Point group: C2v
                                 Next geometry (au)
                                 ------------------
 
- O          0.0000000000            0.0000000000           -0.1444187028
- H    1     0.0000000000            1.4213267558            1.0707625895
- H    2     0.0000000000           -1.4213267558            1.0707625895
+ O          0.0000000000            0.0000000000           -0.1444191470
+ H   _1     0.0000000000            1.4213269250            1.0707628115
+ H   _2     0.0000000000           -1.4213269250            1.0707628115
 
 
 
@@ -790,22 +822,33 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =    4
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -74.9658025772        3.68586D-02   -1.93D-03    1
+      Virial theorem: -V/T =      2.006235
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   2    -74.9658470921        2.83129D-03   -4.45D-05    2
+      Virial theorem: -V/T =      2.005975
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   3    -74.9658478869        7.37127D-04   -7.95D-07    3
+      Virial theorem: -V/T =      2.006002
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   4    -74.9658479608        2.82220D-04   -7.39D-08    4
+      Virial theorem: -V/T =      2.005996
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   5    -74.9658479766        2.43322D-05   -1.58D-08    4
+      Virial theorem: -V/T =      2.005995
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   6    -74.9658479767        3.68589D-06   -8.30D-11    4
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1    -74.9658025789        3.68601D-02   -1.93D-03    1
- MULPOP O    61.85; H     2.05; 
-   2    -74.9658470938        2.83134D-03   -4.45D-05    2
- MULPOP O    61.55; H     2.06; 
-   3    -74.9658478887        7.37175D-04   -7.95D-07    3
- MULPOP O    61.51; H     2.06; 
-   4    -74.9658479626        2.82228D-04   -7.39D-08    4
- MULPOP O    61.51; H     2.06; 
-   5    -74.9658479784        2.43424D-05   -1.58D-08    4
- MULPOP O    61.51; H     2.06; 
-   6    -74.9658479785        3.68652D-06   -8.31D-11    4
- DIIS converged in   6 iterations !
+ *** DIIS converged in   6 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -817,44 +860,47 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.25283502    -1.25862749    -0.46222610     0.58324383
+  1    -20.25283508    -1.25862737    -0.46222612     0.58324358
 
   2     -0.39331074
 
-  3     -0.59187408     0.68971161
+  3     -0.59187389     0.68971122
 
-    E(LUMO) :     0.58324383 au (symmetry 1)
+    E(LUMO) :     0.58324358 au (symmetry 1)
   - E(HOMO) :    -0.39331074 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.97655457 au
+    gap     :     0.97655432 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -74.965847978467                 
-     Nuclear repulsion:             8.908012854592
-     Electronic energy:           -83.873860833059
+     Final HF energy:             -74.965847976693                 
+     Nuclear repulsion:             8.908010243313
+     Electronic energy:           -83.873858220006
 
-     Final gradient norm:           0.000003686524
+     Final gradient norm:           0.000003685893
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:37 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.00 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:37 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -876,8 +922,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -886,8 +932,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
  CPU time statistics for ABACUS
@@ -896,7 +942,7 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.01 seconds
+ >>>> Total CPU  time used in ABACUS:   0.00 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
@@ -915,9 +961,9 @@ Point group: C2v
                                 Next geometry (au)
                                 ------------------
 
- O          0.0000000000            0.0000000000           -0.1356940951
- H    1     0.0000000000            1.4326101344            1.0664002856
- H    2     0.0000000000           -1.4326101344            1.0664002856
+ O          0.0000000000            0.0000000000           -0.1356941650
+ H   _1     0.0000000000            1.4326100207            1.0664003205
+ H   _2     0.0000000000           -1.4326100207            1.0664003205
 
 
 
@@ -930,8 +976,8 @@ Point group: C2v
  End of optimization            :       F 
  Energy at this geometry is     :     -74.965848
  Energy change from last geom.  :      -0.001980
- Norm of gradient               :       0.005820
- Norm of step                   :       0.029169
+ Norm of gradient               :       0.005821
+ Norm of step                   :       0.029168
  Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
@@ -986,20 +1032,29 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =    4
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -74.9658931070        6.48287D-03   -4.51D-05    1
+      Virial theorem: -V/T =      2.005997
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   2    -74.9658996938        2.69424D-03   -6.59D-06    2
+      Virial theorem: -V/T =      2.005990
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   3    -74.9659010134        5.09249D-04   -1.32D-06    3
+      Virial theorem: -V/T =      2.006009
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   4    -74.9659010639        8.16706D-05   -5.05D-08    4
+      Virial theorem: -V/T =      2.006009
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   5    -74.9659010649        4.01112D-07   -9.32D-10    4
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1    -74.9658931079        6.48254D-03   -4.51D-05    1
- MULPOP O    61.59; H     2.06; 
-   2    -74.9658996940        2.69410D-03   -6.59D-06    2
- MULPOP O    61.65; H     2.05; 
-   3    -74.9659010134        5.09186D-04   -1.32D-06    3
- MULPOP O    61.64; H     2.05; 
-   4    -74.9659010640        8.16664D-05   -5.05D-08    4
- MULPOP O    61.64; H     2.05; 
-   5    -74.9659010649        4.01759D-07   -9.32D-10    4
- DIIS converged in   5 iterations !
+ *** DIIS converged in   5 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1011,44 +1066,47 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.25163746    -1.25747060    -0.45976396     0.58162247
+  1    -20.25163747    -1.25747061    -0.45976399     0.58162249
 
   2     -0.39262391
 
-  3     -0.59369824     0.69235394
+  3     -0.59369823     0.69235392
 
-    E(LUMO) :     0.58162247 au (symmetry 1)
+    E(LUMO) :     0.58162249 au (symmetry 1)
   - E(HOMO) :    -0.39262391 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.97424637 au
+    gap     :     0.97424640 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -74.965901064885                 
-     Nuclear repulsion:             8.904548110367
-     Electronic energy:           -83.870449175252
+     Final HF energy:             -74.965901064878                 
+     Nuclear repulsion:             8.904548228258
+     Electronic energy:           -83.870449293135
 
-     Final gradient norm:           0.000000401759
+     Final gradient norm:           0.000000401112
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -1070,8 +1128,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -1080,8 +1138,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:12 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
  CPU time statistics for ABACUS
@@ -1109,9 +1167,9 @@ Point group: C2v
                                 Next geometry (au)
                                 ------------------
 
- O          0.0000000000            0.0000000000           -0.1352768845
- H    1     0.0000000000            1.4325486366            1.0661916803
- H    2     0.0000000000           -1.4325486366            1.0661916803
+ O          0.0000000000            0.0000000000           -0.1352768833
+ H   _1     0.0000000000            1.4325486311            1.0661916797
+ H   _2     0.0000000000           -1.4325486311            1.0661916797
 
 
 
@@ -1180,18 +1238,25 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =    4
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -74.9659011627        4.96441D-04   -9.78D-08    1
+      Virial theorem: -V/T =      2.006004
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   2    -74.9659011885        1.47328D-04   -2.58D-08    2
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   3    -74.9659011917        5.48572D-05   -3.22D-09    3
+      Virial theorem: -V/T =      2.006002
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   4    -74.9659011923        6.18904D-06   -6.08D-10    4
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1    -74.9659011627        4.96411D-04   -9.78D-08    1
- MULPOP O    61.65; H     2.05; 
-   2    -74.9659011885        1.47307D-04   -2.58D-08    2
- MULPOP O    61.65; H     2.05; 
-   3    -74.9659011917        5.48508D-05   -3.22D-09    3
- MULPOP O    61.65; H     2.05; 
-   4    -74.9659011923        6.18887D-06   -6.08D-10    4
- DIIS converged in   4 iterations !
+ *** DIIS converged in   4 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1203,7 +1268,7 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.25157425    -1.25755563    -0.45973035     0.58180741
+  1    -20.25157425    -1.25755563    -0.45973036     0.58180741
 
   2     -0.39261738
 
@@ -1217,30 +1282,33 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -74.965901192304                 
-     Nuclear repulsion:             8.906619162941
-     Electronic energy:           -83.872520355244
+     Final HF energy:             -74.965901192303                 
+     Nuclear repulsion:             8.906619188983
+     Electronic energy:           -83.872520381286
 
-     Final gradient norm:           0.000006188869
+     Final gradient norm:           0.000006189036
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.00 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -1262,8 +1330,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -1272,8 +1340,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
 
  CPU time statistics for ABACUS
@@ -1301,9 +1369,9 @@ Point group: C2v
                                Final geometry (au)
                                -------------------
 
- O          0.0000000000            0.0000000000           -0.1352768845
- H    1     0.0000000000            1.4325486366            1.0661916803
- H    2     0.0000000000           -1.4325486366            1.0661916803
+ O          0.0000000000            0.0000000000           -0.1352768833
+ H   _1     0.0000000000            1.4325486311            1.0661916797
+ H   _2     0.0000000000           -1.4325486311            1.0661916797
 
 
 
@@ -1315,7 +1383,7 @@ Point group: C2v
  Iteration number               :       3
  End of optimization            :       T*
  Energy at this geometry is     :     -74.965901
- Energy change from last geom.  :       0.000000
+ Energy change from last geom.  :      -0.000000
  Norm of gradient               :       0.000034
  Norm of step                   :       0.000050
  Updated trust radius           :       0.500000
@@ -1330,6 +1398,7 @@ Point group: C2v
    *************** Output of molecule and basis set information ***************
    ****************************************************************************
 
+
     The two title cards from your ".mol" input:
     ------------------------------------------------------------------------
  1: Geometry optimization utilizing pre-optimization with smaller           
@@ -1339,16 +1408,24 @@ Point group: C2v
   Atomic type no.    1
   --------------------
   Nuclear charge:   8.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
   Used basis set file for basis set for elements with Z =   8 :
-     "/home/ruud/DaltonFix/dalton/basis/6-31G**"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G**                                                                         
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
   Used basis set file for basis set for elements with Z =   1 :
-     "/home/ruud/DaltonFix/dalton/basis/6-31G**"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G**                                                                         
 
 
                          SYMGRP: Point group information
@@ -1365,9 +1442,9 @@ Point group: C2v
 
         |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
     Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
@@ -1383,9 +1460,9 @@ Point group: C2v
 
         | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
     A2  | A2   B2   B1   A1 
 
 
@@ -1393,8 +1470,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -1405,7 +1482,7 @@ Point group: C2v
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    3
 
   Basis set used is "6-31G**" from the basis set library.
@@ -1426,50 +1503,50 @@ Point group: C2v
   ----------------------------
 
   Total number of coordinates:    9
-  O       :    1  x   0.0000000000   2  y   0.0000000000   3  z  -0.1352768845
-  H   / 1 :    4  x   0.0000000000   5  y   1.4325486366   6  z   1.0661916803
-  H   / 2 :    7  x   0.0000000000   8  y  -1.4325486366   9  z   1.0661916803
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z  -0.1352768833
+  H   / 1 :     4  x   0.0000000000    5  y   1.4325486311    6  z   1.0661916797
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4325486311    9  z   1.0661916797
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:    3   2   3   1
+  Number of coordinates in each symmetry:     3    2    3    1
 
   Symmetry  A1  ( 1)
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
 
   Symmetry  B1  ( 2)
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
 
   Symmetry  B2  ( 3)
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
 
   Symmetry  A2  ( 4)
 
-   9   H     x    [  4  -   7 ]/2
+    9   H     x    [  4  -    7 ]/2
 
 
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.989395    0.000000
- H    2:    0.989395    1.516144    0.000000
+ H   _1:    0.989395    0.000000
+ H   _2:    0.989395    1.516144    0.000000
 
 
   Max interatomic separation is    1.5161 Angstrom (    2.8651 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -1477,8 +1554,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.989395
-  bond distance:  H    2     O            0.989395
+  bond distance:  H   _1     O            0.989395
+  bond distance:  H   _2     O            0.989395
 
 
   Bond angles (degrees):
@@ -1486,7 +1563,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       100.027
+  bond angle:     H   _1     O          H   _2       100.027
 
 
 
@@ -1506,17 +1583,17 @@ Point group: C2v
 
                A                   B                   C
 
-         698425.9832         436295.8286         268541.8927 MHz
+         698425.9792         436295.8282         268541.8920 MHz
            23.296983           14.553262            8.957593 cm-1
 
 
-  Nuclear repulsion energy :    8.906619162856
+@  Nuclear repulsion energy :    8.906619188778
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              11   4   7   2
+  Number of orbitals in each symmetry:          11    4    7    2
 
 
   Symmetry  A1 ( 1)
@@ -1528,10 +1605,10 @@ Point group: C2v
     5     O        2pz        9
     6     O        3d0       12
     7     O        3d2+      14
-    8     H        1s        15  +  16
-    9     H        1s        17  +  18
-   10     H        2py       21  -  22
-   11     H        2pz       23  +  24
+    8     H        1s        15 +   16
+    9     H        1s        17 +   18
+   10     H        2py       21 -   22
+   11     H        2pz       23 +   24
 
 
   Symmetry  B1 ( 2)
@@ -1539,7 +1616,7 @@ Point group: C2v
    12     O        2px        4
    13     O        2px        7
    14     O        3d1+      13
-   15     H        2px       19  +  20
+   15     H        2px       19 +   20
 
 
   Symmetry  B2 ( 3)
@@ -1547,16 +1624,16 @@ Point group: C2v
    16     O        2py        5
    17     O        2py        8
    18     O        3d1-      11
-   19     H        1s        15  -  16
-   20     H        1s        17  -  18
-   21     H        2py       21  +  22
-   22     H        2pz       23  -  24
+   19     H        1s        15 -   16
+   20     H        1s        17 -   18
+   21     H        2py       21 +   22
+   22     H        2pz       23 -   24
 
 
   Symmetry  A2 ( 4)
 
    23     O        3d2-      10
-   24     H        2px       19  -  20
+   24     H        2px       19 -   20
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
@@ -1606,8 +1683,8 @@ Point group: C2v
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:38 2011 
+     Host name              : fe6                                     
 
  Title lines from ".mol" input file:
      Geometry optimization utilizing pre-optimization with smaller           
@@ -1618,12 +1695,12 @@ Point group: C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART H1DIAG" input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -1634,16 +1711,16 @@ Point group: C2v
 
      Orbital specifications
      ======================
-     Abelian symmetry species          All    1    2    3    4
-                                       --  --  --  --
-     Total number of orbitals           24   11    4    7    2
-     Number of basis functions          24   11    4    7    2
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           24 |   11    4    7    2
+     Number of basis functions          24 |   11    4    7    2
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
-      -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals               5    3    1    1    0
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -1659,29 +1736,48 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1  -69.0998097006       8.49D+00   5.87D+00    3  1  1  0
+      Virial theorem: -V/T =      1.704069
+      MULPOP  O      -2.22; H   _1  1.11; H   _2  1.11; 
+ -----------------------------------------------------------------------------
+   2  -71.6604784068       6.74D+00  -2.56D+00    4  0  1  0
+      Virial theorem: -V/T =      2.083860
+      MULPOP  O       3.10; H   _1 -1.55; H   _2 -1.55; 
+ -----------------------------------------------------------------------------
+   3  -75.9074926596       1.52D+00  -4.25D+00    3  1  1  0
+      Virial theorem: -V/T =      1.974541
+      MULPOP  O      -0.99; H   _1  0.50; H   _2  0.50; 
+ -----------------------------------------------------------------------------
+   4  -76.0095389812       3.84D-01  -1.02D-01    3  1  1  0
+      Virial theorem: -V/T =      1.996090
+      MULPOP  O      -0.80; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+   5  -76.0180754730       3.99D-02  -8.54D-03    3  1  1  0
+      Virial theorem: -V/T =      2.003545
+      MULPOP  O      -0.70; H   _1  0.35; H   _2  0.35; 
+ -----------------------------------------------------------------------------
+   6  -76.0182318814       1.77D-02  -1.56D-04    3  1  1  0
+      Virial theorem: -V/T =      2.003228
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   7  -76.0182604368       3.07D-03  -2.86D-05    3  1  1  0
+      Virial theorem: -V/T =      2.002859
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   8  -76.0182613013       9.63D-04  -8.64D-07    3  1  1  0
+      Virial theorem: -V/T =      2.002883
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   9  -76.0182613695       1.10D-04  -6.82D-08    3  1  1  0
+      Virial theorem: -V/T =      2.002899
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+  10  -76.0182613709       9.74D-06  -1.45D-09    3  1  1  0
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1  -69.0998097059       8.49D+00   5.87D+00    3  1  1  0
- MULPOP O    10.35; H    -0.35; 
-   2  -71.6604784069       6.74D+00  -2.56D+00    4  0  1  0
- MULPOP O     8.44; H     1.56; 
-   3  -75.9074926607       1.52D+00  -4.25D+00    3  1  1  0
- MULPOP O     8.48; H     1.52; 
-   4  -76.0095389808       3.84D-01  -1.02D-01    3  1  1  0
- MULPOP O     8.31; H     1.69; 
-   5  -76.0180754726       3.99D-02  -8.54D-03    3  1  1  0
- MULPOP O     8.28; H     1.72; 
-   6  -76.0182318810       1.77D-02  -1.56D-04    3  1  1  0
- MULPOP O     8.29; H     1.71; 
-   7  -76.0182604364       3.07D-03  -2.86D-05    3  1  1  0
- MULPOP O     8.30; H     1.70; 
-   8  -76.0182613009       9.63D-04  -8.64D-07    3  1  1  0
- MULPOP O     8.29; H     1.71; 
-   9  -76.0182613690       1.10D-04  -6.82D-08    3  1  1  0
- MULPOP O     8.29; H     1.71; 
-  10  -76.0182613705       9.74D-06  -1.45D-09    3  1  1  0
- DIIS converged in  10 iterations !
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1693,17 +1789,17 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.56588287    -1.32765948    -0.57180961     0.20772173     1.07458366
+  1    -20.56588287    -1.32765948    -0.57180961     0.20772174     1.07458367
          1.20188559     1.60489321     1.79707747
 
   2     -0.49631647     1.16833607     1.90867328     2.98023305
 
   3     -0.67796671     0.29559825     0.97538770     1.29492946     2.56319781
-         2.74089037
+         2.74089038
 
-  4      1.81104031     2.91641958
+  4      1.81104032     2.91641958
 
-    E(LUMO) :     0.20772173 au (symmetry 1)
+    E(LUMO) :     0.20772174 au (symmetry 1)
   - E(HOMO) :    -0.49631647 au (symmetry 2)
   ------------------------------------------
     gap     :     0.70403820 au
@@ -1711,30 +1807,33 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.018261370472                 
-     Nuclear repulsion:             8.906619162856
-     Electronic energy:           -84.924880533328
+     Final HF energy:             -76.018261370920                 
+     Nuclear repulsion:             8.906619188778
+     Electronic energy:           -84.924880559698
 
      Final gradient norm:           0.000009738671
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -1754,8 +1853,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -1764,16 +1863,16 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
- O          0.0000000000            0.0000000000           -0.1352768845
- H    1     0.0000000000            1.4325486366            1.0661916803
- H    2     0.0000000000           -1.4325486366            1.0661916803
+ O          0.0000000000            0.0000000000           -0.1352768833
+ H   _1     0.0000000000            1.4325486311            1.0661916797
+ H   _2     0.0000000000           -1.4325486311            1.0661916797
 
 
 
@@ -1784,19 +1883,19 @@ Point group: C2v
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-     Total energy        -76.0182613705 au (Hartrees)
-                         -2068.56205843 eV
-                           -199585.9166 kJ/mol
+     Total energy        -76.0182613709 au (Hartrees)
+                         -2068.56211714 eV
+                           -199585.9145 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1947974026 au
-     Mass-velocity correction:                  -0.2459412502 au
+     Darwin correction:                          0.1947974010 au
+     Mass-velocity correction:                  -0.2459412482 au
 
-     Total relativistic correction:             -0.0511438476 au (0.0673%)
-     Non-relativistic + relativistic energy:   -76.0694052180 au
+     Total relativistic correction:             -0.0511438472 au (0.0673%)
+     Non-relativistic + relativistic energy:   -76.0694052181 au
 
 
 
@@ -1804,15 +1903,15 @@ Point group: C2v
                              Molecular gradient (au)
                              -----------------------
 
-                         O    z    -0.0684404263
-                         H    y     0.0585136706
-                         H    z     0.0684404263
+                         O    z    -0.0684404237
+                         H    y     0.0585136661
+                         H    z     0.0684404237
 
 
 
- O          0.0000000000            0.0000000000           -0.0684404263
- H    1     0.0000000000            0.0292568353            0.0342202131
- H    2     0.0000000000           -0.0292568353            0.0342202131
+ O          0.0000000000            0.0000000000           -0.0684404237
+ H   _1     0.0000000000            0.0292568330            0.0342202119
+ H   _2     0.0000000000           -0.0292568330            0.0342202119
 
 
 
@@ -1830,7 +1929,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.89808506         2.28270427         7.61428186
+      z      0.89808506         2.28270438         7.61428222
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1842,15 +1941,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.989395    0.000000
- H    2:    0.989395    1.516144    0.000000
+ H   _1:    0.989395    0.000000
+ H   _2:    0.989395    1.516144    0.000000
 
 
   Max interatomic separation is    1.5161 Angstrom (    2.8651 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -1858,8 +1957,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.989395
-  bond distance:  H    2     O            0.989395
+  bond distance:  H   _1     O            0.989395
+  bond distance:  H   _2     O            0.989395
 
 
   Bond angles (degrees):
@@ -1867,7 +1966,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       100.027
+  bond angle:     H   _1     O          H   _2       100.027
 
 
 
@@ -1878,7 +1977,7 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.03 seconds
+ >>>> Total CPU  time used in ABACUS:   0.02 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
@@ -1897,9 +1996,9 @@ Point group: C2v
                                 Next geometry (au)
                                 ------------------
 
- O          0.0000000000            0.0000000000           -0.0720840695
- H    1     0.0000000000            1.4139481970            1.0345952728
- H    2     0.0000000000           -1.4139481970            1.0345952728
+ O          0.0000000000            0.0000000000           -0.0720841133
+ H   _1     0.0000000000            1.4139479566            1.0345952947
+ H   _2     0.0000000000           -1.4139479566            1.0345952947
 
 
 
@@ -1941,7 +2040,7 @@ Point group: C2v
  Number of two-electron integrals written:       11412 ( 25.3% )
  Megabytes written:                              0.137
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -1968,26 +2067,41 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -76.0216344640        1.31372D-01   -3.37D-03    1
+      Virial theorem: -V/T =      2.002024
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   2    -76.0227669075        4.61657D-02   -1.13D-03    2
+      Virial theorem: -V/T =      2.000354
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   3    -76.0228809101        1.78938D-02   -1.14D-04    3
+      Virial theorem: -V/T =      2.001393
+      MULPOP  O      -0.67; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   4    -76.0229056727        3.73290D-03   -2.48D-05    4
+      Virial theorem: -V/T =      2.001094
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   5    -76.0229077215        7.80325D-04   -2.05D-06    5
+      Virial theorem: -V/T =      2.001141
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   6    -76.0229078326        1.58236D-04   -1.11D-07    6
+      Virial theorem: -V/T =      2.001146
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   7    -76.0229078364        2.49512D-05   -3.83D-09    7
+      Virial theorem: -V/T =      2.001147
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   8    -76.0229078365        3.46484D-06   -7.84D-11    8
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1    -76.0216344658        1.31372D-01   -3.37D-03    1
- MULPOP O     8.29; H     1.71; 
-   2    -76.0227669068        4.61656D-02   -1.13D-03    2
- MULPOP O     8.29; H     1.71; 
-   3    -76.0228809092        1.78938D-02   -1.14D-04    3
- MULPOP O     8.28; H     1.72; 
-   4    -76.0229056718        3.73290D-03   -2.48D-05    4
- MULPOP O     8.28; H     1.72; 
-   5    -76.0229077205        7.80324D-04   -2.05D-06    5
- MULPOP O     8.28; H     1.72; 
-   6    -76.0229078317        1.58236D-04   -1.11D-07    6
- MULPOP O     8.28; H     1.72; 
-   7    -76.0229078355        2.49512D-05   -3.83D-09    7
- MULPOP O     8.28; H     1.72; 
-   8    -76.0229078356        3.46484D-06   -7.84D-11    8
- DIIS converged in   8 iterations !
+ *** DIIS converged in   8 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1999,48 +2113,51 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.55686546    -1.34407899    -0.57100805     0.21709450     1.09776112
-         1.19218158     1.60056934     1.82630148
+  1    -20.55686546    -1.34407904    -0.57100809     0.21709451     1.09776123
+         1.19218160     1.60056937     1.82630138
 
-  2     -0.49735033     1.16910931     1.92415632     3.00385684
+  2     -0.49735034     1.16910931     1.92415628     3.00385702
 
-  3     -0.70556428     0.30685068     1.00548496     1.29547872     2.58955233
-         2.82258843
+  3     -0.70556429     0.30685070     1.00548494     1.29547873     2.58955251
+         2.82258859
 
-  4      1.80636930     2.98516751
+  4      1.80636934     2.98516753
 
-    E(LUMO) :     0.21709450 au (symmetry 1)
-  - E(HOMO) :    -0.49735033 au (symmetry 2)
+    E(LUMO) :     0.21709451 au (symmetry 1)
+  - E(HOMO) :    -0.49735034 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.71444483 au
+    gap     :     0.71444485 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.022907835566                 
-     Nuclear repulsion:             9.264553788509
-     Electronic energy:           -85.287461624075
+     Final HF energy:             -76.022907836483                 
+     Nuclear repulsion:             9.264554587477
+     Electronic energy:           -85.287462423961
 
-     Final gradient norm:           0.000003464839
+     Final gradient norm:           0.000003464843
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -2062,8 +2179,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -2072,8 +2189,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
  CPU time statistics for ABACUS
@@ -2101,9 +2218,9 @@ Point group: C2v
                                 Next geometry (au)
                                 ------------------
 
- O          0.0000000000            0.0000000000           -0.0509421650
- H    1     0.0000000000            1.4178519658            1.0240243205
- H    2     0.0000000000           -1.4178519658            1.0240243205
+ O          0.0000000000            0.0000000000           -0.0509421666
+ H   _1     0.0000000000            1.4178520088            1.0240243214
+ H   _2     0.0000000000           -1.4178520088            1.0240243214
 
 
 
@@ -2145,7 +2262,7 @@ Point group: C2v
  Number of two-electron integrals written:       11412 ( 25.3% )
  Megabytes written:                              0.137
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -2172,24 +2289,37 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -76.0230216465        3.55987D-02   -1.14D-04    1
+      Virial theorem: -V/T =      2.000923
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   2    -76.0231076639        1.17598D-02   -8.60D-05    2
+      Virial theorem: -V/T =      2.000541
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   3    -76.0231156938        4.84048D-03   -8.03D-06    3
+      Virial theorem: -V/T =      2.000804
+      MULPOP  O      -0.67; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   4    -76.0231173817        9.46592D-04   -1.69D-06    4
+      Virial theorem: -V/T =      2.000722
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   5    -76.0231175131        1.87774D-04   -1.31D-07    5
+      Virial theorem: -V/T =      2.000733
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   6    -76.0231175194        3.83901D-05   -6.29D-09    6
+      Virial theorem: -V/T =      2.000735
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   7    -76.0231175196        6.60569D-06   -2.26D-10    7
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1    -76.0230216457        3.55988D-02   -1.14D-04    1
- MULPOP O     8.28; H     1.72; 
-   2    -76.0231076636        1.17599D-02   -8.60D-05    2
- MULPOP O     8.28; H     1.72; 
-   3    -76.0231156936        4.84050D-03   -8.03D-06    3
- MULPOP O     8.28; H     1.72; 
-   4    -76.0231173816        9.46597D-04   -1.69D-06    4
- MULPOP O     8.28; H     1.72; 
-   5    -76.0231175129        1.87775D-04   -1.31D-07    5
- MULPOP O     8.28; H     1.72; 
-   6    -76.0231175192        3.83904D-05   -6.29D-09    6
- MULPOP O     8.28; H     1.72; 
-   7    -76.0231175195        6.60571D-06   -2.26D-10    7
- DIIS converged in   7 iterations !
+ *** DIIS converged in   7 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2201,15 +2331,15 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.55437255    -1.34709515    -0.56892641     0.21928493     1.09963084
-         1.18820346     1.59876687     1.83972344
+  1    -20.55437255    -1.34709514    -0.56892640     0.21928493     1.09963081
+         1.18820346     1.59876686     1.83972345
 
-  2     -0.49730355     1.16937427     1.93091230     3.00191429
+  2     -0.49730355     1.16937427     1.93091230     3.00191426
 
-  3     -0.71363231     0.30908834     1.01662712     1.29601497     2.58718141
-         2.84432696
+  3     -0.71363231     0.30908834     1.01662712     1.29601497     2.58718138
+         2.84432693
 
-  4      1.80377470     3.00655855
+  4      1.80377469     3.00655854
 
     E(LUMO) :     0.21928493 au (symmetry 1)
   - E(HOMO) :    -0.49730355 au (symmetry 2)
@@ -2219,21 +2349,24 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.023117519462                 
-     Nuclear repulsion:             9.345019390847
-     Electronic energy:           -85.368136910309
+     Final HF energy:             -76.023117519612                 
+     Nuclear repulsion:             9.345019199273
+     Electronic energy:           -85.368136718885
 
-     Final gradient norm:           0.000006605712
+     Final gradient norm:           0.000006605687
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
 
@@ -2241,8 +2374,8 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -2264,8 +2397,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -2274,8 +2407,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:39 2011 
+     Host name              : fe6                                     
 
 
  CPU time statistics for ABACUS
@@ -2284,7 +2417,7 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.04 seconds
+ >>>> Total CPU  time used in ABACUS:   0.02 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
@@ -2303,9 +2436,9 @@ Point group: C2v
                                 Next geometry (au)
                                 ------------------
 
- O          0.0000000000            0.0000000000           -0.0492161977
- H    1     0.0000000000            1.4220941907            1.0231613369
- H    2     0.0000000000           -1.4220941907            1.0231613369
+ O          0.0000000000            0.0000000000           -0.0492161522
+ H   _1     0.0000000000            1.4220942620            1.0231613141
+ H   _2     0.0000000000           -1.4220942620            1.0231613141
 
 
 
@@ -2347,7 +2480,7 @@ Point group: C2v
  Number of two-electron integrals written:       11412 ( 25.3% )
  Megabytes written:                              0.137
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -2374,20 +2507,29 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1    -76.0231237888        5.04130D-03   -6.27D-06    1
- MULPOP O     8.28; H     1.72; 
-   2    -76.0231251081        9.70007D-04   -1.32D-06    2
- MULPOP O     8.28; H     1.72; 
-   3    -76.0231251561        4.26412D-04   -4.81D-08    3
- MULPOP O     8.28; H     1.72; 
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -76.0231237888        5.04132D-03   -6.27D-06    1
+      Virial theorem: -V/T =      2.000762
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   2    -76.0231251081        9.70003D-04   -1.32D-06    2
+      Virial theorem: -V/T =      2.000803
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   3    -76.0231251562        4.26408D-04   -4.81D-08    3
+      Virial theorem: -V/T =      2.000784
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
    4    -76.0231251644        5.03461D-05   -8.26D-09    4
- MULPOP O     8.28; H     1.72; 
-   5    -76.0231251646        6.70179D-06   -1.69D-10    5
- DIIS converged in   5 iterations !
+      Virial theorem: -V/T =      2.000793
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   5    -76.0231251646        6.70153D-06   -1.69D-10    5
+
+ *** DIIS converged in   5 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2399,48 +2541,51 @@ Point group: C2v
 
  Sym       Hartree-Fock orbital energies
 
-  1    -20.55436556    -1.34631423    -0.56814146     0.21912862     1.09761109
-         1.18777104     1.59826251     1.84187929
+  1    -20.55436556    -1.34631422    -0.56814145     0.21912862     1.09761106
+         1.18777103     1.59826251     1.84187933
 
-  2     -0.49710911     1.16948537     1.93185592     2.99855851
+  2     -0.49710910     1.16948537     1.93185594     2.99855845
 
-  3     -0.71365607     0.30885673     1.01738818     1.29599119     2.58367404
+  3     -0.71365608     0.30885673     1.01738820     1.29599119     2.58367398
          2.84309917
 
-  4      1.80298877     3.00729820
+  4      1.80298875     3.00729823
 
     E(LUMO) :     0.21912862 au (symmetry 1)
-  - E(HOMO) :    -0.49710911 au (symmetry 2)
+  - E(HOMO) :    -0.49710910 au (symmetry 2)
   ------------------------------------------
     gap     :     0.71623773 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.023125164562                 
-     Nuclear repulsion:             9.334766768851
-     Electronic energy:           -85.357891933413
+     Final HF energy:             -76.023125164604                 
+     Nuclear repulsion:             9.334766671574
+     Electronic energy:           -85.357891836178
 
-     Final gradient norm:           0.000006701794
+     Final gradient norm:           0.000006701525
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:40 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:40 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -2462,8 +2607,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:40 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -2472,8 +2617,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:13 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:40 2011 
+     Host name              : fe6                                     
 
 
  CPU time statistics for ABACUS
@@ -2482,7 +2627,7 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.03 seconds
+ >>>> Total CPU  time used in ABACUS:   0.02 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
@@ -2501,9 +2646,9 @@ Point group: C2v
                                 Next geometry (au)
                                 ------------------
 
- O          0.0000000000            0.0000000000           -0.0485971207
- H    1     0.0000000000            1.4232159561            1.0228517984
- H    2     0.0000000000           -1.4232159561            1.0228517984
+ O          0.0000000000            0.0000000000           -0.0485971208
+ H   _1     0.0000000000            1.4232159560            1.0228517984
+ H   _2     0.0000000000           -1.4232159560            1.0228517984
 
 
 
@@ -2546,7 +2691,7 @@ Point group: C2v
  Megabytes written:                              0.137
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -2572,20 +2717,29 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -76.0231253946        1.32976D-03   -2.30D-07    1
+      Virial theorem: -V/T =      2.000797
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   2    -76.0231254903        2.27866D-04   -9.56D-08    2
+      Virial theorem: -V/T =      2.000805
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   3    -76.0231254938        7.81038D-05   -3.54D-09    3
+      Virial theorem: -V/T =      2.000802
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   4    -76.0231254941        1.48184D-05   -2.74D-10    4
+      Virial theorem: -V/T =      2.000803
+      MULPOP  O      -0.68; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   5    -76.0231254941        2.55408D-06   -1.63D-11    5
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1    -76.0231253946        1.32985D-03   -2.30D-07    1
- MULPOP O     8.28; H     1.72; 
-   2    -76.0231254903        2.27880D-04   -9.56D-08    2
- MULPOP O     8.28; H     1.72; 
-   3    -76.0231254938        7.81071D-05   -3.54D-09    3
- MULPOP O     8.28; H     1.72; 
-   4    -76.0231254941        1.48195D-05   -2.74D-10    4
- MULPOP O     8.28; H     1.72; 
-   5    -76.0231254941        2.55431D-06   -1.64D-11    5
- DIIS converged in   5 iterations !
+ *** DIIS converged in   5 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2615,30 +2769,33 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
      Final HF energy:             -76.023125494102                 
-     Nuclear repulsion:             9.332789712927
-     Electronic energy:           -85.355915207029
+     Nuclear repulsion:             9.332789712866
+     Electronic energy:           -85.355915206968
 
-     Final gradient norm:           0.000002554311
+     Final gradient norm:           0.000002554078
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:14 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:40 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:14 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:40 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -2660,8 +2817,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:14 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:40 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -2670,8 +2827,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:14 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:40 2011 
+     Host name              : fe6                                     
 
 
  CPU time statistics for ABACUS
@@ -2680,7 +2837,7 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.03 seconds
+ >>>> Total CPU  time used in ABACUS:   0.02 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
@@ -2699,9 +2856,9 @@ Point group: C2v
                                Final geometry (au)
                                -------------------
 
- O          0.0000000000            0.0000000000           -0.0485971207
- H    1     0.0000000000            1.4232159561            1.0228517984
- H    2     0.0000000000           -1.4232159561            1.0228517984
+ O          0.0000000000            0.0000000000           -0.0485971208
+ H   _1     0.0000000000            1.4232159560            1.0228517984
+ H   _2     0.0000000000           -1.4232159560            1.0228517984
 
 
 
@@ -2713,7 +2870,7 @@ Point group: C2v
  Iteration number               :       8
  End of optimization            :       T*
  Energy at this geometry is     :     -76.023125
- Energy change from last geom.  :       0.000000
+ Energy change from last geom.  :      -0.000000
  Norm of gradient               :       0.000003
  Norm of step                   :       0.000010
  Updated trust radius           :       0.500000
@@ -2728,6 +2885,7 @@ Point group: C2v
    *************** Output of molecule and basis set information ***************
    ****************************************************************************
 
+
     The two title cards from your ".mol" input:
     ------------------------------------------------------------------------
  1: Geometry optimization utilizing pre-optimization with smaller           
@@ -2737,16 +2895,18 @@ Point group: C2v
   Atomic type no.    1
   --------------------
   Nuclear charge:   8.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
   Used basis set file for basis set for elements with Z =   8 :
-     "/home/ruud/DaltonFix/dalton/basis/cc-pVTZ"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVTZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
-  Number of symmetry independent centres:    1
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
   Used basis set file for basis set for elements with Z =   1 :
-     "/home/ruud/DaltonFix/dalton/basis/cc-pVTZ"
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVTZ"
 
 
                          SYMGRP: Point group information
@@ -2763,9 +2923,9 @@ Point group: C2v
 
         |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
     Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
@@ -2781,9 +2941,9 @@ Point group: C2v
 
         | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
     A2  | A2   B2   B1   A1 
 
 
@@ -2791,8 +2951,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -2803,7 +2963,7 @@ Point group: C2v
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    3
 
   Basis set used is "cc-pVTZ" from the basis set library.
@@ -2824,50 +2984,50 @@ Point group: C2v
   ----------------------------
 
   Total number of coordinates:    9
-  O       :    1  x   0.0000000000   2  y   0.0000000000   3  z  -0.0485971207
-  H   / 1 :    4  x   0.0000000000   5  y   1.4232159561   6  z   1.0228517984
-  H   / 2 :    7  x   0.0000000000   8  y  -1.4232159561   9  z   1.0228517984
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z  -0.0485971208
+  H   / 1 :     4  x   0.0000000000    5  y   1.4232159560    6  z   1.0228517984
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4232159560    9  z   1.0228517984
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:    3   2   3   1
+  Number of coordinates in each symmetry:     3    2    3    1
 
   Symmetry  A1  ( 1)
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
 
   Symmetry  B1  ( 2)
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
 
   Symmetry  B2  ( 3)
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
 
   Symmetry  A2  ( 4)
 
-   9   H     x    [  4  -   7 ]/2
+    9   H     x    [  4  -    7 ]/2
 
 
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.942700    0.000000
- H    2:    0.942700    1.506267    0.000000
+ H   _1:    0.942700    0.000000
+ H   _2:    0.942700    1.506267    0.000000
 
 
   Max interatomic separation is    1.5063 Angstrom (    2.8464 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -2875,8 +3035,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.942700
-  bond distance:  H    2     O            0.942700
+  bond distance:  H   _1     O            0.942700
+  bond distance:  H   _2     O            0.942700
 
 
   Bond angles (degrees):
@@ -2884,7 +3044,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       106.052
+  bond angle:     H   _1     O          H   _2       106.052
 
 
 
@@ -2904,17 +3064,17 @@ Point group: C2v
 
                A                   B                   C
 
-         878217.8713         442036.5736         294037.5775 MHz
+         878217.8635         442036.5698         294037.5750 MHz
            29.294195           14.744753            9.808038 cm-1
 
 
-  Nuclear repulsion energy :    9.332789712868
+@  Nuclear repulsion energy :    9.332789712992
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              23  11  17   7
+  Number of orbitals in each symmetry:          23   11   17    7
 
 
   Symmetry  A1 ( 1)
@@ -2932,16 +3092,16 @@ Point group: C2v
    11     O        3d2+      23
    12     O        4f0       27
    13     O        4f2+      29
-   14     H        1s        31  +  32
-   15     H        1s        33  +  34
-   16     H        1s        35  +  36
-   17     H        2py       39  -  40
-   18     H        2pz       41  +  42
-   19     H        2py       45  -  46
-   20     H        2pz       47  +  48
-   21     H        3d1-      51  -  52
-   22     H        3d0       53  +  54
-   23     H        3d2+      57  +  58
+   14     H        1s        31 +   32
+   15     H        1s        33 +   34
+   16     H        1s        35 +   36
+   17     H        2py       39 -   40
+   18     H        2pz       41 +   42
+   19     H        2py       45 -   46
+   20     H        2pz       47 +   48
+   21     H        3d1-      51 -   52
+   22     H        3d0       53 +   54
+   23     H        3d2+      57 +   58
 
 
   Symmetry  B1 ( 2)
@@ -2953,10 +3113,10 @@ Point group: C2v
    28     O        3d1+      22
    29     O        4f1+      28
    30     O        4f3+      30
-   31     H        2px       37  +  38
-   32     H        2px       43  +  44
-   33     H        3d2-      49  -  50
-   34     H        3d1+      55  +  56
+   31     H        2px       37 +   38
+   32     H        2px       43 +   44
+   33     H        3d2-      49 -   50
+   34     H        3d1+      55 +   56
 
 
   Symmetry  B2 ( 3)
@@ -2968,16 +3128,16 @@ Point group: C2v
    39     O        3d1-      20
    40     O        4f3-      24
    41     O        4f1-      26
-   42     H        1s        31  -  32
-   43     H        1s        33  -  34
-   44     H        1s        35  -  36
-   45     H        2py       39  +  40
-   46     H        2pz       41  -  42
-   47     H        2py       45  +  46
-   48     H        2pz       47  -  48
-   49     H        3d1-      51  +  52
-   50     H        3d0       53  -  54
-   51     H        3d2+      57  -  58
+   42     H        1s        31 -   32
+   43     H        1s        33 -   34
+   44     H        1s        35 -   36
+   45     H        2py       39 +   40
+   46     H        2pz       41 -   42
+   47     H        2py       45 +   46
+   48     H        2pz       47 -   48
+   49     H        3d1-      51 +   52
+   50     H        3d0       53 -   54
+   51     H        3d2+      57 -   58
 
 
   Symmetry  A2 ( 4)
@@ -2985,10 +3145,10 @@ Point group: C2v
    52     O        3d2-      14
    53     O        3d2-      19
    54     O        4f2-      25
-   55     H        2px       37  -  38
-   56     H        2px       43  -  44
-   57     H        3d2-      49  +  50
-   58     H        3d1+      55  -  56
+   55     H        2px       37 -   38
+   56     H        2px       43 -   44
+   57     H        3d2-      49 +   50
+   58     H        3d1+      55 -   56
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
@@ -3016,11 +3176,9 @@ Point group: C2v
  Number of two-electron integrals written:      350015 ( 23.9% )
  Megabytes written:                              4.012
 
-
- >>> Time used in TWOINT is   0.12 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.12 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>> Time used in TWOINT is   0.14 seconds
+ >>>> Total CPU  time used in HERMIT:   0.15 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 
                         .----------------------------------.
@@ -3041,8 +3199,8 @@ Point group: C2v
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:14 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:41 2011 
+     Host name              : fe6                                     
 
  Title lines from ".mol" input file:
      Geometry optimization utilizing pre-optimization with smaller           
@@ -3053,12 +3211,12 @@ Point group: C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART H1DIAG" input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -3069,16 +3227,16 @@ Point group: C2v
 
      Orbital specifications
      ======================
-     Abelian symmetry species          All    1    2    3    4
-                                       --  --  --  --
-     Total number of orbitals           58   23   11   17    7
-     Number of basis functions          58   23   11   17    7
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           58 |   23   11   17    7
+     Number of basis functions          58 |   23   11   17    7
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
-      -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals               5    3    1    1    0
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               5 |    3    1    1    0
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
@@ -3094,33 +3252,56 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -61.4455677820       2.20D+01   1.46D+01    3  1  1  0
- MULPOP O    10.04; H    -0.04; 
-   2  -66.8295655952       8.72D+00  -5.38D+00    3  0  2  0
- MULPOP O     7.65; H     2.35; 
+      Virial theorem: -V/T =      1.500589
+      MULPOP  O      -2.02; H   _1  1.01; H   _2  1.01; 
+ -----------------------------------------------------------------------------
+   2  -66.8295655951       8.72D+00  -5.38D+00    3  0  2  0
+      Virial theorem: -V/T =      2.104689
+      MULPOP  O       3.95; H   _1 -1.98; H   _2 -1.98; 
+ -----------------------------------------------------------------------------
    3  -73.9220251317       7.59D+00  -7.09D+00    3  1  1  0
- MULPOP O     9.38; H     0.62; 
+      Virial theorem: -V/T =      1.840366
+      MULPOP  O      -1.68; H   _1  0.84; H   _2  0.84; 
+ -----------------------------------------------------------------------------
    4  -75.7388194410       2.60D+00  -1.82D+00    3  1  1  0
- MULPOP O     8.47; H     1.53; 
+      Virial theorem: -V/T =      1.947962
+      MULPOP  O      -0.95; H   _1  0.48; H   _2  0.48; 
+ -----------------------------------------------------------------------------
    5  -76.0558518104       1.65D-01  -3.17D-01    3  1  1  0
- MULPOP O     7.94; H     2.06; 
+      Virial theorem: -V/T =      2.000820
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
    6  -76.0573203635       1.02D-01  -1.47D-03    3  1  1  0
- MULPOP O     7.94; H     2.06; 
+      Virial theorem: -V/T =      2.001880
+      MULPOP  O      -0.46; H   _1  0.23; H   _2  0.23; 
+ -----------------------------------------------------------------------------
    7  -76.0577358097       1.86D-02  -4.15D-04    3  1  1  0
- MULPOP O     7.97; H     2.03; 
+      Virial theorem: -V/T =      2.000295
+      MULPOP  O      -0.47; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
    8  -76.0577587541       2.35D-03  -2.29D-05    3  1  1  0
- MULPOP O     7.97; H     2.03; 
+      Virial theorem: -V/T =      1.999935
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
    9  -76.0577596508       4.01D-04  -8.97D-07    3  1  1  0
- MULPOP O     7.97; H     2.03; 
+      Virial theorem: -V/T =      1.999941
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
   10  -76.0577596732       6.55D-05  -2.25D-08    3  1  1  0
- MULPOP O     7.97; H     2.03; 
+      Virial theorem: -V/T =      1.999943
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
   11  -76.0577596736       1.17D-05  -4.18D-10    3  1  1  0
- MULPOP O     7.97; H     2.03; 
-  12  -76.0577596736       1.45D-06  -1.01D-11    3  1  1  0
- DIIS converged in  12 iterations !
+      Virial theorem: -V/T =      1.999944
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
+  12  -76.0577596736       1.45D-06  -1.00D-11    3  1  1  0
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3152,30 +3333,33 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
      Final HF energy:             -76.057759673645                 
-     Nuclear repulsion:             9.332789712868
-     Electronic energy:           -85.390549386513
+     Nuclear repulsion:             9.332789712992
+     Electronic energy:           -85.390549386637
 
      Final gradient norm:           0.000001451246
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:14 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:41 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.14 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:14 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:41 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -3195,8 +3379,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:14 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:41 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -3205,16 +3389,16 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:15 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:41 2011 
+     Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
- O          0.0000000000            0.0000000000           -0.0485971207
- H    1     0.0000000000            1.4232159561            1.0228517984
- H    2     0.0000000000           -1.4232159561            1.0228517984
+ O          0.0000000000            0.0000000000           -0.0485971208
+ H   _1     0.0000000000            1.4232159560            1.0228517984
+ H   _2     0.0000000000           -1.4232159560            1.0228517984
 
 
 
@@ -3226,18 +3410,18 @@ Point group: C2v
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -76.0577596736 au (Hartrees)
-                         -2069.63686190 eV
-                           -199689.6193 kJ/mol
+                         -2069.63692063 eV
+                           -199689.6172 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1998453782 au
-     Mass-velocity correction:                  -0.2514215844 au
+     Darwin correction:                          0.1998453766 au
+     Mass-velocity correction:                  -0.2514215823 au
 
-     Total relativistic correction:             -0.0515762062 au (0.0678%)
-     Non-relativistic + relativistic energy:   -76.1093358799 au
+     Total relativistic correction:             -0.0515762058 au (0.0678%)
+     Non-relativistic + relativistic energy:   -76.1093358794 au
 
 
 
@@ -3246,14 +3430,14 @@ Point group: C2v
                              -----------------------
 
                          O    z    -0.0026327840
-                         H    y     0.0042261266
+                         H    y     0.0042261265
                          H    z     0.0026327840
 
 
 
  O          0.0000000000            0.0000000000           -0.0026327840
- H    1     0.0000000000            0.0021130633            0.0013163920
- H    2     0.0000000000           -0.0021130633            0.0013163920
+ H   _1     0.0000000000            0.0021130633            0.0013163920
+ H   _2     0.0000000000           -0.0021130633            0.0013163920
 
 
 
@@ -3271,7 +3455,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.78240397         1.98867231         6.63349680
+      z      0.78240397         1.98867240         6.63349711
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -3283,15 +3467,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.942700    0.000000
- H    2:    0.942700    1.506267    0.000000
+ H   _1:    0.942700    0.000000
+ H   _2:    0.942700    1.506267    0.000000
 
 
   Max interatomic separation is    1.5063 Angstrom (    2.8464 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -3299,8 +3483,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.942700
-  bond distance:  H    2     O            0.942700
+  bond distance:  H   _1     O            0.942700
+  bond distance:  H   _2     O            0.942700
 
 
   Bond angles (degrees):
@@ -3308,7 +3492,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       106.052
+  bond angle:     H   _1     O          H   _2       106.052
 
 
 
@@ -3319,8 +3503,8 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.27 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.34 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
                    .-------------------------------------------.
@@ -3338,9 +3522,9 @@ Point group: C2v
                                 Next geometry (au)
                                 ------------------
 
- O          0.0000000000            0.0000000000           -0.0474615235
- H    1     0.0000000000            1.4196564789            1.0222839998
- H    2     0.0000000000           -1.4196564789            1.0222839998
+ O          0.0000000000            0.0000000000           -0.0474615175
+ H   _1     0.0000000000            1.4196564800            1.0222839968
+ H   _2     0.0000000000           -1.4196564800            1.0222839968
 
 
 
@@ -3382,11 +3566,9 @@ Point group: C2v
  Number of two-electron integrals written:      350015 ( 23.9% )
  Megabytes written:                              4.012
 
-
- >>> Time used in TWOINT is   0.12 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.13 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>> Time used in TWOINT is   0.13 seconds
+ >>>> Total CPU  time used in HERMIT:   0.15 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 
                         .----------------------------------.
@@ -3412,22 +3594,33 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -76.0577671093        7.63581D-03   -7.44D-06    1
- MULPOP O     7.97; H     2.03; 
+      Virial theorem: -V/T =      1.999894
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
    2    -76.0577694527        2.28809D-03   -2.34D-06    2
- MULPOP O     7.97; H     2.03; 
-   3    -76.0577696472        9.30522D-04   -1.95D-07    3
- MULPOP O     7.97; H     2.03; 
+      Virial theorem: -V/T =      1.999789
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
+   3    -76.0577696472        9.30523D-04   -1.95D-07    3
+      Virial theorem: -V/T =      1.999846
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
    4    -76.0577696917        1.72687D-04   -4.44D-08    4
- MULPOP O     7.97; H     2.03; 
-   5    -76.0577696956        4.67459D-05   -3.95D-09    5
- MULPOP O     7.97; H     2.03; 
-   6    -76.0577696960        8.50663D-06   -4.04D-10    6
- DIIS converged in   6 iterations !
+      Virial theorem: -V/T =      1.999828
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
+   5    -76.0577696956        4.67460D-05   -3.95D-09    5
+      Virial theorem: -V/T =      1.999830
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
+   6    -76.0577696960        8.50664D-06   -4.03D-10    6
+
+ *** DIIS converged in   6 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3440,15 +3633,15 @@ Point group: C2v
  Sym       Hartree-Fock orbital energies
 
   1    -20.55103173    -1.35327179    -0.57787949     0.14422156     0.60641205
-         0.66657663     0.81133471     1.11858674
+         0.66657663     0.81133472     1.11858674
 
-  2     -0.50538249     0.78739497     0.96383547     2.03660338     3.37053267
-         3.81638540
+  2     -0.50538249     0.78739497     0.96383548     2.03660337     3.37053268
+         3.81638541
 
   3     -0.72191046     0.20514990     0.55359536     0.80489558     1.20251172
          1.54610081
 
-  4      0.86144017     2.07553395     3.58184594     3.96762106     4.34888005
+  4      0.86144017     2.07553395     3.58184594     3.96762106     4.34888006
 
 
     E(LUMO) :     0.14422156 au (symmetry 1)
@@ -3459,30 +3652,33 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
      Final HF energy:             -76.057769696025                 
-     Nuclear repulsion:             9.353214414143
-     Electronic energy:           -85.410984110168
+     Nuclear repulsion:             9.353214436726
+     Electronic energy:           -85.410984132752
 
-     Final gradient norm:           0.000008506628
+     Final gradient norm:           0.000008506642
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:15 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:42 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.04 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:15 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:42 2011 
+     Host name              : fe6                                     
 
 
                      .---------------------------------------.
@@ -3504,8 +3700,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:15 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:42 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -3514,18 +3710,18 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:15 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:42 2011 
+     Host name              : fe6                                     
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     419 %
+ REST       00:00:01     384 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.27 seconds
+ >>>> Total CPU  time used in ABACUS:   0.34 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
@@ -3544,9 +3740,9 @@ Point group: C2v
                                Final geometry (au)
                                -------------------
 
- O          0.0000000000            0.0000000000           -0.0474615235
- H    1     0.0000000000            1.4196564789            1.0222839998
- H    2     0.0000000000           -1.4196564789            1.0222839998
+ O          0.0000000000            0.0000000000           -0.0474615175
+ H   _1     0.0000000000            1.4196564800            1.0222839968
+ H   _2     0.0000000000           -1.4196564800            1.0222839968
 
 
 
@@ -3575,8 +3771,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:15 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:42 2011 
+     Host name              : fe6                                     
 
 
    ***************************************************************************
@@ -3585,16 +3781,16 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:15 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:42 2011 
+     Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
- O          0.0000000000            0.0000000000           -0.0474615235
- H    1     0.0000000000            1.4196564789            1.0222839998
- H    2     0.0000000000           -1.4196564789            1.0222839998
+ O          0.0000000000            0.0000000000           -0.0474615175
+ H   _1     0.0000000000            1.4196564800            1.0222839968
+ H   _2     0.0000000000           -1.4196564800            1.0222839968
 
 
 
@@ -3606,18 +3802,18 @@ Point group: C2v
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -76.0577696960 au (Hartrees)
-                         -2069.63713462 eV
-                           -199689.6457 kJ/mol
+                         -2069.63719335 eV
+                           -199689.6436 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1998441305 au
-     Mass-velocity correction:                  -0.2514212585 au
+     Darwin correction:                          0.1998441288 au
+     Mass-velocity correction:                  -0.2514212564 au
 
-     Total relativistic correction:             -0.0515771280 au (0.0678%)
-     Non-relativistic + relativistic energy:   -76.1093468240 au
+     Total relativistic correction:             -0.0515771276 au (0.0678%)
+     Non-relativistic + relativistic energy:   -76.1093468236 au
 
 
 
@@ -3634,7 +3830,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.78206679         1.98781529         6.63063809
+      z      0.78206679         1.98781537         6.63063837
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -3646,15 +3842,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.940653    0.000000
- H    2:    0.940653    1.502500    0.000000
+ H   _1:    0.940653    0.000000
+ H   _2:    0.940653    1.502500    0.000000
 
 
   Max interatomic separation is    1.5025 Angstrom (    2.8393 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -3662,8 +3858,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.940653
-  bond distance:  H    2     O            0.940653
+  bond distance:  H   _1     O            0.940653
+  bond distance:  H   _2     O            0.940653
 
 
   Bond angles (degrees):
@@ -3671,7 +3867,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       106.002
+  bond angle:     H   _1     O          H   _2       106.002
 
 
 
@@ -3701,41 +3897,41 @@ Point group: C2v
                                   Final geometry
                                   --------------
 
- O          0.0000000000            0.0000000000           -0.0474615235
- H    1     0.0000000000            1.4196564789            1.0222839998
- H    2     0.0000000000           -1.4196564789            1.0222839998
+ O          0.0000000000            0.0000000000           -0.0474615175
+ H   _1     0.0000000000            1.4196564800            1.0222839968
+ H   _2     0.0000000000           -1.4196564800            1.0222839968
 
 
 
  Iter      Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
  -------------------------------------------------------------------------------
    0      -74.963868     0.000000     0.052170    0    0.184903*   0.500000   0 
-   1      -74.965848    -0.001980     0.005820    0    0.029169*   0.500000   0 
+   1      -74.965848    -0.001980     0.005821    0    0.029168*   0.500000   0 
    2      -74.965901    -0.000053     0.000537    0    0.000800*   0.500000   0 
-   3      -74.965901     0.000000     0.000034    0    0.000050*   0.500000   0 
+   3      -74.965901    -0.000000     0.000034    0    0.000050*   0.500000   0 
    4      -76.018261    -1.052360     0.093478    0    0.129983*   0.500000   0 
    5      -76.022908    -0.004646     0.018535    0    0.039162*   0.500000   0 
    6      -76.023118    -0.000210     0.002576    0    0.010277*   0.500000   0 
    7      -76.023125    -0.000008     0.000446    0    0.002791*   0.500000   0 
-   8      -76.023125     0.000000     0.000003    0    0.000010*   0.500000   0 
+   8      -76.023125    -0.000000     0.000003    0    0.000010*   0.500000   0 
    9      -76.057760    -0.034634     0.004396    0    0.009021*   0.500000   0 
   10      -76.057770    -0.000010     0.000107    0    0.000223*   0.500000   0 
- 
+
  *) Newton step taken.
 
 
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.940653    0.000000
- H    2:    0.940653    1.502500    0.000000
+ H   _1:    0.940653    0.000000
+ H   _2:    0.940653    1.502500    0.000000
 
 
   Max interatomic separation is    1.5025 Angstrom (    2.8393 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -3743,8 +3939,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.940653
-  bond distance:  H    2     O            0.940653
+  bond distance:  H   _1     O            0.940653
+  bond distance:  H   _2     O            0.940653
 
 
   Bond angles (degrees):
@@ -3752,23 +3948,23 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       106.002
+  bond angle:     H   _1     O          H   _2       106.002
 
 
- 
+
  Geometry converged in           11  iterations!
- 
+
  Energy at final geometry is       :     -76.057770 a.u.
  Energy change during optimization :      -1.093902 a.u.
                                           -2872.038 kJ/mol
- 
+
  Preoptimization was performed using the basis set(s):
      STO-3G                                                      
      6-31G**                                                     
- 
- >>>> Total CPU  time used in DALTON:   1.68 seconds
- >>>> Total wall time used in DALTON:   3.00 seconds
+
+ >>>> Total CPU  time used in DALTON:   1.46 seconds
+ >>>> Total wall time used in DALTON:   5.00 seconds
 
  
-     Date and time (Linux)  : Thu Sep 24 17:57:15 2009
-     Host name              : stallo-2.local                          
+     Date and time (Linux)  : Wed Mar 16 17:42:42 2011 
+     Host name              : fe6                                     

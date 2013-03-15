@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_ETA_CONT(LISTL,LISTR,NODDY,
@@ -50,12 +40,12 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <cclists.h>
-#include <ccroper.h>
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "cclists.h"
+#include "ccroper.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -99,9 +89,6 @@ C
 *     begin
 *---------------------------------------------------------------------*
       CALL QENTER('CCSDT_ETA_CONT')
-#if !defined CC_AARHUS
-      CALL QUIT('No triples (yet) in CCSDT_ETA_CONT.')
-#else
 
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'entered CCSDT_ETA_CONT... NODDY=',NODDY
@@ -323,7 +310,6 @@ C         --------------------
 
       CALL WCLOSE2(LUDEFF,FNDEFF,'DELETE')
 
-#endif
       CALL QEXIT('CCSDT_ETA_CONT')
       RETURN
       END 
@@ -355,13 +341,13 @@ C         --------------------
 *            
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
-#include <ccrc1rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
+#include "ccrc1rsp.h"
 C
       LOGICAL LOCDBG
       LOGICAL LCAUCHY
@@ -695,15 +681,15 @@ C
 *=====================================================================*
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "ccexci.h"
 C
       LOGICAL LOCDBG, TOT_T3Y
       LOGICAL LCAUCHY
@@ -808,7 +794,7 @@ C
       ELSE
         WRITE(LUPRI,*) 'LISTL = ', LISTL(1:3) 
         WRITE(LUPRI,*) 'CCSDT_ETA_FA_DEN handles only L0 or LE as LISTL'
-        CALL QUIT('Unkown left list in CCSDT_ETA_FA_DEN')
+        CALL QUIT('Unknown left list in CCSDT_ETA_FA_DEN')
       END IF
 C
       DO ISYMDL = 1, NSYM
@@ -1424,7 +1410,7 @@ C              Can use kend3 since we do not need the integrals anymore.
                KINDEXB  = KINDSQ  + (6*NCKIJ(ISCKIJ) - 1)/IRAT + 1
                KINDEXD = KINDEXB  + (NCKI(ISALJB)  - 1)/IRAT + 1
                KTMAT   = KINDEXD + (NCKI(ISALJD) - 1)/IRAT + 1
-               KTRVI8  = KTMAT   + MAX(NCKIJ(ISCKIJ),NCKIJ(ISBLCKIJ))
+               KTRVI8  = KTMAT   + NCKIJMAX
                KTRVI9  = KTRVI8  + NCKATR(ISYCKD)
                KTRVI10 = KTRVI9  + NCKATR(ISYCKD)
                KEND4   = KTRVI10 + NCKATR(ISYCKD)
@@ -2262,9 +2248,9 @@ C     files have not been deleted up there. Do it now!
 C---------------------------------------------------------------------
 C     
       IF (LCAUCHY) THEN
-         CALL DELETE_FILE('CC3_CAUINT_V*')
+         CALL DELETE_FILES('CC3_CAUINT_V*')
       ELSE
-         CALL DELETE_FILE('CCSDT_____ETAFD4')
+         CALL DELETE_FILES('CCSDT_____ETAFD4')
       END IF
 
 C
@@ -2287,8 +2273,8 @@ C
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL T2AMP(*), XAIBJ, XBJAI, FAC
@@ -2367,9 +2353,9 @@ C
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL DIA(*), XMMAT(*), T2TP(*), WORK(*)
@@ -2471,8 +2457,8 @@ C
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL FIA(*), FIJ(*), FAI(*), FAB(*), FOCK(*)
@@ -2554,10 +2540,10 @@ C
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccroper.h>
-#include <cclists.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccroper.h"
+#include "cclists.h"
 
 * input:
       CHARACTER*3 LISTL, LISTDPE, LISTDPX
@@ -2738,10 +2724,10 @@ C     -------------------------------------------------------
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

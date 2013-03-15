@@ -95,9 +95,9 @@ fi
 #
 # Test of QMMM dipole moment
 #
-CRIT1=`$GREP "x * ( |0)\.13080" $log | wc -l`
-CRIT2=`$GREP "y * \-1\.34660" $log | wc -l`
-CRIT3=`$GREP "z * ( |0)\.03871" $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.13060" $log | wc -l`
+CRIT2=`$GREP "y * \-1\.34653" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.03820" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[1]=3
 ERROR[1]="QMMM DIPOLE MOMENT NOT CORRECT"
@@ -106,8 +106,8 @@ ERROR[1]="QMMM DIPOLE MOMENT NOT CORRECT"
 #
 # Test of QMMM excitation energies
 #
-CRIT1=`$GREP "1        1  *  ( |0)\.1744" $log | wc -l`
-CRIT2=`$GREP "1        2  *  ( |0)\.3607" $log | wc -l`
+CRIT1=`$GREP " 1  * 1  * 0*\.1744" $log | wc -l`
+CRIT2=`$GREP " 1  * 2  * 0*\.3607" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[2]=4
 ERROR[2]="QMMM EXCITATION ENERGIES NOT CORRECT"

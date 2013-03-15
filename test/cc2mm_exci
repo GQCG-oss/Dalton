@@ -189,13 +189,13 @@ ERROR[1]="THE CLASSICAL MM/MM ENERGY NOT CORRECT"
 
 # QM/MM interaction energy compared:
 CRIT1=`$GREP "\| * (\-|\-0).01030903.. \| * (\-|\-0)\.00020718.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.01051621.. \|" $log | wc -l`
-CRIT2=`$GREP "\| * \-189\.75182217.. \| * \-189\.76233839.. \| * ( |0)\.00009051.. \|" $log | wc -l`
+CRIT2=`$GREP "\| * \-189\.75182217.. \| * \-189\.7623383... \| * ( |0)\.00009051.. \|" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2`
 CTRL[2]=2
 ERROR[2]="QM/MM ENERGY NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "x * ( |0)\.69249491 * 1\.76014630" $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.6924949. * 1\.7601463." $log | wc -l`
 CRIT2=`$GREP "y * (\-|\-0)\.00334991 * (\-|\-0)\.00851461" $log | wc -l`
 CRIT3=`$GREP "z * ( |0)\.00062181 * ( |0)\.00158049" $log | wc -l` 
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
@@ -204,7 +204,7 @@ ERROR[3]="DIPOLE MOMENT NOT CORRECT"
 
 # Three lowest ground state excitation energies compared:
 CRIT1=`$GREP "\^1A   \|    1   \|     ( |0)\.1759967  \|       4\.78911  \|     38626\.813" $log | wc -l`
-CRIT2=`$GREP "\^1A   \|    2   \|     ( |0)\.3707964  \|      10\.08988  \|     81380\.395" $log | wc -l`
+CRIT2=`$GREP "\^1A   \|    2   \|     ( |0)\.3707964  \|      10\.08988  \|     81380\.39." $log | wc -l`
 CRIT3=`$GREP "\^1A   \|    3   \|     ( |0)\.4568489  \|      12\.43149  \|    100266\.747" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3

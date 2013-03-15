@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_time */
       SUBROUTINE SO_TIME(TIMTOT,TIMWTO,PARRAY,LPARRA)
@@ -11,10 +11,10 @@ C
 C     PURPOSE: Sort and print information about timings in SOPPA
 C              calculation.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
+#include "soppinf.h"
 C
 C
       CHARACTER*14 SUBNM(LSOTIM)

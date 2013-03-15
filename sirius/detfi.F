@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck strpa2 */
       SUBROUTINE STRPA2(NSASOA,NSASOB,NASTR,NBSTR,
@@ -49,8 +39,8 @@ C                       introduced REFSPC option
 C      SEP 14 88 NEL1MX AND NEL3MN ADDED
 C L.R. JAN 14 88 ( NDTASM AND MXNDT ADDED )
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER SYMPRO(8,8)
       DIMENSION NSASOA(NOCTPA,MAXSYM),NSASOB(NOCTPB,MAXSYM)
       DIMENSION IOCOC(NOCTPA,NOCTPB)
@@ -168,13 +158,13 @@ C IF IFLAG .NE. 0 REDEFINED TYPE IS OBTAINED THROUGH
 C OCCUPATION POINTERS.
 C IAB = 1 ( 2 ) DESIGNATES ALPHA ( BETA )   STRING
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER  STRING(*)
 C
-#include <mxpdim.h>
-#include <ciinfo.h>
-#include <strnum.h>
+#include "mxpdim.h"
+#include "ciinfo.h"
+#include "strnum.h"
 C
 C OCCUPATION CLASSS OF STRING
 C
@@ -239,8 +229,8 @@ C ( NORB1 - IEL1) *( NEL3MX + 1 ) + IEL3 + 1
 C A POINTER , IPOINT, IS SET UP TO ELIMINATE CLASSES
 C WITH ZERO STRINGS
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION NSTAOC(*), IPOINT(*)
       DIMENSION NL1FTP(*),NL2FTP(*),NL3FTP(*)
 C
@@ -315,12 +305,12 @@ C
 C SOME DIMENSION OF STRINGS FOR DEFINING STATIC PARTITIONING OF
 C MEMORY
 C
-#include <implicit.h>
-#include <mxpdim.h>
-#include <maxash.h>
-#include <strnum.h>
-#include <ciinfo.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxpdim.h"
+#include "maxash.h"
+#include "strnum.h"
+#include "ciinfo.h"
 c.Added sept 90
 c NL1FTP : Number of electron in ras 1 for string of given type
 c NL2FTP : Number of electron in ras 2 for string of given type
@@ -346,9 +336,10 @@ COLD  MS2  = MULTS - 1
       IF (NTEST .GT. 1) WRITE(LUPRI,*) ' MS2 NAEL NBEL ', MS2,NAEL,NBEL
 C
       IF (NAEL + NBEL .NE. NEL ) THEN
-        WRITE(LUPRI,*)
-     &  ' STOP : NUMBER OF ELECTRONS AND MULTIPLICITY INCONSISTENT '
-        CALL QUIT('NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY')
+         WRITE(LUPRI,'(/A/A,2I15)')
+     &'STOP in STRDIM: No. of ELECTRONS and MULTIPLICITY INCONSISTENT',
+     &'MS2, NEL', MS2, NEL
+         CALL QUIT('NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY')
       END IF
 C
       NORB1 = IORB1L - IORB1F + 1
@@ -409,8 +400,8 @@ c Last revision November 1989
 c
 c NEL is number of active electrons
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IOC(NEL),NSSO(NOCTYP,MAXSYM), NSTASM(MAXSYM)
       INTEGER   ORBSYM(*)
 c
@@ -567,12 +558,12 @@ C
 c L.R. October 1990, Dimensions for KIPNSA,KIPNSB changed
 c                    RAS always assumed
 C April 1991 hjaaj: put single excitation info. last
-#include <implicit.h>
-#include <mxpdim.h>
-#include <detbas.h>
-#include <strnum.h>
-#include <ciinfo.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxpdim.h"
+#include "detbas.h"
+#include "strnum.h"
+#include "ciinfo.h"
+#include "priunit.h"
 C
       NORB = NORB1 + NORB2 + NORB3
 C
@@ -726,22 +717,22 @@ C
 C** L.R. JAN 12 1988 / J.O.
 C
 C NOSYM added Nov '88
-#include <implicit.h>
+#include "implicit.h"
       INTEGER   CLCTYP
       DIMENSION WORK(*)
       DIMENSION NRAS1(8),NRAS2(8),NRAS3(8)
       LOGICAL   REFSPC
 C
-#include <mxsmob.h>
-#include <mxpdim.h>
-#include <maxash.h>
+#include "mxsmob.h"
+#include "mxpdim.h"
+#include "maxash.h"
 C
-#include <priunit.h>
-#include <spinfo.h>
-#include <ciinfo.h>
-#include <detbas.h>
-#include <strnum.h>
-#include <mxblk.h>
+#include "priunit.h"
+#include "spinfo.h"
+#include "ciinfo.h"
+#include "detbas.h"
+#include "strnum.h"
+#include "mxblk.h"
 C
       INTEGER SYMPRO(8,8)
       DATA SYMPRO/1,2,3,4,5,6,7,8,
@@ -957,12 +948,12 @@ C
 C     ILTSOB(K) GIVES SIRIUS NUMBER OF ORBITAL WITH LUNAR NUMBER K
 C     ISTLOB(K) GIVES LUNAR  NUMBER OF ORBITAL WITH SIRIUS NUMBER K
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER ORBSYM(1)
       DIMENSION NRAS1(MAXSYM),NRAS2(MAXSYM),NRAS3(MAXSYM)
       DIMENSION ILTSOB(*),ISTLOB(*)
-#include <cbreor.h>
+#include "cbreor.h"
 C
         MINTP = 1
         MAXTP = 3

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_GMATRIX */
@@ -62,10 +52,10 @@ c/* Deck CC_GMATRIX */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -247,26 +237,26 @@ c/* Deck CC_GMAT */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <iratdef.h>
-#include <cbieri.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <maxorb.h>
-#include <distcl.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <aovec.h>
-#include <blocks.h>
-#include <second.h>
-#include <ccnoddy.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "cbieri.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "maxorb.h"
+#include "distcl.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "second.h"
+#include "ccnoddy.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 
 * local parameters:
       CHARACTER MSGDBG*(16)
@@ -291,6 +281,7 @@ c/* Deck CC_GMAT */
       INTEGER IGTRAN(4,NGTRAN)
       INTEGER IGDOTS(MXVEC,NGTRAN)
 
+      CHARACTER*(1) RSPTYP
       CHARACTER*(8) FNTOC
       CHARACTER*(7) FN3FOP2X
       CHARACTER*(6) FNCKJD, FN3VI, FN3FOPX
@@ -367,7 +358,7 @@ c/* Deck CC_GMAT */
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_GMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_GMAT...'
-        CALL QUIT('Unkown CC method in CC_GMAT.')
+        CALL QUIT('Unknown CC method in CC_GMAT.')
       END IF
 
       IF (LISTB(1:1).NE.'R' .OR. LISTC(1:1).NE.'R') THEN
@@ -984,7 +975,7 @@ C
               CALL HERDI2(WORK(KEND2),LEND2,INDEXA,ILLL,NUMDIS,
      &                    IPRINT)          
             ELSE
-              CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+              CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0D0,
      *                    WORK(KODCL1),WORK(KODCL2),
      *                    WORK(KODBC1),WORK(KODBC2),
      *                    WORK(KRDBC1),WORK(KRDBC2),
@@ -1589,9 +1580,6 @@ C
          DTIME = SECOND()
 
          IF (CCSDT) THEN
-#if !defined CC_AARHUS
-            CALL QUIT('No triples (yet) in CC_GMAT.')
-#else
             IF (NODDY_GMAT) THEN
                CALL CCSDT_GMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,
      &                               LISTC,IDLSTC,
@@ -1631,7 +1619,6 @@ C
 
 
             END IF
-#endif
          END IF
 
          TIMTRIP = TIMTRIP + SECOND() - DTIME
@@ -1655,12 +1642,24 @@ C
      *                    LISTC,IDLSTC,ISYMTC,
      *                    MODEL,WORK(KEND2),LEND2)
 C
-          IF (CCMM) CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
-     *              WORK(KDELTA2),ISYRES,
-     *              LISTA,IDLSTA,ISYCTR,
-     *              LISTB,IDLSTB,ISYMTB,
-     *              LISTC,IDLSTC,ISYMTC,
-     *              MODEL,WORK(KEND2),LEND2)
+          IF (CCMM) THEN
+            IF (.NOT. NYQMMM) THEN
+              CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
+     *                   WORK(KDELTA2),ISYRES,
+     *                   LISTA,IDLSTA,ISYCTR,
+     *                   LISTB,IDLSTB,ISYMTB,
+     *                   LISTC,IDLSTC,ISYMTC,
+     *                   MODEL,WORK(KEND2),LEND2)
+C 
+            ELSE IF (NYQMMM) THEN
+              RSPTYP='G'
+              CALL CCMM_QRTRANSFORMER(WORK(KDELTA1(ITRAN)),
+     *                   WORK(KDELTA2),ISYRES,
+     *                   LISTB,IDLSTB,ISYMTB,
+     *                   LISTC,IDLSTC,ISYMTC,
+     *                   MODEL,RSPTYP,WORK(KEND2),LEND2)
+            END IF
+          END IF
         END IF
 
 *=====================================================================*
@@ -1799,7 +1798,7 @@ C
            IOPTWE = 24
            MODELW = 'CC3       '
          ELSE
-           CALL QUIT('Unkown coupled cluster model in CC_GMAT.')
+           CALL QUIT('Unknown coupled cluster model in CC_GMAT.')
          END IF
          IF (CCR12) THEN
            APROXR12 = '   '
@@ -1991,9 +1990,9 @@ c/* Deck CCG_1ITROO */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
    
       INTEGER ISYMTF, ISYMT1, ISYMFM
       
@@ -2070,9 +2069,9 @@ c/* Deck CCG_1ITRVO */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
    
       INTEGER ISYMTF, ISYMT1, ISYMFM, IOPT
       
@@ -2177,9 +2176,9 @@ c/* Deck CCG_1ITRVV */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
    
       INTEGER ISYMTF, ISYMT1, ISYMFM
       
@@ -2272,13 +2271,13 @@ c/* Deck CCG_21CCSD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 * local parameters:
       CHARACTER MSGDBG*(19)
@@ -2968,10 +2967,10 @@ c/* Deck CCG_21CD */
 #else
 # include <implicit.h>
 #endif
-#include <dummy.h>
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "dummy.h"
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
 
 #if defined (SYS_CRAY)
@@ -3317,9 +3316,9 @@ c/* Deck CCG_22CD */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
       LOGICAL LSAME
       INTEGER ISYRES, ISYMXB, ISYMZB, ISYMXC, ISYMZC, LWORK
@@ -3638,10 +3637,10 @@ c/* Deck CCG_4O */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
       CHARACTER MSGDBG*(16)
       PARAMETER (MSGDBG='[debug] CCG_4O> ')
@@ -3771,10 +3770,10 @@ c/* Deck CCG_4OS */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
       CHARACTER MSGDBG*(17)
       PARAMETER (MSGDBG='[debug] CCG_4OS> ')
@@ -3960,9 +3959,9 @@ c/*  Deck CCG_OOVV */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
 #if defined (SYS_CRAY)
       REAL ZERO, ONE
@@ -4183,11 +4182,11 @@ c/* Deck CCG_RDIAJB */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <iratdef.h>
-#include <ccinftap.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "iratdef.h"
+#include "ccinftap.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -4216,7 +4215,7 @@ c/* Deck CCG_RDIAJB */
 
       IF (LOCDBG) THEN
          CALL AROUND( 'CCG_RDIAJB:  Integrals (ia|jb) ' )
-         CALL CC_PRP(0.00,XIAJB,ISYMOP,0,1)
+         CALL CC_PRP(0.00D0,XIAJB,ISYMOP,0,1)
       ENDIF
 
       CALL QEXIT('CCG_RDIAJB')
@@ -4244,9 +4243,9 @@ c/* Deck CCG_TI */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
  
 #if defined (SYS_CRAY)
       REAL T2amp(*)       ! dimension (NT2AM(ISYMTAM))
@@ -4339,10 +4338,10 @@ c/* Deck CCG_TRANS13 */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
       CHARACTER MSGDBG*(21)
       PARAMETER (MSGDBG='[debug] CCG_TRANS13> ')
@@ -4458,9 +4457,9 @@ c/* Deck CCG_TRANS2 */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
       INTEGER ISYMJLI, ISYMB1, ISYOVOV, ISYMC, IOPT
 
@@ -4600,9 +4599,9 @@ c/* Deck CCG_TRANS4 */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
       INTEGER ISYMIAJK, ISYMT1, ISYOVOV
 
@@ -4697,9 +4696,9 @@ c/* Deck CCG_SORT1 */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
       INTEGER ISYMX, IOPT
 
@@ -4910,9 +4909,9 @@ c/* Deck CCG_LXD */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>     
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"     
+#include "ccsdsym.h"
 
       INTEGER ISYFCK, ISYDNS, ISYOVOV, IOPT, KOFF1
       
@@ -4986,7 +4985,6 @@ c/* Deck CCG_LXD */
       RETURN
       END
 *---------------------------------------------------------------------*
-#if defined CC_AARHUS
 *=====================================================================*
       SUBROUTINE CCSDT_GMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
      &                            LISTC,IDLSTC,
@@ -5007,13 +5005,13 @@ c/* Deck CCG_LXD */
 #else
 #  include <implicit.h>
 #endif
-#include <dummy.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "dummy.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -5559,4 +5557,3 @@ C           ----------------------------------------------
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_GMAT_NODDY                     *
 *---------------------------------------------------------------------*
-#endif

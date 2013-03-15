@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C /* Deck dftmolhes */
       SUBROUTINE DFTMOLHES(LURD,WORK,LWORK,IPRINT)
@@ -41,19 +31,19 @@ C     to the molecular hessian
 C
 C     O.B. Lutnaes, D.J. Wilson  Jan 2004 tuh Sep 2004
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "priunit.h"
 C
       DIMENSION WORK(LWORK)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-#include <nuclei.h>
-#include <inforb.h>
+#include "nuclei.h"
+#include "inforb.h"
       CHARACTER*4 KEY
       LOGICAL FOUND 
-#include <dftcom.h>
+#include "dftcom.h"
 #include "dftmolhes.h"
 C
       LOGICAL  DFT_ISGGA           ! , DOKAPPA
@@ -121,11 +111,11 @@ C
 C     O. B. Lutnaes and D. Wilson Jan 2004
 C     tuh Sep 2004 (revision)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inforb.h"
 C
       DIMENSION CMO(NCMOT),DMAT(NBAST,NBAST),QMAT(NBAST,NBAST),
      &          V1MAT(N2BASX,3,NUCDEP),TMAT(N2BASX,3),
@@ -134,14 +124,14 @@ C
       LOGICAL FOUND
       INTEGER R,S,RS
       CHARACTER*4 KEY
-#include <oneadr.h>
-#include <inftap.h>
-#include <abainf.h>
+#include "oneadr.h"
+#include "inftap.h"
+#include "abainf.h"
 C
 C     Construct DMAT and QMAT from MOs
 C
       CALL DZERO(CMO,NCMOT)
-      CALL RDSIFC('CMO',FOUND,CMO,WORK,LWRK)
+      CALL RD_SIRIFC('CMO',FOUND,CMO,WORK,LWRK)
       IF(.NOT.FOUND)CALL QUIT('GETV1MAT error: CMO not found on SIRIFC')
       IF (NSYM.GT.1)CALL QUIT(
      &     'DFT analytical Hessians do not work with symmetry')
@@ -228,10 +218,10 @@ C        V1MAT (overlap derivative contribution matrix)
 C        DKAPMT (response solution matrix - derivative kappa matrix).
 C        [DKAPMT is only used for debugging]
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inforb.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8), NBLOCKS(2,LDAIB,8),
@@ -250,14 +240,14 @@ C /* Deck dftstathe1 */
       SUBROUTINE DFTSTATHE1(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
      &                      COORD,WGHT,DMAT,V1MAT,HESDFT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "inforb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0)
       LOGICAL   ACTIVE(NBAST)
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
@@ -280,10 +270,10 @@ C
       DATA IY2 /1, 2, 3, 2, 3, 3/
       DATA IXY2 /5, 6, 7, 6, 8, 9, 7, 9, 10/
       DATA IXY3 /11,12,13,12,14,15,13,15,16,14,17,18,15,18,19,16,19,20/
-#include <dftcom.h>
-#include <energy.h>
-#include <symmet.h>
-#include <shells.h>
+#include "dftcom.h"
+#include "energy.h"
+#include "symmet.h"
+#include "shells.h"
 #include "dftmolhes.h"
       DIMENSION VXCR(NBLEN), VXCRR(NBLEN), VX(5), DENS(5),
      &          VXCZ(NBLEN), VXCRZ(NBLEN), VXCZZ(NBLEN)
@@ -518,8 +508,8 @@ C
 C
 C /* Deck DFTHSSYM */
       SUBROUTINE DFTHSSYM(HESDFT,NDIM)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION HESDFT(NDIM,NDIM)
 C
 C     Symmetrize Hessian
@@ -541,19 +531,19 @@ C
 C     O B Lutnaes, D Wilson  - Jan 04
 C     tuh Sep 04
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "nuclei.h"
+#include "inforb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       DIMENSION FCD(N2BASX,3), FDFTD(N2BASX,3), WORK(LWORK)
-#include <symmet.h>
-#include <symind.h>
-#include <dftcom.h>
+#include "symmet.h"
+#include "symind.h"
+#include "dftcom.h"
 #include "dftmolhes.h"
 C
       EXTERNAL DFTKSD
@@ -631,10 +621,10 @@ C     DATMAT(KDFTFD) remaining term for total derivative fock matrix
 C                        for calculation of diffferentiated electronic
 C                        gradients (needed for response calculation).
 C    
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "inforb.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &         RHOA(NBLEN), GRADA(3,NBLEN), NBLCNT(8),
@@ -656,15 +646,15 @@ C /* Deck DFTKSD1 */
       SUBROUTINE DFTKSD1(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
      &                   COORD,WGHT,DMAT,V1MAT,DFTFCD,DFTFDX)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <shells.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "shells.h"
+#include "nuclei.h"
+#include "inforb.h"
 #include "dftmolhes.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, DP5 = 0.5D0)
       LOGICAL ACTIVE(NBAST)
@@ -683,7 +673,7 @@ C
      &          VXCZ(NBLEN), VXCRZ(NBLEN), VXCZZ(NBLEN)
       DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP), IXY2(9)
       DATA IXY2 / 5, 6, 7, 6, 8, 9, 7, 9, 10/
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Set Active orbitals
 C
@@ -703,7 +693,12 @@ C
 C
 C     potential 
 C    
+#ifdef MOD_XCFUN
+      CALL xcfun_HESVX(VXCR,VXCRR,VXCZ,VXCRZ,VXCZZ,GRADAT,RHOA,WGHT,
+     &     NBLEN,DOGGA)
+#else
       CALL DFTHESVX(VXCR,VXCRR,VXCZ,VXCRZ,VXCZZ,GRADAT,RHOA,WGHT,NBLEN)
+#endif
 C
 C     GGA
 C
@@ -830,8 +825,8 @@ C
 C
 C /* Deck DFTFDSYM */
       SUBROUTINE DFTFDSYM(DFTFCD,DFTFDX,NBAST)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.5D0)
       DIMENSION DFTFCD(NBAST,NBAST,3), DFTFDX(NBAST,NBAST,3)
 C
@@ -856,19 +851,19 @@ C /* Deck dfthesact */
       SUBROUTINE DFTHESACT(KATOM,NACTIV,KACTCOR,IACTCOR,ACTIVE,
      &                     NBLCNT,NBLOCKS,LDAIB)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inforb.h"
       LOGICAL   ACTIVE(NBAST)
       DIMENSION NBLCNT(8), NBLOCKS(2,LDAIB,8)
       DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP) 
-#include <dftcom.h>
-#include <symmet.h>
-#include <shells.h>
+#include "dftcom.h"
+#include "symmet.h"
+#include "shells.h"
 #include "dftmolhes.h"
 C
 C     Set active orbitals 
@@ -913,13 +908,13 @@ C /* Deck dfthesrho */
      &                     GD1,GD2,GD3,GD4,NBLEN,NBLCNT,NBLOCKS,LDAIB,
      &                     GAO,DMAT,V1MAT,GRADAT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inforb.h"
       PARAMETER (D2 = 2.0D0)
       DIMENSION GAO(NBLEN,NBAST,*), NBLCNT(8), NBLOCKS(2,LDAIB,8)
       DIMENSION GRADAT(NBLEN,3)
@@ -932,9 +927,9 @@ C
       DIMENSION IXY2(9), IDONEB(3*NUCDEP) 
       DIMENSION KACTCOR(NUCDEP), IACTCOR(NBAST,NUCDEP) 
       DATA IXY2 /5, 6, 7, 6, 8, 9, 7, 9, 10/
-#include <dftcom.h>
-#include <symmet.h>
-#include <shells.h>
+#include "dftcom.h"
+#include "symmet.h"
+#include "shells.h"
 #include "dftmolhes.h"
 C
 C     GD = DMAT*GAO  
@@ -1170,23 +1165,23 @@ C /* Deck dfthesvx */
       SUBROUTINE DFTHESVX(VXCR,VXCRR,VXCZ,VXCRZ,VXCZZ,GRADAT,RHOA,WGHT,
      &                    NBLEN)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "inforb.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       DIMENSION WGHT(NBLEN), RHOA(NBLEN), GRADAT(NBLEN,3) 
       DIMENSION VXCR(NBLEN), VXCRR(NBLEN), 
      &          VXCZ(NBLEN), VXCRZ(NBLEN), VXCZZ(NBLEN)
       DIMENSION VX(9), DENS(5) 
-#include <dftcom.h>
-#include <energy.h>
-#include <symmet.h>
-#include <shells.h>
+#include "dftcom.h"
+#include "energy.h"
+#include "symmet.h"
+#include "shells.h"
 #include "dftmolhes.h"
       CALL DZERO(DENS,5)
       CALL DZERO(VX,9)
@@ -1228,19 +1223,19 @@ C     Construct KAPMAT (derivative of orbital variational param matrix)
 C     Output matrices are in AO-basis.
 C     Only needed for debugging purposes.
 C     
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inforb.h"
       DIMENSION TRMAT(NBAST,NBAST,NUCDEP*3), TOTKAP(NORBT,NORBT),
      &          CMO(NCMOT), DKAPPA(NVARPT), WORK(LWRK)
-#include <inftap.h> 
-#include <abainf.h> 
-#include <gdvec.h>
-#include <infvar.h> 
-#include <iratdef.h>
-#include <inflin.h>
+#include "inftap.h" 
+#include "abainf.h" 
+#include "gdvec.h"
+#include "infvar.h" 
+#include "iratdef.h"
+#include "inflin.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from GETKAP','*',103)
 C    
@@ -1282,19 +1277,23 @@ C
       END
 C
       SUBROUTINE KICK_SLAVES_HESSTAT(NBAST,DMAT,V1MAT,NUCDEP,IPRINT)
-#if defined (VAR_MPI)
 #include "implicit.h"
+      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST*NUCDEP)
+C
+#if defined (VAR_MPI)
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-C
-      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST*NUCDEP)
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 8
-         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         IPRTYP = DFT_HESSTAT_WORK
+         CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL DFTINTBCAST
          CALL KSMSYNC(DMAT)
          ISTART = 1
@@ -1352,35 +1351,43 @@ C
 #endif
 C
       SUBROUTINE DFT_HESSTAT_COLLECT(DFTHES,WORK,LWORK)
-#if defined (VAR_MPI)
 #include "implicit.h"
 #include "mxcent.h"
-#include "mpif.h"
       DIMENSION DFTHES(MXCOOR,MXCOOR), WORK(LWORK)
+C
+#if defined (VAR_MPI)
+#include "mpif.h"
+C
       CALL DCOPY(MXCOOR*MXCOOR,DFTHES,1,WORK,1)
       CALL MPI_REDUCE(WORK,DFTHES,MXCOOR*MXCOOR,MPI_DOUBLE_PRECISION,
      &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      RETURN
 #endif
+      RETURN
       END
 C
       SUBROUTINE KICK_SLAVES_HED(IATOM,NBAST,DMAT,V1MAT,IPRINT)
-#if defined (VAR_MPI)
 #include "implicit.h"
+      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST)
+C
+#if defined (VAR_MPI)
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+C defined parallel calculation types  
+#include "iprtyp.h"
 C
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
-      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST)
 C
       IF (MYNUM .EQ. MASTER) THEN
-         IPRTYP = 9
-         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IATOM,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         IPRTYP = DFTHED_WORK
+         CALL MPI_BCAST(IPRTYP,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IATOM,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL DFTINTBCAST
          CALL KSMSYNC(DMAT)
          CALL MPI_BCAST(V1MAT,3*NBAST*NBAST,MPI_DOUBLE_PRECISION,
@@ -1393,22 +1400,22 @@ C
 C /* Deck dfthed */
       SUBROUTINE DFTHED_SLAVE(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <nuclei.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "nuclei.h"
+#include "inforb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       DIMENSION FCD(N2BASX,3), FDFTD(N2BASX,3), WORK(LWORK)
-#include <symmet.h>
-#include <symind.h>
-#include <dftcom.h>
+#include "symmet.h"
+#include "symind.h"
+#include "dftcom.h"
 #include "infpar.h"
 #include "dftmolhes.h"
-#include <mpif.h>
+#include "mpif.h"
 C
       EXTERNAL DFTKSD
       LOGICAL DFT_ISGGA
@@ -1425,7 +1432,7 @@ C
 C
 C     Construct V1MAT = Sa * DMAT in AO basis from Sa in MO basis
 C
-      CALL MPI_BCAST(IATOM,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IATOM,1,my_MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
       CALL DFTINTBCAST
       CALL KSMSYNC(WORK(KDMAT))
       CALL MPI_BCAST(WORK(KV1MAT),3*N2BASX,MPI_DOUBLE_PRECISION,
@@ -1442,12 +1449,14 @@ C
 #endif
 C
       SUBROUTINE DFT_HED_COLLECT(FCD,DFTFD,N2BASX,WORK,LWORK)
-#if defined (VAR_MPI)
 #include "implicit.h"
+      DIMENSION FCD(3*N2BASX), DFTFD(3*N2BASX), WORK(LWORK)
+C
+#if defined (VAR_MPI)
 #include "mxcent.h"
 #include "maxorb.h"
 #include "mpif.h"
-      DIMENSION FCD(3*N2BASX), DFTFD(3*N2BASX), WORK(LWORK)
+C
       CALL DCOPY(3*N2BASX,FCD,1,WORK,1)
       CALL MPI_REDUCE(WORK,FCD,3*N2BASX,MPI_DOUBLE_PRECISION,
      &                MPI_SUM,0,MPI_COMM_WORLD,IERR)

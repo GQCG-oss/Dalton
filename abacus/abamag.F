@@ -1,51 +1,41 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck maginp */
       SUBROUTINE MAGINP(WORD)
 C
 C     K.Ruud, April 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL NEWDEF
       PARAMETER (NTABLE = 14)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <magone.h>
+#include "abainf.h"
+#include "magone.h"
       DATA TABLE /'.SHIELD', '.SPIN-S', '.DIASUS', '.SKIP  ',
      &            '.PRINT ', '.NODC  ', '.NODV  ', '.STOP  ',
      &            '.POINTS', '.NEFIEL', '.QUADRU', '.ALL CO',
@@ -75,23 +65,24 @@ C
      &           '" not recognized in EXPECT.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in EXPECT')
- 1          CONTINUE
+
+ 1          CONTINUE !         .SHIELD
                NST    = .TRUE.
                GOTO 100
- 2          CONTINUE
+ 2          CONTINUE !         .SPIN-S
                SST    = .TRUE.
                GOTO 100
- 3          CONTINUE
+ 3          CONTINUE !         .DIASUS
                MDIASU = .TRUE.
                GOTO 100
- 4          CONTINUE
+ 4          CONTINUE !         .SKIP
                MSKIP  = .TRUE.
                GOTO 100
- 5          CONTINUE
+ 5          CONTINUE !         .PRINT
                READ (LUCMD,*) MPRINT
                IF (MPRINT .EQ. IPRDEF) ICHANG = ICHANG - 1
                GOTO 100
- 6          CONTINUE
+ 6          CONTINUE !         .NODC
                MNODC  = .TRUE.
                GOTO 100
  7          CONTINUE
@@ -137,7 +128,7 @@ C
       END IF
  300  CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults in EXPECT:',0)
+         CALL HEADER('Changes of defaults for EXPECT:',0)
          IF (MSKIP) THEN
             WRITE (LUPRI,'(A)')
      &          ' No magnetic expectation values calculated in this run'
@@ -195,10 +186,13 @@ C  /* Deck magini */
 C
 C     Initialize MAGONE
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <magone.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "magone.h"
+COBL/AMT CAM magnetizabilities fix
+#include "suscpt.h"
 C
 
       MPRINT = IPRDEF
@@ -219,6 +213,8 @@ C
       MNQCC  = NQCC
       ALLCOM = .NOT. DODRCT
       MPQUAD = 40
+COBL/AMT CAM magnetizabilities fix
+      DONETWOLOP = .FALSE.
       RETURN
       END
 C  /* Deck magint */
@@ -226,26 +222,26 @@ C  /* Deck magint */
 C
 C     K. Ruud, March 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxmom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxmom.h"
 #include "maxorb.h"
-#include <maxaqn.h>
+#include "maxaqn.h"
       PARAMETER (D0 = 0.D0)
       LOGICAL PASS
       CHARACTER*7 WORD
       DIMENSION SPNDSO(*), WORK(LWORK)
-#include <magone.h>
-#include <nuclei.h>
-#include <abainf.h>
-#include <inforb.h>
+#include "magone.h"
+#include "nuclei.h"
+#include "abainf.h"
+#include "inforb.h"
 #include "symmet.h"
-#include <dorps.h>
-#include <spnout.h>
-#include <relcor.h>
-#include <dipole.h>
-#include <pcmlog.h>
+#include "dorps.h"
+#include "spnout.h"
+#include "relcor.h"
+#include "dipole.h"
+#include "pcmlog.h"
       IF (MSKIP) RETURN
       IF (.NOT.DODSO .AND. (SST .AND. .NOT.(NST .OR. MDIASU))) RETURN
       CALL QENTER('MAGINT')
@@ -344,13 +340,15 @@ c        but currently, it is implemented only without symmetry.
 c        In case of no symmetry present, both methods should give
 c        identical results.
          IF(NSYM.GT.1) THEN
-            WRITE(LUPRI,*)"Symmetry -> DSO by analytical integration."
+            WRITE(LUPRI,'(/A)')
+     &         "Symmetry -> DSO by analytical integration."
             CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),
      &           WORK(KLAST),LWRK,MPRINT,MNODC,MNODV,WORD,NCOMP)
          ELSE
-            WRITE(LUPRI,*)"No symmetry -> DSO by numerical integration."
+            WRITE(LUPRI,'(/A)')
+     &         "No symmetry -> DSO by numerical integration."
             CALL DZERO(SPNDSO,MXCOOR*MXCOOR)
-            CALL NUMDSO(SPNDSO,NUCIND,WORK(KLAST),LWRK)
+            CALL NUMDSO(SPNDSO,NUCIND,WORK(KLAST),LWRK,MPRINT)
          ENDIF
       END IF
       IF (MDIASU) THEN
@@ -436,22 +434,22 @@ C  /* Deck magdrv */
 C
 C     K. Ruud, March 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <maxmom.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "maxmom.h"
+#include "iratdef.h"
       LOGICAL NODC, NODV
       CHARACTER*7 WORD
       DIMENSION SPNDSO(*), WORK(LWORK), DENMAT(*), FOCMAT(*)
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <inforb.h>
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "inforb.h"
 C
-#include <ibtfun.h>       
+#include "ibtfun.h"       
 C
       CALL QENTER('MAGDRV')
 C
@@ -482,14 +480,14 @@ C     This routine controls the calculation of the different magnetic
 C     properties integrals. It also constructs the density matrix and
 C     calculates the corresponding expectation values.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <maxmom.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "maxmom.h"
+#include "iratdef.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TMAT
       LOGICAL NODC, NODV, EXP1VL
@@ -497,20 +495,20 @@ C
       DIMENSION SPNDSO(*),
      &          DENMAT(NNBASX), INTREP(*), INTADR(*),
      &          FOCMAT(NNBASX), EXPVAL(NCOMP), FMOVL(6),WORK(LWORK)
-#include <gnrinf.h>
-#include <abainf.h>
-#include <efield.h>
-#include <cbisol.h>
-#include <magone.h>
-#include <infinp.h>
-#include <onecom.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <qmmm.h>
+#include "gnrinf.h"
+#include "abainf.h"
+#include "efield.h"
+#include "cbisol.h"
+#include "magone.h"
+#include "infinp.h"
+#include "onecom.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "qmmm.h"
 cDM added to pass vectors to MAGPCMSEC
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 cDM
 C
       SIGN = 1.0D0
@@ -675,27 +673,27 @@ C  /* Deck magave */
 C
 C     Distribute calculated expectation values into proper arrays
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "inforb.h"
       PARAMETER (DP5 = 0.5D0)
       CHARACTER WORD*7, LABINT(9*MXCENT)*8
       DIMENSION DENMAT(NNBASX),
      &          EXPVAL(NCOMP), SPNDSO(*), WORK(LWORK)
-#include <symmet.h>
-#include <nuclei.h>
-#include <suscpt.h>
-#include <quadru.h>
-#include <secmom.h>
-#include <thimom.h>
-#include <molgfa.h>
-#include <relcor.h>
-#include <dipole.h>
-#include <chrxyz.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "suscpt.h"
+#include "quadru.h"
+#include "secmom.h"
+#include "thimom.h"
+#include "molgfa.h"
+#include "relcor.h"
+#include "dipole.h"
+#include "chrxyz.h"
 C
       CALL QENTER('MAGAVE')
 C
@@ -884,15 +882,15 @@ C
 C     K.Ruud, March 1992. This routine generates the nescessary input
 C     for getting first-order magnetic derivatives from HERMIT
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <cbiher.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "mxcent.h"
+#include "maxmom.h"
+#include "cbiher.h"
+#include "nuclei.h"
 C
       LOGICAL TOFILE, TRIMAT, DOINT(2,2)
       CHARACTER WORD*7, MTFORM*6, LABINT(3*MXCOOR)*8
@@ -945,23 +943,26 @@ C     MPQUAD: For spin-spin couplings: Number of quadrature points
 C     MPQUAD: For shieldings and KPATOM=2: which nuclei for which shieldings
 C             are to be calculated
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <dorps.h>
-#include <spnout.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxmom.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "dorps.h"
+#include "spnout.h"
+#include "inftap.h"
+#include "maxorb.h"
+#include "infpar.h"
 C
       LOGICAL TOFILE, TRIMAT, DOINT(2,2), EXP1VL
       CHARACTER WORD*7, LABINT(*)*8
       DIMENSION WORK(LWORK), SINTMA(*), INTREP(*), INTADR(*), EXPVAL(*),
      &          DENMAT(*)
 C
+      CALL QENTER('GET1IN')
       TRIANG = TRIMAT
       PROPRI = NPRINT .GT. 5
 C
@@ -970,7 +971,7 @@ C
       DOINT(1,2) = .FALSE.
       DOINT(2,1) = .FALSE.
 C
-C     Although not obvious, this is a test of wether we are calculating
+C     Although not obvious, this is a test of whether we are calculating
 C     spin-spin couplings
 C
       IF (KPATOM .EQ. 1) THEN
@@ -991,7 +992,7 @@ C
       ELSE IF (KPATOM .EQ. 2) THEN
 C
 C     We have a loop outside over all symmetry independent nuclei (needed
-C     in order to save memory in direct and parallell calculations)
+C     in order to save memory in direct and parallel calculations)
 C     K.Ruud, nov.-94
 C
          NPATOM = 1
@@ -1008,7 +1009,7 @@ C
       END IF
 C
       LUPBKP = LUPROP
-      IF (LUPROP .LE. 0) THEN
+      IF (LUPROP .LE. 0 .AND. TOFILE .AND. MYNUM .EQ. MASTER) THEN
          CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      $        'UNFORMATTED',IDUMMY,.FALSE.)
       END IF
@@ -1018,15 +1019,18 @@ C
      &            WORD,IORDER,MPQUAD,TRIANG,PROPRI,
      &            NPRINT,SINTMA,NCOMP,TOFILE,'TRIANG',DOINT,EXPVAL,
      &            EXP1VL,DENMAT)
-      IF (LUPBKP .LE. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      IF (TOFILE .AND. MYNUM .EQ. MASTER) THEN
+         IF (LUPBKP .LE. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      END IF
+      CALL QEXIT('GET1IN')
       RETURN
       END
 C  /* Deck spntra */
       SUBROUTINE SPNTRA(SPNDSO,EXPVAL,CSTRA,SCTRA,
      &                  NCOMP,LABINT,IPRINT)
-#include <implicit.h>
-#include <maxmom.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxmom.h"
+#include "mxcent.h"
       LOGICAL SAME
       DIMENSION EXPVAL(NCOMP), CSTRA(*), SCTRA(*), SPNDSO(MXCOOR,MXCOOR)
       CHARACTER DSONUM*4, LABINT(9*MXCENT)*8, WORD*8
@@ -1046,15 +1050,15 @@ C  /* Deck spntra */
       END
 C  /* Deck efntra */
       SUBROUTINE EFNTRA(STAVEC,EXPVAL,CSTRA,SCTRA,NCOMP,LABINT,IPRINT)
-#include <implicit.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       DIMENSION STAVEC(NCOMP), EXPVAL(NCOMP), CSTRA(*), SCTRA(*)
       CHARACTER NSTNUM*2, LABINT(9*MXCENT)*8, WORD*8
-#include <nuclei.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "symmet.h"
       DO 10 ICOMP = 1, NCOMP
          WORD = LABINT(ICOMP)
          NSTNUM = WORD(6:7)
@@ -1068,17 +1072,17 @@ C  /* Deck efntra */
 C  /* Deck shitra */
       SUBROUTINE SHITRA(STAVEC,EXPVAL,CSTRA,SCTRA,NCOMP,NROW,LABINT,
      &                  INWORD,IPRINT)
-#include <implicit.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       DIMENSION STAVEC(NROW,3), EXPVAL(NCOMP), CSTRA(*), SCTRA(*)
       CHARACTER NSTNUM*3, NSTDIR*1, LABINT(9*MXCENT)*8, WORD*8, INWORD*7
-#include <sigma.h>
-#include <spinro.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "sigma.h"
+#include "spinro.h"
+#include "nuclei.h"
+#include "symmet.h"
       DO 10 ICOMP = 1, NCOMP
          WORD = LABINT(ICOMP)
          NSTNUM = WORD(:3)
@@ -1106,7 +1110,7 @@ C  /* Deck shitra */
       END
 C  /* Deck scomtr */
       SUBROUTINE SCOMTR(DSONUM,IROW,ICOL)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER DSONUM*4, NUMCAR*1
       DIMENSION NUMBER(4)
 C
@@ -1121,7 +1125,7 @@ C
       END
 C  /* Deck ncomtr */
       SUBROUTINE NCOMTR(NSTNUM,NSTDIR,IROW,MCOMP)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER NSTNUM*3, NSTDIR*1
 C
       NUMBER = (ICHAR(NSTNUM(1:1)) - ICHAR('0'))*100
@@ -1134,11 +1138,11 @@ C
       END
 C  /* Deck sigadd */
       SUBROUTINE SIGADD(AMAT)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION AMAT(3,MXCOOR)
-#include <nuclei.h>
-#include <sigma.h>
+#include "nuclei.h"
+#include "sigma.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, 3
          DO 200 J = 1, NCOORD
@@ -1149,11 +1153,11 @@ C  /* Deck sigadd */
       END
 C  /* Deck addsus */
       SUBROUTINE ADDSUS(AMAT)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION AMAT(MXCOOR,MXCOOR)
-#include <suscpt.h>
-#include <nuclei.h>
+#include "suscpt.h"
+#include "nuclei.h"
 C
       DO 100 I = 1, 3*NUCDEP
          DO 200 J = 1, 3*NUCDEP
@@ -1164,21 +1168,22 @@ C
       END
 C  /* Deck spninp */
       SUBROUTINE SPNINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <abainf.h>
-      PARAMETER (NTABLE = 11, D0 = 0.0D0)
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "abainf.h"
+      PARAMETER (NTABLE = 16, D0 = 0.0D0)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
-#include <dorps.h>
-#include <spnout.h>
+#include "dorps.h"
+#include "spnout.h"
 C
       DATA TABLE /'.ABUNDA','.PRINT ','.SELECT','.NODSO ','.NOSD  ',
      &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDXFC ','.ISOTOP',
-     &            '.COUPLI'/
+     &            '.COUPLI','.SOS   ','.SOSOCC','.SINGST','.TRIPST',
+     &            '.SOSOCS'/
 C
       NEWDEF = (WORD .EQ. '*SPIN-S')
       ICHANG = 0
@@ -1194,7 +1199,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GOTO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16),I
                   END IF
  200           CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1248,12 +1253,12 @@ C
  9             CONTINUE
                   ANISON = .TRUE.
                GOTO 100
- 10            CONTINUE
+ 10            CONTINUE !        .ISOTOP
                   SPNISO = .TRUE.
                   READ (LUCMD, *) (ISOTPS(IS), IS = 1, NATOMS)
                   ABUND = D0
                GOTO 100
- 11            CONTINUE
+ 11            CONTINUE !        .COUPLI
                   READ (LUCMD, *)  NUCSPI
                   READ (LUCMD, *) (IPOINT(IS), IS = 1, NUCSPI)
                   IF (NUCSPI .GT. 0) THEN
@@ -1274,6 +1279,26 @@ C
                      END IF
                   END DO
                GOTO 100
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+ 12            CONTINUE
+                  SOSSPN = .TRUE.
+               GOTO 100
+ 13            CONTINUE
+                  SOSSPN = .TRUE.
+                  SOSOCC = .TRUE.
+               GOTO 100
+ 14            CONTINUE
+                  READ (LUCMD,*) NSTATS
+               GOTO 100
+ 15            CONTINUE
+                  READ (LUCMD,*) NSTATT
+               GOTO 100
+ 16            CONTINUE
+                  SOSSPN = .TRUE.
+                  SOSOCS = .TRUE.
+                  READ (LUCMD,*) NSTATI,NSTATF,NITRST
+               GOTO 100
+Cend-PFP
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
@@ -1308,6 +1333,19 @@ C
          IF (NUCSPI .GT. 0) 
      &      WRITE (LUPRI,'(A)')' The spin-spin couplings of selected '//
      &           'nuclei with all the others will be calculated'
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+         IF (SOSSPN) WRITE (LUPRI,'(A)')
+     &      ' Orbital analysis of spin-spin couplings'
+         IF (SOSOCC) WRITE (LUPRI,'(A,A)')
+     &      ' Only contributions from pairs of occupied ',
+     &      ' orbitals are printed'
+         IF (NSTATS .GT. 0) 
+     &      WRITE (LUPRI,'(A,I6,A)')' Only the contributions from the ',
+     &           NSTATS,' lowest singlet states are included'
+         IF (NSTATT .GT. 0) 
+     &      WRITE (LUPRI,'(A,I6,A)')' Only the contributions from the ',
+     &           NSTATT,' lowest triplet states are included'
+Cend-PFP
       END IF
       RETURN
       END
@@ -1316,10 +1354,10 @@ C  /* Deck spnini */
 C
 C     Initialize SPNOUT
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <spnout.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "spnout.h"
 C
       ABUND  = 1.0D0
       ISPPRI = IPRDEF
@@ -1335,23 +1373,33 @@ C
       DO IS = 1, MXCENT
          NCSPNI(IS) = .TRUE.
       END DO
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+      SOSSPN= .FALSE.
+      SOSOCC= .FALSE.
+      NSTATS= 0
+      NSTATT= 0
+      SOSOCS= .FALSE.
+      NSTATI= 0
+      NSTATF= 0
+      NITRST= 0
+Cend-PFP
       RETURN
       END
 C  /* Deck trpinp */
       SUBROUTINE TRPINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 12)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbitrp.h>
+#include "cbitrp.h"
 C
-#include <abainf.h>
-#include <anrinf.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <spnout.h>
+#include "abainf.h"
+#include "anrinf.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "spnout.h"
       DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.NORHS ','.NORSP ',
      *            '.OPTORB', '.INTPRI','.XXXXXX','.STOP  '/
@@ -1392,7 +1440,7 @@ C
                   READ (LUCMD,*) MAXTRP
                   IF (MAXTRP .EQ. 40) ICHANG = ICHANG - 1
                GO TO 100
-    4          CONTINUE
+    4          CONTINUE ! .THRESH
                   READ (LUCMD,*) THRTRP
                   IF (THRTRP .EQ. 1.D-04) ICHANG = ICHANG - 1
                GO TO 100
@@ -1475,10 +1523,10 @@ C  /* Deck trpini */
 C
 C     Initialize /CBITRP/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbitrp.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbitrp.h"
 C
       IPRTRP = IPRDEF
       INTPRI = IPRDEF
@@ -1500,29 +1548,29 @@ C     contributions (FC and SD) to spin-spin-relaxation terms
 C
 C     K.Ruud, Sept. 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       LOGICAL PASS
       CHARACTER*8 SDLAB(9*MXCENT), FCLAB(MXCENT)
       DIMENSION WORK(LWORK)
-#include <gnrinf.h>
-#include <cbitrp.h>
-#include <spnout.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <wrkrsp.h>
-#include <abainf.h>
-#include <infsop.h>
+#include "gnrinf.h"
+#include "cbitrp.h"
+#include "spnout.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "abainf.h"
+#include "infsop.h"
 C
       IF (SKIP) RETURN
       IF (IPRTRP .GT. 0) CALL TIMER('START ',TIMEIN,TIMOUT)
@@ -1585,47 +1633,47 @@ C
 C  /* Deck trprh1 */
       SUBROUTINE TRPRH1(SDLAB,ISDREP,FCLAB,IFCREP,INTADR,XINDX,
      &                  CMO,UDV,PV,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       PARAMETER (DM1 = -1.0D0)
       CHARACTER OPLBL(8)*8, SDLAB(9*MXCENT)*8, FCLAB(MXCENT)*8,
      &          LABEL(9*MXCENT)*8
-      LOGICAL OLDDX, FOUND
+      LOGICAL   OLDDX, FOUND
       DIMENSION ISDREP(*), IFCREP(*), WORK(LWORK), INTADR(*),
      &          XINDX(*), CMO(*), UDV(*), PV(*)
 C
-#include <abainf.h>
-#include <cbitrp.h>
-#include <spnout.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <symmet.h>
-#include <wrkrsp.h>
-#include <gdvec.h>
-#include <abares.h>
-#include <infsop.h>
+#include "abainf.h"
+#include "cbitrp.h"
+#include "spnout.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "symmet.h"
+#include "wrkrsp.h"
+#include "gdvec.h"
+#include "abares.h"
+#include "infsop.h"
 C
       DATA OPLBL /'EXOPSYM1','EXOPSYM2','EXOPSYM3','EXOPSYM4',
      &            'EXOPSYM5','EXOPSYM6','EXOPSYM7','EXOPSYM8'/
 C
 C     Allocate work space for necessary information to be read by RSPMC
 C
-      CALL RDSIFC('CMO',FOUND,CMO,WORK,LWORK)
+      CALL RD_SIRIFC('CMO',FOUND,CMO,WORK,LWORK)
       IF (.NOT.FOUND) CALL QUIT('TRPRH1 error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
          IF (LWORK.LT.NNASHX)CALL STOPIT('TRPRH1','UDV',LWORK,NNASHX)
-         CALL RDSIFC('DV',FOUND,WORK,WORK,LWORK)
+         CALL RD_SIRIFC('DV',FOUND,WORK,WORK,LWORK)
          IF (.NOT.FOUND)
      &      CALL QUIT('TRPRH1 error: DV not found on SIRIFC')
             CALL DSPTSI(NASHT,WORK,UDV)
@@ -1845,28 +1893,28 @@ C
       END
 C  /* Deck trprs1 */
       SUBROUTINE TRPRS1(ZERNRM,NABATY,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-      LOGICAL INTTRS, CICLC, HFCLC, TRPCLC, ZERNRM, EXCLC
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+      LOGICAL   INTTRS, CICLC, HFCLC, TRPCLC, ZERNRM, EXCLC, OLDDX
       PARAMETER (D10 = 10.0D0, DPM5 = -0.50D0)
       DIMENSION WORK(LWORK), NABATY(*), ZERNRM(*)
 C
-#include <cbitrp.h>
-#include <spnout.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <gdvec.h>
-#include <abares.h>
-#include <chrnos.h>
+#include "cbitrp.h"
+#include "spnout.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "gdvec.h"
+#include "abares.h"
+#include "chrnos.h"
 C
       HFCLC  = NASHT .LE. 1
       IF (HFCLC) NCONF = 1
@@ -1876,13 +1924,13 @@ C
       EXVAL  = 0.0D0
       NEXVAL = 1
 C
-C     Open direct access file
+C     Open direct access files
 C
       LUGDVE = -1
       LUSOVE = -1
       LUREVE = -1
       CALL GPOPEN(LUGDT,ABAGDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
-C     ...changed NREC to 2*NREC to cover residuals
+C     LURDT: ...changed NREC to 2*NREC to cover residuals
       CALL GPOPEN(LURDT,ABARDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -1965,8 +2013,7 @@ C
                   CALL READT(LUREVE,NVARPT,WORK(NVARPT+1))
                END IF
 C
-C                 Divide solution by 2 in accordance with ABACUS
-C                 solver
+C     Divide solution by 2 in accordance with ABACUS solver
 C
                CALL DSCAL(NVARPT,DPM5,WORK,1)
 C
@@ -1977,7 +2024,7 @@ C
 ckr               IDORCT(IREC) = 1
                CALL ABAWRITRS
                IF (IPRTRP .GT. 5) THEN
-                  CALL HEADER('Response and residuum vectors in '//
+                  CALL HEADER('Response and residual vectors in '//
      &                'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)
                   WRITE (LUPRI,'(A,I5)') ' Coordinate:',ICOOR
                   WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC
@@ -2001,16 +2048,17 @@ ckr               IDORCT(IREC) = 1
       END
 C  /* Deck shires */
       SUBROUTINE SHIRES(WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 cLig <> added include abainf.h
-#include <abainf.h>
+#include "abainf.h"
       DIMENSION WORK(LWORK)
-#include <nuclei.h>
+#include "nuclei.h"
+#include "ctocdcc.h"
 cLig >> changed the values of the memory for CTOCD 
       KSPMAT = 1
-      IF(CTOCD) THEN
+      IF(CTOCD .OR. CTOMAG)  THEN
         KSMMAT = KSPMAT + 9*MXCENT
         KCMAT  = KSMMAT + 9*MXCENT
       ELSE
@@ -2050,12 +2098,12 @@ cLig <> added sftpmat and sftmmat
      &                  TMAT,DMAT,PMAT,AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SPAR,APAR,ANIS2,ASYM2,SKEW,SPAN,CSTRA,SCTRA,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER DIAPAR*12
 cLig <> added the dimensions of sftpmat and sftmmat
@@ -2064,38 +2112,82 @@ cLig <> added the dimensions of sftpmat and sftmmat
      &          ANIS(NUCDEP), ASYM(NUCDEP), SPAR(NUCDEP), APAR(NUCDEP),
      &          ANIS2(NUCDEP), ASYM2(NUCDEP), SKEW(NUCDEP),
      &          SPAN(NUCDEP), CSTRA(*), SCTRA(*),
-     &          SFTPMAT(3,3,MXCENT),SFTMMAT(3,3,MXCENT)
-cLig >> added include abainf.h and trkoor.h
-#include <abainf.h>
-#include <trkoor.h>
+     &          SFTPMAT(3,3,MXCENT), SFTMMAT(3,3,MXCENT)
+cLig >> added abainf.h and trkoor.h
+#include "abainf.h"
+#include "trkoor.h"
 cLig <<
-#include <symmet.h>
-#include <sigma.h>
-#include <cbisol.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "sigma.h"
+#include "cbisol.h"
+C GAGORG:
+#include "orgcom.h"
+C CTOCD
+#include "ctocdcc.h"
+
+      LOGICAL PRTSHI(NUCIND)
+      LOGICAL ALLATM
+      DIMENSION IPATOM(MXCENT)
+CTOCD
+
+#include "ibtfun.h"
 C
-      CALL TITLER('ABACUS - CHEMICAL SHIELDINGS','*',124)
+
+C     Get ipatom stuff (if CC some only atoms can be selected)
+C
+      IF (CTOMAG) THEN
+         CALL SELINF(NPATOM,IPATOM,ALLATM)
+      ELSE
+         ALLATM = .TRUE.
+      END IF
+
+      IF (CTOMAG) THEN
+C
+C        Print proper title
+C
+         IF (EXTSOP) THEN
+            CALL TITLER(
+     &           'CTOCD-DZ SHIELDINGS FROM EXTERNAL LINEAR RESPONSES',
+     &           ':',102)
+         ELSE IF (ALCCS) THEN
+C        IF (ALCCS) THEN
+            CALL TITLER('CCS CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         ELSE IF (ALCC2) THEN
+            CALL TITLER('CC2 CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         ELSE IF (ALCC3) THEN
+            CALL TITLER('CC3 CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         ELSE IF (ALCCSD) THEN
+            CALL TITLER('CCSD CTOCD-DZ CHEMICAL SHIELDINGS','*',122)
+         END IF
+C
+C        Initialize DOSYM
+C
+         DO IREP = 1, MAXREP+1
+            DOSYM(IREP) = .TRUE.
+         END DO
+C
+      ELSE
+         CALL TITLER('ABACUS - CHEMICAL SHIELDINGS','*',124)
+      END IF
+C
+      IF (CTOCD .AND. (.NOT. CTOMAG)) THEN
 cLig >> added CTOCD-DZ results title
-      IF (CTOCD) THEN
         CALL HEADER('CTOCD-DZ results',1)
       ENDIF
-cLig <<
       CALL HEADER('Shielding tensors in symmetry coordinates (ppm)',-1)
+      IF (CTOCD .OR. CTOMAG) THEN
 cLig >> added call to FCPRI for shieldings
-      IF (CTOCD) THEN
-        CALL FCPRI(SIGMADZ,'CTOCD',CSTRA,SCTRA)
+         CALL FCPRI(SIGMADZ,'CTOCD',CSTRA,SCTRA)
       ELSE
-cLig <<
-        CALL FCPRI(SIGMAT,'SIGMAS',CSTRA,SCTRA)
-cLig <> ENDIF
+         CALL FCPRI(SIGMAT,'SIGMAS',CSTRA,SCTRA)
       ENDIF
       NUCINS = NUCIND
       IF (SOLVNT) NUCINS = NUCINS - 1
 C
 C     Transform to non-symmetry basis
 C
+      IF(CTOCD .OR. CTOMAG)  THEN
 cLig >> added the call to TRADIP ... for CTOCD
-      IF (CTOCD) THEN
          CALL TRADIP(SIGMADZ,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          IF (DONS) THEN
@@ -2110,19 +2202,35 @@ cLig >> added the call to TRADIP ... for CTOCD
          CALL DCOPY(9*NUCDEP,DMAT,1,TMAT,1)
          CALL DAXPY(9*NUCDEP,D1,PMAT,1,TMAT,1)
       ELSE
-cLig <<
         CALL TRADIP(SIGMAT,TMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
         CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
         CALL DCOPY(9*NUCDEP,TMAT,1,DMAT,1)
         CALL DAXPY(9*NUCDEP,-D1,PMAT,1,DMAT,1)
-cLig <> closed the IF
       ENDIF
+C
+CTOCD
+      IF (ALLATM) THEN
+         DO I = 1, NUCINS
+            PRTSHI(I) = .TRUE.
+         END DO
+      ELSE
+         DO I = 1, NUCINS
+            PRTSHI(I) = .FALSE.
+         END DO
+         DO I = 1,NPATOM
+            PRTSHI(IPATOM(I)) = .TRUE.
+         END  DO
+      END IF
+CTOCD
+C
+
       IATOM = 0
       DO 100 I = 1, NUCINS
          DO 200 ISYMOP = 0, MAXOPR
          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
-            CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),PMAT(1,1,IATOM),
+            IF (PRTSHI(I))          ! Selected atom if CTOMAG
+     &      CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),PMAT(1,1,IATOM),
      &                  AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &                  ANIS(IATOM),ASYM(IATOM),SPAR(IATOM),APAR(IATOM),
      &                  ANIS2(IATOM),ASYM2(IATOM),SKEW(IATOM),
@@ -2133,13 +2241,19 @@ cLig <> closed the IF
   100 CONTINUE
 C
       CALL AROUND('Summary of chemical shieldings')
-      WRITE (LUPRI,'(1X,A)') 'Definitions from J.Mason, Solid '//
-     &       'state Nuc.Magn.Res. 2 (1993), 285'
-      WRITE (LUPRI,'()')
-      WRITE (LUPRI,'(1X,A,/,1X,A)')
-     & '@1atom   shielding       dia      para     skew '/
+      WRITE (LUPRI,'(A/)') '@1  Definitions from J. Mason, Solid '//
+     &       'state Nuc. Magn. Res. 2 (1993), 285'
+      IF (NOLOND) THEN
+         WRITE(LUPRI,'(A/A,3F20.12)')
+     &    '@1 London orbitals (GIAOs) not used.',
+     &    '@1 Gauge origin    (bohr):', (GAGORG(I),I=1,3)
+      ELSE
+         WRITE(LUPRI,'(A)') '@1 London orbitals (GIAOs) has been used.'
+      END IF 
+      WRITE (LUPRI,'(/A/A)')
+     & '@1 atom   shielding       dia      para     skew '/
      &  /'     span     (aniso     asym)',
-     & '@1----------------------------------------------'/
+     & '@1 ----------------------------------------------'/
      &  /'------------------------------'
       IATOM = 0
       DO 300 I = 1, NUCINS
@@ -2151,7 +2265,8 @@ C
             ELSE
                DIAPAR = 'diamagnetic '
             END IF
-            WRITE (LUPRI,'(1X,2A,7F10.4)') '@1',
+            IF (PRTSHI(I))          ! Selected atom if CTOMAG
+     &      WRITE (LUPRI,'(2A,7F10.4)') '@1 ',
      &         NAMDEP(IATOM),AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &         SKEW(IATOM),SPAN(IATOM),ANIS2(IATOM),ASYM2(IATOM)
          END IF
@@ -2160,13 +2275,19 @@ C
       WRITE (LUPRI,'()')
 C
       CALL AROUND('Summary of chemical shieldings')
-      WRITE (LUPRI,'(1X,A)') 'Definitions from Smith, Palke and'//
-     &       ' Grieg, Concepts in Mag.Res. 4 (1992), 107'
-      WRITE (LUPRI,'()')
-      WRITE (LUPRI,'(1X,A,/,1X,A)')
-     & '@2atom   shielding       dia      para     aniso'/
+      WRITE (LUPRI,'(A/)') '@2  Definitions from Smith, Palke, and'//
+     &       ' Grieg, Concepts in Mag. Res. 4 (1992), 107'
+      IF (NOLOND) THEN
+         WRITE(LUPRI,'(A/A,3F20.12)')
+     &    '@2 London orbitals (GIAOs) not used.',
+     &    '@2 Gauge origin    (bohr):', (GAGORG(I),I=1,3)
+      ELSE
+         WRITE(LUPRI,'(A)') '@2 London orbitals (GIAOs) has been used.'
+      END IF 
+      WRITE (LUPRI,'(/A/A)')
+     & '@2 atom   shielding       dia      para     aniso'/
      &  /'      asym        S        A',
-     & '@2----------------------------------------------'/
+     & '@2 ----------------------------------------------'/
      &  /'------------------------------'
       IATOM = 0
       DO 310 I = 1, NUCINS
@@ -2178,7 +2299,8 @@ C
             ELSE
                DIAPAR = 'diamagnetic '
             END IF
-            WRITE (LUPRI,'(1X,2A,7F10.4)') '@2',
+            IF (PRTSHI(I))          ! Selected atom if CTOMAG
+     &      WRITE (LUPRI,'(2A,7F10.4)') '@2 ',
      &         NAMDEP(IATOM),AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &         ANIS(IATOM),ASYM(IATOM),SPAR(IATOM),APAR(IATOM)
          END IF
@@ -2191,15 +2313,15 @@ C  /* Deck shiana */
       SUBROUTINE SHIANA(TMAT,DMAT,PMAT,AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SPAR,APAR,ANIS2,ASYM2,SKEW,SPAN,NAME,NAMEX,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <thrzer.h>
-#include <inftap.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "thrzer.h"
+#include "inftap.h"
+#include "codata.h"
 cLig >> added include mxcent abainf and sigma
-#include <mxcent.h>
-#include <abainf.h>
-#include <sigma.h>
+#include "mxcent.h"
+#include "abainf.h"
+#include "sigma.h"
 cLig <<
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
@@ -2210,7 +2332,12 @@ cmbh end
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMAT(3,3), SYM(3,3), ANTI(3,3),
      &          AXES(3,3), PVAL(6), WRK(3), IWRK(3), ABSP(3)
-#include <chrxyz.h>
+#include "chrxyz.h"
+C
+CTOCD
+#include "ctocdcc.h"
+      CHARACTER*10 LABMET
+CTOCD
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
@@ -2292,7 +2419,7 @@ C
       APAR = SQRT(DDOT(9,ANTI,1,ANTI,1)/D2)
       SPAR = ABS(ANIS)*SQRT(D1 + (ASYM**2)/D3)
 cLig >> added title for CTOCD shieldings
-      IF (CTOCD) THEN
+      IF (CTOCD .OR. CTOMAG) THEN
          CALL TITLER('CTOCD-DZ: Chemical shielding for '
      &               //NAME//':','=',1)
       ELSE
@@ -2314,23 +2441,43 @@ cLig <<
 C << JK write results to DALTON.PROP file
       LANAME = NAME//'  '
       LAPRPC = 'SH-CONST'
-      CALL WRIPRO(AVETOT,"SCF/DFT   ",401,
+C
+CTOCD
+      IF (ALCCS) THEN
+         LABMET = 'DZ /CCS   '
+      ELSE IF (ALCC2) THEN
+         LABMET = 'DZ /CC2   '
+      ELSE IF (ALCC3) THEN
+         LABMET = 'DZ /CC3   '
+      ELSE IF (ALCCSD) THEN
+         LABMET = 'DZ/CCSD   '
+      ELSE
+         LABMET = 'SCF/DFT   '
+      END IF
+CTOCD
+C
+CTOCD CALL WRIPRO(AVETOT,"SCF/DFT   ",401,
+      CALL WRIPRO(AVETOT, LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
       LAPRPC = 'ANISO   '
-      CALL WRIPRO(ANIS  ,"SCF/DFT   ",401,
+CTOCD CALL WRIPRO(ANIS  ,"SCF/DFT   ",401,
+      CALL WRIPRO(ANIS  , LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
       LAPRPC = 'ASYMMETR'
-      CALL WRIPRO(ASYM  ,"SCF/DFT   ",401,
+CTOCD CALL WRIPRO(ASYM  ,"SCF/DFT   ",401,
+      CALL WRIPRO(ASYM  , LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
       LAPRPC = 'S-PARAME'
-      CALL WRIPRO(SPAR  ,"SCF/DFT   ",401,
+CTOCD CALL WRIPRO(SPAR  ,"SCF/DFT   ",401,
+      CALL WRIPRO(SPAR  , LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
       LAPRPC = 'A-PARAME'
-      CALL WRIPRO(APAR  ,"SCF/DFT   ",401,
+CTOCD CALL WRIPRO(APAR  ,"SCF/DFT   ",401,
+      CALL WRIPRO(APAR  , LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
 C << JK
@@ -2436,10 +2583,10 @@ C
 C  /* Deck spires */
       SUBROUTINE SPIRES(SPNDSO,SPNPSO,SPNSD,SPNFC,SPSDFC,
      &                  WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
      &          SPNSD (MXCOOR,MXCOOR), SPNFC (MXCOOR,MXCOOR),
      &          SPSDFC(MXCOOR,MXCOOR)
@@ -2465,23 +2612,23 @@ C
 C  /* Deck spire1 */
       SUBROUTINE SPIRE1(SPNDSO,SPNPSO,SPNSD,SPNFC,SPSDFC,CHESS,
      &                  AVEISO,ANISO,ASYM,SPAR,APAR,CSTRA,SCTRA)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "codata.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
       LOGICAL TEST
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <cbisol.h>
-#include <spnout.h>
-#include <cbinum.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "cbisol.h"
+#include "spnout.h"
+#include "cbinum.h"
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
      &          SPNSD (MXCOOR,MXCOOR), SPNFC (MXCOOR,MXCOOR),
      &          SPSDFC(MXCOOR,MXCOOR)
@@ -2492,7 +2639,7 @@ C  /* Deck spire1 */
      &          SPAR (NUCDEP*(NUCDEP + 1)/2),
      &          APAR (NUCDEP*(NUCDEP + 1)/2),
      &          COUPLM(3,3), CSTRA(*), SCTRA(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C Ordering of the properties in the isotropic matrix:
 C 1: Total spin-spin coupling matrix
@@ -2572,22 +2719,22 @@ C
 C
 C  /* Deck isospn */
       SUBROUTINE ISOSPN(CHESS,AVEISO,ANISO,ASYM,SPAR,APAR)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <cbisol.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "cbisol.h"
+#include "maxaqn.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
       CHARACTER LAPRPC*8, LANAM1*8, LANAM2*8
-#include <dorps.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <spnout.h>
-#include <abainf.h>
+#include "dorps.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "spnout.h"
+#include "abainf.h"
       LOGICAL TEST
       DIMENSION CHESS(3*NUCDEP,3*NUCDEP,6),
      &                AVEISO(NUCDEP*(NUCDEP + 1)/2,5),
@@ -2596,7 +2743,7 @@ C  /* Deck isospn */
      &                SPAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                APAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                COUPLM(3,3)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     *** Calculate the various spin parameters. ***
 C
@@ -2756,6 +2903,24 @@ C MBH+JK
      &                       'Isotropic PSO contribution:',PSO   ,' Hz',
      &                       'Isotropic SD contribution :',SD    ,' Hz',
      &                       'Isotropic FC contribution :',FC    ,' Hz'
+CSPAS: trying to print the whole tensor
+                        DO ICOOR1 = 1, 3
+                           DO ICOOR2 = 1, 3
+                              IADR1 = 3*(IATOM1 - 1) + ICOOR1
+                              IADR2 = 3*(IATOM2 - 1) + ICOOR2
+                        COUPLM(ICOOR1,ICOOR2) = CHESS(IADR1,IADR2,1)
+     &                                                *FACTOR
+                           END DO
+                        END DO
+                    CALL TITLER('Total Coupling Tensor in Hz','-',-1)
+                        WRITE(LUPRI,'(16X,3(A14,1X),/)') 'x','y','z'
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'x',(COUPLM(1,J), J=1,3)
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'y',(COUPLM(2,J), J=1,3)
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'z',(COUPLM(3,J), J=1,3)
+CKeinSPASmehr: trying to print the whole tensor
                      END IF
                   END IF
                END IF
@@ -2773,20 +2938,20 @@ C
 C
 C  /* Deck fnlspn */
       SUBROUTINE FNLSPN(CHESS,AVEISO,ANISO,ASYM,SPAR,APAR)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <cbisol.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "cbisol.h"
+#include "maxaqn.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
-#include <dorps.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <spnout.h>
+#include "dorps.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "spnout.h"
       LOGICAL TEST
       DIMENSION CHESS(3*NUCDEP,3*NUCDEP,6),
      &                AVEISO(NUCDEP*(NUCDEP + 1)/2,5),
@@ -2795,7 +2960,7 @@ C  /* Deck fnlspn */
      &                SPAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                APAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                COUPLM(3,3)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     *** Calculate the various spin parameters. ***
 C
@@ -2944,6 +3109,24 @@ C
      &                       'Isotropic PSO contribution:',PSO   ,' Hz',
      &                       'Isotropic SD contribution :',SD    ,' Hz',
      &                       'Isotropic FC contribution :',FC    ,' Hz'
+CSPAS: trying to print the whole tensor
+                        DO ICOOR1 = 1, 3
+                           DO ICOOR2 = 1, 3
+                              IADR1 = 3*(IATOM1 - 1) + ICOOR1
+                              IADR2 = 3*(IATOM2 - 1) + ICOOR2
+                        COUPLM(ICOOR1,ICOOR2) = CHESS(IADR1,IADR2,1)
+     &                                                *FACTOR
+                           END DO
+                        END DO
+                    CALL TITLER('Total Coupling Tensor in Hz','-',-1)
+                        WRITE(LUPRI,'(16X,3(A14,1X),/)') 'x','y','z'
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'x',(COUPLM(1,J), J=1,3)
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'y',(COUPLM(2,J), J=1,3)
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'z',(COUPLM(3,J), J=1,3)
+CKeinSPASmehr: trying to print the whole tensor
                            END IF
                            END IF
  100                    CONTINUE
@@ -2962,11 +3145,11 @@ C
       END
 C  /* Deck spiana */
       SUBROUTINE SPIANA(PRIBAS,AVEISO,ANISO,ASYM,SPAR,APAR)
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION PRIBAS(3*NUCDEP,3*NUCDEP),
      &          AVEISO(NUCDEP*(NUCDEP + 1)/2),
      &          ANISO(NUCDEP*(NUCDEP + 1)/2),
@@ -3043,18 +3226,18 @@ C  /* Deck nucnqc */
 C
 C     Nuclear contribution to electric field gradients
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "nuclei.h"
       PARAMETER (D3 = 3.0D0)
       DIMENSION GEOM(3*NATOMS)
-#include <symmet.h>
-#include <qm3.h>
-#include <nqcc.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "qm3.h"
+#include "nqcc.h"
+#include "ibtfun.h"
 C
       CALL DZERO(UCNNQC,9*MXCENT)
 C
@@ -3119,16 +3302,16 @@ C
 C     Nuclear contribution to quadrupole moments
 C     K.Ruud, nov.-94
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
-#include <symmet.h>
-#include <quadru.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "quadru.h"
+#include "ibtfun.h"
 C
       CALL DZERO(QDRNUC,9)
 C
@@ -3176,16 +3359,16 @@ C
 C     Nuclear contribution to second moments
 C     H.Solheim, May -03
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
-#include <symmet.h>
-#include <secmom.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "secmom.h"
+#include "ibtfun.h"
 C
       CALL DZERO(SCMNUC,9)
       KK = 1
@@ -3224,16 +3407,16 @@ C
 C     Nuclear contribution to third moments
 C     H.Solheim, May -03
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
-#include <symmet.h>
-#include <thimom.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "thimom.h"
+#include "ibtfun.h"
 C
       CALL DZERO(THDNUC,27)
       KK = 1
@@ -3299,15 +3482,15 @@ C
 C     Calculate nuclear contribution to molecular rotational g-factors
 C     K.Ruud, June-94
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION ORIGIN(3), GEOM(3*(NATOMS+NFLOAT))
-#include <symmet.h>
-#include <molgfa.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "molgfa.h"
+#include "ibtfun.h"
 C
       CALL DZERO(GFANUC,9)
       KK = 1
@@ -3351,18 +3534,18 @@ C
 C     Calculate nuclear contribution to spin-rotation constants
 C     K.Ruud, October-94
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.D0)
       DIMENSION GEOM(3*NATOMS), ORIGIN(3)
-#include <abainf.h>
-#include <symmet.h>
-#include <spinro.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "symmet.h"
+#include "spinro.h"
+#include "ibtfun.h"
 C
       CALL DZERO(SPRNUC,3*MXCOOR)
       KK = 1
@@ -3422,12 +3605,12 @@ C
       END
 C  /* Deck mgfres */
       SUBROUTINE MGFRES(GEOM,AMASS,WORK,LWORK,KATOM,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5)
       LOGICAL PLANAR, LINEAR, D12, D23
@@ -3435,14 +3618,14 @@ C  /* Deck mgfres */
      &          EIGVAL(3), EIGVEC(3,3),
      &          GTRAN1(3,3), GTRAN2(3,3), GTRAN3(3,3), GEOM(KATOM,3),
      &          AMASS(KATOM)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <suscpt.h>
-#include <molgfa.h>
-#include <orgcom.h>
-#include <dftcom.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "suscpt.h"
+#include "molgfa.h"
+#include "orgcom.h"
+#include "dftcom.h"
+#include "ibtfun.h"
 C
       D12 = .FALSE.
       D23 = .FALSE.
@@ -3691,12 +3874,12 @@ C
 C  /* Deck sprres */
       SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DIAMAT,PARMAT,WORK,LWORK,
      &                  KATOM,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <codata.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "codata.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
       PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
@@ -3706,13 +3889,13 @@ C  /* Deck sprres */
      &          GTRANN(3,3), GTRAND(3,3), GEOM(KATOM,3), AMASS(KATOM),
      &          GVAL(KATOM), GTRANP(3,3), PARMAT(3,3,KATOM),
      &          DIAMAT(3,3,KATOM)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <sigma.h>
-#include <spinro.h>
-#include <orgcom.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "sigma.h"
+#include "spinro.h"
+#include "orgcom.h"
+#include "ibtfun.h"
 C
       D12 = .FALSE.
       D23 = .FALSE.
@@ -3886,15 +4069,15 @@ C  /* Deck nqcel */
 C
 C     Collect and arrange electronic contribution to electric field gradients
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nqcc.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nqcc.h"
+#include "nuclei.h"
       DIMENSION TEMP(3,3,NUCDEP), EXPVAL(NCOMP)
-#include <symmet.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "ibtfun.h"
 C
       ITYP = 0
 C
@@ -3947,20 +4130,20 @@ C
 C     Routine for calculating the diamagnetic contribution to the
 C     spin-rotation constant, K.Ruud - Oct.-95
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
      &          CSTRA(3*NUCDEP,3*NUCDEP), SCTRA(3*NUCDEP,3*NUCDEP)
-#include <abainf.h>
-#include <symmet.h>
-#include <spinro.h>
-#include <orgcom.h>
-#include <helfey.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "symmet.h"
+#include "spinro.h"
+#include "orgcom.h"
+#include "helfey.h"
+#include "ibtfun.h"
 C
       CALL DZERO(SPRDNL,3*MXCOOR)
       CALL DZERO(HFGEL,MXCOOR)
@@ -4010,3 +4193,26 @@ C
       RETURN
  1000 FORMAT (1X,A6,F17.10,2F24.10)
       END
+C    
+C  /* Deck selinf */    
+      SUBROUTINE SELINF(MPATOM,JPATOM,ATMALL)
+C        
+C 
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbiher.h"
+C    
+      DIMENSION JPATOM(MXCENT)
+      LOGICAL ATMALL
+C    
+C    
+      ATMALL = ALLATM
+C    
+      MPATOM = NPATOM
+      DO I = 1,MXCENT
+         JPATOM(I) = IPATOM(I)
+      END DO
+C           
+      RETURN
+      END  

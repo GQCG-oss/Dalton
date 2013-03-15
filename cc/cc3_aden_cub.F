@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cc3_aden_cub */
       SUBROUTINE CC3_ADEN_CUB(LISTL,IDLSTL,LISTR,IDLSTR,
@@ -44,11 +34,11 @@ C  /* Deck cc3_aden_cub */
      *                            LU3FOP2X,FN3FOP2X)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CHARACTER LISTL*3, LISTR*3
       CHARACTER*(*) FNTOC, FN3VI, FNDKBC3, FN3FOPX, FN3FOP2X
@@ -278,16 +268,16 @@ C  /* Deck cc3_adenocc_cub */
 *************************************************************************
 *            
       IMPLICIT NONE
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
-#include <ccr2rsp.h>
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
+#include "ccr2rsp.h"
 C
       INTEGER ISYM0
       PARAMETER(ISYM0 = 1)
@@ -296,7 +286,7 @@ C
       PARAMETER (CDUMMY = ' ')
 C
       CHARACTER*14 FN3SRTR, FNCKJDRZ, FNDELDRZ, FNDKBCRZ
-      PARAMETER(FN3SRTR = 'CCSDT_FBMAT1_Z',FNCKJDRZ = 'CCSDT_FBMAT2_Z',
+      PARAMETER(FN3SRTR  = 'CCSDT_FBMAT1_Z',FNCKJDRZ = 'CCSDT_FBMAT2_Z',
      *          FNDELDRZ = 'CCSDT_FBMAT3_Z',FNDKBCRZ = 'CCSDT_FBMAT4_Z')
       INTEGER LU3SRTR, LUCKJDRZ, LUDELDRZ, LUDKBCRZ
 C
@@ -432,7 +422,7 @@ C
         END IF
 
       ELSE 
-         CALL QUIT('Unkown left list in CC3_ADENOCC_CUB')
+         CALL QUIT('Unknown left list in CC3_ADENOCC_CUB')
       END IF
 
       IF (LISTR(1:3).EQ.'R2 ') THEN
@@ -461,7 +451,7 @@ C
       ELSE
          WRITE(LUPRI,*)'LISTR = ',LISTR(1:3)
          WRITE(LUPRI,*)'CC3_ADENVIR_CUB is designed for LISTR = R2'
-         CALL QUIT('Unkown right list in CC3_ADENOCC_CUB')
+         CALL QUIT('Unknown right list in CC3_ADENOCC_CUB')
       END IF
 
       FREQZU = FREQRZ + FREQRU
@@ -1748,10 +1738,10 @@ C
 C
       PARAMETER (ONE = 1.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('TETACB')
 C
@@ -1872,9 +1862,9 @@ C F. Pawlowski, 02-10-2003, Aarhus.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYT30JK, ISYMT2, ISYINT, ISYMJ, ISYMK, LWORK
       INTEGER ISYMDAI, ISYMBCD, ISYMDA, ISYMBC, ISYMBCA, ISYMDBI  
@@ -2084,10 +2074,10 @@ C
 C
       PARAMETER (ONE = 1.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('TETJKCB')
 C
@@ -2262,10 +2252,10 @@ C  /* Deck aden_dab_lm_cub */
      *                           WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER IOPT
       INTEGER ISYMTHLM,ISYMWLM,LWORK
@@ -2459,21 +2449,21 @@ C  /* Deck cc3_adenvir_cub */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <cc3t3d.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <cclrmrsp.h>
-#include <ccexci.h>
-#include <ccr2rsp.h>
-#include <ccer1rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "cc3t3d.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "cclrmrsp.h"
+#include "ccexci.h"
+#include "ccr2rsp.h"
+#include "ccer1rsp.h"
 
 C
       INTEGER ISYM0
@@ -2491,7 +2481,7 @@ C
      *          FNTHETA = 'CC3_THETA3_TMP',FNWZU = 'CC3_WZU____TMP')
 C
       CHARACTER*14 FN3SRTR, FNCKJDRZ, FNDELDRZ, FNDKBCRZ
-      PARAMETER(FN3SRTR = 'CCSDT_FBMAT1_Z',FNCKJDRZ = 'CCSDT_FBMAT2_Z',
+      PARAMETER(FN3SRTR  = 'CCSDT_FBMAT1_Z',FNCKJDRZ = 'CCSDT_FBMAT2_Z',
      *          FNDELDRZ = 'CCSDT_FBMAT3_Z',FNDKBCRZ = 'CCSDT_FBMAT4_Z')
       INTEGER LU3SRTR, LUCKJDRZ, LUDELDRZ, LUDKBCRZ
 C
@@ -2701,7 +2691,7 @@ C
         FREQL1R = DUMMY
 C
       ELSE
-         CALL QUIT('Unkown left list in CC3_ADENVIR_CUB')
+         CALL QUIT('Unknown left list in CC3_ADENVIR_CUB')
       END IF
 
       IF (LISTR(1:3).EQ.'R2 ') THEN
@@ -2742,7 +2732,7 @@ C
       ELSE
        WRITE(LUPRI,*)'LISTR = ',LISTR(1:3)
        WRITE(LUPRI,*)'CC3_ADENVIR_CUB is designed for LISTR = R2 or ER1'
-       CALL QUIT('Unkown right list in CC3_ADENVIR_CUB')
+       CALL QUIT('Unknown right list in CC3_ADENVIR_CUB')
       END IF
 C
       IF (LORXRZ.OR.LORXRU) THEN
@@ -4945,10 +4935,10 @@ C
       DOUBLE PRECISION T2TP(*), FOCKY(*), WMAT(*)
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('WBXT2')
 
@@ -5344,9 +5334,9 @@ C  /* Deck wbarxbd_l1 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER AIBJCK_PERM
       INTEGER ISYMT1, ISINT1, LENSQ, ISYMB, ISYMC
@@ -5697,10 +5687,10 @@ C
 
       IMPLICIT NONE 
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER AIBJCK_PERM
       INTEGER ISYMT2,ISWMAT,ISINT2,ISYMB,ISYMC,ISYRES,ISYMBC
@@ -6982,14 +6972,14 @@ C  /* Deck wx_bd_o */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
 C
       LOGICAL LW,LWBAR
@@ -7259,10 +7249,10 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cc3t3d.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cc3t3d.h"
 C
       CHARACTER LISTRZ*3,LISTRU*3,LISTL*3
 C
@@ -7848,9 +7838,9 @@ C  /* Deck dij_cont_cub */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL TRANSPOSEW
 C
@@ -7978,9 +7968,9 @@ C  /* Deck dab_cont_cub */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL TRANSPOSEW
 C
@@ -8093,10 +8083,10 @@ C  /* Deck read_t3_albj */
 
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <cc3t3d.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "cc3t3d.h"
+#include "ccorb.h"
 C
       CHARACTER*(*) FNFILE
 C
@@ -8193,10 +8183,10 @@ C  /* aden_dai_t2_d_cub */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMDAI,ISYMT2,ISYMTETA,ISYMD,ISYML,LWORK
       INTEGER KT2AM,KEND1,LWRK1
@@ -8305,13 +8295,13 @@ C     t2am(ai,bj) = t2tp(aijb)
 C 
 C     F. Pawlowski, Fall 2003, Aarhus.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION T2AM(*),T2TP(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('T2AI_BJ')
 C
@@ -8379,9 +8369,9 @@ C     Filip Pawlowski, Aarhus, Winter 2003
 *     Fixed for memory problems, 29-Oct-2003, Aarhus, FP.
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYT30JK,ISYMT2,ISYINT,ISYMJ,ISYMK,LWORK
       INTEGER ISYKJ,ISYCL,ISYML,ISYMC,ISYBAI
@@ -8546,14 +8536,14 @@ C     Written by F. Pawlowski, Fall 2003.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER LWRK, KFCLF, KEND0, LWRK0, KOFF1, KOFF2, KTB, KEND1, LWRK1
       INTEGER NL, NF, KOFFY, KOFFT2, KOFFT, KOFFW, KTD, KW
@@ -8766,9 +8756,9 @@ C
 C     F. Pawlowski, Aarhus, Fall 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYBAC,ISYMC,ISYAB,ISYBA,ISYMB,ISYMA
       INTEGER KOFF1,KOFF2
@@ -8823,8 +8813,8 @@ C  /* Deck wxbd_t2_cub */
 
       IMPLICIT NONE
 
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 
       LOGICAL T2XNET2Z
 
@@ -8920,14 +8910,14 @@ C
       DOUBLE PRECISION HALF, ONE, ZERO
 #endif
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0, ZERO = 0.0D0)
 C
@@ -9492,9 +9482,9 @@ C  /* Deck intvir_t3x_jk */
 **********************************************************
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYINT, LUFIL, LWORK
       INTEGER ISYMD, ISYCKA, KINTVI, KEND1, LWRK1, IOFF

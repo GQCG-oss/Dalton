@@ -1,41 +1,31 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
       SUBROUTINE D0FCDIAG(D0DIAG,FCDIAG,FC)
-#include <implicit.h>
-#include <priunit.h> 
-#include <infrsp.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h" 
+#include "infrsp.h"
+#include "inforb.h"
 
       DIMENSION D0DIAG(*),FCDIAG(*),FC(*)
 
@@ -65,10 +55,10 @@ C END OF D0FCDIAG
 C
 
       SUBROUTINE GETH1MO(H1MO,CMO,WRK,LWRK)
-#include <implicit.h>
-#include <priunit.h> 
-#include <infrsp.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h" 
+#include "infrsp.h"
+#include "inforb.h"
 
       DIMENSION H1MO(NORBT,NORBT),CMO(*),WRK(*)
 
@@ -112,11 +102,11 @@ C     Transform the integrals to MO basis
       END
 
       SUBROUTINE GETESG_DENMAT_FOCMAT(D,F,NBAST,NNBAST)
-#include <implicit.h>
+#include "implicit.h"
 #include "rspprp.h"
-#include <esg.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "esg.h"
+#include "dummy.h"
+#include "priunit.h"
 
       DIMENSION D(NNBAST), F(NNBAST)
 
@@ -134,14 +124,14 @@ C     Transform the integrals to MO basis
       END
 
       SUBROUTINE GETESG_DENMAT(DMAT,NDMAT,WRK,LWRK)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
 #include "rspprp.h"
-#include <esg.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <abainf.h>
-#include <priunit.h>
+#include "esg.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "abainf.h"
+#include "priunit.h"
 
       DIMENSION DMAT(NBAST,NBAST,NDMAT),WRK(*)
       PARAMETER (MXDMAT=50)
@@ -186,21 +176,21 @@ C     Transform the integrals to MO basis
 C
 C CALCULATES INV( E2 ) * VECTOR 
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <codata.h>
-#include <priunit.h>
-#include <infopt.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "codata.h"
+#include "priunit.h"
+#include "infopt.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infpp.h>
-#include <inflr.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infsop.h>
+#include "infpp.h"
+#include "inflr.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infsop.h"
 
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
@@ -283,8 +273,8 @@ C
 C  This subroutine folds the square matrix AIN into the triangular 
 C   matrix AOUT 
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AIN(N,N), AOUT(*)
 
       IJ = 0
@@ -301,17 +291,17 @@ C
       END 
 
       SUBROUTINE FMAT2VEC(NSIM,ZYVEC,ZYMAT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ZYVEC(KZYWOP,*), ZYMAT(NORBT,NORBT,*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( D1 = 1.0D0 )
       CALL DZERO(ZYVEC,NSIM*KZYVAR)
@@ -328,8 +318,8 @@ C
       END
 
       SUBROUTINE SYMMETRIZE(MINP,MOUT,NSIM,NORBT)
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
 
       DIMENSION MINP(NORBT,NORBT,*),MOUT(NORBT,NORBT,*)
       DOUBLE PRECISION MINP, MOUT
@@ -380,9 +370,9 @@ C     End of AO2MO_OLD
 C
 
       SUBROUTINE AO2MO(AAO,BMO,CMO,WRK,LWRK)
-#include <implicit.h>
-#include <priunit.h> 
-#include <inforb.h> 
+#include "implicit.h"
+#include "priunit.h" 
+#include "inforb.h" 
 
 C
 C     Purpose: transforms a two-index matrix from 
@@ -440,9 +430,9 @@ C
 C     End of AO2MO
 C
       SUBROUTINE MO2AO(AMO,AAO,CMO,WRK,LWRK)
-#include <implicit.h>
-#include <priunit.h> 
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h" 
+#include "inforb.h"
 
 C
 C     Purpose: transforms a two-index matrix from 
@@ -518,8 +508,8 @@ C     End of MO2AO
 C
 
       SUBROUTINE ESG_PVAL(DODFT,HFXFAC,PVAL,DMAT,A,B,C,D,F)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       INTEGER A, B, C, D
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00,
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
@@ -543,8 +533,8 @@ C----------------------------------------
 C     TEMPORARY SUBROUTINES FOR DEBUGING: 
 C----------------------------------------
       SUBROUTINE PRINTVEC( TEXT, NSIM, KZYVAR, V )   
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
 
       DIMENSION V(*)
       CHARACTER*15 TEXT
@@ -567,8 +557,8 @@ C
 C *** END OF PRINTVEC
 C
       SUBROUTINE PRINTVEC2( TEXT, NSIM, KZVAR, V )   
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
 
       DIMENSION V(*)
       CHARACTER*15 TEXT
@@ -598,8 +588,8 @@ C
 
 
       SUBROUTINE PRINTMAT( TEXT, NSIM, NORBT, A )   
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
 
 
       DIMENSION A(NORBT,NORBT,*)

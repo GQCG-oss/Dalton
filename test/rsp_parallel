@@ -67,7 +67,7 @@ cat > rsp_parallel.dal <<'%EOF%'
 .FREQUENCY
 2
  0.0 0.0656
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -171,31 +171,31 @@ CTRL[8]=20
 ERROR[8]="NOT CORRECT"
 
 # linear response
-CRIT1=`$GREP "Value of linear response.*\: * 8\.71976" $log | wc -l`
-CRIT2=`$GREP "Value of linear response.*\: * 8\.82310" $log | wc -l`
-CRIT3=`$GREP "Value of linear response.*\: * 9\.34353" $log | wc -l`
-CRIT4=`$GREP "Value of linear response.*\: * 9\.43389" $log | wc -l`
-CRIT5=`$GREP "Value of linear response.*\: * 8\.27564" $log | wc -l`
-CRIT6=`$GREP "Value of linear response.*\: * 8\.40237" $log | wc -l`
+CRIT1=`$GREP "Value of linear response.*\: * 8\.7197" $log | wc -l`
+CRIT2=`$GREP "Value of linear response.*\: * 8\.8231" $log | wc -l`
+CRIT3=`$GREP "Value of linear response.*\: * 9\.3435" $log | wc -l`
+CRIT4=`$GREP "Value of linear response.*\: * 9\.4338" $log | wc -l`
+CRIT5=`$GREP "Value of linear response.*\: * 8\.2756" $log | wc -l`
+CRIT6=`$GREP "Value of linear response.*\: * 8\.4023" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[9]=6
 ERROR[9]="LINEAR RESPONSE NOT CORRECT"
 
 # First hyperpolarizabilities
-CRIT1=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(Y;Y,Y\) = *  1\.3512" $log | wc -l`
-CRIT2=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Y;Y,Y\) = *  1\.4996" $log | wc -l`
-CRIT3=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(X;X,Y\) = * -9\.1473" $log | wc -l`
-CRIT4=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(X;X,Y\) = *-10\.1623" $log | wc -l`
-CRIT5=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(Z;Z,Y\) = *  2\.9313" $log | wc -l`
-CRIT6=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Z;Z,Y\) = *  2\.9220" $log | wc -l`
+CRIT1=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(Y;Y,Y\) = *  1\.351" $log | wc -l`
+CRIT2=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Y;Y,Y\) = *  1\.499" $log | wc -l`
+CRIT3=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(X;X,Y\) = * -9\.147" $log | wc -l`
+CRIT4=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(X;X,Y\) = *-10\.162" $log | wc -l`
+CRIT5=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(Z;Z,Y\) = *  2\.931" $log | wc -l`
+CRIT6=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Z;Z,Y\) = *  2\.92[12]" $log | wc -l`
 CRIT7=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(X;Y,X\) = beta\(X,X,Y\)" $log | wc -l`
 CRIT8=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(X;Y,X\) = beta\(X,X,Y\)" $log | wc -l`
 CRIT9=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(Y;X,X\) = beta\(X,X,Y\)" $log | wc -l`
-CRIT10=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Y;X,X\) = *-10\.0598" $log | wc -l`
+CRIT10=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Y;X,X\) = *-10\.059" $log | wc -l`
 CRIT11=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(Z;Y,Z\) = beta\(Z,Z,Y\)" $log | wc -l`
 CRIT12=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Z;Y,Z\) = beta\(Z,Z,Y\)" $log | wc -l`
 CRIT13=`$GREP "\@ B-freq = (0| )\.000000  C-freq = (0| )\.000000 *beta\(Y;Z,Z\) = beta\(Z,Z,Y\)" $log | wc -l`
-CRIT14=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Y;Z,Z\) = *  3\.9349" $log | wc -l`
+CRIT14=`$GREP "\@ B-freq = (0| )\.065600  C-freq = (0| )\.065600 *beta\(Y;Z,Z\) = *  3\.934" $log | wc -l`
 
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \

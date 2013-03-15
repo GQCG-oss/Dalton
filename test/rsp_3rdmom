@@ -73,7 +73,7 @@ cat > rsp_3rdmom.dal <<'%EOF%'
 .FREQUE
  1
 0.03
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

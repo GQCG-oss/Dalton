@@ -1,134 +1,183 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Henrik Koch,              University of Trondheim,      Norway     
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Mar  3 21:03:13 2005
-     Host name              : pi.biotech.kth.se                       
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
 
 
- Default print level:        0
+     Date and time (Linux)  : Wed Mar 16 17:53:16 2011 
+     Host name              : fe6                                     
 
-    Integral sections will be executed
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
-    Wave function sections will be executed
-
-Starting in Integral Section -
-
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
 
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Water calc.                                                             
+ 2: Triplet tests                                                           
+    ------------------------------------------------------------------------
 
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   8 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G                                                                           
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G                                                                           
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G                                                                           
 
 
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
 
-  Title Cards
-  -----------
-
-  Water calc.                                                             
-  Triplet tests                                                           
-
-
-                  SYMADD: Requested addition of symmetry
-                  --------------------------------------
-
- Symmetry threshold:  0.50E-05
+ Symmetry test threshold:  5.00E-06
 
  Symmetry class found: C(2v)  
+
+ Symmetry Independent Centres             
+ ----------------------------
+       8 :      0.00000000     0.00000000    -0.12585268  Isotope  1
+       1 :      0.00000000     1.42717891     0.99868678  Isotope  1
 
  The following elements were found:   X  Y     
 
 
-  Symmetry Operations
-  -------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
-  Symmetry operations: 2
-
-
-
-                      SYMGRP:Point group information
-                      ------------------------------
-
-Full group is:  C(2v)          
-Represented as: C2v
+Full point group is: C(2v)          
+Represented as:      C2v
 
    * The point group was generated by:
 
@@ -139,9 +188,9 @@ Represented as: C2v
 
         |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
     Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
@@ -157,110 +206,101 @@ Represented as: C2v
 
         | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
     A2  | A2   B2   B1   A1 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
 
- Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    3
 
   Basis set used is "6-31G" from the basis set library.
 
-  label    atoms   charge   prim    cont     basis
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  O           1       8      22       9      [10s4p|3s2p]                                 
-  H           2       1       4       2      [4s|2s]                                      
+  O           1    8.0000    22     9      [10s4p|3s2p]                                       
+  H           2    1.0000     4     2      [4s|2s]                                            
   ----------------------------------------------------------------------
-  total:      3      10      30      13
+  total:      3   10.0000    30    13
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates:  9
-
-   1   O        x      0.0000000000
-   2            y      0.0000000000
-   3            z     -0.1258526849
-
-   4   H    1   x      0.0000000000
-   5            y      1.4271789100
-   6            z      0.9986867751
-
-   7   H    2   x      0.0000000000
-   8            y     -1.4271789100
-   9            z      0.9986867751
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z  -0.1258526849
+  H   / 1 :     4  x   0.0000000000    5  y   1.4271789100    6  z   0.9986867751
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4271789100    9  z   0.9986867751
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   3  2  3  1
+  Number of coordinates in each symmetry:     3    2    3    1
 
   Symmetry  A1  ( 1)
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
 
   Symmetry  B1  ( 2)
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
 
   Symmetry  B2  ( 3)
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
 
   Symmetry  A2  ( 4)
 
-   9   H     x    [  4  -   7 ]/2
+    9   H     x    [  4  -    7 ]/2
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.961506    0.000000
- H    2:    0.961506    1.510461    0.000000
+ H   _1:    0.961506    0.000000
+ H   _2:    0.961506    1.510461    0.000000
 
 
-  Max interatomic separation is    1.5105 Angstroms
-  between atoms "H    2" and "H    1".
+  Max interatomic separation is    1.5105 Angstrom (    2.8544 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.961506
-  bond distance:  H    2     O            0.961506
+  bond distance:  H   _1     O            0.961506
+  bond distance:  H   _2     O            0.961506
 
 
   Bond angles (degrees):
@@ -268,7 +308,7 @@ Represented as: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       103.528
+  bond angle:     H   _1     O          H   _2       103.528
 
 
 
@@ -276,9 +316,9 @@ Represented as: C2v
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    0.633901          0.000000    1.000000    0.000000
-   IB    1.149673          0.000000    0.000000    1.000000
-   IC    1.783574          1.000000    0.000000    0.000000
+   IA       0.633901          0.000000    1.000000    0.000000
+   IB       1.149673          0.000000    0.000000    1.000000
+   IC       1.783574          1.000000    0.000000    0.000000
 
 
  Rotational constants
@@ -288,17 +328,17 @@ Represented as: C2v
 
                A                   B                   C
 
-         797252.3607         439585.1102         283351.9157 MHz
-           26.593476           14.662981            9.451603 cm-1
+         797252.3537         439585.1064         283351.9133 MHz
+           26.593476           14.662981            9.451602 cm-1
 
 
-  Nuclear repulsion energy :    9.156145719818
+@  Nuclear repulsion energy :    9.156145719818
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:               7   2   4   0
+  Number of orbitals in each symmetry:           7    2    4    0
 
 
   Symmetry  A1 ( 1)
@@ -308,8 +348,8 @@ Represented as: C2v
     3     O        1s         3
     4     O        2pz        6
     5     O        2pz        9
-    6     H        1s        10  +  11
-    7     H        1s        12  +  13
+    6     H        1s        10 +   11
+    7     H        1s        12 +   13
 
 
   Symmetry  B1 ( 2)
@@ -322,8 +362,8 @@ Represented as: C2v
 
    10     O        2py        5
    11     O        2py        8
-   12     H        1s        10  -  11
-   13     H        1s        12  -  13
+   12     H        1s        10 -   11
+   13     H        1s        12 -   13
 
 
   No orbitals in symmetry  A2 ( 4)
@@ -333,34 +373,43 @@ Represented as: C2v
   Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in HUCKEL is   0.00 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in ONEDRV is   0.00 seconds
 
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:        1270 ( 30.3% )
  Megabytes written:                              0.021
 
-
-
- >>> Time used in TWOINT is   0.01 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
 
- NCCEXCI for singlet: 1 1 1 1
- NCCEXCI for triplet: 5 5 5 5
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+ NCCEXCI for singlet:           1           1           1           1
+ NCCEXCI for triplet:           5           5           5           5
 
  *** Output from Huckel module :
 
@@ -369,24 +418,25 @@ Starting in Wave Function Section -
      Number of Huckel orbitals each symmetry:    4    1    2    0
 
  Huckel EHT eigenvalues for symmetry :  1
-          -20.807008      -2.103361      -0.686885       0.271968
+          -20.705219      -1.504913      -0.671844      -0.293374
 
  Huckel EHT eigenvalues for symmetry :  2
-           -0.623712
+           -0.616200
 
  Huckel EHT eigenvalues for symmetry :  3
-           -0.930523       0.105418
+           -0.729724      -0.258626
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Mar  3 21:03:13 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:53:16 2011 
+     Host name              : fe6                                     
 
  Title     :   Triplet excitation energies                               
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      Water calc.                                                             
      Triplet tests                                                           
 
@@ -398,20 +448,21 @@ Starting in Wave Function Section -
 
      This is a combination run starting with
 
-               a RHF calculation
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART HUCKEL" input option.
+ ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 13
 
      Spin multiplicity                         1
      Total number of symmetries                4
@@ -419,31 +470,37 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2   3   4
-                                       --  --  --  --
-     Occupied SCF orbitals              3   1   1   0
-     Secondary orbitals                 4   1   3   0
-     Total number of orbitals           7   2   4   0
-     Number of basis functions          7   2   4   0
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Occupied SCF orbitals               5 |    3    1    1    0
+     Secondary orbitals                  8 |    4    1    3    0
+     Total number of orbitals           13 |    7    2    4    0
+     Number of basis functions          13 |    7    2    4    0
 
      Optimization information
      ========================
-     Number of configurations              1
-     Number of orbital rotations          16
-     ---------------------------------------
-     Total number of variables            17
+     Number of configurations                 1
+     Number of orbital rotations             16
+     ------------------------------------------
+     Total number of variables               17
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-06
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-06
 
 
  Changes of defaults for CC:
  ---------------------------
 
+ -Excitation energies calculated
+  
 
- Excitation energies calculated
+
+ Changes of defaults for CC:
+ ---------------------------
+
+ -Excitation energies calculated
   
 
 
@@ -452,94 +509,123 @@ Starting in Wave Function Section -
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -75.7971101011        2.02548D+00   -7.58D+01    1
+      Virial theorem: -V/T =      1.999635
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
+   2    -75.9759353378        2.90461D-01   -1.79D-01    2
+      Virial theorem: -V/T =      1.999642
+      MULPOP  O      -0.74; H   _1  0.37; H   _2  0.37; 
+ -----------------------------------------------------------------------------
+   3    -75.9831075358        8.25352D-02   -7.17D-03    3
+      Virial theorem: -V/T =      2.001388
+      MULPOP  O      -0.76; H   _1  0.38; H   _2  0.38; 
+ -----------------------------------------------------------------------------
+   4    -75.9834409393        3.65147D-02   -3.33D-04    4
+      Virial theorem: -V/T =      1.999383
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+   5    -75.9835104272        2.64415D-03   -6.95D-05    5
+      Virial theorem: -V/T =      2.000028
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+   6    -75.9835111771        4.27857D-04   -7.50D-07    6
+      Virial theorem: -V/T =      2.000029
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+   7    -75.9835112014        4.53036D-05   -2.43D-08    7
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+   8    -75.9835112017        9.71259D-06   -3.16D-10    8
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+   9    -75.9835112017        1.91660D-06   -1.89D-11    9
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+  10    -75.9835112017        8.47828D-08   -6.82D-13   10
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.00 seconds
-
-    1      -75.683995306066    3.34814E+00   -7.57E+01    1
-    2      -75.966294396140    4.56117E-01   -2.82E-01    2
-    3      -75.981027379995    2.17198E-01   -1.47E-02    3
-    4      -75.983233581324    4.99068E-02   -2.21E-03    4
-    5      -75.983497522724    8.32109E-03   -2.64E-04    5
-    6      -75.983510754295    1.47424E-03   -1.32E-05    6
-    7      -75.983511198401    1.60125E-04   -4.44E-07    7
-    8      -75.983511201622    3.14122E-05   -3.22E-09    8
-    9      -75.983511201743    4.34550E-06   -1.21E-10    9
-   10      -75.983511201745    3.86009E-07   -1.90E-12   10
- DIIS converged in  10 iterations !
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    3    1    1    0
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -20.56197462    -1.35521986    -0.56190951     0.20252168     1.18498158
-         1.21836096     1.69923965
+  1    -20.56197460    -1.35521987    -0.56190951     0.20252168     1.18498158
+         1.21836095     1.69923965
 
- Hartree-Fock orbital energies, symmetry 2
+  2     -0.50163710     1.16408180
 
-        -0.50163709     1.16408181
-
- Hartree-Fock orbital energies, symmetry 3
-
-        -0.70608019     0.29852091     1.05054493     1.37722176
+  3     -0.70608018     0.29852091     1.05054494     1.37722177
 
     E(LUMO) :     0.20252168 au (symmetry 1)
-  - E(HOMO) :    -0.50163709 au (symmetry 2)
+  - E(HOMO) :    -0.50163710 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.70415877 au
+    gap     :     0.70415878 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -75.983511201745
+     Final HF energy:             -75.983511201745                 
      Nuclear repulsion:             9.156145719818
      Electronic energy:           -85.139656921563
 
-     Final gradient norm:           0.000000386009
+     Final gradient norm:           0.000000084783
 
  
-     Date and time (Linux)  : Thu Mar  3 21:03:13 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:53:16 2011 
+     Host name              : fe6                                     
 
-     Molecular orbitals for symmetry species   1
+ (Only coefficients >0.0100 are printed.)
 
- Orbital          1        2        3
-   1  O   1s     0.9958  -0.2124   0.0764
-   2  O   1s     0.0219   0.4691  -0.1821
-   3  O   1s    -0.0080   0.4804  -0.3082
-   4  O   2pz    0.0021   0.1116   0.5489
-   5  O   2pz   -0.0020   0.0612   0.4006
-   6  H   1s     0.0001   0.1393   0.1453
-   7  H   1s     0.0020  -0.0081   0.0819
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   2
+    Orbital         1        2        3        4        5
+   1 O   :1s     0.9958  -0.2124   0.0764   0.0846   0.0472
+   2 O   :1s     0.0219   0.4691  -0.1821  -0.1036  -0.2376
+   3 O   :1s    -0.0080   0.4804  -0.3082  -1.1720   0.1869
+   4 O   :2pz    0.0021   0.1116   0.5489  -0.2336  -0.7219
+   5 O   :2pz   -0.0020   0.0612   0.4006  -0.4797   0.3068
+   6 H   :1s     0.0001   0.1393   0.1453   0.0577   0.8009
+   7 H   :1s     0.0020  -0.0081   0.0819   0.9885  -0.5450
 
- Orbital          1
-   1  O   2px    0.6421
-   2  O   2px    0.5095
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   3
+    Orbital         1        2
+   1 O   :2px    0.6421  -0.9611
+   2 O   :2px    0.5095   1.0375
 
- Orbital          1
-   1  O   2py    0.5056
-   2  O   2py    0.2714
-   3  H   1s     0.2623
-   4  H   1s     0.1257
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :2py    0.5056  -0.3394   0.1040
+   2 O   :2py    0.2714  -0.8200   0.7330
+   3 H   :1s     0.2623   0.0443  -0.9723
+   4 H   :1s     0.1257   1.3796   0.5046
 
 
 
@@ -547,13 +633,19 @@ Starting in Wave Function Section -
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:03:13 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:53:16 2011 
+     Host name              : fe6                                     
 
 
-Starting Coupled Cluster -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
 
   
 
@@ -566,6 +658,12 @@ Starting Coupled Cluster -
  *                                                                             *
  *******************************************************************************
  *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
 
    
 
@@ -601,9 +699,9 @@ Starting Coupled Cluster -
 
 
 
-                       +---------------------------+
-                       !  CCS Excitation Energies  !
-                       +---------------------------+
+                            +--------------------------+
+                            !  CCS Excitation Energies !
+                            +--------------------------+
 
 
  --------------------------
@@ -627,13 +725,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4363385733       11.8733762255
+         1            0.4363385828       11.8733768236
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.547172628491452
+@@    1    1           -75.547172618894663
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -686,21 +784,21 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3767943437       10.2530953643
-         2            0.5661117399       15.4046836240
-         3            0.9735760439       26.4923510372
-         4            1.1092572125       30.1844233414
-         5            1.1492083726       31.2715496758
+         1            0.3767943352       10.2530954222
+         2            0.5661117339       15.4046838959
+         3            0.9735760507       26.4923519729
+         4            1.1092572218       30.1844244499
+         5            1.1492083653       31.2715503664
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.606716858020107
-@@    1    2           -75.417399461811897
-@@    1    3           -75.009935157816713
-@@    1    4           -74.874253989211709
-@@    1    5           -74.834302829179123
+@@    1    1           -75.606716866583085
+@@    1    2           -75.417399467882078
+@@    1    3           -75.009935151054833
+@@    1    4           -74.874253979952684
+@@    1    5           -74.834302836411325
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -759,8 +857,8 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       2     |        5          |              |   -0.296973  |
- | 1   1   |   2       3     |       10          |              |    0.208821  |
+ | 1   1   |   1       2     |        5          |              |    0.296973  |
+ | 1   1   |   2       3     |       10          |              |    0.208822  |
  | 1   1   |   3       3     |       11          |              |    0.257853  |
  | 2   2   |   1       1     |       13          |              |    0.876072  |
  +=============================================================================+
@@ -784,7 +882,7 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       2     |        5          |              |   -0.277237  |
+ | 1   1   |   1       2     |        5          |              |    0.277237  |
  | 1   1   |   2       3     |       10          |              |    0.629640  |
  | 1   1   |   3       3     |       11          |              |    0.529717  |
  | 2   2   |   1       1     |       13          |              |   -0.433961  |
@@ -800,7 +898,7 @@ Starting Coupled Cluster -
  Analysis of the Coupled Cluster Excitation Vector Number :  5
  -------------------------------------------------------------
 
-          Excitation Energy :                            31.2715 eV
+          Excitation Energy :                            31.2716 eV
 
      Norm of Total Amplitude Vector :          1.0000
 
@@ -810,7 +908,7 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 1   1   |   1       2     |        5          |              |    0.844154  |
- | 1   1   |   3       3     |       11          |              |    0.406845  |
+ | 1   1   |   3       3     |       11          |              |   -0.406845  |
  +=============================================================================+
 
 
@@ -843,13 +941,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3446332575        9.3779477157
+         1            0.3446332584        9.3779480068
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.638877944229833
+@@    2    1           -75.638877943310263
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -905,21 +1003,21 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3093501202        8.4178447373
-         2            1.0803782673       29.3985872899
-         3            1.1554560765       31.4415583433
-         4            1.2364892177       33.6465822195
-         5            1.6097865184       43.8045182063
+         1            0.3093501212        8.4178450043
+         2            1.0803782743       29.3985883135
+         3            1.1554560823       31.4415593940
+         4            1.2364892284       33.6465834659
+         5            1.6097865256       43.8045196432
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.674161081545947
-@@    2    2           -74.903132934424448
-@@    2    3           -74.828055125241079
-@@    2    4           -74.747021984047905
-@@    2    5           -74.373724683303308
+@@    2    1           -75.674161080508782
+@@    2    2           -74.903132927465407
+@@    2    3           -74.828055119414074
+@@    2    4           -74.747021973328756
+@@    2    5           -74.373724676179549
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -956,8 +1054,8 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   2       1     |        5          |              |    0.662677  |
- | 1   2   |   3       1     |        6          |              |    0.597280  |
+ | 1   2   |   2       1     |        5          |              |    0.662678  |
+ | 1   2   |   3       1     |        6          |              |    0.597279  |
  | 2   1   |   1       3     |        3          |              |    0.439411  |
  +=============================================================================+
 
@@ -1003,7 +1101,7 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   2       1     |        5          |              |   -0.563255  |
+ | 1   2   |   2       1     |        5          |              |   -0.563254  |
  | 1   2   |   3       1     |        6          |              |    0.787369  |
  | 2   1   |   1       3     |        3          |              |   -0.215398  |
  +=============================================================================+
@@ -1028,7 +1126,7 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 1   2   |   4       1     |        7          |              |    0.953145  |
- | 2   1   |   1       2     |        2          |              |    0.262649  |
+ | 2   1   |   1       2     |        2          |              |   -0.262649  |
  +=============================================================================+
 
 
@@ -1061,13 +1159,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.5122611845       13.9393355104
+         1            0.5122611873       13.9393359834
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.471250017292206
+@@    3    1           -75.471250014445772
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1123,21 +1221,21 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4408992901       11.9974796406
-         2            0.5061017410       13.7717285326
-         3            1.1426064724       31.0919028380
-         4            1.2121831604       32.9851807747
-         5            1.3110291718       35.6749174925
+         1            0.4408992791       11.9974796818
+         2            0.5061017363       13.7717287953
+         3            1.1426064748       31.0919037864
+         4            1.2121831544       32.9851815469
+         5            1.3110291763       35.6749186256
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.542611911634367
-@@    3    2           -75.477409460754259
-@@    3    3           -74.840904729383183
-@@    3    4           -74.771328041338649
-@@    3    5           -74.672482029927778
+@@    3    1           -75.542611922632929
+@@    3    2           -75.477409465462330
+@@    3    3           -74.840904726951806
+@@    3    4           -74.771328047357429
+@@    3    5           -74.672482025489074
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1243,9 +1341,9 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   3   |   2       1     |       11          |              |    0.797997  |
+ | 1   3   |   2       1     |       11          |              |    0.797998  |
  | 3   1   |   2       3     |        8          |              |    0.269110  |
- | 3   1   |   3       3     |        9          |              |   -0.454839  |
+ | 3   1   |   3       3     |        9          |              |    0.454839  |
  +=============================================================================+
 
 
@@ -1278,13 +1376,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4152526304       11.2995985504
+         1            0.4152526327       11.2995989321
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.568258571308718
+@@    4    1           -75.568258569062237
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1318,8 +1416,8 @@ Starting Coupled Cluster -
 
  Length of Excitation vectors in this class is:         4
  Demand for more excitation energies than amplitudes with this symmetry/multiplicity!!!!
- Nr. of amplitudes with symmetry  4 and multiplicity  3 is  4
- Nr. of exci.e. requested with sym  4 IS  5
+ Nr. of amplitudes with symmetry            4  and multiplicity            3  is            4
+ Nr. of exci.e. requested with sym            4  IS            5
  Converging for  4 roots.
  Start vector guessed from diagonal
  ... selected element no.  1
@@ -1341,19 +1439,19 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3914738678       10.6525455217
-         2            1.1143836987       30.3239221216
-         3            1.2866024795       35.0102334023
-         4            1.3413222542       36.4992341715
+         1            0.3914738661       10.6525457791
+         2            1.1143837120       30.3239233442
+         3            1.2866024849       35.0102345432
+         4            1.3413222549       36.4992352285
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.592037333976577
-@@    4    2           -74.869127503066593
-@@    4    3           -74.696908722223782
-@@    4    4           -74.642188947587201
+@@    4    1           -75.592037335625207
+@@    4    2           -74.869127489758242
+@@    4    3           -74.696908716804302
+@@    4    4           -74.642188946805092
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1412,7 +1510,7 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        4          |              |   -0.423170  |
+ | 2   3   |   1       1     |        4          |              |    0.423170  |
  | 3   2   |   3       1     |        3          |              |    0.892942  |
  +=============================================================================+
 
@@ -1436,7 +1534,7 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 2   3   |   1       1     |        4          |              |    0.905888  |
- | 3   2   |   3       1     |        3          |              |    0.419032  |
+ | 3   2   |   3       1     |        3          |              |   -0.419032  |
  +=============================================================================+
 
 
@@ -1444,6 +1542,12 @@ Starting Coupled Cluster -
 
 
           Printed all single excitations greater than 0.200000
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
    
 
  *******************************************************************
@@ -1463,43 +1567,44 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       265
           Total number of amplitudes in ccsd      :       281
 
- Iter.  1: Coupled cluster MP2   energy :     -76.1127697533085978
- Iter.  1: Coupled cluster CC2   energy :     -76.1127532133445612
- Iter.  2: Coupled cluster CC2   energy :     -76.1134991342490679
- Iter.  3: Coupled cluster CC2   energy :     -76.1135737777290302
- Iter.  4: Coupled cluster CC2   energy :     -76.1135654587392310
- Iter.  5: Coupled cluster CC2   energy :     -76.1135655692282000
- Iter.  6: Coupled cluster CC2   energy :     -76.1135658891907809
- Iter.  7: Coupled cluster CC2   energy :     -76.1135659152321580
- Iter.  8: Coupled cluster CC2   energy :     -76.1135659185981837
- Iter.  9: Coupled cluster CC2   energy :     -76.1135659181683764
- Iter. 10: Coupled cluster CC2   energy :     -76.1135659185149649
- Iter. 11: Coupled cluster CC2   energy :     -76.1135659185061968
+ Iter.  1: Coupled cluster MP2   energy :     -76.1127697555067471
+ Iter.  1: Coupled cluster CC2   energy :     -76.1127532155594224
+ Iter.  2: Coupled cluster CC2   energy :     -76.1134991359769231
+ Iter.  3: Coupled cluster CC2   energy :     -76.1135737792669005
+ Iter.  4: Coupled cluster CC2   energy :     -76.1135654605338630
+ Iter.  5: Coupled cluster CC2   energy :     -76.1135655710265979
+ Iter.  6: Coupled cluster CC2   energy :     -76.1135658909811212
+ Iter.  7: Coupled cluster CC2   energy :     -76.1135659170222993
+ Iter.  8: Coupled cluster CC2   energy :     -76.1135659203881545
+ Iter.  9: Coupled cluster CC2   energy :     -76.1135659199584040
+ Iter. 10: Coupled cluster CC2   energy :     -76.1135659203049357
+ Iter. 11: Coupled cluster CC2   energy :     -76.1135659202963950
 
- CC2   energy converged to within   0.10E-09 is    -76.113565919
-
-
-
+ CC2   energy converged to within   0.10D-09 is    -76.113565920
+ Final 2-norm of the CC vector function:  3.86033321D-09
 
 
-         +-------------------------------------------------------+
-         ! Final results from the Coupled Cluster energy program !
-         +-------------------------------------------------------+
+
+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
 
 
 
             Total SCF   energy:                   -75.9835112017
 
-            Total MP2   energy:                   -76.1127697533
+            Total MP2   energy:                   -76.1127697555
 
-            Total CC2   energy:                   -76.1135659185
-
-
+            Total CC2   energy:                   -76.1135659203
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+
+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -1519,9 +1624,9 @@ Starting Coupled Cluster -
 
 
 
-                       +---------------------------+
-                       !  CC2 Excitation Energies  !
-                       +---------------------------+
+                            +--------------------------+
+                            !  CC2 Excitation Energies !
+                            +--------------------------+
 
 
  --------------------------
@@ -1545,13 +1650,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3995022693       10.8710094339
+         1            0.3995022729       10.8710098414
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.714063649217522
+@@    1    1           -75.714063647369102
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1571,8 +1676,6 @@ Starting Coupled Cluster -
 
           ||T1||/||T2||                  :               5.8335
 
-          Tau1 diagnostic                :               0.3117
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -1583,9 +1686,9 @@ Starting Coupled Cluster -
  | 1   1   |   1       3     |        9          |              |    0.977843  |
  +-----------------------------------------------------------------------------+
  | 1 1 1 1 |   1   1   3   3 |        9        9 |           45 |   -0.065624  |
- | 1 1 1 1 |   2   1   3   3 |       10        9 |           54 |    0.039135  |
- | 1 1 1 1 |   3   1   3   3 |       11        9 |           64 |    0.051495  |
- | 2 1 2 1 |   1   1   1   3 |       13        9 |           87 |    0.058982  |
+ | 1 1 1 1 |   2   1   3   3 |       10        9 |           54 |   -0.039135  |
+ | 1 1 1 1 |   3   1   3   3 |       11        9 |           64 |   -0.051495  |
+ | 2 1 2 1 |   1   1   1   3 |       13        9 |           87 |   -0.058982  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 |          100 |   -0.083785  |
  | 3 1 3 1 |   3   1   1   3 |       16        9 |          129 |   -0.038764  |
  +=============================================================================+
@@ -1628,21 +1731,21 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3602442705        9.8027449754
-         2            0.5788662515       15.7517515292
-         3            1.0010705579       27.2405147991
-         4            1.1076975926       30.1419839258
-         5            1.1563652048       31.4662969811
+         1            0.3602442725        9.8027453088
+         2            0.5788662540       15.7517520448
+         3            1.0010705603       27.2405156384
+         4            1.1076975945       30.1419848323
+         5            1.1563652049       31.4662978769
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.753321648021867
-@@    1    2           -75.534699666989312
-@@    1    3           -75.112495360614673
-@@    1    4           -75.005868325890233
-@@    1    5           -74.957200713737706
+@@    1    1           -75.753321647782613
+@@    1    2           -75.534699666259314
+@@    1    3           -75.112495359968065
+@@    1    4           -75.005868325800961
+@@    1    5           -74.957200715421919
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1662,8 +1765,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         11.2642
 
-     Tau1 diagnostic                     :          0.3150
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -1673,10 +1774,10 @@ Starting Coupled Cluster -
  +=============================================================================+
  | 1   1   |   1       3     |        9          |              |    0.984821  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   2   1   3   3 |       10        9 | (-)       54 |    0.025666  |
- | 1 1 1 1 |   3   1   3   3 |       11        9 | (-)       64 |    0.022911  |
- | 2 1 2 1 |   1   1   1   3 |       13        9 | (+)       87 |    0.026260  |
- | 2 1 2 1 |   1   1   1   3 |       13        9 | (-)       87 |    0.028022  |
+ | 1 1 1 1 |   2   1   3   3 |       10        9 | (-)       54 |   -0.025666  |
+ | 1 1 1 1 |   3   1   3   3 |       11        9 | (-)       64 |   -0.022911  |
+ | 2 1 2 1 |   1   1   1   3 |       13        9 | (+)       87 |   -0.026260  |
+ | 2 1 2 1 |   1   1   1   3 |       13        9 | (-)       87 |   -0.028022  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 | (+)      100 |   -0.027120  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |   -0.039245  |
  | 3 1 3 1 |   3   1   1   3 |       16        9 | (-)      129 |   -0.018400  |
@@ -1709,8 +1810,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         14.9490
 
-     Tau1 diagnostic                     :          0.3155
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -1722,9 +1821,9 @@ Starting Coupled Cluster -
  +-----------------------------------------------------------------------------+
  | 3 1 3 1 |   1   1   1   2 |       14        5 | (+)       96 |   -0.015872  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |    0.023528  |
- | 3 1 3 1 |   1   3   1   3 |       14       11 | (-)      102 |   -0.013787  |
- | 3 2 3 2 |   1   1   1   1 |       14       13 | (+)      104 |    0.017525  |
- | 3 2 3 2 |   1   1   1   1 |       14       13 | (-)      104 |   -0.017243  |
+ | 3 1 3 1 |   1   3   1   3 |       14       11 | (-)      102 |    0.013787  |
+ | 3 2 3 2 |   1   1   1   1 |       14       13 | (+)      104 |   -0.017525  |
+ | 3 2 3 2 |   1   1   1   1 |       14       13 | (-)      104 |    0.017243  |
  | 3 3 3 3 |   3   1   1   1 |       16       14 | (-)      134 |   -0.020580  |
  | 1 3 3 1 |   1   1   1   3 |       10        7 | (-)      216 |    0.014544  |
  +=============================================================================+
@@ -1756,8 +1855,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         16.4402
 
-     Tau1 diagnostic                     :          0.3156
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -1765,16 +1862,16 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       2     |        5          |              |   -0.505603  |
+ | 1   1   |   1       2     |        5          |              |    0.505603  |
  | 1   1   |   2       3     |       10          |              |    0.269921  |
  | 1   1   |   3       3     |       11          |              |    0.248884  |
  | 2   2   |   1       1     |       13          |              |    0.748881  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   3   2 |        9        5 | (-)       41 |    0.012471  |
+ | 1 1 1 1 |   1   1   3   2 |        9        5 | (-)       41 |   -0.012471  |
  | 2 1 2 1 |   1   1   1   3 |       13        9 | (-)       87 |    0.014199  |
- | 3 1 3 1 |   1   1   1   2 |       14        5 | (-)       96 |    0.022158  |
+ | 3 1 3 1 |   1   1   1   2 |       14        5 | (-)       96 |   -0.022158  |
  | 3 2 3 2 |   1   1   1   1 |       14       13 | (-)      104 |   -0.012330  |
- | 1 3 3 1 |   1   1   1   3 |       10        7 | (-)      216 |    0.016392  |
+ | 1 3 3 1 |   1   1   1   3 |       10        7 | (-)      216 |   -0.016392  |
  | 1 3 3 1 |   1   2   1   3 |       10        8 | (-)      217 |    0.014857  |
  +=============================================================================+
 
@@ -1805,8 +1902,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         11.1802
 
-     Tau1 diagnostic                     :          0.3150
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -1815,15 +1910,15 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 1   1   |   1       2     |        5          |              |    0.688937  |
- | 1   1   |   2       3     |       10          |              |   -0.272483  |
- | 2   2   |   1       1     |       13          |              |    0.629115  |
+ | 1   1   |   2       3     |       10          |              |    0.272483  |
+ | 2   2   |   1       1     |       13          |              |   -0.629115  |
  +-----------------------------------------------------------------------------+
  | 1 1 1 1 |   1   1   3   2 |        9        5 | (-)       41 |   -0.018552  |
- | 2 1 2 1 |   1   1   1   2 |       13        5 | (-)       83 |    0.025647  |
+ | 2 1 2 1 |   1   1   1   2 |       13        5 | (-)       83 |   -0.025647  |
  | 3 1 3 1 |   1   1   1   2 |       14        5 | (-)       96 |   -0.031558  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |    0.023750  |
  | 1 3 3 1 |   1   1   1   3 |       10        7 | (-)      216 |   -0.022466  |
- | 1 3 3 1 |   1   2   1   3 |       10        8 | (-)      217 |   -0.020656  |
+ | 1 3 3 1 |   1   2   1   3 |       10        8 | (-)      217 |    0.020656  |
  +=============================================================================+
 
 
@@ -1853,8 +1948,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         16.4671
 
-     Tau1 diagnostic                     :          0.3156
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -1862,15 +1955,15 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       2     |        5          |              |    0.428018  |
- | 1   1   |   2       3     |       10          |              |    0.673160  |
+ | 1   1   |   1       2     |        5          |              |   -0.428018  |
+ | 1   1   |   2       3     |       10          |              |    0.673161  |
  | 1   1   |   3       3     |       11          |              |    0.538702  |
  +-----------------------------------------------------------------------------+
  | 2 1 2 1 |   1   1   1   2 |       13        5 | (-)       83 |    0.013166  |
  | 2 1 2 1 |   1   1   1   3 |       13        9 | (+)       87 |    0.014709  |
  | 2 1 2 1 |   1   1   1   3 |       13        9 | (-)       87 |    0.012779  |
- | 3 1 3 1 |   1   1   1   2 |       14        5 | (-)       96 |   -0.016584  |
- | 3 1 3 1 |   1   1   1   3 |       14        9 | (+)      100 |   -0.019718  |
+ | 3 1 3 1 |   1   1   1   2 |       14        5 | (-)       96 |    0.016584  |
+ | 3 1 3 1 |   1   1   1   3 |       14        9 | (+)      100 |    0.019718  |
  | 3 1 3 1 |   2   1   1   3 |       15        9 | (-)      114 |    0.013905  |
  +=============================================================================+
 
@@ -1907,13 +2000,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3061571512        8.3309596340
+         1            0.3061571535        8.3309599328
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.807408767288138
+@@    2    1           -75.807408766786054
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1933,8 +2026,6 @@ Starting Coupled Cluster -
 
           ||T1||/||T2||                  :               5.6361
 
-          Tau1 diagnostic                :               0.3114
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -1945,11 +2036,11 @@ Starting Coupled Cluster -
  | 1   2   |   1       1     |        4          |              |    0.981938  |
  +-----------------------------------------------------------------------------+
  | 2 1 1 1 |   1   1   1   3 |        1        9 |           57 |   -0.057320  |
- | 2 1 1 1 |   1   1   2   3 |        2        9 |           58 |    0.040796  |
- | 2 1 1 1 |   1   1   3   3 |        3        9 |           59 |    0.043479  |
+ | 2 1 1 1 |   1   1   2   3 |        2        9 |           58 |   -0.040796  |
+ | 2 1 1 1 |   1   1   3   3 |        3        9 |           59 |   -0.043479  |
  | 2 1 1 1 |   1   2   1   3 |        1       10 |           64 |   -0.042462  |
  | 1 1 2 1 |   1   4   1   2 |        4        8 |           53 |   -0.051450  |
- | 1 1 2 1 |   2   1   1   3 |        5        9 |           61 |    0.071838  |
+ | 1 1 2 1 |   2   1   1   3 |        5        9 |           61 |   -0.071838  |
  | 1 1 2 1 |   3   1   1   3 |        6        9 |           62 |   -0.088364  |
  +=============================================================================+
 
@@ -1994,21 +2085,21 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2778507953        7.5607045305
-         2            1.1050869020       30.0709434217
-         3            1.1729383275       31.9172745782
-         4            1.2220811128       33.2545177514
-         5            1.4699987106       40.0006985669
+         1            0.2778507978        7.5607048124
+         2            1.1050869020       30.0709442757
+         3            1.1729383296       31.9172755424
+         4            1.2220811138       33.2545187246
+         5            1.4699987351       40.0007003702
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.835715123166395
-@@    2    2           -75.008479016534480
-@@    2    3           -74.940627591017503
-@@    2    4           -74.891484805748291
-@@    2    5           -74.643567207916249
+@@    2    1           -75.835715122479940
+@@    2    2           -75.008479018297180
+@@    2    3           -74.940627590659119
+@@    2    4           -74.891484806451174
+@@    2    5           -74.643567185151156
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2028,8 +2119,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         10.2196
 
-     Tau1 diagnostic                     :          0.3147
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2040,11 +2129,11 @@ Starting Coupled Cluster -
  | 1   2   |   1       1     |        4          |              |    0.989163  |
  +-----------------------------------------------------------------------------+
  | 2 1 1 1 |   1   1   1   3 |        1        9 | (-)       57 |    0.027036  |
- | 2 1 1 1 |   1   1   2   3 |        2        9 | (-)       58 |   -0.019977  |
- | 2 1 1 1 |   1   1   3   3 |        3        9 | (-)       59 |   -0.021283  |
+ | 2 1 1 1 |   1   1   2   3 |        2        9 | (-)       58 |    0.019977  |
+ | 2 1 1 1 |   1   1   3   3 |        3        9 | (-)       59 |    0.021283  |
  | 2 1 1 1 |   1   2   1   3 |        1       10 | (-)       64 |    0.020858  |
- | 2 1 1 1 |   1   3   3   3 |        3       11 | (+)       73 |   -0.023370  |
- | 1 1 2 1 |   2   1   1   3 |        5        9 | (-)       61 |   -0.037878  |
+ | 2 1 1 1 |   1   3   3   3 |        3       11 | (+)       73 |    0.023370  |
+ | 1 1 2 1 |   2   1   1   3 |        5        9 | (-)       61 |    0.037878  |
  | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |   -0.026949  |
  | 1 1 2 1 |   3   1   1   3 |        6        9 | (-)       62 |    0.043088  |
  +=============================================================================+
@@ -2076,8 +2165,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         12.5058
 
-     Tau1 diagnostic                     :          0.3152
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2085,17 +2172,17 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   2       1     |        5          |              |    0.876400  |
- | 1   2   |   3       1     |        6          |              |    0.393449  |
+ | 1   2   |   2       1     |        5          |              |    0.876401  |
+ | 1   2   |   3       1     |        6          |              |    0.393448  |
  | 2   1   |   1       3     |        3          |              |    0.259965  |
  +-----------------------------------------------------------------------------+
- | 2 1 1 1 |   1   1   1   3 |        1        9 | (-)       57 |    0.023597  |
+ | 2 1 1 1 |   1   1   1   3 |        1        9 | (-)       57 |   -0.023597  |
  | 2 1 1 1 |   1   1   3   3 |        3        9 | (-)       59 |   -0.017621  |
  | 2 1 1 1 |   1   3   3   3 |        3       11 | (+)       73 |   -0.017566  |
  | 2 1 1 1 |   1   4   1   3 |        1       12 | (-)       78 |    0.016289  |
  | 1 1 2 1 |   2   1   1   3 |        5        9 | (-)       61 |   -0.020696  |
- | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |   -0.024027  |
- | 1 1 2 1 |   3   1   1   3 |        6        9 | (-)       62 |    0.024635  |
+ | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |    0.024027  |
+ | 1 1 2 1 |   3   1   1   3 |        6        9 | (-)       62 |   -0.024635  |
  +=============================================================================+
 
 
@@ -2125,8 +2212,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         11.4950
 
-     Tau1 diagnostic                     :          0.3150
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2134,13 +2219,13 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   2       1     |        5          |              |   -0.439174  |
- | 1   2   |   3       1     |        6          |              |    0.596927  |
- | 2   1   |   1       3     |        3          |              |    0.655933  |
+ | 1   2   |   2       1     |        5          |              |    0.439174  |
+ | 1   2   |   3       1     |        6          |              |   -0.596928  |
+ | 2   1   |   1       3     |        3          |              |   -0.655933  |
  +-----------------------------------------------------------------------------+
  | 2 1 1 1 |   1   1   1   3 |        1        9 | (-)       57 |   -0.032160  |
- | 2 1 1 1 |   1   3   3   3 |        3       11 | (+)       73 |    0.018496  |
- | 2 1 1 1 |   1   4   1   3 |        1       12 | (-)       78 |   -0.020176  |
+ | 2 1 1 1 |   1   3   3   3 |        3       11 | (+)       73 |   -0.018496  |
+ | 2 1 1 1 |   1   4   1   3 |        1       12 | (-)       78 |    0.020176  |
  | 2 1 1 1 |   1   4   2   3 |        2       12 | (-)       79 |   -0.018069  |
  | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |    0.017986  |
  | 1 1 2 1 |   3   1   1   3 |        6        9 | (-)       62 |   -0.020811  |
@@ -2173,8 +2258,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         15.6874
 
-     Tau1 diagnostic                     :          0.3156
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2182,14 +2265,14 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   3       1     |        6          |              |   -0.693098  |
- | 2   1   |   1       3     |        3          |              |    0.712048  |
+ | 1   2   |   3       1     |        6          |              |    0.693098  |
+ | 2   1   |   1       3     |        3          |              |   -0.712048  |
  +-----------------------------------------------------------------------------+
- | 2 1 1 1 |   1   3   3   3 |        3       11 | (-)       73 |    0.015510  |
- | 2 1 1 1 |   1   4   1   3 |        1       12 | (-)       78 |    0.013323  |
+ | 2 1 1 1 |   1   3   3   3 |        3       11 | (-)       73 |   -0.015510  |
+ | 2 1 1 1 |   1   4   1   3 |        1       12 | (-)       78 |   -0.013323  |
  | 1 2 2 2 |   3   1   1   1 |        6       13 | (+)       90 |   -0.012913  |
  | 2 3 1 3 |   1   1   2   1 |        2       14 | (-)       93 |    0.020619  |
- | 2 3 1 3 |   1   1   3   1 |        3       14 | (-)       94 |   -0.014031  |
+ | 2 3 1 3 |   1   1   3   1 |        3       14 | (-)       94 |    0.014031  |
  +=============================================================================+
 
 
@@ -2219,8 +2302,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          0.3653
 
-     Tau1 diagnostic                     :          0.1085
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2229,11 +2310,11 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 1   2   |   1       1     |        4          |              |   -0.089181  |
- | 1   2   |   2       1     |        5          |              |   -0.122851  |
+ | 1   2   |   2       1     |        5          |              |    0.122851  |
  | 1   2   |   4       1     |        7          |              |    0.290216  |
- | 2   1   |   1       3     |        3          |              |    0.069112  |
+ | 2   1   |   1       3     |        3          |              |   -0.069112  |
  +-----------------------------------------------------------------------------+
- | 2 1 1 1 |   1   1   1   3 |        1        9 | (-)       57 |    0.938565  |
+ | 2 1 1 1 |   1   1   1   3 |        1        9 | (-)       57 |    0.938564  |
  +=============================================================================+
 
 
@@ -2269,13 +2350,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4914133140       13.3720361147
+         1            0.4914133184       13.3720366135
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.622152604469136
+@@    3    1           -75.622152601872173
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2295,8 +2376,6 @@ Starting Coupled Cluster -
 
           ||T1||/||T2||                  :               5.7282
 
-          Tau1 diagnostic                :               0.3115
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -2307,9 +2386,9 @@ Starting Coupled Cluster -
  | 3   1   |   1       3     |        7          |              |    0.972958  |
  +-----------------------------------------------------------------------------+
  | 3 1 1 1 |   1   1   1   3 |        1        9 |          105 |   -0.089942  |
- | 3 1 1 1 |   2   1   1   3 |        2        9 |          106 |    0.045540  |
- | 3 1 1 1 |   3   1   1   3 |        3        9 |          107 |    0.038776  |
- | 3 1 1 1 |   2   1   2   3 |        5        9 |          109 |    0.052743  |
+ | 3 1 1 1 |   2   1   1   3 |        2        9 |          106 |   -0.045540  |
+ | 3 1 1 1 |   3   1   1   3 |        3        9 |          107 |   -0.038776  |
+ | 3 1 1 1 |   2   1   2   3 |        5        9 |          109 |   -0.052743  |
  | 3 1 1 1 |   3   1   2   3 |        6        9 |          110 |   -0.077559  |
  +=============================================================================+
 
@@ -2354,21 +2433,21 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4399339492       11.9712113791
-         2            0.5081098229       13.8263712189
-         3            1.1120858237       30.2613937635
-         4            1.1853632585       32.2553741408
-         5            1.3138540559       35.7517864968
+         1            0.4399339505       11.9712117547
+         2            0.5081098263       13.8263717039
+         3            1.1120858261       30.2613946873
+         4            1.1853632601       32.2553751002
+         5            1.3138540570       35.7517875400
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.673631969302463
-@@    3    2           -75.605456095626963
-@@    3    3           -75.001480094842194
-@@    3    4           -74.928202659981821
-@@    3    5           -74.799711862590755
+@@    3    1           -75.673631969773140
+@@    3    2           -75.605456094012737
+@@    3    3           -75.001480094237564
+@@    3    4           -74.928202660151314
+@@    3    5           -74.799711863327062
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2388,8 +2467,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         12.7200
 
-     Tau1 diagnostic                     :          0.3153
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2401,12 +2478,12 @@ Starting Coupled Cluster -
  | 3   1   |   1       3     |        7          |              |    0.943704  |
  +-----------------------------------------------------------------------------+
  | 3 1 1 1 |   1   1   1   3 |        1        9 | (-)      105 |    0.017098  |
- | 3 1 1 1 |   2   1   1   3 |        2        9 | (-)      106 |   -0.018904  |
- | 3 1 1 1 |   3   1   1   3 |        3        9 | (-)      107 |   -0.020558  |
- | 3 1 1 1 |   2   1   2   3 |        5        9 | (-)      109 |   -0.023963  |
+ | 3 1 1 1 |   2   1   1   3 |        2        9 | (-)      106 |    0.018904  |
+ | 3 1 1 1 |   3   1   1   3 |        3        9 | (-)      107 |    0.020558  |
+ | 3 1 1 1 |   2   1   2   3 |        5        9 | (-)      109 |    0.023963  |
  | 3 1 1 1 |   3   1   2   3 |        6        9 | (-)      110 |    0.028499  |
  | 3 1 1 1 |   2   1   3   3 |        8        9 | (+)      112 |   -0.023421  |
- | 3 2 2 1 |   3   1   1   1 |        3        1 | (+)      211 |   -0.021885  |
+ | 3 2 2 1 |   3   1   1   1 |        3        1 | (+)      211 |    0.021885  |
  +=============================================================================+
 
 
@@ -2436,8 +2513,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         13.0514
 
-     Tau1 diagnostic                     :          0.3153
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2450,11 +2525,11 @@ Starting Coupled Cluster -
  +-----------------------------------------------------------------------------+
  | 3 1 1 1 |   3   1   2   3 |        6        9 | (-)      110 |   -0.020368  |
  | 1 1 3 1 |   1   4   1   3 |       10       12 | (-)      153 |    0.023714  |
- | 1 1 3 1 |   3   4   1   3 |       12       12 | (-)      155 |   -0.017119  |
- | 3 2 1 2 |   1   1   1   1 |        1       13 | (-)      157 |   -0.020408  |
+ | 1 1 3 1 |   3   4   1   3 |       12       12 | (-)      155 |    0.017119  |
+ | 3 2 1 2 |   1   1   1   1 |        1       13 | (-)      157 |    0.020408  |
  | 3 2 1 2 |   2   1   1   1 |        2       13 | (-)      158 |    0.020446  |
- | 1 2 3 2 |   4   1   1   1 |       13       13 | (+)      169 |   -0.018500  |
- | 3 1 2 2 |   1   4   1   1 |        1        7 | (+)      233 |   -0.020500  |
+ | 1 2 3 2 |   4   1   1   1 |       13       13 | (+)      169 |    0.018500  |
+ | 3 1 2 2 |   1   4   1   1 |        1        7 | (+)      233 |    0.020500  |
  +=============================================================================+
 
 
@@ -2484,8 +2559,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         10.1737
 
-     Tau1 diagnostic                     :          0.3147
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2493,17 +2566,17 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   3   |   2       1     |       11          |              |   -0.210848  |
+ | 1   3   |   2       1     |       11          |              |   -0.210847  |
  | 3   1   |   2       3     |        8          |              |    0.950427  |
  +-----------------------------------------------------------------------------+
- | 3 1 1 1 |   3   1   2   3 |        6        9 | (-)      110 |   -0.022481  |
+ | 3 1 1 1 |   3   1   2   3 |        6        9 | (-)      110 |    0.022481  |
  | 3 1 1 1 |   1   1   3   3 |        7        9 | (+)      111 |    0.027104  |
  | 3 1 1 1 |   1   2   2   3 |        4       10 | (-)      121 |    0.025711  |
- | 3 1 1 1 |   3   2   2   3 |        6       10 | (-)      123 |   -0.023018  |
- | 3 1 1 1 |   2   2   3   3 |        8       10 | (-)      125 |   -0.026517  |
+ | 3 1 1 1 |   3   2   2   3 |        6       10 | (-)      123 |    0.023018  |
+ | 3 1 1 1 |   2   2   3   3 |        8       10 | (-)      125 |    0.026517  |
  | 3 1 1 1 |   3   2   3   3 |        9       10 | (-)      126 |    0.034398  |
  | 1 1 3 1 |   2   2   1   3 |       11       10 | (-)      128 |    0.021171  |
- | 3 2 2 1 |   2   1   1   3 |        2        3 | (+)      218 |   -0.022696  |
+ | 3 2 2 1 |   2   1   1   3 |        2        3 | (+)      218 |    0.022696  |
  +=============================================================================+
 
 
@@ -2533,8 +2606,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          9.8061
 
-     Tau1 diagnostic                     :          0.3146
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2546,8 +2617,8 @@ Starting Coupled Cluster -
  +-----------------------------------------------------------------------------+
  | 3 1 1 1 |   1   1   1   2 |        1        5 | (-)       53 |   -0.021654  |
  | 3 1 1 1 |   2   1   2   2 |        5        5 | (-)       57 |   -0.024800  |
- | 3 1 1 1 |   3   1   3   2 |        9        5 | (-)       61 |    0.026643  |
- | 3 1 1 1 |   1   1   3   3 |        7        9 | (-)      111 |    0.021487  |
+ | 3 1 1 1 |   3   1   3   2 |        9        5 | (-)       61 |   -0.026643  |
+ | 3 1 1 1 |   1   1   3   3 |        7        9 | (-)      111 |   -0.021487  |
  | 1 1 3 1 |   3   1   1   2 |       12        5 | (+)       64 |    0.021466  |
  | 2 2 3 1 |   1   1   1   1 |        4        1 | (-)      212 |   -0.039975  |
  +=============================================================================+
@@ -2579,8 +2650,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         11.0940
 
-     Tau1 diagnostic                     :          0.3150
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2588,17 +2657,17 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   3   |   2       1     |       11          |              |    0.853116  |
+ | 1   3   |   2       1     |       11          |              |   -0.853116  |
  | 3   1   |   1       2     |        4          |              |    0.238614  |
- | 3   1   |   2       3     |        8          |              |    0.201405  |
- | 3   1   |   3       3     |        9          |              |   -0.376320  |
+ | 3   1   |   2       3     |        8          |              |   -0.201405  |
+ | 3   1   |   3       3     |        9          |              |   -0.376321  |
  +-----------------------------------------------------------------------------+
  | 3 1 1 1 |   3   1   2   3 |        6        9 | (-)      110 |    0.018264  |
- | 3 1 1 1 |   3   2   3   3 |        9       10 | (-)      126 |    0.019319  |
+ | 3 1 1 1 |   3   2   3   3 |        9       10 | (-)      126 |   -0.019319  |
  | 1 1 3 1 |   1   4   1   3 |       10       12 | (-)      153 |    0.027112  |
- | 3 2 1 2 |   1   1   1   1 |        1       13 | (-)      157 |   -0.021918  |
+ | 3 2 1 2 |   1   1   1   1 |        1       13 | (-)      157 |    0.021918  |
  | 3 2 1 2 |   2   1   1   1 |        2       13 | (-)      158 |    0.027179  |
- | 3 1 2 2 |   1   4   1   1 |        1        7 | (+)      233 |   -0.018107  |
+ | 3 1 2 2 |   1   4   1   1 |        1        7 | (+)      233 |    0.018107  |
  +=============================================================================+
 
 
@@ -2634,13 +2703,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3906129744       10.6291194225
+         1            0.3906129774       10.6291198060
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.722952944093635
+@@    4    1           -75.722952942874386
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2660,8 +2729,6 @@ Starting Coupled Cluster -
 
           ||T1||/||T2||                  :               5.9426
 
-          Tau1 diagnostic                :               0.3118
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -2673,9 +2740,9 @@ Starting Coupled Cluster -
  +-----------------------------------------------------------------------------+
  | 3 1 2 1 |   1   2   1   1 |        1        2 |           96 |   -0.040582  |
  | 3 1 2 1 |   1   3   1   1 |        1        3 |          100 |   -0.056405  |
- | 3 1 2 1 |   2   3   1   1 |        2        3 |          101 |    0.038725  |
- | 3 1 2 1 |   3   3   1   1 |        3        3 |          102 |    0.035891  |
- | 3 1 2 1 |   1   4   1   1 |        1        4 |          104 |    0.066194  |
+ | 3 1 2 1 |   2   3   1   1 |        2        3 |          101 |   -0.038725  |
+ | 3 1 2 1 |   3   3   1   1 |        3        3 |          102 |   -0.035891  |
+ | 3 1 2 1 |   1   4   1   1 |        1        4 |          104 |   -0.066194  |
  | 3 1 2 1 |   2   4   1   1 |        2        4 |          105 |   -0.086690  |
  | 2 1 3 1 |   1   4   1   1 |        4        4 |          107 |   -0.036182  |
  +=============================================================================+
@@ -2719,19 +2786,19 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3716140379       10.1121320763
-         2            1.0572242853       28.7685354080
-         3            1.2804530373       34.8428985709
-         4            1.3887417392       37.7895839605
+         1            0.3716140402       10.1121324250
+         2            1.0572242874       28.7685362794
+         3            1.2804530348       34.8428994915
+         4            1.3887417390       37.7895850270
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.741951880602016
-@@    4    2           -75.056341633172295
-@@    4    3           -74.833112881248738
-@@    4    4           -74.724824179342122
+@@    4    1           -75.741951880120709
+@@    4    2           -75.056341632939834
+@@    4    3           -74.833112885543571
+@@    4    4           -74.724824181343820
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2751,8 +2818,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         10.8164
 
-     Tau1 diagnostic                     :          0.3149
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2764,8 +2829,8 @@ Starting Coupled Cluster -
  +-----------------------------------------------------------------------------+
  | 3 1 2 1 |   1   2   1   1 |        1        2 | (-)       96 |    0.020000  |
  | 3 1 2 1 |   1   3   1   1 |        1        3 | (-)      100 |    0.027667  |
- | 3 1 2 1 |   2   3   1   1 |        2        3 | (-)      101 |   -0.019112  |
- | 3 1 2 1 |   1   4   1   1 |        1        4 | (-)      104 |   -0.034765  |
+ | 3 1 2 1 |   2   3   1   1 |        2        3 | (-)      101 |    0.019112  |
+ | 3 1 2 1 |   1   4   1   1 |        1        4 | (-)      104 |    0.034765  |
  | 3 1 2 1 |   2   4   1   1 |        2        4 | (-)      105 |    0.033624  |
  | 2 1 3 1 |   1   4   1   1 |        4        4 | (+)      107 |   -0.026346  |
  +=============================================================================+
@@ -2797,8 +2862,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          8.9496
 
-     Tau1 diagnostic                     :          0.3143
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2808,12 +2871,12 @@ Starting Coupled Cluster -
  +=============================================================================+
  | 3   2   |   2       1     |        2          |              |    0.987564  |
  +-----------------------------------------------------------------------------+
- | 3 1 2 1 |   2   4   1   1 |        2        4 | (-)      105 |   -0.023432  |
+ | 3 1 2 1 |   2   4   1   1 |        2        4 | (-)      105 |    0.023432  |
  | 3 1 2 1 |   3   4   1   1 |        3        4 | (+)      106 |    0.030804  |
  | 3 1 2 1 |   1   3   1   2 |        1        7 | (+)      116 |   -0.023559  |
  | 3 1 2 1 |   1   3   1   2 |        1        7 | (-)      116 |    0.023770  |
- | 3 1 2 1 |   2   3   1   2 |        2        7 | (-)      117 |   -0.027948  |
- | 3 1 2 1 |   1   4   1   2 |        1        8 | (-)      120 |   -0.035190  |
+ | 3 1 2 1 |   2   3   1   2 |        2        7 | (-)      117 |    0.027948  |
+ | 3 1 2 1 |   1   4   1   2 |        1        8 | (-)      120 |    0.035190  |
  | 3 1 2 1 |   2   4   1   2 |        2        8 | (-)      121 |    0.037025  |
  | 2 1 3 1 |   1   4   1   2 |        4        8 | (-)      123 |    0.025366  |
  +=============================================================================+
@@ -2845,8 +2908,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          8.4731
 
-     Tau1 diagnostic                     :          0.3140
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2854,12 +2915,12 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        4          |              |   -0.211581  |
+ | 2   3   |   1       1     |        4          |              |    0.211581  |
  | 3   2   |   3       1     |        3          |              |    0.962836  |
  +-----------------------------------------------------------------------------+
  | 3 1 2 1 |   1   3   1   1 |        1        3 | (+)      100 |    0.054998  |
  | 3 1 2 1 |   1   3   1   1 |        1        3 | (-)      100 |   -0.047397  |
- | 3 1 2 1 |   1   4   1   1 |        1        4 | (-)      104 |    0.029280  |
+ | 3 1 2 1 |   1   4   1   1 |        1        4 | (-)      104 |   -0.029280  |
  | 3 1 2 1 |   2   4   1   1 |        2        4 | (-)      105 |   -0.053794  |
  | 2 1 3 1 |   1   4   1   1 |        4        4 | (-)      107 |   -0.024114  |
  +=============================================================================+
@@ -2891,8 +2952,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         20.7172
 
-     Tau1 diagnostic                     :          0.3159
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -2900,9 +2959,9 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        4          |              |   -0.978591  |
+ | 2   3   |   1       1     |        4          |              |    0.978591  |
  +-----------------------------------------------------------------------------+
- | 3 1 1 2 |   2   1   2   1 |        5        4 | (-)       44 |   -0.009662  |
+ | 3 1 1 2 |   2   1   2   1 |        5        4 | (-)       44 |    0.009662  |
  | 3 1 1 2 |   2   3   1   1 |        2        6 | (-)       67 |   -0.010583  |
  | 1 1 3 2 |   3   1   1   1 |       12        4 | (-)       51 |   -0.012268  |
  | 3 1 2 1 |   1   3   1   1 |        1        3 | (+)      100 |   -0.016824  |
@@ -2919,6 +2978,12 @@ Starting Coupled Cluster -
 
 
           Printed all double excitations greater than 0.009643
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
    
 
  *******************************************************************
@@ -2938,43 +3003,44 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :       265
           Total number of amplitudes in ccsd      :       281
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.1135659185061968
- Iter.  1: Coupled cluster CCSD  energy :     -76.1156354194756659
- Iter.  2: Coupled cluster CCSD  energy :     -76.1190447290351813
- Iter.  3: Coupled cluster CCSD  energy :     -76.1192245642532583
- Iter.  4: Coupled cluster CCSD  energy :     -76.1193015201155418
- Iter.  5: Coupled cluster CCSD  energy :     -76.1193135763823108
- Iter.  6: Coupled cluster CCSD  energy :     -76.1193129265301280
- Iter.  7: Coupled cluster CCSD  energy :     -76.1193132124950722
- Iter.  8: Coupled cluster CCSD  energy :     -76.1193132097198486
- Iter.  9: Coupled cluster CCSD  energy :     -76.1193132035444506
- Iter. 10: Coupled cluster CCSD  energy :     -76.1193132009856157
- Iter. 11: Coupled cluster CCSD  energy :     -76.1193132010419191
+ Iter.  1: Coupled cluster RSTAR energy :     -76.1135659202963950
+ Iter.  1: Coupled cluster CCSD  energy :     -76.1156354200707739
+ Iter.  2: Coupled cluster CCSD  energy :     -76.1190447295893762
+ Iter.  3: Coupled cluster CCSD  energy :     -76.1192245647741004
+ Iter.  4: Coupled cluster CCSD  energy :     -76.1193015206434183
+ Iter.  5: Coupled cluster CCSD  energy :     -76.1193135769039912
+ Iter.  6: Coupled cluster CCSD  energy :     -76.1193129270529170
+ Iter.  7: Coupled cluster CCSD  energy :     -76.1193132130178327
+ Iter.  8: Coupled cluster CCSD  energy :     -76.1193132102426944
+ Iter.  9: Coupled cluster CCSD  energy :     -76.1193132040672253
+ Iter. 10: Coupled cluster CCSD  energy :     -76.1193132015081773
+ Iter. 11: Coupled cluster CCSD  energy :     -76.1193132015647507
 
- CCSD  energy converged to within   0.10E-09 is    -76.119313201
-
-
-
+ CCSD  energy converged to within   0.10D-09 is    -76.119313202
+ Final 2-norm of the CC vector function:  3.23304630D-08
 
 
-         +-------------------------------------------------------+
-         ! Final results from the Coupled Cluster energy program !
-         +-------------------------------------------------------+
+
+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
 
 
 
             Total SCF   energy:                   -75.9835112017
 
-            Total RSTAR energy:                   -76.1135659185
+            Total RSTAR energy:                   -76.1135659203
 
-            Total CCSD  energy:                   -76.1193132010
-
-
+            Total CCSD  energy:                   -76.1193132016
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+
+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -2990,9 +3056,9 @@ Starting Coupled Cluster -
 
 
 
-              +---------------------------------------------+
-              ! Calculating triplet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating triplet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
@@ -3009,9 +3075,9 @@ Starting Coupled Cluster -
 
 
 
-                       +----------------------------+
-                       !  CCSD Excitation Energies  !
-                       +----------------------------+
+                           +---------------------------+
+                           !  CCSD Excitation Energies !
+                           +---------------------------+
 
 
  --------------------------
@@ -3035,13 +3101,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4020773520       10.9410809964
+         1            0.4020773537       10.9410813544
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.717235849062661
+@@    1    1           -75.717235847837770
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3061,8 +3127,6 @@ Starting Coupled Cluster -
 
           ||T1||/||T2||                  :               5.1219
 
-          Tau1 diagnostic                :               0.3104
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -3073,9 +3137,9 @@ Starting Coupled Cluster -
  | 1   1   |   1       3     |        9          |              |    0.972980  |
  +-----------------------------------------------------------------------------+
  | 1 1 1 1 |   1   1   3   3 |        9        9 |           45 |   -0.071294  |
- | 1 1 1 1 |   2   1   3   3 |       10        9 |           54 |    0.052304  |
- | 1 1 1 1 |   3   1   3   3 |       11        9 |           64 |    0.052387  |
- | 2 1 2 1 |   1   1   1   3 |       13        9 |           87 |    0.048510  |
+ | 1 1 1 1 |   2   1   3   3 |       10        9 |           54 |   -0.052304  |
+ | 1 1 1 1 |   3   1   3   3 |       11        9 |           64 |   -0.052387  |
+ | 2 1 2 1 |   1   1   1   3 |       13        9 |           87 |   -0.048510  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 |          100 |   -0.092656  |
  | 3 1 3 1 |   3   1   1   3 |       16        9 |          129 |   -0.038681  |
  | 1 3 3 1 |   1   1   1   3 |       10        7 |          216 |   -0.052063  |
@@ -3119,21 +3183,21 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3628937672        9.8748414452
-         2            0.5791532732       15.7595617868
-         3            0.9893882101       26.9226219544
-         4            1.0786191542       29.3507193885
-         5            1.1342686077       30.8650180059
+         1            0.3628937676        9.8748417371
+         2            0.5791532735       15.7595622413
+         3            0.9893882095       26.9226227024
+         4            1.0786191517       29.3507201524
+         5            1.1342686068       30.8650188573
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.756419433887132
-@@    1    2           -75.540159927825258
-@@    1    3           -75.129924990921637
-@@    1    4           -75.040694046834531
-@@    1    5           -74.985044593332020
+@@    1    1           -75.756419433983595
+@@    1    2           -75.540159928077315
+@@    1    3           -75.129924992032073
+@@    1    4           -75.040694049892309
+@@    1    5           -74.985044594752253
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3153,8 +3217,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         11.0118
 
-     Tau1 diagnostic                     :          0.3149
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3164,10 +3226,10 @@ Starting Coupled Cluster -
  +=============================================================================+
  | 1   1   |   1       3     |        9          |              |    0.983768  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   2   1   3   3 |       10        9 | (-)       54 |    0.026959  |
- | 1 1 1 1 |   3   1   3   3 |       11        9 | (-)       64 |    0.024652  |
- | 2 1 2 1 |   1   1   1   3 |       13        9 | (+)       87 |    0.020121  |
- | 2 1 2 1 |   1   1   1   3 |       13        9 | (-)       87 |    0.025072  |
+ | 1 1 1 1 |   2   1   3   3 |       10        9 | (-)       54 |   -0.026959  |
+ | 1 1 1 1 |   3   1   3   3 |       11        9 | (-)       64 |   -0.024652  |
+ | 2 1 2 1 |   1   1   1   3 |       13        9 | (+)       87 |   -0.020121  |
+ | 2 1 2 1 |   1   1   1   3 |       13        9 | (-)       87 |   -0.025072  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 | (+)      100 |   -0.023121  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |   -0.046462  |
  | 3 1 3 1 |   3   1   1   3 |       16        9 | (-)      129 |   -0.019151  |
@@ -3200,8 +3262,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         13.5100
 
-     Tau1 diagnostic                     :          0.3154
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3213,8 +3273,8 @@ Starting Coupled Cluster -
  +-----------------------------------------------------------------------------+
  | 3 1 3 1 |   1   1   1   2 |       14        5 | (+)       96 |   -0.015738  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |    0.028248  |
- | 3 2 3 2 |   1   1   1   1 |       14       13 | (+)      104 |    0.015374  |
- | 3 2 3 2 |   1   1   1   1 |       14       13 | (-)      104 |   -0.015297  |
+ | 3 2 3 2 |   1   1   1   1 |       14       13 | (+)      104 |   -0.015374  |
+ | 3 2 3 2 |   1   1   1   1 |       14       13 | (-)      104 |    0.015297  |
  | 3 3 3 3 |   3   1   1   1 |       16       14 | (-)      134 |   -0.017596  |
  | 1 3 3 1 |   1   1   1   3 |       10        7 | (-)      216 |    0.026818  |
  +=============================================================================+
@@ -3244,9 +3304,7 @@ Starting Coupled Cluster -
 
      Double Excitation Contribution (+/-):          0.0914 %    /    1.8181 % 
 
-     ||T1||/||T2||                       :          7.1673
-
-     Tau1 diagnostic                     :          0.3132
+     ||T1||/||T2||                       :          7.1672
 
      Norm of Total Amplitude Vector :          1.0000
 
@@ -3255,14 +3313,14 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       2     |        5          |              |   -0.559982  |
+ | 1   1   |   1       2     |        5          |              |    0.559982  |
  | 1   1   |   2       3     |       10          |              |    0.266916  |
- | 1   1   |   3       3     |       11          |              |    0.234730  |
+ | 1   1   |   3       3     |       11          |              |    0.234729  |
  | 2   2   |   1       1     |       13          |              |    0.705321  |
  +-----------------------------------------------------------------------------+
- | 3 1 3 1 |   1   1   1   2 |       14        5 | (-)       96 |    0.028969  |
- | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |   -0.054274  |
- | 1 3 3 1 |   1   1   1   3 |       10        7 | (-)      216 |    0.087683  |
+ | 3 1 3 1 |   1   1   1   2 |       14        5 | (-)       96 |   -0.028969  |
+ | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |    0.054274  |
+ | 1 3 3 1 |   1   1   1   3 |       10        7 | (-)      216 |   -0.087683  |
  | 1 3 3 1 |   1   2   1   3 |       10        8 | (-)      217 |    0.037210  |
  +=============================================================================+
 
@@ -3293,8 +3351,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          3.2874
 
-     Tau1 diagnostic                     :          0.3025
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3303,7 +3359,7 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 1   1   |   1       2     |        5          |              |    0.629318  |
- | 2   2   |   1       1     |       13          |              |    0.692064  |
+ | 2   2   |   1       1     |       13          |              |   -0.692064  |
  +-----------------------------------------------------------------------------+
  | 3 1 3 1 |   1   1   1   3 |       14        9 | (+)      100 |   -0.092404  |
  | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |    0.151016  |
@@ -3337,8 +3393,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          3.1202
 
-     Tau1 diagnostic                     :          0.3011
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3351,8 +3405,8 @@ Starting Coupled Cluster -
  | 2   2   |   1       1     |       13          |              |   -0.352260  |
  | 3   3   |   2       1     |       15          |              |   -0.271589  |
  +-----------------------------------------------------------------------------+
- | 3 1 3 1 |   1   1   1   3 |       14        9 | (+)      100 |   -0.244055  |
- | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |    0.128838  |
+ | 3 1 3 1 |   1   1   1   3 |       14        9 | (+)      100 |    0.244055  |
+ | 3 1 3 1 |   1   1   1   3 |       14        9 | (-)      100 |   -0.128838  |
  +=============================================================================+
 
 
@@ -3388,13 +3442,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3067176963        8.3462128406
+         1            0.3067176971        8.3462131005
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.812595504763280
+@@    2    1           -75.812595504436572
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3414,8 +3468,6 @@ Starting Coupled Cluster -
 
           ||T1||/||T2||                  :               4.8254
 
-          Tau1 diagnostic                :               0.3096
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -3426,10 +3478,10 @@ Starting Coupled Cluster -
  | 1   2   |   1       1     |        4          |              |    0.976219  |
  +-----------------------------------------------------------------------------+
  | 2 1 1 1 |   1   1   1   3 |        1        9 |           57 |   -0.068385  |
- | 2 1 1 1 |   1   1   2   3 |        2        9 |           58 |    0.043134  |
+ | 2 1 1 1 |   1   1   2   3 |        2        9 |           58 |   -0.043134  |
  | 2 1 1 1 |   1   2   1   3 |        1       10 |           64 |   -0.045127  |
  | 1 1 2 1 |   1   4   1   2 |        4        8 |           53 |   -0.067609  |
- | 1 1 2 1 |   2   1   1   3 |        5        9 |           61 |    0.073384  |
+ | 1 1 2 1 |   2   1   1   3 |        5        9 |           61 |   -0.073384  |
  | 1 1 2 1 |   3   1   1   3 |        6        9 |           62 |   -0.098810  |
  | 3 3 2 1 |   2   3   1   1 |        2        3 |          122 |   -0.058765  |
  +=============================================================================+
@@ -3475,21 +3527,21 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2796550601        7.6098010718
-         2            0.9244514610       25.1556031758
-         3            1.0318432677       28.0778828051
-         4            1.0906819491       29.6789647254
-         5            1.1040985291       30.0440484272
+         1            0.2796550611        7.6098013131
+         2            0.9244514537       25.1556036889
+         3            1.0318432574       28.0778833218
+         4            1.0906819444       29.6789654389
+         5            1.1040985216       30.0440490758
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.839658140900568
-@@    2    2           -75.194861740007909
-@@    2    3           -75.087469933343584
-@@    2    4           -75.028631251950912
-@@    2    5           -75.015214671987707
+@@    2    1           -75.839658140493214
+@@    2    2           -75.194861747909201
+@@    2    3           -75.087469944157547
+@@    2    4           -75.028631257203585
+@@    2    5           -75.015214680005002
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3509,8 +3561,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          9.8493
 
-     Tau1 diagnostic                     :          0.3146
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3521,9 +3571,9 @@ Starting Coupled Cluster -
  | 1   2   |   1       1     |        4          |              |    0.988217  |
  +-----------------------------------------------------------------------------+
  | 2 1 1 1 |   1   1   1   3 |        1        9 | (-)       57 |    0.028642  |
- | 2 1 1 1 |   1   1   2   3 |        2        9 | (-)       58 |   -0.021226  |
+ | 2 1 1 1 |   1   1   2   3 |        2        9 | (-)       58 |    0.021226  |
  | 2 1 1 1 |   1   2   1   3 |        1       10 | (-)       64 |    0.022848  |
- | 1 1 2 1 |   2   1   1   3 |        5        9 | (-)       61 |   -0.040362  |
+ | 1 1 2 1 |   2   1   1   3 |        5        9 | (-)       61 |    0.040362  |
  | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |   -0.020783  |
  | 1 1 2 1 |   3   1   1   3 |        6        9 | (-)       62 |    0.051118  |
  +=============================================================================+
@@ -3555,8 +3605,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          0.1509
 
-     Tau1 diagnostic                     :          0.0472
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3565,9 +3613,9 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 1   2   |   1       1     |        4          |              |   -0.031508  |
- | 1   2   |   2       1     |        5          |              |    0.118251  |
+ | 1   2   |   2       1     |        5          |              |   -0.118251  |
  | 1   2   |   4       1     |        7          |              |    0.066376  |
- | 2   1   |   1       3     |        3          |              |   -0.048503  |
+ | 2   1   |   1       3     |        3          |              |    0.048503  |
  +-----------------------------------------------------------------------------+
  | 2 1 1 1 |   1   1   1   3 |        1        9 | (-)       57 |    0.805859  |
  | 3 3 2 1 |   3   2   1   1 |        3        2 | (-)      119 |   -0.391347  |
@@ -3596,11 +3644,9 @@ Starting Coupled Cluster -
 
      Single Excitation Contribution      :          0.3295 %
 
-     Double Excitation Contribution (+/-):         40.7831 %    /   58.8874 % 
+     Double Excitation Contribution (+/-):         40.7830 %    /   58.8874 % 
 
      ||T1||/||T2||                       :          0.0575
-
-     Tau1 diagnostic                     :          0.0182
 
      Norm of Total Amplitude Vector :          1.0000
 
@@ -3610,7 +3656,7 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 1   2   |   1       1     |        4          |              |    0.038843  |
- | 1   2   |   2       1     |        5          |              |    0.038545  |
+ | 1   2   |   2       1     |        5          |              |   -0.038545  |
  | 1   2   |   4       1     |        7          |              |    0.011953  |
  +-----------------------------------------------------------------------------+
  | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |   -0.598017  |
@@ -3645,8 +3691,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          1.9131
 
-     Tau1 diagnostic                     :          0.2803
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3655,12 +3699,12 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 1   2   |   2       1     |        5          |              |    0.826807  |
- | 1   2   |   3       1     |        6          |              |    0.178273  |
+ | 1   2   |   3       1     |        6          |              |    0.178272  |
  | 2   1   |   1       3     |        3          |              |    0.239251  |
  +-----------------------------------------------------------------------------+
- | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |   -0.163733  |
- | 3 3 2 1 |   3   2   1   1 |        3        2 | (-)      119 |   -0.264734  |
- | 3 3 2 1 |   2   3   1   1 |        2        3 | (-)      122 |   -0.245897  |
+ | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |    0.163733  |
+ | 3 3 2 1 |   3   2   1   1 |        3        2 | (-)      119 |    0.264734  |
+ | 3 3 2 1 |   2   3   1   1 |        2        3 | (-)      122 |    0.245897  |
  +=============================================================================+
 
 
@@ -3690,8 +3734,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          1.2880
 
-     Tau1 diagnostic                     :          0.2498
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3699,13 +3741,13 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   2       1     |        5          |              |    0.571672  |
+ | 1   2   |   2       1     |        5          |              |    0.571673  |
  | 1   2   |   3       1     |        6          |              |    0.521949  |
  +-----------------------------------------------------------------------------+
- | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |    0.144600  |
- | 1 1 2 1 |   3   1   1   3 |        6        9 | (-)       62 |    0.179547  |
- | 3 3 2 1 |   3   2   1   1 |        3        2 | (-)      119 |    0.401814  |
- | 3 3 2 1 |   2   3   1   1 |        2        3 | (-)      122 |    0.292540  |
+ | 1 1 2 1 |   3   1   1   3 |        6        9 | (+)       62 |   -0.144600  |
+ | 1 1 2 1 |   3   1   1   3 |        6        9 | (-)       62 |   -0.179547  |
+ | 3 3 2 1 |   3   2   1   1 |        3        2 | (-)      119 |   -0.401814  |
+ | 3 3 2 1 |   2   3   1   1 |        2        3 | (-)      122 |   -0.292540  |
  +=============================================================================+
 
 
@@ -3741,13 +3783,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4916071339       13.3773102222
+         1            0.4916071348       13.3773106266
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.627706067109315
+@@    3    1           -75.627706066719455
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3767,8 +3809,6 @@ Starting Coupled Cluster -
 
           ||T1||/||T2||                  :               4.7219
 
-          Tau1 diagnostic                :               0.3094
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -3779,8 +3819,8 @@ Starting Coupled Cluster -
  | 3   1   |   1       3     |        7          |              |    0.965125  |
  +-----------------------------------------------------------------------------+
  | 3 1 1 1 |   1   1   1   3 |        1        9 |          105 |   -0.114522  |
- | 3 1 1 1 |   2   1   1   3 |        2        9 |          106 |    0.058546  |
- | 3 1 1 1 |   2   1   2   3 |        5        9 |          109 |    0.043250  |
+ | 3 1 1 1 |   2   1   1   3 |        2        9 |          106 |   -0.058546  |
+ | 3 1 1 1 |   2   1   2   3 |        5        9 |          109 |   -0.043250  |
  | 3 1 1 1 |   3   1   2   3 |        6        9 |          110 |   -0.095357  |
  | 1 1 3 1 |   1   4   1   3 |       10       12 |          153 |   -0.043202  |
  +=============================================================================+
@@ -3826,21 +3866,21 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4421496337       12.0315032207
-         2            0.5104260647       13.8893993626
-         3            0.9663231093       26.2949886520
-         4            1.0456792029       28.4543777429
-         5            1.1064049259       30.1068086754
+         1            0.4421496341       12.0315035710
+         2            0.5104260652       13.8893997709
+         3            0.9663231089       26.2949893871
+         4            1.0456791870       28.4543781189
+         5            1.1064049262       30.1068095396
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.677163567298336
-@@    3    2           -75.608887136365610
-@@    3    3           -75.152990091739824
-@@    3    4           -75.073633998146136
-@@    3    5           -75.012908275168670
+@@    3    1           -75.677163567492542
+@@    3    2           -75.608887136364871
+@@    3    3           -75.152990092671772
+@@    3    4           -75.073634014526604
+@@    3    5           -75.012908275328471
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3860,8 +3900,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         12.2767
 
-     Tau1 diagnostic                     :          0.3152
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3873,14 +3911,14 @@ Starting Coupled Cluster -
  | 3   1   |   1       3     |        7          |              |    0.943294  |
  +-----------------------------------------------------------------------------+
  | 3 1 1 1 |   1   1   1   3 |        1        9 | (-)      105 |    0.019328  |
- | 3 1 1 1 |   2   1   1   3 |        2        9 | (-)      106 |   -0.022539  |
- | 3 1 1 1 |   3   1   1   3 |        3        9 | (-)      107 |   -0.023059  |
- | 3 1 1 1 |   2   1   2   3 |        5        9 | (-)      109 |   -0.021705  |
+ | 3 1 1 1 |   2   1   1   3 |        2        9 | (-)      106 |    0.022539  |
+ | 3 1 1 1 |   3   1   1   3 |        3        9 | (-)      107 |    0.023059  |
+ | 3 1 1 1 |   2   1   2   3 |        5        9 | (-)      109 |    0.021705  |
  | 3 1 1 1 |   3   1   2   3 |        6        9 | (-)      110 |    0.027452  |
  | 3 1 1 1 |   2   1   3   3 |        8        9 | (+)      112 |   -0.018129  |
  | 1 1 3 1 |   1   4   1   2 |       10        8 | (-)      101 |    0.017381  |
  | 1 1 3 1 |   1   4   1   3 |       10       12 | (-)      153 |   -0.016598  |
- | 3 2 2 1 |   3   1   1   1 |        3        1 | (+)      211 |   -0.016818  |
+ | 3 2 2 1 |   3   1   1   1 |        3        1 | (+)      211 |    0.016818  |
  +=============================================================================+
 
 
@@ -3910,8 +3948,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         12.1299
 
-     Tau1 diagnostic                     :          0.3152
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -3924,10 +3960,10 @@ Starting Coupled Cluster -
  +-----------------------------------------------------------------------------+
  | 3 1 1 1 |   3   1   2   3 |        6        9 | (-)      110 |   -0.026842  |
  | 1 1 3 1 |   1   4   1   3 |       10       12 | (-)      153 |    0.030861  |
- | 1 1 3 1 |   3   4   1   3 |       12       12 | (-)      155 |   -0.016925  |
- | 3 2 1 2 |   1   1   1   1 |        1       13 | (-)      157 |   -0.019175  |
+ | 1 1 3 1 |   3   4   1   3 |       12       12 | (-)      155 |    0.016925  |
+ | 3 2 1 2 |   1   1   1   1 |        1       13 | (-)      157 |    0.019175  |
  | 3 2 1 2 |   2   1   1   1 |        2       13 | (-)      158 |    0.020068  |
- | 3 1 2 2 |   1   4   1   1 |        1        7 | (+)      233 |   -0.017836  |
+ | 3 1 2 2 |   1   4   1   1 |        1        7 | (+)      233 |    0.017836  |
  +=============================================================================+
 
 
@@ -3956,8 +3992,6 @@ Starting Coupled Cluster -
      Double Excitation Contribution (+/-):          0.0587 %    /   91.3903 % 
 
      ||T1||/||T2||                       :          0.3058
-
-     Tau1 diagnostic                     :          0.0925
 
      Norm of Total Amplitude Vector :          1.0000
 
@@ -3999,8 +4033,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          0.2205
 
-     Tau1 diagnostic                     :          0.0681
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -4008,10 +4040,10 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   3   |   2       1     |       11          |              |    0.113667  |
+ | 1   3   |   2       1     |       11          |              |   -0.113667  |
  | 3   1   |   1       2     |        4          |              |   -0.080963  |
  | 3   1   |   1       3     |        7          |              |    0.077246  |
- | 3   1   |   2       3     |        8          |              |   -0.127749  |
+ | 3   1   |   2       3     |        8          |              |    0.127749  |
  +-----------------------------------------------------------------------------+
  | 3 1 1 1 |   1   1   1   3 |        1        9 | (-)      105 |   -0.447776  |
  | 3 1 1 1 |   3   1   2   3 |        6        9 | (-)      110 |    0.375717  |
@@ -4046,8 +4078,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          4.3837
 
-     Tau1 diagnostic                     :          0.3083
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -4058,10 +4088,10 @@ Starting Coupled Cluster -
  | 1   3   |   2       1     |       11          |              |   -0.209136  |
  | 3   1   |   2       3     |        8          |              |    0.929312  |
  +-----------------------------------------------------------------------------+
- | 3 1 1 1 |   1   1   1   3 |        1        9 | (-)      105 |   -0.163905  |
+ | 3 1 1 1 |   1   1   1   3 |        1        9 | (-)      105 |    0.163905  |
  | 3 1 1 1 |   2   1   1   3 |        2        9 | (-)      106 |    0.053786  |
  | 3 1 1 1 |   3   2   3   3 |        9       10 | (-)      126 |    0.051253  |
- | 1 1 3 1 |   1   4   1   3 |       10       12 | (-)      153 |   -0.057584  |
+ | 1 1 3 1 |   1   4   1   3 |       10       12 | (-)      153 |    0.057584  |
  +=============================================================================+
 
 
@@ -4097,13 +4127,13 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3901101370       10.6154365210
+         1            0.3901101379       10.6154368460
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.729203064038060
+@@    4    1           -75.729203063686256
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4123,8 +4153,6 @@ Starting Coupled Cluster -
 
           ||T1||/||T2||                  :               4.9259
 
-          Tau1 diagnostic                :               0.3099
-
           Norm of Total Amplitude Vector :               1.0000
 
 
@@ -4138,8 +4166,8 @@ Starting Coupled Cluster -
  | 3 1 1 2 |   2   3   1   1 |        2        6 |           67 |   -0.044728  |
  | 3 1 2 1 |   1   2   1   1 |        1        2 |           96 |   -0.047417  |
  | 3 1 2 1 |   1   3   1   1 |        1        3 |          100 |   -0.067106  |
- | 3 1 2 1 |   2   3   1   1 |        2        3 |          101 |    0.042308  |
- | 3 1 2 1 |   1   4   1   1 |        1        4 |          104 |    0.067167  |
+ | 3 1 2 1 |   2   3   1   1 |        2        3 |          101 |   -0.042308  |
+ | 3 1 2 1 |   1   4   1   1 |        1        4 |          104 |   -0.067167  |
  | 3 1 2 1 |   2   4   1   1 |        2        4 |          105 |   -0.109207  |
  +=============================================================================+
 
@@ -4182,19 +4210,19 @@ Starting Coupled Cluster -
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3719424442       10.1210684653
-         2            0.9679943471       26.3404653444
-         3            0.9918527299       26.9896849481
-         4            1.0414121596       28.3382655913
+         1            0.3719424450       10.1210687758
+         2            0.9679943389       26.3404658701
+         3            0.9918527205       26.9896854566
+         4            1.0414121585       28.3382663667
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.747370756863702
-@@    4    2           -75.151318853948823
-@@    4    3           -75.127460471107767
-@@    4    4           -75.077901041454268
+@@    4    1           -75.747370756529634
+@@    4    2           -75.151318862619618
+@@    4    3           -75.127460481089031
+@@    4    4           -75.077901043034700
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4214,8 +4242,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :         10.0595
 
-     Tau1 diagnostic                     :          0.3147
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -4228,8 +4254,8 @@ Starting Coupled Cluster -
  | 3 1 1 2 |   2   3   1   1 |        2        6 | (-)       67 |   -0.025038  |
  | 3 1 2 1 |   1   2   1   1 |        1        2 | (-)       96 |    0.024490  |
  | 3 1 2 1 |   1   3   1   1 |        1        3 | (-)      100 |    0.036508  |
- | 3 1 2 1 |   2   3   1   1 |        2        3 | (-)      101 |   -0.021999  |
- | 3 1 2 1 |   1   4   1   1 |        1        4 | (-)      104 |   -0.037847  |
+ | 3 1 2 1 |   2   3   1   1 |        2        3 | (-)      101 |    0.021999  |
+ | 3 1 2 1 |   1   4   1   1 |        1        4 | (-)      104 |    0.037847  |
  | 3 1 2 1 |   2   4   1   1 |        2        4 | (-)      105 |    0.033160  |
  +=============================================================================+
 
@@ -4260,8 +4286,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          0.0585
 
-     Tau1 diagnostic                     :          0.0185
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -4269,7 +4293,7 @@ Starting Coupled Cluster -
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        4          |              |    0.012383  |
+ | 2   3   |   1       1     |        4          |              |   -0.012383  |
  | 3   2   |   1       1     |        1          |              |    0.041985  |
  | 3   2   |   3       1     |        3          |              |    0.038353  |
  +-----------------------------------------------------------------------------+
@@ -4305,8 +4329,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          0.1242
 
-     Tau1 diagnostic                     :          0.0390
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -4315,7 +4337,7 @@ Starting Coupled Cluster -
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
  | 3   2   |   1       1     |        1          |              |    0.078517  |
- | 3   2   |   2       1     |        2          |              |   -0.090830  |
+ | 3   2   |   2       1     |        2          |              |    0.090830  |
  +-----------------------------------------------------------------------------+
  | 3 1 1 2 |   1   1   3   1 |        7        4 | (-)       46 |   -0.427109  |
  | 3 1 1 2 |   2   3   1   1 |        2        6 | (-)       67 |    0.490033  |
@@ -4351,8 +4373,6 @@ Starting Coupled Cluster -
 
      ||T1||/||T2||                       :          1.8712
 
-     Tau1 diagnostic                     :          0.2789
-
      Norm of Total Amplitude Vector :          1.0000
 
 
@@ -4362,9 +4382,9 @@ Starting Coupled Cluster -
  +=============================================================================+
  | 3   2   |   2       1     |        2          |              |    0.868635  |
  +-----------------------------------------------------------------------------+
- | 3 1 1 2 |   1   1   3   1 |        7        4 | (-)       46 |   -0.307209  |
- | 3 1 1 2 |   2   3   1   1 |        2        6 | (-)       67 |   -0.209974  |
- | 3 1 2 1 |   1   3   1   1 |        1        3 | (+)      100 |    0.182475  |
+ | 3 1 1 2 |   1   1   3   1 |        7        4 | (-)       46 |    0.307209  |
+ | 3 1 1 2 |   2   3   1   1 |        2        6 | (-)       67 |    0.209974  |
+ | 3 1 2 1 |   1   3   1   1 |        1        3 | (+)      100 |   -0.182475  |
  +=============================================================================+
 
 
@@ -4396,68 +4416,68 @@ Starting Coupled Cluster -
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A1  |    1   |     0.4363386  |      11.87338  |     95765.247  | 100.00  |
+ | ^1A1  |    1   |     0.4363386  |      11.87338  |     95765.249  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3A1  |    1   |     0.3767943  |      10.25310  |     82696.800  | 100.00  |
- | ^3A1  |    2   |     0.5661117  |      15.40468  |    124247.165  | 100.00  |
- | ^3A1  |    3   |     0.9735760  |      26.49235  |    213675.243  | 100.00  |
+ | ^3A1  |    1   |     0.3767943  |      10.25310  |     82696.797  | 100.00  |
+ | ^3A1  |    2   |     0.5661117  |      15.40468  |    124247.163  | 100.00  |
+ | ^3A1  |    3   |     0.9735761  |      26.49235  |    213675.243  | 100.00  |
  | ^3A1  |    4   |     1.1092572  |      30.18442  |    243453.818  | 100.00  |
- | ^3A1  |    5   |     1.1492084  |      31.27155  |    252222.084  | 100.00  |
+ | ^3A1  |    5   |     1.1492084  |      31.27155  |    252222.080  | 100.00  |
  +-----------------------------------------------------------------------------+
  | ^1B1  |    1   |     0.3446333  |       9.37795  |     75638.257  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3B1  |    1   |     0.3093501  |       8.41784  |     67894.504  | 100.00  |
- | ^3B1  |    2   |     1.0803783  |      29.39859  |    237115.622  | 100.00  |
- | ^3B1  |    3   |     1.1554561  |      31.44156  |    253593.296  | 100.00  |
+ | ^3B1  |    1   |     0.3093501  |       8.41785  |     67894.503  | 100.00  |
+ | ^3B1  |    2   |     1.0803783  |      29.39859  |    237115.621  | 100.00  |
+ | ^3B1  |    3   |     1.1554561  |      31.44156  |    253593.295  | 100.00  |
  | ^3B1  |    4   |     1.2364892  |      33.64658  |    271378.015  | 100.00  |
- | ^3B1  |    5   |     1.6097865  |      43.80452  |    353307.303  | 100.00  |
+ | ^3B1  |    5   |     1.6097865  |      43.80452  |    353307.301  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^1B2  |    1   |     0.5122612  |      13.93934  |    112428.335  | 100.00  |
+ | ^1B2  |    1   |     0.5122612  |      13.93934  |    112428.334  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3B2  |    1   |     0.4408993  |      11.99748  |     96766.209  | 100.00  |
- | ^3B2  |    2   |     0.5061017  |      13.77173  |    111076.493  | 100.00  |
- | ^3B2  |    3   |     1.1426065  |      31.09190  |    250773.134  | 100.00  |
- | ^3B2  |    4   |     1.2121832  |      32.98518  |    266043.452  | 100.00  |
- | ^3B2  |    5   |     1.3110292  |      35.67492  |    287737.644  | 100.00  |
+ | ^3B2  |    1   |     0.4408993  |      11.99748  |     96766.206  | 100.00  |
+ | ^3B2  |    2   |     0.5061017  |      13.77173  |    111076.491  | 100.00  |
+ | ^3B2  |    3   |     1.1426065  |      31.09190  |    250773.133  | 100.00  |
+ | ^3B2  |    4   |     1.2121832  |      32.98518  |    266043.449  | 100.00  |
+ | ^3B2  |    5   |     1.3110292  |      35.67492  |    287737.643  | 100.00  |
  +-----------------------------------------------------------------------------+
  | ^1A2  |    1   |     0.4152526  |      11.29960  |     91137.418  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3A2  |    1   |     0.3914739  |      10.65255  |     85918.583  | 100.00  |
- | ^3A2  |    2   |     1.1143837  |      30.32392  |    244578.951  | 100.00  |
- | ^3A2  |    3   |     1.2866025  |      35.01023  |    282376.605  | 100.00  |
- | ^3A2  |    4   |     1.3413223  |      36.49923  |    294386.207  | 100.00  |
+ | ^3A2  |    1   |     0.3914739  |      10.65255  |     85918.582  | 100.00  |
+ | ^3A2  |    2   |     1.1143837  |      30.32392  |    244578.952  | 100.00  |
+ | ^3A2  |    3   |     1.2866025  |      35.01023  |    282376.603  | 100.00  |
+ | ^3A2  |    4   |     1.3413223  |      36.49924  |    294386.205  | 100.00  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A1       -75.5471726285                                        
-             1 ^3A1       -75.6067168580                                        
-             2 ^3A1       -75.4173994618                                        
-             3 ^3A1       -75.0099351578                                        
-             4 ^3A1       -74.8742539892                                        
-             5 ^3A1       -74.8343028292                                        
-             1 ^1B1       -75.6388779442                                        
-             1 ^3B1       -75.6741610815                                        
-             2 ^3B1       -74.9031329344                                        
-             3 ^3B1       -74.8280551252                                        
-             4 ^3B1       -74.7470219840                                        
-             5 ^3B1       -74.3737246833                                        
-             1 ^1B2       -75.4712500173                                        
-             1 ^3B2       -75.5426119116                                        
-             2 ^3B2       -75.4774094608                                        
-             3 ^3B2       -74.8409047294                                        
-             4 ^3B2       -74.7713280413                                        
-             5 ^3B2       -74.6724820299                                        
-             1 ^1A2       -75.5682585713                                        
-             1 ^3A2       -75.5920373340                                        
-             2 ^3A2       -74.8691275031                                        
-             3 ^3A2       -74.6969087222                                        
-             4 ^3A2       -74.6421889476                                        
+             1 ^1A1       -75.5471726189                                        
+             1 ^3A1       -75.6067168666                                        
+             2 ^3A1       -75.4173994679                                        
+             3 ^3A1       -75.0099351511                                        
+             4 ^3A1       -74.8742539800                                        
+             5 ^3A1       -74.8343028364                                        
+             1 ^1B1       -75.6388779433                                        
+             1 ^3B1       -75.6741610805                                        
+             2 ^3B1       -74.9031329275                                        
+             3 ^3B1       -74.8280551194                                        
+             4 ^3B1       -74.7470219733                                        
+             5 ^3B1       -74.3737246762                                        
+             1 ^1B2       -75.4712500144                                        
+             1 ^3B2       -75.5426119226                                        
+             2 ^3B2       -75.4774094655                                        
+             3 ^3B2       -74.8409047270                                        
+             4 ^3B2       -74.7713280474                                        
+             5 ^3B2       -74.6724820255                                        
+             1 ^1A2       -75.5682585691                                        
+             1 ^3A2       -75.5920373356                                        
+             2 ^3A2       -74.8691274898                                        
+             3 ^3A2       -74.6969087168                                        
+             4 ^3A2       -74.6421889468                                        
                                                                                 
                                                                                 
             Total SCF   energy:                   -75.9835112017                
-            Total MP2   energy:                   -76.1127697533                
-            Total CC2   energy:                   -76.1135659185                
+            Total MP2   energy:                   -76.1127697555                
+            Total CC2   energy:                   -76.1135659203                
                                                                                 
                                                                                 
  +=============================================================================+
@@ -4467,66 +4487,66 @@ Starting Coupled Cluster -
  +=============================================================================+
  | ^1A1  |    1   |     0.3995023  |      10.87101  |     87680.613  |  97.15  |
  +-----------------------------------------------------------------------------+
- | ^3A1  |    1   |     0.3602443  |       9.80274  |     79064.478  |  99.22  |
+ | ^3A1  |    1   |     0.3602443  |       9.80275  |     79064.478  |  99.22  |
  | ^3A1  |    2   |     0.5788663  |      15.75175  |    127046.457  |  99.55  |
- | ^3A1  |    3   |     1.0010706  |      27.24051  |    219709.592  |  99.63  |
- | ^3A1  |    4   |     1.1076976  |      30.14198  |    243111.521  |  99.21  |
- | ^3A1  |    5   |     1.1563652  |      31.46630  |    253792.827  |  99.63  |
+ | ^3A1  |    3   |     1.0010706  |      27.24052  |    219709.590  |  99.63  |
+ | ^3A1  |    4   |     1.1076976  |      30.14198  |    243111.519  |  99.21  |
+ | ^3A1  |    5   |     1.1563652  |      31.46630  |    253792.825  |  99.63  |
  +-----------------------------------------------------------------------------+
  | ^1B1  |    1   |     0.3061572  |       8.33096  |     67193.728  |  96.95  |
  +-----------------------------------------------------------------------------+
  | ^3B1  |    1   |     0.2778508  |       7.56070  |     60981.201  |  99.05  |
- | ^3B1  |    2   |     1.1050869  |      30.07094  |    242538.540  |  99.36  |
- | ^3B1  |    3   |     1.1729383  |      31.91727  |    257430.207  |  99.25  |
- | ^3B1  |    4   |     1.2220811  |      33.25452  |    268215.802  |  99.60  |
- | ^3B1  |    5   |     1.4699987  |      40.00070  |    322627.425  |  11.78  |
+ | ^3B1  |    2   |     1.1050869  |      30.07094  |    242538.538  |  99.36  |
+ | ^3B1  |    3   |     1.1729383  |      31.91728  |    257430.205  |  99.25  |
+ | ^3B1  |    4   |     1.2220811  |      33.25452  |    268215.799  |  99.60  |
+ | ^3B1  |    5   |     1.4699987  |      40.00070  |    322627.428  |  11.78  |
  +-----------------------------------------------------------------------------+
  | ^1B2  |    1   |     0.4914133  |      13.37204  |    107852.756  |  97.04  |
  +-----------------------------------------------------------------------------+
- | ^3B2  |    1   |     0.4399339  |      11.97121  |     96554.341  |  99.39  |
+ | ^3B2  |    1   |     0.4399340  |      11.97121  |     96554.341  |  99.39  |
  | ^3B2  |    2   |     0.5081098  |      13.82637  |    111517.216  |  99.42  |
- | ^3B2  |    3   |     1.1120858  |      30.26139  |    244074.626  |  99.04  |
- | ^3B2  |    4   |     1.1853633  |      32.25537  |    260157.164  |  98.97  |
- | ^3B2  |    5   |     1.3138541  |      35.75179  |    288357.634  |  99.19  |
+ | ^3B2  |    3   |     1.1120858  |      30.26139  |    244074.624  |  99.04  |
+ | ^3B2  |    4   |     1.1853633  |      32.25538  |    260157.162  |  98.97  |
+ | ^3B2  |    5   |     1.3138541  |      35.75179  |    288357.632  |  99.19  |
  +-----------------------------------------------------------------------------+
- | ^1A2  |    1   |     0.3906130  |      10.62912  |     85729.639  |  97.25  |
+ | ^1A2  |    1   |     0.3906130  |      10.62912  |     85729.638  |  97.25  |
  +-----------------------------------------------------------------------------+
  | ^3A2  |    1   |     0.3716140  |      10.11213  |     81559.854  |  99.15  |
- | ^3A2  |    2   |     1.0572243  |      28.76854  |    232033.910  |  98.77  |
- | ^3A2  |    3   |     1.2804530  |      34.84290  |    281026.958  |  98.63  |
- | ^3A2  |    4   |     1.3887417  |      37.78958  |    304793.581  |  99.77  |
+ | ^3A2  |    2   |     1.0572243  |      28.76854  |    232033.909  |  98.77  |
+ | ^3A2  |    3   |     1.2804530  |      34.84290  |    281026.955  |  98.63  |
+ | ^3A2  |    4   |     1.3887417  |      37.78959  |    304793.578  |  99.77  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A1       -75.7140636492                                        
-             1 ^3A1       -75.7533216480                                        
-             2 ^3A1       -75.5346996670                                        
-             3 ^3A1       -75.1124953606                                        
-             4 ^3A1       -75.0058683259                                        
-             5 ^3A1       -74.9572007137                                        
-             1 ^1B1       -75.8074087673                                        
-             1 ^3B1       -75.8357151232                                        
-             2 ^3B1       -75.0084790165                                        
-             3 ^3B1       -74.9406275910                                        
-             4 ^3B1       -74.8914848057                                        
-             5 ^3B1       -74.6435672079                                        
-             1 ^1B2       -75.6221526045                                        
-             1 ^3B2       -75.6736319693                                        
-             2 ^3B2       -75.6054560956                                        
-             3 ^3B2       -75.0014800948                                        
-             4 ^3B2       -74.9282026600                                        
-             5 ^3B2       -74.7997118626                                        
-             1 ^1A2       -75.7229529441                                        
-             1 ^3A2       -75.7419518806                                        
-             2 ^3A2       -75.0563416332                                        
-             3 ^3A2       -74.8331128812                                        
-             4 ^3A2       -74.7248241793                                        
+             1 ^1A1       -75.7140636474                                        
+             1 ^3A1       -75.7533216478                                        
+             2 ^3A1       -75.5346996663                                        
+             3 ^3A1       -75.1124953600                                        
+             4 ^3A1       -75.0058683258                                        
+             5 ^3A1       -74.9572007154                                        
+             1 ^1B1       -75.8074087668                                        
+             1 ^3B1       -75.8357151225                                        
+             2 ^3B1       -75.0084790183                                        
+             3 ^3B1       -74.9406275907                                        
+             4 ^3B1       -74.8914848065                                        
+             5 ^3B1       -74.6435671852                                        
+             1 ^1B2       -75.6221526019                                        
+             1 ^3B2       -75.6736319698                                        
+             2 ^3B2       -75.6054560940                                        
+             3 ^3B2       -75.0014800942                                        
+             4 ^3B2       -74.9282026602                                        
+             5 ^3B2       -74.7997118633                                        
+             1 ^1A2       -75.7229529429                                        
+             1 ^3A2       -75.7419518801                                        
+             2 ^3A2       -75.0563416329                                        
+             3 ^3A2       -74.8331128855                                        
+             4 ^3A2       -74.7248241813                                        
                                                                                 
                                                                                 
             Total SCF   energy:                   -75.9835112017                
-            Total RSTAR energy:                   -76.1135659185                
-            Total CCSD  energy:                   -76.1193132010                
+            Total RSTAR energy:                   -76.1135659203                
+            Total CCSD  energy:                   -76.1193132016                
                                                                                 
                                                                                 
  +=============================================================================+
@@ -4534,66 +4554,66 @@ Starting Coupled Cluster -
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A1  |    1   |     0.4020774  |      10.94108  |     88245.779  |  96.33  |
+ | ^1A1  |    1   |     0.4020774  |      10.94108  |     88245.778  |  96.33  |
  +-----------------------------------------------------------------------------+
- | ^3A1  |    1   |     0.3628938  |       9.87484  |     79645.976  |  99.18  |
- | ^3A1  |    2   |     0.5791533  |      15.75956  |    127109.451  |  99.46  |
- | ^3A1  |    3   |     0.9893882  |      26.92262  |    217145.613  |  98.09  |
- | ^3A1  |    4   |     1.0786192  |      29.35072  |    236729.541  |  91.53  |
- | ^3A1  |    5   |     1.1342686  |      30.86502  |    248943.184  |  90.68  |
+ | ^3A1  |    1   |     0.3628938  |       9.87484  |     79645.975  |  99.18  |
+ | ^3A1  |    2   |     0.5791533  |      15.75956  |    127109.450  |  99.46  |
+ | ^3A1  |    3   |     0.9893882  |      26.92262  |    217145.611  |  98.09  |
+ | ^3A1  |    4   |     1.0786192  |      29.35072  |    236729.539  |  91.53  |
+ | ^3A1  |    5   |     1.1342686  |      30.86502  |    248943.182  |  90.68  |
  +-----------------------------------------------------------------------------+
  | ^1B1  |    1   |     0.3067177  |       8.34621  |     67316.753  |  95.88  |
  +-----------------------------------------------------------------------------+
  | ^3B1  |    1   |     0.2796551  |       7.60980  |     61377.191  |  98.98  |
- | ^3B1  |    2   |     0.9244515  |      25.15560  |    202893.644  |   2.23  |
- | ^3B1  |    3   |     1.0318433  |      28.07788  |    226463.421  |   0.33  |
- | ^3B1  |    4   |     1.0906819  |      29.67896  |    239377.019  |  78.54  |
- | ^3B1  |    5   |     1.1040985  |      30.04405  |    242321.618  |  62.39  |
+ | ^3B1  |    2   |     0.9244515  |      25.15560  |    202893.640  |   2.23  |
+ | ^3B1  |    3   |     1.0318433  |      28.07788  |    226463.416  |   0.33  |
+ | ^3B1  |    4   |     1.0906819  |      29.67897  |    239377.015  |  78.54  |
+ | ^3B1  |    5   |     1.1040985  |      30.04405  |    242321.614  |  62.39  |
  +-----------------------------------------------------------------------------+
  | ^1B2  |    1   |     0.4916071  |      13.37731  |    107895.294  |  95.71  |
  +-----------------------------------------------------------------------------+
- | ^3B2  |    1   |     0.4421496  |      12.03150  |     97040.628  |  99.34  |
- | ^3B2  |    2   |     0.5104261  |      13.88940  |    112025.572  |  99.32  |
- | ^3B2  |    3   |     0.9663231  |      26.29499  |    212083.408  |   8.55  |
- | ^3B2  |    4   |     1.0456792  |      28.45438  |    229500.057  |   4.64  |
- | ^3B2  |    5   |     1.1064049  |      30.10681  |    242827.813  |  95.05  |
+ | ^3B2  |    1   |     0.4421496  |      12.03150  |     97040.627  |  99.34  |
+ | ^3B2  |    2   |     0.5104261  |      13.88940  |    112025.571  |  99.32  |
+ | ^3B2  |    3   |     0.9663231  |      26.29499  |    212083.406  |   8.55  |
+ | ^3B2  |    4   |     1.0456792  |      28.45438  |    229500.052  |   4.64  |
+ | ^3B2  |    5   |     1.1064049  |      30.10681  |    242827.811  |  95.05  |
  +-----------------------------------------------------------------------------+
  | ^1A2  |    1   |     0.3901101  |      10.61544  |     85619.278  |  96.04  |
  +-----------------------------------------------------------------------------+
- | ^3A2  |    1   |     0.3719424  |      10.12107  |     81631.931  |  99.02  |
- | ^3A2  |    2   |     0.9679943  |      26.34047  |    212450.202  |   0.34  |
- | ^3A2  |    3   |     0.9918527  |      26.98968  |    217686.512  |   1.52  |
- | ^3A2  |    4   |     1.0414122  |      28.33827  |    228563.550  |  77.78  |
+ | ^3A2  |    1   |     0.3719424  |      10.12107  |     81631.930  |  99.02  |
+ | ^3A2  |    2   |     0.9679943  |      26.34047  |    212450.199  |   0.34  |
+ | ^3A2  |    3   |     0.9918527  |      26.98969  |    217686.508  |   1.52  |
+ | ^3A2  |    4   |     1.0414122  |      28.33827  |    228563.547  |  77.78  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A1       -75.7172358491                                        
-             1 ^3A1       -75.7564194339                                        
-             2 ^3A1       -75.5401599278                                        
-             3 ^3A1       -75.1299249909                                        
-             4 ^3A1       -75.0406940468                                        
-             5 ^3A1       -74.9850445933                                        
-             1 ^1B1       -75.8125955048                                        
-             1 ^3B1       -75.8396581409                                        
-             2 ^3B1       -75.1948617400                                        
-             3 ^3B1       -75.0874699333                                        
-             4 ^3B1       -75.0286312520                                        
-             5 ^3B1       -75.0152146720                                        
-             1 ^1B2       -75.6277060671                                        
-             1 ^3B2       -75.6771635673                                        
+             1 ^1A1       -75.7172358478                                        
+             1 ^3A1       -75.7564194340                                        
+             2 ^3A1       -75.5401599281                                        
+             3 ^3A1       -75.1299249920                                        
+             4 ^3A1       -75.0406940499                                        
+             5 ^3A1       -74.9850445948                                        
+             1 ^1B1       -75.8125955044                                        
+             1 ^3B1       -75.8396581405                                        
+             2 ^3B1       -75.1948617479                                        
+             3 ^3B1       -75.0874699442                                        
+             4 ^3B1       -75.0286312572                                        
+             5 ^3B1       -75.0152146800                                        
+             1 ^1B2       -75.6277060667                                        
+             1 ^3B2       -75.6771635675                                        
              2 ^3B2       -75.6088871364                                        
-             3 ^3B2       -75.1529900917                                        
-             4 ^3B2       -75.0736339981                                        
-             5 ^3B2       -75.0129082752                                        
-             1 ^1A2       -75.7292030640                                        
-             1 ^3A2       -75.7473707569                                        
-             2 ^3A2       -75.1513188539                                        
-             3 ^3A2       -75.1274604711                                        
-             4 ^3A2       -75.0779010415                                        
+             3 ^3B2       -75.1529900927                                        
+             4 ^3B2       -75.0736340145                                        
+             5 ^3B2       -75.0129082753                                        
+             1 ^1A2       -75.7292030637                                        
+             1 ^3A2       -75.7473707565                                        
+             2 ^3A2       -75.1513188626                                        
+             3 ^3A2       -75.1274604811                                        
+             4 ^3A2       -75.0779010430                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -4607,11 +4627,14 @@ Starting Coupled Cluster -
  *******************************************************************************
 
 
-- End of Coupled Cluster
 
- >>>> Total CPU  time used in DALTON:   6.96 seconds
- >>>> Total wall time used in DALTON:  14.00 seconds
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   2.06 seconds
+ >>>> Total wall time used in DALTON:  22.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 21:03:27 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:53:38 2011 
+     Host name              : fe6                                     

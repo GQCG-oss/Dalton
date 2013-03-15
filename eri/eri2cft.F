@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck expcft */
       SUBROUTINE EXPCFT(ETIJ,NPP12,JMAX1,JMAX2,COOR12,EXP12,
@@ -41,9 +31,9 @@ C  /* Deck expcft */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "r12int.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER X, T
       DIMENSION ETIJ(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
@@ -170,9 +160,9 @@ C  /* Deck EXPVEC */
       SUBROUTINE EXPVEC(HPI,PA,PB,COOR12,EXP12,SIGN,
      &                  NPP12,MAX1,MAX2,IDL,IPRINT,TEXPA,TEXPB)
 C     Compute TEXPA and TEXPB (WK/UniKA/04-11-2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "r12int.h"
       PARAMETER (DP5 = 0.5D0, D2 = 2.0D0)
       DIMENSION HPI(NPP12), 
      &          PA(NPP12,3), PB(NPP12,3),
@@ -264,8 +254,8 @@ C     A. Halkier & T. Helgaker Jan. 1999: Generalised Version
 C     that handles derivative coefficients, where IDL gives the order
 C     of differentiation.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.00 D00, D2 = 2.00 D00)
       INTEGER T, X
       CHARACTER WORD*4
@@ -273,10 +263,9 @@ C
       DIMENSION ETIJ(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM1(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM2(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
 C
-      DLEVEL = SDPRE(IDL)
+      DLEVEL = IDL
 C
 C     ****************************
 C     ********** AB > 0 **********
@@ -379,7 +368,7 @@ C
                   END DO
                END IF
                DO T = 1, I - 2
-                  T1 = SIGN*SDPRE(T + 1)
+                  T1 = SIGN*(T + 1.0D0)
                   DO K = 1, NPP12
                      ETIJ(K,T,I,0) = HPI(K)*ETIJ(K,T-1,I-1,0)
      &                              + PA(K)*ETIJ(K,  T,I-1,0)
@@ -499,7 +488,7 @@ C
                      END DO
                   END IF
                   DO T = 1, IJ - 2
-                     T1 = SIGN*SDPRE(T + 1)
+                     T1 = SIGN*(T + 1.0D0)
                      DO K = 1, NPP12
                         ETIJ(K,T,I,J)=HPI(K)*ETIJ(K,T-1,I,J-1)
      &                               + PB(K)*ETIJ(K,  T,I,J-1)
@@ -623,7 +612,7 @@ C
                      END DO
                   END IF
                   DO T = 2 - IBTAND(1,I), I - 2, 2
-                     T1 = SIGN*SDPRE(T + 1)
+                     T1 = SIGN*(T + 1.0D0)
                      DO K = 1, NPP12
                         ETIJ(K,T,I,0) = HPI(K)*ETIJ(K,T-1,I-1,0)
      &                                    + T1*ETIJ(K,T+1,I-1,0)
@@ -655,7 +644,7 @@ C
                      END DO
                   ENDIF
                   DO T = 1 + IBTAND(1,I), I - 3, 2
-                     T1   = SIGN*SDPRE(T + 1)
+                     T1   = SIGN*(T + 1.0D0)
                      DO K = 1, NPP12
                         HPK  = HPI(K)
                         EXP2 = -DLEVEL*EXP12(K,2)
@@ -779,7 +768,7 @@ C
                         END DO
                      END IF
                      DO T = 2 - IBTAND(1,IJ), IJ - 2, 2
-                        T1 = SIGN*SDPRE(T + 1)
+                        T1 = SIGN*(T + 1.0D0)
                         DO K = 1, NPP12
                            ETIJ(K,T,I,J) = HPI(K)*ETIJ(K,T-1,I,J-1)
      &                                       + T1*ETIJ(K,T+1,I,J-1)
@@ -811,7 +800,7 @@ C
                         END DO
                      END IF
                      DO T = 1 + IBTAND(1,IJ), IJ - 3, 2
-                        T1 = SIGN*SDPRE(T + 1)
+                        T1 = SIGN*(T + 1.0D0)
                         DO K = 1, NPP12
                            HPK  = HPI(K)
                            EXP1 = DLEVEL*EXP12(K,1)
@@ -856,13 +845,13 @@ C
 C  /* Deck eriscl */
       SUBROUTINE ERISCL(ETIJ,EXP12,SCALE,ISCAL1,ISCAL2,NPP12,
      &                  JMAX1,JMAX2,MAX1,MAX2,IAB0,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER WORD*4
       INTEGER T, X, IAB0(3)
       DIMENSION ETIJ(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3),
      &          SCALE(NPP12), EXP12(NPP12,3)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO K = 1, NPP12
          SCALE(K) = ((EXP12(K,1)/EXP12(K,3))**ISCAL1)

@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_twofock */
       SUBROUTINE SO_TWOFOCK(RES1E,LRES1E,RES1D,LRES1D,FOCK,LFOCK,ISYRES)
@@ -12,15 +12,15 @@ C     PURPOSE: Add the two particle part of the Fock matrix to the
 C              results vectors (I.e. the two particle part of the
 C              RPA problem). See eq. (19) in Chem. Phys. 172, 13 (1993).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), FOCK(LFOCK)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Add to trace.

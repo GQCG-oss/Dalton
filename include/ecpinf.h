@@ -24,6 +24,10 @@ C DFAC hardcoded numbers from subroutine CORTAB
 C ==========================================================================
 C
       LOGICAL ECP
+      INTEGER MXECP, MXNONT, MXEXP, MXANG
+      INTEGER NTYECP, NECP, INDECP
+      INTEGER LCR, NCR, NKCRL, NKCRU
+      DOUBLE PRECISION ZCR, CCR
 C
       PARAMETER ( MXECP = 5, MXNONT = 80, MXEXP = 20, MXANG = 6 )
 C

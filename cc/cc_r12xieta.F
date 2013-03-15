@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2001 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 1.2
-C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-C...   and O. Vahtras"
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 
 *=======================================================================
@@ -57,14 +47,14 @@ C
 *-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccrspprp.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccrspprp.h"
+#include "second.h"
 
 C-----------------------------------------------------------------------
 C variables/parameter:
@@ -290,13 +280,13 @@ C start loop over operators V
 C-----------------------------------------------------------------------
       IF (LOCDBG) THEN
         CALL AROUND('LABELS on Operator-List:')
-        DO IPRP = 1, NPRLBL
-          WRITE(LUPRI,*) PRPLBL(IPRP)
+        DO IPRP = 1, NPRLBL_CC
+          WRITE(LUPRI,*) PRPLBL_CC(IPRP)
         END DO
       END IF
 
-      DO IPRP = 1, NPRLBL
-        LABEL1 = PRPLBL(IPRP)
+      DO IPRP = 1, NPRLBL_CC
+        LABEL1 = PRPLBL_CC(IPRP)
         IF (LABEL1(1:5).NE.'HAM0 ') THEN
 C
 C-----------------------------------------------------------------------
@@ -830,14 +820,14 @@ C-----------------------------------------------------------------------
 *-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccrspprp.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccrspprp.h"
+#include "second.h"
 
 C-----------------------------------------------------------------------
 C variables/parameter:
@@ -933,13 +923,13 @@ C start loop over operators V
 C-----------------------------------------------------------------------
       IF (LOCDBG) THEN
         CALL AROUND('LABELS on Operator-List:')
-        DO IPRP = 1, NPRLBL
-          WRITE(LUPRI,*) PRPLBL(IPRP)
+        DO IPRP = 1, NPRLBL_CC
+          WRITE(LUPRI,*) PRPLBL_CC(IPRP)
         END DO
       END IF
 
-      DO IPRP = 1, NPRLBL
-        LABEL1 = PRPLBL(IPRP)
+      DO IPRP = 1, NPRLBL_CC
+        LABEL1 = PRPLBL_CC(IPRP)
         IF (LABEL1(1:5).NE.'HAM0 ') THEN
 C
 C-----------------------------------------------------------------------
@@ -1378,11 +1368,11 @@ C
 C     Christian Neiss 2005 
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "dummy.h"
 
       logical locdbg 
       parameter(locdbg = .false.)
@@ -1483,11 +1473,11 @@ C
 C     Christian Neiss 2005 
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "dummy.h"
 
       logical locdbg 
       parameter(locdbg = .false.)
@@ -1741,9 +1731,9 @@ C
 C     Christian Neiss 2005
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       logical locdbg
       parameter(locdbg = .false.)
@@ -1956,10 +1946,10 @@ C
 C     Christian Neiss,  Feb. 2005, based on CC_ONEP
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
 
       logical locdbg
       parameter(locdbg = .false.)
@@ -2050,9 +2040,9 @@ C
 C     Christian Neiss,  Feb. 2005
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       logical locdbg
       parameter(locdbg = .false.)
@@ -2176,12 +2166,12 @@ C
 C     Christian Neiss,  Feb. 2005
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 #if defined (SYS_CRAY)
       real zero,one,work(*)
@@ -2292,12 +2282,12 @@ C  Christian Neiss  Mar. 2005
 C-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -2380,13 +2370,13 @@ C  Christian Neiss  Mar. 2005
 C-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -2597,13 +2587,13 @@ C  Christian Neiss  April 2005
 C-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       logical locdbg, lao
       parameter (locdbg = .false.)
@@ -2882,8 +2872,8 @@ c
 c     C. Neiss, jan. 2006
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccorb.h"
 
       integer isymr,isymy,istartx,iendx,isymx,dimx(8),dimk(8),x,y
       integer nxk(8),ixk(8,8),nkl(8),ikl(8,8),nxkyl(8),ixkyl(8,8)
@@ -2982,11 +2972,11 @@ c
 c     C. Neiss, march 2006
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 
       integer lusifc,idum,isym,nsymx,norbtsx,nbastx,nlamdsx,nlamdsxtd,
      &        nrhfsx(8),norbsx(8),nbasxtd(8),norbxtd(8)

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck anainp */
       SUBROUTINE ANAINP(WORD)
@@ -210,7 +200,7 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include <codata.h>
+#include "codata.h"
 #include "facang.h"
       PARAMETER (MAXANG = 20)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D1P5 = 1.5D00)
@@ -221,7 +211,7 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
 #include "nuclei.h"
 #include "symmet.h"
@@ -249,6 +239,7 @@ C     set up bond vectors in Angstrom in VEC
 C     NUCIND is number of QM atoms
 C     NCTOT .ge. NUCIND is number of QM atoms + number of MM atoms
 C
+      N_QMATOMS = 0
       IATOMA = 0
       DO 100 ICENTA = 1, NCTOT
          DO 110 IA = 0, MAXOPR
@@ -291,13 +282,19 @@ C
 C
 C     Set up distance matrix in Angstrom
 C
-      DISTMX   = D0
-      ABSDISTMX= D0
-      IDISTMX  = 0
-      JDISTMX  = 0
-      ADISTMX  = D0
-      IADISTMX = 0
-      JADISTMX = 0
+      DIST_MAX   = D0
+      ABSDIST_MAX= D0
+      IDIST_MAX  = 0
+      JDIST_MAX  = 0
+      ADIST_MAX  = D0
+      IADIST_MAX = 0
+      JADIST_MAX = 0
+
+      N_SHORT_HX = 0
+      N_SHORT_YX = 0
+      ADISTHX_MIN= 1.D200
+      ADISTYX_MIN= 1.D200
+
       IJ = 0
       DO 400 I = 1,NUCDEP
          DO 300 J = 1,I
@@ -305,18 +302,28 @@ C
             DISTAN = VEC(1,J,I)*VEC(1,J,I) + VEC(2,J,I)*VEC(2,J,I)
      *             + VEC(3,J,I)*VEC(3,J,I)
             DISTAN = SQRT(DISTAN)
-            IF (DIF) DISTAN = DISTAN - DIST(IJ)
+            IF (DIF) THEN
+               DISTAN = DISTAN - DIST(IJ)
+            ELSE IF (I .LE. N_QMATOMS .AND. I.NE.J) THEN
+               IF (ICHARG(I) .NE. 1 .AND. ICHARG(J) .NE. 1) THEN
+                  ADISTYX_MIN = MIN(ADISTYX_MIN,DISTAN)
+                  IF (DISTAN .LE. 1.0D0) N_SHORT_YX = N_SHORT_YX + 1 ! R(Y-X) .lt. 1.0 Angstrom is usually an error
+               ELSE
+                  ADISTHX_MIN = MIN(ADISTHX_MIN,DISTAN)
+                  IF (DISTAN .LE. 0.7D0) N_SHORT_HX = N_SHORT_HX + 1 ! R(H-X) .lt. 0.7 Angstrom is usually an error
+               END IF
+            END IF
             DIST(IJ)   = DISTAN
-            IF (ABS(DISTAN) .GT. ABSDISTMX) THEN
-               DISTMX  = DISTAN
-               ABSDISTMX = ABS(DISTMX)
-               IDISTMX = I
-               JDISTMX = J
+            IF (ABS(DISTAN) .GT. ABSDIST_MAX) THEN
+               DIST_MAX  = DISTAN
+               ABSDIST_MAX = ABS(DIST_MAX)
+               IDIST_MAX = I
+               JDIST_MAX = J
                IF (I .LE. N_QMATOMS) THEN
 C                 ... these are QM atoms
-                  ADISTMX  = ABS(DISTAN)
-                  IADISTMX = I
-                  JADISTMX = J
+                  ADIST_MAX  = ABS(DISTAN)
+                  IADIST_MAX = I
+                  JADIST_MAX = J
                END IF
             END IF
   300    CONTINUE
@@ -324,8 +331,10 @@ C                 ... these are QM atoms
 C
       IF (PRINT) THEN
          JPRIDIS = MAX(1,IPRUSR)
-         IF (NUCDEP .LE. 16*JPRIDIS .AND. DISTMX .NE. D0) THEN
-C hjaaj Oct 2003: this output is only useful for small molecules ...
+         IF (DIST_MAX .NE. D0) THEN ! exclude atoms (DIST_MAX .eq. 0.D0)
+
+           IF (NUCDEP .LE. 16*JPRIDIS) THEN
+C          hjaaj Oct 2003: this output is only useful for small molecules ...
             IF (DIF) THEN
               CALL HEADER
      *        ('Differential interatomic separations (in Angstrom):',2)
@@ -333,35 +342,50 @@ C hjaaj Oct 2003: this output is only useful for small molecules ...
               CALL HEADER('Interatomic separations (in Angstrom):',2)
             END IF
             CALL PRIDIS(NAMDEP,DIST,NUCDEP)
-         END IF
+           END IF
 C
-         IF (DISTMX .NE. D0) THEN
            IF (DIF) THEN
             WRITE(LUPRI,'(/A,F12.6,A/A,I5,A,I5,5A)')
      &      '  Max differential change in interatomic separation is',
-     &      ADISTMX,' Angstrom',
-     &      '  between atoms',IADISTMX,' and',JADISTMX,
-     &      ', "',NAMDEP(IADISTMX),'" and "',NAMDEP(JADISTMX),'".'
+     &      ADIST_MAX,' Angstrom',
+     &      '  between atoms',IADIST_MAX,' and',JADIST_MAX,
+     &      ', "',NAMDEP(IADIST_MAX),'" and "',NAMDEP(JADIST_MAX),'".'
            ELSE
             WRITE(LUPRI,'(/A,2(F10.4,A)/A,I5,A,I5,5A)')
-     &      '  Max interatomic separation is',
-     &       ADISTMX,' Angstrom (',ADISTMX/XTANG,' Bohr)',
-     &      '  between atoms',IADISTMX,' and',JADISTMX,
-     &      ', "',NAMDEP(IADISTMX),'" and "',NAMDEP(JADISTMX),'".'
+     &      '  Max    interatomic separation is',
+     &       ADIST_MAX,' Angstrom (',ADIST_MAX/XTANG,' Bohr)',
+     &      '  between atoms',IADIST_MAX,' and',JADIST_MAX,
+     &      ', "',NAMDEP(IADIST_MAX),'" and "',NAMDEP(JADIST_MAX),'".'
+            IF (ADISTHX_MIN .LT. 1.D10) WRITE(LUPRI,'(/A,2(F10.4,A))')
+     &      '  Min HX interatomic separation is',
+     &       ADISTHX_MIN,' Angstrom (',ADISTHX_MIN/XTANG,' Bohr)'
+            IF (ADISTYX_MIN .LT. 1.D10) WRITE(LUPRI,'(/A,2(F10.4,A))')
+     &      '  Min YX interatomic separation is',
+     &       ADISTYX_MIN,' Angstrom (',ADISTYX_MIN/XTANG,' Bohr)'
+
+            IF (N_SHORT_YX .GT. 0 .OR. N_SHORT_HX .GT. 0) THEN
+              WRITE(LUPRI,'(/A,2I5/A/A)')
+     &          'WARNING: Number of short HX and YX bond lengths:',
+     &            N_SHORT_HX,N_SHORT_YX,
+     &          'WARNING: If not intentional, maybe your coordinates'
+     &            //' were in Angstrom,',
+     &          'WARNING: but "Angstrom" was not specified in .mol file'
+            END IF
+
            END IF
            IF (N_QMATOMS .NE. NUCDEP) THEN
             IF (DIF) THEN
              WRITE(LUPRI,'(/A,F12.6,A/A,I5,A,I5,5A)')
      &         '  Max differential change in QM+MM interatomic '//
-     &           'separation is',DISTMX,' Angstrom',
-     &         '  between the QM+MM centers ',IDISTMX,' and',JDISTMX,
-     &         ', "',NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
+     &           'separation is',DIST_MAX,' Angstrom',
+     &         '  between the QM+MM centers',IDIST_MAX,' and',JDIST_MAX,
+     &         ', "',NAMDEP(IDIST_MAX),'" and "',NAMDEP(JDIST_MAX),'".'
             ELSE
              WRITE(LUPRI,'(/A,2(F10.4,A)/A,I5,A,I5,5A)')
      &         '  Max QM+MM interatomic separation is',
-     &         DISTMX,' Angstrom (',DISTMX/XTANG,' Bohr)',
-     &         '  between the QM+MM centers ',IDISTMX,' and',JDISTMX,
-     &         ', "',NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
+     &         DIST_MAX,' Angstrom (',DIST_MAX/XTANG,' Bohr)',
+     &         '  between the QM+MM centers',IDIST_MAX,' and',JDIST_MAX,
+     &         ', "',NAMDEP(IDIST_MAX),'" and "',NAMDEP(JDIST_MAX),'".'
             END IF
            END IF
          END IF
@@ -593,12 +617,14 @@ C
       END
 C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
+C
 C     Based on covalent radii and metallic radii in Angstrom.
 C     Returns -1 where data is inavailable
 C     Oct 2006 hjaaj: changed Hydrogen from 30 to 40 pm,
 C              such that H2 is printed as bonded ;-) .
+C
       DIMENSION RAD(100)
       DATA (RAD(I), I = 1, 100)/
      &        40.,  155.,  160.,  110.,
@@ -623,16 +649,16 @@ C              such that H2 is printed as bonded ;-) .
      & -100.,   -100.,   -100.,   -100.,   -100.,
      & -100./
 C
-      IF (NCHARGE .GE. -2 .AND. NCHARGE .LE. 0) THEN
+      IF (NCHARGE .LE. 0) THEN
 Chj      =  0: solvent cavity center or floating orbital
-Chj      = -1: multiple basis for r12 methods
-Chj      = -2: point charges
+Chj      = -Z: multiple basis for r12 methods for nuclear charge Z
+Chj      = -1234567890: point charges
 C
          RADIUS = -1.0D0
       ELSE IF (NCHARGE .LT. 1 .OR. NCHARGE .GT. 100) THEN
          WRITE (LUPRI,*) 
-     &          'ERROR, RADIUS called with NCHARGE =',NCHARGE
-         CALL QUIT('RADIUS called with illegal NCHARGE')
+     &          'ERROR, RADIUS called with CHARGE =',NCHARGE
+         CALL QUIT('RADIUS called with unvalid CHARGE')
       ELSE
          RADIUS = 0.01D0 * RAD(NCHARGE)
       END IF
@@ -668,15 +694,15 @@ C     Returns -1 where data is inavailable
      & -100.,   -100.,   -100.,   -100.,   -100.,
      & -100./
 C
-      IF (NCHARGE .GE. -2 .AND. NCHARGE .LE. 0) THEN
+      IF (NCHARGE .LE. 0) THEN
 Chj      =  0: solvent cavity center or floating orbital
-Chj      = -1: multiple basis for r12 methods
-Chj      = -2: point charges
+Chj      = -Z: multiple basis for r12 methods for nuclear charge Z
+Chj      = -1234567890: point charges
 C
          VDWRAD = -1.0D0
-      ELSE IF (NCHARGE .LT. 1 .OR. NCHARGE .GT. 100) THEN
-         WRITE (LUPRI,*) 'ERROR, VDWRAD called with NCHARGE =',NCHARGE
-         CALL QUIT('VDWRAD called with illegal NCHARGE')
+      ELSE IF (NCHARGE .GT. 100) THEN
+         WRITE (LUPRI,*) 'ERROR, VDWRAD called with CHARGE =',NCHARGE
+         CALL QUIT('VDWRAD called with illegal CHARGE')
       ELSE
          VDWRAD = 0.01D0 * RAD(NCHARGE)
          IF (VDWRAD .LT. 0.0D0) THEN

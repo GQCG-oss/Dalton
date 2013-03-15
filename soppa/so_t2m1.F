@@ -10,16 +10,16 @@ C
 C     PURPOSE: Calculate MP2 T2-amplitudes with one back-transformed
 C              index.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION T2M1(LT2M1), T2MP(LT2MP), CMO(LCMO)
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------------------
 C     Statement function INDEX.

@@ -1,54 +1,46 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck excinp */
       SUBROUTINE EXCINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (NTABLE = 16)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <inforb.h>
-#include <cbiexc.h>
+#include "cbiexc.h"
 C
-#include <gnrinf.h>
-#include <abainf.h>
-#include <anrinf.h>
-#include <dorps.h>
-#include <nuclei.h>
+#include "gnrinf.h"
+#include "abainf.h"
+#include "anrinf.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "symmet.h"
       DATA TABLE /'.SKIP  ', '.INTPRI','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.TRIPLE','.XXXXXX',
      *            '.OPTORB', '.NEXCIT','.DIPSTR','.PRINT ',
@@ -57,6 +49,7 @@ C
       NEWDEF = (WORD .EQ. '*EXCITA')
       ICHANG = 0
       IF (NEWDEF) THEN
+         NSYM = MAXREP + 1 ! NSYM in inforb.h is not always defined when EXCINP is called
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -75,10 +68,10 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in EXCINP.'
+               WRITE (LUPRI,'(/4A/)') ' Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in EXCINP.')
+               CALL QUIT('Illegal keyword for '//WORD1)
     1          CONTINUE
                   SKIP = .TRUE.
                   ICHANG = ICHANG + 1
@@ -114,7 +107,6 @@ C
                   ICHANG = ICHANG + 1
                GO TO 100
    10          CONTINUE
-C                 NSYM is set to 8 since NSYM has not yet been set !!
                   READ (LUCMD,*) (NEXCIT(I),I=1,NSYM)
                   ICHANG = ICHANG + 1
                GO TO 100
@@ -140,7 +132,9 @@ C                 NSYM is set to 8 since NSYM has not yet been set !!
                GO TO 100
    16          CONTINUE
                   SUMRUL = .TRUE.
-                  DIPSTR = .TRUE.
+CSPAS:23/5-11: second and third moment sum rules
+C                 DIPSTR = .TRUE.
+CKeinSPASmehr
                   ICHANG = ICHANG + 1
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -160,63 +154,47 @@ C                 NSYM is set to 8 since NSYM has not yet been set !!
          THREXC = THREXC*THR_REDFAC
       END IF
 C
-C     NSYM is set to 8 since NSYM has not yet been set !!
-C     NTOT = ISUM(NSYM,NEXCIT,1)
-      NTOT = ISUM(8,NEXCIT,1)
+      NTOT = ISUM(NSYM,NEXCIT,1)
+C
+      IF (NTOT.EQ.0) THEN
+         NEXCIT(:) = 1
+      END IF
 C
 CSPAS : let's try whether we cannot calculate all excitation energies
 C
 C     maximum number of excitation energies
 C
       MXNEXI = 1
-C     NSYM is set to 8 since NSYM has not yet been set !!
       DO ISYM = 1,8
          MXNEXI = MAX(MXNEXI,NEXCIT(ISYM))
       END DO
 CKeinSPASmehr
 C
+      CALL HEADER('Changes of defaults for .EXCITA:',0)
+      IF (EXCTRP) WRITE (LUPRI,'(A)') ' Triplet excitation energies'
+      WRITE (LUPRI,'(A,8I5)')
+     &   ' Number of excitation energies:',(NEXCIT(I),I=1,8)
+C
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for EXCITA:',0)
          IF (SKIP) THEN
             WRITE (LUPRI,'(A)') ' EXCITA skipped in this run.'
          ELSE
-            IF (NTOT .GT. 0) THEN
-C               NSYM is set to 8 since NSYM has not yet been set !!
-               WRITE (LUPRI,'(A,8I5)')
-     &            ' Number of excitation energies:',(NEXCIT(I),I=1,8)
-            END IF
             WRITE (LUPRI,'(A,I5)')
-     &         ' Print level in EXCITA        :',IPREXC
+     &         ' Print level          :',IPREXC
             WRITE (LUPRI,'(A,I5)')
-     &         ' Integral print level in EXCITA        :',IPR1IN
+     &         ' Integral print level :',IPR1IN
             WRITE (LUPRI,'(A,1P,E9.2)')
-     &           ' Threshold in EXCITA          :',THREXC
-            WRITE(LUPRI,'(A,I5)')' Maximum iterations in EXCITA :',
-     &                           MAXITE
-            IF (CUT) THEN
-               WRITE (LUPRI,'(/,A)') ' Program is stopped after EXCITA.'
-            END IF
-            IF (ROTVEL) THEN
-               WRITE (LUPRI,'(A)') ' Conventional rotational strength'
-            END IF
-            IF (DIPSTR) THEN
-               WRITE (LUPRI,'(A)') ' Dipole strength'
-            END IF
-            IF (EXCTRP) THEN
-               WRITE (LUPRI,'(A)') ' Triplet excitation energies'
-            END IF
-            IF (FNAC) THEN
-               WRITE (LUPRI,'(A)') ' First order nonadiabatic '//
-     &                             'coupling elements'
-            END IF
+     &         ' Threshold            :',THREXC
+            WRITE(LUPRI,'(A,I5)')
+     &         ' Maximum iterations   :',MAXITE
+            IF (ROTVEL)
+     &         WRITE (LUPRI,'(A)') ' Conventional rotational strength'
+            IF (DIPSTR) WRITE (LUPRI,'(A)') ' Dipole strength'
+            IF (FNAC) WRITE (LUPRI,'(A)')
+     &         ' First order nonadiabatic coupling elements'
+            IF (CUT) WRITE (LUPRI,'(//A)')
+     &         ' Program is stopped after EXCITA.'
          END IF
-      END IF
-      IF (NTOT.EQ.0) THEN
-C         NSYM is set to 8 since NSYM has not yet been set !!
-C         DO 400 I = 1, NSYM
-         DO 400 I = 1, 8
-            NEXCIT(I) = 1
-  400    CONTINUE
       END IF
       RETURN
       END
@@ -225,10 +203,10 @@ C  /* Deck excini */
 C
 C     Initialize /cbiexc/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbiexc.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbiexc.h"
+#include "abainf.h"
 C
       IPR1IN = IPRDEF
       IPREXC = IPRDEF
@@ -251,39 +229,34 @@ C
       RETURN
       END
 C  /* Deck excita */
-CSPAS : 6/11-2009 AO-SOPPA included
-C      SUBROUTINE EXCITA(TRLEN,TRVEL,TQLEN,TQVEL,
-C     &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
-C     &                  FONA2,WORK,LWORK,PASS)
       SUBROUTINE EXCITA(TRLEN,TRVEL,TQLEN,TQVEL,
-     &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
-     &                  FONA2,SECMAT,WORK,LWORK,PASS)
+CSPAS:23/5-11: second and third moment sum rules
+C    &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
+     &                  TRLON,TRMAG,BSRLON,TTLEN,EXENG,FONAC,
 CKeinSPASmehr
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <cbiexc.h>
-#include <infrsp.h>
-#include <nuclei.h>
+     &                  FONA2,SECMAT,WORK,LWORK,PASS)
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "cbiexc.h"
+#include "infrsp.h"
+#include "nuclei.h"
 CSPAS : 6/11-2009 AO-SOPPA included
-#include <soppinf.h>
+#include "soppinf.h"
 CKeinSPASmehr
       LOGICAL PASS
       DIMENSION WORK(LWORK)
-CSPAS : 6/11-2009 AO-SOPPA included
-C      DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
-C      DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
-C      DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
-C      DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
-C      DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
       DIMENSION TRLEN(3,NSYM,MXNEXI,*), TRVEL(3,NSYM,MXNEXI,*)
-      DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
+CSPAS:23/5-11: second and third moment sum rules
+C     DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI,*), TQVEL(3,3,NSYM,MXNEXI,*)
+      DIMENSION TTLEN(10,NSYM,MXNEXI,*)
+CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI,*), TRMAG(3,NSYM,MXNEXI,*)
       DIMENSION BSRLON(3,NSYM,MXNEXI,*),EXENG(NSYM,MXNEXI,*)
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
       DIMENSION SECMAT(3,MXNEXI,NSYM)
-CKeinSPASmehr
 C
       IF (SKIP) RETURN
       CALL QENTER('EXCITA')
@@ -293,19 +266,21 @@ C
 C
       IPRRSP = IPREXC
 C
-CSPAS : 6/11-2009 AO-SOPPA included
-C      CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
-C     &            TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,
-C     &            WORK,LWORK)
       IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-         CALL SO_EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,SECMAT,EXENG,
-     &                  WORK,LWORK)
+CSPAS:23/5-11: second and third moment sum rules
+C        CALL SO_EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,SECMAT,EXENG,
+C    &                  WORK,LWORK)
+         CALL SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
+     &                  BSRLON,SECMAT,EXENG,WORK,LWORK)
+CKeinSPASmehr
       ELSE
-         CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
+CSPAS:23/5-11: second and third moment sum rules
+C        CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
+         CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,
+CKeinSPASmehr
      &               TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,
      &               WORK,LWORK)
       END IF
-CKeinSPASmehr
 C
       CALL TIMER ('EXCITA',TIMEIN,TIMOUT)
       PASS   = .TRUE.
@@ -318,39 +293,48 @@ C
       RETURN
       END
 C  /* Deck excit1 */
-      SUBROUTINE EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
+CSPAS:23/5-11: second and third moment sum rules
+C      SUBROUTINE EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
+      SUBROUTINE EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,
+CKeinSPASmehr
      &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
      &                  FONA2,WORK,LWORK)
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cbiexc.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <infsop.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cbiexc.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "infsop.h"
 C
       DIMENSION WORK(LWORK)
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
       DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
+CSPAS:23/5-11: second and third moment sum rules
+      DIMENSION TTLEN(10,NSYM,MXNEXI)
+CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
       CHARACTER*8 LABEL, LABINT(3*MXCOOR)
       LOGICAL   LOCDIPLEN, LOCDIPVEL, LOCANGMOM, LOCLONDON, LOCSECMOM,
-     &          LOCROTSTR, LOCHBDO, LOCHDO
+CSPAS:23/5-11: second and third moment sum rules
+C    &          LOCROTSTR, LOCHBDO, LOCHDO
+     &          LOCTHIRDM, LOCROTSTR, LOCHBDO, LOCHDO
+CKeinSPASmehr
       LOGICAL   FOUND
 C
       CALL QENTER('EXCIT1')
@@ -390,10 +374,10 @@ C
       KWORK1 = KFREE
       LWORK1 = LFREE
 C
-      CALL RDSIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
+      CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
       IF (.NOT.FOUND) CALL QUIT('EXCIT1 error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
-         CALL RDSIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
+         CALL RD_SIRIFC('DV',FOUND,WORK(KWORK1),WORK(KWORK1),LWORK1)
          IF (.NOT.FOUND)
      &      CALL QUIT('EXCIT1 error: DV not found on SIRIFC')
          CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
@@ -458,7 +442,7 @@ C
             END IF
          END IF
 C
-C        reads the MP2 or CCSD second order one particle density matrix 
+C        reads the MP2 or CCSD second order one particle density matrix
 C
          CALL READT (LUSIFC,NORBT*NORBT,WORK(KUDV))
 C
@@ -490,6 +474,9 @@ C
       LOCLONDON = .FALSE.
       LOCSECMOM = .FALSE.
       LOCROTSTR = .FALSE.
+CSPAS:23/5-11: second and third moment sum rules
+      LOCTHIRDM = .FALSE.
+CKeinSPASmehr
       LOCHBDO   = .FALSE.
       LOCHDO    = .FALSE.
 
@@ -515,6 +502,14 @@ C
          LOCSECMOM = .TRUE.
          LOCROTSTR = .TRUE.
       END IF
+CSPAS:23/5-11: second and third moment sum rules
+      IF (SUMRUL) THEN           ! sum rules, dip, quad, oct.
+         LOCDIPLEN = .TRUE.
+         LOCDIPVEL = .TRUE.
+         LOCSECMOM = .TRUE.
+         LOCTHIRDM = .TRUE.
+      END IF
+CKeinSPASmehr
       IF (FNAC .AND. NODIFC) THEN
          LOCHDO    = .TRUE.
       END IF
@@ -575,6 +570,19 @@ C
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
      &               LABSYM)
       END IF
+CSPAS:23/5-11: second and third moment sum rules
+      IF (LOCTHIRDM) THEN
+         NCOMP  = 0
+         NPATOM = 0
+         CALL GET1IN(DUMMY,'THRMOM ',NCOMP,WORK(KWORK2),LWORK2,
+     &               LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &               IPR1IN)
+         NLAB = 10
+         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
+     &               LABSYM)
+      END IF
+CKeinSPASmehr
       IF (LOCROTSTR) THEN
          NCOMP  = 0
          NPATOM = 0
@@ -611,6 +619,9 @@ C
       CALL DZERO(TRVEL,3*NSYM*MXNEXI)
       CALL DZERO(TQLEN,3*3*NSYM*MXNEXI)
       CALL DZERO(TQVEL,3*3*NSYM*MXNEXI)
+CSPAS:23/5-11: second and third moment sum rules
+      CALL DZERO(TTLEN,10*NSYM*MXNEXI)
+CKeinSPASmehr
       CALL DZERO(TRLON,3*NSYM*MXNEXI)
       CALL DZERO(TRMAG,3*NSYM*MXNEXI)
       CALL DZERO(BSRLON,3*NSYM*MXNEXI)
@@ -623,7 +634,7 @@ C
       LUSOVE = -9002
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
-CSPAS : 26/02-2008 Keld Bak's VIB-G 
+CSPAS : 26/02-2008 Keld Bak's VIB-G
       NBR = 0
 C
 CKeinSPASmehr
@@ -678,9 +689,9 @@ C
      &                         WORK(KWRK2),LWRK)
 C
                     IF (IPREXC.GT.3) THEN
-                       WRITE (LUPRI,'(2A)') 'GP Vector, label: ','d/dR'
-                       CALL OUTPUT(WORK(KWRK2),1,2*NVARPT,1,1,2*NVARPT,
-     &                             1,1,LUPRI)
+                       WRITE (LUPRI,'(A)') 'GP Vector, label: d/dR'
+                       CALL OUTPUT(WORK(KWRK2),1,NVARPT,2,1,NVARPT,2,
+     &                             1,LUPRI)
                     END IF
 C
                     REWIND LUSOVE
@@ -718,8 +729,8 @@ C
      &               WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
                 IF (IPREXC.GT.3) THEN
                   WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL
-                   CALL OUTPUT(WORK(KGD1),1,2*NVARPT,1,1,2*NVARPT,
-     &                         1,1,LUPRI)
+                   CALL OUTPUT(WORK(KGD1),1,NVARPT,2,1,NVARPT,2,
+     &                         1,LUPRI)
                 ENDIF
 C
 C               Form transition moments
@@ -780,6 +791,32 @@ C
                     ELSE
                        CALL QUIT('Logical error (SECMOM) in EXCIT1')
                     END IF
+CSPAS:23/5-11: second and third moment sum rules
+                  ELSE IF (LABEL(5:8).EQ.'3MOM') THEN
+                    IF (LABEL(1:3) .EQ. 'XXX') THEN
+                       TTLEN(1,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:3) .EQ. 'YYY') THEN
+                       TTLEN(2,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:3) .EQ. 'ZZZ') THEN
+                       TTLEN(3,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:3) .EQ. 'XXY') THEN
+                       TTLEN(4,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:3) .EQ. 'XXZ') THEN
+                       TTLEN(5,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:3) .EQ. 'XYY') THEN
+                       TTLEN(6,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:3) .EQ. 'XYZ') THEN
+                       TTLEN(7,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:3) .EQ. 'XZZ') THEN
+                       TTLEN(8,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:3) .EQ. 'YYZ') THEN
+                       TTLEN(9,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:3) .EQ. 'YZZ') THEN
+                       TTLEN(10,ISYM,IEXVAL) = EXMOM
+                    ELSE
+                       CALL QUIT('Logical error (THRMOM) in EXCIT1')
+                    END IF
+CKeinSPASmehr
                   ELSE IF (LABEL(3:8).EQ.'ROTSTR') THEN
                     IF (LABEL(1:2) .EQ. 'XX') THEN
                        TQVEL(1,1,ISYM,IEXVAL) = -EXMOM
@@ -844,21 +881,27 @@ C
       END
 C  /* Deck excout */
       SUBROUTINE EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
-     &                  EXENG,FONAC,FONA2,RMLEN,RQLEN,RLEN,
+CSPAS:23/5-11: second and third moment sum rules
+C    &                  EXENG,FONAC,FONA2,RMLEN,RQLEN,RLEN,
+     &                  TTLEN,EXENG,FONAC,FONA2,RMLEN,RQLEN,RLEN,
+CKeinSPASmehr
      &                  RMVEL,RQVEL,RVEL,SLEN,SVEL,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <codata.h>
-#include <gnrinf.h>
-#include <cbiexc.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <abainf.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "codata.h"
+#include "gnrinf.h"
+#include "cbiexc.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "abainf.h"
+#include "orgcom.h"
       CHARACTER COORDI*21, NMDTXT*9, LAPRPC*8
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
       DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
+CSPAS:23/5-11: second and third moment sum rules
+      DIMENSION TTLEN(10,NSYM,MXNEXI)
+CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
@@ -871,6 +914,9 @@ C  /* Deck excout */
       DIMENSION DSSUML(-6:2,1:4),DLSUML(-6:2,1:4),DISUML(-6:2,1:4)
       DIMENSION DSSUMM(-6:2,1:4),DLSUMM(-6:2,1:4),DISUMM(-6:2,1:4)
       DIMENSION DSSUMV(-6:2,1:4),DLSUMV(-6:2,1:4),DISUMV(-6:2,1:4)
+CSPAS:23/5-11: second and third moment sum rules
+      DIMENSION QSSUM(-6:2,1:4),DTSSUM(-6:2,1:4)
+CKeinSPASmehr
       DIMENSION XLEVICI(3,3,3), AVEC(3), XNEW(3)
       LOGICAL   LCOECD, LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -934,13 +980,15 @@ C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
          ELSE
             CALL HEADER('Singlet electronic excitation energies',15)
          END IF
-         WRITE (LUPRI,'(16X,A/16X,A/16X,A)')
-     &      ' Sym.   Mode   Frequency    Frequency',
-     &      'ex. st.  No.      (au)          (eV)',
-     &      '======================================='
+         WRITE (LUPRI,'(15X,A/15X,A/15X,A)')
+     &     '========================================',
+     &     '  Sym.   Mode   Frequency    Frequency',
+     &     ' ex. st.  No.      (au)         (eV)'
          DO 15 ISYM = 1, NSYM
+         WRITE(LUPRI,'(15X,A)')
+     &     '----------------------------------------'
             DO 14 IEXVAL = 1, NEXCIT(ISYM)
-               WRITE (LUPRI,'(I20,I9,2F12.6)')
+               WRITE (LUPRI,'(I20,I7,2F13.6)')
      &            ISYM,IEXVAL,EXENG(ISYM,IEXVAL),
      &            EXENG(ISYM,IEXVAL)*XTEV
                   LAPRPC = 'Excita  '
@@ -950,9 +998,9 @@ C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
      *                        LAPRPC,LAPRPC,LAPRPC,LAPRPC,
      *                        0.0D0,0.0D0,0.0D0,1,ISYM,ISPINEX,IEXVAL)
  14         CONTINUE
-            WRITE(LUPRI,'(16X,A)')
-     &      '---------------------------------------'
  15      CONTINUE
+         WRITE(LUPRI,'(15X,A)')
+     &     '========================================'
 C-tbp END IF
       IF (DIPSTR .OR. ROTSTR .OR. ROTVEL) THEN
          CALL HEADER('Electric transition dipole moments (in a.u.)',15)
@@ -982,15 +1030,15 @@ C
 C     Write electric quadrupole transition moments to output:
 C     =======================================================
 C
-      IF (OECD) THEN
+      IF (OECD .OR. SUMRUL) THEN ! SPAS:23/5-11: second and third moment sum rules
          CALL HEADER('Diagonal electric quadrupole transition '
      &               //'moments (in a.u.)',15)
-         WRITE (LUPRI,'(A,A,2(/A,A))')
-     &   '  Sym.   Mode    Frequency       Velocity/Frequency  ',
+         WRITE (LUPRI,'(A,2(/A))')
+     &   '  Sym.   Mode    Frequency       Velocity/Frequency  '//
      &   '            Length',
-     &   ' ex. st.  No.      (au)          xx      yy      zz  ',
+     &   ' ex. st.  No.      (au)          xx      yy      zz  '//
      &   '      xx      yy      zz',
-     &   ' ----------------------------------------------------',
+     &   ' ----------------------------------------------------'//
      &   '--------------------------'
          DO ISYM = 1, NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
@@ -1015,14 +1063,14 @@ C
      &                    - 2.0D0*AVEC(2)*TRVEL(2,ISYM,IEXVAL)
                   XNEW(3) = TQVEL(3,3,ISYM,IEXVAL)
      &                    - 2.0D0*AVEC(3)*TRVEL(3,ISYM,IEXVAL)
-                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+                  WRITE(LUPRI,'(I4,I9,F13.6,3X,3F12.6)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            XNEW(1)/EXENG(ISYM,IEXVAL),
      &            XNEW(2)/EXENG(ISYM,IEXVAL),
      &            XNEW(3)/EXENG(ISYM,IEXVAL)
                END DO
             END DO
-            WRITE(LUPRI,'(/,A,3F10.5)')
+            WRITE(LUPRI,'(/A,3F10.5)')
      &      'Length after translation along a = ',(AVEC(I),I=1,3)
             DO ISYM = 1,NSYM
                DO IEXVAL = 1,NEXCIT(ISYM)
@@ -1032,7 +1080,7 @@ C
      &                    - 2.0D0*AVEC(2)*TRLEN(2,ISYM,IEXVAL)
                   XNEW(3) = TQLEN(3,3,ISYM,IEXVAL)
      &                    - 2.0D0*AVEC(3)*TRLEN(3,ISYM,IEXVAL)
-                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+                  WRITE(LUPRI,'(I4,I9,F13.6,3X,3F12.6)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            XNEW(1),XNEW(2),XNEW(3)
                END DO
@@ -1040,16 +1088,16 @@ C
          END IF
          CALL HEADER('Off-diagonal electric quadrupole transition '
      &               //'moments (in a.u.)',15)
-         WRITE (LUPRI,'(1X,A,2(/1X,A))')
-     &   ' Sym.   Mode    Frequency       Velocity/Frequency  '//
+         WRITE (LUPRI,'(A,2(/A))')
+     &   '  Sym.   Mode    Frequency       Velocity/Frequency  '//
      &   '            Length       ',
-     &   'ex. st.  No.      (au)          xy      xz      yz  '//
+     &   ' ex. st.  No.      (au)          xy      xz      yz  '//
      &   '      xy      xz      yz ',
-     &   '=================================================='//
+     &   ' =================================================='//
      &   '============================'
          DO ISYM = 1, NSYM
             DO IEXVAL = 1,NEXCIT(ISYM)
-               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
+               WRITE (LUPRI,'(I4,I9,F13.6,3X,3F8.3,2X,3F8.3)')
      &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
      &            TQVEL(1,2,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
      &            TQVEL(1,3,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
@@ -1058,8 +1106,8 @@ C
      &            TQLEN(1,3,ISYM,IEXVAL),
      &            TQLEN(2,3,ISYM,IEXVAL)
             END DO
-            WRITE(LUPRI,'(1X,A)')
-     &   '--------------------------------------------------'//
+            WRITE(LUPRI,'(A)')
+     &   ' --------------------------------------------------'//
      &   '----------------------------'
          END DO
          IF (LOCDBG) THEN
@@ -1076,7 +1124,7 @@ C
                   XNEW(3) = TQVEL(2,3,ISYM,IEXVAL)
      &                    - AVEC(2)*TRVEL(3,ISYM,IEXVAL)
      &                    - AVEC(3)*TRVEL(2,ISYM,IEXVAL)
-                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+                  WRITE(LUPRI,'(I4,I9,F13.6,3X,3F12.6)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            XNEW(1)/EXENG(ISYM,IEXVAL),
      &            XNEW(2)/EXENG(ISYM,IEXVAL),
@@ -1096,15 +1144,56 @@ C
                   XNEW(3) = TQLEN(2,3,ISYM,IEXVAL)
      &                    - AVEC(2)*TRLEN(3,ISYM,IEXVAL)
      &                    - AVEC(3)*TRLEN(2,ISYM,IEXVAL)
-                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+                  WRITE(LUPRI,'(I4,I9,F13.6,3X,3F12.6)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            XNEW(1),XNEW(2),XNEW(3)
                END DO
             END DO
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(/)')
          END IF
       END IF
+CSPAS:23/5-11: second and third moment sum rules
+      IF (SUMRUL) THEN
+         CALL HEADER('Electric octapole transition '
+     &               //'moments (in a.u.)',15)
+         WRITE (LUPRI,'(A,2(/A))')
+     &   '  Sym.   Mode    Frequency                Length     '//
+     &   '                  ',
+     &   ' ex. st.  No.      (au)         xxx     xxy     xxz  '//
+     &   '   xyy     xyz     xzz',
+     &   ' ----------------------------------------------------'//
+     &   '--------------------------'
+         DO ISYM = 1, NSYM
+            DO IEXVAL = 1,NEXCIT(ISYM)
+               WRITE (LUPRI,'(I4,I9,F13.6,3X,6F8.4)')
+     &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
+     &            TTLEN(1,ISYM,IEXVAL),
+     &            TTLEN(4,ISYM,IEXVAL),
+     &            TTLEN(5,ISYM,IEXVAL),
+     &            TTLEN(6,ISYM,IEXVAL),
+     &            TTLEN(7,ISYM,IEXVAL),
+     &            TTLEN(8,ISYM,IEXVAL)
+            END DO
+         END DO
+         WRITE (LUPRI,'(//,A,A,2(/A,A))')
+     &   '  Sym.   Mode    Frequency                Length     ',
+     &   '                  ',
+     &   ' ex. st.  No.      (au)         yyy     yyz     yzz  ',
+     &   '   zzz     ',
+     &   ' ----------------------------------------------------',
+     &   '----------'
+         DO ISYM = 1, NSYM
+            DO IEXVAL = 1,NEXCIT(ISYM)
+               WRITE (LUPRI,'(I4,I9,F13.6,3X,4F8.4)')
+     &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
+     &            TTLEN(2,ISYM,IEXVAL),
+     &            TTLEN(9,ISYM,IEXVAL),
+     &            TTLEN(10,ISYM,IEXVAL),
+     &            TTLEN(3,ISYM,IEXVAL)
+            END DO
+         END DO
+      END IF
+CKeinSPASmehr
 C
 C     Write magnetic transition dipole moments to output:
 C     ===================================================
@@ -1319,15 +1408,15 @@ C
             DO IEXVAL = 1,NEXCIT(ISYM)
 
                DO K = 1,3
-                  DO J = 1,3
+                  DO M = 1,3
                      DO L = 1,3
-                        DO M = 1,3
+                        DO J = 1,3
                            RQVEL(J,K,ISYM,IEXVAL) =
      &                     RQVEL(J,K,ISYM,IEXVAL) + XLEVICI(J,L,M)*
-     &                     TRVEL(L,ISYM,IEXVAL)*TQVEL(M,K,ISYM,IEXVAL)
+     &                       TRVEL(L,ISYM,IEXVAL)*TQVEL(M,K,ISYM,IEXVAL)
                            RQLEN(J,K,ISYM,IEXVAL) =
      &                     RQLEN(J,K,ISYM,IEXVAL) + XLEVICI(J,L,M)*
-     &                     TRLEN(L,ISYM,IEXVAL)*TQLEN(M,K,ISYM,IEXVAL)
+     &                       TRLEN(L,ISYM,IEXVAL)*TQLEN(M,K,ISYM,IEXVAL)
                         END DO
                      END DO
                   END DO
@@ -1355,7 +1444,7 @@ C
                TSTVEL = TSTVEL/3.0D0
                TSTLEN = TSTLEN/3.0D0
 
-               WRITE(LUPRI,'(2X,I2,3X,I4,2X,A3,6(1X,F9.3))')
+               WRITE(LUPRI,'(I4,I7,2X,A3,6F10.3)')
      &         ISYM,IEXVAL,'Vel',RQVEL(1,1,ISYM,IEXVAL),
      &                           RQVEL(1,2,ISYM,IEXVAL),
      &                           RQVEL(1,3,ISYM,IEXVAL),
@@ -1367,7 +1456,7 @@ C
      &            'WARNING: wrong average: ',TSTVEL
                   LOCWRN = LOCWRN + 1
                END IF
-               WRITE(LUPRI,'(13X,A3,6(1X,F9.3))')
+               WRITE(LUPRI,'(13X,A3,6F10.3)')
      &                     'Len',RQLEN(1,1,ISYM,IEXVAL),
      &                           RQLEN(1,2,ISYM,IEXVAL),
      &                           RQLEN(1,3,ISYM,IEXVAL),
@@ -1413,7 +1502,7 @@ C
                TSTVEL = TSTVEL/3.0D0
                TSTLEN = TSTLEN/3.0D0
 
-               WRITE(LUPRI,'(2X,I2,3X,I4,2X,A3,6(1X,F9.3))')
+               WRITE(LUPRI,'(I4,I7,2X,A3,6F10.3)')
      &         ISYM,IEXVAL,'Vel',RVEL(1,1,ISYM,IEXVAL),
      &                           RVEL(1,2,ISYM,IEXVAL),
      &                           RVEL(1,3,ISYM,IEXVAL),
@@ -1426,7 +1515,7 @@ C
      &            '         expected     : ',SVEL(ISYM,IEXVAL)
                   LOCWRN = LOCWRN + 1
                END IF
-               WRITE(LUPRI,'(13X,A3,6(1X,F9.3))')
+               WRITE(LUPRI,'(13X,A3,6F10.3)')
      &                     'Len',RLEN(1,1,ISYM,IEXVAL),
      &                           RLEN(1,2,ISYM,IEXVAL),
      &                           RLEN(1,3,ISYM,IEXVAL),
@@ -1466,7 +1555,7 @@ C     next line is end of "IF (ROTSTR .OR. ROTVEL) THEN"
      &                  TRVEL(1,ISYM,IEXVAL),1) / EXENG(ISYM,IEXVAL)
                DIPSTL = DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                  TRLEN(1,ISYM,IEXVAL),1) * EXENG(ISYM,IEXVAL)
-               WRITE (LUPRI,'(2X,I2,6X,I3,5X,F12.6,5X,2F9.4)')
+               WRITE (LUPRI,'(I4,I9,F17.6,5X,2F9.4)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            (DTWO/DTHREE)*DIPSTV, (DTWO/DTHREE)*DIPSTL
                   LAPRPC = 'OSCI-VEL'
@@ -1492,12 +1581,12 @@ C
          CALL HEADER
      &   ('Non-adiabatic coupling matrix elements <O|d/dR|f> (in a.u.)',
      &    9)
-         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
-     &   ' Coordinate R          Sym.  Mode Ex. energy    WFR-term ',
+         WRITE (LUPRI,'(1X,A)')
+     &   ' Coordinate R          Sym.  Mode Ex. energy    WFR-term '//
      &   ' BSR-term   Total ',
-     &   ' Cartesian no.          st.   No.    (Ev)                ',
+     &   ' Cartesian no.          st.   No.    (Ev)                '//
      &   '                 ',
-     &   '----------------------------------------------------------',
+     &   '----------------------------------------------------------'//
      &   '------------------'
          DO 1100 ISYM = 1, NSYM
             DO 1000 ISCOOR = 1, 3*NATOMS
@@ -1506,10 +1595,10 @@ C
                DO 900 IEXVAL = 1,NEXCIT(ISYM)
                   CALL GENCOR(WORK(KCSTRA),NCOOR,ISCOOR,COORDI,ICORSY)
                   IF (ICORSY .EQ. ISYM) THEN
-                     WRITE (LUPRI,'(1X,A,2X,I2,4X,I2,2X,F10.6,1X,
+                     WRITE (LUPRI,'(1X,A,I4,I6,F12.6,1X,
      &                      2F10.4,F12.6)')
      &               COORDI, ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
-     &               FONAC(ISCOOR,ISYM,IEXVAL), 
+     &               FONAC(ISCOOR,ISYM,IEXVAL),
      &               FONA2(ISCOOR,ISYM,IEXVAL),
      &               FONAC(ISCOOR,ISYM,IEXVAL)+FONA2(ISCOOR,ISYM,IEXVAL)
 C
@@ -1519,9 +1608,8 @@ C
                   END IF
   900          CONTINUE
 C
-               IF (ICOUNT .GT. 0) WRITE(LUPRI,'(/,1X,A,A,22X,1F11.6,/)') 
-     &                                  'Vibrational g-factor: ',COORDI,
-     &                                  FX*DTWO
+               IF (ICOUNT .GT. 0) WRITE(LUPRI,'(/2A,F33.6,/)')
+     &            ' Vibrational g-factor: ',COORDI, FX*DTWO
 C
  1000       CONTINUE
  1100    CONTINUE
@@ -1532,6 +1620,10 @@ C     =======================================
 C
       IF (SUMRUL) THEN
          CALL DZERO(DSSUML,4*9)
+CSPAS:23/5-11: second and third moment sum rules
+         CALL DZERO(QSSUM ,4*9)
+         CALL DZERO(DTSSUM,4*9)
+CKeinSPASmehr
          CALL DZERO(DLSUML,4*9)
          CALL DZERO(DSSUMM,4*9)
          CALL DZERO(DLSUMM,4*9)
@@ -1541,32 +1633,42 @@ C
             DO IEXVAL = 1,NEXCIT(ISYM)
                DO ICOM = 1,3
                   DO K = -6,2
-                     DSSUML(K,ICOM) = DSSUML(K,ICOM) 
+                     DSSUML(K,ICOM) = DSSUML(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
-     &                              * TRLEN(ICOM,ISYM,IEXVAL) 
      &                              * TRLEN(ICOM,ISYM,IEXVAL)
-                     DLSUML(K,ICOM) = DLSUML(K,ICOM) 
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
+CSPAS:23/5-11: second and third moment sum rules
+                     QSSUM(K,ICOM) = QSSUM(K,ICOM)
+     &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
+     &                              * TQLEN(ICOM,ICOM,ISYM,IEXVAL)
+     &                              * TQLEN(ICOM,ICOM,ISYM,IEXVAL)
+                     DTSSUM(K,ICOM) = DTSSUM(K,ICOM)
+     &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
+     &                              * TTLEN(ICOM,ISYM,IEXVAL)
+CKeinSPASmehr
+                     DLSUML(K,ICOM) = DLSUML(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K+1)
      &                              * DLOG(EXENG(ISYM,IEXVAL))
-     &                              * TRLEN(ICOM,ISYM,IEXVAL) 
      &                              * TRLEN(ICOM,ISYM,IEXVAL)
-                     DSSUMM(K,ICOM) = DSSUMM(K,ICOM) 
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
+                     DSSUMM(K,ICOM) = DSSUMM(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**K
-     &                              * TRLEN(ICOM,ISYM,IEXVAL) 
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
      &                              * TRVEL(ICOM,ISYM,IEXVAL)
-                     DLSUMM(K,ICOM) = DLSUMM(K,ICOM) 
+                     DLSUMM(K,ICOM) = DLSUMM(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**K
      &                              * DLOG(EXENG(ISYM,IEXVAL))
-     &                              * TRLEN(ICOM,ISYM,IEXVAL) 
+     &                              * TRLEN(ICOM,ISYM,IEXVAL)
      &                              * TRVEL(ICOM,ISYM,IEXVAL)
-                     DSSUMV(K,ICOM) = DSSUMV(K,ICOM) 
+                     DSSUMV(K,ICOM) = DSSUMV(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K-1)
-     &                              * TRVEL(ICOM,ISYM,IEXVAL) 
      &                              * TRVEL(ICOM,ISYM,IEXVAL)
-                     DLSUMV(K,ICOM) = DLSUMV(K,ICOM) 
+     &                              * TRVEL(ICOM,ISYM,IEXVAL)
+                     DLSUMV(K,ICOM) = DLSUMV(K,ICOM)
      &                              + DTWO * EXENG(ISYM,IEXVAL)**(K-1)
      &                              * DLOG(EXENG(ISYM,IEXVAL))
-     &                              * TRVEL(ICOM,ISYM,IEXVAL) 
+     &                              * TRVEL(ICOM,ISYM,IEXVAL)
      &                              * TRVEL(ICOM,ISYM,IEXVAL)
                   ENDDO
                ENDDO
@@ -1574,6 +1676,10 @@ C
          ENDDO
          DO K = -6,2
             DSSUML(K,4) = (DSSUML(K,1)+DSSUML(K,2)+DSSUML(K,3)) / DTHREE
+CSPAS:23/5-11: second and third moment sum rules
+            QSSUM(K,4)  = (QSSUM(K,1)+QSSUM(K,2)+QSSUM(K,3)) / DTHREE
+            DTSSUM(K,4) = (DTSSUM(K,1)+DTSSUM(K,2)+DTSSUM(K,3)) / DTHREE
+CKeinSPASmehr
             DLSUML(K,4) = (DLSUML(K,1)+DLSUML(K,2)+DLSUML(K,3)) / DTHREE
             DSSUMM(K,4) = (DSSUMM(K,1)+DSSUMM(K,2)+DSSUMM(K,3)) / DTHREE
             DLSUMM(K,4) = (DLSUMM(K,1)+DLSUMM(K,2)+DLSUMM(K,3)) / DTHREE
@@ -1605,50 +1711,64 @@ C
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'S(K) Sum Rules : Dipole Length Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4G17.6/))')
      &         (K,(DSSUML(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'S(K) Sum Rules : Dipole Mixed Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4G17.6/))')
      &         (K,(DSSUMM(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'S(K) Sum Rules : Dipole Velocity Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
      &         (K,(DSSUMV(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'L(K) Sum Rules : Dipole Length Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
      &         (K,(DLSUML(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'L(K) Sum Rules : Dipole Mixed Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DLSUMM(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'L(K) Sum Rules : Dipole Velocity Approximation in a.u.',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DLSUMV(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'I(K) Sum Rules : Dipole Length Approximation in eV',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
      &         (K,(DISUML(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'I(K) Sum Rules : Dipole Mixed Approximation in eV',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DISUMM(K,J),J=1,4),K=-6,2)
          WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
      &   'I(K) Sum Rules : Dipole Velocity Approximation in eV',
      &   'K','xx - component','yy - component','zz - component','total'
-         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
      &         (K,(DISUMV(K,J),J=1,4),K=-6,2)
+CSPAS:23/5-11: second and third moment sum rules
+         WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,2X,A,2X,A,5X,A,/)')
+     &   'S(K) Sum Rules : Second Moments in a.u.',
+     &   'K','xx,xx component','yy,yy component',
+     &   'zz,zz component','total'
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
+     &         (K,(QSSUM(K,J),J=1,4),K=-6,2)
+         WRITE (LUPRI,'(//,14X,A,/,6X,A,4X,A,2X,A,2X,A,6X,A,/)')
+     &   'S(K) Sum Rules : Mixed First-third moments in a.u.',
+     &   'K','x,xxx component','y,yyy component',
+     &   'z,zzz component','total'
+         WRITE (LUPRI,'(9(I8,4(4X,G13.6)/))')
+     &         (K,(DTSSUM(K,J),J=1,4),K=-6,2)
+CKeinSPASmehr
       ENDIF
-C     
+C
 C        *** If numerical derivatives are calculated, then ***
 C        *** write properties to file.                     ***
 C
@@ -1678,18 +1798,18 @@ C  /* Deck excit2 */
 C
 C     Triplet excitations now determined in input
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "priunit.h"
       CHARACTER*8 LABEL
       LOGICAL INTTRS, CICLC, HFCLC, TRIPLE, EXECLC
       DIMENSION WORK(LWORK), EXVAL(NEXENG)
 C
-#include <cbiexc.h>
-#include <infvar.h>
-#include <inforb.h>
+#include "cbiexc.h"
+#include "infvar.h"
+#include "inforb.h"
 C
       CICLC  = .FALSE.
       HFCLC  = NASHT .LE. 1
@@ -1727,9 +1847,9 @@ C
 C     Purpose: To copy a set of NLAB labels and corresponding
 C     symmetries from LAB1 and ISYM1 to LAB2 and ISYM2.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cbiexc.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cbiexc.h"
       CHARACTER LAB1(*)*8, LAB2(*)*8
       DIMENSION ISYM1(*), ISYM2(*)
 C
@@ -1758,18 +1878,18 @@ C
 C     Purpose: To generate a readable description of the symmetry
 C     coordinate ISCOOR in COORDI.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
       CHARACTER COORDI*21, CNBASE*2
       DIMENSION NBASE(8),NSIGN(8), CSTRA(NCOOR,NCOOR)
-#include <chrxyz.h>
-#include <chrnos.h>
-#include <chrsgn.h>
+#include "chrxyz.h"
+#include "chrnos.h"
+#include "chrsgn.h"
 C
       DO 400 ISYM = 0, MAXREP
       IF (NCRREP(ISYM,1) .GT. 0) THEN

@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cmodel */
       SUBROUTINE CMODEL(CMO,GETCMO)
@@ -45,7 +35,7 @@ C     Written 870710-hjaaj
 C     revised 89050 -hjaaj: + GETCMO
 C             890703-hjaaj: MOLFTUC4
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*)
       LOGICAL   GETCMO
@@ -59,20 +49,20 @@ C Used from common blocks:
 C
 C     INFINP : KDEL, TYPE(*)
 C     INFORB : NSYM, NORB(8), NBAS(8)
-C     INFPRI : IPRERR, LUERR
+C     PRIUNIT : IPRSTAT, LUSTAT
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       CHARACTER*4 MOLFTUC4, CTMPMO(MXCORB)
 C
       CALL QENTER('CMODEL')
-      IF (IPRERR .GE. 99) THEN
-         WRITE (LUERR,'(//A/)') ' >>> Test output from CMODEL'
-         WRITE (LUERR,*) 'KDEL,GETCMO  ',KDEL,GETCMO
+      IF (IPRSTAT .GE. 99) THEN
+         WRITE (LUSTAT,'(//A/)') ' >>> Test output from CMODEL'
+         WRITE (LUSTAT,*) 'KDEL,GETCMO  ',KDEL,GETCMO
       END IF
 C
       IF (KDEL.EQ.0) THEN
@@ -378,12 +368,12 @@ C
             JBAS0=JBAS0+NBAS(ISYM)
 200      CONTINUE
       END IF
-      IF(IPRERR.GE.9) THEN
-         WRITE(LUERR,'(A,8I4)') ' NBAS:',(NBAS(I),I=1,NSYM)
-         WRITE(LUERR,'(A,8I4)') ' NORB:',(NORB(I),I=1,NSYM)
-         IF (GETCMO .AND. IPRERR.GE.20) THEN
-            WRITE(LUERR,*) 'Final CMO in CMODEL'
-            CALL PRORB(CMO,.FALSE.,LUERR)
+      IF(IPRSTAT.GE.9) THEN
+         WRITE(LUSTAT,'(A,8I4)') ' NBAS:',(NBAS(I),I=1,NSYM)
+         WRITE(LUSTAT,'(A,8I4)') ' NORB:',(NORB(I),I=1,NSYM)
+         IF (GETCMO .AND. IPRSTAT.GE.20) THEN
+            WRITE(LUSTAT,*) 'Final CMO in CMODEL'
+            CALL PRORB(CMO,.FALSE.,LUSTAT)
          END IF
       END IF
       CALL QEXIT('CMODEL')
@@ -481,8 +471,8 @@ C Output:
 C  CMO; molecular orbitals
 C  DELEMO set true if orbitals have been deleted
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CMO(*),SCRA(*)
       LOGICAL   DELEMO
       PARAMETER (D1=1.0D0)
@@ -494,11 +484,11 @@ C   INFPRI : LUW4
 C   CBIREA : LMULBS
 C   R12INT : LAUXBS
 C
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "cbirea.h"
+#include "r12int.h"
 C
       CALL QENTER('DELMO ')
 C
@@ -716,12 +706,12 @@ C Input: CMO : MO:s in normal order
 C
 C Output: CMO : MO:s in IORD order
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),CSCR(*),IORD(*)
 C
 C  INFORB : NCMOT, ICMO(8), NBAS(8), NORB(8)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       INEW1 = 1
       DO 10 ISYM = 1,NSYM
@@ -757,7 +747,7 @@ C         NORM   (GRAM-SCHMIDT ORTHONORMALIZATION)
 C         SYMORT (SYMMETRICAL ORTHONORMALIZATION)
 C         MOLLAB (OVERLAP MATRIX ON LUONEL)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),S(*),SIN(LSIN)
 C
       PARAMETER (D0 = 0.0D0)
@@ -767,11 +757,11 @@ C   INFINP : NWARN,CMAXMO,THROVL,?
 C   INFORB : NNBAST,NCMOT
 C   INFPRI : P4FLAG(*),P6FLAG(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       LOGICAL PROVLP
       SAVE    PROVLP
@@ -933,19 +923,19 @@ C
 C Output:
 C  CMO; molecular orbitals
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),SH1(*),SCRA(*)
 C
 C Used from common blocks:
 C   INFINP : FLAG(32)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infdim.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infdim.h"
 C
       LOGICAL LSAVE1,LSAVE2,LSAVE3
 C
@@ -1025,7 +1015,7 @@ C
 C Input:
 C  CMO; molecular orbitals
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),WRK(*)
 C
 C Used from common blocks:
@@ -1033,13 +1023,13 @@ C  SCBRHF : IOPRHF
 C  INFORB : NRHF(), NNBAST,NNORBT,NBAST,...
 C  INFIND : IROW()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <scbrhf.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "scbrhf.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       CALL QENTER('H1OCC ')
 C
@@ -1134,12 +1124,12 @@ C Scratch:
 C  FC; the inactive Fock matrix and scratch area for overlap matrix
 C  SCRA; general scratch area
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),FC(*),SCRA(*)
 C
 C
       PARAMETER (D0=0.0D0, EMYCNV = 1.D-4)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C  INFINP : 
@@ -1147,16 +1137,16 @@ C  INFOPT : EPOT,EMY,EMCSCF
 C  SCBRHF : NFRRHF(*)
 C  INFIND : ...,ISSMO(*),?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infind.h>
-#include <infpri.h>
-#include <gnrinf.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infind.h"
+#include "infpri.h"
+#include "gnrinf.h"
 C
       LOGICAL LSAVE4,LSAVE6
 C
@@ -1306,12 +1296,12 @@ C            to modify virtual Hartree-Fock orbitals for CI/MC
 C
 C  Reference for .FC MVO: C.W. Bauschlicher, JCP 72 (1980) 880.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*), WRK(LFREE)
 C
       PARAMETER ( D0 = 0.0D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C   INFORB : NSYM, NNBAST, NNORBT, ...
 C   SCBRHF : IOPRHF, NMVO(), NMVOT
@@ -1319,14 +1309,14 @@ C   INFIND : IROW(*)
 C   INFPRI : IPRI6
 C   INFIND : SUPSYM
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infinp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infinp.h"
 C
       DIMENSION MISH(8), MRHF(8)
 C
@@ -1432,11 +1422,11 @@ C Purpose:
 C  Print molecular orbital coefficients on unit IOUT.
 C
 C Input:
-C  CMO, MO orbital coefficients (symmetry blocked)
-C  PROCC, print only occupied orbitals
-C  IOUT, output file unit
+C  CMO:    MO orbital coefficients (symmetry blocked)
+C  PROCC:  print only occupied orbitals
+C  IOUT:   output file unit
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*)
       LOGICAL   PROCC
 C
@@ -1446,20 +1436,20 @@ C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
 C   CBIREA : LMULBS
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "cbirea.h"
+#include "r12int.h"
 C
 C *** FORMAT statements
 C
  2400 FORMAT(/' Molecular orbitals for symmetry species',I3,
      &       /' ------------------------------------------')
- 2600 FORMAT(/' Orbital   ',7I9)
- 2620 FORMAT( ' Sup.sym.  ',7I9)
+ 2600 FORMAT(/'    Orbital ',7I9)
+ 2620 FORMAT( '    Sup.sym.',7I9)
  2800 FORMAT(I4,1X,A4,':',A4,7F9.4)
 C
 C *** Print molecular orbitals
@@ -1485,7 +1475,9 @@ C           print all occupied and 2 lowest unoccupied this symmetry
             ELSE
 C           print 5 highest occupied and 2 lowest unoccupied this symmetry
 C           (output becomes too big otherwise ... /hjaaj Dec08)
-               IEND  = MAX(0,NOCC(ISYM)-5)
+C           Oct12 hjaaj: do print all active orbitals if MCSCF
+               IEND  = MIN(NISH(ISYM),NOCC(ISYM)-5)
+               IEND  = MAX(0,IEND)
             END IF
             NENDI = NOCC(ISYM)
      &            + MIN(2,NORB(ISYM)-NOCC(ISYM) - NRXR12(ISYM))
@@ -1539,15 +1531,15 @@ C Control:
 C   IPCTL .eq. 1: also punch occupation numbers
 C   else        : do not punch occupation numbers
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*),OCC(*)
       PARAMETER (D0 = 0.0D0)
 C
 C Used from common blocks:
 C   INFORB : NSYM,NORB(*),NBAS(*)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       CHARACTER*8 LBLDAT(2)
 C
@@ -1570,7 +1562,7 @@ C
          NORBI=NORB(ISYM)
       IF (NORBI.EQ.0) GO TO 700
          NBASI=NBAS(ISYM)
-         DO 705 NI=1,NORBI
+         DO NI=1,NORBI
             IST=IEND+1
             IEND=IEND+NBASI
             IMOMXV = IDAMAX(NBASI,CMO(IST),1)
@@ -1588,14 +1580,13 @@ C
             ELSE
                WRITE (LUPNCH,7050) (CMO(NP),NP=IST,IEND)
             END IF
-  705    CONTINUE
+         END DO
          NDELI = NBASI-NORBI
       IF (NDELI.EQ.0) GO TO 700
-         DO 706 NI=1,NDELI
+         DO NI=1,NDELI
             WRITE (LUPNCH,7000) (D0,NP=1,NBASI)
-  706    CONTINUE
+         END DO
   700 CONTINUE
-      CALL GPCLOSE(LUPNCH,'KEEP')
 C
       IF (IPCTL.EQ.1) THEN
          WRITE (LUPNCH,'(A,A8,2X,A8,A)')
@@ -1603,6 +1594,7 @@ C
          WRITE(LUPNCH,7000) (OCC(NP),NP=1,NORBT)
       END IF
 C
+      CALL GPCLOSE(LUPNCH,'KEEP')
       CALL QEXIT('PUNMO')
       RETURN
 C

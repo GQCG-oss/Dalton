@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck get_lambdax */
       SUBROUTINE GET_LAMBDAX(LAMPX,LAMHX,LISTX,IDLSTX,ISYMX,LAMP0,LAMH0,
@@ -49,11 +39,11 @@ C  /* Deck get_lambdax */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccr1rsp.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccr1rsp.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "dummy.h"
 C
       INTEGER IDLSTX,ISYMX
       INTEGER KT1X
@@ -135,9 +125,9 @@ C  /* Deck get_fock0 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "dummy.h"
 C
       INTEGER ISYM0,LWORK,LUFOCK
 C
@@ -195,10 +185,10 @@ C  /* Deck get_fockx */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccl1rsp.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccl1rsp.h"
+#include "ccorb.h"
 C
       INTEGER ISYMX,IRREP,ISYM
       INTEGER LWORK,KEND1,LWRK1
@@ -280,11 +270,11 @@ C  /* Deck get_lambda0 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccr1rsp.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccr1rsp.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "dummy.h"
 C
       INTEGER IDLST0,ISYM0
       INTEGER KT1AMP0
@@ -355,11 +345,11 @@ C  /* Deck get_t1_t2 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccr1rsp.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccr1rsp.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "dummy.h"
 C
       INTEGER IDLST,ISYM,LWORK,IOPT
 C
@@ -455,9 +445,9 @@ C  /* Deck sort_fockck */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYFCK,ISYMC,ISYMK,KOFF1,KOFF2
 C
@@ -505,12 +495,12 @@ C  /* Deck get_orben */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER LWORK
 C
@@ -572,8 +562,8 @@ C  /* Deck intocc_t3bar0 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYINT,LWORK,KINTOC,KEND1,LWRK1,IOFF
       INTEGER LUTOC
@@ -651,8 +641,8 @@ C  /* Deck intocc_t30 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYINT,LWORK,KINTOC,KEND1,LWRK1,IOFF
       INTEGER LUCKJD
@@ -743,8 +733,8 @@ C  /* Deck intocc_t3barx */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 C
       LOGICAL LSKIPL1R
 C
@@ -831,7 +821,7 @@ C  /* Deck intocc_t3barx2 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
+#include "priunit.h"
 C
       INTEGER ISYMX,ISYINT,LWORK
 C
@@ -884,8 +874,8 @@ C  /* Deck intocc_t3x */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYINT,LWORK,KINTOC,KEND1,LWRK1,IOFF
       INTEGER LUCKJDR
@@ -964,9 +954,9 @@ C  /* Deck intvir_t30_d */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYINT,ISYMD,LWORK,KINTVI,KEND1,LWRK1,IOFF,ISYCKB
       INTEGER LUDKBC,LUDELD
@@ -1060,9 +1050,9 @@ C  /* Deck intvir_t3bar0_d */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYINT,ISYMD,LWORK
       INTEGER LU3FOPX,LU3FOP2X,LUDKBC3,LU3VI
@@ -1211,9 +1201,9 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL LSKIPL1R
 C
@@ -1395,9 +1385,9 @@ C  /* Deck intvir_t3barx_d2 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMX,ISYINT,ISYMD,LWORK
       INTEGER ISYINTX
@@ -1454,9 +1444,9 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMT3,ISYINT,ISYMT2,LENSQ,INDSQ(LENSQ,6),IINDEX,INDEX2
       INTEGER ISYMB,ISYMD,ISCKIJ,LWORK
@@ -1568,9 +1558,9 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMT3,ISYMT1,ISYMT2,ISINT1,ISINT2
       INTEGER LENSQ,INDSQ(LENSQ,6),IINDEX,INDEX2
@@ -1710,9 +1700,9 @@ C  /* Deck get_t3barx_bd */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL NOVIRT
       INTEGER ISTMAT,ISYFKY,ISWMAT,ISYML2,ISYFCKY,ISINT2Y,ISYML2Y
@@ -1827,9 +1817,9 @@ C  /* Deck get_t3x_bd */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMT3,ISWMAT,ISTMAT,ISYFKX,ISYMT2,ISYMT2X,ISYINT
       INTEGER ISYINTX,LENSQ,INDSQ(LENSQ,6),ISYMB,ISYMD,LWORK
@@ -1936,9 +1926,9 @@ C  /* Deck get_e3_bd */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMT3,ISWMAT,ISYMT2,ISYMT2X,ISYINT
       INTEGER ISYINTX,LENSQ,INDSQ(LENSQ,6),ISYMB,ISYMD,LWORK
@@ -2026,9 +2016,9 @@ C  /* Deck get_m3bar_bd */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISWMAT,ISYML2,ISYFCKY,ISINT2Y,ISYMM2
       INTEGER ISYFCKBA,ISINT2,ISYMM1,ISINT1,ISYMB,ISYMD,ISYMT3
@@ -2127,9 +2117,9 @@ C  /* Deck get_l3bar_bd */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISWMAT,ISYML2
       INTEGER ISYFCKBA,ISINT2,ISYML1,ISINT1,ISYMB,ISYMD,ISYMT3
@@ -2207,9 +2197,9 @@ C  /* Deck write_t3_dl */
 C
       IMPLICIT NONE
 C
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cc3t3d.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cc3t3d.h"
 C
       INTEGER LUFILE
       INTEGER ISYMT3,ISYMD,ISYMB
@@ -2268,9 +2258,9 @@ C   XIJ^AB(ij) = t2tp(aijb)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMA, ISYMB, ISYMT2
       INTEGER ISYMAB, ISYMIJ, ISYMI, ISYMJ, ISYMAIJ, ISYMAI
@@ -2319,9 +2309,9 @@ C     t2tp(aijb) as I^I(AJI)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMI, ISYMT2
       INTEGER ISYMAJI, ISYMJ, ISYMAJ, ISYMB, ISYMA, ISYMAIJ, ISYMAI

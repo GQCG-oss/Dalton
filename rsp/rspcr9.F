@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
       SUBROUTINE C3FOCK(IBEQC,FDTI,VECB,VECC,
      *                 ZYMB,ZYMC,KZYVB,KZYVC,
@@ -43,7 +33,7 @@ C To calculate Fock matrix (FDTI) with doubly one-index transformed
 C integrals to be used in direct cubic RPA.
 C March 1997: tsaue Just one call to SIRFCK, big speedup !
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FDTI(N2ORBX)
       DIMENSION VECB(*),VECC(*)
@@ -54,15 +44,15 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
 C
       CALL QENTER('C3FOCK')
       IF (8*N2BASX .GT. LWRK) THEN
@@ -92,9 +82,9 @@ C To calculate Fock matrix (FDTI) with doubly one-index transformed
 C integrals to be used in direct cubic RPA.
 C March 1997: tsaue Just one call to SIRFCK, big speedup !
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "thrzer.h"
 C
       DIMENSION FDTI(N2ORBX)
       DIMENSION VECB(*),VECC(*)
@@ -105,16 +95,16 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
@@ -298,9 +288,9 @@ C PURPOSE:
 C To calculate Fock matrix (FDTI) with doubly one-index transformed
 C integrals to be used in direct cubic RPA.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "thrzer.h"
 C
       DIMENSION FDTI(N2ORBX)
       DIMENSION VECB(*),VECC(*)
@@ -311,16 +301,16 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
@@ -527,7 +517,7 @@ C March 1997: tsaue Just one call to SIRFCK, big speedup !
 C July 1997:  kruud. Interface routine; further path depends on available
 C                    memory
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FTTI(N2ORBX)
       DIMENSION VECB(*),VECC(*),VECD(*)
@@ -538,15 +528,15 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
 C
       IF (14*N2BASX .GT. LWRK) THEN
          WRITE (LUPRI,'(A)') ' Due to potential lack of available '//
@@ -569,8 +559,8 @@ C
      *                  ZYMB,ZYMC,ZYMD,KZYVB,KZYVC,KZYVD,
      *                  ISYMA,ISYMB,ISYMC,ISYMD,
      *                  CMO,FC,MJWOP,WRK,LWRK)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION FTTI(N2ORBX)
       DIMENSION VECB(*),VECC(*),VECD(*)
@@ -581,16 +571,16 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D6 = 6.0D0 , D8 = 8.0D0 ,
      &           D12 = 12.0D0)
@@ -862,8 +852,8 @@ C To calculate Fock matrix (FTTI) with triply one-index transformed
 C integrals to be used in direct cubic RPA.
 C July  1997: kruud: Memory efficient version of C4FOCK
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION FTTI(N2ORBX)
       DIMENSION VECB(*),VECC(*),VECD(*)
@@ -874,16 +864,16 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D6 = 6.0D0, D3 = 3.0D0)
 C
@@ -1177,15 +1167,15 @@ C
       END
       SUBROUTINE FAOMO(ISYMF,FAO,FMO,CMO,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FAO(N2BASX),FMO(N2ORBX),CMO(*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "wrkrsp.h"
 C
       CALL DZERO(FMO,N2ORBX)
       DO 100 ISYM=1,NSYM

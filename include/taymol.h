@@ -1,6 +1,4 @@
-#if defined (SYS_CRAY)
-      REAL ERGMOL, GRDMOL, HESMOL
-#else
-      DOUBLE PRECISION ERGMOL, GRDMOL, HESMOL
-#endif
+! include/taymol.h
+      REAL*8  ERGMOL, GRDMOL, HESMOL
       COMMON /TAYMOL/ ERGMOL, GRDMOL(MXCOOR), HESMOL(MXCOOR,MXCOOR)
+! --- end of taymol.h ---

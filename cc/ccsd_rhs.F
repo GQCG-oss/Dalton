@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck ccrhsn */
       SUBROUTINE CCRHSN(OMEGA1,OMEGA2,T1AM,T2AM,WORK,LWORK,APROXR12)
@@ -54,30 +44,30 @@ C     some changes for CC2 with non-Hatree-Fock fields (NONHF=.true.)
 C     to allow for finite difference also w.r.t. orbital coefficients
 C     (i.e. the CMO vector), spring 2000, Ch. Haettig
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsections.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ccnoddy.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsections.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ccnoddy.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "qm3.h"
 !#include <qmmm.h>
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -487,7 +477,11 @@ C
          IF (.NOT. NYQMMM) THEN
             CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
          ELSE IF (NYQMMM) THEN
-            CALL CCMM_TGT(WORK(KFOCK),WORK(KEND1),LWRK1)
+            IF (HFFLD ) THEN
+              CALL CCMM_ADDGHF(WORK(KFOCK),WORK(KEND1),LWRK1)
+            ELSE
+              CALL CCMM_ADDG(WORK(KFOCK),WORK(KEND1),LWRK1)
+            END IF
          END IF
       ENDIF
 C
@@ -1260,7 +1254,11 @@ C
            IF (.NOT. NYQMMM) THEN
               CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
            ELSE IF (NYQMMM) THEN
-              CALL CCMM_TGT(WORK(KFIELD),WORK(KEND2),LWRK2)
+              IF ( HFFLD ) THEN
+                CALL CCMM_ADDGHF(WORK(KFIELD),WORK(KEND2),LWRK2)
+              ELSE
+                CALL CCMM_ADDG(WORK(KFIELD),WORK(KEND2),LWRK2)
+              END IF
            END IF
         ENDIF
 C
@@ -2256,15 +2254,15 @@ C
 C     Purpose: Calculate E-terms
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
       DIMENSION EMAT1(*),EMAT2(*)
       DIMENSION T2AM(*),OMEGA2(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2420,13 +2418,13 @@ C     Written by Henrik Koch & Ove Christiansen 20-Jan-1994
 C
 C     Purpose: Calculate I-term.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ONE=1.0D0)
       DIMENSION OMEGA1(*),WORK(*)
       DIMENSION T2AM(*),FOCK(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C--------------------------------
 C     Calculate the contribution.
@@ -2482,12 +2480,12 @@ C     well as usual contributions (IOPT 1) by Asger Halkier 22/11-95.
 C
 C     Purpose: Calculate A-term.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0, ONE=1.0D0)
       DIMENSION OMEGA2(*),GAMMA(*),T2AM(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2656,11 +2654,11 @@ C     Written by Henrik Koch & Ove Christiansen 19-Jan-1994
 C
 C     Purpose: Calculate J-term.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCK(*),OMEGA1(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C--------------------
 C     Calculate term.
@@ -2705,12 +2703,12 @@ C              isymp(isymh) is the symmetry of lamp(lamh)
 C
 C     Purpose: Calculate MO Fock Matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, ZERO = 0.0D0)
       DIMENSION FOCK(*),XLAMDP(*),XLAMDH(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYML  = MULD2H(ISYMPA,ISYMHO)
       ISYFMO = MULD2H(ISYML,ISYFAO)
@@ -2833,13 +2831,13 @@ C
 C     Purpose: Calculate H-term.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION DSRHF(*),OMEGA1(*),XLAMDH(*),WORK(LWORK)
       DIMENSION XLAMDP(*),SCRM(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C--------------------------------
 C     Calculate the contribution.
@@ -2862,13 +2860,13 @@ C
 C     Purpose: Calculate H-term.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
       DIMENSION DSRHF(*),OMEGA1(*),SCRM(*)
       DIMENSION XLAMDP(*),XLAMDH(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2973,13 +2971,13 @@ C
 C     Purpose: Calculate G-term.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION DSRHF(*),OMEGA1(*),XLAMP1(*),WORK(LWORK)
       DIMENSION XLAMH1(*),SCRM(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------------
 C     Dynamic allocation.
@@ -3019,14 +3017,14 @@ C
 C     Purpose: Calculate G-term.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
       PARAMETER(TWO=2.0D0)
       DIMENSION DSRHF(*),OMEGA1(*),SCRM(*),SCR1(*)
       DIMENSION XLAMP1(*),XLAMH1(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -3134,15 +3132,15 @@ C
 C     Purpose: Calculate E-intermediates.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION EMAT1(*), EMAT2(*)
       DIMENSION DSRHF(*),WORK(LWORK)
       DIMENSION T2AM(*),SCRM(*)
       DIMENSION XLAMDP(*),XLAMDH(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C
 C------------------------
@@ -3184,7 +3182,7 @@ C
 C     Purpose: Calculate E-intermediates.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,HALF=0.5D0,ONE=1.0D0,TWO=2.0D0)
       DIMENSION DSRHF(*)
       DIMENSION EMAT1(*),EMAT2(*)
@@ -3192,9 +3190,9 @@ C
       DIMENSION SCR1(*),SCR2(*),SCR3(*)
       DIMENSION XLAMDP(*),XLAMDH(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -3368,13 +3366,13 @@ C
 C     Adapted for R12: LAUXD=.TRUE.: Delta runs also over aux-functions
 C     Christian Neiss, spring 2006 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),DENSIT(*)
       DIMENSION FOCK(*),WORK(LWORK)
@@ -3509,17 +3507,17 @@ C                 E_{a delta')^1' intermediate (on E1PIM).
 C 
 C     Purpose: Calculate D-term.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),DSRHF(*),OMEGA2(*),WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMIP(*),XLAMDH(*),SCRM(*)
       DIMENSION XLAMPC(*),XLAMHC(*)
       DIMENSION T2AM(*),E1PIM(*)
       CHARACTER DFIL*(*),DPFIL
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       ISYDIS = MULD2H(ISYMD,ISYMOP)
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
@@ -3603,10 +3601,10 @@ C     adapted for CCSDR12, C. Neiss spring 2006
 C
 C     Purpose: Calculate D-term.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0,HALF=0.5D0,XMHALF=-0.5D0)
       PARAMETER(TWO=2.0D0)
       DIMENSION XINT(*),OMEGA2(*),T2AM(*),DSRHF(*)
@@ -3617,11 +3615,11 @@ C
       DIMENSION WORK(LWORK)
       INTEGER   NADP(8),IADP(8,8),IBASX(8)
       CHARACTER DFIL*(*),DPFIL*(*)
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "r12int.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -4256,18 +4254,18 @@ C                 E_{a delta')^1' intermediate (on E1PIM).
 C
 C     Purpose: Calculate C-term.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       DIMENSION XINT(*),DSRHF(*),OMEGA2(*),XLAMDH(*),WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMIP(*),SCRM(*),XLAMPC(*),XLAMHC(*)
       DIMENSION T2AM(*),E1PIM(*)
       CHARACTER CFIL*(*),CPFIL*(*)
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
 C
       ISYDIS = MULD2H(ISYMD,ISYMOP)
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
@@ -4381,10 +4379,10 @@ C     extended for CCSDR12, C. Neiss spring 2006
 C
 C     Purpose: Calculate C-term intermediate.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
       PARAMETER (ZERO=0.0D0,ONE=1.0D0,HALF=0.5D0,XMHALF=-0.5D0)
       PARAMETER (TWO=2.0D0)
       DIMENSION XINT(*),OMEGA2(*),T2AM(*),DSRHF(*)
@@ -4394,11 +4392,11 @@ C
       DIMENSION WORK(LWORK)
       INTEGER   NADP(8),IADP(8,8),IBASX(8)
       CHARACTER CFIL*(*),CPFIL*(*)
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "r12int.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -4962,13 +4960,13 @@ C     Symmetry by Henrik Koch and Alfredo Sanchez. 21-July-1994
 C
 C     Purpose: Calculate the gamma intermediate.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DSRHF(*),GAMMA(*),SCRM(*)
       DIMENSION WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMDH(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------------
 C     Dynamic allocation.
@@ -5033,14 +5031,14 @@ C     Written by Henrik Koch 3-Jan-1994
 C
 C     Purpose: Calculate the gamma intermediate.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION DSRHF(*),GAMMA(*),SCRM(*),XLAM(*)
       DIMENSION SCR1(*),SCR2(*),SCR3(*),SCR4(*),WORK(*)
       DIMENSION XLAMDP(*),XLAMDH(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -5164,13 +5162,13 @@ C     Symmetry by Henrik Koch and Alfredo Sanchez. 18-July-1994
 C
 C     Purpose: Calculate B-term.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),OMEGA2(*),XLAMDH(*),WORK(LWORK)
       DIMENSION XLAMDP(*),SCRM(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------------
 C     Dynamic allocation.
@@ -5241,15 +5239,15 @@ C     Written by Henrik Koch 3-Jan-1994
 C
 C     Purpose: Calculate B-term.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),OMEGA2(*),XMGD(*)
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -5420,15 +5418,15 @@ C     Symmetry by Henrik Koch and Alfredo Sanchez. 13-July-1994
 C
 C     Purpose: Calculate F-term.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER (HALF = 0.5D0)
       DIMENSION XINT(*),OMEGA2(*)
       DIMENSION XLAMDH(*),WORK(LWORK)
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
 C
       ISYMJ  = ISYMD
       ISYDIS = MULD2H(ISYMD,ISYMOP)
@@ -5506,14 +5504,14 @@ C     Symmetry by Henrik Koch and Alfredo Sanchez. 13-July-1994
 C
 C     Purpose: Calculate F-term.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XINT(*),OMEGA2(*),XLAM(*)
       DIMENSION SCR1(*),SCR2(*)
       DIMENSION XLAMDH(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO 100 B = 1,NBAS(ISYMB)
 C
@@ -5582,14 +5580,14 @@ C     Ove Christiansen 14-6-1996: General sym. lambda matrix ISYMLP
 C
 C     Purpose: Transform integral batch.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
 C
       DIMENSION XINT(*),DSRHF(*),XLAMDP(*),WORK(LWORK)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       KOFF1 = 1
       KOFF2 = 1
@@ -5622,12 +5620,12 @@ C     Written by Henrik Koch 25-Sep-1993
 C
 C     Purpose: Read distribution of AO integrals.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "iratdef.h"
 C
       LOGICAL FIRST, DIRECT
       DIMENSION XINT(*),WORK(LWORK)
@@ -5635,18 +5633,18 @@ C
 C
       CHARACTER*8 NAME(8)
 C
-#include <ccorb.h>
+#include "ccorb.h"
 C
 C   #include <infind.h> replaced by: #include <ccisao.h>
 C   (WK/UniKA/28-04-2003).
 C
-#include <ccisao.h>
+#include "ccisao.h"
 C
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ccpack.h>
-#include <r12int.h>
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ccpack.h"
+#include "r12int.h"
 C
       SAVE FIRST
       DATA FIRST /.TRUE./
@@ -5742,13 +5740,13 @@ C  /* Deck ccrda1 */
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <ibtpar.h>
-#include <ccorb.h>
-#include <mxcent.h>
-#include <eribuf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "ibtpar.h"
+#include "ccorb.h"
+#include "mxcent.h"
+#include "eribuf.h"
       DIMENSION XINT(*)
       DIMENSION KADR1(NBAST),KADR2(NBAST,NBAST)
       DIMENSION IBUF(LBUF,NIBUF),RBUF(LBUF)
@@ -5757,13 +5755,13 @@ C
       LOGICAL OLDDX
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-#include <ccinftap.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <chrnos.h>
-#include <r12int.h>
+#include "ccinftap.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "chrnos.h"
+#include "r12int.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -5785,7 +5783,7 @@ C
       IF (LUAORC(0) .LE. 0) THEN
             LBFINP = LBUF
 C     
-#if defined (INT_STAR8) || defined (VAR_INT64)
+#if defined (VAR_INT64)
             LRECL = LBFINP + LBFINP + 1
 #elif defined (SYS_NEC)
             LRECL = LBFINP + LBFINP/IRAT + 1
@@ -5909,15 +5907,15 @@ C     PURPOSE:
 C             Calculate transformation matrices used in ccsd
 C             calculations.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       DIMENSION XLAMDH(*),XLAMDP(*),WORK(LWORK),T1AM(*)
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
       CALL QENTER('LAMMAT')
@@ -6049,13 +6047,13 @@ C
 C     Calculate the lambda matrices.             asm 05-08-94
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0)
       DIMENSION XLAMDH(*),XLAMDP(*)
       DIMENSION T1AM(*),CMO(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DO 100 ISYMP = 1,NSYM
 C
@@ -6129,14 +6127,14 @@ C     PURPOSE:
 C             Tdjci -> Tci,j (delta)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION T2AM(*),XLAMDH(*)
       DIMENSION SCRM(*),WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C-----------------------------------------------------
 C     Calculate the transformed t2-amplitude and save.
@@ -6213,16 +6211,16 @@ C
 C     PURPOSE:
 C             Read one electron integrals into matrix.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (LBUF = 600, LUINT = 51)
       DIMENSION FOCK(*),WORK(*)
       DIMENSION BUF(LBUF),IBUF(LBUF)
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       LOGICAL EX
 C
@@ -6270,11 +6268,11 @@ C     a general non total symmetric vector.
 C     Squareup the t2-amplitudes distribution.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(*),T2SQ(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       IF (ISYM.EQ.1) THEN
          KOFF1 = 1
@@ -6324,7 +6322,7 @@ C     Ove Christiansen 14-2-1995
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION A(LDA,*),B(LDB,*)
 C
@@ -6354,16 +6352,16 @@ C         ISYMH is the symmetry of the transformed LAMBDAH
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XLAMDP(*), XLAMDH(*), DENS(*), WORK(LWORK)
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
       KOFF1 = 1
       KOFF2 = 1
@@ -6497,16 +6495,16 @@ C        (--> only total-symmetric transf. allowed); result is
 C        added on GAMMA; RHO2 will not be used
 C        Dimension of GAMMA = NT2AOIJ(ISYMO2)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*), CTR2(*), OMEGA2(*), RHO2(*), GAMMA(*),
      *          XLAMDP(*), WORK(*), XLAMPC(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
-#include <cclr.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -6965,12 +6963,12 @@ C
 C     PURPOSE:
 C             Transpose ij index of the T2M-amplitudes.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SCRM(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C-------------------------------------------
 C     Calculate the transposed t2-amplitude.
@@ -7027,12 +7025,12 @@ C     PURPOSE:
 C             Transpose ij index of the T2-amplitudes.
 C             The amplitudes are assumed to be a square matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C-------------------------------------------
 C     Calculate the transposed t2-amplitude.
@@ -7106,16 +7104,16 @@ C
 C     PURPOSE:
 C             Invert the lambda particle matrix.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
-#include <iratdef.h>
+#include "iratdef.h"
       DIMENSION XLAMDP(*), XLAMIP(*)
       DIMENSION WORK(LWORK)
       DIMENSION DET(2)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       DO 100 ISYMA = 1,NSYM
 C
@@ -7284,14 +7282,14 @@ C     PURPOSE:
 C             Calculate two coulomb minus exchange of t2 amplitudes.
 C             The amplitudes are assumed to be a square matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION T2AM(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
 C----------------------------------------------------------
 C     Calculate two coulomb minus exchange of t2-amplitude.
@@ -7390,14 +7388,14 @@ C     PURPOSE:
 C             Back transform t2 amplitudes.
 C             The amplitudes are assumed to be a square matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ONETHD = 1.0D0/3.0D0,TWOTHD = 2.0D0/3.0D0)
       DIMENSION T2AM(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
 C----------------------------------
 C     Back transform t2-amplitudes.
@@ -7496,13 +7494,13 @@ C
 C     PURPOSE:
 C             Calculate 2 coublomb minus exchange of the T2M-amplitudes.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION SCRM(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYMM = MULD2H(ISYMD,ISYMTR)
 C
@@ -7564,13 +7562,13 @@ C
 C     Written by Henrik Koch 17-aug-1994.
 C
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       DIMENSION INDV1(*), INDV2(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 C
       NAB = 0
       DO 100 ISYMB = 1,NSYM
@@ -7612,15 +7610,15 @@ C     Purpose: Making plus and minus combination of integrals.
 C              (a>=g|bd) -> K+ og K- where
 C                           K+- = (ag|bd) +- (bg|ad) a<=b,g<=d
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER(ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),XINTP(*),XINTM(*),SCRAB(*)
       DIMENSION INDV1(*), INDV2(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -7712,16 +7710,16 @@ C
 C     PURPOSE:
 C             Calculate the C-term making I/O
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*)
       DIMENSION WORK(LWORK)
       CHARACTER CFIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -7939,15 +7937,15 @@ C
 C     Ove Christiansen 30-10-1995: Put in C contribution in omega vector
 C                                  avoid troble on cray with optimization.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION SCR2(*),OMEGA2(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -8079,16 +8077,16 @@ C
 C     PURPOSE:
 C             Calculate the D-term making I/O
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*)
       DIMENSION WORK(LWORK)
       CHARACTER DFIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -8277,16 +8275,16 @@ C
 C     Ove Christiansen 30-10-1995: Put in D contribution in omega vector
 C                                  avoid troble on cray with optimization.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION SCR2(*),OMEGA2(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -8335,13 +8333,13 @@ C     asm 22-aug-1994
 C
 C     Purpose: Construct index arrays for CCRDAO
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
 C
       DIMENSION KADR1(NBAST),KADR2(NBAST,NBAST)
 C
-#include <ccsdsym.h>
+#include "ccsdsym.h"
 C
       ICOUN1 = 0
       DO 100 ISYMG = 1,NSYM
@@ -8416,22 +8414,22 @@ C
 C     Purpose: Fock contribution in CC2 model.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       DIMENSION OMEGA2(*),T2AM(*),WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMDH(*)
       LOGICAL FCKCON,ETRAN
 C
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <leinf.h>
-#include <ccsections.h>
-#include <qm3.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "leinf.h"
+#include "ccsections.h"
+#include "qm3.h"
 !#include <qmmm.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -8576,8 +8574,12 @@ C
          IF (CCMM) THEN
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
-            ELSE IF (NYQMMM) THEN
-               CALL CCMM_TGT(WORK(KFOCK),WORK(KEND1),LWRK1)
+            ELSE IF (NYQMMM .AND. (.NOT. HFFLD)) THEN 
+             !WRITE(LUPRI,*) 'About to add difference density contri'
+             CALL CCMM_ADDGDIFF(WORK(KFOCK),WORK(KEND1),LWRK1)
+            ELSE IF (NYQMMM .AND. HFFLD) THEN
+             ! WRITE(LUPRI,*) 'You are using a hffld so no corr. needed'
+              CONTINUE
             END IF
          ENDIF
 C
@@ -8624,14 +8626,14 @@ C     Symmetry 3-aug HK, Separated from contraction OC 13-2-1995
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION EMAT1(*), EMAT2(*)
       DIMENSION WORK(LWORK),FOCK(*),XLAMDH(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       LOGICAL FCKCON,ETRAN
 C
@@ -8669,14 +8671,14 @@ C     Symmetry 3-aug HK, Separated from contraction OC 13-2-1995
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
       DIMENSION EMAT1(*),EMAT2(*),SCR1(*)
       DIMENSION XLAMDH(*),FOCK(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       LOGICAL FCKCON,ETRAN
 C
@@ -8772,14 +8774,14 @@ C
 C     N.B. This routine assumes AO-symmetric integrals, and can therefor
 C          not be used directly for calculations with London-orbitals!!!
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <ccr12int.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "ccr12int.h"
       PARAMETER(ZERO = 0.0D0,ONE = 1.0D0,XMONE=-1.0D0,TWO = 2.0D0)
       LOGICAL CC2R12,MKVAJKL,LRES
       INTEGER IANR12
@@ -9069,17 +9071,17 @@ C
 C     Asger Halkier 6/2 - 1995: Fieldstrength now passed to
 C     routine through the variable FF.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
       LOGICAL LOCDBG, LSYUNK
       PARAMETER (LOCDBG = .FALSE.)
       DIMENSION FOCK(*),WORK(*)
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 C
       CHARACTER LABPT*(*)
 C
@@ -9213,13 +9215,13 @@ C     Isyml1 is symmetry of XLAMD1
 C     Isyml2 is symmetry of XLAMD2
 C     Isyml3 is symmetry of XLAMD3
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),OMEGA2(*),XLAMD1(*),XLAMD2(*),XLAMD3(*)  
       DIMENSION SCRM(*),SCRM2(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------------
 C     Dynamic allocation.
@@ -9337,16 +9339,16 @@ C     Purpose: Calculate B-term.
 C 
 C     See CC_BF( for more info.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0)
       PARAMETER(FOURTH = 0.25D0, TWO = 2.0D0, THREE = 3.0D0)
       DIMENSION XINT(*),OMEGA2(*),XMGD(*),XLAMD1(*),XLAMD2(*)
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C

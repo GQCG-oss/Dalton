@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_SOLRSP(WORK,LWORK,APROXR12)
@@ -48,49 +38,52 @@ C
 C---------------------------------------------------------------------*
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <maxorb.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccexci.h>
-#include <cclrmrsp.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <cco1rsp.h>
-#include <ccx1rsp.h>
-#include <ccl1rsp.h>
-#include <ccr2rsp.h>
-#include <ccl2rsp.h>
-#include <cco2rsp.h>
-#include <ccx2rsp.h>
-#include <ccr3rsp.h>
-#include <ccl3rsp.h>
-#include <cco3rsp.h>
-#include <ccx3rsp.h>
-#include <ccr4rsp.h>
-#include <ccl4rsp.h>
-#include <cco4rsp.h>
-#include <ccx4rsp.h>
-#include <ccn2rsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <cccl2rsp.h>
-#include <ccco2rsp.h>
-#include <cccx2rsp.h>
-#include <ccexgr.h>
-#include <leinf.h>
-#include <ccpl1rsp.h>
-#include <ccslvinf.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccexci.h"
+#include "cclrmrsp.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "cco1rsp.h"
+#include "ccx1rsp.h"
+#include "ccl1rsp.h"
+#include "ccr2rsp.h"
+#include "ccl2rsp.h"
+#include "cco2rsp.h"
+#include "ccx2rsp.h"
+#include "ccr3rsp.h"
+#include "ccl3rsp.h"
+#include "cco3rsp.h"
+#include "ccx3rsp.h"
+#include "ccr4rsp.h"
+#include "ccl4rsp.h"
+#include "cco4rsp.h"
+#include "ccx4rsp.h"
+#include "ccn2rsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "cccl2rsp.h"
+#include "ccco2rsp.h"
+#include "cccx2rsp.h"
+#include "ccexgr.h"
+#include "leinf.h"
+#include "ccpl1rsp.h"
+#include "ccslvinf.h"
+Cholesky
+#include "ccdeco.h"
+Cholesky
 C
 C
       LOGICAL LOCDBG, lold
@@ -151,6 +144,13 @@ C
          CALL QUIT('Model not CCS or CC2 or CCSD in CC_SOLRSP')
       ENDIF
  
+      IF (CHOINT .AND. (.NOT. CC2)) THEN
+         WRITE(LUPRI,'(A,A,A)')
+     &   ' CC_SOLRSP: Cholesky decomposed integrals not implemented',
+     &   ' for ',MODEL
+         CALL QUIT('Cholesky '//MODEL//' not implemented in CC_SOLRSP')
+      ENDIF
+
       WRITE (LUPRI,'(4X,A,/)') '  '
       WRITE (LUPRI,'(4X,A)')
      *'*********************************************************'//
@@ -161,6 +161,13 @@ C
       WRITE (LUPRI,'(4X,A,///)')
      *'*********************************************************'//
      *'**********'
+
+      IF (CHOINT) THEN
+         WRITE(LUPRI,'(4X,A,///)')
+     &   '         (Calculation using Cholesky decomposed integrals)'
+      ELSE
+         WRITE(LUPRI,'(A)') ' '
+      ENDIF
 
 C======================================================================
 
@@ -327,6 +334,9 @@ C     equations for which this is neccessary, because
 C     they involve orbital relaxaton and/or derivative integrals
 C     precalculate first-order chi vectors "X1" for those first-order
 C======================================================================
+Ctmp
+      CALL GPINQ('SKIP_O1','EXIST',O1SKIP)
+Ctmp
       IF ( .NOT. O1SKIP ) THEN
  
           CALL CCRHSVEC('O1 ',LBLO1,IDUMMY,IDUMMY,DUMMY,ISYO1,FRQO1,
@@ -337,6 +347,7 @@ C======================================================================
         WRITE (LUPRI,*)
      &        'Skipped calculation of O1 right hand side vectors.'
         O1SKIP = .FALSE.
+        CALL SYSTEM('rm SKIP_O1')
       END IF
 C
 C------------------------------------------------------------------
@@ -421,6 +432,35 @@ C
      &                  ISYLRT, LRTLBL, FRQLRT, IDUMMY,
      &                  ISYOFT, NLRTLBL, MAXTLBL, WORK, LWORK)
       END IF
+
+C======================================================================
+C     For Cholesky CC2, calculate the "right" first-order density
+C     matrix.
+C======================================================================
+
+      IF (CHOINT .AND. CC2) THEN
+         IF (.NOT. D01SKIP) THEN
+
+            ORDER = 1
+            ISIDE = 1
+
+            DO IDXR1 = 1, NLRTLBL
+               IFTRAN(1,IDXR1) = 0
+               IFTRAN(2,IDXR1) = IDXR1
+               IFTRAN(3,IDXR1) = IDXR1
+            ENDDO
+
+            CALL CC_CHOPDEN(IFTRAN,NLRTLBL,'L0 ','R1 ','d01',ORDER,
+     &                      ISIDE,'DENSITY_01',.TRUE.,WORK,LWORK)
+
+         ELSE
+
+            WRITE (LUPRI,*) 'Skipped right first-order density (d01)',
+     &                      ' calculation'
+            D01SKIP = .FALSE.
+
+         ENDIF
+      ENDIF
 
 C======================================================================
 C     Solve first-order Lagrange multiplier response equations.
@@ -1689,12 +1729,16 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 C                                                                
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+Cholesky
+#include "ccdeco.h"
+      LOGICAL CCSEFF
+Cholesky
 C
       LOGICAL TRIPLET
       PARAMETER (TRIPLET= .FALSE.)       
@@ -1722,6 +1766,9 @@ C
 #endif
                                                             
       INTEGER ILSTSYM
+
+      CCSEFF = CCS .OR. (CHOINT .AND. CC2)  ! No doubles for Chol. CC2, tbp
+      
                                                                      
 C
          IF (NVEC.LE.0) THEN
@@ -1779,7 +1826,7 @@ C
      &      //'    Eigval 2     T1-norm        T2-norm'     
 
          ELSE
-           WRITE (LUPRI,*) 'Unkown list in CC_TSTLST... ignored.'
+           WRITE (LUPRI,*) 'Unknown list in CC_TSTLST... ignored.'
            RETURN
          ENDIF
 C
@@ -1788,7 +1835,8 @@ C
            ISYM = ILSTSYM(LIST,ILSTNR)
            KT1  = 1 
            KEND1= KT1  + NT1AM(ISYM)
-           IF (.NOT. CCS) THEN
+Chol       IF (.NOT. CCS) THEN
+           IF (.NOT. CCSEFF) THEN
               KT2   = KEND1
               KEND1 = KT2  + NT2AM(ISYM)
            ENDIF 
@@ -1807,7 +1855,8 @@ C
      &                   WORK(KT2))
 
            X1 = DDOT(NT1AM(ISYM),WORK(KT1),1,WORK(KT1),1)
-           IF (CCS) THEN
+Chol       IF (CCS) THEN
+           IF (CCSEFF) THEN
               X2 = 0.0D0
            ELSE
               X2 = DDOT(NT2AM(ISYM),WORK(KT2),1,WORK(KT2),1)
@@ -1879,6 +1928,12 @@ C
            ENDIF
 
          END DO
+
+         IF (CHOINT .AND. CC2) THEN
+            WRITE(LUPRI,'(/,1X,A,A)')
+     &      'NOTICE: Cholesky CC2 doubles not stored! Artificial',
+     &      ' zero norm printed.'
+         ENDIF
 
          WRITE (LUPRI,'(//)')
 

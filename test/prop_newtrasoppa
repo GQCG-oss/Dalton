@@ -23,7 +23,7 @@ cat > prop_newtrasoppa.info <<%EOF%
    Molecule:         CH4
    Wave Function:    MP2 (SOPPA) / cc-pVDZ
    Test Purpose:     Calculation of SOPPA spin-spin coupling constants
-                     through ABACUS using the PRESORT option 
+                     through ABACUS using the NEWTRA option 
                       (new integral transformation)
 %EOF%
 
@@ -48,7 +48,7 @@ FINISH
 #######################################################################
 cat > prop_newtrasoppa.dal <<%EOF%
 **DALTON INPUT
-.PRESORT
+.NEWTRA
 .RUN PROPERTIES
 **WAVE FUNCTIONS
 .TITLE
@@ -58,7 +58,7 @@ cat > prop_newtrasoppa.dal <<%EOF%
 **PROPERTIES
 .SPIN-S
 .SOPPA
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -93,18 +93,18 @@ CRIT1=`$GREP "Total number of coordinates\: * 15" $log | wc -l`
 CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
-CRIT5=`$GREP "4 * x * 1\.185081012[0-9]" $log | wc -l`
-CRIT6=`$GREP "5 * y * 1\.185081012[0-9]" $log | wc -l`
-CRIT7=`$GREP "6 * z * 1\.185081012[0-9]" $log | wc -l`
-CRIT8=`$GREP "7 * x * \-1\.185081012[0-9]" $log | wc -l`
-CRIT9=`$GREP "8 * y * \-1\.185081012[0-9]" $log | wc -l`
-CRIT10=`$GREP "9 * z *   1\.185081012[0-9]" $log | wc -l`
-CRIT11=`$GREP "10 * x *   1\.185081012[0-9]" $log | wc -l`
-CRIT12=`$GREP "11 * y * \-1\.185081012[0-9]" $log | wc -l`
-CRIT13=`$GREP "12 * z * \-1\.185081012[0-9]" $log | wc -l`
-CRIT14=`$GREP "13 * x * \-1\.185081012[0-9]" $log | wc -l`
-CRIT15=`$GREP "14 * y *   1\.185081012[0-9]" $log | wc -l`
-CRIT16=`$GREP "15 * z * \-1\.185081012[0-9]" $log | wc -l`
+CRIT5=`$GREP "4 * x * 1\.185081007[0-9]" $log | wc -l`
+CRIT6=`$GREP "5 * y * 1\.185081007[0-9]" $log | wc -l`
+CRIT7=`$GREP "6 * z * 1\.185081007[0-9]" $log | wc -l`
+CRIT8=`$GREP "7 * x * \-1\.185081007[0-9]" $log | wc -l`
+CRIT9=`$GREP "8 * y * \-1\.185081007[0-9]" $log | wc -l`
+CRIT10=`$GREP "9 * z *   1\.185081007[0-9]" $log | wc -l`
+CRIT11=`$GREP "10 * x *   1\.185081007[0-9]" $log | wc -l`
+CRIT12=`$GREP "11 * y * \-1\.185081007[0-9]" $log | wc -l`
+CRIT13=`$GREP "12 * z * \-1\.185081007[0-9]" $log | wc -l`
+CRIT14=`$GREP "13 * x * \-1\.185081007[0-9]" $log | wc -l`
+CRIT15=`$GREP "14 * y *   1\.185081007[0-9]" $log | wc -l`
+CRIT16=`$GREP "15 * z * \-1\.185081007[0-9]" $log | wc -l`
 TEST[2]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
                 $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
                 $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16`
@@ -134,30 +134,30 @@ CTRL[5]=3
 ERROR[5]="CALCULATION OF PROPERTIES NOT SET UP CORRECTLY"
 
 # H-C coupling
-CRIT1=`$GREP "Isotropic coupling * \: * 121\.494. Hz" $log | wc -l`
-CRIT2=`$GREP "Anisotropic coupling * \: * \-4\.496. Hz" $log | wc -l`
-CRIT3=`$GREP "Asymmetry * \: * (\-| )(0| )\.000" $log | wc -l`
-CRIT4=`$GREP "S parameter * \: * 4\.496. Hz" $log | wc -l`
-CRIT5=`$GREP "A parameter * \: * \-*0*\.00.. Hz" $log | wc -l`
+CRIT1=`$GREP "Isotropic coupling * \: * 121\.[45]... Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-4\.(49|50|51).. Hz" $log | wc -l`
+CRIT3=`$GREP "Asymmetry * \: * \-*0*\.000" $log | wc -l`
+CRIT4=`$GREP "S parameter * \: * 4\.(49|50|51).. Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * \-*0*\.0[01].. Hz" $log | wc -l`
 CRIT6=`$GREP "Isotropic DSO contribution\: * 0*\.303. Hz" $log | wc -l`
-CRIT7=`$GREP "Isotropic PSO contribution\: * 1\.06[78]. Hz" $log | wc -l`
-CRIT8=`$GREP "Isotropic SD contribution \: * (0| )\.05[56]. Hz" $log | wc -l`
-CRIT9=`$GREP "Isotropic FC contribution \: * 120\.066. Hz" $log | wc -l`
+CRIT7=`$GREP "Isotropic PSO contribution\: * 1\.0[67].. Hz" $log | wc -l`
+CRIT8=`$GREP "Isotropic SD contribution \: * 0*\.0[45].. Hz" $log | wc -l`
+CRIT9=`$GREP "Isotropic FC contribution \: * 120\.[01]... Hz" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[6]=36
 ERROR[6]="C-H SPIN-SPIN COUPLING NOT CORRECT"
 
 # H-H coupling
-CRIT1=`$GREP "Isotropic coupling * \: * \-13\.6(19|20). Hz" $log | wc -l`
-CRIT2=`$GREP "Anisotropic coupling * \: * \-15\.61[67]. Hz" $log | wc -l`
-CRIT3=`$GREP "Asymmetry * \: * (\-0|\-)\.62[23]" $log | wc -l`
-CRIT4=`$GREP "S parameter * \: * 16\.59.. Hz" $log | wc -l`
-CRIT5=`$GREP "A parameter * \: * 2\.957. Hz" $log | wc -l`
-CRIT6=`$GREP "Isotropic DSO contribution\: * \-3\.451. Hz" $log | wc -l`
-CRIT7=`$GREP "Isotropic PSO contribution\: * 2\.596. Hz" $log | wc -l`
-CRIT8=`$GREP "Isotropic SD contribution \: * (0| )\.334. Hz" $log | wc -l`
-CRIT9=`$GREP "Isotropic FC contribution \: * \-13\.099. Hz" $log | wc -l`
+CRIT1=`$GREP "Isotropic coupling * \: * \-13\.6[1-5].. Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-15\.6... Hz" $log | wc -l`
+CRIT3=`$GREP "Asymmetry * \: * \-0*\.6" $log | wc -l`
+CRIT4=`$GREP "S parameter * \: * 16\.[56]... Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * 2\.95.. Hz" $log | wc -l`
+CRIT6=`$GREP "Isotropic DSO contribution\: * \-3\.45.. Hz" $log | wc -l`
+CRIT7=`$GREP "Isotropic PSO contribution\: * 2\.59.. Hz" $log | wc -l`
+CRIT8=`$GREP "Isotropic SD contribution \: * 0*\.3[34].. Hz" $log | wc -l`
+CRIT9=`$GREP "Isotropic FC contribution \: * \-13\.(12|11|10|09).. Hz" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[7]=54

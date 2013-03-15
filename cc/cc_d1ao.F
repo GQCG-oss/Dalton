@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 C  /* Deck cc_d1ao */
       SUBROUTINE CC_D1AO(IPDD,R12PRP,AODEN,ZKAM,WORK,LWORK,MODEL,LLIST,
@@ -55,30 +45,30 @@ C     May 1998: MP2 Frozen core density by Asger Halkier.
 C
 C     Spring 2002 : CC3 section by K. Hald.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       logical r12prp
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION AODEN(*), ZKAM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <infind.h> 
-#include <inftap.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ccfop.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "infind.h" 
+#include "inftap.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ccfop.h"
+#include "ccfro.h"
 C
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*)
@@ -595,13 +585,13 @@ C     Purpose: To transform all four blocks of the Coupled
 C              Cluster one electron density to AO-basis and add
 C              the results!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION AODEN(*), DENAI(*), DENAB(*), DENIJ(*), DENIA(*)
       DIMENSION XLAMDP(*), XLAMDH(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_DENAO')
 C
@@ -721,12 +711,12 @@ C
 C     Purpose: To set up the (occ,occ) part of the Coupled
 C              Cluster one electron density.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION DIJ(*), XMAT(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C--------------------------
 C     Set up density block.
@@ -766,12 +756,12 @@ C              Cluster one electron density.
 C
 C     NOTE: This block is stored transposed, i.e. like a t1-amplitude!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION DIA(*), T2AMT(*), Z1AM(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -808,12 +798,12 @@ C     Version: 1.0
 C
 C     Purpose: To calculate the first contribution to D2IJK!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
       DIMENSION D2IJK(*), XLAMDH(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIJK01')
 C
@@ -856,12 +846,12 @@ C     Version: 1.0
 C
 C     Purpose: To calculate the second contribution to D2IJK!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2IJK(*), XLAMDH(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIJK02')
 C
@@ -907,13 +897,13 @@ C
 C     Purpose: To backtransform the four 2 electron densities
 C              d(pq,k;del) to AO basis for a given gamma d(pq;gam;del)!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2AOIJ(*), D2AOAI(*), D2AOAB(*), D2AOIA(*), XLAMDP(*)
       DIMENSION D2IJK(*), D2AIJ(*), D2IAJ(*), D2ABI(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_D2PAO')
 C
@@ -973,13 +963,13 @@ C
 C     Purpose: To calculate the contribution from the 2 electron
 C              Coupled Cluster density to the ccsd energy!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0)
       DIMENSION ECCSD(*), XINT(*), XLAMDH(*), XLAMDP(*)
       DIMENSION D2AOIJ(*), D2AOAI(*), D2AOAB(*), D2AOIA(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSD_D2EN')
 C
@@ -1223,12 +1213,12 @@ C
 C     Purpose: To calculate the first two contribution to D2IJK
 C              from projection against singles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2IJK(*), XLAMDH(*), DIA(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIJK11')
 C
@@ -1322,11 +1312,11 @@ C
 C     Purpose: To calculate the third contribution to D2IJK
 C              from projection against singles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2IJK(*), DENAI(*), T2TIN(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIJK13')
 C
@@ -1380,11 +1370,11 @@ C
 C     Purpose: To calculate the first contribution to D2AIJ
 C              from projection against singles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2AIJ(*), XLAMDH(*), DAI(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DAIJ11')
 C
@@ -1426,12 +1416,12 @@ C
 C     Purpose: To calculate the second contribution to D2AIJ
 C              from projection against singles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2AIJ(*), XLAMDH(*), DAI(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DAIJ12')
 C
@@ -1495,11 +1485,11 @@ C
 C     Purpose: To calculate the first and second contribution to D2IAJ
 C              from projection against singles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2IAJ(*), XLAMDH(*), DIA(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIAJ11')
 C
@@ -1572,11 +1562,11 @@ C
 C     Purpose: To calculate the one and only contribution to D2ABI
 C              from projection against singles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2ABI(*), DAI(*), T2TDEL(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DABI11')
 C
@@ -1630,11 +1620,11 @@ C
 C     Purpose: To calculate the first and second contribution to D2AOIJ
 C              from projection against singles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2AOIJ(*), XLAMDH(*), Z1AO(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIJG11')
 C
@@ -1705,12 +1695,12 @@ C
 C     Purpose: To calculate the third contribution to D2IAJ from 
 C              projection against singles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2IAJ(*), DAI(*), T2AMT(*), XLAMDH(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1826,11 +1816,11 @@ C
 C     Purpose: To calculate the one and only contribution to D2AOIA
 C              from projection against singles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2AOIA(*), Z1AO(*), T2TIN(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIAG11')
 C
@@ -1864,11 +1854,11 @@ C
 C     Purpose: To calculate the fifth contribution to D2IJK
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2IJK(*), XMINT(*), XLAMDH(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIJK25')
 C
@@ -1901,11 +1891,11 @@ C
 C     Purpose: To calculate the fourth contribution to D2IJK
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2IJK(*), XMAT(*), XLAMDH(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIJK24')
 C
@@ -1953,11 +1943,11 @@ C
 C     Purpose: To calculate the third contribution to D2IJK
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2IJK(*), XMAT(*), XLAMDH(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIJK23')
 C
@@ -1997,12 +1987,12 @@ C
 C     Purpose: To calculate the first and second contribution to D2IJK
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2IJK(*), XMAT(*), XLAMDH(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIJK21')
 C
@@ -2092,12 +2082,12 @@ C
 C     Purpose: To calculate the second contribution to D2AIJ
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2AIJ(*), DAB(*), XLAMDH(*), WORK(LWORK)
-#include <priunit.h>      
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"      
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DAIJ22')
 C
@@ -2160,11 +2150,11 @@ C
 C     Purpose: To calculate the first contribution to D2ABI
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION D2ABI(*), DAB(*), XLAMDH(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DABI21')
 C
@@ -2204,11 +2194,11 @@ C
 C     Purpose: To calculate the first contribution to D2IAJ
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2IAJ(*), YMAT(*), T2TINT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIAJ21')
 C
@@ -2263,11 +2253,11 @@ C
 C     Purpose: To calculate the second contribution to D2IAJ
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2IAJ(*), XMAT(*), T2TINT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIAJ22')
 C
@@ -2320,11 +2310,11 @@ C
 C     Purpose: To calculate the third contribution to D2IAJ
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2IAJ(*), XMAT(*), T2TINT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('DIAJ23')
 C
@@ -2369,12 +2359,12 @@ C
 C     Purpose: To calculate the fourth contribution to D2IAJ
 C              from projection against doubles!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION D2IAJ(*), T2AMT(*), DAB(*), XLAMDH(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2463,11 +2453,11 @@ C     Purpose: To reorder the four separate blocks DAI through DIA
 C              of the CC one electron density to one matrix stored
 C              as a directly diagonalisable Fock-matrix (DFOCK)!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION DFOCK(*), DAI(*), DAB(*), DIJ(*), DIA(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCD1REOR')
 C
@@ -2544,13 +2534,13 @@ C     Purpose: To add contributions from the t1-amplitudes to
 C              the CC one electron density in MO-basis.
 C                                             --
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION DAI(*), DAB(*), DIJ(*), DIA(*)
       DIMENSION T1AM(*), YMAT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCD1T1CO')
 C
@@ -2684,10 +2674,10 @@ C              do the same reordering of the concomitant
 C              array yarr!
 C              (This routine is based on Bubble-sort from NUM.REC.)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XARR(*), YARR(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('SORTASH')
 C
@@ -2730,13 +2720,13 @@ C
 C     Purpose: To analyze and check the natural occupation
 C              numbers in xarr and yarr (real and imag)!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XARR(*), YARR(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('CCNAOCAN')
 C
@@ -2809,26 +2799,26 @@ C
 C     Purpose: To calculate the Frozen core contribution to the one electron Coupled Cluster
 C              density matrix and add it to AODEN.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION AODEN(*), WORK(LWORK)
-#include <ccorb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
 C
       CHARACTER MODEL*10
 C
@@ -2899,30 +2889,30 @@ C              (input), which contributes to the relaxed density.
 C
 C     Important note: NO FROZEN CORE SO FAR!!!
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <ccinftap.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "ccinftap.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION AODEN(*), ZKAM(*), WORK(LWORK)
       CHARACTER*10 MODEL
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ccfop.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ccfop.h"
+#include "ccfro.h"
 C
       LOGICAL LOCDBG
       PARAMETER ( LOCDBG=.FALSE. )

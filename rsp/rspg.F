@@ -1,54 +1,49 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+! File: DALTON/rsp/rspg.F
+!
+! The routines in this file are generally related to the
+! calculation of ESR g-tensors.
+! 
+!
 #include "single.h"
 C /* Deck gdrv */
       SUBROUTINE GDRV(WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LWORK
       REAL*8 WORK(LWORK)
-#include <infdim.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infdim.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <inflr.h> 
-#include <inflin.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <gtensor.h>
+#include "inflr.h" 
+#include "inflin.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "gtensor.h"
       INTEGER KFREE, LFREE, LWRK1, KWRK1
       INTEGER KINDX, KCMO, KUDV, KPVX, KFOCK, KFC, KFV, KFCAC, KH2AC
       INTEGER ISYM
@@ -149,27 +144,27 @@ C
       EXTERNAL DDOT, DNRM2
       INTEGER INDPRP
       EXTERNAL INDPRP
-#include <gtensor.h>
-#include <qrinf.h>
-#include <inforb.h>
+#include "gtensor.h"
+#include "qrinf.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <wrkrsp.h>
+#include "inflr.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "wrkrsp.h"
       INTEGER KFREE, LFREE
       LOGICAL LDUMMY, FOUND, CONV, OPENED
       INTEGER I, J, KLEN, LU, KANG, ISYM, IPRP, ISO
-      REAL*8 RESID, ANTSYM, D0, DNORM
+      REAL*8  RESID, ANTSYM, D0, DNORM
       PARAMETER (D0=0.0D0)
       CHARACTER*8 BLANK
       DATA BLANK/'        '/
       CALL QENTER('GSET2')
       INQUIRE(FILE='RSPVEC',OPENED=OPENED,NUMBER=LU)
-      write(2,*)'opened with lu',opened,lu
+      !write(2,*)'RSPVEC opened with lu',opened,lu
       IF (.NOT. OPENED) THEN
          LU=-1
          CALL GPOPEN(
@@ -219,15 +214,15 @@ C
 
 C /* Deck ginit */
       SUBROUTINE GINIT
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AVER(3)
-#include <gtensor.h>
-#include <maxorb.h>
-#include <infinp.h>
+#include "gtensor.h"
+#include "maxorb.h"
+#include "infinp.h"
 #include "rspprp.h"
-#include <inflr.h>
+#include "inflr.h"
 #include "infave.h"
-#include <priunit.h>
+#include "priunit.h"
       LOGICAL FNDLB2
       EXTERNAL FNDLB2
       LQRGP = .TRUE.
@@ -346,14 +341,14 @@ C              LRRANK( INDPRP(SOLBL(3,J))) = 0
       END
 C /* Deck gset */
       SUBROUTINE GSET(CMO,UDV,XINDX,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), UDV(*), XINDX(*), WRK(LWRK)
-#include <gtensor.h>
-#include <inftap.h>
-#include <mxcent.h>
-#include <cbihr1.h>
-#include <cbiher.h>
-#include <orgcom.h>
+#include "gtensor.h"
+#include "inftap.h"
+#include "mxcent.h"
+#include "cbihr1.h"
+#include "cbiher.h"
+#include "orgcom.h"
       LOGICAL FNDLAB,FNDLB2,PRINTF
       EXTERNAL FNDLAB,FNDLB2
       CHARACTER*7 RTNLBL(2)
@@ -396,11 +391,11 @@ C
       END
 C
       SUBROUTINE SETECC(WORK,KFREE,LFREE)
-#include <implicit.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gtensor.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gtensor.h"
+#include "priunit.h"
       DIMENSION WORK(*)
       INTEGER KFREE, LFREE  
       CHARACTER*8 RTNLBL(2)
@@ -436,13 +431,13 @@ C
       END
 
       SUBROUTINE GET_TD(D,WORK,KFREE,LFREE)
-#include <implicit.h>   
+#include "implicit.h"   
       DIMENSION WORK(*), D(*)
       INTEGER KFREE, LFREE   
-#include <inforb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "priunit.h"
       PARAMETER ( D1 = 1.0D0)
       LOGICAL CLOSED
 C      
@@ -479,22 +474,22 @@ C
       END
 
       SUBROUTINE ECCSET(CMO,UDV,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), UDV(*), WRK(LWRK)
-#include <maxorb.h>
-#include <priunit.h>
-#include <gtensor.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <orgcom.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <wrkrsp.h>
-#include <iratdef.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gtensor.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "orgcom.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "wrkrsp.h"
+#include "iratdef.h"
+#include "infrsp.h"
       LOGICAL FNDLB2
       CHARACTER*7 RTNLBL(2)
       DIMENSION AVER(3)
@@ -554,14 +549,14 @@ C
          CALL PRPONE(WRK(KPRPMO),UDV,AVER(3),0,'ZDIPLEN')
       END IF
 C
-C  Electronic charge cenroid
+C  Electronic charge centroid
 C
       N=2*NISHT+NACTEL
       GAGORG(1)=AVER(1)/N
       GAGORG(2)=AVER(2)/N
       GAGORG(3)=AVER(3)/N
       CALL HEADER('OUTPUT FROM ECCSET',2)
-         WRITE(LUPRI,'(/A,I5    )') '   Number of electrons:',N
+         WRITE(LUPRI,'(/A,I5   )') '   Number of electrons:',N
          WRITE(LUPRI,'(A,3F10.6)') '   Dipole moment  :',AVER
          WRITE(LUPRI,'(A,3F10.6)') '   Charge centroid:',GAGORG
 C
@@ -580,17 +575,17 @@ C
 C
       SUBROUTINE GINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "infs0.h"
-#include <infpri.h>
-#include <infdim.h>
-#include <trhso.h>
-#include <infhso.h>
-#include <gtensor.h>
-#include <priunit.h>
+#include "infpri.h"
+#include "infdim.h"
+#include "trhso.h"
+#include "infhso.h"
+#include "gtensor.h"
+#include "priunit.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE =  12 )
@@ -636,47 +631,47 @@ C              WRITE (LUPRI,'(/,3A,/)') ' KEYWORD "',WORD,
 C    *            '" NOT RECOGNIZED IN GINP.'
 C              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
 C              CALL QUIT(' ILLEGAL KEYWORD IN GINP ')
- 1             CONTINUE
+ 1             CONTINUE ! .ZERO
                   G_ALL = .FALSE.
                   READ(LUCMD,'(A80)')G_LINE
                GO TO 100
- 2             CONTINUE
+ 2             CONTINUE ! .ECC
                   ECC = .TRUE.
                GO TO 100
- 3             CONTINUE
+ 3             CONTINUE ! .RMC
                   DORMC = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 4             CONTINUE
+ 4             CONTINUE ! .GC1
                   DOGC1 = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 5             CONTINUE
+ 5             CONTINUE ! .GC2
                   DOGC2 = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 6             CONTINUE
+ 6             CONTINUE ! .OZSO1
                   DOOZSO1 = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 7             CONTINUE
+ 7             CONTINUE ! .OZSO2
                   DOOZSO2 = .TRUE.
                   DOALL = .FALSE.
                GO TO 100
- 8             CONTINUE
+ 8             CONTINUE ! .MEAN-Field
                   MNFSO = .TRUE.
                GO TO 100
- 9             CONTINUE
+ 9             CONTINUE ! .TEST Amfi
                   MNFSO = .TRUE.
                   TEST_AMFI = .TRUE.
                GO TO 100
-10             CONTINUE
+10             CONTINUE ! .ADD-SO
                   ADDSO = .TRUE.
                GO TO 100
-11             CONTINUE
+11             CONTINUE ! .SCALED charges
                   SCALED_CHARGES = .TRUE.
                GO TO 100
-12             CONTINUE
+12             CONTINUE ! .OWN-OT
                   SPLITSO2 = .TRUE.
                GO TO 100
             ELSE IF (PROMPT.EQ.'*') THEN
@@ -705,19 +700,19 @@ C
 C *** END OF GINP
 C
       SUBROUTINE GETRMC(CMO,XINDX,AVE,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),XINDX(*),WRK(*)
-#include <gtensor.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <codata.h>
-#include <gfac.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <infinp.h>
+#include "gtensor.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "codata.h"
+#include "gfac.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "infinp.h"
 C
       LOGICAL OLDDX
       LOGICAL FNDLB2
@@ -785,25 +780,25 @@ C
       RETURN
       END
       SUBROUTINE GETGC1(CMO,XINDX,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),XINDX(*),WRK(*)
-#include <gtensor.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <codata.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <dummy.h>
+#include "gtensor.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "codata.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "dummy.h"
       LOGICAL FNDLB2
       LOGICAL OLDDX
       CHARACTER*7 RTNLBL(2)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('GETGC1')
 C
@@ -911,25 +906,25 @@ C
       END
 C Deck Scaled effective gauge correction 
       SUBROUTINE GETGC2SCA(CMO,XINDX,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),XINDX(*),WRK(*)
-#include <gtensor.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <codata.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <dummy.h>
-#include <infinp.h>
+#include "gtensor.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "codata.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "dummy.h"
+#include "infinp.h"
       LOGICAL FNDLB2
       LOGICAL OLDDX
       CHARACTER*7 RTNLBL(2)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('GETGC2SCA')
 C
@@ -1045,11 +1040,11 @@ C
       END
 C /* Deck gset  */
       SUBROUTINE GOZHSO(I,J,XPROP)
-#include <implicit.h>
+#include "implicit.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <wrkrsp.h>
-#include <gtensor.h>
+#include "inflr.h"
+#include "wrkrsp.h"
+#include "gtensor.h"
       CHARACTER*8 ALAB,BLAB
       ALAB=LBLLR(KSYMOP,I)
       BLAB=LBLLR(KSYMOP,J)
@@ -1080,19 +1075,19 @@ C /* Deck gset  */
       END
 C  /* Deck gprint  */
       SUBROUTINE GPRINT(WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(*)
-#include <infpri.h>
-#include <gtensor.h>
-#include <codata.h>
-#include <gfac.h>
-#include <orgcom.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
+#include "infpri.h"
+#include "gtensor.h"
+#include "codata.h"
+#include "gfac.h"
+#include "orgcom.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
       INTEGER SWRITE
       EXTERNAL SWRITE
 C
@@ -1327,8 +1322,8 @@ C           GTENSOR(3,2)=(GTENSOR(2,3)+GTENSOR(3,2))*DP5
       END
 C /* Deck bdg */
       BLOCK DATA BDG
-#include <implicit.h>
-#include <gtensor.h>
+#include "implicit.h"
+#include "gtensor.h"
       DATA GCALC,G_ALL /.FALSE.,.FALSE./
       DATA G_LINE/' '/
       DATA DOALL,DORMC,DOGC1,DOGC2,DOOZSO,DOOZSO1,DOOZSO2,SCALED_CHARGES
@@ -1340,28 +1335,28 @@ C
 C CALCULATE AVERAGE VALUE OF PROPERTIES
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), XINDX(*), WORK(LWORK)
-#include <dummy.h>
+#include "dummy.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infind.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infind.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
 #include "infave.h"
-#include <infpri.h>
-#include <inftap.h>
-#include <iratdef.h>
-#include <aovec.h>
-#include <gtensor.h>
-#include <codata.h>
-#include <priunit.h>
-#include <blocks.h>
-#include <infinp.h>
+#include "infpri.h"
+#include "inftap.h"
+#include "iratdef.h"
+#include "aovec.h"
+#include "gtensor.h"
+#include "codata.h"
+#include "priunit.h"
+#include "blocks.h"
+#include "infinp.h"
 C
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D8 = 8.0D0 )
       PARAMETER ( D1INF = 0.99999D0 , CKMXPR = 1.0D-6 )
@@ -1580,23 +1575,23 @@ C
 C Write an interface file for Gerry Lushingtons 2esg2 program
 C for testing ROHF evaluation of 2-electron gauge correction
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), DENSNG(*), DENTRP(*), WORK(*)
-#include <inforb.h> /* NBAST, NISHT, NORBT, N2ORBX */
-#include <mxcent.h> /* MXCENT */
-#include <nuclei.h> /* NUCIND */
-#include <maxorb.h>
-#include <infinp.h> /* ISPIN  */
-#include <blocks.h> /* MAXSHL, NHKTSH, NUCOSH, NRCSH, NCNTSH */
-#include <molinp.h> /* MLINE  */
-#include <aovec.h>
-#include <primit.h> /* PRIEXP, PRICCF */
-#include <inftap.h> /* LUSIFC, FNSIFC, LBSIFC */
-#include <infpri.h> /* LUERR */
-#include <iratdef.h>/* IRAT */
-#include <maxash.h>
-#include <infind.h> /* ISMO */
-#include <pgroup.h> /* REP */
+#include "inforb.h" /* NBAST, NISHT, NORBT, N2ORBX */
+#include "mxcent.h" /* MXCENT */
+#include "nuclei.h" /* NUCIND */
+#include "maxorb.h"
+#include "infinp.h" /* ISPIN  */
+#include "blocks.h" /* MAXSHL, NHKTSH, NUCOSH, NRCSH, NCNTSH */
+#include "molinp.h" /* MLINE  */
+#include "aovec.h"
+#include "primit.h" /* PRIEXP, PRICCF */
+#include "inftap.h" /* LUSIFC, FNSIFC, LBSIFC */
+#include "infpri.h" /* LUERR */
+#include "iratdef.h"/* IRAT */
+#include "maxash.h"
+#include "infind.h" /* ISMO */
+#include "pgroup.h" /* REP */
       PARAMETER (D0=0.0D0, DH=0.5D0, D1=1.0D0, D2=2.0D0)
       CHARACTER SPD(8)
       CHARACTER*10 FMT
@@ -1803,7 +1798,7 @@ C
       END
 
       SUBROUTINE WRFMTD(LU,FMT,RMAT,N)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LU, N
       DIMENSION RMAT(N,N)
       CHARACTER*(*) FMT
@@ -1814,7 +1809,7 @@ C
       END
 
       SUBROUTINE INDSRT(EIG,IVEC,N)
-#include <implicit.h>
+#include "implicit.h"
 C
 C Sort vector EIG(N)
 C IVEC(N) will give the index in the original vector
@@ -1852,16 +1847,16 @@ C
       END
       SUBROUTINE P2ORG(NCONTS,ISHIND,NNSHL,LUPAO,LUPAS,LUP,
      &   WORK,KFREE,LFREE,PANTI)
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <blocks.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "symmet.h"
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 )
       DIMENSION NCONTS(MXSHEL,MXAOVC,2)
       DIMENSION ISHIND(NNSHL,NNSHL)
@@ -2107,3 +2102,4 @@ C
       RWRITE=OFFSET+LENGTH
       RETURN
       END
+!  --- end of DALTON/rsp/rspg.F ---

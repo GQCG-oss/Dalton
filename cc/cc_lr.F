@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 c*DECK CC_LR
        SUBROUTINE CC_LR(WORK,LWORK)
@@ -53,9 +43,9 @@ C     1/2 C^{+/-w} symmetrization introduced. Ch. Haettig, March 1999.
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,THR=1.0D-08)
@@ -64,26 +54,26 @@ C
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
 C
-#include <iratdef.h>
-#include <inftap.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
-#include <ccrspprp.h>
-#include <ccexpfck.h>
-#include <ccfro.h>
-#include <leinf.h>
-#include <symmet.h>
-#include <codata.h>
+#include "iratdef.h"
+#include "inftap.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
+#include "ccrspprp.h"
+#include "ccexpfck.h"
+#include "ccfro.h"
+#include "leinf.h"
+#include "symmet.h"
+#include "codata.h"
 C
       LOGICAL FTSAV,LRLXA,LRLXB,LPDBSA,LPDBSB,LPRTSCF,OPTST,NOKAPPA
       LOGICAL SHIELD
@@ -939,16 +929,16 @@ C   New version november 1996.
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "dummy.h"
 C
       PARAMETER( TWO = 2.0D00,TOLFRQ=1.0D-08 )
       DIMENSION WORK(LWORK)
@@ -1051,16 +1041,16 @@ C     New version 7-11-1996
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "leinf.h"
 C
       PARAMETER( TWO = 2.0D00,HALF=0.5D00,TOLFRQ=1.0D-08 )
       DIMENSION WORK(LWORK)
@@ -1163,15 +1153,15 @@ C     Written by Ove Christiansen 17-10-1996/7-11-1996
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
 C
       PARAMETER( TWO = 2.0D00,TOLFRQ=1.0D-08 )
       DIMENSION WORK(LWORK)
@@ -1277,23 +1267,23 @@ C     Written by Ove Christiansen 17-10-1996/7-11-1996
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
       PARAMETER (TOLFRQ = 1.0D-08,ONE= 1.0D0,THR = 1.0D-08)
       PARAMETER (DPOLAUTSI = 1.648778D-41, QPOLAUTSI = 4.617048 D-62 )
 C
 C DPOL C2m2J-1, QPOL C2m4J-1
 C
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
 C
       DIMENSION POL(*),PVAL(3),PAXIS(3,3)
       CHARACTER MODEL*10
@@ -1429,23 +1419,23 @@ C     Thomas Bondo Pedersen, January 2005.
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,THR=1.0D-08)
 C
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
-#include <cclrinf.h>
-#include <ccexci.h>
-#include <cclres.h>
-#include <ccroper.h>
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
+#include "cclrinf.h"
+#include "ccexci.h"
+#include "cclres.h"
+#include "ccroper.h"
 C
       LOGICAL LCALC
       DIMENSION WORK(LWORK)
@@ -1455,12 +1445,12 @@ C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 C
-#include <leinf.h>
+#include "leinf.h"
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <codata.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "codata.h"
 C
       PARAMETER (RAUSI = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
       PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
@@ -2685,18 +2675,18 @@ C     New version november 1996.
 C
 C------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <cclres.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "cclres.h"
+#include "dummy.h"
 C
       PARAMETER( TWO = 2.0D00,TOLFRQ=1.0D-08 )
 
@@ -2866,19 +2856,19 @@ C     Written by Ove Christiansen 17-10-1996/7-11-1996
 C
 C------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <pgroup.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "pgroup.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
       PARAMETER (TOLFRQ = 1.0D-08,ONE= 1.0D0,THR = 1.0D-08)
 C
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
 C
       DIMENSION OSC(*),PVAL(3),PAXIS(3,3)
       CHARACTER MODEL*10,CDIP*7
@@ -2892,6 +2882,9 @@ C------------------------------------------
 C     write out transition strength matrix.
 C------------------------------------------
 C
+
+      IMULT = 1  ! force singlet spin symmetry...
+
       IF (LCALC) THEN
 C
       WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
@@ -2909,15 +2902,15 @@ C
       ENDIF
       CALL OUTPUT(TRS,1,3,1,3,3,3,1,LUPRI)
 C
-      CALL  TNSRAN(TRS,PVAL,PAXIS,
-     *             ALFSQ,BETSQ,ITST,ITST2,
-     *             APAR1,APEN1,XKAPPA,IPAR)
+      CALL TNSRAN(TRS,PVAL,PAXIS,
+     *            ALFSQ,BETSQ,ITST,ITST2,
+     *            APAR1,APEN1,XKAPPA,IPAR)
       WRITE(LUPRI,'(/,1X,A,/)')
      *    'Principal values of diagonalized transition strength matrix:'
       WRITE(LUPRI,'(1X,A)') '            a.u.               '
-      WRITE(LUPRI,'(1X,A,F12.8)') '1     ',PVAL(1)
-      WRITE(LUPRI,'(1X,A,F12.8)') '2     ',PVAL(2)
-      WRITE(LUPRI,'(1X,A,F12.8)') '3     ',PVAL(3)
+      WRITE(LUPRI,'(1X,A,F16.8)') '1 ',PVAL(1)
+      WRITE(LUPRI,'(1X,A,F16.8)') '2 ',PVAL(2)
+      WRITE(LUPRI,'(1X,A,F16.8)') '3 ',PVAL(3)
       WRITE(LUPRI,'(/,1X,A,/)')
      *    'Principal axis of diagonalized transition strength matrix:'
       CALL OUTPUT(PAXIS,1,3,1,3,3,3,1,LUPRI)
@@ -2939,12 +2932,12 @@ C
       ENDIF
       CALL DSCAL(3*3,FACT,OSC,1)
       WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
-     *    'oscillator strength matrix for state nr.',IEX,
-     *     ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
+     *    ' oscillator strength matrix for state nr.',IEX,
+     *    ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
       CALL OUTPUT(OSC,1,3,1,3,3,3,1,LUPRI)
-      CALL  TNSRAN(OSC,PVAL,PAXIS,
-     *             ALFSQ,BETSQ,ITST,ITST2,
-     *             APAR2,APEN2,XKAPPA,IPAR)
+      CALL TNSRAN(OSC,PVAL,PAXIS,
+     *            ALFSQ,BETSQ,ITST,ITST2,
+     *            APAR2,APEN2,XKAPPA,IPAR)
       WRITE(LUPRI,'(/,1X,A,/)')
      *    'Principal values of diagonalized oscillator strength matrix:'
       WRITE(LUPRI,'(1X,A)') '            a.u.               '
@@ -2973,20 +2966,19 @@ c
 c     IF ( IEX .EQ. 1) THEN
 C IMULT = 1 is hardwired in since for linear response residues
 C only singlet states have a non-vanishing oscillator strength anyway
-         IMULT = 1
          WRITE(LUOSC,9988) IMULT,REP(ISYM-1),IEX,TRA,OSCS,CDIP
 c     ELSE
 c        WRITE(LUOSC,9989) IEX,TRA,OSCS,CDIP
 c     ENDIF
 C
       ELSE IF (.NOT.LCALC) THEN
-        CDIP = '   ?   '
-c       IF ( IEX .EQ. 1) THEN
+         CDIP = '   ?   '
+c        IF ( IEX .EQ. 1) THEN
            WRITE(LUOSC,9986) IMULT,REP(ISYM-1),IEX,'Not calculated',
      *                       'Not calculated',CDIP
-c       ELSE
+c        ELSE
 c          WRITE(LUOSC,9987) IEX,'Not calculated','Not calculated',CDIP
-c       ENDIF
+c        ENDIF
       ENDIF
 C
  9986 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',A16,4X,
@@ -3012,10 +3004,10 @@ C     Written by Ove Christiansen 10-5-1996 / 2.0: 13-3-1997
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
 C
       LOGICAL LOCDBG
       PARAMETER( LOCDBG = .FALSE. )
@@ -3023,15 +3015,15 @@ C
       DIMENSION WORK(LWORK),VEC(*)
       CHARACTER*10 MODEL
 C
-#include <ccorb.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
-#include <ccx1rsp.h>
-#include <leinf.h>
+#include "ccorb.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
+#include "ccx1rsp.h"
+#include "leinf.h"
 C
 C-------------------------------------------------------------
 C        Calculate response contribution to expectation value.
@@ -3126,22 +3118,22 @@ C     Bug-Fix for frozen-core calculations: Chr. Neiss  22-04-2005
 C
 C-----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
 C
       CHARACTER LBL*(*), MODEL*10
       DIMENSION WORK(LWORK)
       INTEGER ICMO(8,8), NCMO(8), IGLMRHS(8,8), NGLMDS(8), IGLMVIS(8,8)
 C
-#include <ccorb.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <leinf.h>
+#include "ccorb.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "leinf.h"
 C
       IF ( IPRINT .GT. 10 ) THEN
          CALL AROUND( 'IN CC_AVE ')
@@ -3236,11 +3228,11 @@ C     Written by Ove Christiansen 16 februar 1996
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
 C
       PARAMETER( TWO = 2.0D00,XHALF = 0.5D00 )
       LOGICAL FCKCON,ETRAN
@@ -3248,12 +3240,12 @@ C
       CHARACTER LBPERT*(*), MODEL*10
       DIMENSION XKSI(*),WORK(LWORK),XINT(*)
 C
-#include <ccorb.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <leinf.h>
+#include "ccorb.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "leinf.h"
 C
       IF ( IPRINT .GT. 10 ) THEN
          CALL AROUND( 'IN CC_XKSI: Constructing XKSI vector ')
@@ -3465,17 +3457,17 @@ C
 C
 C-----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccexci.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccexci.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
 C
       PARAMETER( TWO = 2.0D00, XHALF = 0.5D00 )
       DIMENSION ETAC(*),WORK(LWORK),XINT(*)
@@ -3821,7 +3813,7 @@ C
 c /* Deck polsym */
       SUBROUTINE POLSYM(A,FACT)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION A(3,3)
 C
@@ -3865,12 +3857,12 @@ C     Written by Ove Christiansen 18-10-1996
 C
 C------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "ccsdinp.h"
 C
       PARAMETER (THR = 1.0D-08)
       DIMENSION TNSR(3,3),PVAL(3),PAXIS(3,3)
@@ -4042,16 +4034,16 @@ C      and F instead of P)
 C
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "leinf.h"
 C
       PARAMETER( TWO = 2.0D00,HALF=0.5D00,TOLFRQ=1.0D-08 )
       DIMENSION WORK(LWORK)
@@ -4156,19 +4148,19 @@ C           -4    excited - excited transition strength (not implemented yet)
 C           -11    First order excited state property
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <prpc.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "prpc.h"
+#include "ccinftap.h"
 C
       LOGICAL EXIST,L1,L2,L3,L4,LI1,LI2
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,TOLEXCI =1.0D-02)
@@ -4194,7 +4186,7 @@ c          IPRPC = IHIT
         ENDIF
 C
         WRITE(LUPRPC,
-     *   '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *   '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *   IPRPC,ISYMIN,NORD,LABEL,PROP,
      *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
       ENDIF
@@ -4209,12 +4201,12 @@ C              IDLSTX,IDLSTY - indeces of first-order amplitudes
 C     Written by Christof Haettig, Mai 2003
 C-----------------------------------------------------------------------
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccr1rsp.h"
 
       INTEGER ISYM0
       PARAMETER ( ISYM0 = 1 )
@@ -4353,14 +4345,14 @@ C              amplitude response to test these
 C     Written by Christof Haettig, May 2003
 C----------------------------------------------------------------------
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -4458,14 +4450,14 @@ C     - based on CC_OSCPRI by Ove Christiansen.
 C
 C     Purpose: Print rotatory strengths.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION    RIN(3)
       CHARACTER*10 MODEL
       LOGICAL      LCALC
-#include <priunit.h>
-#include <pgroup.h>
-#include <codata.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "pgroup.h"
+#include "codata.h"
+#include "ccsdinp.h"
 
       PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
       PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
@@ -4581,14 +4573,14 @@ C     Thomas Bondo Pedersen, July 2003.
 C
 C     Purpose: Print rotatory strength tensors, el. quadrupole contribution.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION    RQIN(3,9), RQOUT(3,3)
       CHARACTER*10 MODEL
       LOGICAL      LCALC
-#include <priunit.h>
-#include <pgroup.h>
-#include <codata.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "pgroup.h"
+#include "codata.h"
+#include "ccsdinp.h"
 
       PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
       PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
@@ -4790,14 +4782,14 @@ C     Thomas Bondo Pedersen, July 2003.
 C
 C     Purpose: Print rotatory strength tensors, magn. dipole contribution.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION    RMIN(3,3), RMOUT(3,3)
       CHARACTER*10 MODEL
       LOGICAL      LCALC
-#include <priunit.h>
-#include <pgroup.h>
-#include <codata.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "pgroup.h"
+#include "codata.h"
+#include "ccsdinp.h"
 
       PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
       PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
@@ -4949,14 +4941,14 @@ C     Thomas Bondo Pedersen, July 2003.
 C
 C     Purpose: Print rotatory strength tensors, total.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION    RTIN(3,3)
       CHARACTER*10 MODEL
       LOGICAL      LCALC
-#include <priunit.h>
-#include <pgroup.h>
-#include <codata.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "pgroup.h"
+#include "codata.h"
+#include "ccsdinp.h"
 
       PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
       PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
@@ -5075,22 +5067,23 @@ C     Purpose: Calculate linear response residues.
 C              The Eta and Ksi vectors are calculated only once.
 C
 C     NOTE: it is probably better to use *CCOPA ....
+C     Added sum rules for stopping power. Sonia, 2012
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <codata.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclres.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
-#include <ccexci.h>
-#include <ccexcinf.h>
-#include <dummy.h>
-#include <ccinftap.h>
-#include <ccsections.h>
+#include "priunit.h"
+#include "codata.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclres.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
+#include "ccexci.h"
+#include "ccexcinf.h"
+#include "dummy.h"
+#include "ccinftap.h"
+#include "ccsections.h"
 
       PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
       PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
@@ -5109,6 +5102,8 @@ C
       INTEGER NLOCS(8)
 
       INTEGER ILRES
+      !SUMRULE sum rules and mean excitation energy (Sonia)
+      DIMENSION DSSUML(-6:2,4),DLSUML(-6:2,4),DISUML(-6:2,4)
 
       CALL QENTER(SECNAM)
 
@@ -5210,7 +5205,7 @@ C     ----------------------------------
 C     Allocation 1.
 C     -------------
 
-      NTRMOM = NXLRSST*NPRLBL
+      NTRMOM = NXLRSST*NPRLBL_CC
 
       KRIGHT = 1
       KLEFT  = KRIGHT + NTRMOM
@@ -5227,12 +5222,12 @@ C     ------------------------------------
       CALL DZERO(WORK(KRIGHT),NTRMOM)
       CALL DZERO(WORK(KLEFT),NTRMOM)
 
-C     Loop through operators in PRPLBL.
+C     Loop through operators in PRPLBL_CC.
 C     ---------------------------------
 
-      DO IPRLBL = 1,NPRLBL
+      DO IPRLBL = 1,NPRLBL_CC
 
-         LABELA = PRPLBL(IPRLBL)
+         LABELA = PRPLBL_CC(IPRLBL)
 
 C        Check that the operator enters in at least 1 residue requested.
 C        ---------------------------------------------------------------
@@ -5338,9 +5333,9 @@ C     -------------------------------
       WRITE(LUPRI,'(1X,A,/)')
      &  '-----------------------------------------------'
  
-      DO IPRLBL = 1,NPRLBL
+      DO IPRLBL = 1,NPRLBL_CC
 
-         LABELA = PRPLBL(IPRLBL)
+         LABELA = PRPLBL_CC(IPRLBL)
 
          IAB   = 1
          IOPER = ILRES(LABELA,'A')
@@ -5386,9 +5381,9 @@ C     ------------------------------
       WRITE(LUPRI,'(1X,A,/)')
      &  '-----------------------------------------------'
 
-      DO IPRLBL = 1,NPRLBL
+      DO IPRLBL = 1,NPRLBL_CC
 
-         LABELA = PRPLBL(IPRLBL)
+         LABELA = PRPLBL_CC(IPRLBL)
 
          IAB   = 1
          IOPER = ILRES(LABELA,'A')
@@ -5559,8 +5554,8 @@ C     -----------------------------------------------------------
          LABELA = LBLOPR(IALRSOP(IOPER))
          LABELB = LBLOPR(IBLRSOP(IOPER))
 
-         IPROPA = INDPRPCC(LABELA)
-         IPROPB = INDPRPCC(LABELB)
+         IPROPA = INDPRP_CC(LABELA)
+         IPROPB = INDPRP_CC(LABELB)
 
          DO IRSD = 1,NXLRSST
 
@@ -5848,6 +5843,42 @@ C     ----------------------------
                CALL CC_OSCPRI(WORK(KTRSI),WORK(KOSCSI),EIGV,
      &                        IEX,ISYM,WORK(KEND2),LEND2,MODELP,LCALC,
      &                        LDIP,LUOSC)
+! SONIA/SPASAUER ---
+!          Sum rules and mean exc energy
+!          components already summed up inside oscpri
+!          2/3*eigv prefactor is also already included
+!          therefore I reduce the exponent in the S(n) series
+!          Removed a factor 3 so TOTAL is just sum of individual comps! 
+           if (sumrules) then
+             write(lupri,*)'DSSUMLI=', DSSUMLI
+             DO K = -6,2
+             DO ICOM = 1,3
+                DSSUML(K,ICOM) = DSSUML(K,ICOM)
+     &                              + EIGV**(K)
+     &                              * WORK(KOSCSI+3*(icom-1)+icom-1)
+                DLSUML(K,ICOM) = DLSUML(K,ICOM)
+     &                              + EIGV**(K)
+     &                              * DLOG(EIGV)
+     &                              * WORK(KOSCSI+3*(icom-1)+icom-1)
+                if (DSSUML(K,ICOM).EQ.ZERO) then
+                    DISUML(K,ICOM) = ZERO
+                else
+                    DISUML(K,ICOM) = DEXP(DLSUML(K,ICOM)/DSSUML(K,ICOM))
+     *                           *XTEV
+                end if
+             ENDDO
+             DSSUML(K,4) = DSSUML(K,1)+DSSUML(K,2)+DSSUML(K,3)
+             DLSUML(K,4) = DLSUML(K,1)+DLSUML(K,2)+DLSUML(K,3)
+             if (DSSUML(K,4).EQ.ZERO) then
+                    DISUML(K,4) = ZERO
+             else
+                    DISUML(K,4) = DEXP(DLSUML(K,4)/DSSUML(K,4))
+     *                           *XTEV
+             end if
+             ENDDO
+           end if
+! end of mean exc energy/sum rules. Sonia
+
             END DO
             IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
                NREST = 0
@@ -6430,6 +6461,7 @@ C     ----------------------------
 
       END IF
 
+      
       IF (ROTLEN .OR. ROTVEL .OR. RTNLEN .OR. RTNVEL) THEN
          WRITE(LUOSC,'(/,1X,A)')
      &   'Conversion factors for rotatory strengths:'
@@ -6438,6 +6470,26 @@ C     ----------------------------
          WRITE(LUOSC,'(3X,A,F15.10,A)')
      &   'cgs units:   1 a.u. = ',RAUCGS,'D-40 cm^5 g s^-2'
       END IF
+!mean exc energy - stopping power - Sonia
+      IF (SUMRULES) THEN
+         CALL HEADER('CC Oscillator strength sum rules',30)
+         WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
+     &   'S(K) Sum Rules : Dipole Length Approximation in a.u.',
+     &   'K','xx - component','yy - component','zz - component','total'
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
+     &         (K,(DSSUML(K,J),J=1,4),K=-6,2)
+         WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
+     &   'L(K) Sum Rules : Dipole Length Approximation in a.u.',
+     &   'K','xx - component','yy - component','zz - component','total'
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
+     &         (K,(DLSUML(K,J),J=1,4),K=-6,2)
+         WRITE (LUPRI,'(//,14X,A,/,6X,A,5X,A,3X,A,3X,A,6X,A,/)')
+     &   'I(K) Sum Rules : Dipole Length Approximation in eV',
+     &   'K','xx - component','yy - component','zz - component','total'
+         WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))')
+     &         (K,(DISUML(K,J),J=1,4),K=-6,2)
+      END IF
+!end of mex
 
 C     Print timings and exit.
 C     -----------------------
@@ -6463,11 +6515,11 @@ C              residue is symmetry--allowed.
 C              If LABEL is not on the list, ILRES = -1
 C              If LIST is illegal,          ILRES = -2.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 LABEL
       CHARACTER*1 LIST
-#include <cclres.h>
-#include <ccroper.h>
+#include "cclres.h"
+#include "ccroper.h"
 
       CHARACTER*8 LOCLAB
 
@@ -6518,16 +6570,16 @@ C     Purpose: Calculate etaA*RE contributions to right ground-excited
 C              state transition moments for all excited states of matching
 C              symmetry.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TRRMOM(*), ETA(*), WORK(LWORK)
       CHARACTER*8  LABELA
       CHARACTER*10 MODEL
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <cclres.h>
-#include <ccexci.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "cclres.h"
+#include "ccexci.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_TRRETA')
@@ -6594,16 +6646,16 @@ C     Purpose: Calculate LE*ksiA contributions to left ground-excited
 C              state transition moments for all excited states of matching
 C              symmetry.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TRLMOM(*), XKSI(*), WORK(LWORK)
       CHARACTER*8  LABELA
       CHARACTER*10 MODEL
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <cclres.h>
-#include <ccexci.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "cclres.h"
+#include "ccexci.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_TRLKSI')
@@ -6670,16 +6722,16 @@ C     Purpose: Calculate Mf*ksiA contributions to right ground-excited
 C              state transition moments for all excited states of matching
 C              symmetry.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TRRMOM(*), XKSI(*), WORK(LWORK)
       CHARACTER*8  LABELA
       CHARACTER*10 MODEL
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <cclres.h>
-#include <ccexci.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "cclres.h"
+#include "ccexci.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_TRRKSI')
@@ -6747,16 +6799,16 @@ C     Purpose: Calculate [F*tA(-wf)]*RE contributions to right ground-excited
 C              state transition moments for all excited states of matching
 C              symmetry.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TRRMOM(*), WORK(LWORK)
       CHARACTER*8  LABELA
       CHARACTER*10 MODEL
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <cclres.h>
-#include <ccexci.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "cclres.h"
+#include "ccexci.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_TRRFTA')
@@ -6852,19 +6904,19 @@ C            401  chemical shielding isotropic
 C            402  chemical shielding tensor
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <prpc.h>
-#include <inftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "prpc.h"
+#include "inftap.h"
 C
       LOGICAL EXIST,L1,L2,L3,L4,LI1,LI2
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,TOLEXCI =1.0D-02)
@@ -6887,18 +6939,18 @@ c          IPRMI = IHIT
         ENDIF
 C
         WRITE(LUNDPF,
-     *   '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *   '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *   IPRMI,ISYMIN,NORD,LABEL,PROP,
      *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
         WRITE(LUNMPF,
-     *   '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *   '(I5,I3,I4,1X,A10,E23.16,4(1X,A8),3E23.16,3I4)')
      *   IPRMI,ISYMIN,NORD,LABEL,PROP,
      *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
       ENDIF
 C
       END
       SUBROUTINE stripblanks(tobestripped)
-#include <priunit.h>
+#include "priunit.h"
 c
 c     mbh: transform nuclei string, e.g. 'C0   1' into
 c          'C0_1   '

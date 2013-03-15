@@ -24,7 +24,7 @@
 *=====================================================================*
       IMPLICIT NONE
 
-#include <priunit.h>
+#include "priunit.h"
       INTEGER MXVEC, MXTRAN
       INTEGER IKTRAN(3,MXTRAN)
       INTEGER IKDOTS(MXVEC,MXTRAN)

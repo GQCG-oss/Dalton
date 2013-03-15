@@ -51,7 +51,7 @@ H     1.45235 0.899623 0.0
 cat > ccsdr12_h2o_gamma2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
-*READIN
+*MOLBAS
 .R12AUX
 **INTEGRALS
 .R12
@@ -94,7 +94,7 @@ cat > ccsdr12_h2o_gamma2.dal <<'%EOF%'
  1B
 .BASSCL
  2.0 5.0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
@@ -130,7 +130,7 @@ TEST[2]=`expr   $CRIT2`
 CTRL[2]=2
 ERROR[2]="CCSD(R12) ENERGY NOT CORRECT"
 #
-CRIT3=`$GREP "y *1.03602830 *2.63332097" $log | wc -l`
+CRIT3=`$GREP "y *1.03602830 *2.63332110" $log | wc -l`
 TEST[3]=`expr $CRIT3`
 CTRL[3]=1
 ERROR[3]="CCSD(R12) DIPOLE MOMENT NOT CORRECT"

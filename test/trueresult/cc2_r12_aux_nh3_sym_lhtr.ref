@@ -1,139 +1,190 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-          This is output from DALTON (Release 2.0, ? 2004)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-                          Principal authors:
+ --------------------------------------------------------------------------------
 
-          Trygve Helgaker,       University of Oslo,           Norway 
-          Hans Joergen Jensen,   SDU - Odense University,      Denmark
-          Poul Joergensen,       Aarhus University,            Denmark
-          Jeppe Olsen,           Aarhus University,            Denmark
-          Kenneth Ruud,          University of Tromsoe,        Norway 
-          Hans Aagren,           KTH Stockholm,                Sweden 
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-                          Contributors:
+ --------------------------------------------------------------------------------
 
-          Alexander A. Auer,     University of Mainz,          Germany
-          Keld L. Bak,           UNI-C,                        Denmark
-          Vebjoern Bakken,       University of Oslo,           Norway 
-          Ove Christiansen,      University of Lund,           Sweden 
-          Sonia Coriani,         University of Trieste,        Italy  
-          Paal Dahle,            University of Oslo,           Norway 
-          Erik K. Dalskov,       UNI-C,                        Denmark
-          Thomas Enevoldsen,     SDU - Odense University,      Denmark
-          Berta Fernandez,       U. of Santiago de Compostela, Spain  
-          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
-          Kasper Hald,           Aarhus University,            Denmark
-          Asger Halkier,         Aarhus University,            Denmark
-          Hanne Heiberg,         University of Oslo,           Norway 
-          Hinne Hettema,         University of Auckland,       NZ     
-          Dan Jonsson,           KTH Stockholm                 Sweden 
-          Sheela Kirpekar,       SDU - Odense University,      Denmark
-          Wim Klopper,           University of Karlsruhe,      Germany
-          Rika Kobayashi,        Cambridge University,         England
-          Henrik Koch,           University of Trondheim,      Norway 
-          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
-          Patrick Norman,        University of Linkoeping,     Sweden 
-          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
-          Martin J. Packer,      University of Sheffield,      UK     
-          Torgeir A. Ruden,      University of Oslo,           Norway 
-          Pawel Salek,           KTH Stockholm,                Sweden 
-          Alfredo Sanchez,       University of Valencia,       Spain  
-          Trond Saue,            University of Toulouse,       France 
-          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
-          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
-          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
-          Peter R. Taylor,       University of Warwick,        UK     
-          Olav Vahtras,          PDC, Stockholm,               Sweden 
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- ---------------------------------------------------------------------
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
-
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF wave functions. The authors accept no
-     responsibility for the performance of the code or for the
-     correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-     See licence agreement for further information.
-      
-     If results obtained with this code are published, an
-     appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 1.2
-     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,
-     R. Kobayashi, H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-     T. B. Pedersen, T. A. Ruden, P. Salek, A. Sanchez, T. Saue, 
-     S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-     P. R. Taylor and O. Vahtras"
-
- 
-     Date and time (Linux)  : Wed Dec 15 09:05:50 2004
-     Host name              : inttch05                                
-
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
-
-
- Default print level:        0
-
-    Direct calculation
-    Integral sections will be executed
-    Wave function sections will be executed
-
-Starting in Integral Section -
+ --------------------------------------------------------------------------------
 
 
+     Date and time (Linux)  : Wed Mar 16 19:27:10 2011 
+     Host name              : fe6                                     
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
-
- Default print level:        1
-
- * Nuclear model: Point charge
-
- Calculation of one-electron Hamiltonian integrals.
-
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - Cartesian multipole moment integrals of orders 2 and lower
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
 
 
-
-  Title Cards
-  -----------
-
-  CC2-R12/A calculation with symmetry                                     
-                                                                          
-
-
-  Symmetry Operations
-  -------------------
-
-  Symmetry operations: 1
+ INFO : "*READIN" is deprecated, use instead "*MOLBAS"
 
 
 
-                      SYMGRP:Point group information
-                      ------------------------------
+ Changes of defaults for *MOLBAS:
+ --------------------------------
+
+ Print level in molecule setup (READIN):    1
+
+ .R12AUX: Reading auxiliary basis sets from .mol file for R12
+
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: NH3: CC2-R12/Ansatz1 excitation energies with symmetry                  
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   7.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
+  Used basis set file for basis set for elements with Z =   7 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G**"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-311G**                                                                        
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    1
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311G**"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-311G**                                                                        
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   7.00000
+  Number of symmetry independent centers:    1
+  This is an auxiliary basis for R12, MBSI:    2
+  Used basis set file for basis set for elements with Z =   7 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311++G(3df,3pd)"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-311++G(3df,3pd)                                                               
+
+  Atomic type no.    4
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  This is an auxiliary basis for R12, MBSI:    2
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-311++G(3df,3pd)"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-311++G(3df,3pd)                                                               
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: Cs 
 
@@ -145,7 +196,7 @@ Point group: Cs
 
         |  E   Oxy
    -----+----------
-     E  |  E 
+     E  |  E   Oxy
     Oxy | Oxy   E 
 
    * Character table
@@ -159,133 +210,133 @@ Point group: Cs
 
         | A'   A" 
    -----+----------
-    A'  | A' 
+    A'  | A'   A" 
     A"  | A"   A' 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            N          14.003074
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
                            H           1.007825
+                           N           0.000000
+                           H   _1      0.000000
+                           H   _2      0.000000
+                           H           0.000000
 
                        Total mass:    17.026549 amu
-                       Natural abundance:  99.585 %
+                       Natural abundance:   0.000 %
 
- Center-of-mass coordinates (A):    0.460792    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):    0.460792   -0.000000    0.000000
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     4
+  Number of atom types :    4
   Total number of atoms:    8
 
-  Basis-set 1 refers to the basis "6-311G**" from the basis-set library.
+  Basis set 1 refers to the basis "6-311G**" from the basis set library.
 
-  Basis-set 2 refers to the basis "6-311++G(3df,3pd)" from the basis-set library.
+  Basis set 2 refers to the basis "6-311++G(3df,3pd)" from the basis set library.
 
-  label  basis   atoms  charge   prim    cont     basis
+  label  basis   atoms  charge   prim  cont     basis
   ------------------------------------------------------------------------------
-  N        1       1       7      31      18      [11s5p1d|4s3p1d]                                   
-  H        1       2       1       8       6      [5s1p|3s1p]                                        
-  H        1       1       1       8       6      [5s1p|3s1p]                                        
-  N        2       1       0      52      39      [12s6p3d1f|5s4p3d1f]                               
-  H        2       2       0      20      18      [6s3p1d|4s3p1d]                                    
-  H        2       1       0      20      18      [6s3p1d|4s3p1d]                                    
+  N        1       1    7.0000    31    18      [11s5p1d|4s3p1d]                                   
+  H        1       3    1.0000     8     6      [5s1p|3s1p]                                        
+  N        2       1    0.0000    52    39      [12s6p3d1f|5s4p3d1f]                               
+  H        2       3    0.0000    20    18      [6s3p1d|4s3p1d]                                    
   ------------------------------------------------------------------------------
-  total:           8      10     167     129
+  total:           8   10.0000   167   129
   ------------------------------------------------------------------------------
   Spherical harmonic basis used.
 
   Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates: 24
-
-   1   N        x      0.6023400000
-   2            y      0.0000000000
-   3            z      0.0000000000
-
-   4   H    1   x     -0.1947831000
-   5            y      0.8997910000
-   6            z      1.5584840000
-
-   7   H    2   x     -0.1947831000
-   8            y      0.8997910000
-   9            z     -1.5584840000
-
-  10   H        x     -0.1947831000
-  11            y     -1.7995826090
-  12            z      0.0000000000
-
-  13   N        x      0.6023400000
-  14            y      0.0000000000
-  15            z      0.0000000000
-
-  16   H    1   x     -0.1947831000
-  17            y      0.8997910000
-  18            z      1.5584840000
-
-  19   H    2   x     -0.1947831000
-  20            y      0.8997910000
-  21            z     -1.5584840000
-
-  22   H        x     -0.1947831000
-  23            y     -1.7995826090
-  24            z      0.0000000000
+  Total number of coordinates:   24
+  N       :     1  x   0.6023400000    2  y   0.0000000000    3  z   0.0000000000
+  H   / 1 :     4  x  -0.1947831000    5  y   0.8997910000    6  z   1.5584840000
+  H   / 2 :     7  x  -0.1947831000    8  y   0.8997910000    9  z  -1.5584840000
+  H       :    10  x  -0.1947831000   11  y  -1.7995826090   12  z  -0.0000000000
+  N       :    13  x   0.6023400000   14  y   0.0000000000   15  z   0.0000000000
+  H   / 1 :    16  x  -0.1947831000   17  y   0.8997910000   18  z   1.5584840000
+  H   / 2 :    19  x  -0.1947831000   20  y   0.8997910000   21  z  -1.5584840000
+  H       :    22  x  -0.1947831000   23  y  -1.7995826090   24  z  -0.0000000000
 
 
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:  14 10
+  Number of coordinates in each symmetry:    14   10
+
+  Symmetry  A'  ( 1)
+
+    1   N     x    1
+    2   N     y    2
+    3   H     x    [  4  +    7 ]/2
+    4   H     y    [  5  +    8 ]/2
+    5   H     z    [  6  -    9 ]/2
+    6   H     x   10
+    7   H     y   11
+    8   N     x   13
+    9   N     y   14
+   10   H     x    [ 16  +   19 ]/2
+   11   H     y    [ 17  +   20 ]/2
+   12   H     z    [ 18  -   21 ]/2
+   13   H     x   22
+   14   H     y   23
+
+  Symmetry  A"  ( 2)
+
+   15   N     z    3
+   16   H     x    [  4  -    7 ]/2
+   17   H     y    [  5  -    8 ]/2
+   18   H     z    [  6  +    9 ]/2
+   19   H     z   12
+   20   N     z   15
+   21   H     x    [ 16  -   19 ]/2
+   22   H     y    [ 17  -   20 ]/2
+   23   H     z    [ 18  +   21 ]/2
+   24   H     z   24
 
 
-  Symmetry 1
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
-   1   N     x    1
-   2   N     y    2
-   3   H     x    [  4  +   7 ]/2
-   4   H     y    [  5  +   8 ]/2
-   5   H     z    [  6  -   9 ]/2
-   6   H     x   10
-   7   H     y   11
-   8   N     x   13
-   9   N     y   14
-  10   H     x    [ 16  +  19 ]/2
-  11   H     y    [ 17  +  20 ]/2
-  12   H     z    [ 18  -  21 ]/2
-  13   H     x   22
-  14   H     y   23
+            N           H   _1      H   _2      H           N           H   _1
+            ------      ------      ------      ------      ------      ------
+ N     :    0.000000
+ H   _1:    1.041539    0.000000
+ H   _2:    1.041539    1.649428    0.000000
+ H     :    1.041539    1.649428    1.649428    0.000000
+ N     :    0.000000    1.041539    1.041539    1.041539    0.000000
+ H   _1:    1.041539    0.000000    1.649428    1.649428    1.041539    0.000000
+ H   _2:    1.041539    1.649428    0.000000    1.649428    1.041539    1.649428
+ H     :    1.041539    1.649428    1.649428    0.000000    1.041539    1.649428
 
-
-  Symmetry 2
-
-  15   N     z    3
-  16   H     x    [  4  -   7 ]/2
-  17   H     y    [  5  -   8 ]/2
-  18   H     z    [  6  +   9 ]/2
-  19   H     z   12
-  20   N     z   15
-  21   H     x    [ 16  -  19 ]/2
-  22   H     y    [ 17  -  20 ]/2
-  23   H     z    [ 18  +  21 ]/2
-  24   H     z   24
+            H   _2      H     
+            ------      ------
+ H   _2:    0.000000
+ H     :    1.649428    0.000000
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Max interatomic separation is    1.6494 Angstrom (    3.1170 Bohr)
+  between atoms    4 and    2, "H     " and "H   _1".
+
+
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     N            1.041539
-  bond distance:  H    2     N            1.041539
+  bond distance:  H   _1     N            1.041539
+  bond distance:  H   _2     N            1.041539
   bond distance:  H          N            1.041539
 
 
@@ -294,9 +345,9 @@ Point group: Cs
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     N          H    2       104.712
-  bond angle:     H    1     N          H            104.712
-  bond angle:     H    2     N          H            104.712
+  bond angle:     H   _1     N          H   _2       104.712
+  bond angle:     H   _1     N          H            104.712
+  bond angle:     H   _2     N          H            104.712
 
 
 
@@ -304,9 +355,9 @@ Point group: Cs
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    1.813393          0.000000    1.000000    0.000000
-   IB    1.813393          0.000000    0.000000    1.000000
-   IC    2.741903          1.000000    0.000000    0.000000
+   IA       1.813393          0.000000    1.000000    0.000000
+   IB       1.813393          0.000000    0.000000    1.000000
+   IC       2.741903          1.000000   -0.000000    0.000000
 
 
  Rotational constants
@@ -314,20 +365,20 @@ Point group: Cs
 
                A                   B                   C
 
-         278692.4410         278692.4194         184316.8748 MHz
+         278692.4386         278692.4170         184316.8732 MHz
             9.296179            9.296178            6.148149 cm-1
 
 
-  Nuclear repulsion energy :   11.631996297964
+@  Nuclear repulsion energy :   11.631996297964
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:              81  48
+  Number of orbitals in each symmetry:          81   48
 
-  Number of main orbitals in each symmetry:         24  12
-  Number of auxiliary functions in each symmetry:   57  36
+  Number of main orbitals in each symmetry:          24   12
+  Number of auxiliary functions in each symmetry:    57   36
 
 
   Symmetry  A' ( 1)
@@ -345,12 +396,12 @@ Point group: Cs
    11     N    M   3d2-      14
    12     N    M   3d0       16
    13     N    M   3d2+      18
-   14     H    M   1s        19  +  20
-   15     H    M   1s        21  +  22
-   16     H    M   1s        23  +  24
-   17     H    M   2px       25  +  26
-   18     H    M   2py       27  +  28
-   19     H    M   2pz       29  -  30
+   14     H    M   1s        19 +   20
+   15     H    M   1s        21 +   22
+   16     H    M   1s        23 +   24
+   17     H    M   2px       25 +   26
+   18     H    M   2py       27 +   28
+   19     H    M   2pz       29 -   30
    20     H    M   1s        31
    21     H    M   1s        32
    22     H    M   1s        33
@@ -382,24 +433,24 @@ Point group: Cs
    48     N    A   4f1-      71
    49     N    A   4f1+      73
    50     N    A   4f3+      75
-   51     H    A   1s        76  +  77
-   52     H    A   1s        78  +  79
-   53     H    A   1s        80  +  81
-   54     H    A   1s        82  +  83
-   55     H    A   2px       84  +  85
-   56     H    A   2py       86  +  87
-   57     H    A   2pz       88  -  89
-   58     H    A   2px       90  +  91
-   59     H    A   2py       92  +  93
-   60     H    A   2pz       94  -  95
-   61     H    A   2px       96  +  97
-   62     H    A   2py       98  +  99
-   63     H    A   2pz      100  - 101
-   64     H    A   3d2-     102  + 103
-   65     H    A   3d1-     104  - 105
-   66     H    A   3d0      106  + 107
-   67     H    A   3d1+     108  - 109
-   68     H    A   3d2+     110  + 111
+   51     H    A   1s        76 +   77
+   52     H    A   1s        78 +   79
+   53     H    A   1s        80 +   81
+   54     H    A   1s        82 +   83
+   55     H    A   2px       84 +   85
+   56     H    A   2py       86 +   87
+   57     H    A   2pz       88 -   89
+   58     H    A   2px       90 +   91
+   59     H    A   2py       92 +   93
+   60     H    A   2pz       94 -   95
+   61     H    A   2px       96 +   97
+   62     H    A   2py       98 +   99
+   63     H    A   2pz      100 -  101
+   64     H    A   3d2-     102 +  103
+   65     H    A   3d1-     104 -  105
+   66     H    A   3d0      106 +  107
+   67     H    A   3d1+     108 -  109
+   68     H    A   3d2+     110 +  111
    69     H    A   1s       112
    70     H    A   1s       113
    71     H    A   1s       114
@@ -422,12 +473,12 @@ Point group: Cs
    84     N    M   2pz       13
    85     N    M   3d1-      15
    86     N    M   3d1+      17
-   87     H    M   1s        19  -  20
-   88     H    M   1s        21  -  22
-   89     H    M   1s        23  -  24
-   90     H    M   2px       25  -  26
-   91     H    M   2py       27  -  28
-   92     H    M   2pz       29  +  30
+   87     H    M   1s        19 -   20
+   88     H    M   1s        21 -   22
+   89     H    M   1s        23 -   24
+   90     H    M   2px       25 -   26
+   91     H    M   2py       27 -   28
+   92     H    M   2pz       29 +   30
    93     H    M   2pz       36
    94     N    A   2pz       44
    95     N    A   2pz       47
@@ -442,113 +493,100 @@ Point group: Cs
   104     N    A   4f2-      70
   105     N    A   4f0       72
   106     N    A   4f2+      74
-  107     H    A   1s        76  -  77
-  108     H    A   1s        78  -  79
-  109     H    A   1s        80  -  81
-  110     H    A   1s        82  -  83
-  111     H    A   2px       84  -  85
-  112     H    A   2py       86  -  87
-  113     H    A   2pz       88  +  89
-  114     H    A   2px       90  -  91
-  115     H    A   2py       92  -  93
-  116     H    A   2pz       94  +  95
-  117     H    A   2px       96  -  97
-  118     H    A   2py       98  -  99
-  119     H    A   2pz      100  + 101
-  120     H    A   3d2-     102  - 103
-  121     H    A   3d1-     104  + 105
-  122     H    A   3d0      106  - 107
-  123     H    A   3d1+     108  + 109
-  124     H    A   3d2+     110  - 111
+  107     H    A   1s        76 -   77
+  108     H    A   1s        78 -   79
+  109     H    A   1s        80 -   81
+  110     H    A   1s        82 -   83
+  111     H    A   2px       84 -   85
+  112     H    A   2py       86 -   87
+  113     H    A   2pz       88 +   89
+  114     H    A   2px       90 -   91
+  115     H    A   2py       92 -   93
+  116     H    A   2pz       94 +   95
+  117     H    A   2px       96 -   97
+  118     H    A   2py       98 -   99
+  119     H    A   2pz      100 +  101
+  120     H    A   3d2-     102 -  103
+  121     H    A   3d1-     104 +  105
+  122     H    A   3d0      106 -  107
+  123     H    A   3d1+     108 +  109
+  124     H    A   3d2+     110 -  111
   125     H    A   2pz      118
   126     H    A   2pz      121
   127     H    A   2pz      124
   128     H    A   3d1-     126
   129     H    A   3d1+     128
 
+  Number of floating/multiple basis set orbitals :    4
+
   Symmetries of electric field:  A' (1)  A' (1)  A" (2)
 
   Symmetries of magnetic field:  A" (2)  A" (2)  A' (1)
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in OVERLA is   0.01 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in CARMOM is   0.01 seconds
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - Cartesian multipole moment integrals of orders 2 and lower
+
+ Center of mass  (bohr):      0.460791541485     -0.000000036048      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
- >>> Time used in CARMOM is   0.01 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
-
- >>> Time used in CARMOM is   0.02 seconds
-
-
- >>> Time used in ONEDRV is   0.02 seconds
-
-
- >>> Time used in GABGEN is   0.06 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.13 seconds
+ >>>> Total CPU  time used in HERMIT:   0.14 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
  NCCEXCI for singlet:           4           4
+
+ >>>> Detected R12 input:
+ Direct Fock matrix formation switched on!
  Scale factors for CC excitations manifolds:
- for bra states (projection manifold):  0.500000000000000     
- for ket states (operator manifold)  :   2.00000000000000     
+ for bra states (projection manifold):  1.00000000000000000     
+ for ket states (operator manifold)  :  1.00000000000000000     
 
-
-@ WARNING: orbitals are deleted during canonical orthonormalization
-@   because of detected numerical linear dependence.
-@ Eigenvalue threshold for num. lin. dep. =  1.00D-06
-
-@  57 MO components are deleted in symmetry    1
- Overlap eigenvalues of the deleted orbitals:
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00
-
-@  36 MO components are deleted in symmetry    2
- Overlap eigenvalues of the deleted orbitals:
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
-  0.00D+00
-
-WARNING: Orbitals have been deleted because of numerical
-   linear dependence although not requested in input.
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 15 09:05:50 2004
-     Host name              : inttch05                                
+     Date and time (Linux)  : Wed Mar 16 19:27:10 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
-     CC2-R12/A calculation with symmetry                                     
+ Title lines from ".mol" input file:
+     NH3: CC2-R12/Ansatz1 excitation energies with symmetry                  
                                                                              
 
  Print level on unit LUPRI =   2 is   0
@@ -559,7 +597,7 @@ WARNING: Orbitals have been deleted because of numerical
 
      This is a combination run starting with
 
-               a RHF calculation
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -569,12 +607,13 @@ WARNING: Orbitals have been deleted because of numerical
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 36
 
      Spin multiplicity                         1
      Total number of symmetries                2
@@ -582,20 +621,20 @@ WARNING: Orbitals have been deleted because of numerical
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1   2
-                                       --  --
-     Total number of orbitals          24  12
-     Number of basis functions         81  48
+     Abelian symmetry species          All |    1    2
+                                       --- |  ---  ---
+     Total number of orbitals           36 |   24   12
+     Number of basis functions         129 |   81   48
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
-      -- Initial occupation of symmetries is : --
 
-     Occupied SCF orbitals              4   1
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is :
+     Occupied SCF orbitals               5 |    4    1
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
+     Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-10
 
 
@@ -607,8 +646,19 @@ WARNING: Orbitals have been deleted because of numerical
   calculation for coupled cluster wave function
 
  -Implicit frozen core calculation
+ -Excitation energies calculated
+  
 
- Excitation energies calculated
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+ -Excitation energies calculated
   
 
 
@@ -620,104 +670,101 @@ WARNING: Orbitals have been deleted because of numerical
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
- Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   1  -42.2708813202       2.04D+01  -4.23D+01    4  1
+      Virial theorem: -V/T =      1.457131
+      MULPOP  N      -3.18; H   _1  1.06; H   _2  1.06; H       1.06; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2  -49.5913569809       7.02D+00  -7.32D+00    4  1
+      Virial theorem: -V/T =      2.097363
+      MULPOP  N       5.16; H   _1 -1.72; H   _2 -1.72; H      -1.72; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3  -54.3143844903       6.28D+00  -4.72D+00    4  1
+      Virial theorem: -V/T =      1.844153
+      MULPOP  N      -2.02; H   _1  0.67; H   _2  0.67; H       0.67; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4  -55.9997530612       1.90D+00  -1.69D+00    4  1
+      Virial theorem: -V/T =      1.960347
+      MULPOP  N      -1.08; H   _1  0.36; H   _2  0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5  -56.2057366546       9.93D-02  -2.06D-01    4  1
+      Virial theorem: -V/T =      2.003664
+      MULPOP  N      -0.57; H   _1  0.19; H   _2  0.19; H       0.19; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   6  -56.2063160816       4.81D-02  -5.79D-04    4  1
+      Virial theorem: -V/T =      2.003710
+      MULPOP  N      -0.54; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7  -56.2064511119       8.59D-03  -1.35D-04    4  1
+      Virial theorem: -V/T =      2.002810
+      MULPOP  N      -0.55; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8  -56.2064619096       1.95D-03  -1.08D-05    4  1
+      Virial theorem: -V/T =      2.002622
+      MULPOP  N      -0.55; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9  -56.2064628556       3.55D-04  -9.46D-07    4  1
+      Virial theorem: -V/T =      2.002624
+      MULPOP  N      -0.55; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10  -56.2064628819       3.78D-05  -2.63D-08    4  1
+      Virial theorem: -V/T =      2.002625
+      MULPOP  N      -0.55; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11  -56.2064628821       6.61D-06  -2.09D-10    4  1
+      Virial theorem: -V/T =      2.002625
+      MULPOP  N      -0.55; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12  -56.2064628821       1.07D-06  -4.95D-12    4  1
+      Virial theorem: -V/T =      2.002625
+      MULPOP  N      -0.55; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13  -56.2064628821       1.17D-07  -1.14D-13    4  1
+      Virial theorem: -V/T =      2.002625
+      MULPOP  N      -0.55; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  14  -56.2064628821       1.76D-08  -1.42D-14    4  1
+      Virial theorem: -V/T =      2.002625
+      MULPOP  N      -0.55; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+  15  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  15  -56.2064628821       1.17D-09  -1.42D-14    4  1
+      Virial theorem: -V/T =      2.002625
+      MULPOP  N      -0.55; H   _1  0.18; H   _2  0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+  16  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  16  -56.2064628821       7.11D-11   0.00D+00    4  1
 
- >>> Time used in TWOINT is   0.05 seconds
-
-   1    -42.270881319898   2.04D+01  -4.23D+01    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
-
- >>> Time used in TWOINT is   0.05 seconds
-
-   2    -49.591356852871   7.02D+00  -7.32D+00    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
-
- >>> Time used in TWOINT is   0.05 seconds
-
-   3    -54.314384439270   6.28D+00  -4.72D+00    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
-
- >>> Time used in TWOINT is   0.05 seconds
-
-   4    -55.999753049493   1.90D+00  -1.69D+00    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
-
- >>> Time used in TWOINT is   0.05 seconds
-
-   5    -56.205736654517   9.93D-02  -2.06D-01    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
-
- >>> Time used in TWOINT is   0.06 seconds
-
-   6    -56.206316081672   4.81D-02  -5.79D-04    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
-
- >>> Time used in TWOINT is   0.05 seconds
-
-   7    -56.206451111915   8.59D-03  -1.35D-04    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
-
- >>> Time used in TWOINT is   0.05 seconds
-
-   8    -56.206461909599   1.95D-03  -1.08D-05    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
-
- >>> Time used in TWOINT is   0.06 seconds
-
-   9    -56.206462855602   3.55D-04  -9.46D-07    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.05 seconds
-
-  10    -56.206462881912   3.78D-05  -2.63D-08    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.05 seconds
-
-  11    -56.206462882121   6.61D-06  -2.09D-10    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.05 seconds
-
-  12    -56.206462882126   1.07D-06  -5.02D-12    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.06 seconds
-
-  13    -56.206462882126   1.17D-07  -1.28D-13    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.05 seconds
-
-  14    -56.206462882126   1.76D-08  -8.53D-14    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.05 seconds
-
-  15    -56.206462882126   1.17D-09   1.42D-13    4  1
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
-
- >>> Time used in TWOINT is   0.06 seconds
-
-  16    -56.206462882126   7.11D-11   1.42D-14    4  1
- DIIS converged in  16 iterations !
+ *** DIIS converged in  16 iterations !
+   - total time used in SIRFCK :              0.61 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    4    1
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -15.54076055    -1.12471367    -0.60783828    -0.42807440     0.15188999
+  1    -15.54076055    -1.12471367    -0.60783828    -0.42807440     0.15188999
          0.22733183     0.50651250     0.66193388     0.81747206
 
- Hartree-Fock orbital energies, symmetry 2
-
-        -0.60783835     0.22733184     0.50651256     0.94732435     1.34622066
+  2     -0.60783835     0.22733184     0.50651256     0.94732435     1.34622066
          1.78471036
 
     E(LUMO) :     0.15188999 au (symmetry 1)
@@ -732,189 +779,101 @@ WARNING: Orbitals have been deleted because of numerical
      1          24    24          57    57
      2          12    12          36    36
 
- >>> Time used in TWOINT is   0.40 seconds
-
-
  Computation of exchange matrix done [5]
 
  AUXILIARY BASIS LOW EIGENVALUES
  ISYM         EIGENVALUE
    1      0.000000000000
    2      0.000000000000
-
- >>> Time used in R12AUX is   0.46 seconds
-
+ >>> Time used in R12AUX is   0.34 seconds
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -56.206462882126
+     Final HF energy:             -56.206462882129                 
      Nuclear repulsion:            11.631996297964
-     Electronic energy:           -67.838459180089
+     Electronic energy:           -67.838459180092
 
      Final gradient norm:           0.000000000071
 
  
-     Date and time (Linux)  : Wed Dec 15 09:05:51 2004
-     Host name              : inttch05                                
+     Date and time (Linux)  : Wed Mar 16 19:27:11 2011 
+     Host name              : fe6                                     
 
-     Molecular orbitals for symmetry species   1
+ (Only coefficients >0.0100 are printed.)
 
- Orbital          1        2        3        4
-   1  N   1s     0.5577  -0.1070   0.0000  -0.0368
-   2  N   1s     0.4683  -0.1772   0.0000  -0.0625
-   3  N   1s     0.0047   0.4759   0.0000   0.1891
-   4  N   1s    -0.0009   0.3325   0.0000   0.2488
-   5  N   2px   -0.0021  -0.0346   0.0000   0.2488
-   6  N   2py    0.0000   0.0000   0.2039   0.0000
-   7  N   2px    0.0009  -0.0568   0.0000   0.3719
-   8  N   2py    0.0000   0.0000   0.3194   0.0000
-   9  N   2px    0.0000  -0.0195   0.0000   0.4508
-  10  N   2py    0.0000   0.0000   0.2125   0.0000
-  11  N   3d2-   0.0000   0.0000  -0.0284   0.0000
-  12  N   3d0   -0.0001   0.0015   0.0151   0.0083
-  13  N   3d2+   0.0001  -0.0027   0.0087  -0.0144
-  14  H   1s     0.0002   0.0870   0.0821  -0.0471
-  15  H   1s     0.0004   0.0963   0.1275  -0.0471
-  16  H   1s     0.0001   0.0027   0.0492  -0.0331
-  17  H   2px    0.0000   0.0071   0.0064   0.0176
-  18  H   2py   -0.0001  -0.0113   0.0067   0.0048
-  19  H   2pz   -0.0002  -0.0196  -0.0165   0.0082
-  20  H   1s     0.0002   0.0870  -0.1642  -0.0471
-  21  H   1s     0.0004   0.0963  -0.2550  -0.0471
-  22  H   1s     0.0001   0.0027  -0.0983  -0.0331
-  23  H   2px    0.0000   0.0071  -0.0129   0.0176
-  24  H   2py    0.0002   0.0226  -0.0220  -0.0095
-  25  N   1s     0.0000   0.0000   0.0000   0.0000
-  26  N   1s     0.0000   0.0000   0.0000   0.0000
-  27  N   1s     0.0000   0.0000   0.0000   0.0000
-  28  N   1s     0.0000   0.0000   0.0000   0.0000
-  29  N   1s     0.0000   0.0000   0.0000   0.0000
-  30  N   2px    0.0000   0.0000   0.0000   0.0000
-  31  N   2py    0.0000   0.0000   0.0000   0.0000
-  32  N   2px    0.0000   0.0000   0.0000   0.0000
-  33  N   2py    0.0000   0.0000   0.0000   0.0000
-  34  N   2px    0.0000   0.0000   0.0000   0.0000
-  35  N   2py    0.0000   0.0000   0.0000   0.0000
-  36  N   2px    0.0000   0.0000   0.0000   0.0000
-  37  N   2py    0.0000   0.0000   0.0000   0.0000
-  38  N   3d2-   0.0000   0.0000   0.0000   0.0000
-  39  N   3d0    0.0000   0.0000   0.0000   0.0000
-  40  N   3d2+   0.0000   0.0000   0.0000   0.0000
-  41  N   3d2-   0.0000   0.0000   0.0000   0.0000
-  42  N   3d0    0.0000   0.0000   0.0000   0.0000
-  43  N   3d2+   0.0000   0.0000   0.0000   0.0000
-  44  N   3d2-   0.0000   0.0000   0.0000   0.0000
-  45  N   3d0    0.0000   0.0000   0.0000   0.0000
-  46  N   3d2+   0.0000   0.0000   0.0000   0.0000
-  47  N   4f3-   0.0000   0.0000   0.0000   0.0000
-  48  N   4f1-   0.0000   0.0000   0.0000   0.0000
-  49  N   4f1+   0.0000   0.0000   0.0000   0.0000
-  50  N   4f3+   0.0000   0.0000   0.0000   0.0000
-  51  H   1s     0.0000   0.0000   0.0000   0.0000
-  52  H   1s     0.0000   0.0000   0.0000   0.0000
-  53  H   1s     0.0000   0.0000   0.0000   0.0000
-  54  H   1s     0.0000   0.0000   0.0000   0.0000
-  55  H   2px    0.0000   0.0000   0.0000   0.0000
-  56  H   2py    0.0000   0.0000   0.0000   0.0000
-  57  H   2pz    0.0000   0.0000   0.0000   0.0000
-  58  H   2px    0.0000   0.0000   0.0000   0.0000
-  59  H   2py    0.0000   0.0000   0.0000   0.0000
-  60  H   2pz    0.0000   0.0000   0.0000   0.0000
-  61  H   2px    0.0000   0.0000   0.0000   0.0000
-  62  H   2py    0.0000   0.0000   0.0000   0.0000
-  63  H   2pz    0.0000   0.0000   0.0000   0.0000
-  64  H   3d2-   0.0000   0.0000   0.0000   0.0000
-  65  H   3d1-   0.0000   0.0000   0.0000   0.0000
-  66  H   3d0    0.0000   0.0000   0.0000   0.0000
-  67  H   3d1+   0.0000   0.0000   0.0000   0.0000
-  68  H   3d2+   0.0000   0.0000   0.0000   0.0000
-  69  H   1s     0.0000   0.0000   0.0000   0.0000
-  70  H   1s     0.0000   0.0000   0.0000   0.0000
-  71  H   1s     0.0000   0.0000   0.0000   0.0000
-  72  H   1s     0.0000   0.0000   0.0000   0.0000
-  73  H   2px    0.0000   0.0000   0.0000   0.0000
-  74  H   2py    0.0000   0.0000   0.0000   0.0000
-  75  H   2px    0.0000   0.0000   0.0000   0.0000
-  76  H   2py    0.0000   0.0000   0.0000   0.0000
-  77  H   2px    0.0000   0.0000   0.0000   0.0000
-  78  H   2py    0.0000   0.0000   0.0000   0.0000
-  79  H   3d2-   0.0000   0.0000   0.0000   0.0000
-  80  H   3d0    0.0000   0.0000   0.0000   0.0000
-  81  H   3d2+   0.0000   0.0000   0.0000   0.0000
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
 
-     Molecular orbitals for symmetry species   2
+    Orbital         1        2        3        4        5        6
+   1 N   :1s     0.5577  -0.1070   0.0000  -0.0368  -0.0417   0.0000
+   2 N   :1s     0.4683  -0.1772   0.0000  -0.0625  -0.0673   0.0000
+   3 N   :1s     0.0047   0.4759  -0.0000   0.1891   0.0998   0.0000
+   4 N   :1s    -0.0009   0.3325  -0.0000   0.2488   1.2521  -0.0000
+   5 N   :2px   -0.0021  -0.0346  -0.0000   0.2488  -0.0613   0.0000
+   6 N   :2py   -0.0000   0.0000   0.2039   0.0000  -0.0000  -0.1333
+   7 N   :2px    0.0009  -0.0568  -0.0000   0.3719  -0.0990   0.0000
+   8 N   :2py    0.0000   0.0000   0.3194   0.0000  -0.0000  -0.1240
+   9 N   :2px    0.0000  -0.0195  -0.0000   0.4508  -0.2590   0.0000
+  10 N   :2py    0.0000   0.0000   0.2125   0.0000  -0.0000  -0.7063
+  11 N   :3d2-  -0.0000  -0.0000  -0.0284  -0.0000  -0.0000   0.0051
+  12 N   :3d0   -0.0001   0.0015   0.0151   0.0083  -0.0001   0.0044
+  13 N   :3d2+   0.0001  -0.0027   0.0087  -0.0144   0.0001   0.0025
+  14 H   :1s     0.0002   0.0870   0.0821  -0.0471  -0.0236   0.0128
+  15 H   :1s     0.0004   0.0963   0.1275  -0.0471   0.0137  -0.0748
+  16 H   :1s     0.0001   0.0027   0.0492  -0.0331  -0.6937   0.9325
+  17 H   :2px    0.0000   0.0071   0.0064   0.0176  -0.0039  -0.0040
+  18 H   :2py   -0.0001  -0.0113   0.0067   0.0048   0.0012   0.0019
+  19 H   :2pz   -0.0002  -0.0196  -0.0165   0.0082   0.0020   0.0066
+  20 H   :1s     0.0002   0.0870  -0.1642  -0.0471  -0.0236  -0.0256
+  21 H   :1s     0.0004   0.0963  -0.2550  -0.0471   0.0137   0.1495
+  22 H   :1s     0.0001   0.0027  -0.0983  -0.0331  -0.6937  -1.8651
+  23 H   :2px    0.0000   0.0071  -0.0129   0.0176  -0.0039   0.0080
+  24 H   :2py    0.0002   0.0226  -0.0220  -0.0095  -0.0023   0.0134
 
- Orbital          1
-   1  N   2pz   -0.2039
-   2  N   2pz   -0.3194
-   3  N   2pz   -0.2125
-   4  N   3d1-  -0.0175
-   5  N   3d1+   0.0284
-   6  H   1s    -0.1422
-   7  H   1s    -0.2209
-   8  H   1s    -0.0851
-   9  H   2px   -0.0111
-  10  H   2py    0.0165
-  11  H   2pz    0.0125
-  12  H   2pz   -0.0162
-  13  N   2pz    0.0000
-  14  N   2pz    0.0000
-  15  N   2pz    0.0000
-  16  N   2pz    0.0000
-  17  N   3d1-   0.0000
-  18  N   3d1+   0.0000
-  19  N   3d1-   0.0000
-  20  N   3d1+   0.0000
-  21  N   3d1-   0.0000
-  22  N   3d1+   0.0000
-  23  N   4f2-   0.0000
-  24  N   4f0    0.0000
-  25  N   4f2+   0.0000
-  26  H   1s     0.0000
-  27  H   1s     0.0000
-  28  H   1s     0.0000
-  29  H   1s     0.0000
-  30  H   2px    0.0000
-  31  H   2py    0.0000
-  32  H   2pz    0.0000
-  33  H   2px    0.0000
-  34  H   2py    0.0000
-  35  H   2pz    0.0000
-  36  H   2px    0.0000
-  37  H   2py    0.0000
-  38  H   2pz    0.0000
-  39  H   3d2-   0.0000
-  40  H   3d1-   0.0000
-  41  H   3d0    0.0000
-  42  H   3d1+   0.0000
-  43  H   3d2+   0.0000
-  44  H   2pz    0.0000
-  45  H   2pz    0.0000
-  46  H   2pz    0.0000
-  47  H   3d1-   0.0000
-  48  H   3d1+   0.0000
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 N   :2pz   -0.2039  -0.1333   0.0818
+   2 N   :2pz   -0.3194  -0.1240   0.1252
+   3 N   :2pz   -0.2125  -0.7063   1.2264
+   4 N   :3d1-  -0.0175   0.0051  -0.0105
+   5 N   :3d1+   0.0284   0.0051  -0.0069
+   6 H   :1s    -0.1422   0.0222  -0.0739
+   7 H   :1s    -0.2209  -0.1295  -1.2958
+   8 H   :1s    -0.0851   1.6152   0.4986
+   9 H   :2px   -0.0111  -0.0069  -0.0057
+  10 H   :2py    0.0165   0.0066   0.0073
+  11 H   :2pz    0.0125   0.0096   0.0290
+  12 H   :2pz   -0.0162  -0.0019   0.0165
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.44 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.03 seconds
  >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 15 09:05:51 2004
-     Host name              : inttch05                                
-
- NOTE:    2 warnings have been issued.
- Check output, result, and error files for "WARNING".
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 19:27:11 2011 
+     Host name              : fe6                                     
 
 
-Starting Coupled Cluster -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
 
   
 
@@ -934,12 +893,15 @@ Starting Coupled Cluster -
 
  CCR12 APPROX =   2
 
+   NRHF   :       3       1
+   NRHFS  :       4       1
    NORB1  :      24      12
    NORB2  :      57      36
 
  Number of primary orbitals             :           36
  Number of secondary orbitals           :           93
  Total number of orbitals               :          129
+ Total number of basis functions        :          129
  Number of (i|p) integrals              :           84
  Number of (i|p') integrals             :          291
  Number of (i|u') integrals             :          291
@@ -957,94 +919,41 @@ Starting Coupled Cluster -
  To avoid the hybride scheme, the keyword '.NO HYB'
  must be specified in the Dalton input file.
  ------------------------------------------------------------------------------
- Ansatz 1 is used and results are printed for approximation A.       
+ Ansatz 1 is used and results are printed for approximations A and B.
  ******************************************************************************
 
- Core memory required by CCSD_R12 :         174501  (double words)
+ Core memory required by CCSD_R12 :         187605  (double words)
 
  Computation of (ip'|r12|jq) integrals done
-
- >>> Time used in R  [5] is   4.05 seconds
-
+ >>> Time used in R  [5] is   2.54 seconds
  Backtransformation of (ip'|r12|jq') integrals done
-
- >>> Time used in R12BTF is   0.01 seconds
-
  Computation of V^aj_kl intermediate done
 
- >>> Time used for V^aj_kl is    0.20 seconds
+ >>> Time used for V^aj_kl is    0.05 seconds
+
  Computation of (ip'|1/r12|jq) integrals done
-
- >>> Time used in 1/R[5] is   4.05 seconds
-
+ >>> Time used in 1/R[5] is   2.20 seconds
  Computation of (i* p'|r12|jq) integrals done
-
- >>> Time used in R  [5] is   4.19 seconds
-
+ >>> Time used in R  [5] is   2.31 seconds
  Computation of (i'p|r12|jq) integrals done
-
- >>> Time used in R  [5] is   7.98 seconds
-
-
- >>> Time used in TWOINT is   1.24 seconds
-
-
- >>> Time used in TWOINT is   1.44 seconds
-
-
- >>> Time used in TWOINT is   0.72 seconds
-
-
- >>> Time used in TWOINT is   0.94 seconds
-
-
- >>> Time used in TWOINT is   0.69 seconds
-
-
- >>> Time used in TWOINT is   0.55 seconds
-
-
- >>> Time used in TWOINT is   0.37 seconds
-
-
- >>> Time used in TWOINT is   0.20 seconds
-
-
- >>> Time used in TWOINT is   0.25 seconds
-
-
- >>> Time used in TWOINT is   0.30 seconds
-
-
- >>> Time used in TWOINT is   0.19 seconds
-
-
- >>> Time used in TWOINT is   0.16 seconds
-
-
- >>> Time used in TWOINT is   0.24 seconds
-
-
- >>> Time used in TWOINT is   0.20 seconds
-
-
- >>> Time used in TWOINT is   0.10 seconds
-
-
- >>> Time used in TWOINT is   0.15 seconds
-
-
+ >>> Time used in R  [5] is   4.41 seconds
+ >>> Time used in TWOINT is   0.47 seconds
+ >>> Time used in TWOINT is   0.57 seconds
+ >>> Time used in TWOINT is   0.39 seconds
+ >>> Time used in TWOINT is   0.47 seconds
+ >>> Time used in TWOINT is   0.39 seconds
+ >>> Time used in TWOINT is   0.27 seconds
+ >>> Time used in TWOINT is   0.21 seconds
  >>> Time used in TWOINT is   0.12 seconds
-
+ >>> Time used in TWOINT is   0.12 seconds
+ >>> Time used in TWOINT is   0.12 seconds
  Computation of (ip'|[T,r12]|jq) integrals done
-
- >>> Time used in T,R[5] is   9.78 seconds
-
+ >>> Time used in T,R[5] is   4.17 seconds
 
 
-             +-----------------------------------------------+
-             ! MP2-R12 ansatz := (1 - P1 - P2 + P1*P2) * R12 !
-             +-----------------------------------------------+
+                 +-----------------------------------------------+
+                 ! MP2-R12 ansatz := (1 - P1 - P2 + P1*P2) * R12 !
+                 +-----------------------------------------------+
 
 
  SECOND-ORDER PAIR ENERGIES:
@@ -1063,173 +972,46 @@ Starting Coupled Cluster -
  MP2 =   -0.200659298   -0.132449191   -0.068210107
 
 
-                        +-------------------------+
-                        ! Original MP2-R12 method !
-                        +-------------------------+
+                         +--------------------------------+
+                         ! Auxiliary-basis MP2-R12 method !
+                         +--------------------------------+
 
-
- SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
-
-   1   -0.009402065   -0.005575655    0.000000000    0.000000000
-   2   -0.013004697   -0.014557070   -0.005769187   -0.003174286
-   3   -0.019085689   -0.017419473    0.000000000    0.000000000
-   4   -0.009742030   -0.008424321   -0.006157222   -0.003025861
-   5   -0.009775104   -0.008482828   -0.017671041   -0.014987808
-   6   -0.018223497   -0.017106215    0.000000000    0.000000000
-   7   -0.013004699   -0.014557074   -0.005769186   -0.003174285
-   8   -0.011350622   -0.011114774   -0.015172430   -0.014319250
-   9   -0.009775103   -0.008482826   -0.017671041   -0.014987808
-  10   -0.019085687   -0.017419472    0.000000000    0.000000000
-
-       -0.132449191   -0.123139707   -0.068210107   -0.053669297
-
- Noninvariant MP2-R12/0   correlation energy =   -0.176809005
-
-  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
-
-   1 -0.5182E-02 -0.1419E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.6972E+01  0.0000E+00
-   2 -0.1053E-01 -0.1951E-01  0.1000E+01 -0.6751E-02 -0.3739E-01  0.5000E+00  0.2833E+01  0.2457E+01
-   3 -0.8387E-02 -0.1844E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.1626E+01  0.0000E+00
-   4 -0.1099E-01 -0.2329E-01  0.1000E+01 -0.1290E-01 -0.6414E-01  0.5000E+00  0.1448E+01  0.1594E+01
-   5 -0.9774E-02 -0.2084E-01  0.1000E+01 -0.1456E-01 -0.6898E-01  0.5000E+00  0.1033E+01  0.1223E+01
-   6 -0.1730E-01 -0.3572E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.9867E+00  0.0000E+00
-   7 -0.1053E-01 -0.1951E-01  0.1000E+01 -0.6751E-02 -0.3739E-01  0.5000E+00  0.2833E+01  0.2457E+01
-   8 -0.7513E-02 -0.1526E-01  0.1000E+01 -0.1085E-01 -0.4681E-01  0.5000E+00  0.1293E+01  0.1308E+01
-   9 -0.9774E-02 -0.2084E-01  0.1000E+01 -0.1456E-01 -0.6898E-01  0.5000E+00  0.1033E+01  0.1223E+01
-  10 -0.8387E-02 -0.1844E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.1626E+01  0.0000E+00
-
- SECOND-ORDER NONINVARIANT R12/A PAIR ENERGIES:
-
-   1   -0.009402065   -0.011294208    0.000000000    0.000000000
-   2   -0.013004697   -0.018689488   -0.005769187   -0.006988444
-   3   -0.019085689   -0.022900140    0.000000000    0.000000000
-   4   -0.009742030   -0.014925398   -0.006157222   -0.008753230
-   5   -0.009775104   -0.014359039   -0.017671041   -0.020744948
-   6   -0.018223497   -0.026602486    0.000000000    0.000000000
-   7   -0.013004699   -0.018689491   -0.005769186   -0.006988443
-   8   -0.011350622   -0.015048917   -0.015172430   -0.017687195
-   9   -0.009775103   -0.014359037   -0.017671041   -0.020744948
-  10   -0.019085687   -0.022900137    0.000000000    0.000000000
-
-       -0.132449191   -0.179768341   -0.068210107   -0.081907208
-
- Noninvariant MP2-R12/A   correlation energy =   -0.261675548
-
-  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
-
-   1 -0.5182E-02 -0.1419E-01  0.3652E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.6972E+01  0.0000E+00
-   2 -0.1053E-01 -0.1951E-01  0.5398E+00 -0.6751E-02 -0.3739E-01  0.1806E+00  0.2833E+01  0.2457E+01
-   3 -0.8387E-02 -0.1844E-01  0.4548E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.1626E+01  0.0000E+00
-   4 -0.1099E-01 -0.2329E-01  0.4717E+00 -0.1290E-01 -0.6414E-01  0.2012E+00  0.1448E+01  0.1594E+01
-   5 -0.9774E-02 -0.2084E-01  0.4690E+00 -0.1456E-01 -0.6898E-01  0.2111E+00  0.1033E+01  0.1223E+01
-   6 -0.1730E-01 -0.3572E-01  0.4844E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.9867E+00  0.0000E+00
-   7 -0.1053E-01 -0.1951E-01  0.5398E+00 -0.6751E-02 -0.3739E-01  0.1806E+00  0.2833E+01  0.2457E+01
-   8 -0.7513E-02 -0.1526E-01  0.4923E+00 -0.1085E-01 -0.4681E-01  0.2318E+00  0.1293E+01  0.1308E+01
-   9 -0.9774E-02 -0.2084E-01  0.4690E+00 -0.1456E-01 -0.6898E-01  0.2111E+00  0.1033E+01  0.1223E+01
-  10 -0.8387E-02 -0.1844E-01  0.4548E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.1626E+01  0.0000E+00
 
  SECOND-ORDER R12/A PAIR ENERGIES:
 
-   1   -0.009402065   -0.011811836    0.000000000    0.000000000    0.810878         1.20808    
-   2   -0.013004697   -0.018711863   -0.005769187   -0.007000602    0.810878         1.20808    
-   3   -0.019085689   -0.023283967    0.000000000    0.000000000    0.810878         1.20808    
-   4   -0.009742030   -0.015058013   -0.006157222   -0.008753230    0.810878         1.20808    
-   5   -0.009775104   -0.014435997   -0.017671041   -0.020750671    0.810878         1.20808    
-   6   -0.018223497   -0.027102089    0.000000000    0.000000000    0.810878         1.20808    
-   7   -0.013004699   -0.018711866   -0.005769186   -0.007000602    0.810878         1.20808    
-   8   -0.011350622   -0.015143151   -0.015172430   -0.017687195    0.810878         1.20808    
-   9   -0.009775103   -0.014435996   -0.017671041   -0.020750670    0.810878         1.20808    
-  10   -0.019085687   -0.023283965    0.000000000    0.000000000    0.810878         1.20808    
-
-       -0.132449191   -0.181978744   -0.068210107   -0.081942970
-
-              MP2-R12/A   correlation energy =   -0.263921714
-
-
-                     +--------------------------------+
-                     ! Auxiliary-basis MP2-R12 method !
-                     +--------------------------------+
-
-
- SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
-
-   1   -0.009402065   -0.006268004    0.000000000    0.000000000
-   2   -0.013004697   -0.014084385   -0.005769187   -0.004154554
-   3   -0.019085689   -0.022249920    0.000000000    0.000000000
-   4   -0.009742030   -0.009852645   -0.006157222   -0.004378142
-   5   -0.009775104   -0.011193831   -0.017671041   -0.018644026
-   6   -0.018223497   -0.022067345    0.000000000    0.000000000
-   7   -0.013004699   -0.014084388   -0.005769186   -0.004154553
-   8   -0.011350622   -0.013323904   -0.015172430   -0.016047277
-   9   -0.009775103   -0.011193830   -0.017671041   -0.018644026
-  10   -0.019085687   -0.022249917    0.000000000    0.000000000
-
-       -0.132449191   -0.146568169   -0.068210107   -0.066022579
-
- Noninvariant MP2-R12/0   correlation energy =   -0.212590748
-
-  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
-
-   1 -0.4045E-02 -0.1122E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.1138E+02  0.0000E+00
-   2 -0.4785E-02 -0.8491E-02  0.1000E+01 -0.2095E-02 -0.1484E-01  0.5000E+00  0.8060E+01  0.7878E+01
-   3 -0.4700E-02 -0.6237E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.3958E+01  0.0000E+00
-   4 -0.4521E-02 -0.8931E-02  0.1000E+01 -0.3354E-02 -0.2053E-01  0.5000E+00  0.4164E+01  0.3853E+01
-   5 -0.3248E-02 -0.5078E-02  0.1000E+01 -0.4313E-02 -0.1336E-01  0.5000E+00  0.1988E+01  0.1854E+01
-   6 -0.7619E-02 -0.1139E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2015E+01  0.0000E+00
-   7 -0.4785E-02 -0.8491E-02  0.1000E+01 -0.2095E-02 -0.1484E-01  0.5000E+00  0.8060E+01  0.7878E+01
-   8 -0.3001E-02 -0.4028E-02  0.1000E+01 -0.2767E-02 -0.7569E-02  0.5000E+00  0.3616E+01  0.2899E+01
-   9 -0.3248E-02 -0.5078E-02  0.1000E+01 -0.4313E-02 -0.1336E-01  0.5000E+00  0.1988E+01  0.1854E+01
-  10 -0.4700E-02 -0.6237E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.3958E+01  0.0000E+00
-
- SECOND-ORDER NONINVARIANT R12/A PAIR ENERGIES:
-
-   1   -0.009402065   -0.010859797    0.000000000    0.000000000
-   2   -0.013004697   -0.015701537   -0.005769187   -0.006064876
-   3   -0.019085689   -0.022628337    0.000000000    0.000000000
-   4   -0.009742030   -0.012030468   -0.006157222   -0.006705009
-   5   -0.009775104   -0.011853031   -0.017671041   -0.019063349
-   6   -0.018223497   -0.023318002    0.000000000    0.000000000
-   7   -0.013004699   -0.015701540   -0.005769186   -0.006064876
-   8   -0.011350622   -0.013586000   -0.015172430   -0.016184037
-   9   -0.009775103   -0.011853030   -0.017671041   -0.019063349
-  10   -0.019085687   -0.022628334    0.000000000    0.000000000
-
-       -0.132449191   -0.160160075   -0.068210107   -0.073145497
-
- Noninvariant MP2-R12/A   correlation energy =   -0.233305572
-
-  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
-
-   1 -0.4045E-02 -0.1122E-01  0.3604E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.1138E+02  0.0000E+00
-   2 -0.4785E-02 -0.8491E-02  0.5636E+00 -0.2095E-02 -0.1484E-01  0.1412E+00  0.8060E+01  0.7878E+01
-   3 -0.4700E-02 -0.6237E-02  0.7537E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.3958E+01  0.0000E+00
-   4 -0.4521E-02 -0.8931E-02  0.5062E+00 -0.3354E-02 -0.2053E-01  0.1633E+00  0.4164E+01  0.3853E+01
-   5 -0.3248E-02 -0.5078E-02  0.6397E+00 -0.4313E-02 -0.1336E-01  0.3228E+00  0.1988E+01  0.1854E+01
-   6 -0.7619E-02 -0.1139E-01  0.6687E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.2015E+01  0.0000E+00
-   7 -0.4785E-02 -0.8491E-02  0.5636E+00 -0.2095E-02 -0.1484E-01  0.1412E+00  0.8060E+01  0.7878E+01
-   8 -0.3001E-02 -0.4028E-02  0.7449E+00 -0.2767E-02 -0.7569E-02  0.3656E+00  0.3616E+01  0.2899E+01
-   9 -0.3248E-02 -0.5078E-02  0.6397E+00 -0.4313E-02 -0.1336E-01  0.3228E+00  0.1988E+01  0.1854E+01
-  10 -0.4700E-02 -0.6237E-02  0.7537E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.3958E+01  0.0000E+00
-
- SECOND-ORDER R12/A PAIR ENERGIES:
-
-   1   -0.009402065   -0.011971922    0.000000000    0.000000000     1.70659         1.77772    
+   1   -0.009402065   -0.011971922    0.000000000   -0.000000000     1.70659         1.77772    
    2   -0.013004697   -0.015864721   -0.005769187   -0.006083674     1.70659         1.77772    
-   3   -0.019085689   -0.022665347    0.000000000    0.000000000     1.70659         1.77772    
+   3   -0.019085689   -0.022665347    0.000000000   -0.000000000     1.70659         1.77772    
    4   -0.009742030   -0.012157513   -0.006157222   -0.006705009     1.70659         1.77772    
    5   -0.009775104   -0.011899738   -0.017671041   -0.019122999     1.70659         1.77772    
-   6   -0.018223497   -0.023398506    0.000000000    0.000000000     1.70659         1.77772    
+   6   -0.018223497   -0.023398506    0.000000000   -0.000000000     1.70659         1.77772    
    7   -0.013004699   -0.015864724   -0.005769186   -0.006083674     1.70659         1.77772    
    8   -0.011350622   -0.013594271   -0.015172430   -0.016184037     1.70659         1.77772    
    9   -0.009775103   -0.011899737   -0.017671041   -0.019122999     1.70659         1.77772    
-  10   -0.019085687   -0.022665344    0.000000000    0.000000000     1.70659         1.77772    
+  10   -0.019085687   -0.022665344    0.000000000   -0.000000000     1.70659         1.77772    
 
        -0.132449191   -0.161981824   -0.068210107   -0.073302391
 
               MP2-R12/A   correlation energy =   -0.235284215
 
- >>> Time used in E(R12) is   0.04 seconds
+ SECOND-ORDER R12/B PAIR ENERGIES:
 
+   1   -0.009402065   -0.011287187    0.000000000   -0.000000000     4.02747         3.96741    
+   2   -0.013004697   -0.015394690   -0.005769187   -0.006025257     3.51059         3.45053    
+   3   -0.019085689   -0.021926977    0.000000000   -0.000000000     2.99371         2.93366    
+   4   -0.009742030   -0.011567169   -0.006157222   -0.006563884     3.33083         3.27077    
+   5   -0.009775104   -0.011195689   -0.017671041   -0.018608032     2.81395         2.75389    
+   6   -0.018223497   -0.021793164    0.000000000   -0.000000000     2.63419         2.57413    
+   7   -0.013004699   -0.015394693   -0.005769186   -0.006025257     3.51059         3.45053    
+   8   -0.011350622   -0.013083674   -0.015172430   -0.015905400     2.99371         2.93366    
+   9   -0.009775103   -0.011195688   -0.017671041   -0.018608032     2.81395         2.75389    
+  10   -0.019085687   -0.021926975    0.000000000   -0.000000000     2.99371         2.93366    
+
+       -0.132449191   -0.154765905   -0.068210107   -0.071735862
+
+              MP2-R12/B   correlation energy =   -0.226501767
+ Time for MP2-R12 part cpu:   15.655620336532593     
+ Time for MP2-R12 part wall:   15.000000000000000     
    
 
  *******************************************************************
@@ -1240,7 +1022,7 @@ Starting Coupled Cluster -
  *                                                                 *
  *******************************************************************
 
- 
+
              The Direct Coupled Cluster Energy Program
              -----------------------------------------
 
@@ -1249,163 +1031,190 @@ Starting Coupled Cluster -
           Number of t2 amplitudes                 :      3987
           Number of t2' amplitudes for R12 part   :        76
           Total number of amplitudes in ccsd      :      4134
- 
- Iter.  1: Coupled cluster MP2-R12/A energy :     -56.4417470974201052
-     Conventional correlation energy:    -0.2006592984209377
-     Singlet R12 correlation energy :    -0.0295326326040411
-     Triplet R12 correlation energy :    -0.0050922842694763
-     Total correlation energy       :    -0.2352842152944550
+
+ Iter.  1: Coupled cluster MP2-R12/A energy :     -56.4417470974231463
+     Conventional correlation energy:    -0.2006592984209803
+     R12 correlation energy         :    -0.0346249168734643
+     Total correlation energy       :    -0.2352842152944447
 
 
        Iteration no.:  1
        -----------------
- 
-       Time used in   RHS - TOTAL  :       3.00 seconds
-       Norm of omega1 after ccvec:         0.2211460863D-02
-       Norm of omega2 after ccvec:         0.1024958981D-27
- Iter.  1: Coupled cluster CC2-R12/A energy :     -56.4416769089989767
-     Conventional correlation energy:    -0.2005891099998394
-     Singlet R12 correlation energy :    -0.0295326326040285
-     Triplet R12 correlation energy :    -0.0050922842694635
-     Total correlation energy       :    -0.2352140268733313
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.2211460863D-02
+       Norm^2 of omega2 after ccvec:        0.1966565968D-27
+       Norm^2 of Omegar12  in NXTAM:        0.2398830047D-27
+ Iter.  1: Coupled cluster CC2-R12/A energy :     -56.4416769090020196
+     Conventional correlation energy:    -0.2005891099998607
+     R12 correlation energy         :    -0.0346249168734565
+     Total correlation energy       :    -0.2352140268733172
 
 
        Iteration no.:  2
        -----------------
- 
-       Time used in   RHS - TOTAL  :       3.01 seconds
-       Norm of omega1 after ccvec:         0.2233030381D-04
-       Norm of omega2 after ccvec:         0.7510754955D-04
- Iter.  2: Coupled cluster CC2-R12/A energy :     -56.4423830691089101
-     Conventional correlation energy:    -0.2012390614354587
-     Singlet R12 correlation energy :    -0.0295571915774763
-     Triplet R12 correlation energy :    -0.0051239339703290
-     Total correlation energy       :    -0.2359201869832639
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.2233030381D-04
+       Norm^2 of omega2 after ccvec:        0.7510754955D-04
+       Norm^2 of Omegar12  in NXTAM:        0.1302947607D-07
+ Iter.  2: Coupled cluster CC2-R12/A energy :     -56.4428649129793314
+     Conventional correlation energy:    -0.2016825406825902
+     R12 correlation energy         :    -0.0347194901680379
+     Total correlation energy       :    -0.2364020308506281
 
 
        Iteration no.:  3
        -----------------
- 
-       Time used in   RHS - TOTAL  :       3.00 seconds
-       Norm of omega1 after ccvec:         0.9862794460D-05
-       Norm of omega2 after ccvec:         0.1749158282D-04
- Iter.  3: Coupled cluster CC2-R12/A energy :     -56.4431189572231328
-     Conventional correlation energy:    -0.2019173007812611
-     Singlet R12 correlation energy :    -0.0295806242167486
-     Triplet R12 correlation energy :    -0.0051581500994793
-     Total correlation energy       :    -0.2366560750974890
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.5098542898D-05
+       Norm^2 of omega2 after ccvec:        0.2014343385D-05
+       Norm^2 of Omegar12  in NXTAM:        0.8046818039D-09
+ Iter.  3: Coupled cluster CC2-R12/A energy :     -56.4431316673251473
+     Conventional correlation energy:    -0.2019289926997203
+     R12 correlation energy         :    -0.0347397924967222
+     Total correlation energy       :    -0.2366687851964425
 
 
        Iteration no.:  4
        -----------------
- 
-       Time used in   RHS - TOTAL  :       3.00 seconds
-       Norm of omega1 after ccvec:         0.1301464501D-06
-       Norm of omega2 after ccvec:         0.1298602121D-06
- Iter.  4: Coupled cluster CC2-R12/A energy :     -56.4431179872407451
-     Conventional correlation energy:    -0.2019122764171186
-     Singlet R12 correlation energy :    -0.0295839886924107
-     Triplet R12 correlation energy :    -0.0051588400055685
-     Total correlation energy       :    -0.2366551051150978
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.1288605927D-06
+       Norm^2 of omega2 after ccvec:        0.1229546711D-06
+       Norm^2 of Omegar12  in NXTAM:        0.3085662314D-10
+ Iter.  4: Coupled cluster CC2-R12/A energy :     -56.4431171700723766
+     Conventional correlation energy:    -0.2019110568804265
+     R12 correlation energy         :    -0.0347432310632468
+     Total correlation energy       :    -0.2366542879436734
 
 
        Iteration no.:  5
        -----------------
- 
-       Time used in   RHS - TOTAL  :       3.01 seconds
-       Norm of omega1 after ccvec:         0.2008423947D-07
-       Norm of omega2 after ccvec:         0.2050505321D-07
- Iter.  5: Coupled cluster CC2-R12/A energy :     -56.4431146027638508
-     Conventional correlation energy:    -0.2019078933152656
-     Singlet R12 correlation energy :    -0.0295847590750844
-     Triplet R12 correlation energy :    -0.0051590682478504
-     Total correlation energy       :    -0.2366517206382004
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.1511153300D-07
+       Norm^2 of omega2 after ccvec:        0.1562691640D-07
+       Norm^2 of Omegar12  in NXTAM:        0.1591380160D-11
+ Iter.  5: Coupled cluster CC2-R12/A energy :     -56.4431134951959947
+     Conventional correlation energy:    -0.2019066186793665
+     R12 correlation energy         :    -0.0347439943879218
+     Total correlation energy       :    -0.2366506130672883
 
 
        Iteration no.:  6
        -----------------
- 
-       Time used in   RHS - TOTAL  :       3.00 seconds
-       Norm of omega1 after ccvec:         0.2215043237D-08
-       Norm of omega2 after ccvec:         0.2294654312D-08
- Iter.  6: Coupled cluster CC2-R12/A energy :     -56.4431137310337138
-     Conventional correlation energy:    -0.2019068951666867
-     Singlet R12 correlation energy :    -0.0295848416040787
-     Triplet R12 correlation energy :    -0.0051591121372956
-     Total correlation energy       :    -0.2366508489080610
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.1735747556D-08
+       Norm^2 of omega2 after ccvec:        0.1678073693D-08
+       Norm^2 of Omegar12  in NXTAM:        0.5026576010D-12
+ Iter.  6: Coupled cluster CC2-R12/A energy :     -56.4431137031016164
+     Conventional correlation energy:    -0.2019068574389706
+     R12 correlation energy         :    -0.0347439635339402
+     Total correlation energy       :    -0.2366508209729109
 
 
        Iteration no.:  7
        -----------------
- 
-       Time used in   RHS - TOTAL  :       3.00 seconds
-       Norm of omega1 after ccvec:         0.8143555674D-10
-       Norm of omega2 after ccvec:         0.1729478633D-09
- Iter.  7: Coupled cluster CC2-R12/A energy :     -56.4431136385472065
-     Conventional correlation energy:    -0.2019070499390310
-     Singlet R12 correlation energy :    -0.0295846667736493
-     Triplet R12 correlation energy :    -0.0051590397088776
-     Total correlation energy       :    -0.2366507564215579
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.7208793642D-10
+       Norm^2 of omega2 after ccvec:        0.1297851341D-09
+       Norm^2 of Omegar12  in NXTAM:        0.3146876563D-13
+ Iter.  7: Coupled cluster CC2-R12/A energy :     -56.4431136658051216
+     Conventional correlation energy:    -0.2019070768389710
+     R12 correlation energy         :    -0.0347437068374475
+     Total correlation energy       :    -0.2366507836764185
 
 
        Iteration no.:  8
        -----------------
- 
-       Time used in   RHS - TOTAL  :       2.98 seconds
-       Norm of omega1 after ccvec:         0.1260620139D-10
-       Norm of omega2 after ccvec:         0.5474675285D-11
- Iter.  8: Coupled cluster CC2-R12/A energy :     -56.4431137747525468
-     Conventional correlation energy:    -0.2019072248185196
-     Singlet R12 correlation energy :    -0.0295846349022507
-     Triplet R12 correlation energy :    -0.0051590329061291
-     Total correlation energy       :    -0.2366508926268995
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.9568071029D-11
+       Norm^2 of omega2 after ccvec:        0.4196015602D-11
+       Norm^2 of Omegar12  in NXTAM:        0.9330872613D-15
+ Iter.  8: Coupled cluster CC2-R12/A energy :     -56.4431137723916549
+     Conventional correlation energy:    -0.2019072276601150
+     R12 correlation energy         :    -0.0347436626028326
+     Total correlation energy       :    -0.2366508902629476
 
 
        Iteration no.:  9
        -----------------
- 
-       Time used in   RHS - TOTAL  :       2.97 seconds
-       Norm of omega1 after ccvec:         0.2376814491D-12
-       Norm of omega2 after ccvec:         0.3482602102D-12
- Iter.  9: Coupled cluster CC2-R12/A energy :     -56.4431137609488686
-     Conventional correlation energy:    -0.2019072169073794
-     Singlet R12 correlation energy :    -0.0295846314512783
-     Triplet R12 correlation energy :    -0.0051590304645642
-     Total correlation energy       :    -0.2366508788232220
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.2187951126D-12
+       Norm^2 of omega2 after ccvec:        0.1331475700D-12
+       Norm^2 of Omegar12  in NXTAM:        0.2011120974D-16
+ Iter.  9: Coupled cluster CC2-R12/A energy :     -56.4431137631131463
+     Conventional correlation energy:    -0.2019072200196561
+     R12 correlation energy         :    -0.0347436609647869
+     Total correlation energy       :    -0.2366508809844430
 
 
        Iteration no.: 10
        -----------------
- 
-       Time used in   RHS - TOTAL  :       2.99 seconds
-       Norm of omega1 after ccvec:         0.2637369653D-13
-       Norm of omega2 after ccvec:         0.2275868557D-13
- Iter. 10: Coupled cluster CC2-R12/A energy :     -56.4431137662734805
-     Conventional correlation energy:    -0.2019072230725314
-     Singlet R12 correlation energy :    -0.0295846309840853
-     Triplet R12 correlation energy :    -0.0051590300912167
-     Total correlation energy       :    -0.2366508841478335
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.1483871801D-13
+       Norm^2 of omega2 after ccvec:        0.2338891253D-13
+       Norm^2 of Omegar12  in NXTAM:        0.2282857223D-17
+ Iter. 10: Coupled cluster CC2-R12/A energy :     -56.4431137668693026
+     Conventional correlation energy:    -0.2019072242978055
+     R12 correlation energy         :    -0.0347436604427905
+     Total correlation energy       :    -0.2366508847405960
 
 
        Iteration no.: 11
        -----------------
- 
-       Time used in   RHS - TOTAL  :       2.98 seconds
-       Norm of omega1 after ccvec:         0.2407314416D-14
-       Norm of omega2 after ccvec:         0.5504463855D-14
- Iter. 11: Coupled cluster CC2-R12/A energy :     -56.4431137663397475
-     Conventional correlation energy:    -0.2019072241092914
-     Singlet R12 correlation energy :    -0.0295846303030778
-     Triplet R12 correlation energy :    -0.0051590298017339
-     Total correlation energy       :    -0.2366508842141031
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.1729668112D-14
+       Norm^2 of omega2 after ccvec:        0.1127665467D-14
+       Norm^2 of Omegar12  in NXTAM:        0.2187686534D-18
+ Iter. 11: Coupled cluster CC2-R12/A energy :     -56.4431137666633731
+     Conventional correlation energy:    -0.2019072245313325
+     R12 correlation energy         :    -0.0347436600033328
+     Total correlation energy       :    -0.2366508845346653
+
+
+       Iteration no.: 12
+       -----------------
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.1109896300D-15
+       Norm^2 of omega2 after ccvec:        0.8138348280D-16
+       Norm^2 of Omegar12  in NXTAM:        0.1385700773D-19
+ Iter. 12: Coupled cluster CC2-R12/A energy :     -56.4431137663058422
+     Conventional correlation energy:    -0.2019072242915243
+     R12 correlation energy         :    -0.0347436598856108
+     Total correlation energy       :    -0.2366508841771351
+
+
+       Iteration no.: 13
+       -----------------
+
+       Time used in   RHS - TOTAL  :       1.86 seconds
+       Norm^2 of omega1 after ccvec:        0.1482397578D-16
+       Norm^2 of omega2 after ccvec:        0.4827926198D-17
+       Norm^2 of Omegar12  in NXTAM:        0.1015978346D-20
+ Iter. 13: Coupled cluster CC2-R12/A energy :     -56.4431137662714590
+     Conventional correlation energy:    -0.2019072242584343
+     R12 correlation energy         :    -0.0347436598843230
+     Total correlation energy       :    -0.2366508841427573
 
 
  CC2-R12/A energy converged to within   0.10D-09 is    -56.443113766
+ Final 2-norm of the CC vector function:  4.43304658D-09
+ R12       energy converged to within   0.10D-09 is     -0.034743660
 
 
-                +------------------------------------------+
-                ! Largest amplitudes in converged solution !
-                +------------------------------------------+
+                    +------------------------------------------+
+                    ! Largest amplitudes in converged solution !
+                    +------------------------------------------+
 
 
 
@@ -1457,9 +1266,9 @@ Starting Coupled Cluster -
 
 
 
-         +-------------------------------------------------------+
-         ! Final results from the Coupled Cluster energy program !
-         +-------------------------------------------------------+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
 
 
 
@@ -1472,13 +1281,13 @@ Starting Coupled Cluster -
 
 
 
-              +---------------------------------------------+
-              ! Calculating singlet intermediates for CCLR  !
-              +---------------------------------------------+
+                   +--------------------------------------------+
+                   ! Calculating singlet intermediates for CCLR !
+                   +--------------------------------------------+
 
 
 
-       Time used in   RHS - TOTAL  :       3.03 seconds
+       Time used in   RHS - TOTAL  :       1.88 seconds
 
 
             E-intermediates calculated 
@@ -1497,9 +1306,9 @@ Starting Coupled Cluster -
 
 
 
-                       +---------------------------+
-                       !  CC2 Excitation Energies  !
-                       +---------------------------+
+                            +--------------------------+
+                            !  CC2 Excitation Energies !
+                            +--------------------------+
 
 
  --------------------------
@@ -1513,10 +1322,8 @@ Starting Coupled Cluster -
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-
      1 :     41     42     21     22     61     43     44
-  MIN AND MAX IN SELECTED SUPSPACE   0.579964389565573     
-   1.09000827667276     
+  MIN AND MAX IN SELECTED SUPSPACE   0.57996438955511898        1.0900082766885257     
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_1___1
  IOPTSV is    33 ... program continues nevertheless.
@@ -1551,603 +1358,538 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.37971023
-       2       0.46093171
-       3       0.55433584
-       4       0.67084868
+              Column   1
+       1      0.37971023
+       2      0.46093171
+       3      0.55433584
+       4      0.67084868
   
- ROOT:  1 RESIDUAL TOT: 6.28207D-01
- ROOT:  2 RESIDUAL TOT: 6.16668D-01
- ROOT:  3 RESIDUAL TOT: 5.69899D-01
- ROOT:  4 RESIDUAL TOT: 5.97036D-01
-      1       4         0.02     0.63E+00
+ ROOT:  1 RESIDUAL TOT: 6.28178D-01
+ ROOT:  2 RESIDUAL TOT: 6.16628D-01
+ ROOT:  3 RESIDUAL TOT: 5.69858D-01
+ ROOT:  4 RESIDUAL TOT: 5.96968D-01
+      1       4         0.01     0.63E+00
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.37971023
-       2       0.46093171
-       3       0.55433584
-       4       0.67084868
-
+              Column   1
+       1      0.37971023
+       2      0.46093171
+       3      0.55433584
+       4      0.67084868
  Dimension of the reduced space:     8
-
- >>> TIME USED IN THIS MICRO ITERATION        1.17
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27590961
-       2       0.35939056
-       3       0.47083176
-       4       0.57693265
+              Column   1
+       1      0.27593952
+       2      0.35921665
+       3      0.47078242
+       4      0.57640999
   
- ROOT:  1 RESIDUAL TOT: 4.10129D-02
- ROOT:  2 RESIDUAL TOT: 3.71913D-02
- ROOT:  3 RESIDUAL TOT: 4.15323D-02
- ROOT:  4 RESIDUAL TOT: 6.33051D-02
-      2       4         0.02     0.63E-01
+ ROOT:  1 RESIDUAL TOT: 4.94611D-02
+ ROOT:  2 RESIDUAL TOT: 5.45734D-02
+ ROOT:  3 RESIDUAL TOT: 5.13306D-02
+ ROOT:  4 RESIDUAL TOT: 1.00184D-01
+      2       4         0.01     0.10E+00
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27590961
-       2       0.35939056
-       3       0.47083176
-       4       0.57693265
-
+              Column   1
+       1      0.27593952
+       2      0.35921665
+       3      0.47078242
+       4      0.57640999
  Dimension of the reduced space:    12
-
- >>> TIME USED IN THIS MICRO ITERATION        1.20
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27382391
-       2       0.35521636
-       3       0.46871686
-       4       0.57052647
+              Column   1
+       1      0.27377388
+       2      0.35535913
+       3      0.46866730
+       4      0.57108157
   
- ROOT:  1 RESIDUAL TOT: 1.80722D-02
- ROOT:  2 RESIDUAL TOT: 2.20528D-02
- ROOT:  3 RESIDUAL TOT: 1.82442D-02
- ROOT:  4 RESIDUAL TOT: 3.90534D-02
-      3       4         0.02     0.39E-01
+ ROOT:  1 RESIDUAL TOT: 2.33111D-02
+ ROOT:  2 RESIDUAL TOT: 3.33657D-02
+ ROOT:  3 RESIDUAL TOT: 2.41049D-02
+ ROOT:  4 RESIDUAL TOT: 6.14635D-02
+      3       4         0.01     0.61E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27382391
-       2       0.35521636
-       3       0.46871686
-       4       0.57052647
-
+              Column   1
+       1      0.27377388
+       2      0.35535913
+       3      0.46866730
+       4      0.57108157
  Dimension of the reduced space:    16
-
- >>> TIME USED IN THIS MICRO ITERATION        1.17
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27314845
-       2       0.35382790
-       3       0.46801056
-       4       0.56692644
+              Column   1
+       1      0.27307785
+       2      0.35380853
+       3      0.46782895
+       4      0.56265463
   
- ROOT:  1 RESIDUAL TOT: 4.81318D-03
- ROOT:  2 RESIDUAL TOT: 8.39602D-03
- ROOT:  3 RESIDUAL TOT: 9.57482D-03
- ROOT:  4 RESIDUAL TOT: 2.67750D-02
-      4       4         0.02     0.27E-01
+ ROOT:  1 RESIDUAL TOT: 6.01251D-03
+ ROOT:  2 RESIDUAL TOT: 1.30934D-02
+ ROOT:  3 RESIDUAL TOT: 9.23881D-03
+ ROOT:  4 RESIDUAL TOT: 6.31133D-02
+      4       4         0.01     0.63E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27314845
-       2       0.35382790
-       3       0.46801056
-       4       0.56692644
-
+              Column   1
+       1      0.27307785
+       2      0.35380853
+       3      0.46782895
+       4      0.56265463
  Dimension of the reduced space:    20
-
- >>> TIME USED IN THIS MICRO ITERATION        1.19
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27308340
-       2       0.35379338
-       3       0.46781164
-       4       0.56153662
+              Column   1
+       1      0.27307827
+       2      0.35382364
+       3      0.46779699
+       4      0.55761635
   
- ROOT:  1 RESIDUAL TOT: 2.03625D-03
- ROOT:  2 RESIDUAL TOT: 4.13916D-03
- ROOT:  3 RESIDUAL TOT: 6.18809D-03
- ROOT:  4 RESIDUAL TOT: 3.13506D-02
-      5       4         0.02     0.31E-01
+ ROOT:  1 RESIDUAL TOT: 1.37443D-03
+ ROOT:  2 RESIDUAL TOT: 6.53008D-03
+ ROOT:  3 RESIDUAL TOT: 5.18131D-03
+ ROOT:  4 RESIDUAL TOT: 7.32115D-02
+      5       4         0.01     0.73E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27308340
-       2       0.35379338
-       3       0.46781164
-       4       0.56153662
-
+              Column   1
+       1      0.27307827
+       2      0.35382364
+       3      0.46779699
+       4      0.55761635
  Dimension of the reduced space:    24
-
- >>> TIME USED IN THIS MICRO ITERATION        1.21
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27306798
-       2       0.35377623
-       3       0.46779727
-       4       0.55528373
+              Column   1
+       1      0.27307543
+       2      0.35377984
+       3      0.46781900
+       4      0.55059769
   
- ROOT:  1 RESIDUAL TOT: 9.95193D-04
- ROOT:  2 RESIDUAL TOT: 1.22380D-03
- ROOT:  3 RESIDUAL TOT: 2.13207D-03
- ROOT:  4 RESIDUAL TOT: 3.29550D-02
-      6       4         0.02     0.33E-01
+ ROOT:  1 RESIDUAL TOT: 4.12868D-04
+ ROOT:  2 RESIDUAL TOT: 1.37356D-03
+ ROOT:  3 RESIDUAL TOT: 2.08870D-03
+ ROOT:  4 RESIDUAL TOT: 5.31955D-02
+      6       4         0.01     0.53E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27306798
-       2       0.35377623
-       3       0.46779727
-       4       0.55528373
-
+              Column   1
+       1      0.27307543
+       2      0.35377984
+       3      0.46781900
+       4      0.55059769
  Dimension of the reduced space:    28
-
- >>> TIME USED IN THIS MICRO ITERATION        1.19
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307802
-       2       0.35377901
-       3       0.46780831
-       4       0.55096855
+              Column   1
+       1      0.27307711
+       2      0.35376915
+       3      0.46780296
+       4      0.54919064
   
- ROOT:  1 RESIDUAL TOT: 3.04060D-04
- ROOT:  2 RESIDUAL TOT: 5.55962D-04
- ROOT:  3 RESIDUAL TOT: 1.22322D-03
- ROOT:  4 RESIDUAL TOT: 2.89439D-02
-      7       4         0.02     0.29E-01
+ ROOT:  1 RESIDUAL TOT: 8.81786D-05
+ ROOT:  2 RESIDUAL TOT: 3.19537D-04
+ ROOT:  3 RESIDUAL TOT: 6.51311D-04
+ ROOT:  4 RESIDUAL TOT: 2.17124D-02
+      7       4         0.01     0.22E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307802
-       2       0.35377901
-       3       0.46780831
-       4       0.55096855
-
+              Column   1
+       1      0.27307711
+       2      0.35376915
+       3      0.46780296
+       4      0.54919064
  Dimension of the reduced space:    32
-
- >>> TIME USED IN THIS MICRO ITERATION        1.19
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307638
-       2       0.35377310
-       3       0.46780471
-       4       0.54918230
+              Column   1
+       1      0.27307646
+       2      0.35377178
+       3      0.46780227
+       4      0.54885206
   
- ROOT:  1 RESIDUAL TOT: 8.68599D-05
- ROOT:  2 RESIDUAL TOT: 1.84025D-04
- ROOT:  3 RESIDUAL TOT: 4.74428D-04
- ROOT:  4 RESIDUAL TOT: 1.72878D-02
-      8       4         0.02     0.17E-01
+ ROOT:  1 RESIDUAL TOT: 3.26072D-05
+ ROOT:  2 RESIDUAL TOT: 6.93643D-05
+ ROOT:  3 RESIDUAL TOT: 2.40972D-04
+ ROOT:  4 RESIDUAL TOT: 1.06434D-02
+      8       4         0.01     0.11E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307638
-       2       0.35377310
-       3       0.46780471
-       4       0.54918230
-
+              Column   1
+       1      0.27307646
+       2      0.35377178
+       3      0.46780227
+       4      0.54885206
  Dimension of the reduced space:    36
-
- >>> TIME USED IN THIS MICRO ITERATION        1.21
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307627
-       2       0.35377176
-       3       0.46780312
-       4       0.54887500
+              Column   1
+       1      0.27307612
+       2      0.35377217
+       3      0.46780225
+       4      0.54871560
   
- ROOT:  1 RESIDUAL TOT: 2.06709D-05
- ROOT:  2 RESIDUAL TOT: 5.88051D-05
- ROOT:  3 RESIDUAL TOT: 1.76942D-04
- ROOT:  4 RESIDUAL TOT: 7.79670D-03
-      9       4         0.02     0.78E-02
+ ROOT:  1 RESIDUAL TOT: 1.03995D-05
+ ROOT:  2 RESIDUAL TOT: 1.96398D-05
+ ROOT:  3 RESIDUAL TOT: 8.12167D-05
+ ROOT:  4 RESIDUAL TOT: 4.83313D-03
+      9       4         0.01     0.48E-02
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307627
-       2       0.35377176
-       3       0.46780312
-       4       0.54887500
-
+              Column   1
+       1      0.27307612
+       2      0.35377217
+       3      0.46780225
+       4      0.54871560
  Dimension of the reduced space:    40
-
- >>> TIME USED IN THIS MICRO ITERATION        1.19
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307613
-       2       0.35377185
-       3       0.46780200
-       4       0.54874988
+              Column   1
+       1      0.27307614
+       2      0.35377223
+       3      0.46780222
+       4      0.54865548
   
- ROOT:  1 RESIDUAL TOT: 6.07898D-06
- ROOT:  2 RESIDUAL TOT: 1.73241D-05
- ROOT:  3 RESIDUAL TOT: 7.22208D-05
- ROOT:  4 RESIDUAL TOT: 4.08182D-03
-     10       4         0.02     0.41E-02
+ ROOT:  1 RESIDUAL TOT: 2.03140D-06
+ ROOT:  2 RESIDUAL TOT: 5.30218D-06
+ ROOT:  3 RESIDUAL TOT: 2.85376D-05
+ ROOT:  4 RESIDUAL TOT: 1.99977D-03
+     10       4         0.01     0.20E-02
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307613
-       2       0.35377185
-       3       0.46780200
-       4       0.54874988
-
+              Column   1
+       1      0.27307614
+       2      0.35377223
+       3      0.46780222
+       4      0.54865548
  Dimension of the reduced space:    44
-
- >>> TIME USED IN THIS MICRO ITERATION        1.22
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307614
-       2       0.35377212
-       3       0.46780214
-       4       0.54868394
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780220
+       4      0.54866320
   
- ROOT:  1 RESIDUAL TOT: 1.82256D-06
- ROOT:  2 RESIDUAL TOT: 5.64870D-06
- ROOT:  3 RESIDUAL TOT: 2.51564D-05
- ROOT:  4 RESIDUAL TOT: 2.06027D-03
-     11       4         0.02     0.21E-02
+ ROOT:  1 RESIDUAL TOT: 4.07879D-07
+ ROOT:  2 RESIDUAL TOT: 1.62583D-06
+ ROOT:  3 RESIDUAL TOT: 1.08970D-05
+ ROOT:  4 RESIDUAL TOT: 9.04049D-04
+     11       4         0.01     0.90E-03
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307614
-       2       0.35377212
-       3       0.46780214
-       4       0.54868394
-
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780220
+       4      0.54866320
  Dimension of the reduced space:    48
-
- >>> TIME USED IN THIS MICRO ITERATION        1.21
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307613
-       2       0.35377220
-       3       0.46780223
-       4       0.54866206
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866811
   
- ROOT:  1 RESIDUAL TOT: 4.73044D-07
- ROOT:  2 RESIDUAL TOT: 2.13172D-06
- ROOT:  3 RESIDUAL TOT: 9.82051D-06
- ROOT:  4 RESIDUAL TOT: 8.56622D-04
-     12       4         0.02     0.86E-03
+ ROOT:  1 RESIDUAL TOT: 7.64397D-08
+ ROOT:  2 RESIDUAL TOT: 4.75083D-07
+ ROOT:  3 RESIDUAL TOT: 2.59816D-06
+ ROOT:  4 RESIDUAL TOT: 2.83974D-04
+     12       4         0.01     0.28E-03
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307613
-       2       0.35377220
-       3       0.46780223
-       4       0.54866206
-
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866811
  Dimension of the reduced space:    52
-
- >>> TIME USED IN THIS MICRO ITERATION        1.20
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780222
-       4       0.54865889
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866827
   
- ROOT:  1 RESIDUAL TOT: 1.14683D-07
- ROOT:  2 RESIDUAL TOT: 6.56311D-07
- ROOT:  3 RESIDUAL TOT: 4.42657D-06
- ROOT:  4 RESIDUAL TOT: 4.39526D-04
-     13       4         0.02     0.44E-03
+ ROOT:  1 RESIDUAL TOT: 1.57017D-08
+ ROOT:  2 RESIDUAL TOT: 1.02405D-07
+ ROOT:  3 RESIDUAL TOT: 7.23924D-07
+ ROOT:  4 RESIDUAL TOT: 8.66720D-05
+     13       4         0.01     0.87E-04
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780222
-       4       0.54865889
-
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866827
  Dimension of the reduced space:    56
-
- >>> TIME USED IN THIS MICRO ITERATION        1.22
-
-
- REDUCED EIGENVALUES real part:
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780222
-       4       0.54866883
-  
- ROOT:  1 RESIDUAL TOT: 4.45751D-08
- ROOT:  2 RESIDUAL TOT: 1.59214D-07
- ROOT:  3 RESIDUAL TOT: 1.13801D-06
- ROOT:  4 RESIDUAL TOT: 1.35241D-04
-     14       4         0.02     0.14E-03
-
- Lowest eigenvalues in this iteration: 
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780222
-       4       0.54866883
-
- Dimension of the reduced space:    60
-
- >>> TIME USED IN THIS MICRO ITERATION        1.21
+ >>> TIME USED IN THIS MICRO ITERATION        0.66
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866833
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866821
   
- ROOT:  1 RESIDUAL TOT: 1.46092D-08
- ROOT:  2 RESIDUAL TOT: 4.73079D-08
- ROOT:  3 RESIDUAL TOT: 3.61996D-07
- ROOT:  4 RESIDUAL TOT: 4.72368D-05
-     15       4         0.02     0.47E-04
+ ROOT:  1 RESIDUAL TOT: 3.23425D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.23425D-09
+ ROOT:  2 RESIDUAL TOT: 1.99887D-08
+ ROOT:  3 RESIDUAL TOT: 1.86829D-07
+ ROOT:  4 RESIDUAL TOT: 2.21266D-05
+     14       4         0.01     0.22E-04
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866833
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866821
+ Dimension of the reduced space:    59
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
+
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
+  
+ ROOT:  1 RESIDUAL TOT: 2.35222D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.35222D-09
+ ROOT:  2 RESIDUAL TOT: 2.74725D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.74725D-09
+ ROOT:  3 RESIDUAL TOT: 4.32624D-08
+ ROOT:  4 RESIDUAL TOT: 6.04747D-06
+     15       3         0.01     0.60E-05
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
+ Dimension of the reduced space:    61
+ >>> TIME USED IN THIS MICRO ITERATION        0.63
+
+
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866821
+  
+ ROOT:  1 RESIDUAL TOT: 2.36350D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.36350D-09
+ ROOT:  2 RESIDUAL TOT: 2.36714D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.36714D-09
+ ROOT:  3 RESIDUAL TOT: 7.63308D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.63308D-09
+ ROOT:  4 RESIDUAL TOT: 1.15439D-06
+     16       2         0.01     0.12E-05
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866821
+ Dimension of the reduced space:    62
+ >>> TIME USED IN THIS MICRO ITERATION        0.61
+
+
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
+  
+ ROOT:  1 RESIDUAL TOT: 2.32690D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.32690D-09
+ ROOT:  2 RESIDUAL TOT: 2.36184D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.36184D-09
+ ROOT:  3 RESIDUAL TOT: 3.89639D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 3.89639D-09
+ ROOT:  4 RESIDUAL TOT: 2.46643D-07
+     17       1         0.01     0.25E-06
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
+ Dimension of the reduced space:    63
+ >>> TIME USED IN THIS MICRO ITERATION        0.59
+
+
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
+  
+ ROOT:  1 RESIDUAL TOT: 2.31076D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.31076D-09
+ ROOT:  2 RESIDUAL TOT: 2.34861D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.34861D-09
+ ROOT:  3 RESIDUAL TOT: 2.91290D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.91290D-09
+ ROOT:  4 RESIDUAL TOT: 7.28137D-08
+     18       1         0.01     0.73E-07
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
  Dimension of the reduced space:    64
-
- >>> TIME USED IN THIS MICRO ITERATION        1.21
-
-
- REDUCED EIGENVALUES real part:
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866811
-  
- ROOT:  1 RESIDUAL TOT: 2.78389D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.78389D-09
- ROOT:  2 RESIDUAL TOT: 9.38402D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.38402D-09
- ROOT:  3 RESIDUAL TOT: 7.38930D-08
- ROOT:  4 RESIDUAL TOT: 1.13210D-05
-     16       4         0.02     0.11E-04
-
- Lowest eigenvalues in this iteration: 
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866811
-
- Dimension of the reduced space:    66
-
- >>> TIME USED IN THIS MICRO ITERATION        1.21
+ >>> TIME USED IN THIS MICRO ITERATION        0.59
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866822
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
   
- ROOT:  1 RESIDUAL TOT: 2.43004D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.43004D-09
- ROOT:  2 RESIDUAL TOT: 4.58279D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.58279D-09
- ROOT:  3 RESIDUAL TOT: 1.18917D-08
- ROOT:  4 RESIDUAL TOT: 2.41869D-06
-     17       2         0.02     0.24E-05
+ ROOT:  1 RESIDUAL TOT: 2.30375D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.30375D-09
+ ROOT:  2 RESIDUAL TOT: 2.36708D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.36708D-09
+ ROOT:  3 RESIDUAL TOT: 2.88297D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.88297D-09
+ ROOT:  4 RESIDUAL TOT: 2.38112D-08
+     19       1         0.01     0.24E-07
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866822
-
- Dimension of the reduced space:    68
-
- >>> TIME USED IN THIS MICRO ITERATION        1.12
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
+ Dimension of the reduced space:    65
+ >>> TIME USED IN THIS MICRO ITERATION        0.58
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866821
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
   
- ROOT:  1 RESIDUAL TOT: 2.48896D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.48896D-09
- ROOT:  2 RESIDUAL TOT: 5.11472D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.11472D-09
- ROOT:  3 RESIDUAL TOT: 2.12859D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.12859D-09
- ROOT:  4 RESIDUAL TOT: 6.01821D-07
-     18       2         0.02     0.60E-06
+ ROOT:  1 RESIDUAL TOT: 2.26565D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.26565D-09
+ ROOT:  2 RESIDUAL TOT: 2.33656D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.33656D-09
+ ROOT:  3 RESIDUAL TOT: 2.55050D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.55050D-09
+ ROOT:  4 RESIDUAL TOT: 5.62013D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 5.62013D-09
+     20       1         0.01     0.56E-08
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866821
-
- Dimension of the reduced space:    69
-
- >>> TIME USED IN THIS MICRO ITERATION        1.08
-
-
- REDUCED EIGENVALUES real part:
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866822
-  
- ROOT:  1 RESIDUAL TOT: 2.40927D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.40927D-09
- ROOT:  2 RESIDUAL TOT: 4.53591D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.53591D-09
- ROOT:  3 RESIDUAL TOT: 1.34622D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.34622D-09
- ROOT:  4 RESIDUAL TOT: 1.28399D-07
-     19       1         0.02     0.13E-06
-
- Lowest eigenvalues in this iteration: 
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866822
-
- Dimension of the reduced space:    70
-
- >>> TIME USED IN THIS MICRO ITERATION        1.04
-
-
- REDUCED EIGENVALUES real part:
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866822
-  
- ROOT:  1 RESIDUAL TOT: 2.43990D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.43990D-09
- ROOT:  2 RESIDUAL TOT: 4.54929D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.54929D-09
- ROOT:  3 RESIDUAL TOT: 1.35801D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.35801D-09
- ROOT:  4 RESIDUAL TOT: 2.69434D-08
-     20       1         0.02     0.27E-07
-
- Lowest eigenvalues in this iteration: 
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866822
-
- Dimension of the reduced space:    71
-
- >>> TIME USED IN THIS MICRO ITERATION        1.03
-
-
- REDUCED EIGENVALUES real part:
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866822
-  
- ROOT:  1 RESIDUAL TOT: 2.46163D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.46163D-09
- ROOT:  2 RESIDUAL TOT: 4.54911D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.54911D-09
- ROOT:  3 RESIDUAL TOT: 1.31774D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.31774D-09
- ROOT:  4 RESIDUAL TOT: 5.52998D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 5.52998D-09
-     21       1         0.02     0.55E-08
-
- Lowest eigenvalues in this iteration: 
-
-               Column   1
-       1       0.27307613
-       2       0.35377221
-       3       0.46780221
-       4       0.54866822
-
- Dimension of the reduced space:    71
-
- >>> TIME USED IN THIS MICRO ITERATION        1.04
+              Column   1
+       1      0.27307613
+       2      0.35377221
+       3      0.46780221
+       4      0.54866822
+ Dimension of the reduced space:    65
+ >>> TIME USED IN THIS MICRO ITERATION        0.58
 
     --------------------------------------
-    converged in 21 iterations
+    converged in 20 iterations
     threshold:    0.10E-07
 
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.40
-         CCRED               0.01
-         CCNEX               0.01
+         CC_TRDRV            0.21
+         CCRED               0.00
+         CCNEX               0.00
          ---------------------------
-         Total time          0.41
+         Total time          0.21
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  24.51 seconds
- >>>> Total wall time used in CCEQ_SOLV:  25.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  12.75 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  15.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2158,10 +1900,10 @@ Try to use right eigenvector as start for a left eigenvector.
  =====================
  (convergence threshold:  1.00D-08)
 
-    1   0.2730761303
-    2   0.3537722104
-    3   0.4678022096
-    4   0.5486682173
+    1   0.2730761308
+    2   0.3537722111
+    3   0.4678022098
+    4   0.5486682176
 
 
  SYMMETRY CLASS NR.    1
@@ -2174,19 +1916,19 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2730761303        7.4307792880
-         2            0.3537722104        9.6266312665
-         3            0.4678022096       12.7295452983
-         4            0.5486682173       14.9300212407
+         1            0.2730761308        7.4307795151
+         2            0.3537722111        9.6266315586
+         3            0.4678022098       12.7295456640
+         4            0.5486682176       14.9300216726
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -56.170037636086345
-@@    1    2           -56.089341555953797
-@@    1    3           -55.975311556744768
-@@    1    4           -55.894445549054037
+@@    1    1           -56.170037635423178
+@@    1    2           -56.089341555187254
+@@    1    3           -55.975311556511713
+@@    1    4           -55.894445548682796
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2206,26 +1948,28 @@ Try to use right eigenvector as start for a left eigenvector.
 
           ||T1||/||T2||                  :               3.1897
 
-          Tau1 diagnostic                :               0.2671
-
-          Norm of Total Amplitude Vector :               0.7916
+          Norm of Total Amplitude Vector :               0.9999
 
 
  +=============================================================================+
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       3     |       41          |              |    0.750173  |
+ | 1   1   |   1       3     |       41          |              |    0.947543  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   2   3   2 |       41       22 |          842 |   -0.083989  |
- | 1 1 1 1 |   1   6   3   2 |       41       26 |          846 |    0.066135  |
- | 1 1 1 1 |   5   1   3   3 |       45       41 |         1031 |    0.061051  |
- | 2 1 2 1 |   1   1   1   3 |       61       41 |         1871 |    0.083989  |
- | 2 1 2 1 |   3   1   1   3 |       63       41 |         1994 |    0.066135  |
+ | 1 1 1 1 |   1   7   3   1 |       41        7 |          827 |   -0.054134  |
+ | 1 1 1 1 |   1   2   3   2 |       41       22 |          842 |   -0.106087  |
+ | 1 1 1 1 |   1   3   3   2 |       41       23 |          843 |    0.052932  |
+ | 1 1 1 1 |   1   6   3   2 |       41       26 |          846 |    0.083535  |
+ | 1 1 1 1 |   1   1   3   3 |       41       41 |          861 |   -0.056527  |
+ | 1 1 1 1 |   5   1   3   3 |       45       41 |         1031 |    0.077113  |
+ | 2 1 2 1 |   1   1   1   3 |       61       41 |         1871 |    0.106087  |
+ | 2 1 2 1 |   2   1   1   3 |       62       41 |         1932 |   -0.052932  |
+ | 2 1 2 1 |   3   1   1   3 |       63       41 |         1994 |    0.083535  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.7677
+          Norm of Printed Amplitude Vector :             0.9757
 
 
           Printed all single excitations greater than 0.159034
@@ -2251,24 +1995,27 @@ Try to use right eigenvector as start for a left eigenvector.
 
           ||T1||/||T2||                  :               3.3772
 
-          Tau1 diagnostic                :               0.2143
-
-          Norm of Total Amplitude Vector :               0.6322
+          Norm of Total Amplitude Vector :               0.9998
 
 
  +=============================================================================+
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   2       3     |       42          |              |   -0.596574  |
+ | 1   1   |   2       3     |       42          |              |    0.943424  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   2   6   3   2 |       42       26 |          887 |   -0.059502  |
- | 2 1 2 1 |   1   2   1   3 |       61       42 |         1872 |   -0.065296  |
- | 2 1 2 1 |   3   2   1   3 |       63       42 |         1995 |   -0.048308  |
+ | 1 1 1 1 |   2   1   3   1 |       42        1 |          862 |    0.061346  |
+ | 1 1 1 1 |   2   2   3   2 |       42       22 |          883 |   -0.072226  |
+ | 1 1 1 1 |   6   2   3   2 |       46       22 |         1057 |   -0.064494  |
+ | 1 1 1 1 |   2   3   3   2 |       42       23 |          884 |    0.062231  |
+ | 1 1 1 1 |   2   6   3   2 |       42       26 |          887 |    0.094096  |
+ | 1 1 1 1 |   5   2   3   3 |       45       42 |         1032 |    0.072226  |
+ | 2 1 2 1 |   1   2   1   3 |       61       42 |         1872 |    0.103259  |
+ | 2 1 2 1 |   3   2   1   3 |       63       42 |         1995 |    0.076394  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.6050
+          Norm of Printed Amplitude Vector :             0.9683
 
 
           Printed all single excitations greater than 0.159808
@@ -2294,25 +2041,25 @@ Try to use right eigenvector as start for a left eigenvector.
 
           ||T1||/||T2||                  :               3.6537
 
-          Tau1 diagnostic                :               0.2714
-
-          Norm of Total Amplitude Vector :               0.7959
+          Norm of Total Amplitude Vector :               0.9999
 
 
  +=============================================================================+
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       2     |       21          |              |    0.761197  |
+ | 1   1   |   1       2     |       21          |              |    0.956321  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   2   1   2   2 |       22       21 |          252 |   -0.056397  |
- | 1 1 1 1 |   5   1   3   2 |       45       21 |         1011 |    0.077278  |
- | 2 1 2 1 |   1   1   1   2 |       61       21 |         1851 |    0.071854  |
- | 2 1 2 1 |   3   1   1   2 |       63       21 |         1974 |    0.052961  |
+ | 1 1 1 1 |   4   1   2   1 |       24        1 |          277 |    0.046286  |
+ | 1 1 1 1 |   2   1   2   2 |       22       21 |          252 |   -0.070854  |
+ | 1 1 1 1 |   5   1   3   2 |       45       21 |         1011 |    0.097087  |
+ | 1 1 1 1 |   1   5   3   2 |       41       25 |          845 |   -0.046868  |
+ | 2 1 2 1 |   1   1   1   2 |       61       21 |         1851 |    0.090273  |
+ | 2 1 2 1 |   3   1   1   2 |       63       21 |         1974 |    0.066537  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.7724
+          Norm of Printed Amplitude Vector :             0.9726
 
 
           Printed all single excitations greater than 0.160754
@@ -2338,25 +2085,27 @@ Try to use right eigenvector as start for a left eigenvector.
 
           ||T1||/||T2||                  :               3.4668
 
-          Tau1 diagnostic                :               0.2182
-
-          Norm of Total Amplitude Vector :               0.6423
+          Norm of Total Amplitude Vector :               0.9996
 
 
  +=============================================================================+
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   2       2     |       22          |              |    0.403903  |
- | 1   1   |   3       3     |       43          |              |    0.203858  |
- | 2   2   |   1       1     |       61          |              |    0.403902  |
+ | 1   1   |   2       2     |       22          |              |    0.628643  |
+ | 1   1   |   3       3     |       43          |              |    0.317289  |
+ | 2   2   |   1       1     |       61          |              |    0.628642  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   2   2   2   2 |       22       22 |          253 |   -0.050447  |
- | 2 2 2 2 |   1   1   1   1 |       61       61 |         1891 |    0.051382  |
+ | 1 1 1 1 |   2   2   2   2 |       22       22 |          253 |   -0.078516  |
+ | 1 1 1 1 |   5   2   3   2 |       45       22 |         1012 |    0.057319  |
+ | 2 1 2 1 |   3   2   1   2 |       63       22 |         1975 |    0.058614  |
+ | 2 1 2 1 |   1   6   1   2 |       61       26 |         1856 |    0.058220  |
+ | 2 1 2 1 |   1   5   1   3 |       61       45 |         1875 |    0.057319  |
+ | 2 2 2 2 |   1   1   1   1 |       61       61 |         1891 |    0.079971  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.6108
+          Norm of Printed Amplitude Vector :             0.9576
 
 
           Printed all single excitations greater than 0.160138
@@ -2386,10 +2135,8 @@ Try to use right eigenvector as start for a left eigenvector.
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-
      1 :     23     34     12     35     24     13     36
-  MIN AND MAX IN SELECTED SUPSPACE   0.655406237418236     
-   1.11435084836257     
+  MIN AND MAX IN SELECTED SUPSPACE   0.65540623742027715        1.1143508483675466     
 Try to use right eigenvector as start for a left eigenvector.
  could not find required file CCRE_2___1
  IOPTSV is    33 ... program continues nevertheless.
@@ -2424,461 +2171,456 @@ Try to use right eigenvector as start for a left eigenvector.
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.46093054
-       2       0.55315538
-       3       0.64255365
-       4       0.64779356
+              Column   1
+       1      0.46093054
+       2      0.55315538
+       3      0.64255365
+       4      0.64779356
   
- ROOT:  1 RESIDUAL TOT: 6.15975D-01
- ROOT:  2 RESIDUAL TOT: 5.63883D-01
- ROOT:  3 RESIDUAL TOT: 5.79543D-01
- ROOT:  4 RESIDUAL TOT: 5.92020D-01
-      1       4         0.02     0.62E+00
+ ROOT:  1 RESIDUAL TOT: 6.15935D-01
+ ROOT:  2 RESIDUAL TOT: 5.63842D-01
+ ROOT:  3 RESIDUAL TOT: 5.79489D-01
+ ROOT:  4 RESIDUAL TOT: 5.91966D-01
+      1       4         0.01     0.62E+00
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.46093054
-       2       0.55315538
-       3       0.64255365
-       4       0.64779356
-
+              Column   1
+       1      0.46093054
+       2      0.55315538
+       3      0.64255365
+       4      0.64779356
  Dimension of the reduced space:     8
-
- >>> TIME USED IN THIS MICRO ITERATION        1.16
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35939606
-       2       0.47075326
-       3       0.55606575
-       4       0.55707126
+              Column   1
+       1      0.35921092
+       2      0.47064248
+       3      0.55596586
+       4      0.55704000
   
- ROOT:  1 RESIDUAL TOT: 3.71141D-02
- ROOT:  2 RESIDUAL TOT: 4.10763D-02
- ROOT:  3 RESIDUAL TOT: 4.05886D-02
- ROOT:  4 RESIDUAL TOT: 4.45065D-02
-      2       4         0.02     0.45E-01
+ ROOT:  1 RESIDUAL TOT: 5.44949D-02
+ ROOT:  2 RESIDUAL TOT: 5.04228D-02
+ ROOT:  3 RESIDUAL TOT: 5.83202D-02
+ ROOT:  4 RESIDUAL TOT: 6.47074D-02
+      2       4         0.01     0.65E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35939606
-       2       0.47075326
-       3       0.55606575
-       4       0.55707126
-
+              Column   1
+       1      0.35921092
+       2      0.47064248
+       3      0.55596586
+       4      0.55704000
  Dimension of the reduced space:    12
-
- >>> TIME USED IN THIS MICRO ITERATION        1.18
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35515515
-       2       0.46847296
-       3       0.55115408
-       4       0.55245146
+              Column   1
+       1      0.35533619
+       2      0.46857733
+       3      0.55119252
+       4      0.55254304
   
- ROOT:  1 RESIDUAL TOT: 2.19835D-02
- ROOT:  2 RESIDUAL TOT: 1.88409D-02
- ROOT:  3 RESIDUAL TOT: 3.42040D-02
- ROOT:  4 RESIDUAL TOT: 2.50466D-02
-      3       4         0.02     0.34E-01
+ ROOT:  1 RESIDUAL TOT: 3.31597D-02
+ ROOT:  2 RESIDUAL TOT: 2.34017D-02
+ ROOT:  3 RESIDUAL TOT: 5.47179D-02
+ ROOT:  4 RESIDUAL TOT: 3.87983D-02
+      3       4         0.01     0.55E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35515515
-       2       0.46847296
-       3       0.55115408
-       4       0.55245146
-
+              Column   1
+       1      0.35533619
+       2      0.46857733
+       3      0.55119252
+       4      0.55254304
  Dimension of the reduced space:    16
-
- >>> TIME USED IN THIS MICRO ITERATION        1.17
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35382046
-       2       0.46785314
-       3       0.54831830
-       4       0.55065124
+              Column   1
+       1      0.35381250
+       2      0.46780916
+       3      0.54822404
+       4      0.55052654
   
- ROOT:  1 RESIDUAL TOT: 8.37446D-03
- ROOT:  2 RESIDUAL TOT: 5.97637D-03
- ROOT:  3 RESIDUAL TOT: 1.22665D-02
- ROOT:  4 RESIDUAL TOT: 1.28450D-02
-      4       4         0.02     0.13E-01
+ ROOT:  1 RESIDUAL TOT: 1.30228D-02
+ ROOT:  2 RESIDUAL TOT: 7.76268D-03
+ ROOT:  3 RESIDUAL TOT: 2.04658D-02
+ ROOT:  4 RESIDUAL TOT: 2.07634D-02
+      4       4         0.01     0.21E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35382046
-       2       0.46785314
-       3       0.54831830
-       4       0.55065124
-
+              Column   1
+       1      0.35381250
+       2      0.46780916
+       3      0.54822404
+       4      0.55052654
  Dimension of the reduced space:    20
-
- >>> TIME USED IN THIS MICRO ITERATION        1.19
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35378821
-       2       0.46778594
-       3       0.54783867
-       4       0.54962417
+              Column   1
+       1      0.35380875
+       2      0.46779806
+       3      0.54797642
+       4      0.54974089
   
- ROOT:  1 RESIDUAL TOT: 3.99634D-03
- ROOT:  2 RESIDUAL TOT: 3.11175D-03
- ROOT:  3 RESIDUAL TOT: 6.14597D-03
- ROOT:  4 RESIDUAL TOT: 1.65142D-02
-      5       4         0.02     0.17E-01
+ ROOT:  1 RESIDUAL TOT: 6.46244D-03
+ ROOT:  2 RESIDUAL TOT: 4.12868D-03
+ ROOT:  3 RESIDUAL TOT: 1.06702D-02
+ ROOT:  4 RESIDUAL TOT: 2.81078D-02
+      5       4         0.01     0.28E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35378821
-       2       0.46778594
-       3       0.54783867
-       4       0.54962417
-
+              Column   1
+       1      0.35380875
+       2      0.46779806
+       3      0.54797642
+       4      0.54974089
  Dimension of the reduced space:    24
-
- >>> TIME USED IN THIS MICRO ITERATION        1.17
+ >>> TIME USED IN THIS MICRO ITERATION        0.63
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35378092
-       2       0.46781452
-       3       0.54803861
-       4       0.54903100
+              Column   1
+       1      0.35378131
+       2      0.46781221
+       3      0.54804460
+       4      0.54895636
   
- ROOT:  1 RESIDUAL TOT: 8.61971D-04
- ROOT:  2 RESIDUAL TOT: 1.03865D-03
- ROOT:  3 RESIDUAL TOT: 1.93223D-03
- ROOT:  4 RESIDUAL TOT: 9.90308D-03
-      6       4         0.02     0.99E-02
+ ROOT:  1 RESIDUAL TOT: 1.34350D-03
+ ROOT:  2 RESIDUAL TOT: 1.31680D-03
+ ROOT:  3 RESIDUAL TOT: 3.15528D-03
+ ROOT:  4 RESIDUAL TOT: 1.63095D-02
+      6       4         0.01     0.16E-01
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35378092
-       2       0.46781452
-       3       0.54803861
-       4       0.54903100
-
+              Column   1
+       1      0.35378131
+       2      0.46781221
+       3      0.54804460
+       4      0.54895636
  Dimension of the reduced space:    28
-
- >>> TIME USED IN THIS MICRO ITERATION        1.18
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35377052
-       2       0.46780093
-       3       0.54798404
-       4       0.54867394
+              Column   1
+       1      0.35376903
+       2      0.46780150
+       3      0.54798242
+       4      0.54864824
   
- ROOT:  1 RESIDUAL TOT: 2.44714D-04
- ROOT:  2 RESIDUAL TOT: 3.40738D-04
- ROOT:  3 RESIDUAL TOT: 2.79226D-04
- ROOT:  4 RESIDUAL TOT: 4.26439D-03
-      7       4         0.02     0.43E-02
+ ROOT:  1 RESIDUAL TOT: 3.68099D-04
+ ROOT:  2 RESIDUAL TOT: 4.16001D-04
+ ROOT:  3 RESIDUAL TOT: 4.25331D-04
+ ROOT:  4 RESIDUAL TOT: 6.57971D-03
+      7       4         0.01     0.66E-02
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35377052
-       2       0.46780093
-       3       0.54798404
-       4       0.54867394
-
+              Column   1
+       1      0.35376903
+       2      0.46780150
+       3      0.54798242
+       4      0.54864824
  Dimension of the reduced space:    32
-
- >>> TIME USED IN THIS MICRO ITERATION        1.18
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35377191
-       2       0.46780208
-       3       0.54798442
-       4       0.54867875
+              Column   1
+       1      0.35377219
+       2      0.46780240
+       3      0.54798396
+       4      0.54868154
   
- ROOT:  1 RESIDUAL TOT: 4.97794D-05
- ROOT:  2 RESIDUAL TOT: 1.02933D-04
- ROOT:  3 RESIDUAL TOT: 4.47622D-05
- ROOT:  4 RESIDUAL TOT: 1.62338D-03
-      8       4         0.02     0.16E-02
+ ROOT:  1 RESIDUAL TOT: 7.28044D-05
+ ROOT:  2 RESIDUAL TOT: 1.23151D-04
+ ROOT:  3 RESIDUAL TOT: 6.77438D-05
+ ROOT:  4 RESIDUAL TOT: 2.41571D-03
+      8       4         0.01     0.24E-02
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35377191
-       2       0.46780208
-       3       0.54798442
-       4       0.54867875
-
+              Column   1
+       1      0.35377219
+       2      0.46780240
+       3      0.54798396
+       4      0.54868154
  Dimension of the reduced space:    36
-
- >>> TIME USED IN THIS MICRO ITERATION        1.18
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35377221
-       2       0.46780239
-       3       0.54798458
-       4       0.54866853
+              Column   1
+       1      0.35377220
+       2      0.46780234
+       3      0.54798456
+       4      0.54867016
   
- ROOT:  1 RESIDUAL TOT: 9.50050D-06
- ROOT:  2 RESIDUAL TOT: 2.19358D-05
- ROOT:  3 RESIDUAL TOT: 6.20475D-06
- ROOT:  4 RESIDUAL TOT: 4.16771D-04
-      9       4         0.02     0.42E-03
+ ROOT:  1 RESIDUAL TOT: 1.42795D-05
+ ROOT:  2 RESIDUAL TOT: 2.64039D-05
+ ROOT:  3 RESIDUAL TOT: 1.00475D-05
+ ROOT:  4 RESIDUAL TOT: 6.16697D-04
+      9       4         0.01     0.62E-03
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35377221
-       2       0.46780239
-       3       0.54798458
-       4       0.54866853
-
+              Column   1
+       1      0.35377220
+       2      0.46780234
+       3      0.54798456
+       4      0.54867016
  Dimension of the reduced space:    40
-
- >>> TIME USED IN THIS MICRO ITERATION        1.19
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35377222
-       2       0.46780225
-       3       0.54798459
-       4       0.54866770
+              Column   1
+       1      0.35377222
+       2      0.46780226
+       3      0.54798460
+       4      0.54866740
   
- ROOT:  1 RESIDUAL TOT: 2.75850D-06
- ROOT:  2 RESIDUAL TOT: 7.16659D-06
- ROOT:  3 RESIDUAL TOT: 9.69945D-07
- ROOT:  4 RESIDUAL TOT: 1.39761D-04
-     10       4         0.02     0.14E-03
+ ROOT:  1 RESIDUAL TOT: 4.19733D-06
+ ROOT:  2 RESIDUAL TOT: 8.93155D-06
+ ROOT:  3 RESIDUAL TOT: 1.53340D-06
+ ROOT:  4 RESIDUAL TOT: 2.18828D-04
+     10       4         0.01     0.22E-03
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35377222
-       2       0.46780225
-       3       0.54798459
-       4       0.54866770
-
+              Column   1
+       1      0.35377222
+       2      0.46780226
+       3      0.54798460
+       4      0.54866740
  Dimension of the reduced space:    44
-
- >>> TIME USED IN THIS MICRO ITERATION        1.19
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35377224
-       2       0.46780227
-       3       0.54798460
-       4       0.54866806
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866798
   
- ROOT:  1 RESIDUAL TOT: 5.83327D-07
- ROOT:  2 RESIDUAL TOT: 1.89998D-06
- ROOT:  3 RESIDUAL TOT: 1.85099D-07
- ROOT:  4 RESIDUAL TOT: 4.31868D-05
-     11       4         0.02     0.43E-04
+ ROOT:  1 RESIDUAL TOT: 8.86604D-07
+ ROOT:  2 RESIDUAL TOT: 2.38264D-06
+ ROOT:  3 RESIDUAL TOT: 2.88477D-07
+ ROOT:  4 RESIDUAL TOT: 6.87806D-05
+     11       4         0.01     0.69E-04
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35377224
-       2       0.46780227
-       3       0.54798460
-       4       0.54866806
-
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866798
  Dimension of the reduced space:    48
-
- >>> TIME USED IN THIS MICRO ITERATION        1.21
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866820
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866823
   
- ROOT:  1 RESIDUAL TOT: 9.13521D-08
- ROOT:  2 RESIDUAL TOT: 3.95238D-07
- ROOT:  3 RESIDUAL TOT: 4.17369D-08
- ROOT:  4 RESIDUAL TOT: 1.04086D-05
-     12       4         0.02     0.10E-04
+ ROOT:  1 RESIDUAL TOT: 1.35887D-07
+ ROOT:  2 RESIDUAL TOT: 4.86505D-07
+ ROOT:  3 RESIDUAL TOT: 6.56957D-08
+ ROOT:  4 RESIDUAL TOT: 1.64324D-05
+     12       4         0.01     0.16E-04
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866820
-
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866823
  Dimension of the reduced space:    52
-
- >>> TIME USED IN THIS MICRO ITERATION        1.20
-
-
- REDUCED EIGENVALUES real part:
-
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866823
-  
- ROOT:  1 RESIDUAL TOT: 1.31711D-08
- ROOT:  2 RESIDUAL TOT: 6.47823D-08
- ROOT:  3 RESIDUAL TOT: 6.89197D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.89197D-09
- ROOT:  4 RESIDUAL TOT: 1.90586D-06
-     13       4         0.02     0.19E-05
-
- Lowest eigenvalues in this iteration: 
-
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866823
-
- Dimension of the reduced space:    55
-
- >>> TIME USED IN THIS MICRO ITERATION        1.18
+ >>> TIME USED IN THIS MICRO ITERATION        0.64
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866822
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866823
   
- ROOT:  1 RESIDUAL TOT: 1.95625D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.95625D-09
- ROOT:  2 RESIDUAL TOT: 1.04068D-08
- ROOT:  3 RESIDUAL TOT: 6.89193D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.89193D-09
- ROOT:  4 RESIDUAL TOT: 3.18950D-07
-     14       3         0.02     0.32E-06
+ ROOT:  1 RESIDUAL TOT: 1.94472D-08
+ ROOT:  2 RESIDUAL TOT: 8.01267D-08
+ ROOT:  3 RESIDUAL TOT: 1.12643D-08
+ ROOT:  4 RESIDUAL TOT: 3.07050D-06
+     13       4         0.01     0.31E-05
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866822
-
- Dimension of the reduced space:    57
-
- >>> TIME USED IN THIS MICRO ITERATION        1.13
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866823
+ Dimension of the reduced space:    56
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866822
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866822
   
- ROOT:  1 RESIDUAL TOT: 5.37374D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.37374D-10
- ROOT:  2 RESIDUAL TOT: 1.37029D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.37029D-09
- ROOT:  3 RESIDUAL TOT: 6.89192D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.89192D-09
- ROOT:  4 RESIDUAL TOT: 5.13865D-08
-     15       2         0.02     0.51E-07
+ ROOT:  1 RESIDUAL TOT: 3.28113D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.28113D-09
+ ROOT:  2 RESIDUAL TOT: 1.50629D-08
+ ROOT:  3 RESIDUAL TOT: 1.77424D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.77424D-09
+ ROOT:  4 RESIDUAL TOT: 6.35971D-07
+     14       4         0.01     0.64E-06
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866822
-
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866822
  Dimension of the reduced space:    58
-
- >>> TIME USED IN THIS MICRO ITERATION        1.08
+ >>> TIME USED IN THIS MICRO ITERATION        0.65
 
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866822
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866822
   
- ROOT:  1 RESIDUAL TOT: 4.51828D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.51828D-10
- ROOT:  2 RESIDUAL TOT: 6.50106D-10
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 6.50106D-10
- ROOT:  3 RESIDUAL TOT: 6.89193D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.89193D-09
- ROOT:  4 RESIDUAL TOT: 8.93418D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 8.93418D-09
-     16       1         0.02     0.89E-08
+ ROOT:  1 RESIDUAL TOT: 5.98682D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.98682D-10
+ ROOT:  2 RESIDUAL TOT: 2.68062D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.68062D-09
+ ROOT:  3 RESIDUAL TOT: 1.77422D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.77422D-09
+ ROOT:  4 RESIDUAL TOT: 1.49758D-07
+     15       2         0.01     0.15E-06
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
-       1       0.35377223
-       2       0.46780226
-       3       0.54798460
-       4       0.54866822
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866822
+ Dimension of the reduced space:    59
+ >>> TIME USED IN THIS MICRO ITERATION        0.60
 
- Dimension of the reduced space:    58
 
- >>> TIME USED IN THIS MICRO ITERATION        1.02
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866822
+  
+ ROOT:  1 RESIDUAL TOT: 4.80332D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.80332D-10
+ ROOT:  2 RESIDUAL TOT: 9.82833D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.82833D-10
+ ROOT:  3 RESIDUAL TOT: 1.77422D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.77422D-09
+ ROOT:  4 RESIDUAL TOT: 3.14007D-08
+     16       1         0.01     0.31E-07
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866822
+ Dimension of the reduced space:    60
+ >>> TIME USED IN THIS MICRO ITERATION        0.58
+
+
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866822
+  
+ ROOT:  1 RESIDUAL TOT: 4.70783D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.70783D-10
+ ROOT:  2 RESIDUAL TOT: 6.59445D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 6.59445D-10
+ ROOT:  3 RESIDUAL TOT: 1.77422D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.77422D-09
+ ROOT:  4 RESIDUAL TOT: 5.09080D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 5.09080D-09
+     17       1         0.01     0.51E-08
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.35377224
+       2      0.46780226
+       3      0.54798460
+       4      0.54866822
+ Dimension of the reduced space:    60
+ >>> TIME USED IN THIS MICRO ITERATION        0.58
 
     --------------------------------------
-    converged in 16 iterations
+    converged in 17 iterations
     threshold:    0.10E-07
 
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.30
+         CC_TRDRV            0.18
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.31
+         Total time          0.18
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  18.61 seconds
- >>>> Total wall time used in CCEQ_SOLV:  19.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  10.74 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  12.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2889,10 +2631,10 @@ Try to use right eigenvector as start for a left eigenvector.
  =====================
  (convergence threshold:  1.00D-08)
 
-    1   0.3537722344
-    2   0.4678022588
-    3   0.5479846011
-    4   0.5486682209
+    1   0.3537722351
+    2   0.4678022589
+    3   0.5479846013
+    4   0.5486682211
 
 
  SYMMETRY CLASS NR.    2
@@ -2905,19 +2647,19 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3537722344        9.6266319187
-         2            0.4678022588       12.7295466367
-         3            0.5479846011       14.9114190984
-         4            0.5486682209       14.9300213388
+         1            0.3537722351        9.6266322111
+         2            0.4678022589       12.7295470024
+         3            0.5479846013       14.9114195282
+         4            0.5486682211       14.9300217683
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -56.089341531983443
-@@    2    2           -55.975311507562697
-@@    2    3           -55.895129165244039
-@@    2    4           -55.894445545449977
+@@    2    1           -56.089341531208440
+@@    2    2           -55.975311507329259
+@@    2    3           -55.895129164932527
+@@    2    4           -55.894445545164622
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2937,24 +2679,27 @@ Try to use right eigenvector as start for a left eigenvector.
 
           ||T1||/||T2||                  :               3.3799
 
-          Tau1 diagnostic                :               0.2136
-
-          Norm of Total Amplitude Vector :               0.6301
+          Norm of Total Amplitude Vector :               0.9998
 
 
  +=============================================================================+
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   1   |   1       3     |       23          |              |   -0.594630  |
+ | 2   1   |   1       3     |       23          |              |    0.943486  |
  +-----------------------------------------------------------------------------+
- | 1 1 2 1 |  14  10   1   2 |       47       30 |         1584 |    0.065083  |
- | 1 1 2 1 |  18  10   1   2 |       51       30 |         1588 |   -0.048151  |
- | 1 1 2 1 |   2  11   1   2 |       35       31 |         1625 |   -0.059308  |
+ | 2 1 1 1 |   4  10   3   2 |       26       30 |         1563 |    0.061350  |
+ | 2 1 1 1 |   6  11   2   2 |       17       31 |         1607 |    0.072230  |
+ | 2 1 1 1 |  11  11   3   2 |       33       31 |         1623 |    0.072230  |
+ | 2 1 1 1 |   5  14   2   2 |       16       34 |         1765 |   -0.064498  |
+ | 1 1 2 1 |  14  10   1   2 |       47       30 |         1584 |   -0.103266  |
+ | 1 1 2 1 |  18  10   1   2 |       51       30 |         1588 |    0.076400  |
+ | 1 1 2 1 |   1  11   1   2 |       34       31 |         1624 |   -0.062235  |
+ | 1 1 2 1 |   2  11   1   2 |       35       31 |         1625 |    0.094103  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.6030
+          Norm of Printed Amplitude Vector :             0.9684
 
 
           Printed all single excitations greater than 0.159818
@@ -2980,25 +2725,25 @@ Try to use right eigenvector as start for a left eigenvector.
 
           ||T1||/||T2||                  :               3.6650
 
-          Tau1 diagnostic                :               0.2717
-
-          Norm of Total Amplitude Vector :               0.7967
+          Norm of Total Amplitude Vector :               0.9999
 
 
  +=============================================================================+
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   1       1     |       34          |              |    0.762137  |
+ | 1   2   |   1       1     |       34          |              |    0.956525  |
  +-----------------------------------------------------------------------------+
- | 2 1 1 1 |  11   5   3   3 |       33       45 |         2365 |   -0.071943  |
- | 2 1 1 1 |   3   6   1   3 |        3       46 |         2388 |    0.077373  |
- | 2 1 1 1 |   8   6   2   3 |       19       46 |         2404 |    0.056467  |
- | 1 1 2 1 |   4   5   1   3 |       37       45 |         2369 |    0.053026  |
+ | 2 1 1 1 |  11   5   3   3 |       33       45 |         2365 |   -0.090293  |
+ | 2 1 1 1 |   3   6   1   3 |        3       46 |         2388 |    0.097108  |
+ | 2 1 1 1 |   8   6   2   3 |       19       46 |         2404 |    0.070869  |
+ | 2 1 1 1 |   2   9   2   3 |       13       49 |         2557 |    0.046296  |
+ | 2 1 1 1 |   7  11   2   3 |       18       51 |         2668 |   -0.046878  |
+ | 1 1 2 1 |   4   5   1   3 |       37       45 |         2369 |    0.066551  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.7733
+          Norm of Printed Amplitude Vector :             0.9728
 
 
           Printed all single excitations greater than 0.160789
@@ -3024,88 +2769,32 @@ Try to use right eigenvector as start for a left eigenvector.
 
           ||T1||/||T2||                  :               3.6099
 
-          Tau1 diagnostic                :               0.2036
-
-          Norm of Total Amplitude Vector :               0.5975
+          Norm of Total Amplitude Vector :               0.9996
 
 
  +=============================================================================+
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   2       1     |       35          |              |   -0.396874  |
- | 2   1   |   1       2     |       12          |              |   -0.396885  |
+ | 1   2   |   2       1     |       35          |              |    0.664002  |
+ | 2   1   |   1       2     |       12          |              |    0.664020  |
  +-----------------------------------------------------------------------------+
- | 2 1 1 1 |  10   1   2   1 |       21        1 |           21 |    0.011663  |
- | 2 1 1 1 |   1   1   3   1 |       23        1 |           23 |   -0.014701  |
- | 2 1 1 1 |   2   1   3   1 |       24        1 |           24 |   -0.016942  |
- | 2 1 1 1 |   6   1   3   1 |       28        1 |           28 |   -0.010469  |
- | 2 1 1 1 |   9   2   1   1 |        9        2 |           62 |   -0.014701  |
- | 2 1 1 1 |  11   2   1   1 |       11        2 |           64 |   -0.010469  |
- | 2 1 1 1 |   7  16   1   1 |        7       16 |          802 |   -0.009858  |
- | 2 1 1 1 |   8  16   1   1 |        8       16 |          803 |    0.021943  |
- | 2 1 1 1 |  10  16   1   1 |       10       16 |          805 |    0.012308  |
- | 2 1 1 1 |   1  16   2   1 |       12       16 |          807 |   -0.011741  |
- | 2 1 1 1 |   5  16   3   1 |       27       16 |          822 |    0.015327  |
- | 2 1 1 1 |   7  16   3   1 |       29       16 |          824 |    0.012199  |
- | 2 1 1 1 |   9  16   3   1 |       31       16 |          826 |   -0.035966  |
- | 2 1 1 1 |   6  17   1   1 |        6       17 |          854 |   -0.014701  |
- | 2 1 1 1 |   1  18   2   1 |       12       18 |          913 |   -0.023218  |
- | 2 1 1 1 |   3  19   2   1 |       14       19 |          968 |    0.015366  |
- | 2 1 1 1 |   8  19   3   1 |       30       19 |          984 |    0.027441  |
- | 2 1 1 1 |  11  12   1   2 |       11       32 |         1654 |   -0.011548  |
- | 2 1 1 1 |   1  12   2   2 |       12       32 |         1655 |    0.012198  |
- | 2 1 1 1 |   6  14   3   2 |       28       34 |         1777 |   -0.012090  |
- | 2 1 1 1 |   2   5   2   3 |       13       45 |         2345 |    0.011663  |
- | 2 1 1 1 |  11   5   3   3 |       33       45 |         2365 |    0.009858  |
- | 2 1 1 1 |   1   6   1   3 |        1       46 |         2386 |   -0.011548  |
- | 2 1 1 1 |   8   6   2   3 |       19       46 |         2404 |    0.009858  |
- | 2 1 1 1 |   8   6   3   3 |       30       46 |         2415 |   -0.024648  |
- | 2 1 1 1 |  11   6   3   3 |       33       46 |         2418 |    0.014080  |
- | 2 1 1 1 |   2   7   1   3 |        2       47 |         2440 |   -0.033779  |
- | 2 1 1 1 |   6   7   2   3 |       17       47 |         2455 |    0.015326  |
- | 2 1 1 1 |   8   7   2   3 |       19       47 |         2457 |   -0.012198  |
- | 2 1 1 1 |  10   7   2   3 |       21       47 |         2459 |   -0.035965  |
- | 2 1 1 1 |   5   8   2   3 |       16       48 |         2507 |    0.023218  |
- | 2 1 1 1 |   3   9   2   3 |       14       49 |         2558 |   -0.016941  |
- | 2 1 1 1 |  11   9   3   3 |       33       49 |         2577 |    0.014281  |
- | 2 1 1 1 |   9  10   2   3 |       20       50 |         2617 |   -0.012308  |
- | 2 1 1 1 |   8  11   2   3 |       19       51 |         2669 |    0.017155  |
- | 2 1 1 1 |   6  12   2   3 |       17       52 |         2720 |    0.027440  |
- | 2 1 1 1 |  11  14   3   3 |       33       54 |         2842 |    0.010469  |
- | 1 1 2 1 |  10   1   1   1 |       43        1 |           43 |   -0.014650  |
- | 1 1 2 1 |  15   1   1   1 |       48        1 |           48 |    0.012090  |
- | 1 1 2 1 |   7  15   1   1 |       40       15 |          782 |   -0.024649  |
- | 1 1 2 1 |  10  15   1   1 |       43       15 |          785 |    0.014081  |
- | 1 1 2 1 |  13  15   1   1 |       46       15 |          788 |    0.013085  |
- | 1 1 2 1 |  14  16   1   1 |       47       16 |          842 |   -0.021943  |
- | 1 1 2 1 |  15  16   1   1 |       48       16 |          843 |    0.022233  |
- | 1 1 2 1 |  16  16   1   1 |       49       16 |          844 |   -0.033779  |
- | 1 1 2 1 |   9  19   1   1 |       42       19 |          996 |   -0.010469  |
- | 1 1 2 1 |  17  10   1   2 |       50       30 |         1587 |    0.017155  |
- | 1 1 2 1 |  12  11   1   2 |       45       31 |         1635 |    0.014650  |
- | 1 1 2 1 |  18  12   1   2 |       51       32 |         1694 |    0.012199  |
- | 1 1 2 1 |   2   5   1   3 |       35       45 |         2367 |   -0.014281  |
- | 1 1 2 1 |   3   6   1   3 |       36       46 |         2421 |    0.013085  |
- | 1 1 2 1 |  17   6   1   3 |       50       46 |         2435 |    0.009858  |
- | 1 1 2 1 |  18   6   1   3 |       51       46 |         2436 |    0.021942  |
- | 1 1 2 1 |  19   6   1   3 |       52       46 |         2437 |   -0.022233  |
- | 1 1 2 1 |  20   6   1   3 |       53       46 |         2438 |   -0.012308  |
- | 1 1 2 1 |   4   7   1   3 |       37       47 |         2475 |   -0.021942  |
- | 1 1 2 1 |   6   7   1   3 |       39       47 |         2477 |   -0.011741  |
- | 1 1 2 1 |  16   7   1   3 |       49       47 |         2487 |    0.014701  |
- | 1 1 2 1 |   1   9   1   3 |       34       49 |         2578 |   -0.012308  |
- | 1 1 2 1 |   7  12   1   3 |       40       52 |         2743 |   -0.015366  |
+ | 2 1 1 1 |   9  16   3   1 |       31       16 |          826 |    0.060175  |
+ | 2 1 1 1 |   8  19   3   1 |       30       19 |          984 |   -0.045911  |
+ | 2 1 1 1 |   2   7   1   3 |        2       47 |         2440 |    0.056514  |
+ | 2 1 1 1 |  10   7   2   3 |       21       47 |         2459 |    0.060173  |
+ | 2 1 1 1 |   6  12   2   3 |       17       52 |         2720 |   -0.045910  |
+ | 1 1 2 1 |  16  16   1   1 |       49       16 |          844 |    0.056516  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.5782
+          Norm of Printed Amplitude Vector :             0.9485
 
 
           Printed all single excitations greater than 0.160618
 
 
-          Printed all double excitations greater than 0.008899
+          Printed all double excitations greater than 0.044493
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  4
@@ -3125,89 +2814,31 @@ Try to use right eigenvector as start for a left eigenvector.
 
           ||T1||/||T2||                  :               3.6605
 
-          Tau1 diagnostic                :               0.2095
-
-          Norm of Total Amplitude Vector :               0.6142
+          Norm of Total Amplitude Vector :               0.9996
 
 
  +=============================================================================+
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   2       1     |       35          |              |    0.387815  |
- | 2   1   |   1       2     |       12          |              |   -0.387803  |
- | 2   1   |   2       3     |       24          |              |    0.195734  |
+ | 1   2   |   2       1     |       35          |              |    0.631137  |
+ | 2   1   |   1       2     |       12          |              |   -0.631118  |
+ | 2   1   |   2       3     |       24          |              |    0.318542  |
  +-----------------------------------------------------------------------------+
- | 2 1 1 1 |   2   1   1   1 |        2        1 |            2 |    0.011410  |
- | 2 1 1 1 |  10   1   2   1 |       21        1 |           21 |    0.011743  |
- | 2 1 1 1 |   1   1   3   1 |       23        1 |           23 |   -0.014211  |
- | 2 1 1 1 |   2   1   3   1 |       24        1 |           24 |   -0.016372  |
- | 2 1 1 1 |   6   1   3   1 |       28        1 |           28 |   -0.011033  |
- | 2 1 1 1 |   9   2   1   1 |        9        2 |           62 |   -0.015688  |
- | 2 1 1 1 |   7  16   1   1 |        7       16 |          802 |   -0.009409  |
- | 2 1 1 1 |   8  16   1   1 |        8       16 |          803 |    0.023984  |
- | 2 1 1 1 |  10  16   1   1 |       10       16 |          805 |    0.011374  |
- | 2 1 1 1 |   1  16   2   1 |       12       16 |          807 |   -0.011970  |
- | 2 1 1 1 |   5  16   3   1 |       27       16 |          822 |    0.015838  |
- | 2 1 1 1 |   7  16   3   1 |       29       16 |          824 |    0.010442  |
- | 2 1 1 1 |   9  16   3   1 |       31       16 |          826 |   -0.035360  |
- | 2 1 1 1 |   6  17   1   1 |        6       17 |          854 |    0.015639  |
- | 2 1 1 1 |   3  17   3   1 |       25       17 |          873 |    0.009153  |
- | 2 1 1 1 |   1  18   2   1 |       12       18 |          913 |   -0.016422  |
- | 2 1 1 1 |   3  19   2   1 |       14       19 |          968 |    0.014910  |
- | 2 1 1 1 |   8  19   3   1 |       30       19 |          984 |    0.024774  |
- | 2 1 1 1 |  11  12   1   2 |       11       32 |         1654 |   -0.010507  |
- | 2 1 1 1 |   1  12   2   2 |       12       32 |         1655 |   -0.019176  |
- | 2 1 1 1 |   5  12   2   2 |       16       32 |         1659 |    0.013749  |
- | 2 1 1 1 |   6  14   3   2 |       28       34 |         1777 |    0.011489  |
- | 2 1 1 1 |   2   5   2   3 |       13       45 |         2345 |   -0.011743  |
- | 2 1 1 1 |  10   5   3   3 |       32       45 |         2364 |   -0.012395  |
- | 2 1 1 1 |   1   6   1   3 |        1       46 |         2386 |    0.010507  |
- | 2 1 1 1 |   8   6   3   3 |       30       46 |         2415 |    0.024993  |
- | 2 1 1 1 |  11   6   3   3 |       33       46 |         2418 |   -0.013935  |
- | 2 1 1 1 |   2   7   1   3 |        2       47 |         2440 |    0.030648  |
- | 2 1 1 1 |   6   7   2   3 |       17       47 |         2455 |   -0.015839  |
- | 2 1 1 1 |   8   7   2   3 |       19       47 |         2457 |    0.013548  |
- | 2 1 1 1 |  10   7   2   3 |       21       47 |         2459 |    0.035361  |
- | 2 1 1 1 |   4   8   2   3 |       15       48 |         2506 |   -0.017414  |
- | 2 1 1 1 |   5   8   2   3 |       16       48 |         2507 |   -0.015242  |
- | 2 1 1 1 |   3   9   2   3 |       14       49 |         2558 |    0.016372  |
- | 2 1 1 1 |   8  11   2   3 |       19       51 |         2669 |   -0.017207  |
- | 2 1 1 1 |   6  12   2   3 |       17       52 |         2720 |   -0.024532  |
- | 2 1 1 1 |  11  14   3   3 |       33       54 |         2842 |   -0.010154  |
- | 1 1 2 1 |  10   1   1   1 |       43        1 |           43 |   -0.014264  |
- | 1 1 2 1 |  15   1   1   1 |       48        1 |           48 |    0.011488  |
- | 1 1 2 1 |   7  15   1   1 |       40       15 |          782 |   -0.024993  |
- | 1 1 2 1 |  10  15   1   1 |       43       15 |          785 |    0.013935  |
- | 1 1 2 1 |  13  15   1   1 |       46       15 |          788 |    0.013092  |
- | 1 1 2 1 |  14  16   1   1 |       47       16 |          842 |   -0.024901  |
- | 1 1 2 1 |  15  16   1   1 |       48       16 |          843 |    0.018362  |
- | 1 1 2 1 |  16  16   1   1 |       49       16 |          844 |   -0.030405  |
- | 1 1 2 1 |   9  19   1   1 |       42       19 |          996 |    0.008892  |
- | 1 1 2 1 |  17  10   1   2 |       50       30 |         1587 |    0.017207  |
- | 1 1 2 1 |  12  11   1   2 |       45       31 |         1635 |   -0.014265  |
- | 1 1 2 1 |   2  12   1   2 |       35       32 |         1678 |    0.015777  |
- | 1 1 2 1 |  18  12   1   2 |       51       32 |         1694 |    0.022281  |
- | 1 1 2 1 |  20  12   1   2 |       53       32 |         1696 |    0.015109  |
- | 1 1 2 1 |   1   5   1   3 |       34       45 |         2366 |    0.017910  |
- | 1 1 2 1 |   3   6   1   3 |       36       46 |         2421 |   -0.013092  |
- | 1 1 2 1 |  18   6   1   3 |       51       46 |         2436 |   -0.025799  |
- | 1 1 2 1 |  19   6   1   3 |       52       46 |         2437 |    0.019543  |
- | 1 1 2 1 |  20   6   1   3 |       53       46 |         2438 |    0.016650  |
- | 1 1 2 1 |   4   7   1   3 |       37       47 |         2475 |    0.023087  |
- | 1 1 2 1 |   6   7   1   3 |       39       47 |         2477 |    0.011727  |
- | 1 1 2 1 |  16   7   1   3 |       49       47 |         2487 |   -0.014262  |
- | 1 1 2 1 |   7  12   1   3 |       40       52 |         2743 |    0.014910  |
+ | 2 1 1 1 |   9  16   3   1 |       31       16 |          826 |   -0.057545  |
+ | 2 1 1 1 |   2   7   1   3 |        2       47 |         2440 |    0.049878  |
+ | 2 1 1 1 |  10   7   2   3 |       21       47 |         2459 |    0.057546  |
+ | 1 1 2 1 |  16  16   1   1 |       49       16 |          844 |   -0.049481  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.5986
+          Norm of Printed Amplitude Vector :             0.9538
 
 
           Printed all single excitations greater than 0.160775
 
 
-          Printed all double excitations greater than 0.008784
+          Printed all double excitations greater than 0.043922
 
 
  *******************************************************************************
@@ -3224,7 +2855,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Ground state energy is target 
 
- Ecorr =                    -56.44311376633974752792
+ Ecorr =                    -56.44311376627145904195
 
  *******************************************************************
   
@@ -3254,27 +2885,27 @@ Try to use right eigenvector as start for a left eigenvector.
  | ^1A'  |    1   |     0.2730761  |       7.43078  |     59933.283  |  91.05  |
  | ^1A'  |    2   |     0.3537722  |       9.62663  |     77644.025  |  91.94  |
  | ^1A'  |    3   |     0.4678022  |      12.72955  |    102670.717  |  93.03  |
- | ^1A'  |    4   |     0.5486682  |      14.93002  |    120418.755  |  92.32  |
+ | ^1A'  |    4   |     0.5486682  |      14.93002  |    120418.754  |  92.32  |
  +-----------------------------------------------------------------------------+
- | ^1A"  |    1   |     0.3537722  |       9.62663  |     77644.031  |  91.95  |
- | ^1A"  |    2   |     0.4678023  |      12.72955  |    102670.728  |  93.07  |
- | ^1A"  |    3   |     0.5479846  |      14.91142  |    120268.718  |  92.87  |
- | ^1A"  |    4   |     0.5486682  |      14.93002  |    120418.755  |  93.06  |
+ | ^1A"  |    1   |     0.3537722  |       9.62663  |     77644.030  |  91.95  |
+ | ^1A"  |    2   |     0.4678023  |      12.72955  |    102670.727  |  93.07  |
+ | ^1A"  |    3   |     0.5479846  |      14.91142  |    120268.717  |  92.87  |
+ | ^1A"  |    4   |     0.5486682  |      14.93002  |    120418.754  |  93.06  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A'       -56.1700376361                                        
-             2 ^1A'       -56.0893415560                                        
-             3 ^1A'       -55.9753115567                                        
-             4 ^1A'       -55.8944455491                                        
-             1 ^1A"       -56.0893415320                                        
-             2 ^1A"       -55.9753115076                                        
-             3 ^1A"       -55.8951291652                                        
-             4 ^1A"       -55.8944455454                                        
+             1 ^1A'       -56.1700376354                                        
+             2 ^1A'       -56.0893415552                                        
+             3 ^1A'       -55.9753115565                                        
+             4 ^1A'       -55.8944455487                                        
+             1 ^1A"       -56.0893415312                                        
+             2 ^1A"       -55.9753115073                                        
+             3 ^1A"       -55.8951291649                                        
+             4 ^1A"       -55.8944455452                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -3288,11 +2919,14 @@ Try to use right eigenvector as start for a left eigenvector.
  *******************************************************************************
 
 
-- End of Coupled Cluster
 
- >>>> Total CPU  time used in DALTON:  1 minute  52 seconds
- >>>> Total wall time used in DALTON:  1 minute  52 seconds
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  1 minute   7 seconds
+ >>>> Total wall time used in DALTON:  1 minute  12 seconds
 
  
-     Date and time (Linux)  : Wed Dec 15 09:07:42 2004
-     Host name              : inttch05                                
+     Date and time (Linux)  : Wed Mar 16 19:28:22 2011 
+     Host name              : fe6                                     

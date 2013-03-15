@@ -11,15 +11,15 @@ C     PURPOSE: Calculate diagonale one-particle part of the
 C              SOPPA E[2] matrix excluding the second order 
 C              contributions.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION DIAG1(LDIAG1), FOCKD(LFOCKD)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Add to trace.

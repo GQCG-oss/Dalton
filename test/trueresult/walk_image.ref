@@ -1,94 +1,122 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-    Celestino Angeli,         University of Ferrara,        Italy      
-    Keld L. Bak,              UNI-C,                        Denmark    
-    Vebjoern Bakken,          University of Oslo,           Norway     
-    Ove Christiansen,         Aarhus University,            Denmark    
-    Renzo Cimiraglia,         University of Ferrara,        Italy      
-    Sonia Coriani,            University of Trieste,        Italy      
-    Paal Dahle,               University of Oslo,           Norway     
-    Erik K. Dalskov,          UNI-C,                        Denmark    
-    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
-    Berta Fernandez,          U. of Santiago de Compostela, Spain      
-    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
-    Kasper Hald,              Aarhus University,            Denmark    
-    Asger Halkier,            Aarhus University,            Denmark    
-    Hanne Heiberg,            University of Oslo,           Norway     
-    Trygve Helgaker,          University of Oslo,           Norway     
-    Hinne Hettema,            University of Auckland,       New Zealand
-    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
-    Dan Jonsson,              KTH Stockholm,                Sweden     
-    Poul Joergensen,          Aarhus University,            Denmark    
-    Sheela Kirpekar,          SDU - Odense University,      Denmark    
-    Wim Klopper,              University of Karlsruhe,      Germany    
-    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
-    Henrik Koch,              University of Trondheim,      Norway     
-    Ola B. Lutnaes,           University of Oslo,           Norway     
-    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
-    Patrick Norman,           University of Linkoeping,     Sweden     
-    Jeppe Olsen,              Aarhus University,            Denmark    
-    Martin J. Packer,         University of Sheffield,      UK         
-    Thomas B. Pedersen,       University of Lund,           Sweden     
-    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
-    Elias Rudberg,            KTH Stockholm,                Sweden     
-    Torgeir A. Ruden,         University of Oslo,           Norway     
-    Kenneth Ruud,             University of Tromsoe,        Norway     
-    Pawel Salek,              KTH Stockholm,                Sweden     
-    Alfredo Sanchez de Meras, University of Valencia,       Spain      
-    Trond Saue,               University of Strasbourg,     France     
-    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
-    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
-    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
-    Peter R. Taylor,          University of Warwick,        UK         
-    Olav Vahtras,             KTH Stockholm,                Sweden     
-    David J. Wilson,          University of Oslo,           Norway     
-    Hans Agren,               KTH Stockholm,                Sweden     
+ --------------------------------------------------------------------------------
 
- ---------------------------------------------------------------------
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF and CC wave functions. The authors
-     accept no responsibility for the performance of the code or
-     for the correctness of the results.
-      
-     The code (in whole or part) is provided under a licence and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-      
-     See the home page "http://www.kjemi.uio.no/software/dalton"
-     for further information.
-      
-     If results obtained with this code are published,
-     an appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 2.0
-     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+ --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Mar  3 20:10:05 2005
-     Host name              : pi.biotech.kth.se                       
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
 
 
- Default print level:        0
+     Date and time (Linux)  : Wed Mar 16 17:47:22 2011 
+     Host name              : fe6                                     
+
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
 
     Geometry optimization
       Starting at iteration:    0
       Maximum number of iterations:   20
     "Old" integral transformation used (limited to max 255 basis functions)
+ --------------------------------------------------------------------------------
 
 
-   ********************************************************************
-   *********** Commencing geometry optimization using .WALK ***********
-   ********************************************************************
+                  .----------------------------------------------.
+                  | Commencing geometry optimization using .WALK |
+                  `----------------------------------------------'
 
 
 
@@ -96,61 +124,51 @@
 
 
 
-Starting in Integral Section -
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Location of saddle point (transition state) using IMAGE method          
+ 2:                                                                         
+    ------------------------------------------------------------------------
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   7.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "6-31G**" from the basis set library.
+  Used basis set file for basis set for elements with Z =   7 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G**                                                                         
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    3
+  Number of basis sets to read;    2
+  The basis set is "6-31G**" from the basis set library.
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/6-31G**"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G**                                                                         
 
 
-
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
-
-
-
-  Title Cards
-  -----------
-
-  Location of saddle point (transition state) using IMAGE method          
-                                                                          
-
- For atomic type no.  1 the basis set
-     6-31G**                                                                         
- from the basis set library will be used.
-
- Huckel basis read for atomic type no.  1
-
- For atomic type no.  2 the basis set
-     6-31G**                                                                         
- from the basis set library will be used.
-
- Huckel basis read for atomic type no.  2
-
-
-                      SYMGRP:Point group information
-                      ------------------------------
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: C1 
 
-   * Character table
 
-        |  E 
-   -----+-----
-    A   |   1
-
-   * Direct product table
-
-        | A  
-   -----+-----
-    A   | A  
-
-
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            N          14.003074
                            H           1.007825
@@ -160,54 +178,40 @@ Point group: C1
                        Total mass:    17.026549 amu
                        Natural abundance:  99.585 %
 
- Center-of-mass coordinates (A):   -0.063228    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):   -0.063228    0.000000    0.000000
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    4
 
-  label    atoms   charge   prim    cont     basis
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  N           1       7      28      15      [10s4p1d|3s2p1d]                             
-  H           1       1       7       5      [4s1p|2s1p]                                  
-  H           1       1       7       5      [4s1p|2s1p]                                  
-  H           1       1       7       5      [4s1p|2s1p]                                  
+  N           1    7.0000    28    15      [10s4p1d|3s2p1d]                                   
+  H           3    1.0000     7     5      [4s1p|2s1p]                                        
   ----------------------------------------------------------------------
-  total:      4      10      49      30
+  total:      4   10.0000    49    30
   ----------------------------------------------------------------------
   Cartesian basis used.
   (Note that d, f, ... atomic GTOs are not all normalized.)
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates: 12
-
-   1   N        x      0.0000000000
-   2            y      0.0000000000
-   3            z      0.0000000000
-
-   4   H        x      1.7000000000
-   5            y      0.0000000000
-   6            z      0.0000000000
-
-   7   H        x     -1.3841000000
-   8            y      0.9919000000
-   9            z      0.0000000000
-
-  10   H        x     -1.3841000000
-  11            y     -0.9919000000
-  12            z      0.0000000000
+  Total number of coordinates:   12
+  N       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  H       :     4  x   1.7000000000    5  y   0.0000000000    6  z   0.0000000000
+  H       :     7  x  -1.3841000000    8  y   0.9919000000    9  z   0.0000000000
+  H       :    10  x  -1.3841000000   11  y  -0.9919000000   12  z   0.0000000000
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
@@ -217,12 +221,12 @@ Point group: C1
  H     :    0.901094    1.714366    1.049782    0.000000
 
 
-  Max interatomic separation is    1.7144 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7144 Angstrom (    3.2397 Bohr)
+  between atoms    3 and    2, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -246,9 +250,9 @@ Point group: C1
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    0.555333          1.000000    0.000000    0.000000
-   IB    1.877869          0.000000    1.000000    0.000000
-   IC    2.433202          0.000000    0.000000    1.000000
+   IA       0.555333          1.000000    0.000000    0.000000
+   IB       1.877869          0.000000    1.000000    0.000000
+   IC       2.433202          0.000000    0.000000    1.000000
 
 
  Rotational constants
@@ -258,38 +262,47 @@ Point group: C1
 
                A                   B                   C
 
-         910047.4385         269123.6673         207701.2427 MHz
+         910047.4305         269123.6649         207701.2409 MHz
            30.355915            8.976999            6.928168 cm-1
 
 
-  Nuclear repulsion energy :   13.460727047286
+@  Nuclear repulsion energy :   13.460727047286
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in HUCKEL is   0.01 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
 
 
- >>> Time used in ONEDRV is   0.00 seconds
 
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:       52269 ( 48.2% )
  Megabytes written:                              0.605
 
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
- >>> Time used in TWOINT is   0.09 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.11 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
-
-- End of Integral Section
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
 
 
  *** Output from Huckel module :
@@ -299,21 +312,22 @@ Starting in Wave Function Section -
      Number of Huckel orbitals each symmetry:    8
 
  EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
- which normally is better than Extended Huckel Theory.
- Reference: Linderberg and Ohrm, Propagators in Quantum Chemistry (Wiley, 1973)
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
 
  Huckel EWMO eigenvalues for symmetry :  1
-          -15.645029      -1.614843      -0.879233      -0.665861      -0.563400
-           -0.171896      -0.121065      -0.097199
+          -15.678199      -1.638645      -0.830784      -0.613795      -0.508700
+           -0.174165      -0.118755      -0.093158
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:06 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:22 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      Location of saddle point (transition state) using IMAGE method          
                                                                              
 
@@ -322,18 +336,15 @@ Starting in Wave Function Section -
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 30
 
      Spin multiplicity                         1
      Total number of symmetries                1
@@ -341,130 +352,159 @@ Starting in Wave Function Section -
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1
-                                       --
-     Total number of orbitals          30
-     Number of basis functions         30
+     Abelian symmetry species          All |    1
+                                       --- |  ---
+     Occupied SCF orbitals               5 |    5
+     Secondary orbitals                 25 |   25
+     Total number of orbitals           30 |   30
+     Number of basis functions          30 |   30
 
-      ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.                    
-      -- Initial occupation of symmetries is : --
-
-     Occupied SCF orbitals              5
+     Optimization information
+     ========================
+     Number of configurations                 1
+     Number of orbital rotations            125
+     ------------------------------------------
+     Total number of variables              126
 
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-06
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
  C1-DIIS algorithm; max error vectors =   10
 
- Automatic occupation of symmetries with  10 electrons.
-
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -55.8295064311        1.82245D+00   -5.58D+01    1
+      Virial theorem: -V/T =      2.002341
+      MULPOP  N      -0.49; H       0.12; H       0.19; H       0.19; 
+ -----------------------------------------------------------------------------
+   2    -56.0623781888        4.66187D-01   -2.33D-01    2
+      Virial theorem: -V/T =      1.983736
+      MULPOP  N      -0.74; H       0.27; H       0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+   3    -56.0774635579        2.00400D-01   -1.51D-02    3
+      Virial theorem: -V/T =      1.994190
+      MULPOP  N      -0.73; H       0.27; H       0.23; H       0.23; 
+ -----------------------------------------------------------------------------
+   4    -56.0797803274        3.96799D-02   -2.32D-03    4
+      Virial theorem: -V/T =      1.990112
+      MULPOP  N      -0.80; H       0.30; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
+   5    -56.0799839596        8.74580D-03   -2.04D-04    5
+      Virial theorem: -V/T =      1.990281
+      MULPOP  N      -0.81; H       0.31; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
+   6    -56.0799902220        9.07886D-04   -6.26D-06    6
+      Virial theorem: -V/T =      1.990186
+      MULPOP  N      -0.82; H       0.31; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
+   7    -56.0799902956        7.50107D-05   -7.36D-08    7
+      Virial theorem: -V/T =      1.990201
+      MULPOP  N      -0.82; H       0.31; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
+   8    -56.0799902962        1.08102D-05   -5.11D-10    8
+      Virial theorem: -V/T =      1.990201
+      MULPOP  N      -0.82; H       0.31; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
+   9    -56.0799902962        1.46043D-06   -1.06D-11    9
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.02 seconds
-
-   1    -55.823088065487   1.85E+00  -5.58E+01    5
-   2    -56.064318078364   4.25E-01  -2.41E-01    5
-   3    -56.077964158396   1.78E-01  -1.36E-02    5
-   4    -56.079794183307   3.88E-02  -1.83E-03    5
-   5    -56.079983471470   9.25E-03  -1.89E-04    5
-   6    -56.079990206938   9.61E-04  -6.74E-06    5
-   7    -56.079990295517   8.10E-05  -8.86E-08    5
-   8    -56.079990296150   1.13E-05  -6.33E-10    5
-   9    -56.079990296161   1.45E-06  -1.17E-11    5
-  10    -56.079990296162   1.97E-07  -2.84E-13    5
- DIIS converged in  10 iterations !
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    5
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -15.49138782    -1.19439657    -0.78806332    -0.55241269    -0.38990481
-         0.23727047     0.31678843     0.35519720     0.84832943     0.87490032
+  1    -15.49138792    -1.19439661    -0.78806337    -0.55241268    -0.38990493
+         0.23727046     0.31678842     0.35519722     0.84832940     0.87490029
 
-    E(LUMO) :     0.23727047 au (symmetry 1)
-  - E(HOMO) :    -0.38990481 au (symmetry 1)
+    E(LUMO) :     0.23727046 au (symmetry 1)
+  - E(HOMO) :    -0.38990493 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.62717527 au
+    gap     :     0.62717539 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -56.079990296162
+     Final HF energy:             -56.079990296163                 
      Nuclear repulsion:            13.460727047286
-     Electronic energy:           -69.540717343448
+     Electronic energy:           -69.540717343449
 
-     Final gradient norm:           0.000000196932
+     Final gradient norm:           0.000001460428
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:06 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:22 2011 
+     Host name              : fe6                                     
 
-     Molecular orbitals for symmetry species   1
+ (Only coefficients >0.0100 are printed.)
 
- Orbital          1        2        3        4        5
-   1  N   s     -0.9947   0.2012  -0.0454   0.0000   0.0000
-   2  N   s     -0.0261  -0.3933   0.0904   0.0000   0.0000
-   3  N   s      0.0001  -0.3637   0.1387   0.0000   0.0000
-   4  N   px     0.0008   0.0792   0.4595   0.0000   0.0000
-   5  N   py     0.0000   0.0000   0.0000  -0.5051   0.0000
-   6  N   pz     0.0000   0.0000   0.0000   0.0000   0.5875
-   7  N   px    -0.0001   0.0117   0.1811   0.0000   0.0000
-   8  N   py     0.0000   0.0000   0.0000  -0.2981   0.0000
-   9  N   pz     0.0000   0.0000   0.0000   0.0000   0.5348
-  10  N   dxx    0.0014  -0.0076  -0.0018   0.0000   0.0000
-  11  N   dxy    0.0000   0.0000   0.0000   0.0298   0.0000
-  12  N   dxz    0.0000   0.0000   0.0000   0.0000  -0.0097
-  13  N   dyy    0.0023   0.0030  -0.0049   0.0000   0.0000
-  14  N   dyz    0.0000   0.0000   0.0000   0.0000   0.0000
-  15  N   dzz    0.0023   0.0064   0.0010   0.0000   0.0000
-  16  H   s      0.0006  -0.1251   0.3036   0.0000   0.0000
-  17  H   s     -0.0003  -0.0020   0.1033   0.0000   0.0000
-  18  H   px    -0.0004   0.0168  -0.0231   0.0000   0.0000
-  19  H   py     0.0000   0.0000   0.0000  -0.0165   0.0000
-  20  H   pz     0.0000   0.0000   0.0000   0.0000   0.0239
-  21  H   s      0.0005  -0.1877  -0.1610  -0.2311   0.0000
-  22  H   s     -0.0003  -0.0213  -0.0566  -0.1993   0.0000
-  23  H   px     0.0003  -0.0143   0.0024  -0.0163   0.0000
-  24  H   py    -0.0004   0.0147   0.0138  -0.0011   0.0000
-  25  H   pz     0.0000   0.0000   0.0000   0.0000   0.0245
-  26  H   s      0.0005  -0.1877  -0.1610   0.2311   0.0000
-  27  H   s     -0.0003  -0.0213  -0.0566   0.1993   0.0000
-  28  H   px     0.0003  -0.0143   0.0024   0.0163   0.0000
-  29  H   py     0.0004  -0.0147  -0.0138  -0.0011   0.0000
-  30  H   pz     0.0000   0.0000   0.0000   0.0000   0.0245
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 N   :s     -0.9947   0.2012  -0.0454   0.0000   0.0000   0.1274   0.0336
+   2 N   :s     -0.0261  -0.3933   0.0904  -0.0000  -0.0000  -0.1103  -0.0541
+   3 N   :s      0.0001  -0.3637   0.1387   0.0000  -0.0000  -2.2039  -0.4001
+   4 N   :px     0.0008   0.0792   0.4595  -0.0000  -0.0000   0.0744  -0.2497
+   5 N   :py     0.0000   0.0000  -0.0000  -0.5051  -0.0000   0.0000  -0.0000
+   6 N   :pz     0.0000  -0.0000   0.0000  -0.0000   0.5875   0.0000   0.0000
+   7 N   :px    -0.0001   0.0117   0.1811  -0.0000  -0.0000   0.4345  -1.5196
+   8 N   :py     0.0000  -0.0000  -0.0000  -0.2981  -0.0000   0.0000  -0.0000
+   9 N   :pz     0.0000  -0.0000   0.0000  -0.0000   0.5348   0.0000   0.0000
+  10 N   :dxx    0.0014  -0.0076  -0.0018   0.0000  -0.0000   0.0121   0.0139
+  11 N   :dxy   -0.0000  -0.0000   0.0000   0.0298   0.0000  -0.0000   0.0000
+  13 N   :dyy    0.0023   0.0030  -0.0049  -0.0000  -0.0000   0.0219   0.0094
+  15 N   :dzz    0.0023   0.0064   0.0010  -0.0000   0.0000   0.0315  -0.0027
+  16 H   :s      0.0006  -0.1251   0.3036  -0.0000  -0.0000   0.0501   0.0149
+  17 H   :s     -0.0003  -0.0020   0.1033  -0.0000  -0.0000   0.7173   2.3507
+  18 H   :px    -0.0004   0.0168  -0.0231   0.0000   0.0000  -0.0038  -0.0073
+  19 H   :py     0.0000   0.0000  -0.0000  -0.0165  -0.0000   0.0000  -0.0000
+  20 H   :pz    -0.0000   0.0000  -0.0000   0.0000   0.0239  -0.0000  -0.0000
+  21 H   :s      0.0005  -0.1877  -0.1610  -0.2311  -0.0000   0.0253   0.0117
+  22 H   :s     -0.0003  -0.0213  -0.0566  -0.1993  -0.0000   1.1405  -0.9193
+  23 H   :px     0.0003  -0.0143   0.0024  -0.0163   0.0000  -0.0019  -0.0113
+  24 H   :py    -0.0004   0.0147   0.0138  -0.0011   0.0000  -0.0062   0.0037
+  25 H   :pz    -0.0000   0.0000  -0.0000   0.0000   0.0245  -0.0000  -0.0000
+  26 H   :s      0.0005  -0.1877  -0.1610   0.2311   0.0000   0.0253   0.0117
+  27 H   :s     -0.0003  -0.0213  -0.0566   0.1993   0.0000   1.1405  -0.9193
+  28 H   :px     0.0003  -0.0143   0.0024   0.0163  -0.0000  -0.0019  -0.0113
+  29 H   :py     0.0004  -0.0147  -0.0138  -0.0011   0.0000   0.0062  -0.0037
+  30 H   :pz    -0.0000   0.0000  -0.0000   0.0000   0.0245  -0.0000  -0.0000
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.08 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.04 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:06 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:22 2011 
+     Host name              : fe6                                     
 
-- End of Wave Function Section
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
 
 
 
@@ -479,7 +519,40 @@ Starting in Wave Function Section -
  Index of critical point searched: 0
 
  Tolerance for stationary point :
- Molecular gradient norm less than  0.00001000
+ Molecular gradient norm less than  0.00010000
+
+ Hessian mode selection :         1
+
+ Restricted step control parameters
+ ----------------------------------
+ Initial trust radius   :    0.5000
+ Trust radius increment :    1.2000
+ Trust radius decrement :    0.7000
+ Bad prediction ratio   :    0.4000
+ Good prediction ratio  :    0.8000
+ Rejection ratio, low   :    0.1000
+ Rejection ratio, high  :    1.9000
+
+ No scaling in this run.
+
+
+
+
+ Center of mass dipole origin  :   -0.063228    0.000000    0.000000
+
+
+ Changes of defaults for WALK:
+ -----------------------------
+
+
+ Walk type: Level-shifted Newton walk (mode following)
+ Minimization of image surface 
+ Initial image mode: 1
+
+ Index of critical point searched: 0
+
+ Tolerance for stationary point :
+ Molecular gradient norm less than  0.00010000
 
  Hessian mode selection :         1
 
@@ -499,57 +572,28 @@ Starting in Wave Function Section -
 
 
 
- Changes of defaults for WALK:
- -----------------------------
-
-
- Walk type: Level-shifted Newton walk (mode following)
- Minimization of image surface 
- Initial image mode: 1
-
- Index of critical point searched: 0
-
- Tolerance for stationary point :
- Molecular gradient norm less than  0.00001000
-
- Hessian mode selection :         1
-
- Restricted step control parameters
- ----------------------------------
- Initial trust radius   :    0.5000
- Trust radius increment :    1.2000
- Trust radius decrement :    0.7000
- Bad prediction ratio   :    0.4000
- Good prediction ratio  :    0.8000
- Rejection ratio, low   :    0.1000
- Rejection ratio, high  :    1.9000
-
- No scaling in this run.
-
-
-
-
-Starting in Static Property Section -
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:06 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
+     Host name              : fe6                                     
 
 
- ***************************************************************************
- ************************ FINAL RESULTS FROM ABACUS ************************
- ***************************************************************************
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:07 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
+     Host name              : fe6                                     
 
 
-
-                         Molecular geometry (au)
-                         -----------------------
+                             Molecular geometry (au)
+                             -----------------------
 
  N          0.0000000000            0.0000000000            0.0000000000
  H          1.7000000000            0.0000000000            0.0000000000
@@ -560,63 +604,60 @@ Starting in Static Property Section -
 
 
 
-                    Molecular wave function and energy
-                    ----------------------------------
+                        Molecular wave function and energy
+                        ----------------------------------
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-
      Total energy        -56.0799902962 au (Hartrees)
-                         -1526.01411914 eV
-                           -147237.9934 kJ/mol
+                         -1526.01416244 eV
+                           -147237.9918 kJ/mol
+
+
+                             Relativistic corrections
+                             ------------------------
+
+     Darwin correction:                          0.1119225540 au
+     Mass-velocity correction:                  -0.1403793979 au
+
+     Total relativistic correction:             -0.0284568440 au (0.0507%)
+     Non-relativistic + relativistic energy:   -56.1084471401 au
 
 
 
 
-                         Relativistic corrections
-                         ------------------------
+                             Molecular gradient (au)
+                             -----------------------
 
-     Darwin correction:                          0.1119225554 au
-     Mass-velocity correction:                  -0.1403793998 au
-
-     Total relativistic correction:             -0.0284568444 au (0.0507%)
-     Non-relativistic + relativistic energy:   -56.1084471406 au
-
-
-
-
-                         Molecular gradient (au)
-                         -----------------------
-
- N          0.0179559569            0.0000000000            0.0000000000
- H         -0.1096919677            0.0000000000            0.0000000000
- H          0.0458680054           -0.1795320833            0.0000000000
- H          0.0458680054            0.1795320833            0.0000000000
+ N          0.0179560516            0.0000000000           -0.0000000000
+ H         -0.1096919931           -0.0000000000            0.0000000000
+ H          0.0458679707           -0.1795323357           -0.0000000000
+ H          0.0458679707            0.1795323357            0.0000000000
 
 
 
 
 
-                          Molecular Hessian (au)
-                          ----------------------
+                              Molecular Hessian (au)
+                              ----------------------
 
            N    x      N    y      N    z      H    x      H    y      H    z
 
  N    x    2.144847
- N    y    0.000000    0.627430
- N    z    0.000000    0.000000   -0.321139
+ N    y   -0.000000    0.627430
+ N    z    0.000000    0.000000   -0.321137
 
- H    x   -0.989143    0.000000    0.000000    0.977107
- H    y    0.000000    0.017196    0.000000    0.000000   -0.029536
- H    z    0.000000    0.000000    0.149945    0.000000    0.000000   -0.102860
+ H    x   -0.989143   -0.000000    0.000000    0.977107
+ H    y   -0.000000    0.017196    0.000000    0.000000   -0.029535
+ H    z   -0.000000   -0.000000    0.149944   -0.000000   -0.000000   -0.102860
 
- H    x   -0.577852    0.455441    0.000000    0.006018    0.021374    0.000000
- H    y    0.453044   -0.322313    0.000000   -0.012066    0.006170    0.000000
- H    z    0.000000    0.000000    0.085597    0.000000    0.000000   -0.023542
+ H    x   -0.577852    0.455441   -0.000000    0.006018    0.021374    0.000000
+ H    y    0.453044   -0.322313   -0.000000   -0.012066    0.006170    0.000000
+ H    z   -0.000000   -0.000000    0.085597    0.000000   -0.000000   -0.023542
 
- H    x   -0.577852   -0.455441    0.000000    0.006018   -0.021374    0.000000
- H    y   -0.453044   -0.322313    0.000000    0.012066    0.006170    0.000000
- H    z    0.000000    0.000000    0.085597    0.000000    0.000000   -0.023542
+ H    x   -0.577852   -0.455441   -0.000000    0.006018   -0.021374    0.000000
+ H    y   -0.453044   -0.322313   -0.000000    0.012066    0.006170    0.000000
+ H    z   -0.000000   -0.000000    0.085597    0.000000   -0.000000   -0.023542
 
 
            H    x      H    y      H    z      H    x      H    y      H    z
@@ -625,7 +666,7 @@ Starting in Static Property Section -
  H    y   -0.458897    0.425909
  H    z    0.000000    0.000000   -0.121526
 
- H    x    0.025424    0.017919    0.000000    0.546409
+ H    x    0.025425    0.017919    0.000000    0.546409
  H    y   -0.017919   -0.109766    0.000000    0.458897    0.425909
  H    z    0.000000    0.000000    0.059472    0.000000    0.000000   -0.121526
 
@@ -633,31 +674,31 @@ Starting in Static Property Section -
 
 
 
-                              Dipole moment
-                              -------------
+                                  Dipole moment
+                                  -------------
 
-                    0.222937 au           0.566649 Debye
-
-
-
-
-                         Dipole moment components
-                         ------------------------
-
-                               au             Debye
-
-                    x     -0.22293693     -0.56664910
-                    y      0.00000000      0.00000000
-                    z      0.00000000      0.00000000
-
-                        1 a.u. =   2.54175 Debye 
+                 au               Debye          C m (/(10**-30)
+              0.222936           0.566648           1.890134
 
 
+                             Dipole moment components
+                             ------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x     -0.22293646        -0.56664792        -1.89013402
+      y      0.00000000         0.00000000         0.00000000
+      z      0.00000000         0.00000000         0.00000000
+
+
+   Units:   1 a.u. =   2.54175 Debye 
+            1 a.u. =   8.47835 (10**-30) C m (SI)
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
@@ -667,12 +708,12 @@ Starting in Static Property Section -
  H     :    0.901094    1.714366    1.049782    0.000000
 
 
-  Max interatomic separation is    1.7144 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7144 Angstrom (    3.2397 Bohr)
+  between atoms    3 and    2, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -692,20 +733,20 @@ Starting in Static Property Section -
 
 
 
- Largest deviation from orthonormality of OMOs:0.737188E-13
+ Largest deviation from orthonormality of OMOs:0.677236E-13
  - found for element   30  30
 
 
- ***************************************************************************
- ************************* FINAL RESULTS FROM WALK *************************
- ***************************************************************************
+   ***************************************************************************
+   ************************* FINAL RESULTS FROM WALK *************************
+   ***************************************************************************
 
 
  Walk type: TS by minimization on image surface       
 
  Iteration number:  0
 
-  Norm of molecular gradient:     0.2846507155
+  Norm of molecular gradient:     0.2846510386
 
 @ Energy at current point:   -56.0799902962
 
@@ -720,98 +761,98 @@ Starting in Static Property Section -
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           6           6       2.846507E-01    2          6.06E+01
+    1           6           6       2.846510D-01    2          6.06D+01
 
 
 
-                  +-------------------------------------+
-                  ! Analysis in diagonal representation !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! Analysis in diagonal representation !
+                      +-------------------------------------+
 
 
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
-@    0     1       1<     0.00000000   -0.43735279    0.00000000    0.00000000 
-@    0     1       2      0.00000000   -0.05146057    0.00000000    0.00000000 
-@    0     1       3     -0.16083518    0.14482442    0.45880354<  -0.05854893<
-@    0     1       4     -0.23300683<   0.96783172    0.19854688   -0.02718640 
-@    0     1       5      0.00000000    1.56615992    0.00000000    0.00000000 
-@    0     1       6     -0.02942602    3.11680595<   0.00885650   -0.00013837 
+@    0     1       1<    -0.00000000   -0.43735045   -0.00000000    0.00000000 
+@    0     1       2      0.00000000   -0.05145951    0.00000000    0.00000000 
+@    0     1       3     -0.16083550    0.14482477    0.45880356<  -0.05854904<
+@    0     1       4     -0.23300701<   0.96783175    0.19854697   -0.02718644 
+@    0     1       5      0.00000000    1.56615981   -0.00000000   -0.00000000 
+@    0     1       6     -0.02942600    3.11680604<   0.00885649   -0.00013837 
 
 
-                          +----------------------+
-                          ! Hessian eigenvectors !
-                          +----------------------+
+                              +----------------------+
+                              ! Hessian eigenvectors !
+                              +----------------------+
 
 
    sym 1            1           2           3           4           5
   ----------------------------------------------------------------------
 
-   N    x       0.000000    0.000000   -0.254625   -0.005837    0.000000
-   N    y       0.000000    0.575479    0.000000    0.000000    0.640576
-   N    z       0.859604    0.000000    0.000000    0.000000    0.000000
+   N    x      -0.000000   -0.000000   -0.254625   -0.005837    0.000000
+   N    y      -0.000000    0.575479   -0.000000    0.000000    0.640577
+   N    z       0.859604   -0.000000   -0.000000    0.000000    0.000000
 
-   H    x       0.000000    0.000000   -0.289351    0.719238    0.000000
-   H    y       0.000000   -0.538114    0.000000    0.000000   -0.004423
-   H    z      -0.385778    0.000000    0.000000    0.000000    0.000000
+   H    x      -0.000000    0.000000   -0.289351    0.719238   -0.000000
+   H    y      -0.000000   -0.538114    0.000000    0.000000   -0.004423
+   H    z      -0.385778    0.000000    0.000000   -0.000000   -0.000000
 
    H    x       0.000000   -0.435063    0.271988   -0.356700    0.440055
    H    y       0.000000   -0.018682    0.593080    0.337781   -0.318077
-   H    z      -0.236913    0.000000    0.000000    0.000000    0.000000
+   H    z      -0.236913    0.000000    0.000000   -0.000000   -0.000000
 
    H    x       0.000000    0.435063    0.271988   -0.356700   -0.440055
-   H    y       0.000000   -0.018682   -0.593080   -0.337781   -0.318077
-   H    z      -0.236913    0.000000    0.000000    0.000000    0.000000
+   H    y      -0.000000   -0.018682   -0.593080   -0.337781   -0.318077
+   H    z      -0.236913    0.000000    0.000000   -0.000000   -0.000000
 
 
    sym 1            6
   ----------------------
    N    x       0.827727
-   N    y       0.000000
+   N    y      -0.000000
    N    z       0.000000
 
    H    x      -0.385970
-   H    y       0.000000
-   H    z       0.000000
+   H    y      -0.000000
+   H    z      -0.000000
 
    H    x      -0.220879
    H    y       0.184825
-   H    z       0.000000
+   H    z      -0.000000
 
    H    x      -0.220879
    H    y      -0.184825
-   H    z       0.000000
+   H    z      -0.000000
 
 
 
  Input trust radius:            0.500000
  Updated trust radius:          0.500000
- Level shift employed:          0.2057290580
+ Level shift employed:          0.2057293933
 
 
- Predicted energy change   -0.0858737008
+ Predicted energy change   -0.0858738529
 
 
-                           +--------------------+
-                           ! Change in geometry !
-                           +--------------------+
-
-
-
-                       Cartesian displacements (au)
-                       ----------------------------
-
- N         -0.1106508733            0.0000000000            0.0000000000
- H          0.0066288150            0.0000000000            0.0000000000
- H          0.0520110291            0.3408094304            0.0000000000
- H          0.0520110291           -0.3408094304            0.0000000000
+                               +--------------------+
+                               ! Change in geometry !
+                               +--------------------+
 
 
 
+                           Cartesian displacements (au)
+                           ----------------------------
+
+ N         -0.1106508677           -0.0000000000           -0.0000000000
+ H          0.0066288432            0.0000000000            0.0000000000
+ H          0.0520110123            0.3408094778            0.0000000000
+ H          0.0520110123           -0.3408094778            0.0000000000
 
 
-   Differential interatomic separations (in Angstroms):
-   ----------------------------------------------------
+
+
+
+   Differential interatomic separations (in Angstrom):
+   ---------------------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
@@ -821,47 +862,47 @@ Starting in Static Property Section -
  H     :    0.055536    0.041508    0.360697    0.000000
 
 
-  Max differential change in interatomic separation is    0.360697 Angstroms
-  between atoms "H     " and "H     ".
+  Max differential change in interatomic separation is    0.360697 Angstrom
+  between atoms    4 and    3, "H     " and "H     ".
 
 
 
 
-                          +---------------------+
-                          ! Geometry after step !
-                          +---------------------+
+                              +---------------------+
+                              ! Geometry after step !
+                              +---------------------+
 
 
 
-                        Cartesian coordinates (au)
-                        --------------------------
+                            Cartesian coordinates (au)
+                            --------------------------
 
- N         -0.1106508733            0.0000000000            0.0000000000
- H          1.7066288150            0.0000000000            0.0000000000
- H         -1.3320889709            1.3327094304            0.0000000000
- H         -1.3320889709           -1.3327094304            0.0000000000
-
-
+ N         -0.1106508677           -0.0000000000           -0.0000000000
+ H          1.7066288432            0.0000000000            0.0000000000
+ H         -1.3320889877            1.3327094778            0.0000000000
+ H         -1.3320889877           -1.3327094778            0.0000000000
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
  H     :    0.961663    0.000000
- H     :    0.956630    1.755873    0.000000
- H     :    0.956630    1.755873    1.410479    0.000000
+ H     :    0.956630    1.755874    0.000000
+ H     :    0.956630    1.755874    1.410479    0.000000
 
 
-  Max interatomic separation is    1.7559 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7559 Angstrom (    3.3181 Bohr)
+  between atoms    4 and    2, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -885,106 +926,67 @@ Starting in Static Property Section -
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     100 %
-
- TOTAL      00:00:01     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.31 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
-
-- End of Static Property Section
+ >>>> Total CPU  time used in ABACUS:   0.46 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
-    Energy:   -56.079990   Gradient: 0.2846507155
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+
+@  Geometry walk step no.   0:  Molecular energy =    -56.079990   Molecular gradient =  0.284651
 
 
      @@>>>>>>>>>> Geometry walk iteration number:    1 <<<<<<<<<<
 
 
 
-Starting in Integral Section -
+
+ **************************************************************************************
+ ****************** Output of molecule and basis set info suppressed ******************
+ **************************************************************************************
 
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
-
-
- >>> Time used in ONEDRV is   0.00 seconds
-
-
- Number of two-electron integrals written:       55465 ( 51.2% )
- Megabytes written:                              0.639
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
 
- >>> Time used in TWOINT is   0.09 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.10 seconds
+ Threshold for neglecting two-electron integrals:  1.00D-15
+
+ Number of two-electron integrals written:       54826 ( 50.6% )
+ Megabytes written:                              0.632
+
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
- 
-     Date and time (Linux)  : Thu Mar  3 20:10:07 2005
-     Host name              : pi.biotech.kth.se                       
-
- Title lines from integral program:
-     Location of saddle point (transition state) using IMAGE method          
-                                                                             
-
- Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   3
-
-     Restricted, closed shell Hartree-Fock calculation.
-
-
- Initial molecular orbitals are obtained according to
- ".MOSTART NEWORB" input option.
-
-     Wave function specification
-     ============================
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 30
-
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
-
-     Orbital specifications
-     ======================
-     Abelian symmetry species           1
-                                       --
-     Occupied SCF orbitals              5
-     Secondary orbitals                25
-     Total number of orbitals          30
-     Number of basis functions         30
-
-     Optimization information
-     ========================
-     Number of configurations              1
-     Number of orbital rotations         125
-     ---------------------------------------
-     Total number of variables           126
-
-     Maximum number of Fock   iterations      0
-     Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-06
+ (Wave function specification suppressed here, see output above for initial geometry.)
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -992,47 +994,68 @@ Starting in Wave Function Section -
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -55.0590277016        7.18430D+00    1.02D+00    1
+      Virial theorem: -V/T =      1.959562
+      MULPOP  N      -0.51; H       0.10; H       0.21; H       0.21; 
+ -----------------------------------------------------------------------------
+   2    -56.1534905911        5.51561D-01   -1.09D+00    2
+      Virial theorem: -V/T =      1.998455
+      MULPOP  N      -0.89; H       0.29; H       0.30; H       0.30; 
+ -----------------------------------------------------------------------------
+   3    -56.1650544378        4.81080D-02   -1.16D-02    3
+      Virial theorem: -V/T =      1.998792
+      MULPOP  N      -0.87; H       0.31; H       0.28; H       0.28; 
+ -----------------------------------------------------------------------------
+   4    -56.1653071026        1.18439D-02   -2.53D-04    4
+      Virial theorem: -V/T =      1.998377
+      MULPOP  N      -0.86; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
+   5    -56.1653270642        4.79421D-03   -2.00D-05    5
+      Virial theorem: -V/T =      1.998513
+      MULPOP  N      -0.85; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
+   6    -56.1653288320        6.85711D-04   -1.77D-06    6
+      Virial theorem: -V/T =      1.998407
+      MULPOP  N      -0.85; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
+   7    -56.1653288828        1.08167D-04   -5.08D-08    7
+      Virial theorem: -V/T =      1.998412
+      MULPOP  N      -0.85; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
+   8    -56.1653288841        2.16152D-05   -1.29D-09    8
+      Virial theorem: -V/T =      1.998412
+      MULPOP  N      -0.85; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
+   9    -56.1653288842        2.54856D-06   -5.57D-11    9
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.02 seconds
-
-    1      -55.059027733077    7.18430E+00    1.02E+00    1
-    2      -56.153490565244    5.51561E-01   -1.09E+00    2
-    3      -56.165054429231    4.81081E-02   -1.16E-02    3
-    4      -56.165307096138    1.18439E-02   -2.53E-04    4
-    5      -56.165327057929    4.79420E-03   -2.00E-05    5
-    6      -56.165328825765    6.85714E-04   -1.77E-06    6
-    7      -56.165328876584    1.08167E-04   -5.08E-08    7
-    8      -56.165328877879    2.16153E-05   -1.29E-09    8
-    9      -56.165328877934    2.54857E-06   -5.57E-11    9
-   10      -56.165328877935    3.32508E-07   -7.51E-13   10
- DIIS converged in  10 iterations !
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.03 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    5
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -15.50693076    -1.13855219    -0.70427619    -0.60130958    -0.38290703
-         0.23592087     0.32587720     0.34018125     0.85494509     0.93789707
+  1    -15.50693085    -1.13855220    -0.70427623    -0.60130960    -0.38290696
+         0.23592087     0.32587719     0.34018122     0.85494509     0.93789709
 
     E(LUMO) :     0.23592087 au (symmetry 1)
-  - E(HOMO) :    -0.38290703 au (symmetry 1)
+  - E(HOMO) :    -0.38290696 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.61882790 au
+    gap     :     0.61882782 au
 
  >>> Writing SIRIFC interface file <<<
 
 
- Check ratio for geometry walk with converged RHF :
+ Check ratio for geometry walk with converged SCF :
 
 
 
@@ -1040,187 +1063,194 @@ Starting in Wave Function Section -
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0853385818  -0.0858737008    0.993769
+ actual, predicted and ratio:  -0.0853385880  -0.0858738529    0.993767
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -56.165328877935
-     Nuclear repulsion:            12.574193931038
-     Electronic energy:           -68.739522808973
+     Final HF energy:             -56.165328884196                 
+     Nuclear repulsion:            12.574193644400
+     Electronic energy:           -68.739522528597
 
-     Final gradient norm:           0.000000332508
+     Final gradient norm:           0.000002548564
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:07 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:07 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
+     Host name              : fe6                                     
 
 
-Starting in Static Property Section -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+ Center of mass dipole origin  :   -0.147681   -0.000000   -0.000000
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:07 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
+     Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
 
 
- ***************************************************************************
- ************************ FINAL RESULTS FROM ABACUS ************************
- ***************************************************************************
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:09 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:24 2011 
+     Host name              : fe6                                     
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ N         -0.1106508677           -0.0000000000           -0.0000000000
+ H          1.7066288432            0.0000000000            0.0000000000
+ H         -1.3320889877            1.3327094778            0.0000000000
+ H         -1.3320889877           -1.3327094778            0.0000000000
 
 
 
-                         Molecular geometry (au)
-                         -----------------------
-
- N         -0.1106508733            0.0000000000            0.0000000000
- H          1.7066288150            0.0000000000            0.0000000000
- H         -1.3320889709            1.3327094304            0.0000000000
- H         -1.3320889709           -1.3327094304            0.0000000000
 
 
-
-
-
-                    Molecular wave function and energy
-                    ----------------------------------
+                        Molecular wave function and energy
+                        ----------------------------------
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-
-     Total energy        -56.1653288779 au (Hartrees)
-                         -1528.33630001 eV
-                           -147462.0498 kJ/mol
-
+     Total energy        -56.1653288842 au (Hartrees)
+                         -1528.33634355 eV
+                           -147462.0483 kJ/mol
 
 
+                             Relativistic corrections
+                             ------------------------
 
-                         Relativistic corrections
-                         ------------------------
+     Darwin correction:                          0.1118668180 au
+     Mass-velocity correction:                  -0.1402463886 au
 
-     Darwin correction:                          0.1118668188 au
-     Mass-velocity correction:                  -0.1402463897 au
-
-     Total relativistic correction:             -0.0283795709 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.1937084488 au
+     Total relativistic correction:             -0.0283795706 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.1937084548 au
 
 
 
 
-                         Molecular gradient (au)
-                         -----------------------
+                             Molecular gradient (au)
+                             -----------------------
 
- N          0.0370718975            0.0000000000            0.0000000000
- H         -0.0213431524            0.0000000000            0.0000000000
- H         -0.0078643726           -0.0647290295            0.0000000000
- H         -0.0078643726            0.0647290295            0.0000000000
+ N          0.0370722447           -0.0000000000            0.0000000000
+ H         -0.0213430671            0.0000000000           -0.0000000000
+ H         -0.0078645888           -0.0647289080           -0.0000000000
+ H         -0.0078645888            0.0647289080           -0.0000000000
 
 
 
 
 
-                          Molecular Hessian (au)
-                          ----------------------
+                              Molecular Hessian (au)
+                              ----------------------
 
            N    x      N    y      N    z      H    x      H    y      H    z
 
  N    x    1.313660
  N    y    0.000000    0.847258
- N    z    0.000000    0.000000   -0.136707
+ N    z   -0.000000   -0.000000   -0.136706
 
- H    x   -0.667319    0.000000    0.000000    0.668370
- H    y    0.000000   -0.062742    0.000000    0.000000    0.041362
- H    z    0.000000    0.000000    0.067150    0.000000    0.000000   -0.034015
+ H    x   -0.667319   -0.000000    0.000000    0.668369
+ H    y   -0.000000   -0.062743    0.000000    0.000000    0.041363
+ H    z    0.000000    0.000000    0.067150   -0.000000   -0.000000   -0.034015
 
- H    x   -0.323171    0.302821    0.000000   -0.000525    0.026411    0.000000
- H    y    0.292033   -0.392258    0.000000   -0.010701    0.010690    0.000000
- H    z    0.000000    0.000000    0.034778    0.000000    0.000000   -0.016567
+ H    x   -0.323171    0.302820    0.000000   -0.000525    0.026411   -0.000000
+ H    y    0.292033   -0.392258    0.000000   -0.010701    0.010690   -0.000000
+ H    z    0.000000    0.000000    0.034778   -0.000000   -0.000000   -0.016567
 
- H    x   -0.323171   -0.302821    0.000000   -0.000525   -0.026411    0.000000
- H    y   -0.292033   -0.392258    0.000000    0.010701    0.010690    0.000000
- H    z    0.000000    0.000000    0.034778    0.000000    0.000000   -0.016567
+ H    x   -0.323171   -0.302820   -0.000000   -0.000525   -0.026411    0.000000
+ H    y   -0.292033   -0.392258   -0.000000    0.010701    0.010690    0.000000
+ H    z    0.000000    0.000000    0.034778   -0.000000   -0.000000   -0.016567
 
 
            H    x      H    y      H    z      H    x      H    y      H    z
 
  H    x    0.306442
  H    y   -0.305282    0.431861
- H    z    0.000000    0.000000   -0.033390
+ H    z   -0.000000   -0.000000   -0.033390
 
  H    x    0.017254    0.023949    0.000000    0.306442
- H    y   -0.023949   -0.050293    0.000000    0.305282    0.431861
- H    z    0.000000    0.000000    0.015179    0.000000    0.000000   -0.033390
+ H    y   -0.023949   -0.050294    0.000000    0.305282    0.431861
+ H    z   -0.000000   -0.000000    0.015179    0.000000    0.000000   -0.033390
 
 
 
 
 
-                              Dipole moment
-                              -------------
+                                  Dipole moment
+                                  -------------
 
-                    0.103650 au           0.263451 Debye
-
-
-
-
-                         Dipole moment components
-                         ------------------------
-
-                               au             Debye
-
-                    x     -0.10364955     -0.26345085
-                    y      0.00000000      0.00000000
-                    z      0.00000000      0.00000000
-
-                        1 a.u. =   2.54175 Debye 
+                 au               Debye          C m (/(10**-30)
+              0.103651           0.263454           0.878788
 
 
+                             Dipole moment components
+                             ------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x     -0.10365078        -0.26345400        -0.87878795
+      y      0.00000000         0.00000000         0.00000000
+      z      0.00000000         0.00000000         0.00000000
+
+
+   Units:   1 a.u. =   2.54175 Debye 
+            1 a.u. =   8.47835 (10**-30) C m (SI)
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
  H     :    0.961663    0.000000
- H     :    0.956630    1.755873    0.000000
- H     :    0.956630    1.755873    1.410479    0.000000
+ H     :    0.956630    1.755874    0.000000
+ H     :    0.956630    1.755874    1.410479    0.000000
 
 
-  Max interatomic separation is    1.7559 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7559 Angstrom (    3.3181 Bohr)
+  between atoms    4 and    2, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -1243,25 +1273,25 @@ Starting in Static Property Section -
  Overlap between normal coordinate  1 and the normal coordinate walk 
  direction of the previous iteration is equal to 0.99879
 
- Largest deviation from orthonormality of OMOs:0.845990E-13
- - found for element   29  29
+ Largest deviation from orthonormality of OMOs:0.979217E-13
+ - found for element    2   2
 
 
- ***************************************************************************
- ************************* FINAL RESULTS FROM WALK *************************
- ***************************************************************************
+   ***************************************************************************
+   ************************* FINAL RESULTS FROM WALK *************************
+   ***************************************************************************
 
 
  Walk type: TS by minimization on image surface       
 
  Iteration number:  1
 
-  Norm of molecular gradient:     0.1016525797
+  Norm of molecular gradient:     0.1016525672
 
-@ Energy at current point:   -56.1653288779
+@ Energy at current point:   -56.1653288842
   Energy at initial point:   -56.0799902962
 
-  Change in energy since start of walk:-0.0853385818 au
+  Change in energy since start of walk:-0.0853385880 au
                                              -224.06 kJ/mol
                                               -53.55 kCal/mol
 
@@ -1281,68 +1311,68 @@ Starting in Static Property Section -
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           6           6       1.016526E-01    1          1.71E+01
+    1           6           6       1.016526D-01    1          1.71D+01
 
 
 
-                  +-------------------------------------+
-                  ! Analysis in diagonal representation !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! Analysis in diagonal representation !
+                      +-------------------------------------+
 
 
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
-@    1     1       1<     0.00000001   -0.18576970    0.00000003    0.00000000 
-@    1     1       2      0.00000003    0.11484604   -0.00000028    0.00000000 
-@    1     1       3     -0.07745702<   0.15593772    0.49671765<  -0.01923713<
-@    1     1       4      0.06378861    0.67173912   -0.09496039   -0.00302870 
-@    1     1       5      0.00000000    1.46425089    0.00000000    0.00000000 
-@    1     1       6      0.01626870    1.96020378<  -0.00829949   -0.00006751 
+@    1     1       1<     0.00000001   -0.18576868    0.00000005    0.00000000 
+@    1     1       2      0.00000004    0.11484686   -0.00000032   -0.00000000 
+@    1     1       3     -0.07745715<   0.15593804    0.49671747<  -0.01923716<
+@    1     1       4      0.06378833    0.67173893   -0.09496000   -0.00302867 
+@    1     1       5      0.00000000    1.46425051   -0.00000000   -0.00000000 
+@    1     1       6      0.01626910    1.96020352<  -0.00829970   -0.00006751 
 
   This is Newton step.
 
 
-                          +----------------------+
-                          ! Hessian eigenvectors !
-                          +----------------------+
+                              +----------------------+
+                              ! Hessian eigenvectors !
+                              +----------------------+
 
 
    sym 1            1           2           3           4           5
   ----------------------------------------------------------------------
 
-   N    x       0.000000    0.000000   -0.294187    0.016247    0.000000
-   N    y       0.000000   -0.429128    0.000000    0.000000    0.750559
-   N    z       0.863740    0.000000    0.000000    0.000000    0.000000
+   N    x       0.000000    0.000000   -0.294187    0.016247   -0.000000
+   N    y       0.000000   -0.429127   -0.000000   -0.000000    0.750559
+   N    z       0.863740    0.000000    0.000000   -0.000000   -0.000000
 
-   H    x       0.000000    0.000000   -0.360148   -0.663813    0.000000
-   H    y       0.000000    0.590482    0.000000    0.000000   -0.037702
-   H    z      -0.347188    0.000000    0.000000    0.000000    0.000000
+   H    x      -0.000000    0.000000   -0.360148   -0.663812   -0.000000
+   H    y      -0.000000    0.590482    0.000000   -0.000000   -0.037703
+   H    z      -0.347188   -0.000000   -0.000000    0.000000    0.000000
 
-   H    x       0.000000    0.476531    0.327168    0.323783    0.300964
-   H    y       0.000000   -0.080677    0.533699   -0.417982   -0.356428
-   H    z      -0.258276    0.000000    0.000000    0.000000    0.000000
+   H    x      -0.000000    0.476531    0.327168    0.323783    0.300963
+   H    y      -0.000000   -0.080677    0.533699   -0.417982   -0.356428
+   H    z      -0.258276   -0.000000   -0.000000    0.000000    0.000000
 
-   H    x       0.000000   -0.476531    0.327167    0.323783   -0.300964
+   H    x       0.000000   -0.476531    0.327167    0.323783   -0.300963
    H    y       0.000000   -0.080677   -0.533699    0.417982   -0.356428
-   H    z      -0.258276    0.000000    0.000000    0.000000    0.000000
+   H    z      -0.258276   -0.000000   -0.000000    0.000000    0.000000
 
 
    sym 1            6
   ----------------------
    N    x       0.814365
    N    y       0.000000
-   N    z       0.000000
+   N    z      -0.000000
 
    H    x      -0.423847
-   H    y       0.000000
+   H    y      -0.000000
    H    z       0.000000
 
    H    x      -0.195259
-   H    y       0.201137
+   H    y       0.201136
    H    z       0.000000
 
    H    x      -0.195259
-   H    y      -0.201137
+   H    y      -0.201136
    H    z       0.000000
 
 
@@ -1352,79 +1382,79 @@ Starting in Static Property Section -
  Level shift employed:          0.0000000000
 
 
- Predicted energy change   -0.0223333403
+ Predicted energy change   -0.0223333434
 
 
-                           +--------------------+
-                           ! Change in geometry !
-                           +--------------------+
-
-
-
-                       Cartesian displacements (au)
-                       ----------------------------
-
- N         -0.1544297087            0.0000000455            0.0000000578
- H         -0.1123381453           -0.0000000545           -0.0000000233
- H          0.1333838858            0.3031203115           -0.0000000173
- H          0.1333839683           -0.3031203026           -0.0000000173
+                               +--------------------+
+                               ! Change in geometry !
+                               +--------------------+
 
 
 
+                           Cartesian displacements (au)
+                           ----------------------------
+
+ N         -0.1544297582            0.0000000512            0.0000000760
+ H         -0.1123383553           -0.0000000628           -0.0000000305
+ H          0.1333840086            0.3031200017           -0.0000000227
+ H          0.1333841049           -0.3031199900           -0.0000000227
 
 
-   Differential interatomic separations (in Angstroms):
-   ----------------------------------------------------
+
+
+
+   Differential interatomic separations (in Angstrom):
+   ---------------------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
  H     :    0.022274    0.000000
- H     :    0.040079   -0.043042    0.000000
- H     :    0.040079   -0.043042    0.320809    0.000000
+ H     :    0.040078   -0.043042    0.000000
+ H     :    0.040078   -0.043042    0.320808    0.000000
 
 
-  Max differential change in interatomic separation is    0.320809 Angstroms
-  between atoms "H     " and "H     ".
-
-
-
-
-                          +---------------------+
-                          ! Geometry after step !
-                          +---------------------+
-
-
-
-                        Cartesian coordinates (au)
-                        --------------------------
-
- N         -0.2650805820            0.0000000455            0.0000000578
- H          1.5942906697           -0.0000000545           -0.0000000233
- H         -1.1987050851            1.6358297419           -0.0000000173
- H         -1.1987050026           -1.6358297329           -0.0000000173
+  Max differential change in interatomic separation is    0.320808 Angstrom
+  between atoms    4 and    3, "H     " and "H     ".
 
 
 
 
+                              +---------------------+
+                              ! Geometry after step !
+                              +---------------------+
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+
+
+                            Cartesian coordinates (au)
+                            --------------------------
+
+ N         -0.2650806259            0.0000000512            0.0000000760
+ H          1.5942904879           -0.0000000628           -0.0000000305
+ H         -1.1987049792            1.6358294794           -0.0000000227
+ H         -1.1987048828           -1.6358294678           -0.0000000227
+
+
+
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
  H     :    0.983937    0.000000
  H     :    0.996708    1.712832    0.000000
- H     :    0.996708    1.712832    1.731288    0.000000
+ H     :    0.996708    1.712832    1.731287    0.000000
 
 
-  Max interatomic separation is    1.7313 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7313 Angstrom (    3.2717 Bohr)
+  between atoms    4 and    3, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -1448,106 +1478,68 @@ Starting in Static Property Section -
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     100 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:02     251 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.63 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
-
-- End of Static Property Section
+ >>>> Total CPU  time used in ABACUS:   0.61 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
-    Energy:   -56.165329   Gradient: 0.1016525797
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+
+@  Geometry walk step no.   1:  Molecular energy =    -56.165329   Molecular gradient =  0.101653
 
 
      @@>>>>>>>>>> Geometry walk iteration number:    2 <<<<<<<<<<
 
 
 
-Starting in Integral Section -
+
+ **************************************************************************************
+ ****************** Output of molecule and basis set info suppressed ******************
+ **************************************************************************************
 
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
-
-
- >>> Time used in ONEDRV is   0.00 seconds
-
-
- Number of two-electron integrals written:       98393 ( 90.8% )
- Megabytes written:                              1.127
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
 
- >>> Time used in TWOINT is   0.10 seconds
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.11 seconds
+ Threshold for neglecting two-electron integrals:  1.00D-15
+
+ Number of two-electron integrals written:       98542 ( 91.0% )
+ Megabytes written:                              1.134
+
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
- 
-     Date and time (Linux)  : Thu Mar  3 20:10:09 2005
-     Host name              : pi.biotech.kth.se                       
-
- Title lines from integral program:
-     Location of saddle point (transition state) using IMAGE method          
-                                                                             
-
- Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   3
-
-     Restricted, closed shell Hartree-Fock calculation.
-
-
- Initial molecular orbitals are obtained according to
- ".MOSTART NEWORB" input option.
-
-     Wave function specification
-     ============================
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 30
-
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
-
-     Orbital specifications
-     ======================
-     Abelian symmetry species           1
-                                       --
-     Occupied SCF orbitals              5
-     Secondary orbitals                25
-     Total number of orbitals          30
-     Number of basis functions         30
-
-     Optimization information
-     ========================
-     Number of configurations              1
-     Number of orbital rotations         125
-     ---------------------------------------
-     Total number of variables           126
-
-     Maximum number of Fock   iterations      0
-     Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-06
+ (Wave function specification suppressed here, see output above for initial geometry.)
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1555,47 +1547,68 @@ Starting in Wave Function Section -
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -55.6036806076        4.57781D+00    5.62D-01    1
+      Virial theorem: -V/T =      1.980684
+      MULPOP  N      -0.80; H       0.18; H       0.31; H       0.31; 
+ -----------------------------------------------------------------------------
+   2    -56.1796875731        4.16614D-01   -5.76D-01    2
+      Virial theorem: -V/T =      2.001949
+      MULPOP  N      -0.87; H       0.27; H       0.30; H       0.30; 
+ -----------------------------------------------------------------------------
+   3    -56.1864328928        3.02872D-02   -6.75D-03    3
+      Virial theorem: -V/T =      2.002579
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   4    -56.1865279987        8.73488D-03   -9.51D-05    4
+      Virial theorem: -V/T =      2.002239
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   5    -56.1865362020        3.45543D-03   -8.20D-06    5
+      Virial theorem: -V/T =      2.002415
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   6    -56.1865373260        5.84717D-04   -1.12D-06    6
+      Virial theorem: -V/T =      2.002346
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   7    -56.1865373593        8.18745D-05   -3.33D-08    7
+      Virial theorem: -V/T =      2.002352
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   8    -56.1865373600        1.31375D-05   -7.44D-10    8
+      Virial theorem: -V/T =      2.002352
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   9    -56.1865373600        1.94628D-06   -2.53D-11    9
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.02 seconds
-
-    1      -55.603680288748    4.57782E+00    5.62E-01    1
-    2      -56.179687564115    4.16614E-01   -5.76E-01    2
-    3      -56.186432886370    3.02872E-02   -6.75E-03    3
-    4      -56.186527992702    8.73481E-03   -9.51E-05    4
-    5      -56.186536195927    3.45541E-03   -8.20E-06    5
-    6      -56.186537319908    5.84717E-04   -1.12E-06    6
-    7      -56.186537353180    8.18740E-05   -3.33E-08    7
-    8      -56.186537353925    1.31374E-05   -7.44E-10    8
-    9      -56.186537353950    1.94627E-06   -2.52E-11    9
-   10      -56.186537353951    1.73713E-07   -5.56E-13   10
- DIIS converged in  10 iterations !
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.06 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    5
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -15.51668153    -1.11545646    -0.64134075    -0.63960379    -0.38004740
-         0.23145501     0.33044048     0.33256159     0.92657371     0.93390115
+  1    -15.51668160    -1.11545654    -0.64134082    -0.63960392    -0.38004733
+         0.23145505     0.33044046     0.33256162     0.92657369     0.93390111
 
-    E(LUMO) :     0.23145501 au (symmetry 1)
-  - E(HOMO) :    -0.38004740 au (symmetry 1)
+    E(LUMO) :     0.23145505 au (symmetry 1)
+  - E(HOMO) :    -0.38004733 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.61150240 au
+    gap     :     0.61150238 au
 
  >>> Writing SIRIFC interface file <<<
 
 
- Check ratio for geometry walk with converged RHF :
+ Check ratio for geometry walk with converged SCF :
 
 
 
@@ -1603,189 +1616,196 @@ Starting in Wave Function Section -
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0212084760  -0.0223333403    0.949633
+ actual, predicted and ratio:  -0.0212084758  -0.0223333434    0.949633
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -56.186537353951
-     Nuclear repulsion:            12.121214424585
-     Electronic energy:           -68.307751778535
+     Final HF energy:             -56.186537360032                 
+     Nuclear repulsion:            12.121216038160
+     Electronic energy:           -68.307753398192
 
-     Final gradient norm:           0.000000173713
+     Final gradient norm:           0.000001946277
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:09 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:25 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:09 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:47:25 2011 
+     Host name              : fe6                                     
 
 
-Starting in Static Property Section -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+ Center of mass dipole origin  :   -0.265547    0.000000    0.000000
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:09 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:25 2011 
+     Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
 
- Largest deviation from tra-rot symmetry is in gradient element  6:  1.24E-12
+ Largest deviation from tra-rot symmetry is in gradient element  6:  5.30E-12
 
 
- ***************************************************************************
- ************************ FINAL RESULTS FROM ABACUS ************************
- ***************************************************************************
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:11 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:26 2011 
+     Host name              : fe6                                     
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ N         -0.2650806259            0.0000000512            0.0000000760
+ H          1.5942904879           -0.0000000628           -0.0000000305
+ H         -1.1987049792            1.6358294794           -0.0000000227
+ H         -1.1987048828           -1.6358294678           -0.0000000227
 
 
 
-                         Molecular geometry (au)
-                         -----------------------
-
- N         -0.2650805820            0.0000000455            0.0000000578
- H          1.5942906697           -0.0000000545           -0.0000000233
- H         -1.1987050851            1.6358297419           -0.0000000173
- H         -1.1987050026           -1.6358297329           -0.0000000173
 
 
-
-
-
-                    Molecular wave function and energy
-                    ----------------------------------
+                        Molecular wave function and energy
+                        ----------------------------------
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-
-     Total energy        -56.1865373540 au (Hartrees)
-                         -1528.91341198 eV
-                           -147517.7326 kJ/mol
-
+     Total energy        -56.1865373600 au (Hartrees)
+                         -1528.91345553 eV
+                           -147517.7311 kJ/mol
 
 
+                             Relativistic corrections
+                             ------------------------
 
-                         Relativistic corrections
-                         ------------------------
+     Darwin correction:                          0.1118370377 au
+     Mass-velocity correction:                  -0.1401802510 au
 
-     Darwin correction:                          0.1118370385 au
-     Mass-velocity correction:                  -0.1401802521 au
-
-     Total relativistic correction:             -0.0283432136 au (0.0504%)
-     Non-relativistic + relativistic energy:   -56.2148805675 au
+     Total relativistic correction:             -0.0283432133 au (0.0504%)
+     Non-relativistic + relativistic energy:   -56.2148805734 au
 
 
 
 
-                         Molecular gradient (au)
-                         -----------------------
+                             Molecular gradient (au)
+                             -----------------------
 
- N          0.0116238418            0.0000000267           -0.0000000054
- H         -0.0031236822           -0.0000000102            0.0000000021
- H         -0.0042500813            0.0098130856            0.0000000016
- H         -0.0042500783           -0.0098131021            0.0000000016
+ N          0.0116240891            0.0000000289           -0.0000000071
+ H         -0.0031238219           -0.0000000117            0.0000000028
+ H         -0.0042501358            0.0098130817            0.0000000021
+ H         -0.0042501314           -0.0098130990            0.0000000021
 
 
 
 
 
-                          Molecular Hessian (au)
-                          ----------------------
+                              Molecular Hessian (au)
+                              ----------------------
 
            N    x      N    y      N    z      H    x      H    y      H    z
 
- N    x    0.951912
- N    y    0.000000    0.906940
- N    z    0.000000    0.000000   -0.069707
+ N    x    0.951913
+ N    y   -0.000000    0.906940
+ N    z   -0.000000   -0.000000   -0.069708
 
  H    x   -0.563280    0.000000    0.000000    0.577846
- H    y    0.000000   -0.082274    0.000000    0.000000    0.067013
- H    z    0.000000    0.000000    0.027463    0.000000    0.000000   -0.010299
+ H    y    0.000000   -0.082274    0.000000   -0.000000    0.067013
+ H    z    0.000000    0.000000    0.027463   -0.000000   -0.000000   -0.010299
 
- H    x   -0.194316    0.185021    0.000000   -0.007283    0.034685    0.000000
- H    y    0.186164   -0.412333    0.000000   -0.007457    0.007630    0.000000
- H    z    0.000000    0.000000    0.021122    0.000000    0.000000   -0.008582
+ H    x   -0.194316    0.185021   -0.000000   -0.007283    0.034685   -0.000000
+ H    y    0.186164   -0.412333    0.000000   -0.007457    0.007630   -0.000000
+ H    z   -0.000000    0.000000    0.021122    0.000000   -0.000000   -0.008582
 
- H    x   -0.194316   -0.185021    0.000000   -0.007283   -0.034685    0.000000
- H    y   -0.186164   -0.412333    0.000000    0.007457    0.007630    0.000000
- H    z    0.000000    0.000000    0.021122    0.000000    0.000000   -0.008582
+ H    x   -0.194316   -0.185021   -0.000000   -0.007283   -0.034685   -0.000000
+ H    y   -0.186164   -0.412333   -0.000000    0.007457    0.007630   -0.000000
+ H    z   -0.000000   -0.000000    0.021122    0.000000    0.000000   -0.008582
 
 
            H    x      H    y      H    z      H    x      H    y      H    z
 
  H    x    0.186208
- H    y   -0.199206    0.419069
- H    z    0.000000    0.000000   -0.003271
+ H    y   -0.199207    0.419070
+ H    z    0.000000   -0.000000   -0.003271
 
  H    x    0.015391    0.020500    0.000000    0.186208
- H    y   -0.020500   -0.014367    0.000000    0.199206    0.419069
+ H    y   -0.020500   -0.014367   -0.000000    0.199207    0.419070
  H    z    0.000000    0.000000   -0.009269    0.000000    0.000000   -0.003271
 
 
 
 
 
-                              Dipole moment
-                              -------------
+                                  Dipole moment
+                                  -------------
 
-                    0.001026 au           0.002608 Debye
-
-
-
-
-                         Dipole moment components
-                         ------------------------
-
-                               au             Debye
-
-                    x     -0.00102597     -0.00260777
-                    y     -0.00000003     -0.00000007
-                    z     -0.00000009     -0.00000024
-
-                        1 a.u. =   2.54175 Debye 
+                 au               Debye          C m (/(10**-30)
+              0.001027           0.002611           0.008709
 
 
+                             Dipole moment components
+                             ------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x     -0.00102717        -0.00261082        -0.00870874
+      y     -0.00000003        -0.00000008        -0.00000026
+      z     -0.00000012        -0.00000031        -0.00000104
+
+
+   Units:   1 a.u. =   2.54175 Debye 
+            1 a.u. =   8.47835 (10**-30) C m (SI)
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
  H     :    0.983937    0.000000
  H     :    0.996708    1.712832    0.000000
- H     :    0.996708    1.712832    1.731288    0.000000
+ H     :    0.996708    1.712832    1.731287    0.000000
 
 
-  Max interatomic separation is    1.7313 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7313 Angstrom (    3.2717 Bohr)
+  between atoms    4 and    3, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -1808,25 +1828,25 @@ Starting in Static Property Section -
  Overlap between normal coordinate  1 and the normal coordinate walk 
  direction of the previous iteration is equal to 0.99743
 
- Largest deviation from orthonormality of OMOs:0.650591E-13
- - found for element   29  29
+ Largest deviation from orthonormality of OMOs:0.563993E-13
+ - found for element   30  30
 
 
- ***************************************************************************
- ************************* FINAL RESULTS FROM WALK *************************
- ***************************************************************************
+   ***************************************************************************
+   ************************* FINAL RESULTS FROM WALK *************************
+   ***************************************************************************
 
 
  Walk type: TS by minimization on image surface       
 
  Iteration number:  2
 
-  Norm of molecular gradient:     0.0193285040
+  Norm of molecular gradient:     0.0193286954
 
-@ Energy at current point:   -56.1865373540
+@ Energy at current point:   -56.1865373600
   Energy at initial point:   -56.0799902962
 
-  Change in energy since start of walk:-0.1065470578 au
+  Change in energy since start of walk:-0.1065470639 au
                                              -279.74 kJ/mol
                                               -66.86 kCal/mol
 
@@ -1846,57 +1866,57 @@ Starting in Static Property Section -
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           6           6       1.932850E-02    1          1.57E+01
+    1           6           6       1.932870D-02    1          1.57D+01
 
 
 
-                  +-------------------------------------+
-                  ! Analysis in diagonal representation !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! Analysis in diagonal representation !
+                      +-------------------------------------+
 
 
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
-@    2     1       1<    -0.00000001   -0.09295507   -0.00000007    0.00000000 
-@    2     1       2      0.00000000    0.15803279   -0.00000002    0.00000000 
-@    2     1       3     -0.00334169    0.16142541    0.02070112<  -0.00003459 
-@    2     1       4      0.01103475    0.54109085   -0.02039352   -0.00011252<
-@    2     1       5      0.00000004    1.38819569   -0.00000003    0.00000000 
-@    2     1       6      0.01551317<   1.46227634<  -0.01060892   -0.00008229 
+@    2     1       1<    -0.00000001   -0.09295572   -0.00000010    0.00000000 
+@    2     1       2     -0.00000000    0.15803285    0.00000003   -0.00000000 
+@    2     1       3     -0.00334162    0.16142550    0.02070069<  -0.00003459 
+@    2     1       4     -0.01103471    0.54109126    0.02039343   -0.00011252<
+@    2     1       5      0.00000005    1.38819690   -0.00000004   -0.00000000 
+@    2     1       6      0.01551346<   1.46227746<  -0.01060910   -0.00008229 
 
   This is Newton step.
 
 
-                          +----------------------+
-                          ! Hessian eigenvectors !
-                          +----------------------+
+                              +----------------------+
+                              ! Hessian eigenvectors !
+                              +----------------------+
 
 
    sym 1            1           2           3           4           5
   ----------------------------------------------------------------------
 
-   N    x       0.000000    0.000001    0.332618    0.030829    0.000001
-   N    y       0.000000    0.330303   -0.000001    0.000000    0.800562
-   N    z       0.866025    0.000000    0.000000    0.000000    0.000000
+   N    x       0.000000   -0.000001    0.332618   -0.030829    0.000001
+   N    y       0.000000   -0.330303   -0.000001   -0.000000    0.800562
+   N    z       0.866025    0.000000   -0.000000   -0.000000   -0.000000
 
-   H    x       0.000000    0.000001    0.420160    0.560322   -0.000001
-   H    y       0.000000   -0.647775    0.000002    0.000000   -0.045449
-   H    z      -0.289489    0.000000    0.000000    0.000000    0.000000
+   H    x      -0.000000   -0.000002    0.420160   -0.560322   -0.000001
+   H    y      -0.000000    0.647775    0.000002    0.000000   -0.045449
+   H    z      -0.289489   -0.000000    0.000000    0.000000    0.000000
 
-   H    x       0.000000   -0.458745   -0.376388   -0.295576    0.189654
-   H    y       0.000000    0.158734   -0.463408    0.505153   -0.377556
-   H    z      -0.288268    0.000000    0.000000    0.000000    0.000000
+   H    x       0.000000    0.458746   -0.376388    0.295576    0.189654
+   H    y      -0.000000   -0.158734   -0.463408   -0.505153   -0.377556
+   H    z      -0.288268   -0.000000   -0.000000    0.000000    0.000000
 
-   H    x       0.000000    0.458743   -0.376391   -0.295576   -0.189654
-   H    y       0.000000    0.158738    0.463407   -0.505153   -0.377556
-   H    z      -0.288268    0.000000    0.000000    0.000000    0.000000
+   H    x       0.000000   -0.458743   -0.376391    0.295576   -0.189654
+   H    y       0.000000   -0.158738    0.463406    0.505153   -0.377556
+   H    z      -0.288268    0.000000   -0.000000    0.000000   -0.000000
 
 
    sym 1            6
   ----------------------
    N    x       0.799008
    N    y      -0.000001
-   N    z       0.000000
+   N    z      -0.000000
 
    H    x      -0.509416
    H    y       0.000000
@@ -1904,42 +1924,42 @@ Starting in Static Property Section -
 
    H    x      -0.144797
    H    y       0.173421
-   H    z       0.000000
+   H    z      -0.000000
 
    H    x      -0.144796
    H    y      -0.173420
-   H    z       0.000000
+   H    z      -0.000000
 
 
 
  Old trust radius:              0.600000
- Updated trust radius:          0.606938
+ Updated trust radius:          0.606937
  Level shift employed:          0.0000000000
 
 
- Predicted energy change   -0.0002293960
+ Predicted energy change   -0.0002293966
 
 
-                           +--------------------+
-                           ! Change in geometry !
-                           +--------------------+
-
-
-
-                       Cartesian displacements (au)
-                       ----------------------------
-
- N         -0.0022197581           -0.0000000451           -0.0000000624
- H          0.0026751970            0.0000000582            0.0000000208
- H         -0.0002276820           -0.0217346989            0.0000000208
- H         -0.0002277569            0.0217346858            0.0000000208
+                               +--------------------+
+                               ! Change in geometry !
+                               +--------------------+
 
 
 
+                           Cartesian displacements (au)
+                           ----------------------------
+
+ N         -0.0022200475           -0.0000000513           -0.0000000839
+ H          0.0026751615            0.0000000676            0.0000000280
+ H         -0.0002275132           -0.0217344835            0.0000000280
+ H         -0.0002276007            0.0217344673            0.0000000280
 
 
-   Differential interatomic separations (in Angstroms):
-   ----------------------------------------------------
+
+
+
+   Differential interatomic separations (in Angstrom):
+   ---------------------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
@@ -1949,32 +1969,32 @@ Starting in Static Property Section -
  H     :   -0.010500   -0.004454   -0.023003    0.000000
 
 
-  Max differential change in interatomic separation is    0.000000 Angstroms
-  between atoms "H     " and "H     ".
+  Max differential change in interatomic separation is    0.023003 Angstrom
+  between atoms    4 and    3, "H     " and "H     ".
 
 
 
 
-                          +---------------------+
-                          ! Geometry after step !
-                          +---------------------+
+                              +---------------------+
+                              ! Geometry after step !
+                              +---------------------+
 
 
 
-                        Cartesian coordinates (au)
-                        --------------------------
+                            Cartesian coordinates (au)
+                            --------------------------
 
- N         -0.2673003401            0.0000000004           -0.0000000046
- H          1.5969658667            0.0000000037           -0.0000000025
- H         -1.1989327671            1.6140950430            0.0000000035
- H         -1.1989327595           -1.6140950471            0.0000000035
-
-
+ N         -0.2673006734           -0.0000000002           -0.0000000080
+ H          1.5969656493            0.0000000047           -0.0000000026
+ H         -1.1989324924            1.6140949959            0.0000000053
+ H         -1.1989324835           -1.6140950004            0.0000000053
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
@@ -1984,12 +2004,12 @@ Starting in Static Property Section -
  H     :    0.986208    1.708378    1.708285    0.000000
 
 
-  Max interatomic separation is    1.7084 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7084 Angstrom (    3.2284 Bohr)
+  between atoms    3 and    2, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -2013,106 +2033,68 @@ Starting in Static Property Section -
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     100 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:01     193 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.76 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
-
-- End of Static Property Section
+ >>>> Total CPU  time used in ABACUS:   0.65 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
-    Energy:   -56.186537   Gradient: 0.0193285040
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+
+@  Geometry walk step no.   2:  Molecular energy =    -56.186537   Molecular gradient =  0.019329
 
 
      @@>>>>>>>>>> Geometry walk iteration number:    3 <<<<<<<<<<
 
 
 
-Starting in Integral Section -
+
+ **************************************************************************************
+ ****************** Output of molecule and basis set info suppressed ******************
+ **************************************************************************************
 
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in ONEDRV is   0.00 seconds
 
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:       98155 ( 90.6% )
  Megabytes written:                              1.127
 
-
-
- >>> Time used in TWOINT is   0.09 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.10 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
- 
-     Date and time (Linux)  : Thu Mar  3 20:10:11 2005
-     Host name              : pi.biotech.kth.se                       
-
- Title lines from integral program:
-     Location of saddle point (transition state) using IMAGE method          
-                                                                             
-
- Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   3
-
-     Restricted, closed shell Hartree-Fock calculation.
-
-
- Initial molecular orbitals are obtained according to
- ".MOSTART NEWORB" input option.
-
-     Wave function specification
-     ============================
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 30
-
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
-
-     Orbital specifications
-     ======================
-     Abelian symmetry species           1
-                                       --
-     Occupied SCF orbitals              5
-     Secondary orbitals                25
-     Total number of orbitals          30
-     Number of basis functions         30
-
-     Optimization information
-     ========================
-     Number of configurations              1
-     Number of orbital rotations         125
-     ---------------------------------------
-     Total number of variables           126
-
-     Maximum number of Fock   iterations      0
-     Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-06
+ (Wave function specification suppressed here, see output above for initial geometry.)
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -2120,46 +2102,60 @@ Starting in Wave Function Section -
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -56.1834381590        5.41763D-01    3.10D-03    1
+      Virial theorem: -V/T =      2.002018
+      MULPOP  N      -0.90; H       0.27; H       0.31; H       0.31; 
+ -----------------------------------------------------------------------------
+   2    -56.1867302574        2.90968D-02   -3.29D-03    2
+      Virial theorem: -V/T =      2.001492
+      MULPOP  N      -0.87; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   3    -56.1867596385        6.44227D-03   -2.94D-05    3
+      Virial theorem: -V/T =      2.001860
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   4    -56.1867619050        2.04306D-03   -2.27D-06    4
+      Virial theorem: -V/T =      2.001691
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   5    -56.1867621942        3.26603D-04   -2.89D-07    5
+      Virial theorem: -V/T =      2.001733
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   6    -56.1867622104        4.19352D-05   -1.62D-08    6
+      Virial theorem: -V/T =      2.001733
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   7    -56.1867622106        7.02118D-06   -2.23D-10    7
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.02 seconds
-
-    1      -56.183438151164    5.41762E-01    3.10E-03    1
-    2      -56.186730256760    2.90969E-02   -3.29E-03    2
-    3      -56.186759638727    6.44227E-03   -2.94E-05    3
-    4      -56.186761905254    2.04312E-03   -2.27E-06    4
-    5      -56.186762194464    3.26629E-04   -2.89E-07    5
-    6      -56.186762210669    4.19364E-05   -1.62E-08    6
-    7      -56.186762210892    7.02162E-06   -2.23E-10    7
-    8      -56.186762210898    1.15063E-06   -5.64E-12    8
-    9      -56.186762210898    1.81606E-07   -1.58E-13    9
- DIIS converged in   9 iterations !
+ *** DIIS converged in   7 iterations !
+   - total time used in SIRFCK :              0.12 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    5
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -15.51496123    -1.11866553    -0.64351737    -0.64336930    -0.38048141
-         0.23322427     0.33266381     0.33271112     0.92889179     0.92895452
+  1    -15.51496136    -1.11866553    -0.64351744    -0.64336933    -0.38048179
+         0.23322433     0.33266386     0.33271125     0.92889165     0.92895458
 
-    E(LUMO) :     0.23322427 au (symmetry 1)
-  - E(HOMO) :    -0.38048141 au (symmetry 1)
+    E(LUMO) :     0.23322433 au (symmetry 1)
+  - E(HOMO) :    -0.38048179 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.61370568 au
+    gap     :     0.61370612 au
 
  >>> Writing SIRIFC interface file <<<
 
 
- Check ratio for geometry walk with converged RHF :
+ Check ratio for geometry walk with converged SCF :
 
 
 
@@ -2167,172 +2163,181 @@ Starting in Wave Function Section -
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0002248569  -0.0002293960    0.980213
+ actual, predicted and ratio:  -0.0002248506  -0.0002293966    0.980183
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -56.186762210898
-     Nuclear repulsion:            12.196193543057
-     Electronic energy:           -68.382955753955
+     Final HF energy:             -56.186762210632                 
+     Nuclear repulsion:            12.196194795008
+     Electronic energy:           -68.382957005640
 
-     Final gradient norm:           0.000000181606
+     Final gradient norm:           0.000007021183
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:11 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:26 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:11 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:47:26 2011 
+     Host name              : fe6                                     
 
 
-Starting in Static Property Section -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+ Center of mass dipole origin  :   -0.267241   -0.000000   -0.000000
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:11 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:26 2011 
+     Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
 
+ Largest deviation from tra-rot symmetry is in gradient element  3:  1.93E-12
 
- ***************************************************************************
- ************************ FINAL RESULTS FROM ABACUS ************************
- ***************************************************************************
+
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:13 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:27 2011 
+     Host name              : fe6                                     
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ N         -0.2673006734           -0.0000000002           -0.0000000080
+ H          1.5969656493            0.0000000047           -0.0000000026
+ H         -1.1989324924            1.6140949959            0.0000000053
+ H         -1.1989324835           -1.6140950004            0.0000000053
 
 
 
-                         Molecular geometry (au)
-                         -----------------------
-
- N         -0.2673003401            0.0000000004           -0.0000000046
- H          1.5969658667            0.0000000037           -0.0000000025
- H         -1.1989327671            1.6140950430            0.0000000035
- H         -1.1989327595           -1.6140950471            0.0000000035
 
 
-
-
-
-                    Molecular wave function and energy
-                    ----------------------------------
+                        Molecular wave function and energy
+                        ----------------------------------
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-
-     Total energy        -56.1867622109 au (Hartrees)
-                         -1528.91953065 eV
-                           -147518.3230 kJ/mol
-
+     Total energy        -56.1867622106 au (Hartrees)
+                         -1528.91957403 eV
+                           -147518.3214 kJ/mol
 
 
+                             Relativistic corrections
+                             ------------------------
 
-                         Relativistic corrections
-                         ------------------------
+     Darwin correction:                          0.1118444471 au
+     Mass-velocity correction:                  -0.1401945575 au
 
-     Darwin correction:                          0.1118444534 au
-     Mass-velocity correction:                  -0.1401945658 au
-
-     Total relativistic correction:             -0.0283501125 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.2151123234 au
+     Total relativistic correction:             -0.0283501104 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.2151123210 au
 
 
 
 
-                         Molecular gradient (au)
-                         -----------------------
+                             Molecular gradient (au)
+                             -----------------------
 
- N         -0.0003675823            0.0000000003            0.0000000004
- H         -0.0000175105           -0.0000000001           -0.0000000001
- H          0.0001925464           -0.0002989011           -0.0000000001
- H          0.0001925463            0.0002989009           -0.0000000001
+ N         -0.0003669228           -0.0000000004            0.0000000005
+ H         -0.0000179675           -0.0000000000           -0.0000000002
+ H          0.0001924450           -0.0002989354           -0.0000000002
+ H          0.0001924453            0.0002989358           -0.0000000002
 
 
 
 
 
-                          Molecular Hessian (au)
-                          ----------------------
+                              Molecular Hessian (au)
+                              ----------------------
 
            N    x      N    y      N    z      H    x      H    y      H    z
 
- N    x    0.957365
- N    y    0.000000    0.958928
- N    z    0.000000    0.000000   -0.078142
+ N    x    0.957367
+ N    y    0.000000    0.958933
+ N    z   -0.000000   -0.000000   -0.078135
 
- H    x   -0.553623    0.000000    0.000000    0.568522
- H    y    0.000000   -0.084461    0.000000    0.000000    0.068192
- H    z    0.000000    0.000000    0.025906    0.000000    0.000000   -0.008639
+ H    x   -0.553623   -0.000000   -0.000000    0.568522
+ H    y    0.000000   -0.084463    0.000000    0.000000    0.068193
+ H    z   -0.000000    0.000000    0.025904    0.000000   -0.000000   -0.008638
 
- H    x   -0.201871    0.203703    0.000000   -0.007449    0.034691    0.000000
- H    y    0.203696   -0.437233    0.000000   -0.007724    0.008135    0.000000
- H    z    0.000000    0.000000    0.026118    0.000000    0.000000   -0.008634
+ H    x   -0.201872    0.203702    0.000000   -0.007449    0.034692    0.000000
+ H    y    0.203696   -0.437235   -0.000000   -0.007724    0.008135    0.000000
+ H    z    0.000000   -0.000000    0.026115   -0.000000    0.000000   -0.008633
 
- H    x   -0.201871   -0.203703    0.000000   -0.007449   -0.034691    0.000000
- H    y   -0.203696   -0.437233    0.000000    0.007724    0.008135    0.000000
- H    z    0.000000    0.000000    0.026118    0.000000    0.000000   -0.008634
+ H    x   -0.201872   -0.203702    0.000000   -0.007449   -0.034692    0.000000
+ H    y   -0.203696   -0.437235    0.000000    0.007724    0.008135   -0.000000
+ H    z    0.000000    0.000000    0.026115   -0.000000   -0.000000   -0.008633
 
 
            H    x      H    y      H    z      H    x      H    y      H    z
 
- H    x    0.193400
- H    y   -0.217183    0.444310
- H    z    0.000000    0.000000   -0.008834
+ H    x    0.193401
+ H    y   -0.217183    0.444311
+ H    z   -0.000000    0.000000   -0.008834
 
- H    x    0.015920    0.021211    0.000000    0.193400
- H    y   -0.021211   -0.015211    0.000000    0.217183    0.444310
- H    z    0.000000    0.000000   -0.008649    0.000000    0.000000   -0.008834
-
-
-
-
-
-                              Dipole moment
-                              -------------
-
-                    0.000154 au           0.000393 Debye
-
-
-
-
-                         Dipole moment components
-                         ------------------------
-
-                               au             Debye
-
-                    x      0.00015446      0.00039259
-                    y      0.00000000      0.00000000
-                    z      0.00000001      0.00000002
-
-                        1 a.u. =   2.54175 Debye 
+ H    x    0.015920    0.021211   -0.000000    0.193401
+ H    y   -0.021211   -0.015211    0.000000    0.217183    0.444311
+ H    z   -0.000000   -0.000000   -0.008648   -0.000000   -0.000000   -0.008834
 
 
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+                                  Dipole moment
+                                  -------------
+
+                 au               Debye          C m (/(10**-30)
+              0.000154           0.000391           0.001305
+
+
+                             Dipole moment components
+                             ------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      0.00015388         0.00039112         0.00130465
+      y      0.00000000         0.00000000         0.00000000
+      z      0.00000001         0.00000003         0.00000011
+
+
+   Units:   1 a.u. =   2.54175 Debye 
+            1 a.u. =   8.47835 (10**-30) C m (SI)
+
+
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
@@ -2342,12 +2347,12 @@ Starting in Static Property Section -
  H     :    0.986208    1.708378    1.708285    0.000000
 
 
-  Max interatomic separation is    1.7084 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7084 Angstrom (    3.2284 Bohr)
+  between atoms    3 and    2, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -2370,25 +2375,25 @@ Starting in Static Property Section -
  Overlap between normal coordinate  1 and the normal coordinate walk 
  direction of the previous iteration is equal to 1.00000
 
- Largest deviation from orthonormality of OMOs:0.610623E-13
- - found for element   14  14
+ Largest deviation from orthonormality of OMOs:0.834888E-13
+ - found for element   15  15
 
 
- ***************************************************************************
- ************************* FINAL RESULTS FROM WALK *************************
- ***************************************************************************
+   ***************************************************************************
+   ************************* FINAL RESULTS FROM WALK *************************
+   ***************************************************************************
 
 
  Walk type: TS by minimization on image surface       
 
  Iteration number:  3
 
-  Norm of molecular gradient:     0.0006231013
+  Norm of molecular gradient:     0.0006226961
 
-@ Energy at current point:   -56.1867622109
+@ Energy at current point:   -56.1867622106
   Energy at initial point:   -56.0799902962
 
-  Change in energy since start of walk:-0.1067719147 au
+  Change in energy since start of walk:-0.1067719145 au
                                              -280.33 kJ/mol
                                               -67.00 kCal/mol
 
@@ -2403,155 +2408,155 @@ Starting in Static Property Section -
 
 @ Angle between gradient and walk mode: 90.00 deg 
 @ Angle between old and new walk modes:  0.06 deg 
-@ Angle between old and new steps:      42.47 deg 
+@ Angle between old and new steps:      42.42 deg 
 
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           6           6       6.231013E-04    1          1.42E+01
+    1           6           6       6.226961D-04    1          1.42D+01
 
 
 
-                  +-------------------------------------+
-                  ! Analysis in diagonal representation !
-                  +-------------------------------------+
+                      +-------------------------------------+
+                      ! Analysis in diagonal representation !
+                      +-------------------------------------+
 
 
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
-@    3     1       1<     0.00000000   -0.10418919    0.00000000    0.00000000 
-@    3     1       2     -0.00000063    0.15769458    0.00000398    0.00000000 
-@    3     1       3      0.00000000    0.15782343    0.00000000    0.00000000 
-@    3     1       4     -0.00041977    0.56334455    0.00074514<  -0.00000016<
-@    3     1       5     -0.00046049<   1.47368852    0.00031247   -0.00000007 
-@    3     1       6      0.00000000    1.47600475<   0.00000000    0.00000000 
+@    3     1       1<     0.00000000   -0.10417948    0.00000001    0.00000000 
+@    3     1       2     -0.00000049    0.15769544    0.00000311   -0.00000000 
+@    3     1       3      0.00000000    0.15782699   -0.00000000   -0.00000000 
+@    3     1       4     -0.00042001    0.56334560    0.00074556<  -0.00000016<
+@    3     1       5     -0.00045972<   1.47369040    0.00031195   -0.00000007 
+@    3     1       6     -0.00000000    1.47601000<   0.00000000   -0.00000000 
 
   This is Newton step.
 
 
-                          +----------------------+
-                          ! Hessian eigenvectors !
-                          +----------------------+
+                              +----------------------+
+                              ! Hessian eigenvectors !
+                              +----------------------+
 
 
    sym 1            1           2           3           4           5
   ----------------------------------------------------------------------
 
-   N    x       0.000000    0.335242   -0.000011   -0.000786    0.798506
-   N    y       0.000000    0.000011    0.335162    0.000000   -0.000002
-   N    z       0.866025    0.000000    0.000000    0.000000    0.000000
+   N    x       0.000000    0.335241   -0.000009   -0.000787    0.798506
+   N    y       0.000000    0.000009    0.335160   -0.000000   -0.000002
+   N    z       0.866025   -0.000000   -0.000000   -0.000000   -0.000000
 
-   H    x       0.000000    0.420727   -0.000014    0.577685   -0.489152
-   H    y       0.000000   -0.000021   -0.644041    0.000000    0.000000
-   H    z      -0.288572    0.000000    0.000000    0.000000    0.000000
+   H    x       0.000000    0.420727   -0.000011    0.577685   -0.489151
+   H    y      -0.000000   -0.000016   -0.644041    0.000000    0.000000
+   H    z      -0.288572   -0.000000    0.000000    0.000000   -0.000000
 
-   H    x       0.000000   -0.377999   -0.461059   -0.288449   -0.154678
-   H    y       0.000000   -0.460895    0.154455    0.499937    0.193996
+   H    x      -0.000000   -0.377996   -0.461062   -0.288449   -0.154678
+   H    y       0.000000   -0.460896    0.154452    0.499937    0.193996
    H    z      -0.288727    0.000000    0.000000    0.000000    0.000000
 
-   H    x       0.000000   -0.377969    0.461084   -0.288449   -0.154677
-   H    y       0.000000    0.460905    0.154425   -0.499937   -0.193994
+   H    x      -0.000000   -0.377972    0.461082   -0.288449   -0.154677
+   H    y      -0.000000    0.460904    0.154429   -0.499937   -0.193994
    H    z      -0.288727    0.000000    0.000000    0.000000    0.000000
 
 
    sym 1            6
   ----------------------
    N    x       0.000002
-   N    y       0.798540
-   N    z       0.000000
+   N    y       0.798541
+   N    z      -0.000000
 
    H    x      -0.000001
-   H    y      -0.042699
+   H    y      -0.042700
    H    z       0.000000
 
-   H    x       0.193471
+   H    x       0.193470
    H    y      -0.377920
-   H    z       0.000000
+   H    z      -0.000000
 
-   H    x      -0.193472
+   H    x      -0.193471
    H    y      -0.377921
    H    z       0.000000
 
 
 
- Old trust radius:              0.606938
- Updated trust radius:          0.606938
+ Old trust radius:              0.606937
+ Updated trust radius:          0.606937
  Level shift employed:          0.0000000000
 
 
  Predicted energy change   -0.0000002283
 
 
-                           +--------------------+
-                           ! Change in geometry !
-                           +--------------------+
+                               +--------------------+
+                               ! Change in geometry !
+                               +--------------------+
 
 
 
-                       Cartesian displacements (au)
-                       ----------------------------
+                           Cartesian displacements (au)
+                           ----------------------------
 
- N          0.0002502600           -0.0000000004            0.0000000043
- H          0.0002792834            0.0000000004           -0.0000000014
- H         -0.0002647715            0.0004313052           -0.0000000014
- H         -0.0002647719           -0.0004313052           -0.0000000014
-
-
+ N          0.0002495511            0.0000000002            0.0000000049
+ H          0.0002794184            0.0000000002           -0.0000000016
+ H         -0.0002644846            0.0004318176           -0.0000000016
+ H         -0.0002644849           -0.0004318179           -0.0000000016
 
 
 
-   Differential interatomic separations (in Angstroms):
-   ----------------------------------------------------
+
+
+   Differential interatomic separations (in Angstrom):
+   ---------------------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
- H     :    0.000015    0.000000
- H     :    0.000334    0.000363    0.000000
- H     :    0.000334    0.000363    0.000456    0.000000
+ H     :    0.000016    0.000000
+ H     :    0.000334    0.000364    0.000000
+ H     :    0.000334    0.000364    0.000457    0.000000
 
 
-  Max differential change in interatomic separation is    0.000456 Angstroms
-  between atoms "H     " and "H     ".
-
-
-
-
-                          +---------------------+
-                          ! Geometry after step !
-                          +---------------------+
-
-
-
-                        Cartesian coordinates (au)
-                        --------------------------
-
- N         -0.2670500801            0.0000000000           -0.0000000003
- H          1.5972451501            0.0000000041           -0.0000000039
- H         -1.1991975386            1.6145263482            0.0000000021
- H         -1.1991975314           -1.6145263523            0.0000000021
+  Max differential change in interatomic separation is    0.000457 Angstrom
+  between atoms    4 and    3, "H     " and "H     ".
 
 
 
 
+                              +---------------------+
+                              ! Geometry after step !
+                              +---------------------+
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+
+
+                            Cartesian coordinates (au)
+                            --------------------------
+
+ N         -0.2670511224           -0.0000000000           -0.0000000030
+ H          1.5972450678            0.0000000049           -0.0000000042
+ H         -1.1991969769            1.6145268134            0.0000000036
+ H         -1.1991969685           -1.6145268183            0.0000000036
+
+
+
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
  H     :    0.986543    0.000000
- H     :    0.986542    1.708742    0.000000
- H     :    0.986542    1.708742    1.708741    0.000000
+ H     :    0.986542    1.708741    0.000000
+ H     :    0.986542    1.708741    1.708742    0.000000
 
 
-  Max interatomic separation is    1.7087 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7087 Angstrom (    3.2291 Bohr)
+  between atoms    4 and    3, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -2575,106 +2580,68 @@ Starting in Static Property Section -
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      57 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:01     200 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.78 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
-
-- End of Static Property Section
+ >>>> Total CPU  time used in ABACUS:   0.65 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
-    Energy:   -56.186762   Gradient: 0.0006231013
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+
+@  Geometry walk step no.   3:  Molecular energy =    -56.186762   Molecular gradient =  0.000623
 
 
      @@>>>>>>>>>> Geometry walk iteration number:    4 <<<<<<<<<<
 
 
 
-Starting in Integral Section -
+
+ **************************************************************************************
+ ****************** Output of molecule and basis set info suppressed ******************
+ **************************************************************************************
 
 
 
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in ONEDRV is   0.00 seconds
 
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
- Number of two-electron integrals written:       98145 ( 90.6% )
+ Threshold for neglecting two-electron integrals:  1.00D-15
+
+ Number of two-electron integrals written:       98155 ( 90.6% )
  Megabytes written:                              1.127
 
-
-
- >>> Time used in TWOINT is   0.10 seconds
-
- >>>> Total CPU  time used in HERMIT:   0.10 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
 
 
-Starting in Wave Function Section -
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
- 
-     Date and time (Linux)  : Thu Mar  3 20:10:13 2005
-     Host name              : pi.biotech.kth.se                       
-
- Title lines from integral program:
-     Location of saddle point (transition state) using IMAGE method          
-                                                                             
-
- Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   3
-
-     Restricted, closed shell Hartree-Fock calculation.
-
-
- Initial molecular orbitals are obtained according to
- ".MOSTART NEWORB" input option.
-
-     Wave function specification
-     ============================
-     Number of closed shell electrons         10
-     Number of electrons in active shells      0
-     Total charge of the molecule              0
-
-     Number of active orbitals                 0
-     Total number of orbitals                 30
-
-     Spin multiplicity                         1
-     Total number of symmetries                1
-     Reference state symmetry                  1
-
-     Orbital specifications
-     ======================
-     Abelian symmetry species           1
-                                       --
-     Occupied SCF orbitals              5
-     Secondary orbitals                25
-     Total number of orbitals          30
-     Number of basis functions         30
-
-     Optimization information
-     ========================
-     Number of configurations              1
-     Number of orbital rotations         125
-     ---------------------------------------
-     Total number of variables           126
-
-     Maximum number of Fock   iterations      0
-     Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-06
+ (Wave function specification suppressed here, see output above for initial geometry.)
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -2682,44 +2649,56 @@ Starting in Wave Function Section -
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1    -56.1867591576        1.72833D-02    3.05D-06    1
+      Virial theorem: -V/T =      2.001743
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   2    -56.1867624065        8.99823D-04   -3.25D-06    2
+      Virial theorem: -V/T =      2.001765
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   3    -56.1867624364        2.19360D-04   -2.98D-08    3
+      Virial theorem: -V/T =      2.001753
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   4    -56.1867624390        6.47504D-05   -2.69D-09    4
+      Virial theorem: -V/T =      2.001758
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   5    -56.1867624394        1.02436D-05   -3.19D-10    5
+      Virial theorem: -V/T =      2.001757
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
+   6    -56.1867624394        1.05514D-06   -1.64D-11    6
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00E-15
-
- >>> Time used in FRMSUP is   0.02 seconds
-
-    1      -56.186759155809    1.72855E-02    3.06E-06    1
-    2      -56.186762406468    9.00005E-04   -3.25E-06    2
-    3      -56.186762436349    2.19519E-04   -2.99E-08    3
-    4      -56.186762439047    6.48392E-05   -2.70E-09    4
-    5      -56.186762439368    1.03173E-05   -3.21E-10    5
-    6      -56.186762439385    1.05695E-06   -1.66E-11    6
-    7      -56.186762439385    1.53684E-07   -1.39E-13    7
- DIIS converged in   7 iterations !
+ *** DIIS converged in   6 iterations !
+   - total time used in SIRFCK :              0.18 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    5
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Hartree-Fock orbital energies
 
-       -15.51502565    -1.11854430    -0.64333305    -0.64333299    -0.38046515
-         0.23316070     0.33264377     0.33264383     0.92897185     0.92897203
+  1    -15.51502567    -1.11854430    -0.64333336    -0.64333269    -0.38046511
+         0.23316069     0.33264372     0.33264384     0.92897167     0.92897222
 
-    E(LUMO) :     0.23316070 au (symmetry 1)
-  - E(HOMO) :    -0.38046515 au (symmetry 1)
+    E(LUMO) :     0.23316069 au (symmetry 1)
+  - E(HOMO) :    -0.38046511 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.61362586 au
+    gap     :     0.61362580 au
 
  >>> Writing SIRIFC interface file <<<
 
 
- Check ratio for geometry walk with converged RHF :
+ Check ratio for geometry walk with converged SCF :
 
 
 
@@ -2727,187 +2706,194 @@ Starting in Wave Function Section -
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0000002285  -0.0000002283    1.000647
+ actual, predicted and ratio:  -0.0000002288  -0.0000002283    1.002078
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -56.186762439385
-     Nuclear repulsion:            12.193377890177
-     Electronic energy:           -68.380140329562
+     Final HF energy:             -56.186762439384                 
+     Nuclear repulsion:            12.193377537165
+     Electronic energy:           -68.380139976549
 
-     Final gradient norm:           0.000000153684
+     Final gradient norm:           0.000001055140
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:13 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:27 2011 
+     Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.05 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:13 2005
-     Host name              : pi.biotech.kth.se                       
-
-- End of Wave Function Section
+     Date and time (Linux)  : Wed Mar 16 17:47:27 2011 
+     Host name              : fe6                                     
 
 
-Starting in Static Property Section -
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+ Center of mass dipole origin  :   -0.267051   -0.000000   -0.000000
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:13 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:27 2011 
+     Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
 
 
- ***************************************************************************
- ************************ FINAL RESULTS FROM ABACUS ************************
- ***************************************************************************
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:15 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:28 2011 
+     Host name              : fe6                                     
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ N         -0.2670511224           -0.0000000000           -0.0000000030
+ H          1.5972450678            0.0000000049           -0.0000000042
+ H         -1.1991969769            1.6145268134            0.0000000036
+ H         -1.1991969685           -1.6145268183            0.0000000036
 
 
 
-                         Molecular geometry (au)
-                         -----------------------
-
- N         -0.2670500801            0.0000000000           -0.0000000003
- H          1.5972451501            0.0000000041           -0.0000000039
- H         -1.1991975386            1.6145263482            0.0000000021
- H         -1.1991975314           -1.6145263523            0.0000000021
 
 
-
-
-
-                    Molecular wave function and energy
-                    ----------------------------------
+                        Molecular wave function and energy
+                        ----------------------------------
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-
      Total energy        -56.1867624394 au (Hartrees)
-                         -1528.91953687 eV
-                           -147518.3236 kJ/mol
+                         -1528.91958025 eV
+                           -147518.3220 kJ/mol
+
+
+                             Relativistic corrections
+                             ------------------------
+
+     Darwin correction:                          0.1118441648 au
+     Mass-velocity correction:                  -0.1401940114 au
+
+     Total relativistic correction:             -0.0283498465 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.2151122859 au
 
 
 
 
-                         Relativistic corrections
-                         ------------------------
+                             Molecular gradient (au)
+                             -----------------------
 
-     Darwin correction:                          0.1118441653 au
-     Mass-velocity correction:                  -0.1401940119 au
-
-     Total relativistic correction:             -0.0283498466 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.2151122860 au
-
-
-
-
-                         Molecular gradient (au)
-                         -----------------------
-
- N         -0.0000003630            0.0000000000            0.0000000000
- H          0.0000000402            0.0000000000            0.0000000000
- H          0.0000001614           -0.0000003242            0.0000000000
- H          0.0000001614            0.0000003242            0.0000000000
+ N         -0.0000013544           -0.0000000000            0.0000000004
+ H          0.0000005413            0.0000000000           -0.0000000001
+ H          0.0000004066           -0.0000004464           -0.0000000001
+ H          0.0000004066            0.0000004464           -0.0000000001
 
 
 
 
 
-                          Molecular Hessian (au)
-                          ----------------------
+                              Molecular Hessian (au)
+                              ----------------------
 
            N    x      N    y      N    z      H    x      H    y      H    z
 
- N    x    0.957047
- N    y    0.000000    0.957048
- N    z    0.000000    0.000000   -0.077810
+ N    x    0.957045
+ N    y   -0.000000    0.957050
+ N    z   -0.000000    0.000000   -0.077811
 
- H    x   -0.553603    0.000000    0.000000    0.568475
- H    y    0.000000   -0.084428    0.000000    0.000000    0.068178
- H    z    0.000000    0.000000    0.025937    0.000000    0.000000   -0.008646
+ H    x   -0.553602    0.000000   -0.000000    0.568473
+ H    y    0.000000   -0.084428    0.000000   -0.000000    0.068178
+ H    z   -0.000000   -0.000000    0.025936   -0.000000   -0.000000   -0.008645
 
  H    x   -0.201722    0.203160    0.000000   -0.007436    0.034672    0.000000
- H    y    0.203160   -0.436310    0.000000   -0.007721    0.008125    0.000000
- H    z    0.000000    0.000000    0.025937    0.000000    0.000000   -0.008646
+ H    y    0.203160   -0.436311   -0.000000   -0.007721    0.008125    0.000000
+ H    z    0.000000   -0.000000    0.025937    0.000000    0.000000   -0.008646
 
  H    x   -0.201722   -0.203160    0.000000   -0.007436   -0.034672    0.000000
- H    y   -0.203160   -0.436310    0.000000    0.007721    0.008125    0.000000
- H    z    0.000000    0.000000    0.025937    0.000000    0.000000   -0.008646
+ H    y   -0.203160   -0.436311    0.000000    0.007721    0.008125   -0.000000
+ H    z    0.000000    0.000000    0.025937    0.000000   -0.000000   -0.008646
 
 
            H    x      H    y      H    z      H    x      H    y      H    z
 
- H    x    0.193253
- H    y   -0.216635    0.443402
- H    z    0.000000    0.000000   -0.008646
+ H    x    0.193252
+ H    y   -0.216636    0.443402
+ H    z   -0.000000    0.000000   -0.008646
 
- H    x    0.015905    0.021196    0.000000    0.193253
- H    y   -0.021196   -0.015216    0.000000    0.216635    0.443402
- H    z    0.000000    0.000000   -0.008646    0.000000    0.000000   -0.008646
-
-
-
-
-
-                              Dipole moment
-                              -------------
-
-                    0.000000 au           0.000000 Debye
-
-
-
-
-                         Dipole moment components
-                         ------------------------
-
-                               au             Debye
-
-                    x      0.00000011      0.00000028
-                    y      0.00000000      0.00000000
-                    z      0.00000000      0.00000000
-
-                        1 a.u. =   2.54175 Debye 
+ H    x    0.015905    0.021196   -0.000000    0.193252
+ H    y   -0.021196   -0.015216    0.000000    0.216636    0.443402
+ H    z   -0.000000   -0.000000   -0.008646   -0.000000   -0.000000   -0.008646
 
 
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+                                  Dipole moment
+                                  -------------
+
+                 au               Debye          C m (/(10**-30)
+              0.000000           0.000001           0.000004
+
+
+                             Dipole moment components
+                             ------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      0.00000049         0.00000124         0.00000414
+      y      0.00000000         0.00000000         0.00000000
+      z      0.00000000         0.00000001         0.00000004
+
+
+   Units:   1 a.u. =   2.54175 Debye 
+            1 a.u. =   8.47835 (10**-30) C m (SI)
+
+
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
  H     :    0.986543    0.000000
- H     :    0.986542    1.708742    0.000000
- H     :    0.986542    1.708742    1.708741    0.000000
+ H     :    0.986542    1.708741    0.000000
+ H     :    0.986542    1.708741    1.708742    0.000000
 
 
-  Max interatomic separation is    1.7087 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7087 Angstrom (    3.2291 Bohr)
+  between atoms    4 and    3, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -2928,16 +2914,16 @@ Starting in Static Property Section -
 
 
 
- ***************************************************************************
- ************************* FINAL RESULTS FROM WALK *************************
- ***************************************************************************
+   ***************************************************************************
+   ************************* FINAL RESULTS FROM WALK *************************
+   ***************************************************************************
 
 
  Walk type: TS by minimization on image surface       
 
  Iteration number:  4
 
-  Norm of molecular gradient:     0.0000006290
+  Norm of molecular gradient:     0.0000016901
 
 @ Energy at current point:   -56.1867624394
   Energy at initial point:   -56.0799902962
@@ -2955,106 +2941,106 @@ Starting in Static Property Section -
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           6           6       6.290458E-07    1          1.42E+01
+    1           6           6       1.690126D-06    1          1.42D+01
 
 
 
-            +-------------------------------------------------+
-            ! Gradient and Hessian in diagonal representation !
-            +-------------------------------------------------+
+                +-------------------------------------------------+
+                ! Gradient and Hessian in diagonal representation !
+                +-------------------------------------------------+
 
 
            @sym        mode          gradient        eigenvalue    
            @-------------------------------------------------------
-            @ 1           1         0.0000000001    -0.1037471017
-            @ 1           2         0.0000000721     0.1578413422
-            @ 1           3        -0.0000000053     0.1578414893
-            @ 1           4         0.0000003942     0.5625391014
-            @ 1           5        -0.0000004849     1.4729168402
-            @ 1           6         0.0000000021     1.4729190029
+            @ 1           1         0.0000000004    -0.1037478905
+            @ 1           2        -0.0000001216     0.1578410716
+            @ 1           3         0.0000000068     0.1578411781
+            @ 1           4        -0.0000003686     0.5625389044
+            @ 1           5        -0.0000016449     1.4729133067
+            @ 1           6         0.0000000019     1.4729215102
 
 
-                          +----------------------+
-                          ! Hessian eigenvectors !
-                          +----------------------+
+                              +----------------------+
+                              ! Hessian eigenvectors !
+                              +----------------------+
 
 
    sym 1            1           2           3           4           5
   ----------------------------------------------------------------------
 
-   N    x       0.000000    0.334172   -0.024433    0.000001    0.798574
-   N    y       0.000000   -0.024433   -0.334172    0.000000    0.003445
-   N    z       0.866025    0.000000    0.000000    0.000000    0.000000
+   N    x       0.000000    0.334534   -0.018842   -0.000003    0.798581
+   N    y       0.000000    0.018842    0.334533   -0.000000    0.000935
+   N    z       0.866025   -0.000000   -0.000000   -0.000000   -0.000000
 
-   H    x       0.000000    0.419580   -0.030677   -0.577351   -0.489564
-   H    y       0.000000    0.046966    0.642361    0.000000   -0.000185
+   H    x       0.000000    0.420034   -0.023658    0.577351   -0.489568
+   H    y      -0.000000   -0.036219   -0.643056   -0.000000   -0.000050
+   H    z      -0.288675   -0.000000    0.000000   -0.000000    0.000000
+
+   H    x      -0.000000   -0.403211   -0.439082   -0.288674   -0.154280
+   H    y       0.000000   -0.451643    0.180189    0.500000    0.193008
    H    z      -0.288675    0.000000    0.000000    0.000000    0.000000
 
-   H    x       0.000000   -0.343255    0.487389    0.288675   -0.153670
-   H    y       0.000000   -0.471100   -0.120474   -0.500000    0.191818
-   H    z      -0.288675    0.000000    0.000000    0.000000    0.000000
-
-   H    x       0.000000   -0.410496   -0.432279    0.288675   -0.155339
-   H    y       0.000000    0.448567   -0.187715    0.500000   -0.195078
-   H    z      -0.288675    0.000000    0.000000    0.000000    0.000000
+   H    x      -0.000000   -0.351357    0.481582   -0.288674   -0.154733
+   H    y      -0.000000    0.469020    0.128334   -0.500000   -0.193893
+   H    z      -0.288675    0.000000   -0.000000    0.000000    0.000000
 
 
    sym 1            6
   ----------------------
-   N    x      -0.003445
-   N    y       0.798574
+   N    x      -0.000935
+   N    y       0.798581
    N    z       0.000000
 
-   H    x       0.002112
+   H    x       0.000573
    H    y      -0.042818
+   H    z      -0.000000
+
+   H    x       0.193630
+   H    y      -0.378108
+   H    z      -0.000000
+
+   H    x      -0.193268
+   H    y      -0.377655
    H    z       0.000000
 
-   H    x       0.194114
-   H    y      -0.378713
-   H    z       0.000000
-
-   H    x      -0.192781
-   H    y      -0.377044
-   H    z       0.000000
 
 
 
-
-                             +----------------+
-                             ! Final geometry !
-                             +----------------+
-
+                                 +----------------+
+                                 ! Final geometry !
+                                 +----------------+
 
 
-                        Cartesian coordinates (au)
-                        --------------------------
 
- N         -0.2670500801            0.0000000000           -0.0000000003
- H          1.5972451501            0.0000000041           -0.0000000039
- H         -1.1991975386            1.6145263482            0.0000000021
- H         -1.1991975314           -1.6145263523            0.0000000021
+                            Cartesian coordinates (au)
+                            --------------------------
+
+ N         -0.2670511224           -0.0000000000           -0.0000000030
+ H          1.5972450678            0.0000000049           -0.0000000042
+ H         -1.1991969769            1.6145268134            0.0000000036
+ H         -1.1991969685           -1.6145268183            0.0000000036
 
 
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
  H     :    0.986543    0.000000
- H     :    0.986542    1.708742    0.000000
- H     :    0.986542    1.708742    1.708741    0.000000
+ H     :    0.986542    1.708741    0.000000
+ H     :    0.986542    1.708741    1.708742    0.000000
 
 
-  Max interatomic separation is    1.7087 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7087 Angstrom (    3.2291 Bohr)
+  between atoms    4 and    3, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -3078,196 +3064,198 @@ Starting in Static Property Section -
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      57 %
- REST       00:00:02      86 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:01     212 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.76 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
-
-- End of Static Property Section
+ >>>> Total CPU  time used in ABACUS:   0.58 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
-    Energy:   -56.186762   Gradient: 0.0000006290
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
 
 
-      >>>>>>>>>> Geometry has converged <<<<<<<<<<
+@  Geometry walk step no.   4:  Molecular energy =    -56.186762   Molecular gradient =  0.000002
+
+
+                          .-----------------------------.
+                          | Geometry walk has converged |
+                          `-----------------------------'
 
 
 
-
-    *****************************************************************
-    ******** Output from **PROPE input processing for ABACUS ********
-    *****************************************************************
+        *****************************************************************
+        ******** Output from **PROPE input processing for ABACUS ********
+        *****************************************************************
 
 
 
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
-      Vibrational analysis
-      Cioslowski population analysis and static polarizabilities only.
-
-
  Default print level:        0
 
+      Vibrational analysis
+      Cioslowski population analysis and static polarizabilities only.
+      Natural orbital connection is used
+      for perturbation dependent basis sets.
 
-Starting in Static Property Section -
+ Center of mass dipole origin  :   -0.267051   -0.000000   -0.000000
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:15 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:28 2011 
+     Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
 
 
- ***************************************************************************
- ************************ FINAL RESULTS FROM ABACUS ************************
- ***************************************************************************
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
 
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:16 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:29 2011 
+     Host name              : fe6                                     
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ N         -0.2670511224           -0.0000000000           -0.0000000030
+ H          1.5972450678            0.0000000049           -0.0000000042
+ H         -1.1991969769            1.6145268134            0.0000000036
+ H         -1.1991969685           -1.6145268183            0.0000000036
 
 
 
-                         Molecular geometry (au)
-                         -----------------------
-
- N         -0.2670500801            0.0000000000           -0.0000000003
- H          1.5972451501            0.0000000041           -0.0000000039
- H         -1.1991975386            1.6145263482            0.0000000021
- H         -1.1991975314           -1.6145263523            0.0000000021
 
 
-
-
-
-                    Molecular wave function and energy
-                    ----------------------------------
+                        Molecular wave function and energy
+                        ----------------------------------
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-
      Total energy        -56.1867624394 au (Hartrees)
-                         -1528.91953687 eV
-                           -147518.3236 kJ/mol
+                         -1528.91958025 eV
+                           -147518.3220 kJ/mol
+
+
+                             Relativistic corrections
+                             ------------------------
+
+     Darwin correction:                          0.1118441648 au
+     Mass-velocity correction:                  -0.1401940114 au
+
+     Total relativistic correction:             -0.0283498465 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.2151122859 au
 
 
 
 
-                         Relativistic corrections
-                         ------------------------
+                                  Dipole moment
+                                  -------------
 
-     Darwin correction:                          0.1118441653 au
-     Mass-velocity correction:                  -0.1401940119 au
-
-     Total relativistic correction:             -0.0283498466 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.2151122860 au
+                 au               Debye          C m (/(10**-30)
+              0.000000           0.000001           0.000004
 
 
+                             Dipole moment components
+                             ------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      0.00000049         0.00000124         0.00000414
+      y      0.00000000         0.00000000         0.00000000
+      z      0.00000000         0.00000001         0.00000004
 
 
-                              Dipole moment
-                              -------------
-
-                    0.000000 au           0.000000 Debye
-
-
-
-
-                         Dipole moment components
-                         ------------------------
-
-                               au             Debye
-
-                    x      0.00000011      0.00000028
-                    y      0.00000000      0.00000000
-                    z      0.00000000      0.00000000
-
-                        1 a.u. =   2.54175 Debye 
+   Units:   1 a.u. =   2.54175 Debye 
+            1 a.u. =   8.47835 (10**-30) C m (SI)
 
 
 
 
-
-                       Dipole moment gradient (au)
-                       ---------------------------
+                           Dipole moment gradient (au)
+                           ---------------------------
 
                        Ex             Ey             Ez
 
-        N    x    -0.46525473     0.00000000     0.00000000
-        N    y     0.00000000    -0.46525497     0.00000000
-        N    z     0.00000000     0.00000000    -1.21850826
+        N    x    -0.46525429    -0.00000000    -0.00000000
+        N    y     0.00000000    -0.46525650    -0.00000000
+        N    z    -0.00000000    -0.00000000    -1.21850839
 
-        H    x     0.15140768     0.00000000     0.00000000
-        H    y     0.00000000     0.15876238     0.00000000
-        H    z     0.00000000     0.00000000     0.40616941
+        H    x     0.15140701     0.00000000     0.00000000
+        H    y    -0.00000000     0.15876252    -0.00000000
+        H    z    -0.00000000     0.00000000     0.40616899
 
-        H    x     0.15692352     0.00318470     0.00000000
-        H    y     0.00318459     0.15324630     0.00000000
-        H    z     0.00000000     0.00000000     0.40616942
+        H    x     0.15692364     0.00318446     0.00000000
+        H    y     0.00318448     0.15324699    -0.00000000
+        H    z     0.00000000    -0.00000000     0.40616970
 
-        H    x     0.15692352    -0.00318469     0.00000000
-        H    y    -0.00318459     0.15324630     0.00000000
-        H    z     0.00000000     0.00000000     0.40616942
-
-
+        H    x     0.15692364    -0.00318446     0.00000000
+        H    y    -0.00318448     0.15324699     0.00000000
+        H    z     0.00000000     0.00000000     0.40616970
 
 
 
-                        +-------------------------+
-                        ! APT Population Analysis !
-                        +-------------------------+
+
+
+                            +-------------------------+
+                            ! APT Population Analysis !
+                            +-------------------------+
 
 
       [ Reference : J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333 ]
 
-                            N        -0.716339
+                            N        -0.716340
                             H         0.238780
                             H         0.238780
                             H         0.238780
 
 
 
-                       Static polarizabilities (au)
-                       ----------------------------
+                           Static polarizabilities (au)
+                           ----------------------------
 
                          Ex          Ey          Ez
 
-            Ex       8.479540    0.000000    0.000000
-            Ey       0.000000    8.479534    0.000000
-            Ez       0.000000    0.000000    4.134296
+            Ex       8.479542   -0.000000   -0.000000
+            Ey      -0.000000    8.479531   -0.000000
+            Ez      -0.000000   -0.000000    4.134297
 
 
 
-                  Static polarizabilities (angstroms**3)
-                  --------------------------------------
+                      Static polarizabilities (angstroms**3)
+                      --------------------------------------
 
                          Ex          Ey          Ez
 
-            Ex       1.256538    0.000000    0.000000
-            Ey       0.000000    1.256537    0.000000
-            Ez       0.000000    0.000000    0.612639
+            Ex       1.256538   -0.000000   -0.000000
+            Ey      -0.000000    1.256537   -0.000000
+            Ez      -0.000000   -0.000000    0.612640
 
 
 
-            +--------------------------------------------------+
-            ! Principal values and axes of polarizability (au) !
-            +--------------------------------------------------+
+                +--------------------------------------------------+
+                ! Principal values and axes of polarizability (au) !
+                +--------------------------------------------------+
 
 
 
-                value              x          y          z  
-             -----------------------------------------------
+                value              x          y          z
+             ---------------------------------------------
 
-                8.4795          1.0000     0.0000     0.0000
-                8.4795          0.0000     1.0000     0.0000
+                8.4795          1.0000    -0.0000    -0.0000
+                8.4795          0.0000     1.0000    -0.0000
                 4.1343          0.0000     0.0000     1.0000
 
 
@@ -3277,23 +3265,23 @@ Starting in Static Property Section -
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
             N           H           H           H     
             ------      ------      ------      ------
  N     :    0.000000
  H     :    0.986543    0.000000
- H     :    0.986542    1.708742    0.000000
- H     :    0.986542    1.708742    1.708741    0.000000
+ H     :    0.986542    1.708741    0.000000
+ H     :    0.986542    1.708741    1.708742    0.000000
 
 
-  Max interatomic separation is    1.7087 Angstroms
-  between atoms "H     " and "H     ".
+  Max interatomic separation is    1.7087 Angstrom (    3.2291 Bohr)
+  between atoms    4 and    3, "H     " and "H     ".
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Bond distances (Angstrom):
+  --------------------------
 
                   atom 1     atom 2       distance
                   ------     ------       --------
@@ -3314,9 +3302,9 @@ Starting in Static Property Section -
 
 
 
- ****************************************************************************
- *************** ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS ***************
- ****************************************************************************
+   ****************************************************************************
+   *************** ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS ***************
+   ****************************************************************************
 
 
  Norm of (unprojected) molecular gradient (au) :     0.00000000
@@ -3324,10 +3312,10 @@ Starting in Static Property Section -
 
  Conversion factors used:
 
-    Hartree to (cm)-1      : 219474.63128
+    Hartree to (cm)-1      : 219474.62934
     a.m.u.  to a.u.        :   1822.88848
-    Bohr    to Angstrom    :  0.529177208
-    a.u.    to A**4amu-1   :   142.943570
+    Bohr    to Angstrom    :  0.529177211
+    a.u.    to A**4amu-1   :   142.943572
     a.u.    to km (mol)-1  :      974.864
 
 
@@ -3339,8 +3327,8 @@ Starting in Static Property Section -
                          ======================= 
 
 
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            N          14.003074
                            H           1.007825
@@ -3350,15 +3338,15 @@ Starting in Static Property Section -
                        Total mass:    17.026549 amu
                        Natural abundance:  99.585 %
 
- Center-of-mass coordinates (A):   -0.267050    0.000000    0.000000
+ Center-of-mass coordinates (a.u.):   -0.267051   -0.000000   -0.000000
 
 
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA    1.471322          1.000000   -0.000039    0.000000
-   IB    1.471323          0.000039    1.000000    0.000000
-   IC    2.942645          0.000000    0.000000    1.000000
+   IA       1.471322         -0.000001    1.000000    0.000000
+   IB       1.471323          1.000000    0.000001   -0.000000
+   IC       2.942645          0.000000    0.000000    1.000000
 
 
  Rotational constants
@@ -3368,8 +3356,8 @@ Starting in Static Property Section -
 
                A                   B                   C
 
-         343486.3929         343486.1432         171743.1340 MHz
-           11.457473           11.457464            5.728734 cm-1
+         343486.2986         343486.1917         171743.1226 MHz
+           11.457470           11.457466            5.728734 cm-1
 
 
 
@@ -3384,10 +3372,10 @@ Starting in Static Property Section -
   ------------------------------------------------------------
 
    1      A      4065.90    0.018526     43.347   1.0258
-   2      A      4065.89    0.018526     43.347   1.0258
+   2      A      4065.89    0.018526     43.346   1.0258
    3      A      3840.50    0.017499      0.000   0.0000
    4      A      1714.31    0.007811     41.557   0.9835
-   5      A      1714.31    0.007811     41.556   0.9835
+   5      A      1714.31    0.007811     41.557   0.9835
    6      A       909.33i   0.004143i
 
 
@@ -3402,36 +3390,36 @@ Starting in Static Property Section -
                 1  4066     2  4066     3  3841     4  1714     5  1714 
   ----------------------------------------------------------------------
 
-    N      x    0.000427   -0.082137    0.000001   -0.005856   -0.076813
-    N      y   -0.082137   -0.000427    0.000000   -0.076813    0.005856
-    N      z    0.000000    0.000000    0.000000    0.000000    0.000000
+    N      x    0.000078   -0.082138   -0.000002    0.002023   -0.077009
+    N      y   -0.082138   -0.000078   -0.000000   -0.077009   -0.002023
+    N      z   -0.000000    0.000000   -0.000000    0.000000    0.000000
 
-    H      x   -0.004025    0.773824   -0.575112   -0.004766   -0.062512
-    H      y   -0.013006   -0.000068    0.000000    0.774020   -0.059011
-    H      z    0.000000    0.000000    0.000000    0.000000    0.000000
+    H      x   -0.000739    0.773824    0.575125    0.001647   -0.062672
+    H      y   -0.013006   -0.000012   -0.000000    0.775998    0.020389
+    H      z    0.000000   -0.000000   -0.000000   -0.000000    0.000000
 
-    H      x   -0.341665    0.181933    0.287551    0.405296    0.537271
-    H      y    0.578893   -0.337713   -0.498052    0.174237    0.351051
-    H      z    0.000000    0.000000    0.000000    0.000000    0.000000
+    H      x   -0.340889    0.183387   -0.287547    0.348275    0.575873
+    H      y    0.577454   -0.340176    0.498046    0.137454    0.367017
+    H      z    0.000000   -0.000000    0.000000    0.000000   -0.000000
 
-    H      x    0.339754    0.185477    0.287551   -0.319163    0.592503
-    H      y    0.575348    0.343716    0.498052    0.119005   -0.373407
-    H      z    0.000000    0.000000    0.000000    0.000000    0.000000
+    H      x    0.340538    0.184038   -0.287547   -0.378035    0.556790
+    H      y    0.576803    0.341279   -0.498046    0.156537   -0.359292
+    H      z   -0.000000   -0.000000    0.000000   -0.000000   -0.000000
 
 
                 6   909i
   ----------------------
 
-    N      x    0.000000
-    N      y    0.000000
+    N      x   -0.000000
+    N      y   -0.000000
     N      z   -0.112610
 
-    H      x    0.000000
+    H      x   -0.000000
     H      y    0.000000
-    H      z    0.521549
+    H      z    0.521548
 
     H      x    0.000000
-    H      y    0.000000
+    H      y   -0.000000
     H      z    0.521549
 
     H      x    0.000000
@@ -3447,28 +3435,28 @@ Starting in Static Property Section -
 
   mode           dMA/dQi        dMB/dQi        dMC/dQi
   ----------------------------------------------------
-   1           -0.005268       1.012816       0.000000
-   2            1.012816       0.005268       0.000000
-   3           -0.000009       0.000000       0.000000
-   4            0.075387       0.988827       0.000000
-   5            0.988826      -0.075387       0.000000
+   1           -0.000967       1.012835       0.000000
+   2            1.012827       0.000967      -0.000000
+   3            0.000024       0.000000       0.000000
+   4           -0.026047       0.991355      -0.000000
+   5            0.991354       0.026047      -0.000000
    6            0.000000       0.000000       3.711573
 
 
 
-                          Total Molecular Energy
-                          ----------------------
+                              Total Molecular Energy
+                              ----------------------
 
              electronic     vibrational           total    energy 
 
              -56.186762        0.035086      -56.151677    Hartrees
-           -12331568.97         7700.45    -12323868.52    cm-1
-             -147518.32           92.12      -147426.21    kJ/mol
+           -12331568.86         7700.45    -12323868.41    cm-1
+             -147518.32           92.12      -147426.20    kJ/mol
               -35257.73           22.02       -35235.71    kcal/mol
 
 
-                      Molecular Partition Functions
-                      -----------------------------
+                          Molecular Partition Functions
+                          -----------------------------
 
  Qtran is evaluated per mol at 1 atm. pressure.
  Qrot does not include symmetry numbers.
@@ -3478,24 +3466,21 @@ Starting in Static Property Section -
 
  Temp.(K)  Translational     Rotational    Vibrational      Total
 
-    50.00     3.1804E+04          13.97         1.0000   4.442493E+05
-   100.00     1.7991E+05          38.48         1.0000   6.922870E+06
-   200.00     1.0177E+06         107.38         1.0000   1.092859E+08
-   273.15     2.2185E+06         170.77         1.0002   3.789400E+08
-   298.15     2.7615E+06         194.58         1.0005   5.376007E+08
-   300.00     2.8045E+06         196.38         1.0005   5.510523E+08
-   400.00     5.7571E+06         301.66         1.0042   1.744029E+09
-   500.00     1.0057E+07         421.01         1.0146   4.296054E+09
-   600.00     1.5865E+07         552.93         1.0338   9.068928E+09
-   700.00     2.3324E+07         696.32         1.0626   1.725749E+10
-   800.00     3.2567E+07         850.33         1.1009   3.048695E+10
-   900.00     4.3718E+07        1014.26         1.1487   5.093277E+10
-  1000.00     5.6892E+07        1187.55         1.2058   8.146861E+10
-  1500.00     1.5678E+08        2179.68         1.6414   5.609129E+11
-  2000.00     3.2183E+08        3354.30         2.3733   2.562037E+12
-
- >>> Time used in VIBCTL is   0.00 seconds
-
+    50.00     3.1804D+04          13.97         1.0000   4.442493D+05
+   100.00     1.7991D+05          38.48         1.0000   6.922871D+06
+   200.00     1.0177D+06         107.38         1.0000   1.092859D+08
+   273.15     2.2185D+06         170.77         1.0002   3.789400D+08
+   298.15     2.7615D+06         194.58         1.0005   5.376008D+08
+   300.00     2.8045D+06         196.38         1.0005   5.510523D+08
+   400.00     5.7571D+06         301.66         1.0042   1.744030D+09
+   500.00     1.0057D+07         421.01         1.0146   4.296054D+09
+   600.00     1.5865D+07         552.93         1.0338   9.068930D+09
+   700.00     2.3324D+07         696.32         1.0626   1.725750D+10
+   800.00     3.2567D+07         850.33         1.1009   3.048696D+10
+   900.00     4.3718D+07        1014.26         1.1487   5.093279D+10
+  1000.00     5.6892D+07        1187.55         1.2058   8.146865D+10
+  1500.00     1.5678D+08        2179.68         1.6414   5.609134D+11
+  2000.00     3.2183D+08        3354.30         2.3733   2.562040D+12
 
 
  CPU time statistics for ABACUS
@@ -3504,15 +3489,17 @@ Starting in Static Property Section -
 
 
 
-
- >>>> Total CPU  time used in ABACUS:   0.98 seconds
+ >>>> Total CPU  time used in ABACUS:   0.36 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
-- End of Static Property Section
 
- >>>> Total CPU  time used in DALTON:  10.06 seconds
- >>>> Total wall time used in DALTON:  11.00 seconds
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   3.73 seconds
+ >>>> Total wall time used in DALTON:   7.00 seconds
 
  
-     Date and time (Linux)  : Thu Mar  3 20:10:16 2005
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Wed Mar 16 17:47:29 2011 
+     Host name              : fe6                                     

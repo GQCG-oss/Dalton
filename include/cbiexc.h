@@ -1,8 +1,8 @@
-C
-C     cbiexc.h - Control common block for abacus/abaexc.F
-C
-      LOGICAL SKIP, CUT, DIPSTR, ROTSTR, ROTVEL, FNAC, EXCTRP,
-     &        SUMRUL, OOTV
+!
+!     cbiexc.h - Control common block for abacus/abaexc.F
+!
+      LOGICAL         SKIP, CUT, DIPSTR, ROTSTR, ROTVEL, FNAC, EXCTRP,
+     &                SUMRUL, OOTV
       PARAMETER       (MAXPP = 200)
       CHARACTER*8     LABAPP
       COMMON /PPLBL / LABAPP(MAXPP), LABSYM(MAXPP)
@@ -11,3 +11,4 @@ C
      &                MXPHP, NABAPP, IPREXC, IPR1IN,
      &                SKIP, CUT, DIPSTR, ROTSTR, ROTVEL, FNAC, EXCTRP,
      &                SUMRUL, OOTV
+! -- end of abaexc.h --

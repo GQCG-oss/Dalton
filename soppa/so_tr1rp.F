@@ -10,10 +10,10 @@ C     PURPOSE: Use RPA trial vectors as first guess for SOPPA
 C              or SOPPA(CCSD). Since the 1p1h vectors are in place,
 C              this routine we just zero the 2p2h vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
+#include "soppinf.h"
 C
       DIMENSION WORK(LWORK)
 C

@@ -1,36 +1,26 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren."
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 #include "single.h"
 C
 C  /* Deck pr1int */
@@ -59,7 +49,7 @@ C
 C
       CALL QENTER('PR1INT')
 #ifdef VAR_DEBUG
-      write (lupri,*) 'PR1INT called with ',WORD
+      write (lupri,*) 'DEBUG: PR1INT called with ',WORD
 #endif
 C
       NCOMP  = 0
@@ -70,9 +60,12 @@ C
          DOINT(2,1) = .TRUE.
          DOINT(1,2) = .TRUE.
          DOINT(2,2) = .TRUE.
-         KMAX   = NLRGSH + NSMLSH
-         NBASIS = NLARGE + NSMALL
-         NPBAS  = NPLRG + NPSML
+                                  ! note that relativistic 4-c small
+                                  ! component dimensions have been used
+                                  ! for Huckel dimensions
+         KMAX   = NLRGSH + NSMLSH ! NSMLSH is really "NHUCSH"
+         NBASIS = NLARGE + NSMALL ! NSMALL is really "NHUCBA"
+         NPBAS  = NPLRG  + NPSML  ! NPSML  is really "NPHUC "
 C
          KKVAL = 1
          KMVAL = KKVAL + MXAQN
@@ -205,7 +198,7 @@ C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include "efield.h"
 #include "ccom.h"
 #include "qm3.h"
-      PARAMETER (NTABLE = 100)
+      PARAMETER (NTABLE = 101)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
@@ -235,56 +228,32 @@ C
 #include "pcm.h"
 #include "pcmlog.h"
 C
-!                   1          2          3          4
-      DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
-!                   5          6          7          8
-     &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ',
-!                   9         10         11         12
-     &            'SPHMOM ', 'SOLVENT', 'FERMI C', 'PSO    ',
-!                  13         14         15         16
-     &            'SPIN-DI', 'DSO    ', 'SDFC   ', 'HDO    ',
-!                  17         18         19         20
-     &            'S1MAG  ', 'S2MAG  ', 'ANGLON ', 'ANGMOM ',
-!                  21         22         23         24
-     &            'LONMOM ', 'MAGMOM ', 'KINENER', 'DSUSNOL',
-!                  25         26         27         28
-     &            'DSUSLAN', 'DSUSLH ', 'DIASUS ', 'NUCSNLO',
-!                  29         30         31         32
-     &            'NUCSLO ', 'NUCSHI ', 'NEFIELD', 'ELFGRDC',
-!                  33         34         35         36
-     &            'ELFGRDS', 'S1MAGL ', 'S1MAGR ', 'HDOBR  ',
-!                  37         38         39         40
-     &            'NUCPOT ', 'HBDO   ', 'SQHDOL ', 'DSUSCGO',
-!                  41         42         43         44
-     &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ',
-!                  45         46         47         48
-     &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
-!                  49         50         51         52
-     &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ',
-!                  53         54         55         56
-     &            'S1ELB  ', 'ONEELD ', 'DPLGRA ', 'QUAGRA ',
-!                  57         58         59         60
-     &            'OCTGRA ', 'ROTSTR ', 'THRMOM ', 'SOFIELD',
-!                  61         62         63         64
-     &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
-!                  65         66         67         68
-     &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
-!                  69         70         71         72
-     &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ',
-!                  73         74         75         76
-     &            'SPHMOML', 'QDBINT ', 'SOSCALE', 'ELGDSCA',
-!                  77         78         79         80
-     &            'ANGECC ', 'RANGMO ', 'RPSO   ', 'PXPINT ',
-!                  81         82         83         84
-     &            'PRPINT ', 'OZKE   ', 'PSOKE  ', 'DNSKE  ',
-!                  85         86         87         88
-     &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  ',
-!                  89         90         91         92
-     &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ',
-!                  93         94         95         96
-     &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2',
-!                  97         98         99        100
-     &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP'/
+      DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP', !   1: 4
+     &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ', !   5: 8
+     &            'SPHMOM ', 'SOLVENT', 'FERMI C', 'PSO    ', !   9:12
+     &            'SPIN-DI', 'DSO    ', 'SDFC   ', 'HDO    ', !  13:16
+     &            'S1MAG  ', 'S2MAG  ', 'ANGLON ', 'ANGMOM ', !  17:20
+     &            'LONMOM ', 'MAGMOM ', 'KINENER', 'DSUSNOL', !  21:24
+     &            'DSUSLAN', 'DSUSLH ', 'DIASUS ', 'NUCSNLO', !  25:28
+     &            'NUCSLO ', 'NUCSHI ', 'NEFIELD', 'ELFGRDC', !  29:32
+     &            'ELFGRDS', 'S1MAGL ', 'S1MAGR ', 'HDOBR  ', !  33:36
+     &            'NUCPOT ', 'HBDO   ', 'SQHDOL ', 'DSUSCGO', !  37:40
+     &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ', !  41:44
+     &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP', !  45:48
+     &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', !  49:52
+     &            'S1ELB  ', 'ONEELD ', 'DPLGRA ', 'QUAGRA ', !  53:56
+     &            'OCTGRA ', 'ROTSTR ', 'THRMOM ', 'SOFIELD', !  57:60
+     &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN', !  61:64
+     &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ', !  65:68
+     &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ', !  69:72
+     &            'SPHMOML', 'QDBINT ', 'SOSCALE', 'ELGDSCA', !  73:76
+     &            'ANGECC ', 'RANGMO ', 'RPSO   ', 'PXPINT ', !  77:80
+     &            'PRPINT ', 'OZKE   ', 'PSOKE  ', 'DNSKE  ', !  81:84
+     &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  ', !  85:88
+     &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ', !  89:92
+     &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2', !  93:96
+     &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP', !  97:100
+     &            'KINADIA'/                                  ! 101
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -308,14 +277,17 @@ C
       FMMORI = .FALSE. ! in orgcom.h
       DO I = 1, NTABLE
          IF (TABLE(I) .EQ. WORD) THEN
-cLig <> added goto 75 and 76 for RANGMO and RPSO
-            GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-     &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
-     &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
-     &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
-     &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
-     &             79,80,81,82,83,84,85,86,87,88,89,90,91,92, 1,
-     &             94,95,96,97,98,99,100), I
+            GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &             11,12,13,14,15,16,17,18,19,20,
+     &             21,22,23,24,25,26,27,28,29,30,
+     &             31,32,33,34,35,36,37,38,39,40,
+     &             41,42,43,44,45,46,47,48,49,50,
+     &             51,52,53,54,55,56,57,58,59,60,
+     &             61,62,63,64,65,66,67,68,69,70,
+     &             71,72,73,74,75,76,77,78,79,80,
+     &             81,82,83,84,85,86,87,88,89,90,
+     &             91,92, 1,94,95,96,97,98,99,100,
+     &             101), I
          END IF
       END DO
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -615,13 +587,13 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Half-derivative overlap integrals HDO
+C     Half-derivative overlap integrals HDO (antisymmetrized)
 C     ---------------------------------
 C
    16 CONTINUE
          INTTYP = 14
-         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
-     &      ' Calculation of half-derivative overlap integrals.'
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)') ' Calculation of'//
+     &      ' antisymmetrized half-derivative overlap integrals.'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL HDOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,.TRUE.,
      &               INTTYP)
@@ -907,7 +879,7 @@ C
  30   CONTINUE
          INTTYP = 28
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &        'Calculation of nuclear shielding tensor integrals'
+     &       'Calculation of nuclear shielding tensor integrals'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,' NST',
      &               INTADR)
@@ -2356,6 +2328,23 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
+C     Adiabatic kinetic energy KINADIAB
+C     -------------------------
+C     (from nuclear second derivatives, with specified isotopes)
+C     hjaaj August 2011
+C
+  101 CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &   ' Calculation of adiabatic kinetic energy contribution'
+         INTTYP = 1002 ! standard kinetic integrals are type 21
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'KINADIAB'
+         INTREP(1) = 0
+         ANTI = .FALSE.
+      GO TO 200
+C
   200 CONTINUE
 C
 C     ***** Print section *****
@@ -2830,6 +2819,7 @@ c  /* Deck SCALE_CHRG */
 #include "elements.h"
 #include "ecpinf.h"
       DIMENSION SVCHRG(*)
+      LOGICAL ISECP
 C      
       PARAMETER (CHGLi = 3D0, CHGF  = 9D0,  CHGNa = 11D0, CHGCl = 17D0,
      &     CHGSc = 21D0, CHGZn = 30D0, CHGY  = 39D0, CHGCd = 48D0,
@@ -2851,10 +2841,10 @@ C            true charge if ECP). With this change this
 C            may (???) also work for ECP ???
 C
 c     scaling according to Koseki et al, J.Phys.Chem 1995, 99, 12764
-         IF (INDECP(I) .NE. 0) THEN
+         IF (ISECP(I)) THEN
             IF(CHG.GE.CHGLi.AND.CHG.LE.CHGF) THEN
                VLE = CHG - 2D0
-               FAC = 0.40 + 0.05*VLE
+               FAC = 0.45 + 0.05*VLE
             ELSE IF(CHG.GE.CHGNa.AND.CHG.LE.CHGCl) THEN
                FAC = 12.0D0
 c     scaling according to Koseki et al, J. Pys. Chem. A 1998, 102, 10430  
@@ -2908,6 +2898,29 @@ C            charge in CHARGE(I) /hjaaj mar 2004
 C            
          WRITE(LUPRI,'(A4,11X,F8.2)')ELEMENTS(IND),CHARGE(I)
       END DO
+      END
+      LOGICAL FUNCTION ISECP(IATOM) 
+C
+C True if atom I is an ECP type atom
+C
+      IMPLICIT NONE
+      INTEGER IATOM
+C
+#include "ecpinf.h"
+C
+      INTEGER ITYP, INONT
+C
+      ISECP = .FALSE.
+      DO ITYP = 1, NTYECP
+         DO INONT = 1, NECP(ITYP)
+            IF (IATOM .EQ. INDECP(ITYP) + INONT - 1) THEN
+               ISECP = .TRUE.
+               GOTO 999
+            END IF
+         END DO
+      END DO
+ 999  CONTINUE
+      RETURN
       END
 C  /* Deck ioden */
       FUNCTION IODEN(I)
@@ -3955,8 +3968,7 @@ C  /* Deck efntyp */
       CALL QENTER('EFNTYP')
 
       NOPTYP = 3*NATOM
-      IF (INTDIR .AND. FORQM3 .AND. RUNQM3) NOPTYP = 3
-      IF (QMMM .AND. RUNQM3) NOPTYP = 3
+      IF (RUNQM3) NOPTYP = 3
       CALL NTYPTS(NOPTYP)
 C
       ITYP = 0
@@ -4037,7 +4049,7 @@ C  /* Deck efgtyp */
 #endif
 C
       NOPTYP = 6*NATOM
-      IF (QMMM .AND. RUNQM3) NOPTYP = 6
+      IF (RUNQM3) NOPTYP = 6
       CALL NTYPTS(NOPTYP)
       CALL IZERO(IFGTBL,6*NUCIND*(MAXREP + 1))
 C
@@ -4540,8 +4552,6 @@ C  /* Deck sphco1 */
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, D3 = 3.0D0)
       DIMENSION TRAMAT(NXYZ,NLM), COSSIN(0:LVAL,0:LVAL), PL(0:LVAL)
 C
-#include "sdpre.h"
-C
       LVAL1 = LVAL + 1
 C
 C     Legendre coefficients
@@ -4549,8 +4559,8 @@ C     ---------------------
 C
       CALL DZERO(PL(0),LVAL1)
       DO 100 K = 0, LVAL/2
-         PL(LVAL-2*K) = (SDPRE((-1)**K)/SDPRE(2**LVAL))
-     &                    *BINOM(LVAL,K)*BINOM(2*(LVAL-K),LVAL)
+         PL(LVAL-2*K) = (((-1.0D0)**K) * (2.0D0**(-LVAL)))
+     &                * BINOM(LVAL,K) * BINOM(2*(LVAL-K),LVAL)
   100 CONTINUE
 C
 C     Cosine and sine coefficients
@@ -4560,7 +4570,7 @@ C
       DO 200 M = 0, LVAL
          COSSIN(M,0) = D1
          DO 210 K = 1, M
-            COSSIN(M,K) = COSSIN(M-1,K-1)*SDPRE((-1)**(K-1))
+            COSSIN(M,K) = COSSIN(M-1,K-1)*((-1.0D0)**(K-1))
             IF (M .GT. K) COSSIN(M,K) = COSSIN(M,K) + COSSIN(M-1,K)
   210    CONTINUE
   200 CONTINUE
@@ -4631,7 +4641,7 @@ C
       RETURN
       END
 C  /* Deck facult */
-      FUNCTION FACULT(N)
+      REAL*8 FUNCTION FACULT(N)
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
@@ -4689,7 +4699,7 @@ C
       RETURN
       END
 C  /* Deck binom */
-      FUNCTION BINOM(I,J)
+      REAL*8 FUNCTION BINOM(I,J)
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
@@ -4740,6 +4750,9 @@ C        New AOPROPER, open file
 #else
 C     Dalton: Please note that we now require LUPROP to be open
 C     when reaching this routine.
+         IF (LUPROP .LT. 0) THEN
+            CALL QUIT('Programming error, AOPROPER not open in WRTPRO')
+         END IF
 #endif
          REWIND LUPROP
       ELSE

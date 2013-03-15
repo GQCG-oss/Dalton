@@ -52,7 +52,6 @@ cat > rsp_soppapolarnosymm.dal <<'%EOF%'
 .MP2
 **RESPONSE
 .S0MIX
-.NOITRA
 .SOPPA
 *LINEAR
 .DIPLEN
@@ -60,6 +59,8 @@ cat > rsp_soppapolarnosymm.dal <<'%EOF%'
  2
 0.0 0.0592
 *C6
+.PRINT
+  5
 .DIPLEN
 .MAXMOM
   6
@@ -124,7 +125,7 @@ TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="STATIC POLARIZABILITIES NOT CORRECT"
 
-# Frequency dependant polarizabilites
+# Frequency dependent polarizabilites
 CRIT1=`$GREP "\@ *a\.u\.\: * 5\.9200000(D|E)\-02" $log | wc -l`
 CRIT2=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 7\.46290.*(D|E)\+00" $log | wc -l`
 CRIT3=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 5\.56057.*(D|E)\+00" $log | wc -l`

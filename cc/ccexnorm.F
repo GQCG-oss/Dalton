@@ -1,37 +1,27 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include <single.h>
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+#include "single.h"
 C
 *=====================================================================*
       subroutine ccexnorm(isym,imult,threig,work,lwork)
@@ -46,16 +36,16 @@ C
 *
 *=====================================================================*
       implicit none  
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <ccexcinf.h>
-#include <codata.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "ccexcinf.h"
+#include "codata.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccnoddy.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -318,9 +308,6 @@ c         -----------------------------------------------------------
        if (iovlp.ne.novlp) call quit('error in CCEXNORM.')
   
        if (ccsdt) then
-#if !defined CC_AARHUS
-          CALL QUIT('No triples (yet) in CCEXNORM.')
-#else
          if (ipass.eq.1 .and. (.not.ccsdtrenrm)) then
            continue 
          else
@@ -339,7 +326,6 @@ c         -----------------------------------------------------------
      &                         1,1,1,1,dummy,work,lwork)
            END IF
          end if
-#endif
        end if
 
        if (ipass.eq.1) then
@@ -540,7 +526,6 @@ C FIX OF CCSDR(3) BUG. SAVE UNIT NORM IN APPROPRIATE VECTOR
 *---------------------------------------------------------------------*
 *              end of subroutine ccexnorm                             *
 *---------------------------------------------------------------------*
-#if defined CC_AARHUS
 *=====================================================================*
       subroutine ccovlp_noddy(listl,listr,imode,
      &                        overlap,ilstnrst,ilstnrnd,istartend,
@@ -562,15 +547,15 @@ C FIX OF CCSDR(3) BUG. SAVE UNIT NORM IN APPROPRIATE VECTOR
 *
 *=====================================================================*
       implicit none  
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <inftap.h> 
-#include <dummy.h> 
-#include <ccsdsym.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "inftap.h" 
+#include "dummy.h" 
+#include "ccsdsym.h"
+#include "ccexci.h"
 
       logical locdbg
       parameter (locdbg=.false.)
@@ -1034,8 +1019,8 @@ C  /* Deck cc3_lr_ovlp */
 C
       IMPLICIT NONE
 C
-#include <ccexci.h>
-#include <priunit.h>
+#include "ccexci.h"
+#include "priunit.h"
 C
       INTEGER ilstnrst,ilstnrnd,istartend(maxexci,2),lwork
       INTEGER LU3VI,LU3VI2,LU3FOP,LU3FOP2,LUCKJD,LUTOC,LUDKBC
@@ -1049,10 +1034,10 @@ C
       CHARACTER*5 FN3FOP
       CHARACTER*4 FNDKBC
 C
-      PARAMETER (FN3VI  = 'CC3_VI', FN3VI2 = 'CC3_VI12', 
-     *           FN3FOP='PTFOP'   , FN3FOP2='PTFOP2',
-     *           FNCKJD = 'CKJDEL', FNTOC  = 'CCSDT_OC',
-     *           FNDKBC  = 'DKBC')
+      PARAMETER (FN3VI  = 'CC3_VI', FN3VI2  = 'CC3_VI12', 
+     *           FN3FOP = 'PTFOP' , FN3FOP2 = 'PTFOP2',
+     *           FNCKJD = 'CKJDEL', FNTOC   = 'CCSDT_OC',
+     *           FNDKBC = 'DKBC')
 C
       LOGICAL locdbg
       PARAMETER (locdbg = .false.)
@@ -1084,12 +1069,12 @@ C
 
       if (listl(1:2).ne.'LE ' ) then
          WRITE(LUPRI,*) 'LISTL:',LISTL
-         CALL QUIT('Unkown/Illegal list in CC3_LR_OVLP.')
+         CALL QUIT('Unknown/Illegal list in CC3_LR_OVLP.')
       end if
 !
       if ( listr(1:2).ne.'RE ') then
          WRITE(LUPRI,*) 'LISTR:',LISTR
-         CALL QUIT('Unkown/Illegal list in CC3_LR_OVLP.')
+         CALL QUIT('Unknown/Illegal list in CC3_LR_OVLP.')
       end if
 C
 C-------------------
@@ -1195,14 +1180,14 @@ C  /* Deck eb3_e3_ovlp */
 C
       IMPLICIT NONE 
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccexci.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <cc3t3d.h>
-#include <ccinftap.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccexci.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "cc3t3d.h"
+#include "ccinftap.h"
 C
       INTEGER IDLSTEB,ISYMEB,IDLSTE,ISYME,ISYM0,ISINTETR,LWORK
       INTEGER IOPT,IOFF
@@ -1271,12 +1256,12 @@ C------------------------------------
 C
       if (LISTEB(1:2).ne.'LE ' ) then
          WRITE(LUPRI,*) 'LISTEB:',LISTEB
-         CALL QUIT('Unkown/Illegal list in EB3_E3_OVLP.')
+         CALL QUIT('Unknown/Illegal list in EB3_E3_OVLP.')
       end if
 C
       if ( LISTE(1:2).ne.'RE ') then
          WRITE(LUPRI,*) 'LISTE:',LISTE
-         CALL QUIT('Unkown/Illegal list in EB3_E3_OVLP.')
+         CALL QUIT('Unknown/Illegal list in EB3_E3_OVLP.')
       end if
 C
 C--------------------------------
@@ -2013,7 +1998,7 @@ C     Construct TMAT^AC(bjik) = WE^AC(bkji) + WE^AC(bjki)
 C-----------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
 C
       INTEGER ISWEMAT,LENSQ,INDSQ(LENSQ,6)
       INTEGER I
@@ -2047,8 +2032,8 @@ C******************************************************************
 C
       IMPLICIT NONE 
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISAIBJ,ISYMB,ISYAIJ,ISYMJ,ISYMBJ,ISYMAI,ISYMI,ISYMA
       INTEGER NBJ,NAI,KOFF1,KOFF2
@@ -2113,4 +2098,4 @@ C
 C
       RETURN
       END
-#endif
+! -- end of ccexnorm.F --

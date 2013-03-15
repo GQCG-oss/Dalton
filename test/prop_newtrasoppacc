@@ -87,7 +87,7 @@ F  1    1
 #######################################################################
 cat > prop_newtrasoppacc.dal <<%EOF%
 **DALTON INPUT
-.PRESORT
+.NEWTRA
 .RUN PROPERTIES
 **WAVE FUNCTIONS
 .HF
@@ -100,7 +100,7 @@ cat > prop_newtrasoppacc.dal <<%EOF%
 *SPIN-S
 .ABUNDA
  0.04
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

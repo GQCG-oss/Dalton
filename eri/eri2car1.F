@@ -1,39 +1,29 @@
-C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C FILE: eri2car1.F
 C
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cr1drv */
       SUBROUTINE CR1DRV(HERINT,HERR12,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
@@ -42,9 +32,9 @@ C  /* Deck cr1drv */
 C
 C     HERR12 integrals have been added (WK/UniKA/04-11-2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       LOGICAL DOREC, FRSTAO, CONTRA
       DIMENSION HERINT(*), HCINT(*), HERR12(*),
@@ -54,11 +44,11 @@ C
      &          WORK(LWORK)
 C     Call to subroutine CR1UND or CR1U12 in CR1TWO (WK/UniKA/04-11-2002).
       EXTERNAL CR1UND, CR1U12
-#include <cbieri.h>
-#include <ericom.h>
-#include <eriao.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eriao.h"
+#include "r12int.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
 C
@@ -188,9 +178,9 @@ C  /* Deck cr1two */
      &                  TEXPA,TEXPB,AOVERP,BOVERP,CR1SUB)
 C     TEXPA,TEXPB,AOVERP,BOVERP and CR1SUB have been added (WK/UniKA/04-11-2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
       EXTERNAL CR1SUB
       INTEGER TUV
@@ -214,13 +204,13 @@ C
      &          HCSINT(NCCPP,NTUV34,KHKT2),
      &          TEXPA(*),TEXPB(*),AOVERP(*),BOVERP(*)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <r12int.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "r12int.h"
       LOGICAL LOCMIA
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1TWO','*',103)
 C
@@ -396,17 +386,17 @@ c       giving miau12 its old value back (C. Villani, Uni-Ka, Feb 2005)
       END
 C  /* Deck hcprint */
       SUBROUTINE HCPRINT(HCINT,IODDHC,IPNTUV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (NHCTYP = 1)
       INTEGER TUV
       DIMENSION HCINT(NCTF12,NPQBCX,NPRF34,NTUV34,KHKT12,NHCTYP),
      &          IODDHC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "ibtfun.h"
 C
 C     Print Hermite-Spherical integrals
 C     =================================
@@ -452,9 +442,9 @@ C  /* Deck cr1und */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
       INTEGER T, U, V, TUV
       LOGICAL FRSTUV(NTUV34)
@@ -466,11 +456,11 @@ C
      &          ETUV(NPP12), EUV(NPP12),
      &          HCPRIM(NPP12,NPRF34,NTUV34),AOVERP(NPP12)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1UND','*',103)
 C
@@ -540,8 +530,8 @@ C
 C  /* Deck erict1 */
       SUBROUTINE ERICT1(PPINT,CCINT,CMAT1,CMAT2,CPINT,IODDHC,IODKC,
      &                  FRSTUV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TUV
       LOGICAL FRSTUV(NTUV34)
@@ -551,9 +541,9 @@ C  /* Deck erict1 */
       DIMENSION CPINT(NCTF1,NPQBCX,NPRF2)
       DIMENSION CCINT(NCTF12*NPQBCX,NPRF34,NTUV34)
       DIMENSION IODDHC(NRTOP)
-#include <hertop.h>
-#include <ericom.h>
-#include <eriao.h>
+#include "hertop.h"
+#include "ericom.h"
+#include "eriao.h"
 C
       IF (IPRINT .GT. 25) THEN
          CALL HEADER('Output from ERICT1',-1)
@@ -652,14 +642,14 @@ C
 
 C  /* Deck cont12 */
       SUBROUTINE CONT12(PPINT,CCINT,CMAT1,CMAT2,CPINT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMAT1(NPRF1,NCTF1)
       DIMENSION CMAT2(NPRF2,NCTF2)
       DIMENSION PPINT(NPQBCX*NPRF2,NPRF1,NPRF34)
       DIMENSION CPINT(NCTF1,NPQBCX,NPRF2)
       DIMENSION CCINT(NCTF2,NCTF1*NPQBCX,NPRF34)
-#include <ericom.h>
-#include <eriao.h>
+#include "ericom.h"
+#include "eriao.h"
       DO L = 1, NPRF34
          CALL DZERO(CPINT,NCTF1*NPQBCX*NPRF2)
          DO 200 K = 1, NPRF1
@@ -686,9 +676,9 @@ c     Part for [T1,r12] integral derivatives, based on subroutine CR1DRV
       SUBROUTINE CR1MIA(HERINT,HERR12,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
      &                  LMNPWR,IPNTUV,COOR12,EXP12,CSQ,CCFBT,
      &                  WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL DOREC, FRSTAO, CONTRA
       DIMENSION HERINT(*), HCINT(*), HERR12(*),
      &          INDHER(*), INDHSQ(*), IODDHH(*), IODDHC(*),
@@ -696,11 +686,11 @@ c     Part for [T1,r12] integral derivatives, based on subroutine CR1DRV
      &          COOR12(NPP12,3), EXP12(NPP12,3), CSQ(*), CCFBT(*),
      &          WORK(LWORK)
       EXTERNAL  CMIASB
-#include <cbieri.h>
-#include <ericom.h>
-#include <eriao.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eriao.h"
+#include "r12int.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
 C
@@ -833,9 +823,9 @@ C     This subroutine is a variant of CR1U12 for derivative integrals
 c     over [T1,r12].
 C     Written by Cristian Villani (University of Karlsruhe, winter 2004).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)
       INTEGER T, U, V, TUV
@@ -849,11 +839,11 @@ C
      &          ETUV(NPP12), EUV(NPP12),
      &          HCPRIM(NPP12,NPRF34,NTUV34),ABVERP(NPP12)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "r12int.h"
+#include "ibtfun.h"
 
       DO I=1,3
         MIAXYZ(I)=0

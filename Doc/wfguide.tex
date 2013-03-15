@@ -26,6 +26,12 @@ interaction\index{CI}\index{Configuration Interaction}. Two types of
 configuration selection schemes are implemented: the complete active
 space model (CAS) and the restricted active space model (RAS).
 
+\item[GASCI] Generalized Active Spaces Configuration
+interaction\index{GASCI}\index{Generalized Active Spaces Configuration Interaction}. 
+The most general scheme of defining configuration selection schemes (including CAS and RAS).
+For more information on how to run this kind of calculation, we refer to
+Chapters~\ref{ch:lucitaexamples} and~\ref{ch:lucita}.
+
 \item[CC] Coupled Cluster\index{CC}\index{Coupled Cluster}.
 For information on how to run this kind of calculation, we refer to 
 Chapters~\ref{ch:ccexamples} and~\ref{ch:CC}.
@@ -151,8 +157,7 @@ The default convergence threshold\index{convergence!threshold} of
 
 
 \clearpage
-\section{\label{sec:ig_hints} Hints on the structure of the input for
-the \\\Sec{*WAVE FUNCTIONS} input module}
+\section{\label{sec:ig_hints} Hints on the structure of the \Sec{*WAVE FUNCTIONS} input}
 
 
 The following list attempts to show the interdependence of the various
@@ -305,9 +310,9 @@ orbitals\index{molecular orbital} already available on the \verb|SIRIUS.RST|
 file, for instance the converged
 orbitals from a previous calculation.  The orbitals can then be
 transferred to another computer and appended to the SIRIUS input
-there. The orbitals may then be read by \siraba\ using the \Key{MOSTART}
+there. The orbitals may then be read by \dalton\ using the \Key{MOSTART}
 followed by \Key{FORM18} option on the next line (with this option
-\siraba\ will, after having finished the \Sec{*WAVE FUNCTIONS}
+\dalton\ will, after having finished the \Sec{*WAVE FUNCTIONS}
 input module, search the input file for either the \Sec{*MOLORB}
 keyword or the \Sec{*NATORB} keyword and expect the orbital
 coefficients to follow immediately afterwards).
@@ -319,7 +324,7 @@ Those who are used to the old {\sc sirius} input will not
 experience any dramatic changes with respect to the DALTON input,
 although a few minor differences exist in order to create a more
 user-friendly environment. The input sections are the same as
-before starting with a wavefunction specification, currently,
+before starting with a wave function specification, currently,
 including options for SCF, DFT, MP2, MCSCF, and CC reference states.
 Depending on this choice of reference state the following input
 sections take different form, from the simplest SCF input to the
@@ -567,8 +572,6 @@ Ref.~\cite{hjajpjhajcp87}. Such an input would look like:
 .TITLE
 4 2 2 0 CAS on first excited 1A_1 state, converging to 1.D-07
 .MCSCF
-.NSYM
-  4
 *CONFIGURATION INPUT
 .SYMMETRY
   1                 | same symmetry as ground state
@@ -629,8 +632,6 @@ example employing a frozen core\index{frozen core}:
 C1s core hole state of CO, 4 2 2 0 valence CAS + C1s.
 Frozen core orbital calculation.
 .MCSCF
-.NSYM
-  4
 *CONFIGURATION INPUT
 .SYMMETRY
   1
@@ -720,8 +721,6 @@ non-equilibrium excited state calculation; keyword \Key{INERSINITIAL}.
 .TITLE
  2-RAS(2p2p') : on F+ (1^D) in Glycol
 .MCSCF
-.NSYM
- 8
 *CONFIGURATION INPUT
 .SPIN MULTIPLICITY
  1
