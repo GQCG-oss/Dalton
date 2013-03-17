@@ -57,10 +57,6 @@ C
       DIMENSION KLRED(2),KNVEC(2)
       LOGICAL CONV(ABS_NFREQ_INTERVAL),CONVERGED,EX1,EX2,EX3
 C
-c      LUSB = 80
-c      LUAB = 81
-c      LUSS = 82
-c      LUAS = 83
 C
       NEQ2S=ABS_NFREQ_INTERVAL
       KZYVAR=2*KZVAR
@@ -100,9 +96,9 @@ c        write(luabspri,*) 'ABS_KLRED >0, restart'
           WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
           WRK(KGD+KZVAR-1+I)=0.5d0*(GD(I)-GD(KZVAR+I))
         END DO
-        CALL GPINQ('E1RED','EXIST',EX1)
-        CALL GPINQ('E2RED','EXIST',EX2)
-        CALL GPINQ('SRED','EXIST',EX3)
+        CALL GPINQ('ABS_E1RED','EXIST',EX1)
+        CALL GPINQ('ABS_E2RED','EXIST',EX2)
+        CALL GPINQ('ABS_SRED','EXIST',EX3)
         IF (EX1.AND.EX2.AND.EX3) THEN
           write(luabspri,*)
      &          'Use ABS_READIN_RED ',ABS_KLRED(1),ABS_KLRED(2)
@@ -191,7 +187,7 @@ C
         ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
           ITYPE = 2
         ELSE
-           WRITE(LUPRI,'(A)') ' Warning : Unknown operator!'
+          WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
           RETURN
         END IF
 C
@@ -239,9 +235,9 @@ C
       ABS_KLRED(1)=KLRED(1)
       ABS_KLRED(2)=KLRED(2)
 C
-      CALL GPINQ('E1RED','EXIST',EX1)
-      CALL GPINQ('E2RED','EXIST',EX2)
-      CALL GPINQ('SRED','EXIST',EX3)
+      CALL GPINQ('ABS_E1RED','EXIST',EX1)
+      CALL GPINQ('ABS_E2RED','EXIST',EX2)
+      CALL GPINQ('ABS_SRED','EXIST',EX3)
 c
       IF (EX1.AND.EX2.AND.EX3) THEN
         REWIND(LUE1RED)
@@ -1233,6 +1229,7 @@ C
       LOGICAL CONV(NBNEW/2)
       LOGICAL ORCHK(NBNEW),ORTHO_QUIT
 c      PARAMETER (THR_LD=1.0D-2*THCLR_ABSORP)
+#include "abslrs.h"
 C
       KTMP =1
       KFREE = KTMP + KZVAR
@@ -1398,7 +1395,7 @@ c     &                    xort(1+(J-1)*KZVAR),1)
 c          enddo
 c      enddo
 c
-      IF (IPRABS.GE.200) THEN
+      IF (IPRABSLRS.GE.200) THEN
          WRITE(LUABSPRI,'(2(/,5X,A))') ' NORMALIZED TRIAL VECTOR',
      &        '========================'
          CALL OUTPUT(XORT,1,KZVAR,1,NBNEW,KZVAR,NBNEW,1,LUABSPRI)
