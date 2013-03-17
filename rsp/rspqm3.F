@@ -49,6 +49,7 @@ C
 #include "orgcom.h"
 #include "infinp.h"
 #include "nuclei.h"
+#include "pcmdef.h"
 #include "pcm.h"
 #include "pcmlog.h"
 
