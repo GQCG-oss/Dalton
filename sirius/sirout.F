@@ -330,21 +330,21 @@ csonia 04/10/95
          END IF
 
       ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
-        WRITE(LUPRI,'(/5X,A/)') 'QM/MM calculation converged :'
+        WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
         WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Total QM/MM energy:   ', ESOLT
       ELSE IF (QMMM) THEN
-        WRITE(LUPRI,'(/5X,A/)') 'QM/MM calculation converged :'
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Charge contribution:    ', ECHART
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ', EDIPT 
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Quadrupole contribution:', EQUADT
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Octuple contribution:   ', EOCTUP
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Electronic Pol. energy: ', EDELD 
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ', EDNUC
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ', EDMULT
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ', ESOLT
+        WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QMMM" calculation converged :'
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Charge contribution:    ',ECHART
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ',EDIPT
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Quadrupole contribution:',EQUADT
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Octuple contribution:   ',EOCTUP
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Electronic Pol. energy: ',EDELD
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ',EDNUC
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ',ESOLT
       ELSE IF (MMPCM) THEN
          WRITE(LUPRI,'(/5X,A/)') 'QM/MM/PCM calculation converged :'
          WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
