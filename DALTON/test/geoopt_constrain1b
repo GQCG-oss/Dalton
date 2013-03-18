@@ -91,7 +91,7 @@ CRIT6=`$GREP "The following coordinate numbers will be held fixed during the opt
 CRIT7=`$GREP "Coordinate \# * 1" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
-CTRL[1]=7
+CTRL[1]=6  # no redundant nternal coordinates for diatomics any more
 ERROR[1]="CONSTRAINED GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Symmetry
@@ -124,13 +124,13 @@ CTRL[4]=1
 ERROR[4]="INITIAL ENERGY NOT CORRECT"
 
 # Initial gradient
-CRIT1=`$GREP "C * z *  0*\.242895" $log | wc -l`
-CRIT2=`$GREP "C * y * \-*0*\.0000000" $log | wc -l`
-CRIT3=`$GREP "H * z *  0*\.009542" $log | wc -l`
-CRIT4=`$GREP "H * y *  0*\.003465" $log | wc -l`
-CRIT5=`$GREP "H * z *  0*\.019085" $log | wc -l`
-CRIT6=`$GREP "H * y * -0*\.003465" $log | wc -l`
-CRIT7=`$GREP "H * x *  0*\.006001" $log | wc -l`
+CRIT1=`$GREP "C * z *  0*\.24289" $log | wc -l`
+CRIT2=`$GREP "C * y *\-*0*\.00000" $log | wc -l`
+CRIT3=`$GREP "H * z *  0*\.00954" $log | wc -l`
+CRIT4=`$GREP "H * y *  0*\.00346" $log | wc -l`
+CRIT5=`$GREP "H * z *  0*\.01908" $log | wc -l`
+CRIT6=`$GREP "H * y * -0*\.00346" $log | wc -l`
+CRIT7=`$GREP "H * x *  0*\.00600" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[5]=7
@@ -140,12 +140,12 @@ ERROR[5]="INITIAL GRADIENT NOT CORRECT"
 #CRIT1=`$GREP "C * 2 * 0*\.00000000.* \-0*\.0000000.* \-1\.7547876" $log | wc -l`
 CRIT1=1
 #hjaaj: the carbon atom doesn't really move, so number of hits change easily
-CRIT2=`$GREP "H * _. * 0*\.00000000.. *\-1\.9594337.* \-*2\.372259" $log | wc -l`
-CRIT3=`$GREP "H * _. * 0*\.00000000.. *  1\.9594337.* \-*2\.372259" $log | wc -l`
-CRIT4=`$GREP "H * _. *  1\.696919.*     0*\.979716.*  \-*2\.372259" $log | wc -l`
-CRIT5=`$GREP "H * _. *\-1\.696919.*     0*\.979716.*  \-*2\.372259" $log | wc -l`
-CRIT6=`$GREP "H * _. *  1\.696919.*   \-0*\.979716.*  \-*2\.372259" $log | wc -l`
-CRIT7=`$GREP "H * _. *\-1\.696919.*   \-0*\.979716.*  \-*2\.372259" $log | wc -l`
+CRIT2=`$GREP "H * _. *  0*\.000000* * \-1\.959433.*   2\.37225" $log | wc -l`
+CRIT3=`$GREP "H * _. *  0*\.000000* *   1\.959433.* \-2\.37225" $log | wc -l`
+CRIT4=`$GREP "H * _. *   1\.696919.*   0*\.979716.*   2\.37225" $log | wc -l`
+CRIT5=`$GREP "H * _. * \-1\.696919.*   0*\.979716.*   2\.37225" $log | wc -l`
+CRIT6=`$GREP "H * _. *   1\.696919.* \-0*\.979716.* \-2\.37225" $log | wc -l`
+CRIT7=`$GREP "H * _. * \-1\.696919.* \-0*\.979716.* \-2\.37225" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[6]=7
@@ -153,30 +153,30 @@ ERROR[6]="INITIAL STEP NOT CORRECT"
 
 # Second iteration
 CRIT1=`$GREP "Energy at this geometry is * \: * \-78\.25702[0-9]" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.19278[0-9]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.04593[0-9]" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * 0*\.1927" $log | wc -l`
+CRIT3=`$GREP "Norm of step     * \: * 0*\.0459" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="SECOND ITERATION NOT CORRECT"
 
 # Third iteration
-CRIT1=`$GREP "Norm of gradient * \: * (0| )\.18778[0-9]" $log | wc -l`
-CRIT2=`$GREP "Norm of step * \: * (0| )\.0014[8-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Norm of gradient * \: * (0| )\.1877" $log | wc -l`
+CRIT2=`$GREP "Norm of step     * \: * (0| )\.0014" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[8]=2
 ERROR[8]="THIRD ITERATION NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "C * _1 * 0*\.00000.* * \-*0*\.00000.* * 1\.7547876282" $log | wc -l`
-CRIT2=`$GREP "C * _2 * 0*\.00000.* * \-*0*\.00000.* * \-1\.7547876282" $log | wc -l`
+CRIT1=`$GREP "C * _1 *  0*\.00000.* *\-*0*\.00000.*    *   1\.7547876282" $log | wc -l`
+CRIT2=`$GREP "C * _2 *  0*\.00000.* *\-*0*\.00000.*    * \-1\.7547876282" $log | wc -l`
 # many digits in z-coordinate in CRIT1 and CRIT2 because this coordinate
 # is constrained to be fixed.
-CRIT3=`$GREP "H * _. * 0*\.00000.* * \-1\.94839.* * \-*2\.3971(49|5)" $log | wc -l`
-CRIT4=`$GREP "H * _. * 0*\.00000.* *   1\.94839.* * \-*2\.3971(49|5)" $log | wc -l`
-CRIT5=`$GREP "H * _. *  1\.68735.* *  0*\.97419.* * \-*2\.3971(49|5)" $log | wc -l`
-CRIT6=`$GREP "H * _. *\-1\.68735.* *  0*\.97419.* * \-*2\.3971(49|5)" $log | wc -l`
-CRIT7=`$GREP "H * _. *  1\.68735.* *\-0*\.97419.* * \-*2\.3971(49|5)" $log | wc -l`
-CRIT8=`$GREP "H * _. *\-1\.68735.* *\-0*\.97419.* * \-*2\.3971(49|5)" $log | wc -l`
+CRIT3=`$GREP "H * _. *  0*\.00000.* *  \-1\.9483[89].* *   2\.3971(4|5)" $log | wc -l`
+CRIT4=`$GREP "H * _. *  0*\.00000.* *    1\.9483[89].* * \-2\.3971(4|5)" $log | wc -l`
+CRIT5=`$GREP "H * _. *   1\.68735.* *   0*\.97419.*    *   2\.3971(4|5)" $log | wc -l`
+CRIT6=`$GREP "H * _. * \-1\.68735.* *   0*\.97419.*    *   2\.3971(4|5)" $log | wc -l`
+CRIT7=`$GREP "H * _. *   1\.68735.* * \-0*\.97419.*    * \-2\.3971(4|5)" $log | wc -l`
+CRIT8=`$GREP "H * _. * \-1\.68735.* * \-0*\.97419.*    * \-2\.3971(4|5)" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[9]=38 # 7 + 7 +6*4
@@ -185,8 +185,8 @@ ERROR[9]="FINAL GEOMETRY NOT CORRECT"
 # Geometry convergence
 CRIT1=`$GREP "Constrained optimization converged in * 4( |  )iterations\!" $log | wc -l`
 CRIT2=`$GREP "Removing the constraint\(s\) might decrease the energy further\." $log | wc -l`
-CRIT3=`$GREP "Energy at final geometry is * \: * \-78\.25722[0-9] a\.u\." $log | wc -l`
-CRIT4=`$GREP "Energy change during optimization \: * (\-0|\-)\.00063[0-9] a\.u\." $log | wc -l`
+CRIT3=`$GREP "Energy at final geometry is     * \: * \-78\.25722[0-9] a\.u\." $log | wc -l`
+CRIT4=`$GREP "Energy change during optimization \: * \-0*\.00063[0-9] a\.u\." $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[10]=4
 ERROR[10]="GEOMETRY OPTIMIZATION NOT CONVERGED"
