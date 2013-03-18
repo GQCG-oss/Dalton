@@ -1502,12 +1502,12 @@ C
          NTCONV = NTCONV + NOTCNV
 
          IF (MMPCM) THEN
-            IF (NSTATES.NE.MAXVEC) THEN
-              CALL QUIT('NSTATES.NE.MAXVEC for MMPCM')
+             IF (NSTATES.LE.0) THEN
+              CALL QUIT('NSTATES.LE.0 for MMPCM')
             ENDIF 
             DO 3333 KL=1,NBX
               ICQM3(KL) = KEX(KL)
- 3333       CONTINUE     
+ 3333       CONTINUE
          ENDIF
 
          IF (NTCONV.EQ.0 .OR. NCSIM+NOSIM.EQ.0) GO TO 3999

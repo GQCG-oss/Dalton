@@ -112,12 +112,7 @@ WATER
 1.750   
 1.950
 1.950
-**INTEGRALS
-.DIPLEN
-.NOSUP
-.PRINT
- 2
-*QM3INP
+*QM3
 .QM3
 .PRINT
  1
@@ -127,6 +122,11 @@ WATER
  180
 .MMPCM
 .INTDIR
+**INTEGRALS
+.DIPLEN
+.NOSUP
+.PRINT
+ 2
 **WAVE FUNCTIONS
 .HF
 *SCF INPUT
@@ -159,10 +159,10 @@ else
 fi
 # Test of energy
 #
-CRIT1=`$GREP "QM/MM calculation converged" $log | wc -l`
+CRIT1=`$GREP "QM/MM/PCM calculation converged" $log | wc -l`
 CRIT2=`$GREP "Electrostatic energy: * ( \-|\-0)\.008726038" $log | wc -l`
 CRIT3=`$GREP "Polarization energy: * ( \-|\-0)\.000609032" $log | wc -l`
-CRIT4=`$GREP "Total QM/MM energy: * ( \-|\-0)\.009335070" $log | wc -l`
+CRIT4=`$GREP "QM/MM/PCM energy: * ( \-|\-0)\.009335070" $log | wc -l`
 CRIT5=`$GREP "Final HF energy:    *       \-112\.362260168" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
 CTRL[1]=5
