@@ -1,38 +1,4 @@
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-#include "single.h"
-C
 C  /* Deck lrscinp */
 C This module read nesserary input for LRESC calculations.
 C jim-gesc : May-2012
@@ -49,7 +15,6 @@ C
       LOGICAL NEWDEF 
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
-<<<<<<< HEAD
 C#include "dorps.h"
 #include "spnout.h"
 c#include "lrescinf.h"
@@ -58,27 +23,24 @@ C jim  aca van las opctiones para LRESC , aun no las defino todas
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
 C
-=======
-#include <dorps.h>
-#include <spnout.h>
-C jim  aca van las opctiones para LRESC , aun no las defino
-      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.LINEAR ','.QUADRA',
-     &            '.GESC  ','.NOPSO ','.SD+FC ','.SDxFC','.ISOTOP',
-     &            '.COUPLI'/
-C
-      write(lupri,*) ' LRSCOPTS :  called with : ' , WORD
->>>>>>> 46d1f194ad6db75a493ae3805b16ad5c830dd66c
+c#include <dorps.h>
+c#include <spnout.h>
+cC jim  aca van las opctiones para LRESC , aun no las defino
+c      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.LINEAR ','.QUADRA',
+c     &            '.GESC  ','.NOPSO ','.SD+FC ','.SDxFC','.ISOTOP',
+c     &            '.COUPLI'/
+cC
+c      write(lupri,*) ' LRSCOPTS :  called with : ' , WORD
+
+
+
       NEWDEF = (WORD .EQ. '*LROPTS')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
-<<<<<<< HEAD
 c            write(lupri,*) ' @LRSCINP : reading : ' , WORD
-=======
-            write(lupri,*) ' LRSCOPTS : read : ' , WORD
->>>>>>> 46d1f194ad6db75a493ae3805b16ad5c830dd66c
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
@@ -416,20 +378,20 @@ cc      ENDIF
       SGP1S = 0.0  ! sigma 1order singlet PARAM : Lkin, Psokin
       SGD0S = 0.0  ! sigma 0rder singlet DIAM : Fc, AngPso, DiaKin
       SGD1S = 0.0  ! sigm`ia 1order singlet DIAM : DiaMv, DiaDw
-C Add constants to print all in ppm's
+C    Add constants to print all in ppm's
       Do i=1, 3
-        LRFCZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCZK* LRFCZK(i,i)
+       LRFCZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCZK*LRFCZK(i,i)
 c        write(*,*)' fckin' , LRFCZK(i,i)
-        LRSDZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDZK* LRSDZK(i,i)
-        LRFCBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCBS* LRFCBS(i,i)
-        LRSDBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDBS* LRSDBS(i,i)
-        LRLKIN(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CLKIN* LRLKIN(i,i)
-        LRPSOK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CPSOK* LRPSOK(i,i)
-        LRFCAV(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCAV* LRFCAV(i,i)
-        LRDIAK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CDIAK* LRDIAK(i,i)
-        LRANGP(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CANGP* LRANGP(i,i)
-        LRDIAD(i,i) = calfa*calfa*1.0D+6* CDIAD* LRDIAD(i,i)
-        LRDIAM(i,i) = calfa*calfa*1.0D+6* CDIAM* LRDIAM(i,i)
+       LRSDZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDZK*LRSDZK(i,i)
+       LRFCBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCBS*LRFCBS(i,i)
+       LRSDBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDBS*LRSDBS(i,i)
+       LRLKIN(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CLKIN*LRLKIN(i,i)
+       LRPSOK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CPSOK*LRPSOK(i,i)
+       LRFCAV(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCAV*LRFCAV(i,i)
+       LRDIAK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CDIAK*LRDIAK(i,i)
+       LRANGP(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CANGP*LRANGP(i,i)
+       LRDIAD(i,i) = calfa*calfa*1.0D+6* CDIAD* LRDIAD(i,i)
+       LRDIAM(i,i) = calfa*calfa*1.0D+6* CDIAM* LRDIAM(i,i)
       ENDDO
       
       DO i=1, 3
