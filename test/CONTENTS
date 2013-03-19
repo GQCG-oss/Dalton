@@ -76,7 +76,8 @@ All the old testjobs have been given names instead of numbers:
 	test75		geoopt_constrain1a
 	test76		geoopt_constrain1b
 	test77		geoopt_vrml
-
+	test78		tddft_tda
+	test79		rpa_cis
 
 
 The CC testjobs have been given new names:
@@ -1036,6 +1037,13 @@ Test Purpose:     Single-point calculation checking vibrational analysis
                   and IR and VCD spectral properties
 
 
+rpa_cis
+---------
+Molecule:         H2O
+Wave Function:    Configuration Interaction Singles calculation
+Test Purpose:     Tamm-Dancoff approximation to Random-Phase Approximation
+
+
 rsp_2ndharm
 -----------
 Molecule:         LiH
@@ -1313,6 +1321,13 @@ rsp_twophot
 Molecule:         KUM1
 Wave Function:    SCF / 3-21G
 Test Purpose:     Two-photon absorption
+
+
+tddft_tda
+---------
+Molecule:         H2O
+Wave Function:    Combined functional (Turbomole version of B-P86) with TDA
+Test Purpose:     Tamm-Dancoff approximation to TDDFT calculation of excitation energies
 
 
 vibave_spinspin

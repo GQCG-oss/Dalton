@@ -92,6 +92,7 @@ C
 #include "infhyp.h"
 #include "priunit.h"
 #include "infsop.h"
+#include "abslrs.h"
 C
       LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX
 C
@@ -379,6 +380,16 @@ C
      &        .FALSE.)
       END IF
 C
+      IF (ABSLRS) THEN
+        CALL GPINQ('ABSVECS','EXIST',EX)
+        IF (.NOT.EX) THEN
+          OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+          WRITE(LUABSVECS) 'EOFLABEL'
+        ELSE
+          OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+        END IF
+      ENDIF
+C
 C Open files for trial and sigma vectors
 C
       CALL GPOPEN(LURSP3,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
@@ -467,6 +478,7 @@ C
       CALL GPCLOSE(LURSP5,'KEEP')
       CALL GPCLOSE(LURSP ,'KEEP')
       IF (LUSOL.GT.0) CALL GPCLOSE(LUSOL,'KEEP')
+      IF (ABSLRS) CLOSE(LUABSVECS,status='keep')
 C
       TIMRSP = SECOND() - TIMRSP
       IF (IPRRSP .GT. 0) WRITE (LUPRI,'(/A,F13.2,A)')
@@ -643,6 +655,7 @@ C
 #include "inforb.h"
 #include "abainf.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "infvar.h"
 #include "dftcom.h"
 C
@@ -661,6 +674,23 @@ C
 C
       KFREE = 1
       LFREE = LWRK
+      IF (ABSLRS) THEN
+        CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,
+     &              LFREE)
+        CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
+        CALL MEMGET('REAL',KXSOL,2*NFREQ_ALPHA*KZYVAR,
+     &              WRK,KFREE,LFREE)
+        CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
+     &              KFREE,LFREE)
+        CALL ABS2INTER(WRK(KMJWOP),KZVAR)
+        CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
+     &              WRK(KFREE),LFREE)
+          CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
+          CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
+     &                 ABS_FREQ_ALPHA,
+     &                 WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
+     &                 WRK(KRES),WRK(KFREE),LFREE)
+      ELSE
       CALL MEMGET('REAL',KREDE,MAXRM*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDS,MAXRM*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDZ,2*MAXRM*MAXRM,WRK,KFREE,LFREE)
@@ -808,6 +838,7 @@ C
 C     End loop over B operators
 C
          END DO
+      END IF
       END IF
 C
       CALL QEXIT('RSPLLE')

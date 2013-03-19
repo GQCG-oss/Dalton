@@ -34,6 +34,8 @@ add_test(geoopt_vrml ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/d
 add_test(prop_ecd ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null prop_ecd)
 add_test(prop_or ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null prop_or)
 add_test(prop_exci ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null prop_exci)
+add_test(tddft_tda ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null tddft_tda)
+add_test(rpa_cis ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null rpa_cis)
 add_test(prop_nolondon ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null prop_nolondon)
 add_test(prop_spinspin ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null prop_spinspin)
 add_test(prop_spinspin2 ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null prop_spinspin2)

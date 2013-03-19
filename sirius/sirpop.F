@@ -335,7 +335,6 @@ C
       VIR = -V/TK
       IF (IPRMUL .GE. 0 .OR. IPRMUL .LT. -30) THEN
          WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
-         IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
       ELSE IF (IPRMUL .NE. 0) THEN
          WRITE(LUPRI,'(T7,A,F14.6)') 'Virial theorem: -V/T =',VIR
       END IF
@@ -374,11 +373,11 @@ C
 C
       LOGICAL FOUND
 C
-C     *****   Read in overlap integrals from AOONEINT (unit LUONEL)
+C     Read AO integrals for population analysis
 C
       FOUND = .FALSE.
-C
       IF (IPOPTYP .EQ. 1) THEN
+C     *****   Read in overlap integrals from AOONEINT (unit LUONEL)
          CALL RDONEL('OVERLAP ',FOUND,S,NNBAST)
          CALL PKSYM1(SS,S,NBAS,NSYM,-1)
          CALL DSPTGE(NBAST,SS,S)
@@ -390,6 +389,7 @@ C
          END IF
          POPANA_TYPE = '     MULPOP '
       ELSE IF (IPOPTYP .EQ. 2) THEN
+C     *****   Read in overlap integrals from AOPROPER (unit LUPROP)
          CALL RDPROP('OVERLAP ',SS,FOUND)
          CALL DSPTGE(NBAST,SS,S)
          POPANA_TYPE = '   MULPOP x '
@@ -521,16 +521,19 @@ C
 C Used from common blocks:
 C   INFPOP ? MAXTYP, ...
 C   INFORB ? NBAST,
+C   INFIND : ISX(:), ISMO(:)
 C   INFTAP : LUTEMP
+C   CCOM   : GTOTYP(:)
+C   SHELLS : NCENT(:)
 C
 #include "maxaqn.h"
+#include "maxash.h"
 #include "infpop.h"
 #include "inforb.h"
+#include "infind.h"
 #include "inftap.h"
 #include "infpri.h"
-! ccom.h : GTOTYP()
 #include "ccom.h"
-! shells.h : NCENT()
 #include "shells.h"
 C
       DIMENSION   POPTSM(MXCENT,2)
@@ -648,7 +651,6 @@ C     Populations between centers
 C
       if (iprmul .ge. 1) then
       WRITE (LUPRI,1004) POPANA_TYPE
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1004) POPANA_TYPE
  1004 FORMAT(//6X,'Total net, overlap, and gross populations,',
      &            ' summed over all MOs',/6X,'Type:',A)
 C
@@ -661,10 +663,6 @@ C
             WRITE (LUPRI,1009) (NAMDEP(NUC),NUC=IST,IEND)
          END IF
          WRITE (LUPRI,'()')
-         IF (LUW4 .NE. LUPRI) THEN
-            WRITE (LUW4,1009) (NAMDEP(NUC),NUC=IST,IEND)
-            WRITE (LUW4,'()')
-         END IF
          DO 140 NUCA = 1,NATOMS
             POPNAB_MAX = MAXVAL(POPNAB(NUCA,IST:IEND))
             POPNAB_MIN = MINVAL(POPNAB(NUCA,IST:IEND))
@@ -678,10 +676,6 @@ C
                WRITE (LUPRI,1012)
      &         NAMDEP(NUCA),(POPNAB(NUCA,NUCB),NUCB=IST,IEND)
             END IF
-            IF (LUW4 .NE. LUPRI) THEN
-               WRITE (LUW4,1012)
-     &            NAMDEP(NUCA),(POPNAB(NUCA,NUCB),NUCB=IST,IEND)
-            END IF
   140    CONTINUE
       IF (IEND.LT.NATOMS)   GO TO 5
       end if
@@ -694,11 +688,12 @@ C
          REWIND LUTEMP
          ISYM = 1
          DO 130 IP = 1,NOCCT
-            WRITE (LUPRI,1002) IP, OCCUP(IP)
- 1002       FORMAT (/6X,'Molecular orbital number',I5,
-     &      ', occupation',F10.5)
-            READ (LUTEMP) POPABI
+            IP_SYM = ISMO( ISX(IP) )
+            WRITE (LUPRI,1002) IP, OCCUP(IP), IP_SYM
+ 1002       FORMAT (/6X,'Molecular orbital number',I4,
+     &      ', occupation',F8.5,', symmetry',I3)
 C
+            READ (LUTEMP) POPABI
             IEND = 0
     3          IST  = IEND + 1
                IEND = MIN(NATOMS, IEND + 10)
@@ -731,17 +726,13 @@ C     Gross populations of cgto's
 C
       IF (IPRMUL.GE.10) THEN
          WRITE (LUPRI,1005) POPANA_TYPE
-         IF (LUW4 .NE. LUPRI) WRITE (LUW4,1005) POPANA_TYPE
  1005    FORMAT (//6X,'Partial orbital gross populations:',
      &   /6X,'Gross populations of AO basis functions for each MO',
      &   /6X,'Type:',A)
          DO 160 IP = 1,NOCCT
-            WRITE (LUPRI,1002) IP, OCCUP(IP)
+            IP_SYM = ISMO( ISX(IP) )
+            WRITE (LUPRI,1002) IP, OCCUP(IP), IP_SYM
             WRITE (LUPRI,1006) (IA,POPC(IA,IP),IA=1,NBAST)
-            IF (LUW4 .NE. LUPRI) THEN
-               WRITE (LUW4,1002) IP, OCCUP(IP)
-               WRITE (LUW4,1006) (IA,POPC(IA,IP),IA=1,NBAST)
-            END IF
   160    CONTINUE
  1006    FORMAT (10(I4,F8.4))
       END IF
@@ -767,12 +758,6 @@ C
      &   ' Sum = total electronic charge  :',POPTOT,
      &   ' No. of AOs with gross population < 1.0e-5:',N_ZERO,
      &   ' out of',NBAST
-      IF (LUW4 .NE. LUPRI) THEN
-         WRITE (LUW4,1007) POPANA_TYPE
-         WRITE (LUW4,1006) (IA,POPCGT(IA),IA = 1,NBAST)
-         WRITE (LUW4,'(/A,F10.4)')
-     &   ' Sum = total electronic charge:',POPTOT
-      END IF
       end if
  1007 FORMAT(//6X,'Total gross populations of AO basis functions,',
      &            ' summed over all MOs'/6X,'Type:',A)
@@ -781,14 +766,13 @@ C     GROSS POPULATIONS OF ORBITAL TYPES
 C
       IF (IPRMUL.GE.5) THEN
          WRITE (LUPRI,1008) POPANA_TYPE
-         IF (LUW4 .NE. LUPRI) WRITE (LUW4,1008) POPANA_TYPE
  1008    FORMAT(//6X,'Partial gross population of AO basis',
      &              ' functions for each MO',
      &           /6X,'distributed over AO types for each center',
      &           /6X,'Type:',A)
          DO 200 IP = 1,NOCCT
-            WRITE (LUPRI,1002) IP,OCCUP(IP)
-            IF (LUW4 .NE. LUPRI) WRITE (LUW4,1002) IP,OCCUP(IP)
+            IP_SYM = ISMO( ISX(IP) )
+            WRITE (LUPRI,1002) IP,OCCUP(IP),IP_SYM
 C
             CALL DZERO(POPTY, MAXTYP*NATOMS)
 C
@@ -805,18 +789,12 @@ C
             IEND = MIN(NATOMS,IEND + 10)
             WRITE (LUPRI,1009) (NAMDEP(NUC),NUC = IST,IEND)
             WRITE (LUPRI,'()')
-            IF (LUW4 .NE. LUPRI) THEN
-               WRITE (LUW4,1009) (NAMDEP(NUC),NUC = IST,IEND)
-               WRITE (LUW4,'()')
-            END IF
             DO 190 ITYP = 1,NTYP
                POPTY_MAX = MAXVAL(POPTY(ITYP,IST:IEND))
                POPTY_MIN = MINVAL(POPTY(ITYP,IST:IEND))
             IF (POPTY_MAX .LT. 1.0D-4 .AND. POPTY_MIN .GT. -1.0D-4)
      &         GO TO 190
                WRITE (LUPRI,1010)
-     &         GTOTYP(ITYP),(POPTY(ITYP,NUC), NUC=IST,IEND)
-               IF (LUW4 .NE. LUPRI) WRITE (LUW4,1010)
      &         GTOTYP(ITYP),(POPTY(ITYP,NUC), NUC=IST,IEND)
   190       CONTINUE
             IF (IEND.LT.NATOMS)   GO TO 7
@@ -829,7 +807,6 @@ C
 C
       if (iprmul .gt. 0) then
       WRITE (LUPRI,1013) POPANA_TYPE
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1013) POPANA_TYPE
  1013 FORMAT(/6X,'Total gross population of AO basis',
      &           ' functions, summed over all MOs',
      &       /6X,'distributed over AO types for each center',
@@ -840,10 +817,6 @@ C
       IEND = MIN(NATOMS, IEND + 10)
       WRITE (LUPRI,1009) (NAMDEP(NUC),NUC = IST,IEND)
       WRITE (LUPRI,'()')
-      IF (LUW4 .NE. LUPRI) THEN
-         WRITE (LUW4,1009) (NAMDEP(NUC),NUC = IST,IEND)
-         WRITE (LUW4,'()')
-      END IF
       LQ = 0
       POPTSM(IST:IEND,1:2) = 0.0D0
       DO 210 ITYP = 1,MAX_ITYP
@@ -853,25 +826,19 @@ C
          IF (LQ .GT. 0) THEN
             POPTYP_MAX = MAXVAL(POPTYP(ITYP,IST:IEND))
             POPTYP_MIN = MINVAL(POPTYP(ITYP,IST:IEND))
-      IF (POPTYP_MAX .LT. 1.0D-4 .AND. POPTYP_MIN .GT. -1.0D-4)
-     &      GO TO 210
-            WRITE (LUPRI,1010)
-     &        GTOTYP(ITYP),(POPTYP(ITYP,NUC),NUC=IST,IEND)
-            IF (LUW4 .NE. LUPRI) WRITE(LUW4,1010)
-     &        GTOTYP(ITYP),(POPTYP(ITYP,NUC),NUC=IST,IEND)
+            IF (POPTYP_MAX .GE. 1.0D-4 .OR. POPTYP_MIN .LE. -1.0D-4)
+     &         WRITE (LUPRI,1010)
+     &         GTOTYP(ITYP),(POPTYP(ITYP,NUC),NUC=IST,IEND)
          END IF
-C
+
       IF (GTOTYP(ITYP+1)(1:1) .EQ. GTOTYP(ITYP)(1:1)) GO TO 210
-C     for cartesian GTOTYP(*)(1:1) will be 's', 'p', etc.
-C     for spherical GTOTYP(*)(1:1) will be '1', '2', etc.
-C     thus: when char 1 changes so does l quantum number and
-C     using GTOTYP to decide works both for cartesian and spherical
+C        for cartesian GTOTYP(*)(1:1) will be 's', 'p', etc.
+C        for spherical GTOTYP(*)(1:1) will be '1', '2', etc.
+C        thus: when char 1 changes so does l quantum number and
+C        using GTOTYP to decide works both for cartesian and spherical
+
          WRITE (LUPRI,1010) SPDCAR(LQ),(POPTSM(NUC,2), NUC=IST,IEND)
-         IF (LUW4 .NE. LUPRI) THEN
-            WRITE (LUW4,1010)SPDCAR(LQ),(POPTSM(NUC,2), NUC=IST,IEND)
-         END IF
          WRITE (LUPRI,1099)
-         IF (LUW4 .NE. LUPRI) WRITE (LUW4,1099)
          POPTSM(IST:IEND,1) = POPTSM(IST:IEND,1) + POPTSM(IST:IEND,2)
          POPTSM(IST:IEND,2) = 0.0D0
          LQ = LQ + 1
@@ -885,7 +852,6 @@ C     POPULATION at EACH center
 C
       IF (IPRMUL.GE.6) THEN
         WRITE (LUPRI,1014) POPANA_TYPE
-        IF (LUW4 .NE. LUPRI) WRITE (LUW4,1014) POPANA_TYPE
  1014 FORMAT (/6X,'Partial gross population of the centers',
      *            ' from each MO'/6X,'Type:',A)
 C
@@ -896,14 +862,11 @@ C
             POPABI(NUC,1) = POPABI(NUC,1) + POPC(IA,IP)
           ENDDO
 C
-          WRITE (LUPRI,1002) IP, OCCUP(IP)
+          IP_SYM = ISMO( ISX(IP) )
+          WRITE (LUPRI,1002) IP, OCCUP(IP), IP_SYM
           WRITE (LUPRI,1015) (NAMDEP(NUC),POPABI(NUC,1),NUC=1,NATOMS)
 c1015     FORMAT (4(1X,A6,F10.4))
  1015     FORMAT (5(1X,A6,F8.2,' ;'))
-          IF (LUW4 .NE. LUPRI) THEN
-            WRITE (LUW4,1002) IP, OCCUP(IP)
-            WRITE (LUW4,1015) (NAMDEP(NUC),POPABI(NUC,1),NUC=1,NATOMS)
-          END IF
   240 CONTINUE
       END IF
 C
@@ -935,12 +898,6 @@ C     ... only print max -iprmul populations in each iteration
      &      (NAMDEP(NUC),POPNUC(NUC),NUC=1,NATOMS)
          WRITE (LUPRI,'(/A,F10.4)')
      &   ' Sum = total charge:',POPTOT
-         IF (LUW4 .NE. LUPRI) THEN
-            WRITE (LUW4,1016) POPANA_TYP
-            WRITE (LUW4,1015) (NAMDEP(NUC),POPNUC(NUC),NUC=1,NATOMS)
-            WRITE (LUW4,'(/A,F10.4)')
-     &      ' Sum = total charge:',POPTOT
-         END IF
       end if
  1016 FORMAT (/' Total gross populations',A/)
 C
@@ -992,7 +949,6 @@ C
       LOGICAL FOUND
 C
       WRITE (LUPRI,1001)
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1001)
  1001 FORMAT (//,22X,'Dipole moment analysis')
 C
 C     *****     READ IN THE DIPOLE MOMENT INTEGRALS
@@ -1010,7 +966,6 @@ C
 C     *****     Compute the electronic contribution to dipole moment
 C
       WRITE (LUPRI,1002)
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1002)
  1002 FORMAT(//25X,'Orbital dipole moments'//28X,'Vector component'
      *       //10X,'Orbital',12X,'X',11X,'Y',11X,'Z',5X,'Occ.number'/)
       IP = 0
@@ -1058,8 +1013,6 @@ C
             DIPOL(3) = DIPOL(3) - DZ
             IF (IPRMUL .GE. 3) THEN
                WRITE (LUPRI,1003) IP,DX,DY,DZ,OCCUP(IP)
-               IF (LUW4 .NE. LUPRI)
-     1         WRITE (LUW4,1003) IP,DX,DY,DZ,OCCUP(IP)
  1003          FORMAT(10X,I4,7X,4F12.6)
             END IF
 C
@@ -1080,7 +1033,6 @@ C     *****     Print out the total dipole moments
 C
 C
       WRITE(LUPRI,1005) (DIPOL(I),I=1,3)
-      IF (LUW4 .NE. LUPRI) WRITE(LUW4,1005) (DIPOL(I),I=1,3)
  1005 FORMAT(/11X,'TOTAL',5X,3F12.6)
 C
 C     MAGNITUDE
@@ -1089,7 +1041,6 @@ C
       DIPITO = SQRT(DIPITO)
       DIPITD = DIPITO * 2.5415D0
       WRITE (LUPRI,1006) DIPITO,DIPITD
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1006) DIPITO,DIPITD
  1006 FORMAT (/6X,'TOTAL DIPOLE MOMENT (A.U.) = ',F10.6,
      *       //6X,'TOTAL DIPOLE MOMENT (D)    = ',F10.6)
 C
@@ -1124,7 +1075,6 @@ C
       LOGICAL FOUND
 C
       WRITE (LUPRI,1001)
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1001)
  1001 FORMAT (///,21X,' QUADRUPOLE MOMENT ANALYSIS')
 C
 C     *****     Read in the quadrupole moment integrals
@@ -1143,10 +1093,8 @@ C     *****     Compute the electronic contribution to quadrupole moment
 C
       IF (IPRMUL .GE. 3) THEN
          WRITE(LUPRI,1002)
-         IF (LUW4 .NE. LUPRI) WRITE(LUW4,1002)
       ELSE
          WRITE(LUPRI,2002)
-         IF (LUW4 .NE. LUPRI) WRITE(LUW4,2002)
       END IF
  1002 FORMAT(//23X,'Occupation weighted orbital quadrupole moments',
      *        /23X,'(except <r2> which shows spatial extent of orbital)'
@@ -1209,9 +1157,7 @@ C
             IF (JFXYZ(3).EQ.1)   QUPOL(6) = 0.0D0
             IF (IPRMUL .GE. 2) THEN
                WRITE (LUPRI,1003) IP,(QUPOL(ICOMP),ICOMP=1,6),RR,R2
-               IF (LUW4 .NE. LUPRI)
-     1         WRITE (LUW4,1003) IP,(QUPOL(ICOMP),ICOMP=1,6),RR,R2
- 1003          FORMAT(1X,I4,3X,7F9.4,F7.2)
+ 1003          FORMAT(I5,3X,7F9.4,F7.2)
             END IF
 C
    80    CONTINUE
@@ -1226,14 +1172,12 @@ C
       IF (JFXYZ(2).EQ.1) ELQPOL(5) = 0.0D0
       IF (JFXYZ(3).EQ.1) ELQPOL(6) = 0.0D0
       WRITE(LUPRI,1004) ELQPOL,SUM
-      IF (LUW4 .NE. LUPRI) WRITE(LUW4,1004) ELQPOL,SUM
- 1004 FORMAT(/' SUMMED ',7F9.4)
+ 1004 FORMAT(/' Summed ',7F9.4)
 C
 C     *****     Print out the nuclear quadrupole moment
 C
       WRITE (LUPRI,1005) QPOL
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1005) QPOL
- 1005 FORMAT(/' NUCLEAR',6F9.4)
+ 1005 FORMAT(/' Nuclear',6F9.4)
 C
 C     *****     Print out the total quadrupole moment
 C
@@ -1241,8 +1185,7 @@ C
 100      QPOL(I) = QPOL(I) + ELQPOL(I)
       SUM = QPOL(1) + QPOL(2) + QPOL(3)
       WRITE (LUPRI,1006) QPOL,SUM
-      IF (LUW4 .NE. LUPRI) WRITE (LUW4,1006) QPOL,SUM
- 1006 FORMAT(/'  TOTAL ',7F9.4)
+ 1006 FORMAT(/'  Total ',7F9.4)
 C
 C     *****     Quadrupole moments relative to mass center
 C
@@ -1254,15 +1197,13 @@ C
       QOPOL(6)=QPOL(6)-  QQFAC(2)*DIPOL(3)-QQFAC(3)*DIPOL(2)
       SUMR    =QOPOL(1) + QOPOL(2) + QOPOL(3)
       WRITE(LUPRI,1007) QOPOL,SUMR
-      IF (LUW4 .NE. LUPRI) WRITE(LUW4,1007) QOPOL,SUMR
- 1007 FORMAT(//16X,'QUADRUPOLE MOMENTS RELATIVE MASS center',
+ 1007 FORMAT(//16X,'Quadrupole moments relative to mass center',
      *       //8X,7F9.4)
 C
 C     *****     Diagonalize quadrupole moment tensor
 C
       ITURN=0
       WRITE(LUPRI,1008)
-      IF (LUW4 .NE. LUPRI) WRITE(LUW4,1008)
  1008 FORMAT(//6X,
      *   'Diagonalization of quadrupole tensor relative ORIGO')
       A(1)=0.5D0*(3.0D0*QPOL(1)-SUM)
@@ -1277,21 +1218,18 @@ C
       A(2)=A(3)
       A(3)=A(6)
       WRITE(LUPRI,140)
-      IF (LUW4 .NE. LUPRI) WRITE(LUW4,140)
   140 FORMAT(//,18X,'Eigenvalues',16X,'Eigenvectors')
       IEND=0
       DO 141 I=1,3
          IST =IEND+1
          IEND=IEND+3
          WRITE(LUPRI,142)A(I),(EIVR(J),J=IST,IEND)
-         IF (LUW4 .NE. LUPRI) WRITE(LUW4,142)A(I),(EIVR(J),J=IST,IEND)
   142    FORMAT(/,20X,F10.6,10X,3F10.6)
   141 CONTINUE
       IF (ITURN.NE.1) THEN
          ITURN = 1
 C
          WRITE(LUPRI,1009)
-         IF (LUW4 .NE. LUPRI) WRITE(LUW4,1009)
  1009    FORMAT(//'   Diagonalization of quadrupole tensor relative',
      *          ' to mass center')
          A(1)=0.5D0*(3.0D0*QOPOL(1)-SUM)
