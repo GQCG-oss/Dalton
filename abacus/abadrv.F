@@ -508,8 +508,14 @@ C
 C  jim-gesc 1: call to LRSCDRV 
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
-c       write(lupri,*) ' LRSCDRV is not called yet, still developing' 
        CALL LRSCDRV(WORK(KLST2),LWRK2) 
+cxx         IF (JIMPRT) THEN 
+cx          CALL LRSCDRV(WORK(KLST2),LWRK2)
+cx            en realidad llamar a LRSCDRV y de ahi hacer linear o quad o
+cx            gautever
+cxx         ENDIF
+cx       KLST2 final pointer on mem. LWRK2 the lenght of it
+cx       CALL AQRDRV(WORK(KLST2),LWRK2)
       END IF
 C
 C     ****************************************
@@ -814,7 +820,11 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
+<<<<<<< HEAD
      &             '.VIB_G ', '.LOCALI', '.LRESC '/ 
+=======
+     &             '.VIB_G ', '.LOCALI', '.LRESC ' / ! jim May-12 for LRESC
+>>>>>>> 46d1f194ad6db75a493ae3805b16ad5c830dd66c
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -996,6 +1006,13 @@ C         geometry if not overridden with '**START' /Feb 2003 hjaaj
          GOTO 1
   930 CONTINUE
       WORD1 = WORD
+<<<<<<< HEAD
+=======
+cx jim-dbg : (abainp.1015)  take it off 
+cxx      IF (JIMPRT) then 
+         write(lupri,*)'abainp #1017 read LUCMOD up 2 WORD : ',WORD
+cxx      ENDIF
+>>>>>>> 46d1f194ad6db75a493ae3805b16ad5c830dd66c
 C
       CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
      &            ,'*',108)
@@ -1974,9 +1991,17 @@ cs
       GO TO 200
    16   CALL FLTINP(WORD)
       GO TO 200
+<<<<<<< HEAD
 C jim-gesc 1.4 : CALL LRSCINP to read OPTNS @ DAL  file 
    17 CONTINUE
          CALL LRSCINP(WORD)
+=======
+C jim-gesc 1.5 : (abainp.1985) reading TABDIR call lrscinp
+   17 Write(lupri,*) ' Calling lrsec inp for word', WORD
+      CALL LRSCINP(WORD)
+cx jim-dbg : take this out
+      Write(lupri,*) ' volvi de LRSCINP ', WORD
+>>>>>>> 46d1f194ad6db75a493ae3805b16ad5c830dd66c
       GO TO 200
    18   CONTINUE
          CALL QPGINP(WORD)

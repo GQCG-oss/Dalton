@@ -49,6 +49,7 @@ C
       LOGICAL NEWDEF 
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
+<<<<<<< HEAD
 C#include "dorps.h"
 #include "spnout.h"
 c#include "lrescinf.h"
@@ -57,13 +58,27 @@ C jim  aca van las opctiones para LRESC , aun no las defino todas
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
 C
+=======
+#include <dorps.h>
+#include <spnout.h>
+C jim  aca van las opctiones para LRESC , aun no las defino
+      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.LINEAR ','.QUADRA',
+     &            '.GESC  ','.NOPSO ','.SD+FC ','.SDxFC','.ISOTOP',
+     &            '.COUPLI'/
+C
+      write(lupri,*) ' LRSCOPTS :  called with : ' , WORD
+>>>>>>> 46d1f194ad6db75a493ae3805b16ad5c830dd66c
       NEWDEF = (WORD .EQ. '*LROPTS')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
+<<<<<<< HEAD
 c            write(lupri,*) ' @LRSCINP : reading : ' , WORD
+=======
+            write(lupri,*) ' LRSCOPTS : read : ' , WORD
+>>>>>>> 46d1f194ad6db75a493ae3805b16ad5c830dd66c
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
