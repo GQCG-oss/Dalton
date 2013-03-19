@@ -83,6 +83,7 @@ C
 #include "orgcom.h"
 C
       IPRLNR = JIMPRT
+      IPRRSP = JIMPRT
 cxu
 C
 C
@@ -102,7 +103,6 @@ C
          WRITE(LUPRI,'(2A)') '@AVERAGE to do ', KEY
       END IF
 C
-      IPRRSP = JIMPRT
 C
 C     Get reference state
 C     ===================
@@ -271,8 +271,7 @@ C
 C
 C  blanquear todas las labels antes 
 C
-      NLAB1 = 0
-      NLAB2 = 0 
+      NLAB = 0
       DO I = 1, 10
        LISTA1(I)='        '
       ENDDO
@@ -308,7 +307,7 @@ C
 C      Look for LABELS : FERMI  
 C     ---------------------------
       IF(KEY.EQ."FCAV") THEN 
-        nlab=1
+        NLAB=1
         LABEL2='FC '//NAMN(LRATOM)(1:3)
 cx        IF (aa.GE.1) THEN
 cx          write(char,'(i3)') LRATOM
@@ -329,7 +328,7 @@ C
 C      Look for LABELS : DIAKIN
 C     ---------------------------
       IF(KEY.EQ."DIAK") THEN
-        nlab=3 
+        NLAB=3 
         LABEL2='NSKE'
         IJ = 1
         DO I=npos1,npos1+2
@@ -345,7 +344,7 @@ C
 C   AngPso is done with a unity matrix inside : AngPso = ANGMOM.1.PSO
 C
       IF(KEY.EQ."ANGP") THEN
-        nlab = 3   ! this is to control loop ahead when calling angpso
+        NLAB = 3   ! this is to control loop ahead when calling angpso
 C
 C        Look for LABELS : ANGPSO
 C       ---------------------------
@@ -384,7 +383,7 @@ c        ENDDO
 C  Print LABELS
 C -----------------------------------
 cdbg      write(lupri,*) '@Average setting  LABEL1 :'
-cdbg      DO i =1, nlab
+cdbg      DO i =1, NLAB
 cdbg         WRITE(LUPRI,*)'   LABEL :', LISTA1(I) 
 cdbg      ENDDO
 cdbg      WRITE(LUPRI,*)' ---------------------------------- '
@@ -400,6 +399,7 @@ C        the dipole velocity operators
 C        ===========================================
 C   
 C     
+      KJ = 0
       IDIP = 0 
       DO 300 IDIP = 1,NLAB
 C
@@ -417,86 +417,57 @@ c         write(lupri,*)' NVARPT :', NVARPT
          LWRK = LWORK - KLAST + 1
 C
 C        Starting Calculations depending on angpso or not
-C         
+C        
+         KJ = KJ+1 
          IF (KEY.EQ.'ANGP') THEN 
             CALL ANGPSO(WORK(KCMO),LWORK,JIMPRT,LISTA1(IDIP),
      $                 LISTA1(IDIP+3),SNDPRP)
-            IF (JIMPRT.GE.1) THEN
-               WRITE (LUPRI,'(5A,F20.12)')
-     &         ' Expectation Value for Operator : < ',LISTA1(IDIP),
+            IF (JIMPRT.GE.2) THEN
+               WRITE (LUPRI,'(1A,I2,5A,F20.12)')
+     &      '#',KJ,' Expectation Value for Operator : < ',LISTA1(IDIP),
      &         '.',LISTA1(IDIP+3),' > = ',SNDPRP
             ENDIF
          ELSE 
             CALL PRP1AVE(LISTA1(IDIP),SNDPRP,WORK(KCMO),WORK(KUDV),
      $                   WORK(KWRKG1),LWRKG1,JIMPRT)
-            IF (JIMPRT.GE.1) THEN
-               WRITE (LUPRI,'(3A,F20.12)')
-     &         ' Expectation Value for Operator : < ',LISTA1(IDIP),
+            IF (JIMPRT.GE.2) THEN
+               WRITE (LUPRI,'(1A,I2,3A,F20.12)')
+     &      '#',KJ,' Expectation Value for Operator : < ',LISTA1(IDIP),
      &         ' > = ',SNDPRP
             ENDIF
          ENDIF
 C
 C       =========================================================
 C
-cxzC              Nuclear Shieldings
-cxzC              ------------------
-cxz               IF (KEY.EQ.'D1S ') THEN
-cxz                  IF (LABEL2.EQ.'MASSVELO') THEN 
-cxz                      SIGMAMV(IDIP)=SNDPRP
-cxz                      write(lupri,*)'massvelo' , IDIP
-cxz                  ENDIF
-cxz                  IF (LABEL2.EQ.'DARWIN  ') THEN 
-cxz                     SIGMADW(IDIP)=SNDPRP
-cxz                     write(lupri,*)'darwin'  , IDIP
-cxz                  ENDIF
-cxz               END IF      
-cx                  IF (LABEL1.EQ.'XDIPVEL') THEN
-cx                     IF (LABEL2(8:8).EQ.'Y') THEN
-cx                        SIGMADZ(IPTAX(3,2),INUCLEO)=
-cx     &                     SIGMADZ(IPTAX(3,2),INUCLEO)+SNDPRP
-cx                     ELSE IF (LABEL2(8:8).EQ.'Z') THEN
-cx                        SIGMADZ(IPTAX(2,2),INUCLEO)=
-cx     &                     SIGMADZ(IPTAX(2,2),INUCLEO)-SNDPRP
-cx                     ENDIF
-cx                  ELSE IF (LABEL1.EQ.'ZDIPVEL') THEN
-cx                     IF (LABEL2(8:8).EQ.'X') THEN
-cx                        SIGMADZ(IPTAX(2,2),INUCLEO)=
-cx     &                     SIGMADZ(IPTAX(2,2),INUCLEO)+SNDPRP
-cx                     ELSE IF (LABEL2(8:8).EQ.'Y') THEN
-cx                        SIGMADZ(IPTAX(1,2),INUCLEO)=
-cx     &                     SIGMADZ(IPTAX(1,2),INUCLEO)-SNDPRP
-cx                     ENDIF
-cx                  ENDIF
-cxz  200 CONTINUE
-cm         END IF  NFRVAL
+C
+C              Write properties into the various property matrices
+C              ===================================================
+C
+C         <Fc> : 
+C       -----------
+           IF (KEY.EQ.'FCAV') THEN
+              LRFCAV(1,1)= SNDPRP
+              LRFCAV(2,2)= SNDPRP
+              LRFCAV(3,3)= SNDPRP
+           ENDIF
+C         <DiaKin> :
+C       ------------------
+           IF (KEY.EQ.'DIAK') THEN
+             IF(KJ.EQ.1) LRDIAK(1,1)=SNDPRP         
+             IF(KJ.EQ.2) LRDIAK(2,2)=SNDPRP         
+             IF(KJ.EQ.3) LRDIAK(3,3)=SNDPRP         
+           ENDIF
+C         <Angpso> :
+C       ------------------
+           IF (KEY.EQ.'ANGP') THEN
+             IF(KJ.EQ.1) LRANGP(1,1)=SNDPRP         
+             IF(KJ.EQ.2) LRANGP(2,2)=SNDPRP         
+             IF(KJ.EQ.3) LRANGP(3,3)=SNDPRP         
+           ENDIF
   300 CONTINUE
 
 
-cxz      CALL GPCLOSE(LUREVE,'DELETE')
-C   
-C     for magnetizability conversion factor -0.25
-C   
-cb      IF (MAGSUS) THEN
-cb        Do I=1,3
-cb          Do J=1,3
-cb            SUSDZD(I,J)=-D025*SUSDZD(I,J)
-cb          ENDDO
-cb        ENDDO
-cb      ENDIF
-cb      IF (SHIELD) THEN
-C   
-C     for shieldings conversion factor -0.5
-C   
-cb        DO J=1,3
-cb          Do I=1,NCOOR
-cb            SIGMADZ(J,I)=-D05*SIGMADZ(J,I)
-cb            SIGMASFTP(J,I)=D05*SIGMASFTP(J,I)
-cb            SIGMASFTM(J,I)=D05*SIGMASFTM(J,I)
-cb          ENDDO
-cb        ENDDO
-cb      ENDIF
-C
-c      WRITE(LUPRI,*) ' llegue al final de AVERAGE.' 
+
       CALL TIMER ('AVELRSC',TIMEIN,TIMOUT)
 C
       CALL QEXIT('AVELRSC')

@@ -59,7 +59,7 @@ C ------------------------------------------------------
        naos = NBAST 
        nmos= naos
        nelec=10
-       write(*,*) 'nelec = NOCCT ?. elec. cpa closed:', NOCCT, nelec
+c       write(*,*) 'nelec = NOCCT ?. elec. cpa closed:', NOCCT, nelec
  
 c      write(lupri,*)
 c      write(lupri,'(/72A1/)')('*',I=1,72)
@@ -143,9 +143,9 @@ C              write(lupri,*) 'Orbital : ',i1, '  Valor', ORBC(i1)
            S1 = S1 + ORBC(i1)
         enddo
         Av = 2.0*S1
-        IF (PRT.GT.5) THEN 
-           write(lupri,*) '< ',LABEL(j),' >< ',LABEL(k),' >  = ', Av 
-           write(*,*) '< ',LABEL(j),' >< ',LABEL(k),' >  = ', Av 
+        IF (PRT.GE.2) THEN 
+        write(lupri,*) '@ANGPSO< ',LABEL(j),' >< ',LABEL(k),' >  = ',Av 
+c           write(*,*) '< ',LABEL(j),' >< ',LABEL(k),' >  = ', Av 
            if (B0(1).Eq.'ORBITAL') then
               write(lupri,*) '======================================= '
            endif
@@ -173,7 +173,7 @@ C
 C ----------------------------------------------------------
 C         SECCION CHEQUEO DE LA BASE
 C ----------------------------------------------------------
-      IF (PRT.GT.5) THEN 
+      IF (PRT.GT.2) THEN 
          write(lupri,*) '*******************************************' 
          write(lupri,*) '********** Chequeo de la Base *************'
          write(lupri,*) '*******************************************' 
@@ -203,21 +203,21 @@ C          CHEQUEO Cmos tenga norma 1 EN BASE ATOMICA !!
 C        ---------------------------------------------
          write(lupri,*) 
          write(lupri,*) 'Norma de Cmos por Filas en Base Atomica :' 
-         Av = 0.0
+         Avv = 0.0
          do i = 1,NOCCT
             do j = 1,naos
                uno = uno + Cmos(i,j)*Cmos(i,j)
                uno = sqrt(uno)
             enddo
             write(lupri,*) '  Orbital', i, ' : ',uno
-            Av = Av + uno 
+            Avv = Avv + uno 
          enddo
-         write(lupri,*) '** Suma total norma de las FILAS :', Av
+         write(lupri,*) '** Suma total norma de las FILAS :', Avv
          write(lupri,*) 
 C     ------------------------
 C     CHEQUEO Tr(PS) Mulliken 
 C     ------------------------
-         Av = 0.0
+         Avv = 0.0
          do i = 1,naos
             do j = 1,naos
                do k=1,NOCCT
@@ -233,9 +233,9 @@ C     ------------------------
             enddo
          enddo
          do k=1,naos
-            Av = Av + A2(k,k)
+            Avv = Avv + A2(k,k)
          enddo
-         write(lupri,*) '  Tr(P.S) = ',Av
+         write(lupri,*) '  Tr(P.S) = ',Avv
       ENDIF
       RETURN
       END

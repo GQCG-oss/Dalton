@@ -31,7 +31,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck lrscinp */
 C This module read nesserary input for LRESC calculations.
@@ -39,21 +39,21 @@ C jim-gesc : May-2012
 C
 C
       SUBROUTINE LRSCINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <lrescinf.h>
-#include <nuclei.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "lrescinf.h"
+#include "nuclei.h"
+#include "abainf.h"
       PARAMETER (NTABLE = 11, D0 = 0.0D0)
       LOGICAL NEWDEF 
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
-C#include <dorps.h>
-#include <spnout.h>
-c#include <lrescinf.h>
+C#include "dorps.h"
+#include "spnout.h"
+c#include "lrescinf.h"
 C jim  aca van las opctiones para LRESC , aun no las defino todas
-      DATA TABLE /'.GAUGEO','.PRINT ','.SELECT','.xXXXXx','.xXXXXx',
+      DATA TABLE /'.GAUGEO','.PRINT ','.SELECT','.PRTALL','.xXXXXx',
      &            '.PARA1S','.PARA1T','.PARA3S','.PARA3T','.DIAM0S',
      &            '.DIAM1S'/
 C
@@ -118,7 +118,7 @@ cx     $         'named : ', NAMN(LRATOM), 'on Molecule.mol file'
                GOTO 100
 C   SET WHICH NUC TO DO LRESC 
  4             CONTINUE
-c                  do algo 
+                 PRTALL=.TRUE. 
                GOTO 100
  5             CONTINUE
 c                  do algo 
@@ -215,13 +215,13 @@ C  /* Deck lrscini */
 C
 C     Initialize /LRSCINI/
 C
-#include <implicit.h>
-#include <lrescinf.h>
-#include <mxcent.h>
-#include <cbiqr.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "lrescinf.h"
+#include "mxcent.h"
+#include "cbiqr.h"
+#include "abainf.h"
 c jim-dbg : sacar esto de abajo
-#include <priunit.h>
+#include "priunit.h"
 C
       JIMPRT    = 0
       LRATOM    = 1 
@@ -282,81 +282,26 @@ c    ---------------------------------------
 C  /* Deck lrscdrv */
       SUBROUTINE LRSCDRV(WORK,LWORK)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "wrkrsp.h"
 #include "lrescinf.h"
-#include <inforb.h>
-C
-
+#include "inforb.h"
+C     
 cv      write(lupri,*)'@ LRSCDRV : '
-      IF (LRESCALL) THEN
+
+       IF (LRESCALL) THEN
         SIGMAD0S = .TRUE.
         SIGMAD1S = .TRUE.
         SIGMAP1S = .TRUE.
         SIGMAP1T = .TRUE.
       ENDIF
-C 
-C First Order SINLGET 
+     
 C
-      WRITE(LUPRI,*)
-      IF (SIGMAP1S)  THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : PsoKin'
-         WRITE (LUPRI,'(A)')'   in 2 steps, A.B and using inside integs'
-c         write(*,*) 'nbas1' , nbas(1)
-c         write(*,*) 'nbas' , nbas
-c               nnaos = nbas(1)
-c               nmber = nnaos*(nnaos+1)/2
-c         CALL angkin(nmber,nnaos)   ! this is with ORIGINAL angkin routine
-         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : PSOK  '//
-     &        'using dalton integrals' ! con dalton integrales
-         write(LUPRI,'(/721A1/)')('*',I=1,72)
-         CALL LINEARLR('PSOK',WORK,LWORK) 
-C
-         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : PSKI  '//
-     &        'using A.1.B routine'  ! con mis integrales
-         write(LUPRI,'(/721A1/)')('*',I=1,72)
-         CALL LINEARLR('PSKI',WORK,LWORK)
-
-         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : Lkin'
-         write(LUPRI,'(/721A1/)')('*',I=1,72)
-         CALL LINEARLR('LKIN',WORK,LWORK) ! ANDA
-      END IF
-
-      IF (SIGMAD1S) THEN
-         WRITE (LUPRI,'(A)')'  Calling to SIGMA1S for : Diamagnetic'// 
-     &         ' Singlet First Order Shielding corrections'
-         CALL LINEARLR('DIAM',WORK,LWORK) ! ANDA
-         CALL LINEARLR('DIAD',WORK,LWORK) ! ANDA
-      END IF
-C 
-C First Order TRIPLET
-C
-      IF (SIGMAP1T) THEN
-         WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
-     &         ' Triplet First Order Shielding corrections'
-c         CALL LINEARLR('FCZK',WORK,LWORK) !ANDA
-C         CALL LINEARLR('SDZK',WORK,LWORK) !ANDA
-c         CALL LINEARLR('FCBS',WORK,LWORK) !ANDA 
-         CALL LINEARLR('SDBS',WORK,LWORK) !ANDA
-      END IF
-C 
-C Third Order SINLGET 
-C
-      IF (SIGMAP3S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA3S for : Paramagnetic'//
-     &         ' Singlet Second Order Shielding corrections'
-cv         CALL CUADRAS('LPSO')
-      END IF
-C 
-C Third Order TRIPLET 
-C
-      IF (SIGMAP3T) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA3T for : '
-cv         CALL CUADRAS('LFCO')
-      END IF
+C Zeroth Order, Singlet of course
+C --------------------------------
 C
       IF (SIGMAD0S) THEN
          WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : Diamagnetic '//
@@ -366,63 +311,213 @@ C
          CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
       END IF
 
+C 
+C First Order SINLGET 
+C ---------------------
+C
+C     Paramagnetic ones
+C
+
+      WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
+      WRITE(LUPRI,*)
+      IF (SIGMAP1S)  THEN
+         WRITE(LUPRI,'(A)')'   Calling to SIGMAP1S for : PSOK   '//
+     &         'using dalton integrals' ! con dalton integrals
+         WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
+         CALL LINEARLR('PSOK',WORK,LWORK) 
+C
+C         WRITE(LUPRI,'(A)')'   Calling to SIGMAP1S for : PSKI  '//
+C     &        'using A.1.B routine'  ! con mis integrales
+C         WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
+C         CALL LINEARLR('PSKI',WORK,LWORK)
+C
+         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : LKIN'
+         write(LUPRI,'(/721A1/)')('*',I=1,72)
+         CALL LINEARLR('LKIN',WORK,LWORK) ! ANDA
+      END IF
+C
+C    Diamagnetic ones
+C
+      IF (SIGMAD1S) THEN
+         WRITE (LUPRI,'(A)')'  Calling to SIGMA1S for : Diamagnetic'//
+     &         ' Singlet First Order Shielding corrections',
+     &         '                           Darwin and MassVelo '
+         CALL LINEARLR('DIAM',WORK,LWORK) ! ANDA
+         CALL LINEARLR('DIAD',WORK,LWORK) ! ANDA
+      END IF
+C 
+C First Order TRIPLET
+C----------------------
+C
+C Paramagnetic, only
+C
+      IF (SIGMAP1T) THEN
+         WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
+     &         ' Triplet First Order Shielding corrections'
+         CALL LINEARLR('FCZK',WORK,LWORK) !ANDA
+         CALL LINEARLR('SDZK',WORK,LWORK) !ANDA
+         CALL LINEARLR('FCBS',WORK,LWORK) !ANDA 
+         CALL LINEARLR('SDBS',WORK,LWORK) !ANDA
+      END IF
+C 
+C Third Order SINLGET 
+C ------------------------
+C
+      IF (SIGMAP3S) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA3S for : Paramagnetic'//
+     &         ' Singlet Second Order Shielding corrections'
+cv         CALL CUADRAS('LPSO')
+      END IF
+C 
+C Third Order TRIPLET 
+C -------------------
+C
+      IF (SIGMAP3T) THEN
+         WRITE (LUPRI,'(A)')'   Calling to SIGMA3T for : '
+cv         CALL CUADRAS('LFCO')
+      END IF
+
 C
 C -================---------------======================
 C                  Print Section
 C -================---------------======================
 C
 C 
+cc      IF(JIMPRT.GE.-2) THEN
+c         PRTALL = .TRUE.
+cc      ENDIF
+ 
+      
       relall = 0.0
       SGP1T = 0.0  ! sigma 1order triplet PARAM : FcKin, SdKin, SdBso, FcBso
       SGP1S = 0.0  ! sigma 1order singlet PARAM : Lkin, Psokin
       SGD0S = 0.0  ! sigma 0rder singlet DIAM : Fc, AngPso, DiaKin
-      SGD1S = 0.0  ! sigma 1order singlet DIAM : DiaMv, DiaDw
-      DO i=1, 3
-          SGP1T = SG1T + LRFCZK(i,i)+LRSDZK(i,i)+LRFCBS(i,i)+LRSDBS(i,i)
-          SGP1S = SG1S  + LRLKIN(i,i)+LRPSOK(i,i) 
-          SGD0S = SGD0S + LRFCAV(i,i)+LRDIAK(i,i)+LRANGP(i,i)
-          SGD1S = SGD1S + LRDIAD(i,i)+LRDIAM(i,i)
-          relall = relall + SGD0S+SGD1S+SGP1S+SGP1T
-          write(lupri,*)' lrdiad' , LRDIAD(i,i)
-          write(lupri,*)' lrdiaM' , LRDIAM(i,i)
+      SGD1S = 0.0  ! sigm`ia 1order singlet DIAM : DiaMv, DiaDw
+C Add constants to print all in ppm's
+      Do i=1, 3
+        LRFCZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCZK* LRFCZK(i,i)
+c        write(*,*)' fckin' , LRFCZK(i,i)
+        LRSDZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDZK* LRSDZK(i,i)
+        LRFCBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCBS* LRFCBS(i,i)
+        LRSDBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDBS* LRSDBS(i,i)
+        LRLKIN(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CLKIN* LRLKIN(i,i)
+        LRPSOK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CPSOK* LRPSOK(i,i)
+        LRFCAV(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCAV* LRFCAV(i,i)
+        LRDIAK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CDIAK* LRDIAK(i,i)
+        LRANGP(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CANGP* LRANGP(i,i)
+        LRDIAD(i,i) = calfa*calfa*1.0D+6* CDIAD* LRDIAD(i,i)
+        LRDIAM(i,i) = calfa*calfa*1.0D+6* CDIAM* LRDIAM(i,i)
       ENDDO
-
+      
+      DO i=1, 3
+         SGP1T = SGP1T + LRFCZK(i,i)+LRSDZK(i,i)+LRFCBS(i,i)+LRSDBS(i,i)
+         SGP1S = SGP1S + LRLKIN(i,i) + LRPSOK(i,i) 
+         SGD0S = SGD0S + LRFCAV(i,i) + LRDIAK(i,i) + LRANGP(i,i)
+         SGD1S = SGD1S + LRDIAD(i,i) + LRDIAM(i,i)
+         relall= relall + SGD0S + SGD1S + SGP1S + SGP1T
+      ENDDO
+         relall = relall/3.0
+C
       CALL HEADER('Relativistic corrections to Nuclear Shielding',-1)
-      WRITE(LUPRI,*)' Paramagnetic Corrections:' 
-      IF (SIGMAP1S) THEN 
-         WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
-     &   'First Order Singlets    ', SGP1S,' arb.units'
-         WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
-     &   'First Order Triplets    ', SGP1T,' arb.units'
+
+      write(lupri,*)
+      write(lupri,*)' First and zeroth order relativistic corrcetions'
+      write(lupri,*) ' to nuclear shielding constant of ATOM', LRATOM
+      
+C
+C paramagnetic 1st singlet or triplet
+C
+      IF ((SIGMAP1S).OR.(SIGMAP1T)) THEN 
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)' Paramagnetic Corrections :' 
+
+         IF(SIGMAP1S) THEN 
+            WRITE(LUPRI,*)
+            WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
+     &      'First Order Singlets    ', SGP1S,' [ppm]'
+            IF(PRTALL) THEN 
+              aa =(LRLKIN(1,1)+LRLKIN(2,2)+LRLKIN(3,3))/3.0
+              WRITE(LUPRI,*)'       Detailed info :'
+              WRITE(LUPRI,*)'       ---------------'
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'Lkin :  ',LRLKIN(1,1),LRLKIN(2,2),LRLKIN(3,3),aa,' [ppm]'
+              aa = (LRPSOK(1,1)+LRPSOK(2,2)+LRPSOK(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'PsoKin :',LRPSOK(1,1),LRPSOK(2,2),LRPSOK(3,3),aa,' [ppm]'
+            ENDIF
+         ENDIF
+
+         IF (SIGMAP1T) THEN 
+            WRITE(LUPRI,*)
+            WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
+     &      'First Order Triplets    ', SGP1T,'[ppm]'
+            IF(PRTALL) THEN
+              WRITE(LUPRI,*)'       Detailed info :'
+              WRITE(LUPRI,*)'       ---------------'
+              aa = (LRFCZK(1,1) + LRFCZK(2,2) + LRFCZK(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.2,X,F13.2,X,F13.2,F13.5,A)')
+     &       'FcKin :',LRFCZK(1,1),LRFCZK(2,2),LRFCZK(3,3),aa,' [ppm]'
+              aa = (LRSDZK(1,1) + LRSDZK(2,2) + LRSDZK(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'SdKin :',LRSDZK(1,1),LRSDZK(2,2),LRSDZK(3,3),aa,' [ppm]'
+              aa = (LRFCBS(1,1) + LRFCBS(2,2) + LRFCBS(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'FcBso :',LRFCBS(1,1),LRFCBS(2,2),LRFCBS(3,3),aa,' [ppm]'
+              aa = (LRSDBS(1,1) + LRSDBS(2,2) + LRSDBS(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'SdBso :',LRSDBS(1,1),LRSDBS(2,2),LRSDBS(3,3),aa,' [ppm]'
+            ENDIF
+         ENDIF
+
       ENDIF
-      WRITE(LUPRI,*)' Diamagnetic Corrections:' 
+C
+C diamagnetic 0th or 1st order singlet
+C
       IF ((SIGMAD0S).OR.(SIGMAD1S)) THEN 
-         WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
-     &   'Zeroth Order             ', SGD0S,' arb.units'
-         WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
-     &   'First Order Singlets     ', SGD1S,'arb.units'
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)' Diamagnetic Corrections :' 
+         IF(SIGMAD0S) THEN 
+            WRITE(LUPRI,*)
+            WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
+     &      'Zeroth Order             ', SGD0S,' [ppm]'
+            IF(PRTALL) THEN
+              WRITE(LUPRI,*)'       Detailed info :'
+              WRITE(LUPRI,*)'       ---------------'
+              aa = (LRFCAV(1,1) + LRFCAV(2,2) + LRFCAV(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'Fc     :',LRFCAV(1,1),LRFCAV(2,2),LRFCAV(3,3),aa,' [ppm]'
+              aa = (LRDIAK(1,1) + LRDIAK(2,2) + LRDIAK(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'DiaKin :',LRDIAK(1,1),LRDIAK(2,2),LRDIAK(3,3),aa,' [ppm]'
+              aa = (LRANGP(1,1) + LRANGP(2,2) + LRANGP(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'AngPso :',LRANGP(1,1),LRANGP(2,2),LRANGP(3,3),aa,' [ppm]'
+            ENDIF
+         ENDIF
+         IF(SIGMAD1S) THEN 
+            WRITE(LUPRI,*)
+            WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
+     &      'First Order Singlets     ', SGD1S,' [ppm]'
+            IF(PRTALL) THEN
+              WRITE(LUPRI,*)'       Detailed info :'
+              WRITE(LUPRI,*)'       ---------------'
+              aa = (LRDIAM(1,1) + LRDIAM(2,2) + LRDIAM(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'DiaMv  :',LRDIAM(1,1),LRDIAM(2,2),LRDIAM(3,3),aa,' [ppm]'
+              aa = (LRDIAD(1,1) + LRDIAD(2,2) + LRDIAD(3,3))/3.0
+              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &       'DiaDw  :',LRDIAD(1,1),LRDIAD(2,2),LRDIAD(3,3),aa,' [ppm]'
+            ENDIF
+         ENDIF
       ENDIF
+C
+C All of them in detail
+C
       IF (LRESCALL) THEN
          WRITE (LUPRI,'(/5X,A,F17.10,A,F6.4,A)') 
      &           'Total relativistic correction:         ', relall
-c    &           ' au (', D100*RELTOT/EMCSCF,'%)'
-c            WRITE (LUPRI,'(5X,A,F17.10,A//)')
-c    &           'Non-relativistic + relativistic energy:',
-c    &           EMCSCF + RELTOT,' au'
       END IF
 
-
-
-c       Paramagnetic Corrections
-c            First Order Triplets                    bla bla ppm
-c            First Order Singlets                    ble ble ppm
-c 
-c       Diamagnetic Corrections
-c           Zeroth Order                             bli bli ppm
-c           First  Order Singlet                     blo blo ppm
-c 
-c       Total LRESC 0th and 1st Order Corrections    suma ppm
-c 
       WRITE(LUPRI,*) 
       write(LUPRI,*)'Note : For 3rd order paramagnetic corrections ' //
      &     'run response module.'

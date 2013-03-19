@@ -471,11 +471,7 @@ C  /* Deck exesir */
 #include "inftap.h"
 #include "huckel.h"
 #include "gnrinf.h"
-C by jmelo added
-#include "inforb.h"
-#include "lrescinf.h"
 C
-c      integer worke , lineas
 C
 C     Run SIRIUS
 C
@@ -518,19 +514,6 @@ C
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
       CALL TITLER('End of Wave Function Section (SIRIUS)',' ',200)
 
-C ******** jmelo *******************************************
-C  Debugging section for PSOK LRESC option, as it is not
-C  working inside LRESC module. I cant guess why, but here just works.  
-C  
-C  worke = total number of elements in UPPER TRIANGULAR AO-MATRIX
-C  lineas = number of AOs
-c       worke = nbas(1)*(nbas(1)+1)/2
-c       lineas  = nbas(1)
-c       WRITE(LUPRI, *) 'nbas-1, worke, lineas ', nbas(1),worke, lineas
-c       CALL angkin(worke,lineas)
-c       WRITE(LUPRI, '(/A)') '- End of jmelo debugging Zone'
-C
-C **********************************************************************
       IF (ICONV .EQ. 0 .AND. .NOT.WLKREJ) THEN
          WRITE(LUPRI, '(/A)')
      &      '@ - DALTON aborted because wave function not converged!'

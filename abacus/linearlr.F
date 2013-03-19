@@ -40,24 +40,23 @@ C...
 C...  This subroutine was written by Juan Ignacio Melo using
 C...  the subroutine ABACTOCD  as a model (2012)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <trkoor.h>
-c#include <sigma.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cbilnr.h>
-c#include <suscpt.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "trkoor.h"
+c#include "sigma.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cbilnr.h"
+c#include "suscpt.h"
+#include "infpri.h"
       LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL1,LABEL2,LISTA1(4*MXCOOR+9),LISTA2(4*MXCOOR+9)
       CHARACTER*6 LABEL22
       CHARACTER*4 KEY
       CHARACTER*3 char
-c      DIMENSION SIGMAMV(9),SIGMADW(9)
       PARAMETER (D05=0.5D0,D025=0.25)
       LOGICAL TODOINT
 C
@@ -108,7 +107,7 @@ C
          WRITE(LUPRI,'(2A)') '@LINEARLR to do ', KEY
       END IF
 C
-       IPRRSP = JIMPRT
+       IPRRSP = JIMPRT-1
 
 C
 C     Get reference state
@@ -541,7 +540,6 @@ C  ----------------------------------------------
         DO i =1, nlab2
           WRITE(LUPRI,*)'   LABEL2 :', LISTA2(I)
         ENDDO
-        WRITE(LUPRI,*)' ---------------------------------- '
 
 C
 C ---------------------------------------------------------------------
@@ -627,7 +625,7 @@ C          (1: symmetric, -1: antisymmetric, 0: unknown)
      &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
             REWIND LUGDVE
             CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
-            IF (IPRLNR.GT.1) THEN
+            IF (JIMPRT.GE.3) THEN
                WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL1
                CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
             ENDIF
@@ -667,7 +665,7 @@ C
                CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
      &             WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
 C
-               IF (IPRLNR.GT.5) THEN
+               IF (JIMPRT.GT.3) THEN
                   WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
                   CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
                ENDIF
@@ -678,18 +676,18 @@ C
                REWIND LUSOVE
                CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
 C
-               IF (IPRLNR.GT.5) THEN
+               IF (JIMPRT.GT.3) THEN
                  WRITE (LUPRI,'(2A)') 'Solution Vector, label: ',LABEL1
                  CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,2,1,LUPRI)
                ENDIF
 C
                SNDPRP = DDOT(2*NVARPT,WORK(KSLV),1,WORK(KGD1),1)
 C
-cv               IF (IPRLNR.GT.2) THEN
+               IF (JIMPRT.GE.2) THEN
                   WRITE (LUPRI,'(1A,I2,5A,F20.12)')
      &         '#',KJ,' Second order property for <<',LABEL2,';',LABEL1,
      &            '>> = ',SNDPRP
-cv               ENDIF
+               ENDIF
 C
 C              Write properties into the various property matrices
 C              ===================================================
@@ -721,8 +719,8 @@ C         <<Fc,Bso>>
 C       ------------------
                IF(KEY.EQ.'FCBS') THEN
                  IF (KJ.EQ.1) LRFCBS(1,1)=SNDPRP
-                 IF (KJ.EQ.5) LRFCBS(2,2)=SNDPRP
-                 IF (KJ.EQ.9) LRFCBS(3,3)=SNDPRP
+                 IF (KJ.EQ.4) LRFCBS(2,2)=SNDPRP
+                 IF (KJ.EQ.6) LRFCBS(3,3)=SNDPRP
                ENDIF
 C         <<Sd,Bso>> : (Good luck to find non diag elements)
 C       ------------------
@@ -787,6 +785,7 @@ C
       write(lupri,*) 
       WRITE(LUPRI,*)
       CALL TIMER ('LRSCLIN',TIMEIN,TIMOUT)
+      WRITE(LUPRI,*)' ---------------------------------- '
 C
       CALL QEXIT('LRSCLIN')
       RETURN
