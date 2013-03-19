@@ -289,7 +289,11 @@ C
 #include "wrkrsp.h"
 #include "lrescinf.h"
 #include "inforb.h"
-C     
+C this is for print section
+#include "nuclei.h"
+C
+C
+
 cv      write(lupri,*)'@ LRSCDRV : '
 
        IF (LRESCALL) THEN
@@ -377,6 +381,10 @@ C
 cv         CALL CUADRAS('LFCO')
       END IF
 
+C *******************************************************************
+C *******************************************************************
+C
+C
 C
 C -================---------------======================
 C                  Print Section
@@ -410,35 +418,46 @@ c        write(*,*)' fckin' , LRFCZK(i,i)
       ENDDO
       
       DO i=1, 3
-         SGP1T = SGP1T + LRFCZK(i,i)+LRSDZK(i,i)+LRFCBS(i,i)+LRSDBS(i,i)
-         SGP1S = SGP1S + LRLKIN(i,i) + LRPSOK(i,i) 
-         SGD0S = SGD0S + LRFCAV(i,i) + LRDIAK(i,i) + LRANGP(i,i)
-         SGD1S = SGD1S + LRDIAD(i,i) + LRDIAM(i,i)
-         relall= relall + SGD0S + SGD1S + SGP1S + SGP1T
+       SGP1T = SGP1T + LRFCZK(i,i) + LRSDZK(i,i)+LRFCBS(i,i)+LRSDBS(i,i)
+       SGP1S = SGP1S + LRLKIN(i,i) + LRPSOK(i,i) 
+       SGD0S = SGD0S + LRFCAV(i,i) + LRDIAK(i,i) + LRANGP(i,i)
+       SGD1S = SGD1S + LRDIAD(i,i) + LRDIAM(i,i)
+       relall= relall + SGD0S + SGD1S + SGP1S + SGP1T
       ENDDO
-         relall = relall/3.0
 C
-      CALL HEADER('Relativistic corrections to Nuclear Shielding',-1)
-
+C  shielding constant is the trace of each tensor
+C
+         relall = relall/3.0
+         SGP1T = SGP1T/3.0
+         SGP1S = SGP1S/3.0
+         SGD1S = SGD1S/3.0
+         SGD0S = SGD0S/3.0
+C
+      CALL TITLER('ABACUS - RELATIVISTIC CORRECTIONS LRESC','*',124)
       write(lupri,*)
-      write(lupri,*)' First and zeroth order relativistic corrcetions'
-      write(lupri,*) ' to nuclear shielding constant of ATOM', LRATOM
+      write(lupri,*)' First and Second order relativistic '// 
+     & 'corrections to nuclear shielding constant of ATOM ',NAMN(LRATOM)
+      WRITE(LUPRI,*)'(For definitions on terms named ABC, refered '//
+     &'to relativistic correction of sigma,'
+      WRITE(LUPRI,*)' see JCP. 137, 214319(2012))'
       
 C
 C paramagnetic 1st singlet or triplet
 C
       IF ((SIGMAP1S).OR.(SIGMAP1T)) THEN 
          WRITE(LUPRI,*)
-         WRITE(LUPRI,*)' Paramagnetic Corrections :' 
-
+         CALL HEADER('Paramagnetic Corrections',-1)
          IF(SIGMAP1S) THEN 
             WRITE(LUPRI,*)
-            WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
-     &      'First Order Singlets    ', SGP1S,' [ppm]'
+            WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
+     &      'Second Order Singlets. Total Value : ', SGP1S,' [ppm]'
+            WRITE(LUPRI,*)
             IF(PRTALL) THEN 
               aa =(LRLKIN(1,1)+LRLKIN(2,2)+LRLKIN(3,3))/3.0
-              WRITE(LUPRI,*)'       Detailed info :'
-              WRITE(LUPRI,*)'       ---------------'
+              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+     &                      ' components, for each operator'
+              WRITE(LUPRI,*)'       ---------------            xx  '//
+     &                       '          yy             zz          iso'
               WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
      &       'Lkin :  ',LRLKIN(1,1),LRLKIN(2,2),LRLKIN(3,3),aa,' [ppm]'
               aa = (LRPSOK(1,1)+LRPSOK(2,2)+LRPSOK(3,3))/3.0
@@ -449,11 +468,14 @@ C
 
          IF (SIGMAP1T) THEN 
             WRITE(LUPRI,*)
-            WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
-     &      'First Order Triplets    ', SGP1T,'[ppm]'
+            WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
+     &      'Second Order Triplets. Total Value : ', SGP1T,'[ppm]'
+            WRITE(LUPRI,*)
             IF(PRTALL) THEN
-              WRITE(LUPRI,*)'       Detailed info :'
-              WRITE(LUPRI,*)'       ---------------'
+              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+     &                      ' components, for each operator'
+              WRITE(LUPRI,*)'       ---------------            xx  '//
+     &                       '          yy             zz          iso'
               aa = (LRFCZK(1,1) + LRFCZK(2,2) + LRFCZK(3,3))/3.0
               WRITE (LUPRI,'(10X,A,9X,F13.2,X,F13.2,X,F13.2,F13.5,A)')
      &       'FcKin :',LRFCZK(1,1),LRFCZK(2,2),LRFCZK(3,3),aa,' [ppm]'
@@ -468,6 +490,10 @@ C
      &       'SdBso :',LRSDBS(1,1),LRSDBS(2,2),LRSDBS(3,3),aa,' [ppm]'
             ENDIF
          ENDIF
+            WRITE(LUPRI,*)
+            WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
+     &      'Total Paramagnetic Corrections :     ',
+     &       (SGP1S+SGP1T),' [ppm]'
 
       ENDIF
 C
@@ -475,14 +501,18 @@ C diamagnetic 0th or 1st order singlet
 C
       IF ((SIGMAD0S).OR.(SIGMAD1S)) THEN 
          WRITE(LUPRI,*)
-         WRITE(LUPRI,*)' Diamagnetic Corrections :' 
+c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
+         CALL HEADER(' Diamagnetic Corrections :',-1)
          IF(SIGMAD0S) THEN 
             WRITE(LUPRI,*)
-            WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
-     &      'Zeroth Order             ', SGD0S,' [ppm]'
+            WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
+     &      'First Order. Total Value :           ', SGD0S,' [ppm]'
+            WRITE(LUPRI,*)
             IF(PRTALL) THEN
-              WRITE(LUPRI,*)'       Detailed info :'
-              WRITE(LUPRI,*)'       ---------------'
+              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+     &                      ' components, for each operator'
+              WRITE(LUPRI,*)'       ---------------            xx  '//
+     &                       '          yy             zz          iso'
               aa = (LRFCAV(1,1) + LRFCAV(2,2) + LRFCAV(3,3))/3.0
               WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
      &       'Fc     :',LRFCAV(1,1),LRFCAV(2,2),LRFCAV(3,3),aa,' [ppm]'
@@ -496,11 +526,14 @@ C
          ENDIF
          IF(SIGMAD1S) THEN 
             WRITE(LUPRI,*)
-            WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
-     &      'First Order Singlets     ', SGD1S,' [ppm]'
+            WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
+     &      'Second Order Singlets. Total Value : ', SGD1S,' [ppm]'
+            WRITE(LUPRI,*)
             IF(PRTALL) THEN
-              WRITE(LUPRI,*)'       Detailed info :'
-              WRITE(LUPRI,*)'       ---------------'
+              WRITE(LUPRI,*)'       Detailed info :  Diagonal'// 
+     &                      ' components, for each operator'
+              WRITE(LUPRI,*)'       ---------------            xx  '//
+     &                       '          yy             zz          iso'
               aa = (LRDIAM(1,1) + LRDIAM(2,2) + LRDIAM(3,3))/3.0
               WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
      &       'DiaMv  :',LRDIAM(1,1),LRDIAM(2,2),LRDIAM(3,3),aa,' [ppm]'
@@ -510,19 +543,27 @@ C
             ENDIF
          ENDIF
       ENDIF
+            WRITE(LUPRI,*)
+            WRITE (LUPRI,'(5X,A,9X,F17.5,A)')
+     &      'Total Diamagnetic Corrections :      ',
+     &       (SGD0S+SGD1S),' [ppm]'
 C
 C All of them in detail
 C
       IF (LRESCALL) THEN
-         WRITE (LUPRI,'(/5X,A,F17.10,A,F6.4,A)') 
-     &           'Total relativistic correction:         ', relall
+         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
+         WRITE (LUPRI,'(/5X,A,15X,F17.5,A)') 
+     &           'Total relativistic correction: ', relall,
+     &           ' [ppm]'
+c         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
       END IF
 
       WRITE(LUPRI,*) 
-      write(LUPRI,*)'Note : For 3rd order paramagnetic corrections ' //
-     &     'run response module.'
-      write(LUPRI,*)'       Can use this as template, it is set for' //
-     &     ' the selected atom on INPUT FILE'
+      write(LUPRI,*)'Note : Run RESPONSE module for third order '//
+     &     'paramagnetic corrections.'
+      write(LUPRI,*)'       Can use this as template. Settled for' //
+     &     ' the first atom on input file, named X '
       WRITE(LUPRI,*)'          Spin Orbit :' 
       WRITE(LUPRI,*)'                  **RESPONSE'
       WRITE(LUPRI,*)'                  *QUADRATIC'
@@ -564,6 +605,7 @@ C
       WRITE(LUPRI,*)'                  MASSVELO   !(or DARWIN)'
        RETURN
       END
+     RETURN
 C...
 c    ---------------------------------------
 c    ---------------------------------------

@@ -530,13 +530,13 @@ C
 C Print Section for LABELS on LISTAS 
 C  ----------------------------------------------
         
-        WRITE(LUPRI,*)' @Linear setting  LABEL1 :'
+        WRITE(LUPRI,*)' @LinearLR setting  LABEL1 :'
         DO i =1, nlab1
           WRITE(LUPRI,*)'   LABEL1 :', LISTA1(I)
         ENDDO
         WRITE(LUPRI,*)
  
-        WRITE(LUPRI,*)' @Linear setting  LABEL2 :'
+        WRITE(LUPRI,*)' @LinearLR setting  LABEL2 :'
         DO i =1, nlab2
           WRITE(LUPRI,*)'   LABEL2 :', LISTA2(I)
         ENDDO
@@ -703,7 +703,7 @@ C         <<Sd,Kin>> : (Good luck to find non diag elements)
 C       ------------------
 c          xx = (001x;xx)+(001y;xy)+(001z;xz) :  1 + 11 + 21 . ok
 c          yy = (002x;xy)+(002y;yy)+(002z;zy) : 13 + 32 + 42 . ok
-c          xx = (003x;xz)+(003y;zy)+(003z;zz) : 24 + 44 + 54 . ok
+c          zz = (003x;xz)+(003y;zy)+(003z;zz) : 25 + 44 + 54 . ok
                IF (KEY.EQ.'SDZK') THEN
                   IF ((KJ.EQ.1).OR.(KJ.EQ.11).OR.(KJ.EQ.21)) THEN
                      LRSDZK(1,1)=LRSDZK(1,1)+SNDPRP
@@ -711,7 +711,7 @@ c          xx = (003x;xz)+(003y;zy)+(003z;zz) : 24 + 44 + 54 . ok
                   IF ((KJ.EQ.13).OR.(KJ.EQ.32).OR.(KJ.EQ.42)) THEN
                      LRSDZK(2,2)=LRSDZK(2,2)+SNDPRP
                   ENDIF
-                  IF ((KJ.EQ.24).OR.(KJ.EQ.44).OR.(KJ.EQ.54)) THEN
+                  IF ((KJ.EQ.25).OR.(KJ.EQ.44).OR.(KJ.EQ.54)) THEN
                      LRSDZK(3,3)=LRSDZK(3,3)+SNDPRP
                   ENDIF
                ENDIF
@@ -726,7 +726,7 @@ C         <<Sd,Bso>> : (Good luck to find non diag elements)
 C       ------------------
 c          xx = (001x;xx)+(001y;xy)+(001z;xz) :  1 + 11 + 21 . ok
 c          yy = (002x;xy)+(002y;yy)+(002z;zy) : 13 + 32 + 42 . ok
-c          xx = (003x;xz)+(003y;zy)+(003z;zz) : 24 + 44 + 54 . ok
+c          zz = (003x;xz)+(003y;zy)+(003z;zz) : 25 + 44 + 54 . ok
                IF (KEY.EQ.'SDBS') THEN
                   IF ((KJ.EQ.1).OR.(KJ.EQ.11).OR.(KJ.EQ.21)) THEN
                      LRSDBS(1,1)=LRSDBS(1,1)+SNDPRP
@@ -734,7 +734,7 @@ c          xx = (003x;xz)+(003y;zy)+(003z;zz) : 24 + 44 + 54 . ok
                   IF ((KJ.EQ.13).OR.(KJ.EQ.32).OR.(KJ.EQ.42)) THEN
                      LRSDBS(2,2)=LRSDBS(2,2)+SNDPRP
                   ENDIF
-                  IF ((KJ.EQ.24).OR.(KJ.EQ.44).OR.(KJ.EQ.54)) THEN
+                  IF ((KJ.EQ.25).OR.(KJ.EQ.44).OR.(KJ.EQ.54)) THEN
                      LRSDBS(3,3)=LRSDBS(3,3)+SNDPRP
                   ENDIF
                ENDIF

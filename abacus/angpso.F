@@ -156,8 +156,7 @@ C      ESCRIBO LAS MATRICES
 C   *****************************
       IF (B0(2).Eq.'INTEGRAL') then
          write(lupri,*) ' ****** INTEGRALS OUTPUT   DETECTED !  *******'
-          write(lupri,*) '        como una riestra de chorizos !  '
-          write(lupri,*) '        chorizos pero en base atomica   '
+          write(lupri,*) '        in atomic basis set  '
           write(lupri,*) LABEL(j)
           do mu=1,naos
           do nu=mu,naos
