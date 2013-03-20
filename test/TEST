@@ -738,7 +738,7 @@ do
         fi
 #     else everything OK and -keep defined
       fi
-      myprint "     $checkout -- $total_failed tests failed so far out of $total_tests"
+      myprint "     $checkout -- so far $total_failed tests failed out of $total_tests"
       step=`expr $step \+ 1`
   done
   if [ "$trouble" -eq 0 ]; then

@@ -1064,8 +1064,10 @@ C
      &   ' IOSTAT =',IOERR
       CALL QUIT('I/O error in FIND_ELEMENT in HERBAS')
  200  CONTINUE
-      WRITE (LUPRI,'(/I3,2A)') INTQ,
-     &     ' is an unsupported element for basis ',BASNAM
+      WRITE (LUPRI,'(//A,I5,2A/A//)')
+     &' ERROR: Nuclear charge',INTQ,
+     &   ' is an unsupported element for basis ',BASNAM,
+     &' ERROR: You must choose another basis set, or enter it manually.'
       CALL QUIT('Unsupported element in HERBAS')
       END 
 C/* Deck finnqd */
