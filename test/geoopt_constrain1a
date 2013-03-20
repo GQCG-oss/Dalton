@@ -82,7 +82,7 @@ fi
 
 # Determination
 CRIT1=`$GREP "Determination of redundant internal will be performed\." $log | wc -l`
-CRIT2=`$GREP "No geometry optimization will be done\, other keywords will be ignored\!\!\!\!\!" $log | wc -l`
+CRIT2=`$GREP "No geometry optimization will be done\, other keywords will be ignored\!\!" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[1]=2
 ERROR[1]="INTERNAL COORDINATE DETERMINATION NOT SET UP CORRECTLY"
@@ -95,14 +95,14 @@ CTRL[2]=2
 ERROR[2]="SYMMETRY NOT CORRECT"
 
 # Geometry
-CRIT1=`$GREP ". * 6\.00000000  * (\-0|\-|0| )\.00000000 * (\-0|\-|0| )\.00000000 * (0| )\.9285936." $log | wc -l`
-CRIT2=`$GREP ". * 6\.00000000 * (\-0|\-|0| )\.00000000 * (\-0|\-|0| )\.00000000 * (\-0| \-)\.9285936." $log | wc -l`
-CRIT3=`$GREP ". * 1\.00000000 * (\-0|\-|0| )\.00000000 * \-1\.027065.. * 1\.2936025." $log | wc -l`
-CRIT4=`$GREP ". * 1\.00000000 * (\-0|\-|0| )\.00000000 * 1\.027065.. * \-1\.2936025." $log | wc -l`
-CRIT5=`$GREP ". * 1\.00000000 * (0| )\.8894646. * (0| )\.5135326. * 1\.2936025." $log | wc -l`
-CRIT6=`$GREP ". * 1\.00000000 * (\-0| \-)\.8894646. * (0| )\.5135326. * 1\.2936025." $log | wc -l`
-CRIT7=`$GREP ". * 1\.00000000 * (0| )\.8894646. * (\-0| \-)\.5135326. * \-1\.2936025." $log | wc -l`
-CRIT8=`$GREP ". * 1\.00000000 * (\-0| \-)\.8894646. * (\-0| \-)\.5135326. * \-1\.2936025." $log | wc -l`
+CRIT1=`$GREP ". * 6\.00000000 *\-*0*\.00000000 *\-*0*\.00000000 *  0*\.9285936." $log | wc -l`
+CRIT2=`$GREP ". * 6\.00000000 *\-*0*\.00000000 *\-*0*\.00000000 *\-0*\.9285936." $log | wc -l`
+CRIT3=`$GREP ". * 1\.00000000 *\-*0*\.00000000 *  \-1\.027065.. *\-*1\.2936025." $log | wc -l`
+CRIT4=`$GREP ". * 1\.00000000 *\-*0*\.00000000 *    1\.027065.. *\-*1\.2936025." $log | wc -l`
+CRIT5=`$GREP ". * 1\.00000000 *   0*\.8894646. *   0*\.5135326. *\-*1\.2936025." $log | wc -l`
+CRIT6=`$GREP ". * 1\.00000000 * \-0*\.8894646. *   0*\.5135326. *\-*1\.2936025." $log | wc -l`
+CRIT7=`$GREP ". * 1\.00000000 *   0*\.8894646. * \-0*\.5135326. *\-*1\.2936025." $log | wc -l`
+CRIT8=`$GREP ". * 1\.00000000 * \-0*\.8894646. * \-0*\.5135326. *\-*1\.2936025." $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[3]=8
