@@ -47,6 +47,7 @@ module pe_variables
     logical, save :: response = .false.
     logical, save :: mep = .false.
     logical, save :: noneq = .false.
+    logical, save :: london = .false.
 
     ! temporary solution for work array thing
     real(dp), dimension(:), pointer :: work

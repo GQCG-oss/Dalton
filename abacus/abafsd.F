@@ -1705,6 +1705,9 @@ C  /* Deck onedrl */
       SUBROUTINE ONEDRL(KEY,OMATX,OMATY,OMATZ,IATOM,DERX,DERY,DERZ,WORK,
      &                  LWORK,IPRINT,INTPRI)
 C
+       use pe_variables, only : peqm
+       use polarizable_embedding, only : pe_master
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1863,6 +1866,16 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
             CALL QMMMFIRST(WORK(KTMAT),IPRINT,INTPRI,WORK(MWRK),LLEFT)
             CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
             IF (IPQMMM .GT. 1) CALL TIMER('QMMMFIRST',TIMSTR,TIMEND)
+         END IF
+
+         IF (PEQM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
+            ktmat = kwrk
+            mwrk  = ktmat + 3*n2basx
+            if (mwrk .gt. lwrk) call stopit('onedrl','qmmm-1',mwrk,lwrk)
+            lleft = lwrk - mwrk + 1
+            call pe_master('london',  nmats=1,
+     &                                fckmats = work(ktmat:mwrk),
+     &                                dalwrk = work(mwrk:lwrk))
          END IF
 
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)

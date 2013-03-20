@@ -57,7 +57,7 @@ C
       CALL QENTER('QMMMFIRST')
       IF (MMTIME) DTIME = SECOND()
 
-      LOCDEB = .FALSE.
+      LOCDEB = .TRUE.
 
 C     If we have BOTH permanent dipoles AND induced dipoles then these
 C     can be added together and we can treat the effect of those
@@ -137,6 +137,7 @@ C     1. Construct the charge contribution for all MM centers
 
         ENDIF ! (NODTOT.GE.1) ... ELSE 
       ENDIF !( NMULT .GE. 0)
+      CALL QUIT("ROFL")
 
 C     2. Construct the permanent dipole contribution for all MM centers
 

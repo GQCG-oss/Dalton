@@ -902,7 +902,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
 
     character(*), intent(in) :: runtype
     integer, intent(in) :: nmats
-    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(in), optional :: denmats
     real(dp), dimension(:), intent(inout), optional :: fckmats
     real(dp), dimension(:), intent(out), optional :: energies
     real(dp), dimension(:), target, intent(inout) :: dalwrk
@@ -924,6 +924,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         response = .false.
         mep = .false.
         noneq = .false.
+        london = .false.
         scfcycle = scfcycle + 1
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input'
@@ -936,6 +937,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         response = .false.
         mep = .false.
         noneq = .false.
+        london = .false.
     else if (runtype == 'response') then
         if (pe_gspol) return
         fock = .false.
@@ -943,6 +945,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         response = .true.
         mep = .false.
         noneq = .false.
+        london = .false.
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input'
         end if
@@ -952,6 +955,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         response = .false.
         mep = .true.
         noneq = .false.
+        london = .false.
     else if (runtype == 'noneq') then
         fock = .false.
         energy = .false.
@@ -959,16 +963,29 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         mep = .false.
 !        noneq = .false.
         noneq = .true.
+        london = .false.
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input'
         end if
+    else if (runtype == 'london') then
+        fock = .false.
+        energy = .false.
+        response = .false.
+        mep = .false.
+        noneq = .false.
+        london = .true.
     else
         stop 'Could not determine calculation type.'
     end if
 
     ndens = nmats
-    nnbas = size(denmats) / ndens
-    nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
+    if(london) then
+      if(.not.present(fckmats)) stop 'output matrix missing from input.'
+      nbas = int(sqrt(size(fckmats) / 3.0d0))
+    else
+      nnbas = size(denmats) / ndens
+      nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
+    endif
     allocate(Epe(ndens))
     Epe = 0.0d0
     allocate(Ees(0:5,ndens))
@@ -994,9 +1011,9 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         end if
 
         call mpi_bcast(nbas, 1, impi, 0, comm, ierr)
-        call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
         call mpi_bcast(ndens, 1, impi, 0, comm, ierr)
-        call mpi_bcast(denmats, nnbas * ndens, rmpi, 0, comm, ierr)
+        if(.not. london) call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
+        if(.not. london) call mpi_bcast(denmats, nnbas * ndens, rmpi, 0, comm, ierr)
 
         if (.not. synced) then
             call pe_sync()
@@ -1072,6 +1089,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
     else if (mep) then
         if (ndens > 1) stop 'Not implemented for more than 1 density matrix'
         call pe_compute_mep(denmats)
+    else if (london) then
+        call pe_compute_london(fckmats)
     end if
 
     deallocate(Epe, Ees, Epol, Esol, Efd)
@@ -7027,5 +7046,90 @@ subroutine FIXDIIS(NFFPAR, NIT, MXDIIS, QOUT, QIN, DIMAT,&
       RETURN
 !
 end subroutine fixdiis
+
+subroutine pe_compute_london(fckmats)
+    real(dp), dimension(:), intent(out) :: fckmats
+    integer :: k
+    fckmats = 0.0d0
+    write(luout, '(A7,6L4)') "CSS:M",(lmul(k),k=0,5)
+    if(lmul(0)) call b_multipoles(M0s, fckmats)
+end subroutine pe_compute_london
+
+! -------
+subroutine b_multipoles(MKs, fckmats)
+    real(dp), dimension(:,:), intent(in) :: Mks
+    real(dp), dimension(:), intent(inout) :: fckmats
+
+    integer :: i
+    integer :: site, ncomps
+    real(dp), dimension(3) :: Rsm
+    real(dp), dimension(:), allocatable :: Tsm, symfacs
+    real(dp), dimension(:,:), allocatable :: Mk_ints
+
+    ncomps = size(Mks,1)
+
+    allocate(Tsm(ncomps))
+
+    ! notice change to nbas instead of nnbas here
+    allocate(Mk_ints(nbas*nbas,ncomps))
+
+    write(luout, '(A7,3I4)') "CSS:NC",nbas,site_start, site_finish
+
+    do site = site_start, site_finish
+        if (abs(maxval(Mks(:,site))) < zero) then
+            i = i + 1
+            cycle
+        end if
+    write(luout, '(A7,I4)') "CSS:SI",site
+        ! electron - multipole interaction energy
+        call Mkb_integrals(Mk_ints, Rs(:,site), Mks(:,site))
+!        do l = 1, ndens
+!            m = (l - 1) * nnbas + 1
+!            n = l * nnbas
+!            Eel(l) = Eel(l) + dot(denmats(m:n), sum(Mk_ints, 2))
+!            if (fock) fckmats(m:n) = fckmats(m:n) + sum(Mk_ints, 2)
+!        end do
+        i = i + 1
+    end do
+    deallocate(Tsm, Mk_ints)
+end subroutine b_multipoles
+!----------------------------------------
+subroutine Mkb_integrals(Mk_ints, Rij, Mk)
+
+    external :: Tkb_integrals
+
+    real(dp), dimension(:,:), intent(out) :: Mk_ints
+    real(dp), dimension(:), intent(in) :: Mk
+    real(dp), dimension(3), intent(in) :: Rij
+
+    integer :: i, k
+    integer :: ncomps
+    real(dp) :: taylor
+    real(dp), dimension(:), allocatable :: factors
+
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Mk)) - 1.0d0)) - 1
+
+    if (mod(k,2) == 0) then
+        taylor = 1.0d0 / factorial(k)
+    else if (mod(k,2) /= 0) then
+        taylor = - 1.0d0 / factorial(k)
+    end if
+
+    ncomps = size(Mk_ints, 2)
+    write(luout,*) "CSS: NCOMPS", ncomps
+    call Tkb_integrals(Mk_ints, nbas*nbas, ncomps, Rij)
+
+    ! get symmetry factors
+    allocate(factors(ncomps))
+    call symmetry_factors(factors)
+
+    ! dot T^(k) integrals with multipole to get M^(k) integrals
+    do i = 1, ncomps
+        Mk_ints(:,i) = taylor * factors(i) * Mk(i) * Mk_ints(:,i)
+    end do
+
+    deallocate(factors)
+
+end subroutine Mkb_integrals
 
 end module polarizable_embedding
