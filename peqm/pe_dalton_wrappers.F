@@ -830,39 +830,39 @@ C     as to what works best for singly bonded C,N,O
      &                .false., dummy, 1)
           diporg(1) = coord(1) - 0.001d0
           call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,
-                      labint, intrep, intadr, 0, .false., 0, trimat,
-                      dummy, .false., dummy, 1)
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
           diporg = coord
           Tk_ints(1:3*nints) = - (work(1:m) - work(1+m:2*m))
-                                  / (2.0d0 * 0.001d0)
+     &                            / (2.0d0 * 0.001d0)
    
           ! yy, yz
           diporg(2) = diporg(2) + 0.001d0
           call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,
-                      labint, intrep, intadr, 0, .false., 0, trimat,
-                      dummy, .false., dummy, 1)
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
           diporg(2) = diporg(2) - 2.0d0 * 0.001d0
           call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,
-                      labint, intrep, intadr, 0, .false., 0, trimat,
-                      dummy, .false., dummy, 1)
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
           diporg = coord
           Tk_ints(1+3*nints:5*nints) = - (work(1+nints:m)
-                                          - work(1+4*nints:2*m))
-                                          / (2.0d0 * 0.001d0)
+     &                                    - work(1+4*nints:2*m))
+     &                                    / (2.0d0 * 0.001d0)
    
           ! zz
           diporg(3) = diporg(3) + 0.001d0
           call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,
-                      labint, intrep, intadr, 0, .false., 0, trimat,
-                      dummy, .false., dummy, 1)
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
           diporg(3) = diporg(3) - 2.0d0 * 0.001d0
           call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1),nwrk,
-                      labint, intrep, intadr, 0, .false., 0, trimat,
-                      dummy, .false., dummy, 1)
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
           diporg = coord
           Tk_ints(1+5*nints:6*nints) = - (work(1+2*nints:m)
-                                          - work(1+5*nints:2*m))
-                                          / (2.0d0 * 0.001d0)
+     &                                    - work(1+5*nints:2*m))
+     &                                    / (2.0d0 * 0.001d0)
       else if (k == 3) then
           n = 6
           m = nints
@@ -871,10 +871,8 @@ C     as to what works best for singly bonded C,N,O
           do j = 1, 3
               diporg(j) = diporg(j) + 0.01d0
               call get1in(work(l*i+1), inttype, n, work(j*i+1), nwrk,
-              &
-                          labint, intrep, intadr, 0, .false., 0, trimat,
-                          &
-                          dummy, .false., dummy, 1)
+     &                    labint, intrep, intadr, 0, .false., 0, trimat,
+     &                    dummy, .false., dummy, 1)
               diporg(j) = diporg(j) - 2.0d0 * 0.01d0
               call get1in(work(j*i+1), inttype, n, work((j+1)*i+1),
      &                    nwrk, labint, intrep, intadr, 0, .false., 0,
