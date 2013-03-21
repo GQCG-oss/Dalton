@@ -99,12 +99,29 @@ C         'FCZK' 'FCZK'
 C
       CALL QENTER('LRSCLIN')
       CALL TIMER('START ',TIMEIN,TIMOUT)
+
+      IF (JIMPRT .GE. 2) THEN
+      WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
       WRITE(LUPRI,*)
-      IF (JIMPRT .GT. 5) THEN
-         WRITE (LUPRI,'(A,/)') ' <<<<<<<<<< Output from LRESC-'//
-     &       'LINEAR-S >>>>>>>>>> '
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(2A)') '@LINEARLR to do ', KEY
+         IF (KEY.EQ.'DIAM') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Diamagnetic Second Order Singlet : DIAM '
+         IF (KEY.EQ.'DIAD') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Diamagnetic Second Order Singlet : DIAD '
+         IF (KEY.EQ.'PSOK') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Paramagnetic Second Order Singlet : PSOK '
+         IF (KEY.EQ.'PSOKI') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Paramagnetic Second Order Singlet : PSOKI'
+         IF (KEY.EQ.'LKIN') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Paramagnetic Second Order Singlet : LKIN '
+         IF (KEY.EQ.'FCZK') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Paramagnetic Second Order Triplet : FCZK'
+      IF (KEY.EQ.'SDZK') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Paramagnetic Second Order Triplet : SDZK'
+      IF (KEY.EQ.'FCBS') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Paramagnetic Second Order Triplet : FCBS'
+      IF (KEY.EQ.'SDBS') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Paramagnetic Second Order Triplet : SDBS'
+      WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
       END IF
 C
        IPRRSP = JIMPRT-1
@@ -527,20 +544,22 @@ C        -----------------------------------
       ENDIF
 C ---------------------------------------------------------------------
 C
-C Print Section for LABELS on LISTAS 
+C  Print Section for LABELS on LISTAS 
 C  ----------------------------------------------
-        
+C        
+      IF (JIMPRT.GE.2) THEN 
         WRITE(LUPRI,*)' @LinearLR setting  LABEL1 :'
         DO i =1, nlab1
           WRITE(LUPRI,*)'   LABEL1 :', LISTA1(I)
         ENDDO
         WRITE(LUPRI,*)
- 
+C 
         WRITE(LUPRI,*)' @LinearLR setting  LABEL2 :'
         DO i =1, nlab2
           WRITE(LUPRI,*)'   LABEL2 :', LISTA2(I)
         ENDDO
-
+      ENDIF
+C
 C
 C ---------------------------------------------------------------------
 C
@@ -785,7 +804,6 @@ C
       write(lupri,*) 
       WRITE(LUPRI,*)
       CALL TIMER ('LRSCLIN',TIMEIN,TIMOUT)
-      WRITE(LUPRI,*)' ---------------------------------- '
 C
       CALL QEXIT('LRSCLIN')
       RETURN

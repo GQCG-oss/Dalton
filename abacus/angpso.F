@@ -143,7 +143,7 @@ C              write(lupri,*) 'Orbital : ',i1, '  Valor', ORBC(i1)
            S1 = S1 + ORBC(i1)
         enddo
         Av = 2.0*S1
-        IF (PRT.GE.2) THEN 
+        IF (PRT.GT.2) THEN 
         write(lupri,*) '@ANGPSO< ',LABEL(j),' >< ',LABEL(k),' >  = ',Av 
 c           write(*,*) '< ',LABEL(j),' >< ',LABEL(k),' >  = ', Av 
            if (B0(1).Eq.'ORBITAL') then
@@ -166,13 +166,13 @@ C   *****************************
       ENDIF
 C
 cjim-dbg       ENDDO
-      write(lupri,*) 
-      write(lupri,*) 
+c      write(lupri,*) 
+c      write(lupri,*) 
 C
 C ----------------------------------------------------------
 C         SECCION CHEQUEO DE LA BASE
 C ----------------------------------------------------------
-      IF (PRT.GT.2) THEN 
+      IF (PRT.GT.3) THEN 
          write(lupri,*) '*******************************************' 
          write(lupri,*) '********** Chequeo de la Base *************'
          write(lupri,*) '*******************************************' 

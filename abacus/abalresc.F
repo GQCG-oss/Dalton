@@ -285,11 +285,9 @@ C Zeroth Order, Singlet of course
 C --------------------------------
 C
       IF (SIGMAD0S) THEN
-         WRITE (LUPRI,'(A)')'   Calling to SIGMA0S for : Diamagnetic '//
-     &         ' ZerothORder Shielding corrections ' 
-         CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
-         CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
-         CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
+           CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
+           CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
+           CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
       END IF
 
 C 
@@ -299,32 +297,21 @@ C
 C     Paramagnetic ones
 C
 
-      WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
-      WRITE(LUPRI,*)
       IF (SIGMAP1S)  THEN
-         WRITE(LUPRI,'(A)')'   Calling to SIGMAP1S for : PSOK   '//
-     &         'using dalton integrals' ! con dalton integrals
-         WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
          CALL LINEARLR('PSOK',WORK,LWORK) 
-C
 C         WRITE(LUPRI,'(A)')'   Calling to SIGMAP1S for : PSKI  '//
 C     &        'using A.1.B routine'  ! con mis integrales
 C         WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
 C         CALL LINEARLR('PSKI',WORK,LWORK)
 C
-         WRITE (LUPRI,'(A)')'   Calling to SIGMAP1S for : LKIN'
-         write(LUPRI,'(/721A1/)')('*',I=1,72)
          CALL LINEARLR('LKIN',WORK,LWORK) ! ANDA
       END IF
 C
 C    Diamagnetic ones
 C
       IF (SIGMAD1S) THEN
-         WRITE (LUPRI,'(A)')'  Calling to SIGMA1S for : Diamagnetic'//
-     &         ' Singlet First Order Shielding corrections',
-     &         '                           Darwin and MassVelo '
-         CALL LINEARLR('DIAM',WORK,LWORK) ! ANDA
-         CALL LINEARLR('DIAD',WORK,LWORK) ! ANDA
+           CALL LINEARLR('DIAM',WORK,LWORK) ! ANDA
+           CALL LINEARLR('DIAD',WORK,LWORK) ! ANDA
       END IF
 C 
 C First Order TRIPLET
@@ -333,12 +320,10 @@ C
 C Paramagnetic, only
 C
       IF (SIGMAP1T) THEN
-         WRITE (LUPRI,'(A)')'  Calling to SIGMA1T for : Paramagnetic'//
-     &         ' Triplet First Order Shielding corrections'
-         CALL LINEARLR('FCZK',WORK,LWORK) !ANDA
-         CALL LINEARLR('SDZK',WORK,LWORK) !ANDA
-         CALL LINEARLR('FCBS',WORK,LWORK) !ANDA 
-         CALL LINEARLR('SDBS',WORK,LWORK) !ANDA
+           CALL LINEARLR('FCZK',WORK,LWORK) !ANDA
+           CALL LINEARLR('SDZK',WORK,LWORK) !ANDA
+           CALL LINEARLR('FCBS',WORK,LWORK) !ANDA 
+           CALL LINEARLR('SDBS',WORK,LWORK) !ANDA
       END IF
 C 
 C Third Order SINLGET 

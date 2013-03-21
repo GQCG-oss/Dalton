@@ -83,7 +83,7 @@ C
 #include "orgcom.h"
 C
       IPRLNR = JIMPRT
-      IPRRSP = JIMPRT
+      IPRRSP = -1
 cxu
 C
 C
@@ -95,13 +95,20 @@ C
 C
       CALL QENTER('AVELRSC')
       CALL TIMER('START ',TIMEIN,TIMOUT)
-      WRITE(LUPRI,*)
-      IF (JIMPRT .GT. 3) THEN
-         WRITE (LUPRI,'(A,/)') ' <<<<<<<<<< Output from LRESC-'//
-     &       'AVERAGE >>>>>>>>>> '
+
+      IF (JIMPRT .GE. 2) THEN
+         WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
          WRITE(LUPRI,*)
-         WRITE(LUPRI,'(2A)') '@AVERAGE to do ', KEY
+         IF (KEY.EQ.'FCAV') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Diamagnetic First Order Singlet : FCAV '
+         IF (KEY.EQ.'DIAK') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Diamagnetic First Order Singlet : DIAK'
+         IF (KEY.EQ.'ANGP') WRITE(LUPRI,'(A)')
+     &      '   LINEARLR, Diamagnetic First Order Singlet : ANGP '
+         WRITE(LUPRI,'(/721A1/)')('*',I=1,72)
       END IF
+C     
+
 C
 C
 C     Get reference state
@@ -382,11 +389,12 @@ c        ENDDO
 
 C  Print LABELS
 C -----------------------------------
-cdbg      write(lupri,*) '@Average setting  LABEL1 :'
-cdbg      DO i =1, NLAB
-cdbg         WRITE(LUPRI,*)'   LABEL :', LISTA1(I) 
-cdbg      ENDDO
-cdbg      WRITE(LUPRI,*)' ---------------------------------- '
+      IF(JIMPRT.GE.2) THEN
+      write(lupri,*) '@AVELRSC setting  LABEL :'
+      DO i =1, NLAB
+         WRITE(LUPRI,*)'   LABEL :', LISTA1(I) 
+      ENDDO
+      ENDIF
 C
 C ---------------------------------------------------------------------
 C
@@ -465,9 +473,7 @@ C       ------------------
              IF(KJ.EQ.3) LRANGP(3,3)=SNDPRP         
            ENDIF
   300 CONTINUE
-
-
-
+C
       CALL TIMER ('AVELRSC',TIMEIN,TIMOUT)
 C
       CALL QEXIT('AVELRSC')

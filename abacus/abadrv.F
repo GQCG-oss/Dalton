@@ -1753,27 +1753,29 @@ cLig <<
 C  jim-gesc 1.3:  Print section 'lresc will be done ' 
 Cx jim-dbg :  here we can stop if london or smthg else. 
 cx jim-dbg :  asking to specific logic : ex SOPPA
-       IF ((RNLRSC).AND.(ABASOP)) THEN
-         WRITE(LUPRI,*) ' Unsupported input - calculation of  ', 
-     &   ' corrections for shiledings not implemented for SOPPA yet '
-         CALL QUIT('Inconsistent input in ABAINP')
-       ENDIF
-       IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
-     &    ' Linear Response Elimination of Small Component',
-     &    ' DEVELOPING NOTES :   ' ,
-     &    '         -Uncont basis set  : not yet ',
-     &    '         -Selected atom     : DONE ! except FC operator ',
-     &    '         -Man pages         : not yet ',
-     &    '         -Test runs         : not yet ',
-     &    '         -LRESC Corrections : ONLY 0 and 1st order',
-     &    '              diam  singlet first order ',
-     &    '              param singlet first order ',
-     &    '              param triplet first order ',
-     &    '         -Remember to set GAUGEO on INTEGRAL SECTION',
-     &    '              GAUGEO MUST be placed on selected NUCLEUS' 
-
+      IF (RNLRSC) THEN
+c         IF (.NOT.NOLOND)  WRITE(LUPRI,*)
+c     &     ' Unsupported input - LONDON Orbitals not implemented' //
+c     &     ' for LRESC properties'
+c            CALL QUIT('Not supported input in ABAINP')
+ 
+         IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
+     &      ' Linear Response Elimination of Small Component (LRESC)',
+     &      ' DEVELOPING NOTES :   ' ,
+     &      '     - Uncont basis set : not yet ',
+     &      '     - LRESC Corrections : ONLY first and second orders',
+     &      '        Diamagnetic first and second order ',
+     &      '        Paramagnetic second singlet and triplet order ',
+     &      '     -Remember to set GAUGEO on INTEGRAL SECTION',
+     &      '        GAUGEO Should be placed at selected nucleus'
+      ENDIF
       IF (ABASOP) THEN
          IERR = 0
+         IF (RNLRSC) THEN    ! jim-dbg : soppa not for lresc
+            WRITE(LUPRI,'(A)') ' Incompatible input. LRESC '//
+     &                         'cannot be calculated with SOPPA'
+            IERR = IERR + 1
+         END IF
          IF (MOLGRD) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MOLGRD '//
      &                         'cannot be calculated with SOPPA'
@@ -2113,8 +2115,7 @@ C     We need to change the origin to the center of mass when calculating
 C     spin-rotation constants and molecular g-factors.
 C     This is now default for all molecular properties, unless turned off.
 C
-Cx jim-dbg : check GAUGEO origin here ?: not done yet
-      write(lupri,*)' jim looking for gaugeo' 
+Cx jim-dbg : jim looking for gaugeo, check GAUGEO origin here ?: not done yet
       KGEOM = 1
       KMASS = KGEOM + 3*(NATOMS + NFLOAT)
       KNAT  = KMASS + NATOMS + NFLOAT
