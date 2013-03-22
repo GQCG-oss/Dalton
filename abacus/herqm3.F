@@ -85,7 +85,7 @@ C
       REDCNT  = .FALSE.
       MMPCM   = .FALSE.
       MXITMP  = 20
-      THRSMP  = 1.0D-05
+      THRSMP  = 1.0D-05 ! MM/PCM convergence threhold
       LGSPOL  = .FALSE.
       QMDAMP  = .FALSE.
 C
@@ -277,7 +277,7 @@ C
           GO TO 100
 
    19     CONTINUE
-            READ(LUCMD,*) THDISC 
+            READ(LUCMD,*) THRSMP
           GO TO 100
 
    20   CONTINUE
