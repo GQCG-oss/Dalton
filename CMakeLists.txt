@@ -92,7 +92,7 @@ set(2EL_MEM_WORDS
 add_definitions(-DINSTALL_MMWORK=${2EL_MEM_WORDS})
 
 # find a good default scratch base directory
-foreach(dir "/global/work/$ENV{USER}" "/work" "/scratch" "/scr" "/temp" "/tmp")
+foreach(dir "/global/work/$ENV{USER}" "/scratch/$ENV{USER}" "/work" "/scratch" "/scr" "/temp" "/tmp")
    if(EXISTS "${dir}/")
        set(DEFAULT_SCRATCH_BASE_DIR ${dir})
        break()
