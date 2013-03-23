@@ -21,6 +21,7 @@ c NCOMP (INPUT)  : number of independent perturbation (3)
 #include "inforb.h"
 #include "infpri.h"
 #include "infvar.h"
+#include "qm3.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT
@@ -40,6 +41,7 @@ C
       CALL DCOPY(NTS,QSE,1,WORK(KEXPVL),1)
       CALL DSCAL(NTS,-1.0D0,WORK(KEXPVL),1)
       CALL DAXPY(NTS,-1.0D0,QSN,1,WORK(KEXPVL),1)
+      IF (MMPCM) CALL DAXPY(NTS,-1.0D0,QSMM,1,WORK(KEXPVL),1)
       CALL DCOPY(NTS,WORK(KEXPVL),1,WORK(KEXPVL +   NTS),1)
       CALL DCOPY(NTS,WORK(KEXPVL),1,WORK(KEXPVL + 2*NTS),1)
       CALL J1INT(WORK(KEXPVL),.FALSE.,VEC2,NCOMP,.FALSE.,'PCMBSOL',

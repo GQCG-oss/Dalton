@@ -389,6 +389,13 @@ C
       CALL ICVEV(WORK(LDMATM),WORK(LSE1),WORK(LSE1),
      $     WORK(LBMCHG),WORK(LVEC0),WORK(LMEP),WORK(LCAM),NTS,NNBASX,
      $     SOME,WORK(KFREE),LWRK)
+Clf      call COMP_NUC_POT_CAV(work(lcam))
+Clf      print *, 'lmep'
+Clf      print *,(WORK(LMEP + i - 1), i=1,ntsirr)
+Clf      print *, 'lcam'
+Clf      print *,(WORK(LCAM + i - 1), i=1,ntsirr)
+Clf      print *, 'diff'
+Clf      print *,(WORK(LMEP + i - 1) - WORK(LCAM + i - 1), i=1,ntsirr)
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
 C     4) Calculation of the interaction free energy between
@@ -660,7 +667,7 @@ C
       RETURN
       END
 C/* Deck pcmjmat */
-      SUBROUTINE PCMJMAT(VEC2,NUM2,WORK,LWORK)
+      SUBROUTINE PCMJMAT(VEC2,NUM2,WRK,LWRK)
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -671,10 +678,12 @@ C
 C
       CHARACTER*8 RTNLBL(2)
       LOGICAL FNDLAB
-      DIMENSION VEC(NUM2),VEC2(NUM2)
+      DIMENSION VEC2(NUM2), WRK(*)
 C
 #include "pcm.h"
 #include "pcmlog.h"
+#include "qm3.h"
+#include "gnrinf.h"
 C
 C     This routine computes J matrix  (interaction between induced
 C     nuclear charges and electronic potential due to the solute):
@@ -686,10 +695,24 @@ C     (S=overlap matrix, E_i=matrix of normal components of the field)
 C     These matrices are used to correct 1-e integrals obtained without
 C     solvent (they are stored in file 11, or for MCSCF in file 87).
 C
-      CALL DZERO(VEC2,NUM2)
 C
+      KQNUC = 1
+      KWRK1 = KQNUC + NTSIRR
+      LWRK1 = LWRK - KWRK1 + 1
+      IF (LWRK1 .LT. 0) CALL ERRWRK('PCMJMAT',-KWRK1, LWRK)
+
+      CALL DZERO(VEC2,NUM2)
+      CALL DZERO(WRK(KQNUC),NTSIRR)
+
+      CALL DCOPY(NTSIRR,QSN,1,WRK(KQNUC),1)
+      IF(QM3.AND.MMPCM) THEN
+         CALL DAXPY(NTSIRR,1.0D0,QSMM,1,WRK(KQNUC),1)
+      ENDIF         
+      
       LUBKP = LUPROP
-      CALL J1INT(QSN,.FALSE.,VEC2,1,.FALSE.,'NPETES ',1,WORK,LWORK)
+      
+      CALL J1INT(WRK(KQNUC),.FALSE.,VEC2,1,.FALSE.,'NPETES ',1,
+     *           WRK(KWRK1), LWRK1)
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
 C        
@@ -1021,6 +1044,7 @@ C
       IF (LUPCMD .LT. 0) CALL GPOPEN(LUPCMD,'PCMDATA','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND (LUPCMD)
+
       IF (NONEQQ) THEN
          IF (FNDLAB('Q-DINMAT',LUPCMD)) THEN
             CALL READT(LUPCMD,NTNIRR,CINVMT)
@@ -1400,6 +1424,8 @@ C
 #include "pcm.h"
 #include "codata.h"
 #include "symmet.h"
+#include "qm3.h"
+#include "gnrinf.h"
       PARAMETER (LASTAR=99)
       PARAMETER (D0=0.0D0)
       DIMENSION RVDW(LASTAR)
@@ -1434,9 +1460,14 @@ Clf      RVDW(3) = 1.45D+00
 Clf      RVDW(4) = 1.45D+00
 C
 C
+      IF(QM3 .AND. MMPCM) THEN
+         NNUC = NUCDEP
+      ELSE
+         NNUC = NUCIND
+      ENDIF
 
       I=0
-      DO N=1,NUCIND
+      DO N=1,NNUC
          I=I+1
          PCMCORD(1,I)=CORD(1,N)
          PCMCORD(2,I)=CORD(2,N)
@@ -1444,7 +1475,7 @@ C
          PCMCHG(I)=CHARGE(N)
       END DO
       DO K = 1, MAXREP
-         DO N = 1, NUCIND
+         DO N = 1, NNUC
             IF (IBTAND(K,ISTBNU(N)) .EQ. 0) THEN
                DS = (CORD(1,N)-CORD(1,N)*PT(IBTAND(ISYMAX(1,1),K)))**2
      &            + (CORD(2,N)-CORD(2,N)*PT(IBTAND(ISYMAX(2,1),K)))**2
@@ -1463,8 +1494,7 @@ C
          END DO
       END DO
 
-      IF(I.NE.NUCDEP) CALL QUIT('PCMSPHGEN: WRONG NUMBER OF NUCLEI')
-
+Clf      IF(I.NE.NUCDEP) CALL QUIT('PCMSPHGEN: WRONG NUMBER OF NUCLEI')
 Clf      IPCM = 0
 ClfC
 ClfC GENERATION OF ALL COORDINATES 

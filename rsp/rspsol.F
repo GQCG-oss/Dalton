@@ -128,6 +128,9 @@ C---------------------
 #include "gnrinf.h"
 #include "infpar.h"
 #include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "qm3.h"
 #include "qmmm.h"
 C---------------------
 C
@@ -305,14 +308,7 @@ C
          END IF
          CALL DZERO(EVECS,(NOSIM+NCSIM)*KZYVAR)
       END IF
-      IF (PCM) THEN
-         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
-     *   ' CONTRIBUTIONS FROM PCMLTR TO LINEAR TRANSFORMATION'
-         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
-     &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &               WRK(KDVT),WRK(KDVTTR),
-     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-      ELSE IF (QM3) THEN
+      IF (QM3 .AND. (.NOT. MMPCM)) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QM3LNO TO LINEAR TRANSFORMATION'
          IF (NODTOT .GE. 1) THEN
@@ -325,14 +321,62 @@ C
      &               EVECS(NCSIM*KZYVAR+1),
      &               WRK(KFREE),LFREE)
          END IF
-      ELSE IF (QMMM) THEN
+      ENDIF
+      IF (PCM .AND. (.NOT. MMPCM)) THEN
+         LADDMM = .TRUE. 
+         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
+     *   ' CONTRIBUTIONS FROM PCMLTR TO LINEAR TRANSFORMATION'
+         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
+     &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &               WRK(KDVT),WRK(KDVTTR),
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+      ENDIF
+
+      IF (MMPCM) THEN
+         IF (NOSIM .GT. MXEPCM) THEN
+           WRITE(LUPRI,*) 'Error Increase MXEPCM to at least: ',NOSIM 
+           CALL QUIT('Increase MXEPCM')
+         ENDIF 
+         LADDMM = .FALSE.
+         DMMSAVE = 0.0D0
+         FIRST1 = .TRUE.
+         DO WHILE (.NOT. LADDMM)
+            CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
+     &                 WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &                 EVECS(NCSIM*KZYVAR+1),
+     &                 WRK(KFREE),LFREE)           
+            IF (FIRST1) THEN
+               CALL PCM_INIT_QVFLAGS('EL1')
+               CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, 
+     &                          DUMMY, NOSIM, IDUMMY, WRK(KFREE), LFREE)
+               CALL PCM_COMP_CHG(NOSIM, NEQRSP, WRK(KFREE), LFREE)
+            END IF
+            CALL PCM_INIT_QVFLAGS('MM1')
+            CALL PCM_COMP_POT(DUMMY, DUMMY, DUMMY, DUMMY, DUMMY,
+     &                       DUMMY,NOSIM,IDUMMY, WRK(KFREE), LFREE)
+            CALL PCM_COMP_CHG(NOSIM, NEQRSP, WRK(KFREE), LFREE)
+            CALL PCM_WRITE_PCM2MM(NOSIM,NTS,XTSCOR,YTSCOR,ZTSCOR,
+     &                           QSE1,QSMM1)
+            FIRST1 = .FALSE.
+         ENDDO
+         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,
+     &        INDXCI,
+     &        UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &        WRK(KDVT),WRK(KDVTTR),
+     &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+         FIRST1 = .FALSE.
+      ENDIF
+      IF (QMMM) THEN
+         IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QMMMLNO TO LINEAR TRANSFORMATION'
          CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-      ELSE
-      IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
+         IF (IPQMMM .GT. 1) CALL TIMER('QMMMLNO',TIMSTR,TIMEND)
+      ENDIF
+      IF (FLAG(16)) THEN
+         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
          CALL SLVLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
@@ -410,7 +454,7 @@ C
       CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
 C
       IF (LUSOL .LE. 0)
-     &CALL GPOPEN(LUSOL,FNSOL,'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+     &  CALL GPOPEN(LUSOL,FNSOL,'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       IF (NCSIM .GT. 0) THEN
          IF (IPRRSP.GT.101) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
