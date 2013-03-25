@@ -1762,11 +1762,11 @@ c            CALL QUIT('Not supported input in ABAINP')
          IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
      &      ' Linear Response Elimination of Small Component (LRESC)',
      &      ' DEVELOPING NOTES :   ' ,
-     &      '     - Uncont basis set : not yet ',
-     &      '     - LRESC Corrections : ONLY first and second orders',
+     &      '     - Uncontracted Basis set should be used ',
+     &      '     - LRESC Corrections : ',
      &      '        Diamagnetic first and second order ',
      &      '        Paramagnetic second singlet and triplet order ',
-     &      '     -Remember to set GAUGEO on INTEGRAL SECTION',
+     &      '     - Remember to set GAUGEO on INTEGRAL SECTION',
      &      '        GAUGEO Should be placed at selected nucleus'
       ENDIF
       IF (ABASOP) THEN

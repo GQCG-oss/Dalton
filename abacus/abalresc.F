@@ -180,8 +180,8 @@ c jim-dbg ICHANG < 0 no cambios
      &           'nuclei with all the others will be calculated'
        WRITE(LUPRI,*)' ' 
       END IF
-      IF (LRESCALL) WRITE (LUPRI,'(A)')
-     &      ' LRESC Corrections for Shielding on Atom LRATOM. '
+      IF (LRESCALL) WRITE (LUPRI,*)
+     &      ' LRESC Corrections for Shielding on Atom LRATOM. ', LRATOM
 
       RETURN
       END
@@ -273,7 +273,7 @@ C
 
 cv      write(lupri,*)'@ LRSCDRV : '
 
-       IF (LRESCALL) THEN
+      IF (LRESCALL) THEN
         SIGMAD0S = .TRUE.
         SIGMAD1S = .TRUE.
         SIGMAP1S = .TRUE.
@@ -285,9 +285,9 @@ C Zeroth Order, Singlet of course
 C --------------------------------
 C
       IF (SIGMAD0S) THEN
-           CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
-           CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
-           CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
+         CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
+         CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
+         CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
       END IF
 
 C 
@@ -353,32 +353,27 @@ C                  Print Section
 C -================---------------======================
 C
 C 
-cc      IF(JIMPRT.GE.-2) THEN
-c         PRTALL = .TRUE.
-cc      ENDIF
- 
-      
       relall = 0.0
       SGP1T = 0.0  ! sigma 1order triplet PARAM : FcKin, SdKin, SdBso, FcBso
       SGP1S = 0.0  ! sigma 1order singlet PARAM : Lkin, Psokin
       SGD0S = 0.0  ! sigma 0rder singlet DIAM : Fc, AngPso, DiaKin
       SGD1S = 0.0  ! sigm`ia 1order singlet DIAM : DiaMv, DiaDw
+
 C    Add constants to print all in ppm's
       Do i=1, 3
-       LRFCZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCZK*LRFCZK(i,i)
-c        write(*,*)' fckin' , LRFCZK(i,i)
-       LRSDZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDZK*LRSDZK(i,i)
-       LRFCBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCBS*LRFCBS(i,i)
-       LRSDBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDBS*LRSDBS(i,i)
-       LRLKIN(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CLKIN*LRLKIN(i,i)
-       LRPSOK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CPSOK*LRPSOK(i,i)
-       LRFCAV(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCAV*LRFCAV(i,i)
-       LRDIAK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CDIAK*LRDIAK(i,i)
-       LRANGP(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CANGP*LRANGP(i,i)
-       LRDIAD(i,i) = calfa*calfa*1.0D+6* CDIAD* LRDIAD(i,i)
-       LRDIAM(i,i) = calfa*calfa*1.0D+6* CDIAM* LRDIAM(i,i)
+         LRFCZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCZK*LRFCZK(i,i)
+         LRSDZK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDZK*LRSDZK(i,i)
+         LRFCBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCBS*LRFCBS(i,i)
+         LRSDBS(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CSDBS*LRSDBS(i,i)
+         LRLKIN(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CLKIN*LRLKIN(i,i)
+         LRPSOK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CPSOK*LRPSOK(i,i)
+         LRFCAV(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CFCAV*LRFCAV(i,i)
+         LRDIAK(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CDIAK*LRDIAK(i,i)
+         LRANGP(i,i) = calfa*calfa*calfa*calfa*1.0D+6* CANGP*LRANGP(i,i)
+         LRDIAD(i,i) = calfa*calfa*1.0D+6* CDIAD* LRDIAD(i,i)
+         LRDIAM(i,i) = calfa*calfa*1.0D+6* CDIAM* LRDIAM(i,i)
       ENDDO
-      
+C      
       DO i=1, 3
        SGP1T = SGP1T + LRFCZK(i,i) + LRSDZK(i,i)+LRFCBS(i,i)+LRSDBS(i,i)
        SGP1S = SGP1S + LRLKIN(i,i) + LRPSOK(i,i) 
@@ -396,12 +391,22 @@ C
          SGD0S = SGD0S/3.0
 C
       CALL TITLER('ABACUS - RELATIVISTIC CORRECTIONS LRESC','*',124)
-      write(lupri,*)
-      write(lupri,*)' First and Second order relativistic '// 
-     & 'corrections to nuclear shielding constant of ATOM ',NAMN(LRATOM)
-      WRITE(LUPRI,*)'(For definitions on terms named ABC, refered '//
-     &'to relativistic correction of sigma,'
-      WRITE(LUPRI,*)' see JCP. 137, 214319(2012))'
+      WRITE(lupri,*)
+      WRITE(lupri,*)' First and Second order relativistic '// 
+     & 'corrections to nuclear shielding constant.'
+
+      WRITE(LUPRI,*)'     (For definitions on terms named ABC, '//
+     &             ' refered to relativistic correction '
+      WRITE(LUPRI,*)'      of sigma, see JCP. 137, 214319(2012))'
+
+
+c      WRITE(LUPRI,*)' Gaugeo placed at : ', GAGORG  
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A,I2,A,A)')'  Selected Atom   : #',LRATOM,
+     &         ": ",NAMN(LRATOM) 
+      WRITE(LUPRI,'(A,3F10.4)')' Atom coordinates : ', CORD(1,LRATOM),
+     &                CORD(2,LRATOM),CORD(3,LRATOM)
+      WRITE(LUPRI,*)
       
 C
 C paramagnetic 1st singlet or triplet
@@ -513,58 +518,61 @@ C
 C All of them in detail
 C
       IF (LRESCALL) THEN
-         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
-         WRITE (LUPRI,'(/5X,A,15X,F17.5,A)') 
-     &           'Total relativistic correction: ', relall,
-     &           ' [ppm]'
+c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
+         CALL HEADER('Total Relativistic Corrections :',-1)
+         WRITE (LUPRI,'(/5X,A,F17.5,A)') 
+     &           'Sum of corrections : ' ,relall, ' [ppm]'
 c         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
+c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
       END IF
 
       WRITE(LUPRI,*) 
-      write(LUPRI,*)'Note : Run RESPONSE module for third order '//
-     &     'paramagnetic corrections.'
-      write(LUPRI,*)'       Can use this as template. Settled for' //
-     &     ' the first atom on input file, named X '
-      WRITE(LUPRI,*)'          Spin Orbit :' 
-      WRITE(LUPRI,*)'                  **RESPONSE'
-      WRITE(LUPRI,*)'                  *QUADRATIC'
-      WRITE(LUPRI,*)'                  .ISPABC'
-      WRITE(LUPRI,*)'                  0    1    1'
-      WRITE(LUPRI,*)'                  .APROP'
-      WRITE(LUPRI,*)'                  XANGMOM'
-      WRITE(LUPRI,*)'                  .APROP'
-      WRITE(LUPRI,*)'                  YANGMOM'
-      WRITE(LUPRI,*)'                  .APROP'
-      WRITE(LUPRI,*)'                  ZANGMOM'
-      WRITE(LUPRI,*)'                  .BPROP'
-      WRITE(LUPRI,*)'                  FC X  01'
-      WRITE(LUPRI,*)'                  .CPROP'
-      WRITE(LUPRI,*)'                  X1SPNORB'
-      WRITE(LUPRI,*)'                  .CPROP'
-      WRITE(LUPRI,*)'                  Y1SPNORB'
-      WRITE(LUPRI,*)'                  .CPROP'
-      WRITE(LUPRI,*)'                  Z1SPNORB'
-      WRITE(LUPRI,*)' ----------------------'
-      WRITE(LUPRI,*)'           Massvelo or Darwin :'
-      WRITE(LUPRI,*)'                  **RESPONSE'
-      WRITE(LUPRI,*)'                  *QUADRATIC'
-      WRITE(LUPRI,*)'                  .ISPABC'
-      WRITE(LUPRI,*)'                  0    0    0'
-      WRITE(LUPRI,*)'                  .APROP'
-      WRITE(LUPRI,*)'                  XANGMOM'
-      WRITE(LUPRI,*)'                  .APROP'
-      WRITE(LUPRI,*)'                  YANGMOM'
-      WRITE(LUPRI,*)'                  .APROP'
-      WRITE(LUPRI,*)'                  ZANGMOM'
-      WRITE(LUPRI,*)'              .    BPROP'
-      WRITE(LUPRI,*)'                  PSO 001'
-      WRITE(LUPRI,*)'                  .BPROP'
-      WRITE(LUPRI,*)'                  PSO 002'
-      WRITE(LUPRI,*)'                  .BPROP'
-      WRITE(LUPRI,*)'                  PSO 003'
-      WRITE(LUPRI,*)'                  .CPROP'
-      WRITE(LUPRI,*)'                  MASSVELO   !(or DARWIN)'
+cx      write(LUPRI,*)'Note : Run RESPONSE module for third order '//
+cx     &     'paramagnetic corrections.'
+cx      write(LUPRI,*)'       Can use this as template. Settled for' //
+cx     &     ' the first atom on input file, named X '
+cx      WRITE(LUPRI,*)'          Spin Orbit :' 
+cx      WRITE(LUPRI,*)'                  **RESPONSE'
+cx      WRITE(LUPRI,*)'                  *QUADRATIC'
+cx      WRITE(LUPRI,*)'                  .ISPABC'
+cx      WRITE(LUPRI,*)'                  0    1    1'
+cx      WRITE(LUPRI,*)'                  .APROP'
+cx      WRITE(LUPRI,*)'                  XANGMOM'
+cx      WRITE(LUPRI,*)'                  .APROP'
+cx      WRITE(LUPRI,*)'                  YANGMOM'
+cx      WRITE(LUPRI,*)'                  .APROP'
+cx      WRITE(LUPRI,*)'                  ZANGMOM'
+cx      WRITE(LUPRI,*)'                  .BPROP'
+cx      WRITE(LUPRI,*)'                  FC X  01'
+cx      WRITE(LUPRI,*)'                  .CPROP'
+cx      WRITE(LUPRI,*)'                  X1SPNORB'
+cx      WRITE(LUPRI,*)'                  .CPROP'
+cx      WRITE(LUPRI,*)'                  Y1SPNORB'
+cx      WRITE(LUPRI,*)'                  .CPROP'
+cx      WRITE(LUPRI,*)'                  Z1SPNORB'
+cx      WRITE(LUPRI,*)' ----------------------'
+cx      WRITE(LUPRI,*)'           Massvelo or Darwin :'
+cx      WRITE(LUPRI,*)'                  **RESPONSE'
+cx      WRITE(LUPRI,*)'                  *QUADRATIC'
+cx      WRITE(LUPRI,*)'                  .ISPABC'
+cx      WRITE(LUPRI,*)'                  0    0    0'
+cx      WRITE(LUPRI,*)'                  .APROP'
+cx      WRITE(LUPRI,*)'                  XANGMOM'
+cx      WRITE(LUPRI,*)'                  .APROP'
+cx      WRITE(LUPRI,*)'                  YANGMOM'
+cx      WRITE(LUPRI,*)'                  .APROP'
+cx      WRITE(LUPRI,*)'                  ZANGMOM'
+cx      WRITE(LUPRI,*)'              .    BPROP'
+cx      WRITE(LUPRI,*)'                  PSO 001'
+cx      WRITE(LUPRI,*)'                  .BPROP'
+cx      WRITE(LUPRI,*)'                  PSO 002'
+cx      WRITE(LUPRI,*)'                  .BPROP'
+cx      WRITE(LUPRI,*)'                  PSO 003'
+cx      WRITE(LUPRI,*)'                  .CPROP'
+cx      WRITE(LUPRI,*)'                  MASSVELO   !(or DARWIN)'
+
+
+
        RETURN
       END
      RETURN
