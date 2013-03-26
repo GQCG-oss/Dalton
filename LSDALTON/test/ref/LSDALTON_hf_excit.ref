@@ -1,0 +1,2180 @@
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+      This is output from LINSCA DALTON (Release 1.0 )
+      Principal authors (alphabetically):
+      Trygve Helgaker,       University of Oslo,           Norway 
+      Poul Joergensen,       Aarhus University,            Denmark
+      Jeppe Olsen,           Aarhus University,            Denmark
+      Contributors (alphabetically):
+      Sonia Coriani,         University of Trieste,        Italy  
+      Stinne Hoest,          Aarhus University,            Denmark
+      Branislav Jansik,      Aarhus University,            Denmark
+      Thomas Kjaergaard,     Aarhus University,            Denmark
+      Simen Reine,           University of Oslo,           Norway 
+      Pawel Salek,           KTH Stockholm,                Sweden 
+      Lea Thoegersen,        Aarhus University,            Denmark
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using SCF wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "LSDalton, a molecular electronic structure program, Release 1.0
+     (2004), written by <INSERT AUTHOR LIST>"
+ 
+ Linear response calculations are carried out.
+
+ Keyword "1.d-4                                   " not recognized in config_rsp_input
+
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:37:26 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  ATOMBASIS                               
+  Methane with -OH, -F, and Cl            
+  b3lyp/6-31+g(d,p) optimized geo.        
+      5    0  X  Z                                            
+          1.    2      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit     
+  H     0.520821    0.080551    1.451675                      
+  H     1.965224   -1.097271    0.053015                      
+          6.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit     
+  C     0.430423    0.005605    0.364687                      
+          8.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit     
+  O     1.023374   -1.101579   -0.177807                      
+          9.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit     
+  F     0.989971    1.157250   -0.160167                      
+         17.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit     
+  Cl   -1.303842   -0.036443   -0.048756                      
+                      
+ -----------------------------------------
+          PRINTING THE DALTON.INP FILE 
+ -----------------------------------------
+                      
+  **DALTON INPUT                          
+  .RUN LINSCA                             
+  **INTEGRALS                             
+  .LINSCA                                 
+  **WAVE FUNCTIONS                        
+  .HF                                     
+  *SCF INPUT                              
+  *LINSCA                                 
+  .TrFD                                   
+  .DSM                                    
+  .NVEC                                   
+  8                                       
+  .START                                  
+  H1DIAG                                  
+  .CONVDYN                                
+  STANDAR                                 
+  **RESPONS                                
+  *LINRSP                                 
+  .NEXCIT                                 
+   2                                      
+  .CONVTHR                                
+  1.d-4                                   
+  *END OF INPUT                           
+  
+  MOLPRINT IS SET TO       0
+        Integral threshold is set to the default 1.00D-15
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates: 18
+
+   1   H        x      0.5208210000
+   2            y      0.0805510000
+   3            z      1.4516750000
+
+   4   H        x      1.9652240000
+   5            y     -1.0972710000
+   6            z      0.0530150000
+
+   7   C        x      0.4304230000
+   8            y      0.0056050000
+   9            z      0.3646870000
+
+  10   O        x      1.0233740000
+  11            y     -1.1015790000
+  12            z     -0.1778070000
+
+  13   F        x      0.9899710000
+  14            y      1.1572500000
+  15            z     -0.1601670000
+
+  16   Cl       x     -1.3038420000
+  17            y     -0.0364430000
+  18            z     -0.0487560000
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS
+   
+
+ Default basis set library used:
+        /home/stinne/prog/feb2010_svn/dalton/basis/                           
+ OPENING FILE/home/stinne/prog/feb2010_svn/dalton/basis/3-21G
+   
+BASISSETLIBRARY
+ Number of Basisset           2
+ BASISSET:  3-21G                                             
+  CHARGES:   1   6   8   9  17
+ BASISSET:  Ahlrichs-Coulomb-Fit                              
+  CHARGES:   1   6   8   9  17
+                      
+   
+  CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
+   
+
+ Default basis set library used:
+        /home/stinne/prog/feb2010_svn/dalton/basis/                           
+ OPENING FILE/home/stinne/prog/feb2010_svn/dalton/basis/Ahlrichs-Coulomb-Fit
+                      
+Atoms and basis sets
+  Total number of atoms        :      6
+  THE  AUXILIARY is on R =   2
+---------------------------------------------------------------------
+ atom label charge  basisset            prim cont basis
+---------------------------------------------------------------------
+      1 H      1.000 Ahlrichs-Coulomb-Fit      15       14 [4s2p1d|3s2p1d]          
+      2 H      1.000 Ahlrichs-Coulomb-Fit      15       14 [4s2p1d|3s2p1d]          
+      3 C      6.000 Ahlrichs-Coulomb-Fit      40       38 [9s3p3d1f|7s3p3d1f]      
+      4 O      8.000 Ahlrichs-Coulomb-Fit      40       38 [9s3p3d1f|7s3p3d1f]      
+      5 F      9.000 Ahlrichs-Coulomb-Fit      45       43 [9s3p4d1f|7s3p4d1f]      
+      6 Cl    17.000 Ahlrichs-Coulomb-Fit      71       40 [12s6p5d1f1g|5s3p2d1f1g] 
+---------------------------------------------------------------------
+total         42                             226     187
+---------------------------------------------------------------------
+                      
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+    Molecular Charge                 :    0.0000
+    Regular basisfunctions             :       44
+    Auxiliary basisfunctions           :      187
+    Huckel basisfunctions              :        0
+    Primitive Regular basisfunctions   :       78
+    Primitive Auxiliary basisfunctions :      226
+    Primitive Huckel basisfunctions    :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis      Auxiliarybasisset   GHOST   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   1.000  3-21G         Ahlrichs-Coulomb-Fit    F              3           2
+     2   1.000  3-21G         Ahlrichs-Coulomb-Fit    F              3           2
+     3   6.000  3-21G         Ahlrichs-Coulomb-Fit    F             15           9
+     4   8.000  3-21G         Ahlrichs-Coulomb-Fit    F             15           9
+     5   9.000  3-21G         Ahlrichs-Coulomb-Fit    F             15           9
+     6  17.000  3-21G         Ahlrichs-Coulomb-Fit    F             27          13
+                      
+  ATOM  NAME  ISOTOPE        X             Y             Z     
+    1    H          1    0.52082100    0.08055100    1.45167500
+    2    H          1    1.96522400   -1.09727100    0.05301500
+    3    C          1    0.43042300    0.00560500    0.36468700
+    4    O          1    1.02337400   -1.10157900   -0.17780700
+    5    F          1    0.98997100    1.15725000   -0.16016700
+    6    Cl         1   -1.30384200   -0.03644300   -0.04875600
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      6
+  THE  REGULAR   is on R =   1
+---------------------------------------------------------------------
+ atom label charge  basisset            prim cont basis
+---------------------------------------------------------------------
+      1 H      1.000 3-21G                      3        2 [3s|2s]                  
+      2 H      1.000 3-21G                      3        2 [3s|2s]                  
+      3 C      6.000 3-21G                     15        9 [6s3p|3s2p]              
+      4 O      8.000 3-21G                     15        9 [6s3p|3s2p]              
+      5 F      9.000 3-21G                     15        9 [6s3p|3s2p]              
+      6 Cl    17.000 3-21G                     27       13 [9s6p|4s3p]              
+---------------------------------------------------------------------
+total         42                              78      44
+---------------------------------------------------------------------
+                      
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Direct density optimization        
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+Dynamic convergence threshold for gradient:   0.65E-04
+ 
+ End of configuration from new input structure!
+ Linear response calculations are carried out.
+ 
+ >>>  CPU Time used in *INPUT          is   0.00 seconds
+ >>> wall Time used in *INPUT          is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.25 seconds
+ >>> wall Time used in ls_getIntegrals is   0.12 seconds
+ >>>  CPU Time used in OVERLAP         is   1.28 seconds
+ >>> wall Time used in OVERLAP         is   0.12 seconds
+ >>>  CPU Time used in *S              is   1.28 seconds
+ >>> wall Time used in *S              is   0.12 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   4.74 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.32 seconds
+ >>>  CPU Time used in CSConNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSConNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   0.39 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.05 seconds
+ >>>  CPU Time used in CSPriNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSPriNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in ls_getIntegrals is   5.76 seconds
+ >>> wall Time used in ls_getIntegrals is   0.45 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in *H1             is   5.84 seconds
+ >>> wall Time used in *H1             is   0.46 seconds
+ Optimize first density for H1 operator
+ >>>  CPU Time used in *START          is   0.02 seconds
+ >>> wall Time used in *START          is   0.00 seconds
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.01 seconds
+ >>> wall Time used in LWDIAG          is   0.00 seconds
+Matrix S     has nnz=      1620 sparsity:     83.678 %
+Matrix AO D  has nnz=      1936 sparsity:    100.000 %
+Matrix AO F  has nnz=         0 sparsity:      0.000 %
+ micthrs =  1.000000000000000E-002
+ >>>  CPU Time used in INIT SCF        is   0.00 seconds
+ >>> wall Time used in INIT SCF        is   0.00 seconds
+** Get Fock matrix number   1
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  16.72 seconds
+ >>> wall Time used in Jengine         is   1.54 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                1.16 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                8.54 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   8.82 seconds
+ >>> wall Time used in LINK-Kbuild     is   1.19 seconds
+ >>>  CPU Time used in FCK_FO          is  25.73 seconds
+ >>> wall Time used in FCK_FO          is   2.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1   -627.9092973639    0.00000000000    0.00      0.00000    0.00    0.0000000    0.26E+02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)          272.250 kB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 226.875 kB
+  Allocated memory,     type(matrix)          226.875 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm   8.05716886426596     
+CROP scheme with full subspace (DISK)
+ First mu:  -11.0000000000000     
+  Error of red space iteration  1:     26.8258207334 (mu = -11.00, xmax = 0.341069E+00, xnorm = 0.157011E+01, THR = 0.805717E-01)
+  Error of red space iteration  2:      7.9630360496 (mu = -11.00, xmax = 0.234952E+00, xnorm = 0.982970E+00, THR = 0.805717E-01)
+  Error of red space iteration  3:      2.2918440448 (mu = -11.50, xmax = 0.148544E+00, xnorm = 0.686654E+00, THR = 0.805717E-01)
+  Error of red space iteration  4:      0.6569538165 (mu = -12.51, xmax = 0.123642E+00, xnorm = 0.596093E+00, THR = 0.805717E-01)
+  Error of red space iteration  5:      0.1204820695 (mu = -12.64, xmax = 0.119611E+00, xnorm = 0.584259E+00, THR = 0.805717E-01)
+  Error of red space iteration  6:      0.0486545885 (mu = -12.37, xmax = 0.121780E+00, xnorm = 0.596252E+00, THR = 0.805717E-01)
+ mumax =  -12.3724169198038     
+  Error of red space iteration  7:      5.1105455981 (mu =  -4.23, xmax = 0.455825E+00, xnorm = 0.213786E+01, THR = 0.805717E-01)
+  Error of red space iteration  8:      2.9836265857 (mu =  -4.37, xmax = 0.358947E+00, xnorm = 0.179021E+01, THR = 0.805717E-01)
+  Error of red space iteration  9:     10.2782681682 (mu =  -4.59, xmax = 0.571930E+00, xnorm = 0.257123E+01, THR = 0.805717E-01)
+  Error of red space iteration 10:     10.8117428527 (mu =  -4.54, xmax = 0.474229E+00, xnorm = 0.259401E+01, THR = 0.805717E-01)
+  Error of red space iteration 11:      8.1533838456 (mu =  -4.58, xmax = 0.367819E+00, xnorm = 0.213284E+01, THR = 0.805717E-01)
+  Error of red space iteration 12:     27.9064257105 (mu =  -4.52, xmax = 0.173744E+01, xnorm = 0.607582E+01, THR = 0.805717E-01)
+  Error of red space iteration 13:      3.4335378449 (mu =  -4.54, xmax = 0.337749E+00, xnorm = 0.171233E+01, THR = 0.805717E-01)
+  Error of red space iteration 14:     26.2405640445 (mu =  -4.62, xmax = 0.107371E+01, xnorm = 0.518956E+01, THR = 0.805717E-01)
+  Error of red space iteration 15:     13.1098580190 (mu =  -4.64, xmax = 0.360998E+00, xnorm = 0.236690E+01, THR = 0.805717E-01)
+  Error of red space iteration 16:    127.2816949778 (mu =  -4.67, xmax = 0.480481E+01, xnorm = 0.227150E+02, THR = 0.805717E-01)
+  Error of red space iteration 17:     82.0079590827 (mu =  -4.66, xmax = 0.245561E+01, xnorm = 0.141547E+02, THR = 0.805717E-01)
+  Error of red space iteration 18:      5.2688694983 (mu =  -4.64, xmax = 0.317796E+00, xnorm = 0.187800E+01, THR = 0.805717E-01)
+  Error of red space iteration 19:     10.2983293201 (mu =  -4.55, xmax = 0.556155E+00, xnorm = 0.249127E+01, THR = 0.805717E-01)
+  Error of red space iteration 20:      3.2997224317 (mu =  -4.52, xmax = 0.334924E+00, xnorm = 0.175040E+01, THR = 0.805717E-01)
+  Error of red space iteration 21:     60.0482130167 (mu =  -4.53, xmax = 0.381381E+01, xnorm = 0.128232E+02, THR = 0.805717E-01)
+Error went down by-1074.99%
+ Residual is not going down, decrease trust radius (xmax)
+ New trust radius =   3.43242870223093     
+  Error of red space iteration 22:      5.0218501977 (mu =  -4.60, xmax = 0.324313E+00, xnorm = 0.180872E+01, THR = 0.805717E-01)
+  Error of red space iteration 23:      2.4491141334 (mu =  -4.50, xmax = 0.337233E+00, xnorm = 0.170312E+01, THR = 0.805717E-01)
+  Error of red space iteration 24:     19.0352364758 (mu =  -5.15, xmax = 0.596987E+00, xnorm = 0.378722E+01, THR = 0.805717E-01)
+  Error of red space iteration 25:      5.7737443603 (mu =  -5.14, xmax = 0.346737E+00, xnorm = 0.179317E+01, THR = 0.805717E-01)
+  Error of red space iteration 26:      4.1641952457 (mu =  -5.14, xmax = 0.313463E+00, xnorm = 0.162765E+01, THR = 0.805717E-01)
+  Error of red space iteration 27:      3.6558804556 (mu =  -5.22, xmax = 0.284891E+00, xnorm = 0.161094E+01, THR = 0.805717E-01)
+  Error of red space iteration 28:      9.2821008249 (mu =  -5.30, xmax = 0.782668E+00, xnorm = 0.239423E+01, THR = 0.805717E-01)
+  Error of red space iteration 29:      6.6831897348 (mu =  -5.33, xmax = 0.718256E+00, xnorm = 0.211238E+01, THR = 0.805717E-01)
+  Error of red space iteration 30:     16.1943198615 (mu =  -5.33, xmax = 0.660024E+00, xnorm = 0.273645E+01, THR = 0.805717E-01)
+  Error of red space iteration 31:      2.2369786330 (mu =  -5.33, xmax = 0.279124E+00, xnorm = 0.139739E+01, THR = 0.805717E-01)
+  Error of red space iteration 32:      2.0674274309 (mu =  -5.39, xmax = 0.273396E+00, xnorm = 0.146812E+01, THR = 0.805717E-01)
+  Error of red space iteration 33:      2.4885021960 (mu =  -5.41, xmax = 0.269895E+00, xnorm = 0.140174E+01, THR = 0.805717E-01)
+  Error of red space iteration 34:      1.1967006606 (mu =  -5.41, xmax = 0.269479E+00, xnorm = 0.143076E+01, THR = 0.805717E-01)
+  Error of red space iteration 35:      0.8478761911 (mu =  -5.51, xmax = 0.263119E+00, xnorm = 0.141100E+01, THR = 0.805717E-01)
+  Error of red space iteration 36:      1.0019354739 (mu =  -5.54, xmax = 0.256621E+00, xnorm = 0.145503E+01, THR = 0.805717E-01)
+Error went down by   80.05%
+  Error of red space iteration 37:      1.1283517995 (mu =  -5.54, xmax = 0.273987E+00, xnorm = 0.143041E+01, THR = 0.805717E-01)
+  Error of red space iteration 38:      2.0210851671 (mu =  -5.67, xmax = 0.246934E+00, xnorm = 0.145131E+01, THR = 0.805717E-01)
+  Error of red space iteration 39:      4.7358498661 (mu =  -5.69, xmax = 0.284946E+00, xnorm = 0.160973E+01, THR = 0.805717E-01)
+  Error of red space iteration 40:      8.3681482062 (mu =  -5.69, xmax = 0.601571E+00, xnorm = 0.214000E+01, THR = 0.805717E-01)
+  Error of red space iteration 41:      6.7454708345 (mu =  -5.69, xmax = 0.467121E+00, xnorm = 0.199527E+01, THR = 0.805717E-01)
+  Error of red space iteration 42:      3.4873848609 (mu =  -5.69, xmax = 0.242142E+00, xnorm = 0.157111E+01, THR = 0.805717E-01)
+  Error of red space iteration 43:     12.2209073130 (mu =  -5.72, xmax = 0.706156E+00, xnorm = 0.258787E+01, THR = 0.805717E-01)
+  Error of red space iteration 44:      4.6912294577 (mu =  -5.72, xmax = 0.283115E+00, xnorm = 0.159412E+01, THR = 0.805717E-01)
+  Error of red space iteration 45:      3.4737235278 (mu =  -5.65, xmax = 0.274285E+00, xnorm = 0.166795E+01, THR = 0.805717E-01)
+  Error of red space iteration 46:      3.2154945657 (mu =  -5.65, xmax = 0.263244E+00, xnorm = 0.168993E+01, THR = 0.805717E-01)
+  Error of red space iteration 47:      2.1645340724 (mu =  -5.81, xmax = 0.260978E+00, xnorm = 0.146114E+01, THR = 0.805717E-01)
+  Error of red space iteration 48:     21.0864118414 (mu =  -5.81, xmax = 0.112728E+01, xnorm = 0.454752E+01, THR = 0.805717E-01)
+  Error of red space iteration 49:      1.1370902408 (mu =  -5.81, xmax = 0.260905E+00, xnorm = 0.141194E+01, THR = 0.805717E-01)
+  Error of red space iteration 50:      2.7774728816 (mu =  -5.81, xmax = 0.279402E+00, xnorm = 0.148708E+01, THR = 0.805717E-01)
+  Error of red space iteration 51:      2.3248158389 (mu =  -5.83, xmax = 0.263979E+00, xnorm = 0.145947E+01, THR = 0.805717E-01)
+Error went down by -106.04%
+ Residual is not going down, decrease trust radius (xmax)
+ New trust radius =  0.237580884931017     
+  Error of red space iteration 52:   1437.2086964147 (mu =  -5.85, xmax = 0.739853E+02, xnorm = 0.255128E+03, THR = 0.805717E-01)
+  Error of red space iteration 53:      1.9443637306 (mu =  -5.87, xmax = 0.251809E+00, xnorm = 0.137300E+01, THR = 0.805717E-01)
+  Error of red space iteration 54:      0.7421066696 (mu =  -5.97, xmax = 0.245934E+00, xnorm = 0.133235E+01, THR = 0.805717E-01)
+  Error of red space iteration 55:      0.5858827598 (mu =  -5.98, xmax = 0.245344E+00, xnorm = 0.136077E+01, THR = 0.805717E-01)
+  Error of red space iteration 56:      3.7786164744 (mu =  -6.00, xmax = 0.287948E+00, xnorm = 0.188914E+01, THR = 0.805717E-01)
+  Error of red space iteration 57:      0.3326385837 (mu =  -6.05, xmax = 0.242153E+00, xnorm = 0.135794E+01, THR = 0.805717E-01)
+  Error of red space iteration 58:      0.3254619020 (mu =  -5.99, xmax = 0.244831E+00, xnorm = 0.138655E+01, THR = 0.805717E-01)
+  Error of red space iteration 59:      0.2672245873 (mu =  -6.10, xmax = 0.239675E+00, xnorm = 0.136346E+01, THR = 0.805717E-01)
+  Error of red space iteration 60:      0.2424628801 (mu =  -6.12, xmax = 0.238999E+00, xnorm = 0.138072E+01, THR = 0.805717E-01)
+  Error of red space iteration 61:      0.2134406783 (mu =  -6.16, xmax = 0.236774E+00, xnorm = 0.137968E+01, THR = 0.805717E-01)
+  Error of red space iteration 62:      0.1721797905 (mu =  -6.21, xmax = 0.234756E+00, xnorm = 0.138920E+01, THR = 0.805717E-01)
+  Error of red space iteration 63:      0.1479894126 (mu =  -6.22, xmax = 0.234433E+00, xnorm = 0.140962E+01, THR = 0.805717E-01)
+  Error of red space iteration 64:      0.1259136813 (mu =  -6.23, xmax = 0.233813E+00, xnorm = 0.142592E+01, THR = 0.805717E-01)
+  Error of red space iteration 65:      0.0815871962 (mu =  -6.23, xmax = 0.233710E+00, xnorm = 0.149092E+01, THR = 0.805717E-01)
+  Error of red space iteration 66:      0.0604254043 (mu =  -6.23, xmax = 0.233321E+00, xnorm = 0.151897E+01, THR = 0.805717E-01)
+Newton equations converged in 66 iterations!
+Error went down by  100.00%
+ >>>  CPU Time used in CROP solver     is  53.52 seconds
+ >>> wall Time used in CROP solver     is   5.15 seconds
+ >>>  CPU Time used in NEW D           is   0.02 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   488
+ >>>  CPU Time used in G_DENS          is  53.57 seconds
+ >>> wall Time used in G_DENS          is   5.16 seconds
+ >>>  CPU Time used in SCF iteration   is   0 hours  1 minute  19 seconds
+ >>> wall Time used in SCF iteration   is   7.91 seconds
+** Get Fock matrix number   2
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  10.13 seconds
+ >>> wall Time used in Jengine         is   1.10 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.97 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is               10.54 seconds
+ >>>  CPU Time used in LINK-Kbuild     is  10.90 seconds
+ >>> wall Time used in LINK-Kbuild     is   1.00 seconds
+ >>>  CPU Time used in FCK_FO          is  21.22 seconds
+ >>> wall Time used in FCK_FO          is   2.13 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  2   -648.0220236985  -20.11272633463    0.00      0.00000    6.23    0.0000000    0.19E+02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)          468.875 kB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 257.125 kB
+  Allocated memory,     type(matrix)          257.125 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.11 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm   5.49923189490878     
+CROP scheme with full subspace (DISK)
+ First mu:  -7.00000000000000     
+  Error of red space iteration  1:     13.8064296288 (mu =  -7.00, xmax = 0.169505E+00, xnorm = 0.124451E+01, THR = 0.549923E-01)
+  Error of red space iteration  2:      5.2839338724 (mu =  -7.25, xmax = 0.110917E+00, xnorm = 0.847860E+00, THR = 0.549923E-01)
+  Error of red space iteration  3:      1.2096594468 (mu =  -7.50, xmax = 0.998943E-01, xnorm = 0.650447E+00, THR = 0.549923E-01)
+  Error of red space iteration  4:      0.4292862287 (mu =  -7.67, xmax = 0.966365E-01, xnorm = 0.597004E+00, THR = 0.549923E-01)
+  Error of red space iteration  5:      0.1125108381 (mu =  -7.88, xmax = 0.948926E-01, xnorm = 0.577594E+00, THR = 0.549923E-01)
+  Error of red space iteration  6:      0.0564183701 (mu =  -7.54, xmax = 0.984002E-01, xnorm = 0.595093E+00, THR = 0.549923E-01)
+  Error of red space iteration  7:      0.0341507878 (mu =  -7.54, xmax = 0.984097E-01, xnorm = 0.596514E+00, THR = 0.549923E-01)
+ mumax =  -7.54019864270770     
+  Error of red space iteration  8:      1.4699260213 (mu =  -2.52, xmax = 0.208504E+00, xnorm = 0.127153E+01, THR = 0.549923E-01)
+  Error of red space iteration  9:      0.6974500787 (mu =  -2.61, xmax = 0.209928E+00, xnorm = 0.136923E+01, THR = 0.549923E-01)
+  Error of red space iteration 10:      0.3317324669 (mu =  -2.89, xmax = 0.231390E+00, xnorm = 0.140980E+01, THR = 0.549923E-01)
+  Error of red space iteration 11:      0.1770118173 (mu =  -3.04, xmax = 0.231689E+00, xnorm = 0.138902E+01, THR = 0.549923E-01)
+  Error of red space iteration 12:      0.0756689995 (mu =  -3.14, xmax = 0.222833E+00, xnorm = 0.134616E+01, THR = 0.549923E-01)
+  Error of red space iteration 13:      0.0610453815 (mu =  -3.13, xmax = 0.223780E+00, xnorm = 0.135182E+01, THR = 0.549923E-01)
+  Error of red space iteration 14:      0.0763406443 (mu =  -3.03, xmax = 0.227072E+00, xnorm = 0.137407E+01, THR = 0.549923E-01)
+  Error of red space iteration 15:      0.0506310657 (mu =  -3.03, xmax = 0.229003E+00, xnorm = 0.138140E+01, THR = 0.549923E-01)
+Newton equations converged in 15 iterations!
+ >>>  CPU Time used in CROP solver     is   1.64 seconds
+ >>> wall Time used in CROP solver     is   0.20 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   131
+ >>>  CPU Time used in G_DENS          is   1.67 seconds
+ >>> wall Time used in G_DENS          is   0.21 seconds
+ >>>  CPU Time used in SCF iteration   is  23.00 seconds
+ >>> wall Time used in SCF iteration   is   2.35 seconds
+** Get Fock matrix number   3
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  12.36 seconds
+ >>> wall Time used in Jengine         is   0.98 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.94 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                4.89 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   5.08 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.97 seconds
+ >>>  CPU Time used in FCK_FO          is  17.64 seconds
+ >>> wall Time used in FCK_FO          is   1.97 seconds
+ >>>  CPU Time used in G_GRAD          is   0.35 seconds
+ >>> wall Time used in G_GRAD          is   0.07 seconds
+  3   -658.9475105859  -10.92548688737    0.00      0.00000    3.03    0.0000000    0.76E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   3
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)          544.500 kB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 287.375 kB
+  Allocated memory,     type(matrix)          287.375 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.18 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm   2.14797543945896     
+CROP scheme with full subspace (DISK)
+ First mu: -0.968750000000000     
+  Error of red space iteration  1:      3.2446433886 (mu =  -0.97, xmax = 0.217828E+00, xnorm = 0.117389E+01, THR = 0.214798E-01)
+  Error of red space iteration  2:      1.8690376481 (mu =  -1.66, xmax = 0.157440E+00, xnorm = 0.890687E+00, THR = 0.214798E-01)
+  Error of red space iteration  3:      0.7476773072 (mu =  -1.81, xmax = 0.133408E+00, xnorm = 0.710065E+00, THR = 0.214798E-01)
+  Error of red space iteration  4:      0.2983192063 (mu =  -1.88, xmax = 0.116746E+00, xnorm = 0.609382E+00, THR = 0.214798E-01)
+  Error of red space iteration  5:      0.1564979862 (mu =  -1.88, xmax = 0.119126E+00, xnorm = 0.621258E+00, THR = 0.214798E-01)
+  Error of red space iteration  6:      0.0759612886 (mu =  -1.88, xmax = 0.118401E+00, xnorm = 0.602660E+00, THR = 0.214798E-01)
+  Error of red space iteration  7:      0.0318034678 (mu =  -1.88, xmax = 0.118274E+00, xnorm = 0.600091E+00, THR = 0.214798E-01)
+  Error of red space iteration  8:      0.0110571495 (mu =  -1.88, xmax = 0.118638E+00, xnorm = 0.599417E+00, THR = 0.214798E-01)
+ mumax =  -1.87500000000000     
+  Error of red space iteration  9:      0.6488363937 (mu =  -0.38, xmax = 0.221471E+00, xnorm = 0.911407E+00, THR = 0.214798E-01)
+  Error of red space iteration 10:      0.3077549941 (mu =  -0.54, xmax = 0.219232E+00, xnorm = 0.975839E+00, THR = 0.214798E-01)
+  Error of red space iteration 11:      0.1920236931 (mu =  -0.61, xmax = 0.226556E+00, xnorm = 0.103285E+01, THR = 0.214798E-01)
+  Error of red space iteration 12:      0.1285745118 (mu =  -0.59, xmax = 0.230674E+00, xnorm = 0.108224E+01, THR = 0.214798E-01)
+  Error of red space iteration 13:      0.1670403260 (mu =  -0.60, xmax = 0.233879E+00, xnorm = 0.114915E+01, THR = 0.214798E-01)
+  Error of red space iteration 14:      0.0466596795 (mu =  -0.57, xmax = 0.237964E+00, xnorm = 0.119217E+01, THR = 0.214798E-01)
+  Error of red space iteration 15:      0.7075807530 (mu =  -0.56, xmax = 0.316541E+00, xnorm = 0.184443E+01, THR = 0.214798E-01)
+  Error of red space iteration 16:      0.0390747908 (mu =  -0.57, xmax = 0.233439E+00, xnorm = 0.121362E+01, THR = 0.214798E-01)
+  Error of red space iteration 17:      0.0146053572 (mu =  -0.57, xmax = 0.235380E+00, xnorm = 0.122379E+01, THR = 0.214798E-01)
+Newton equations converged in 17 iterations!
+ >>>  CPU Time used in CROP solver     is   4.16 seconds
+ >>> wall Time used in CROP solver     is   0.28 seconds
+ >>>  CPU Time used in NEW D           is   0.02 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   145
+ >>>  CPU Time used in G_DENS          is   4.20 seconds
+ >>> wall Time used in G_DENS          is   0.28 seconds
+ >>>  CPU Time used in SCF iteration   is  22.37 seconds
+ >>> wall Time used in SCF iteration   is   2.33 seconds
+** Get Fock matrix number   4
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   9.89 seconds
+ >>> wall Time used in Jengine         is   1.09 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                1.16 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is               14.90 seconds
+ >>>  CPU Time used in LINK-Kbuild     is  15.32 seconds
+ >>> wall Time used in LINK-Kbuild     is   1.19 seconds
+ >>>  CPU Time used in FCK_FO          is  25.55 seconds
+ >>> wall Time used in FCK_FO          is   2.30 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  4   -661.7100248880   -2.76251430210    0.00      0.00000    0.57    0.0000000    0.12E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   4
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)          635.250 kB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 317.625 kB
+  Allocated memory,     type(matrix)          317.625 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.31 seconds
+ >>> wall Time used in AVERAG          is   0.02 seconds
+** Get new density 
+ OAO gradnorm  0.473455885642421     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.6345468323 (mu =   0.00, xmax = 0.747748E-01, xnorm = 0.389742E+00, THR = 0.473456E-02)
+  Error of red space iteration  2:      0.3756373926 (mu =   0.00, xmax = 0.857407E-01, xnorm = 0.388427E+00, THR = 0.473456E-02)
+  Error of red space iteration  3:      0.1426986994 (mu =   0.00, xmax = 0.860407E-01, xnorm = 0.387838E+00, THR = 0.473456E-02)
+  Error of red space iteration  4:      0.0708892217 (mu =   0.00, xmax = 0.861573E-01, xnorm = 0.390197E+00, THR = 0.473456E-02)
+  Error of red space iteration  5:      0.0358206879 (mu =   0.00, xmax = 0.870179E-01, xnorm = 0.393904E+00, THR = 0.473456E-02)
+  Error of red space iteration  6:      0.0184212870 (mu =   0.00, xmax = 0.875462E-01, xnorm = 0.397296E+00, THR = 0.473456E-02)
+  Error of red space iteration  7:      0.0095207110 (mu =   0.00, xmax = 0.876606E-01, xnorm = 0.399717E+00, THR = 0.473456E-02)
+  Error of red space iteration  8:      0.0058090733 (mu =   0.00, xmax = 0.876724E-01, xnorm = 0.401370E+00, THR = 0.473456E-02)
+  Error of red space iteration  9:      0.0033383560 (mu =   0.00, xmax = 0.876528E-01, xnorm = 0.402522E+00, THR = 0.473456E-02)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   0.89 seconds
+ >>> wall Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    87
+ >>>  CPU Time used in G_DENS          is   0.94 seconds
+ >>> wall Time used in G_DENS          is   0.06 seconds
+ >>>  CPU Time used in SCF iteration   is  26.81 seconds
+ >>> wall Time used in SCF iteration   is   2.39 seconds
+** Get Fock matrix number   5
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  12.97 seconds
+ >>> wall Time used in Jengine         is   0.98 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                1.40 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                7.26 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   7.55 seconds
+ >>> wall Time used in LINK-Kbuild     is   1.43 seconds
+ >>>  CPU Time used in FCK_FO          is  20.85 seconds
+ >>> wall Time used in FCK_FO          is   2.43 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  5   -661.8960490288   -0.18602414078    0.00      0.00000    0.00    0.0000000    0.26E+00  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   5
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)          726.000 kB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 347.875 kB
+  Allocated memory,     type(matrix)          347.875 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.42 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+ OAO gradnorm  0.128124247736062     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.1391476635 (mu =   0.00, xmax = 0.264942E-01, xnorm = 0.120454E+00, THR = 0.128124E-02)
+  Error of red space iteration  2:      0.0757711042 (mu =   0.00, xmax = 0.270902E-01, xnorm = 0.121790E+00, THR = 0.128124E-02)
+  Error of red space iteration  3:      0.0334718979 (mu =   0.00, xmax = 0.274614E-01, xnorm = 0.123189E+00, THR = 0.128124E-02)
+  Error of red space iteration  4:      0.0137680748 (mu =   0.00, xmax = 0.278110E-01, xnorm = 0.124773E+00, THR = 0.128124E-02)
+  Error of red space iteration  5:      0.0073816016 (mu =   0.00, xmax = 0.281071E-01, xnorm = 0.126451E+00, THR = 0.128124E-02)
+  Error of red space iteration  6:      0.0035582775 (mu =   0.00, xmax = 0.282764E-01, xnorm = 0.127694E+00, THR = 0.128124E-02)
+  Error of red space iteration  7:      0.0021547176 (mu =   0.00, xmax = 0.283701E-01, xnorm = 0.128471E+00, THR = 0.128124E-02)
+  Error of red space iteration  8:      0.0011737146 (mu =   0.00, xmax = 0.284186E-01, xnorm = 0.128853E+00, THR = 0.128124E-02)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.75 seconds
+ >>> wall Time used in CROP solver     is   0.05 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    79
+ >>>  CPU Time used in G_DENS          is   0.79 seconds
+ >>> wall Time used in G_DENS          is   0.05 seconds
+ >>>  CPU Time used in SCF iteration   is  22.07 seconds
+ >>> wall Time used in SCF iteration   is   2.51 seconds
+** Get Fock matrix number   6
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  15.10 seconds
+ >>> wall Time used in Jengine         is   1.53 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.90 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                8.83 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   9.03 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.92 seconds
+ >>>  CPU Time used in FCK_FO          is  24.43 seconds
+ >>> wall Time used in FCK_FO          is   2.47 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  6   -661.9087648739   -0.01271584514    0.00      0.00000    0.00    0.0000000    0.54E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   6
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)          816.750 kB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 378.125 kB
+  Allocated memory,     type(matrix)          378.125 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.27 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+ OAO gradnorm  2.696956912426852E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0328518742 (mu =   0.00, xmax = 0.545073E-02, xnorm = 0.257763E-01, THR = 0.269696E-03)
+  Error of red space iteration  2:      0.0193578115 (mu =   0.00, xmax = 0.560282E-02, xnorm = 0.262178E-01, THR = 0.269696E-03)
+  Error of red space iteration  3:      0.0060873097 (mu =   0.00, xmax = 0.575281E-02, xnorm = 0.266486E-01, THR = 0.269696E-03)
+  Error of red space iteration  4:      0.0027991713 (mu =   0.00, xmax = 0.587273E-02, xnorm = 0.271421E-01, THR = 0.269696E-03)
+  Error of red space iteration  5:      0.0017119381 (mu =   0.00, xmax = 0.596543E-02, xnorm = 0.276110E-01, THR = 0.269696E-03)
+  Error of red space iteration  6:      0.0007960344 (mu =   0.00, xmax = 0.602204E-02, xnorm = 0.279470E-01, THR = 0.269696E-03)
+  Error of red space iteration  7:      0.0004520521 (mu =   0.00, xmax = 0.604636E-02, xnorm = 0.281369E-01, THR = 0.269696E-03)
+  Error of red space iteration  8:      0.0002158674 (mu =   0.00, xmax = 0.605503E-02, xnorm = 0.282302E-01, THR = 0.269696E-03)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.43 seconds
+ >>> wall Time used in CROP solver     is   0.05 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    76
+ >>>  CPU Time used in G_DENS          is   0.45 seconds
+ >>> wall Time used in G_DENS          is   0.05 seconds
+ >>>  CPU Time used in SCF iteration   is  25.16 seconds
+ >>> wall Time used in SCF iteration   is   2.56 seconds
+** Get Fock matrix number   7
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  23.56 seconds
+ >>> wall Time used in Jengine         is   2.52 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                1.92 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is               18.00 seconds
+ >>>  CPU Time used in LINK-Kbuild     is  18.28 seconds
+ >>> wall Time used in LINK-Kbuild     is   1.94 seconds
+ >>>  CPU Time used in FCK_FO          is  42.05 seconds
+ >>> wall Time used in FCK_FO          is   4.48 seconds
+ >>>  CPU Time used in G_GRAD          is   0.03 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  7   -661.9092575035   -0.00049262956    0.00      0.00000    0.00    0.0000000    0.18E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)          907.500 kB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 408.375 kB
+  Allocated memory,     type(matrix)          408.375 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           7
+ >>>  CPU Time used in AVERAG          is   0.70 seconds
+ >>> wall Time used in AVERAG          is   0.05 seconds
+** Get new density 
+ OAO gradnorm  5.803494394292612E-003
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0072387189 (mu =   0.00, xmax = 0.741290E-03, xnorm = 0.445704E-02, THR = 0.580349E-04)
+  Error of red space iteration  2:      0.0052905556 (mu =   0.00, xmax = 0.743694E-03, xnorm = 0.430343E-02, THR = 0.580349E-04)
+  Error of red space iteration  3:      0.0020330048 (mu =   0.00, xmax = 0.778418E-03, xnorm = 0.428736E-02, THR = 0.580349E-04)
+  Error of red space iteration  4:      0.0008624742 (mu =   0.00, xmax = 0.803288E-03, xnorm = 0.431245E-02, THR = 0.580349E-04)
+  Error of red space iteration  5:      0.0004146892 (mu =   0.00, xmax = 0.823141E-03, xnorm = 0.434740E-02, THR = 0.580349E-04)
+  Error of red space iteration  6:      0.0001766471 (mu =   0.00, xmax = 0.836035E-03, xnorm = 0.437999E-02, THR = 0.580349E-04)
+  Error of red space iteration  7:      0.0000832287 (mu =   0.00, xmax = 0.842320E-03, xnorm = 0.440156E-02, THR = 0.580349E-04)
+  Error of red space iteration  8:      0.0000474877 (mu =   0.00, xmax = 0.845637E-03, xnorm = 0.441692E-02, THR = 0.580349E-04)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.81 seconds
+ >>> wall Time used in CROP solver     is   0.05 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    75
+ >>>  CPU Time used in G_DENS          is   0.84 seconds
+ >>> wall Time used in G_DENS          is   0.05 seconds
+ >>>  CPU Time used in SCF iteration   is  43.62 seconds
+ >>> wall Time used in SCF iteration   is   4.59 seconds
+** Get Fock matrix number   8
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  32.57 seconds
+ >>> wall Time used in Jengine         is   3.28 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.96 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                3.69 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   4.01 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.98 seconds
+ >>>  CPU Time used in FCK_FO          is  36.93 seconds
+ >>> wall Time used in FCK_FO          is   4.29 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  8   -661.9092759815   -0.00001847801    0.00      0.00000    0.00    0.0000000    0.60E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)            0.975 MB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 438.625 kB
+  Allocated memory,     type(matrix)          438.625 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           8
+ >>>  CPU Time used in AVERAG          is   0.28 seconds
+ >>> wall Time used in AVERAG          is   0.05 seconds
+** Get new density 
+ OAO gradnorm  1.958194858087874E-003
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0022740568 (mu =   0.00, xmax = 0.226390E-03, xnorm = 0.140600E-02, THR = 0.195819E-04)
+  Error of red space iteration  2:      0.0014425316 (mu =   0.00, xmax = 0.238963E-03, xnorm = 0.137577E-02, THR = 0.195819E-04)
+  Error of red space iteration  3:      0.0005459561 (mu =   0.00, xmax = 0.246178E-03, xnorm = 0.138045E-02, THR = 0.195819E-04)
+  Error of red space iteration  4:      0.0002454434 (mu =   0.00, xmax = 0.251300E-03, xnorm = 0.139453E-02, THR = 0.195819E-04)
+  Error of red space iteration  5:      0.0001299690 (mu =   0.00, xmax = 0.256500E-03, xnorm = 0.141409E-02, THR = 0.195819E-04)
+  Error of red space iteration  6:      0.0000635935 (mu =   0.00, xmax = 0.260388E-03, xnorm = 0.143363E-02, THR = 0.195819E-04)
+  Error of red space iteration  7:      0.0000329439 (mu =   0.00, xmax = 0.262537E-03, xnorm = 0.144654E-02, THR = 0.195819E-04)
+  Error of red space iteration  8:      0.0000167803 (mu =   0.00, xmax = 0.263685E-03, xnorm = 0.145414E-02, THR = 0.195819E-04)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.69 seconds
+ >>> wall Time used in CROP solver     is   0.07 seconds
+ >>>  CPU Time used in NEW D           is   0.03 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    74
+ >>>  CPU Time used in G_DENS          is   0.78 seconds
+ >>> wall Time used in G_DENS          is   0.08 seconds
+ >>>  CPU Time used in SCF iteration   is  37.99 seconds
+ >>> wall Time used in SCF iteration   is   4.42 seconds
+** Get Fock matrix number   9
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   9.42 seconds
+ >>> wall Time used in Jengine         is   0.73 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.75 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                5.17 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   5.51 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.78 seconds
+ >>>  CPU Time used in FCK_FO          is  15.18 seconds
+ >>> wall Time used in FCK_FO          is   1.54 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  9   -661.9092779595   -0.00000197805    0.00      0.00000    0.00    0.0000000    0.11E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   9
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)            1.063 MB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 468.875 kB
+  Allocated memory,     type(matrix)          468.875 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           8
+ >>>  CPU Time used in AVERAG          is   0.24 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+ OAO gradnorm  3.735769730322238E-004
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0005857709 (mu =   0.00, xmax = 0.744952E-04, xnorm = 0.313791E-03, THR = 0.373577E-05)
+  Error of red space iteration  2:      0.0004047907 (mu =   0.00, xmax = 0.626922E-04, xnorm = 0.307201E-03, THR = 0.373577E-05)
+  Error of red space iteration  3:      0.0001452338 (mu =   0.00, xmax = 0.612652E-04, xnorm = 0.309593E-03, THR = 0.373577E-05)
+  Error of red space iteration  4:      0.0000639641 (mu =   0.00, xmax = 0.607111E-04, xnorm = 0.314042E-03, THR = 0.373577E-05)
+  Error of red space iteration  5:      0.0000365923 (mu =   0.00, xmax = 0.597843E-04, xnorm = 0.319637E-03, THR = 0.373577E-05)
+  Error of red space iteration  6:      0.0000159057 (mu =   0.00, xmax = 0.593039E-04, xnorm = 0.324786E-03, THR = 0.373577E-05)
+  Error of red space iteration  7:      0.0000079987 (mu =   0.00, xmax = 0.592781E-04, xnorm = 0.327891E-03, THR = 0.373577E-05)
+  Error of red space iteration  8:      0.0000043082 (mu =   0.00, xmax = 0.593161E-04, xnorm = 0.329993E-03, THR = 0.373577E-05)
+  Error of red space iteration  9:      0.0000022252 (mu =   0.00, xmax = 0.593300E-04, xnorm = 0.331126E-03, THR = 0.373577E-05)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   0.47 seconds
+ >>> wall Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    81
+ >>>  CPU Time used in G_DENS          is   0.50 seconds
+ >>> wall Time used in G_DENS          is   0.07 seconds
+ >>>  CPU Time used in SCF iteration   is  15.92 seconds
+ >>> wall Time used in SCF iteration   is   1.63 seconds
+** Get Fock matrix number  10
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  10.98 seconds
+ >>> wall Time used in Jengine         is   1.10 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.96 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                7.78 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   8.10 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.98 seconds
+ >>>  CPU Time used in FCK_FO          is  19.27 seconds
+ >>> wall Time used in FCK_FO          is   2.10 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ 10   -661.9092780480   -0.00000008850    0.00      0.00000    0.00    0.0000000    0.34E-03  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration  10
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)            1.063 MB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 468.875 kB
+  Allocated memory,     type(matrix)          468.875 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           8
+ >>>  CPU Time used in AVERAG          is   0.24 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+ OAO gradnorm  1.154438024272303E-004
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0001301802 (mu =   0.00, xmax = 0.202068E-04, xnorm = 0.989766E-04, THR = 0.115444E-05)
+  Error of red space iteration  2:      0.0000827449 (mu =   0.00, xmax = 0.161059E-04, xnorm = 0.977295E-04, THR = 0.115444E-05)
+  Error of red space iteration  3:      0.0000373505 (mu =   0.00, xmax = 0.157875E-04, xnorm = 0.992952E-04, THR = 0.115444E-05)
+  Error of red space iteration  4:      0.0000190299 (mu =   0.00, xmax = 0.159737E-04, xnorm = 0.101486E-03, THR = 0.115444E-05)
+  Error of red space iteration  5:      0.0000086716 (mu =   0.00, xmax = 0.169707E-04, xnorm = 0.104198E-03, THR = 0.115444E-05)
+  Error of red space iteration  6:      0.0000043177 (mu =   0.00, xmax = 0.176264E-04, xnorm = 0.106380E-03, THR = 0.115444E-05)
+  Error of red space iteration  7:      0.0000026649 (mu =   0.00, xmax = 0.180023E-04, xnorm = 0.107719E-03, THR = 0.115444E-05)
+  Error of red space iteration  8:      0.0000014480 (mu =   0.00, xmax = 0.182094E-04, xnorm = 0.108568E-03, THR = 0.115444E-05)
+  Error of red space iteration  9:      0.0000007363 (mu =   0.00, xmax = 0.182960E-04, xnorm = 0.108955E-03, THR = 0.115444E-05)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   1.06 seconds
+ >>> wall Time used in CROP solver     is   0.14 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    80
+ >>>  CPU Time used in G_DENS          is   1.08 seconds
+ >>> wall Time used in G_DENS          is   0.14 seconds
+ >>>  CPU Time used in SCF iteration   is  20.59 seconds
+ >>> wall Time used in SCF iteration   is   2.28 seconds
+** Get Fock matrix number  11
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  12.39 seconds
+ >>> wall Time used in Jengine         is   1.30 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                1.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                9.73 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   9.95 seconds
+ >>> wall Time used in LINK-Kbuild     is   1.05 seconds
+ >>>  CPU Time used in FCK_FO          is  22.53 seconds
+ >>> wall Time used in FCK_FO          is   2.37 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ 11   -661.9092780571   -0.00000000908    0.00      0.00000    0.00    0.0000000    0.79E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration  11
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)            1.063 MB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 468.875 kB
+  Allocated memory,     type(matrix)          468.875 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           8
+ >>>  CPU Time used in AVERAG          is   0.27 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+ OAO gradnorm  2.956242329050961E-005
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000299390 (mu =   0.00, xmax = 0.372222E-05, xnorm = 0.258897E-04, THR = 0.295624E-06)
+  Error of red space iteration  2:      0.0000190190 (mu =   0.00, xmax = 0.417381E-05, xnorm = 0.264973E-04, THR = 0.295624E-06)
+  Error of red space iteration  3:      0.0000077420 (mu =   0.00, xmax = 0.451931E-05, xnorm = 0.273576E-04, THR = 0.295624E-06)
+  Error of red space iteration  4:      0.0000036080 (mu =   0.00, xmax = 0.481531E-05, xnorm = 0.282529E-04, THR = 0.295624E-06)
+  Error of red space iteration  5:      0.0000021219 (mu =   0.00, xmax = 0.510236E-05, xnorm = 0.292650E-04, THR = 0.295624E-06)
+  Error of red space iteration  6:      0.0000012387 (mu =   0.00, xmax = 0.532237E-05, xnorm = 0.301048E-04, THR = 0.295624E-06)
+  Error of red space iteration  7:      0.0000006530 (mu =   0.00, xmax = 0.542550E-05, xnorm = 0.305522E-04, THR = 0.295624E-06)
+  Error of red space iteration  8:      0.0000003267 (mu =   0.00, xmax = 0.546613E-05, xnorm = 0.307591E-04, THR = 0.295624E-06)
+  Error of red space iteration  9:      0.0000001752 (mu =   0.00, xmax = 0.547915E-05, xnorm = 0.308395E-04, THR = 0.295624E-06)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   0.56 seconds
+ >>> wall Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    80
+ >>>  CPU Time used in G_DENS          is   0.58 seconds
+ >>> wall Time used in G_DENS          is   0.07 seconds
+ >>>  CPU Time used in SCF iteration   is  23.38 seconds
+ >>> wall Time used in SCF iteration   is   2.46 seconds
+** Get Fock matrix number  12
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   9.29 seconds
+ >>> wall Time used in Jengine         is   0.74 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                1.24 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                9.91 seconds
+ >>>  CPU Time used in LINK-Kbuild     is  10.17 seconds
+ >>> wall Time used in LINK-Kbuild     is   1.27 seconds
+ >>>  CPU Time used in FCK_FO          is  19.68 seconds
+ >>> wall Time used in FCK_FO          is   2.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ 12   -661.9092780553    0.00000000178    0.00      0.00000    0.00    0.0000000    0.32E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration  12
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)            1.063 MB
+  Max allocated memory, real                    1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+ 
+  Allocated memory,     TOTAL                 468.875 kB
+  Allocated memory,     type(matrix)          468.875 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in **ITER          is   0 hours  6 minutes  0 seconds
+ >>> wall Time used in **ITER          is  37.45 seconds
+ 
+Total no. of matmuls in SCF optimization:       2687
+ Postponing calculation of HOMO-LUMO gap to response part...
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2  -20.11272633463    0.0000    6.2345    0.0000000
+  3  -10.92548688737    0.0000    3.0337    0.0000000
+  4   -2.76251430210    0.0000    0.5713    0.0000000
+  5   -0.18602414078    0.0000    0.0000    0.0000000
+  6   -0.01271584514    0.0000    0.0000    0.0000000
+  7   -0.00049262956    0.0000    0.0000    0.0000000
+  8   -0.00001847801    0.0000    0.0000    0.0000000
+  9   -0.00000197805    0.0000    0.0000    0.0000000
+ 10   -0.00000008850    0.0000    0.0000    0.0000000
+ 11   -0.00000000908    0.0000    0.0000    0.0000000
+ 12    0.00000000178    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -627.90929736389909976424      0.256227922599512D+02
+    2          -648.02202369853137042810      0.190529525215022D+02
+    3          -658.94751058590520642610      0.759835406905751D+01
+    4          -661.71002488800377250300      0.120968972609605D+01
+    5          -661.89604902878306802450      0.261529429593101D+00
+    6          -661.90876487392358740180      0.540474939577105D-01
+    7          -661.90925750347935263562      0.176683152021237D-01
+    8          -661.90927598149062305311      0.598759239655647D-02
+    9          -661.90927795954121393152      0.108038406515510D-02
+   10          -661.90927804804107381642      0.340260760156516D-03
+   11          -661.90927805711862674798      0.789544671495362D-04
+   12          -661.90927805534226990858      0.319538464590692D-04
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final HF energy:                  -661.909278055342
+      Nuclear repulsion:                 316.807555888350
+      Electronic energy:                -978.716833943692
+ 
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (LSTDHF) >>>
+
+
+ 
+ Number of occupied orbitals:          21
+ Number of virtual orbitals:          23
+ 
+ Number of occupied orbital energies to be found:           2
+ Number of virtual orbital energies to be found:           2
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+    E(LUMO):                         0.246744 au
+   -E(HOMO):                        -0.321037 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.567781 au
+ 
+ >>>  CPU Time used in HL GAP          is   1.66 seconds
+ >>> wall Time used in HL GAP          is   0.91 seconds
+ 
+Calculating initial guess(es) for excitation energies from orb. energies
+========================================================================
+ >>>  CPU Time used in HESEIG          is   0.01 seconds
+ >>> wall Time used in HESEIG          is   0.00 seconds
+ Exci starting guess:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.00112404     0.00125754     0.00168034    -0.00080951
+       2       0.26349942     0.29479413     0.39390615    -0.18976674
+       3       0.00219558     0.00245634     0.00328218    -0.00158121
+       4       0.09773166     0.10933883     0.14609938    -0.07038428
+       5       0.00194739     0.00217867     0.00291116    -0.00140247
+       6      -0.00548387    -0.00613517    -0.00819786     0.00394937
+       7      -0.42197501    -0.47209119    -0.63081183     0.30389752
+       8      -0.00209285    -0.00234141    -0.00312861     0.00150723
+       9       0.00037652     0.00042124     0.00056286    -0.00027116
+      10      -0.01807564    -0.02022241    -0.02702133     0.01301770
+      11       0.03567589     0.03991297     0.05333201    -0.02569303
+      12       0.02915467     0.03261724     0.04358341    -0.02099658
+      13      -0.07383583    -0.08260500    -0.11037743     0.05317501
+      14       0.00260503     0.00291441     0.00389426    -0.00187608
+      15      -0.00442615    -0.00495182    -0.00661666     0.00318762
+      16       0.00510374     0.00570989     0.00762960    -0.00367561
+      17      -0.00445855    -0.00498807    -0.00666510     0.00321095
+      18       0.00177275     0.00198329     0.00265009    -0.00127670
+      19       0.00135154     0.00151206     0.00202042    -0.00097335
+      20      -0.03257806    -0.03644722    -0.04870105     0.02346203
+      21       0.01476344     0.01651684     0.02206992    -0.01063232
+      22       0.01961360     0.02194302     0.02932043    -0.01412530
+      23       0.00116152     0.00129947     0.00173636    -0.00083650
+      24      -0.00253540    -0.00283652    -0.00379017     0.00182594
+      25       0.00654836     0.00732608     0.00978917    -0.00471599
+      26      -0.00233262    -0.00260965    -0.00348703     0.00167990
+      27      -0.00058029    -0.00064921    -0.00086748     0.00041792
+      28       0.00097586     0.00109176     0.00145881    -0.00070279
+      29      -0.00889399    -0.00995029    -0.01329566     0.00640527
+      30      -0.00249374    -0.00278991    -0.00372789     0.00179594
+      31       0.00815753     0.00912637     0.01219472    -0.00587488
+      32      -0.00018350    -0.00020529    -0.00027431     0.00013215
+      33       0.00164554     0.00184097     0.00245992    -0.00118508
+      34       0.01433754     0.01604035     0.02143324    -0.01032559
+      35       0.10104018     0.11304030     0.15104530    -0.07276701
+      36      -0.00196082    -0.00219370    -0.00293124     0.00141214
+      37       0.00029474     0.00032975     0.00044061    -0.00021227
+      38       0.00177644     0.00198742     0.00265561    -0.00127936
+      39       0.00856203     0.00957891     0.01279941    -0.00616619
+      40      -0.00009125    -0.00010208    -0.00013641     0.00006571
+      41      -0.00254785    -0.00285045    -0.00380879     0.00183491
+      42       0.03788357     0.04238284     0.05663227    -0.02728295
+      43      -0.00654836    -0.00732609    -0.00978917     0.00471599
+      44       0.02717137     0.03039840     0.04061857    -0.01956825
+
+               Column   5     Column   6     Column   7     Column   8
+       1      -0.00013803     0.00022898     0.00227534    -0.00058242
+       2      -0.03235622     0.05367799     0.53338814    -0.13653067
+       3      -0.00026960     0.00044727     0.00444439    -0.00113763
+       4      -0.01200089     0.01990911     0.19783310    -0.05063908
+       5      -0.00023913     0.00039671     0.00394200    -0.00100903
+       6       0.00067339    -0.00111713    -0.01110072     0.00284144
+       7       0.05181612    -0.08596137    -0.85418201     0.21864385
+       8       0.00025699    -0.00042634    -0.00423645     0.00108440
+       9      -0.00004623     0.00007670     0.00076217    -0.00019509
+      10       0.00221959    -0.00368222    -0.03658958     0.00936579
+      11      -0.00438080     0.00726761     0.07221685    -0.01848525
+      12      -0.00358003     0.00593916     0.05901627    -0.01510632
+      13       0.00906662    -0.01504125    -0.14946203     0.03825760
+      14      -0.00031988     0.00053068     0.00527322    -0.00134978
+      15       0.00054351    -0.00090166    -0.00895962     0.00229338
+      16      -0.00062671     0.00103969     0.01033124    -0.00264447
+      17       0.00054748    -0.00090826    -0.00902520     0.00231017
+      18      -0.00021768     0.00036113     0.00358848    -0.00091854
+      19      -0.00016596     0.00027533     0.00273585    -0.00070029
+      20       0.00400040    -0.00663654    -0.06594607     0.01688013
+      21      -0.00181287     0.00300749     0.02988487    -0.00764959
+      22      -0.00240844     0.00399553     0.03970279    -0.01016267
+      23      -0.00014263     0.00023662     0.00235121    -0.00060184
+      24       0.00031133    -0.00051649    -0.00513227     0.00131370
+      25      -0.00080410     0.00133398     0.01325551    -0.00339300
+      26       0.00028643    -0.00047518    -0.00472179     0.00120863
+      27       0.00007126    -0.00011821    -0.00117466     0.00030068
+      28      -0.00011983     0.00019879     0.00197538    -0.00050564
+      29       0.00109213    -0.00181181    -0.01800364     0.00460837
+      30       0.00030622    -0.00050800    -0.00504794     0.00129211
+      31      -0.00100170     0.00166179     0.01651286    -0.00422678
+      32       0.00002253    -0.00003738    -0.00037144     0.00009508
+      33      -0.00020206     0.00033522     0.00333098    -0.00085263
+      34      -0.00176057     0.00292073     0.02902273    -0.00742891
+      35      -0.01240716     0.02058310     0.20453038    -0.05235337
+      36       0.00024078    -0.00039944    -0.00396919     0.00101599
+      37      -0.00003619     0.00006004     0.00059663    -0.00015272
+      38      -0.00021814     0.00036188     0.00359596    -0.00092045
+      39      -0.00105137     0.00174419     0.01733167    -0.00443637
+      40       0.00001120    -0.00001859    -0.00018471     0.00004728
+      41       0.00031286    -0.00051903    -0.00515748     0.00132015
+      42      -0.00465189     0.00771734     0.07668573    -0.01962915
+      43       0.00080410    -0.00133398    -0.01325551     0.00339300
+      44      -0.00333649     0.00553513     0.05500159    -0.01407869
+
+               Column   9     Column  10     Column  11     Column  12
+       1       0.00076962     0.00099170    -0.00061152     0.00140797
+       2       0.18041499     0.23247627    -0.14335416     0.33005716
+       3       0.00150329     0.00193708    -0.00119448     0.00275016
+       4       0.06691573     0.08622521    -0.05316991     0.12241785
+       5       0.00133335     0.00171811    -0.00105946     0.00243928
+       6      -0.00375474    -0.00483823     0.00298344    -0.00686905
+       7      -0.28892138    -0.37229371     0.22957118    -0.52856235
+       8      -0.00143295    -0.00184645     0.00113859    -0.00262149
+       9       0.00025780     0.00033219    -0.00020484     0.00047163
+      10      -0.01237618    -0.01594750     0.00983387    -0.02264139
+      11       0.02442687     0.03147558    -0.01940910     0.04468732
+      12       0.01996186     0.02572214    -0.01586130     0.03651889
+      13      -0.05055454    -0.06514276     0.04016963    -0.09248614
+      14       0.00178363     0.00229832    -0.00141724     0.00326303
+      15      -0.00303053    -0.00390504     0.00240800    -0.00554416
+      16       0.00349447     0.00450285    -0.00277664     0.00639290
+      17      -0.00305271    -0.00393362     0.00242563    -0.00558474
+      18       0.00121378     0.00156403    -0.00096445     0.00222053
+      19       0.00092538     0.00119242    -0.00073529     0.00169293
+      20      -0.02230582    -0.02874248     0.01772376    -0.04080700
+      21       0.01010836     0.01302527    -0.00803190     0.01849257
+      22       0.01342920     0.01730439    -0.01067058     0.02456783
+      23       0.00079528     0.00102477    -0.00063191     0.00145491
+      24      -0.00173596    -0.00223689     0.00137936    -0.00317582
+      25       0.00448359     0.00577739    -0.00356257     0.00820243
+      26      -0.00159711    -0.00205798     0.00126904    -0.00292181
+      27      -0.00039732    -0.00051197     0.00031570    -0.00072687
+      28       0.00066816     0.00086097    -0.00053091     0.00122235
+      29      -0.00608961    -0.00784686     0.00483868    -0.01114054
+      30      -0.00170743    -0.00220014     0.00135669    -0.00312363
+      31       0.00558537     0.00719710    -0.00443802     0.01021805
+      32      -0.00012564    -0.00016189     0.00009983    -0.00022985
+      33       0.00112668     0.00145180    -0.00089524     0.00206119
+      34       0.00981675     0.01264951    -0.00780019     0.01795908
+      35       0.06918104     0.08914420    -0.05496988     0.12656208
+      36      -0.00134255    -0.00172996     0.00106676    -0.00245611
+      37       0.00020181     0.00026004    -0.00016035     0.00036919
+      38       0.00121631     0.00156729    -0.00096645     0.00222516
+      39       0.00586232     0.00755398    -0.00465809     0.01072473
+      40      -0.00006248    -0.00008050     0.00004964    -0.00011430
+      41      -0.00174448    -0.00224788     0.00138613    -0.00319142
+      42       0.02593844     0.03342334    -0.02061017     0.04745264
+      43      -0.00448359    -0.00577739     0.00356257    -0.00820243
+      44       0.01860392     0.02397235    -0.01478231     0.03403463
+
+               Column  13     Column  14     Column  15     Column  16
+       1       0.00038313     0.00079971    -0.00065647    -0.00451076
+       2       0.08981341     0.18746842    -0.15389072    -1.05741629
+       3       0.00074836     0.00156206    -0.00128228    -0.00881080
+       4       0.03331170     0.06953184    -0.05707791    -0.39219459
+       5       0.00066376     0.00138548    -0.00113733    -0.00781482
+       6      -0.00186917    -0.00390154     0.00320273     0.02200663
+       7      -0.14382959    -0.30021693     0.24644471     1.69337468
+       8      -0.00071335    -0.00148897     0.00122228     0.00839856
+       9       0.00012834     0.00026788    -0.00021990    -0.00151096
+      10      -0.00616106    -0.01286003     0.01055666     0.07253707
+      11       0.01216008     0.02538185    -0.02083568    -0.14316642
+      12       0.00993733     0.02074228    -0.01702711    -0.11699692
+      13      -0.02516684    -0.05253099     0.04312210     0.29630127
+      14       0.00088792     0.00185336    -0.00152140    -0.01045390
+      15      -0.00150865    -0.00314901     0.00258499     0.01776202
+      16       0.00173960     0.00363109    -0.00298072    -0.02048118
+      17      -0.00151969    -0.00317206     0.00260391     0.01789203
+      18       0.00060424     0.00126123    -0.00103533    -0.00711400
+      19       0.00046067     0.00096156    -0.00078934    -0.00542370
+      20      -0.01110419    -0.02317788     0.01902646     0.13073490
+      21       0.00503210     0.01050355    -0.00862225    -0.05924532
+      22       0.00668527     0.01395423    -0.01145487    -0.07870886
+      23       0.00039590     0.00082637    -0.00067836    -0.00466115
+      24      -0.00086419    -0.00180383     0.00148074     0.01017449
+      25       0.00223200     0.00465888    -0.00382442    -0.02627841
+      26      -0.00079507    -0.00165955     0.00136231     0.00936073
+      27      -0.00019779    -0.00041285     0.00033891     0.00232870
+      28       0.00033262     0.00069428    -0.00056993    -0.00391609
+      29      -0.00303150    -0.00632769     0.00519433     0.03569135
+      30      -0.00084999    -0.00177419     0.00145641     0.01000730
+      31       0.00278048     0.00580373    -0.00476422    -0.03273595
+      32      -0.00006254    -0.00013055     0.00010717     0.00073636
+      33       0.00056088     0.00117073    -0.00096104    -0.00660351
+      34       0.00488693     0.01020054    -0.00837351    -0.05753617
+      35       0.03443940     0.07188571    -0.05901017    -0.40547162
+      36      -0.00066834    -0.00139504     0.00114517     0.00786872
+      37       0.00010046     0.00020970    -0.00017214    -0.00118280
+      38       0.00060550     0.00126386    -0.00103749    -0.00712881
+      39       0.00291836     0.00609151    -0.00500046    -0.03435921
+      40      -0.00003110    -0.00006492     0.00005329     0.00036617
+      41      -0.00086843    -0.00181269     0.00148801     0.01022446
+      42       0.01291256     0.02695252    -0.02212502    -0.15202577
+      43      -0.00223200    -0.00465888     0.00382442     0.02627842
+      44       0.00926132     0.01933125    -0.01586881    -0.10903800
+
+               Column  17     Column  18     Column  19     Column  20
+       1       0.00297340     0.00256910    -0.00036774     0.00324292
+       2       0.69702705     0.60225087    -0.08620671     0.76020937
+       3       0.00580790     0.00501818    -0.00071831     0.00633436
+       4       0.25852660     0.22337421    -0.03197398     0.28196086
+       5       0.00515137     0.00445093    -0.00063711     0.00561832
+       6      -0.01450632    -0.01253387     0.00179411    -0.01582125
+       7      -1.11623772    -0.96446062     0.13805373    -1.21741958
+       8      -0.00553616    -0.00478340     0.00068470    -0.00603799
+       9       0.00099600     0.00086057    -0.00012318     0.00108628
+      10      -0.04781494    -0.04131345     0.00591364    -0.05214915
+      11       0.09437236     0.08154036    -0.01167176     0.10292678
+      12       0.07712196     0.06663553    -0.00953827     0.08411271
+      13      -0.19531570    -0.16875822     0.02415620    -0.21302017
+      14       0.00689100     0.00595401    -0.00085226     0.00751563
+      15      -0.01170836    -0.01011635     0.00144806    -0.01276967
+      16       0.01350077     0.01166504    -0.00166974     0.01472455
+      17      -0.01179406    -0.01019040     0.00145866    -0.01286314
+      18       0.00468940     0.00405177    -0.00057997     0.00511447
+      19       0.00357519     0.00308906    -0.00044217     0.00389926
+      20      -0.08617776    -0.07445999     0.01065827    -0.09398938
+      21       0.03905329     0.03374314    -0.00483002     0.04259330
+      22       0.05188326     0.04482859    -0.00641680     0.05658624
+      23       0.00307254     0.00265476    -0.00038000     0.00335105
+      24      -0.00670681    -0.00579487     0.00082948    -0.00731475
+      25       0.01732219     0.01496685    -0.00214237     0.01889237
+      26      -0.00617040    -0.00533140     0.00076314    -0.00672972
+      27      -0.00153503    -0.00132631     0.00018985    -0.00167418
+      28       0.00258141     0.00223041    -0.00031926     0.00281540
+      29      -0.02352701    -0.02032799     0.00290977    -0.02565962
+      30      -0.00659661    -0.00569965     0.00081585    -0.00719456
+      31       0.02157887     0.01864474    -0.00266882     0.02353489
+      32      -0.00048540    -0.00041940     0.00006003    -0.00052940
+      33       0.00435290     0.00376102    -0.00053836     0.00474747
+      34       0.03792666     0.03276969    -0.00469068     0.04136454
+      35       0.26727854     0.23093614    -0.03305640     0.29150612
+      36      -0.00518690    -0.00448163     0.00064150    -0.00565707
+      37       0.00077968     0.00067366    -0.00009643     0.00085035
+      38       0.00469917     0.00406021    -0.00058118     0.00512513
+      39       0.02264888     0.01956927    -0.00280116     0.02470190
+      40      -0.00024137    -0.00020855     0.00002985    -0.00026325
+      41      -0.00673976    -0.00582334     0.00083356    -0.00735068
+      42       0.10021226     0.08658620    -0.01239402     0.10929604
+      43      -0.01732219    -0.01496686     0.00214237    -0.01889237
+      44       0.07187561     0.06210253    -0.00888941     0.07839080
+
+               Column  21     Column  22     Column  23     Column  24
+       1       0.00390427    -0.00027848    -0.00014619     0.00014574
+       2       0.91524291    -0.06528060    -0.03427066     0.03416433
+       3       0.00762615    -0.00054394    -0.00028556     0.00028467
+       4       0.33946264    -0.02421250    -0.01271095     0.01267151
+       5       0.00676409    -0.00048246    -0.00025328     0.00025249
+       6      -0.01904776     0.00135860     0.00071323    -0.00071102
+       7      -1.46569444     0.10454209     0.05488195    -0.05471166
+       8      -0.00726934     0.00051849     0.00027220    -0.00027135
+       9       0.00130781    -0.00009328    -0.00004897     0.00004882
+      10      -0.06278420     0.00447814     0.00235091    -0.00234362
+      11       0.12391719    -0.00883851    -0.00464000     0.00462560
+      12       0.10126627    -0.00722292    -0.00379185     0.00378008
+      13      -0.25646251     0.01829244     0.00960307    -0.00957327
+      14       0.00904834    -0.00064538    -0.00033881     0.00033776
+      15      -0.01537385     0.00109656     0.00057566    -0.00057388
+      16       0.01772741    -0.00126442    -0.00066379     0.00066173
+      17      -0.01548638     0.00110458     0.00057988    -0.00057808
+      18       0.00615749    -0.00043919    -0.00023056     0.00022985
+      19       0.00469446    -0.00033484    -0.00017578     0.00017524
+      20      -0.11315713     0.00807104     0.00423709    -0.00422395
+      21       0.05127957    -0.00365757    -0.00192013     0.00191417
+      22       0.06812617    -0.00485917    -0.00255094     0.00254302
+      23       0.00403445    -0.00028776    -0.00015107     0.00015060
+      24      -0.00880649     0.00062813     0.00032975    -0.00032873
+      25       0.02274519    -0.00162232    -0.00085168     0.00084904
+      26      -0.00810214     0.00057789     0.00030338    -0.00030244
+      27      -0.00201560     0.00014376     0.00007547    -0.00007524
+      28       0.00338956    -0.00024176    -0.00012692     0.00012653
+      29      -0.03089252     0.00220344     0.00115675    -0.00115316
+      30      -0.00866178     0.00061781     0.00032433    -0.00032333
+      31       0.02833449    -0.00202099    -0.00106097     0.00105767
+      32      -0.00063736     0.00004546     0.00002387    -0.00002379
+      33       0.00571564    -0.00040767    -0.00021402     0.00021335
+      34       0.04980023    -0.00355205    -0.00186474     0.00185895
+      35       0.35095452    -0.02503217    -0.01314126     0.01310048
+      36      -0.00681075     0.00048578     0.00025502    -0.00025423
+      37       0.00102377    -0.00007302    -0.00003833     0.00003822
+      38       0.00617032    -0.00044010    -0.00023104     0.00023033
+      39       0.02973949    -0.00212120    -0.00111358     0.00111012
+      40      -0.00031694     0.00002261     0.00001187    -0.00001183
+      41      -0.00884975     0.00063122     0.00033137    -0.00033034
+      42       0.13158537    -0.00938546    -0.00492713     0.00491184
+      43      -0.02274519     0.00162232     0.00085168    -0.00084904
+      44       0.09437746    -0.00673156    -0.00353390     0.00352294
+
+               Column  25     Column  26     Column  27     Column  28
+       1       0.00021118    -0.00260163     0.00164783    -0.00036854
+       2       0.04950573    -0.60987710     0.38628531    -0.08639378
+       3       0.00041250    -0.00508173     0.00321868    -0.00071987
+       4       0.01836162    -0.22620278     0.14327282    -0.03204336
+       5       0.00036587    -0.00450729     0.00285484    -0.00063849
+       6      -0.00103030     0.01269258    -0.00803926     0.00179800
+       7      -0.07927980     0.97667348    -0.61860760     0.13835330
+       8      -0.00039320     0.00484397    -0.00306808     0.00068619
+       9       0.00007074    -0.00087147     0.00055197    -0.00012345
+      10      -0.00339601     0.04183660    -0.02649856     0.00592648
+      11       0.00670271    -0.08257289     0.05230020    -0.01169708
+      12       0.00547752    -0.06747933     0.04274021    -0.00955897
+      13      -0.01387212     0.17089519    -0.10824197     0.02420862
+      14       0.00048943    -0.00602941     0.00381892    -0.00085411
+      15      -0.00083158     0.01024445    -0.00648865     0.00145121
+      16       0.00095888    -0.01181276     0.00748199    -0.00167337
+      17      -0.00083766     0.01031944    -0.00653615     0.00146183
+      18       0.00033306    -0.00410308     0.00259882    -0.00058123
+      19       0.00025392    -0.00312818     0.00198133    -0.00044313
+      20      -0.00612070     0.07540287    -0.04775884     0.01068140
+      21       0.00277373    -0.03417042     0.02164294    -0.00484050
+      22       0.00368496    -0.04539625     0.02875318    -0.00643073
+      23       0.00021822    -0.00268837     0.00170277    -0.00038083
+      24      -0.00047635     0.00586825    -0.00371685     0.00083128
+      25       0.00123029    -0.01515638     0.00959978    -0.00214702
+      26      -0.00043825     0.00539891    -0.00341957     0.00076480
+      27      -0.00010902     0.00134311    -0.00085070     0.00019026
+      28       0.00018334    -0.00225865     0.00143059    -0.00031996
+      29      -0.00167098     0.02058540    -0.01303843     0.00291608
+      30      -0.00046852     0.00577183    -0.00365577     0.00081762
+      31       0.00153262    -0.01888084     0.01195879    -0.00267462
+      32      -0.00003447     0.00042471    -0.00026900     0.00006016
+      33       0.00030916    -0.00380865     0.00241233    -0.00053952
+      34       0.00269371    -0.03318465     0.02101857    -0.00470086
+      35       0.01898322    -0.23386046     0.14812305    -0.03312813
+      36      -0.00036839     0.00453838    -0.00287453     0.00064290
+      37       0.00005538    -0.00068219     0.00043209    -0.00009664
+      38       0.00033375    -0.00411163     0.00260423    -0.00058244
+      39       0.00160862    -0.01981707     0.01255178    -0.00280724
+      40      -0.00001714     0.00021119    -0.00013377     0.00002992
+      41      -0.00047869     0.00589708    -0.00373510     0.00083537
+      42       0.00711749    -0.08768263     0.05553662    -0.01242092
+      43      -0.00123029     0.01515638    -0.00959978     0.00214702
+      44       0.00510490    -0.06288893     0.03983273    -0.00890870
+
+               Column  29     Column  30     Column  31     Column  32
+       1      -0.00327935     0.00215914    -0.00083859     0.00004189
+       2      -0.76874805     0.50614837    -0.19658411     0.00982106
+       3      -0.00640550     0.00421742    -0.00163801     0.00008183
+       4      -0.28512784     0.18772990    -0.07291284     0.00364262
+       5      -0.00568142     0.00374068    -0.00145285     0.00007258
+       6       0.01599896    -0.01053381     0.00409125    -0.00020439
+       7       1.23109365    -0.81055951     0.31481505    -0.01572770
+       8       0.00610580    -0.00402010     0.00156138    -0.00007800
+       9      -0.00109848     0.00072325    -0.00028090     0.00001403
+      10       0.05273489    -0.03472097     0.01348536    -0.00067371
+      11      -0.10408286     0.06852878    -0.02661605     0.00132970
+      12      -0.08505747     0.05600235    -0.02175088     0.00108664
+      13       0.21541282    -0.14182910     0.05508533    -0.00275198
+      14      -0.00760005     0.00500392    -0.00194348     0.00009709
+      15       0.01291309    -0.00850206     0.00330213    -0.00016497
+      16      -0.01488994     0.00980363    -0.00380765     0.00019022
+      17       0.01300761    -0.00856429     0.00332630    -0.00016618
+      18      -0.00517192     0.00340522    -0.00132256     0.00006607
+      19      -0.00394306     0.00259614    -0.00100832     0.00005037
+      20       0.09504507    -0.06257825     0.02430491    -0.00121424
+      21      -0.04307171     0.02835867    -0.01101429     0.00055026
+      22      -0.05722182     0.03767519    -0.01463275     0.00073103
+      23      -0.00338869     0.00223113    -0.00086655     0.00004329
+      24       0.00739691    -0.00487017     0.00189154    -0.00009450
+      25      -0.01910456     0.01257856    -0.00488542     0.00024407
+      26       0.00680530    -0.00448065     0.00174025    -0.00008694
+      27       0.00169298    -0.00111467     0.00043293    -0.00002163
+      28      -0.00284702     0.00187450    -0.00072804     0.00003637
+      29       0.02594783    -0.01708421     0.00663537    -0.00033149
+      30       0.00727537    -0.00479015     0.00186046    -0.00009295
+      31      -0.02379924     0.01566956    -0.00608594     0.00030404
+      32       0.00053534    -0.00035247     0.00013690    -0.00000684
+      33      -0.00480079     0.00316087    -0.00122766     0.00006133
+      34      -0.04182915     0.02754056    -0.01069654     0.00053438
+      35      -0.29478032     0.19408515    -0.07538117     0.00376593
+      36       0.00572061    -0.00376648     0.00146287    -0.00007308
+      37      -0.00085990     0.00056616    -0.00021989     0.00001099
+      38      -0.00518269     0.00341232    -0.00132532     0.00006621
+      39      -0.02497935     0.01644656    -0.00638772     0.00031912
+      40       0.00026621    -0.00017527     0.00006808    -0.00000340
+      41       0.00743325    -0.00489409     0.00190083    -0.00009496
+      42      -0.11052366     0.07276945    -0.02826309     0.00141198
+      43       0.01910457    -0.01257856     0.00488542    -0.00024407
+      44      -0.07927129     0.05219270    -0.02027124     0.00101272
+
+               Column  33     Column  34     Column  35     Column  36
+       1      -0.00025016     0.00052138    -0.00186691    -0.00037177
+       2      -0.05864331     0.12222149    -0.43764182    -0.08714998
+       3      -0.00048864     0.00101840    -0.00364660    -0.00072617
+       4      -0.02175074     0.04533182    -0.16232089    -0.03232384
+       5      -0.00043340     0.00090328    -0.00323439    -0.00064408
+       6       0.00122047    -0.00254364     0.00910807     0.00181374
+       7       0.09391296    -0.19572876     0.70085129     0.13956431
+       8       0.00046578    -0.00097075     0.00347598     0.00069219
+       9      -0.00008380     0.00017464    -0.00062536    -0.00012453
+      10       0.00402284    -0.00838420     0.03002153     0.00597835
+      11      -0.00793987     0.01654789    -0.05925350    -0.01179947
+      12      -0.00648854     0.01352309    -0.04842250    -0.00964264
+      13       0.01643259    -0.03424799     0.12263271     0.02442052
+      14      -0.00057976     0.00120831    -0.00432664    -0.00086159
+      15       0.00098506    -0.00205302     0.00735132     0.00146391
+      16      -0.00113587     0.00236732    -0.00847672    -0.00168801
+      17       0.00099228    -0.00206805     0.00740513     0.00147462
+      18      -0.00039454     0.00082227    -0.00294433    -0.00058632
+      19      -0.00030079     0.00062690    -0.00224475    -0.00044701
+      20       0.00725043    -0.01511100     0.05410836     0.01077489
+      21      -0.00328569     0.00684787    -0.02452036    -0.00488287
+      22      -0.00436512     0.00909757    -0.03257590    -0.00648702
+      23      -0.00025850     0.00053876    -0.00192915    -0.00038416
+      24       0.00056427    -0.00117602     0.00421100     0.00083856
+      25      -0.00145738     0.00303739    -0.01087607    -0.00216581
+      26       0.00051914    -0.00108196     0.00387420     0.00077149
+      27       0.00012915    -0.00026916     0.00096380     0.00019193
+      28      -0.00021718     0.00045264    -0.00162079    -0.00032276
+      29       0.00197941    -0.00412539     0.01477188     0.00294160
+      30       0.00055500    -0.00115669     0.00414181     0.00082478
+      31      -0.00181551     0.00378379    -0.01354871    -0.00269803
+      32       0.00004084    -0.00008511     0.00030477     0.00006069
+      33      -0.00036622     0.00076327    -0.00273305    -0.00054425
+      34      -0.00319090     0.00665032    -0.02381298    -0.00474201
+      35      -0.02248707     0.04686645    -0.16781597    -0.03341810
+      36       0.00043639    -0.00090951     0.00325669     0.00064852
+      37      -0.00006560     0.00013671    -0.00048953    -0.00009748
+      38      -0.00039536     0.00082398    -0.00295046    -0.00058754
+      39      -0.00190553     0.00397141    -0.01422053    -0.00283181
+      40       0.00002031    -0.00004232     0.00015155     0.00003018
+      41       0.00056704    -0.00118179     0.00423169     0.00084268
+      42      -0.00843121     0.01757190    -0.06292019    -0.01252964
+      43       0.00145738    -0.00303739     0.01087607     0.00216581
+      44      -0.00604714     0.01260316    -0.04512848    -0.00898668
+
+               Column  37     Column  38     Column  39     Column  40
+       1       0.00405025     0.00079657     0.00075403    -0.00970998
+       2       0.94946266     0.18673209     0.17676120    -2.27622437
+       3       0.00791129     0.00155592     0.00147284    -0.01896637
+       4       0.35215470     0.06925874     0.06556055    -0.84424923
+       5       0.00701699     0.00138004     0.00130635    -0.01682241
+       6      -0.01975993    -0.00388621    -0.00367870     0.04737211
+       7      -1.52049485    -0.29903775    -0.28307011     3.64520648
+       8      -0.00754113    -0.00148313    -0.00140393     0.01807898
+       9       0.00135671     0.00026683     0.00025258    -0.00325254
+      10      -0.06513162    -0.01280952    -0.01212554     0.15614536
+      11       0.12855029     0.02528216     0.02393217    -0.30818411
+      12       0.10505248     0.02066081     0.01955759    -0.25185090
+      13      -0.26605131    -0.05232467    -0.04953070     0.63782654
+      14       0.00938664     0.00184608     0.00174751    -0.02250336
+      15      -0.01594866    -0.00313664    -0.00296916     0.03823503
+      16       0.01839021     0.00361683     0.00342370    -0.04408836
+      17      -0.01606540    -0.00315960    -0.00299089     0.03851489
+      18       0.00638772     0.00125628     0.00118920    -0.01531379
+      19       0.00486998     0.00095779     0.00090664    -0.01167521
+      20      -0.11738793    -0.02308684    -0.02185408     0.28142367
+      21       0.05319685     0.01046230     0.00990364    -0.12753316
+      22       0.07067332     0.01389942     0.01315723    -0.16943093
+      23       0.00418529     0.00082313     0.00077917    -0.01003373
+      24      -0.00913575    -0.00179674    -0.00170080     0.02190189
+      25       0.02359560     0.00464058     0.00439279    -0.05656766
+      26      -0.00840507    -0.00165304    -0.00156477     0.02015016
+      27      -0.00209096    -0.00041123    -0.00038927     0.00501284
+      28       0.00351629     0.00069155     0.00065463    -0.00842989
+      29      -0.03204756    -0.00630284    -0.00596628     0.07683022
+      30      -0.00898563    -0.00176722    -0.00167285     0.02154200
+      31       0.02939388     0.00578093     0.00547225    -0.07046835
+      32      -0.00066119    -0.00013004    -0.00012309     0.00158512
+      33       0.00592934     0.00116613     0.00110386    -0.01421490
+      34       0.05166219     0.01016047     0.00961794    -0.12385400
+      35       0.36407625     0.07160336     0.06777998    -0.87282973
+      36      -0.00706539    -0.00138956    -0.00131536     0.01693844
+      37       0.00106204     0.00020887     0.00019772    -0.00254612
+      38       0.00640102     0.00125890     0.00119168    -0.01534569
+      39       0.03085141     0.00606759     0.00574360    -0.07396260
+      40      -0.00032879    -0.00006466    -0.00006121     0.00078824
+      41      -0.00918063    -0.00180557    -0.00170916     0.02200947
+      42       0.13650518     0.02684666     0.02541313    -0.32725501
+      43      -0.02359560    -0.00464058    -0.00439279     0.05656767
+      44       0.09790611     0.01925532     0.01822715    -0.23471830
+
+               Column  41     Column  42     Column  43     Column  44
+       1      -0.00192947    -0.00013499    -0.00927226    -0.00244421
+       2      -0.45230798    -0.03164520    -2.17361276    -0.57297337
+       3      -0.00376880    -0.00026368    -0.01811137    -0.00477423
+       4      -0.16776056    -0.01173717    -0.80619069    -0.21251522
+       5      -0.00334278    -0.00023387    -0.01606406    -0.00423455
+       6       0.00941330     0.00065859     0.04523658     0.01192455
+       7       0.72433808     0.05067747     3.48088151     0.91757485
+       8       0.00359247     0.00025134     0.01726398     0.00455086
+       9      -0.00064631    -0.00004522    -0.00310592    -0.00081873
+      10       0.03102761     0.00217081     0.14910637     0.03930506
+      11      -0.06123919    -0.00428453    -0.29429125    -0.07757640
+      12      -0.05004523    -0.00350136    -0.24049752    -0.06339615
+      13       0.12674235     0.00886738     0.60907348     0.16055430
+      14      -0.00447164    -0.00031285    -0.02148892    -0.00566457
+      15       0.00759767     0.00053156     0.03651140     0.00962456
+      16      -0.00876079    -0.00061294    -0.04210087    -0.01109796
+      17       0.00765328     0.00053545     0.03677865     0.00969501
+      18      -0.00304300    -0.00021290    -0.01462345    -0.00385480
+      19      -0.00231998    -0.00016231    -0.01114889    -0.00293889
+      20       0.05592163     0.00391249     0.26873717     0.07084024
+      21      -0.02534208    -0.00177303    -0.12178399    -0.03210277
+      22      -0.03366758    -0.00235551    -0.16179302    -0.04264931
+      23      -0.00199380    -0.00013949    -0.00958141    -0.00252570
+      24       0.00435212     0.00030449     0.02091456     0.00551316
+      25      -0.01124054    -0.00078643    -0.05401760    -0.01423926
+      26       0.00400403     0.00028014     0.01924180     0.00507222
+      27       0.00099610     0.00006969     0.00478686     0.00126184
+      28      -0.00167510    -0.00011720    -0.00804987    -0.00212198
+      29       0.01526691     0.00106813     0.07336674     0.01933978
+      30       0.00428060     0.00029949     0.02057089     0.00542257
+      31      -0.01400275    -0.00097969    -0.06729165    -0.01773836
+      32       0.00031498     0.00002204     0.00151366     0.00039901
+      33      -0.00282464    -0.00019762    -0.01357409    -0.00357819
+      34      -0.02461100    -0.00172188    -0.11827069    -0.03117665
+      35      -0.17343978    -0.01213451    -0.83348279    -0.21970953
+      36       0.00336583     0.00023549     0.01617486     0.00426376
+      37      -0.00050594    -0.00003540    -0.00243134    -0.00064091
+      38      -0.00304934    -0.00021334    -0.01465391    -0.00386283
+      39      -0.01469709    -0.00102826    -0.07062839    -0.01861794
+      40       0.00015663     0.00001096     0.00075270     0.00019842
+      41       0.00437350     0.00030599     0.02101729     0.00554024
+      42      -0.06502876    -0.00454966    -0.31250243    -0.08237694
+      43       0.01124055     0.00078643     0.05401761     0.01423927
+      44      -0.04664082    -0.00326317    -0.22413726    -0.05908352
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  17.79 seconds
+ >>> wall Time used in Jengine         is   1.77 seconds
+ >>>  CPU Time used in st-Kbuild       is   9.54 seconds
+ >>> wall Time used in st-Kbuild       is   1.10 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  32.17 seconds
+ >>> wall Time used in Jengine         is   2.63 seconds
+ >>>  CPU Time used in st-Kbuild       is  15.28 seconds
+ >>> wall Time used in st-Kbuild       is   1.04 seconds
+ >>>  CPU Time used in LINTRA          is   0 hours  1 minute  15 seconds
+ >>> wall Time used in LINTRA          is   6.60 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Response convergence threshold is  1.000000000000000E-004
+Residual norm for vector   1 is:   0.848955E-01    and eigenvalue =   0.32408277   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1331758522E+00
+          Preconditioning: Error of red space iteration  2:  0.5719348292E-01
+          Preconditioning: Error of red space iteration  3:  0.3729161514E-01
+          Preconditioning: Error of red space iteration  4:  0.2613558248E-01
+          Preconditioning: Error of red space iteration  5:  0.1796364204E-01
+          Preconditioning: Error of red space iteration  6:  0.1178350415E-01
+          Preconditioning: Error of red space iteration  7:  0.7216614841E-02
+          Preconditioning: Error of red space iteration  8:  0.5493933751E-02
+          Preconditioning: Error of red space iteration  9:  0.4059401262E-02
+          Preconditioning: Error of red space iteration 10:  0.2637100981E-02
+          Preconditioning: Error of red space iteration 11:  0.1795698145E-02
+          Preconditioning: Error of red space iteration 12:  0.1037299427E-02
+          Preconditioning: Error of red space iteration 13:  0.6749437212E-03
+     Preconditioning: Linear equations converged in 13 iterations!
+Residual norm for vector   2 is:   0.115845E+00    and eigenvalue =   0.43045845   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1783274990E+00
+          Preconditioning: Error of red space iteration  2:  0.1095189049E+00
+          Preconditioning: Error of red space iteration  3:  0.8586160052E-01
+          Preconditioning: Error of red space iteration  4:  0.5202649377E-01
+          Preconditioning: Error of red space iteration  5:  0.3478812019E-01
+          Preconditioning: Error of red space iteration  6:  0.2371487793E-01
+          Preconditioning: Error of red space iteration  7:  0.1544091878E-01
+          Preconditioning: Error of red space iteration  8:  0.8797851715E-02
+          Preconditioning: Error of red space iteration  9:  0.5831955549E-02
+          Preconditioning: Error of red space iteration 10:  0.4134718996E-02
+          Preconditioning: Error of red space iteration 11:  0.3634261202E-02
+          Preconditioning: Error of red space iteration 12:  0.2545189881E-02
+          Preconditioning: Error of red space iteration 13:  0.2271511579E-02
+          Preconditioning: Error of red space iteration 14:  0.1915628622E-02
+          Preconditioning: Error of red space iteration 15:  0.1310661331E-02
+     Preconditioning: Linear equations converged in 15 iterations!
+ >>>  CPU Time used in RSP_IT          is   0 hours  1 minute  19 seconds
+ >>> wall Time used in RSP_IT          is   6.91 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  29.35 seconds
+ >>> wall Time used in Jengine         is   2.53 seconds
+ >>>  CPU Time used in st-Kbuild       is  12.90 seconds
+ >>> wall Time used in st-Kbuild       is   0.86 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  14.28 seconds
+ >>> wall Time used in Jengine         is   0.95 seconds
+ >>>  CPU Time used in st-Kbuild       is  10.62 seconds
+ >>> wall Time used in st-Kbuild       is   1.09 seconds
+ >>>  CPU Time used in LINTRA          is   0 hours  1 minute   8 seconds
+ >>> wall Time used in LINTRA          is   5.48 seconds
+ omega in build_reduc..   0.324082767533848     
+Residual norm for vector   1 is:   0.320392E-01    and eigenvalue =   0.31659279   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.5239079427E-01
+          Preconditioning: Error of red space iteration  2:  0.2934228375E-01
+          Preconditioning: Error of red space iteration  3:  0.2089398772E-01
+          Preconditioning: Error of red space iteration  4:  0.1486257798E-01
+          Preconditioning: Error of red space iteration  5:  0.1011616301E-01
+          Preconditioning: Error of red space iteration  6:  0.6965843307E-02
+          Preconditioning: Error of red space iteration  7:  0.4352758607E-02
+          Preconditioning: Error of red space iteration  8:  0.3104751563E-02
+          Preconditioning: Error of red space iteration  9:  0.1945965165E-02
+          Preconditioning: Error of red space iteration 10:  0.1212593994E-02
+          Preconditioning: Error of red space iteration 11:  0.7767329486E-03
+          Preconditioning: Error of red space iteration 12:  0.4918775507E-03
+          Preconditioning: Error of red space iteration 13:  0.2781682356E-03
+     Preconditioning: Linear equations converged in 13 iterations!
+Residual norm for vector   2 is:   0.877863E-01    and eigenvalue =   0.40928034   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1396350142E+00
+          Preconditioning: Error of red space iteration  2:  0.6840497698E-01
+          Preconditioning: Error of red space iteration  3:  0.5391257964E-01
+          Preconditioning: Error of red space iteration  4:  0.3667543660E-01
+          Preconditioning: Error of red space iteration  5:  0.2330935967E-01
+          Preconditioning: Error of red space iteration  6:  0.1346257553E-01
+          Preconditioning: Error of red space iteration  7:  0.7498369335E-02
+          Preconditioning: Error of red space iteration  8:  0.5260225881E-02
+          Preconditioning: Error of red space iteration  9:  0.4421473044E-02
+          Preconditioning: Error of red space iteration 10:  0.3392826443E-02
+          Preconditioning: Error of red space iteration 11:  0.3195214073E-02
+          Preconditioning: Error of red space iteration 12:  0.2004958695E-02
+          Preconditioning: Error of red space iteration 13:  0.1299041684E-02
+          Preconditioning: Error of red space iteration 14:  0.8536305650E-03
+     Preconditioning: Linear equations converged in 14 iterations!
+ >>>  CPU Time used in RSP_IT          is   0 hours  1 minute  10 seconds
+ >>> wall Time used in RSP_IT          is   5.78 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  11.66 seconds
+ >>> wall Time used in Jengine         is   1.27 seconds
+ >>>  CPU Time used in st-Kbuild       is  12.39 seconds
+ >>> wall Time used in st-Kbuild       is   0.87 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  13.88 seconds
+ >>> wall Time used in Jengine         is   1.08 seconds
+ >>>  CPU Time used in st-Kbuild       is   8.72 seconds
+ >>> wall Time used in st-Kbuild       is   0.91 seconds
+ >>>  CPU Time used in LINTRA          is  47.22 seconds
+ >>> wall Time used in LINTRA          is   4.18 seconds
+ omega in build_reduc..   0.316592785722618     
+Residual norm for vector   1 is:   0.274941E-01    and eigenvalue =   0.31539794   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4613716985E-01
+          Preconditioning: Error of red space iteration  2:  0.2420723720E-01
+          Preconditioning: Error of red space iteration  3:  0.1756838079E-01
+          Preconditioning: Error of red space iteration  4:  0.1417567897E-01
+          Preconditioning: Error of red space iteration  5:  0.1116159457E-01
+          Preconditioning: Error of red space iteration  6:  0.7345094323E-02
+          Preconditioning: Error of red space iteration  7:  0.4046631763E-02
+          Preconditioning: Error of red space iteration  8:  0.2153322350E-02
+          Preconditioning: Error of red space iteration  9:  0.1227084097E-02
+          Preconditioning: Error of red space iteration 10:  0.8682930246E-03
+          Preconditioning: Error of red space iteration 11:  0.5632755191E-03
+          Preconditioning: Error of red space iteration 12:  0.3467973751E-03
+          Preconditioning: Error of red space iteration 13:  0.2066671150E-03
+     Preconditioning: Linear equations converged in 13 iterations!
+Residual norm for vector   2 is:   0.614676E-01    and eigenvalue =   0.40322888   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1096537028E+00
+          Preconditioning: Error of red space iteration  2:  0.5057638597E-01
+          Preconditioning: Error of red space iteration  3:  0.3332710810E-01
+          Preconditioning: Error of red space iteration  4:  0.2668358266E-01
+          Preconditioning: Error of red space iteration  5:  0.2414328429E-01
+          Preconditioning: Error of red space iteration  6:  0.1904800356E-01
+          Preconditioning: Error of red space iteration  7:  0.1335934997E-01
+          Preconditioning: Error of red space iteration  8:  0.9291989505E-02
+          Preconditioning: Error of red space iteration  9:  0.6326261606E-02
+          Preconditioning: Error of red space iteration 10:  0.4736134083E-02
+          Preconditioning: Error of red space iteration 11:  0.3248210361E-02
+          Preconditioning: Error of red space iteration 12:  0.1869569299E-02
+          Preconditioning: Error of red space iteration 13:  0.1175045533E-02
+          Preconditioning: Error of red space iteration 14:  0.6763107062E-03
+     Preconditioning: Linear equations converged in 14 iterations!
+ >>>  CPU Time used in RSP_IT          is  50.19 seconds
+ >>> wall Time used in RSP_IT          is   4.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  13.14 seconds
+ >>> wall Time used in Jengine         is   1.26 seconds
+ >>>  CPU Time used in st-Kbuild       is  13.02 seconds
+ >>> wall Time used in st-Kbuild       is   0.87 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  12.62 seconds
+ >>> wall Time used in Jengine         is   1.31 seconds
+ >>>  CPU Time used in st-Kbuild       is   8.75 seconds
+ >>> wall Time used in st-Kbuild       is   0.91 seconds
+ >>>  CPU Time used in LINTRA          is  48.14 seconds
+ >>> wall Time used in LINTRA          is   4.40 seconds
+ omega in build_reduc..   0.315397938842295     
+Residual norm for vector   1 is:   0.283588E-01    and eigenvalue =   0.31439272   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4563329779E-01
+          Preconditioning: Error of red space iteration  2:  0.2015232635E-01
+          Preconditioning: Error of red space iteration  3:  0.1484025818E-01
+          Preconditioning: Error of red space iteration  4:  0.1233590160E-01
+          Preconditioning: Error of red space iteration  5:  0.7788007303E-02
+          Preconditioning: Error of red space iteration  6:  0.5032374576E-02
+          Preconditioning: Error of red space iteration  7:  0.4152340862E-02
+          Preconditioning: Error of red space iteration  8:  0.2792547692E-02
+          Preconditioning: Error of red space iteration  9:  0.1630739492E-02
+          Preconditioning: Error of red space iteration 10:  0.1075566786E-02
+          Preconditioning: Error of red space iteration 11:  0.5968141508E-03
+          Preconditioning: Error of red space iteration 12:  0.3368589141E-03
+     Preconditioning: Linear equations converged in 12 iterations!
+Residual norm for vector   2 is:   0.211223E+00    and eigenvalue =   0.37430756   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3414008351E+00
+          Preconditioning: Error of red space iteration  2:  0.1570515278E+00
+          Preconditioning: Error of red space iteration  3:  0.1262481035E+00
+          Preconditioning: Error of red space iteration  4:  0.1144852194E+00
+          Preconditioning: Error of red space iteration  5:  0.7389378254E-01
+          Preconditioning: Error of red space iteration  6:  0.5102759759E-01
+          Preconditioning: Error of red space iteration  7:  0.4237579110E-01
+          Preconditioning: Error of red space iteration  8:  0.3193250973E-01
+          Preconditioning: Error of red space iteration  9:  0.1910212077E-01
+          Preconditioning: Error of red space iteration 10:  0.1285325706E-01
+          Preconditioning: Error of red space iteration 11:  0.7541035190E-02
+          Preconditioning: Error of red space iteration 12:  0.4776246839E-02
+          Preconditioning: Error of red space iteration 13:  0.2697429416E-02
+          Preconditioning: Error of red space iteration 14:  0.1698784742E-02
+     Preconditioning: Linear equations converged in 14 iterations!
+ >>>  CPU Time used in RSP_IT          is  50.63 seconds
+ >>> wall Time used in RSP_IT          is   4.86 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  14.31 seconds
+ >>> wall Time used in Jengine         is   1.02 seconds
+ >>>  CPU Time used in st-Kbuild       is  11.56 seconds
+ >>> wall Time used in st-Kbuild       is   0.87 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  12.72 seconds
+ >>> wall Time used in Jengine         is   1.46 seconds
+ >>>  CPU Time used in st-Kbuild       is  11.40 seconds
+ >>> wall Time used in st-Kbuild       is   0.88 seconds
+ >>>  CPU Time used in LINTRA          is  50.43 seconds
+ >>> wall Time used in LINTRA          is   4.28 seconds
+ omega in build_reduc..   0.314392719121371     
+Residual norm for vector   1 is:   0.192030E-01    and eigenvalue =   0.31337768   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4214858695E-01
+          Preconditioning: Error of red space iteration  2:  0.1422727581E-01
+          Preconditioning: Error of red space iteration  3:  0.9468025365E-02
+          Preconditioning: Error of red space iteration  4:  0.6305767687E-02
+          Preconditioning: Error of red space iteration  5:  0.4122423955E-02
+          Preconditioning: Error of red space iteration  6:  0.2503408712E-02
+          Preconditioning: Error of red space iteration  7:  0.1514383034E-02
+          Preconditioning: Error of red space iteration  8:  0.9397485879E-03
+          Preconditioning: Error of red space iteration  9:  0.6105777946E-03
+          Preconditioning: Error of red space iteration 10:  0.4248005786E-03
+          Preconditioning: Error of red space iteration 11:  0.3507360182E-03
+          Preconditioning: Error of red space iteration 12:  0.2232185913E-03
+     Preconditioning: Linear equations converged in 12 iterations!
+Residual norm for vector   2 is:   0.806279E-01    and eigenvalue =   0.34125196   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1908078158E+00
+          Preconditioning: Error of red space iteration  2:  0.6339799150E-01
+          Preconditioning: Error of red space iteration  3:  0.4212638049E-01
+          Preconditioning: Error of red space iteration  4:  0.2967642436E-01
+          Preconditioning: Error of red space iteration  5:  0.2017709260E-01
+          Preconditioning: Error of red space iteration  6:  0.1323276083E-01
+          Preconditioning: Error of red space iteration  7:  0.8029213114E-02
+          Preconditioning: Error of red space iteration  8:  0.5004459173E-02
+          Preconditioning: Error of red space iteration  9:  0.3365082973E-02
+          Preconditioning: Error of red space iteration 10:  0.2446642852E-02
+          Preconditioning: Error of red space iteration 11:  0.2006135927E-02
+          Preconditioning: Error of red space iteration 12:  0.1322918765E-02
+          Preconditioning: Error of red space iteration 13:  0.7841513289E-03
+     Preconditioning: Linear equations converged in 13 iterations!
+ >>>  CPU Time used in RSP_IT          is  54.39 seconds
+ >>> wall Time used in RSP_IT          is   4.54 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  12.16 seconds
+ >>> wall Time used in Jengine         is   0.88 seconds
+ >>>  CPU Time used in st-Kbuild       is   8.68 seconds
+ >>> wall Time used in st-Kbuild       is   0.93 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   1.87 seconds
+ >>> wall Time used in Jengine         is   0.35 seconds
+ >>>  CPU Time used in st-Kbuild       is   9.45 seconds
+ >>> wall Time used in st-Kbuild       is   0.90 seconds
+ >>>  CPU Time used in LINTRA          is  32.68 seconds
+ >>> wall Time used in LINTRA          is   3.11 seconds
+ omega in build_reduc..   0.313377683986793     
+Residual norm for vector   1 is:   0.518040E-02    and eigenvalue =   0.31310435   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1577357899E-01
+          Preconditioning: Error of red space iteration  2:  0.4626947867E-02
+          Preconditioning: Error of red space iteration  3:  0.2917569719E-02
+          Preconditioning: Error of red space iteration  4:  0.1906984510E-02
+          Preconditioning: Error of red space iteration  5:  0.1150546361E-02
+          Preconditioning: Error of red space iteration  6:  0.6752401087E-03
+          Preconditioning: Error of red space iteration  7:  0.3845054600E-03
+          Preconditioning: Error of red space iteration  8:  0.2117628004E-03
+          Preconditioning: Error of red space iteration  9:  0.1274489945E-03
+          Preconditioning: Error of red space iteration 10:  0.7673266365E-04
+     Preconditioning: Linear equations converged in 10 iterations!
+Residual norm for vector   2 is:   0.224847E-01    and eigenvalue =   0.33665988   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.7372322429E-01
+          Preconditioning: Error of red space iteration  2:  0.2050414526E-01
+          Preconditioning: Error of red space iteration  3:  0.1357221308E-01
+          Preconditioning: Error of red space iteration  4:  0.9101848278E-02
+          Preconditioning: Error of red space iteration  5:  0.5670862034E-02
+          Preconditioning: Error of red space iteration  6:  0.3503141045E-02
+          Preconditioning: Error of red space iteration  7:  0.2179822071E-02
+          Preconditioning: Error of red space iteration  8:  0.1334005425E-02
+          Preconditioning: Error of red space iteration  9:  0.8712128541E-03
+          Preconditioning: Error of red space iteration 10:  0.5307366330E-03
+          Preconditioning: Error of red space iteration 11:  0.3409266856E-03
+          Preconditioning: Error of red space iteration 12:  0.2022715587E-03
+     Preconditioning: Linear equations converged in 12 iterations!
+ >>>  CPU Time used in RSP_IT          is  36.05 seconds
+ >>> wall Time used in RSP_IT          is   3.33 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  13.95 seconds
+ >>> wall Time used in Jengine         is   0.93 seconds
+ >>>  CPU Time used in st-Kbuild       is   9.86 seconds
+ >>> wall Time used in st-Kbuild       is   0.90 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  11.04 seconds
+ >>> wall Time used in Jengine         is   1.00 seconds
+ >>>  CPU Time used in st-Kbuild       is  10.34 seconds
+ >>> wall Time used in st-Kbuild       is   0.88 seconds
+ >>>  CPU Time used in LINTRA          is  45.76 seconds
+ >>> wall Time used in LINTRA          is   3.76 seconds
+ omega in build_reduc..   0.313104346629597     
+Residual norm for vector   1 is:   0.136940E-02    and eigenvalue =   0.31308375   It =   7 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4028351153E-02
+          Preconditioning: Error of red space iteration  2:  0.1151695732E-02
+          Preconditioning: Error of red space iteration  3:  0.8971986059E-03
+          Preconditioning: Error of red space iteration  4:  0.5691682466E-03
+          Preconditioning: Error of red space iteration  5:  0.2993980407E-03
+          Preconditioning: Error of red space iteration  6:  0.1939640817E-03
+          Preconditioning: Error of red space iteration  7:  0.9978222759E-04
+          Preconditioning: Error of red space iteration  8:  0.6128863241E-04
+          Preconditioning: Error of red space iteration  9:  0.5152721612E-04
+          Preconditioning: Error of red space iteration 10:  0.4350630712E-04
+          Preconditioning: Error of red space iteration 11:  0.4119244188E-04
+          Preconditioning: Error of red space iteration 12:  0.3825639871E-04
+          Preconditioning: Error of red space iteration 13:  0.3579095652E-04
+          Preconditioning: Error of red space iteration 14:  0.3327665986E-04
+          Preconditioning: Error of red space iteration 15:  0.3167115463E-04
+          Preconditioning: Error of red space iteration 16:  0.2999878836E-04
+          Preconditioning: Error of red space iteration 17:  0.2902116153E-04
+          Preconditioning: Error of red space iteration 18:  0.2828879588E-04
+          Preconditioning: Error of red space iteration 19:  0.2728938239E-04
+ Warning: Max. no of iterations reached, exiting
+Residual norm for vector   2 is:   0.717990E-02    and eigenvalue =   0.33626105   It =   7 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1910679204E-01
+          Preconditioning: Error of red space iteration  2:  0.6360304522E-02
+          Preconditioning: Error of red space iteration  3:  0.4600693748E-02
+          Preconditioning: Error of red space iteration  4:  0.2943655223E-02
+          Preconditioning: Error of red space iteration  5:  0.1576128197E-02
+          Preconditioning: Error of red space iteration  6:  0.1041279197E-02
+          Preconditioning: Error of red space iteration  7:  0.5396601259E-03
+          Preconditioning: Error of red space iteration  8:  0.3374454524E-03
+          Preconditioning: Error of red space iteration  9:  0.2191800801E-03
+          Preconditioning: Error of red space iteration 10:  0.1431809962E-03
+          Preconditioning: Error of red space iteration 11:  0.8685367056E-04
+     Preconditioning: Linear equations converged in 11 iterations!
+ >>>  CPU Time used in RSP_IT          is  52.15 seconds
+ >>> wall Time used in RSP_IT          is   4.18 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  14.78 seconds
+ >>> wall Time used in Jengine         is   1.29 seconds
+ >>>  CPU Time used in st-Kbuild       is   8.76 seconds
+ >>> wall Time used in st-Kbuild       is   0.91 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  11.58 seconds
+ >>> wall Time used in Jengine         is   1.03 seconds
+ >>>  CPU Time used in st-Kbuild       is  13.18 seconds
+ >>> wall Time used in st-Kbuild       is   0.88 seconds
+ >>>  CPU Time used in LINTRA          is  48.89 seconds
+ >>> wall Time used in LINTRA          is   4.17 seconds
+ omega in build_reduc..   0.313083745602747     
+Residual norm for vector   1 is:   0.370376E-03    and eigenvalue =   0.31308223   It =   8 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1150235149E-02
+          Preconditioning: Error of red space iteration  2:  0.3353197227E-03
+          Preconditioning: Error of red space iteration  3:  0.2413366082E-03
+          Preconditioning: Error of red space iteration  4:  0.1482810255E-03
+          Preconditioning: Error of red space iteration  5:  0.9537634368E-04
+          Preconditioning: Error of red space iteration  6:  0.5736572448E-04
+          Preconditioning: Error of red space iteration  7:  0.4754848607E-04
+          Preconditioning: Error of red space iteration  8:  0.4385259451E-04
+          Preconditioning: Error of red space iteration  9:  0.3865567233E-04
+          Preconditioning: Error of red space iteration 10:  0.3566310883E-04
+          Preconditioning: Error of red space iteration 11:  0.3342642401E-04
+          Preconditioning: Error of red space iteration 12:  0.3179200227E-04
+          Preconditioning: Error of red space iteration 13:  0.3023189210E-04
+          Preconditioning: Error of red space iteration 14:  0.2900912236E-04
+          Preconditioning: Error of red space iteration 15:  0.2870125732E-04
+          Preconditioning: Error of red space iteration 16:  0.2818509894E-04
+          Preconditioning: Error of red space iteration 17:  0.2749490772E-04
+          Preconditioning: Error of red space iteration 18:  0.2695065552E-04
+          Preconditioning: Error of red space iteration 19:  0.2627525805E-04
+ Warning: Max. no of iterations reached, exiting
+Residual norm for vector   2 is:   0.209012E-02    and eigenvalue =   0.33622077   It =   8 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.5928662517E-02
+          Preconditioning: Error of red space iteration  2:  0.1724057250E-02
+          Preconditioning: Error of red space iteration  3:  0.1209500582E-02
+          Preconditioning: Error of red space iteration  4:  0.7323093827E-03
+          Preconditioning: Error of red space iteration  5:  0.4652418288E-03
+          Preconditioning: Error of red space iteration  6:  0.2702450827E-03
+          Preconditioning: Error of red space iteration  7:  0.1742676600E-03
+          Preconditioning: Error of red space iteration  8:  0.9740772262E-04
+          Preconditioning: Error of red space iteration  9:  0.6369955885E-04
+          Preconditioning: Error of red space iteration 10:  0.5945508817E-04
+          Preconditioning: Error of red space iteration 11:  0.5592157316E-04
+          Preconditioning: Error of red space iteration 12:  0.5219115095E-04
+          Preconditioning: Error of red space iteration 13:  0.4793245177E-04
+          Preconditioning: Error of red space iteration 14:  0.4457862927E-04
+          Preconditioning: Error of red space iteration 15:  0.4202844110E-04
+          Preconditioning: Error of red space iteration 16:  0.4062298208E-04
+          Preconditioning: Error of red space iteration 17:  0.3970138394E-04
+          Preconditioning: Error of red space iteration 18:  0.3907569465E-04
+          Preconditioning: Error of red space iteration 19:  0.3900830949E-04
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is  56.87 seconds
+ >>> wall Time used in RSP_IT          is   4.80 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  14.47 seconds
+ >>> wall Time used in Jengine         is   1.52 seconds
+ >>>  CPU Time used in st-Kbuild       is  11.25 seconds
+ >>> wall Time used in st-Kbuild       is   1.18 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  12.99 seconds
+ >>> wall Time used in Jengine         is   0.91 seconds
+ >>>  CPU Time used in st-Kbuild       is  11.79 seconds
+ >>> wall Time used in st-Kbuild       is   0.93 seconds
+ >>>  CPU Time used in LINTRA          is  51.00 seconds
+ >>> wall Time used in LINTRA          is   4.60 seconds
+ omega in build_reduc..   0.313082232585026     
+Residual norm for vector   1 is:   0.111283E-03    and eigenvalue =   0.31308214   It =   9 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2631875240E-03
+          Preconditioning: Error of red space iteration  2:  0.9056876921E-04
+          Preconditioning: Error of red space iteration  3:  0.9384631195E-04
+          Preconditioning: Error of red space iteration  4:  0.5974502244E-04
+          Preconditioning: Error of red space iteration  5:  0.5501832555E-04
+          Preconditioning: Error of red space iteration  6:  0.5238659856E-04
+          Preconditioning: Error of red space iteration  7:  0.4879888901E-04
+          Preconditioning: Error of red space iteration  8:  0.4354329768E-04
+          Preconditioning: Error of red space iteration  9:  0.3874595390E-04
+          Preconditioning: Error of red space iteration 10:  0.3528192457E-04
+          Preconditioning: Error of red space iteration 11:  0.3309347584E-04
+          Preconditioning: Error of red space iteration 12:  0.3156488644E-04
+          Preconditioning: Error of red space iteration 13:  0.3065218702E-04
+          Preconditioning: Error of red space iteration 14:  0.2999681177E-04
+          Preconditioning: Error of red space iteration 15:  0.2980896912E-04
+          Preconditioning: Error of red space iteration 16:  0.2943863655E-04
+          Preconditioning: Error of red space iteration 17:  0.2934623997E-04
+          Preconditioning: Error of red space iteration 18:  0.2921482684E-04
+          Preconditioning: Error of red space iteration 19:  0.2873410566E-04
+ Warning: Max. no of iterations reached, exiting
+Residual norm for vector   2 is:   0.576518E-03    and eigenvalue =   0.33621808   It =   9 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1254013083E-02
+          Preconditioning: Error of red space iteration  2:  0.4559232066E-03
+          Preconditioning: Error of red space iteration  3:  0.3648405901E-03
+          Preconditioning: Error of red space iteration  4:  0.2332680967E-03
+          Preconditioning: Error of red space iteration  5:  0.1477922153E-03
+          Preconditioning: Error of red space iteration  6:  0.7928190796E-04
+          Preconditioning: Error of red space iteration  7:  0.4859205549E-04
+          Preconditioning: Error of red space iteration  8:  0.4219730011E-04
+          Preconditioning: Error of red space iteration  9:  0.3814617488E-04
+          Preconditioning: Error of red space iteration 10:  0.3481006762E-04
+          Preconditioning: Error of red space iteration 11:  0.3152336049E-04
+          Preconditioning: Error of red space iteration 12:  0.2946824816E-04
+          Preconditioning: Error of red space iteration 13:  0.2856934226E-04
+          Preconditioning: Error of red space iteration 14:  0.2779757982E-04
+          Preconditioning: Error of red space iteration 15:  0.2725723523E-04
+          Preconditioning: Error of red space iteration 16:  0.2673847733E-04
+          Preconditioning: Error of red space iteration 17:  0.2654003636E-04
+          Preconditioning: Error of red space iteration 18:  0.2602115536E-04
+          Preconditioning: Error of red space iteration 19:  0.2609000362E-04
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is  59.02 seconds
+ >>> wall Time used in RSP_IT          is   5.53 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  12.64 seconds
+ >>> wall Time used in Jengine         is   1.20 seconds
+ >>>  CPU Time used in st-Kbuild       is  11.08 seconds
+ >>> wall Time used in st-Kbuild       is   0.88 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  12.31 seconds
+ >>> wall Time used in Jengine         is   0.83 seconds
+ >>>  CPU Time used in st-Kbuild       is   7.68 seconds
+ >>> wall Time used in st-Kbuild       is   0.87 seconds
+ >>>  CPU Time used in LINTRA          is  45.67 seconds
+ >>> wall Time used in LINTRA          is   3.93 seconds
+ omega in build_reduc..   0.313082135297521     
+Residual norm for vector   1 is:   0.430245E-04    and eigenvalue =   0.31308213   It =  10 CONV = T
+Residual norm for vector   2 is:   0.174298E-03    and eigenvalue =   0.33621791   It =  10 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3267488710E-03
+          Preconditioning: Error of red space iteration  2:  0.1370851823E-03
+          Preconditioning: Error of red space iteration  3:  0.1217100930E-03
+          Preconditioning: Error of red space iteration  4:  0.7666327217E-04
+          Preconditioning: Error of red space iteration  5:  0.4733166238E-04
+          Preconditioning: Error of red space iteration  6:  0.4131312634E-04
+          Preconditioning: Error of red space iteration  7:  0.3902076754E-04
+          Preconditioning: Error of red space iteration  8:  0.3754014307E-04
+          Preconditioning: Error of red space iteration  9:  0.3621825071E-04
+          Preconditioning: Error of red space iteration 10:  0.3543418562E-04
+          Preconditioning: Error of red space iteration 11:  0.3499670280E-04
+          Preconditioning: Error of red space iteration 12:  0.3423205068E-04
+          Preconditioning: Error of red space iteration 13:  0.3272746083E-04
+          Preconditioning: Error of red space iteration 14:  0.3187473441E-04
+          Preconditioning: Error of red space iteration 15:  0.3167819960E-04
+          Preconditioning: Error of red space iteration 16:  0.3176527240E-04
+          Preconditioning: Error of red space iteration 17:  0.3166604831E-04
+          Preconditioning: Error of red space iteration 18:  0.3060712089E-04
+          Preconditioning: Error of red space iteration 19:  0.2970031024E-04
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is  48.99 seconds
+ >>> wall Time used in RSP_IT          is   4.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  16.21 seconds
+ >>> wall Time used in Jengine         is   1.41 seconds
+ >>>  CPU Time used in st-Kbuild       is  12.78 seconds
+ >>> wall Time used in st-Kbuild       is   0.86 seconds
+ >>>  CPU Time used in LINTRA          is  29.24 seconds
+ >>> wall Time used in LINTRA          is   2.29 seconds
+ omega in build_reduc..   0.313082128802689     
+Residual norm for vector   1 is:   0.377367E-04    and eigenvalue =   0.31308213   It =  11 CONV = T
+Residual norm for vector   2 is:   0.650354E-04    and eigenvalue =   0.33621790   It =  11 CONV = T
+
+ *** THE REQUESTED              2 SOLUTION VECTORS CONVERGED
+ 
+ ============================================================
+                     RESPONSE RESULTS                        
+ ============================================================
+ 
+     LINEAR RESPONSE:
+ 
+  Excitation value:           0.313082128
+  Excitation value:           0.336217899
+ 
+ *****************************************************
+ **     CPU-TIME USED IN POLARI:    589.185430000000       **
+ *****************************************************
+ Number of linear transformations performed in LINRSP:          21
+ >>>  CPU Time used in LSDALTON RSP    is   0 hours  9 minutes 49 seconds
+ >>> wall Time used in LSDALTON RSP    is  52.18 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    589.185430000000         **
+ *****************************************************
+ >>>  CPU Time used in *SCF            is   0 hours 15 minutes 49 seconds
+ >>> wall Time used in *SCF            is   0 hours  1 minute  30 seconds
+ 
+Total no. of matmuls used:                      6033
+Total no. of Fock/KS matrix evaluations:          12
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                   1.290 GB
+  Max allocated memory, type(matrix)            1.063 MB
+  Max allocated memory, real(realk)             1.278 GB
+  Max allocated memory, integer                12.014 MB
+  Max allocated memory, logical                18.062 kB
+  Max allocated memory, linkshell               4.777 kB
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem          857.695 MB
+  Max allocated memory, Overlap               457.548 MB
+  Max allocated memory, ODitem                 32.500 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in LSDALTON        is   0 hours 15 minutes 56 seconds
+ >>> wall Time used in LSDALTON        is   0 hours  1 minute  30 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON:    956.478593000000         **
+ *****************************************************

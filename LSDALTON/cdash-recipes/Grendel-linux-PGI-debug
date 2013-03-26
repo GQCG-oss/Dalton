@@ -1,0 +1,19 @@
+#!/bin/bash
+export PATH=/usr/local/torque/bin:/com/pgi/linux86-64/12.4/bin:/com/bin:/usr/local/bin:/bin:/usr/bin
+export LD_LIBRARY_PATH=/com/acml-4.1.0-pgi/pgi64_mp_int64/lib
+TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonPGIDebug
+SCRATCH_DIR=/scratch/tkjaer/DaltonPGIDebug
+git clone git@repo.ctcc.no:dalton.git $TMP_DIR
+cd $TMP_DIR
+git checkout linsca-develop
+export OMP_NUM_THREADS=1
+#./setup --fc=pgf90 --cc=pgcc --math="-Llib -L/com/acml-4.1.0-pgi/pgi64_mp_int64/lib/ -lacml -lacml_mv -lm -lpthread -lrt -pgf90libs" --scratch=$SCRATCH_DIR -D BUILDNAME="Grendel-linux-PGI-debug" --debug --check
+./setup --fc=pgf90 --cc=pgcc --internal-math --scratch=$SCRATCH_DIR -D BUILDNAME="Grendel-linux-PGI-debug" --debug --check
+cd $TMP_DIR/build
+make clean
+make depend
+make Nightly
+rm -rf $TMP_DIR 
+rm -rf $SCRATCH_DIR
+exit 0
+

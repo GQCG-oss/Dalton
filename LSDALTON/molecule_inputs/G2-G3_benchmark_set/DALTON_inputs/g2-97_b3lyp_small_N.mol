@@ -1,0 +1,6 @@
+ATOMBASIS
+N
+ 
+Atomtypes=1 Angstrom Nosymmetry
+Charge=7.0 Atoms=1 Basis=regbasis Aux=auxbasis
+N      0.00000000000000      0.00000000000000      0.00000000000000

@@ -1,0 +1,173 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > LSresponse_NMR_SHIELD.info <<'%EOF%'
+   LSresponse_NMR_SHIELD 
+   -------------
+   Molecule:         Methane with -OH, -F, and Cl
+   Wave Function:    DFT (B3LYP) / 3-21G 
+   Test Purpose:     Test nuclear magnetic shielding tensor
+                     
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > LSresponse_NMR_SHIELD.mol <<'%EOF%'
+ATOMBASIS
+Calculation of London shielding constants through ABACUS
+Methane with -OH, -F, and Cl, b3lyp/6-31+g(d,p) optimized geo.
+    5    0  X  Z
+        1.    2      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+H     0.520821    0.080551    1.451675
+H     1.965224   -1.097271    0.053015
+        6.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+C     0.430423    0.005605    0.364687
+        8.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+O     1.023374   -1.101579   -0.177807
+        9.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+F     0.989971    1.157250   -0.160167
+       17.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+Cl   -1.303842   -0.036443   -0.048756
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > LSresponse_NMR_SHIELD.dal <<'%EOF%'
+**WAVE FUNCTIONS
+.DFT
+KT3
+*DENSOPT
+.RH
+.DIIS
+.NVEC
+8
+.CONVTHR
+1.d-7
+**RESPONSE
+*SHIELD
+*SOLVER
+.CONVTHR
+1.d-6
+*END OF INPUT
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >LSresponse_NMR_SHIELD.check
+cat >>LSresponse_NMR_SHIELD.check <<'%EOF%'
+
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# ENERGY                                                                              
+CRIT1=`$GREP "Final DFT energy\: *\-669\.578376" $log | wc -l`         
+TEST[1]=`expr   $CRIT1`        
+CTRL[1]=1                                       
+ERROR[1]="DFT ENERGY NOT CORRECT -"  
+
+# Absolute chemical shift
+CRIT1=`$GREP "H * 60.167" $log | wc -l` 
+CRIT2=`$GREP "H * 68.798" $log | wc -l` 
+CRIT3=`$GREP "C * 256.97" $log | wc -l` 
+CRIT4=`$GREP "O * 316.76" $log | wc -l` 
+CRIT5=`$GREP "F * 318.33" $log | wc -l` 
+CRIT6=`$GREP "Cl * 657.63" $log | wc -l` 
+TEST[2]=`expr   $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6`     
+CTRL[2]=6
+ERROR[2]="Absolute chemical shift are wrong"     
+
+CRIT1=`$GREP " H * X  * 55\.453[0-9][0-9][0-9][0-9][0-9] * 3\.023[0-9][0-9][0-9][0-9][0-9] * 5\.301[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+CRIT2=`$GREP " H * Y  * 2\.1311[0-9][0-9][0-9][0-9] * 46\.101[0-9][0-9][0-9][0-9][0-9] * 0?\.63168[0-9][0-9][0-9]" $log | wc -l` 
+CRIT3=`$GREP " H * Z  * 7\.7821[0-9][0-9][0-9][0-9] * \-3\.9584[0-9][0-9][0-9][0-9] * 78\.948[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+CRIT4=`$GREP " H * X  * 93\.523[0-9][0-9][0-9][0-9][0-9] * \-9\.0270[0-9][0-9][0-9][0-9] * \-0?\.8142[0-9][0-9][0-9][0-9]" $log | wc -l` 
+CRIT5=`$GREP " C * Y  * 1\.517[0-9][0-9][0-9][0-9][0-9] * 237\.77[0-9][0-9][0-9][0-9][0-9][0-9] * \-13\.375[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+CRIT6=`$GREP " O * Z  * \-1\.162[0-9][0-9][0-9][0-9][0-9] * 6\.746[0-9][0-9][0-9][0-9][0-9] * 302\.80[0-9][0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+CRIT7=`$GREP " F * Y  * \-27\.59[0-9][0-9][0-9][0-9][0-9][0-9] * 306\.92[0-9][0-9][0-9][0-9][0-9][0-9] * 30\.792[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+CRIT8=`$GREP " Cl * Y  * \-23\.878[0-9][0-9][0-9][0-9][0-9] * 512\.35[0-9][0-9][0-9][0-9][0-9][0-9] * 30\.103[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+TEST[3]=`expr   $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6 + $CRIT7 + $CRIT8`     
+CTRL[3]=8
+ERROR[3]="Shielding tensor is wrong"     
+
+# B3LYP  B3LYP  B3LYP  B3LYP  B3LYP  B3LYP  B3LYP  B3LYP  B3LYP 
+# ENERGY                                                                              
+#CRIT1=`$GREP "Final DFT energy\: *\-663\.518098" $log | wc -l`         
+#TEST[1]=`expr   $CRIT1`        
+#CTRL[1]=1                                       
+#ERROR[1]="DFT ENERGY NOT CORRECT -"  
+# Absolute chemical shift
+#CRIT1=`$GREP "H * 59.916" $log | wc -l` 
+#CRIT2=`$GREP "H * 68.284" $log | wc -l` 
+#CRIT3=`$GREP "C * 257.21" $log | wc -l` 
+#CRIT4=`$GREP "O * 314.35" $log | wc -l` 
+#CRIT5=`$GREP "F * 315.06" $log | wc -l` 
+#CRIT6=`$GREP "Cl * 632.22" $log | wc -l` 
+#TEST[2]=`expr   $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6`     
+#CTRL[2]=6
+#ERROR[2]="Absolute chemical shift are wrong"     
+#CRIT1=`$GREP " H * X  * 54\.961[0-9][0-9][0-9][0-9][0-9] * 3\.121[0-9][0-9][0-9][0-9][0-9] * 5\.668[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+#CRIT2=`$GREP " H * Y  * 2\.0288[0-9][0-9][0-9][0-9] * 45\.706[0-9][0-9][0-9][0-9][0-9] * 0?\.86246[0-9][0-9][0-9]" $log | wc -l` 
+#CRIT3=`$GREP " H * Z  * 7\.7664[0-9][0-9][0-9][0-9] * \-4\.0714[0-9][0-9][0-9][0-9] * 79\.080[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+#CRIT4=`$GREP " H * X  * 92\.667[0-9][0-9][0-9][0-9][0-9] * \-9\.1118[0-9][0-9][0-9][0-9] * \-0?\.53711[0-9][0-9][0-9]" $log | wc -l` 
+#CRIT5=`$GREP " C * Y  * 1\.8425[0-9][0-9][0-9][0-9] * 233\.73[0-9][0-9][0-9][0-9][0-9][0-9] * \-13\.235[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+#CRIT6=`$GREP " O * Z  * \-1\.6068[0-9][0-9][0-9][0-9] * 6\.1949[0-9][0-9][0-9][0-9] * 301\.25[0-9][0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+#CRIT7=`$GREP " F * Y  * \-31\.022[0-9][0-9][0-9][0-9][0-9] * 306\.15[0-9][0-9][0-9][0-9][0-9][0-9] * 36\.259[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+#CRIT8=`$GREP " Cl * Y  * \-24\.172[0-9][0-9][0-9][0-9][0-9] * 481\.18[0-9][0-9][0-9][0-9][0-9][0-9] * 32\.415[0-9][0-9][0-9][0-9][0-9]" $log | wc -l` 
+#TEST[3]=`expr   $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6 + $CRIT7 + $CRIT8`     
+#CTRL[3]=8
+#ERROR[3]="Shielding tensor is wrong"     
+
+# Memory test
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[4]=`expr  $CRIT1`
+CTRL[4]=1
+ERROR[4]="Memory leak -"
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

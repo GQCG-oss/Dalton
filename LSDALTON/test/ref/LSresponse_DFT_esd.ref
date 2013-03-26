@@ -1,0 +1,1274 @@
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+      This is output from LINSCA DALTON (Release 1.0 )
+            Authors:                                  
+      Trygve Helgaker,       University of Oslo,           Norway 
+      Poul Joergensen,       Aarhus University,            Denmark
+      Jeppe Olsen,           Aarhus University,            Denmark
+      Sonia Coriani,         University of Trieste,        Italy  
+      Stinne Hoest,          Aarhus University,            Denmark
+      Branislav Jansik,      Aarhus University,            Denmark
+      Joanna Kauczor,        Aarhus University,            Denmark
+      Thomas Kjaergaard,     Aarhus University,            Denmark
+      Kasper Kristensen,     Aarhus University,            Denmark
+      Simen Reine,           University of Oslo,           Norway 
+      Pawel Salek,           KTH Stockholm,                Sweden 
+      Andreas Thorvaldsen,   University of Tromsoe,        Norway 
+      Lea Thoegersen,        Aarhus University,            Denmark
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using SCF wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "LSDalton, a molecular electronic structure program, Release 2010,
+      written by <INSERT AUTHOR LIST>"
+
+
+ 
+     Date and time (Linux)  : Thu Sep 30 10:38:11 2010 
+     Host name              : kasperk.chem.au.dk                      
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  6-31G                                   
+  -----------test----------               
+                                          
+  Atomtypes=2 Generators=0                                    
+  Charge=1.0 Atoms=1                                          
+  H 0.000000000 0.0000000000   0.000000000000000              
+  Charge=9.0 Atoms=1                                          
+  F 2.000000000  0.0000000000   0.000000000000000             
+                      
+ -----------------------------------------
+          PRINTING THE DALTON.INP FILE 
+ -----------------------------------------
+                      
+  **DALTON INPUT                          
+  .RUN LINSCA                             
+  **WAVE FUNCTIONS                        
+  .DFT                                    
+  B3LYP                                   
+  *LINSCA                                 
+  .RH                                     
+  .DIIS                                   
+  .NVEC                                   
+  8                                       
+  .CONVTHR                                
+  1.0D-6                                  
+  **RESPONSE                              
+  .NEXCIT                                 
+  6                                       
+  *ESDIPOLE                               
+  .EXSTATES                               
+  2                                       
+  3  6                                    
+  *END OF INPUT                           
+  
+  MOLPRINT IS SET TO       0
+  Integral threshold is set to the default 1.00D-15
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates:  6
+
+   1   H        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   F        x      2.0000000000
+   5            y      0.0000000000
+   6            z      0.0000000000
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS
+   
+
+ Default basis set library used:
+        /Users/kasperkristensen/bin/Dalton-august2010/basis/                  
+ OPENING FILE/Users/kasperkristensen/bin/Dalton-august2010/basis/6-31G
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  6-31G                                             
+  CHARGES:   1   9
+                      
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+    Molecular Charge                 :    0.0000
+    Regular basisfunctions             :       11
+    Auxiliary basisfunctions           :        0
+    Huckel basisfunctions              :        0
+    Primitive Regular basisfunctions   :       26
+    Primitive Auxiliary basisfunctions :        0
+    Primitive Huckel basisfunctions    :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    GHOST   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   1.000  6-31G           F              4           2
+     2   9.000  6-31G           F             22           9
+                      
+  ATOM  NAME  ISOTOPE        X             Y             Z     
+    1    H          1    0.00000000    0.00000000    0.00000000
+    2    F          1    2.00000000    0.00000000    0.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      2
+  THE  REGULAR   is on R =   0
+---------------------------------------------------------------------
+ atom label charge  basisset            prim cont basis
+---------------------------------------------------------------------
+      1 H      1.000 6-31G                      4        2 [4s|2s]                  
+      2 F      9.000 6-31G                     22        9 [10s4p|3s2p]             
+---------------------------------------------------------------------
+total         10                              26      11
+---------------------------------------------------------------------
+                      
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+
+LINSCF configuration :
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
+
+
+ Maximum size of Fock/density queue in averaging:           8
+Convergence threshold for gradient:   0.10E-05
+ End of configuration from new input structure!
+
+ >>>  CPU Time used in *INPUT          is   0.00 seconds
+ Level 1 atomic calculation on 6-31G Charge   1
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 9158 compressed from  9158 ( 61 radial)
+ Number of grid points:     9158 Grid generation time:       0.0 s
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.01 seconds
+KS electrons/energy:    0.99999999999842   -0.22355794176458 rel.err:-0.16E-11
+ >>>  CPU Time used in xc-Fock         is   0.12 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.12 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -0.4388706084    0.00000000000    0.00      0.00000    0.00    0.0000000    0.84E-01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    0.99999999999819   -0.21356077419062 rel.err:-0.18E-11
+ >>>  CPU Time used in xc-Fock         is   0.11 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.11 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  2     -0.4403058570   -0.00143524859    0.00      0.00000    0.00    0.0000000    0.70E-02  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    0.99999999999821   -0.21431317096543 rel.err:-0.18E-11
+ >>>  CPU Time used in xc-Fock         is   0.11 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.11 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  3     -0.4403160550   -0.00001019803   -1.00      0.00000    0.00    0.0000000    0.32E-04  ###
+ Level 1 atomic calculation on 6-31G Charge   9
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.01 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.01 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 8904 compressed from  8904 ( 84 radial)
+ Number of grid points:     8904 Grid generation time:       0.0 s
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.01 seconds
+KS electrons/energy:    8.99999999996867  -10.00176904479822 rel.err:-0.35E-11
+ >>>  CPU Time used in xc-Fock         is   0.16 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.16 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -95.4542234480    0.00000000000    0.00      0.00000    0.00    0.0000000    0.70E+01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    9.00000000000639   -7.03863062154943 rel.err: 0.71E-12
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  2    -96.5985022640   -1.14427881599    0.00      0.00000    0.00    0.0000000    0.84E+01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    9.00000000000147   -8.08996035598480 rel.err: 0.16E-12
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  3    -99.5273867130   -2.92888444909   -1.00      0.00000    0.00    0.0000000    0.14E+01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    8.99999999999981   -8.27087740259885 rel.err:-0.21E-13
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  4    -99.5918694546   -0.06448274159   -1.00      0.00000    0.00    0.0000000    0.24E+00  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    8.99999999999932   -8.30882635542472 rel.err:-0.76E-13
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  5    -99.5937610871   -0.00189163249   -1.00      0.00000    0.00    0.0000000    0.46E-02  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    8.99999999999920   -8.30813579625964 rel.err:-0.88E-13
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  6    -99.5937618188   -0.00000073166   -1.00      0.00000    0.00    0.0000000    0.31E-03  ###
+ >>>  CPU Time used in *ATOM           is   1.38 seconds
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in *S              is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.01 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.01 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in *H1             is   0.04 seconds
+ First density: Atoms in molecule guess
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 9149 compressed from  9158 ( 61 radial)
+ Atom:    2*1 points= 8895 compressed from  8904 ( 84 radial)
+ Number of grid points:    18044 Grid generation time:       0.0 s
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.02 seconds
+KS electrons/energy:    9.99999931904368   -8.59933431385174 rel.err:-0.68E-07
+ >>>  CPU Time used in xc-Fock         is   0.38 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.38 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  Iteration 0 energy:  -100.282151725500     
+ >>>  CPU Time used in *START          is   0.42 seconds
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.00 seconds
+Matrix S     has nnz=        30 sparsity:     25.620 %
+Matrix AO D  has nnz=        56 sparsity:     47.107 %
+Matrix AO F  has nnz=        20 sparsity:     16.529 %
+ micthrs =  1.000000000000000E-002
+ >>>  CPU Time used in INIT SCF        is   0.00 seconds
+** Get Fock matrix number   1
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    9.99999998045515   -8.84572763929028 rel.err:-0.20E-08
+ >>>  CPU Time used in xc-Fock         is   0.36 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.36 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1   -100.3171397958    0.00000000000    0.00      0.00000    0.00    0.0000000    0.14E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 148.846 MB
+  Max allocated memory, type(matrix)           17.016 kB
+  Max allocated memory, real                  148.811 MB
+  Max allocated memory, integer                22.758 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                 10.500 kB
+
+  Allocated memory,     TOTAL                  14.180 kB
+  Allocated memory,     type(matrix)           14.180 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.39 seconds
+** Get Fock matrix number   2
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   10.00000071972807   -8.46985154331023 rel.err: 0.72E-07
+ >>>  CPU Time used in xc-Fock         is   0.36 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.36 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  2   -100.2785732784    0.03856651740    0.00      0.00000    0.00    0.0000000    0.21E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 148.849 MB
+  Max allocated memory, type(matrix)           19.852 kB
+  Max allocated memory, real                  148.811 MB
+  Max allocated memory, integer                22.758 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                 10.500 kB
+
+  Allocated memory,     TOTAL                  17.016 kB
+  Allocated memory,     type(matrix)           17.016 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.39 seconds
+** Get Fock matrix number   3
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   10.00000034603272   -8.69534429096151 rel.err: 0.35E-07
+ >>>  CPU Time used in xc-Fock         is   0.36 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.36 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  3   -100.3573894700   -0.07881619154   -1.00      0.00000    0.00    0.0000000    0.21E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   3
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 148.851 MB
+  Max allocated memory, type(matrix)           22.688 kB
+  Max allocated memory, real                  148.811 MB
+  Max allocated memory, integer                22.758 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                 10.500 kB
+
+  Allocated memory,     TOTAL                  19.852 kB
+  Allocated memory,     type(matrix)           19.852 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.39 seconds
+** Get Fock matrix number   4
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   10.00000034080192   -8.69710964350493 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.36 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.36 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  4   -100.3574019924   -0.00001252248   -1.00      0.00000    0.00    0.0000000    0.13E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   4
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 148.854 MB
+  Max allocated memory, type(matrix)           25.523 kB
+  Max allocated memory, real                  148.811 MB
+  Max allocated memory, integer                22.758 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                 10.500 kB
+
+  Allocated memory,     TOTAL                  22.688 kB
+  Allocated memory,     type(matrix)           22.688 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.39 seconds
+** Get Fock matrix number   5
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   10.00000034141959   -8.69703374208503 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.36 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.36 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  5   -100.3574020735   -0.00000008107   -1.00      0.00000    0.00    0.0000000    0.23E-03  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   5
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 148.857 MB
+  Max allocated memory, type(matrix)           28.359 kB
+  Max allocated memory, real                  148.811 MB
+  Max allocated memory, integer                22.758 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                 10.500 kB
+
+  Allocated memory,     TOTAL                  25.523 kB
+  Allocated memory,     type(matrix)           25.523 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.40 seconds
+** Get Fock matrix number   6
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   10.00000034135223   -8.69705338028266 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.36 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.36 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  6   -100.3574020752   -0.00000000169   -1.00      0.00000    0.00    0.0000000    0.90E-05  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   6
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 148.860 MB
+  Max allocated memory, type(matrix)           31.195 kB
+  Max allocated memory, real                  148.811 MB
+  Max allocated memory, integer                22.758 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                 10.500 kB
+
+  Allocated memory,     TOTAL                  28.359 kB
+  Allocated memory,     type(matrix)           28.359 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.39 seconds
+** Get Fock matrix number   7
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   10.00000034135431   -8.69705269055013 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.36 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.36 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  7   -100.3574020752    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.15E-05  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 148.863 MB
+  Max allocated memory, type(matrix)           34.031 kB
+  Max allocated memory, real                  148.811 MB
+  Max allocated memory, integer                22.758 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                 10.500 kB
+
+  Allocated memory,     TOTAL                  31.195 kB
+  Allocated memory,     type(matrix)           31.195 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.39 seconds
+** Get Fock matrix number   8
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   10.00000034135456   -8.69705253990966 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.36 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.36 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  8   -100.3574020752    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.25E-07  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 148.865 MB
+  Max allocated memory, type(matrix)           36.867 kB
+  Max allocated memory, real                  148.811 MB
+  Max allocated memory, integer                22.758 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                 10.500 kB
+
+  Allocated memory,     TOTAL                  34.031 kB
+  Allocated memory,     type(matrix)           34.031 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ >>>  CPU Time used in **ITER          is   3.13 seconds
+
+Total no. of matmuls in SCF optimization:         51
+ Postponing calculation of HOMO-LUMO gap to response part...
+
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2    0.03856651740    0.0000    0.0000    0.0000000
+  3   -0.07881619154   -1.0000    0.0000    0.0000000
+  4   -0.00001252248   -1.0000    0.0000    0.0000000
+  5   -0.00000008107   -1.0000    0.0000    0.0000000
+  6   -0.00000000169   -1.0000    0.0000    0.0000000
+  7    0.00000000000   -1.0000    0.0000    0.0000000
+  8    0.00000000000   -1.0000    0.0000    0.0000000
+
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -100.31713979582309548277      0.140807937596247D+01
+    2          -100.27857327842110635174      0.214766341779252D+01
+    3          -100.35738946995758169578      0.210107828634223D-01
+    4          -100.35740199243686276986      0.133127113702205D-02
+    5          -100.35740207350821151522      0.229182179173256D-03
+    6          -100.35740207520311173539      0.897333247798887D-05
+    7          -100.35740207520414912779      0.147651631608890D-05
+    8          -100.35740207520419176035      0.245435560433956D-07
+
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+
+
+      Final DFT energy:                 -100.357402075204
+      Nuclear repulsion:                   4.500000000000
+      Electronic energy:                -104.857402075204
+
+
+
+
+                       Permanent dipole moment
+                       -----------------------
+               au              Debye           10**-30 C m
+           0.870923           2.21367           7.38399    
+
+
+                       Dipole moment components
+                       ------------------------
+               au              Debye           10**-30 C m
+ x        -0.870923          -2.21367          -7.38399    
+ y        -0.147956E-19     -0.376066E-19     -0.125442E-18
+ z        -0.175249E-17     -0.445440E-17     -0.148582E-16
+
+
+
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (LSTDHF) >>>
+
+
+ Use MO orbital energy differences to find  first guess for eigenvectors/values
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ >>>  CPU Time used in reg-Fbuild      is   0.04 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.83 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.83 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.87 seconds
+ omega in build_reduc..   1.432790372939615E-322
+ Response convergence threshold is  1.000000000000000E-008
+Residual norm for vector   1 is:   0.527269E-01    and eigenvalue =   0.29907996   It =   1 CONV = F
+ MO preconditioning
+Residual norm for vector   2 is:   0.527269E-01    and eigenvalue =   0.29907996   It =   1 CONV = F
+ MO preconditioning
+Residual norm for vector   3 is:   0.486729E+00    and eigenvalue =   0.55432220   It =   1 CONV = F
+ MO preconditioning
+Residual norm for vector   4 is:   0.314880E-01    and eigenvalue =   1.01316801   It =   1 CONV = F
+ MO preconditioning
+Residual norm for vector   5 is:   0.314880E-01    and eigenvalue =   1.01316801   It =   1 CONV = F
+ MO preconditioning
+Residual norm for vector   6 is:   0.370435E+00    and eigenvalue =   1.14943161   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.87 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ >>>  CPU Time used in reg-Fbuild      is   0.04 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.83 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.83 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.86 seconds
+ omega in build_reduc..   0.299079957368262     
+Residual norm for vector   1 is:   0.143748E-01    and eigenvalue =   0.29848669   It =   2 CONV = F
+ MO preconditioning
+Residual norm for vector   2 is:   0.143748E-01    and eigenvalue =   0.29848669   It =   2 CONV = F
+ MO preconditioning
+Residual norm for vector   3 is:   0.485278E-01    and eigenvalue =   0.51435790   It =   2 CONV = F
+ MO preconditioning
+Residual norm for vector   4 is:   0.250838E-01    and eigenvalue =   1.01300660   It =   2 CONV = F
+ MO preconditioning
+Residual norm for vector   5 is:   0.250838E-01    and eigenvalue =   1.01300660   It =   2 CONV = F
+ MO preconditioning
+Residual norm for vector   6 is:   0.108708E+00    and eigenvalue =   1.12635678   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.88 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ >>>  CPU Time used in reg-Fbuild      is   0.04 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.83 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.83 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.87 seconds
+ omega in build_reduc..   0.298486690788796     
+Residual norm for vector   1 is:   0.145848E-02    and eigenvalue =   0.29841338   It =   3 CONV = F
+ MO preconditioning
+Residual norm for vector   2 is:   0.145848E-02    and eigenvalue =   0.29841338   It =   3 CONV = F
+ MO preconditioning
+Residual norm for vector   3 is:   0.212744E-01    and eigenvalue =   0.51387269   It =   3 CONV = F
+ MO preconditioning
+Residual norm for vector   4 is:   0.184561E-01    and eigenvalue =   1.01262509   It =   3 CONV = F
+ MO preconditioning
+Residual norm for vector   5 is:   0.184561E-01    and eigenvalue =   1.01262509   It =   3 CONV = F
+ MO preconditioning
+Residual norm for vector   6 is:   0.481961E-01    and eigenvalue =   1.12491600   It =   3 CONV = F
+ MO preconditioning
+bvector number   4 is removed because its norm**2 : 0.95021D-31 is < cfg_rsp_thr_lin_depend  0.10000D-19
+bvector number   5 is removed because its norm**2 : 0.24295D-30 is < cfg_rsp_thr_lin_depend  0.10000D-19
+ >>>  CPU Time used in RSP_IT          is   0.89 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ >>>  CPU Time used in reg-Fbuild      is   0.04 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.67 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.67 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.71 seconds
+ omega in build_reduc..   0.298413378136217     
+Residual norm for vector   1 is:   0.584064E-14    and eigenvalue =   0.29841324   It =   4 CONV = T
+Residual norm for vector   2 is:   0.769703E-14    and eigenvalue =   0.29841324   It =   4 CONV = T
+Residual norm for vector   3 is:   0.583475E-02    and eigenvalue =   0.51375919   It =   4 CONV = F
+ MO preconditioning
+Residual norm for vector   4 is:   0.556234E-14    and eigenvalue =   1.01259609   It =   4 CONV = T
+Residual norm for vector   5 is:   0.985219E-14    and eigenvalue =   1.01259609   It =   4 CONV = T
+Residual norm for vector   6 is:   0.455080E-01    and eigenvalue =   1.12421828   It =   4 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.74 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.52 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.52 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.56 seconds
+ omega in build_reduc..   0.298413244662270     
+Residual norm for vector   1 is:   0.150945E-13    and eigenvalue =   0.29841324   It =   5 CONV = T
+Residual norm for vector   2 is:   0.105238E-13    and eigenvalue =   0.29841324   It =   5 CONV = T
+Residual norm for vector   3 is:   0.198718E-03    and eigenvalue =   0.51375822   It =   5 CONV = F
+ MO preconditioning
+Residual norm for vector   4 is:   0.153717E-13    and eigenvalue =   1.01259609   It =   5 CONV = T
+Residual norm for vector   5 is:   0.156566E-13    and eigenvalue =   1.01259609   It =   5 CONV = T
+Residual norm for vector   6 is:   0.217317E-02    and eigenvalue =   1.12414177   It =   5 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.59 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.52 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.52 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.56 seconds
+ omega in build_reduc..   0.298413244662268     
+Residual norm for vector   1 is:   0.136627E-13    and eigenvalue =   0.29841324   It =   6 CONV = T
+Residual norm for vector   2 is:   0.200371E-13    and eigenvalue =   0.29841324   It =   6 CONV = T
+Residual norm for vector   3 is:   0.245495E-06    and eigenvalue =   0.51375822   It =   6 CONV = F
+ MO preconditioning
+Residual norm for vector   4 is:   0.169843E-13    and eigenvalue =   1.01259609   It =   6 CONV = T
+Residual norm for vector   5 is:   0.847357E-14    and eigenvalue =   1.01259609   It =   6 CONV = T
+Residual norm for vector   6 is:   0.118522E-04    and eigenvalue =   1.12414166   It =   6 CONV = F
+ MO preconditioning
+bvector number   2 is removed because its norm**2 : 0.36824D-28 is < cfg_rsp_thr_lin_depend  0.10000D-19
+ >>>  CPU Time used in RSP_IT          is   0.60 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..   0.298413244662271     
+Residual norm for vector   1 is:   0.178535E-13    and eigenvalue =   0.29841324   It =   7 CONV = T
+Residual norm for vector   2 is:   0.196360E-13    and eigenvalue =   0.29841324   It =   7 CONV = T
+Residual norm for vector   3 is:   0.120414E-13    and eigenvalue =   0.51375822   It =   7 CONV = T
+Residual norm for vector   4 is:   0.113997E-13    and eigenvalue =   1.01259609   It =   7 CONV = T
+Residual norm for vector   5 is:   0.128722E-13    and eigenvalue =   1.01259609   It =   7 CONV = T
+Residual norm for vector   6 is:   0.130069E-13    and eigenvalue =   1.12414166   It =   7 CONV = T
+
+ *** THE REQUESTED              6 SOLUTION VECTORS CONVERGED
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+
+ The following excitation energies are used for the response calculation:
+
+           1  0.298413244662270     
+           2  0.298413244662271     
+           3  0.513758216849764     
+           4   1.01259609498217     
+           5   1.01259609498217     
+           6   1.12414165554892     
+ Starting linear response function calculation for: << EL  ; EXCI>>
+
+ Starting linear response function calculation for: << EL  ; EXCI>>
+
+ Starting linear response function calculation for: << EL  ; EXCI>>
+
+ Starting linear response function calculation for: << EL  ; EXCI>>
+
+ Starting linear response function calculation for: << EL  ; EXCI>>
+
+ Starting linear response function calculation for: << EL  ; EXCI>>
+
+
+
+
+
+  ***********************************************************************************
+  *                     ONE-PHOTON ABSORPTION RESULTS (in a.u.)                     *
+  ***********************************************************************************
+
+
+
+   Excitation                 Transition Dipole Moments                  Oscillator
+    Energies              x                y                z            Strengths
+ ====================================================================================
+   0.29841324      -0.26077775E-15   0.12831255      -0.39809238E-01   0.35906846E-02
+   0.29841324      -0.25519577E-15  -0.39809238E-01  -0.12831255       0.35906846E-02
+   0.51375822        1.1598529      -0.55628261E-16  -0.14330956E-15   0.46075850    
+    1.0125961      -0.56935552E-15   0.17525021      -0.19801793       0.47203003E-01
+    1.0125961      -0.31050755E-14  -0.19801793      -0.17525021       0.47203003E-01
+    1.1241417       0.10923794      -0.13558797E-14   0.51048227E-15   0.89428679E-02
+
+
+
+
+ Starting quadratic response function calculation for: << EL  ; EXCI, EXCI>>
+
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.59 seconds
+ >>>  CPU  Time used II_get_xc_quadrsp is    0.59 seconds
+ >>>  WALL Time used II_get_xc_quadrsp is    0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+ Response convergence threshold is  1.000000000000000E-008
+Residual norm for vector   1 is:   0.127324E+00    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.131878E-01    and frequency =     0.000000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.785426E-03    and frequency =     0.000000   It =   3 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.478864E-04    and frequency =     0.000000   It =   4 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.120089E-05    and frequency =     0.000000   It =   5 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.430414E-07    and frequency =     0.000000   It =   6 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.126942E-07    and frequency =     0.000000   It =   7 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.124472E-07    and frequency =     0.000000   It =   8 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.648885E-08    and frequency =     0.000000   It =   9 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ Starting quadratic response function calculation for: << EL  ; EXCI, EXCI>>
+
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.59 seconds
+ >>>  CPU  Time used II_get_xc_quadrsp is    0.59 seconds
+ >>>  WALL Time used II_get_xc_quadrsp is    0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+ Response convergence threshold is  1.000000000000000E-008
+Residual norm for vector   1 is:   0.735160E-01    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.785475E-02    and frequency =     0.000000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.523393E-03    and frequency =     0.000000   It =   3 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.487586E-04    and frequency =     0.000000   It =   4 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.143082E-05    and frequency =     0.000000   It =   5 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.311598E-07    and frequency =     0.000000   It =   6 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.124733E-07    and frequency =     0.000000   It =   7 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+ >>>  CPU Time used in LINTRA          is   0.48 seconds
+ omega in build_reduc..    0.00000000000000     
+Residual norm for vector   1 is:   0.396899E-08    and frequency =     0.000000   It =   8 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ >>>  CPU Time used in reg-Fbuild      is   0.03 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   10.00000034135456 rel.err: 0.34E-07
+ >>>  CPU Time used in xc-Fock         is   0.45 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.45 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.00 seconds
+
+
+
+
+  ***********************************************************************************
+  *                      EXCITED STATE DIPOLE RESULTS (in a.u.)                     *
+  ***********************************************************************************
+
+
+
+  State No.   Exc. Energy            x                 y                 z
+  ==================================================================================
+       (Ground state)          -0.87092257       -0.14795557E-19   -0.17524917E-17
+      3       0.51375822        0.11892963       -0.18401837E-15    0.74877590E-16
+      6        1.1241417        0.13635400       -0.45668547E-16   -0.11721705E-14
+
+
+
+
+ >>>  CPU Time used in LSDALTON RSP    is  20.33 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    20.3302900000000         **
+ *****************************************************
+ >>>  CPU Time used in *SCF            is  23.46 seconds
+
+Total no. of matmuls used:                      1889
+Total no. of Fock/KS matrix evaluations:           8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 148.896 MB
+  Max allocated memory, type(matrix)           66.172 kB
+  Max allocated memory, real(realk)           148.816 MB
+  Max allocated memory, integer                22.758 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, Overlap               439.531 kB
+  Max allocated memory, ODitem                 10.500 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ >>>  CPU Time used in LSDALTON        is  25.30 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON:    25.2998340000000         **
+ *****************************************************

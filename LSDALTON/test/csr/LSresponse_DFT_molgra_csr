@@ -1,0 +1,157 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > LSresponse_DFT_molgra_csr.info <<'%EOF%'
+   LSresponse_DFT_molgra_csr
+   ---------------------
+   Molecule:         Hydrogen fluoride
+   Wave Function:    DFT-B3LYP / 6-31G
+   Test Purpose:     Test molecular gradient in LSDALTON (Kasper K)
+                    
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > LSresponse_DFT_molgra_csr.mol <<'%EOF%'
+BASIS
+6-31G
+-----------test----------
+
+Atomtypes=2 Generators=0
+Charge=1.0 Atoms=1 Basis=STO-3G
+H 0.000000000 0.0000000000   0.000000000000000
+Charge=9.0 Atoms=1 Basis=STO-3G
+F 1.99500000  0.0000000000   0.000000000000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > LSresponse_DFT_molgra_csr.dal <<'%EOF%'
+**WAVE FUNCTIONS
+.DFT
+B3LYP
+*DFT INPUT
+.FINE
+*DENSOPT
+.CSR
+.ARH                                                                                       
+.NVEC
+8
+.CONVTHR
+1.0D-6
+**RESPONS
+*MOLGRA
+*END OF INPUT  
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL > LSresponse_DFT_molgra_csr.check
+cat >> LSresponse_DFT_molgra_csr.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Energy
+CRIT1=`$GREP "Final * DFT energy\: * \-100.3577[5-6]" $log | wc -l`
+TEST[1]=`expr   $CRIT1`
+CTRL[1]=1
+ERROR[1]="DFT ENERGY NOT CORRECT -"
+
+# Memory test
+CRIT2=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[2]=`expr  $CRIT2`
+CTRL[2]=1
+ERROR[2]="Memory leak -"
+
+# MOLGRA: Nuclear repulsion
+CRIT1=`$GREP "H * 2\.26129" $log | wc -l`
+TEST[3]=`expr  $CRIT1`
+CTRL[3]=1
+ERROR[3]="Error in nuclear repulsion part of molecular gradient"
+
+# MOLGRA: Coulomb
+CRIT1=`$GREP "H * 2\.5015" $log | wc -l`
+TEST[4]=`expr  $CRIT1`
+CTRL[4]=1
+ERROR[4]="Error in coulomb part of molecular gradient"
+
+# MOLGRA: Exchange
+CRIT1=`$GREP "H * \-0\.0657" $log | wc -l`
+TEST[5]=`expr  $CRIT1`
+CTRL[5]=1
+ERROR[5]="Error in exchange part of molecular gradient"
+
+# MOLGRA: Nuclear Attraction
+CRIT1=`$GREP "H * \-5\.1942" $log | wc -l`
+TEST[6]=`expr  $CRIT1`
+CTRL[6]=1
+ERROR[6]="Error in nuclear attraction part of molecular gradient"
+
+# MOLGRA: Kinetic Energy
+CRIT1=`$GREP "H * 0\.4008" $log | wc -l`
+TEST[7]=`expr  $CRIT1`
+CTRL[7]=1
+ERROR[7]="Error in kinetic energy part of molecular gradient"
+
+# MOLGRA: Reorthonomarlization
+CRIT1=`$GREP "H * 0\.2057" $log | wc -l`
+TEST[8]=`expr  $CRIT1`
+CTRL[8]=1
+ERROR[8]="Error in reorthonormalization part of molecular gradient"
+
+# MOLGRA: Exchange-correllation
+CRIT1=`$GREP "H * \-0\.1803" $log | wc -l`
+TEST[9]=`expr  $CRIT1`
+CTRL[9]=1
+ERROR[9]="Error in exchange-correlation part of molecular gradient"
+
+
+PASSED=1
+for i in 1 2 3 4 5 6 7 8 9
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

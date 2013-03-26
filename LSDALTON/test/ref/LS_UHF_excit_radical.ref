@@ -1,0 +1,1752 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Mon Aug 16 15:43:13 2010
+     Host name              : cirkelineIII                            
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  Methane with -OH, -F, and Cl                                            
+  b3lyp/6-31+g(d,p) optimized geo.                                        
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           H           1.007825
+                           C          12.000000
+                           O          15.994915
+                           F          18.998403
+
+                       Total mass:    49.008968 amu
+                       Natural abundance:  98.633 %
+
+ Center-of-mass coordinates (A):    1.652137    0.131440    0.000223
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     4
+  Total number of atoms:    5
+
+  Basis set used is "3-21G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       3       2      [3s|2s]                                                                          
+  H           1       1       3       2      [3s|2s]                                                                          
+  C           1       6      15       9      [6s3p|3s2p]                                                                      
+  O           1       8      15       9      [6s3p|3s2p]                                                                      
+  F           1       9      15       9      [6s3p|3s2p]                                                                      
+  ----------------------------------------------------------------------
+  total:      5      25      51      31
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.01 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ Number of two-electron integrals written:      117985 ( 95.7% )
+ Megabytes written:                              1.353
+
+
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total wall time used in HERMIT:   0.09 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ Linear response calculations are carried out.
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Mon Aug 16 15:43:13 2010
+     Host name              : cirkelineIII                            
+
+ Title lines from integral program:
+     Methane with -OH, -F, and Cl                                            
+     b3lyp/6-31+g(d,p) optimized geo.                                        
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, one open shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         24
+     Number of electrons in active shells      1
+     Total charge of the molecule              0
+
+     Number of active orbitals                 1
+     Total number of orbitals                 31
+
+     Spin multiplicity                         2
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          31
+     Number of basis functions         31
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals             12
+
+     plus one open shell SCF orbital of symmetry   1
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING WARNING WARNING spin check commented out!!!
+
+ --------------------------
+ <Unrestricted calculation>
+ --------------------------
+ ALPHA spin occupancy =    12
+ BETA  spin occupancy =    13
+
+ 
+Dynamic response convergence threshold:
+Response residuals will be reduced by a factor   0.10E-02
+ 
+ Linear response calculations are carried out.
+
+ Keyword " TIGHT                                  " not recognized in config_rsp_input
+
+ LSint is requested by *LINSCA under **INTEGRALS 
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+   You have requested Augmented Roothaan-Hall optimization
+   => explicit averaging is turned off!
+Expand trust radius if ratio is larger than:            0.75
+Contract trust radius if ratio is smaller than:         0.25
+On expansion, trust radius is expanded by a factor      1.20
+On contraction, trust radius is contracted by a factor  0.70
+ 
+LINSCF configuration :
+Density subspace min. method    : None                    
+Density optimization : Augmented RH optimization          
+ 
+ 
+ Maximum size of Fock/density queue in averaging:          10
+ WARNING WARNING WARNING spin check commented out!!! /Stinne
+
+ --------------------------
+ <Unrestricted calculation>
+ --------------------------
+ ALPHA spin occupancy =    12
+ BETA  spin occupancy =    13
+
+Dynamic convergence threshold for gradient:   0.50E-05
+ 
+ End of configuration from new input structure!
+ Replace S with S build from new integral driver
+ QQQ New Overlap S1:   106.528716159454     
+ QQQ Old Overlap S:   106.528716159454     
+ QQQ DIFF S-S1:  1.750194252085436E-029
+  SUCCESFULLY REPLACED OLD OVERLAP WITH NEW
+ QQQ New H1:   23415.0393602503     
+ QQQ Old H1:   23415.0393602527     
+ QQQ DIFF H-H1:  1.483360575435054E-021
+  SUCCESFULLY REPLACED OLD h1 WITH NEW
+ FALLBACK: Huckel guess does not work with open shell systems
+ - will do H1DIAG instead (if you are the Huckel author, please fix it!)
+ Optimize first density for H1 operator
+ FALLBACK: open shell currently works only with cholesky decomposition
+ - Ask Dr. Jansik to fix it for Lowdin!
+ Preparing to do cholesky decomposition...
+ >>>  CPU Time used in CHOLDC          is   0.00 seconds
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.12 seconds
+** Get Fock matrix number   1
+ Replace F with F build from new integral driver
+ QQQ New  F:   17129.1243683351     
+ QQQ Old  F:   17129.1243683282     
+ QQQ DIFF  :  7.944404077038957E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   0.33 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   29.4399660776531     
+*************************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
+******************************************************************  *******************************###
+  1   -190.0679487840    0.00000000000    0.00      0.00000    0.00    0.00E+00    0.29E+02  ###
+*******************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+*******************************************************************************************%%%
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm   8.86724597117750     
+ Number of densities in queue:           0
+CROP scheme with full subspace (DISK)
+ First mu:  -13.5000000000000     
+  Error of red space iteration  1:     12.1266135666 (mu = -13.50, xmax = 0.198236E+00, xnorm = 0.924340E+00, THR = 0.886725E-01)
+  Error of red space iteration  2:      2.0197440307 (mu = -13.50, xmax = 0.129457E+00, xnorm = 0.680215E+00, THR = 0.886725E-01)
+  Error of red space iteration  3:      0.2740687616 (mu = -14.00, xmax = 0.103368E+00, xnorm = 0.603124E+00, THR = 0.886725E-01)
+  Error of red space iteration  4:      0.0198216925 (mu = -14.30, xmax = 0.997792E-01, xnorm = 0.589675E+00, THR = 0.886725E-01)
+ mumax =  -14.2975226015281     
+  Error of red space iteration  5:      1.9711914082 (mu =  -4.30, xmax = 0.350479E+00, xnorm = 0.196766E+01, THR = 0.886725E-01)
+  Error of red space iteration  6:      1.1065696095 (mu =  -4.44, xmax = 0.337531E+00, xnorm = 0.187718E+01, THR = 0.886725E-01)
+  Error of red space iteration  7:      0.2650573353 (mu =  -4.34, xmax = 0.345730E+00, xnorm = 0.192111E+01, THR = 0.886725E-01)
+  Error of red space iteration  8:      0.1054210806 (mu =  -4.35, xmax = 0.345723E+00, xnorm = 0.193353E+01, THR = 0.886725E-01)
+  Error of red space iteration  9:      0.0544455135 (mu =  -4.44, xmax = 0.338565E+00, xnorm = 0.189898E+01, THR = 0.886725E-01)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   0.07 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    88
+ >>>  CPU Time used in G_DENS          is   0.08 seconds
+** Get Fock matrix number   2
+ Replace F with F build from new integral driver
+ QQQ New  F:   15511.5631658775     
+ QQQ Old  F:   15511.5631658721     
+ QQQ DIFF  :  6.719435894152752E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.35000 (xmax)     0.33856    1.89898    4.44    0.4483    0.0000         0          1    %%%
+ Trust radius based on max element!
+ % trust-radius ok, h =   0.350000000000000     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.33 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   21.7451881129075     
+  2   -204.4169994924  -14.34905070839    0.00      0.00000    4.44    0.00E+00    0.22E+02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm   5.61492475282569     
+ Number of densities in queue:           1
+CROP scheme with full subspace (DISK)
+ First mu:  -6.75000000000000     
+  Error of red space iteration  1:      7.8892838917 (mu =  -6.75, xmax = 0.645871E-01, xnorm = 0.585835E+00, THR = 0.561492E-01)
+  Error of red space iteration  2:      1.2318681933 (mu =  -6.75, xmax = 0.102141E+00, xnorm = 0.650577E+00, THR = 0.561492E-01)
+  Error of red space iteration  3:      0.1685559105 (mu =  -7.00, xmax = 0.962910E-01, xnorm = 0.598234E+00, THR = 0.561492E-01)
+  Error of red space iteration  4:      0.0211829300 (mu =  -7.00, xmax = 0.960100E-01, xnorm = 0.595144E+00, THR = 0.561492E-01)
+ mumax =  -7.00000000000000     
+  Error of red space iteration  5:      4.4946919579 (mu =  -0.94, xmax = 0.119236E+01, xnorm = 0.352658E+01, THR = 0.561492E-01)
+  Error of red space iteration  6:     17.0215188464 (mu =  -0.98, xmax = 0.429108E+01, xnorm = 0.928533E+01, THR = 0.561492E-01)
+  Error of red space iteration  7:      6.1053962124 (mu =  -0.98, xmax = 0.444974E+01, xnorm = 0.722572E+01, THR = 0.561492E-01)
+  Error of red space iteration  8:      0.8342672743 (mu =  -1.50, xmax = 0.274240E+00, xnorm = 0.168465E+01, THR = 0.561492E-01)
+  Error of red space iteration  9:      0.7085087218 (mu =  -1.50, xmax = 0.280198E+00, xnorm = 0.185275E+01, THR = 0.561492E-01)
+  Error of red space iteration 10:      0.3639062354 (mu =  -1.85, xmax = 0.237731E+00, xnorm = 0.162247E+01, THR = 0.561492E-01)
+  Error of red space iteration 11:      0.2379178131 (mu =  -1.92, xmax = 0.257424E+00, xnorm = 0.169644E+01, THR = 0.561492E-01)
+  Error of red space iteration 12:      0.1398003660 (mu =  -2.00, xmax = 0.285269E+00, xnorm = 0.173172E+01, THR = 0.561492E-01)
+  Error of red space iteration 13:      0.0766253497 (mu =  -2.06, xmax = 0.293291E+00, xnorm = 0.173252E+01, THR = 0.561492E-01)
+  Error of red space iteration 14:      0.0709171655 (mu =  -2.03, xmax = 0.299908E+00, xnorm = 0.175274E+01, THR = 0.561492E-01)
+  Error of red space iteration 15:      0.0367625746 (mu =  -2.07, xmax = 0.299973E+00, xnorm = 0.174218E+01, THR = 0.561492E-01)
+Newton equations converged in 15 iterations!
+ >>>  CPU Time used in CROP solver     is   0.22 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   178
+ >>>  CPU Time used in G_DENS          is   0.23 seconds
+** Get Fock matrix number   3
+ Replace F with F build from new integral driver
+ QQQ New  F:   13945.8955919944     
+ QQQ Old  F:   13945.8955919904     
+ QQQ DIFF  :  5.692778834136620E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.35000 (xmax)     0.29997    1.74218    2.07    0.3524    0.6077         1          2    %%%
+ Trust radius based on max element!
+ % Too large difference between trust-radius and actual step.  Reduce trust-radi
+ us
+ % h(old), h(new):  0.350000000000000       0.299973459534146     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.34 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   9.37265437865275     
+  3   -210.1530078467   -5.73600835436    0.00      0.00000    2.07    0.00E+00    0.94E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm   1.79319051398915     
+ Number of densities in queue:           2
+CROP scheme with full subspace (DISK)
+ First mu: -0.937500000000000     
+  Error of red space iteration  1:      1.9560546551 (mu =  -0.94, xmax = 0.172840E+00, xnorm = 0.109659E+01, THR = 0.179319E-01)
+  Error of red space iteration  2:      0.6490742497 (mu =  -1.88, xmax = 0.119382E+00, xnorm = 0.785218E+00, THR = 0.179319E-01)
+  Error of red space iteration  3:      0.7476726919 (mu =  -1.97, xmax = 0.901588E-01, xnorm = 0.576989E+00, THR = 0.179319E-01)
+  Error of red space iteration  4:      4.1461387224 (mu =  -2.00, xmax = 0.260710E+00, xnorm = 0.175670E+01, THR = 0.179319E-01)
+  Error of red space iteration  5:      6.6437961965 (mu =  -2.00, xmax = 0.404637E+00, xnorm = 0.243830E+01, THR = 0.179319E-01)
+ WARNING: Imaginary eigenvalue in reduced Hessian, size:  1.942634385689485E-003
+ WARNING: Imaginary eigenvalue in reduced Hessian, size:  1.942634385689497E-003
+  Error of red space iteration  6:      1.9213543007 (mu =  -2.00, xmax = 0.924724E-01, xnorm = 0.634458E+00, THR = 0.179319E-01)
+  Error of red space iteration  7:      0.1873917593 (mu =  -2.00, xmax = 0.866912E-01, xnorm = 0.573258E+00, THR = 0.179319E-01)
+  Error of red space iteration  8:      0.0492339279 (mu =  -2.00, xmax = 0.895705E-01, xnorm = 0.591123E+00, THR = 0.179319E-01)
+  Error of red space iteration  9:      0.0107340440 (mu =  -2.00, xmax = 0.900704E-01, xnorm = 0.593564E+00, THR = 0.179319E-01)
+ mumax =  -2.00000000000000     
+  Error of red space iteration 10:      0.6833519965 (mu =  -0.49, xmax = 0.171710E+00, xnorm = 0.105749E+01, THR = 0.179319E-01)
+  Error of red space iteration 11:      0.4189501857 (mu =  -0.49, xmax = 0.202223E+00, xnorm = 0.125394E+01, THR = 0.179319E-01)
+  Error of red space iteration 12:      0.1571825370 (mu =  -0.52, xmax = 0.262525E+00, xnorm = 0.157843E+01, THR = 0.179319E-01)
+  Error of red space iteration 13:      0.0690825173 (mu =  -0.52, xmax = 0.285133E+00, xnorm = 0.167902E+01, THR = 0.179319E-01)
+  Error of red space iteration 14:      0.0319715185 (mu =  -0.53, xmax = 0.292631E+00, xnorm = 0.170848E+01, THR = 0.179319E-01)
+  Error of red space iteration 15:      0.0185730857 (mu =  -0.53, xmax = 0.295431E+00, xnorm = 0.171963E+01, THR = 0.179319E-01)
+  Error of red space iteration 16:      0.0153907673 (mu =  -0.53, xmax = 0.295017E+00, xnorm = 0.171704E+01, THR = 0.179319E-01)
+Newton equations converged in 16 iterations!
+ >>>  CPU Time used in CROP solver     is   0.27 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   189
+ >>>  CPU Time used in G_DENS          is   0.27 seconds
+** Get Fock matrix number   4
+ Replace F with F build from new integral driver
+ QQQ New  F:   13256.1868650881     
+ QQQ Old  F:   13256.1868650854     
+ QQQ DIFF  :  5.163809225194816E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.29997 (xmax)     0.29502    1.71704    0.53    0.2639    0.2825         2          3    %%%
+ Trust radius based on max element!
+ % trust-radius ok, h =   0.299973459534146     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.33 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   2.74302008367146     
+  4   -211.5995957270   -1.44658788025    0.00      0.00000    0.53    0.00E+00    0.27E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.599935903214820     
+ Number of densities in queue:           3
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.3788581368 (mu =   0.00, xmax = 0.578298E-01, xnorm = 0.403877E+00, THR = 0.599936E-02)
+  Error of red space iteration  2:      0.1687042042 (mu =   0.00, xmax = 0.642907E-01, xnorm = 0.426389E+00, THR = 0.599936E-02)
+  Error of red space iteration  3:      0.0885911801 (mu =   0.00, xmax = 0.636946E-01, xnorm = 0.441663E+00, THR = 0.599936E-02)
+  Error of red space iteration  4:      0.0719586801 (mu =   0.00, xmax = 0.641182E-01, xnorm = 0.465125E+00, THR = 0.599936E-02)
+  Error of red space iteration  5:      0.0520041749 (mu =  -0.04, xmax = 0.637676E-01, xnorm = 0.502270E+00, THR = 0.599936E-02)
+  Error of red space iteration  6:      0.0368717717 (mu =  -0.09, xmax = 0.646986E-01, xnorm = 0.516434E+00, THR = 0.599936E-02)
+  Error of red space iteration  7:      0.0279036462 (mu =  -0.11, xmax = 0.676133E-01, xnorm = 0.514610E+00, THR = 0.599936E-02)
+  Error of red space iteration  8:      0.0212567230 (mu =  -0.12, xmax = 0.725250E-01, xnorm = 0.520585E+00, THR = 0.599936E-02)
+  Error of red space iteration  9:      0.0156397806 (mu =  -0.12, xmax = 0.784003E-01, xnorm = 0.531972E+00, THR = 0.599936E-02)
+  Error of red space iteration 10:      0.0114278901 (mu =  -0.12, xmax = 0.844060E-01, xnorm = 0.546641E+00, THR = 0.599936E-02)
+  Error of red space iteration 11:      0.0071669758 (mu =  -0.13, xmax = 0.906685E-01, xnorm = 0.563193E+00, THR = 0.599936E-02)
+  Error of red space iteration 12:      0.0037508832 (mu =  -0.13, xmax = 0.965184E-01, xnorm = 0.580288E+00, THR = 0.599936E-02)
+ mumax = -0.126953125000000     
+  Error of red space iteration 13:      0.0454259005 (mu =  -0.04, xmax = 0.107633E+00, xnorm = 0.620099E+00, THR = 0.599936E-02)
+  Error of red space iteration 14:      0.0368767263 (mu =  -0.04, xmax = 0.123851E+00, xnorm = 0.682435E+00, THR = 0.599936E-02)
+  Error of red space iteration 15:      0.0319476108 (mu =  -0.04, xmax = 0.144710E+00, xnorm = 0.754696E+00, THR = 0.599936E-02)
+  Error of red space iteration 16:      0.0218837774 (mu =  -0.04, xmax = 0.192386E+00, xnorm = 0.928901E+00, THR = 0.599936E-02)
+  Error of red space iteration 17:      0.0101013275 (mu =  -0.04, xmax = 0.271900E+00, xnorm = 0.123532E+01, THR = 0.599936E-02)
+  Error of red space iteration 18:      0.0053712971 (mu =  -0.04, xmax = 0.289287E+00, xnorm = 0.130267E+01, THR = 0.599936E-02)
+Newton equations converged in 18 iterations!
+ >>>  CPU Time used in CROP solver     is   0.38 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   210
+ >>>  CPU Time used in G_DENS          is   0.39 seconds
+** Get Fock matrix number   5
+ Replace F with F build from new integral driver
+ QQQ New  F:   13127.1477384986     
+ QQQ Old  F:   13127.1477384955     
+ QQQ DIFF  :  5.182936861988807E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.29997 (xmax)     0.28929    1.30267    0.04    0.3931    0.0679         3          4    %%%
+ Trust radius based on max element!
+ % trust-radius ok, h =   0.299973459534146     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.34 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   2.33807135023288     
+  5   -211.9128791394   -0.31328341240    0.00      0.00000    0.04    0.00E+00    0.23E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.522413296143704     
+ Number of densities in queue:           4
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.3211976253 (mu =   0.00, xmax = 0.111120E+00, xnorm = 0.427607E+00, THR = 0.522413E-02)
+  Error of red space iteration  2:      0.1811129377 (mu =   0.00, xmax = 0.123565E+00, xnorm = 0.473607E+00, THR = 0.522413E-02)
+  Error of red space iteration  3:      0.0977034968 (mu =  -0.01, xmax = 0.132931E+00, xnorm = 0.505876E+00, THR = 0.522413E-02)
+  Error of red space iteration  4:      0.0500276693 (mu =  -0.06, xmax = 0.143025E+00, xnorm = 0.548930E+00, THR = 0.522413E-02)
+  Error of red space iteration  5:      0.0201552116 (mu =  -0.09, xmax = 0.149109E+00, xnorm = 0.578007E+00, THR = 0.522413E-02)
+  Error of red space iteration  6:      0.0113898110 (mu =  -0.10, xmax = 0.150478E+00, xnorm = 0.586213E+00, THR = 0.522413E-02)
+  Error of red space iteration  7:      0.0062340928 (mu =  -0.10, xmax = 0.151402E+00, xnorm = 0.591755E+00, THR = 0.522413E-02)
+  Error of red space iteration  8:      0.0026625241 (mu =  -0.10, xmax = 0.152106E+00, xnorm = 0.595646E+00, THR = 0.522413E-02)
+ mumax = -9.765625000000000E-002
+  Error of red space iteration  9:      0.0449955544 (mu =   0.00, xmax = 0.162064E+00, xnorm = 0.628449E+00, THR = 0.522413E-02)
+  Error of red space iteration 10:      0.0325960046 (mu =   0.00, xmax = 0.170114E+00, xnorm = 0.662192E+00, THR = 0.522413E-02)
+  Error of red space iteration 11:      0.0134981572 (mu =   0.00, xmax = 0.183226E+00, xnorm = 0.715954E+00, THR = 0.522413E-02)
+  Error of red space iteration 12:      0.0040636313 (mu =   0.00, xmax = 0.187870E+00, xnorm = 0.737118E+00, THR = 0.522413E-02)
+Newton equations converged in 12 iterations!
+ >>>  CPU Time used in CROP solver     is   0.14 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   149
+ >>>  CPU Time used in G_DENS          is   0.16 seconds
+** Get Fock matrix number   6
+ Replace F with F build from new integral driver
+ QQQ New  F:   13145.6891919832     
+ QQQ Old  F:   13145.6891919799     
+ QQQ DIFF  :  5.074600645428956E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.29997 (xmax)     0.18787    0.73712    0.00    0.1524    0.1875         4          5    %%%
+ Trust radius based on max element!
+ % Too large difference between trust-radius and actual step.  Reduce trust-radi
+ us
+ % h(old), h(new):  0.299973459534146       0.209981421673902     
+ >>>  CPU Time used in FCK_FO          is   0.34 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ gradnrm   1.91501727734184     
+  6   -212.0489492801   -0.13607014074    0.00      0.00000    0.00    0.00E+00    0.19E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.453066126043895     
+ Number of densities in queue:           5
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.3029579992 (mu =   0.00, xmax = 0.266149E-01, xnorm = 0.228030E+00, THR = 0.453066E-02)
+  Error of red space iteration  2:      0.1593476356 (mu =   0.00, xmax = 0.319827E-01, xnorm = 0.239623E+00, THR = 0.453066E-02)
+  Error of red space iteration  3:      0.0397282679 (mu =   0.00, xmax = 0.316145E-01, xnorm = 0.238405E+00, THR = 0.453066E-02)
+  Error of red space iteration  4:      0.0169527142 (mu =   0.00, xmax = 0.314370E-01, xnorm = 0.242500E+00, THR = 0.453066E-02)
+  Error of red space iteration  5:      0.0082031779 (mu =   0.00, xmax = 0.317443E-01, xnorm = 0.247639E+00, THR = 0.453066E-02)
+  Error of red space iteration  6:      0.0043486034 (mu =   0.00, xmax = 0.319015E-01, xnorm = 0.251579E+00, THR = 0.453066E-02)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver     is   0.02 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    86
+ >>>  CPU Time used in G_DENS          is   0.03 seconds
+** Get Fock matrix number   7
+ Replace F with F build from new integral driver
+ QQQ New  F:   13154.3933247592     
+ QQQ Old  F:   13154.3933247558     
+ QQQ DIFF  :  5.170036476279789E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.42000 (xnorm)    0.03190    0.25158    0.00    0.1131    0.3213         5          6    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  0.420000000000000     
+  0.294000000000000     
+ >>>  CPU Time used in FCK_FO          is   0.38 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.933084714008355     
+  7   -212.0812528596   -0.03230357952    0.00      0.00000    0.00    0.00E+00    0.93E+00  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.229378999173738     
+ Number of densities in queue:           6
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.2308659730 (mu =   0.00, xmax = 0.199984E-01, xnorm = 0.875862E-01, THR = 0.229379E-02)
+  Error of red space iteration  2:      0.0940071468 (mu =   0.00, xmax = 0.231486E-01, xnorm = 0.111115E+00, THR = 0.229379E-02)
+  Error of red space iteration  3:      0.0296090742 (mu =   0.00, xmax = 0.250602E-01, xnorm = 0.113468E+00, THR = 0.229379E-02)
+  Error of red space iteration  4:      0.0162524440 (mu =   0.00, xmax = 0.272506E-01, xnorm = 0.119771E+00, THR = 0.229379E-02)
+  Error of red space iteration  5:      0.0103577594 (mu =   0.00, xmax = 0.305553E-01, xnorm = 0.131125E+00, THR = 0.229379E-02)
+  Error of red space iteration  6:      0.0059240220 (mu =   0.00, xmax = 0.330433E-01, xnorm = 0.139938E+00, THR = 0.229379E-02)
+  Error of red space iteration  7:      0.0025627776 (mu =   0.00, xmax = 0.344615E-01, xnorm = 0.145177E+00, THR = 0.229379E-02)
+  Error of red space iteration  8:      0.0010768048 (mu =   0.00, xmax = 0.348981E-01, xnorm = 0.146850E+00, THR = 0.229379E-02)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   106
+ >>>  CPU Time used in G_DENS          is   0.06 seconds
+** Get Fock matrix number   8
+ Replace F with F build from new integral driver
+ QQQ New  F:   13147.8306591892     
+ QQQ Old  F:   13147.8306591859     
+ QQQ DIFF  :  5.131760392062479E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.29400 (xnorm)    0.03490    0.14685    0.00    0.1704    0.9095         6          7    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  0.294000000000000     
+  0.205800000000000     
+ >>>  CPU Time used in FCK_FO          is   0.33 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.156388402133659     
+  8   -212.0921127612   -0.01085990160    0.00      0.00000    0.00    0.00E+00    0.16E+00  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  3.486435636629477E-002
+ Number of densities in queue:           7
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0309487164 (mu =   0.00, xmax = 0.351353E-02, xnorm = 0.210271E-01, THR = 0.348644E-03)
+  Error of red space iteration  2:      0.0119395012 (mu =   0.00, xmax = 0.398562E-02, xnorm = 0.239555E-01, THR = 0.348644E-03)
+  Error of red space iteration  3:      0.0050268618 (mu =   0.00, xmax = 0.439643E-02, xnorm = 0.248731E-01, THR = 0.348644E-03)
+  Error of red space iteration  4:      0.0032433094 (mu =   0.00, xmax = 0.487323E-02, xnorm = 0.264559E-01, THR = 0.348644E-03)
+  Error of red space iteration  5:      0.0019837359 (mu =   0.00, xmax = 0.581384E-02, xnorm = 0.298453E-01, THR = 0.348644E-03)
+  Error of red space iteration  6:      0.0010237233 (mu =   0.00, xmax = 0.634597E-02, xnorm = 0.317852E-01, THR = 0.348644E-03)
+  Error of red space iteration  7:      0.0004055407 (mu =   0.00, xmax = 0.658435E-02, xnorm = 0.326407E-01, THR = 0.348644E-03)
+  Error of red space iteration  8:      0.0001808134 (mu =   0.00, xmax = 0.664825E-02, xnorm = 0.328554E-01, THR = 0.348644E-03)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   103
+ >>>  CPU Time used in G_DENS          is   0.06 seconds
+** Get Fock matrix number   9
+ Replace F with F build from new integral driver
+ QQQ New  F:   13150.1357942727     
+ QQQ Old  F:   13150.1357942693     
+ QQQ DIFF  :  5.137720051465073E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.20580 (xnorm)    0.00665    0.03286    0.00    0.1769    0.8079         7          8    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  0.205800000000000     
+  0.144060000000000     
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.743458976805092E-002
+  9   -212.0925464190   -0.00043365778    0.00      0.00000    0.00    0.00E+00    0.57E-01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.182629058163511E-002
+ Number of densities in queue:           8
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0099464312 (mu =   0.00, xmax = 0.183384E-02, xnorm = 0.855824E-02, THR = 0.118263E-03)
+  Error of red space iteration  2:      0.0032849323 (mu =   0.00, xmax = 0.210858E-02, xnorm = 0.946021E-02, THR = 0.118263E-03)
+  Error of red space iteration  3:      0.0016612476 (mu =   0.00, xmax = 0.218961E-02, xnorm = 0.987762E-02, THR = 0.118263E-03)
+  Error of red space iteration  4:      0.0011442017 (mu =   0.00, xmax = 0.233265E-02, xnorm = 0.105361E-01, THR = 0.118263E-03)
+  Error of red space iteration  5:      0.0006362807 (mu =   0.00, xmax = 0.260035E-02, xnorm = 0.118221E-01, THR = 0.118263E-03)
+  Error of red space iteration  6:      0.0003334684 (mu =   0.00, xmax = 0.270869E-02, xnorm = 0.123464E-01, THR = 0.118263E-03)
+  Error of red space iteration  7:      0.0001825427 (mu =   0.00, xmax = 0.275245E-02, xnorm = 0.125426E-01, THR = 0.118263E-03)
+  Error of red space iteration  8:      0.0000854283 (mu =   0.00, xmax = 0.276898E-02, xnorm = 0.126164E-01, THR = 0.118263E-03)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   102
+ >>>  CPU Time used in G_DENS          is   0.06 seconds
+** Get Fock matrix number  10
+ Replace F with F build from new integral driver
+ QQQ New  F:   13150.0596167921     
+ QQQ Old  F:   13150.0596167887     
+ QQQ DIFF  :  5.136578594654024E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.14406 (xnorm)    0.00277    0.01262    0.00    0.1887    0.8041         8          9    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  0.144060000000000     
+  0.100842000000000     
+ >>>  CPU Time used in FCK_FO          is   0.36 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.062853643188127E-002
+ 10   -212.0926134846   -0.00006706555    0.00      0.00000    0.00    0.00E+00    0.21E-01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  4.151217224001435E-003
+ Number of densities in queue:           9
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0038589076 (mu =   0.00, xmax = 0.627629E-03, xnorm = 0.355486E-02, THR = 0.415122E-04)
+  Error of red space iteration  2:      0.0012277018 (mu =   0.00, xmax = 0.654129E-03, xnorm = 0.389876E-02, THR = 0.415122E-04)
+  Error of red space iteration  3:      0.0007448181 (mu =   0.00, xmax = 0.700689E-03, xnorm = 0.418770E-02, THR = 0.415122E-04)
+  Error of red space iteration  4:      0.0004704180 (mu =   0.00, xmax = 0.778777E-03, xnorm = 0.473929E-02, THR = 0.415122E-04)
+  Error of red space iteration  5:      0.0002162133 (mu =   0.00, xmax = 0.880661E-03, xnorm = 0.539918E-02, THR = 0.415122E-04)
+  Error of red space iteration  6:      0.0001154760 (mu =   0.00, xmax = 0.911514E-03, xnorm = 0.553798E-02, THR = 0.415122E-04)
+  Error of red space iteration  7:      0.0000734996 (mu =   0.00, xmax = 0.926831E-03, xnorm = 0.558286E-02, THR = 0.415122E-04)
+  Error of red space iteration  8:      0.0000436019 (mu =   0.00, xmax = 0.938637E-03, xnorm = 0.560504E-02, THR = 0.415122E-04)
+  Error of red space iteration  9:      0.0000207520 (mu =   0.00, xmax = 0.945988E-03, xnorm = 0.561516E-02, THR = 0.415122E-04)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   112
+ >>>  CPU Time used in G_DENS          is   0.07 seconds
+** Get Fock matrix number  11
+ Replace F with F build from new integral driver
+ QQQ New  F:   13149.8632061406     
+ QQQ Old  F:   13149.8632061372     
+ QQQ DIFF  :  5.136691699220435E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.10084 (xnorm)    0.00095    0.00562    0.00    0.1947    0.9326         9         10    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  0.100842000000000     
+  7.058939999999998E-002
+ >>>  CPU Time used in FCK_FO          is   0.34 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  7.055494510055479E-003
+ 11   -212.0926246977   -0.00001121314    0.00      0.00000    0.00    0.00E+00    0.71E-02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.310290119355349E-003
+ Number of densities in queue:           9
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0011532614 (mu =   0.00, xmax = 0.263836E-03, xnorm = 0.126605E-02, THR = 0.131029E-04)
+  Error of red space iteration  2:      0.0003656354 (mu =   0.00, xmax = 0.289333E-03, xnorm = 0.137116E-02, THR = 0.131029E-04)
+  Error of red space iteration  3:      0.0002554777 (mu =   0.00, xmax = 0.316608E-03, xnorm = 0.149450E-02, THR = 0.131029E-04)
+  Error of red space iteration  4:      0.0001521458 (mu =   0.00, xmax = 0.364929E-03, xnorm = 0.174625E-02, THR = 0.131029E-04)
+  Error of red space iteration  5:      0.0000643593 (mu =   0.00, xmax = 0.402544E-03, xnorm = 0.193613E-02, THR = 0.131029E-04)
+  Error of red space iteration  6:      0.0000371530 (mu =   0.00, xmax = 0.410538E-03, xnorm = 0.197601E-02, THR = 0.131029E-04)
+  Error of red space iteration  7:      0.0000234066 (mu =   0.00, xmax = 0.413709E-03, xnorm = 0.199088E-02, THR = 0.131029E-04)
+  Error of red space iteration  8:      0.0000124714 (mu =   0.00, xmax = 0.416070E-03, xnorm = 0.200003E-02, THR = 0.131029E-04)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.05 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   101
+ >>>  CPU Time used in G_DENS          is   0.07 seconds
+** Get Fock matrix number  12
+ Replace F with F build from new integral driver
+ QQQ New  F:   13149.9808027111     
+ QQQ Old  F:   13149.9808027077     
+ QQQ DIFF  :  5.136750584176808E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.07059 (xnorm)    0.00042    0.00200    0.00    0.2033    0.9229         9         11    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  7.058939999999998E-002
+  4.941257999999998E-002
+ >>>  CPU Time used in FCK_FO          is   0.33 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.390239656201584E-003
+ 12   -212.0926261181   -0.00000142041    0.00      0.00000    0.00    0.00E+00    0.24E-02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm  4.501062797283232E-004
+ Number of densities in queue:           9
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0003204183 (mu =   0.00, xmax = 0.922355E-04, xnorm = 0.424945E-03, THR = 0.450106E-05)
+  Error of red space iteration  2:      0.0001380076 (mu =   0.00, xmax = 0.102871E-03, xnorm = 0.467248E-03, THR = 0.450106E-05)
+  Error of red space iteration  3:      0.0000983477 (mu =   0.00, xmax = 0.112115E-03, xnorm = 0.509412E-03, THR = 0.450106E-05)
+  Error of red space iteration  4:      0.0000595688 (mu =   0.00, xmax = 0.133393E-03, xnorm = 0.608080E-03, THR = 0.450106E-05)
+  Error of red space iteration  5:      0.0000246583 (mu =   0.00, xmax = 0.153494E-03, xnorm = 0.700889E-03, THR = 0.450106E-05)
+  Error of red space iteration  6:      0.0000133887 (mu =   0.00, xmax = 0.157555E-03, xnorm = 0.718936E-03, THR = 0.450106E-05)
+  Error of red space iteration  7:      0.0000088491 (mu =   0.00, xmax = 0.159354E-03, xnorm = 0.724923E-03, THR = 0.450106E-05)
+  Error of red space iteration  8:      0.0000049053 (mu =   0.00, xmax = 0.160807E-03, xnorm = 0.728953E-03, THR = 0.450106E-05)
+  Error of red space iteration  9:      0.0000025740 (mu =   0.00, xmax = 0.161534E-03, xnorm = 0.730599E-03, THR = 0.450106E-05)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   0.07 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   111
+ >>>  CPU Time used in G_DENS          is   0.08 seconds
+** Get Fock matrix number  13
+ Replace F with F build from new integral driver
+ QQQ New  F:   13149.9126791982     
+ QQQ Old  F:   13149.9126791948     
+ QQQ DIFF  :  5.136705793841486E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.04941 (xnorm)    0.00016    0.00073    0.00    0.1982    0.8954         9         12    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  4.941257999999998E-002
+  3.458880599999999E-002
+ >>>  CPU Time used in FCK_FO          is   0.34 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  9.896515604042942E-004
+ 13   -212.0926262881   -0.00000016995    0.00      0.00000    0.00    0.00E+00    0.99E-03  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  2.210547920343631E-004
+ Number of densities in queue:           9
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0002175645 (mu =   0.00, xmax = 0.201896E-04, xnorm = 0.147297E-03, THR = 0.221055E-05)
+  Error of red space iteration  2:      0.0000862606 (mu =   0.00, xmax = 0.230211E-04, xnorm = 0.167101E-03, THR = 0.221055E-05)
+  Error of red space iteration  3:      0.0000402755 (mu =   0.00, xmax = 0.242782E-04, xnorm = 0.175668E-03, THR = 0.221055E-05)
+  Error of red space iteration  4:      0.0000269363 (mu =   0.00, xmax = 0.263536E-04, xnorm = 0.189346E-03, THR = 0.221055E-05)
+  Error of red space iteration  5:      0.0000165446 (mu =   0.00, xmax = 0.312308E-04, xnorm = 0.219796E-03, THR = 0.221055E-05)
+  Error of red space iteration  6:      0.0000088764 (mu =   0.00, xmax = 0.339214E-04, xnorm = 0.236869E-03, THR = 0.221055E-05)
+  Error of red space iteration  7:      0.0000041271 (mu =   0.00, xmax = 0.354980E-04, xnorm = 0.245340E-03, THR = 0.221055E-05)
+  Error of red space iteration  8:      0.0000024152 (mu =   0.00, xmax = 0.361623E-04, xnorm = 0.247866E-03, THR = 0.221055E-05)
+  Error of red space iteration  9:      0.0000014312 (mu =   0.00, xmax = 0.365498E-04, xnorm = 0.248783E-03, THR = 0.221055E-05)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+No. of matmuls in get_density:   111
+ >>>  CPU Time used in G_DENS          is   0.07 seconds
+** Get Fock matrix number  14
+ Replace F with F build from new integral driver
+ QQQ New  F:   13149.9702229459     
+ QQQ Old  F:   13149.9702229425     
+ QQQ DIFF  :  5.136709918724411E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.03459 (xnorm)    0.00004    0.00025    0.00    0.1804    0.9282         9         13    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  3.458880599999999E-002
+  2.421216419999999E-002
+ >>>  CPU Time used in FCK_FO          is   0.34 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.097200803475219E-004
+ 14   -212.0926263089   -0.00000002089    0.00      0.00000    0.00    0.00E+00    0.21E-03  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  4.756896024996743E-005
+ Number of densities in queue:           9
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000506775 (mu =   0.00, xmax = 0.781073E-05, xnorm = 0.391900E-04, THR = 0.475690E-06)
+  Error of red space iteration  2:      0.0000163561 (mu =   0.00, xmax = 0.854890E-05, xnorm = 0.423031E-04, THR = 0.475690E-06)
+  Error of red space iteration  3:      0.0000075396 (mu =   0.00, xmax = 0.920676E-05, xnorm = 0.447456E-04, THR = 0.475690E-06)
+  Error of red space iteration  4:      0.0000049626 (mu =   0.00, xmax = 0.997497E-05, xnorm = 0.481501E-04, THR = 0.475690E-06)
+  Error of red space iteration  5:      0.0000028470 (mu =   0.00, xmax = 0.110184E-04, xnorm = 0.534371E-04, THR = 0.475690E-06)
+  Error of red space iteration  6:      0.0000016070 (mu =   0.00, xmax = 0.113533E-04, xnorm = 0.555350E-04, THR = 0.475690E-06)
+  Error of red space iteration  7:      0.0000009884 (mu =   0.00, xmax = 0.114269E-04, xnorm = 0.564599E-04, THR = 0.475690E-06)
+  Error of red space iteration  8:      0.0000005806 (mu =   0.00, xmax = 0.114093E-04, xnorm = 0.569189E-04, THR = 0.475690E-06)
+  Error of red space iteration  9:      0.0000002901 (mu =   0.00, xmax = 0.113810E-04, xnorm = 0.571346E-04, THR = 0.475690E-06)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   110
+ >>>  CPU Time used in G_DENS          is   0.07 seconds
+** Get Fock matrix number  15
+ Replace F with F build from new integral driver
+ QQQ New  F:   13149.9660662217     
+ QQQ Old  F:   13149.9660662183     
+ QQQ DIFF  :  5.136735374579789E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.02421 (xnorm)    0.00001    0.00006    0.00    0.1874    0.9269         9         14    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  2.421216419999999E-002
+  1.694851493999999E-002
+ >>>  CPU Time used in FCK_FO          is   0.32 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.477501463181090E-005
+ 15   -212.0926263101   -0.00000000120    0.00      0.00000    0.00    0.00E+00    0.55E-04  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.098445712384102E-005
+ Number of densities in queue:           9
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000108553 (mu =   0.00, xmax = 0.207751E-05, xnorm = 0.981049E-05, THR = 0.109845E-06)
+  Error of red space iteration  2:      0.0000029561 (mu =   0.00, xmax = 0.227409E-05, xnorm = 0.105261E-04, THR = 0.109845E-06)
+  Error of red space iteration  3:      0.0000016531 (mu =   0.00, xmax = 0.247148E-05, xnorm = 0.112294E-04, THR = 0.109845E-06)
+  Error of red space iteration  4:      0.0000010260 (mu =   0.00, xmax = 0.277885E-05, xnorm = 0.123780E-04, THR = 0.109845E-06)
+  Error of red space iteration  5:      0.0000004799 (mu =   0.00, xmax = 0.307750E-05, xnorm = 0.135742E-04, THR = 0.109845E-06)
+  Error of red space iteration  6:      0.0000002494 (mu =   0.00, xmax = 0.314385E-05, xnorm = 0.138652E-04, THR = 0.109845E-06)
+  Error of red space iteration  7:      0.0000001562 (mu =   0.00, xmax = 0.316243E-05, xnorm = 0.139547E-04, THR = 0.109845E-06)
+  Error of red space iteration  8:      0.0000000987 (mu =   0.00, xmax = 0.316953E-05, xnorm = 0.139949E-04, THR = 0.109845E-06)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   100
+ >>>  CPU Time used in G_DENS          is   0.06 seconds
+** Get Fock matrix number  16
+ Replace F with F build from new integral driver
+ QQQ New  F:   13149.9670802388     
+ QQQ Old  F:   13149.9670802354     
+ QQQ DIFF  :  5.136740201723381E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.01695 (xnorm)    0.00000    0.00001    0.00    0.2122    0.8599         9         15    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  1.694851493999999E-002
+  1.186396045799999E-002
+ >>>  CPU Time used in FCK_FO          is   0.36 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.132887750665196E-005
+ 16   -212.0926263102   -0.00000000008    0.00      0.00000    0.00    0.00E+00    0.21E-04  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  4.122493693462977E-006
+ Number of densities in queue:           9
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000032248 (mu =   0.00, xmax = 0.988307E-06, xnorm = 0.408555E-05, THR = 0.412249E-07)
+  Error of red space iteration  2:      0.0000012814 (mu =   0.00, xmax = 0.110168E-05, xnorm = 0.451837E-05, THR = 0.412249E-07)
+  Error of red space iteration  3:      0.0000008482 (mu =   0.00, xmax = 0.120043E-05, xnorm = 0.494033E-05, THR = 0.412249E-07)
+  Error of red space iteration  4:      0.0000004785 (mu =   0.00, xmax = 0.138202E-05, xnorm = 0.577632E-05, THR = 0.412249E-07)
+  Error of red space iteration  5:      0.0000001907 (mu =   0.00, xmax = 0.152202E-05, xnorm = 0.643359E-05, THR = 0.412249E-07)
+  Error of red space iteration  6:      0.0000000941 (mu =   0.00, xmax = 0.153981E-05, xnorm = 0.652649E-05, THR = 0.412249E-07)
+  Error of red space iteration  7:      0.0000000495 (mu =   0.00, xmax = 0.154548E-05, xnorm = 0.655820E-05, THR = 0.412249E-07)
+  Error of red space iteration  8:      0.0000000294 (mu =   0.00, xmax = 0.154844E-05, xnorm = 0.656804E-05, THR = 0.412249E-07)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.05 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   100
+ >>>  CPU Time used in G_DENS          is   0.07 seconds
+** Get Fock matrix number  17
+ Replace F with F build from new integral driver
+ QQQ New  F:   13149.9668149395     
+ QQQ Old  F:   13149.9668149361     
+ QQQ DIFF  :  5.136697064425439E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.01186 (xnorm)    0.00000    0.00001    0.00    0.1945    0.9481         9         16    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  1.186396045799999E-002
+  8.304772320599995E-003
+ >>>  CPU Time used in FCK_FO          is   0.36 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ gradnrm  7.020624844071646E-006
+ 17   -212.0926263102   -0.00000000001    0.00      0.00000    0.00    0.00E+00    0.70E-05  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.352792846505893E-006
+ Number of densities in queue:           9
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000011942 (mu =   0.00, xmax = 0.253012E-06, xnorm = 0.133867E-05, THR = 0.135279E-07)
+  Error of red space iteration  2:      0.0000004420 (mu =   0.00, xmax = 0.276769E-06, xnorm = 0.145383E-05, THR = 0.135279E-07)
+  Error of red space iteration  3:      0.0000002923 (mu =   0.00, xmax = 0.297493E-06, xnorm = 0.158686E-05, THR = 0.135279E-07)
+  Error of red space iteration  4:      0.0000001801 (mu =   0.00, xmax = 0.340230E-06, xnorm = 0.185170E-05, THR = 0.135279E-07)
+  Error of red space iteration  5:      0.0000000756 (mu =   0.00, xmax = 0.383764E-06, xnorm = 0.210858E-05, THR = 0.135279E-07)
+  Error of red space iteration  6:      0.0000000348 (mu =   0.00, xmax = 0.393493E-06, xnorm = 0.216547E-05, THR = 0.135279E-07)
+  Error of red space iteration  7:      0.0000000193 (mu =   0.00, xmax = 0.397606E-06, xnorm = 0.218194E-05, THR = 0.135279E-07)
+  Error of red space iteration  8:      0.0000000100 (mu =   0.00, xmax = 0.399930E-06, xnorm = 0.218936E-05, THR = 0.135279E-07)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.05 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   100
+ >>>  CPU Time used in G_DENS          is   0.05 seconds
+** Get Fock matrix number  18
+ Replace F with F build from new integral driver
+ QQQ New  F:   13149.9669533925     
+ QQQ Old  F:   13149.9669533892     
+ QQQ DIFF  :  5.136735404586321E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.00830 (xnorm)    0.00000    0.00000    0.00    0.1927    0.8994         9         17    %%%
+ Trust radius based on max norm!
+ % Reduce trust-radius, h(old), h(new):  8.304772320599995E-003
+  5.813340624419996E-003
+ >>>  CPU Time used in FCK_FO          is   0.35 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.707032312123601E-006
+ 18   -212.0926263102    0.00000000000    0.00      0.00000    0.00    0.00E+00    0.37E-05  ###
+ >>>  CPU Time used in **ITER          is   8.12 seconds
+Total no. of matmuls in SCF optimization:       2178
+ Postponing calculation of HOMO-LUMO gap to response part...
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2  -14.34905070839    0.0000    4.4381    0.0000000
+  3   -5.73600835436    0.0000    2.0705    0.0000000
+  4   -1.44658788025    0.0000    0.5329    0.0000000
+  5   -0.31328341240    0.0000    0.0386    0.0000000
+  6   -0.13607014074    0.0000    0.0000    0.0000000
+  7   -0.03230357952    0.0000    0.0000    0.0000000
+  8   -0.01085990160    0.0000    0.0000    0.0000000
+  9   -0.00043365778    0.0000    0.0000    0.0000000
+ 10   -0.00006706555    0.0000    0.0000    0.0000000
+ 11   -0.00001121314    0.0000    0.0000    0.0000000
+ 12   -0.00000142041    0.0000    0.0000    0.0000000
+ 13   -0.00000016995    0.0000    0.0000    0.0000000
+ 14   -0.00000002089    0.0000    0.0000    0.0000000
+ 15   -0.00000000120    0.0000    0.0000    0.0000000
+ 16   -0.00000000008    0.0000    0.0000    0.0000000
+ 17   -0.00000000001    0.0000    0.0000    0.0000000
+ 18    0.00000000000    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -190.06794878397749926080      0.294399660776531D+02
+    2          -204.41699949236721067791      0.217451881129075D+02
+    3          -210.15300784672990630497      0.937265437865275D+01
+    4          -211.59959572697823659837      0.274302008367146D+01
+    5          -211.91287913937810571952      0.233807135023288D+01
+    6          -212.04894928011401589174      0.191501727734184D+01
+    7          -212.08125285963240003184      0.933084714008355D+00
+    8          -212.09211276123238576474      0.156388402133659D+00
+    9          -212.09254641901185323150      0.574345897680509D-01
+   10          -212.09261348456237783466      0.206285364318813D-01
+   11          -212.09262469769907966111      0.705549451005548D-02
+   12          -212.09262611811084298097      0.239023965620158D-02
+   13          -212.09262628805987560554      0.989651560404294D-03
+   14          -212.09262630894500034628      0.209720080347522D-03
+   15          -212.09262631014428279741      0.547750146318109D-04
+   16          -212.09262631022716050211      0.213288775066520D-04
+   17          -212.09262631024108713973      0.702062484407165D-05
+   18          -212.09262631024256506862      0.370703231212360D-05
+ 
+      SCF converged !!!! 
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (LSTDHF) >>>
+
+
+ 
+ Number of occupied alpha orbitals:          12
+ Number of occupied beta orbitals:          13
+ 
+ Number of virtual alpha orbitals:          19
+ Number of virtual beta orbitals:          18
+ 
+ Number of occupied alpha orbital energies to be found:           2
+ Number of occupied beta orbital energies to be found:           2
+ 
+ Number of virtual alpha orbital energies to be found:           2
+ Number of virtual beta orbital energies to be found:           2
+ 
+ 
+    E(LUMO), alpha:                          0.124434 au
+   -E(HOMO), alpha:                         -0.502696 au
+   -------------------------------------
+    "Alpha" HOMO-LUMO Gap (iteratively):     0.627130 au
+ 
+ 
+    E(LUMO), beta:                           0.250621 au
+   -E(HOMO), beta:                          -0.422863 au
+   -------------------------------------
+    "Beta" HOMO-LUMO Gap (iteratively):      0.673484 au
+ 
+ 
+    E(LUMO):                                 0.124434 au
+   -E(HOMO):                                -0.422863 au
+   -------------------------------------
+    "Overall" HOMO-LUMO Gap (iteratively):   0.547298 au
+ 
+ >>>  CPU Time used in HL GAP          is   2.89 seconds
+ >>>  CPU Time used in HESEIG          is   0.00 seconds
+ Vector            1  has norm:   0.854454748006526     
+ Vector            2  has norm:   0.833969987021326     
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ QQQ DIFF   2.616966130822755E-024
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   2.916571103057397E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.68 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  2.369264163043426E-004
+Residual norm for vector   1 is:   0.227174E+00    and eigenvalue =   0.33073328   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3005488808E+00
+          Preconditioning: Error of red space iteration  2:  0.7738552757E-01
+          Preconditioning: Error of red space iteration  3:  0.4489983295E-01
+          Preconditioning: Error of red space iteration  4:  0.3551057522E-01
+          Preconditioning: Error of red space iteration  5:  0.1762910667E-01
+          Preconditioning: Error of red space iteration  6:  0.1197769084E-01
+          Preconditioning: Error of red space iteration  7:  0.8782946450E-02
+          Preconditioning: Error of red space iteration  8:  0.4359287255E-02
+          Preconditioning: Error of red space iteration  9:  0.2139551511E-02
+     Preconditioning: Linear equations converged in  9 iterations!
+Residual norm for vector   2 is:   0.246679E+00    and eigenvalue =   0.37790114   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3124876455E+00
+          Preconditioning: Error of red space iteration  2:  0.9253078620E-01
+          Preconditioning: Error of red space iteration  3:  0.5419083517E-01
+          Preconditioning: Error of red space iteration  4:  0.4000541067E-01
+          Preconditioning: Error of red space iteration  5:  0.2318141260E-01
+          Preconditioning: Error of red space iteration  6:  0.1374473241E-01
+          Preconditioning: Error of red space iteration  7:  0.1101020727E-01
+          Preconditioning: Error of red space iteration  8:  0.6157157126E-02
+          Preconditioning: Error of red space iteration  9:  0.3046611211E-02
+          Preconditioning: Error of red space iteration 10:  0.1666561734E-02
+     Preconditioning: Linear equations converged in 10 iterations!
+ Vector            1  has norm:   9.835482915094877E-002
+ Vector            2  has norm:   0.111788460886701     
+ >>>  CPU Time used in RSP_IT          is   0.82 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ QQQ DIFF   1.178363702238236E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   4.769474457182770E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.71 seconds
+ omega in build_reduc..   0.330733275780413     
+Residual norm for vector   1 is:   0.972096E-01    and eigenvalue =   0.29328655   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1068520982E+00
+          Preconditioning: Error of red space iteration  2:  0.3589345356E-01
+          Preconditioning: Error of red space iteration  3:  0.2102001379E-01
+          Preconditioning: Error of red space iteration  4:  0.1110848066E-01
+          Preconditioning: Error of red space iteration  5:  0.6120101082E-02
+          Preconditioning: Error of red space iteration  6:  0.3485018448E-02
+          Preconditioning: Error of red space iteration  7:  0.1886789816E-02
+          Preconditioning: Error of red space iteration  8:  0.9677458699E-03
+          Preconditioning: Error of red space iteration  9:  0.4573713118E-03
+     Preconditioning: Linear equations converged in  9 iterations!
+Residual norm for vector   2 is:   0.112410E+00    and eigenvalue =   0.33927996   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1130948241E+00
+          Preconditioning: Error of red space iteration  2:  0.3875852873E-01
+          Preconditioning: Error of red space iteration  3:  0.2598503674E-01
+          Preconditioning: Error of red space iteration  4:  0.1552982159E-01
+          Preconditioning: Error of red space iteration  5:  0.7728089579E-02
+          Preconditioning: Error of red space iteration  6:  0.4349973055E-02
+          Preconditioning: Error of red space iteration  7:  0.2484284409E-02
+          Preconditioning: Error of red space iteration  8:  0.1505259732E-02
+          Preconditioning: Error of red space iteration  9:  0.7131596531E-03
+     Preconditioning: Linear equations converged in  9 iterations!
+ Vector            1  has norm:   7.292315102281591E-003
+ Vector            2  has norm:   7.193632730145940E-003
+ >>>  CPU Time used in RSP_IT          is   0.85 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ QQQ DIFF   1.233039296655401E-022
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   1.792834167648466E-022
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.69 seconds
+ omega in build_reduc..   0.293286551632307     
+Residual norm for vector   1 is:   0.521648E-01    and eigenvalue =   0.28874700   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.7134943364E-01
+          Preconditioning: Error of red space iteration  2:  0.1944290233E-01
+          Preconditioning: Error of red space iteration  3:  0.1244928530E-01
+          Preconditioning: Error of red space iteration  4:  0.7059439004E-02
+          Preconditioning: Error of red space iteration  5:  0.4191592385E-02
+          Preconditioning: Error of red space iteration  6:  0.2272531159E-02
+          Preconditioning: Error of red space iteration  7:  0.1289307115E-02
+          Preconditioning: Error of red space iteration  8:  0.7079482790E-03
+          Preconditioning: Error of red space iteration  9:  0.3456570638E-03
+     Preconditioning: Linear equations converged in  9 iterations!
+Residual norm for vector   2 is:   0.576797E-01    and eigenvalue =   0.33545670   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.7110187141E-01
+          Preconditioning: Error of red space iteration  2:  0.2469109099E-01
+          Preconditioning: Error of red space iteration  3:  0.1461644404E-01
+          Preconditioning: Error of red space iteration  4:  0.8698599474E-02
+          Preconditioning: Error of red space iteration  5:  0.4911138850E-02
+          Preconditioning: Error of red space iteration  6:  0.2850338445E-02
+          Preconditioning: Error of red space iteration  7:  0.1657250372E-02
+          Preconditioning: Error of red space iteration  8:  0.1042372273E-02
+          Preconditioning: Error of red space iteration  9:  0.4223541985E-03
+     Preconditioning: Linear equations converged in  9 iterations!
+ Vector            1  has norm:   2.701420057579066E-003
+ Vector            2  has norm:   2.244828612586627E-003
+ >>>  CPU Time used in RSP_IT          is   0.83 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ QQQ DIFF   4.448563363037127E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   2.900551450207549E-022
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.67 seconds
+ omega in build_reduc..   0.288747004788621     
+Residual norm for vector   1 is:   0.257707E-01    and eigenvalue =   0.28710441   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3282055744E-01
+          Preconditioning: Error of red space iteration  2:  0.1101775807E-01
+          Preconditioning: Error of red space iteration  3:  0.6598393954E-02
+          Preconditioning: Error of red space iteration  4:  0.3837693547E-02
+          Preconditioning: Error of red space iteration  5:  0.2339937487E-02
+          Preconditioning: Error of red space iteration  6:  0.1240413388E-02
+          Preconditioning: Error of red space iteration  7:  0.6782117208E-03
+          Preconditioning: Error of red space iteration  8:  0.3612569372E-03
+          Preconditioning: Error of red space iteration  9:  0.1882731987E-03
+     Preconditioning: Linear equations converged in  9 iterations!
+Residual norm for vector   2 is:   0.320747E-01    and eigenvalue =   0.33346035   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4953854031E-01
+          Preconditioning: Error of red space iteration  2:  0.1423599733E-01
+          Preconditioning: Error of red space iteration  3:  0.9550581207E-02
+          Preconditioning: Error of red space iteration  4:  0.6209606038E-02
+          Preconditioning: Error of red space iteration  5:  0.3366923865E-02
+          Preconditioning: Error of red space iteration  6:  0.1859047895E-02
+          Preconditioning: Error of red space iteration  7:  0.1123995520E-02
+          Preconditioning: Error of red space iteration  8:  0.6485673074E-03
+          Preconditioning: Error of red space iteration  9:  0.3270280379E-03
+          Preconditioning: Error of red space iteration 10:  0.1799373028E-03
+     Preconditioning: Linear equations converged in 10 iterations!
+ Vector            1  has norm:   7.189457613851657E-004
+ Vector            2  has norm:   1.389834878407972E-003
+ >>>  CPU Time used in RSP_IT          is   0.84 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ QQQ DIFF   9.788173140098161E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   1.437624641763034E-022
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.71 seconds
+ omega in build_reduc..   0.287104414845595     
+Residual norm for vector   1 is:   0.172317E-01    and eigenvalue =   0.28677584   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2157422861E-01
+          Preconditioning: Error of red space iteration  2:  0.6112481430E-02
+          Preconditioning: Error of red space iteration  3:  0.3350347225E-02
+          Preconditioning: Error of red space iteration  4:  0.1991409995E-02
+          Preconditioning: Error of red space iteration  5:  0.1074769678E-02
+          Preconditioning: Error of red space iteration  6:  0.6896364364E-03
+          Preconditioning: Error of red space iteration  7:  0.3278421236E-03
+          Preconditioning: Error of red space iteration  8:  0.1945993169E-03
+          Preconditioning: Error of red space iteration  9:  0.9056484956E-04
+     Preconditioning: Linear equations converged in  9 iterations!
+Residual norm for vector   2 is:   0.220402E-01    and eigenvalue =   0.33239601   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3219342012E-01
+          Preconditioning: Error of red space iteration  2:  0.1022598913E-01
+          Preconditioning: Error of red space iteration  3:  0.7136883052E-02
+          Preconditioning: Error of red space iteration  4:  0.4410653349E-02
+          Preconditioning: Error of red space iteration  5:  0.2148418126E-02
+          Preconditioning: Error of red space iteration  6:  0.1143540776E-02
+          Preconditioning: Error of red space iteration  7:  0.6486277335E-03
+          Preconditioning: Error of red space iteration  8:  0.3562650658E-03
+          Preconditioning: Error of red space iteration  9:  0.2002265137E-03
+     Preconditioning: Linear equations converged in  9 iterations!
+ Vector            1  has norm:   1.604798563134758E-004
+ Vector            2  has norm:   5.736913608390799E-004
+ >>>  CPU Time used in RSP_IT          is   0.85 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ QQQ DIFF   8.645940802288793E-022
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   9.306722512259916E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.65 seconds
+ omega in build_reduc..   0.286775839311588     
+Residual norm for vector   1 is:   0.653189E-02    and eigenvalue =   0.28669052   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1003086172E-01
+          Preconditioning: Error of red space iteration  2:  0.2871597481E-02
+          Preconditioning: Error of red space iteration  3:  0.1781943569E-02
+          Preconditioning: Error of red space iteration  4:  0.1028078477E-02
+          Preconditioning: Error of red space iteration  5:  0.5170817338E-03
+          Preconditioning: Error of red space iteration  6:  0.3007948117E-03
+          Preconditioning: Error of red space iteration  7:  0.1895024272E-03
+          Preconditioning: Error of red space iteration  8:  0.9730334634E-04
+          Preconditioning: Error of red space iteration  9:  0.5051850068E-04
+     Preconditioning: Linear equations converged in  9 iterations!
+Residual norm for vector   2 is:   0.158869E-01    and eigenvalue =   0.33193977   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2060364482E-01
+          Preconditioning: Error of red space iteration  2:  0.8173806468E-02
+          Preconditioning: Error of red space iteration  3:  0.5693864834E-02
+          Preconditioning: Error of red space iteration  4:  0.3871440659E-02
+          Preconditioning: Error of red space iteration  5:  0.1753309591E-02
+          Preconditioning: Error of red space iteration  6:  0.8821498758E-03
+          Preconditioning: Error of red space iteration  7:  0.5004279820E-03
+          Preconditioning: Error of red space iteration  8:  0.3014645087E-03
+          Preconditioning: Error of red space iteration  9:  0.1878457707E-03
+          Preconditioning: Error of red space iteration 10:  0.9397042260E-04
+     Preconditioning: Linear equations converged in 10 iterations!
+ Vector            1  has norm:   4.616640593670349E-005
+ Vector            2  has norm:   4.143088066041748E-004
+ >>>  CPU Time used in RSP_IT          is   0.82 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ QQQ DIFF   3.450225300885255E-022
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   5.636280301672534E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.68 seconds
+ omega in build_reduc..   0.286690518865015     
+Residual norm for vector   1 is:   0.289675E-02    and eigenvalue =   0.28666424   It =   7 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3752612563E-02
+          Preconditioning: Error of red space iteration  2:  0.1346735019E-02
+          Preconditioning: Error of red space iteration  3:  0.8675093165E-03
+          Preconditioning: Error of red space iteration  4:  0.5050000377E-03
+          Preconditioning: Error of red space iteration  5:  0.2633400765E-03
+          Preconditioning: Error of red space iteration  6:  0.1488340168E-03
+          Preconditioning: Error of red space iteration  7:  0.7768943386E-04
+          Preconditioning: Error of red space iteration  8:  0.4221378458E-04
+          Preconditioning: Error of red space iteration  9:  0.3653693974E-04
+          Preconditioning: Error of red space iteration 10:  0.3260101994E-04
+          Preconditioning: Error of red space iteration 11:  0.3106574164E-04
+          Preconditioning: Error of red space iteration 12:  0.2940543489E-04
+     Preconditioning: Linear equations converged in 12 iterations!
+Residual norm for vector   2 is:   0.965566E-02    and eigenvalue =   0.33170503   It =   7 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.9505428836E-02
+          Preconditioning: Error of red space iteration  2:  0.4415803909E-02
+          Preconditioning: Error of red space iteration  3:  0.3393694026E-02
+          Preconditioning: Error of red space iteration  4:  0.2003944270E-02
+          Preconditioning: Error of red space iteration  5:  0.1007302168E-02
+          Preconditioning: Error of red space iteration  6:  0.6040310984E-03
+          Preconditioning: Error of red space iteration  7:  0.3568197490E-03
+          Preconditioning: Error of red space iteration  8:  0.2223679556E-03
+          Preconditioning: Error of red space iteration  9:  0.1160836116E-03
+          Preconditioning: Error of red space iteration 10:  0.6337448361E-04
+     Preconditioning: Linear equations converged in 10 iterations!
+ Vector            1  has norm:   8.708115627631014E-006
+ Vector            2  has norm:   9.489075681125477E-005
+ Vector            1  has norm:    1.00000000000000     
+ Vector            2  has norm:   0.999999999999999     
+ >>>  CPU Time used in RSP_IT          is   0.92 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ QQQ DIFF   2.208729380239740E-022
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   3.349880383223771E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.69 seconds
+ omega in build_reduc..   0.286664243194340     
+Residual norm for vector   1 is:   0.168823E-02    and eigenvalue =   0.28665884   It =   8 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1613532795E-02
+          Preconditioning: Error of red space iteration  2:  0.6682718587E-03
+          Preconditioning: Error of red space iteration  3:  0.4789146731E-03
+          Preconditioning: Error of red space iteration  4:  0.2710854711E-03
+          Preconditioning: Error of red space iteration  5:  0.1393640746E-03
+          Preconditioning: Error of red space iteration  6:  0.7887525266E-04
+          Preconditioning: Error of red space iteration  7:  0.7014306644E-04
+          Preconditioning: Error of red space iteration  8:  0.6333150932E-04
+          Preconditioning: Error of red space iteration  9:  0.5915046117E-04
+          Preconditioning: Error of red space iteration 10:  0.5472246157E-04
+          Preconditioning: Error of red space iteration 11:  0.5239348033E-04
+          Preconditioning: Error of red space iteration 12:  0.5035147004E-04
+          Preconditioning: Error of red space iteration 13:  0.4825304872E-04
+          Preconditioning: Error of red space iteration 14:  0.4675271210E-04
+          Preconditioning: Error of red space iteration 15:  0.4573880595E-04
+          Preconditioning: Error of red space iteration 16:  0.4492166271E-04
+          Preconditioning: Error of red space iteration 17:  0.4381125659E-04
+          Preconditioning: Error of red space iteration 18:  0.4282838679E-04
+          Preconditioning: Error of red space iteration 19:  0.4185480180E-04
+ Warning: Max. no of iterations reached, exiting
+Residual norm for vector   2 is:   0.777157E-02    and eigenvalue =   0.33163909   It =   8 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.6285822248E-02
+          Preconditioning: Error of red space iteration  2:  0.2963507944E-02
+          Preconditioning: Error of red space iteration  3:  0.2264326686E-02
+          Preconditioning: Error of red space iteration  4:  0.1376965295E-02
+          Preconditioning: Error of red space iteration  5:  0.7049909880E-03
+          Preconditioning: Error of red space iteration  6:  0.3912991143E-03
+          Preconditioning: Error of red space iteration  7:  0.2357749589E-03
+          Preconditioning: Error of red space iteration  8:  0.1452343698E-03
+          Preconditioning: Error of red space iteration  9:  0.8766874773E-04
+     Preconditioning: Linear equations converged in  9 iterations!
+ Vector            1  has norm:   2.276320669144224E-006
+ Vector            2  has norm:   3.211929806319498E-005
+ Vector            1  has norm:    1.00000000000000     
+ Vector            2  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   1.08 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ QQQ DIFF   2.074305547183535E-022
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   6.806962266081882E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.72 seconds
+ omega in build_reduc..   0.286658843470927     
+Residual norm for vector   1 is:   0.853664E-03    and eigenvalue =   0.28665737   It =   9 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.6984894669E-03
+          Preconditioning: Error of red space iteration  2:  0.3443005755E-03
+          Preconditioning: Error of red space iteration  3:  0.2555304616E-03
+          Preconditioning: Error of red space iteration  4:  0.1317560982E-03
+          Preconditioning: Error of red space iteration  5:  0.7197778635E-04
+          Preconditioning: Error of red space iteration  6:  0.4008728081E-04
+          Preconditioning: Error of red space iteration  7:  0.3691255335E-04
+          Preconditioning: Error of red space iteration  8:  0.3290488889E-04
+          Preconditioning: Error of red space iteration  9:  0.3019803506E-04
+          Preconditioning: Error of red space iteration 10:  0.2800737460E-04
+          Preconditioning: Error of red space iteration 11:  0.2668089431E-04
+          Preconditioning: Error of red space iteration 12:  0.2552967371E-04
+          Preconditioning: Error of red space iteration 13:  0.2421055205E-04
+          Preconditioning: Error of red space iteration 14:  0.2310858286E-04
+          Preconditioning: Error of red space iteration 15:  0.2231140292E-04
+          Preconditioning: Error of red space iteration 16:  0.2156960660E-04
+          Preconditioning: Error of red space iteration 17:  0.2088534278E-04
+          Preconditioning: Error of red space iteration 18:  0.2047389104E-04
+          Preconditioning: Error of red space iteration 19:  0.1990726826E-04
+ Warning: Max. no of iterations reached, exiting
+Residual norm for vector   2 is:   0.492902E-02    and eigenvalue =   0.33160489   It =   9 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3664556544E-02
+          Preconditioning: Error of red space iteration  2:  0.2024830825E-02
+          Preconditioning: Error of red space iteration  3:  0.1570747827E-02
+          Preconditioning: Error of red space iteration  4:  0.8162402454E-03
+          Preconditioning: Error of red space iteration  5:  0.4341558584E-03
+          Preconditioning: Error of red space iteration  6:  0.2474465191E-03
+          Preconditioning: Error of red space iteration  7:  0.1534535573E-03
+          Preconditioning: Error of red space iteration  8:  0.8694504929E-04
+          Preconditioning: Error of red space iteration  9:  0.5241600186E-04
+     Preconditioning: Linear equations converged in  9 iterations!
+ Vector            1  has norm:   6.027192853676214E-007
+ Vector            2  has norm:   1.055538790217731E-005
+ Vector            1  has norm:    1.00000000000000     
+ Vector            2  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   1.14 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+ QQQ DIFF   1.078080736703581E-022
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   3.050299025500218E-024
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.68 seconds
+ omega in build_reduc..   0.286657367787599     
+Residual norm for vector   1 is:   0.475529E-03    and eigenvalue =   0.28665703   It =  10 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3543701399E-03
+          Preconditioning: Error of red space iteration  2:  0.1862762345E-03
+          Preconditioning: Error of red space iteration  3:  0.1326309057E-03
+          Preconditioning: Error of red space iteration  4:  0.7229809791E-04
+          Preconditioning: Error of red space iteration  5:  0.3643275665E-04
+          Preconditioning: Error of red space iteration  6:  0.3451169450E-04
+          Preconditioning: Error of red space iteration  7:  0.3089693847E-04
+          Preconditioning: Error of red space iteration  8:  0.2969132521E-04
+          Preconditioning: Error of red space iteration  9:  0.2895065225E-04
+          Preconditioning: Error of red space iteration 10:  0.2869208455E-04
+          Preconditioning: Error of red space iteration 11:  0.2845122826E-04
+          Preconditioning: Error of red space iteration 12:  0.2806546569E-04
+          Preconditioning: Error of red space iteration 13:  0.2782239409E-04
+          Preconditioning: Error of red space iteration 14:  0.2771667024E-04
+          Preconditioning: Error of red space iteration 15:  0.2721788781E-04
+          Preconditioning: Error of red space iteration 16:  0.2672712660E-04
+          Preconditioning: Error of red space iteration 17:  0.2640705715E-04
+          Preconditioning: Error of red space iteration 18:  0.2595399097E-04
+          Preconditioning: Error of red space iteration 19:  0.2580163356E-04
+ Warning: Max. no of iterations reached, exiting
+Residual norm for vector   2 is:   0.380670E-02    and eigenvalue =   0.33158993   It =  10 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2709156620E-02
+          Preconditioning: Error of red space iteration  2:  0.1530377311E-02
+          Preconditioning: Error of red space iteration  3:  0.1222056838E-02
+          Preconditioning: Error of red space iteration  4:  0.6983144360E-03
+          Preconditioning: Error of red space iteration  5:  0.3313663988E-03
+          Preconditioning: Error of red space iteration  6:  0.1882598563E-03
+          Preconditioning: Error of red space iteration  7:  0.1207767619E-03
+          Preconditioning: Error of red space iteration  8:  0.7344382597E-04
+          Preconditioning: Error of red space iteration  9:  0.4067662161E-04
+     Preconditioning: Linear equations converged in  9 iterations!
+ Vector            1  has norm:   1.396414579502293E-007
+ Vector            2  has norm:   2.951024782074609E-006
+ Vector            1  has norm:    1.00000000000000     
+ Vector            2  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   1.09 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+ QQQ DIFF   6.142537785437521E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ QQQ DIFF   2.705531574578878E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.66 seconds
+ omega in build_reduc..   0.286657025179964     
+Residual norm for vector   1 is:   0.236836E-03    and eigenvalue =   0.28665693   It =  11 CONV = T
+Residual norm for vector   2 is:   0.291193E-02    and eigenvalue =   0.33158054   It =  11 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2058064683E-02
+          Preconditioning: Error of red space iteration  2:  0.1204561874E-02
+          Preconditioning: Error of red space iteration  3:  0.9042437917E-03
+          Preconditioning: Error of red space iteration  4:  0.5152075186E-03
+          Preconditioning: Error of red space iteration  5:  0.2699064612E-03
+          Preconditioning: Error of red space iteration  6:  0.1648937480E-03
+          Preconditioning: Error of red space iteration  7:  0.9944133680E-04
+          Preconditioning: Error of red space iteration  8:  0.5838879988E-04
+          Preconditioning: Error of red space iteration  9:  0.5225642533E-04
+          Preconditioning: Error of red space iteration 10:  0.4875464093E-04
+          Preconditioning: Error of red space iteration 11:  0.4627041200E-04
+          Preconditioning: Error of red space iteration 12:  0.4395436953E-04
+          Preconditioning: Error of red space iteration 13:  0.4246442531E-04
+          Preconditioning: Error of red space iteration 14:  0.4144149825E-04
+          Preconditioning: Error of red space iteration 15:  0.4040925162E-04
+          Preconditioning: Error of red space iteration 16:  0.3964811517E-04
+          Preconditioning: Error of red space iteration 17:  0.3893322665E-04
+          Preconditioning: Error of red space iteration 18:  0.3809344555E-04
+          Preconditioning: Error of red space iteration 19:  0.3741047915E-04
+     Preconditioning: Linear equations converged in 19 iterations!
+ Vector            1  has norm:   6.476651079405119E-006
+ Vector            1  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   0.96 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          12
+ QQQ DIFF   4.760949821967515E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.33 seconds
+ omega in build_reduc..   0.286656928822156     
+Residual norm for vector   1 is:   0.137913E-03    and eigenvalue =   0.28665691   It =  12 CONV = T
+Residual norm for vector   2 is:   0.195376E-02    and eigenvalue =   0.33157586   It =  12 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1385611777E-02
+          Preconditioning: Error of red space iteration  2:  0.7934997472E-03
+          Preconditioning: Error of red space iteration  3:  0.5656615287E-03
+          Preconditioning: Error of red space iteration  4:  0.3457303532E-03
+          Preconditioning: Error of red space iteration  5:  0.1881465562E-03
+          Preconditioning: Error of red space iteration  6:  0.9947826875E-04
+          Preconditioning: Error of red space iteration  7:  0.5358704090E-04
+          Preconditioning: Error of red space iteration  8:  0.4795983368E-04
+          Preconditioning: Error of red space iteration  9:  0.4323249870E-04
+          Preconditioning: Error of red space iteration 10:  0.3998632534E-04
+          Preconditioning: Error of red space iteration 11:  0.3771524586E-04
+          Preconditioning: Error of red space iteration 12:  0.3615105151E-04
+          Preconditioning: Error of red space iteration 13:  0.3504478305E-04
+          Preconditioning: Error of red space iteration 14:  0.3396348882E-04
+          Preconditioning: Error of red space iteration 15:  0.3337863313E-04
+          Preconditioning: Error of red space iteration 16:  0.3275200868E-04
+          Preconditioning: Error of red space iteration 17:  0.3188161453E-04
+          Preconditioning: Error of red space iteration 18:  0.3087663764E-04
+          Preconditioning: Error of red space iteration 19:  0.3003132607E-04
+ Warning: Max. no of iterations reached, exiting
+ Vector            1  has norm:   2.225519825923439E-006
+ Vector            1  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   0.66 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          13
+ QQQ DIFF   6.464152083801990E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.35 seconds
+ omega in build_reduc..   0.286656912400500     
+Residual norm for vector   1 is:   0.121623E-03    and eigenvalue =   0.28665691   It =  13 CONV = T
+Residual norm for vector   2 is:   0.138031E-02    and eigenvalue =   0.33157386   It =  13 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1009957065E-02
+          Preconditioning: Error of red space iteration  2:  0.5544043507E-03
+          Preconditioning: Error of red space iteration  3:  0.4031613993E-03
+          Preconditioning: Error of red space iteration  4:  0.2243707105E-03
+          Preconditioning: Error of red space iteration  5:  0.1233400096E-03
+          Preconditioning: Error of red space iteration  6:  0.6366229764E-04
+          Preconditioning: Error of red space iteration  7:  0.5490183889E-04
+          Preconditioning: Error of red space iteration  8:  0.4927524850E-04
+          Preconditioning: Error of red space iteration  9:  0.4581078509E-04
+          Preconditioning: Error of red space iteration 10:  0.4292321082E-04
+          Preconditioning: Error of red space iteration 11:  0.4025659178E-04
+          Preconditioning: Error of red space iteration 12:  0.3863912566E-04
+          Preconditioning: Error of red space iteration 13:  0.3753226861E-04
+          Preconditioning: Error of red space iteration 14:  0.3582574637E-04
+          Preconditioning: Error of red space iteration 15:  0.3481173457E-04
+          Preconditioning: Error of red space iteration 16:  0.3375012006E-04
+          Preconditioning: Error of red space iteration 17:  0.3281579474E-04
+          Preconditioning: Error of red space iteration 18:  0.3200487789E-04
+          Preconditioning: Error of red space iteration 19:  0.3152332996E-04
+ Warning: Max. no of iterations reached, exiting
+ Vector            1  has norm:   1.199760686733896E-006
+ Vector            1  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   0.70 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          14
+ QQQ DIFF   7.316026583167837E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.33 seconds
+ omega in build_reduc..   0.286656909312573     
+Residual norm for vector   1 is:   0.114665E-03    and eigenvalue =   0.28665691   It =  14 CONV = T
+Residual norm for vector   2 is:   0.849946E-03    and eigenvalue =   0.33157279   It =  14 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.6260379085E-03
+          Preconditioning: Error of red space iteration  2:  0.3469462143E-03
+          Preconditioning: Error of red space iteration  3:  0.2398117265E-03
+          Preconditioning: Error of red space iteration  4:  0.1363622688E-03
+          Preconditioning: Error of red space iteration  5:  0.7314568283E-04
+          Preconditioning: Error of red space iteration  6:  0.6136111842E-04
+          Preconditioning: Error of red space iteration  7:  0.3896604647E-04
+          Preconditioning: Error of red space iteration  8:  0.3160858999E-04
+          Preconditioning: Error of red space iteration  9:  0.2696736448E-04
+          Preconditioning: Error of red space iteration 10:  0.2465142258E-04
+          Preconditioning: Error of red space iteration 11:  0.2357838325E-04
+          Preconditioning: Error of red space iteration 12:  0.2286639982E-04
+          Preconditioning: Error of red space iteration 13:  0.2230112814E-04
+          Preconditioning: Error of red space iteration 14:  0.2185941704E-04
+          Preconditioning: Error of red space iteration 15:  0.2147509555E-04
+          Preconditioning: Error of red space iteration 16:  0.2098010585E-04
+          Preconditioning: Error of red space iteration 17:  0.2062659114E-04
+          Preconditioning: Error of red space iteration 18:  0.2023422124E-04
+          Preconditioning: Error of red space iteration 19:  0.1978912439E-04
+ Warning: Max. no of iterations reached, exiting
+ Vector            1  has norm:   4.283936955087538E-007
+ Vector            1  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   0.67 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          15
+ QQQ DIFF   4.381336598735331E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.34 seconds
+ omega in build_reduc..   0.286656908356233     
+Residual norm for vector   1 is:   0.113307E-03    and eigenvalue =   0.28665691   It =  15 CONV = T
+Residual norm for vector   2 is:   0.519500E-03    and eigenvalue =   0.33157246   It =  15 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3724780629E-03
+          Preconditioning: Error of red space iteration  2:  0.2241654322E-03
+          Preconditioning: Error of red space iteration  3:  0.1700158976E-03
+          Preconditioning: Error of red space iteration  4:  0.9008690939E-04
+          Preconditioning: Error of red space iteration  5:  0.4827997778E-04
+          Preconditioning: Error of red space iteration  6:  0.3994275154E-04
+          Preconditioning: Error of red space iteration  7:  0.3434264628E-04
+          Preconditioning: Error of red space iteration  8:  0.3148917862E-04
+          Preconditioning: Error of red space iteration  9:  0.2951865759E-04
+          Preconditioning: Error of red space iteration 10:  0.2821787638E-04
+          Preconditioning: Error of red space iteration 11:  0.2802180974E-04
+          Preconditioning: Error of red space iteration 12:  0.2790847505E-04
+          Preconditioning: Error of red space iteration 13:  0.2790077787E-04
+          Preconditioning: Error of red space iteration 14:  0.2764789749E-04
+          Preconditioning: Error of red space iteration 15:  0.2696534028E-04
+          Preconditioning: Error of red space iteration 16:  0.2630205233E-04
+          Preconditioning: Error of red space iteration 17:  0.2559181663E-04
+          Preconditioning: Error of red space iteration 18:  0.2496358535E-04
+          Preconditioning: Error of red space iteration 19:  0.2453803129E-04
+ Warning: Max. no of iterations reached, exiting
+ Vector            1  has norm:   2.013682469262878E-007
+ Vector            1  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   0.69 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          16
+ QQQ DIFF   4.070572150358529E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.33 seconds
+ omega in build_reduc..   0.286656908029261     
+Residual norm for vector   1 is:   0.117835E-03    and eigenvalue =   0.28665691   It =  16 CONV = T
+Residual norm for vector   2 is:   0.489784E-03    and eigenvalue =   0.33157228   It =  16 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3189547876E-03
+          Preconditioning: Error of red space iteration  2:  0.1830728510E-03
+          Preconditioning: Error of red space iteration  3:  0.1295000254E-03
+          Preconditioning: Error of red space iteration  4:  0.7517452943E-04
+          Preconditioning: Error of red space iteration  5:  0.3865863883E-04
+          Preconditioning: Error of red space iteration  6:  0.3396336978E-04
+          Preconditioning: Error of red space iteration  7:  0.2892646682E-04
+          Preconditioning: Error of red space iteration  8:  0.2670111119E-04
+          Preconditioning: Error of red space iteration  9:  0.2546982426E-04
+          Preconditioning: Error of red space iteration 10:  0.2459844980E-04
+          Preconditioning: Error of red space iteration 11:  0.2397527960E-04
+          Preconditioning: Error of red space iteration 12:  0.2336333495E-04
+          Preconditioning: Error of red space iteration 13:  0.2283167523E-04
+          Preconditioning: Error of red space iteration 14:  0.2251240790E-04
+          Preconditioning: Error of red space iteration 15:  0.2212944717E-04
+          Preconditioning: Error of red space iteration 16:  0.2172541053E-04
+          Preconditioning: Error of red space iteration 17:  0.2119226071E-04
+          Preconditioning: Error of red space iteration 18:  0.2086370247E-04
+          Preconditioning: Error of red space iteration 19:  0.2059167819E-04
+ Warning: Max. no of iterations reached, exiting
+ Vector            1  has norm:   1.160869483047474E-007
+ Vector            1  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   0.67 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          17
+ QQQ DIFF   6.878702795355360E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.34 seconds
+ omega in build_reduc..   0.286656907262423     
+Residual norm for vector   1 is:   0.107455E-03    and eigenvalue =   0.28665691   It =  17 CONV = T
+Residual norm for vector   2 is:   0.317897E-03    and eigenvalue =   0.33157218   It =  17 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2132740062E-03
+          Preconditioning: Error of red space iteration  2:  0.1290034873E-03
+          Preconditioning: Error of red space iteration  3:  0.1035846247E-03
+          Preconditioning: Error of red space iteration  4:  0.5241646241E-04
+          Preconditioning: Error of red space iteration  5:  0.4802208306E-04
+          Preconditioning: Error of red space iteration  6:  0.4276239494E-04
+          Preconditioning: Error of red space iteration  7:  0.4075228904E-04
+          Preconditioning: Error of red space iteration  8:  0.3854017476E-04
+          Preconditioning: Error of red space iteration  9:  0.3706438480E-04
+          Preconditioning: Error of red space iteration 10:  0.3575709901E-04
+          Preconditioning: Error of red space iteration 11:  0.3491774272E-04
+          Preconditioning: Error of red space iteration 12:  0.3420989144E-04
+          Preconditioning: Error of red space iteration 13:  0.3369244521E-04
+          Preconditioning: Error of red space iteration 14:  0.3339025635E-04
+          Preconditioning: Error of red space iteration 15:  0.3294732579E-04
+          Preconditioning: Error of red space iteration 16:  0.3252877649E-04
+          Preconditioning: Error of red space iteration 17:  0.3216664721E-04
+          Preconditioning: Error of red space iteration 18:  0.3167927121E-04
+          Preconditioning: Error of red space iteration 19:  0.3112156658E-04
+ Warning: Max. no of iterations reached, exiting
+ Vector            1  has norm:   6.083530594835068E-008
+ Vector            1  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   0.68 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          18
+ QQQ DIFF   6.913755498056109E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.33 seconds
+ omega in build_reduc..   0.286656906171956     
+Residual norm for vector   1 is:   0.101655E-03    and eigenvalue =   0.28665691   It =  18 CONV = T
+Residual norm for vector   2 is:   0.259794E-03    and eigenvalue =   0.33157212   It =  18 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1804112672E-03
+          Preconditioning: Error of red space iteration  2:  0.9921280971E-04
+          Preconditioning: Error of red space iteration  3:  0.6774601123E-04
+          Preconditioning: Error of red space iteration  4:  0.6416955958E-04
+          Preconditioning: Error of red space iteration  5:  0.5496855624E-04
+          Preconditioning: Error of red space iteration  6:  0.5219991906E-04
+          Preconditioning: Error of red space iteration  7:  0.5076838074E-04
+          Preconditioning: Error of red space iteration  8:  0.4934440864E-04
+          Preconditioning: Error of red space iteration  9:  0.4803479028E-04
+          Preconditioning: Error of red space iteration 10:  0.4712185045E-04
+          Preconditioning: Error of red space iteration 11:  0.4638668388E-04
+          Preconditioning: Error of red space iteration 12:  0.4522761929E-04
+          Preconditioning: Error of red space iteration 13:  0.4467653029E-04
+          Preconditioning: Error of red space iteration 14:  0.4439804411E-04
+          Preconditioning: Error of red space iteration 15:  0.4371611372E-04
+          Preconditioning: Error of red space iteration 16:  0.4303103611E-04
+          Preconditioning: Error of red space iteration 17:  0.4227773585E-04
+          Preconditioning: Error of red space iteration 18:  0.4151150237E-04
+          Preconditioning: Error of red space iteration 19:  0.4107451444E-04
+ Warning: Max. no of iterations reached, exiting
+ Vector            1  has norm:   2.655895349198135E-008
+ Vector            1  has norm:    1.00000000000000     
+ >>>  CPU Time used in RSP_IT          is   0.67 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          19
+ QQQ DIFF   7.995595885879950E-023
+  SUCCESFULLY REPLACED OLD GbDs WITH NEW GbDs
+ >>>  CPU Time used in LINTRA          is   0.33 seconds
+ omega in build_reduc..   0.286656905779471     
+Residual norm for vector   1 is:   0.101196E-03    and eigenvalue =   0.28665691   It =  19 CONV = T
+Residual norm for vector   2 is:   0.156722E-03    and eigenvalue =   0.33157209   It =  19 CONV = T
+
+ *** THE REQUESTED              2 SOLUTION VECTORS CONVERGED
+ 
+ ============================================================
+                     RESPONSE RESULTS                        
+ ============================================================
+ 
+     LINEAR RESPONSE:
+ 
+  Excitation value:           0.286656906
+  Excitation value:           0.331572092
+ 
+ *****************************************************
+ **     CPU-TIME USED IN POLARI:    18.2651410000000       **
+ *****************************************************
+ Number of linear transformations performed in LINRSP:          30
+ Total no. of matmuls used:        6952
+ Total no. of Fock/KS matrix evaluations:          18
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  97.520 MB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)            51.619 MB
+  Max allocated memory, integer                52.148 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand             177.188 kB
+  Max allocated memory, integralitem           51.165 MB
+  Max allocated memory, Overlap               270.297 kB
+  Max allocated memory, ODitem                 16.625 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    26.50566        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           2
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:            -212.092626310243
+     Nuclear repulsion:            71.595720805759
+     Electronic energy:          -283.688347116001
+
+     Final gradient norm:           0.000003707032
+
+ 
+     Date and time (Linux)  : Mon Aug 16 15:43:41 2010
+     Host name              : cirkelineIII                            
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     26.53 seconds
+ >>>> Total wall time used in SIRIUS :     27.98 seconds
+
+ 
+     Date and time (Linux)  : Mon Aug 16 15:43:41 2010
+     Host name              : cirkelineIII                            
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  26.61 seconds
+ >>>> Total wall time used in DALTON:  28.07 seconds
+
+ 
+     Date and time (Linux)  : Mon Aug 16 15:43:41 2010
+     Host name              : cirkelineIII                            

@@ -1,0 +1,1330 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:28:08 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+ *LINSCA specified in old input
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  1 HCN molecules placed 20 atomic units apart                            
+  STRUCTURE IS NOT OPTIMIZED.                                             
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           N          14.003074
+                           C          12.000000
+
+                       Total mass:    27.010899 amu
+                       Natural abundance:  98.519 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.740323
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     3
+  Total number of atoms:    3
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       7       5      [4s1p|2s1p]                                                                      
+  N           1       7      14       9      [5s3p|3s2p]                                                                      
+  C           1       6      14       9      [5s3p|3s2p]                                                                      
+  ----------------------------------------------------------------------
+  total:      3      14      35      23
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+ 
+ 
+  Auxiliary basis is "pc-1" from the basis set library.
+
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.02 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ Number of two-electron integrals written:       11703 ( 30.6% )
+ Megabytes written:                              0.137
+
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total wall time used in HERMIT:   0.08 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:28:08 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ Title lines from integral program:
+     1 HCN molecules placed 20 atomic units apart                            
+     STRUCTURE IS NOT OPTIMIZED.                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         14
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 23
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          23
+     Number of basis functions         23
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              7
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ LSint is requested by *LINSCA under **INTEGRALS 
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:          10
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ Replace S with S build from new integral driver
+ QQQ New Overlap S1:   44.3026324393216     
+ QQQ Old Overlap S:   44.3026324393217     
+ QQQ DIFF S-S1:  4.449545615088507E-030
+  SUCCESFULLY REPLACED OLD OVERLAP WITH NEW
+ QQQ New H1:   7802.47975999585     
+ QQQ Old H1:   7802.47975999730     
+ QQQ DIFF H-H1:  5.110200290933778E-022
+  SUCCESFULLY REPLACED OLD h1 WITH NEW
+ Take first density from Hueckel guess
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   1.09 seconds
+ >>> wall Time used in **INIT          is   0.12 seconds
+** Get Fock matrix number   1
+
+ Precalculated two-electron integrals are transformed to P-supermatrix elements.
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.04 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   3119.41373008238     
+ QQQ Old  F:   3119.41373008336     
+ QQQ DIFF  :  1.267194123000995E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   1.10 seconds
+ >>> wall Time used in FCK_FO          is   0.13 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   8.15577669050813     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -90.2259602691    0.00000000000    0.00      0.00000    0.00    0.0000000    0.82E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+ Replace F with F build from new integral driver
+ QQQ New  F:   3516.00214798344     
+ QQQ Old  F:   3516.00214798440     
+ QQQ DIFF  :  1.302867055635050E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   1.06 seconds
+ >>> wall Time used in FCK_FO          is   0.12 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   1.70149508973286     
+  2    -91.1384713063   -0.91251103716    0.00      0.00000    0.00    0.0000000    0.17E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.04 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+ Replace F with F build from new integral driver
+ QQQ New  F:   3431.86872281372     
+ QQQ Old  F:   3431.86872281467     
+ QQQ DIFF  :  1.269024055484154E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   1.23 seconds
+ >>> wall Time used in FCK_FO          is   0.14 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.210929800082214     
+  3    -91.1898413600   -0.05137005372    0.00      0.00000    0.00    0.0000000    0.21E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.05 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+ Replace F with F build from new integral driver
+ QQQ New  F:   3435.04448111153     
+ QQQ Old  F:   3435.04448111248     
+ QQQ DIFF  :  1.272986521291054E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   1.10 seconds
+ >>> wall Time used in FCK_FO          is   0.12 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  9.814157920779121E-002
+  4    -91.1915418692   -0.00170050920    0.00      0.00000    0.00    0.0000000    0.98E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.07 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+ Replace F with F build from new integral driver
+ QQQ New  F:   3436.65128360719     
+ QQQ Old  F:   3436.65128360814     
+ QQQ DIFF  :  1.273758324364402E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   1.06 seconds
+ >>> wall Time used in FCK_FO          is   0.12 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.513670124071206E-002
+  5    -91.1916956750   -0.00015380585    0.00      0.00000    0.00    0.0000000    0.25E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.05 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+ Replace F with F build from new integral driver
+ QQQ New  F:   3436.20789748098     
+ QQQ Old  F:   3436.20789748194     
+ QQQ DIFF  :  1.272730039879605E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   1.64 seconds
+ >>> wall Time used in FCK_FO          is   0.16 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.894468264950793E-003
+  6    -91.1917140740   -0.00001839892    0.00      0.00000    0.00    0.0000000    0.19E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.05 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+ Replace F with F build from new integral driver
+ QQQ New  F:   3436.19220569978     
+ QQQ Old  F:   3436.19220570074     
+ QQQ DIFF  :  1.273701623621144E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   2.61 seconds
+ >>> wall Time used in FCK_FO          is   0.22 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.679906985216304E-004
+  7    -91.1917142487   -0.00000017473    0.00      0.00000    0.00    0.0000000    0.17E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           7
+ >>>  CPU Time used in AVERAG          is   0.09 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   8
+ Replace F with F build from new integral driver
+ QQQ New  F:   3436.19242917731     
+ QQQ Old  F:   3436.19242917826     
+ QQQ DIFF  :  1.271204956128472E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   1.15 seconds
+ >>> wall Time used in FCK_FO          is   0.12 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.027861988948808E-005
+  8    -91.1917142500   -0.00000000132    0.00      0.00000    0.00    0.0000000    0.20E-04  ###
+ >>>  CPU Time used in **ITER          is  11.38 seconds
+ >>> wall Time used in **ITER          is   1.16 seconds
+Total no. of matmuls in SCF optimization:        548
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.91251103716    0.0000    0.0000    0.0000000
+  3   -0.05137005372    0.0000    0.0000    0.0000000
+  4   -0.00170050920    0.0000    0.0000    0.0000000
+  5   -0.00015380585    0.0000    0.0000    0.0000000
+  6   -0.00001839892    0.0000    0.0000    0.0000000
+  7   -0.00000017473    0.0000    0.0000    0.0000000
+  8   -0.00000000132    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -90.22596026910740363292      0.815577669050813D+01
+    2           -91.13847130626486148230      0.170149508973286D+01
+    3           -91.18984135998141482560      0.210929800082214D+00
+    4           -91.19154186918088100811      0.981415792077912D-01
+    5           -91.19169567503175244383      0.251367012407121D-01
+    6           -91.19171407395552364505      0.189446826495079D-02
+    7           -91.19171424868623887505      0.167990698521630D-03
+    8           -91.19171425000281772100      0.202786198894881D-04
+ 
+      SCF converged !!!! 
+ >>>  CPU Time used in st-Kbuild       is   0.76 seconds
+ >>> wall Time used in st-Kbuild       is   0.08 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.31 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.32 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.24 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.24 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.04 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.09 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.07 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.81 seconds
+ >>> wall Time used in ls_getIntegrals is   0.23 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.27 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.16 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.17 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.09 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.54 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.13 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.62 seconds
+ >>> wall Time used in ls_getIntegrals is   0.15 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.07 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.07 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.09 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.06 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.20 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.17 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.16 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.16 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.17 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.19 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.10 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.10 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.09 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.09 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.04 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.04 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.07 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.05 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   5.47 seconds
+ >>> wall Time used in ls_getIntegrals is   0.59 seconds
+ >>>  CPU Time used in ls_getIntegrals is   2.84 seconds
+ >>> wall Time used in ls_getIntegrals is   0.56 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.17 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.30 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.33 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.20 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   4.02 seconds
+ >>> wall Time used in ls_getIntegrals is   0.48 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.52 seconds
+ >>> wall Time used in ls_getIntegrals is   0.06 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.17 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ QQQ DI_DEBUG_DECPACK K STD       152.547058313504     
+ QQQ DI_DEBUG_DECPACK K DECPACK   152.547058313504     
+ QQQ DIFF  1.090466292913185E-029
+ QQQ SUCCESFUL DECPACK K TEST
+ >>>  CPU Time used in reg-J           is   0.72 seconds
+ >>> wall Time used in reg-J           is   0.08 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.35 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.43 seconds
+ >>> wall Time used in ls_getIntegrals is   0.16 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.36 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.17 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.98 seconds
+ >>> wall Time used in ls_getIntegrals is   0.27 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.34 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.61 seconds
+ >>> wall Time used in ls_getIntegrals is   0.23 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.30 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.21 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.39 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.20 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.41 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.35 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.37 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.39 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.40 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.36 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   1.50 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.12 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.69 seconds
+ >>> wall Time used in ls_getIntegrals is   0.14 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.49 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.06 seconds
+ >>>  CPU Time used in ls_getIntegrals is   5.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.68 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   3.71 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.41 seconds
+ >>>  CPU Time used in ls_getIntegrals is   3.89 seconds
+ >>> wall Time used in ls_getIntegrals is   0.43 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.31 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.36 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.27 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.27 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.31 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.20 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.33 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.24 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.33 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.23 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.31 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.23 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.29 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.29 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.66 seconds
+ >>> wall Time used in ls_getIntegrals is   0.16 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.25 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.79 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.19 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.91 seconds
+ >>> wall Time used in ls_getIntegrals is   0.21 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.27 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.31 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.33 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.40 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.35 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   1.80 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.24 seconds
+ >>>  CPU Time used in ls_getIntegrals is   4.09 seconds
+ >>> wall Time used in ls_getIntegrals is   0.52 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   6.10 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.86 seconds
+ >>>  CPU Time used in ls_getIntegrals is  11.70 seconds
+ >>> wall Time used in ls_getIntegrals is   1.48 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.37 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.29 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.39 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.25 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.27 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.23 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.24 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.35 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.24 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.31 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.25 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.23 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.24 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.20 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.18 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.33 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.20 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.30 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.80 seconds
+ >>> wall Time used in ls_getIntegrals is   0.13 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.24 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.16 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.04 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.14 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.37 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.37 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.22 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.23 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.33 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.17 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.31 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.25 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.27 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.21 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.25 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS1S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.25 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS2S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.30 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS3S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.30 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS4S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS5S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.30 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS6S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.23 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS7S is   1.61 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.11 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.77 seconds
+ >>> wall Time used in ls_getIntegrals is   0.13 seconds
+ >>>  CPU Time used in CSConCourrrrS8S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS9S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.36 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS10 is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.23 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS11 is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS11 is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.25 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ QQQ DI_DEBUG_DECPACK_J  STD       4848.79930740383     
+ QQQ DI_DEBUG_DECPACK_J  DECPACK   4848.79930740383     
+ QQQ DIFF  4.369580703738603E-028
+ QQQ SUCCESFUL DECPACK J TEST
+ Total no. of matmuls used:         548
+ Total no. of Fock/KS matrix evaluations:           8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 487.230 MB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)           487.089 MB
+  Max allocated memory, integer               114.539 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               8.750 MB
+  Max allocated memory, integralitem          475.981 MB
+  Max allocated memory, Overlap                 2.459 MB
+  Max allocated memory, ODitem                 14.062 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    112.6599        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:             -91.191714250003
+     Nuclear repulsion:            36.800000000000
+     Electronic energy:          -127.991714250003
+
+     Final gradient norm:           0.000020278620
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:28:22 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :    113.29 seconds
+ >>>> Total wall time used in SIRIUS :     14.00 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:28:22 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  1 minute  53 seconds
+ >>>> Total wall time used in DALTON:  14.09 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:28:22 2010
+     Host name              : fe2.grendel.cscaa.dk                    

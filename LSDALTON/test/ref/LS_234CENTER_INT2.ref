@@ -1,0 +1,915 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:25:41 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - electronic kinetic energy
+ *LINSCA specified in old input
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - electronic kinetic energy
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  NH3 molecule                                                            
+  ccsd/cc-pVQZ optimized                                                  
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           N          12.000000
+                           H          12.000000
+                           H          12.000000
+                           H          12.000000
+
+                       Total mass:    48.000000 amu
+                       Natural abundance:  95.672 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.326132
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     4
+  Total number of atoms:    4
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  N           1       6      22       9      [10s4p|3s2p]                                                                     
+  H           1       6      22       9      [10s4p|3s2p]                                                                     
+  H           1       6      10       5      [4s2p|2s1p]                                                                      
+  H           1       6      15       9      [6s3p|3s2p]                                                                      
+  ----------------------------------------------------------------------
+  total:      4      24      69      32
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+ 
+ 
+  Auxiliary basis is "3-21G" from the basis set library.
+
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.04 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in KINENE is   0.03 seconds
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ Number of two-electron integrals written:      114604 ( 82.1% )
+ Megabytes written:                              1.319
+
+
+
+ >>> Time used in TWOINT is   0.41 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.51 seconds
+ >>>> Total wall time used in HERMIT:   0.52 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:25:42 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ Title lines from integral program:
+     NH3 molecule                                                            
+     ccsd/cc-pVQZ optimized                                                  
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         24
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 32
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          32
+     Number of basis functions         32
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals             12
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ LSint is requested by *LINSCA under **INTEGRALS 
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:          10
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ Replace S with S build from new integral driver
+ QQQ New Overlap S1:   74.9784830758761     
+ QQQ Old Overlap S:   74.9784830758761     
+ QQQ DIFF S-S1:  9.152306768583150E-030
+  SUCCESFULLY REPLACED OLD OVERLAP WITH NEW
+ QQQ New H1:   13051.5968460798     
+ QQQ Old H1:   13051.5968460836     
+ QQQ DIFF H-H1:  1.162234707254000E-021
+  SUCCESFULLY REPLACED OLD h1 WITH NEW
+ QQQ New 3 center Overlap (standard and TCO):
+  SUM OF ALL 3 CENTER OVERLAPS 
+  FROM THE STANDARD DRIVER      99.898665237443
+  FROM THE TCO DRIVER           99.898665237443
+  ABSOLUTE DIFFERENCE           0.626884870D-13
+ GET OVERLAP AND H1 H1 printet
+ Replace S with S build from new integral driver
+ QQQ New Overlap S1:   74.9784830758761     
+ QQQ Old Overlap S:   74.9784830758761     
+ QQQ DIFF S-S1:  9.152306768583150E-030
+  SUCCESFULLY REPLACED OLD OVERLAP WITH NEW
+ QQQ New H1:   13051.5968460798     
+ QQQ Old H1:   13051.5968460836     
+ QQQ DIFF H-H1:  1.162234707254000E-021
+  SUCCESFULLY REPLACED OLD h1 WITH NEW
+ GET KINETIC (OLD)
+ GET NUCLEAR ATTRACTION
+ QQQ Old nucrep:   18645.0274558399     
+ Replace nucrep with nucrep build from new integral driver
+ QQQ New nucrep:   18645.0274558399     
+ QQQ DIFF nucrep-nucrep:  7.724520940606970E-029
+  SUCCESFULLY REPLACED OLD nuclear attraction WITH NEW nuclear attraction
+ Debugging Kinetic T
+QQQ Old Kinetic:   1120.34490865
+ Replace Kinetic with Kinetic build from new integral driver
+QQQ New Kinetic:   1120.34490865
+ QQQ DIFF Kinetic-Kinetic:  2.578107220292699E-029
+  SUCCESFULLY REPLACED OLD Kinetic WITH NEW Kinetic
+ QQQ New 2 center eri1 TEST1:    98563.238712034
+ QQQ New 2 center eri1 TEST2:      624.649318253
+ QQQ New 2 center eri1 TEST3:     2048.789422198
+ Take first density from Hueckel guess
+ QQQ New 3 center Overlap contracted with dens (standard-jengine and TCO):
+  SUM OF ALL 3 CENTER OVERLAPS CONTRACTED WITH MATRIX
+  FROM THE STANDARD DRIVER      31.165998743068
+  FROM THE TCO DRIVER           31.165998743099
+  ABSOLUTE DIFFERENCE           0.316339359D-10
+  SUM OF ALL 3 CENTER OVERLAPS CONTRACTED WITH VECTOR
+  FROM THE STANDARD DRIVER      80.215287306127
+  FROM THE TCO DRIVER           80.215287306127
+  ABSOLUTE DIFFERENCE           0.689595981D-13
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   9.50 seconds
+ >>> wall Time used in **INIT          is   0.93 seconds
+** Get Fock matrix number   1
+
+ Precalculated two-electron integrals are transformed to P-supermatrix elements.
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.64 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   7694.74661869609     
+ QQQ Old  F:   7694.74661872081     
+ QQQ DIFF  :  4.807872362771688E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   4.63 seconds
+ >>> wall Time used in FCK_FO          is   0.38 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   17.4978477448576     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1   -144.7997802378    0.00000000000    0.00      0.00000    0.00    0.0000000    0.17E+02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+ Replace F with F build from new integral driver
+ QQQ New  F:   8805.49267155816     
+ QQQ Old  F:   8805.49267146952     
+ QQQ DIFF  :  9.881893073536644E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.49 seconds
+ >>> wall Time used in FCK_FO          is   0.43 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   4.28209285044622     
+  2   -147.2934354333   -2.49365519554    0.00      0.00000    0.00    0.0000000    0.43E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.12 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+ Replace F with F build from new integral driver
+ QQQ New  F:   8360.88965698716     
+ QQQ Old  F:   8360.88965687838     
+ QQQ DIFF  :  9.708021063662886E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   6.03 seconds
+ >>> wall Time used in FCK_FO          is   0.57 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   4.15995458525689     
+  3   -147.5616781929   -0.26824275952    0.00      0.00000    0.00    0.0000000    0.42E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.11 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+ Replace F with F build from new integral driver
+ QQQ New  F:   8410.86738567771     
+ QQQ Old  F:   8410.86738564719     
+ QQQ DIFF  :  7.101318090630071E-019
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   6.27 seconds
+ >>> wall Time used in FCK_FO          is   0.77 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   1.42632166598926     
+  4   -148.0746843685   -0.51300617563    0.00      0.00000    0.00    0.0000000    0.14E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.08 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+ Replace F with F build from new integral driver
+ QQQ New  F:   8411.05985748981     
+ QQQ Old  F:   8411.05985746624     
+ QQQ DIFF  :  1.789723152516080E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   7.15 seconds
+ >>> wall Time used in FCK_FO          is   0.75 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.706105904210453     
+  5   -148.2033155627   -0.12863119418    0.00      0.00000    0.00    0.0000000    0.71E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.17 seconds
+ >>> wall Time used in AVERAG          is   0.02 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+ Replace F with F build from new integral driver
+ QQQ New  F:   8407.38350149490     
+ QQQ Old  F:   8407.38350148617     
+ QQQ DIFF  :  1.676758840898711E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   3.34 seconds
+ >>> wall Time used in FCK_FO          is   0.57 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.311496040500052     
+  6   -148.2596415480   -0.05632598531    0.00      0.00000    0.00    0.0000000    0.31E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.16 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+ Replace F with F build from new integral driver
+ QQQ New  F:   8399.64058652117     
+ QQQ Old  F:   8399.64058650863     
+ QQQ DIFF  :  1.932378780750935E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   4.34 seconds
+ >>> wall Time used in FCK_FO          is   0.60 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  9.905980130278345E-002
+  7   -148.2730364559   -0.01339490793    0.00      0.00000    0.00    0.0000000    0.99E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           7
+ >>>  CPU Time used in AVERAG          is   0.23 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   8
+ Replace F with F build from new integral driver
+ QQQ New  F:   8402.43420933240     
+ QQQ Old  F:   8402.43420931762     
+ QQQ DIFF  :  1.914948693953633E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.38 seconds
+ >>> wall Time used in FCK_FO          is   0.58 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.858113632967725E-002
+  8   -148.2745053636   -0.00146890764    0.00      0.00000    0.00    0.0000000    0.39E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           8
+ >>>  CPU Time used in AVERAG          is   1.72 seconds
+ >>> wall Time used in AVERAG          is   0.12 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.19 seconds
+ >>> wall Time used in G_DENS          is   0.02 seconds
+** Get Fock matrix number   9
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.56200673830     
+ QQQ Old  F:   8401.56200672297     
+ QQQ DIFF  :  1.873096833198715E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.07 seconds
+ >>> wall Time used in FCK_FO          is   0.53 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.879723282124541E-002
+  9   -148.2746854036   -0.00018004001    0.00      0.00000    0.00    0.0000000    0.19E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           9
+ >>>  CPU Time used in AVERAG          is   5.24 seconds
+ >>> wall Time used in AVERAG          is   0.60 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  10
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.17485258413     
+ QQQ Old  F:   8401.17485256862     
+ QQQ DIFF  :  1.855578893758384E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.00 seconds
+ >>> wall Time used in FCK_FO          is   0.54 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  7.206868744218529E-003
+ 10   -148.2747085934   -0.00002318987    0.00      0.00000    0.00    0.0000000    0.72E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.32 seconds
+ >>> wall Time used in AVERAG          is   0.04 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  11
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.15459243287     
+ QQQ Old  F:   8401.15459241732     
+ QQQ DIFF  :  1.851845772101835E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   7.31 seconds
+ >>> wall Time used in FCK_FO          is   0.62 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.784797662115711E-003
+ 11   -148.2747112858   -0.00000269236    0.00      0.00000    0.00    0.0000000    0.18E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.54 seconds
+ >>> wall Time used in AVERAG          is   0.04 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  12
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.16459648206     
+ QQQ Old  F:   8401.16459646650     
+ QQQ DIFF  :  1.850493050265689E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.93 seconds
+ >>> wall Time used in FCK_FO          is   0.44 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  7.370990248219474E-004
+ 12   -148.2747116177   -0.00000033196    0.00      0.00000    0.00    0.0000000    0.74E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.52 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  13
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.16005807696     
+ QQQ Old  F:   8401.16005806140     
+ QQQ DIFF  :  1.849616553249783E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   6.43 seconds
+ >>> wall Time used in FCK_FO          is   0.51 seconds
+ >>>  CPU Time used in G_GRAD          is   0.08 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.943824625803308E-004
+ 13   -148.2747117988   -0.00000018101    0.00      0.00000    0.00    0.0000000    0.59E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   1.26 seconds
+ >>> wall Time used in AVERAG          is   0.10 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  14
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.17830662799     
+ QQQ Old  F:   8401.17830661250     
+ QQQ DIFF  :  1.847999490450223E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   4.97 seconds
+ >>> wall Time used in FCK_FO          is   0.51 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  8.462949882700638E-004
+ 14   -148.2747121653   -0.00000036659    5.00      0.00000    0.00    0.0000000    0.85E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.34 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  15
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.11822922631     
+ QQQ Old  F:   8401.11822921099     
+ QQQ DIFF  :  1.842587317593321E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   7.59 seconds
+ >>> wall Time used in FCK_FO          is   0.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.480392999392198E-003
+ 15   -148.2747133471   -0.00000118173    0.00      0.00000    0.00    0.0000000    0.15E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.56 seconds
+ >>> wall Time used in AVERAG          is   0.06 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  16
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.18075895683     
+ QQQ Old  F:   8401.18075894199     
+ QQQ DIFF  :  1.820855080845553E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.66 seconds
+ >>> wall Time used in FCK_FO          is   0.59 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.532915422061547E-003
+ 16   -148.2747171682   -0.00000382111    0.00      0.00000    0.00    0.0000000    0.15E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   3.90 seconds
+ >>> wall Time used in AVERAG          is   0.41 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  17
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.03535982688     
+ QQQ Old  F:   8401.03535981248     
+ QQQ DIFF  :  1.796935236275959E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.72 seconds
+ >>> wall Time used in FCK_FO          is   0.58 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.034206048293723E-003
+ 17   -148.2747200545   -0.00000288630    0.00      0.00000    0.00    0.0000000    0.10E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.58 seconds
+ >>> wall Time used in AVERAG          is   0.06 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  18
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.05201830331     
+ QQQ Old  F:   8401.05201828923     
+ QQQ DIFF  :  1.779698252959390E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   7.14 seconds
+ >>> wall Time used in FCK_FO          is   0.68 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.128527377308782E-003
+ 18   -148.2747212208   -0.00000116635    0.00      0.00000    0.00    0.0000000    0.11E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.43 seconds
+ >>> wall Time used in AVERAG          is   0.05 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  19
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.00604911539     
+ QQQ Old  F:   8401.00604910148     
+ QQQ DIFF  :  1.769258241142855E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.64 seconds
+ >>> wall Time used in FCK_FO          is   0.77 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.140256055063142E-003
+ 19   -148.2747215700   -0.00000034921    0.00      0.00000    0.00    0.0000000    0.11E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.43 seconds
+ >>> wall Time used in AVERAG          is   0.04 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  20
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.00002300743     
+ QQQ Old  F:   8401.00002299368     
+ QQQ DIFF  :  1.761580871580141E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   6.30 seconds
+ >>> wall Time used in FCK_FO          is   0.85 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.230585929194461E-004
+ 20   -148.2747217228   -0.00000015274    0.00      0.00000    0.00    0.0000000    0.32E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.30 seconds
+ >>> wall Time used in AVERAG          is   0.04 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  21
+ Replace F with F build from new integral driver
+ QQQ New  F:   8401.00178856351     
+ QQQ Old  F:   8401.00178854980     
+ QQQ DIFF  :  1.758956781948683E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   3.61 seconds
+ >>> wall Time used in FCK_FO          is   0.43 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.421512991261681E-004
+ 21   -148.2747217424   -0.00000001962    0.00      0.00000    0.00    0.0000000    0.14E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:          10
+ >>>  CPU Time used in AVERAG          is   0.73 seconds
+ >>> wall Time used in AVERAG          is   0.08 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  22
+ Replace F with F build from new integral driver
+ QQQ New  F:   8400.99571920280     
+ QQQ Old  F:   8400.99571918911     
+ QQQ DIFF  :  1.758188545145749E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.95 seconds
+ >>> wall Time used in FCK_FO          is   0.47 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.364386391454036E-005
+ 22   -148.2747217448   -0.00000000241    5.00      0.00000    0.00    0.0000000    0.54E-04  ###
+ >>>  CPU Time used in **ITER          is   0 hours  2 minutes 23 seconds
+ >>> wall Time used in **ITER          is  14.78 seconds
+Total no. of matmuls in SCF optimization:       4531
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -2.49365519554    0.0000    0.0000    0.0000000
+  3   -0.26824275952    0.0000    0.0000    0.0000000
+  4   -0.51300617563    0.0000    0.0000    0.0000000
+  5   -0.12863119418    0.0000    0.0000    0.0000000
+  6   -0.05632598531    0.0000    0.0000    0.0000000
+  7   -0.01339490793    0.0000    0.0000    0.0000000
+  8   -0.00146890764    0.0000    0.0000    0.0000000
+  9   -0.00018004001    0.0000    0.0000    0.0000000
+ 10   -0.00002318987    0.0000    0.0000    0.0000000
+ 11   -0.00000269236    0.0000    0.0000    0.0000000
+ 12   -0.00000033196    0.0000    0.0000    0.0000000
+ 13   -0.00000018101    0.0000    0.0000    0.0000000
+ 14   -0.00000036659    5.0000    0.0000    0.0000000
+ 15   -0.00000118173    0.0000    0.0000    0.0000000
+ 16   -0.00000382111    0.0000    0.0000    0.0000000
+ 17   -0.00000288630    0.0000    0.0000    0.0000000
+ 18   -0.00000116635    0.0000    0.0000    0.0000000
+ 19   -0.00000034921    0.0000    0.0000    0.0000000
+ 20   -0.00000015274    0.0000    0.0000    0.0000000
+ 21   -0.00000001962    0.0000    0.0000    0.0000000
+ 22   -0.00000000241    5.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -144.79978023779517570802      0.174978477448576D+02
+    2          -147.29343543333794741557      0.428209285044622D+01
+    3          -147.56167819285627729187      0.415995458525689D+01
+    4          -148.07468436848785131588      0.142632166598926D+01
+    5          -148.20331556266864936333      0.706105904210453D+00
+    6          -148.25964154798361960275      0.311496040500052D+00
+    7          -148.27303645591092617906      0.990598013027835D-01
+    8          -148.27450536355195254146      0.385811363296773D-01
+    9          -148.27468540355880577408      0.187972328212454D-01
+   10          -148.27470859342560061123      0.720686874421853D-02
+   11          -148.27471128578758907679      0.178479766211571D-02
+   12          -148.27471161774928987143      0.737099024821947D-03
+   13          -148.27471179875510642887      0.594382462580331D-03
+   14          -148.27471216534763698291      0.846294988270064D-03
+   15          -148.27471334707712458112      0.148039299939220D-02
+   16          -148.27471716818763525225      0.153291542206155D-02
+   17          -148.27472005448686331874      0.103420604829372D-02
+   18          -148.27472122083673866655      0.112852737730878D-02
+   19          -148.27472157004780228817      0.114025605506314D-02
+   20          -148.27472172278424977776      0.323058592919446D-03
+   21          -148.27472174240335789364      0.142151299126168D-03
+   22          -148.27472174481039246530      0.536438639145404D-04
+ 
+      SCF converged !!!! 
+ Total no. of matmuls used:        4531
+ Total no. of Fock/KS matrix evaluations:          22
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                   1.205 GB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)             1.198 GB
+  Max allocated memory, integer                 7.235 MB
+  Max allocated memory, logical                 7.562 kB
+  Max allocated memory, linkshell               2.082 kB
+  Max allocated memory, integrand              44.297 MB
+  Max allocated memory, integralitem          945.586 MB
+  Max allocated memory, Overlap               269.144 MB
+  Max allocated memory, ODitem                 26.312 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    152.7478        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:            -148.274721744810
+     Nuclear repulsion:            91.947852953306
+     Electronic energy:          -240.222574698116
+
+     Final gradient norm:           0.000053643864
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:25:58 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :    153.26 seconds
+ >>>> Total wall time used in SIRIUS :     15.87 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:25:58 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  2 minutes 34 seconds
+ >>>> Total wall time used in DALTON:  16.39 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:25:58 2010
+     Host name              : fe2.grendel.cscaa.dk                    
