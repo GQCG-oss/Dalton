@@ -64,7 +64,7 @@ option(ENABLE_MKLFLAG        "Enable MKL FLAG"               OFF)
 option(ENABLE_INTEREST       "Enable interest integrals"     OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
 option(ENABLE_OPENRSP        "Enable OpenRSP module"         OFF)
-option(ENABLE_XCFUN          "Enable XCFun library"          OFF)
+#option(ENABLE_XCFUN          "Enable XCFun library"          OFF)
 option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
@@ -106,14 +106,14 @@ endif()
 include(Archs)
 include(Sources)
 include(Compilers)
-
-#add_subdirectory(LSint)
+include(ConfigExternal)
 
 set(LIBS)
+set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a)
 
+#add_subdirectory(xcfun_host)
 
 if(ENABLE_OPENRSP)
-    include(ConfigExternal)
 	set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
 	add_definitions(-DBUILD_GEN1INT)
 	set(CMAKE_Fortran_MODULE_DIRECTORY
@@ -398,6 +398,7 @@ add_library(
     ${LSINT_SOURCES}
     )
 target_link_libraries(lsintlib dftfunclib)
+add_dependencies(lsintlib xcfun)
 
 add_library(
     pbclib
