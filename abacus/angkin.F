@@ -33,10 +33,10 @@ C ------------------------------------------------------
        integer  naos, nmos, nelec, lineas
        double precision Xmos, Cmos, Vec1, Vec2, Vec3,
      &    Mat1, Mat2, Mat3, MatKin, VecKin
-       dimension xmos(500000), CCMOS(700,700), 
-     &    Vec1(500000), Vec2(500000), Vec3(500000),
-     &    Mat1(700,700), Mat2(700,700), Mat3(700,700),
-     &    MatKin(700,700), VecKin(500000)
+       dimension xmos(5000000), CCMOS(1700,1700), 
+     &    Vec1(5000000), Vec2(5000000), Vec3(5000000),
+     &    Mat1(1700,1700), Mat2(1700,1700), Mat3(1700,1700),
+     &    MatKin(1700,1700), VecKin(5000000)
 C ------------------------------------------------------
 C  TITLUOS :
 C ------------------------------------------------------
@@ -314,7 +314,7 @@ C -------------------------------------------------
        double precision VEC, Mat
        character*8 label
        INTEGER  naos, number, lupri
-       DIMENSION VEC(5000000), MAT(700,700)
+       DIMENSION VEC(5000000), MAT(1700,1700)
 C
 C       write(*,*) '    Empieza VEC --> MAT'
 C
@@ -354,7 +354,7 @@ C -------------------------------------------------
        double precision VEC, Mat
        character*8 label
        INTEGER  naos, number, lupri, i, j
-       DIMENSION VEC(5000000), MAT(700,700)
+       DIMENSION VEC(5000000), MAT(1700,1700)
 C
 C       write(*,*) '    Empieza VEC --> MAT'
 C
@@ -391,8 +391,8 @@ C   -------------------------------------------------
        double precision A, B, Cmos , aux1, aux2, Cout
        double precision g11, g22, Sum, ge1, ge2
        INTEGER   nelec, naos, mu, n , i, j
-       DIMENSION A(700,700),B(700,700), Cmos(700,700)
-       DIMENSION aux1(700,700), aux2(700,700), Cout(700,700)
+       DIMENSION A(1700,1700),B(1700,1700), Cmos(1700,1700)
+       DIMENSION aux1(1700,1700), aux2(1700,1700), Cout(1700,1700)
 C ***************************************************
 C       write(*,*) '          Empieza la cuenta AB = A.1.B'
 C                                               
@@ -436,7 +436,7 @@ C ***********************************************************
        FUNCTION g22(i, mu, lim, mat1, mat2)
        integer*4 i, mu, lim, k
        double precision mat1, mat2, S, g22
-       dimension mat1(700,700), mat2(700,700)
+       dimension mat1(1700,1700), mat2(1700,1700)
        S = 0.0
        do k=1,lim
           S = S + mat1(i,k)*mat2(mu,k)
@@ -448,7 +448,7 @@ C *********************************************
        FUNCTION g11(i,mu,lim,mat1,mat2)
        double precision  mat1, mat2, S, g11
        integer*4 i, mu, lim, k
-       dimension mat1(700,700), mat2(700,700)
+       dimension mat1(1700,1700), mat2(1700,1700)
 C OJO q estoy usando la mat 2 TRASPUESTA DE como viene !!!!
        S = 0.0
        do k=1,lim
@@ -505,7 +505,7 @@ C
                                              
             INTEGER Number
             double precision A, B, C, aux, sclfac
-            dimension A(500000),B(500000),C(500000)
+            dimension A(5000000),B(5000000),C(5000000)
 C
 C   deberia sumar dos vectores 
 C

@@ -28,7 +28,7 @@ C  PARAMETOS :        LEO SIRIUS.RST
 C ------------------------------------------------------
       CHARACTER*8  STARS, B(4)
       PARAMETER (STARS = '********')
-      double precision cmos(1700,1700), xmos(10000000)
+      double precision cmos(1700,1700), xmos(5000000)
       integer*8 k
 
 C ------------------------------------------------------
@@ -352,11 +352,11 @@ C      nmos : Numero de obitales moleculares
 C       a   : Ocupados = nelec/2, AHORA 'noc'
 C       i   : Todos  = nmos
 C -------------------------------------------------
-       DIMENSION A1(1200,1200), A2(1200,1200), C(1200,1200)
-       DIMENSION CT(1200,1200),gama(1200,1200)
-       DIMENSION alfa(1200,1200), beta(1200,1200)
-       DIMENSION delta(1200,1200)
-       double precision A1, A2, C, CT, ORBC(10000000)
+       DIMENSION A1(1700,1700), A2(1700,1700), C(1700,1700)
+       DIMENSION CT(1700,1700),gama(1700,1700)
+       DIMENSION alfa(1700,1700), beta(1700,1700)
+       DIMENSION delta(1700,1700)
+       double precision A1, A2, C, CT, ORBC(5000000)
        double precision alfa, beta, gama, delta, g1, g2
 C       double precision mat1, mat2
        INTEGER*4  naos, nmos, noc, a, i, mu, sigma
@@ -415,7 +415,7 @@ C          write(*,*) delta(i,a)
        end
 C ***********************************************************
        FUNCTION g2(i, mu, lim, mat1, mat2)
-       dimension mat1(1200,1200), mat2(1200,1200)
+       dimension mat1(1700,1700), mat2(1700,1700)
        double precision mat1, mat2, S, g2
        integer*4 i, mu, lim, k
        S = 0.0
@@ -431,7 +431,7 @@ C       write(*,*) 'FIN g2 : ', S
        end
 C *********************************************
        FUNCTION g1(i,mu,lim,mat1,mat2)
-       dimension mat1(1200,1200), mat2(1200,1200)
+       dimension mat1(1700,1700), mat2(1700,1700)
        double precision  mat1, mat2, S, g1
        integer*4 i, mu, lim, k
        S = 0.0
