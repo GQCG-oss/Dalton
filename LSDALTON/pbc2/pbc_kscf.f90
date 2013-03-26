@@ -1470,7 +1470,8 @@ ll,latt_cell,refcell,numvecs,nfdensity,g_2,E_K)
         write(lupri,'(A9,X,I3,x,I3,X,I3)') 't1 t2 t3:',il1,il2,il3
         write(lupri,'(A4,X,E16.8)') 'Z^2:',exchang2
         write(lupri,'(A10,X,E16.8)') 'sum ijZ^2:',exchangst
-#endif      !call mat_abs_max_elm(ll%lvec(index1)%oper(1), val) 
+#endif
+      !call mat_abs_max_elm(ll%lvec(index1)%oper(1), val) 
       !if(val .lt. 1E-10) write(*,*)'max K0l',val,il1
       if(ll%store_mats) then
         call pbc_get_file_and_write(ll,nbast,nbast,index1,5,1,'            ')!5 refers to
