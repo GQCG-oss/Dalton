@@ -142,6 +142,7 @@ integer       :: operator
 integer       :: node
 integer       :: numnodes
 logical       :: LHSsameAsRHSDmat
+logical       :: RealGabMatrix
 END TYPE INTEGRALINPUT
 
 CONTAINS

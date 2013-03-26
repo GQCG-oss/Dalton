@@ -185,7 +185,8 @@ IF(doDEC)intinp%DALTON%NOGCINTEGRALTRANSFORM=.TRUE.
 !as we perform calculations of explicit 4 center integrals we cannot
 !at this time perform the calculation in the input basis and transform to GC
 !but this could be done I think. 
-
+!added complications if the 2int screening matrix should be calculated. 
+!it needs to be possible for a single integral to change basis in the integral call
 
 CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
      &intinp%MOLECULE,intinp%BASIS%REGULAR,LIBRARY,&

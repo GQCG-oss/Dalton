@@ -34,6 +34,7 @@ INTEGER                :: LUITNM, LUITNMR ! logical units for the integer and th
 logical                :: decpacked
 logical                :: decpacked2
 logical                :: decpackedK
+logical                :: RealGabMatrix
 real(realk)            :: exchangeFactor
 END TYPE INTEGRALOUTPUT
 
