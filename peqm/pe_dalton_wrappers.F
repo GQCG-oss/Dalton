@@ -774,7 +774,7 @@ C     as to what works best for singly bonded C,N,O
       integer, dimension(9*mxcent) :: intrep, intadr
   
       integer, intent(in) :: nints, ncomps, nwrk
-      real(8), dimension(nints*ncomps), intent(inout) :: Tk_ints
+      real(8), dimension(nints*ncomps*3), intent(inout) :: Tk_ints
       real(8), dimension(3), intent(in) :: coord
       real(8), dimension(nwrk), intent(inout) :: work
   
@@ -782,23 +782,24 @@ C     as to what works best for singly bonded C,N,O
       integer :: i, j, k, l, m, n
       character(len=7) :: inttype
       real(8), dimension(3) :: backup
-  
+      real(8) :: dd
+      real(8), dimension(:), allocatable :: diff
+      dd = 0.001d0
       k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps)) - 1.0d0)) - 1
   
       backup = diporg
       diporg = coord
       runqm3 = .true.
   
-      trimat = .true.
+      ! magnetic properties are assymetric
+      trimat = .false.
   
       if (k == 0) then
-          inttype = 'NPETES '
+          inttype = 'PCMBSOL'
       else if (k == 1) then
-          inttype = 'NEFIELD'
+          inttype = 'EFIELB1'
       else if (k == 2) then
-          print *, 'WARNING: using EFG integrals which can result in
-     &            unstable behavior.'
-        inttype = 'ELFGRDC'
+        !inttype = 'ELFGRDC'
       else if (k >= 3) then
           stop 'Electric field hessian and higher order integrals not
      &          implemented.'
@@ -812,57 +813,84 @@ C     as to what works best for singly bonded C,N,O
 !    else
 !        stop 'wrong order specified or not implemented'
       end if
-  
+!
       Tk_ints = 0.0d0
-  
-      if (k <= 1) then
-          n = ncomps
+!
+      if (k == 0) then
+          n = ncomps*3
+          call get1in(Tk_ints(1), inttype, n, work(1), nwrk, labint,
+     &                intrep, intadr, 0, .false., 0, trimat, dummy,
+     &                .false., dummy, 1)
+          Tk_ints = -Tk_ints
+      else if (k == 1) then
+!          n = 3
+!          m = nints*n
+!      ! numerical approach
+!      ! x first
+!          do j=1,3
+!          diporg(j) = coord(j) + dd
+!          call get1in(work(1:m), 'PCMBSOL', n, work(m+1), nwrk, labint,
+!     &                intrep, intadr, 0, .false., 0, trimat, dummy,
+!     &                .false., dummy, 1)
+!          diporg(j) = coord(j) - dd
+!          call get1in(work(m+1:2*m), 'PCMBSOL', n, work(2*m+1),
+!     &    nwrk, labint,
+!     &                intrep, intadr, 0, .false., 0, trimat, dummy,
+!     &                .false., dummy, 1)
+!         TK_ints((j-1)*m+1:j*m) = (work(1:m) - work(m+1:m*2))/(2.0d0*dd)
+!          diporg = coord
+!          enddo
+
+      ! analytical approach
+          n = 9
           call get1in(Tk_ints(1), inttype, n, work(1), nwrk, labint,
      &                intrep, intadr, 0, .false., 0, trimat, dummy,
      &                .false., dummy, 1)
       else if (k == 2) then
-          n = 3
-          m = 3 * nints
+          n = 9
+          m = nints*n
+!          allocate(diff(nints))
           ! xx, xy, xz
-          diporg(1) = coord(1) + 0.001d0
-          call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk, labint,
+          diporg = coord
+          diporg(1) = coord(1) + dd
+          call get1in(work(1:m), 'EFIELB1', n, work(m+1), nwrk, labint,
      &                intrep, intadr, 0, .false., 0, trimat, dummy,
      &                .false., dummy, 1)
-          diporg(1) = coord(1) - 0.001d0
-          call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,
+          diporg(1) = coord(1) - dd
+          call get1in(work(1+m:2*m), 'EFIELB1', n, work(2*m+1), nwrk,
      &                labint, intrep, intadr, 0, .false., 0, trimat,
      &                dummy, .false., dummy, 1)
-          diporg = coord
-          Tk_ints(1:3*nints) = - (work(1:m) - work(1+m:2*m))
-     &                            / (2.0d0 * 0.001d0)
+          Tk_ints(1:m) = work(1:m)-work(m+1:2*m)
    
           ! yy, yz
-          diporg(2) = diporg(2) + 0.001d0
-          call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-          diporg(2) = diporg(2) - 2.0d0 * 0.001d0
-          call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
           diporg = coord
-          Tk_ints(1+3*nints:5*nints) = - (work(1+nints:m)
-     &                                    - work(1+4*nints:2*m))
-     &                                    / (2.0d0 * 0.001d0)
+          diporg(2) = coord(2) + dd
+          call get1in(work(1:m), 'EFIELB1', n, work(m+1), nwrk,
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
+          diporg(2) = coord(2) - dd
+          call get1in(work(1+m:2*m), 'EFIELB1', n, work(2*m+1), nwrk,
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
+          i=3*nints
+          Tk_ints(m+1:m+2*i+1)=work(i+1:m)-work(m+i+1:2*m)
    
           ! zz
-          diporg(3) = diporg(3) + 0.001d0
-          call get1in(work(1:m), 'NEFIELD', n, work(m+1), nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
-          diporg(3) = diporg(3) - 2.0d0 * 0.001d0
-          call get1in(work(1+m:2*m), 'NEFIELD', n, work(2*m+1),nwrk,
-     &                labint, intrep, intadr, 0, .false., 0, trimat,
-     &                dummy, .false., dummy, 1)
           diporg = coord
-          Tk_ints(1+5*nints:6*nints) = - (work(1+2*nints:m)
-     &                                    - work(1+5*nints:2*m))
-     &                                    / (2.0d0 * 0.001d0)
+          diporg(3) = coord(3) + dd
+          call get1in(work(1:m), 'EFIELB1', n, work(m+1), nwrk,
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
+          diporg(3) = coord(3) - dd
+          call get1in(work(1+m:2*m), 'EFIELB1', n, work(2*m+1),nwrk,
+     &                labint, intrep, intadr, 0, .false., 0, trimat,
+     &                dummy, .false., dummy, 1)
+
+          i=6*nints
+          Tk_ints(m+i+1:2*m)=work(i+1:m)-work(m+i+1:2*m)
+          ! suspecting sign from magnus
+          Tk_ints = -Tk_ints / (2.0d0 * dd)
+!          deallocate(diff)
       else if (k == 3) then
           n = 6
           m = nints

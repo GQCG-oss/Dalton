@@ -1874,8 +1874,9 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
             if (mwrk .gt. lwrk) call stopit('onedrl','qmmm-1',mwrk,lwrk)
             lleft = lwrk - mwrk + 1
             call pe_master('london',  nmats=1,
-     &                                fckmats = work(ktmat:mwrk),
-     &                                dalwrk = work(mwrk:lwrk))
+     &                                fckmats = work(ktmat:mwrk-1),
+     &                                dalwrk = work(mwrk:lleft))
+            CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
          END IF
 
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)

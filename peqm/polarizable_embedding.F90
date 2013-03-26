@@ -1723,7 +1723,7 @@ subroutine pe_polarization(denmats, fckmats)
 
     external :: Tk_integrals
 
-    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(in), optional :: denmats
     real(dp), dimension(:), intent(inout), optional :: fckmats
 
     integer :: site, ndist, nrest
@@ -7049,65 +7049,97 @@ end subroutine fixdiis
 
 subroutine pe_compute_london(fckmats)
     real(dp), dimension(:), intent(out) :: fckmats
-    integer :: k
+    real(dp), dimension(:,:), allocatable :: Mkinds
+    integer :: k, lu
+    logical :: lexist
     fckmats = 0.0d0
-    write(luout, '(A7,6L4)') "CSS:M",(lmul(k),k=0,5)
+
     if(lmul(0)) call b_multipoles(M0s, fckmats)
+    if(lmul(1)) call b_multipoles(M1s, fckmats)
+    if(lmul(2)) call b_multipoles(M2s, fckmats)
+
+    if(lpol(1)) then
+
+    allocate(Mkinds(3,npols))
+    if (myid == 0) then
+        inquire(file='pe_induced_dipoles.bin', exist=lexist)
+    end if
+!    print *, "pe_induced_dipoles", lexist
+#if defined(VAR_MPI)
+    if (nprocs > 1) then
+        call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
+    end if
+#endif
+    if (lexist) then
+        if (myid == 0) then
+            call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
+            rewind(lu)
+            read(lu) Mkinds
+            close(lu)
+        end if
+    end if
+    call b_multipoles(Mkinds, fckmats, linduced=.true.)
+    deallocate(Mkinds)
+    endif
+    !print *, Mkinds(1,1)
 end subroutine pe_compute_london
 
 ! -------
-subroutine b_multipoles(MKs, fckmats)
+subroutine b_multipoles(MKs, fckmats, linduced)
     real(dp), dimension(:,:), intent(in) :: Mks
     real(dp), dimension(:), intent(inout) :: fckmats
+    logical, intent(in), optional :: linduced
 
-    integer :: i
+    integer :: i, j, n2bas, ifrom, ito
     integer :: site, ncomps
-    real(dp), dimension(3) :: Rsm
-    real(dp), dimension(:), allocatable :: Tsm, symfacs
-    real(dp), dimension(:,:), allocatable :: Mk_ints
+    real(dp), dimension(:), allocatable :: symfacs
+    real(dp), dimension(:,:,:), allocatable :: Mk_ints
+    logical :: pol
 
+    pol = .false.
+    if(present(linduced)) pol = linduced
     ncomps = size(Mks,1)
-
-    allocate(Tsm(ncomps))
+    n2bas=nbas*nbas
 
     ! notice change to nbas instead of nnbas here
-    allocate(Mk_ints(nbas*nbas,ncomps))
-
-    write(luout, '(A7,3I4)') "CSS:NC",nbas,site_start, site_finish
+    ! also, the integrals now have a
+    ! Bx, By and Bz factor on them
+    allocate(Mk_ints(n2bas,3,ncomps))
 
     do site = site_start, site_finish
         if (abs(maxval(Mks(:,site))) < zero) then
-            i = i + 1
             cycle
         end if
-    write(luout, '(A7,I4)') "CSS:SI",site
-        ! electron - multipole interaction energy
+        if(pol.and.zeroalphas(site)) cycle
         call Mkb_integrals(Mk_ints, Rs(:,site), Mks(:,site))
-!        do l = 1, ndens
-!            m = (l - 1) * nnbas + 1
-!            n = l * nnbas
-!            Eel(l) = Eel(l) + dot(denmats(m:n), sum(Mk_ints, 2))
-!            if (fock) fckmats(m:n) = fckmats(m:n) + sum(Mk_ints, 2)
-!        end do
-        i = i + 1
+
+        ! update for all directions of the magnetic field
+        do j=1,3
+            ifrom = (j-1)*n2bas+1
+            ito   = j*n2bas
+            fckmats(ifrom:ito) = fckmats(ifrom:ito) + sum(Mk_ints(:,j,:),2)
+        enddo
     end do
-    deallocate(Tsm, Mk_ints)
+    deallocate(Mk_ints)
+    
 end subroutine b_multipoles
 !----------------------------------------
 subroutine Mkb_integrals(Mk_ints, Rij, Mk)
 
-    external :: Tkb_integrals
+    external :: Tk_lao_integrals
 
-    real(dp), dimension(:,:), intent(out) :: Mk_ints
+    real(dp), dimension(:,:,:), intent(out) :: Mk_ints
     real(dp), dimension(:), intent(in) :: Mk
     real(dp), dimension(3), intent(in) :: Rij
 
-    integer :: i, k
+    integer :: i, j, k, nwrk, nints
     integer :: ncomps
     real(dp) :: taylor
     real(dp), dimension(:), allocatable :: factors
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Mk)) - 1.0d0)) - 1
+
+    nwrk = size(work)
 
     if (mod(k,2) == 0) then
         taylor = 1.0d0 / factorial(k)
@@ -7115,19 +7147,20 @@ subroutine Mkb_integrals(Mk_ints, Rij, Mk)
         taylor = - 1.0d0 / factorial(k)
     end if
 
-    ncomps = size(Mk_ints, 2)
-    write(luout,*) "CSS: NCOMPS", ncomps
-    call Tkb_integrals(Mk_ints, nbas*nbas, ncomps, Rij)
+    ncomps = size(Mk_ints,3)
+    nints = size(Mk_ints,1)
 
-    ! get symmetry factors
+    call Tk_lao_integrals(Mk_ints, nints, ncomps, Rij, work, nwrk)
     allocate(factors(ncomps))
     call symmetry_factors(factors)
-
-    ! dot T^(k) integrals with multipole to get M^(k) integrals
-    do i = 1, ncomps
-        Mk_ints(:,i) = taylor * factors(i) * Mk(i) * Mk_ints(:,i)
-    end do
-
+!
+     ! dot T^(k) integrals with multipole to get M^(k) integrals
+    do i=1, ncomps
+        do j = 1,3
+            Mk_ints(:,j,i) = taylor * factors(i)*Mk(i) * Mk_ints(:,j,i)
+        enddo
+    enddo
+!
     deallocate(factors)
 
 end subroutine Mkb_integrals
