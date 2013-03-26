@@ -686,33 +686,10 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
 
-         if (peqm) then
-           call memget('REAL', kfpe, nnbasx, wrk, kfree, lfree)
-           call memget('REAL', kepe, 1, wrk, kfree, lfree)
-           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
-             call pe_master(runtype='fock', denmats=daosav(:,1),
-     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
-     &                      energies=wrk(kepe:kepe),
-     &                      dalwrk=wrk(kfree:lfree))
-           else
-             call pe_master(runtype='fock',
-     &                      denmats=(daosav(:,1) + daosav(:,2)),
-     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
-     &                      energies=wrk(kepe:kepe), 
-     &                      dalwrk=wrk(kfree:lfree))
-           end if
-           esolt = wrk(kepe)
-           faosav(:,indevc,1) = faosav(:,indevc,1)
-     &                          + wrk(kfpe:kfpe+nnbasx-1)
-           call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfpe,
-     &                 kfree, lfree)
-         end if
-
 C
 c        we need to divide the solvent calls into mmpcm and not mmpcm
 c        since we in the latter iterate between the mm and pcm for a given QM
 c        density    
-       
          IF (.NOT. MMPCM) THEN ! do as we usually do ...
            ESOLT = D0
            IF (QM3 .AND. .NOT. DOCCSD) THEN
@@ -802,6 +779,28 @@ Clf             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
            IF (.NOT. LCONV) write(lupri,*) 'MMPCM not converged !'
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          ENDIF
+
+         if (peqm) then
+           call memget('REAL', kfpe, nnbasx, wrk, kfree, lfree)
+           call memget('REAL', kepe, 1, wrk, kfree, lfree)
+           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+             call pe_master(runtype='fock', denmats=daosav(:,1),
+     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
+     &                      energies=wrk(kepe:kepe),
+     &                      dalwrk=wrk(kfree:lfree))
+           else
+             call pe_master(runtype='fock',
+     &                      denmats=(daosav(:,1) + daosav(:,2)),
+     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
+     &                      energies=wrk(kepe:kepe), 
+     &                      dalwrk=wrk(kfree:lfree))
+           end if
+           esolt = wrk(kepe)
+           faosav(:,indevc,1) = faosav(:,indevc,1)
+     &                          + wrk(kfpe:kfpe+nnbasx-1)
+           call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfpe,
+     &                 kfree, lfree)
+         end if
 C
          EMCDIF = EMCSCF
          EMCSCF = EMY + EACTIV + EPOT + ESOLT
