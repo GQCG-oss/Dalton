@@ -974,13 +974,15 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         mep = .false.
         noneq = .false.
         london = .true.
+        if (.not. present(fckmats)) then
+            stop 'Output matrix missing from input.'
+        end if
     else
         stop 'Could not determine calculation type.'
     end if
 
     ndens = nmats
-    if(london) then
-      if(.not.present(fckmats)) stop 'output matrix missing from input.'
+    if (london) then
       nbas = int(sqrt(size(fckmats) / 3.0d0))
     else
       nnbas = size(denmats) / ndens
@@ -1012,8 +1014,10 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
 
         call mpi_bcast(nbas, 1, impi, 0, comm, ierr)
         call mpi_bcast(ndens, 1, impi, 0, comm, ierr)
-        if(.not. london) call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
-        if(.not. london) call mpi_bcast(denmats, nnbas * ndens, rmpi, 0, comm, ierr)
+        if (.not. london) then
+            call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
+            call mpi_bcast(denmats, nnbas * ndens, rmpi, 0, comm, ierr)
+        end if
 
         if (.not. synced) then
             call pe_sync()
@@ -1139,8 +1143,8 @@ subroutine pe_mpi(dalwrk, runtype)
     end if
 
     call mpi_bcast(nbas, 1, impi, 0, comm, ierr)
-    call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
     call mpi_bcast(ndens, 1, impi, 0, comm, ierr)
+    call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
     call mpi_bcast(work(1), nnbas * ndens, rmpi, 0, comm, ierr)
 
     allocate(Epe(ndens))
