@@ -25,11 +25,7 @@ C jim  aca van las opctiones para LRESC , aun no las defino todas
 C
 c#include <dorps.h>
 c#include <spnout.h>
-cC jim  aca van las opctiones para LRESC , aun no las defino
-c      DATA TABLE /'.JIMOPT','.PRINT ','.SELECT','.LINEAR ','.QUADRA',
-c     &            '.GESC  ','.NOPSO ','.SD+FC ','.SDxFC','.ISOTOP',
-c     &            '.COUPLI'/
-cC
+C
 c      write(lupri,*) ' LRSCOPTS :  called with : ' , WORD
 
 
