@@ -1,0 +1,2129 @@
+
+ Work memory size (LMWORK+2):   123123125 =  939.35 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:44:51 2010
+     Host name              : login-0-1.local                         
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+    Static molecular property section will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Threshold set dynamically.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  LDA molecular hessian without symmetry                                  
+  Ethane                                                                  
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           C          12.000000
+                           C          12.000000
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    30.046950 amu
+                       Natural abundance:  97.724 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    8
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  C           1       6      15       5      [6s3p|2s1p]                                                                      
+  C           1       6      15       5      [6s3p|2s1p]                                                                      
+  H           1       1       3       1      [3s|1s]                                                                          
+  H           1       1       3       1      [3s|1s]                                                                          
+  H           1       1       3       1      [3s|1s]                                                                          
+  H           1       1       3       1      [3s|1s]                                                                          
+  H           1       1       3       1      [3s|1s]                                                                          
+  H           1       1       3       1      [3s|1s]                                                                          
+  ----------------------------------------------------------------------
+  total:      8      18      48      16
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 24
+
+   1   C        x      1.4496747688
+   2            y     -0.0000010117
+   3            z      0.0000000000
+
+   4   C        x     -1.4496747688
+   5            y      0.0000010117
+   6            z      0.0000000000
+
+   7   H        x      2.1888645654
+   8            y     -0.9728762646
+   9            z      1.6850699397
+
+  10   H        x      2.1888645654
+  11            y     -0.9728762646
+  12            z     -1.6850699397
+
+  13   H        x     -2.1888645654
+  14            y      0.9728762646
+  15            z      1.6850699397
+
+  16   H        x     -2.1888645654
+  17            y      0.9728762646
+  18            z     -1.6850699397
+
+  19   H        x      2.1888617992
+  20            y      1.9457507963
+  21            z      0.0000000000
+
+  22   H        x     -2.1888617992
+  23            y     -1.9457507963
+  24            z      0.0000000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C           C           H           H           H           H     
+            ------      ------      ------      ------      ------      ------
+ C     :    0.000000
+ C     :    1.534270    0.000000
+ H     :    1.101445    2.183452    0.000000
+ H     :    1.101445    2.183452    1.783401    0.000000
+ H     :    2.183452    1.101445    2.535110    3.099565    0.000000
+ H     :    2.183452    1.101445    3.099565    2.535110    1.783401    0.000000
+ H     :    1.101445    2.183450    1.783401    1.783401    2.535109    2.535109
+ H     :    2.183450    1.101445    2.535109    2.535109    1.783401    1.783401
+
+            H           H     
+            ------      ------
+ H     :    0.000000
+ H     :    3.099563    0.000000
+
+
+  Max interatomic separation is    3.0996 Angstroms
+  between atoms "H     " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C          C            1.534270
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    6.410816          1.000000   -0.000001    0.000000
+   IB   25.442207          0.000001    1.000000    0.000000
+   IC   25.442208          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+          78832.2482          19863.8036          19863.8031 MHz
+            2.629561            0.662585            0.662585 cm-1
+
+
+  Nuclear repulsion energy :     41.982234322450
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.01 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in GABGEN is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                       0.10D-08    0.10D-09    0.20D-11
+     Default threshold for number of electrons:                        0.10D-02
+     DFT radial quadrature accuracy/ang. expansion order:  0.10E-12  35
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:44:51 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     LDA molecular hessian without symmetry                                  
+     Ethane                                                                  
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         18
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 16
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: LDA
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          16
+     Number of basis functions         16
+
+      ** Automatic occupation of RKS orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              9
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  18 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    F
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in FCK2el is   0.03 seconds
+
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-13
+ Angular integration order range: [9 35] Angular points 434
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points=12165 compressed from 12292 ( 92 radial)
+ Atom:    2*1 points=12165 compressed from 12292 ( 92 radial)
+ Atom:    3*1 points=13120 compressed from 13326 ( 75 radial)
+ Atom:    4*1 points=13120 compressed from 13326 ( 75 radial)
+ Atom:    5*1 points=13120 compressed from 13326 ( 75 radial)
+ Atom:    6*1 points=13120 compressed from 13326 ( 75 radial)
+ Atom:    7*1 points=13138 compressed from 13326 ( 75 radial)
+ Atom:    8*1 points=13138 compressed from 13326 ( 75 radial)
+ Number of grid points:   103086 Grid generation time:       0.1 s
+KS electrons/energy:   18.00000071945920  -12.28364038003143 rel.err: 0.40E-07
+
+ >>> Time used in DFT_KS is   0.47 seconds
+
+   1    -77.857363680015   3.50D+00  -7.79D+01    9
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.50 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    8    F
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in FCK2el is   0.02 seconds
+
+KS electrons/energy:   18.00000022042705  -12.42464456845179 rel.err: 0.12E-07
+
+ >>> Time used in DFT_KS is   0.32 seconds
+
+   2    -78.029077745267   8.81D-01  -1.72D-01    9
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.34 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in FCK2el is   0.02 seconds
+
+KS electrons/energy:   18.00000068897056  -12.21248662709565 rel.err: 0.38E-07
+
+ >>> Time used in DFT_KS is   0.32 seconds
+
+   3    -78.042783707136   7.76D-01  -1.37D-02    9
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.34 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in FCK2el is   0.02 seconds
+
+KS electrons/energy:   18.00000047040195  -12.30354834583317 rel.err: 0.26E-07
+
+ >>> Time used in DFT_KS is   0.32 seconds
+
+   4    -78.089382103944   1.62D-03  -4.66D-02    9
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.34 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   12    F
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in FCK2el is   0.03 seconds
+
+KS electrons/energy:   18.00000047065480  -12.30338577307519 rel.err: 0.26E-07
+
+ >>> Time used in DFT_KS is   0.32 seconds
+
+   5    -78.089382343651   1.89D-04  -2.40D-07    9
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.35 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   13    F
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in FCK2el is   0.03 seconds
+
+KS electrons/energy:   18.00000047069459  -12.30338501277789 rel.err: 0.26E-07
+
+ >>> Time used in DFT_KS is   0.31 seconds
+
+   6    -78.089382347573   7.71D-06  -3.92D-09    9
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.34 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in FCK2el is   0.03 seconds
+
+KS electrons/energy:   18.00000047069183  -12.30338590877252 rel.err: 0.26E-07
+
+ >>> Time used in DFT_KS is   0.31 seconds
+
+   7    -78.089382347578   1.05D-08  -4.75D-12    9
+ DIIS converged in   7 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   18
+ Orbital occupations :    9
+
+ Hartree-Fock orbital energies, symmetry 1
+
+        -9.57829692    -9.57672879    -0.62914355    -0.50411788    -0.34126604
+        -0.34126593    -0.27157915    -0.24952807    -0.24952804     0.36880839
+         0.36880887     0.38813089     0.43410418     0.46980125
+
+    E(LUMO) :     0.36880839 au (symmetry 1)
+  - E(HOMO) :    -0.24952804 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.61833643 au
+
+ >>> Writing SIRIFC interface file <<<
+
+ >>> Time used in DISCTL is   2.55 seconds
+
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:            -78.089382347578
+     Nuclear repulsion:            41.982234322450
+     Electronic energy:          -120.071616670028
+
+     Final gradient norm:           0.000000010479
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:44:53 2010
+     Host name              : login-0-1.local                         
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  C   1s    -0.6983  -0.6997   0.1701  -0.1497   0.0000   0.0000  -0.0212
+   2  C   1s    -0.0446  -0.0319  -0.4581   0.4439   0.0000   0.0000   0.0793
+   3  C   2px    0.0047  -0.0053   0.0577   0.1570   0.0000   0.0000  -0.5446
+   4  C   2py    0.0000   0.0000   0.0000   0.0000   0.4183   0.0000   0.0000
+   5  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.4183   0.0000
+   6  C   1s     0.6983  -0.6997   0.1701   0.1497   0.0000   0.0000  -0.0212
+   7  C   1s     0.0446  -0.0319  -0.4581  -0.4439   0.0000   0.0000   0.0793
+   8  C   2px    0.0047   0.0053  -0.0577   0.1570   0.0000   0.0000   0.5446
+   9  C   2py    0.0000   0.0000   0.0000   0.0000   0.4183   0.0000   0.0000
+  10  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.4183   0.0000
+  11  H   1s     0.0080   0.0078  -0.1109   0.1654  -0.1482   0.2568  -0.1397
+  12  H   1s     0.0080   0.0078  -0.1109   0.1654  -0.1482  -0.2568  -0.1397
+  13  H   1s    -0.0080   0.0078  -0.1109  -0.1654   0.1482   0.2568  -0.1397
+  14  H   1s    -0.0080   0.0078  -0.1109  -0.1654   0.1482  -0.2568  -0.1397
+  15  H   1s     0.0080   0.0078  -0.1109   0.1654   0.2965   0.0000  -0.1397
+  16  H   1s    -0.0080   0.0078  -0.1109  -0.1654  -0.2965   0.0000  -0.1397
+
+ Orbital          8        9
+   1  C   1s     0.0000   0.0000
+   2  C   1s     0.0000   0.0000
+   3  C   2px    0.0000   0.0000
+   4  C   2py    0.0000   0.4128
+   5  C   2pz   -0.4128   0.0000
+   6  C   1s     0.0000   0.0000
+   7  C   1s     0.0000   0.0000
+   8  C   2px    0.0000   0.0000
+   9  C   2py    0.0000  -0.4128
+  10  C   2pz    0.4128   0.0000
+  11  H   1s    -0.3338  -0.1927
+  12  H   1s     0.3338  -0.1927
+  13  H   1s     0.3338  -0.1927
+  14  H   1s    -0.3338  -0.1927
+  15  H   1s     0.0000   0.3854
+  16  H   1s     0.0000   0.3854
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.57 seconds
+ >>>> Total wall time used in SIRIUS :      2.57 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:44:53 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+
+
+    *****************************************************************
+    ******** Output from **PROPE input processing for ABACUS ********
+    *****************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      The molecular Hessian
+      Dipole moment gradient
+      Vibrational analysis
+      Direct calculation - no two-electron integrals written or read.
+
+
+ Default print level:        0
+
+
+Starting in Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:44:53 2010
+     Host name              : login-0-1.local                         
+
+ >>> Time used in DFTGRA is   0.29 seconds
+
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.04 seconds
+
+
+ >>> Time used in FCK3GR is   0.04 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.03 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+ Electrons: 18.000000( 4.71e-07): LR-DFT*1 evaluation time:       0.4 s
+
+ Largest deviation from tra-rot symmetry is in gradient element  5:  2.98E-07
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:45:21 2010
+     Host name              : login-0-1.local                         
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ C          1.4496747688           -0.0000010117            0.0000000000
+ C         -1.4496747688            0.0000010117            0.0000000000
+ H          2.1888645654           -0.9728762646            1.6850699397
+ H          2.1888645654           -0.9728762646           -1.6850699397
+ H         -2.1888645654            0.9728762646            1.6850699397
+ H         -2.1888645654            0.9728762646           -1.6850699397
+ H          2.1888617992            1.9457507963            0.0000000000
+ H         -2.1888617992           -1.9457507963            0.0000000000
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -78.0893823476 au (Hartrees)
+                         -2124.92012548 eV
+                           -205023.6439 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.0774140787 au
+     Mass-velocity correction:                  -0.0975837861 au
+
+     Total relativistic correction:             -0.0201697075 au (0.0258%)
+     Non-relativistic + relativistic energy:   -78.1095520550 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+ C         -0.0000130534            0.0000005535            0.0000000000
+ C          0.0000130534           -0.0000005535            0.0000000000
+ H          0.0000008526           -0.0000011763            0.0000018961
+ H          0.0000008526           -0.0000011763           -0.0000018961
+ H         -0.0000008526            0.0000011763            0.0000018961
+ H         -0.0000008526            0.0000011763           -0.0000018961
+ H          0.0000007915            0.0000021293            0.0000000000
+ H         -0.0000007915           -0.0000021293            0.0000000000
+
+
+
+
+
+                          Molecular Hessian (au)
+                          ----------------------
+
+           C    x      C    y      C    z      C    x      C    y      C    z
+
+ C    x    6.072392
+ C    y    0.000003   42.740136
+ C    z    0.000000    0.000008   13.167298
+
+ C    x    0.556243    0.000002    0.000000    6.072393
+ C    y    0.000002  -14.258072   -0.000002    0.000002   14.387831
+ C    z    0.000000   -0.000008   -8.250184    0.000000    0.000002   13.167298
+
+ H    x   -2.203172   -1.168114    2.023238   -0.006371    0.800773   -1.386981
+ H    y   -0.336684  -23.343801   -0.720425   -0.030658    4.840444   -0.031145
+ H    z    0.583153    0.980234   -1.892599    0.053101   -0.376648    0.687480
+
+ H    x   -2.203172   -1.168119   -2.023238   -0.006371    0.800774    1.386981
+ H    y   -0.336684   -5.670085    0.720419   -0.030658    1.249929    0.031151
+ H    z   -0.583153    2.421071   -1.892599   -0.053101   -0.314346    0.687480
+
+ H    x   -0.006372    0.800776    1.386981   -2.203172   -1.168117   -2.023238
+ H    y   -0.030658    3.597128    0.031151   -0.336683   -3.322886    0.720419
+ H    z   -0.053101   -1.669501    0.687480   -0.583153    1.065916   -1.892599
+
+ H    x   -0.006372    0.800771   -1.386981   -2.203172   -1.168116    2.023238
+ H    y   -0.030658   -2.294108   -0.031151   -0.336683   -2.126048   -0.720419
+ H    z    0.053101   -1.731804    0.687480    0.583153   -0.374922   -1.892599
+
+ H    x   -2.203177    2.336231    0.000000   -0.006372   -1.601550    0.000000
+ H    y    0.673362   -1.476660    0.000000    0.061316    0.705462    0.000000
+ H    z    0.000000   -3.401310   -3.140400    0.000000    0.690995    0.633523
+
+ H    x   -0.006372   -1.601550    0.000000   -2.203177    2.336231    0.000000
+ H    y    0.061316    0.705462    0.000000    0.673362   -1.476660    0.000000
+ H    z    0.000000    3.401310    0.633523    0.000000   -0.690995   -3.140400
+
+
+           H    x      H    y      H    z      H    x      H    y      H    z
+
+ H    x    2.109532
+ H    y    0.392602   16.160754
+ H    z   -0.680009   -0.646987    1.259831
+
+ H    x    0.041501   -0.009132   -0.008922    2.109532
+ H    y   -0.009133    2.393434    0.018343    0.392603    2.077553
+ H    z    0.008922   -1.373498   -0.084039    0.680009   -0.708168    1.259831
+
+ H    x   -0.000673   -0.003567    0.008923    0.018355   -0.018912   -0.032757
+ H    y   -0.003565   -2.343576   -0.007975   -0.018912    0.002820    0.018451
+ H    z   -0.008923    1.363130   -0.008946   -0.032757    0.018451    0.024124
+
+ H    x    0.018355   -0.018910    0.032757   -0.000673   -0.003565   -0.008923
+ H    y   -0.018912    2.350019   -0.018451   -0.003565    0.003624    0.007975
+ H    z    0.032757    1.336705    0.024124    0.008923   -0.007975   -0.008946
+
+ H    x    0.041501    0.012294    0.003449    0.041501    0.012294   -0.003449
+ H    y   -0.003160   -0.051470    0.038066   -0.003160   -0.051470   -0.038066
+ H    z    0.012371    2.785068    0.013666   -0.012371   -0.074753    0.013666
+
+ H    x   -0.000673   -0.005945    0.007549   -0.000673   -0.005945   -0.007549
+ H    y    0.009510   -0.005804    0.013417    0.009510   -0.005804   -0.013417
+ H    z   -0.001375   -2.712847    0.000481    0.001375    0.002532    0.000481
+
+
+           H    x      H    y      H    z      H    x      H    y      H    z
+
+ H    x    2.109532
+ H    y    0.392603    2.077553
+ H    z    0.680009   -0.708168    1.259831
+
+ H    x    0.041501   -0.009133    0.008922    2.109532
+ H    y   -0.009133    0.046235   -0.018343    0.392603    2.077553
+ H    z   -0.008922    0.018343   -0.084039   -0.680009    0.708168    1.259831
+
+ H    x   -0.000673   -0.005945   -0.007549   -0.000673   -0.005945    0.007549
+ H    y    0.009510   -0.005804   -0.013417    0.009510   -0.005804    0.013417
+ H    z    0.001375    0.002532    0.000481   -0.001375   -0.002532    0.000481
+
+ H    x    0.041501    0.012294   -0.003449    0.041501    0.012294    0.003449
+ H    y   -0.003160   -0.051470   -0.038066   -0.003160   -0.051470    0.038066
+ H    z   -0.012371   -0.074753    0.013666    0.012371    0.074753    0.013666
+
+
+           H    x      H    y      H    z      H    x      H    y      H    z
+
+ H    x    2.109537
+ H    y   -0.785202    0.850969
+ H    z    0.000000    0.000000    2.486415
+
+ H    x    0.018355    0.037824    0.000000    2.109537
+ H    y    0.037824    0.034777    0.000000   -0.785202    0.850969
+ H    z    0.000000    0.000000   -0.007833    0.000000    0.000000    2.486415
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.000000 au           0.000000 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+                       Dipole moment gradient (au)
+                       ---------------------------
+
+                       Ex             Ey             Ez
+
+        C    x    -0.04857056     0.00000028     0.00000001
+        C    y     0.00000022    -0.10376867     0.00000001
+        C    z     0.00000002     0.00000013    -0.10376898
+
+        C    x    -0.04857450    -0.00000015     0.00000000
+        C    y    -0.00000006    -0.10376984     0.00000000
+        C    z     0.00000000     0.00000002    -0.10376902
+
+        H    x     0.01619087     0.01906951    -0.03302990
+        H    y     0.01699363     0.05687621     0.03860101
+        H    z    -0.02943383     0.03860087     0.01230342
+
+        H    x     0.01619089     0.01906963     0.03302990
+        H    y     0.01699360     0.05687601    -0.03860102
+        H    z     0.02943379    -0.03860109     0.01230341
+
+        H    x     0.01619073     0.01906977     0.03302991
+        H    y     0.01699368     0.05687644    -0.03860102
+        H    z     0.02943386    -0.03860097     0.01230341
+
+        H    x     0.01619073     0.01906976    -0.03302991
+        H    y     0.01699368     0.05687642     0.03860103
+        H    z    -0.02943386     0.03860097     0.01230341
+
+        H    x     0.01619103    -0.03813942    -0.00000001
+        H    y    -0.03398737    -0.00998328     0.00000000
+        H    z     0.00000001     0.00000007     0.07916217
+
+        H    x     0.01619081    -0.03813937     0.00000000
+        H    y    -0.03398738    -0.00998328     0.00000000
+        H    z     0.00000000     0.00000000     0.07916218
+
+
+
+
+
+                        +-------------------------+
+                        ! APT Population Analysis !
+                        +-------------------------+
+
+
+      [ Reference : J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333 ]
+
+                            C        -0.085369
+                            C        -0.085371
+                            H         0.028457
+                            H         0.028457
+                            H         0.028457
+                            H         0.028457
+                            H         0.028457
+                            H         0.028457
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C           C           H           H           H           H     
+            ------      ------      ------      ------      ------      ------
+ C     :    0.000000
+ C     :    1.534270    0.000000
+ H     :    1.101445    2.183452    0.000000
+ H     :    1.101445    2.183452    1.783401    0.000000
+ H     :    2.183452    1.101445    2.535110    3.099565    0.000000
+ H     :    2.183452    1.101445    3.099565    2.535110    1.783401    0.000000
+ H     :    1.101445    2.183450    1.783401    1.783401    2.535109    2.535109
+ H     :    2.183450    1.101445    2.535109    2.535109    1.783401    1.783401
+
+            H           H     
+            ------      ------
+ H     :    0.000000
+ H     :    3.099563    0.000000
+
+
+  Max interatomic separation is    3.0996 Angstroms
+  between atoms "H     " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C          C            1.534270
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+
+
+
+
+ ****************************************************************************
+ *************** ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS ***************
+ ****************************************************************************
+
+
+ Norm of (unprojected) molecular gradient (au) :     0.00001935
+
+
+ Conversion factors used:
+
+    Hartree to (cm)-1      : 219474.63128
+    a.m.u.  to a.u.        :   1822.88848
+    Bohr    to Angstrom    :  0.529177208
+    a.u.    to A**4amu-1   :   142.943570
+    a.u.    to km (mol)-1  :      974.864
+
+
+ Vibrational analysis for parent molecule only.
+  Norm of projected gradient     0.000019
+
+
+                            PROJECTED HESSIAN 
+                           -------------------
+
+
+               Column   1     Column   2     Column   3     Column   4
+       1       6.07239247     0.00000271    -0.00000001     0.55624302
+       2       0.00000271    42.74013650     0.00000812     0.00000206
+       3      -0.00000001     0.00000792    13.16729930     0.00000000
+       4       0.55624302     0.00000206     0.00000000     6.07239289
+       5       0.00000224   -14.25807270    -0.00000169     0.00000246
+       6       0.00000000    -0.00000795    -8.25018482     0.00000000
+       7      -2.20317207    -1.16811412     2.02323734    -0.00637146
+       8      -0.33668356   -23.34380013    -0.72042519    -0.03065797
+       9       0.58315292     0.98023351    -1.89259848     0.05310115
+      10      -2.20317209    -1.16811886    -2.02323734    -0.00637146
+      11      -0.33668354    -5.67008455     0.72041872    -0.03065797
+      12      -0.58315289     2.42107101    -1.89259849    -0.05310115
+      13      -0.00637155     0.80077560     1.38698039    -2.20317201
+      14      -0.03065814     3.59712748     0.03115144    -0.33668341
+      15      -0.05310121    -1.66950087     0.68747975    -0.58315285
+      16      -0.00637155     0.80077086    -1.38698039    -2.20317201
+      17      -0.03065814    -2.29410874    -0.03115144    -0.33668341
+      18       0.05310121    -1.73180364     0.68747975     0.58315285
+      19      -2.20317661     2.33623091     0.00000000    -0.00637201
+      20       0.67336247    -1.47665897     0.00000000     0.06131578
+      21      -0.00000001    -3.40131041    -3.14039910     0.00000000
+      22      -0.00637161    -1.60154915     0.00000001    -2.20317695
+      23       0.06131596     0.70546112     0.00000004     0.67336245
+      24       0.00000000     3.40131044     0.63352208     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       1       0.00000224     0.00000000    -2.20317207    -0.33668356
+       2     -14.25807270    -0.00000815    -1.16811410   -23.34380013
+       3      -0.00000164    -8.25018482     2.02323734    -0.72042505
+       4       0.00000246     0.00000000    -0.00637146    -0.03065797
+       5      14.38783217     0.00000165     0.80077283     4.84044335
+       6       0.00000161    13.16729934    -1.38698039    -0.03114509
+       7       0.80077284    -1.38698039     2.10953159     0.39260144
+       8       4.84044335    -0.03114495     0.39260142    16.16075339
+       9      -0.37664845     0.68747975    -0.68000882    -0.64698723
+      10       0.80077377     1.38698039     0.04150150    -0.00913167
+      11       1.24992836     0.03115144    -0.00913356     2.39343381
+      12      -0.31434569     0.68747975     0.00892257    -1.37349858
+      13      -1.16811696    -2.02323734    -0.00067325    -0.00356657
+      14      -3.32288544     0.72041872    -0.00356468    -2.34357561
+      15       1.06591586    -1.89259848    -0.00892353     1.36312975
+      16      -1.16811600     2.02323734     0.01835557    -0.01891001
+      17      -2.12604756    -0.72041872    -0.01891190     2.35001894
+      18      -0.37492165    -1.89259848     0.03275636     1.33670472
+      19      -1.60154918     0.00000000     0.04150147     0.01229397
+      20       0.70546099     0.00000000    -0.00316029    -0.05147025
+      21       0.69099538     0.63352207     0.01237112     2.78506837
+      22       2.33623084     0.00000000    -0.00067334    -0.00594563
+      23      -1.47665917     0.00000001     0.00951027    -0.00580350
+      24      -0.69099541    -3.14039913    -0.00137465    -2.71284691
+
+               Column   9     Column  10     Column  11     Column  12
+       1       0.58315292    -2.20317209    -0.33668354    -0.58315289
+       2       0.98023348    -1.16811889    -5.67008455     2.42107098
+       3      -1.89259850    -2.02323734     0.72041874    -1.89259850
+       4       0.05310115    -0.00637146    -0.03065797    -0.05310115
+       5      -0.37664845     0.80077377     1.24992836    -0.31434568
+       6       0.68747976     1.38698039     0.03115142     0.68747977
+       7      -0.68000882     0.04150150    -0.00913356     0.00892257
+       8      -0.64698720    -0.00913165     2.39343381    -1.37349856
+       9       1.25983129    -0.00892257     0.01834342    -0.08403873
+      10      -0.00892257     2.10953159     0.39260332     0.68000882
+      11       0.01834343     0.39260333     2.07755286    -0.70816793
+      12      -0.08403873     0.68000882    -0.70816793     1.25983129
+      13       0.00892352     0.01835557    -0.01891190    -0.03275636
+      14      -0.00797460    -0.01891190     0.00281977     0.01845043
+      15      -0.00894585    -0.03275636     0.01845043     0.02412449
+      16       0.03275636    -0.00067325    -0.00356468    -0.00892352
+      17      -0.01845043    -0.00356468     0.00362356     0.00797460
+      18       0.02412449     0.00892353    -0.00797460    -0.00894585
+      19       0.00344864     0.04150147     0.01229397    -0.00344864
+      20       0.03806649    -0.00316029    -0.05147025    -0.03806649
+      21       0.01366633    -0.01237112    -0.07475337     0.01366633
+      22       0.00754880    -0.00067333    -0.00594566    -0.00754883
+      23       0.01341728     0.00951031    -0.00580356    -0.01341735
+      24       0.00048120     0.00137465     0.00253187     0.00048120
+
+               Column  13     Column  14     Column  15     Column  16
+       1      -0.00637155    -0.03065814    -0.05310121    -0.00637155
+       2       0.80077562     3.59712748    -1.66950084     0.80077084
+       3       1.38698039     0.03115142     0.68747977    -1.38698039
+       4      -2.20317201    -0.33668341    -0.58315285    -2.20317201
+       5      -1.16811697    -3.32288544     1.06591585    -1.16811599
+       6      -2.02323734     0.72041874    -1.89259850     2.02323734
+       7      -0.00067325    -0.00356468    -0.00892352     0.01835557
+       8      -0.00356658    -2.34357561     1.36312973    -0.01890999
+       9       0.00892353    -0.00797460    -0.00894585     0.03275636
+      10       0.01835557    -0.01891190    -0.03275636    -0.00067325
+      11      -0.01891190     0.00281977     0.01845043    -0.00356468
+      12      -0.03275636     0.01845043     0.02412449    -0.00892353
+      13       2.10953159     0.39260332     0.68000882     0.04150150
+      14       0.39260333     2.07755286    -0.70816793    -0.00913356
+      15       0.68000882    -0.70816793     1.25983129     0.00892257
+      16       0.04150150    -0.00913356     0.00892257     2.10953159
+      17      -0.00913356     0.04623464    -0.01834343     0.39260333
+      18      -0.00892257     0.01834343    -0.08403873    -0.68000882
+      19      -0.00067331    -0.00594564    -0.00754882    -0.00067331
+      20       0.00951036    -0.00580351    -0.01341732     0.00951036
+      21       0.00137465     0.00253187     0.00048120    -0.00137465
+      22       0.04150147     0.01229400    -0.00344864     0.04150147
+      23      -0.00316030    -0.05147018    -0.03806649    -0.00316030
+      24      -0.01237112    -0.07475337     0.01366633     0.01237112
+
+               Column  17     Column  18     Column  19     Column  20
+       1      -0.03065814     0.05310121    -2.20317661     0.67336247
+       2      -2.29410874    -1.73180361     2.33623091    -1.47665897
+       3      -0.03115142     0.68747977     0.00000000     0.00000000
+       4      -0.33668341     0.58315285    -0.00637201     0.06131578
+       5      -2.12604756    -0.37492166    -1.60154918     0.70546099
+       6      -0.72041874    -1.89259850     0.00000000     0.00000000
+       7      -0.01891190     0.03275636     0.04150147    -0.00316029
+       8       2.35001894     1.33670470     0.01229397    -0.05147025
+       9      -0.01845043     0.02412449     0.00344864     0.03806649
+      10      -0.00356468     0.00892352     0.04150147    -0.00316029
+      11       0.00362356    -0.00797460     0.01229397    -0.05147025
+      12       0.00797460    -0.00894585    -0.00344864    -0.03806649
+      13      -0.00913356    -0.00892257    -0.00067331     0.00951036
+      14       0.04623464     0.01834343    -0.00594564    -0.00580351
+      15      -0.01834343    -0.08403873    -0.00754882    -0.01341732
+      16       0.39260332    -0.68000882    -0.00067331     0.00951036
+      17       2.07755286     0.70816793    -0.00594564    -0.00580351
+      18       0.70816793     1.25983129     0.00754882     0.01341732
+      19      -0.00594564     0.00754882     2.10953679    -0.78520224
+      20      -0.00580351     0.01341732    -0.78520224     0.85096853
+      21      -0.00253187     0.00048120     0.00000000     0.00000000
+      22       0.01229399     0.00344864     0.01835551     0.03782385
+      23      -0.05147019     0.03806649     0.03782384     0.03477697
+      24       0.07475337     0.01366633     0.00000000     0.00000000
+
+               Column  21     Column  22     Column  23     Column  24
+       1      -0.00000001    -0.00637161     0.06131596     0.00000000
+       2      -3.40131044    -1.60154915     0.70546112     3.40131047
+       3      -3.14039908     0.00000001     0.00000004     0.63352205
+       4       0.00000000    -2.20317695     0.67336245     0.00000000
+       5       0.69099539     2.33623084    -1.47665917    -0.69099542
+       6       0.63352205     0.00000000     0.00000001    -3.14039911
+       7       0.01237113    -0.00067334     0.00951027    -0.00137465
+       8       2.78506840    -0.00594563    -0.00580350    -2.71284693
+       9       0.01366632     0.00754880     0.01341728     0.00048121
+      10      -0.01237113    -0.00067333     0.00951031     0.00137465
+      11      -0.07475337    -0.00594566    -0.00580356     0.00253187
+      12       0.01366632    -0.00754883    -0.01341735     0.00048121
+      13       0.00137465     0.04150147    -0.00316030    -0.01237113
+      14       0.00253187     0.01229400    -0.05147018    -0.07475337
+      15       0.00048121    -0.00344864    -0.03806649     0.01366632
+      16      -0.00137465     0.04150147    -0.00316030     0.01237113
+      17      -0.00253187     0.01229399    -0.05147019     0.07475337
+      18       0.00048121     0.00344864     0.03806649     0.01366632
+      19       0.00000000     0.01835551     0.03782384     0.00000000
+      20       0.00000000     0.03782385     0.03477697     0.00000000
+      21       2.48641462     0.00000001     0.00000002    -0.00783265
+      22       0.00000001     2.10953679    -0.78520224     0.00000000
+      23       0.00000002    -0.78520224     0.85096853     0.00000000
+      24      -0.00783265     0.00000000     0.00000000     2.48641464
+
+
+                         Isotopic Molecule No. 1
+                         ======================= 
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           C          12.000000
+                           C          12.000000
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    30.046950 amu
+                       Natural abundance:  97.724 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    6.410816          1.000000   -0.000001    0.000000
+   IB   25.442207          0.000001    1.000000    0.000000
+   IC   25.442208          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+          78832.2482          19863.8036          19863.8031 MHz
+            2.629561            0.662585            0.662585 cm-1
+
+
+
+  Vibrational Frequencies and IR Intensities
+  ------------------------------------------
+
+
+
+  mode   irrep        frequency             IR intensity
+  ============================================================
+                 cm-1       hartrees     km/mol   (D/A)**2/amu
+  ------------------------------------------------------------
+   1      A     23818.98    0.108527      5.918   0.1401
+   2      A     10538.72    0.048018      0.000   0.0000
+   3      A     10029.40    0.045697      3.535   0.0837
+   4      A      9003.59    0.041023      4.576   0.1083
+   5      A      8987.13    0.040948      0.926   0.0219
+   6      A      8703.48    0.039656     21.933   0.5191
+   7      A      8406.90    0.038305     10.014   0.2370
+   8      A      8188.01    0.037307      0.000   0.0000
+   9      A      8068.11    0.036761      0.804   0.0190
+  10      A      8043.36    0.036648      0.371   0.0088
+  11      A      7935.28    0.036156      0.423   0.0100
+  12      A      5093.57    0.023208      2.875   0.0680
+  13      A      4136.52    0.018847      2.750   0.0651
+  14      A      3741.03    0.017045      0.750   0.0178
+  15      A      3635.85    0.016566      2.141   0.0507
+  16      A      3366.21    0.015338      0.480   0.0114
+  17      A      3216.39    0.014655      0.000   0.0000
+  18      A      1526.11i   0.006953i
+
+
+
+
+
+
+  Normal Coordinates (bohrs*amu**(1/2)):
+  --------------------------------------
+
+
+                1  ****     2  ****     3  ****     4  9004     5  8987 
+  ----------------------------------------------------------------------
+
+    C      x   -0.001386    0.000000   -0.009443   -0.054785   -0.102091
+    C      y   -0.109082    0.018001    0.083306    0.003364    0.007143
+    C      z   -0.002985   -0.131400    0.010013    0.001463    0.003084
+
+    C      x   -0.000107    0.000000   -0.000294   -0.106101    0.050132
+    C      y    0.026538   -0.018001   -0.140613    0.006393    0.013004
+    C      z   -0.000016    0.131400   -0.025259    0.002159    0.004443
+
+    H      x    0.025808   -0.268761   -0.030164    0.208892    0.417737
+    H      y    0.856758    0.027180    0.179477    0.001115    0.002768
+    H      z   -0.033042    0.173370   -0.002623   -0.099442   -0.204825
+
+    H      x    0.007823    0.229362   -0.174715    0.216441    0.432402
+    H      y    0.140347   -0.096582   -0.148509    0.033363    0.067677
+    H      z   -0.075187    0.190325   -0.015903    0.091061    0.187321
+
+    H      x   -0.006512   -0.229362    0.211777    0.416321   -0.238624
+    H      y   -0.129061    0.096582    0.246501    0.078171   -0.086488
+    H      z    0.071369   -0.190325   -0.016305    0.169541   -0.078615
+
+    H      x   -0.006768    0.268761    0.116536    0.423647   -0.223650
+    H      y    0.114296   -0.027180    0.399985    0.062069   -0.119264
+    H      z    0.068546   -0.173370    0.160890   -0.183270    0.050629
+
+    H      x   -0.014632    0.039399    0.323373    0.208812    0.418498
+    H      y    0.006768   -0.020018   -0.163411   -0.091914   -0.189505
+    H      z    0.144825    0.289028    0.062518   -0.016162   -0.033361
+
+    H      x    0.012058   -0.039399   -0.330870    0.441536   -0.187706
+    H      y   -0.006268    0.020018    0.168303   -0.198982    0.084927
+    H      z   -0.140781   -0.289028   -0.007049   -0.004854   -0.010774
+
+
+                6  8703     7  8407     8  8188     9  8068    10  8043 
+  ----------------------------------------------------------------------
+
+    C      x    0.000000    0.009540    0.000000   -0.002273    0.000000
+    C      y    0.028411    0.055964   -0.003758   -0.009775    0.012032
+    C      z   -0.067162    0.026988    0.003966   -0.013158   -0.002473
+
+    C      x    0.000000   -0.000055    0.000000    0.000015    0.000000
+    C      y    0.028411    0.032141    0.003758   -0.007813    0.012032
+    C      z   -0.067162    0.017791   -0.003966   -0.014969   -0.002473
+
+    H      x   -0.105466    0.049029    0.323963   -0.281610   -0.333999
+    H      y    0.028411    0.075026   -0.005674   -0.014513    0.012032
+    H      z    0.079700   -0.049885   -0.193561    0.167636    0.189683
+
+    H      x    0.064063   -0.401573   -0.094823    0.308556   -0.158637
+    H      y   -0.345176   -0.316564   -0.386781    0.251481    0.078122
+    H      z    0.237735   -0.046524    0.167613    0.018054   -0.131897
+
+    H      x    0.064062    0.087462    0.094823    0.557999   -0.158636
+    H      y   -0.345176   -0.308377    0.386782    0.217619    0.078122
+    H      z    0.237735    0.232365   -0.167613    0.185171   -0.131896
+
+    H      x   -0.105466    0.016180   -0.323963   -0.365307   -0.333999
+    H      y    0.028411   -0.425331    0.005674   -0.338611    0.012031
+    H      z    0.079700   -0.254659    0.193561    0.006631    0.189682
+
+    H      x    0.041404    0.237634   -0.229140    0.000116    0.492636
+    H      y   -0.021520   -0.124734    0.116557   -0.001915   -0.233417
+    H      z    0.482254   -0.005561    0.317074    0.102852   -0.028342
+
+    H      x    0.041404   -0.101661    0.229140   -0.192866    0.492635
+    H      y   -0.021520    0.050929   -0.116557    0.095359   -0.233417
+    H      z    0.482255   -0.408916   -0.317074   -0.145445   -0.028343
+
+
+               11  7935    12  5094    13  4137    14  3741    15  3636 
+  ----------------------------------------------------------------------
+
+    C      x   -0.003878   -0.042252   -0.003900    0.050884    0.000001
+    C      y   -0.012256   -0.012408   -0.006947    0.015045   -0.047177
+    C      z   -0.000762   -0.039357    0.026133   -0.030729   -0.026286
+
+    C      x    0.000029   -0.001509   -0.048908   -0.046470   -0.000001
+    C      y   -0.005974    0.006471   -0.007270    0.013425   -0.047177
+    C      z   -0.001146   -0.016804    0.013859   -0.024336   -0.026285
+
+    H      x    0.202309    0.450603   -0.128286    0.090534   -0.003937
+    H      y   -0.021666   -0.062539    0.004674    0.012129   -0.047177
+    H      z   -0.079691    0.795010   -0.153399    0.017793   -0.035836
+
+    H      x   -0.265780   -0.049881    0.157790   -0.196662   -0.221355
+    H      y    0.305832   -0.020680   -0.183714    0.279731    0.183079
+    H      z   -0.327389   -0.179567   -0.243514    0.412104    0.377431
+
+    H      x   -0.056662    0.043959    0.167874    0.023673   -0.221349
+    H      y    0.265576   -0.076055   -0.244055   -0.060568    0.183070
+    H      z   -0.179385   -0.000041   -0.430574   -0.145494    0.377417
+
+    H      x    0.110742    0.049125    0.115924    0.193797   -0.003939
+    H      y   -0.310244    0.022380   -0.196436   -0.244305   -0.047179
+    H      z   -0.236626    0.161705    0.299615    0.433273   -0.035833
+
+    H      x    0.109429    0.027197    0.141245   -0.189128    0.225282
+    H      y   -0.052019    0.136698    0.304254   -0.491104    0.425822
+    H      z    0.532667   -0.001509    0.020314   -0.031798   -0.028611
+
+    H      x   -0.054200    0.000053    0.174228    0.025220    0.225288
+    H      y    0.029578    0.070882    0.484547    0.165120    0.425838
+    H      z    0.313149   -0.106900    0.031382   -0.030227   -0.028611
+
+
+               16  3366    17  3216    18  1526i
+  ----------------------------------------------
+
+    C      x   -0.015344    0.000001   -0.178328
+    C      y    0.002815   -0.026207    0.001840
+    C      z    0.001385   -0.015146   -0.001228
+
+    C      x    0.010129   -0.000001    0.177834
+    C      y    0.025054    0.026206    0.000081
+    C      z   -0.043949    0.015147   -0.000186
+
+    H      x   -0.120444    0.000139   -0.181247
+    H      y    0.003670   -0.039570    0.004441
+    H      z   -0.081772   -0.022600   -0.027763
+
+    H      x    0.107080   -0.265376   -0.194818
+    H      y   -0.108892    0.186896    0.029097
+    H      z   -0.158252    0.369247    0.049695
+
+    H      x   -0.204005    0.265378    0.193196
+    H      y    0.236408   -0.186898   -0.025865
+    H      z    0.279563   -0.369248   -0.048943
+
+    H      x    0.372250   -0.000144    0.190604
+    H      y   -0.306801    0.039576   -0.028870
+    H      z    0.509876    0.022592    0.044600
+
+    H      x    0.103873    0.265232   -0.196219
+    H      y    0.200925    0.412998   -0.056646
+    H      z    0.005284   -0.022802   -0.003180
+
+    H      x   -0.196660   -0.265230    0.194363
+    H      y   -0.357149   -0.412995    0.054969
+    H      z   -0.047899    0.022803    0.002433
+
+
+
+
+  Dipole Gradient in Normal Coordinate Basis (D/(A*amu**(1/2)))
+  -------------------------------------------------------------
+
+
+  mode           dMA/dQi        dMB/dQi        dMC/dQi
+  ----------------------------------------------------
+   1            0.076272       0.319107       0.180042
+   2            0.000000       0.000000       0.000000
+   3            0.038857       0.261398       0.117585
+   4            0.325073      -0.047160      -0.020032
+   5            0.103429      -0.097489      -0.041382
+   6            0.000000      -0.280687       0.663530
+   7           -0.009221      -0.445429      -0.196190
+   8            0.000000       0.000001       0.000000
+   9            0.000924       0.086028       0.107796
+  10            0.000000      -0.091844       0.018876
+  11            0.000749       0.099925       0.005613
+  12           -0.154980       0.206529      -0.037036
+  13           -0.234092      -0.076991       0.065914
+  14            0.020959       0.072309      -0.109962
+  15            0.000002      -0.196615      -0.109549
+  16           -0.026159       0.033691      -0.097692
+  17            0.000001      -0.000001       0.000002
+  18           -0.003162      -0.002637      -0.005410
+
+
+
+                          Total Molecular Energy
+                          ----------------------
+
+             electronic     vibrational           total    energy 
+
+             -78.089382        0.307353      -77.782029    Hartrees
+           -17138638.40        67456.27    -17071182.13    cm-1
+             -205023.64          806.96      -204216.69    kJ/mol
+              -49001.83          192.87       -48808.96    kcal/mol
+
+
+                      Molecular Partition Functions
+                      -----------------------------
+
+ Qtran is evaluated per mol at 1 atm. pressure.
+ Qrot does not include symmetry numbers.
+ Qvib does not include zero point energies
+ (i.e., energy scale has vibrational ground state as zero).
+
+
+ Temp.(K)  Translational     Rotational    Vibrational      Total
+
+    50.00     7.4557D+04         339.96         1.0000   2.534656D+07
+   100.00     4.2176D+05         958.71         1.0000   4.043445D+08
+   200.00     2.3858D+06        2707.62         1.0000   6.459909D+09
+   273.15     5.2008D+06        4319.87         1.0000   2.246665D+10
+   298.15     6.4737D+06        4925.86         1.0000   3.188844D+10
+   300.00     6.5746D+06        4971.74         1.0000   3.268710D+10
+   400.00     1.3496D+07        7652.60         1.0000   1.032837D+11
+   500.00     2.3577D+07       10693.25         1.0002   2.521693D+11
+   600.00     3.7191D+07       14055.24         1.0011   5.233116D+11
+   700.00     5.4678D+07       17710.37         1.0036   9.718472D+11
+   800.00     7.6347D+07       21636.78         1.0088   1.666445D+12
+   900.00     1.0249D+08       25816.86         1.0178   2.693019D+12
+  1000.00     1.3337D+08       30236.06         1.0315   4.159699D+12
+  1500.00     3.6753D+08       55541.69         1.1922   2.433581D+13
+  2000.00     7.5447D+08       85507.78         1.5564   1.004047D+14
+
+ >>> Time used in VIBCTL is   0.01 seconds
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ TWOTEX     00:00:03      11 %
+ RHSIDE     00:00:05      19 %
+ RESPON     00:00:20      72 %
+ RELAX      00:00:02       7 %
+
+ TOTAL      00:00:28     100 %
+
+
+
+ >>>> Total CPU  time used in ABACUS:  27.89 seconds
+ >>>> Total wall time used in ABACUS:  27.96 seconds
+
+- End of Static Property Section
+
+ >>>> Total CPU  time used in DALTON:  30.47 seconds
+ >>>> Total wall time used in DALTON:  30.57 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:45:21 2010
+     Host name              : login-0-1.local                         

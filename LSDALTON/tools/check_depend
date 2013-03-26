@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+# (c) Multiple contributors.
+# Rewritten by pawsa to contain only one perl invocation per directory.
+#
+
+$dirlist=`echo '.' @ARGV | sed -e 's/-WF//g' -e 's/-I//g' -e 's/,/ /g' `;
+
+foreach $dir (split / /, $dirlist) { 
+    chomp $dir;
+    opendir DIR, $dir;
+    while($file = readdir DIR) {
+        $file =~ /\.h$/ or next;
+        $file =~ s/\.\///g;
+        $dir{$file}=$dir . "/";
+    }
+    closedir DIR;
+}
+
+opendir DIR, "." or die;
+while($f = readdir DIR) {
+    $f =~ /\.(F|f|c|cc)$/ or next;
+    open FL, $f or next;
+    $r=$f; $r =~ s/\.[^.]$//g;
+    while(<FL>) {
+       if(/^ *# *include/){
+	  @a=split /["<>]/; $inc{$a[$#a-1]}++;
+       }
+    }
+    close FL;
+    $n=3;
+    printf "%s.o %s.i : %s",$r,$r,$f;
+    foreach $i (sort keys %inc) {
+	$i =~ s,.*/,,; 
+        if(defined $dir{$i}) {
+          if ($n < 3) {printf "  %s%s",$dir{$i},$i; $n++; }
+          else  {printf " \\\n  %s%s",$dir{$i},$i; $n = 1;}
+        }
+    }
+    print "\n\n\n";
+}
+closedir DIR;

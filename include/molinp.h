@@ -13,5 +13,5 @@
 !     note: line length of 80 is hardcoded many places so it is a lot of work to change it!
       CHARACTER*(len_MLINE) MLINE
       COMMON /MOLINC/ MLINE(KMLINE)
-      COMMON /MOLINP/ NMLINE,NCLINE(MXCENT),NMLAU,NONTYP_QM
+      COMMON /MOLINP/ NMLINE,NCLINE(MXCENT),NMLAU,NONTP1,NONTYP_QM
 ! -- End of molinp.h --

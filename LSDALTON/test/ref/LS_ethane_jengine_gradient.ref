@@ -1,0 +1,987 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:36:17 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+    Static molecular property section will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+ Print level in FCK3:    0
+Threshold set dynamically.
+ *LINSCA specified in old input
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  LDA molecular hessian without symmetry                                  
+  Ethane                                                                  
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           C          12.000000
+                           C          12.000000
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    30.046950 amu
+                       Natural abundance:  97.724 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    8
+
+  Basis set used is "6-31G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  C           1       6      22       9      [10s4p|3s2p]                                                                     
+  C           1       6      22       9      [10s4p|3s2p]                                                                     
+  H           1       1       4       2      [4s|2s]                                                                          
+  H           1       1       4       2      [4s|2s]                                                                          
+  H           1       1       4       2      [4s|2s]                                                                          
+  H           1       1       4       2      [4s|2s]                                                                          
+  H           1       1       4       2      [4s|2s]                                                                          
+  H           1       1       4       2      [4s|2s]                                                                          
+  ----------------------------------------------------------------------
+  total:      8      18      68      30
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.03 seconds
+
+
+ >>> Time used in ONEDRV is   0.02 seconds
+
+
+ >>> Time used in GABGEN is   0.02 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.09 seconds
+ >>>> Total wall time used in HERMIT:   0.09 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ Ground state molecular gradient calculations are carried out.
+ 
+No frequencies specified in input. Only static properties will be  calculated.
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:36:17 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ Title lines from integral program:
+     LDA molecular hessian without symmetry                                  
+     Ethane                                                                  
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         18
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 30
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          30
+     Number of basis functions         30
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              9
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ Ground state molecular gradient calculations are carried out.
+ LSint is requested by *LINSCA under **INTEGRALS 
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:          10
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ Replace S with S build from new integral driver
+ QQQ New Overlap S1:   74.4267359655664     
+ QQQ Old Overlap S:   74.4267359655664     
+ QQQ DIFF S-S1:  4.758387854897387E-030
+  SUCCESFULLY REPLACED OLD OVERLAP WITH NEW
+ QQQ New H1:   4854.05316950804     
+ QQQ Old H1:   4854.05316950873     
+ QQQ DIFF H-H1:  1.955624107832724E-022
+  SUCCESFULLY REPLACED OLD h1 WITH NEW
+ Take first density from Hueckel guess
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   1.54 seconds
+ >>> wall Time used in **INIT          is   0.21 seconds
+** Get Fock matrix number   1
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   3.00 seconds
+
+
+ >>> Time used in JBUILD is   3.10 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.63 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   2979.16526888534     
+ QQQ Old  F:   2979.16526889063     
+ QQQ DIFF  :  7.210151080461680E-018
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  17.19 seconds
+ >>> wall Time used in FCK_FO          is   2.54 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   5.05553066030514     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -78.7886443414    0.00000000000    0.00      0.00000    0.00    0.0000000    0.51E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.04 seconds
+
+
+ >>> Time used in JBUILD is   1.05 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.62 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   3176.86824095537     
+ QQQ Old  F:   3176.86824095290     
+ QQQ DIFF  :  1.658510175968142E-017
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  14.78 seconds
+ >>> wall Time used in FCK_FO          is   2.33 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   1.20050506030225     
+  2    -79.1584817469   -0.36983740545    0.00      0.00000    0.00    0.0000000    0.12E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.04 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.51 seconds
+
+
+ >>> Time used in JBUILD is   1.51 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.62 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   3104.90384905788     
+ QQQ Old  F:   3104.90384905941     
+ QQQ DIFF  :  2.595950331739793E-017
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  11.97 seconds
+ >>> wall Time used in FCK_FO          is   2.10 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.369504689419389     
+  3    -79.1928849421   -0.03440319521    0.00      0.00000    0.00    0.0000000    0.37E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.05 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.67 seconds
+
+
+ >>> Time used in JBUILD is   1.68 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.61 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   3122.32105004533     
+ QQQ Old  F:   3122.32105004880     
+ QQQ DIFF  :  2.529045548771398E-017
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   5.47 seconds
+ >>> wall Time used in FCK_FO          is   1.61 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.369215086354130E-002
+  4    -79.1962924228   -0.00340748073    0.00      0.00000    0.00    0.0000000    0.34E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.05 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.30 seconds
+
+
+ >>> Time used in JBUILD is   1.31 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.62 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   3122.14016952005     
+ QQQ Old  F:   3122.14016952386     
+ QQQ DIFF  :  2.503778928198217E-017
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   6.93 seconds
+ >>> wall Time used in FCK_FO          is   1.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.957039961829770E-003
+  5    -79.1963493841   -0.00005696133    0.00      0.00000    0.00    0.0000000    0.30E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.08 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.89 seconds
+
+
+ >>> Time used in JBUILD is   1.89 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.60 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   3122.00259908821     
+ QQQ Old  F:   3122.00259908426     
+ QQQ DIFF  :  2.561583507624080E-017
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  15.38 seconds
+ >>> wall Time used in FCK_FO          is   2.24 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.012724684145315E-004
+  6    -79.1963499985   -0.00000061441    0.00      0.00000    0.00    0.0000000    0.30E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.09 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.74 seconds
+
+
+ >>> Time used in JBUILD is   1.76 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.58 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   3122.01003147970     
+ QQQ Old  F:   3122.01003148467     
+ QQQ DIFF  :  2.719825984166406E-017
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   6.96 seconds
+ >>> wall Time used in FCK_FO          is   1.63 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  4.992501252222269E-005
+  7    -79.1963500035   -0.00000000498    0.00      0.00000    0.00    0.0000000    0.50E-04  ###
+ >>>  CPU Time used in **ITER          is   0 hours  1 minute  19 seconds
+ >>> wall Time used in **ITER          is  14.25 seconds
+Total no. of matmuls in SCF optimization:        373
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.36983740545    0.0000    0.0000    0.0000000
+  3   -0.03440319521    0.0000    0.0000    0.0000000
+  4   -0.00340748073    0.0000    0.0000    0.0000000
+  5   -0.00005696133    0.0000    0.0000    0.0000000
+  6   -0.00000061441    0.0000    0.0000    0.0000000
+  7   -0.00000000498    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -78.78864434141658534827      0.505553066030514D+01
+    2           -79.15848174686476568240      0.120050506030225D+01
+    3           -79.19288494207830808591      0.369504689419389D+00
+    4           -79.19629242280637981821      0.336921508635413D-01
+    5           -79.19634938413173586014      0.295703996182977D-02
+    6           -79.19634999854076795600      0.301272468414531D-03
+    7           -79.19635000352096199094      0.499250125222227D-04
+ 
+      SCF converged !!!! 
+ Total no. of matmuls used:         375
+ Total no. of Fock/KS matrix evaluations:           7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                   0.974 GB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)             0.973 GB
+  Max allocated memory, integer               278.461 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand              44.297 MB
+  Max allocated memory, integralitem          945.586 MB
+  Max allocated memory, Overlap                 6.953 MB
+  Max allocated memory, ODitem                 54.812 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    80.60674        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:             -79.196350003521
+     Nuclear repulsion:            41.982234322450
+     Electronic energy:          -121.178584325971
+
+     Final gradient norm:           0.000049925013
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:36:31 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     81.09 seconds
+ >>>> Total wall time used in SIRIUS :     14.57 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:36:31 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+- End of Wave Function Section
+
+
+
+    *****************************************************************
+    ******** Output from **PROPE input processing for ABACUS ********
+    *****************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      Direct calculation - no two-electron integrals written or read.
+
+
+ Default print level:        0
+
+
+Starting in Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:36:31 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ QQQ:             nuclear-nuclear gradient      0.0000000000000004
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ QQQ:                     kinetic gradient      0.0000000000000002
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ >>>  CPU Time used in CSConCourrrrS0S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.02 seconds
+ >>>  CPU Time used in CSConNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSConNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   0.51 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.06 seconds
+ >>>  CPU Time used in CSPriNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSPriNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in ls_getIntegrals is   3.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.42 seconds
+ QQQ: nuclear-electron attraction gradient      0.0000000000008288
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.02 seconds
+ QQQ:        Reorthonormalization gradient      0.0000000000000001
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.02 seconds
+ >>>  CPU Time used in CSConNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSConNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   0.47 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.07 seconds
+ >>>  CPU Time used in CSPriNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSPriNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.27 seconds
+ >>> wall Time used in ls_getIntegrals is   0.20 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ QQQ:   Error in the one-electron gradient      0.0000000000008297
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.90 seconds
+
+
+ >>> Time used in FCK3GR is   0.91 seconds
+
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ Ground state molecular gradient calculations are carried out.
+ >>>  CPU Time used in CSConCourrrrS0S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.03 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   2.71 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.35 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  17.06 seconds
+ >>> wall Time used in Jengine         is   1.80 seconds
+ QQQ:  Coulomb electron-repulsion gradient      0.0000000000792149
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ Ground state molecular gradient calculations are carried out.
+ >>>  CPU Time used in CSConCourrrrS0S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.03 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   0.33 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.06 seconds
+
+
+                          Old exchange gradient
+                          ---------------------
+
+ C         -0.2021639760           -0.0000010756            0.0000000000
+ C          0.2021639760            0.0000010756            0.0000000000
+ H          0.0975376597           -0.1307033046            0.2263848107
+ H          0.0975376597           -0.1307033046           -0.2263848107
+ H         -0.0975376597            0.1307033046            0.2263848107
+ H         -0.0975376597            0.1307033046           -0.2263848107
+ H          0.0975367787            0.2614068489            0.0000000000
+ H         -0.0975367787           -0.2614068489            0.0000000000
+
+
+
+
+
+                          New exchange gradient
+                          ---------------------
+
+ C         -0.2021639759           -0.0000010756            0.0000000000
+ C          0.2021639759            0.0000010756            0.0000000000
+ H          0.0975376597           -0.1307033046            0.2263848107
+ H          0.0975376597           -0.1307033046           -0.2263848107
+ H         -0.0975376597            0.1307033046            0.2263848107
+ H         -0.0975376597            0.1307033046           -0.2263848107
+ H          0.0975367787            0.2614068489            0.0000000000
+ H         -0.0975367787           -0.2614068489            0.0000000000
+
+
+
+ QQQ: Exchange electron-repulsion gradient      0.0000000000208957
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ Ground state molecular gradient calculations are carried out.
+ >>>  CPU Time used in CSConCourrrrS0S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.02 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   2.42 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.23 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is  10.70 seconds
+ >>> wall Time used in Jengine         is   1.30 seconds
+
+
+                     Coulomb contribution to gradient
+                     --------------------------------
+
+   C       -1.8503746518            0.0000127526            0.0000000000
+   C        1.8503746518           -0.0000127526            0.0000000000
+   H       -1.1015483599            1.1934234494           -2.0670701749
+   H       -1.1015483599            1.1934234494            2.0670701749
+   H        1.1015483599           -1.1934234494           -2.0670701749
+   H        1.1015483599           -1.1934234494            2.0670701749
+   H       -1.1015404686           -2.3868487823            0.0000000000
+   H        1.1015404686            2.3868487823            0.0000000000
+
+
+                    exchange contribution to gradient
+                    ---------------------------------
+
+   C       -0.2021639759           -0.0000010756            0.0000000000
+   C        0.2021639759            0.0000010756            0.0000000000
+   H        0.0975376597           -0.1307033046            0.2263848107
+   H        0.0975376597           -0.1307033046           -0.2263848107
+   H       -0.0975376597            0.1307033046            0.2263848107
+   H       -0.0975376597            0.1307033046           -0.2263848107
+   H        0.0975367787            0.2614068489            0.0000000000
+   H       -0.0975367787           -0.2614068489            0.0000000000
+                QQQ: Two-electron gradient      0.0000000000727926
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:36:42 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ C          1.4496747688           -0.0000010117            0.0000000000
+ C         -1.4496747688            0.0000010117            0.0000000000
+ H          2.1888645654           -0.9728762646            1.6850699397
+ H          2.1888645654           -0.9728762646           -1.6850699397
+ H         -2.1888645654            0.9728762646            1.6850699397
+ H         -2.1888645654            0.9728762646           -1.6850699397
+ H          2.1888617992            1.9457507963            0.0000000000
+ H         -2.1888617992           -1.9457507963            0.0000000000
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -79.1963500035 au (Hartrees)
+                         -2155.04224682 eV
+                           -207929.9871 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1188752783 au
+     Mass-velocity correction:                  -0.1480835381 au
+
+     Total relativistic correction:             -0.0292082598 au (0.0369%)
+     Non-relativistic + relativistic energy:   -79.2255582633 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+ C         -0.0067289280           -0.0000003422            0.0000000000
+ C          0.0067289280            0.0000003422            0.0000000000
+ H          0.0028765041           -0.0057579793            0.0099730831
+ H          0.0028765041           -0.0057579793           -0.0099730831
+ H         -0.0028765041            0.0057579793            0.0099730831
+ H         -0.0028765041            0.0057579793           -0.0099730831
+ H          0.0028761856            0.0115159175            0.0000000000
+ H         -0.0028761856           -0.0115159175            0.0000000000
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.000000 au           0.000000 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C           C           H           H           H           H     
+            ------      ------      ------      ------      ------      ------
+ C     :    0.000000
+ C     :    1.534270    0.000000
+ H     :    1.101445    2.183452    0.000000
+ H     :    1.101445    2.183452    1.783401    0.000000
+ H     :    2.183452    1.101445    2.535110    3.099565    0.000000
+ H     :    2.183452    1.101445    3.099565    2.535110    1.783401    0.000000
+ H     :    1.101445    2.183450    1.783401    1.783401    2.535109    2.535109
+ H     :    2.183450    1.101445    2.535109    2.535109    1.783401    1.783401
+
+            H           H     
+            ------      ------
+ H     :    0.000000
+ H     :    3.099563    0.000000
+
+
+  Max interatomic separation is    3.0996 Angstroms
+  between atoms "H     " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C          C            1.534270
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+  bond distance:  H          C            1.101445
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     C          C          H            110.802
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+  bond angle:     H          C          H            108.109
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ ONEINT     00:00:06       8 %
+ TWOTEX     00:01:49     146 %
+
+ TOTAL      00:01:15     100 %
+
+
+
+ >>>> Total CPU  time used in ABACUS:  1 minute  15 seconds
+ >>>> Total wall time used in ABACUS:  11.06 seconds
+
+- End of Static Property Section
+
+ >>>> Total CPU  time used in DALTON:  2 minutes 36 seconds
+ >>>> Total wall time used in DALTON:  25.73 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:36:42 2010
+     Host name              : fe2.grendel.cscaa.dk                    

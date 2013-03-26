@@ -1,0 +1,108 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > LSDALTON_FMM_trilevel_csr.info <<'%EOF%'
+   LSDALTON_FMM_trilevel_csr
+   -------------
+   Molecule:         5 HCN molecules placed 20 atomic units apart
+   Wave Function:    B3LYP/STO-2G
+   Test Purpose:     Check FMM and trilevel
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > LSDALTON_FMM_trilevel_csr.mol <<'%EOF%'
+BASIS
+6-31G* Aux=df-def2
+Two H2O approxomately 10 au. apart
+-----------------------------
+Atomtypes=2 Angstrom Nosymmetry
+Charge=1. Atoms=4
+H                  9.241330    0.571501   -2.493601
+H                 10.146266    0.571501   -3.774055
+H                  7.134485   10.659897   -2.982496
+H                  8.039421   10.659897   -4.262951
+Charge=8. Atoms=2
+O                  9.241330    0.571501   -3.453601
+O                  7.134485   10.659897   -3.942496
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > LSDALTON_FMM_trilevel_csr.dal <<'%EOF%'
+**INTEGRALS
+.DENSFIT
+.RUNMM
+.NOSEGMENT        
+**WAVE FUNCTION
+.DFT               
+ B3LYP             
+*DENSOPT
+.ARH
+.CSR
+*END OF INPUT
+%EOF%
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >LSDALTON_FMM_trilevel_csr.check
+cat >> LSDALTON_FMM_trilevel_csr.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Energy
+CRIT1=`$GREP "Final * DFT energy\: * \-152\.738013879..." $log | wc -l`
+TEST[1]=`expr   $CRIT1`
+CTRL[1]=1
+ERROR[1]="DFT ENERGY NOT CORRECT -"
+
+# Memory test
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[2]=`expr  $CRIT1`
+CTRL[2]=1
+ERROR[2]="Memory leak -"
+
+PASSED=1
+for i in 1 2
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+      echo ${ERROR[i]}
+      PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+   echo TEST ENDED PROPERLY
+   exit 0
+else
+   echo THERE IS A PROBLEM
+   exit 1
+fi
+
+%EOF%
+#######################################################################

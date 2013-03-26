@@ -1,6 +1,6 @@
 C
 C  -- dalton/sirius/sircav.F --
-C     (Luca Frediano)
+C     (Luca Frediani)
 C
 C/* Deck pedram */
       SUBROUTINE PEDRAM(WORK,LWORK)
@@ -2481,12 +2481,12 @@ Clf
       ANGMOM(3) = 1.0D0
       CALL WLKDIN(GEOM,AMASS,KATOM,ANGMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
      &            .TRUE.,PLANAR,LINEAR)
-Clf      WRITE(LUPRI,*) 'INERTIA TENSOR EIGENVECTORS AND EIGENVALUES'
+C      WRITE(LUPRI,*) 'INERTIA TENSOR EIGENVECTORS AND EIGENVALUES'
       DO I = 1, 3
          DO J = 1, 3
             EIGINV(I,J) = EIGVEC(J,I)
          ENDDO
-Clf         WRITE(LUPRI,*) (EIGINV(I,J),J=1,3), EIGVAL(I), OMEGA(I), QUAD
+C         WRITE(LUPRI,*) (EIGINV(I,J),J=1,3), EIGVAL(I), OMEGA(I), QUAD
       ENDDO
 C      do i=1,3
 C         write(lupri,*) 'tinert',(tinert(i,j),j=1,3)

@@ -491,6 +491,21 @@ C     ... I am a "slave" ... (MYNUM .ne. MASTER)
            WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
      &        MMCORE
          END IF
+         CALL TITLER('DALTON - An electronic structure program',
+     &               '*',111)
+         WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
+         CALL TSTAMP('INIT',LUPRI)
+         IF (GBYTES .GE. 1.D0) THEN
+           WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
+     &        LMWORK,' =',GBYTES,' gigabytes.'
+         ELSE
+           WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
+     &        LMWORK,' =',XMBYTES,' megabytes.'
+         END IF
+         IF (AOSAVE) THEN
+           WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
+     &        MMCORE
+         END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
 

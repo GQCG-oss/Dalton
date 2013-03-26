@@ -85,6 +85,7 @@ usage (){
         echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into TMPDIR before calculation starts'
         echo ' -get "file1 file2" : get files back from TMPDIR after calculation stops'
         echo ' -put "file1 file2" : put files to TMPDIR before calculation starts'
+	echo ' -nocpex    : force to not copy dalton executable from master node to slave nodes (for global work)'
         echo ' -valgrind  : run with valgrind'
         echo ' -rsh       : use rsh/rcp instead of ssh/scp'
         echo ' -ssh       : use ssh/scp instead of rsh/rcp'
@@ -124,6 +125,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -nobackup ) opt_nobackup=1;;
       -noarch ) opt_noarch=1;;
       -valgrind ) opt_valgrind=1;;
+      -nocpex ) opt_nocpex=1;;
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
@@ -260,24 +262,15 @@ ierr=0
      fi
    fi
 
+# temporary (I swear!) solution for fragment density embedding stuff
    if [ -s $WRKDIR/core.dat ] ; then
      cp $WRKDIR/core.dat .
    fi
-
    if [ -s $WRKDIR/pe_density.bin ] ; then
      cp $WRKDIR/pe_density.bin .
    fi
-
     if [ -s $WRKDIR/pe_fock_1.bin ] ; then
      cp $WRKDIR/pe_fock_*.bin .
-   fi
-
-   if [ -s $WRKDIR/mep.inp ] ; then
-     cp $WRKDIR/mep.inp MEP.INP
-   fi
-
-   if [ -s $WRKDIR/surface.py ] ; then
-     cp $WRKDIR/surface.py .
    fi
 
    # put files listed under -put to scratch directory
@@ -315,8 +308,8 @@ if [ $optn -gt 1 ] ; then
    if [ -s "$MPIRUN" -a -x "$MPIRUN" ]; then
       if [ -s "$DALMPI" -a -x "$DALMPI" ]; then
          cp $DALMPI ./dalton_mpi_copy.x
-         echo 'Copying dalton executable from master node: ' ${HOSTNAME}
-         if [ -n "$PBS_NODEFILE" ] ; then
+         if [ -n "$PBS_NODEFILE" -o -n ${opt_nocpex} == 1 ] ; then
+	     echo 'Copying dalton executable from master node: ' ${HOSTNAME}
              # $PBS_NODEFILE is defined, then do the instructions below
              for node in `cat $PBS_NODEFILE | sort | uniq`
              do

@@ -1,0 +1,2492 @@
+
+ Work memory size (LMWORK+2):   123123125 =  939.35 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:32:06 2010
+     Host name              : login-0-1.local                         
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Integrals are calculated using ERI instead of HERMIT (where possible)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Threshold is fixed.
+No skipping of the nonclassical integrals (only set to 0).
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Energy calculation without symmetry                                     
+  Basis set specified with ATOMBASIS                                      
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           Li          7.016005
+
+                       Total mass:     8.023830 amu
+                       Natural abundance:  92.486 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    8.743960
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       7       5      [4s1p|2s1p]                                                                      
+  Li          1       3      26      14      [9s4p1d|3s2p1d]                                                                  
+  ----------------------------------------------------------------------
+  total:      2       4      33      19
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+ 
+ 
+  Auxiliary basis is "Ahlrichs-Coulomb-Fit" from the basis set library.
+
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+   1   H        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   Li       x      0.0000000000
+   5            y      0.0000000000
+   6            z     10.0000000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H           Li    
+            ------      ------
+ H     :    0.000000
+ Li    :    5.291772    0.000000
+
+
+  Max interatomic separation is    5.2918 Angstroms
+  between atoms "Li    " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.000000          0.000000    0.000000    1.000000
+   IB   24.677182          0.000000    1.000000    0.000000
+   IC   24.677182          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =        20479.61 MHz     (    0.683126 cm-1)
+
+
+  Nuclear repulsion energy :      0.300000000000
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in GABGEN is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                       0.10D-08    0.10D-09    0.20D-11
+     Default threshold for number of electrons:                        0.10D-02
+     DFT radial quadrature accuracy/ang. expansion order:  0.10E-12  35
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:32:06 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     Energy calculation without symmetry                                     
+     Basis set specified with ATOMBASIS                                      
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART H1DIAG" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons          4
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 19
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: LDA
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          19
+     Number of basis functions         19
+
+      ** Automatic occupation of RKS orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              2
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with   4 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+
+ >>> Time used in FCK2el is   0.02 seconds
+
+ Radial Quadrature : LMG scheme
+ Space partitioning: Becke partitioning with atomic radius correction
+ Radial integration threshold: 1e-13
+ Angular integration order range: [5 35] Angular points 434
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points=15108 compressed from 15114 ( 87 radial)
+ Atom:    2*1 points=14797 compressed from 14806 (119 radial)
+ Number of grid points:    29905 Grid generation time:       0.0 s
+KS electrons/energy:    3.99999817452501   -1.94252759965125 rel.err:-0.46E-06
+
+ >>> Time used in DFT_KS is   0.13 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   1     -7.307218663424   3.91D-01  -7.31D+00    2
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.15 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00003727272642   -2.16770368124499 rel.err: 0.93E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   2     -7.616776796351   7.95D-01  -3.10D-01    2
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00004178595960   -2.12944430398392 rel.err: 0.10E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   3     -7.659551384251   5.82D-01  -4.28D-02    2
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    3.99999949715435   -1.86352948306126 rel.err:-0.13E-06
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   4     -7.398953283593   2.93D-01   2.61D-01    2
+
+!!! INFO: DIIS restarted because it was stalled ...
+ - energy changed by    0.261    
+ - gradient changed by -0.289    
+ - or strange C vector coeff. for current index (=  4) :
+    0.087713   -1.811265    2.527705    0.195846
+
+! Backstep to previous Fock matrix because energy increased.
+
+ Level shift: occupied orbital energies shifted by   -2.6060
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00004471659217   -2.10444477718462 rel.err: 0.11E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   5     -7.682219195139   4.18D-01  -2.83D-01    2
+
+!!! INFO: DIIS restarted because it was stalled ...
+ - energy changed by   -0.283    
+ - gradient changed by  0.125    
+ - or strange C vector coeff. for current index (=  2) :
+    0.429449    0.570551
+
+ Level shift: occupied orbital energies shifted by   -5.4386
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00004553566617   -2.09517477436568 rel.err: 0.11E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   6     -7.688957399732   3.58D-01  -6.74D-03    2
+
+ Level shift: occupied orbital energies shifted by   -4.5209
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00004617863254   -2.08517735427921 rel.err: 0.12E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   7     -7.695111168817   2.96D-01  -6.15D-03    2
+
+ Level shift: occupied orbital energies shifted by   -3.7580
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00004636976429   -2.07904821653775 rel.err: 0.12E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   8     -7.698634063951   2.60D-01  -3.52D-03    2
+
+!!! INFO: DIIS restarted because it was stalled ...
+ - energy changed by   -3.523E-03
+ - gradient changed by -3.556E-02
+ - or strange C vector coeff. for current index (=  4) :
+    0.000526  -19.692620   46.868757  -26.176662
+
+ Level shift: occupied orbital energies shifted by   -3.7932
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00004650716525   -2.07130667226561 rel.err: 0.12E-04
+
+ >>> Time used in DFT_KS is   0.12 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   9     -7.702310814172   2.18D-01  -3.68D-03    2
+
+ Level shift: occupied orbital energies shifted by   -3.2242
+
+ >>> Time used in FCKEIG is   0.01 seconds
+
+
+ >>> Time used in DISITR is   0.13 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00004642678683   -2.06408634270606 rel.err: 0.12E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  10     -7.705370309162   1.85D-01  -3.06D-03    2
+
+ Level shift: occupied orbital energies shifted by   -2.7406
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00004609172537   -2.05911997784940 rel.err: 0.12E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  11     -7.707612974178   1.68D-01  -2.24D-03    2
+
+!!! INFO: DIIS restarted because it was stalled ...
+ - energy changed by   -2.243E-03
+ - gradient changed by -1.702E-02
+ - or strange C vector coeff. for current index (=  4) :
+    0.000416  -21.374566   52.969790  -30.595640
+
+ Level shift: occupied orbital energies shifted by   -2.7630
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00004570190472   -2.05325793269787 rel.err: 0.11E-04
+
+ >>> Time used in DFT_KS is   0.10 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  12     -7.709894296027   1.51D-01  -2.28D-03    2
+
+ Level shift: occupied orbital energies shifted by   -2.3486
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00004510987675   -2.04768359968930 rel.err: 0.11E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  13     -7.712169592588   1.41D-01  -2.28D-03    2
+
+ Level shift: occupied orbital energies shifted by   -1.9963
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00004426993569   -2.04307142908837 rel.err: 0.11E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  14     -7.714523336423   1.39D-01  -2.35D-03    2
+
+!!! INFO: DIIS restarted because it was stalled ...
+ - energy changed by   -2.354E-03
+ - gradient changed by -2.306E-03
+ - or strange C vector coeff. for current index (=  4) :
+    0.000139  -12.927682   32.673202  -18.745660
+
+ Level shift: occupied orbital energies shifted by   -2.0198
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00004337375828   -2.03810829939268 rel.err: 0.11E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  15     -7.716940645906   1.38D-01  -2.42D-03    2
+
+ Level shift: occupied orbital energies shifted by   -1.7168
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00004219304594   -2.03278564528265 rel.err: 0.11E-04
+
+ >>> Time used in DFT_KS is   0.12 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  16     -7.719820267702   1.40D-01  -2.88D-03    2
+
+INFO: SCF gradient has been lower than now,
+      therefore  2 old iterations are removed from DIIS.
+
+ Level shift: occupied orbital energies shifted by   -1.4593
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00004065213138   -2.02674967887885 rel.err: 0.10E-04
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  17     -7.723351760975   1.43D-01  -3.53D-03    2
+
+INFO: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+
+ Level shift: occupied orbital energies shifted by   -1.2404
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00003865479093   -2.01953152639272 rel.err: 0.97E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  18     -7.727760068633   1.47D-01  -4.41D-03    2
+
+INFO: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+
+ Level shift: occupied orbital energies shifted by   -1.0544
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00003609894572   -2.01056999016533 rel.err: 0.90E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  19     -7.733307875137   1.51D-01  -5.55D-03    2
+
+INFO: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+
+ Level shift: occupied orbital energies shifted by   -0.8962
+
+ >>> Time used in FCKEIG is   0.01 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00003291980235   -1.99930084692645 rel.err: 0.82E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  20     -7.740265029032   1.54D-01  -6.96D-03    2
+
+INFO: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+
+ Level shift: occupied orbital energies shifted by   -0.7618
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002918232054   -1.98540862927313 rel.err: 0.73E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  21     -7.748790383325   1.54D-01  -8.53D-03    2
+
+INFO: SCF gradient has been lower than now,
+      therefore  1 old iterations are removed from DIIS.
+
+ Level shift: occupied orbital energies shifted by   -0.6475
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00002522193739   -1.96936387602074 rel.err: 0.63E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  22     -7.758658163422   1.49D-01  -9.87D-03    2
+
+ Level shift: occupied orbital energies shifted by   -0.5504
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002219345410   -1.95611599428710 rel.err: 0.55E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  23     -7.768387300461   1.35D-01  -9.73D-03    2
+
+!!! INFO: DIIS restarted because it was stalled ...
+ - energy changed by   -9.729E-03
+ - gradient changed by -1.351E-02
+ - or strange C vector coeff. for current index (=  3) :
+    5.970780  -11.938582    6.967802
+
+ Level shift: occupied orbital energies shifted by   -0.6477
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002044662899   -1.94606262931820 rel.err: 0.51E-05
+
+ >>> Time used in DFT_KS is   0.12 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  24     -7.775260863453   1.20D-01  -6.87D-03    2
+
+ Level shift: occupied orbital energies shifted by   -0.5505
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00001980168543   -1.94017504204551 rel.err: 0.50E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  25     -7.781131414242   1.04D-01  -5.87D-03    2
+
+ Level shift: occupied orbital energies shifted by   -0.4679
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002145714945   -1.94636710660427 rel.err: 0.54E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  26     -7.784803234323   1.01D-01  -3.67D-03    2
+
+ Level shift: occupied orbital energies shifted by   -0.3978
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00002242003754   -1.94584737637790 rel.err: 0.56E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  27     -7.788857197741   9.12D-02  -4.05D-03    2
+
+!!! INFO: DIIS restarted because it was stalled ...
+ - energy changed by   -4.054E-03
+ - gradient changed by -9.429E-03
+ - or strange C vector coeff. for current index (=  5) :
+    0.042016    1.569627   -0.683650   -6.939060    7.011067
+
+ Level shift: occupied orbital energies shifted by   -0.4383
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002178211866   -1.93439692955617 rel.err: 0.54E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  28     -7.792747867964   6.95D-02  -3.89D-03    2
+
+ Level shift: occupied orbital energies shifted by   -0.3725
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00002239313685   -1.93451698615876 rel.err: 0.56E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  29     -7.795283997016   5.92D-02  -2.54D-03    2
+
+ Level shift: occupied orbital energies shifted by   -0.3167
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002417517532   -1.94140686601724 rel.err: 0.60E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  30     -7.797140656866   5.77D-02  -1.86D-03    2
+
+ Level shift: occupied orbital energies shifted by   -0.2692
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00002506066894   -1.94222973001602 rel.err: 0.63E-05
+
+ >>> Time used in DFT_KS is   0.10 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  31     -7.798851216645   5.26D-02  -1.71D-03    2
+
+!!! INFO: DIIS restarted because it was stalled ...
+ - energy changed by   -1.711E-03
+ - gradient changed by -5.096E-03
+ - or strange C vector coeff. for current index (=  5) :
+    0.009267   -0.430240    1.428276   -6.485415    6.478112
+
+ Level shift: occupied orbital energies shifted by   -0.2863
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002426113459   -1.93195601635375 rel.err: 0.61E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  32     -7.800245282472   4.28D-02  -1.39D-03    2
+
+ Level shift: occupied orbital energies shifted by   -0.2433
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002523660789   -1.93808077748211 rel.err: 0.63E-05
+
+ >>> Time used in DFT_KS is   0.12 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  33     -7.801138019103   2.79D-02  -8.93D-04    2
+
+ Level shift: occupied orbital energies shifted by   -0.2068
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002531828177   -1.93520784940685 rel.err: 0.63E-05
+
+ >>> Time used in DFT_KS is   0.12 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  34     -7.801708554343   2.22D-02  -5.71D-04    2
+
+ Level shift: occupied orbital energies shifted by   -0.1758
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002631585016   -1.93941319502322 rel.err: 0.66E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  35     -7.802016970319   1.93D-02  -3.08D-04    2
+
+ Level shift: occupied orbital energies shifted by   -0.1494
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002681446807   -1.94114439227333 rel.err: 0.67E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  36     -7.802127923890   2.33D-02  -1.11D-04    2
+
+INFO: SCF gradient has been lower than now,
+      therefore  2 old iterations are removed from DIIS.
+
+!!! INFO: DIIS restarted because it was stalled ...
+ - energy changed by   -1.110E-04
+ - gradient changed by  4.021E-03
+ - or strange C vector coeff. for current index (=  4) :
+   -0.015009    0.671736   -1.201340    1.544613
+
+ Level shift: occupied orbital energies shifted by   -0.1505
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00002544717899   -1.93006212819042 rel.err: 0.64E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  37     -7.801928132024   4.42D-02   2.00D-04    2
+
+ Level shift: occupied orbital energies shifted by   -0.1280
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002793773145   -1.95097964225055 rel.err: 0.70E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  38     -7.801233072217   7.22D-02   6.95D-04    2
+
+ Level shift: occupied orbital energies shifted by   -0.1088
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00002788381383   -1.94815917259557 rel.err: 0.70E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  39     -7.801589742820   5.64D-02  -3.57D-04    2
+
+ Level shift: occupied orbital energies shifted by   -0.0925
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002762173083   -1.94577018525676 rel.err: 0.69E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  40     -7.801905975881   4.34D-02  -3.16D-04    2
+
+ Level shift: occupied orbital energies shifted by   -0.0786
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00002766048405   -1.94573736155275 rel.err: 0.69E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  41     -7.801914423191   4.32D-02  -8.45D-06    2
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002743930367   -1.94393392457770 rel.err: 0.69E-05
+
+ >>> Time used in DFT_KS is   0.12 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  42     -7.802112873139   3.31D-02  -1.98D-04    2
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002714285059   -1.94158869913023 rel.err: 0.68E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  43     -7.802286899427   1.99D-02  -1.74D-04    2
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002717638699   -1.94186289099018 rel.err: 0.68E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  44     -7.802271102842   2.15D-02   1.58D-05    2
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.11 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002701872215   -1.94069040453193 rel.err: 0.68E-05
+
+ >>> Time used in DFT_KS is   0.12 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  45     -7.802331242948   1.49D-02  -6.01D-05    2
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+
+ >>> Time used in FCK2el is   0.01 seconds
+
+KS electrons/energy:    4.00002671034541   -1.93840335612130 rel.err: 0.67E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  46     -7.802385184216   1.75D-03  -5.39D-05    2
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.12 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   12    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+
+ >>> Time used in FCK2el is   0.00 seconds
+
+KS electrons/energy:    4.00002667020591   -1.93810133009799 rel.err: 0.67E-05
+
+ >>> Time used in DFT_KS is   0.11 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+  47     -7.802385932337   7.74D-07  -7.48D-07    2
+ DIIS converged in  47 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :    4
+ Orbital occupations :    2
+
+ Hartree-Fock orbital energies, symmetry 1
+
+        -1.92267305    -0.13594874    -0.12936848    -0.06313298    -0.06313298
+        -0.05852554     0.04325287
+
+    E(LUMO) :    -0.12936848 au (symmetry 1)
+  - E(HOMO) :    -0.13594874 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.00658026 au
+
+ INFO: E(LUMO) - E(HOMO) small or negative.
+
+ >>> Time used in DISCTL is   5.45 seconds
+
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:             -7.802385932337
+     Nuclear repulsion:             0.300000000000
+     Electronic energy:            -8.102385932337
+
+     Final gradient norm:           0.000000774445
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:32:11 2010
+     Host name              : login-0-1.local                         
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2
+   1  H   1s    -0.0005   0.6081
+   2  H   1s     0.0012   0.1821
+   3  H   2px    0.0000   0.0000
+   4  H   2py    0.0000   0.0000
+   5  H   2pz    0.0001   0.0004
+   6  Li  1s     1.0057  -0.0139
+   7  Li  1s     0.0474   0.5494
+   8  Li  1s    -0.0361   0.0386
+   9  Li  2px    0.0000   0.0000
+  10  Li  2py    0.0000   0.0000
+  11  Li  2pz    0.0004   0.0582
+  12  Li  2px    0.0000   0.0000
+  13  Li  2py    0.0000   0.0000
+  14  Li  2pz   -0.0001  -0.1044
+  15  Li  3d2-   0.0000   0.0000
+  16  Li  3d1-   0.0000   0.0000
+  17  Li  3d0    0.0000   0.0047
+  18  Li  3d1+   0.0000   0.0000
+  19  Li  3d2+   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      5.45 seconds
+ >>>> Total wall time used in SIRIUS :      5.48 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:32:11 2010
+     Host name              : login-0-1.local                         
+
+ NOTE:   16 informational messages have been issued.
+ Check output, result, and error files for "INFO".
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:   5.46 seconds
+ >>>> Total wall time used in DALTON:   5.49 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:32:11 2010
+     Host name              : login-0-1.local                         
