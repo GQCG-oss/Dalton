@@ -128,7 +128,7 @@ dft_parallell_properties parallel_lucita_gasci parallel_spin_local"
 QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
 #
 SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_redthr pehf_small_gspol \
-pehf_small_fixsol_direct"
+pehf_small_fixsol_direct pehf_small_london"
 #
 LONGPEQM="pehf_large_iter pehf_large_direct pehf_large_redthr pehf_large_gspol \
 pehf_large_damp"
@@ -738,7 +738,7 @@ do
         fi
 #     else everything OK and -keep defined
       fi
-      myprint "     $checkout -- $total_failed tests failed so far out of $total_tests"
+      myprint "     $checkout -- so far $total_failed tests failed out of $total_tests"
       step=`expr $step \+ 1`
   done
   if [ "$trouble" -eq 0 ]; then

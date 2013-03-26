@@ -335,31 +335,18 @@ C           this is e.g. PREHF, i.e. standard HF
 C
        IF (CHIVAL .ne. D0) THEN
 C        ... No long-range integrals if CHIVAL .eq. 0
-         IF (NSYM.GT.1 .AND. (DODFT.OR.DOHFSRDFT.OR.DOMCSRDFT)) THEN
-C           HERFCK destroys DMAT when called with symmetry
-            KDMAT = 1
-            KLAST = KDMAT + NDCandDV*N2BASX
-            LWRK  = LWORK - KLAST + 1
-            IF (KLAST.GT.LWORK) CALL STOPIT('SIRFCK','DMAT',KLAST,LWORK)
-            CALL DCOPY(NDCandDV*N2BASX,DMAT,1,WRK(KDMAT),1)
-            if (atomdf .AND. CHIVAL .LT. D0) then
-C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
-              call dens_fit(fmat,wrk(kdmat),NDCandDV,ISYMDM,IFCTYP,
-     &                    IPRHER,WRK(KLAST),LWRK)
-            else
-              CALL HERFCK(FMAT,WRK(KDMAT),NDCandDV,ISYMDM,IFCTYP,
-     &                    IPRHER,WRK(KLAST),LWRK)
-            end if
-         ELSE
-            if (atomdf .AND. CHIVAL .LT. D0) then
-C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
-              call dens_fit(fmat,dmat,NDCandDV,ISYMDM,IFCTYP,IPRHER,
-     &                      wrk,lwork)
-            else
-              CALL HERFCK(FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP,IPRHER,
-     &                      WRK,LWORK)
-            end if
-         END IF
+C
+C        INFO: HERFCK destroys DMAT when called with symmetry
+
+         if (atomdf .AND. CHIVAL .LT. D0) then
+C          hjaaj mar 2006: dens_fit not for short range integrals (yet)
+           call dens_fit(fmat,dmat,NDCandDV,ISYMDM,IFCTYP,IPRHER,
+     &                   wrk,lwork)
+         else
+           CALL HERFCK  (FMAT,DMAT,NDCandDV,ISYMDM,IFCTYP,IPRHER,
+     &                   WRK,LWORK)
+         end if
+
        END IF ! (CHIVAL .ne. D0)
 #ifdef SIRFCK_DEBUG
          write(lupri,*) 'SIRFCK: first FMAT'

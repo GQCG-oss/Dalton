@@ -2392,7 +2392,7 @@ c.   default values for NEL1MX and NEL3MN  ( Includes ALPHA AND BETA)
 COLD    NEL1MX = MIN(2*NORB1,NAEL+NBEL)
 COLD    NEL3MN = MAX(0,NAEL+NBEL-2*(NORB1+NORB2) )
 c. number of electrons for alpha or beta case
-        MXEL1  = MIN(NEL1MX,NORB1,NELEC)
+        MXEL1  = MIN(NEL1MX+1,NORB1,NELEC)
         MXEL1O  = MIN(NEL1MX,NORB1,NELECO)
         MNEL1 = MAX(0,NEL1MN-MXEL1O)
         IF( IPRINT.GT.10 ) WRITE(LUPRI,*)' MXEL1,MXEL1O,MNEL1',
