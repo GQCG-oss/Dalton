@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-project(LSDALTON Fortran C)
+project(LSDALTON Fortran C CXX)
 
 # set version
 set(VERSION_MAJOR 2011)
@@ -112,7 +112,7 @@ include(ConfigExternal)
 set(LIBS)
 set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a)
 
-#add_subdirectory(xcfun_host)
+add_subdirectory(xcfun_host)
 
 if(ENABLE_OPENRSP)
 	set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
@@ -308,7 +308,6 @@ execute_process(COMMAND echo LSDALTON_script="${CMAKE_BINARY_DIR}/lsdalton" OUTP
 if(ENABLE_OPENRSP)
 	add_subdirectory(gen1int)
 endif()
-add_subdirectory(xcfun_host)
 
 # Tell CMake the source won't be available until build time.
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/lsutil/git_revision_info.f90 PROPERTIES GENERATED 1)
@@ -368,6 +367,27 @@ target_link_libraries(lsutillib lsutiltypelib_common)
 add_dependencies(lsutillib generate_revinfo)
 add_dependencies(lsutillib generate_compinfo)
 
+add_library(
+    xcfun_interface
+    xcfun_host/xcfun_host.F90
+    )
+
+set(PARENT_DEFINITIONS "-DVAR_LSDALTON")
+
+set(ExternalProjectCMakeArgs
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/include
+    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+    -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+    )
+
+add_external(xcfun)
+
+target_link_libraries(xcfun_interface lsutillib)
+add_dependencies(xcfun_interface xcfun)
 
 if(ENABLE_INTEREST)
         add_definitions(-DVAR_INTEREST)
@@ -375,7 +395,7 @@ if(ENABLE_INTEREST)
 		interestlib
     		${INTERESTLIB_SOURCES}
 		)
-	target_link_libraries(interestlib lsutillib)
+	target_link_libraries(interestlib xcfun_interface)
 endif()
 
 add_library(
@@ -383,7 +403,7 @@ add_library(
     ${FMM_SOURCES}
     ${FMM_C_SOURCES}
     )
-target_link_libraries(fmmlib lsutillib)
+target_link_libraries(fmmlib xcfun_interface)
 if(ENABLE_INTEREST)
 target_link_libraries(fmmlib interestlib)
 endif()
@@ -400,7 +420,6 @@ add_library(
     ${LSINT_SOURCES}
     )
 target_link_libraries(lsintlib dftfunclib)
-add_dependencies(lsintlib xcfun)
 
 add_library(
     pbclib
@@ -480,6 +499,7 @@ if(ENABLE_OPENRSP)
 	add_dependencies(gen1int_interface matrixolib)
 	add_dependencies(gen1int_interface matrixulib)
 	add_dependencies(gen1int_interface lsutiltypelib_common)
+	add_dependencies(lsintlib gen1int)
 	add_dependencies(gen1int_interface lsintlib)
 	add_dependencies(linearslib gen1int_interface)
 	add_dependencies(lsdaltonmain gen1int_interface)
@@ -567,6 +587,7 @@ MERGE_STATIC_LIBS(
     rsp_prop
     geooptlib
     lsdaltonmain 
+    xcfun_interface
     )
 target_link_libraries(lsdalton lsdaltonmain)
 
