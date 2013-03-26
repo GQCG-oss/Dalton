@@ -108,6 +108,7 @@ include(Sources)
 include(Compilers)
 include(ConfigExternal)
 
+#add_subdirectory(LSint)
 set(LIBS)
 set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a)
 
@@ -307,6 +308,7 @@ execute_process(COMMAND echo LSDALTON_script="${CMAKE_BINARY_DIR}/lsdalton" OUTP
 if(ENABLE_OPENRSP)
 	add_subdirectory(gen1int)
 endif()
+add_subdirectory(xcfun_host)
 
 # Tell CMake the source won't be available until build time.
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/lsutil/git_revision_info.f90 PROPERTIES GENERATED 1)
