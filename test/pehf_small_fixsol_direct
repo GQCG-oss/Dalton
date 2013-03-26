@@ -78,8 +78,8 @@ fi
 #
 # Potential readin test
 #
-CRIT1=`$GREP "Number of surface points:  142" $log | wc -l`
-CRIT2=`$GREP "Surface area FIXA   103.1106709" $log | wc -l`
+CRIT1=`$GREP "Number of surface points:  228" $log | wc -l`
+CRIT2=`$GREP "Surface area FIXA   107.1030993" $log | wc -l`
 CRIT3=`$GREP "Direct solver for induced moments will be used." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[1]=3
@@ -94,10 +94,10 @@ ERROR[2]="CONVERGENCE PROBLEM"
 #
 # Energy tests
 #
-CRIT1=`$GREP "Electronic * (|0)\.0460215" $log | wc -l`
-CRIT2=`$GREP "Nuclear       * (\-|\-0)\.0642214" $log | wc -l`
-CRIT3=`$GREP "Total PE energy: * (\-|\-0)\.0181999" $log | wc -l`
-CRIT4=`$GREP "Final HF energy: * \-190\.78040176" $log | wc -l`
+CRIT1=`$GREP "Electronic * (|0)\.0006954" $log | wc -l`
+CRIT2=`$GREP "Nuclear       * (\-|\-0)\.0149603" $log | wc -l`
+CRIT3=`$GREP "Total PE energy: * (\-|\-0)\.0142648" $log | wc -l`
+CRIT4=`$GREP "Final HF energy: * \-190\.7772250" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
 CTRL[3]=4
 ERROR[3]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
