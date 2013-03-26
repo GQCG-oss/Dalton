@@ -51,6 +51,7 @@ DFT%CS00ZND1=0.2332E0_realk
 DFT%CS00ZND2=0.315E0_realk
 !DFT%CS00ZND2=0.0116E0_realk
 DFT%HFexchangeFac=0.0E0_realk
+DFT%XCFUN=.FALSE.
 end subroutine DFT_set_default_config
 
 #if 0
@@ -94,6 +95,7 @@ WRITE(LUN) DFT%CS00eHOMO
 WRITE(LUN) DFT%CS00ZND1
 WRITE(LUN) DFT%CS00ZND2
 WRITE(LUN) DFT%HFexchangeFac
+WRITE(LUN) DFT%XCFUN
 end subroutine WRITE_DFT_PARAM
 #endif
 
@@ -154,6 +156,7 @@ WRITE(LUPRI,'(2X,A35,F16.8)') 'CS00eHOMO',DFT%CS00eHOMO
 WRITE(LUPRI,'(2X,A35,F16.8)') 'CS00ZND1',DFT%CS00ZND1
 WRITE(LUPRI,'(2X,A35,F16.8)') 'CS00ZND2',DFT%CS00ZND2
 WRITE(LUPRI,'(2X,A35,F16.8)') 'HF exchange Factor',DFT%HFexchangeFac
+WRITE(LUPRI,'(2X,A35,L1)')'XCFUN',DFT%XCFUN
 end subroutine WRITE_FORMATTET_DFT_PARAM
 
 !> \brief mpi copy the DFTdata structure
@@ -239,6 +242,7 @@ READ(LUN) DFT%CS00ehomo
 READ(LUN) DFT%CS00ZND1
 READ(LUN) DFT%CS00ZND2
 READ(LUN) DFT%HFexchangeFac
+READ(LUN) DFT%XCFUN
 end subroutine READ_DFT_PARAM
 #endif
 
@@ -282,6 +286,7 @@ call LS_MPI_BUFFER(DFT%CS00eHOMO,Master)
 call LS_MPI_BUFFER(DFT%CS00ZND1,Master)
 call LS_MPI_BUFFER(DFT%CS00ZND2,Master)
 call LS_MPI_BUFFER(DFT%HFexchangeFac,Master)
+call LS_MPI_BUFFER(DFT%XCFUN,Master)
 end subroutine mpicopy_DFTparam
 #endif
 

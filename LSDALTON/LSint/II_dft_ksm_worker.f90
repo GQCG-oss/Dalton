@@ -6,6 +6,7 @@ use dft_type
 use dft_memory_handling
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
+!use xcfun_host
 #ifdef VAR_LSMPI
   use infpar_module
   use lsmpi_mod
@@ -78,12 +79,16 @@ call mem_dft_alloc(VXC,NBLEN,NDMAT)
 DO IDMAT = 1, NDMAT
  DO IPNT = 1, NBLEN
    IF(RHO(IPNT,IDMAT) .GT. RHOTHR)THEN
-      !get the functional derivatives 
-      !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}}
-      CALL dft_funcderiv1(RHO(IPNT,IDMAT),DUMMY,WGHT(IPNT),VX)
-      DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
-      !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
-      VXC(IPNT,IDMAT) = D2*VX(1) 
+!      IF(.NOT.USEXCFUN)THEN
+         !get the functional derivatives 
+         !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}}
+         CALL dft_funcderiv1(RHO(IPNT,IDMAT),DUMMY,WGHT(IPNT),VX)
+         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
+         !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
+         VXC(IPNT,IDMAT) = D2*VX(1) 
+!      ELSE
+!         call lsquit('xcfun II_DFT_KSMLDA',-1)
+!      ENDIF
    ELSE
       VXC(IPNT,IDMAT) = 0.0E0_realk
    ENDIF
@@ -178,10 +183,14 @@ DO IDMAT = 1, NDMAT/2
       !get the functional derivatives 
       !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}} 
       !and same for beta
-      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY,WGHT(IPNT),VX)
-      DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY)*WGHT(IPNT)
-      VXC(IPNT,IDMAT1) = VX(1)
-      VXC(IPNT,IDMAT2) = VX(2)
+!      IF(.NOT.USEXCFUN)THEN
+         CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY,WGHT(IPNT),VX)
+         DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY)*WGHT(IPNT)
+         VXC(IPNT,IDMAT1) = VX(1)
+         VXC(IPNT,IDMAT2) = VX(2)
+!      ELSE
+!         call lsquit('XCFUN')
+!      ENDIF
    ELSE
       VXC(IPNT,IDMAT1) = 0.0E0_realk
       VXC(IPNT,IDMAT2) = 0.0E0_realk
@@ -363,6 +372,7 @@ Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
 REAL(REALK) :: VX(3),DFTENE,GRD,GRDA,A
 REAL(REALK),pointer :: VXC(:,:,:)
+REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
 EXTERNAL DFTENE
 call mem_dft_alloc(VXC,4,NBLEN,NDMAT)
 !     GGA Exchange-correlation contribution to Kohn-Sham matrix
@@ -375,31 +385,51 @@ DO IDMAT=1,NDMAT
       !vx(1) = drvs.df1000 = \frac{\partial f}{\partial \rho_{\alpha}}        
       !vx(2) = drvs.df0010 = \frac{\partial f}{\partial |\nabla \rho_{\alpha}|^{2}}
       !vx(3) = drvs.df00001= \frac{\partial f}{\partial \nabla \rho_{\alpha} \nabla \rho_{\beta}}  
-      CALL dft_funcderiv1(RHO(IPNT,IDMAT),GRD,WGHT(IPNT),VX)
-      IF(DFTDATA%LB94)THEN
-         CALL LB94correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
-              & WGHT(IPNT),VX(1))
-      ELSEIF(DFTDATA%CS00)THEN
-         CALL CS00correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
-              & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
-      ENDIF
-      DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + DFTENE(RHO(IPNT,IDMAT),GRD)*WGHT(IPNT)
-      VXC(1,IPNT,IDMAT) = D2*VX(1) !this is 2 times greater than the UNRES VXC BECAUSE we need alpha + beta
-      IF(GRD.GT. 1E-40_realk) THEN
-         GRDA = D05*GRD
-!         VXC(2,IPNT) = D2*(VX(2)/GRDA + VX(3))  
-         A = D2*(VX(2)/GRDA + VX(3))
-         VXC(2,IPNT,IDMAT) = A*GRAD(1,IPNT,IDMAT)
-         VXC(3,IPNT,IDMAT) = A*GRAD(2,IPNT,IDMAT)
-         VXC(4,IPNT,IDMAT) = A*GRAD(3,IPNT,IDMAT)
-         !WARNING: this is the same as for the unrestricted case, but since we use \nabla rho 
-         !and not \nabla rho_{\alpha} in II_DISTGGA it is the same as having a factor 2 on this 
-         !meaning that we take alpha + beta.
-      ELSE
-         VXC(2,IPNT,IDMAT) = 0E0_realk
-         VXC(3,IPNT,IDMAT) = 0E0_realk
-         VXC(4,IPNT,IDMAT) = 0E0_realk
-      ENDIF
+!      IF(.NOT.USEXCFUN)THEN
+         CALL dft_funcderiv1(RHO(IPNT,IDMAT),GRD,WGHT(IPNT),VX)
+         IF(DFTDATA%LB94)THEN
+            CALL LB94correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
+                 & WGHT(IPNT),VX(1))
+         ELSEIF(DFTDATA%CS00)THEN
+            CALL CS00correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
+                 & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
+         ENDIF
+         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + DFTENE(RHO(IPNT,IDMAT),GRD)*WGHT(IPNT)
+         VXC(1,IPNT,IDMAT) = D2*VX(1) !this is 2 times greater than the UNRES VXC BECAUSE we need alpha + beta
+         IF(GRD.GT. 1E-40_realk) THEN
+            GRDA = D05*GRD
+            !         VXC(2,IPNT) = D2*(VX(2)/GRDA + VX(3))  
+            A = D2*(VX(2)/GRDA + VX(3))
+            VXC(2,IPNT,IDMAT) = A*GRAD(1,IPNT,IDMAT)
+            VXC(3,IPNT,IDMAT) = A*GRAD(2,IPNT,IDMAT)
+            VXC(4,IPNT,IDMAT) = A*GRAD(3,IPNT,IDMAT)
+            !WARNING: this is the same as for the unrestricted case, but since we use \nabla rho 
+            !and not \nabla rho_{\alpha} in II_DISTGGA it is the same as having a factor 2 on this 
+            !meaning that we take alpha + beta.
+         ELSE
+            VXC(2,IPNT,IDMAT) = 0E0_realk
+            VXC(3,IPNT,IDMAT) = 0E0_realk
+            VXC(4,IPNT,IDMAT) = 0E0_realk
+         ENDIF
+!      ELSE
+!         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+!         XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)&
+!              &+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
+!              &+GRAD(3,IPNT,IDMAT)*GRAD(3,IPNT,IDMAT)
+!         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+!         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
+!
+!         IF(DFTDATA%LB94)THEN
+!            call lsquit('error lb94 xcfun',-1)
+!         ELSEIF(DFTDATA%CS00)THEN
+!            call lsquit('error cs00 xcfun',-1)
+!         ENDIF
+
+!         VXC(1,IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+!         VXC(2,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
+!         VXC(3,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
+!         VXC(4,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
+!      ENDIF
    ELSE
       VXC(1,IPNT,IDMAT) = 0E0_realk
       VXC(2,IPNT,IDMAT) = 0E0_realk
@@ -553,15 +583,19 @@ DO IDMAT = 1,NDMAT/2
       !vx(5) = drvs.df00001= \frac{\partial f}{\partial \nabla \rho_{\alpha} \nabla \rho_{\beta}}  
       IF(GRDA.LT. 1E-40_realk) GRDA = 1E-40_realk
       IF(GRDB.LT. 1E-40_realk) GRDB = 1E-40_realk
-      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB,WGHT(IPNT),VX)
-      DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB)*WGHT(IPNT)
-      VXC(IPNT,1,1) = VX(1)
-      VXC(IPNT,1,2) = VX(2)
-      !WARNING: The factor of 2 in these next coeffficients comes from the fact 
-      !that we only build half of these terms and use a symmetrization at the end to get the full contribution
-      VXC(IPNT,2,1) = D2*VX(3)/GRDA  
-      VXC(IPNT,2,2) = D2*VX(4)/GRDB
-      VXM(IPNT) = D2*VX(5) !mixed derivate
+!      IF(.NOT.USEXCFUN)THEN
+         CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB,WGHT(IPNT),VX)
+         DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB)*WGHT(IPNT)
+         VXC(IPNT,1,1) = VX(1)
+         VXC(IPNT,1,2) = VX(2)
+         !WARNING: The factor of 2 in these next coeffficients comes from the fact 
+         !that we only build half of these terms and use a symmetrization at the end to get the full contribution
+         VXC(IPNT,2,1) = D2*VX(3)/GRDA  
+         VXC(IPNT,2,2) = D2*VX(4)/GRDB
+         VXM(IPNT) = D2*VX(5) !mixed derivate
+!      ELSE
+!         call lsquit('XCFUN',-1)
+!      ENDIF
    ELSE
       VXC(IPNT,1,1) = 0E0_realk
       VXC(IPNT,2,1) = 0E0_realk
@@ -881,21 +915,25 @@ IF (DOGGA) THEN
            &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
       IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
          !get the functional derivatives 
-         CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-         IF(DFTDATA%LB94)THEN
-            CALL LB94correction(rho(IPNT,1),GRD,DFTDATA%HFexchangeFac,&
-                 & WGHT(IPNT),VX(1))            
-         ELSEIF(DFTDATA%CS00)THEN
-            CALL CS00correction(rho(IPNT,1),GRD,DFTDATA%HFexchangeFac,&
-                 & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
-         ENDIF         
-         VXC(1,IPNT) = D2*VX(1) 
-         IF(GRD.GT. 1E-40_realk) THEN
-            GRDA = D05*GRD
-            VXC(2,IPNT) = (VX(2)/GRDA + VX(3))  
-         ELSE
-            VXC(2,IPNT) = 0E0_realk
-         ENDIF
+!         IF(.NOT.USEXCFUN)THEN
+            CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+            IF(DFTDATA%LB94)THEN
+               CALL LB94correction(rho(IPNT,1),GRD,DFTDATA%HFexchangeFac,&
+                    & WGHT(IPNT),VX(1))            
+            ELSEIF(DFTDATA%CS00)THEN
+               CALL CS00correction(rho(IPNT,1),GRD,DFTDATA%HFexchangeFac,&
+                    & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
+            ENDIF
+            VXC(1,IPNT) = D2*VX(1) 
+            IF(GRD.GT. 1E-40_realk) THEN
+               GRDA = D05*GRD
+               VXC(2,IPNT) = (VX(2)/GRDA + VX(3))  
+            ELSE
+               VXC(2,IPNT) = 0E0_realk
+            ENDIF
+!         ELSE
+!            call lsquit('xcfun',-1)
+!         ENDIF
       ELSE
          VXC(1,IPNT) = 0E0_realk
          VXC(2,IPNT) = 0E0_realk
@@ -907,8 +945,12 @@ ELSE
       IF(RHO(IPNT,1).GT.RHOTHR) THEN
          !get the functional derivatives 
          !vx(1) = drvs.df1000 = \frac{\partial f}{\partial \rho_{\alpha}}        
-         CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-         VXC(1,IPNT) = D2*VX(1) 
+!         IF(.NOT.USEXCFUN)THEN
+            CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+            VXC(1,IPNT) = D2*VX(1) 
+!         ELSE
+!            call lsquit('xcfun',-1)
+!         ENDIF
       ELSE
          VXC(1,IPNT) = 0E0_realk
       END IF
@@ -1134,21 +1176,25 @@ IF(DOCALC)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
     !get the functional derivatives 
-    CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
-    !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-    fRR = VX(6) + VX(7)     
-    DO IBMAT = 1,NBMAT
-     !THE factor 0.5 IN fRR cancels a factor 2.0 in VXC so  
-     VXC(IPNT,IBMAT) = D2*fRR*EXPVAL(IPNT,IBMAT) ! D4*fRR*EXPVAL(IPNT,IBMAT)
-     !WARNING the factor 4 is due to 
-     ! G_{\rho \sigma} &=& \frac{\delta (F^{\alpha} + F^{\beta})}{\delta D^{\alpha}_{\nu \mu}}\kappa^{\alpha}_{\nu \mu}\\
-     ! &+& \frac{\delta (F^{\alpha} + F^{\beta})}{\delta D^{\beta}_{\nu \mu}}\kappa^{\beta}_{\nu \mu}\\
-     ! G_{\rho \sigma} &=& 4 \frac{\delta (F^{\alpha}{\delta D^{\alpha}_{\nu \mu}} \kappa^{\alpha}_{\nu \mu}\\
-     ! G_{\rho \sigma} &=& 4 \int \frac{\partial^{2} f }{\partial \rho^{2}_{\alpha}} \Omega_{\rho \sigma}
-     ! \Omega_{\mu \nu} \kappa^{\alpha}_{\mu \nu} d\textbf{r}
-    ENDDO
+!      IF(.NOT.USEXCFUN)THEN
+         CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
+         !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+         fRR = VX(6) + VX(7)     
+         DO IBMAT = 1,NBMAT
+            !THE factor 0.5 IN fRR cancels a factor 2.0 in VXC so  
+            VXC(IPNT,IBMAT) = D2*fRR*EXPVAL(IPNT,IBMAT) ! D4*fRR*EXPVAL(IPNT,IBMAT)
+            !WARNING the factor 4 is due to 
+            ! G_{\rho \sigma} &=& \frac{\delta (F^{\alpha} + F^{\beta})}{\delta D^{\alpha}_{\nu \mu}}\kappa^{\alpha}_{\nu \mu}\\
+            ! &+& \frac{\delta (F^{\alpha} + F^{\beta})}{\delta D^{\beta}_{\nu \mu}}\kappa^{\beta}_{\nu \mu}\\
+            ! G_{\rho \sigma} &=& 4 \frac{\delta (F^{\alpha}{\delta D^{\alpha}_{\nu \mu}} \kappa^{\alpha}_{\nu \mu}\\
+            ! G_{\rho \sigma} &=& 4 \int \frac{\partial^{2} f }{\partial \rho^{2}_{\alpha}} \Omega_{\rho \sigma}
+            ! \Omega_{\mu \nu} \kappa^{\alpha}_{\mu \nu} d\textbf{r}
+         ENDDO
+!      ELSE
+!         call lsquit('XCFUN',-1)
+!      ENDIF
    ELSE
-    VXC(IPNT,:) = 0.0E0_realk
+         VXC(IPNT,:) = 0.0E0_realk
    ENDIF
   END DO
   DO IBMAT = 1,NBMAT
@@ -1440,30 +1486,34 @@ IF(DOCALC)THEN
    GRDA = D05*GRD
    IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
     !get the functional derivatives 
-    CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-    fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
-    fZ  = VX(3)                    !drvs.df0010;
-    fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-    fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
-    fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
-    fRG = D05*VX(10)             !0.5*drvs.df10001;   
-    fZG = D05*VX(13)             !0.5*drvs.df00101; 
-    fGG = D025*VX(14)            !0.25*drvs.df00002; 
-    fG  = D05*VX(5)               !0.5*drvs.df00001;  
-    DO IBMAT = 1,NBMAT
-     MIXEDGRDA = (EXPGRAD(1,IPNT,IBMAT)*GRAD(1,IPNT,1)&
-          &+EXPGRAD(2,IPNT,IBMAT)*GRAD(2,IPNT,1)&
-          &+EXPGRAD(3,IPNT,IBMAT)*GRAD(3,IPNT,1))
-     !the LDA part
-     VXC(1,IPNT,IBMAT) =D4*fRR*EXPVAL(IPNT,IBMAT)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
-     !the non LDA parts
-     A = D8*((fRZ/GRD + fRG)*EXPVAL(IPNT,IBMAT)&
-          & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
-     B= D8*(fZ/GRD + fG)
-     VXC(2,IPNT,IBMAT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,IBMAT)
-     VXC(3,IPNT,IBMAT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,IBMAT)
-     VXC(4,IPNT,IBMAT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,IBMAT)
-    ENDDO
+!    IF(.NOT.USEXCFUN)THEN
+       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
+       fZ  = VX(3)                    !drvs.df0010;
+       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
+       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
+       fRG = D05*VX(10)             !0.5*drvs.df10001;   
+       fZG = D05*VX(13)             !0.5*drvs.df00101; 
+       fGG = D025*VX(14)            !0.25*drvs.df00002; 
+       fG  = D05*VX(5)               !0.5*drvs.df00001;  
+       DO IBMAT = 1,NBMAT
+          MIXEDGRDA = (EXPGRAD(1,IPNT,IBMAT)*GRAD(1,IPNT,1)&
+               &+EXPGRAD(2,IPNT,IBMAT)*GRAD(2,IPNT,1)&
+               &+EXPGRAD(3,IPNT,IBMAT)*GRAD(3,IPNT,1))
+          !the LDA part
+          VXC(1,IPNT,IBMAT) =D4*fRR*EXPVAL(IPNT,IBMAT)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
+          !the non LDA parts
+          A = D8*((fRZ/GRD + fRG)*EXPVAL(IPNT,IBMAT)&
+               & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
+          B= D8*(fZ/GRD + fG)
+          VXC(2,IPNT,IBMAT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,IBMAT)
+          VXC(3,IPNT,IBMAT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,IBMAT)
+          VXC(4,IPNT,IBMAT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,IBMAT)
+       ENDDO
+!    ELSE
+!       call lsquit('XCFUN',-1)
+!    ENDIF
    ELSE
     VXC(:,IPNT,:) = 0.0E0_realk
    ENDIF
@@ -1772,19 +1822,23 @@ IF(DOCALC)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
     !get the functional derivatives 
-    CALL dft_funcderiv3(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
-!    fR  = VX(1)              !drvs.df1000;
-!radovan: factor 0.5 "missing" here compared to "true" derivative wrt RR i'm 
-!sure it's compensated elsewhere but can be confusing when comparing with 
-!other codes
-!     fRR = (VX(6) + VX(7))   !(drvs.df2000 + drvs.df1100);
-!radovan: factor 0.25 "missing" here compared to "true" derivative wrt RRR
-!        (i'm sure it's compensated elsewhere)
-!         but can be confusing when comparing with other codes
-    fRRR = (VX(15)+D3*VX(16))     !(drvs.df3000 + 3*drvs.df2100);
-!    VXCB(IPNT) = fRR*EXPVALB(IPNT) 
-!    VXCC(IPNT) = fRR*EXPVALC(IPNT) 
-    VXC(IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)  
+!    IF(.NOT.USEXCFUN)THEN
+       CALL dft_funcderiv3(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
+       !    fR  = VX(1)              !drvs.df1000;
+       !radovan: factor 0.5 "missing" here compared to "true" derivative wrt RR i'm 
+       !sure it's compensated elsewhere but can be confusing when comparing with 
+       !other codes
+       !     fRR = (VX(6) + VX(7))   !(drvs.df2000 + drvs.df1100);
+       !radovan: factor 0.25 "missing" here compared to "true" derivative wrt RRR
+       !        (i'm sure it's compensated elsewhere)
+       !         but can be confusing when comparing with other codes
+       fRRR = (VX(15)+D3*VX(16))     !(drvs.df3000 + 3*drvs.df2100);
+       !    VXCB(IPNT) = fRR*EXPVALB(IPNT) 
+       !    VXCC(IPNT) = fRR*EXPVALC(IPNT) 
+       VXC(IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)  
+!    ELSE
+!       call lsquit('funcderiv xcfun',-1)
+!    ENDIF
    ELSE
     VXC(IPNT) = 0.0E0_realk
    ENDIF
@@ -1895,45 +1949,49 @@ IF(DOCALC)THEN
     GRD2 = GRD*GRD
     GRDA2 = GRDA*GRDA
     GRDA3 = GRDA2*GRDA
-    CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-    fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
-    fRG = D2*VX(10)                      !2*drvs.df10001   
-    fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA) !(drvs.df0020 + drvs.df0011)/(4*grada2)-drvs.df0010/(4*grada3)
-    fRRR = VX(15)+D3*VX(16)              !(drvs.df3000 + 3*drvs.df2100) 
-    fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD !(drvs.df2010+drvs.df2001+2*drvs.df1110)/(2*grada)
-    fRRG = VX(19)+VX(21)                 !drvs.df20001+drvs.df11001
-    fRRGX = D2*(VX(19)+VX(21))           !2*(drvs.df20001+drvs.df11001)
-    fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  !(drvs.df1020+drvs.df0120+2*drvs.df1011)/(4*grada2)-(drvs.df1010+drvs.df1001)/(4*grada3)
-    fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
-!((drvs.df0030 + 3*drvs.df0021)/grada3& 
-!         &-3*(drvs.df0020 + drvs.df0011)/(grada2*grada2)&
-!         &+3*drvs.df0010/(grada3*grada2))/8.0
-    gradY = D05*(EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1) &
-         &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1) &
-         &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-    gradZ = D05*(EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1) &
-         &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1) &
-         &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
-    gradYZ = (EXPGRAD(1,IPNT,2)*EXPGRAD(1,IPNT,1) &
-         &+EXPGRAD(2,IPNT,2)*EXPGRAD(2,IPNT,1) &
-         &+EXPGRAD(3,IPNT,2)*EXPGRAD(3,IPNT,1))
-    VXC(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &!OK
-         &+D4*(fRRZ*EXPVAL(IPNT,1)*gradZ+fRRZ*EXPVAL(IPNT,2)*gradY) & !OK
-         &+D8*gradZ*gradY*fRZZ &! OK
-         &+D4*gradYZ*fRZ &! OK  
-         &+D4*fRRG*EXPVAL(IPNT,1)*gradZ &! OK
-         &+D4*fRRG*EXPVAL(IPNT,2)*gradY+D2*fRG*gradYZ !OK
-
-    A = D8*fZZZ*gradY*gradZ &
-         & + D4*(fRZZ*EXPVAL(IPNT,1)*gradZ + fRZZ*EXPVAL(IPNT,2)*gradY) &
-         & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
-         & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*gradYZ
-    B = D8*fZZ*gradY + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
-    C = D8*fZZ*gradZ + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
-    
-    VXC(2,IPNT) = D2*A*GRAD(1,IPNT,1) + D2*B*EXPGRAD(1,IPNT,2) + D2*C*EXPGRAD(1,IPNT,1)
-    VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
-    VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
+!    IF(.NOT.USEXCFUN)THEN
+       CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
+       fRG = D2*VX(10)                      !2*drvs.df10001   
+       fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA) !(drvs.df0020 + drvs.df0011)/(4*grada2)-drvs.df0010/(4*grada3)
+       fRRR = VX(15)+D3*VX(16)              !(drvs.df3000 + 3*drvs.df2100) 
+       fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD !(drvs.df2010+drvs.df2001+2*drvs.df1110)/(2*grada)
+       fRRG = VX(19)+VX(21)                 !drvs.df20001+drvs.df11001
+       fRRGX = D2*(VX(19)+VX(21))           !2*(drvs.df20001+drvs.df11001)
+       fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  !(drvs.df1020+drvs.df0120+2*drvs.df1011)/(4*grada2)-(drvs.df1010+drvs.df1001)/(4*grada3)
+       fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
+       !((drvs.df0030 + 3*drvs.df0021)/grada3& 
+       !         &-3*(drvs.df0020 + drvs.df0011)/(grada2*grada2)&
+       !         &+3*drvs.df0010/(grada3*grada2))/8.0
+       gradY = D05*(EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+       gradZ = D05*(EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
+       gradYZ = (EXPGRAD(1,IPNT,2)*EXPGRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*EXPGRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*EXPGRAD(3,IPNT,1))
+       VXC(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &!OK
+            &+D4*(fRRZ*EXPVAL(IPNT,1)*gradZ+fRRZ*EXPVAL(IPNT,2)*gradY) & !OK
+            &+D8*gradZ*gradY*fRZZ &! OK
+            &+D4*gradYZ*fRZ &! OK  
+            &+D4*fRRG*EXPVAL(IPNT,1)*gradZ &! OK
+            &+D4*fRRG*EXPVAL(IPNT,2)*gradY+D2*fRG*gradYZ !OK
+       
+       A = D8*fZZZ*gradY*gradZ &
+            & + D4*(fRZZ*EXPVAL(IPNT,1)*gradZ + fRZZ*EXPVAL(IPNT,2)*gradY) &
+            & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
+            & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*gradYZ
+       B = D8*fZZ*gradY + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
+       C = D8*fZZ*gradZ + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
+       
+       VXC(2,IPNT) = D2*A*GRAD(1,IPNT,1) + D2*B*EXPGRAD(1,IPNT,2) + D2*C*EXPGRAD(1,IPNT,1)
+       VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
+       VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
+!    ELSE
+!       call lsquit('XCFUN 3 ',-1)
+!    ENDIF
    ELSE
     VXC(:,IPNT) = 0.0E0_realk
    ENDIF
@@ -2018,9 +2076,13 @@ DO IPNT = 1, NBLEN
 !   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
       !get the functional derivatives 
       !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}}
+!   IF(.NOT.USEXCFUN)THEN
       CALL dft_funcderiv1(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
       !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
       VXC(IPNT) = VX(1)*D4 
+!   ELSE
+!      call lsquit('xcfun',-1)
+!   ENDIF
 !   ELSE
 !      VXC(IPNT) = 0.0E0_realk
 !   ENDIF
@@ -2201,26 +2263,30 @@ DO IPNT = 1, NBLEN
    GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
         &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
    IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-      CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-      IF(DFTDATA%LB94)THEN
-         CALL LB94correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
-              & WGHT(IPNT),VX(1))            
-      ELSEIF(DFTDATA%CS00)THEN
-         CALL CS00correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
-              & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
-      ENDIF
-      VXC(1,IPNT) = D2*VX(1) 
-      IF(GRD.GT. 1E-40_realk) THEN
-         GRDA = D05*GRD
-         A = D2*(VX(2)/GRDA + VX(3))
-         VXC(2,IPNT) = A*GRAD(1,IPNT,1)
-         VXC(3,IPNT) = A*GRAD(2,IPNT,1)
-         VXC(4,IPNT) = A*GRAD(3,IPNT,1)
-      ELSE
-         VXC(2,IPNT) = 0E0_realk
-         VXC(3,IPNT) = 0E0_realk
-         VXC(4,IPNT) = 0E0_realk
-      ENDIF
+!      IF(.NOT.USEXCFUN)THEN
+         CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+         IF(DFTDATA%LB94)THEN
+            CALL LB94correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
+                 & WGHT(IPNT),VX(1))            
+         ELSEIF(DFTDATA%CS00)THEN
+            CALL CS00correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
+                 & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
+         ENDIF
+         VXC(1,IPNT) = D2*VX(1) 
+         IF(GRD.GT. 1E-40_realk) THEN
+            GRDA = D05*GRD
+            A = D2*(VX(2)/GRDA + VX(3))
+            VXC(2,IPNT) = A*GRAD(1,IPNT,1)
+            VXC(3,IPNT) = A*GRAD(2,IPNT,1)
+            VXC(4,IPNT) = A*GRAD(3,IPNT,1)
+         ELSE
+            VXC(2,IPNT) = 0E0_realk
+            VXC(3,IPNT) = 0E0_realk
+            VXC(4,IPNT) = 0E0_realk
+         ENDIF
+!      ELSE
+!         call lsquit('XCFUN',-1)
+!      ENDIF
    ELSE
       VXC(:,IPNT) = 0E0_realk
    END IF
@@ -2455,18 +2521,22 @@ IF(DOCALC)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
     !get the functional derivatives 
-    CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
-    !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-    fRR = VX(6) + VX(7)     
-     !THE factor 0.5 IN fRR cancels a factor 2.0 in VXC so  
-    DO IBMAT = 1,NBMAT
-     VXC(IPNT,IBMAT) = D2*fRR*EXPVAL(IPNT,IBMAT)!D4*fRR*EXPVAL(IPNT,IBMAT)
-    ENDDO
-    DO N=1,3
-     DO IBMAT = 1,NBMAT
-      VXC2(IPNT,IBMAT,N)=D2*fRR*EXPGRAD(IPNT,N,IBMAT)
-     ENDDO
-    ENDDO
+!     IF(.NOT.USEXCFUN)THEN
+        CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
+        !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+        fRR = VX(6) + VX(7)     
+        !THE factor 0.5 IN fRR cancels a factor 2.0 in VXC so  
+        DO IBMAT = 1,NBMAT
+           VXC(IPNT,IBMAT) = D2*fRR*EXPVAL(IPNT,IBMAT)!D4*fRR*EXPVAL(IPNT,IBMAT)
+        ENDDO
+        DO N=1,3
+           DO IBMAT = 1,NBMAT
+              VXC2(IPNT,IBMAT,N)=D2*fRR*EXPGRAD(IPNT,N,IBMAT)
+           ENDDO
+        ENDDO
+!     ELSE
+!        call lsquit('XCFUN 2',-1)
+!     ENDIF
    ELSE
     VXC(IPNT,:) = 0.0E0_realk
    ENDIF
@@ -2912,47 +2982,51 @@ IF(DOCALC)THEN
     IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
     GRDA = D05*GRD
     !get the functional derivatives 
-    CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-    fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
-    fZ  = VX(3)                    !drvs.df0010;
-    fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-    fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
-    fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
-    fRG = D05*VX(10)             !0.5*drvs.df10001;   
-    fZG = D05*VX(13)             !0.5*drvs.df00101; 
-    fGG = D025*VX(14)            !0.25*drvs.df00002; 
-    fG  = D05*VX(5)               !0.5*drvs.df00001;  
-    DO IBMAT = 1,NBMAT
-     MIXEDGRDA = (EXPGRAD(IPNT,2,1,IBMAT)*GRAD(1,IPNT,1)&
-          &+EXPGRAD(IPNT,3,1,IBMAT)*GRAD(2,IPNT,1)&
-          &+EXPGRAD(IPNT,4,1,IBMAT)*GRAD(3,IPNT,1))
-     VXC1(IPNT,IBMAT) =D4*fRR*EXPGRAD(IPNT,1,1,IBMAT)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
-     !magnetic differentiation of VXC1
-     DO N=1,3
-        MIXEDGRDAMAG(N) = (EXPGRAD(IPNT,2,N+1,IBMAT)*GRAD(1,IPNT,1)&
-             &+EXPGRAD(IPNT,3,N+1,IBMAT)*GRAD(2,IPNT,1)&
-             &+EXPGRAD(IPNT,4,N+1,IBMAT)*GRAD(3,IPNT,1))
-     ENDDO
-     DO N=1,3
-      VXC1MAG(IPNT,IBMAT,N)=D4*(fRZ/GRD+fRG)*MIXEDGRDAMAG(N)+D4*fRR*EXPGRAD(IPNT,1,1+N,IBMAT)
-     ENDDO
-     A = D8*((fRZ/GRD + fRG)*EXPGRAD(IPNT,1,1,IBMAT)&
-          & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
-     B= D8*(fZ/GRD + fG)
-     VXC2(IPNT,IBMAT,1) = A*GRAD(1,IPNT,1)+B*EXPGRAD(IPNT,2,1,IBMAT)
-     VXC2(IPNT,IBMAT,2) = A*GRAD(2,IPNT,1)+B*EXPGRAD(IPNT,3,1,IBMAT)
-     VXC2(IPNT,IBMAT,3) = A*GRAD(3,IPNT,1)+B*EXPGRAD(IPNT,4,1,IBMAT)
-     !magnetic differentiation of VXC2
-     DO N=1,3
-        AMAG(N) = D8*((fRZ/GRD + fRG)*EXPGRAD(IPNT,1,N+1,IBMAT)&
-             & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDAMAG(N))
-     ENDDO
-     DO N=1,3
-      VXC2MAG(IPNT,IBMAT,1,N)=AMAG(N)*GRAD(1,IPNT,1)+B*EXPGRAD(IPNT,2,1+N,IBMAT)
-      VXC2MAG(IPNT,IBMAT,2,N)=AMAG(N)*GRAD(2,IPNT,1)+B*EXPGRAD(IPNT,3,1+N,IBMAT)
-      VXC2MAG(IPNT,IBMAT,3,N)=AMAG(N)*GRAD(3,IPNT,1)+B*EXPGRAD(IPNT,4,1+N,IBMAT)
-      ENDDO
-    ENDDO
+!    IF(.NOT.USEXCFUN)THEN
+       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
+       fZ  = VX(3)                    !drvs.df0010;
+       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
+       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
+       fRG = D05*VX(10)             !0.5*drvs.df10001;   
+       fZG = D05*VX(13)             !0.5*drvs.df00101; 
+       fGG = D025*VX(14)            !0.25*drvs.df00002; 
+       fG  = D05*VX(5)               !0.5*drvs.df00001;  
+       DO IBMAT = 1,NBMAT
+          MIXEDGRDA = (EXPGRAD(IPNT,2,1,IBMAT)*GRAD(1,IPNT,1)&
+               &+EXPGRAD(IPNT,3,1,IBMAT)*GRAD(2,IPNT,1)&
+               &+EXPGRAD(IPNT,4,1,IBMAT)*GRAD(3,IPNT,1))
+          VXC1(IPNT,IBMAT) =D4*fRR*EXPGRAD(IPNT,1,1,IBMAT)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
+          !magnetic differentiation of VXC1
+          DO N=1,3
+             MIXEDGRDAMAG(N) = (EXPGRAD(IPNT,2,N+1,IBMAT)*GRAD(1,IPNT,1)&
+                  &+EXPGRAD(IPNT,3,N+1,IBMAT)*GRAD(2,IPNT,1)&
+                  &+EXPGRAD(IPNT,4,N+1,IBMAT)*GRAD(3,IPNT,1))
+          ENDDO
+          DO N=1,3
+             VXC1MAG(IPNT,IBMAT,N)=D4*(fRZ/GRD+fRG)*MIXEDGRDAMAG(N)+D4*fRR*EXPGRAD(IPNT,1,1+N,IBMAT)
+          ENDDO
+          A = D8*((fRZ/GRD + fRG)*EXPGRAD(IPNT,1,1,IBMAT)&
+               & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
+          B= D8*(fZ/GRD + fG)
+          VXC2(IPNT,IBMAT,1) = A*GRAD(1,IPNT,1)+B*EXPGRAD(IPNT,2,1,IBMAT)
+          VXC2(IPNT,IBMAT,2) = A*GRAD(2,IPNT,1)+B*EXPGRAD(IPNT,3,1,IBMAT)
+          VXC2(IPNT,IBMAT,3) = A*GRAD(3,IPNT,1)+B*EXPGRAD(IPNT,4,1,IBMAT)
+          !magnetic differentiation of VXC2
+          DO N=1,3
+             AMAG(N) = D8*((fRZ/GRD + fRG)*EXPGRAD(IPNT,1,N+1,IBMAT)&
+                  & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDAMAG(N))
+          ENDDO
+          DO N=1,3
+             VXC2MAG(IPNT,IBMAT,1,N)=AMAG(N)*GRAD(1,IPNT,1)+B*EXPGRAD(IPNT,2,1+N,IBMAT)
+             VXC2MAG(IPNT,IBMAT,2,N)=AMAG(N)*GRAD(2,IPNT,1)+B*EXPGRAD(IPNT,3,1+N,IBMAT)
+             VXC2MAG(IPNT,IBMAT,3,N)=AMAG(N)*GRAD(3,IPNT,1)+B*EXPGRAD(IPNT,4,1+N,IBMAT)
+          ENDDO
+       ENDDO
+!    ELSE
+!       call lsquit('funcderiv xcfun',-1)
+!    ENDIF
    ELSE
     VXC1(IPNT,:) = 0.0E0_realk
     VXC1MAG(IPNT,:,:) = 0.0E0_realk
@@ -3498,9 +3572,13 @@ IF(DOCALC)THEN
  IF(NRED.GT. 0)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+!    IF(.NOT.USEXCFUN)THEN
       CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
       fR(IPNT) = VX(1)*D4 
       fRR(IPNT) = D2*(VX(6) + VX(7))*EXPVAL(IPNT,1) 
+!    ELSE
+!       call lsquit('xcfun2',-1)
+!    ENDIF
    ELSE
       VXC(IPNT) = 0.0E0_realk
    ENDIF
@@ -3764,6 +3842,7 @@ IF(DOCALC)THEN
           &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
      GRDA = D05*GRD
      IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+!      IF(.NOT.USEXCFUN)THEN
        CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
        fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
        fZ  = VX(3)                    !drvs.df0010;
@@ -3792,6 +3871,9 @@ IF(DOCALC)THEN
        VXC4(1,IPNT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,1)
        VXC4(2,IPNT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,1)
        VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
+!      ELSE
+!         call lsquit('xcfun',-1)
+!      ENDIF
     ELSE
        VXC1(IPNT) = 0.0E0_realk
        VXC2(:,IPNT) = 0.0E0_realk
@@ -4100,12 +4182,16 @@ IF(DOCALC)THEN
  IF(NRED.GT. 0)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+!     IF(.NOT.USEXCFUN)THEN
       CALL dft_funcderiv3(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
       A = D4*(VX(6) + VX(7))
       fRR(1,IPNT) = A*EXPVAL(IPNT,1) 
       fRR(2,IPNT) = A*EXPVAL(IPNT,2) 
       A = D2*(VX(15) + D3*VX(16))
       fRRR(IPNT) = A*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
+!     ELSE
+!        call lsquit('xcfun3',-1)
+!     ENDIF
    ELSE
       VXC(IPNT) = 0.0E0_realk
    ENDIF
@@ -4407,58 +4493,62 @@ IF(DOCALC)THEN
     GRD2 = GRD*GRD
     GRDA2 = GRDA*GRDA
     GRDA3 = GRDA2*GRDA
-    CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-    !THE NON DIFFERENTIATED PART
-    fR  = D05*(VX(1) + VX(2))    !0.5*(drvs.df1000 + drvs.df0100);
-    fZ  = VX(3)                  !drvs.df0010;
-    fRR = D05*(VX(6) + VX(7))    !0.5*(drvs.df2000 + drvs.df1100);
-    fRZ = D05*(VX(8) + VX(9))    !0.5*(drvs.df1010 + drvs.df1001);
-    fZZ = D05*(VX(11) + VX(12))  !0.5*(drvs.df0020 + drvs.df0011);
-    fRG = D05*VX(10)             !0.5*drvs.df10001;   
-    fZG = D05*VX(13)             !0.5*drvs.df00101; 
-    fGG = D025*VX(14)            !0.25*drvs.df00002; 
-    fG  = D05*VX(5)              !0.5*drvs.df00001;  
-    VXC1(1,IPNT) = D8*fRR*EXPVAL(IPNT,1) + D8*(fRZ/GRD+fRG)*ARHOGRAD
-    VXC1(2,IPNT) = D8*fRR*EXPVAL(IPNT,2) + D8*(fRZ/GRD+fRG)*BRHOGRAD
-    B= D8*(fZ/GRD + fG)
-    FacW = D8*(((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)
-    FactorRZ = D8*(fRZ/GRD + fRG)
-    A = FactorRZ*EXPVAL(IPNT,1)+FacW*ARHOGRAD
-    VXC2(1,IPNT,1) = B*EXPGRAD(1,IPNT,1)+A*GRAD(1,IPNT,1)
-    VXC2(2,IPNT,1) = B*EXPGRAD(2,IPNT,1)+A*GRAD(2,IPNT,1)
-    VXC2(3,IPNT,1) = B*EXPGRAD(3,IPNT,1)+A*GRAD(3,IPNT,1)
-    A = FactorRZ*EXPVAL(IPNT,2)+FacW*BRHOGRAD
-    VXC2(1,IPNT,2) = B*EXPGRAD(1,IPNT,2)+A*GRAD(1,IPNT,1)
-    VXC2(2,IPNT,2) = B*EXPGRAD(2,IPNT,2)+A*GRAD(2,IPNT,1)
-    VXC2(3,IPNT,2) = B*EXPGRAD(3,IPNT,2)+A*GRAD(3,IPNT,1)
-    !THE DIFFERENTIATED PART
-    fRRR = (VX(15) + D3*VX(16))
-    fRZ = (VX(8)+VX(9))/GRD  !warning change definition of fRZ
-    fRG = D4*fRG                 !D2*VX(10)                      
-    fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA)
-    fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD 
-    fRRG = VX(19)+VX(21)                 
-    fRRGX = D2*(VX(19)+VX(21))           
-    fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  
-    fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
-
-    VXC3(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) & 
-         &+D2*fRRZ*(EXPVAL(IPNT,1)*BRHOGRAD+EXPVAL(IPNT,2)*ARHOGRAD) & 
-         &+D2*BRHOGRAD*ARHOGRAD*fRZZ& 
-         &+D4*ABRHOGRAD*fRZ &
-         &+D2*fRRG*(EXPVAL(IPNT,1)*BRHOGRAD+EXPVAL(IPNT,2)*ARHOGRAD)&
-         &+D2*fRG*ABRHOGRAD 
- 
-    A = D2*fZZZ*ARHOGRAD*BRHOGRAD &
-         & + D2*(fRZZ*EXPVAL(IPNT,1)*BRHOGRAD + fRZZ*EXPVAL(IPNT,2)*ARHOGRAD) &
-         & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
-         & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*ABRHOGRAD
-    B = D4*fZZ*ARHOGRAD + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
-    C = D4*fZZ*BRHOGRAD + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
-    
-    VXC3(2,IPNT) = A*GRAD(1,IPNT,1) + B*EXPGRAD(1,IPNT,2) + C*EXPGRAD(1,IPNT,1)
-    VXC3(3,IPNT) = A*GRAD(2,IPNT,1) + B*EXPGRAD(2,IPNT,2) + C*EXPGRAD(2,IPNT,1)
-    VXC3(4,IPNT) = A*GRAD(3,IPNT,1) + B*EXPGRAD(3,IPNT,2) + C*EXPGRAD(3,IPNT,1)
+!    IF(.NOT.USEXCFUN)THEN
+       CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       !THE NON DIFFERENTIATED PART
+       fR  = D05*(VX(1) + VX(2))    !0.5*(drvs.df1000 + drvs.df0100);
+       fZ  = VX(3)                  !drvs.df0010;
+       fRR = D05*(VX(6) + VX(7))    !0.5*(drvs.df2000 + drvs.df1100);
+       fRZ = D05*(VX(8) + VX(9))    !0.5*(drvs.df1010 + drvs.df1001);
+       fZZ = D05*(VX(11) + VX(12))  !0.5*(drvs.df0020 + drvs.df0011);
+       fRG = D05*VX(10)             !0.5*drvs.df10001;   
+       fZG = D05*VX(13)             !0.5*drvs.df00101; 
+       fGG = D025*VX(14)            !0.25*drvs.df00002; 
+       fG  = D05*VX(5)              !0.5*drvs.df00001;  
+       VXC1(1,IPNT) = D8*fRR*EXPVAL(IPNT,1) + D8*(fRZ/GRD+fRG)*ARHOGRAD
+       VXC1(2,IPNT) = D8*fRR*EXPVAL(IPNT,2) + D8*(fRZ/GRD+fRG)*BRHOGRAD
+       B= D8*(fZ/GRD + fG)
+       FacW = D8*(((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)
+       FactorRZ = D8*(fRZ/GRD + fRG)
+       A = FactorRZ*EXPVAL(IPNT,1)+FacW*ARHOGRAD
+       VXC2(1,IPNT,1) = B*EXPGRAD(1,IPNT,1)+A*GRAD(1,IPNT,1)
+       VXC2(2,IPNT,1) = B*EXPGRAD(2,IPNT,1)+A*GRAD(2,IPNT,1)
+       VXC2(3,IPNT,1) = B*EXPGRAD(3,IPNT,1)+A*GRAD(3,IPNT,1)
+       A = FactorRZ*EXPVAL(IPNT,2)+FacW*BRHOGRAD
+       VXC2(1,IPNT,2) = B*EXPGRAD(1,IPNT,2)+A*GRAD(1,IPNT,1)
+       VXC2(2,IPNT,2) = B*EXPGRAD(2,IPNT,2)+A*GRAD(2,IPNT,1)
+       VXC2(3,IPNT,2) = B*EXPGRAD(3,IPNT,2)+A*GRAD(3,IPNT,1)
+       !THE DIFFERENTIATED PART
+       fRRR = (VX(15) + D3*VX(16))
+       fRZ = (VX(8)+VX(9))/GRD  !warning change definition of fRZ
+       fRG = D4*fRG                 !D2*VX(10)                      
+       fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA)
+       fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD 
+       fRRG = VX(19)+VX(21)                 
+       fRRGX = D2*(VX(19)+VX(21))           
+       fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  
+       fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
+       
+       VXC3(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) & 
+            &+D2*fRRZ*(EXPVAL(IPNT,1)*BRHOGRAD+EXPVAL(IPNT,2)*ARHOGRAD) & 
+            &+D2*BRHOGRAD*ARHOGRAD*fRZZ& 
+            &+D4*ABRHOGRAD*fRZ &
+            &+D2*fRRG*(EXPVAL(IPNT,1)*BRHOGRAD+EXPVAL(IPNT,2)*ARHOGRAD)&
+            &+D2*fRG*ABRHOGRAD 
+       
+       A = D2*fZZZ*ARHOGRAD*BRHOGRAD &
+            & + D2*(fRZZ*EXPVAL(IPNT,1)*BRHOGRAD + fRZZ*EXPVAL(IPNT,2)*ARHOGRAD) &
+            & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
+            & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*ABRHOGRAD
+       B = D4*fZZ*ARHOGRAD + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
+       C = D4*fZZ*BRHOGRAD + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
+       
+       VXC3(2,IPNT) = A*GRAD(1,IPNT,1) + B*EXPGRAD(1,IPNT,2) + C*EXPGRAD(1,IPNT,1)
+       VXC3(3,IPNT) = A*GRAD(2,IPNT,1) + B*EXPGRAD(2,IPNT,2) + C*EXPGRAD(2,IPNT,1)
+       VXC3(4,IPNT) = A*GRAD(3,IPNT,1) + B*EXPGRAD(3,IPNT,2) + C*EXPGRAD(3,IPNT,1)
+!    ELSE
+!       call lsquit('XCFUNgeoderiv_linrsp',-1)
+!    ENDIF
    ELSE
       VXC1(:,IPNT) = 0.0E0_realk
       VXC2(:,IPNT,:) = 0.0E0_realk
@@ -4838,8 +4928,12 @@ DO IDMAT = 1, NDMAT/2
       !get the functional derivatives 
       !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}} 
       !and same for beta
-!      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY,WGHT(IPNT),VX)
-      DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY)*WGHT(IPNT)
+!     IF(.NOT.USEXCFUN)THEN
+        !      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY,WGHT(IPNT),VX)
+        DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY)*WGHT(IPNT)
+!     ELSE
+!        call lsquit('xcfun0',-1)
+!     ENDIF
    ENDIF
  END DO
 ENDDO
@@ -4980,8 +5074,12 @@ DO IDMAT = 1,NDMAT
         &(GRDB .GT. RHOTHR .OR. RHO(IPNT,IDMAT2).GT.RHOTHR))then 
       IF(GRDA.LT. 1E-40_realk) GRDA = 1E-40_realk
       IF(GRDB.LT. 1E-40_realk) GRDB = 1E-40_realk
-!      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB,WGHT(IPNT),VX)
-      DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB)*WGHT(IPNT)
+!      IF(.NOT.USEXCFUN)THEN
+         !      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB,WGHT(IPNT),VX)
+         DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB)*WGHT(IPNT)
+!      ELSE
+!         call lsquit('xcfun',-1)
+!      ENDIF
    END IF
  END DO
 ENDDO
