@@ -6153,7 +6153,7 @@ subroutine fixtes(all_centers, all_z)
          inuc = int(all_z(i))
          RFIX(I) = 2.400D+00*aa2au 
 
-         IF(INUC.EQ. 1) RFIX(I) = 0.001D+00*aa2au 
+         IF(INUC.EQ. 1) RFIX(I) = 1.400D+00*aa2au 
          IF(INUC.EQ. 3) RFIX(I) = 1.400D+00*aa2au 
          IF(INUC.EQ. 4) RFIX(I) = 1.400D+00*aa2au 
          IF(INUC.EQ. 5) RFIX(I) = 1.400D+00*aa2au 
