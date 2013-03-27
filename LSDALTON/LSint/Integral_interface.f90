@@ -2525,12 +2525,19 @@ INTEGER               :: LUPRI,LUERR
 !
 Integer             :: nbast
 !call lsquit('II_get_2int_ScreenMat not implemented ',-LUPRI)
+IF(setting%IntegralTransformGC)THEN
+   !I do not think it makes sense to transform afterwards 
+   !so here the basis needs to be transformed
+   call lsquit('II_get_2int_ScreenMat and IntegralTransformGC do not work',-1)
+ENDIF
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 nbast = GAB%nrow
 call mat_zero(GAB)
 call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
+setting%Output%RealGabMatrix = .TRUE.
 CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
      &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
+setting%Output%RealGabMatrix = .FALSE.
 CALL retrieve_Output(lupri,setting,GAB,setting%IntegralTransformGC)
 
 END SUBROUTINE II_get_2int_ScreenMat

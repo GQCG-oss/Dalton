@@ -203,6 +203,7 @@ INTINPUT%fullcontraction = .FALSE.
 INTINPUT%node = setting%node
 INTINPUT%numnodes = setting%numnodes
 INTINPUT%LHSSameAsRHSDmat = setting%LHSSameAsRHSDmat
+INTINPUT%RealGabMatrix = setting%Output%RealGabMatrix
 END SUBROUTINE init_integral_INPUT
 
 END MODULE INTEGRALINFO

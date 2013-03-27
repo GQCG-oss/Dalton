@@ -217,7 +217,7 @@ CALL SET_ORBITAL(P%orbital1,ODB%AO(1)%p,integral,input%HermiteEcoeff,LUPRI)
 CALL SET_ORBITAL(P%orbital2,ODB%AO(2)%p,integral,input%HermiteEcoeff,LUPRI)
 P%Orb1atom(1) = ODB%AO(1)%p%atom
 P%Orb2atom(1) = ODB%AO(2)%p%atom
-IF(.NOT.(Input%CS_int))THEN !default
+IF(.NOT.(Input%CS_int).OR.Input%RealGabMatrix)THEN !default
    P%Orb1batch(1) = ODB%AO(1)%p%batch
    P%Orb2batch(1) = ODB%AO(2)%p%batch
 ELSE !Screening integrals 
