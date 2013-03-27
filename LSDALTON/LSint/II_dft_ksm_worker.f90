@@ -25,7 +25,7 @@ CONTAINS
 !> Worker routine that for a batch of gridpoints build the LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -55,6 +55,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> grippoint coordinates
 REAL(REALK),intent(in) :: COORD(3,NBLEN)
 !> grippoint weights
@@ -122,7 +124,7 @@ END SUBROUTINE II_DFT_KSMLDA
 !> Worker routine that for a batch of gridpoints build the unrestricted LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMLDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -152,6 +154,8 @@ INTEGER     :: MXBLLEN
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> grippoint coordinates
 REAL(REALK),intent(in) :: COORD(3,NBLEN)
 !> grippoint weights
@@ -323,7 +327,7 @@ END SUBROUTINE II_DFT_DIST_LDA
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -351,6 +355,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -457,6 +463,124 @@ call mem_dft_dealloc(VXC)
 
 END SUBROUTINE II_DFT_KSMGGA
 
+!> \brief main closed shell meat-GGA kohn-sham matrix driver
+!> \author T. Kjaergaard
+!> \date 2008
+SUBROUTINE II_DFT_KSMMETA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
+Real(realk), parameter :: D8 = 8.0E0_realk
+INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
+REAL(REALK) :: VX(3),DFTENE,GRD,GRDA,A
+REAL(REALK),pointer :: VXC(:,:,:)
+REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
+EXTERNAL DFTENE
+call mem_dft_alloc(VXC,5,NBLEN,NDMAT)
+!     GGA Exchange-correlation contribution to Kohn-Sham matrix
+DO IDMAT=1,NDMAT
+ DO IPNT = 1, NBLEN
+   GRD = SQRT(GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
+        &+GRAD(3,IPNT,IDMAT)*GRAD(3,IPNT,IDMAT))
+   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,IDMAT).GT.RHOTHR .OR. TAU(IPNT,IDMAT).GT.RHOTHR) THEN
+      !get the functional derivatives 
+      !vx(1) = drvs.df1000 = \frac{\partial f}{\partial \rho_{\alpha}}        
+      !vx(2) = drvs.df0010 = \frac{\partial f}{\partial |\nabla \rho_{\alpha}|^{2}}
+      !vx(3) = drvs.df00001= \frac{\partial f}{\partial \nabla \rho_{\alpha} \nabla \rho_{\beta}}  
+      IF(.NOT.USEXCFUN)THEN
+         CALL LSQUIT('meta-GGA only implemented using XC-fun',-1)
+      ELSE
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)&
+              &+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
+              &+GRAD(3,IPNT,IDMAT)*GRAD(3,IPNT,IDMAT)
+         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
+
+         IF(DFTDATA%LB94)THEN
+            call lsquit('error lb94 xcfun',-1)
+         ELSEIF(DFTDATA%CS00)THEN
+            call lsquit('error cs00 xcfun',-1)
+         ENDIF
+
+         VXC(1,IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         VXC(2,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
+         VXC(3,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
+         VXC(4,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
+!        VXC(4,IPNT,IDMAT) = D2*XCFUNOUTPUT(4,1)*WGHT(IPNT) !?
+      ENDIF
+   ELSE
+      VXC(1,IPNT,IDMAT) = 0E0_realk
+      VXC(2,IPNT,IDMAT) = 0E0_realk
+      VXC(3,IPNT,IDMAT) = 0E0_realk
+      VXC(4,IPNT,IDMAT) = 0E0_realk
+      VXC(5,IPNT,IDMAT) = 0E0_realk
+   END IF
+ END DO
+ENDDO
+W1 = 1
+W2 = NBLEN*Nactbast*4                        !W1 - 1 + NBLEN*Nactbast*4 -> GAORED 
+W3 = 4*NBLEN*Nactbast+1                      !W2 + 1
+W4 = (4*NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast  -> EXCRED
+W5 = (4*NBLEN+Nactbast)*Nactbast + 1         !W4 + 1 
+W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
+W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
+W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
+#ifdef VAR_DEBUGINT
+IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+#endif
+
+CALL II_DISTMETA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,NactBast,NBAST,NTYPSO,NDMAT,&
+     & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
+call mem_dft_dealloc(VXC)
+
+END SUBROUTINE II_DFT_KSMMETA
+
 SUBROUTINE LB94correction(rho,GRD,HFexchangeFac,WGHT,VX)
 implicit none
 REAL(REALK),intent(in)    :: rho,GRD,HFexchangeFac,WGHT
@@ -515,7 +639,7 @@ end SUBROUTINE CS00correction
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -543,6 +667,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -842,6 +968,113 @@ ENDDO
 call mem_dft_dealloc(INXRED)
 
 END SUBROUTINE II_DISTGGA
+
+!> \brief the main GGA distribution routine 
+!> \author T. Kjaergaard
+!> \date 2008
+SUBROUTINE II_DISTMETA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
+     & NTYPSO,NDMAT,COEF,GAOS,EXCMAT,DFTHRI,GAORED,EXCRED,GAOGMX,TMP)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of GAOs types
+INTEGER,intent(in) :: NTYPSO
+!> Number of matrices
+INTEGER,intent(in) :: NDMAT
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> coefficient (combination of functional derivative)
+REAL(REALK),intent(in) :: COEF(5,NBLEN,NDMAT)
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST,NTYPSO)
+!> The Kohn-Sham matrix
+REAL(REALK),intent(inout) :: EXCMAT(NBAST,NBAST,NDMAT)
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!
+REAL(REALK),intent(inout) :: TMP(NBLEN,NACTBAST)
+REAL(REALK),intent(inout) :: GAOGMX(NACTBAST)
+REAL(REALK),intent(inout) :: GAORED(NBLEN,NACTBAST,4)
+REAL(REALK),intent(inout) :: EXCRED(NactBAST*NactBAST)
+REAL(REALK) :: GAOMAX,GAOMAXTMP
+INTEGER     :: ISTART,IBL,I,ILEN,JBL,J,K,JSTART,JLEN
+INTEGER     :: IRED,JRED,NRED,offset,IDMAT
+INTEGER,pointer :: INXRED(:)
+call mem_dft_alloc(INXRED,NACTBAST)
+DO IDMAT = 1,NDMAT
+ NRED = 0
+ GAOMAX = 0.0E0_realk
+ ! Set up maximum Gaussian AO elements
+ DO JBL = 1, NBLOCKS
+   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
+      GAOMAXTMP = 0.0E0_realk
+      DO K = 1, NBLEN
+         GAOMAXTMP = MAX(GAOMAXTMP,ABS(GAOS(K,J,1)))
+      ENDDO
+      GAOMAX = MAX(GAOMAX,GAOMAXTMP)
+      DO I=2,4
+         DO K = 1, NBLEN
+            GAOMAXTMP = MAX(GAOMAXTMP,ABS(GAOS(K,J,I)))
+         ENDDO
+      ENDDO
+      GAOGMX(J) = GAOMAXTMP      
+   ENDDO
+ ENDDO
+
+ ! Set up reduced Gaussian AO's
+ DO JBL = 1, NBLOCKS
+   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
+      IF (GAOGMX(J)*GAOMAX.GT.DFTHRI) THEN
+         NRED = NRED + 1
+         INXRED(NRED) = INXACT(J)
+         DO I=1,4
+            DO K = 1, NBLEN
+               GAORED(K,NRED,I) = GAOS(K,J,I)
+            ENDDO
+         ENDDO
+      ENDIF
+   ENDDO
+ ENDDO
+ IF (NRED.GT. 0) THEN
+ !  First half-contraction of GAO's with potential
+   DO J=1,NRED
+      DO K=1, NBLEN
+         TMP(K,J) =  coef(1,K,IDMAT)*GAORED(K,J,1)&
+              &   + coef(2,K,IDMAT)*GAORED(K,J,2)&
+              &   + coef(3,K,IDMAT)*GAORED(K,J,3)&
+              &   + coef(4,K,IDMAT)*GAORED(K,J,4)
+      ENDDO
+   ENDDO
+!  Second half-contraction of GAO's with potential
+!   CALL MEM_DFT_ALLOC(EXCRED,NRED,NRED)
+   CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+        &                EXCRED(1:NRED*NRED),NRED)
+!  Distribute contributions to KS-matrix
+   DO JRED=1,NRED          !Jred is reduced index
+      J = INXRED(JRED)     !J is orbital index
+      offset = (JRED-1)*NRED
+      DO IRED=1,NRED       !Ired is reduced index
+         I = INXRED(IRED)  !I is orbital index
+         EXCMAT(I,J,IDMAT) = EXCMAT(I,J,IDMAT) + EXCRED(IRED+offset)
+      ENDDO
+   ENDDO
+!   CALL MEM_DFT_DEALLOC(EXCRED)
+ ENDIF
+ENDDO
+call mem_dft_dealloc(INXRED)
+
+END SUBROUTINE II_DISTMETA
 
 !> \brief GGA Exchange-correlation contribution to molecular gradient
 !> \author T. Kjaergaard
@@ -1342,7 +1575,7 @@ END SUBROUTINE II_GET_EXPVAL_LDA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_LINRSPLDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -1370,6 +1603,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -1395,7 +1630,7 @@ END SUBROUTINE II_DFT_LINRSPLDAUNRES
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_LINRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -1423,6 +1658,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -1686,7 +1923,7 @@ END SUBROUTINE II_GET_EXPVAL_GGA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_LINRSPGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -1714,6 +1951,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -1858,7 +2097,7 @@ END SUBROUTINE II_DFT_QUADRSPLDA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_QUADRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -1886,6 +2125,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -2022,7 +2263,7 @@ END SUBROUTINE II_DFT_QUADRSPGGA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_magderiv_kohnshamLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,MXBLLEN,COORD,WGHT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
      & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -2051,6 +2292,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -2208,7 +2451,7 @@ END SUBROUTINE II_DFT_DISTMAGDERIV_LDA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_magderiv_kohnshamGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,MXBLLEN,COORD,WGHT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
      & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2236,6 +2479,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -2445,7 +2690,7 @@ END SUBROUTINE II_DFT_DISTMAGDERIV_GGA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_MAGDERIV_LINRSPLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,MXBLLEN,COORD,WGHT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
      & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -2474,6 +2719,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -2901,7 +3148,7 @@ END SUBROUTINE II_DFT_DISTMAGDERIV_linrsp_LDA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_MAGDERIV_LINRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,MXBLLEN,COORD,WGHT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
      & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -2930,6 +3177,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -3507,7 +3756,7 @@ END SUBROUTINE II_GET_MAGDERIV_EXPVAL_GGA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_geoderiv_kohnshamLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,MXBLLEN,COORD,WGHT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
      & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -3536,6 +3785,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -3759,7 +4010,7 @@ END SUBROUTINE II_DFT_DISTGEODERIV_LDA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_geoderiv_kohnshamGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,MXBLLEN,COORD,WGHT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
      & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -3788,6 +4039,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -4117,7 +4370,7 @@ END SUBROUTINE II_DFT_DISTGEODERIV_GGA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_geoderiv_linrspLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,MXBLLEN,COORD,WGHT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
      & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -4146,6 +4399,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -4395,7 +4650,7 @@ END SUBROUTINE II_DFT_DISTGEODERIV2_LDA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_geoderiv_linrspGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,MXBLLEN,COORD,WGHT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
      & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
@@ -4424,6 +4679,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -4803,7 +5060,7 @@ END SUBROUTINE II_DFT_DISTGEODERIV2_GGA
 !> Worker routine that for a batch of gridpoints build the LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMELDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -4831,6 +5088,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -4871,7 +5130,7 @@ END SUBROUTINE II_DFT_KSMELDA
 !> Worker routine that for a batch of gridpoints build the unrestricted LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMELDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -4899,6 +5158,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -4944,7 +5205,7 @@ END SUBROUTINE II_DFT_KSMELDAUNRES
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMEGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -4972,6 +5233,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -5012,7 +5275,7 @@ END SUBROUTINE II_DFT_KSMEGGA
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMEGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -5040,6 +5303,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
