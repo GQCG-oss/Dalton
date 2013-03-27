@@ -367,6 +367,12 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
+      if (peqm) then
+        call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
+     &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
+     &                 wrk(kvdt), wrk(kdvttr), evecs,
+     &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
+      end if
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
@@ -375,13 +381,10 @@ C
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               WRK(KDVT),WRK(KDVTTR),
      &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-      else if (peqm) then
-        call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
-     &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
-     &                 wrk(kvdt), wrk(kdvttr), evecs,
-     &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
-      ELSE
-      IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
+         IF (IPQMMM .GT. 1) CALL TIMER('QMMMLNO',TIMSTR,TIMEND)
+      ENDIF
+      IF (FLAG(16)) THEN
+         IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
          CALL SLVLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
@@ -619,8 +622,6 @@ C
          END IF
          TLM   = TN(LM) - SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
 C
-C        edh: Txc = < g(l)sum(lm,pq)< 0(L)|Te|0 > + < 0|Te|0(R) > )tpq Epq  
-C
          JRXC  = KRXC
          DO 200 ICSIM = 1,NCSIM
             TTT = SLVELM(DTV(1,ICSIM),WRK(KRLMAC),WRK(KRLM),TAC)
@@ -686,9 +687,9 @@ C     ... orbital part of sigma vector(s)
 C
       IF (KZWOPT .GT. 0) THEN
          JRXC   = KRXC
-         CALL DSPTSI(NORBT,WRK(KRYC),WRK(KURYC))    ! Tyo = tilde{T}g = - 2 sum(lm,pq)g(l)<T(lm)> Q(pq)Epq 
+         CALL DSPTSI(NORBT,WRK(KRYC),WRK(KURYC))
          DO 800 ICSIM = 1,NCSIM
-            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KURXC)) ! Txo = 2 sum{lm,pq}g(l)<Q(lm)>Epq
+            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KURXC))
             IF (TRPLET) THEN
                CALL SLVSOR(.TRUE.,.FALSE.,1,UDVTR,
      *                     SVEC(1,ICSIM),WRK(KURXC))
