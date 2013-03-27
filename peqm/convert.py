@@ -100,7 +100,7 @@ ndec = len(str(nsites)) + 1
 fout = open('new_{}'.format(sys.argv[1]), 'w')
 body = 'coordinates\n'
 body += '{}\n'.format(nsites)
-body += '{}\n'.format(unit)
+body += 'AA\n'
 for i, coord in enumerate(coords):
     body += '{0} {1[0]:12.6f} {1[1]:12.6f} {1[2]:12.6f}\n'.format(charge2elem[elements[i]], coord)
 
