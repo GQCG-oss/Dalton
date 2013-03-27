@@ -1227,14 +1227,17 @@ contains
     endif
     call ABCcommutator(ndim,F,S,prod2(1),sigma_i)
     
-    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
-         &prod2(1),GbDs,molcfg%setting)
-    if (molcfg%setting%do_dft) THEN 
-       !Add extra G contributions 
-       call II_get_xc_linrsp(molcfg%lupri,molcfg%luerr,& 
-            &molcfg%setting,ndim,prod2,D,prod,1) 
-       call mat_daxpy(1E0_realk,prod(1),GbDs) 
-    endif
+	call di_GET_GbDs_and_XC_linrsp(GbDs,prod,molcfg%lupri,molcfg%luerr,molcfg%setting,&
+											& prod2,1,ndim,D)
+!    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
+!         &prod2(1),GbDs,molcfg%setting)
+!    if (molcfg%setting%do_dft) THEN 
+!       !Add extra G contributions 
+!       call II_get_xc_linrsp(molcfg%lupri,molcfg%luerr,& 
+!            &molcfg%setting,ndim,prod2,D,prod,1) 
+!       call mat_daxpy(1E0_realk,prod(1),GbDs) 
+!    endif
+    
     call ABCcommutator(ndim,GbDs,S,D,prod(1))
     call mat_DAXPY(1E0_realk,prod(1),sigma_i)
     call mat_scal(2.0E0_realk,sigma_i)

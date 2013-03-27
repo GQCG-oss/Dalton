@@ -61,6 +61,7 @@ END INTERFACE
         & di_get_overlap_and_H1, &
         & di_get_fock_LSDALTON, &
         & di_GET_GbDs, &
+        & di_GET_GbDs_and_XC_linrsp, &
         & di_get_sigma_xc_cont_lsdalton,&
         & di_GET_GAOL_lsdalton, &
         & di_SCF_EnergyCont, &
@@ -2285,6 +2286,38 @@ CONTAINS
         ENDIF
       end subroutine di_GET_GbDsSingle
 
+	!> \brief Determine the G matrix for the 2-e contribution to 
+	!>        sigma vector in RSP,
+	!>        and includes the XC contrib. to linear response
+	!> \author Patrick Merlot
+	!> \date 2013-03-26
+	!> \param GbDs  The 2-e contribution to sigma vector in RSP
+	!> \param Gxc   The xc cont to the linear response
+	!> \param lupri Default print unit
+	!> \param luerr Default error print unit
+	!> \param setting Integral evalualtion settings
+	!> \param Bmat  The b matrix G(b)
+	!> \param nBmat The number of Bmat matrices
+	!> \param nbast The number of basisfunctions
+	!> \param Dmat  The Density matrix
+	SUBROUTINE di_GET_GbDs_and_XC_linrsp(GbDs,Gxc,lupri,luerr,setting,&
+											& Bmat,nBmat,nbast,Dmat)
+		IMPLICIT NONE
+		INTEGER, intent(in)           :: lupri,luerr,nBmat,nbast
+		TYPE(LSsetting),intent(inout) :: setting
+		TYPE(Matrix), intent(in)      :: Bmat(nBmat)
+		TYPE(Matrix), intent(in)      :: Dmat
+		TYPE(Matrix), intent(inout)   :: GbDs
+		TYPE(Matrix), intent(inout)   :: Gxc(nBmat)
+		!
+		call di_GET_GbDs(lupri,luerr,Bmat(1),GbDs,setting)
+		if (setting%do_dft) THEN 
+			! Add extra XC contributions to G 
+			call II_get_xc_linrsp(lupri,luerr,setting,nbast,Bmat,Dmat,Gxc,1) 
+			call mat_daxpy(1E0_realk,Gxc(1),GbDs) 
+		endif
+	END SUBROUTINE di_GET_GbDs_and_XC_linrsp
+	
       subroutine di_GET_GbDsArray(lupri,luerr,Dens,GbDs,nDmat,setting)
         !*********************************************************
         ! Determine the G matrix for the 2-e contribution to sigma
@@ -2710,4 +2743,4 @@ CONTAINS
       call mem_dealloc(integrals2)
     END SUBROUTINE di_debug_4center_eri_interest
 
- end MODULE dal_interface
+end MODULE dal_interface
