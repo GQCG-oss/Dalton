@@ -365,33 +365,53 @@ TYPE(lstensor),intent(inout)    :: RES
 !
 Integer               :: nA,nB, AtomA,atomB
 logical               :: SameLHSaos,dopermutation
-integer               :: IA,IB!,batchA,batchB
+integer               :: IA,IB,batchA,batchB,n1,n2,maxBat,maxAng,sA,sB,AB,BA
 TYPE(Overlap),pointer :: P
 real(realk) :: maxgabelm
 SameLHSaos = INPUT%SameLHSaos
 P => PQ%P%p
 IF (P%nPasses.GT. 1) CALL LSQUIT('Error in distributeCS. nPasses > 1',-1)
-nA = P%orbital1%totOrbitals
-nB = P%orbital2%totOrbitals
-CALL findMaxAbsGabElm(QPMAT2,nA*nB,maxgabelm,input%CS_THRESHOLD,lupri)
 
 !Beware when converting from double precision to short integer 
 !If double precision is less than 10^-33 then you can run into
 !problems with short integer overflow
-atomA   = P%orb1atom(1)
-atomB   = P%orb2atom(1)
-IA   = P%orb1batch(1)
-IB   = P%orb2batch(1)
-IF (maxgabelm.GT.shortintCRIT) THEN
-   RES%maxgab(IA,IB) = CEILING(LOG10(sqrt(maxgabelm)))
+nA     = P%orbital1%totOrbitals
+nB     = P%orbital2%totOrbitals
+IF(Output2%RealGabMatrix)THEN
+   atoma  = P%orb1atom(1)
+   batchA = P%orb1batch(1)
+   atomb  = P%orb2atom(1)
+   batchB = P%orb2batch(1)
+   AB = output2%resultTensor%INDEX(AtomA,AtomB,1,1) 
+   n1 = output2%resultTensor%LSAO(AB)%nLocal(1)
+   n2 = output2%resultTensor%LSAO(AB)%nLocal(2)
+   maxBat = output2%resultTensor%LSAO(AB)%maxBat
+   maxAng = output2%resultTensor%LSAO(AB)%maxAng
+   sA = output2%resultTensor%LSAO(AB)%startLocalOrb(1+(batchA-1)*maxAng) - 1
+   sB = output2%resultTensor%LSAO(AB)%startLocalOrb(1+(batchB-1)*maxAng+maxAng*maxBat) - 1 
+   CALL BuildGab(QPMAT2,nA,nB,output2%resultTensor%LSAO(AB)%elms,n1,n2,sA,sB)
+   dopermutation = SameLHSaos .AND.((batchA.NE.batchB).OR.(atoma.NE.atomb))
+   IF (dopermutation) THEN
+      BA = output2%resultTensor%INDEX(AtomB,AtomA,1,1) 
+      CALL BuildGabPermute(QPMAT2,nA,nB,output2%resultTensor%LSAO(BA)%elms,n1,n2,sA,sB)
+   ENDIF
 ELSE
-   RES%maxgab(IA,IB) = shortzero !meaning -33=> 10**-33=0
-ENDIF
-dopermutation = SameLHSaos .AND.((IA.NE.IB).OR.(atoma.NE.atomb))
-IF (dopermutation) THEN
-   RES%maxgab(IB,IA) =  RES%maxgab(IA,IB)
-ENDIF 
+   CALL findMaxAbsGabElm(QPMAT2,nA*nB,maxgabelm,input%CS_THRESHOLD,lupri)
 
+   atomA   = P%orb1atom(1)
+   atomB   = P%orb2atom(1)
+   IA   = P%orb1batch(1)
+   IB   = P%orb2batch(1)
+   IF (maxgabelm.GT.shortintCRIT) THEN
+      RES%maxgab(IA,IB) = CEILING(LOG10(sqrt(maxgabelm)))
+   ELSE
+      RES%maxgab(IA,IB) = shortzero !meaning -33=> 10**-33=0
+   ENDIF
+   dopermutation = SameLHSaos .AND.((IA.NE.IB).OR.(atoma.NE.atomb))
+   IF (dopermutation) THEN
+      RES%maxgab(IB,IA) =  RES%maxgab(IA,IB)
+   ENDIF
+ENDIF
 CONTAINS
 SUBROUTINE findMaxAbsGabElm(Gabint,nP,maxgabelm,thresh,lupri)
 implicit none
@@ -401,7 +421,7 @@ Real(realk),intent(INOUT) :: maxgabelm
 !
 real(realk) :: maxgabelm2
 Integer :: iP
-!write(lupri,*)'Gabint'
+!write(lupri,*)'Gabint findMaxAbsGabElm'
 !call output(Gabint,1,nP,1,nP,nP,nP,1,lupri)
 maxgabelm = 0.0E0_realk
 DO iP=1,nP
@@ -421,6 +441,49 @@ DO iP=1,nP
 #endif
 ENDDO
 END SUBROUTINE findMaxAbsGabElm
+
+SUBROUTINE BuildGab(Gabint,nA,nB,OutputMatrix,n1,n2,sA,sB)
+implicit none
+Integer,intent(IN)        :: n1,n2,sA,sB,nA,nB
+Real(realk),intent(IN)    :: Gabint(nA,nB,nA,nB)
+Real(realk),intent(INOUT) :: OutputMatrix(n1,n2)
+!
+Integer :: iA,iB
+!write(lupri,*)'Gabint BuildGab'
+!call output(Gabint,1,nA*nB,1,nA*nB,nA*nB,nA*nB,1,lupri)
+DO iB=1,nB
+   DO iA=1,nA
+#ifdef VAR_DEBUGINT
+      IF(Gabint(iA,iB,iA,iB).LT. 0.0E0_realk)THEN
+         print*, 'Error in buildGab. Negative screening int',Gabint(iA,iB,iA,iB)
+         call lsquit('Error in buildGab. Negative screening int',-1)
+      ENDIF
+#endif
+      OutputMatrix(sA+iA,sB+iB) = sqrt(Gabint(iA,iB,iA,iB))      
+   ENDDO
+ENDDO
+END SUBROUTINE BuildGab
+
+SUBROUTINE BuildGabPermute(Gabint,nA,nB,OutputMatrix,n1,n2,sA,sB)
+implicit none
+Integer,intent(IN)        :: n1,n2,sA,sB,nA,nB
+Real(realk),intent(IN)    :: Gabint(nA,nB,nA,nB)
+Real(realk),intent(INOUT) :: OutputMatrix(n2,n1)
+!
+Integer :: iA,iB
+DO iB=1,nB
+   DO iA=1,nA
+#ifdef VAR_DEBUGINT
+      IF(Gabint(iA,iB,iA,iB).LT. 0.0E0_realk)THEN
+         print*, 'Error in buildGab. Negative screening int',Gabint(iA,iB,iA,iB)
+         call lsquit('Error in buildGab. Negative screening int',-1)
+      ENDIF
+#endif
+      OutputMatrix(sB+iB,sA+iA) = sqrt(Gabint(iA,iB,iA,iB))
+   ENDDO
+ENDDO
+END SUBROUTINE BuildGabPermute
+
 END SUBROUTINE distributeCS
 
 !> \brief new distributePQ to lstensor

@@ -3251,6 +3251,24 @@ IF (Oper.EQ.NucleiOperator) THEN
 ELSEIF ((AO1.EQ.AOEmpty).AND.(AO2.EQ.AOEmpty)) THEN
    CALL LSQUIT('result is screenMat(1,1) = 1.0E0_realk but this should have been done a different place',lupri)
 ELSE
+ IF(setting%Output%RealGabMatrix)Then
+    IF(CS_SCREEN)THEN   
+       CALL SetInputAO(INT_INPUT,AO1,AO2,AO1,AO2,Contractedinttype,AObuild,nAObuilds,SETTING,LUPRI,LUERR,LHSGAB)
+       CALL initIntegralOutputDims1(setting%Output,INT_INPUT%AOdim(1),INT_INPUT%AOdim(2),1,1,1)
+       Int_Input%CS_int = .TRUE.
+       Int_Input%PS_int = .FALSE.
+       nullify(setting%output%resultTensor)
+       allocate(setting%output%resultTensor)
+       call init_lstensor_5dim(setting%output%resultTensor,Int_Input%AO(1)%p,Int_Input%AO(2)%p,&
+            & Int_Input%AO(3)%p,Int_Input%AO(4)%p,INT_INPUT%AOdim(1),INT_INPUT%AOdim(2),1,&
+            & 1,1,.TRUE.,.TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,lupri)
+!       call init_cs_lstensor(setting%output%ScreenTensor,Int_Input%AO(1)%p,&
+!           &Int_Input%AO(2)%p,INT_INPUT%AOdim(1),INT_INPUT%AOdim(2),INT_INPUT%OD_SCREEN,lupri)
+      call MAIN_INTEGRAL_DRIVER(LUPRI,IPRINT,INT_INPUT,setting%OUTPUT)
+!      call set_lst_maxgabelms(setting%output%ScreenTensor)
+      CALL FreeInputAO(AObuild,nAObuilds,LUPRI)
+   ENDIF
+ ELSE
    nullify(setting%output%ScreenTensor)
    allocate(setting%output%ScreenTensor)
    call lstensor_nullify(setting%output%ScreenTensor)
@@ -3292,6 +3310,7 @@ ELSE
       INT_INPUT%MBIE_INT=.FALSE.
       CALL FreeInputAO(AObuild,nAObuilds,LUPRI)
    ENDIF
+ ENDIF
 ENDIF
 setting%output%ndim = ndim2
 CS_THRLOG = Int_Input%CS_Thrlog

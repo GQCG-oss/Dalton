@@ -2813,9 +2813,15 @@ ELSE
    dimQ=PQ%Q%p%totOrbitals(rhsDer+1)
 
    IF (Input%CS_int) THEN
-      !Cauchy-Schwarz screening integrals
-      call distributeCS(OUTPUT%ScreenTensor,PQ,Integral%integralsABCD,&
-           & dimQ,dimP,Input,Output,LUPRI,IPRINT)      
+      IF(OUTPUT%RealGabMatrix)THEN
+         !Cauchy-Schwarz screening integrals
+         call distributeCS(OUTPUT%resultTensor,PQ,Integral%integralsABCD,&
+              & dimQ,dimP,Input,Output,LUPRI,IPRINT)      
+      ELSE
+         !Cauchy-Schwarz screening integrals
+         call distributeCS(OUTPUT%ScreenTensor,PQ,Integral%integralsABCD,&
+              & dimQ,dimP,Input,Output,LUPRI,IPRINT)      
+      ENDIF
    ELSEIF(Input%PS_int) THEN
       !Cauchy-Schwarz screening integrals
       call distributePS(OUTPUT%ScreenTensor,PQ,Integral%integralsABCD,&
