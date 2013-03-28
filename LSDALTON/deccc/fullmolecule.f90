@@ -755,6 +755,13 @@ contains
     call dec_diff_basis_transform1(molecule%nbasis,molecule%numocc,molecule%numvirt,&
          & molecule%ypo, molecule%ypv, AOint, molecule%orbint)
 
+    ! Take absolute value (should not be necessary but do it to be on the safe side)
+    do j=1,molecule%numvirt
+       do i=1,molecule%numocc
+          molecule%orbint(i,j) = abs(molecule%orbint(i,j))
+       end do
+    end do
+
     call mem_dealloc(AOint)
 
   end subroutine molecule_get_interaction_matrices

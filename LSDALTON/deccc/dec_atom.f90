@@ -6133,4 +6133,72 @@ end subroutine get_main_pair_info
 
   end subroutine which_orbitals_in_atomic_extents
 
+
+  !> \brief Prioriterize orbitals based on orbital interaction matrix (MyMolecule%orbint),
+  !> such that all orbitals are sorted according to accumulated interaction with orbitals 
+  !> assigned to central atom in fragment. (Largest elements first).
+  !> \author Kasper Kristensen
+  !> \date March 2013
+  subroutine prioritize_orbitals_based_on_atom(MyFragment,MyMolecule,occidx,unoccidx,occval,unoccval)
+    implicit none
+
+    !> Fragment info
+    type(ccatom),intent(inout) :: MyFragment
+    !> Full molecule info
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> Occupied orbital indices listed in order of decreasing interaction with unocc EOS orbitals
+    integer,intent(inout),dimension(MyMolecule%numocc) :: occidx
+    !> Unocc orbital indices listed in order of decreasing interaction with occupied EOS orbitals
+    integer,intent(inout),dimension(MyMolecule%numvirt) :: unoccidx
+    !> Sorted values of accumulated occ interaction 
+    !> (e.g. value of index occidx(i) is given by occval(i))
+    real(realk),intent(inout),dimension(MyMolecule%numocc) :: occval
+    !> Sorted values of accumulated unocc interaction 
+    !> (e.g. value of index unoccidx(i) is given by unoccval(i))
+    real(realk),intent(inout),dimension(MyMolecule%numvirt) :: unoccval
+    integer :: nocc,nunocc,i,j,ix
+    
+    ! Full molecular dimensions
+    nocc = MyMolecule%numocc
+    nunocc = MyMolecule%numvirt
+
+
+    ! Prioritize unocc orbitals based on interaction with occ EOS
+    ! ***********************************************************
+    ! For each unocc orbital "j" we add all interaction contributions
+    ! with occ orbitals "i" in the occupied EOS.
+    ! Note: MyMolecule%orbint has dimensions: (nocc,nunocc)
+
+    unoccval = 0.0_realk
+    do i=1,MyFragment%noccEOS  ! loop over occ EOS
+       ix = MyFragment%occEOSidx(i)  ! index of occ EOS orbital in full molecular orbital list
+       do j=1,nunocc  ! loop over all unocc orbitals
+          unoccval(j) = unoccval(j) + MyMolecule%orbint(ix,j)
+       end do
+    end do
+
+    ! Sort interaction vector and set indices (largest elements first)
+    call real_inv_sort_with_tracking(unoccval,unoccidx,nunocc)
+
+
+
+    ! Prioritize occ orbitals based on interaction with unocc EOS
+    ! ***********************************************************
+    ! For each occ orbital "j" we add all interaction contributions
+    ! with unocc orbitals "i" in the unoccupied EOS.
+
+    occval = 0.0_realk
+    do i=1,MyFragment%nunoccEOS  ! loop over unocc EOS
+       ix = MyFragment%unoccEOSidx(i)  ! index of unocc EOS orbital in full molecular orbital list
+       do j=1,nocc  ! loop over all occ orbitals
+          occval(j) = occval(j) + MyMolecule%orbint(j,ix)
+       end do
+    end do
+
+    ! Sort interaction vector and set indices (largest elements first)
+    call real_inv_sort_with_tracking(occval,occidx,nocc)
+
+
+  end subroutine prioritize_orbitals_based_on_atom
+
 end module atomic_fragment_operations
