@@ -66,6 +66,7 @@ contains
     call molecule_get_overlap(molecule,mylsitem)
     call molecule_get_atomic_sizes(molecule,mylsitem)
     call molecule_mo_fock(molecule)
+    call molecule_get_interaction_matrices(molecule,mylsitem)
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
@@ -502,52 +503,46 @@ contains
     ! Delete transformation matrices for general basis
     if(associated(molecule%ypo)) then
        call mem_dealloc(molecule%ypo)
-       molecule%ypo => null()
     end if
 
     if(associated(molecule%ypv)) then
        call mem_dealloc(molecule%ypv)
-       molecule%ypv => null()
     end if
 
     ! Delete AO fock matrix
     if(associated(molecule%fock)) then
        call mem_dealloc(molecule%fock)
-       molecule%fock => null()
     end if
 
     ! P^Fock
     if(associated(molecule%ppfock)) then
        call mem_dealloc(molecule%ppfock)
-       molecule%ppfock => null()
     end if
 
     ! Q^Fock
     if(associated(molecule%qqfock)) then
        call mem_dealloc(molecule%qqfock)
-       molecule%qqfock => null()
     end if
 
     ! Delete atomic info
     if(associated(molecule%atom_size)) then
        call mem_dealloc(molecule%atom_size)
-       molecule%atom_size => null()
     end if
 
     if(associated(molecule%atom_start)) then
        call mem_dealloc(molecule%atom_start)
-       molecule%atom_start => null()
     end if
 
     if(associated(molecule%atom_end)) then
        call mem_dealloc(molecule%atom_end)
-       molecule%atom_end => null()
     end if
 
-    ! Delete overlap matrix
     if(associated(molecule%overlap)) then
        call mem_dealloc(molecule%overlap)
-       molecule%overlap => null()
+    end if
+
+    if(associated(molecule%orbint)) then
+       call mem_dealloc(molecule%orbint)
     end if
 
     return
@@ -718,6 +713,51 @@ contains
   end subroutine calculate_fullmolecule_memory
 
 
+  !> Calculate occ and virt interaction matrices which are used for atomic fragment
+  !> optimization as a measure of orbital interactions:
+  !> G_ia = sum_{mu nu} C_{mu i} C_{nu a} G_{mu nu}
+  !> G_{mu nu} is approximation to (mu nu | mu nu)
+  !> More precisely G_{mu nu} > (mu nu | mu nu), see II_get_2int_ScreenMat.
+  !> Thus G_{ia} is a rough measure of (i a | i a) integrals which enter the CC energy, and therefore
+  !> G_{ia} is a measure of the interaction between orbital "i" and orbital "a" 
+  !> in a correlation energy context.
+  subroutine molecule_get_interaction_matrices(molecule,mylsitem)
+    implicit none
+
+    !> Molecule info
+    type(fullmolecule), intent(inout) :: molecule
+    !> Integral info
+    type(lsitem), intent(inout) :: mylsitem
+    real(realk),pointer :: AOint(:,:)
+    type(matrix),target :: AOint_mat
+    integer :: i,j,idx
+
+
+    ! Get interaction matrix in AO basis
+    call mat_init(AOint_mat,molecule%nbasis,molecule%nbasis)
+    call II_get_2int_ScreenMat(DECinfo%output,DECinfo%output,mylsitem%setting,AOint_mat)
+
+    ! Temporary fix until Thomas makes routine which gives Fortran arrays as output
+    call mem_alloc(AOint,molecule%nbasis,molecule%nbasis)
+    idx=0
+    do j=1,molecule%nbasis
+       do i=1,molecule%nbasis
+          idx = idx+1
+          AOint(i,j) = AOint_mat%elms(idx)
+       end do
+    end do
+    call mat_free(AOint_mat)
+
+    ! Init interaction matrix: Occupied,virtual dimension
+    call mem_alloc(molecule%orbint,molecule%numocc,molecule%numvirt)
+
+    ! Transform to MO basis
+    call dec_diff_basis_transform1(molecule%nbasis,molecule%numocc,molecule%numvirt,&
+         & molecule%ypo, molecule%ypv, AOint, molecule%orbint)
+
+    call mem_dealloc(AOint)
+
+  end subroutine molecule_get_interaction_matrices
 
 
 end module full_molecule
